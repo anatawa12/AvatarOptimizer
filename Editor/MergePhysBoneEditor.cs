@@ -130,106 +130,13 @@ namespace Anatawa12.Merger
             }
             serializedObject.ApplyModifiedProperties();
 
-            if (componentsProp.AsEnumerable().ZipWithNext()
-                .Any(x => !IsSamePhysBone(
-                    (MergePhysBone) target,
-                    x.Item1.objectReferenceValue as VRCPhysBoneBase,
-                    x.Item2.objectReferenceValue as VRCPhysBoneBase)))
+            var differs = ((MergePhysBone)target).CollectDifferentProps();
+            if (differs.Count != 0)
             {
-                GUILayout.Label("Some Component has different", Style.ErrorStyle);
+                GUILayout.Label("The following properies are different", Style.ErrorStyle);
+                foreach (var differ in differs)
+                    GUILayout.Label($"  {differ}", Style.ErrorStyle);
             }
-
-        }
-
-        private static bool Eq<T>(T a, T b) => a.Equals(b);
-        private static bool Eq(float a, float b) => Mathf.Abs(a - b) < 0.00001f;
-        private static bool Eq(Vector3 a, Vector3 b) => (a - b).magnitude < 0.00001f;
-        private static bool Eq(AnimationCurve a, AnimationCurve b) => a.Equals(b);
-        private static bool Eq(float aFloat, AnimationCurve aCurve, float bFloat, AnimationCurve bCurve) => 
-            Eq(aFloat, bFloat) && Eq(aCurve, bCurve);
-        private static bool SetEq<T>(IEnumerable<T> a, IEnumerable<T> b) => 
-            new HashSet<T>(a).SetEquals(b);
-
-        private static bool IsSamePhysBone(MergePhysBone overrides, VRCPhysBoneBase a, VRCPhysBoneBase b)
-        {
-            // === Transforms ===
-            // Root Transform: ignore: we'll merge them
-            // Ignore Transforms: ignore: we'll merge them
-            // Endpoint position: ignore: we'll replace with zero and insert end bone instead
-            // Multi Child Type: ignore: Must be 'Ignore'
-            // == Forces ==
-            if (!overrides.forces)
-            {
-                if (!Eq(a.integrationType, b.integrationType)) return false;
-                if (!overrides.pull && !Eq(a.pull, a.pullCurve, b.pull, b.pullCurve)) return false;
-                if (!overrides.spring && !Eq(a.spring, a.springCurve, b.spring, b.springCurve)) return false;
-                if (!overrides.stiffness && !Eq(a.stiffness, a.stiffnessCurve, b.stiffness, b.stiffnessCurve))
-                    return false;
-                if (!overrides.gravity && !Eq(a.gravity, a.gravityCurve, b.gravity, b.gravityCurve)) return false;
-                if (!overrides.gravityFalloff && !Eq(a.gravityFalloff, a.gravityFalloffCurve, b.gravityFalloff,
-                        b.gravityFalloffCurve)) return false;
-                if (!overrides.immobile)
-                {
-                    if (!Eq(a.immobileType, b.immobileType)) return false;
-                    if (!Eq(a.immobile, a.immobileCurve, b.immobile, b.immobileCurve)) return false;
-                }
-            }
-
-            // == Limits ==
-            if (!overrides.limits)
-            {
-                if (a.limitType != b.limitType) return false;
-                switch (a.limitType)
-                {
-                    case VRCPhysBoneBase.LimitType.None:
-                        break;
-                    case VRCPhysBoneBase.LimitType.Angle:
-                    case VRCPhysBoneBase.LimitType.Hinge:
-                        if (!overrides.maxAngleX && !Eq(a.maxAngleX, a.maxAngleXCurve, b.maxAngleX, b.maxAngleXCurve))
-                            return false;
-                        //if (!Eq(a.maxAngleZ, a.maxAngleZCurve, b.maxAngleZ, b.maxAngleZCurve)) return false;
-                        if (!overrides.limitRotation)
-                        {
-                            if (!Eq(a.limitRotation, b.limitRotation)) return false;
-                            if (!Eq(a.limitRotationXCurve, b.limitRotationXCurve)) return false;
-                            if (!Eq(a.limitRotationYCurve, b.limitRotationYCurve)) return false;
-                            if (!Eq(a.limitRotationZCurve, b.limitRotationZCurve)) return false;
-                        }
-
-                        break;
-                    case VRCPhysBoneBase.LimitType.Polar:
-                        if (!overrides.maxAngleX && !Eq(a.maxAngleX, a.maxAngleXCurve, b.maxAngleX, b.maxAngleXCurve))
-                            return false;
-                        if (!overrides.maxAngleZ && !Eq(a.maxAngleZ, a.maxAngleZCurve, b.maxAngleZ, b.maxAngleZCurve))
-                            return false;
-                        if (!overrides.limitRotation)
-                        {
-                            if (!Eq(a.limitRotation, b.limitRotation)) return false;
-                            if (!Eq(a.limitRotationXCurve, b.limitRotationXCurve)) return false;
-                            if (!Eq(a.limitRotationYCurve, b.limitRotationYCurve)) return false;
-                            if (!Eq(a.limitRotationZCurve, b.limitRotationZCurve)) return false;
-                        }
-
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-            }
-
-            // == Collision ==
-            if (!overrides.radius && !Eq(a.radius, a.radiusCurve, b.radius, b.radiusCurve)) return false;
-            if (!overrides.allowCollision && !Eq(a.allowCollision, b.allowCollision)) return false;
-            if (overrides.colliders != CollidersSettings.Copy && !SetEq(a.colliders, b.colliders)) return false;
-            // == Grab & Pose ==
-            if (!overrides.allowGrabbing && !Eq(a.allowGrabbing, b.allowGrabbing)) return false;
-            if (!overrides.allowPosing && !Eq(a.allowPosing, b.allowPosing)) return false;
-            if (!overrides.grabMovement && !Eq(a.grabMovement, b.grabMovement)) return false;
-            if (!overrides.maxStretch && !Eq(a.maxStretch, a.maxStretchCurve, b.maxStretch, b.maxStretchCurve)) return false;
-            // == Options ==
-            // Parameter: ignore: must be empty
-            // Is Animated: ignore: we can merge them.
-            // Gizmos: ignore: it should not affect actual behaviour
-            return true;
         }
     }
 }
