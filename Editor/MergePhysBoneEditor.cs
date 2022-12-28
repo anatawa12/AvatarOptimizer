@@ -109,8 +109,8 @@ namespace Anatawa12.Merger
             }
 
             if (componentsProp.AsEnumerable().ZipWithNext()
-                .Any(x => !IsSamePhysBone(new SerializedObject(x.Item1.objectReferenceValue),
-                    new SerializedObject(x.Item2.objectReferenceValue))))
+                .Any(x => !IsSamePhysBone(x.Item1.objectReferenceValue as VRCPhysBoneBase,
+                    x.Item2.objectReferenceValue as VRCPhysBoneBase)))
             {
                 GUILayout.Label("Some Component has different", Style.ErrorStyle);
             }
@@ -118,16 +118,13 @@ namespace Anatawa12.Merger
             serializedObject.ApplyModifiedProperties();
         }
 
-        private bool Eq(SerializedObject a, SerializedObject b, string prop) =>
-            serializedObject.FindProperty(prop).boolValue ||
-            SerializedProperty.DataEquals(a.FindProperty(prop), b.FindProperty(prop));
+        private bool Eq(float a, float b) => Mathf.Abs(a - b) < 0.00001f;
+        private bool Eq(Vector3 a, Vector3 b) => (a - b).magnitude < 0.00001f;
+        private bool Eq(AnimationCurve a, AnimationCurve b) => a.Equals(b);
+        private bool Eq(float aFloat, AnimationCurve aCurve, float bFloat, AnimationCurve bCurve) => 
+            Eq(aFloat, bFloat) && Eq(aCurve, bCurve);
 
-        private bool EqCurve(SerializedObject a, SerializedObject b, string prop) =>
-            serializedObject.FindProperty(prop).boolValue ||
-            SerializedProperty.DataEquals(a.FindProperty(prop), b.FindProperty(prop)) ||
-            SerializedProperty.DataEquals(a.FindProperty(prop + "Curve"), b.FindProperty(prop + "Curve"));
-
-        private bool IsSamePhysBone(SerializedObject a, SerializedObject b)
+        private bool IsSamePhysBone(VRCPhysBoneBase a, VRCPhysBoneBase b)
         {
             // === Transforms ===
             // Root Transform: ignore: we'll merge them
@@ -135,50 +132,49 @@ namespace Anatawa12.Merger
             // Endpoint position: ignore: we'll replace with zero and insert end bone instead
             // Multi Child Type: ignore: Must be 'Ignore'
             // == Forces ==
-            if (!Eq(a, b, nameof(VRCPhysBoneBase.integrationType))) return false;
-            if (!EqCurve(a, b, nameof(VRCPhysBoneBase.pull))) return false;
-            if (!EqCurve(a, b, nameof(VRCPhysBoneBase.spring))) return false;
-            if (!EqCurve(a, b, nameof(VRCPhysBoneBase.stiffness))) return false;
-            if (!EqCurve(a, b, nameof(VRCPhysBoneBase.gravity))) return false;
-            if (!EqCurve(a, b, nameof(VRCPhysBoneBase.gravityFalloff))) return false;
-            if (!Eq(a, b, nameof(VRCPhysBoneBase.immobileType))) return false;
-            if (!EqCurve(a, b, nameof(VRCPhysBoneBase.immobile))) return false;
+            if (a.integrationType != b.integrationType) return false;
+            if (!Eq(a.pull, a.pullCurve, b.pull, b.pullCurve)) return false;
+            if (!Eq(a.spring, a.springCurve, b.spring, b.springCurve)) return false;
+            if (!Eq(a.stiffness, a.stiffnessCurve, b.stiffness, b.stiffnessCurve)) return false;
+            if (!Eq(a.gravity, a.gravityCurve, b.gravity, b.gravityCurve)) return false;
+            if (!Eq(a.gravityFalloff, a.gravityFalloffCurve, b.gravityFalloff, b.gravityFalloffCurve)) return false;
+            if (a.immobileType != b.immobileType) return false;
+            if (!Eq(a.immobile, a.immobileCurve, b.immobile, b.immobileCurve)) return false;
             // == Limits ==
-            if (!Eq(a, b, nameof(VRCPhysBoneBase.limitType))) return false;
-            switch ((VRCPhysBoneBase.LimitType) a.FindProperty(nameof(VRCPhysBoneBase.limitType)).enumValueIndex)
+            if (a.limitType != b.limitType) return false;
+            switch (a.limitType)
             {
                 case VRCPhysBoneBase.LimitType.None:
                     break;
                 case VRCPhysBoneBase.LimitType.Angle:
                 case VRCPhysBoneBase.LimitType.Hinge:
-                    if (!EqCurve(a, b, nameof(VRCPhysBoneBase.maxAngleXCurve))) return false;
-                    //if (!EqCurve(a, b, nameof(VRCPhysBoneBase.maxAngleZCurve))) return false;
-                    if (!Eq(a, b, nameof(VRCPhysBoneBase.limitRotation))) return false;
-                    if (!Eq(a, b, nameof(VRCPhysBoneBase.limitRotationXCurve))) return false;
-                    if (!Eq(a, b, nameof(VRCPhysBoneBase.limitRotationYCurve))) return false;
-                    if (!Eq(a, b, nameof(VRCPhysBoneBase.limitRotationZCurve))) return false;
+                    if (!Eq(a.maxAngleX, a.maxAngleXCurve, b.maxAngleX, b.maxAngleXCurve)) return false;
+                    //if (!Eq(a.maxAngleZ, a.maxAngleZCurve, b.maxAngleZ, b.maxAngleZCurve)) return false;
+                    if (!Eq(a.limitRotation, b.limitRotation)) return false;
+                    if (!Eq(a.limitRotationXCurve, b.limitRotationXCurve)) return false;
+                    if (!Eq(a.limitRotationYCurve, b.limitRotationYCurve)) return false;
+                    if (!Eq(a.limitRotationZCurve, b.limitRotationZCurve)) return false;
                     break;
                 case VRCPhysBoneBase.LimitType.Polar:
-                    if (!EqCurve(a, b, nameof(VRCPhysBoneBase.maxAngleXCurve))) return false;
-                    if (!EqCurve(a, b, nameof(VRCPhysBoneBase.maxAngleZCurve))) return false;
-                    if (!Eq(a, b, nameof(VRCPhysBoneBase.limitRotation))) return false;
-                    if (!Eq(a, b, nameof(VRCPhysBoneBase.limitRotationXCurve))) return false;
-                    if (!Eq(a, b, nameof(VRCPhysBoneBase.limitRotationYCurve))) return false;
-                    if (!Eq(a, b, nameof(VRCPhysBoneBase.limitRotationZCurve))) return false;
+                    if (!Eq(a.maxAngleX, a.maxAngleXCurve, b.maxAngleX, b.maxAngleXCurve)) return false;
+                    if (!Eq(a.maxAngleZ, a.maxAngleZCurve, b.maxAngleZ, b.maxAngleZCurve)) return false;
+                    if (!Eq(a.limitRotation, b.limitRotation)) return false;
+                    if (!Eq(a.limitRotationXCurve, b.limitRotationXCurve)) return false;
+                    if (!Eq(a.limitRotationYCurve, b.limitRotationYCurve)) return false;
+                    if (!Eq(a.limitRotationZCurve, b.limitRotationZCurve)) return false;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
             // == Collision ==
-            if (!EqCurve(a, b, nameof(VRCPhysBoneBase.radius))) return false;
-            if (!Eq(a, b, nameof(VRCPhysBoneBase.allowCollision))) return false;
-            if (!EqSet(a.FindProperty(nameof(VRCPhysBoneBase.colliders)).AsEnumerable().Select(x => x.objectReferenceValue), 
-                    b.FindProperty(nameof(VRCPhysBoneBase.colliders)).AsEnumerable().Select(x => x.objectReferenceValue))) return false;
+            if (!Eq(a.radius, a.radiusCurve, b.radius, b.radiusCurve)) return false;
+            if (a.allowCollision != b.allowCollision) return false;
+            if (!Eq(a.colliders, b.colliders)) return false;
             // == Grab & Pose ==
-            if (!Eq(a, b, nameof(VRCPhysBoneBase.allowGrabbing))) return false;
-            if (!Eq(a, b, nameof(VRCPhysBoneBase.allowPosing))) return false;
-            if (!Eq(a, b, nameof(VRCPhysBoneBase.grabMovement))) return false;
-            if (!EqCurve(a, b, nameof(VRCPhysBoneBase.maxStretch))) return false;
+            if (a.allowGrabbing != b.allowGrabbing) return false;
+            if (a.allowPosing != b.allowPosing) return false;
+            if (!Eq(a.grabMovement, b.grabMovement)) return false;
+            if (!Eq(a.maxStretch, a.maxStretchCurve, b.maxStretch, b.maxStretchCurve)) return false;
             // == Options ==
             // Parameter: ignore: must be empty
             // Is Animated: ignore: we can merge them.
@@ -186,7 +182,7 @@ namespace Anatawa12.Merger
             return true;
         }
 
-        private bool EqSet<T>(IEnumerable<T> a, IEnumerable<T> b) => 
-            new HashSet<T>(a).SetEquals(b);
+        private bool Eq(IEnumerable<VRCPhysBoneColliderBase> a, IEnumerable<VRCPhysBoneColliderBase> b) => 
+            new HashSet<VRCPhysBoneColliderBase>(a).SetEquals(b);
     }
 }
