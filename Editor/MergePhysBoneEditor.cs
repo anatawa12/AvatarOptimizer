@@ -11,9 +11,6 @@ namespace Anatawa12.Merger
     [CustomEditor(typeof(MergePhysBone))]
     internal class MergePhysBoneEditor : Editor
     {
-        private MergePhysBone Target => (MergePhysBone)target;
-
-
         private static class Style
         {
             public static readonly GUIStyle ErrorStyle = new GUIStyle
@@ -30,30 +27,45 @@ namespace Anatawa12.Merger
 
         public override void OnInspectorGUI()
         {
-            
-
             EditorGUILayout.LabelField("Components:");
 
-            for (var i = 0; i < Target.components.Length; i++)
+            var componentsProp = serializedObject.FindProperty("components");
+
+            for (var i = 0; i < componentsProp.arraySize; i++)
             {
-                Target.components[i] =
-                    (VRCPhysBone)EditorGUILayout.ObjectField(Target.components[i], typeof(VRCPhysBone), true);
-                if (Target.components[i].multiChildType != VRCPhysBoneBase.MultiChildType.Ignore)
-                    GUILayout.Label("Multi child type must be Ignore", Style.ErrorStyle);
-                if (Target.components[i].parameter != "")
-                    GUILayout.Label("You cannot use individual parameter", Style.WarningStyle);
+                var elementProp = componentsProp.GetArrayElementAtIndex(i);
+                EditorGUILayout.PropertyField(elementProp);
+
+                if (elementProp.objectReferenceValue == null)
+                {
+                    componentsProp.DeleteArrayElementAtIndex(i);
+                    i--;
+                }
+                else if (elementProp.objectReferenceValue is VRCPhysBoneBase bone)
+                {
+                    if (bone.multiChildType != VRCPhysBoneBase.MultiChildType.Ignore)
+                        GUILayout.Label("Multi child type must be Ignore", Style.ErrorStyle);
+                    if (bone.parameter != "")
+                        GUILayout.Label("You cannot use individual parameter", Style.WarningStyle);
+                }
             }
 
-            if (Target.components.Any(x => x == null))
-                Target.components = Target.components.Where(x => x != null).ToArray();
-
-            var toAdd = (VRCPhysBone)EditorGUILayout.ObjectField(null, typeof(VRCPhysBone), true);
+            var toAdd = (VRCPhysBoneBase)EditorGUILayout.ObjectField($"Element {componentsProp.arraySize}", null,
+                typeof(VRCPhysBoneBase), true);
             if (toAdd != null)
-                ArrayUtility.Add(ref Target.components, toAdd);
+            {
+                componentsProp.arraySize += 1;
+                componentsProp.GetArrayElementAtIndex(componentsProp.arraySize - 1).objectReferenceValue = toAdd;
+            }
 
-            if (Target.components.ZipWithNext().Any(x => !IsSamePhysBone(x.Item1, x.Item2))) {
+            if (componentsProp.AsEnumerable().ZipWithNext()
+                .Any(x => !IsSamePhysBone(x.Item1.objectReferenceValue as VRCPhysBoneBase,
+                    x.Item2.objectReferenceValue as VRCPhysBoneBase)))
+            {
                 GUILayout.Label("Some Component has different", Style.ErrorStyle);
             }
+
+            serializedObject.ApplyModifiedProperties();
         }
 
         private bool Eq(float a, float b) => Mathf.Abs(a - b) < 0.00001f;
@@ -62,14 +74,7 @@ namespace Anatawa12.Merger
         private bool Eq(float aFloat, AnimationCurve aCurve, float bFloat, AnimationCurve bCurve) => 
             Eq(aFloat, bFloat) && Eq(aCurve, bCurve);
 
-        private bool IsValidPhysBone(VRCPhysBone a)
-        {
-            if (a.multiChildType != VRCPhysBoneBase.MultiChildType.Ignore) return false;
-            if (a.parameter != "") return false;
-            return true;
-        }
-
-        private bool IsSamePhysBone(VRCPhysBone a, VRCPhysBone b)
+        private bool IsSamePhysBone(VRCPhysBoneBase a, VRCPhysBoneBase b)
         {
             // === Transforms ===
             // Root Transform: ignore: we'll merge them
