@@ -13,19 +13,33 @@ namespace Anatawa12.Merger
     {
         private MergePhysBone Target => (MergePhysBone)target;
 
-        private bool _initialized;
-        private bool _differ;
+
+        private static class Style
+        {
+            public static readonly GUIStyle ErrorStyle = new GUIStyle
+            {
+                normal = { textColor = Color.red },
+                wordWrap = false,
+            };
+            public static readonly GUIStyle WarningStyle = new GUIStyle
+            {
+                normal = { textColor = Color.yellow },
+                wordWrap = false,
+            };
+        }
 
         public override void OnInspectorGUI()
         {
             EditorGUILayout.LabelField("Components:");
 
-            EditorGUI.BeginChangeCheck();
-
             for (var i = 0; i < Target.components.Length; i++)
             {
                 Target.components[i] =
                     (VRCPhysBone)EditorGUILayout.ObjectField(Target.components[i], typeof(VRCPhysBone), true);
+                if (Target.components[i].multiChildType != VRCPhysBoneBase.MultiChildType.Ignore)
+                    GUILayout.Label("Multi child type must be Ignore", Style.ErrorStyle);
+                if (Target.components[i].parameter != "")
+                    GUILayout.Label("You cannot use individual parameter", Style.WarningStyle);
             }
 
             if (Target.components.Any(x => x == null))
@@ -35,26 +49,21 @@ namespace Anatawa12.Merger
             if (toAdd != null)
                 ArrayUtility.Add(ref Target.components, toAdd);
 
-            if (EditorGUI.EndChangeCheck() || !_initialized)
-            {
-                _differ = Target.components
-                    .ZipWithNext()
-                    .Any(x => !IsSamePhysBone(x.Item1, x.Item2));
+            if (Target.components.ZipWithNext().Any(x => !IsSamePhysBone(x.Item1, x.Item2))) {
+                GUILayout.Label("Some Component has different", Style.ErrorStyle);
             }
-
-            if (_differ) {
-                var style = new GUIStyle();
-                style.normal.textColor = Color.red;
-                style.wordWrap = false;
-                GUILayout.Label("Some Component has different", style);
-            }
-
-            _initialized = true;
         }
 
         private bool Eq(float a, float b) => Mathf.Abs(a - b) < 0.00001f;
         private bool Eq(Vector3 a, Vector3 b) => (a - b).magnitude < 0.00001f;
         private bool Eq(AnimationCurve a, AnimationCurve b) => a.Equals(b);
+
+        private bool IsValidPhysBone(VRCPhysBone a)
+        {
+            if (a.multiChildType != VRCPhysBoneBase.MultiChildType.Ignore) return false;
+            if (a.parameter != "") return false;
+            return true;
+        }
 
         private bool IsSamePhysBone(VRCPhysBone a, VRCPhysBone b)
         {
