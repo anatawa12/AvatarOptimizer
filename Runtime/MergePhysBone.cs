@@ -11,6 +11,7 @@ namespace Anatawa12.Merger
     [AddComponentMenu("Anatawa12/Merge PhysBone")]
     [RequireComponent(typeof(VRCPhysBone))]
     [DisallowMultipleComponent]
+    [ExecuteInEditMode]
     internal class MergePhysBone : MonoBehaviour
     {
         [FormerlySerializedAs("mergedComponent")] public VRCPhysBoneBase merged;
@@ -51,6 +52,7 @@ namespace Anatawa12.Merger
 
         private void Start()
         {
+#if !UNITY_EDITOR
             Debug.Log("Start: MergePhysBone");
             if (IsValid())
             {
@@ -58,6 +60,7 @@ namespace Anatawa12.Merger
                 DoMerge();
                 DestroyImmediate(this);
             }
+#endif
         }
 
         public HashSet<string> CollectDifferentProps()
