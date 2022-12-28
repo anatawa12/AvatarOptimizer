@@ -11,40 +11,35 @@ namespace Anatawa12.Merger
     [CustomEditor(typeof(MergePhysBone))]
     internal class MergePhysBoneEditor : Editor
     {
-        private bool _inited = false;
-        private bool _differ = false;
+        private MergePhysBone Target => (MergePhysBone)target;
+
+        private bool _initialized;
+        private bool _differ;
+
         public override void OnInspectorGUI()
         {
-            // ReSharper disable once LocalVariableHidesMember
-            var target = (MergePhysBone)this.target;
+            EditorGUILayout.LabelField("Components:");
 
             EditorGUI.BeginChangeCheck();
-            
-            var size = EditorGUILayout.IntField("Size", target.components.Length);
-            if (size != target.components.Length)
+
+            for (var i = 0; i < Target.components.Length; i++)
             {
-                Array.Resize(ref target.components, size);
+                Target.components[i] =
+                    (VRCPhysBone)EditorGUILayout.ObjectField(Target.components[i], typeof(VRCPhysBone), true);
             }
 
-            for (var i = 0; i < target.components.Length; i++)
-                target.components[i] =
-                    (VRCPhysBone)EditorGUILayout.ObjectField(target.components[i], typeof(VRCPhysBone), true);
-            
+            if (Target.components.Any(x => x == null))
+                Target.components = Target.components.Where(x => x != null).ToArray();
 
-            if (EditorGUI.EndChangeCheck() || _inited)
+            var toAdd = (VRCPhysBone)EditorGUILayout.ObjectField(null, typeof(VRCPhysBone), true);
+            if (toAdd != null)
+                ArrayUtility.Add(ref Target.components, toAdd);
+
+            if (EditorGUI.EndChangeCheck() || !_initialized)
             {
-                var nonNulls = target.components.Where(x => x != null).ToArray();
-                if (nonNulls.Length >= 2)
-                {
-                    var first = nonNulls[0];
-
-                    _differ = nonNulls.Skip(1).Any(x => !IsSamePhysBone(x, first));
-                }
-                else
-                {
-                    _differ = false;
-                }
-
+                _differ = Target.components
+                    .ZipWithNext()
+                    .Any(x => !IsSamePhysBone(x.Item1, x.Item2));
             }
 
             if (_differ) {
@@ -54,7 +49,7 @@ namespace Anatawa12.Merger
                 GUILayout.Label("Some Component has different", style);
             }
 
-            _inited = true;
+            _initialized = true;
         }
 
         private bool Eq(float a, float b) => Mathf.Abs(a - b) < 0.00001f;
@@ -83,7 +78,6 @@ namespace Anatawa12.Merger
             if (a.immobileType != b.immobileType) return false;
             if (!Eq(a.immobile, b.immobile)) return false;
             if (!Eq(a.immobileCurve, b.immobileCurve)) return false;
-            Debug.Log("Forces");
             // == Limits ==
             if (a.limitType != b.limitType) return false;
             if (!Eq(a.maxAngleX, b.maxAngleX)) return false;
@@ -91,21 +85,17 @@ namespace Anatawa12.Merger
             if (!Eq(a.maxAngleZ, b.maxAngleZ)) return false;
             if (!Eq(a.maxAngleZCurve, b.maxAngleZCurve)) return false;
             if (!Eq(a.limitRotation, b.limitRotation)) return false;
-            Debug.Log("Limits");
             // == Collision ==
             if (!Eq(a.radius, b.radius)) return false;
             if (!Eq(a.radiusCurve, b.radiusCurve)) return false;
             if (a.allowCollision != b.allowCollision) return false;
-            Debug.Log("Collision except colliders");
             if (!Eq(a.colliders, b.colliders)) return false;
-            Debug.Log("Collision");
             // == Grab & Pose ==
             if (a.allowGrabbing != b.allowGrabbing) return false;
             if (a.allowPosing != b.allowPosing) return false;
             if (!Eq(a.grabMovement, b.grabMovement)) return false;
             if (!Eq(a.maxStretch, b.maxStretch)) return false;
             if (!Eq(a.maxStretchCurve, b.maxStretchCurve)) return false;
-            Debug.Log("Grab & Pose");
             // == Options ==
             // Parameter: ignore: must be empty
             // Is Animated: ignore: we can merge them.
