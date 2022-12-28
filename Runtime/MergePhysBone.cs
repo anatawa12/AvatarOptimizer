@@ -12,7 +12,7 @@ namespace Anatawa12.Merger
         public VRCPhysBone mergedComponent;
 
         // == Forces ==
-        public bool integrationType;
+        [FormerlySerializedAs("force")] public bool forces;
         public bool pull;
         public bool spring;
         public bool stiffness;
@@ -20,7 +20,7 @@ namespace Anatawa12.Merger
         public bool gravityFalloff;
         public bool immobile;
         // == Limits ==
-        public bool limitType;
+        public bool limits;
         public bool maxAngleX;
         public bool maxAngleZ;
         public bool limitRotation;

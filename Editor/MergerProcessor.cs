@@ -14,6 +14,10 @@ namespace Anatawa12.Merger
 
         public bool OnPreprocessAvatar(GameObject avatarGameObject)
         {
+            foreach (var componentsInChild in avatarGameObject.GetComponentsInChildren<MergePhysBone>())
+            {
+            }
+
             return true;
         }
     }
