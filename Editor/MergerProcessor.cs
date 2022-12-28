@@ -5,6 +5,7 @@ using UnityEditor;
 using UnityEngine;
 using VRC.SDK3.Dynamics.PhysBone.Components;
 using VRC.SDKBase.Editor.BuildPipeline;
+using Object = UnityEngine.Object;
 
 namespace Anatawa12.Merger
 {
@@ -18,6 +19,7 @@ namespace Anatawa12.Merger
             {
                 if (mergePhysBone.IsValid()) return false;
                 mergePhysBone.DoMerge();
+                Object.DestroyImmediate(mergePhysBone);
             }
 
             return true;

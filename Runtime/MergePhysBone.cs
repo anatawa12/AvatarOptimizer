@@ -12,7 +12,7 @@ namespace Anatawa12.Merger
     [RequireComponent(typeof(VRCPhysBone))]
     [DisallowMultipleComponent]
     [ExecuteInEditMode]
-    internal class MergePhysBone : MonoBehaviour
+    internal class MergePhysBone : AvatarTagComponent
     {
         [FormerlySerializedAs("mergedComponent")] public VRCPhysBoneBase merged;
 
