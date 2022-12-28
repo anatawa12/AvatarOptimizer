@@ -112,24 +112,20 @@ namespace Anatawa12.Merger
                 .Any(x => !IsSamePhysBone(new SerializedObject(x.Item1.objectReferenceValue),
                     new SerializedObject(x.Item2.objectReferenceValue))))
             {
-                GUILayout.Label("Some non-overriden properties are different!", Style.ErrorStyle);
+                GUILayout.Label("Some Component has different", Style.ErrorStyle);
             }
 
             serializedObject.ApplyModifiedProperties();
         }
 
-        private bool Eq(SerializedObject a, SerializedObject b, string prop, string overrideProp = null) =>
-            serializedObject.FindProperty(overrideProp ?? prop).boolValue ||
+        private bool Eq(SerializedObject a, SerializedObject b, string prop) =>
+            serializedObject.FindProperty(prop).boolValue ||
             SerializedProperty.DataEquals(a.FindProperty(prop), b.FindProperty(prop));
 
-        private bool EqCurve(SerializedObject a, SerializedObject b, string prop, string overrideProp = null) =>
-            serializedObject.FindProperty(overrideProp ?? prop).boolValue ||
+        private bool EqCurve(SerializedObject a, SerializedObject b, string prop) =>
+            serializedObject.FindProperty(prop).boolValue ||
             SerializedProperty.DataEquals(a.FindProperty(prop), b.FindProperty(prop)) ||
             SerializedProperty.DataEquals(a.FindProperty(prop + "Curve"), b.FindProperty(prop + "Curve"));
-
-        private bool EqSet<T>(IEnumerable<T> a, IEnumerable<T> b, string overrideProp) => 
-            serializedObject.FindProperty(overrideProp).boolValue ||
-            new HashSet<T>(a).SetEquals(b);
 
         private bool IsSamePhysBone(SerializedObject a, SerializedObject b)
         {
@@ -145,7 +141,7 @@ namespace Anatawa12.Merger
             if (!EqCurve(a, b, nameof(VRCPhysBoneBase.stiffness))) return false;
             if (!EqCurve(a, b, nameof(VRCPhysBoneBase.gravity))) return false;
             if (!EqCurve(a, b, nameof(VRCPhysBoneBase.gravityFalloff))) return false;
-            if (!Eq(a, b, nameof(VRCPhysBoneBase.immobileType), "immobile")) return false;
+            if (!Eq(a, b, nameof(VRCPhysBoneBase.immobileType))) return false;
             if (!EqCurve(a, b, nameof(VRCPhysBoneBase.immobile))) return false;
             // == Limits ==
             if (!Eq(a, b, nameof(VRCPhysBoneBase.limitType))) return false;
@@ -155,20 +151,20 @@ namespace Anatawa12.Merger
                     break;
                 case VRCPhysBoneBase.LimitType.Angle:
                 case VRCPhysBoneBase.LimitType.Hinge:
-                    if (!EqCurve(a, b, nameof(VRCPhysBoneBase.maxAngleX))) return false;
-                    //if (!EqCurve(a, b, nameof(VRCPhysBoneBase.maxAngleZ))) return false;
+                    if (!EqCurve(a, b, nameof(VRCPhysBoneBase.maxAngleXCurve))) return false;
+                    //if (!EqCurve(a, b, nameof(VRCPhysBoneBase.maxAngleZCurve))) return false;
                     if (!Eq(a, b, nameof(VRCPhysBoneBase.limitRotation))) return false;
-                    if (!Eq(a, b, nameof(VRCPhysBoneBase.limitRotationXCurve), "limitRotation")) return false;
-                    if (!Eq(a, b, nameof(VRCPhysBoneBase.limitRotationYCurve), "limitRotation")) return false;
-                    if (!Eq(a, b, nameof(VRCPhysBoneBase.limitRotationZCurve), "limitRotation")) return false;
+                    if (!Eq(a, b, nameof(VRCPhysBoneBase.limitRotationXCurve))) return false;
+                    if (!Eq(a, b, nameof(VRCPhysBoneBase.limitRotationYCurve))) return false;
+                    if (!Eq(a, b, nameof(VRCPhysBoneBase.limitRotationZCurve))) return false;
                     break;
                 case VRCPhysBoneBase.LimitType.Polar:
-                    if (!EqCurve(a, b, nameof(VRCPhysBoneBase.maxAngleX))) return false;
-                    if (!EqCurve(a, b, nameof(VRCPhysBoneBase.maxAngleZ))) return false;
+                    if (!EqCurve(a, b, nameof(VRCPhysBoneBase.maxAngleXCurve))) return false;
+                    if (!EqCurve(a, b, nameof(VRCPhysBoneBase.maxAngleZCurve))) return false;
                     if (!Eq(a, b, nameof(VRCPhysBoneBase.limitRotation))) return false;
-                    if (!Eq(a, b, nameof(VRCPhysBoneBase.limitRotationXCurve), "limitRotation")) return false;
-                    if (!Eq(a, b, nameof(VRCPhysBoneBase.limitRotationYCurve), "limitRotation")) return false;
-                    if (!Eq(a, b, nameof(VRCPhysBoneBase.limitRotationZCurve), "limitRotation")) return false;
+                    if (!Eq(a, b, nameof(VRCPhysBoneBase.limitRotationXCurve))) return false;
+                    if (!Eq(a, b, nameof(VRCPhysBoneBase.limitRotationYCurve))) return false;
+                    if (!Eq(a, b, nameof(VRCPhysBoneBase.limitRotationZCurve))) return false;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -177,8 +173,7 @@ namespace Anatawa12.Merger
             if (!EqCurve(a, b, nameof(VRCPhysBoneBase.radius))) return false;
             if (!Eq(a, b, nameof(VRCPhysBoneBase.allowCollision))) return false;
             if (!EqSet(a.FindProperty(nameof(VRCPhysBoneBase.colliders)).AsEnumerable().Select(x => x.objectReferenceValue), 
-                    b.FindProperty(nameof(VRCPhysBoneBase.colliders)).AsEnumerable().Select(x => x.objectReferenceValue),
-                    "colliders")) return false;
+                    b.FindProperty(nameof(VRCPhysBoneBase.colliders)).AsEnumerable().Select(x => x.objectReferenceValue))) return false;
             // == Grab & Pose ==
             if (!Eq(a, b, nameof(VRCPhysBoneBase.allowGrabbing))) return false;
             if (!Eq(a, b, nameof(VRCPhysBoneBase.allowPosing))) return false;
@@ -190,5 +185,8 @@ namespace Anatawa12.Merger
             // Gizmos: ignore: it should not affect actual behaviour
             return true;
         }
+
+        private bool EqSet<T>(IEnumerable<T> a, IEnumerable<T> b) => 
+            new HashSet<T>(a).SetEquals(b);
     }
 }
