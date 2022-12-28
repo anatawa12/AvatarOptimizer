@@ -87,9 +87,30 @@ namespace Anatawa12.Merger
             if (!Eq(a.immobile, a.immobileCurve, b.immobile, b.immobileCurve)) return false;
             // == Limits ==
             if (a.limitType != b.limitType) return false;
-            if (!Eq(a.maxAngleX, a.maxAngleXCurve, b.maxAngleX, b.maxAngleXCurve)) return false;
-            if (!Eq(a.maxAngleZ, a.maxAngleZCurve, b.maxAngleZ, b.maxAngleZCurve)) return false;
-            if (!Eq(a.limitRotation, b.limitRotation)) return false;
+            switch (a.limitType)
+            {
+                case VRCPhysBoneBase.LimitType.None:
+                    break;
+                case VRCPhysBoneBase.LimitType.Angle:
+                case VRCPhysBoneBase.LimitType.Hinge:
+                    if (!Eq(a.maxAngleX, a.maxAngleXCurve, b.maxAngleX, b.maxAngleXCurve)) return false;
+                    //if (!Eq(a.maxAngleZ, a.maxAngleZCurve, b.maxAngleZ, b.maxAngleZCurve)) return false;
+                    if (!Eq(a.limitRotation, b.limitRotation)) return false;
+                    if (!Eq(a.limitRotationXCurve, b.limitRotationXCurve)) return false;
+                    if (!Eq(a.limitRotationYCurve, b.limitRotationYCurve)) return false;
+                    if (!Eq(a.limitRotationZCurve, b.limitRotationZCurve)) return false;
+                    break;
+                case VRCPhysBoneBase.LimitType.Polar:
+                    if (!Eq(a.maxAngleX, a.maxAngleXCurve, b.maxAngleX, b.maxAngleXCurve)) return false;
+                    if (!Eq(a.maxAngleZ, a.maxAngleZCurve, b.maxAngleZ, b.maxAngleZCurve)) return false;
+                    if (!Eq(a.limitRotation, b.limitRotation)) return false;
+                    if (!Eq(a.limitRotationXCurve, b.limitRotationXCurve)) return false;
+                    if (!Eq(a.limitRotationYCurve, b.limitRotationYCurve)) return false;
+                    if (!Eq(a.limitRotationZCurve, b.limitRotationZCurve)) return false;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
             // == Collision ==
             if (!Eq(a.radius, a.radiusCurve, b.radius, b.radiusCurve)) return false;
             if (a.allowCollision != b.allowCollision) return false;
