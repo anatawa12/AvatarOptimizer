@@ -48,6 +48,8 @@ namespace Anatawa12.Merger
         {
             if (merged == null)
                 merged = GetComponent<VRCPhysBoneBase>();
+            if (components == null)
+                components = Array.Empty<VRCPhysBoneBase>();
         }
 
         private void Start()
