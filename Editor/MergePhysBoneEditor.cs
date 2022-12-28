@@ -4,7 +4,6 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using VRC.Dynamics;
-using VRC.SDK3.Dynamics.PhysBone.Components;
 
 namespace Anatawa12.Merger
 {
@@ -18,6 +17,7 @@ namespace Anatawa12.Merger
                 normal = { textColor = Color.red },
                 wordWrap = false,
             };
+
             public static readonly GUIStyle WarningStyle = new GUIStyle
             {
                 normal = { textColor = Color.yellow },
@@ -27,10 +27,59 @@ namespace Anatawa12.Merger
 
         public override void OnInspectorGUI()
         {
-            EditorGUILayout.LabelField("Components:");
+            var mergedComponentProp = serializedObject.FindProperty("mergedComponent");
+            EditorGUI.BeginDisabledGroup(mergedComponentProp.objectReferenceValue != null);
+            EditorGUILayout.PropertyField(mergedComponentProp);
+            EditorGUI.EndDisabledGroup();
 
+            EditorGUILayout.LabelField("Overrides", EditorStyles.boldLabel);
+            EditorGUI.indentLevel++;
+            // == Forces ==
+            EditorGUILayout.LabelField("Forces", EditorStyles.boldLabel);
+            EditorGUI.indentLevel++;
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("integrationType"));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("pull"));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("spring"));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("stiffness"));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("gravity"));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("gravityFalloff"));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("immobile"));
+            EditorGUI.indentLevel--;
+            // == Limits ==
+            EditorGUILayout.LabelField("Limits", EditorStyles.boldLabel);
+            EditorGUI.indentLevel++;
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("limitType"));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("maxAngleX"));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("maxAngleZ"));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("limitRotation"));
+            EditorGUI.indentLevel--;
+            // == Collision ==
+            EditorGUILayout.LabelField("Collision", EditorStyles.boldLabel);
+            EditorGUI.indentLevel++;
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("radius"));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("allowCollision"));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("colliders"));
+            EditorGUI.indentLevel--;
+            // == Grab & Pose ==
+            EditorGUILayout.LabelField("Collision", EditorStyles.boldLabel);
+            EditorGUI.indentLevel++;
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("allowGrabbing"));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("grabMovement"));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("allowPosing"));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("maxStretch"));
+            EditorGUI.indentLevel--;
+            // == Others ==
+            EditorGUILayout.LabelField("Others", EditorStyles.boldLabel);
+            EditorGUI.indentLevel++;
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("isAnimated"));
+            EditorGUI.indentLevel--;
+
+            EditorGUI.indentLevel--;
+
+            EditorGUILayout.LabelField("Components:", EditorStyles.boldLabel);
             var componentsProp = serializedObject.FindProperty("components");
 
+            EditorGUI.indentLevel++;
             for (var i = 0; i < componentsProp.arraySize; i++)
             {
                 var elementProp = componentsProp.GetArrayElementAtIndex(i);
@@ -52,6 +101,7 @@ namespace Anatawa12.Merger
 
             var toAdd = (VRCPhysBoneBase)EditorGUILayout.ObjectField($"Element {componentsProp.arraySize}", null,
                 typeof(VRCPhysBoneBase), true);
+            EditorGUI.indentLevel--;
             if (toAdd != null)
             {
                 componentsProp.arraySize += 1;
