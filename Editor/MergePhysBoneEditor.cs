@@ -55,8 +55,10 @@ namespace Anatawa12.Merger
             EditorGUI.indentLevel++;
             EditorGUILayout.PropertyField(limitsProp = serializedObject.FindProperty("limits"));
             EditorGUI.BeginDisabledGroup(limitsProp.boolValue && componentsProp.arraySize != 0);
-            var physBoneBase = (VRCPhysBoneBase)componentsProp.GetArrayElementAtIndex(0).objectReferenceValue;
-            switch (physBoneBase.limitType)
+            var physBoneBase = (VRCPhysBoneBase)(componentsProp.arraySize != 0
+                ? componentsProp.GetArrayElementAtIndex(0).objectReferenceValue
+                : null);
+            switch (physBoneBase != null ? physBoneBase.limitType : VRCPhysBoneBase.LimitType.None)
             {
                 case VRCPhysBoneBase.LimitType.None:
                     break;
