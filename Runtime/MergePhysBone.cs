@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Serialization;
 using VRC.Dynamics;
@@ -12,7 +13,7 @@ namespace Anatawa12.Merger
     [DisallowMultipleComponent]
     internal class MergePhysBone : MonoBehaviour
     {
-        public VRCPhysBoneBase mergedComponent;
+        [FormerlySerializedAs("mergedComponent")] public VRCPhysBoneBase merged;
 
         // == Forces ==
         [FormerlySerializedAs("force")] public bool forces;
@@ -44,10 +45,20 @@ namespace Anatawa12.Merger
 
         void OnEnable()
         {
-            if (mergedComponent == null)
-                mergedComponent = GetComponent<VRCPhysBoneBase>();
+            if (merged == null)
+                merged = GetComponent<VRCPhysBoneBase>();
         }
 
+        private void Start()
+        {
+            Debug.Log("Start: MergePhysBone");
+            if (IsValid())
+            {
+                Debug.Log("Start: Before DoMerge");
+                DoMerge();
+                DestroyImmediate(this);
+            }
+        }
 
         public HashSet<string> CollectDifferentProps()
         {
@@ -70,6 +81,8 @@ namespace Anatawa12.Merger
         {
             // === Transforms ===
             // Root Transform: ignore: we'll merge them
+            if (!Eq((a.rootTransform ? a.rootTransform : a.transform).parent,
+                    (b.rootTransform ? b.rootTransform : b.transform).parent)) differ.Add("Parent of target Transform");
             // Ignore Transforms: ignore: we'll merge them
             // Endpoint position: ignore: we'll replace with zero and insert end bone instead
             // Multi Child Type: ignore: Must be 'Ignore'
@@ -77,8 +90,8 @@ namespace Anatawa12.Merger
             if (!forces)
             {
                 if (!Eq(a.integrationType, b.integrationType)) differ.Add("Integration Type");
-                if (!pull && !Eq(a.pull, a.pullCurve, b.pull, b.pullCurve))  differ.Add("Pull");
-                if (!spring && !Eq(a.spring, a.springCurve, b.spring, b.springCurve))  differ.Add("Spring");
+                if (!pull && !Eq(a.pull, a.pullCurve, b.pull, b.pullCurve)) differ.Add("Pull");
+                if (!spring && !Eq(a.spring, a.springCurve, b.spring, b.springCurve)) differ.Add("Spring");
                 if (!stiffness && !Eq(a.stiffness, a.stiffnessCurve, b.stiffness, b.stiffnessCurve))
                     differ.Add("Stiffness");
                 if (!gravity && !Eq(a.gravity, a.gravityCurve, b.gravity, b.gravityCurve)) differ.Add("Gravity");
@@ -141,11 +154,142 @@ namespace Anatawa12.Merger
             if (!allowGrabbing && !Eq(a.allowGrabbing, b.allowGrabbing)) differ.Add("Allow Grabbing");
             if (!allowPosing && !Eq(a.allowPosing, b.allowPosing)) differ.Add("Allow Posing");
             if (!grabMovement && !Eq(a.grabMovement, b.grabMovement)) differ.Add("Grab Movement");
-            if (!maxStretch && !Eq(a.maxStretch, a.maxStretchCurve, b.maxStretch, b.maxStretchCurve)) differ.Add("Max Stretch");
+            if (!maxStretch && !Eq(a.maxStretch, a.maxStretchCurve, b.maxStretch, b.maxStretchCurve))
+                differ.Add("Max Stretch");
             // == Options ==
             // Parameter: ignore: must be empty
             // Is Animated: ignore: we can merge them.
             // Gizmos: ignore: it should not affect actual behaviour
+        }
+
+        public bool IsValid() =>
+            CollectDifferentProps().Count == 0 && 
+            components.All(x => x.multiChildType == VRCPhysBoneBase.MultiChildType.Ignore);
+
+        public void DoMerge()
+        {
+            if (components.Length == 0) return;
+
+            var pb = components[0];
+
+            var parent = (pb.rootTransform ? pb.rootTransform : pb.transform).parent;
+            var root = new GameObject("PhysBoneRoot");
+            root.transform.parent = parent;
+            root.transform.localPosition = Vector3.zero;
+            root.transform.localRotation = Quaternion.identity;
+            root.transform.localScale = Vector3.one;
+
+            // modify
+            foreach (var physBone in components)
+            {
+                var target = physBone.rootTransform ? physBone.rootTransform : physBone.transform;
+                target.parent = root.transform;
+                if (physBone.endpointPosition != Vector3.zero)
+                {
+                    WalkChildrenAndSetEndpoint(target, physBone.endpointPosition);
+                }
+            }
+
+            // === Transforms ===
+            merged.rootTransform = root.transform;
+            merged.ignoreTransforms = components.SelectMany(x => x.ignoreTransforms).Distinct().ToList();
+            // Endpoint position: ignore: we'll replace with zero and insert end bone instead
+            merged.multiChildType = VRCPhysBoneBase.MultiChildType.Ignore;
+            // == Forces ==
+            if (!forces)
+            {
+                merged.integrationType = pb.integrationType;
+                if (!pull) (merged.pull, merged.pullCurve) = (pb.pull, pb.pullCurve);
+                if (!spring) (merged.spring, merged.springCurve) = (pb.spring, pb.springCurve);
+                if (!stiffness) (merged.stiffness, merged.stiffnessCurve) = (pb.stiffness, pb.stiffnessCurve);
+                if (!gravity) (merged.gravity, merged.gravityCurve) = (pb.gravity, pb.gravityCurve);
+                if (!gravityFalloff)
+                    (merged.gravityFalloff, merged.gravityFalloffCurve) = (pb.gravityFalloff, pb.gravityFalloffCurve);
+                if (!immobile)
+                {
+                    merged.immobileType = pb.immobileType;
+                    (merged.immobile, merged.immobileCurve) = (pb.immobile, pb.immobileCurve);
+                }
+            }
+
+            // == Limits ==
+            if (!limits)
+            {
+                merged.limitType = pb.limitType;
+                switch (merged.limitType)
+                {
+                    case VRCPhysBoneBase.LimitType.None:
+                        break;
+                    case VRCPhysBoneBase.LimitType.Angle:
+                    case VRCPhysBoneBase.LimitType.Hinge:
+                        if (!maxAngleX) (merged.maxAngleX, merged.maxAngleXCurve) = (pb.maxAngleX, pb.maxAngleXCurve);
+                        if (!limitRotation)
+                        {
+                            merged.limitRotation = pb.limitRotation;
+                            merged.limitRotationXCurve = pb.limitRotationXCurve;
+                            merged.limitRotationYCurve = pb.limitRotationYCurve;
+                            merged.limitRotationZCurve = pb.limitRotationZCurve;
+                        }
+
+                        break;
+                    case VRCPhysBoneBase.LimitType.Polar:
+                        if (!maxAngleX) (merged.maxAngleX, merged.maxAngleXCurve) = (pb.maxAngleX, pb.maxAngleXCurve);
+                        if (!maxAngleZ) (merged.maxAngleZ, merged.maxAngleZCurve) = (pb.maxAngleZ, pb.maxAngleZCurve);
+                        if (!limitRotation)
+                        {
+                            merged.limitRotation = pb.limitRotation;
+                            merged.limitRotationXCurve = pb.limitRotationXCurve;
+                            merged.limitRotationYCurve = pb.limitRotationYCurve;
+                            merged.limitRotationZCurve = pb.limitRotationZCurve;
+                        }
+
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+
+            // == Collision ==
+            if (!radius) (merged.radius, merged.radiusCurve) = (pb.radius, pb.radiusCurve);
+            if (!allowCollision) merged.allowCollision = pb.allowCollision;
+            switch (colliders)
+            {
+                case CollidersSettings.Copy:
+                    merged.colliders = pb.colliders;
+                    break;
+                case CollidersSettings.Merge:
+                    merged.colliders = components.SelectMany(x => x.colliders).Distinct().ToList();
+                    break;
+                case CollidersSettings.Override:
+                    // keep merged.colliders
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+            // == Grab & Pose ==
+            merged.allowGrabbing = pb.allowGrabbing;
+            merged.allowPosing = pb.allowPosing;
+            merged.grabMovement = pb.grabMovement;
+            if (!maxStretch) (merged.maxStretch, merged.maxStretchCurve) = (pb.maxStretch, pb.maxStretchCurve);
+            // == Options ==
+            // Parameter: ignore: must be empty
+            merged.isAnimated = isAnimated || components.Any(x => x.isAnimated);
+            // Gizmos: ignore: it should not affect actual behaviour
+
+            foreach (var physBone in components) DestroyImmediate(physBone);
+        }
+
+        private static void WalkChildrenAndSetEndpoint(Transform target, Vector3 physBoneEndpointPosition)
+        {
+            if (target.childCount == 0)
+            {
+                var go = new GameObject($"{target.name}_EndPhysBone");
+                go.transform.parent = target;
+                go.transform.localPosition = physBoneEndpointPosition;
+                return;
+            }
+            for (var i = 0; i < target.childCount; i++)
+                WalkChildrenAndSetEndpoint(target.GetChild(i), physBoneEndpointPosition);
         }
     }
 

@@ -27,7 +27,7 @@ namespace Anatawa12.Merger
 
         public override void OnInspectorGUI()
         {
-            var mergedComponentProp = serializedObject.FindProperty("mergedComponent");
+            var mergedComponentProp = serializedObject.FindProperty("merged");
             EditorGUI.BeginDisabledGroup(mergedComponentProp.objectReferenceValue != null);
             EditorGUILayout.PropertyField(mergedComponentProp);
             EditorGUI.EndDisabledGroup();
