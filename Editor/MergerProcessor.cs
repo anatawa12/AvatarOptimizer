@@ -11,7 +11,7 @@ namespace Anatawa12.Merger
 {
     internal class MergerProcessor : IVRCSDKPreprocessAvatarCallback
     {
-        public int callbackOrder => -1024;
+        public int callbackOrder => 0;
 
         public bool OnPreprocessAvatar(GameObject avatarGameObject)
         {
