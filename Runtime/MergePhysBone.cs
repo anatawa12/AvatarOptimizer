@@ -191,7 +191,7 @@ namespace Anatawa12.Merger
                 target.parent = root.transform;
                 if (physBone.endpointPosition != Vector3.zero)
                 {
-                    WalkChildrenAndSetEndpoint(target, physBone.endpointPosition);
+                    WalkChildrenAndSetEndpoint(target, physBone);
                 }
             }
 
@@ -284,17 +284,19 @@ namespace Anatawa12.Merger
             foreach (var physBone in components) DestroyImmediate(physBone);
         }
 
-        private static void WalkChildrenAndSetEndpoint(Transform target, Vector3 physBoneEndpointPosition)
+        internal static void WalkChildrenAndSetEndpoint(Transform target, VRCPhysBoneBase physBone)
         {
+            if (physBone.ignoreTransforms.Contains(target))
+                return;
             if (target.childCount == 0)
             {
                 var go = new GameObject($"{target.name}_EndPhysBone");
                 go.transform.parent = target;
-                go.transform.localPosition = physBoneEndpointPosition;
+                go.transform.localPosition = physBone.endpointPosition;
                 return;
             }
             for (var i = 0; i < target.childCount; i++)
-                WalkChildrenAndSetEndpoint(target.GetChild(i), physBoneEndpointPosition);
+                WalkChildrenAndSetEndpoint(target.GetChild(i), physBone);
         }
     }
 
