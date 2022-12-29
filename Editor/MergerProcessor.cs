@@ -15,10 +15,10 @@ namespace Anatawa12.Merger
 
         public bool OnPreprocessAvatar(GameObject avatarGameObject)
         {
-            foreach (var mergePhysBone in avatarGameObject.GetComponentsInChildren<MergePhysBone>())
+            foreach (var mergePhysBone in avatarGameObject.GetComponentsInChildren<AvatarTagComponent>())
             {
                 if (!mergePhysBone.IsValid()) return false;
-                mergePhysBone.DoMerge();
+                mergePhysBone.Apply();
                 Object.DestroyImmediate(mergePhysBone);
             }
 

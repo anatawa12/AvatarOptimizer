@@ -52,18 +52,6 @@ namespace Anatawa12.Merger
                 components = Array.Empty<VRCPhysBoneBase>();
         }
 
-        private void Awake()
-        {
-            if (!Application.isPlaying) return;
-            Debug.Log("Start: MergePhysBone");
-            if (IsValid())
-            {
-                Debug.Log("Start: Before DoMerge");
-                DoMerge();
-                DestroyImmediate(this);
-            }
-        }
-
         public HashSet<string> CollectDifferentProps()
         {
             var differ = new HashSet<string>();
@@ -166,11 +154,11 @@ namespace Anatawa12.Merger
             // Gizmos: ignore: it should not affect actual behaviour
         }
 
-        public bool IsValid() =>
+        protected internal override bool IsValid() =>
             CollectDifferentProps().Count == 0 && 
             components.All(x => x.multiChildType == VRCPhysBoneBase.MultiChildType.Ignore);
 
-        public void DoMerge()
+        protected internal override void Apply()
         {
             if (components.Length == 0) return;
 
