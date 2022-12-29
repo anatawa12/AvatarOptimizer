@@ -17,7 +17,7 @@ namespace Anatawa12.Merger
         {
             foreach (var mergePhysBone in avatarGameObject.GetComponentsInChildren<MergePhysBone>())
             {
-                if (mergePhysBone.IsValid()) return false;
+                if (!mergePhysBone.IsValid()) return false;
                 mergePhysBone.DoMerge();
                 Object.DestroyImmediate(mergePhysBone);
             }
