@@ -52,9 +52,9 @@ namespace Anatawa12.Merger
                 components = Array.Empty<VRCPhysBoneBase>();
         }
 
-        private void Start()
+        private void Awake()
         {
-#if !UNITY_EDITOR
+            if (!Application.isPlaying) return;
             Debug.Log("Start: MergePhysBone");
             if (IsValid())
             {
@@ -62,7 +62,6 @@ namespace Anatawa12.Merger
                 DoMerge();
                 DestroyImmediate(this);
             }
-#endif
         }
 
         public HashSet<string> CollectDifferentProps()
