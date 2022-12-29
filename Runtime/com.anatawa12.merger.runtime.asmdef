@@ -1,3 +1,13 @@
 {
-  "name": "com.anatawa12.merger.runtime"
+    "name": "com.anatawa12.merger.runtime",
+    "references": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
 }
