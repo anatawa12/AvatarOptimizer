@@ -29,6 +29,17 @@ namespace Anatawa12.Merger
                     return true;
                 }
             }
+            
+            if (component is SkinnedMeshRenderer)
+            {
+                // TODO: cache for performance
+                if (Object.FindObjectsOfType<MergeSkinnedMesh>()
+                    .SelectMany(x => x.renderers)
+                    .Any(x => x == component))
+                {
+                    return true;
+                }
+            }
 
             return false;
         }
