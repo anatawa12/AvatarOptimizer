@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using VRC.Dynamics;
@@ -118,12 +116,8 @@ namespace Anatawa12.Merger
                 }
                 else if (elementProp.objectReferenceValue is VRCPhysBoneBase bone)
                 {
-                    if (rootTransformProp.objectReferenceValue is Transform transform)
-                    {
-                        var targetTransform = bone.rootTransform ? bone.rootTransform : bone.transform;
-                        if (!targetTransform.IsChildOf(transform))
-                            GUILayout.Label("RootTransform is not valid", Style.ErrorStyle);
-                    }
+                    if (rootTransformProp.objectReferenceValue is Transform transform && !bone.GetTarget().IsChildOf(transform))
+                        GUILayout.Label("RootTransform is not valid", Style.ErrorStyle);
                     if (bone.multiChildType != VRCPhysBoneBase.MultiChildType.Ignore)
                         GUILayout.Label("Multi child type must be Ignore", Style.ErrorStyle);
                     if (bone.parameter != "")
@@ -141,7 +135,7 @@ namespace Anatawa12.Merger
             }
             serializedObject.ApplyModifiedProperties();
 
-            var differs = ((MergePhysBone)target).CollectDifferentProps();
+            var differs = Processors.MergePhysBoneProcessor.CollectDifferentProps((MergePhysBone)target);
             if (differs.Count != 0)
             {
                 GUILayout.Label("The following properies are different", Style.ErrorStyle);

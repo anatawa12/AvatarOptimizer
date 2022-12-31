@@ -15,14 +15,24 @@ namespace Anatawa12.Merger
 
         public bool OnPreprocessAvatar(GameObject avatarGameObject)
         {
-            foreach (var mergePhysBone in avatarGameObject.GetComponentsInChildren<AvatarTagComponent>())
+            try
             {
-                if (!mergePhysBone.IsValid()) return false;
-                mergePhysBone.Apply();
-                Object.DestroyImmediate(mergePhysBone);
+                ProcessObject(avatarGameObject);
+                return true;
             }
+            catch (Exception e)
+            {
+                Debug.LogError(e);
+                return false;
+            }
+        }
 
-            return true;
+        public static void ProcessObject(GameObject gameObject)
+        {
+            var session = new MergerSession(gameObject);
+            new Processors.MergePhysBoneProcessor().Merge(session);
+            new Processors.MergeSkinnedMeshProcessor().Merge(session);
+            // TODO: process mapping objects
         }
     }
 }

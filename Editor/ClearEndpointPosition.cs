@@ -23,8 +23,7 @@ namespace Anatawa12.Merger
         {
             if (physBoneBase.endpointPosition != Vector3.zero)
             {
-                MergePhysBone.WalkChildrenAndSetEndpoint(
-                    physBoneBase.rootTransform ? physBoneBase.rootTransform : physBoneBase.transform, physBoneBase);
+                Processors.MergePhysBoneProcessor.WalkChildrenAndSetEndpoint(physBoneBase.GetTarget(), physBoneBase);
                 physBoneBase.endpointPosition = Vector3.zero;
             }
         }
