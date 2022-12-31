@@ -123,9 +123,9 @@ namespace Anatawa12.Merger
                 Copy(verticesBase, vertexCount, vertexTotalCount, mesh.GetBonesPerVertex(), bonesPerVertex);
 
                 // bone attributes
-                var boneCount = renderer.bones.Length;
-                Copy(boneBase, boneCount, boneTotalCount, renderer.bones, ref bones);
-                Copy(boneBase, boneCount, boneTotalCount, mesh.bindposes, ref bindposes);
+                var rendererBones = renderer.bones;
+                Copy(boneBase, rendererBones.Length, boneTotalCount, rendererBones, ref bones);
+                Copy(boneBase, rendererBones.Length, boneTotalCount, mesh.bindposes, ref bindposes);
 
                 // other attributes
                 var meshTriangles = mesh.triangles;
@@ -177,7 +177,7 @@ namespace Anatawa12.Merger
                     renderer.materials, ref materials);
 
                 verticesBase += vertexCount;
-                boneBase += boneCount;
+                boneBase += bones.Length;
                 trianglesBase += meshTriangles.Length;
                 boneWeightsBase += meshBoneWeights.Length;
                 subMeshesBase += mesh.subMeshCount;
