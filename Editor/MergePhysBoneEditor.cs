@@ -31,6 +31,9 @@ namespace Anatawa12.Merger
             EditorGUI.BeginDisabledGroup(mergedComponentProp.objectReferenceValue != null);
             EditorGUILayout.PropertyField(mergedComponentProp);
             EditorGUI.EndDisabledGroup();
+            
+            var rootTransformProp = serializedObject.FindProperty("rootTransform");
+            EditorGUILayout.PropertyField(rootTransformProp);
 
             SerializedProperty forcesProp, limitsProp;
             var componentsProp = serializedObject.FindProperty("components");
@@ -115,6 +118,12 @@ namespace Anatawa12.Merger
                 }
                 else if (elementProp.objectReferenceValue is VRCPhysBoneBase bone)
                 {
+                    if (rootTransformProp.objectReferenceValue is Transform transform)
+                    {
+                        var targetTransform = bone.rootTransform ? bone.rootTransform : bone.transform;
+                        if (!targetTransform.IsChildOf(transform))
+                            GUILayout.Label("RootTransform is not valid", Style.ErrorStyle);
+                    }
                     if (bone.multiChildType != VRCPhysBoneBase.MultiChildType.Ignore)
                         GUILayout.Label("Multi child type must be Ignore", Style.ErrorStyle);
                     if (bone.parameter != "")

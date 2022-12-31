@@ -16,6 +16,8 @@ namespace Anatawa12.Merger
     {
         [FormerlySerializedAs("mergedComponent")] public VRCPhysBoneBase merged;
 
+        public Transform rootTransform;
+
         // == Forces ==
         [FormerlySerializedAs("force")] public bool forces;
         public bool pull;
@@ -73,8 +75,10 @@ namespace Anatawa12.Merger
         {
             // === Transforms ===
             // Root Transform: ignore: we'll merge them
-            if (!Eq((a.rootTransform ? a.rootTransform : a.transform).parent,
-                    (b.rootTransform ? b.rootTransform : b.transform).parent)) differ.Add("Parent of target Transform");
+            if (!rootTransform && 
+                !Eq((a.rootTransform ? a.rootTransform : a.transform).parent,
+                    (b.rootTransform ? b.rootTransform : b.transform).parent))
+                differ.Add("Parent of target Transform");
             // Ignore Transforms: ignore: we'll merge them
             // Endpoint position: ignore: we'll replace with zero and insert end bone instead
             // Multi Child Type: ignore: Must be 'Ignore'
@@ -155,8 +159,10 @@ namespace Anatawa12.Merger
         }
 
         protected internal override bool IsValid() =>
-            CollectDifferentProps().Count == 0 && 
-            components.All(x => x.multiChildType == VRCPhysBoneBase.MultiChildType.Ignore);
+            CollectDifferentProps().Count == 0 &&
+            components.All(x => x.multiChildType == VRCPhysBoneBase.MultiChildType.Ignore
+                                && (!rootTransform ||
+                                    (x.rootTransform ? x.rootTransform : x.transform).IsChildOf(rootTransform)));
 
         protected internal override void Apply()
         {
@@ -164,18 +170,42 @@ namespace Anatawa12.Merger
 
             var pb = components[0];
 
-            var parent = (pb.rootTransform ? pb.rootTransform : pb.transform).parent;
-            var root = new GameObject("PhysBoneRoot");
-            root.transform.parent = parent;
-            root.transform.localPosition = Vector3.zero;
-            root.transform.localRotation = Quaternion.identity;
-            root.transform.localScale = Vector3.one;
+            Transform root;
+            Transform newParent = null;
+            if (rootTransform)
+            {
+                root = rootTransform;
+            }
+            else
+            {
+                var rootObject = new GameObject("PhysBoneRoot");
+                rootObject.transform.parent = (pb.rootTransform ? pb.rootTransform : pb.transform).parent;
+                rootObject.transform.localPosition = Vector3.zero;
+                rootObject.transform.localRotation = Quaternion.identity;
+                rootObject.transform.localScale = Vector3.one;
+                newParent = root = rootObject.transform;
+            }
 
             // modify
             foreach (var physBone in components)
             {
                 var target = physBone.rootTransform ? physBone.rootTransform : physBone.transform;
-                target.parent = root.transform;
+
+                var parent = target.parent;
+                while (parent != root)
+                {
+                    if (parent.childCount == 1)
+                    {
+                        var dummyObj = new GameObject("_dummy");
+                        dummyObj.transform.parent = parent;
+                        dummyObj.transform.localPosition = Vector3.zero;
+                        dummyObj.transform.localRotation = Quaternion.identity;
+                        dummyObj.transform.localScale = Vector3.one;
+                    }
+                    parent = parent.parent;
+                }
+
+                if (newParent) target.parent = newParent;
                 if (physBone.endpointPosition != Vector3.zero)
                 {
                     WalkChildrenAndSetEndpoint(target, physBone);
@@ -183,7 +213,7 @@ namespace Anatawa12.Merger
             }
 
             // === Transforms ===
-            merged.rootTransform = root.transform;
+            merged.rootTransform = root;
             merged.ignoreTransforms = components.SelectMany(x => x.ignoreTransforms).Distinct().ToList();
             // Endpoint position: ignore: we'll replace with zero and insert end bone instead
             merged.multiChildType = VRCPhysBoneBase.MultiChildType.Ignore;
