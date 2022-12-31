@@ -12,54 +12,9 @@ namespace Anatawa12.Merger
     [AddComponentMenu("Anatawa12/Merge Skinned Mesh")]
     [RequireComponent(typeof(SkinnedMeshRenderer))]
     [DisallowMultipleComponent]
-    [ExecuteInEditMode]
     public class MergeSkinnedMesh : AvatarTagComponent
     {
         public SkinnedMeshRenderer[] renderers = Array.Empty<SkinnedMeshRenderer>();
-        private SkinnedMeshRenderer[] _renderersCache;
-        private SkinnedMeshRenderer _rendererCache;
-
-        private void Update()
-        {
-            if (Application.isPlaying) return;
-            if (_rendererCache == null)
-                _rendererCache = gameObject.GetOrAddComponent<SkinnedMeshRenderer>();
-            if (_renderersCache == null || !_renderersCache.SequenceEqual(renderers))
-            {
-                // create fake blenshapes
-                var newMesh = _rendererCache.sharedMesh;
-                if (_rendererCache.sharedMesh == null)
-                {
-                    newMesh = _rendererCache.sharedMesh = new Mesh();
-                    newMesh.hideFlags = HideFlags.HideInHierarchy;
-                }
-
-                newMesh.Clear();
-                newMesh.ClearBlendShapes();
-
-                var blendShapeNames = new List<string>();
-
-                // ReSharper disable once LocalVariableHidesMember
-                foreach (var renderer in renderers)
-                {
-                    var mesh = renderer.sharedMesh;
-                
-                    for (var i = 0; i < mesh.blendShapeCount; i++)
-                    {
-                        var shapeName = mesh.GetBlendShapeName(i);
-                        if (!blendShapeNames.Contains(shapeName))
-                        {
-                            blendShapeNames.Add(shapeName);
-                        }
-                    }
-                }
-
-                foreach (var blendShapeName in blendShapeNames)
-                    newMesh.AddBlendShapeFrame(blendShapeName, 0, Array.Empty<Vector3>(), null, null);
-
-                _renderersCache = (SkinnedMeshRenderer[])renderers.Clone();
-            }
-        }
 
         protected internal override bool IsValid()
         {
@@ -229,8 +184,8 @@ namespace Anatawa12.Merger
             }
 
             // create mesh
-            var newRenderer = _rendererCache ? _rendererCache : gameObject.GetOrAddComponent<SkinnedMeshRenderer>();
-            var newMesh = newRenderer.sharedMesh ? newRenderer.sharedMesh : new Mesh();
+            var newRenderer = gameObject.GetOrAddComponent<SkinnedMeshRenderer>();
+            var newMesh = new Mesh();
             var newBounds = new Bounds();
             newMesh.Clear();
             newMesh.ClearBlendShapes();
