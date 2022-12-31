@@ -43,7 +43,7 @@ namespace Anatawa12.Merger
         protected internal override void Apply()
         {
             var trianglesTotalCount = renderers.Sum(x => x.sharedMesh.triangles.Length);
-            var boneTotalCount = renderers.Sum(x => x.bones.Length);
+            var boneTotalCount = renderers.Sum(x => x.sharedMesh.bindposes.Length);
             var vertexTotalCount = renderers.Sum(x => x.sharedMesh.vertexCount);
             var boneWeightsTotalCount = renderers.Sum(x => x.sharedMesh.GetAllBoneWeights().Length);
             var subMeshesTotalCount = renderers.Sum(x => x.sharedMesh.subMeshCount);
@@ -124,8 +124,9 @@ namespace Anatawa12.Merger
 
                 // bone attributes
                 var rendererBones = renderer.bones;
-                Copy(boneBase, rendererBones.Length, boneTotalCount, rendererBones, ref bones);
-                Copy(boneBase, rendererBones.Length, boneTotalCount, mesh.bindposes, ref bindposes);
+                var bindposesCount = mesh.bindposes.Length;
+                Copy(boneBase, bindposesCount, boneTotalCount, rendererBones, ref bones);
+                Copy(boneBase, bindposesCount, boneTotalCount, mesh.bindposes, ref bindposes);
 
                 // other attributes
                 var meshTriangles = mesh.triangles;
@@ -177,7 +178,7 @@ namespace Anatawa12.Merger
                     renderer.materials, ref materials);
 
                 verticesBase += vertexCount;
-                boneBase += bones.Length;
+                boneBase += bindposesCount;
                 trianglesBase += meshTriangles.Length;
                 boneWeightsBase += meshBoneWeights.Length;
                 subMeshesBase += mesh.subMeshCount;
