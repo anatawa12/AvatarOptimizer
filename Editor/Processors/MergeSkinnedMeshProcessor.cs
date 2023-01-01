@@ -189,7 +189,7 @@ namespace Anatawa12.Merger.Processors
             foreach (var blendShapeName in blendShapeNames)
             {
                 var (vertex, normal, tangent) = blendShapes[blendShapeName];
-                newMesh.AddBlendShapeFrame(blendShapeName, 0, vertex, normal, tangent);
+                newMesh.AddBlendShapeFrame(blendShapeName, 100, vertex, normal, tangent);
             }
 
             newMesh.subMeshCount = subMeshes.Length;
