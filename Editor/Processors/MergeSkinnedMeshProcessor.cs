@@ -25,7 +25,7 @@ namespace Anatawa12.Merger.Processors
             var boneTotalCount = merge.renderers.Sum(x => x.sharedMesh.bindposes.Length);
             var vertexTotalCount = merge.renderers.Sum(x => x.sharedMesh.vertexCount);
             var boneWeightsTotalCount = merge.renderers.Sum(x => x.sharedMesh.GetAllBoneWeights().Length);
-            var subMeshesTotalCount = merge.renderers.Sum(x => x.sharedMesh.subMeshCount);
+            var (subMeshIndexMap, subMeshesTotalCount) = CreateSubMeshIndexMapping(merge);
 
             // bounds attributes
             var min = Vector3.positiveInfinity;
@@ -55,7 +55,6 @@ namespace Anatawa12.Merger.Processors
             var bindposes = new Matrix4x4[boneTotalCount];
 
             // others
-            var triangles = new int[trianglesTotalCount];
             var boneWeights = new NativeArray<BoneWeight1>(boneWeightsTotalCount, Allocator.Temp);
 
             // blendShapes
@@ -63,19 +62,21 @@ namespace Anatawa12.Merger.Processors
             var blendShapes = new Dictionary<string, (Vector3[] vertex, Vector3[] normal, Vector3[] tangent)>();
 
             // subMeshes
-            var subMeshes = new SubMeshDescriptor[subMeshesTotalCount];
             var materials = new Material[subMeshesTotalCount];
+            var subMeshInfos = new List<(int vertexBase, int[] triangles, SubMeshDescriptor submesh)>[subMeshesTotalCount];
+            for (var i = 0; i < subMeshInfos.Length; i++)
+                subMeshInfos[i] = new List<(int, int[], SubMeshDescriptor)>();
 
             var verticesBase = 0;
             var boneBase = 0;
-            var trianglesBase = 0;
             var boneWeightsBase = 0;
             var subMeshesBase = 0;
 
             // collect bones
             // ReSharper disable once LocalVariableHidesMember
-            foreach (var renderer in merge.renderers)
+            for (var rendererIndex = 0; rendererIndex < merge.renderers.Length; rendererIndex++)
             {
+                var renderer = merge.renderers[rendererIndex];
                 var mesh = renderer.sharedMesh;
                 var vertexCount = mesh.vertexCount;
 
@@ -109,8 +110,6 @@ namespace Anatawa12.Merger.Processors
 
                 // other attributes
                 var meshTriangles = mesh.triangles;
-                for (var i = 0; i < meshTriangles.Length; i++)
-                    triangles[i + trianglesBase] = meshTriangles[i] + verticesBase;
 
                 var meshBoneWeights = mesh.GetAllBoneWeights();
                 for (var i = 0; i < meshBoneWeights.Length; i++)
@@ -147,20 +146,37 @@ namespace Anatawa12.Merger.Processors
 
                 // subMeshes
                 for (var i = 0; i < mesh.subMeshCount; i++)
-                {
-                    var subMesh = mesh.GetSubMesh(i);
-                    subMeshes[subMeshesBase + i] = new SubMeshDescriptor(subMesh.indexStart + trianglesBase,
-                        subMesh.indexCount, subMesh.topology);
-                }
+                    subMeshInfos[subMeshIndexMap[(rendererIndex, i)]]
+                        .Add((verticesBase, meshTriangles, mesh.GetSubMesh(i)));
 
-                Copy(subMeshesBase, Math.Min(mesh.subMeshCount, renderer.materials.Length), subMeshesTotalCount,
-                    renderer.materials, ref materials);
+                var activeMaterialsCount = Math.Min(mesh.subMeshCount, renderer.materials.Length);
+                for (var i = 0; i < activeMaterialsCount; i++)
+                    materials[subMeshIndexMap[(rendererIndex, i)]] = renderer.materials[i];
 
                 verticesBase += vertexCount;
                 boneBase += bindposesCount;
-                trianglesBase += meshTriangles.Length;
                 boneWeightsBase += meshBoneWeights.Length;
                 subMeshesBase += mesh.subMeshCount;
+            }
+
+            // create triangles & subMeshes
+            var triangles = new int[trianglesTotalCount];
+            var subMeshes = new SubMeshDescriptor[subMeshesTotalCount];
+            
+            var trianglesIndex = 0;
+            for (var i = 0; i < subMeshInfos.Length; i++)
+            {
+                var indexStart = trianglesIndex;
+                foreach (var (vertexBase, sourceTriangles, subMesh) in subMeshInfos[i])
+                {
+                    Assert.AreEqual(MeshTopology.Triangles, subMesh.topology);
+                    for (var j = 0; j < subMesh.indexCount; j++, trianglesIndex++)
+                        triangles[trianglesIndex] = sourceTriangles[j + subMesh.indexStart] + vertexBase;
+                }
+
+                var length = trianglesIndex - indexStart;
+
+                subMeshes[i] = new SubMeshDescriptor(indexStart, length);
             }
 
             // create mesh
@@ -208,6 +224,27 @@ namespace Anatawa12.Merger.Processors
                 session.Destroy(renderer);
             }
             session.Destroy(merge);
+        }
+
+        private (Dictionary<(int rendererIndex, int submeshIndex), int> mapping, int subMeshTotalCount) CreateSubMeshIndexMapping(MergeSkinnedMesh merge)
+        {
+            // initial mapping: 
+            var result = merge.merges
+                .SelectMany((x, i) => x.merges.Select(y => ((int)(y >> 32), (int)y, i)))
+                .ToDictionary(x => (x.Item1, x.Item2), x => x.Item3);
+            var nextIndex = merge.merges.Length;
+
+            for (var i = 0; i < merge.renderers.Length; i++)
+            {
+                var renderer = merge.renderers[i];
+                for (var j = 0; j < renderer.sharedMesh.subMeshCount; j++)
+                {
+                    if (!result.ContainsKey((i, j)))
+                        result[(i, j)] = nextIndex++;
+                }
+            }
+
+            return (result, nextIndex);
         }
 
         private static void Copy<T>(int baseIndex, int count, int totalLength, T[] src, ref T[] dest)

@@ -9,5 +9,16 @@ namespace Anatawa12.Merger
     public class MergeSkinnedMesh : AvatarTagComponent
     {
         public SkinnedMeshRenderer[] renderers = Array.Empty<SkinnedMeshRenderer>();
+        public MergeConfig[] merges = Array.Empty<MergeConfig>();
+
+        [Serializable]
+        public class MergeConfig
+        {
+            public Material target;
+            // long as pair of int,
+            // 0xFFFFFFFF00000000 as index of renderer
+            // 0x00000000FFFFFFFF as index of material in renderer
+            public ulong[] merges;
+        }
     }
 }
