@@ -32,7 +32,9 @@ namespace Anatawa12.Merger
             var session = new MergerSession(gameObject);
             new Processors.MergePhysBoneProcessor().Merge(session);
             new Processors.MergeSkinnedMeshProcessor().Merge(session);
-            // TODO: process mapping objects
+
+            new Processors.ApplyObjectMapping().Apply(session);
+            new Processors.ApplyDestroy().Apply(session);
         }
     }
 }

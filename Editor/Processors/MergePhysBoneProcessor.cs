@@ -14,7 +14,7 @@ namespace Anatawa12.Merger.Processors
         {
             foreach (var mergePhysBone in session.GetComponents<MergePhysBone>())
             {
-                DoMerge(mergePhysBone);
+                DoMerge(mergePhysBone, session);
             }
         }
 
@@ -47,7 +47,7 @@ namespace Anatawa12.Merger.Processors
             return differ;
         }
 
-        internal static void DoMerge(MergePhysBone merge)
+        internal static void DoMerge(MergePhysBone merge, MergerSession session)
         {
             if (merge.components.Length == 0) return;
 
@@ -150,8 +150,8 @@ namespace Anatawa12.Merger.Processors
             // == Options ==
             merged.isAnimated = merge.isAnimated || merge.components.Any(x => x.isAnimated);
 
-            foreach (var physBone in merge.components) Object.DestroyImmediate(physBone);
-            Object.DestroyImmediate(merge);
+            foreach (var physBone in merge.components) session.Destroy(physBone);
+            session.Destroy(merge);
         }
 
         internal delegate void PropertyCallback(string prop);

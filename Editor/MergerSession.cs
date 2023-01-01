@@ -7,6 +7,7 @@ namespace Anatawa12.Merger
     {
         private readonly GameObject _rootObject;
         private readonly Dictionary<Object, Object> _mapping = new Dictionary<Object, Object>();
+        private readonly List<Object> _toDestroy = new List<Object>();
 
         public MergerSession(GameObject rootObject)
         {
@@ -14,6 +15,10 @@ namespace Anatawa12.Merger
         }
 
         public void AddObjectMapping<T>(T oldValue, T newValue) where T : Object => _mapping[oldValue] = newValue;
+        internal Dictionary<Object, Object> GetMapping() => _mapping;
+
+        public void Destroy(Object merge) => _toDestroy.Add(merge);
+        internal List<Object> GetObjectsToDestroy() => _toDestroy;
 
         public IEnumerable<T> GetComponents<T>() where T : Component
         {

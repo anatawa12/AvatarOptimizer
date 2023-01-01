@@ -3,14 +3,18 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Assertions;
 using VRC.Dynamics;
 
 namespace Anatawa12.Merger
 {
     internal static class Utils
     {
-        public static ArraySerializedPropertyEnumerable AsEnumerable(this SerializedProperty property) =>
-            new ArraySerializedPropertyEnumerable(property);
+        public static ArraySerializedPropertyEnumerable AsEnumerable(this SerializedProperty property)
+        {
+            Assert.IsTrue(property.isArray);
+            return new ArraySerializedPropertyEnumerable(property);
+        }
 
         public static TransformParentEnumerable ParentEnumerable(this Transform transform) =>
             new TransformParentEnumerable(transform);

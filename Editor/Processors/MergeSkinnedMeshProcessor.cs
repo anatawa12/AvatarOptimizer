@@ -205,9 +205,9 @@ namespace Anatawa12.Merger.Processors
             foreach (var renderer in merge.renderers)
             {
                 session.AddObjectMapping(renderer, newRenderer);
-                Object.DestroyImmediate(renderer);
+                session.Destroy(renderer);
             }
-            Object.DestroyImmediate(merge);
+            session.Destroy(merge);
         }
 
         private static void Copy<T>(int baseIndex, int count, int totalLength, T[] src, ref T[] dest)
