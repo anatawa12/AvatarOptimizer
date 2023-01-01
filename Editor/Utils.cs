@@ -22,6 +22,23 @@ namespace Anatawa12.Merger
         public static TransformDirectChildrenEnumerable DirectChildrenEnumerable(this Transform transform) =>
             new TransformDirectChildrenEnumerable(transform);
 
+        public static string RelativePath(Transform root, Transform child)
+        {
+            if (root == child) return "";
+
+            var pathSegments = new List<string>();
+            while (child != root)
+            {
+                pathSegments.Add(child.name);
+                child = child.transform.parent;
+                if (child == null) return null;
+            }
+
+            pathSegments.Reverse();
+            return string.Join("/", pathSegments);
+        }
+
+
         // func should returns false if nothing to return
         public static void WalkChildren(this Transform root, Func<Transform, bool> func)
         {
