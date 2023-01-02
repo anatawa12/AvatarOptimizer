@@ -31,7 +31,7 @@ namespace Anatawa12.Merger.Processors
                         if (p.objectReferenceValue is AnimatorController controller)
                         {
                             if (mapper == null)
-                                mapper = new AnimatorControllerMapper(mapping, component.transform);
+                                mapper = new AnimatorControllerMapper(mapping, component.transform, session);
 
                             var mapped = mapper.MapAnimatorController(controller);
                             if (mapped != null)
@@ -48,10 +48,13 @@ namespace Anatawa12.Merger.Processors
     internal class AnimatorControllerMapper
     {
         private readonly Dictionary<(string, Type), string> _mapping = new Dictionary<(string, Type), string>();
+        private readonly Dictionary<Object, Object> _cache = new Dictionary<Object, Object>();
+        private readonly MergerSession _session;
         private bool _mapped = false;
 
-        public AnimatorControllerMapper(Dictionary<Object, Object> mapping, Transform root)
+        public AnimatorControllerMapper(Dictionary<Object, Object> mapping, Transform root, MergerSession session)
         {
+            _session = session;
             foreach (var kvp in mapping)
             {
                 if (!(kvp.Key is Component key)) continue;
@@ -67,14 +70,16 @@ namespace Anatawa12.Merger.Processors
 
         public AnimatorController MapAnimatorController(AnimatorController controller)
         {
+            if (_cache.TryGetValue(controller, out var cached)) return (AnimatorController)cached;
             _mapped = false;
-            var animatorController = new AnimatorController
+            var newController = new AnimatorController
             {
                 parameters = controller.parameters,
                 layers = controller.layers.Select(MapAnimatorControllerLayer).ToArray()
             };
-            if (!_mapped) return null;
-            return animatorController;
+            if (!_mapped) newController = null;
+            _cache[controller] = newController;
+            return _session.AddToAsset(newController);
         }
 
         private AnimatorControllerLayer MapAnimatorControllerLayer(AnimatorControllerLayer layer) =>
@@ -90,10 +95,8 @@ namespace Anatawa12.Merger.Processors
                 stateMachine = MapStateMachine(layer.stateMachine),
             };
 
-        private AnimatorStateMachine MapStateMachine(AnimatorStateMachine layerStateMachine)
-        {
-            return DeepClone(layerStateMachine, CustomClone);
-        }
+        private AnimatorStateMachine MapStateMachine(AnimatorStateMachine stateMachine) =>
+            DeepClone(stateMachine, CustomClone);
 
         // https://github.com/bdunderscore/modular-avatar/blob/db49e2e210bc070671af963ff89df853ae4514a5/Packages/nadena.dev.modular-avatar/Editor/AnimatorMerger.cs#L199-L241
         // Originally under MIT License
@@ -102,7 +105,7 @@ namespace Anatawa12.Merger.Processors
         {
             if (o is AnimationClip clip)
             {
-                AnimationClip newClip = new AnimationClip();
+                var newClip = _session.AddToAsset(new AnimationClip());
                 newClip.name = "rebased " + clip.name;
 
                 foreach (var binding in AnimationUtility.GetCurveBindings(clip))
@@ -146,10 +149,7 @@ namespace Anatawa12.Merger.Processors
         // https://github.com/bdunderscore/modular-avatar/blob/db49e2e210bc070671af963ff89df853ae4514a5/Packages/nadena.dev.modular-avatar/Editor/AnimatorMerger.cs#LL242-L340C10
         // Originally under MIT License
         // Copyright (c) 2022 bd_
-        private T DeepClone<T>(T original,
-            Func<Object, Object> visitor,
-            Dictionary<Object, Object> cloneMap = null
-        ) where T : Object
+        private T DeepClone<T>(T original, Func<Object, Object> visitor) where T : Object
         {
             if (original == null) return null;
 
@@ -181,18 +181,12 @@ namespace Anatawa12.Merger.Processors
                 default:
                     throw new Exception($"Unknown type referenced from animator: {original.GetType()}");
             }
-
-            if (cloneMap == null) cloneMap = new Dictionary<Object, Object>();
-
-            if (cloneMap.ContainsKey(original))
-            {
-                return (T)cloneMap[original];
-            }
+            if (_cache.TryGetValue(original, out var cached)) return (T)cached;
 
             var obj = visitor(original);
             if (obj != null)
             {
-                cloneMap[original] = obj;
+                _cache[original] = obj;
                 return (T)obj;
             }
 
@@ -207,7 +201,7 @@ namespace Anatawa12.Merger.Processors
                 EditorUtility.CopySerialized(original, obj);
             }
 
-            cloneMap[original] = obj;
+            _cache[original] = _session.AddToAsset(obj);
 
             SerializedObject so = new SerializedObject(obj);
             SerializedProperty prop = so.GetIterator();
@@ -219,7 +213,7 @@ namespace Anatawa12.Merger.Processors
                 switch (prop.propertyType)
                 {
                     case SerializedPropertyType.ObjectReference:
-                        prop.objectReferenceValue = DeepClone(prop.objectReferenceValue, visitor, cloneMap);
+                        prop.objectReferenceValue = DeepClone(prop.objectReferenceValue, visitor);
                         break;
                     // Iterating strings can get super slow...
                     case SerializedPropertyType.String:

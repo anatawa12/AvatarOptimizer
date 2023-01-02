@@ -41,7 +41,7 @@ namespace Anatawa12.Merger
             {
                 var avatar = RuntimeUtil.FindAvatarInParents(component.transform);
                 if (avatar == null) return;
-                MergerProcessor.ProcessObject(avatar.gameObject);
+                MergerProcessor.ProcessObject(new MergerSession(avatar.gameObject, false));
             }
         }
 

@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Assertions;
@@ -165,6 +166,23 @@ namespace Anatawa12.Merger
             rootObject.transform.localRotation = Quaternion.identity;
             rootObject.transform.localScale = Vector3.one;
             return rootObject;
+        }
+
+        private const string TemporalDirPath = "Assets/9999-MergerGeneratedTemporalAssets";
+
+        public static void DeleteTemporalDirectory()
+        {
+            AssetDatabase.SaveAssets();
+            AssetDatabase.DeleteAsset(TemporalDirPath);
+            FileUtil.DeleteFileOrDirectory(TemporalDirPath);
+        }
+
+        public static DummyObject CreateAssetFile()
+        {
+            var obj = ScriptableObject.CreateInstance<DummyObject>();
+            Directory.CreateDirectory(TemporalDirPath);
+            AssetDatabase.CreateAsset(obj, $"{TemporalDirPath}/{GUID.Generate()}.asset");
+            return obj;
         }
     }
 

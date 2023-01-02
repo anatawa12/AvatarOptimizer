@@ -62,7 +62,7 @@ namespace Anatawa12.Merger.Processors
             var blendShapes = new Dictionary<string, (Vector3[] vertex, Vector3[] normal, Vector3[] tangent)>();
 
             // subMeshes
-            var materials = new Material[subMeshesTotalCount];
+            var sharedMaterials = new Material[subMeshesTotalCount];
             var subMeshInfos = new List<(int vertexBase, int[] triangles, SubMeshDescriptor submesh)>[subMeshesTotalCount];
             for (var i = 0; i < subMeshInfos.Length; i++)
                 subMeshInfos[i] = new List<(int, int[], SubMeshDescriptor)>();
@@ -149,9 +149,9 @@ namespace Anatawa12.Merger.Processors
                     subMeshInfos[subMeshIndexMap[(rendererIndex, i)]]
                         .Add((verticesBase, meshTriangles, mesh.GetSubMesh(i)));
 
-                var activeMaterialsCount = Math.Min(mesh.subMeshCount, renderer.materials.Length);
+                var activeMaterialsCount = Math.Min(mesh.subMeshCount, renderer.sharedMaterials.Length);
                 for (var i = 0; i < activeMaterialsCount; i++)
-                    materials[subMeshIndexMap[(rendererIndex, i)]] = renderer.materials[i];
+                    sharedMaterials[subMeshIndexMap[(rendererIndex, i)]] = renderer.sharedMaterials[i];
 
                 verticesBase += vertexCount;
                 boneBase += bindposesCount;
@@ -181,7 +181,7 @@ namespace Anatawa12.Merger.Processors
 
             // create mesh
             var newRenderer = merge.gameObject.GetOrAddComponent<SkinnedMeshRenderer>();
-            var newMesh = new Mesh();
+            var newMesh = session.AddToAsset(new Mesh());
             var newBounds = new Bounds();
             newMesh.Clear();
             newMesh.ClearBlendShapes();
@@ -214,7 +214,7 @@ namespace Anatawa12.Merger.Processors
 
             newRenderer.bones = bones;
             newRenderer.sharedMesh = newMesh;
-            newRenderer.materials = materials;
+            newRenderer.sharedMaterials = sharedMaterials;
             //newBounds.SetMinMax(renderMin, renderMax);
             //newRenderer.bounds = newBounds;
 

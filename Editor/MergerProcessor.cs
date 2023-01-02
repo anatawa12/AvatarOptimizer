@@ -1,15 +1,12 @@
 
 using System;
-using System.Linq;
 using UnityEditor;
 using UnityEngine;
-using VRC.SDK3.Dynamics.PhysBone.Components;
 using VRC.SDKBase.Editor.BuildPipeline;
-using Object = UnityEngine.Object;
 
 namespace Anatawa12.Merger
 {
-    internal class MergerProcessor : IVRCSDKPreprocessAvatarCallback
+    internal class MergerProcessor : IVRCSDKPreprocessAvatarCallback, IVRCSDKPostprocessAvatarCallback
     {
         public int callbackOrder => 0;
 
@@ -17,7 +14,7 @@ namespace Anatawa12.Merger
         {
             try
             {
-                ProcessObject(avatarGameObject);
+                ProcessObject(new MergerSession(avatarGameObject, true));
                 return true;
             }
             catch (Exception e)
@@ -27,9 +24,13 @@ namespace Anatawa12.Merger
             }
         }
 
-        public static void ProcessObject(GameObject gameObject)
+        public void OnPostprocessAvatar()
         {
-            var session = new MergerSession(gameObject);
+            Utils.DeleteTemporalDirectory();
+        }
+
+        public static void ProcessObject(MergerSession session)
+        {
             new Processors.MergePhysBoneProcessor().Merge(session);
             new Processors.MergeSkinnedMeshProcessor().Merge(session);
 
