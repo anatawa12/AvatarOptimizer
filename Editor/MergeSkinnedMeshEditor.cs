@@ -82,10 +82,21 @@ namespace Anatawa12.Merger
             {
                 var merge = (MergeSkinnedMesh)target;
                 foreach (var group in merge.renderers
-                             .SelectMany((x, rendererIndex) =>
-                                 x.sharedMaterials.Select((mat, materialIndex) => (mat, rendererIndex, materialIndex)))
+                             .SelectMany((x, renderer) =>
+                                 x.sharedMaterials.Select((mat, material) => (mat, renderer, material)))
                              .GroupBy(x => x.mat))
                 {
+                    if (group.Count() == 1)
+                    {
+                        var found = Array.FindIndex(merge.merges, x => x.target == group.Key);
+                        if (found >= 0)
+                        {
+                            EditorUtility.SetDirty(merge);
+                            ArrayUtility.RemoveAt(ref merge.merges, found);
+                        }
+                        continue;
+                    }
+
                     EditorGUI.BeginDisabledGroup(true);
                     EditorGUILayout.ObjectField(group.Key, typeof(Material), true);
                     EditorGUI.EndDisabledGroup();
@@ -93,21 +104,32 @@ namespace Anatawa12.Merger
                     EditorGUI.indentLevel++;
                     var foundConfigIndex = Array.FindIndex(merge.merges, x => x.target == group.Key);
                     var oldMerges = foundConfigIndex >= 0;
-                    var merges = EditorGUILayout.ToggleLeft("Merge", oldMerges);
-                    if (oldMerges != merges)
+                    var newMerges = EditorGUILayout.ToggleLeft("Merge", oldMerges);
+                    EditorUtility.SetDirty(merge);
+                    if (newMerges)
                     {
-                        EditorUtility.SetDirty(merge);
-                        if (merges)
+                        var mergesList = group.Select(x => ((ulong)x.renderer << 32) | (uint)x.material).ToArray();
+                        Array.Sort(mergesList);
+                        if (foundConfigIndex >= 0)
                         {
-                            ArrayUtility.Add(ref merge.merges, new MergeSkinnedMesh.MergeConfig
+                            if (!merge.merges[foundConfigIndex].merges.SequenceEqual(mergesList))
                             {
-                                target = group.Key,
-                                merges = group.Select(x => ((ulong)x.rendererIndex << 32) | (uint)x.materialIndex)
-                                    .ToArray(),
-                            });
+                                EditorUtility.SetDirty(merge);
+                                merge.merges[foundConfigIndex].merges = mergesList;
+                            }
                         }
                         else
                         {
+                            EditorUtility.SetDirty(merge);
+                            ArrayUtility.Add(ref merge.merges,
+                                new MergeSkinnedMesh.MergeConfig { target = group.Key, merges = mergesList });
+                        }
+                    }
+                    else
+                    {
+                        if (foundConfigIndex >= 0)
+                        {
+                            EditorUtility.SetDirty(merge);
                             ArrayUtility.RemoveAt(ref merge.merges, foundConfigIndex);
                         }
                     }
