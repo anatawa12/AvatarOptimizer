@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -32,7 +33,8 @@ namespace Anatawa12.Merger
 
         public IEnumerable<T> GetComponents<T>() where T : Component
         {
-            return _rootObject != null ? _rootObject.GetComponentsInChildren<T>() : Object.FindObjectsOfType<T>();
+            return (_rootObject != null ? _rootObject.GetComponentsInChildren<T>() : Object.FindObjectsOfType<T>())
+                .Where(x => x);
         }
 
         public T AddToAsset<T>(T obj) where T : Object
