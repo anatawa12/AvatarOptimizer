@@ -5,7 +5,6 @@ using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.Rendering;
-using Object = UnityEngine.Object;
 
 namespace Anatawa12.Merger.Processors
 {
@@ -19,13 +18,90 @@ namespace Anatawa12.Merger.Processors
             }
         }
 
+        private class MeshInfo
+        {
+            public Bounds Bounds;
+            public readonly int[] Triangles;
+            // ReSharper disable InconsistentNaming
+            public readonly Vector3[] vertices;
+            public readonly Vector3[] normals;
+            public readonly Vector4[] tangents;
+            public readonly Vector2[] uv;
+            public readonly Vector2[] uv2;
+            public readonly Vector2[] uv3;
+            public readonly Vector2[] uv4;
+            public readonly Vector2[] uv5;
+            public readonly Vector2[] uv6;
+            public readonly Vector2[] uv7;
+            public readonly Vector2[] uv8;
+            public readonly Color32[] colors32;
+            public readonly NativeArray<byte> BonesPerVertex;
+            public readonly NativeArray<BoneWeight1> AllBoneWeights;
+            public readonly SubMeshDescriptor[] SubMeshes;
+            public readonly (string name, (Vector3[] vertices, Vector3[] normals, Vector3[] tangents))[] BlendShapes;
+            public readonly Material[] SharedMaterials;
+            public readonly Matrix4x4[] bindposes;
+            public readonly Transform[] bones;
+            // ReSharper restore InconsistentNaming
+
+            public MeshInfo(SkinnedMeshRenderer renderer)
+            {
+                var mesh = renderer.sharedMesh;
+                Bounds = mesh.bounds;
+                Triangles = mesh.triangles;
+                vertices = mesh.vertices;
+                normals = mesh.normals;
+                tangents = mesh.tangents;
+                uv = mesh.uv;
+                uv2 = mesh.uv2;
+                uv3 = mesh.uv3;
+                uv4 = mesh.uv4;
+                uv5 = mesh.uv5;
+                uv6 = mesh.uv6;
+                uv7 = mesh.uv7;
+                uv8 = mesh.uv8;
+                colors32 = mesh.colors32;
+
+                BonesPerVertex = mesh.GetBonesPerVertex();
+                AllBoneWeights = mesh.GetAllBoneWeights();
+
+                BlendShapes = new (string, (Vector3[], Vector3[], Vector3[]))[mesh.blendShapeCount];
+                for (var i = 0; i < mesh.blendShapeCount; i++)
+                {
+                    Assert.AreEqual(1, mesh.GetBlendShapeFrameCount(i));
+                    Assert.AreEqual(100.0f, mesh.GetBlendShapeFrameWeight(i, 0));
+                    var deltaVertices = new Vector3[vertices.Length];
+                    var deltaNormals = new Vector3[vertices.Length];
+                    var deltaTangents = new Vector3[vertices.Length];
+                    mesh.GetBlendShapeFrameVertices(i, 0, deltaVertices, deltaNormals, deltaTangents);
+                    var shapeName = mesh.GetBlendShapeName(i);
+                    BlendShapes[i] = (shapeName, (deltaVertices, deltaNormals, deltaTangents));
+                }
+
+                SubMeshes = new SubMeshDescriptor[mesh.subMeshCount];
+                for (var i = 0; i < SubMeshes.Length; i++)
+                    SubMeshes[i] = mesh.GetSubMesh(i);
+
+                var sourceMaterials = renderer.sharedMaterials;
+                SharedMaterials = new Material[mesh.subMeshCount];
+                Array.Copy(sourceMaterials, SharedMaterials, Math.Min(sourceMaterials.Length, SharedMaterials.Length));
+
+                bindposes = mesh.bindposes;
+
+                var bones = renderer.bones;
+                this.bones = new Transform[bindposes.Length];
+                Array.Copy(bones, this.bones, Math.Min(bones.Length, this.bones.Length));
+            }
+        }
+
         private void DoMerge(MergeSkinnedMesh merge, MergerSession session)
         {
-            var trianglesTotalCount = merge.renderers.Sum(x => x.sharedMesh.triangles.Length);
-            var vertexTotalCount = merge.renderers.Sum(x => x.sharedMesh.vertexCount);
-            var boneWeightsTotalCount = merge.renderers.Sum(x => x.sharedMesh.GetAllBoneWeights().Length);
-            var (subMeshIndexMap, subMeshesTotalCount) = CreateSubMeshIndexMapping(merge);
-            var (bindPoseIndexMap, bindPoseTotalCount) = CreateBindPoseIndexMapping(merge);
+            var meshInfos = merge.renderers.Select(x => new MeshInfo(x)).ToArray();
+            var trianglesTotalCount = meshInfos.Sum(x => x.Triangles.Length);
+            var vertexTotalCount = meshInfos.Sum(x => x.vertices.Length);
+            var boneWeightsTotalCount = meshInfos.Sum(x => x.AllBoneWeights.Length);
+            var (subMeshIndexMap, subMeshesTotalCount) = CreateSubMeshIndexMapping(merge.merges, meshInfos);
+            var (bindPoseIndexMap, bindPoseTotalCount) = CreateBindPoseIndexMapping(meshInfos);
 
             // bounds attributes
             var min = Vector3.positiveInfinity;
@@ -68,23 +144,20 @@ namespace Anatawa12.Merger.Processors
                 subMeshInfos[i] = new List<(int, int[], SubMeshDescriptor)>();
 
             var verticesBase = 0;
-            var boneBase = 0;
             var boneWeightsBase = 0;
-            var subMeshesBase = 0;
 
             // collect bones
             // ReSharper disable once LocalVariableHidesMember
-            for (var rendererIndex = 0; rendererIndex < merge.renderers.Length; rendererIndex++)
+            for (var rendererIndex = 0; rendererIndex < meshInfos.Length; rendererIndex++)
             {
-                var renderer = merge.renderers[rendererIndex];
-                var mesh = renderer.sharedMesh;
-                var vertexCount = mesh.vertexCount;
+                var mesh = meshInfos[rendererIndex];
+                var vertexCount = mesh.vertices.Length;
 
-                var bounds = mesh.bounds;
+                var bounds = mesh.Bounds;
                 min = Vector3.Min(min, bounds.min);
                 max = Vector3.Max(max, bounds.max);
-                renderMin = Vector3.Min(renderMin, renderer.bounds.min);
-                renderMax = Vector3.Max(renderMax, renderer.bounds.max);
+                renderMin = Vector3.Min(renderMin, mesh.Bounds.min);
+                renderMax = Vector3.Max(renderMax, mesh.Bounds.max);
 
                 // vertex attributes
                 Copy(verticesBase, vertexCount, vertexTotalCount, mesh.vertices, ref vertices);
@@ -100,21 +173,21 @@ namespace Anatawa12.Merger.Processors
                 Copy(verticesBase, vertexCount, vertexTotalCount, mesh.uv8, ref uv8);
                 //Copy(verticesBase, vertexCount, vertexTotalCount, mesh.colors, ref colors);
                 Copy(verticesBase, vertexCount, vertexTotalCount, mesh.colors32, ref colors32);
-                Copy(verticesBase, vertexCount, vertexTotalCount, mesh.GetBonesPerVertex(), bonesPerVertex);
+                Copy(verticesBase, vertexCount, vertexTotalCount, mesh.BonesPerVertex, bonesPerVertex);
 
                 // bone attributes
                 var bindPoseIndices = bindPoseIndexMap[rendererIndex];
-                var rendererBones = renderer.bones;
+                var rendererBones = mesh.bones;
                 var bindposesCount = mesh.bindposes.Length;
-                for (var i = 0; i < rendererBones.Length && i < bindposesCount; i++)
+                for (var i = 0; i < rendererBones.Length; i++)
                     bones[bindPoseIndices[i]] = rendererBones[i];
                 for (var i = 0; i < bindposesCount; i++)
                     bindposes[bindPoseIndices[i]] = mesh.bindposes[i];
 
                 // other attributes
-                var meshTriangles = mesh.triangles;
+                var meshTriangles = mesh.Triangles;
 
-                var meshBoneWeights = mesh.GetAllBoneWeights();
+                var meshBoneWeights = mesh.AllBoneWeights;
                 for (var i = 0; i < meshBoneWeights.Length; i++)
                 {
                     var weight = meshBoneWeights[i];
@@ -126,15 +199,8 @@ namespace Anatawa12.Merger.Processors
                 }
 
                 // blendShapes
-                for (var i = 0; i < mesh.blendShapeCount; i++)
+                foreach (var (shapeName, (deltaVertices, deltaNormals, deltaTangents)) in mesh.BlendShapes)
                 {
-                    Assert.AreEqual(1, mesh.GetBlendShapeFrameCount(i));
-                    Assert.AreEqual(100.0f, mesh.GetBlendShapeFrameWeight(i, 0));
-                    var deltaVertices = new Vector3[vertexCount];
-                    var deltaNormals = new Vector3[vertexCount];
-                    var deltaTangents = new Vector3[vertexCount];
-                    mesh.GetBlendShapeFrameVertices(i, 0, deltaVertices, deltaNormals, deltaTangents);
-                    var shapeName = mesh.GetBlendShapeName(i);
                     if (!blendShapes.TryGetValue(shapeName, out var tuple))
                     {
                         blendShapeNames.Add(shapeName);
@@ -148,18 +214,15 @@ namespace Anatawa12.Merger.Processors
                 }
 
                 // subMeshes
-                for (var i = 0; i < mesh.subMeshCount; i++)
-                    subMeshInfos[subMeshIndexMap[(rendererIndex, i)]]
-                        .Add((verticesBase, meshTriangles, mesh.GetSubMesh(i)));
+                for (var i = 0; i < mesh.SubMeshes.Length; i++)
+                    subMeshInfos[subMeshIndexMap[rendererIndex][i]]
+                        .Add((verticesBase, meshTriangles, mesh.SubMeshes[i]));
 
-                var activeMaterialsCount = Math.Min(mesh.subMeshCount, renderer.sharedMaterials.Length);
-                for (var i = 0; i < activeMaterialsCount; i++)
-                    sharedMaterials[subMeshIndexMap[(rendererIndex, i)]] = renderer.sharedMaterials[i];
+                for (var i = 0; i < mesh.SharedMaterials.Length; i++)
+                    sharedMaterials[subMeshIndexMap[rendererIndex][i]] = mesh.SharedMaterials[i];
 
                 verticesBase += vertexCount;
-                boneBase += bindposesCount;
                 boneWeightsBase += meshBoneWeights.Length;
-                subMeshesBase += mesh.subMeshCount;
             }
 
             // create triangles & subMeshes
@@ -229,48 +292,45 @@ namespace Anatawa12.Merger.Processors
             session.Destroy(merge);
         }
 
-        private (Dictionary<(int rendererIndex, int submeshIndex), int> mapping, int subMeshTotalCount) CreateSubMeshIndexMapping(MergeSkinnedMesh merge)
+        private (int[][] mapping, int subMeshTotalCount)
+            CreateSubMeshIndexMapping(MergeSkinnedMesh.MergeConfig[] merges, MeshInfo[] infos)
         {
-            // initial mapping: 
-            var result = merge.merges
-                .SelectMany((x, i) => x.merges.Select(y => ((int)(y >> 32), (int)y, i)))
-                .ToDictionary(x => (x.Item1, x.Item2), x => x.Item3);
-            var nextIndex = merge.merges.Length;
+            var result = new int[infos.Length][];
 
-            for (var i = 0; i < merge.renderers.Length; i++)
+            // initialize with -1
+            for (var i = 0; i < infos.Length; i++)
             {
-                var renderer = merge.renderers[i];
-                for (var j = 0; j < renderer.sharedMesh.subMeshCount; j++)
-                {
-                    if (!result.ContainsKey((i, j)))
-                        result[(i, j)] = nextIndex++;
-                }
+                result[i] = new int[infos[i].SubMeshes.Length];
+                for (var j = 0; j < result[i].Length; j++)
+                    result[i][j] = -1;
             }
+
+            for (var i = 0; i < merges.Length; i++)
+                foreach (var pair in merges[i].merges)
+                    result[(int)(pair >> 32)][(int)pair] = i;
+
+            var nextIndex = merges.Length;
+
+            foreach (var t in result)
+                for (var j = 0; j < t.Length; j++)
+                    if (t[j] == -1)
+                        t[j] = nextIndex++;
 
             return (result, nextIndex);
         }
 
-        private (int[][] mapping, int subMeshTotalCount) CreateBindPoseIndexMapping(MergeSkinnedMesh merge)
+        private (int[][] mapping, int subMeshTotalCount) CreateBindPoseIndexMapping(MeshInfo[] infos)
         {
             var mapping = new Dictionary<(Transform, Matrix4x4), int>();
-            var indicesArray = new int[merge.renderers.Length][];
+            var indicesArray = new int[infos.Length][];
             var nextIndex = 0;
-            for (var i = 0; i < merge.renderers.Length; i++)
+            for (var i = 0; i < infos.Length; i++)
             {
-                var renderer = merge.renderers[i];
-                var sharedMesh = renderer.sharedMesh;
+                var sharedMesh = infos[i];
                 var indices = indicesArray[i] = new int[sharedMesh.bindposes.Length];
-                var bindPoseIndex = 0;
-                var boneLength = Math.Min(sharedMesh.bindposes.Length, renderer.bones.Length);
-                for (; bindPoseIndex < boneLength; bindPoseIndex++)
+                for (var bindPoseIndex = 0; bindPoseIndex < sharedMesh.bindposes.Length; bindPoseIndex++)
                 {
-                    var key = (renderer.bones[bindPoseIndex], sharedMesh.bindposes[bindPoseIndex]);
-                    indices[bindPoseIndex] =
-                        mapping.TryGetValue(key, out var index) ? index : mapping[key] = nextIndex++;
-                }
-                for (; bindPoseIndex < sharedMesh.bindposes.Length; bindPoseIndex++)
-                {
-                    (Transform, Matrix4x4) key = (null, sharedMesh.bindposes[bindPoseIndex]);
+                    var key = (sharedMesh.bones[bindPoseIndex], sharedMesh.bindposes[bindPoseIndex]);
                     indices[bindPoseIndex] =
                         mapping.TryGetValue(key, out var index) ? index : mapping[key] = nextIndex++;
                 }
