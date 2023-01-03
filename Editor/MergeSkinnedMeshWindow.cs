@@ -37,6 +37,7 @@ namespace Anatawa12.Merger
                 //PrintInfo(nameof(_mesh.vertexAttributeCount), _mesh.vertexAttributeCount);
                 PrintInfo(nameof(_mesh.triangles), _mesh.triangles);
                 PrintInfo(nameof(_mesh.boneWeights), _mesh.boneWeights);
+                EditorGUILayout.LabelField("BlendShape count", _mesh.blendShapeCount.ToString());
                 EditorGUILayout.LabelField("All Weights", _mesh.GetAllBoneWeights().Length.ToString());
                 EditorGUILayout.LabelField("BonesPerVertex", _mesh.GetBonesPerVertex().Length.ToString());
                 EditorGUILayout.LabelField("subMeshCount", _mesh.subMeshCount.ToString());
