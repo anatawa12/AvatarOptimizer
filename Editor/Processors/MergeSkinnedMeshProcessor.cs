@@ -135,6 +135,7 @@ namespace Anatawa12.Merger.Processors
 
         private void DoMerge(MergeSkinnedMesh merge, MergerSession session)
         {
+            var white = new Color32(0xff, 0xff, 0xff, 0xff);
             var meshInfos = merge.renderers.Select(x => new MeshInfo(x))
                 .Concat(merge.staticRenderers.Select(x => new MeshInfo(x)))
                 .ToArray();
@@ -213,7 +214,7 @@ namespace Anatawa12.Merger.Processors
                 Copy(verticesBase, vertexCount, vertexTotalCount, mesh.uv7, ref uv7);
                 Copy(verticesBase, vertexCount, vertexTotalCount, mesh.uv8, ref uv8);
                 //Copy(verticesBase, vertexCount, vertexTotalCount, mesh.colors, ref colors);
-                Copy(verticesBase, vertexCount, vertexTotalCount, mesh.colors32, ref colors32);
+                Copy(verticesBase, vertexCount, vertexTotalCount, mesh.colors32, ref colors32, white);
                 Copy(verticesBase, vertexCount, vertexTotalCount, mesh.BonesPerVertex, bonesPerVertex);
 
                 // bone attributes
@@ -325,6 +326,8 @@ namespace Anatawa12.Merger.Processors
             //newBounds.SetMinMax(renderMin, renderMax);
             //newRenderer.bounds = newBounds;
 
+            session.Destroy(merge);
+
             foreach (var renderer in merge.renderers)
             {
                 session.AddObjectMapping(renderer, newRenderer);
@@ -336,8 +339,6 @@ namespace Anatawa12.Merger.Processors
                 session.Destroy(renderer.GetComponent<MeshFilter>());
                 session.Destroy(renderer);
             }
-
-            session.Destroy(merge);
         }
 
         private (int[][] mapping, int subMeshTotalCount)
@@ -387,10 +388,15 @@ namespace Anatawa12.Merger.Processors
             return (indicesArray, nextIndex);
         }
 
-        private static void Copy<T>(int baseIndex, int count, int totalLength, T[] src, ref T[] dest)
+        private static void Copy<T>(int baseIndex, int count, int totalLength, T[] src, ref T[] dest, T init = default)
         {
             if (src == null || src.Length == 0) return;
-            if (dest == null) dest = new T[totalLength];
+            if (dest == null)
+            {
+                dest = new T[totalLength];
+                for (var i = 0; i < dest.Length; i++)
+                    dest[i] = init;
+            }
             Array.Copy(src, 0, dest, baseIndex, count);
         }
 
