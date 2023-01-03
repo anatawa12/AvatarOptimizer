@@ -22,10 +22,10 @@ namespace Anatawa12.Merger.Processors
         private void DoMerge(MergeSkinnedMesh merge, MergerSession session)
         {
             var trianglesTotalCount = merge.renderers.Sum(x => x.sharedMesh.triangles.Length);
-            var boneTotalCount = merge.renderers.Sum(x => x.sharedMesh.bindposes.Length);
             var vertexTotalCount = merge.renderers.Sum(x => x.sharedMesh.vertexCount);
             var boneWeightsTotalCount = merge.renderers.Sum(x => x.sharedMesh.GetAllBoneWeights().Length);
             var (subMeshIndexMap, subMeshesTotalCount) = CreateSubMeshIndexMapping(merge);
+            var (bindPoseIndexMap, bindPoseTotalCount) = CreateBindPoseIndexMapping(merge);
 
             // bounds attributes
             var min = Vector3.positiveInfinity;
@@ -51,8 +51,8 @@ namespace Anatawa12.Merger.Processors
             var bonesPerVertex = new NativeArray<byte>(vertexTotalCount, Allocator.Temp);
 
             // bone attributes
-            var bones = new Transform[boneTotalCount];
-            var bindposes = new Matrix4x4[boneTotalCount];
+            var bones = new Transform[bindPoseTotalCount];
+            var bindposes = new Matrix4x4[bindPoseTotalCount];
 
             // others
             var boneWeights = new NativeArray<BoneWeight1>(boneWeightsTotalCount, Allocator.Temp);
@@ -103,10 +103,13 @@ namespace Anatawa12.Merger.Processors
                 Copy(verticesBase, vertexCount, vertexTotalCount, mesh.GetBonesPerVertex(), bonesPerVertex);
 
                 // bone attributes
+                var bindPoseIndices = bindPoseIndexMap[rendererIndex];
                 var rendererBones = renderer.bones;
                 var bindposesCount = mesh.bindposes.Length;
-                Copy(boneBase, bindposesCount, boneTotalCount, rendererBones, ref bones);
-                Copy(boneBase, bindposesCount, boneTotalCount, mesh.bindposes, ref bindposes);
+                for (var i = 0; i < rendererBones.Length && i < bindposesCount; i++)
+                    bones[bindPoseIndices[i]] = rendererBones[i];
+                for (var i = 0; i < bindposesCount; i++)
+                    bindposes[bindPoseIndices[i]] = mesh.bindposes[i];
 
                 // other attributes
                 var meshTriangles = mesh.triangles;
@@ -118,7 +121,7 @@ namespace Anatawa12.Merger.Processors
                     boneWeights[boneWeightsBase + i] = new BoneWeight1()
                     {
                         weight = weight.weight,
-                        boneIndex = weight.boneIndex + boneBase,
+                        boneIndex = bindPoseIndices[weight.boneIndex],
                     };
                 }
 
@@ -245,6 +248,35 @@ namespace Anatawa12.Merger.Processors
             }
 
             return (result, nextIndex);
+        }
+
+        private (int[][] mapping, int subMeshTotalCount) CreateBindPoseIndexMapping(MergeSkinnedMesh merge)
+        {
+            var mapping = new Dictionary<(Transform, Matrix4x4), int>();
+            var indicesArray = new int[merge.renderers.Length][];
+            var nextIndex = 0;
+            for (var i = 0; i < merge.renderers.Length; i++)
+            {
+                var renderer = merge.renderers[i];
+                var sharedMesh = renderer.sharedMesh;
+                var indices = indicesArray[i] = new int[sharedMesh.bindposes.Length];
+                var bindPoseIndex = 0;
+                var boneLength = Math.Min(sharedMesh.bindposes.Length, renderer.bones.Length);
+                for (; bindPoseIndex < boneLength; bindPoseIndex++)
+                {
+                    var key = (renderer.bones[bindPoseIndex], sharedMesh.bindposes[bindPoseIndex]);
+                    indices[bindPoseIndex] =
+                        mapping.TryGetValue(key, out var index) ? index : mapping[key] = nextIndex++;
+                }
+                for (; bindPoseIndex < sharedMesh.bindposes.Length; bindPoseIndex++)
+                {
+                    (Transform, Matrix4x4) key = (null, sharedMesh.bindposes[bindPoseIndex]);
+                    indices[bindPoseIndex] =
+                        mapping.TryGetValue(key, out var index) ? index : mapping[key] = nextIndex++;
+                }
+            }
+
+            return (indicesArray, nextIndex);
         }
 
         private static void Copy<T>(int baseIndex, int count, int totalLength, T[] src, ref T[] dest)
