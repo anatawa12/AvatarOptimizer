@@ -1,5 +1,8 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Collections;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -90,11 +93,13 @@ namespace Anatawa12.Merger
 
         public void MergeMaterials(MergeSkinnedMesh merge)
         {
+            var materials = new HashSet<Material>();
             foreach (var group in merge.renderers.Concat<Renderer>(merge.staticRenderers)
                          .SelectMany((x, renderer) =>
                              x.sharedMaterials.Select((mat, material) => (mat, renderer, material)))
                          .GroupBy(x => x.mat))
             {
+                materials.Add(group.Key);
                 if (group.Count() == 1)
                 {
                     var found = Array.FindIndex(merge.merges, x => x.target == group.Key);
@@ -159,6 +164,17 @@ namespace Anatawa12.Merger
                 EditorGUI.EndDisabledGroup();
                 EditorGUI.indentLevel--;
                 EditorGUI.indentLevel--;
+            }
+
+            // remove unused mapping
+            for (var i = 0; i < merge.merges.Length; i++)
+            {
+                if (!materials.Contains(merge.merges[i].target))
+                {
+                    EditorUtility.SetDirty(merge);
+                    ArrayUtility.RemoveAt(ref merge.merges, i);
+                    i--;
+                }
             }
         }
     }
