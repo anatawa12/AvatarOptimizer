@@ -92,11 +92,52 @@ namespace Anatawa12.Merger.Processors
                 this.bones = new Transform[bindposes.Length];
                 Array.Copy(bones, this.bones, Math.Min(bones.Length, this.bones.Length));
             }
+
+            public MeshInfo(MeshRenderer renderer)
+            {
+                var mesh = renderer.GetComponent<MeshFilter>().sharedMesh;
+                Bounds = mesh.bounds;
+                Triangles = mesh.triangles;
+                vertices = mesh.vertices;
+                normals = mesh.normals;
+                tangents = mesh.tangents;
+                uv = mesh.uv;
+                uv2 = mesh.uv2;
+                uv3 = mesh.uv3;
+                uv4 = mesh.uv4;
+                uv5 = mesh.uv5;
+                uv6 = mesh.uv6;
+                uv7 = mesh.uv7;
+                uv8 = mesh.uv8;
+                colors32 = mesh.colors32;
+                BonesPerVertex = new NativeArray<byte>(vertices.Length, Allocator.Temp);
+                AllBoneWeights = new NativeArray<BoneWeight1>(vertices.Length, Allocator.Temp);
+                for (var i = 0; i < AllBoneWeights.Length; i++)
+                {
+                    BonesPerVertex[i] = 1;
+                    AllBoneWeights[i] = new BoneWeight1 { weight = 1f, boneIndex = 0 };
+                }
+
+                BlendShapes = Array.Empty<(string, (Vector3[], Vector3[], Vector3[]))>();
+
+                SubMeshes = new SubMeshDescriptor[mesh.subMeshCount];
+                for (var i = 0; i < SubMeshes.Length; i++)
+                    SubMeshes[i] = mesh.GetSubMesh(i);
+
+                var sourceMaterials = renderer.sharedMaterials;
+                SharedMaterials = new Material[mesh.subMeshCount];
+                Array.Copy(sourceMaterials, SharedMaterials, Math.Min(sourceMaterials.Length, SharedMaterials.Length));
+
+                bindposes = new [] { Matrix4x4.identity };
+                bones = new [] { renderer.transform };
+            }
         }
 
         private void DoMerge(MergeSkinnedMesh merge, MergerSession session)
         {
-            var meshInfos = merge.renderers.Select(x => new MeshInfo(x)).ToArray();
+            var meshInfos = merge.renderers.Select(x => new MeshInfo(x))
+                .Concat(merge.staticRenderers.Select(x => new MeshInfo(x)))
+                .ToArray();
             var trianglesTotalCount = meshInfos.Sum(x => x.Triangles.Length);
             var vertexTotalCount = meshInfos.Sum(x => x.vertices.Length);
             var boneWeightsTotalCount = meshInfos.Sum(x => x.AllBoneWeights.Length);
@@ -289,6 +330,13 @@ namespace Anatawa12.Merger.Processors
                 session.AddObjectMapping(renderer, newRenderer);
                 session.Destroy(renderer);
             }
+
+            foreach (var renderer in merge.staticRenderers)
+            {
+                session.Destroy(renderer.GetComponent<MeshFilter>());
+                session.Destroy(renderer);
+            }
+
             session.Destroy(merge);
         }
 

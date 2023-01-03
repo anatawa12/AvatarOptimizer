@@ -9,6 +9,7 @@ namespace Anatawa12.Merger
     public class MergeSkinnedMesh : AvatarTagComponent
     {
         public SkinnedMeshRenderer[] renderers = Array.Empty<SkinnedMeshRenderer>();
+        public MeshRenderer[] staticRenderers = Array.Empty<MeshRenderer>();
         public MergeConfig[] merges = Array.Empty<MergeConfig>();
 
         [Serializable]
