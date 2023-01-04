@@ -29,7 +29,27 @@ namespace Anatawa12.Merger
             Utils.DeleteTemporalDirectory();
         }
 
+        private static bool _processing;
+
         public static void ProcessObject(MergerSession session)
+        {
+            if (_processing) return;
+            try
+            {
+                _processing = true;
+                DoProcessObject(session);
+            }
+            finally
+            {
+                _processing = false;
+                foreach (var component in session.GetComponents<AvatarTagComponent>())
+                    UnityEngine.Object.DestroyImmediate(component);
+                foreach (var activator in session.GetComponents<AvatarActivator>())
+                    UnityEngine.Object.DestroyImmediate(activator);
+            }
+        }
+        
+        private static void DoProcessObject(MergerSession session)
         {
             new Processors.MergePhysBoneProcessor().Merge(session);
             new Processors.MergeSkinnedMeshProcessor().Merge(session);

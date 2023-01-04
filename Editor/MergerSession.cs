@@ -33,7 +33,7 @@ namespace Anatawa12.Merger
 
         public IEnumerable<T> GetComponents<T>() where T : Component
         {
-            return (_rootObject != null ? _rootObject.GetComponentsInChildren<T>() : Object.FindObjectsOfType<T>())
+            return (_rootObject != null ? _rootObject.GetComponentsInChildren<T>(true) : Object.FindObjectsOfType<T>())
                 .Where(x => x);
         }
 
