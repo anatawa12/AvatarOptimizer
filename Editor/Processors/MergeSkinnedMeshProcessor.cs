@@ -38,7 +38,8 @@ namespace Anatawa12.Merger.Processors
             public readonly NativeArray<byte> BonesPerVertex;
             public readonly NativeArray<BoneWeight1> AllBoneWeights;
             public readonly SubMeshDescriptor[] SubMeshes;
-            public readonly (string name, (Vector3[] vertices, Vector3[] normals, Vector3[] tangents))[] BlendShapes;
+            public readonly (string name, (Vector3[] vertices, Vector3[] normals, Vector3[] tangents, float weight))[]
+                BlendShapes;
             public readonly Material[] SharedMaterials;
             public readonly Matrix4x4[] bindposes;
             public readonly Transform[] bones;
@@ -65,7 +66,7 @@ namespace Anatawa12.Merger.Processors
                 BonesPerVertex = mesh.GetBonesPerVertex();
                 AllBoneWeights = mesh.GetAllBoneWeights();
 
-                BlendShapes = new (string, (Vector3[], Vector3[], Vector3[]))[mesh.blendShapeCount];
+                BlendShapes = new (string, (Vector3[], Vector3[], Vector3[], float))[mesh.blendShapeCount];
                 for (var i = 0; i < mesh.blendShapeCount; i++)
                 {
                     Assert.AreEqual(1, mesh.GetBlendShapeFrameCount(i));
@@ -75,7 +76,8 @@ namespace Anatawa12.Merger.Processors
                     var deltaTangents = new Vector3[vertices.Length];
                     mesh.GetBlendShapeFrameVertices(i, 0, deltaVertices, deltaNormals, deltaTangents);
                     var shapeName = mesh.GetBlendShapeName(i);
-                    BlendShapes[i] = (shapeName, (deltaVertices, deltaNormals, deltaTangents));
+                    var weight = renderer.GetBlendShapeWeight(i);
+                    BlendShapes[i] = (shapeName, (deltaVertices, deltaNormals, deltaTangents, weight));
                 }
 
                 SubMeshes = new SubMeshDescriptor[mesh.subMeshCount];
@@ -118,7 +120,7 @@ namespace Anatawa12.Merger.Processors
                     AllBoneWeights[i] = new BoneWeight1 { weight = 1f, boneIndex = 0 };
                 }
 
-                BlendShapes = Array.Empty<(string, (Vector3[], Vector3[], Vector3[]))>();
+                BlendShapes = Array.Empty<(string, (Vector3[], Vector3[], Vector3[], float))>();
 
                 SubMeshes = new SubMeshDescriptor[mesh.subMeshCount];
                 for (var i = 0; i < SubMeshes.Length; i++)
@@ -177,7 +179,8 @@ namespace Anatawa12.Merger.Processors
 
             // blendShapes
             var blendShapeNames = new List<string>();
-            var blendShapes = new Dictionary<string, (Vector3[] vertex, Vector3[] normal, Vector3[] tangent)>();
+            var blendShapes =
+                new Dictionary<string, (Vector3[] vertex, Vector3[] normal, Vector3[] tangent, float weight)>();
 
             // subMeshes
             var sharedMaterials = new Material[subMeshesTotalCount];
@@ -241,12 +244,13 @@ namespace Anatawa12.Merger.Processors
                 }
 
                 // blendShapes
-                foreach (var (shapeName, (deltaVertices, deltaNormals, deltaTangents)) in mesh.BlendShapes)
+                foreach (var (shapeName, (deltaVertices, deltaNormals, deltaTangents, shapeWeight)) in mesh.BlendShapes)
                 {
                     if (!blendShapes.TryGetValue(shapeName, out var tuple))
                     {
                         blendShapeNames.Add(shapeName);
                         tuple = default;
+                        tuple.weight = shapeWeight;
                     }
 
                     Copy(verticesBase, vertexCount, vertexTotalCount, deltaVertices, ref tuple.vertex);
@@ -312,7 +316,7 @@ namespace Anatawa12.Merger.Processors
             newMesh.SetBoneWeights(bonesPerVertex, boneWeights);
             foreach (var blendShapeName in blendShapeNames)
             {
-                var (vertex, normal, tangent) = blendShapes[blendShapeName];
+                var (vertex, normal, tangent, _) = blendShapes[blendShapeName];
                 newMesh.AddBlendShapeFrame(blendShapeName, 100, vertex, normal, tangent);
             }
 
@@ -325,6 +329,9 @@ namespace Anatawa12.Merger.Processors
             newRenderer.sharedMaterials = sharedMaterials;
             //newBounds.SetMinMax(renderMin, renderMax);
             //newRenderer.bounds = newBounds;
+
+            for (var i = 0; i < blendShapeNames.Count; i++)
+                newRenderer.SetBlendShapeWeight(i, blendShapes[blendShapeNames[i]].weight);
 
             session.Destroy(merge);
 
