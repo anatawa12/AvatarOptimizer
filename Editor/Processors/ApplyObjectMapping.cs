@@ -58,6 +58,7 @@ namespace Anatawa12.Merger.Processors
             foreach (var kvp in mapping)
             {
                 if (!(kvp.Key is Component key)) continue;
+                if (kvp.Value == null) continue;
                 Assert.AreEqual(key.GetType(), kvp.Value.GetType());
                 var value = (Component) kvp.Value;
                 var relativeKey = Utils.RelativePath(root, key.transform);

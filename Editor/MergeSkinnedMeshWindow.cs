@@ -15,7 +15,7 @@ namespace Anatawa12.Merger
                 //PrintInfo(nameof(_mesh.indexFormat), _mesh.indexFormat);
                 //PrintInfo(nameof(_mesh.vertexBufferCount), _mesh.vertexBufferCount);
                 //PrintInfo(nameof(_mesh.blendShapeCount), _mesh.blendShapeCount);
-                //PrintInfo(nameof(_mesh.bindposes), _mesh.bindposes);
+                PrintInfo(nameof(_mesh.bindposes), _mesh.bindposes);
                 //PrintInfo(nameof(_mesh.isReadable), _mesh.isReadable);
                 //PrintInfo(nameof(_mesh.canAccess), _mesh.canAccess); internal
                 //PrintInfo(nameof(_mesh.vertexCount), _mesh.vertexCount);

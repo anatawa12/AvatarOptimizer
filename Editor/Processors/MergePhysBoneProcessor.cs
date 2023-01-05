@@ -10,7 +10,7 @@ namespace Anatawa12.Merger.Processors
 {
     internal class MergePhysBoneProcessor
     {
-        public void Merge(MergerSession session)
+        public void Process(MergerSession session)
         {
             foreach (var mergePhysBone in session.GetComponents<MergePhysBone>())
             {

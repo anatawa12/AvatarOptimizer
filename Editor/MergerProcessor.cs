@@ -51,8 +51,9 @@ namespace Anatawa12.Merger
         
         private static void DoProcessObject(MergerSession session)
         {
-            new Processors.MergePhysBoneProcessor().Merge(session);
-            new Processors.MergeSkinnedMeshProcessor().Merge(session);
+            new Processors.MergePhysBoneProcessor().Process(session);
+            new Processors.MergeSkinnedMeshProcessor().Process(session);
+            new Processors.DeleteGameObjectProcessor().Process(session);
 
             new Processors.ApplyObjectMapping().Apply(session);
             new Processors.ApplyDestroy().Apply(session);
