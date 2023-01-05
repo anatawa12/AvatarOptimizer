@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.Collections;
@@ -225,9 +226,11 @@ namespace Anatawa12.Merger.Processors
                 var rendererBones = mesh.bones;
                 var bindposesCount = mesh.bindposes.Length;
                 for (var i = 0; i < rendererBones.Length; i++)
-                    bones[bindPoseIndices[i]] = rendererBones[i];
+                    if (bindPoseIndices[i] != -1)
+                        bones[bindPoseIndices[i]] = rendererBones[i];
                 for (var i = 0; i < bindposesCount; i++)
-                    bindposes[bindPoseIndices[i]] = mesh.bindposes[i];
+                    if (bindPoseIndices[i] != -1)
+                        bindposes[bindPoseIndices[i]] = mesh.bindposes[i];
 
                 // other attributes
                 var meshTriangles = mesh.Triangles;
@@ -383,12 +386,23 @@ namespace Anatawa12.Merger.Processors
             for (var i = 0; i < infos.Length; i++)
             {
                 var sharedMesh = infos[i];
+                var usedBones = new BitArray(sharedMesh.bindposes.Length);
+                foreach (var weight in sharedMesh.AllBoneWeights)
+                    usedBones[weight.boneIndex] = true;
+
                 var indices = indicesArray[i] = new int[sharedMesh.bindposes.Length];
                 for (var bindPoseIndex = 0; bindPoseIndex < sharedMesh.bindposes.Length; bindPoseIndex++)
                 {
-                    var key = (sharedMesh.bones[bindPoseIndex], sharedMesh.bindposes[bindPoseIndex]);
-                    indices[bindPoseIndex] =
-                        mapping.TryGetValue(key, out var index) ? index : mapping[key] = nextIndex++;
+                    if (!usedBones[bindPoseIndex])
+                    {
+                        indices[bindPoseIndex] = -1;
+                    }
+                    else
+                    {
+                        var key = (sharedMesh.bones[bindPoseIndex], sharedMesh.bindposes[bindPoseIndex]);
+                        indices[bindPoseIndex] =
+                            mapping.TryGetValue(key, out var index) ? index : mapping[key] = nextIndex++;
+                    }
                 }
             }
 
