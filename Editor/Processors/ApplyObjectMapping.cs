@@ -21,7 +21,7 @@ namespace Anatawa12.Merger.Processors
                 var serialized = new SerializedObject(component);
                 var p = serialized.GetIterator();
                 AnimatorControllerMapper mapper = null;
-                while (p.NextVisible(true))
+                while (p.Next(true))
                 {
                     if (p.propertyType == SerializedPropertyType.ObjectReference)
                     {
