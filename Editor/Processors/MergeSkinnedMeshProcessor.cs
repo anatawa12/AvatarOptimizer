@@ -13,9 +13,10 @@ namespace Anatawa12.Merger.Processors
     {
         public void Process(MergerSession session)
         {
+            var proceed = new HashSet<MergeSkinnedMesh>();
             foreach (var mergePhysBone in session.GetComponents<MergeSkinnedMesh>())
             {
-                DoMerge(mergePhysBone, session);
+                DoMerge(mergePhysBone, session, proceed);
             }
         }
 
@@ -136,8 +137,17 @@ namespace Anatawa12.Merger.Processors
             }
         }
 
-        private void DoMerge(MergeSkinnedMesh merge, MergerSession session)
+        private void DoMerge(MergeSkinnedMesh merge, MergerSession session, ISet<MergeSkinnedMesh> proceed)
         {
+            if (proceed.Contains(merge)) return;
+            proceed.Add(merge);
+            foreach (var skinnedMeshRenderer in merge.renderers)
+            {
+                var depends = skinnedMeshRenderer.GetComponent<MergeSkinnedMesh>();
+                if (proceed.Contains(depends)) continue;
+                DoMerge(merge, session, proceed);
+            }
+
             var white = new Color32(0xff, 0xff, 0xff, 0xff);
             var meshInfos = merge.renderers.Select(x => new MeshInfo(x))
                 .Concat(merge.staticRenderers.Select(x => new MeshInfo(x)))

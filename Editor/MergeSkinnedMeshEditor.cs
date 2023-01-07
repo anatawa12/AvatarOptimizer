@@ -35,6 +35,7 @@ namespace Anatawa12.Merger
             ShowRenderers("Skinned Renderers", renderersProp, (SkinnedMeshRenderer renderer) =>
             {
                 var mesh = renderer.sharedMesh;
+                if (!mesh) return;
 
                 for (var j = 0; j < mesh.blendShapeCount; j++)
                 {
