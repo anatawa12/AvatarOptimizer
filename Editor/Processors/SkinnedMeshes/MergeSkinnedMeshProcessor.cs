@@ -7,17 +7,12 @@ using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.Rendering;
 
-namespace Anatawa12.AvatarOptimizer.Processors
+namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 {
-    internal class MergeSkinnedMeshProcessor
+    internal class MergeSkinnedMeshProcessor : EditSkinnedMeshProcessor<MergeSkinnedMesh>
     {
-        public void Process(OptimizerSession session)
+        public MergeSkinnedMeshProcessor(MergeSkinnedMesh component) : base(component)
         {
-            var proceed = new HashSet<MergeSkinnedMesh>();
-            foreach (var mergePhysBone in session.GetComponents<MergeSkinnedMesh>())
-            {
-                DoMerge(mergePhysBone, session, proceed);
-            }
         }
 
         private class MeshInfo
@@ -137,25 +132,16 @@ namespace Anatawa12.AvatarOptimizer.Processors
             }
         }
 
-        private void DoMerge(MergeSkinnedMesh merge, OptimizerSession session, ISet<MergeSkinnedMesh> proceed)
+        public override void Process(OptimizerSession session)
         {
-            if (proceed.Contains(merge)) return;
-            proceed.Add(merge);
-            foreach (var skinnedMeshRenderer in merge.renderers)
-            {
-                var depends = skinnedMeshRenderer.GetComponent<MergeSkinnedMesh>();
-                if (proceed.Contains(depends)) continue;
-                DoMerge(merge, session, proceed);
-            }
-
             var white = new Color32(0xff, 0xff, 0xff, 0xff);
-            var meshInfos = merge.renderers.Select(x => new MeshInfo(x))
-                .Concat(merge.staticRenderers.Select(x => new MeshInfo(x)))
+            var meshInfos = Component.renderers.Select(x => new MeshInfo(x))
+                .Concat(Component.staticRenderers.Select(x => new MeshInfo(x)))
                 .ToArray();
             var trianglesTotalCount = meshInfos.Sum(x => x.Triangles.Length);
             var vertexTotalCount = meshInfos.Sum(x => x.vertices.Length);
             var boneWeightsTotalCount = meshInfos.Sum(x => x.AllBoneWeights.Length);
-            var (subMeshIndexMap, subMeshesTotalCount) = CreateSubMeshIndexMapping(merge.merges, meshInfos);
+            var (subMeshIndexMap, subMeshesTotalCount) = CreateSubMeshIndexMapping(Component.merges, meshInfos);
             var (bindPoseIndexMap, bindPoseTotalCount) = CreateBindPoseIndexMapping(meshInfos);
 
             // bounds attributes
@@ -305,7 +291,6 @@ namespace Anatawa12.AvatarOptimizer.Processors
             }
 
             // create mesh
-            var newRenderer = merge.gameObject.GetOrAddComponent<SkinnedMeshRenderer>();
             var newMesh = session.AddToAsset(new Mesh());
             var newBounds = new Bounds();
             newMesh.Clear();
@@ -337,24 +322,24 @@ namespace Anatawa12.AvatarOptimizer.Processors
             for (var i = 0; i < subMeshes.Length; i++)
                 newMesh.SetSubMesh(i, subMeshes[i]);
 
-            newRenderer.bones = bones;
-            newRenderer.sharedMesh = newMesh;
-            newRenderer.sharedMaterials = sharedMaterials;
+            Target.bones = bones;
+            Target.sharedMesh = newMesh;
+            Target.sharedMaterials = sharedMaterials;
             //newBounds.SetMinMax(renderMin, renderMax);
             //newRenderer.bounds = newBounds;
 
             for (var i = 0; i < blendShapeNames.Count; i++)
-                newRenderer.SetBlendShapeWeight(i, blendShapes[blendShapeNames[i]].weight);
+                Target.SetBlendShapeWeight(i, blendShapes[blendShapeNames[i]].weight);
 
-            session.Destroy(merge);
+            session.Destroy(Component);
 
-            foreach (var renderer in merge.renderers)
+            foreach (var renderer in Component.renderers)
             {
-                session.AddObjectMapping(renderer, newRenderer);
+                session.AddObjectMapping(renderer, Target);
                 session.Destroy(renderer);
             }
 
-            foreach (var renderer in merge.staticRenderers)
+            foreach (var renderer in Component.staticRenderers)
             {
                 session.Destroy(renderer.GetComponent<MeshFilter>());
                 session.Destroy(renderer);

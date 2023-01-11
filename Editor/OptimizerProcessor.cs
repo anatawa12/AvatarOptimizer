@@ -52,7 +52,7 @@ namespace Anatawa12.AvatarOptimizer
         private static void DoProcessObject(OptimizerSession session)
         {
             new Processors.MergePhysBoneProcessor().Process(session);
-            new Processors.MergeSkinnedMeshProcessor().Process(session);
+            new Processors.EditSkinnedMeshComponentProcessor().Process(session);
             new Processors.DeleteGameObjectProcessor().Process(session);
 
             new Processors.ApplyObjectMapping().Apply(session);

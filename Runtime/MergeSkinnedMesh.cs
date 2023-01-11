@@ -6,7 +6,7 @@ namespace Anatawa12.AvatarOptimizer
     [AddComponentMenu("Anatawa12/Merge Skinned Mesh")]
     [RequireComponent(typeof(SkinnedMeshRenderer))]
     [DisallowMultipleComponent]
-    public class MergeSkinnedMesh : AvatarTagComponent
+    public class MergeSkinnedMesh : EditSkinnedMeshComponent
     {
         public SkinnedMeshRenderer[] renderers = Array.Empty<SkinnedMeshRenderer>();
         public MeshRenderer[] staticRenderers = Array.Empty<MeshRenderer>();
