@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer
 {
@@ -7,6 +8,15 @@ namespace Anatawa12.AvatarOptimizer
     {
         public static ZipWithNextEnumerable<T> ZipWithNext<T>(this IEnumerable<T> enumerable) =>
             new ZipWithNextEnumerable<T>(enumerable);
+
+        
+        public static T GetOrAddComponent<T>(this GameObject go) where T : Component
+        {
+            var component = go.GetComponent<T>();
+            if (!component)
+                component = go.AddComponent<T>();
+            return component;
+        }
     }
 
     internal struct ZipWithNextEnumerable<T> : IEnumerable<(T, T)>
