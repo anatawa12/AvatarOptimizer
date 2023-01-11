@@ -6,11 +6,11 @@ using UnityEngine;
 using VRC.Dynamics;
 using Object = UnityEngine.Object;
 
-namespace Anatawa12.Merger.Processors
+namespace Anatawa12.AvatarOptimizer.Processors
 {
     internal class MergePhysBoneProcessor
     {
-        public void Process(MergerSession session)
+        public void Process(OptimizerSession session)
         {
             foreach (var mergePhysBone in session.GetComponents<MergePhysBone>())
             {
@@ -47,7 +47,7 @@ namespace Anatawa12.Merger.Processors
             return differ;
         }
 
-        internal static void DoMerge(MergePhysBone merge, MergerSession session)
+        internal static void DoMerge(MergePhysBone merge, OptimizerSession session)
         {
             if (merge.components.Length == 0) return;
 

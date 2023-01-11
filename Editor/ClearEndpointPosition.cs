@@ -2,7 +2,7 @@ using UnityEditor;
 using UnityEngine;
 using VRC.Dynamics;
 
-namespace Anatawa12.Merger
+namespace Anatawa12.AvatarOptimizer
 {
     internal class ClearEndpointPosition : EditorWindow
     {
@@ -28,7 +28,7 @@ namespace Anatawa12.Merger
             }
         }
 
-        [MenuItem("Tools/Merger/Clear Endpoint Position")]
+        [MenuItem("Tools/Avatar Optimizer/Clear Endpoint Position")]
         public static void Open() => CreateWindow<ClearEndpointPosition>();
     }
 }

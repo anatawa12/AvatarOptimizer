@@ -7,7 +7,7 @@ using UnityEngine;
 using UnityEngine.Assertions;
 using VRC.Dynamics;
 
-namespace Anatawa12.Merger
+namespace Anatawa12.AvatarOptimizer
 {
     internal static class Utils
     {
@@ -168,7 +168,7 @@ namespace Anatawa12.Merger
             return rootObject;
         }
 
-        private const string TemporalDirPath = "Assets/9999-MergerGeneratedTemporalAssets";
+        private const string TemporalDirPath = "Assets/9999-OptimizerGeneratedTemporalAssets";
 
         public static void DeleteTemporalDirectory()
         {

@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Anatawa12.Merger
+namespace Anatawa12.AvatarOptimizer
 {
     internal static class Utils
     {

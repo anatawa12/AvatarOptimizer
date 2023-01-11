@@ -7,11 +7,11 @@ using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.Rendering;
 
-namespace Anatawa12.Merger.Processors
+namespace Anatawa12.AvatarOptimizer.Processors
 {
     internal class MergeSkinnedMeshProcessor
     {
-        public void Process(MergerSession session)
+        public void Process(OptimizerSession session)
         {
             var proceed = new HashSet<MergeSkinnedMesh>();
             foreach (var mergePhysBone in session.GetComponents<MergeSkinnedMesh>())
@@ -137,7 +137,7 @@ namespace Anatawa12.Merger.Processors
             }
         }
 
-        private void DoMerge(MergeSkinnedMesh merge, MergerSession session, ISet<MergeSkinnedMesh> proceed)
+        private void DoMerge(MergeSkinnedMesh merge, OptimizerSession session, ISet<MergeSkinnedMesh> proceed)
         {
             if (proceed.Contains(merge)) return;
             proceed.Add(merge);

@@ -6,7 +6,7 @@ using UnityEngine.Serialization;
 using VRC.Dynamics;
 using VRC.SDK3.Dynamics.PhysBone.Components;
 
-namespace Anatawa12.Merger
+namespace Anatawa12.AvatarOptimizer
 {
     [AddComponentMenu("Anatawa12/Merge PhysBone")]
     [RequireComponent(typeof(VRCPhysBone))]

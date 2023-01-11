@@ -4,7 +4,7 @@ using UnityEngine;
 using VRC.Dynamics;
 using VRC.SDKBase.Validation.Performance;
 
-namespace Anatawa12.Merger
+namespace Anatawa12.AvatarOptimizer
 {
     [InitializeOnLoad]
     public static class ShouldIgnoreComponentPatch

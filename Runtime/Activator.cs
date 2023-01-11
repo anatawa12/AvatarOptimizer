@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using VRC.SDK3.Avatars.Components;
 
-namespace Anatawa12.Merger
+namespace Anatawa12.AvatarOptimizer
 {
     // https://github.com/bdunderscore/modular-avatar/blob/db49e2e210bc070671af963ff89df853ae4514a5/Packages/nadena.dev.modular-avatar/Runtime/Activator.cs#L25
     // Originally under MIT License

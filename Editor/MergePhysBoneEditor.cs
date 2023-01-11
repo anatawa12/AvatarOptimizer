@@ -3,7 +3,7 @@ using UnityEditor;
 using UnityEngine;
 using VRC.Dynamics;
 
-namespace Anatawa12.Merger
+namespace Anatawa12.AvatarOptimizer
 {
     [CustomEditor(typeof(MergePhysBone))]
     internal class MergePhysBoneEditor : Editor

@@ -3,16 +3,16 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
-namespace Anatawa12.Merger
+namespace Anatawa12.AvatarOptimizer
 {
-    internal class MergerSession
+    internal class OptimizerSession
     {
         private readonly GameObject _rootObject;
         private readonly Dictionary<Object, Object> _mapping = new Dictionary<Object, Object>();
         private readonly List<Object> _toDestroy = new List<Object>();
         private readonly DummyObject _assetFileObject;
 
-        public MergerSession(GameObject rootObject, bool addToAsset)
+        public OptimizerSession(GameObject rootObject, bool addToAsset)
         {
             this._rootObject = rootObject;
             if (addToAsset)

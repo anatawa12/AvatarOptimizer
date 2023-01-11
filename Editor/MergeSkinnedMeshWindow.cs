@@ -1,7 +1,7 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace Anatawa12.Merger
+namespace Anatawa12.AvatarOptimizer
 {
     public class MergeSkinnedMeshWindow : EditorWindow
     {
@@ -51,7 +51,7 @@ namespace Anatawa12.Merger
             EditorGUILayout.LabelField(prop, array == null ? "null" : array.Length.ToString());
         }
 
-        [MenuItem("Tools/Merger/Test GUI")]
+        [MenuItem("Tools/Avatar Optimizer/Test GUI")]
         public static void Open() => CreateWindow<MergeSkinnedMeshWindow>();
     }
 }

@@ -4,7 +4,7 @@ using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 
-namespace Anatawa12.Merger
+namespace Anatawa12.AvatarOptimizer
 {
     // https://github.com/bdunderscore/modular-avatar/blob/2bfefc7bacbbed2c9720b72b11aad3abcff0d564/Packages/nadena.dev.modular-avatar/Editor/ComponentAllowlistPatch.cs#L33-L131
     // Originally under MIT License
@@ -47,7 +47,7 @@ namespace Anatawa12.Merger
             if (findIllegalComponents == null)
             {
                 Debug.LogError(
-                    "[Merger] Unsupported VRCSDK version: Failed to find AvatarValidation.FindIllegalComponents");
+                    "[Avatar Optimizer] Unsupported VRCSDK version: Failed to find AvatarValidation.FindIllegalComponents");
                 return;
             }
 
@@ -81,14 +81,14 @@ namespace Anatawa12.Merger
             if (whitelistedTypes == null)
             {
                 Debug.LogError(
-                    "[Merger] Unsupported VRCSDK version: Failed to find ValidationUtils.WhitelistedTypes");
+                    "[Avatar Optimizer] Unsupported VRCSDK version: Failed to find ValidationUtils.WhitelistedTypes");
                 return;
             }
 
             var allowlist = whitelistedTypes.Invoke(null, new object[] {"avatar-sdk3", null}) as HashSet<Type>;
             if (allowlist == null)
             {
-                Debug.LogError("[Merger] Unsupported VRCSDK version: Failed to retrieve component whitelist");
+                Debug.LogError("[Avatar Optimizer] Unsupported VRCSDK version: Failed to retrieve component whitelist");
                 return;
             }
 

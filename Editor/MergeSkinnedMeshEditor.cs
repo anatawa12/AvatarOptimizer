@@ -7,7 +7,7 @@ using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace Anatawa12.Merger
+namespace Anatawa12.AvatarOptimizer
 {
     [CustomEditor(typeof(MergeSkinnedMesh))]
     internal class MergeSkinnedMeshEditor : Editor

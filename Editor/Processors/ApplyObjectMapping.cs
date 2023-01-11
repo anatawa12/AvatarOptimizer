@@ -7,11 +7,11 @@ using UnityEngine;
 using UnityEngine.Assertions;
 using Object = UnityEngine.Object;
 
-namespace Anatawa12.Merger.Processors
+namespace Anatawa12.AvatarOptimizer.Processors
 {
     internal class ApplyObjectMapping
     {
-        public void Apply(MergerSession session)
+        public void Apply(OptimizerSession session)
         {
             var mapping = session.GetMapping();
 
@@ -49,10 +49,10 @@ namespace Anatawa12.Merger.Processors
     {
         private readonly Dictionary<(string, Type), string> _mapping = new Dictionary<(string, Type), string>();
         private readonly Dictionary<Object, Object> _cache = new Dictionary<Object, Object>();
-        private readonly MergerSession _session;
+        private readonly OptimizerSession _session;
         private bool _mapped = false;
 
-        public AnimatorControllerMapper(Dictionary<Object, Object> mapping, Transform root, MergerSession session)
+        public AnimatorControllerMapper(Dictionary<Object, Object> mapping, Transform root, OptimizerSession session)
         {
             _session = session;
             foreach (var kvp in mapping)

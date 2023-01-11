@@ -4,9 +4,9 @@ using UnityEditor;
 using UnityEngine;
 using VRC.SDKBase.Editor.BuildPipeline;
 
-namespace Anatawa12.Merger
+namespace Anatawa12.AvatarOptimizer
 {
-    internal class MergerProcessor : IVRCSDKPreprocessAvatarCallback, IVRCSDKPostprocessAvatarCallback
+    internal class OptimizerProcessor : IVRCSDKPreprocessAvatarCallback, IVRCSDKPostprocessAvatarCallback
     {
         public int callbackOrder => 0;
 
@@ -14,7 +14,7 @@ namespace Anatawa12.Merger
         {
             try
             {
-                ProcessObject(new MergerSession(avatarGameObject, true));
+                ProcessObject(new OptimizerSession(avatarGameObject, true));
                 return true;
             }
             catch (Exception e)
@@ -31,7 +31,7 @@ namespace Anatawa12.Merger
 
         private static bool _processing;
 
-        public static void ProcessObject(MergerSession session)
+        public static void ProcessObject(OptimizerSession session)
         {
             if (_processing) return;
             try
@@ -49,7 +49,7 @@ namespace Anatawa12.Merger
             }
         }
         
-        private static void DoProcessObject(MergerSession session)
+        private static void DoProcessObject(OptimizerSession session)
         {
             new Processors.MergePhysBoneProcessor().Process(session);
             new Processors.MergeSkinnedMeshProcessor().Process(session);

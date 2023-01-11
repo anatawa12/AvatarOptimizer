@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Anatawa12.Merger
+namespace Anatawa12.AvatarOptimizer
 {
     // https://github.com/bdunderscore/modular-avatar/blob/db49e2e210bc070671af963ff89df853ae4514a5/Packages/nadena.dev.modular-avatar/Runtime/AvatarTagComponent.cs
     // Originally under MIT License

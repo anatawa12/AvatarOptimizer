@@ -1,7 +1,7 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace Anatawa12.Merger
+namespace Anatawa12.AvatarOptimizer
 {
     // https://github.com/bdunderscore/modular-avatar/blob/db49e2e210bc070671af963ff89df853ae4514a5/Packages/nadena.dev.modular-avatar/Editor/ApplyOnPlay.cs#L54
     // Originally under MIT License
@@ -9,8 +9,8 @@ namespace Anatawa12.Merger
     [InitializeOnLoad]
     internal static class ApplyOnPlay
     {
-        private const string MenuName = "Tools/Merger/Apply on Play";
-        private const string SettingName = "com.anatawa12.merger.apply-on-play";
+        private const string MenuName = "Tools/Avatar Optimizer/Apply on Play";
+        private const string SettingName = "com.anatawa12.avatar-optimizer.apply-on-play";
 
         public static bool Enabled
         {
@@ -41,7 +41,7 @@ namespace Anatawa12.Merger
             {
                 var avatar = RuntimeUtil.FindAvatarInParents(component.transform);
                 if (avatar == null) return;
-                MergerProcessor.ProcessObject(new MergerSession(avatar.gameObject, false));
+                OptimizerProcessor.ProcessObject(new OptimizerSession(avatar.gameObject, false));
             }
         }
 

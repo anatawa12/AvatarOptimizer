@@ -1,3 +1,3 @@
 using System.Runtime.CompilerServices;
 
-[assembly:InternalsVisibleTo("com.anatawa12.merger.editor")]
+[assembly:InternalsVisibleTo("com.anatawa12.avatar-optimizer.editor")]
