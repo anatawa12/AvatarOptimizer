@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
 using JetBrains.Annotations;
 using UnityEditor;
@@ -16,7 +17,8 @@ namespace Anatawa12.AvatarOptimizer
             RuntimeUtil.OnDestroyEditSkinnedMesh += OnDestroy;
         }
 
-        private static void OnAwake(EditSkinnedMeshComponent component)
+        // might be called by Processor to make sure the component is registered
+        internal static void OnAwake(EditSkinnedMeshComponent component)
         {
             var processor = CreateProcessor(component);
             if (!ProcessorsByRenderer.TryGetValue(processor.Target, out var processors))
@@ -36,11 +38,13 @@ namespace Anatawa12.AvatarOptimizer
         static readonly Dictionary<SkinnedMeshRenderer, SkinnedMeshProcessors> ProcessorsByRenderer =
             new Dictionary<SkinnedMeshRenderer, SkinnedMeshProcessors>();
 
-        public static string[] GetBlendShapes(SkinnedMeshRenderer renderer) =>
-            GetProcessors(renderer)?.GetBlendShapes() ?? SourceMeshInfoComputer.BlendShapes(renderer);
+        public static string[] GetBlendShapes(SkinnedMeshRenderer renderer) => GetBlendShapes(renderer, null);
+        public static string[] GetBlendShapes(SkinnedMeshRenderer renderer, EditSkinnedMeshComponent before) =>
+            GetProcessors(renderer)?.GetBlendShapes(before) ?? SourceMeshInfoComputer.BlendShapes(renderer);
 
-        public static Material[] GetMaterials(SkinnedMeshRenderer renderer) =>
-            GetProcessors(renderer)?.GetMaterials() ?? SourceMeshInfoComputer.Materials(renderer);
+        public static Material[] GetMaterials(SkinnedMeshRenderer renderer) => GetMaterials(renderer, null);
+        public static Material[] GetMaterials(SkinnedMeshRenderer renderer, EditSkinnedMeshComponent before) =>
+            GetProcessors(renderer)?.GetMaterials(before) ?? SourceMeshInfoComputer.Materials(renderer);
 
         [CanBeNull]
         private static SkinnedMeshProcessors GetProcessors(SkinnedMeshRenderer target)
@@ -49,72 +53,93 @@ namespace Anatawa12.AvatarOptimizer
             return processors;
         }
 
+        public static IEnumerable<List<IEditSkinnedMeshProcessor>> GetSortedProcessors(IEnumerable<SkinnedMeshRenderer> targets)
+        {
+            var processors = new LinkedList<SkinnedMeshProcessors>(targets.Select(GetProcessors).Where(x => x != null));
+            
+            var proceed = new HashSet<SkinnedMeshRenderer>();
+            while (processors.Count != 0)
+            {
+                var iterator = processors.First;
+                while (!iterator.Value.GetSorted().SelectMany(x => x.Dependencies).All(proceed.Contains))
+                    iterator = iterator.Next ?? throw new InvalidOperationException("Circular Dependencies Detected");
+
+                var found = iterator.Value;
+                processors.Remove(iterator);
+                proceed.Add(found.Target);
+                yield return found.GetSorted();
+            }
+        }
+
         private class SkinnedMeshProcessors
         {
-            private readonly SkinnedMeshRenderer _target;
-            private readonly List<IEditSkinnedMeshProcessor> _processors = new List<IEditSkinnedMeshProcessor>();
-            private bool _sorted;
-            private IMeshInfoComputer _computer;
+            internal readonly SkinnedMeshRenderer Target;
+            private readonly HashSet<IEditSkinnedMeshProcessor> _processors = new HashSet<IEditSkinnedMeshProcessor>();
+            private List<IEditSkinnedMeshProcessor> _sorted = new List<IEditSkinnedMeshProcessor>();
+            private IMeshInfoComputer[] _computers;
 
             public SkinnedMeshProcessors(SkinnedMeshRenderer target)
             {
-                _target = target;
+                Target = target;
             }
 
             private void PurgeCache(bool removing = false)
             {
-                if (!removing)
-                    _sorted = false;
-                _computer = null;
+                _sorted = null;
+                _computers = null;
             }
 
             public void AddProcessor(IEditSkinnedMeshProcessor processor)
             {
-                _processors.Add(processor);
-                PurgeCache();
+                if (_processors.Add(processor))
+                    PurgeCache();
             }
 
             public void RemoveProcessorOf(EditSkinnedMeshComponent component)
             {
-                var index = _processors.FindIndex(x => x.Component == component);
-                if (index == -1) return;
-                _processors.RemoveAt(index);
+                var removed = _processors.RemoveWhere(x => x.Component == component);
+                if (removed == 0) return;
                 PurgeCache(removing: true);
             }
 
-            private List<IEditSkinnedMeshProcessor> GetSorted()
+            internal List<IEditSkinnedMeshProcessor> GetSorted()
             {
-                if (!_sorted)
-                {
-                    _processors.Sort((a, b) => 
-                        a.ProcessOrder.CompareTo(b.ProcessOrder));
-                    _sorted = true;
-                }
+                if (_sorted != null) return _sorted;
 
-                return _processors;
+                _sorted = new List<IEditSkinnedMeshProcessor>(_processors);
+                _sorted.Sort((a, b) =>
+                    a.ProcessOrder.CompareTo(b.ProcessOrder));
+
+                return _sorted;
             }
 
-            private IMeshInfoComputer GetComputer()
+            private IMeshInfoComputer[] GetComputers()
             {
-                if (_computer != null) return _computer;
+                if (_computers != null) return _computers;
                 var sorted = GetSorted();
-                IMeshInfoComputer computer = new SourceMeshInfoComputer(_target);
-                for (var i = sorted.Count - 1; i >= 0; i--)
-                    computer = sorted[i].GetComputer(computer);
-                return _computer = computer;
+                _computers = new IMeshInfoComputer[sorted.Count + 1];
+                var computer = _computers[0] = new SourceMeshInfoComputer(Target);
+                for (var i = 0; i < sorted.Count; i++)
+                    computer = _computers[i + 1] = sorted[i].GetComputer(computer);
+                return _computers;
             }
 
-            public string[] GetBlendShapes() => GetComputer().BlendShapes();
-            public Material[] GetMaterials() => GetComputer().Materials();
+            private IMeshInfoComputer GetComputer(EditSkinnedMeshComponent before = null) => !before
+                ? GetComputers().Last()
+                : GetComputers()[_sorted.FindIndex(x => x.Component == before)];
+
+            public string[] GetBlendShapes(EditSkinnedMeshComponent before = null) => GetComputer(before).BlendShapes();
+            public Material[] GetMaterials(EditSkinnedMeshComponent before = null) => GetComputer(before).Materials();
         }
 
-        private static readonly Dictionary<Type, Func<EditSkinnedMeshComponent, IEditSkinnedMeshProcessor>> _creators =
+        private static readonly Dictionary<Type, Func<EditSkinnedMeshComponent, IEditSkinnedMeshProcessor>> Creators =
             new Dictionary<Type, Func<EditSkinnedMeshComponent, IEditSkinnedMeshProcessor>>
             {
                 [typeof(MergeSkinnedMesh)] = x => new MergeSkinnedMeshProcessor((MergeSkinnedMesh)x),
+                [typeof(FreezeBlendShape)] = x => new FreezeBlendShapeProcessor((FreezeBlendShape)x),
             };
 
         private static IEditSkinnedMeshProcessor CreateProcessor(EditSkinnedMeshComponent mergePhysBone) =>
-            _creators[mergePhysBone.GetType()].Invoke(mergePhysBone);
+            Creators[mergePhysBone.GetType()].Invoke(mergePhysBone);
     }
 }

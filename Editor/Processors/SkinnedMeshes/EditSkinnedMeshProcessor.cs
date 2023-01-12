@@ -52,9 +52,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             _upstream = upstream;
         }
 
-        public string[] BlendShapes() => _upstream?.BlendShapes() ?? Array.Empty<string>();
+        public virtual string[] BlendShapes() => _upstream?.BlendShapes() ?? Array.Empty<string>();
 
-        public Material[] Materials() => _upstream?.Materials() ?? Array.Empty<Material>();
+        public virtual Material[] Materials() => _upstream?.Materials() ?? Array.Empty<Material>();
     }
 
 
