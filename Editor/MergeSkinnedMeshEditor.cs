@@ -93,9 +93,10 @@ namespace Anatawa12.AvatarOptimizer
         public void MergeMaterials(MergeSkinnedMesh merge)
         {
             var materials = new HashSet<Material>();
-            foreach (var group in merge.renderers.Concat<Renderer>(merge.staticRenderers)
-                         .SelectMany((x, renderer) =>
-                             x.sharedMaterials.Select((mat, material) => (mat, renderer, material)))
+            var ofRenderers = merge.renderers.Select(EditSkinnedMeshComponentUtil.GetMaterials);
+            var ofStatics = merge.staticRenderers.Select(x => x.sharedMaterials);
+            foreach (var group in ofRenderers.Concat(ofStatics)
+                         .SelectMany((x, renderer) => x.Select((mat, material) => (mat, renderer, material)))
                          .GroupBy(x => x.mat))
             {
                 materials.Add(group.Key);

@@ -15,6 +15,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         {
         }
 
+        public override int ProcessOrder => int.MinValue;
+
         private class MeshInfo
         {
             public Bounds Bounds;
@@ -421,6 +423,30 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         {
             if (src.Length == 0) return;
             NativeArray<T>.Copy(src, 0, dest, baseIndex, count);
+        }
+
+        public override IMeshInfoComputer GetComputer(IMeshInfoComputer upstream) => new MeshInfoComputer(this);
+
+        class MeshInfoComputer : IMeshInfoComputer
+        {
+            private readonly MergeSkinnedMeshProcessor _processor;
+
+            public MeshInfoComputer(MergeSkinnedMeshProcessor processor) => _processor = processor;
+
+            public string[] BlendShapes() =>
+                _processor.Component.renderers
+                    .SelectMany(EditSkinnedMeshComponentUtil.GetBlendShapes)
+                    .Distinct()
+                    .ToArray();
+
+            public Material[] Materials() =>
+                _processor.Component.merges
+                    .Select(x => x.target)
+                    .Concat(
+                        _processor.Component.renderers
+                            .SelectMany(EditSkinnedMeshComponentUtil.GetMaterials)
+                            .Where(x => _processor.Component.merges.All(y => y.target != x)))
+                    .ToArray();
         }
     }
 }

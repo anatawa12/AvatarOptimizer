@@ -30,16 +30,8 @@ namespace Anatawa12.AvatarOptimizer
                 }
             }
             
-            if (component is SkinnedMeshRenderer)
-            {
-                // TODO: cache for performance
-                if (Object.FindObjectsOfType<MergeSkinnedMesh>()
-                    .SelectMany(x => x.renderers)
-                    .Any(x => x == component))
-                {
-                    return true;
-                }
-            }
+            if (component is SkinnedMeshRenderer renderer)
+                return EditSkinnedMeshComponentUtil.IsModifiedByEditComponent(renderer);
 
             return false;
         }

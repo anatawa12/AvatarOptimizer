@@ -128,5 +128,8 @@ namespace Anatawa12.AvatarOptimizer
         {
             OnHierarchyChanged?.Invoke();
         }
+
+        public static Action<EditSkinnedMeshComponent> OnAwakeEditSkinnedMesh;
+        public static Action<EditSkinnedMeshComponent> OnDestroyEditSkinnedMesh;
     }
 }
