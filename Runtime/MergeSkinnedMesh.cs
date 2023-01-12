@@ -11,6 +11,7 @@ namespace Anatawa12.AvatarOptimizer
         public SkinnedMeshRenderer[] renderers = Array.Empty<SkinnedMeshRenderer>();
         public MeshRenderer[] staticRenderers = Array.Empty<MeshRenderer>();
         public MergeConfig[] merges = Array.Empty<MergeConfig>();
+        public bool removeEmptyRendererObject;
 
         [Serializable]
         public class MergeConfig

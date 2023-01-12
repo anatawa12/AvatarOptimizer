@@ -339,6 +339,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             {
                 session.AddObjectMapping(renderer, Target);
                 session.Destroy(renderer);
+                if (Component.removeEmptyRendererObject
+                    && renderer.gameObject.GetComponents<Component>()
+                        .All(x => x is AvatarTagComponent || x is Transform || x is SkinnedMeshRenderer))
+                    session.Destroy(renderer.gameObject);
             }
 
             foreach (var renderer in Component.staticRenderers)

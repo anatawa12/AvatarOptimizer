@@ -49,6 +49,9 @@ namespace Anatawa12.AvatarOptimizer
 
             ShowRenderers("Static Renderers", staticRenderersProp, (MeshRenderer renderer) => { });
 
+            var prop = serializedObject.FindProperty("removeEmptyRendererObject");
+            prop.boolValue = EditorGUILayout.ToggleLeft("Remove Empty Renderer GameObject", prop.boolValue);
+
             serializedObject.ApplyModifiedProperties();
 
             EditorGUILayout.LabelField("Merge Materials:", EditorStyles.boldLabel);
