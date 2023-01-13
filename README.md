@@ -14,6 +14,28 @@ Avatar Optimizer
 Set of Anatawa12's Small Avatar Optimization Utilities.
 Those utilies are applied on entering play mode or building VRC Avatars.
 
+## Installation
+
+### Using Installer UnityPackage with VPM
+
+With [VPAI] You can include this package just importing one unitypackage.
+
+1. download installer unitypackage [here][installer unitypackage].
+2. Make sure your project contains [`vpm-resolver`][vpm-resolver]. If your project is VRChat Avatars/Worlds project with VCC, It's installed.
+3. Import the unitypackage into your project.
+
+### Using VPM CommandLine Interface
+
+You may install this package using [VPM/VCC CLI][vcc-cli].
+
+```bash
+# add our vpm repository
+vpm add repo https://vpm.anatawa12.com/vpm.json
+# add package to your project
+cd /path/to/your-unity-project
+vpm add package com.anatawa12.avatar-optimizer
+```
+
 ## Components
 
 ### Merge Skinned Mesh
@@ -161,3 +183,7 @@ This may be useful for developing avatars.
 
 [vpm-repository]: https://vpm.anatawa12.com/vpm.json
 [github-latest]: https://github.com/anatawa12/AvatarOpitimizer/releases/latest
+[vcc-cli]: https://vcc.docs.vrchat.com/vpm/cli
+[vpm-resolver]: https://vcc.docs.vrchat.com/vpm/resolver
+[installer unitypackage]: https://github.com/anatawa12/AvatarOpitimizer/raw/master/.readme/installer.unitypackage
+[VPAI]: https://github.com/anatawa12/VPMPackageAutoInstaller
