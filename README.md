@@ -1,6 +1,16 @@
 Avatar Optimizer
 ====
 
+[![GitHub release][shields-latest-release]][github-latest]
+[![GitHub deployments][shields-deployment-master]][github-latest]
+[![GitHub deployments][shields-deployment-vpm]][vpm-repository]
+[![VPM release][shields-vpm]][vpm-repository]
+
+[shields-latest-release]: https://img.shields.io/github/v/release/anatawa12/AvatarOpitimizer?display_name=tag&sort=semver
+[shields-deployment-vpm]: https://img.shields.io/github/deployments/anatawa12/AvatarOpitimizer/vpm.anatawa12.com?label=VPM%20Deployment
+[shields-deployment-master]: https://img.shields.io/github/deployments/anatawa12/AvatarOpitimizer/master%20branch?label=Deployment
+[shields-vpm]: https://img.shields.io/vpm/v/com.anatawa12.avatar-optimizer?repository_url=https%3A%2F%2Fvpm.anatawa12.com%2Fvpm.json
+
 Set of Anatawa12's Small Avatar Optimization Utilities.
 Those utilies are applied on entering play mode or building VRC Avatars.
 
@@ -148,3 +158,6 @@ Clicking `Apply and Remove component` will applies this operation and removes th
 This may be useful for developing avatars.
 
 <img src="./.readme/clear-endpoint-position.png" width="427">
+
+[vpm-repository]: https://vpm.anatawa12.com/vpm.json
+[github-latest]: https://github.com/anatawa12/AvatarOpitimizer/releases/latest
