@@ -49,8 +49,17 @@ namespace Anatawa12.AvatarOptimizer
 
             ShowRenderers("Static Renderers", staticRenderersProp, (MeshRenderer renderer) => { });
 
-            var prop = serializedObject.FindProperty("removeEmptyRendererObject");
-            prop.boolValue = EditorGUILayout.ToggleLeft("Remove Empty Renderer GameObject", prop.boolValue);
+            {
+                var prop = serializedObject.FindProperty("removeEmptyRendererObject");
+                var rect = EditorGUILayout.GetControlRect(true);
+                var label = new GUIContent("Remove Empty Renderer GameObject");
+                label = EditorGUI.BeginProperty(rect, label, prop);
+                EditorGUI.BeginChangeCheck();
+                var flag = EditorGUI.ToggleLeft(rect, label, prop.boolValue);
+                if (EditorGUI.EndChangeCheck())
+                    prop.boolValue = flag;
+                EditorGUI.EndProperty();
+            }
 
             serializedObject.ApplyModifiedProperties();
 
