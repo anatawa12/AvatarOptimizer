@@ -1,0 +1,107 @@
+on:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: "True to publish release to git, vpm. if false, this creates release asset only"
+        type: boolean
+        required: false
+
+env:
+  PKG_NAME: com.anatawa12.avatar-optimizer
+
+concurrency:
+  group: publish
+  cancel-in-progress: true
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    environment:
+      name: master branch
+    outputs:
+      version: ${{ steps.update-version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.MASTER_GITHUB_PAT }}
+      - uses: anatawa12/something-releaser@v2
+      - uses: snow-actions/git-config-user@v1.0.0
+      - name: Check version is Snapshot
+        run: |
+          if ! [[ "$(get-version)" = *-SNAPSHOT ]]; then
+            echo 'VERSION IS NOT SNAPSHOT' >&2
+            exit 1
+          fi
+
+      - name: Update Version Name
+        id: update-version
+        run: |
+          set-version "$(version-unsnapshot "$(get-version)")"
+          echo "VERSION=$(get-version)" >> $GITHUB_ENV
+          echo "version=$(get-version)" >> $GITHUB_OUTPUT
+
+      - name: Commit & tag version
+        if: ${{ inputs.publish }}
+        run: |
+          git commit -am "$VERSION"
+          git tag "v$VERSION"
+
+      - name: Prepare build folder
+        run: mkdir build
+
+      - name: Create unitypackage
+        uses: anatawa12/sh-actions/create-unitypackage@master
+        with:
+          output-path: build/${{ env.PKG_NAME }}-${{ env.VERSION }}.unitypackage
+          package-path: .
+          path-prefix: Packages/${{ env.PKG_NAME }}
+      - name: Upload unitypackage
+        uses: actions/upload-artifact@v3
+        with:
+          name: unitypackage
+          path: build/${{ env.PKG_NAME }}-${{ env.VERSION }}.unitypackage
+
+      - name: Build VPM release
+        run: |
+          zip -r "build/$PKG_NAME-$VERSION.zip" . -x 'build*' '.*'
+      - name: Upload VPM release
+        uses: actions/upload-artifact@v3
+        with:
+          name: vpm-package
+          path: build/${{ env.PKG_NAME }}-${{ env.VERSION }}.zip
+
+      - name: Publish Release
+        if: ${{ inputs.publish }}
+        run: |
+          git push && git push origin "v$VERSION"
+
+      - name: Publish release to github
+        if: ${{ inputs.publish }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          sleep 1
+          # upload release assets
+          gh release create "v$VERSION" \
+            "build/$PKG_NAME-$VERSION.zip" \
+            "build/$PKG_NAME-$VERSION.unitypackage" \
+            "package.json" \
+
+      - name: prepare next release & push
+        if: ${{ inputs.publish }}
+        run: |
+          VERSION="$(version-next "$(get-version)")"
+          set-version "$(version-snapshot "$VERSION")"
+          git commit -am "prepare for next version: $VERSION"
+          git push && git push --tags
+
+  publish-vpm:
+    uses: anatawa12/vpm.anatawa12.com/.github/workflows/update-package.yml@master
+    needs: create-release
+    if: inputs.publish
+    with:
+      version: ${{ needs.create-release.outputs.version }}
+      environment: vpm.anatawa12.com
+    secrets:
+      TOKEN: ${{ secrets.VPM_GITHUB_PAT }}
