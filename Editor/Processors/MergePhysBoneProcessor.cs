@@ -110,8 +110,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
             // clear endpoint position
             foreach (var physBone in merge.components)
-                if (physBone.endpointPosition != Vector3.zero)
-                    WalkChildrenAndSetEndpoint(physBone.GetTarget(), physBone);
+                ClearEndpointPositionProcessor.Process(physBone);
 
             // copy common properties
             {
@@ -234,21 +233,6 @@ namespace Anatawa12.AvatarOptimizer.Processors
             // Parameter: ignore: must be empty
             // Is Animated: ignore: we can merge them.
             // Gizmos: ignore: it should not affect actual behaviour
-        }
-
-        internal static void WalkChildrenAndSetEndpoint(Transform target, VRCPhysBoneBase physBone)
-        {
-            if (physBone.ignoreTransforms.Contains(target))
-                return;
-            if (target.childCount == 0)
-            {
-                var go = new GameObject($"_EndPhysBone");
-                go.transform.parent = target;
-                go.transform.localPosition = physBone.endpointPosition;
-                return;
-            }
-            for (var i = 0; i < target.childCount; i++)
-                WalkChildrenAndSetEndpoint(target.GetChild(i), physBone);
         }
     }
 }

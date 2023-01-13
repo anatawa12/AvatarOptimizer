@@ -9,12 +9,12 @@ namespace Anatawa12.AvatarOptimizer.Processors
         public void Process(OptimizerSession session)
         {
             foreach (var component in session.GetComponents<ClearEndpointPosition>())
-                Process(component);
+                Process(component.GetComponent<VRCPhysBoneBase>());
         }
         
-        public static void Process(ClearEndpointPosition component)
+        public static void Process(VRCPhysBoneBase pb)
         {
-            var pb = component.GetComponent<VRCPhysBoneBase>();
+            if (pb.endpointPosition == Vector3.zero) return;
             WalkChildrenAndSetEndpoint(pb.GetTarget(), pb);
             pb.endpointPosition = Vector3.zero;
             EditorUtility.SetDirty(pb);

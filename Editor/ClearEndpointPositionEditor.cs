@@ -1,6 +1,7 @@
 using Anatawa12.AvatarOptimizer.Processors;
 using UnityEditor;
 using UnityEngine;
+using VRC.Dynamics;
 
 namespace Anatawa12.AvatarOptimizer
 {
@@ -14,7 +15,7 @@ namespace Anatawa12.AvatarOptimizer
 
             if (GUILayout.Button("Apply and Remove Component"))
             {
-                ClearEndpointPositionProcessor.Process((ClearEndpointPosition)target);
+                ClearEndpointPositionProcessor.Process(((Component)target).GetComponent<VRCPhysBoneBase>());
                 DestroyImmediate(target);
             }
         }
