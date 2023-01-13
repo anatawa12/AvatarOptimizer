@@ -34,7 +34,8 @@ namespace Anatawa12.AvatarOptimizer
         public IEnumerable<T> GetComponents<T>() where T : Component
         {
             return (_rootObject != null ? _rootObject.GetComponentsInChildren<T>(true) : Object.FindObjectsOfType<T>())
-                .Where(x => x);
+                .Where(x => x)
+                .Where(x => !_toDestroy.Contains(x));
         }
 
         public T AddToAsset<T>(T obj) where T : Object
