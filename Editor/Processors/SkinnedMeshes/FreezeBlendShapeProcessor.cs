@@ -66,6 +66,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             mesh.vertices = vertices;
             mesh.normals = normals;
             mesh.tangents = tangents;
+
+            session.Destroy(Component);
         }
 
         public override IMeshInfoComputer GetComputer(IMeshInfoComputer upstream) => new MeshInfoComputer(this, upstream);
