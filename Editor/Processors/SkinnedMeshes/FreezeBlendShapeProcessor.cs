@@ -21,7 +21,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         public override void Process(OptimizerSession session)
         {
             var freezes = new HashSet<string>(Component.shapeKeys);
-            var mesh = session.AddToAsset(Object.Instantiate(Target.sharedMesh));
+            var mesh = session.MayInstantiate(Target.sharedMesh);
             var vertices = mesh.vertices;
             var normals = mesh.normals;
             var tangents = mesh.tangents;

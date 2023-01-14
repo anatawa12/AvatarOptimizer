@@ -10,6 +10,7 @@ namespace Anatawa12.AvatarOptimizer
         private readonly GameObject _rootObject;
         private readonly Dictionary<Object, Object> _mapping = new Dictionary<Object, Object>();
         private readonly List<Object> _toDestroy = new List<Object>();
+        private readonly HashSet<Object> _added = new HashSet<Object>();
         private readonly DummyObject _assetFileObject;
 
         public OptimizerSession(GameObject rootObject, bool addToAsset)
@@ -40,9 +41,16 @@ namespace Anatawa12.AvatarOptimizer
 
         public T AddToAsset<T>(T obj) where T : Object
         {
-            if (obj && _assetFileObject)
-                AssetDatabase.AddObjectToAsset(obj, _assetFileObject);
+            if (obj)
+            {
+                _added.Add(obj);
+                if (_assetFileObject)
+                    AssetDatabase.AddObjectToAsset(obj, _assetFileObject);
+            }
             return obj;
         }
+
+        public T MayInstantiate<T>(T obj) where T : Object =>
+            _added.Contains(obj) ? obj : AddToAsset(Object.Instantiate(obj));
     }
 }
