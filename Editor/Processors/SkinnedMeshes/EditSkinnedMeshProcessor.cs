@@ -24,6 +24,15 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         public abstract void Process(OptimizerSession session);
         public abstract IMeshInfoComputer GetComputer(IMeshInfoComputer upstream);
+
+        protected bool Equals(EditSkinnedMeshProcessor<TComponent> other) => Component == other.Component;
+
+        public override bool Equals(object obj) =>
+            obj != null &&
+            (ReferenceEquals(this, obj) || 
+             obj.GetType() == this.GetType() && Equals((EditSkinnedMeshProcessor<TComponent>)obj));
+
+        public override int GetHashCode() => Component.GetHashCode();
     }
 
     internal interface IEditSkinnedMeshProcessor
