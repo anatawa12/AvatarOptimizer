@@ -25,7 +25,7 @@ namespace Anatawa12.AvatarOptimizer
     [DefaultExecutionOrder(-9989)]
     public class Activator : MonoBehaviour
     {
-        private const string TAG_OBJECT_NAME = "ModularAvatarInternal_Activator";
+        private const string TAG_OBJECT_NAME = "AvatarOptimizerInternal_Activator";
 
         private void Awake()
         {
