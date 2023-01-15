@@ -13,7 +13,7 @@ namespace Anatawa12.AvatarOptimizer
         {
             public MergeSource[] source = Array.Empty<MergeSource>();
             // 2^x. 13 (2^13 = 8192) is upper limit.
-            public Vector2Int textureSize = new Vector2Int(11, 11);
+            public Vector2Int textureSize = new Vector2Int(2048, 2048);
         }
         [Serializable]
         internal class MergeSource

@@ -314,8 +314,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         private static Texture GenerateTexture(MergeToonLitMaterial.MergeInfo mergeInfo, Material[] materials)
         {
-            var texWidth = 1 << mergeInfo.textureSize.x;
-            var texHeight = 1 << mergeInfo.textureSize.y;
+            var texWidth = mergeInfo.textureSize.x;
+            var texHeight = mergeInfo.textureSize.y;
             var texture = new Texture2D(texWidth, texHeight);
             var target = new RenderTexture(texWidth, texHeight, 0, RenderTextureFormat.ARGB32);
 
