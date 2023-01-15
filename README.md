@@ -181,9 +181,29 @@ This may be useful for developing avatars.
 
 <img src="./.readme/clear-endpoint-position.png" width="427">
 
+### Merge Toon Lit Material
+
+Merge `VRChat/Mobbile/Toon Lit` materials to one material with Manual Texture Packing.
+
+This component currently only supports `Toon Lit` because I believe there are big demands
+but I may add support for other materials. (also for third-party shaders) 
+If you have some materials, please write a [issue][issues]
+
+#### Settings
+
+Click `Add Merged Material` to add merged material.
+For each merged material, you can set multiple source materials from materials. 
+Click `Add Source` or select your material from dropdown menu.
+For each source material, you must set where to the texture will placed to.
+Please change X, Y, W, H to fit to where you want.
+Click `Generate Preview` to generate each texture and see preview.
+
+<img src="./.readme/merge-toon-lit-material.png" width="429">
+
 [vpm-repository]: https://vpm.anatawa12.com/vpm.json
 [github-latest]: https://github.com/anatawa12/AvatarOpitimizer/releases/latest
 [vcc-cli]: https://vcc.docs.vrchat.com/vpm/cli
 [vpm-resolver]: https://vcc.docs.vrchat.com/vpm/resolver
 [installer unitypackage]: https://github.com/anatawa12/AvatarOpitimizer/raw/master/.readme/installer.unitypackage
+[issues]: https://github.com/anatawa12/AvatarOpitimizer/issues/new
 [VPAI]: https://github.com/anatawa12/VPMPackageAutoInstaller
