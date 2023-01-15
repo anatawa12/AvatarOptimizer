@@ -9,13 +9,22 @@ namespace Anatawa12.AvatarOptimizer
     [InitializeOnLoad]
     internal static class ApplyOnPlay
     {
-        private const string MenuName = "Tools/Avatar Optimizer/Apply on Play";
-        private const string SettingName = "com.anatawa12.avatar-optimizer.apply-on-play";
+        private const string EnableMenuName = "Tools/Avatar Optimizer/Apply on Play";
+        private const string EnableSettingName = "com.anatawa12.avatar-optimizer.apply-on-play";
+
+        private const string GenerateMenuName = "Tools/Avatar Optimizer/Write to Asset on Play";
+        private const string GenerateSettingName = "com.anatawa12.avatar-optimizer.write-on-play";
 
         public static bool Enabled
         {
-            get => EditorPrefs.GetBool(SettingName, true);
-            set => EditorPrefs.SetBool(SettingName, value);
+            get => EditorPrefs.GetBool(EnableSettingName, true);
+            set => EditorPrefs.SetBool(EnableSettingName, value);
+        }
+
+        public static bool Generate
+        {
+            get => EditorPrefs.GetBool(GenerateSettingName, true);
+            set => EditorPrefs.SetBool(GenerateSettingName, value);
         }
 
         /**
@@ -32,7 +41,7 @@ namespace Anatawa12.AvatarOptimizer
         {
             EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
             RuntimeUtil.OnDemandProcessAvatar = MaybeProcessAvatar;
-            EditorApplication.delayCall += () => Menu.SetChecked(MenuName, Enabled);
+            EditorApplication.delayCall += () => Menu.SetChecked(EnableMenuName, Enabled);
         }
 
         private static void MaybeProcessAvatar(RuntimeUtil.OnDemandSource source, MonoBehaviour component)
@@ -41,15 +50,22 @@ namespace Anatawa12.AvatarOptimizer
             {
                 var avatar = RuntimeUtil.FindAvatarInParents(component.transform);
                 if (avatar == null) return;
-                OptimizerProcessor.ProcessObject(new OptimizerSession(avatar.gameObject, false));
+                OptimizerProcessor.ProcessObject(new OptimizerSession(avatar.gameObject, Generate));
             }
         }
 
-        [MenuItem(MenuName)]
+        [MenuItem(EnableMenuName)]
         private static void ToggleApplyOnPlay()
         {
             Enabled = !Enabled;
-            Menu.SetChecked(MenuName, Enabled);
+            Menu.SetChecked(EnableMenuName, Enabled);
+        }
+
+        [MenuItem(GenerateMenuName)]
+        private static void ToggleGenerateOnPlay()
+        {
+            Generate = !Generate;
+            Menu.SetChecked(GenerateMenuName, Generate);
         }
 
         private static void OnPlayModeStateChanged(PlayModeStateChange obj)
