@@ -198,7 +198,7 @@ For each source material, you must set where to the texture will placed to.
 Please change X, Y, W, H to fit to where you want.
 Click `Generate Preview` to generate each texture and see preview.
 
-<img src="./.readme/merge-toon-lit-material.png" width="429">
+<img src="./.readme/merge-toon-lit-material.png" width="430">
 
 [vpm-repository]: https://vpm.anatawa12.com/vpm.json
 [github-latest]: https://github.com/anatawa12/AvatarOpitimizer/releases/latest
