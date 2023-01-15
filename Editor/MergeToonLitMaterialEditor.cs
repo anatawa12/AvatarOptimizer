@@ -33,6 +33,7 @@ namespace Anatawa12.AvatarOptimizer
 
         private static void DrawList<T>(
             ref T[] array,
+            string addButton,
             Action<T, int> drawer,
             Func<T> newElement,
             bool noEmpty = false,
@@ -82,7 +83,7 @@ namespace Anatawa12.AvatarOptimizer
             }
 
             using (new EditorGUI.DisabledScope(newElement == null))
-                if (GUILayout.Button("Add Source"))
+                if (GUILayout.Button(addButton))
                 {
                     Debug.Assert(newElement != null, nameof(newElement) + " != null");
                     T element;
@@ -107,9 +108,9 @@ namespace Anatawa12.AvatarOptimizer
 
             var component = (MergeToonLitMaterial)target;
 
-            DrawList(ref component.merges, (componentMerge, i) =>
+            DrawList(ref component.merges, "Add Merged Material", (componentMerge, i) =>
                 {
-                    DrawList(ref componentMerge.source, (mergeSource, _2) =>
+                    DrawList(ref componentMerge.source, "Add Source", (mergeSource, _2) =>
                         {
                             var found = _materials.FirstOrDefault(x => x.index == mergeSource.materialIndex);
                             _candidateNames[0] = found.mat != null ? found.mat.name : "(invalid)";
