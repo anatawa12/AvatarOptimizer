@@ -6,11 +6,21 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.Assertions;
 using VRC.Dynamics;
+using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer
 {
     internal static class Utils
     {
+        private static CachedGuidLoader<Shader> _toonLitShader = "affc81f3d164d734d8f13053effb1c5c";
+        public static Shader ToonLitShader => _toonLitShader.Value;
+        
+        private static CachedGuidLoader<Shader> _mergeTextureHelper = "2d4f01f29e91494bb5eafd4c99153ab0";
+        public static Shader MergeTextureHelper => _mergeTextureHelper.Value;
+
+        private static CachedGuidLoader<Texture2D> _previewHereTex = "617775211fe634657ae06fc9f81b6ceb";
+        public static Texture2D PreviewHereTex => _previewHereTex.Value;
+
         public static ArraySerializedPropertyEnumerable AsEnumerable(this SerializedProperty property)
         {
             Assert.IsTrue(property.isArray);
@@ -59,6 +69,58 @@ namespace Anatawa12.AvatarOptimizer
                     head = head.Current.DirectChildrenEnumerable().GetEnumerator();
                 }
             }
+        }
+
+        // this is same as .Distinct().Count() however Optimized for int with range 0-X with BitArray
+        public static int DistinctCountIntWithUpperLimit(this IEnumerable<int> self, int upperLimit)
+        {
+            var exists = new BitArray(upperLimit);
+            var count = 0;
+            foreach (var i in self)
+            {
+                if (exists[i]) continue;
+                exists[i] = true;
+                count++;
+            }
+
+            return count;
+        }
+
+        public static int CountFalse(this BitArray self) => self.Count - self.CountTrue();
+
+        public static int CountTrue(this BitArray self)
+        {
+            var ints = new int[(self.Count >> 5) + 1];
+            self.CopyTo(ints, 0);
+            var count = 0;
+
+            // fix for not truncated bits in last integer that may have been set to true with SetAll()
+            ints[ints.Length - 1] &= ~(-1 << (self.Count % 32));
+
+            foreach (var t in ints)
+            {
+                uint c = (uint)t;
+
+                // magic (http://graphics.stanford.edu/~seander/bithacks.html#CountBitsSetParallel)
+                unchecked
+                {
+                    c = ((c >> 0) & 0xFFFFFFFF) - ((c >> 1) & 0x55555555);
+                    c = ((c >> 2) & 0x33333333) + (c & 0x33333333);
+                    c = ((c >> 4) + c) & 0x0F0F0F0F;
+                    c = ((c >> 8) + c) & 0x00FF00FF;
+                    c = ((c >> 16) + c) & 0x0000FFFF;
+                }
+
+                count += (int) c;
+            }
+
+            return count;
+        }
+
+        public static void FillArray<T>(T[] array, T value)
+        {
+            for (var i = 0; i < array.Length; i++)
+                array[i] = value;
         }
 
         public static Transform GetTarget(this VRCPhysBoneBase physBoneBase) =>
@@ -286,5 +348,27 @@ namespace Anatawa12.AvatarOptimizer
             public void Reset() => _index = -1;
             public void Dispose() {}
         }
+    }
+
+    internal struct CachedGuidLoader<T> where T : Object
+    {
+        private readonly string _guid;
+        private T _cached;
+
+        public CachedGuidLoader(string guid)
+        {
+            _guid = guid;
+            _cached = null;
+        }
+
+        public T Value =>
+            _cached
+                ? _cached
+                : _cached =
+                    AssetDatabase.LoadAssetAtPath<T>(
+                        AssetDatabase.GUIDToAssetPath(_guid));
+
+        public static implicit operator CachedGuidLoader<T>(string guid) =>
+            new CachedGuidLoader<T>(guid);
     }
 }

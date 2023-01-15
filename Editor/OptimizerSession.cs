@@ -43,6 +43,8 @@ namespace Anatawa12.AvatarOptimizer
         {
             if (obj)
             {
+                // already added to some asset
+                if (!string.IsNullOrEmpty(AssetDatabase.GetAssetPath(obj))) return obj;
                 _added.Add(obj);
                 if (_assetFileObject)
                     AssetDatabase.AddObjectToAsset(obj, _assetFileObject);
