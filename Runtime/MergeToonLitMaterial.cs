@@ -6,12 +6,12 @@ namespace Anatawa12.AvatarOptimizer
     [AddComponentMenu("Anatawa12/Merge Toon Lit Material")]
     internal class MergeToonLitMaterial : EditSkinnedMeshComponent
     {
-        public MergeInfo[] merges;
+        public MergeInfo[] merges = Array.Empty<MergeInfo>();
 
         [Serializable]
         internal class MergeInfo
         {
-            public MergeSource[] source;
+            public MergeSource[] source = Array.Empty<MergeSource>();
             // 2^x. 13 (2^13 = 8192) is upper limit.
             public Vector2Int textureSize = new Vector2Int(11, 11);
         }
