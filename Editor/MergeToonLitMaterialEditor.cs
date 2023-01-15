@@ -8,8 +8,8 @@ using Debug = System.Diagnostics.Debug;
 
 namespace Anatawa12.AvatarOptimizer
 {
-    [CustomEditor(typeof(MergeToonLitTexture))]
-    internal class MergeToonLitTextureEditor : Editor
+    [CustomEditor(typeof(MergeToonLitMaterial))]
+    internal class MergeToonLitMaterialEditor : Editor
     {
         private Material[] _upstreamMaterials;
         private (Material mat, int index)[] _materials;
@@ -19,15 +19,15 @@ namespace Anatawa12.AvatarOptimizer
 
         private Texture[] _generatedPreviews;
 
-        private readonly Func<MergeToonLitTexture.MergeSource> _createNewSource;
-        private readonly Func<MergeToonLitTexture.MergeInfo> _createNewMergeInfo;
+        private readonly Func<MergeToonLitMaterial.MergeSource> _createNewSource;
+        private readonly Func<MergeToonLitMaterial.MergeInfo> _createNewMergeInfo;
 
-        public MergeToonLitTextureEditor()
+        public MergeToonLitMaterialEditor()
         {
             // ReSharper disable once PossibleNullReferenceException
-            _createNewSource = () => new MergeToonLitTexture.MergeSource
+            _createNewSource = () => new MergeToonLitMaterial.MergeSource
                 { materialIndex = _candidateMaterials[0].index };
-            _createNewMergeInfo = () => new MergeToonLitTexture.MergeInfo 
+            _createNewMergeInfo = () => new MergeToonLitMaterial.MergeInfo 
                 { source = new [] {_createNewSource()} };
         }
 
@@ -105,7 +105,7 @@ namespace Anatawa12.AvatarOptimizer
 
             EditorGUI.BeginChangeCheck();
 
-            var component = (MergeToonLitTexture)target;
+            var component = (MergeToonLitMaterial)target;
 
             DrawList(ref component.merges, (componentMerge, i) =>
                 {
@@ -147,14 +147,14 @@ namespace Anatawa12.AvatarOptimizer
 
             if (GUILayout.Button("Generate Preview"))
             {
-                _generatedPreviews = MergeToonLitTextureProcessor.GenerateTextures(component, _upstreamMaterials);
+                _generatedPreviews = MergeToonLitMaterialProcessor.GenerateTextures(component, _upstreamMaterials);
             }            
         }
 
         private void OnChanged()
         {
             _generatedPreviews = null;
-            var component = (MergeToonLitTexture)target;
+            var component = (MergeToonLitMaterial)target;
             EditorUtility.SetDirty(component);
             var usedIndices = new HashSet<int>(component.merges.SelectMany(x => x.source.Select(y => y.materialIndex)));
             _candidateMaterials = _materials.Where(x => !usedIndices.Contains(x.index)).ToArray();
@@ -183,7 +183,7 @@ namespace Anatawa12.AvatarOptimizer
 
         private void OnEnable()
         {
-            var component = (MergeToonLitTexture)target;
+            var component = (MergeToonLitMaterial)target;
 
             // find materials with toonlit
             _upstreamMaterials = EditSkinnedMeshComponentUtil

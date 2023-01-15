@@ -3,7 +3,8 @@ using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer
 {
-    internal class MergeToonLitTexture : EditSkinnedMeshComponent
+    [AddComponentMenu("Anatawa12/Merge Toon Lit Material")]
+    internal class MergeToonLitMaterial : EditSkinnedMeshComponent
     {
         public MergeInfo[] merges;
 

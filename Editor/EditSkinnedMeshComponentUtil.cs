@@ -145,7 +145,7 @@ namespace Anatawa12.AvatarOptimizer
             {
                 [typeof(MergeSkinnedMesh)] = x => new MergeSkinnedMeshProcessor((MergeSkinnedMesh)x),
                 [typeof(FreezeBlendShape)] = x => new FreezeBlendShapeProcessor((FreezeBlendShape)x),
-                [typeof(MergeToonLitTexture)] = x => new MergeToonLitTextureProcessor((MergeToonLitTexture)x),
+                [typeof(MergeToonLitMaterial)] = x => new MergeToonLitMaterialProcessor((MergeToonLitMaterial)x),
             };
 
         private static IEditSkinnedMeshProcessor CreateProcessor(EditSkinnedMeshComponent mergePhysBone) =>

@@ -10,7 +10,7 @@ using UnityEngine.XR;
 
 namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 {
-    internal class MergeToonLitTextureProcessor : EditSkinnedMeshProcessor<MergeToonLitTexture>
+    internal class MergeToonLitMaterialProcessor : EditSkinnedMeshProcessor<MergeToonLitMaterial>
     {
         private static readonly int MainTexProp = Shader.PropertyToID("_MainTex");
         private static readonly int MainTexStProp = Shader.PropertyToID("_MainTex_ST");
@@ -21,7 +21,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         private static Material HelperMaterial =>
             _helperMaterial ? _helperMaterial : _helperMaterial = new Material(Utils.MergeTextureHelper);
 
-        public MergeToonLitTextureProcessor(MergeToonLitTexture component) : base(component)
+        public MergeToonLitMaterialProcessor(MergeToonLitMaterial component) : base(component)
         {
         }
 
@@ -307,12 +307,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             return mat;
         }
 
-        public static Texture[] GenerateTextures(MergeToonLitTexture config, Material[] materials)
+        public static Texture[] GenerateTextures(MergeToonLitMaterial config, Material[] materials)
         {
             return config.merges.Select(x => GenerateTexture(x, materials)).ToArray();
         }
 
-        private static Texture GenerateTexture(MergeToonLitTexture.MergeInfo mergeInfo, Material[] materials)
+        private static Texture GenerateTexture(MergeToonLitMaterial.MergeInfo mergeInfo, Material[] materials)
         {
             var texWidth = 1 << mergeInfo.textureSize.x;
             var texHeight = 1 << mergeInfo.textureSize.y;
@@ -351,9 +351,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         class MeshInfoComputer : AbstractMeshInfoComputer
         {
-            private readonly MergeToonLitTextureProcessor _processor;
+            private readonly MergeToonLitMaterialProcessor _processor;
 
-            public MeshInfoComputer(MergeToonLitTextureProcessor processor, IMeshInfoComputer upstream) : base(upstream)
+            public MeshInfoComputer(MergeToonLitMaterialProcessor processor, IMeshInfoComputer upstream) : base(upstream)
                 => _processor = processor;
 
             public override Material[] Materials(bool fast = true) => 
