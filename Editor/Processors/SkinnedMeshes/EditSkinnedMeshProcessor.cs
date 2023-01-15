@@ -40,7 +40,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
     internal interface IMeshInfoComputer
     {
         string[] BlendShapes();
-        Material[] Materials();
+        Material[] Materials(bool fast = true);
     }
 
     internal class AbstractMeshInfoComputer : IMeshInfoComputer
@@ -54,7 +54,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         public virtual string[] BlendShapes() => _upstream?.BlendShapes() ?? Array.Empty<string>();
 
-        public virtual Material[] Materials() => _upstream?.Materials() ?? Array.Empty<Material>();
+        public virtual Material[] Materials(bool fast = true) => _upstream?.Materials(fast) ?? Array.Empty<Material>();
     }
 
 
@@ -73,6 +73,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         public static Material[] Materials(SkinnedMeshRenderer renderer) => renderer.sharedMaterials;
 
         public string[] BlendShapes() => BlendShapes(_target);
-        public Material[] Materials() => Materials(_target);
+        public Material[] Materials(bool fast = true) => Materials(_target);
     }
 }

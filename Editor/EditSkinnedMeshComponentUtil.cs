@@ -39,12 +39,17 @@ namespace Anatawa12.AvatarOptimizer
             new Dictionary<SkinnedMeshRenderer, SkinnedMeshProcessors>();
 
         public static string[] GetBlendShapes(SkinnedMeshRenderer renderer) => GetBlendShapes(renderer, null);
+
         public static string[] GetBlendShapes(SkinnedMeshRenderer renderer, EditSkinnedMeshComponent before) =>
             GetProcessors(renderer)?.GetBlendShapes(before) ?? SourceMeshInfoComputer.BlendShapes(renderer);
 
         public static Material[] GetMaterials(SkinnedMeshRenderer renderer) => GetMaterials(renderer, null);
-        public static Material[] GetMaterials(SkinnedMeshRenderer renderer, EditSkinnedMeshComponent before) =>
-            GetProcessors(renderer)?.GetMaterials(before) ?? SourceMeshInfoComputer.Materials(renderer);
+
+        // Rider's problem, to call GetMaterials(renderer, fast: false)
+        // ReSharper disable once MethodOverloadWithOptionalParameter
+        public static Material[] GetMaterials(SkinnedMeshRenderer renderer, EditSkinnedMeshComponent before = null,
+            bool fast = true) =>
+            GetProcessors(renderer)?.GetMaterials(before, fast) ?? SourceMeshInfoComputer.Materials(renderer);
 
         [CanBeNull]
         private static SkinnedMeshProcessors GetProcessors(SkinnedMeshRenderer target)
@@ -53,10 +58,11 @@ namespace Anatawa12.AvatarOptimizer
             return processors;
         }
 
-        public static IEnumerable<List<IEditSkinnedMeshProcessor>> GetSortedProcessors(IEnumerable<SkinnedMeshRenderer> targets)
+        public static IEnumerable<List<IEditSkinnedMeshProcessor>> GetSortedProcessors(
+            IEnumerable<SkinnedMeshRenderer> targets)
         {
             var processors = new LinkedList<SkinnedMeshProcessors>(targets.Select(GetProcessors).Where(x => x != null));
-            
+
             var proceed = new HashSet<SkinnedMeshRenderer>();
             while (processors.Count != 0)
             {
@@ -129,7 +135,9 @@ namespace Anatawa12.AvatarOptimizer
                 : GetComputers()[_sorted.FindIndex(x => x.Component == before)];
 
             public string[] GetBlendShapes(EditSkinnedMeshComponent before = null) => GetComputer(before).BlendShapes();
-            public Material[] GetMaterials(EditSkinnedMeshComponent before = null) => GetComputer(before).Materials();
+
+            public Material[] GetMaterials(EditSkinnedMeshComponent before = null, bool fast = true) =>
+                GetComputer(before).Materials(fast);
         }
 
         private static readonly Dictionary<Type, Func<EditSkinnedMeshComponent, IEditSkinnedMeshProcessor>> Creators =
@@ -137,6 +145,7 @@ namespace Anatawa12.AvatarOptimizer
             {
                 [typeof(MergeSkinnedMesh)] = x => new MergeSkinnedMeshProcessor((MergeSkinnedMesh)x),
                 [typeof(FreezeBlendShape)] = x => new FreezeBlendShapeProcessor((FreezeBlendShape)x),
+                [typeof(MergeToonLitTexture)] = x => new MergeToonLitTextureProcessor((MergeToonLitTexture)x),
             };
 
         private static IEditSkinnedMeshProcessor CreateProcessor(EditSkinnedMeshComponent mergePhysBone) =>

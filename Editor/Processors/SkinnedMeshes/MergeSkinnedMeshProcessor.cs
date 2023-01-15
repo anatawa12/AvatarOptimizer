@@ -326,7 +326,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     .Distinct()
                     .ToArray();
 
-            public Material[] Materials() =>
+            public Material[] Materials(bool fast = true) =>
                 _processor.Component.merges
                     .Select(x => x.target)
                     .Concat(
