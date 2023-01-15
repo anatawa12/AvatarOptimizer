@@ -6,9 +6,9 @@ Avatar Optimizer
 [![GitHub deployments][shields-deployment-vpm]][vpm-repository]
 [![VPM release][shields-vpm]][vpm-repository]
 
-[shields-latest-release]: https://img.shields.io/github/v/release/anatawa12/AvatarOpitimizer?display_name=tag&sort=semver
-[shields-deployment-vpm]: https://img.shields.io/github/deployments/anatawa12/AvatarOpitimizer/vpm.anatawa12.com?label=VPM%20Deployment
-[shields-deployment-master]: https://img.shields.io/github/deployments/anatawa12/AvatarOpitimizer/master%20branch?label=Deployment
+[shields-latest-release]: https://img.shields.io/github/v/release/anatawa12/AvatarOptimizer?display_name=tag&sort=semver
+[shields-deployment-vpm]: https://img.shields.io/github/deployments/anatawa12/AvatarOptimizer/vpm.anatawa12.com?label=VPM%20Deployment
+[shields-deployment-master]: https://img.shields.io/github/deployments/anatawa12/AvatarOptimizer/master%20branch?label=Deployment
 [shields-vpm]: https://img.shields.io/vpm/v/com.anatawa12.avatar-optimizer?repository_url=https%3A%2F%2Fvpm.anatawa12.com%2Fvpm.json
 
 Set of Anatawa12's Small Avatar Optimization Utilities.
@@ -201,9 +201,9 @@ Click `Generate Preview` to generate each texture and see preview.
 <img src="./.readme/merge-toon-lit-material.png" width="430">
 
 [vpm-repository]: https://vpm.anatawa12.com/vpm.json
-[github-latest]: https://github.com/anatawa12/AvatarOpitimizer/releases/latest
+[github-latest]: https://github.com/anatawa12/AvatarOptimizer/releases/latest
 [vcc-cli]: https://vcc.docs.vrchat.com/vpm/cli
 [vpm-resolver]: https://vcc.docs.vrchat.com/vpm/resolver
-[installer unitypackage]: https://github.com/anatawa12/AvatarOpitimizer/raw/master/.readme/installer.unitypackage
-[issues]: https://github.com/anatawa12/AvatarOpitimizer/issues/new
+[installer unitypackage]: https://github.com/anatawa12/AvatarOptimizer/raw/master/.readme/installer.unitypackage
+[issues]: https://github.com/anatawa12/AvatarOptimizer/issues/new
 [VPAI]: https://github.com/anatawa12/VPMPackageAutoInstaller
