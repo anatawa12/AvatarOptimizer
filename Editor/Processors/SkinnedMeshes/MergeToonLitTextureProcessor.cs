@@ -15,7 +15,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         private static readonly int MainTexProp = Shader.PropertyToID("_MainTex");
         private static readonly int MainTexStProp = Shader.PropertyToID("_MainTex_ST");
         private static readonly int RectProp = Shader.PropertyToID("_Rect");
-        private static readonly Material HelperMaterial = new Material(Utils.MergeTextureHelper);
+
+        private static Material _helperMaterial;
+
+        private static Material HelperMaterial =>
+            _helperMaterial ? _helperMaterial : _helperMaterial = new Material(Utils.MergeTextureHelper);
 
         public MergeToonLitTextureProcessor(MergeToonLitTexture component) : base(component)
         {
