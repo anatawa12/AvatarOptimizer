@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer
 {
-    [AddComponentMenu("Anatawa12/Merge Skinned Mesh")]
+    [AddComponentMenu("Optimizer/Merge Skinned Mesh")]
     [RequireComponent(typeof(SkinnedMeshRenderer))]
     [DisallowMultipleComponent]
     public class MergeSkinnedMesh : EditSkinnedMeshComponent

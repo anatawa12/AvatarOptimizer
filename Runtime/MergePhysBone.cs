@@ -8,7 +8,7 @@ using VRC.SDK3.Dynamics.PhysBone.Components;
 
 namespace Anatawa12.AvatarOptimizer
 {
-    [AddComponentMenu("Anatawa12/Merge PhysBone")]
+    [AddComponentMenu("Optimizer/Merge PhysBone")]
     [RequireComponent(typeof(VRCPhysBone))]
     [DisallowMultipleComponent]
     [ExecuteInEditMode]

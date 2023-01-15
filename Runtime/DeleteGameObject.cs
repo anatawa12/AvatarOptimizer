@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer
 {
-    [AddComponentMenu("Anatawa12/Delete Game Object")]
+    [AddComponentMenu("Optimizer/Delete Game Object")]
     [DisallowMultipleComponent]
     public class DeleteGameObject : AvatarTagComponent
     {
