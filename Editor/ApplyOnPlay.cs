@@ -23,7 +23,7 @@ namespace Anatawa12.AvatarOptimizer
 
         public static bool Generate
         {
-            get => EditorPrefs.GetBool(GenerateSettingName, true);
+            get => EditorPrefs.GetBool(GenerateSettingName, false);
             set => EditorPrefs.SetBool(GenerateSettingName, value);
         }
 
