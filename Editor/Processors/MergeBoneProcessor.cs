@@ -33,7 +33,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
             foreach (var renderer in session.GetComponents<SkinnedMeshRenderer>())
             {
                 if (renderer.bones.Any(mergeMapping.ContainsKey))
-                    DoBoneMap(renderer, mergeMapping);
+                    DoBoneMap(session, renderer, mergeMapping);
             }
 
             foreach (var pair in mergeMapping)
@@ -47,9 +47,10 @@ namespace Anatawa12.AvatarOptimizer.Processors
             }
         }
 
-        private void DoBoneMap(SkinnedMeshRenderer renderer, Dictionary<Transform,Transform> mergeMapping)
+        private void DoBoneMap(OptimizerSession session, SkinnedMeshRenderer renderer, 
+            Dictionary<Transform, Transform> mergeMapping)
         {
-            var mesh = Object.Instantiate(renderer.sharedMesh);
+            var mesh = session.MayInstantiate(renderer.sharedMesh);
 
             var oldBones = renderer.bones;
             var oldBindposes = mesh.bindposes;
@@ -134,8 +135,10 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 if (oldWeights[destI].boneIndex == oldWeights[srcI].boneIndex)
                     oldWeights[destI].weight += oldWeights[srcI].weight;
                 else
-                    oldWeights[destI++] = oldWeights[srcI];
+                    oldWeights[++destI] = oldWeights[srcI];
             }
+
+            destI++;
 
             var newWeights = oldWeights.Slice(0, destI);
 
