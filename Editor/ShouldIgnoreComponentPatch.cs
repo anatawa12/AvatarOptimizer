@@ -1,3 +1,4 @@
+#if false // disable
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
@@ -37,3 +38,4 @@ namespace Anatawa12.AvatarOptimizer
         }
     }
 }
+#endif
