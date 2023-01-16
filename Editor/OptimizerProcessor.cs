@@ -59,6 +59,8 @@ namespace Anatawa12.AvatarOptimizer
 
             new Processors.ApplyObjectMapping().Apply(session);
             new Processors.ApplyDestroy().Apply(session);
+
+            session.MarkDirtyAll();
         }
     }
 }

@@ -54,5 +54,11 @@ namespace Anatawa12.AvatarOptimizer
 
         public T MayInstantiate<T>(T obj) where T : Object =>
             _added.Contains(obj) ? obj : AddToAsset(Object.Instantiate(obj));
+
+        public void MarkDirtyAll()
+        {
+            foreach (var o in _added)
+                EditorUtility.SetDirty(o);
+        }
     }
 }
