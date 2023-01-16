@@ -112,6 +112,8 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 newBonesPerVertex[vertexIndex] = (byte)newWeights.Length;
             }
 
+            newAllWeights = Utils.SliceNativeArray(newAllWeights, newWeightIndex, Allocator.Temp);
+
             // set to mesh
             mesh.bindposes = newBindposes;
             mesh.SetBoneWeights(newBonesPerVertex, newAllWeights);

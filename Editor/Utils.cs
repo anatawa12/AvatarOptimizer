@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using Unity.Collections;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Assertions;
@@ -249,6 +250,14 @@ namespace Anatawa12.AvatarOptimizer
 
         public static ZipWithNextEnumerable<T> ZipWithNext<T>(this IEnumerable<T> enumerable) =>
             new ZipWithNextEnumerable<T>(enumerable);
+
+        public static NativeArray<T> SliceNativeArray<T>(NativeArray<T> source, int length, Allocator allocator)
+            where T : unmanaged
+        {
+            var res = new NativeArray<T>(length, allocator);
+            source.AsReadOnlySpan().Slice(0, length).CopyTo(res.AsSpan());
+            return res;
+        }
     }
 
     internal struct ArraySerializedPropertyEnumerable : IEnumerable<SerializedProperty>
