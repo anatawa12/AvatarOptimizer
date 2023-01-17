@@ -14,6 +14,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
         public void Apply(OptimizerSession session)
         {
             var mapping = session.GetMapping();
+            mapping.FlattenMapping();
 
             // replace all objects
             foreach (var component in session.GetComponents<Component>())

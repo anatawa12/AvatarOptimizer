@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Unity.Collections;
 using UnityEditor;
 using UnityEngine;
@@ -33,6 +34,17 @@ namespace Anatawa12.AvatarOptimizer
 
         public static TransformDirectChildrenEnumerable DirectChildrenEnumerable(this Transform transform) =>
             new TransformDirectChildrenEnumerable(transform);
+
+        public static void FlattenMapping<T>(this Dictionary<T, T> self)
+        {
+            foreach (var key in self.Keys.ToArray())
+            {
+                var value = self[key];
+                while (self.TryGetValue(value, out var mapped))
+                    value = mapped;
+                self[key] = value;
+            }
+        }
 
         public static string RelativePath(Transform root, Transform child)
         {

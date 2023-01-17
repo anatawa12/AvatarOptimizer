@@ -22,13 +22,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
             }
 
             // normalize map
-            foreach (var key in mergeMapping.Keys.ToArray())
-            {
-                var value = mergeMapping[key];
-                while (mergeMapping.TryGetValue(value, out var mapped))
-                    value = mapped;
-                mergeMapping[key] = value;
-            }
+            mergeMapping.FlattenMapping();
 
             foreach (var renderer in session.GetComponents<SkinnedMeshRenderer>())
             {
