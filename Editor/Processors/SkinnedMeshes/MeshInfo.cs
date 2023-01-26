@@ -38,6 +38,17 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         public readonly Matrix4x4[] bindposes;
 
         public readonly Transform[] bones;
+
+        public int uvCount =>
+            uv8 != null ? 8 :
+            uv7 != null ? 7 :
+            uv6 != null ? 6 :
+            uv5 != null ? 5 :
+            uv4 != null ? 4 :
+            uv3 != null ? 3 :
+            uv2 != null ? 2 :
+            uv != null ? 1 : 
+            0;
         // ReSharper restore InconsistentNaming
 
         public MeshInfo(
@@ -179,6 +190,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         public void WriteToMesh(Mesh destMesh)
         {
+            destMesh.Clear();
             destMesh.vertices = vertices;
             destMesh.normals = normals;
             destMesh.tangents = tangents;
@@ -194,7 +206,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             destMesh.triangles = Triangles;
             destMesh.bindposes = bindposes;
             destMesh.triangles = Triangles;
-            destMesh.SetBoneWeights(BonesPerVertex, AllBoneWeights);
+            if (AllBoneWeights.Length != 0)
+                destMesh.SetBoneWeights(BonesPerVertex, AllBoneWeights);
 
             destMesh.ClearBlendShapes();
             foreach (var (name, (vertice, normal, tangent, _)) in BlendShapes)
