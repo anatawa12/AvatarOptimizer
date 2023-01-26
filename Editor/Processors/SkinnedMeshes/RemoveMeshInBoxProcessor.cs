@@ -105,6 +105,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             var mesh = session.MayInstantiate(Target.sharedMesh);
             destMesh.WriteToMesh(mesh);
             Target.sharedMesh = mesh;
+
+            session.Destroy(Component);
         }
 
         private BitArray ComputeInBoxVertices(Vector3[] vertices)

@@ -40,7 +40,7 @@ namespace Anatawa12.AvatarOptimizer
             foreach (var key in self.Keys.ToArray())
             {
                 var value = self[key];
-                while (self.TryGetValue(value, out var mapped))
+                while (value != null && self.TryGetValue(value, out var mapped))
                     value = mapped;
                 self[key] = value;
             }
