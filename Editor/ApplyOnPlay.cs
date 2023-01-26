@@ -42,6 +42,7 @@ namespace Anatawa12.AvatarOptimizer
             EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
             RuntimeUtil.OnDemandProcessAvatar = MaybeProcessAvatar;
             EditorApplication.delayCall += () => Menu.SetChecked(EnableMenuName, Enabled);
+            EditorApplication.delayCall += () => Menu.SetChecked(GenerateMenuName, Generate);
         }
 
         private static void MaybeProcessAvatar(RuntimeUtil.OnDemandSource source, MonoBehaviour component)
