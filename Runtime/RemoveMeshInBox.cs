@@ -15,7 +15,6 @@ namespace Anatawa12.AvatarOptimizer
         {
             public Vector3 center;
             public Vector3 size = new Vector3(1, 1, 1);
-            [EulerQuaternion]
             public Quaternion rotation = Quaternion.identity;
 
             public bool ContainsVertex(Vector3 point)
