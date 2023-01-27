@@ -1,12 +1,6 @@
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
-using Unity.Collections;
 using UnityEngine;
-using UnityEngine.Assertions;
-using UnityEngine.Rendering;
-using UnityEngine.XR;
 
 namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 {
@@ -27,249 +21,68 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         public override int ProcessOrder => -10000;
 
-        private struct Vertex
+        public override void Process(OptimizerSession session, MeshInfo2 target)
         {
-            // ReSharper disable InconsistentNaming
-            public readonly Vector3 position;
-            public readonly Vector3 normals;
-            public readonly Vector4 tangents;
-            public readonly Vector2 uv; // UV is required
-            public readonly Color32 colors32;
-            public readonly NativeSlice<BoneWeight1> BoneWeights;
-            public readonly SubMeshDescriptor[] SubMeshes;
-            public readonly (string name, (Vector3 vertices, Vector3 normals, Vector3 tangents))[] BlendShapes;
-            // ReSharper restore InconsistentNaming
-        }
+            // compute usages. AdditionalTemporal is usage count for now.
+            // if #usages is not zero for merging triangles
+            foreach (var v in target.Vertices) v.AdditionalTemporal = 0;
 
+            foreach (var targetSubMesh in target.SubMeshes)
+            foreach (var v in targetSubMesh.Triangles)
+                v.AdditionalTemporal++;
 
-        public override void Process(OptimizerSession session)
-        {
-            // get source info for computing vertex mapping
-            var srcMesh = new MeshInfo(Target);
-            var mergingIndices = new BitArray(srcMesh.SubMeshes.Length);
-            foreach (var mergeInfo in Component.merges)
-            foreach (var source in mergeInfo.source)
-                mergingIndices[source.materialIndex] = true;
+            // compute per-material data
+            var mergingIndices = ComputeMergingIndices();
+            var targetRectForMaterial = new Rect[target.SubMeshes.Length];
+            foreach (var componentMerge in Component.merges)
+            foreach (var mergeSource in componentMerge.source)
+                targetRectForMaterial[mergeSource.materialIndex] = mergeSource.targetRect;
 
-            var boneWeightsPerVertex = new NativeSlice<BoneWeight1>[srcMesh.vertices.Length];
+            // map UVs
+            for (var subMeshI = 0; subMeshI < target.SubMeshes.Length; subMeshI++)
             {
-                var weightBase = 0;
-                for (var i = 0; i < srcMesh.BonesPerVertex.Length; i++)
+                if (mergingIndices[subMeshI])
                 {
-                    int bones = srcMesh.BonesPerVertex[i];
-                    boneWeightsPerVertex[i] = srcMesh.AllBoneWeights.Slice(weightBase, bones);
-                    weightBase += bones;
+                    // the material is for merge.
+                    var subMesh = target.SubMeshes[subMeshI];
+                    var targetRect = targetRectForMaterial[subMeshI];
+                    for (var i = 0; i < subMesh.Triangles.Count; i++)
+                    {
+                        if (subMesh.Triangles[i].AdditionalTemporal != 1)
+                        {
+                            // if there are multiple users for the vertex: duplicate it
+                            var cloned = subMesh.Triangles[i].Clone();
+                            target.Vertices.Add(cloned);
+                            subMesh.Triangles[i] = cloned;
+
+                            subMesh.Triangles[i].AdditionalTemporal--;
+                            cloned.AdditionalTemporal = 1;
+                        }
+
+                        subMesh.Triangles[i].TexCoord0 = MapUV(subMesh.Triangles[i].TexCoord0, targetRect);
+                    }
                 }
             }
 
-            var (destTriangles, destSubMeshes, destSourceVertexIndexMap, destSourceRects) =
-                ComputeVertexMapping(mergingIndices, srcMesh);
-
-            var destMesh = new MeshInfo(
-                bounds: srcMesh.Bounds,
-                trianglesCount: destTriangles.Length,
-                vertexCount: destSourceVertexIndexMap.Length,
-                uvCount: 1, // ToonLit will recognize one UV
-                withColors: srcMesh.colors32 != null && srcMesh.colors32.Length == 0,
-                subMeshCount: destSubMeshes.Length,
-                bonesCount: srcMesh.bones.Length,
-                blendShapes: srcMesh.BlendShapes.Select(x => (x.name, x.Item2.weight)).ToArray()
-            );
-
-            var weightsList = new List<BoneWeight1>();
-
-            Array.Copy(destTriangles, destMesh.Triangles, destTriangles.Length);
-            Array.Copy(destSubMeshes, destMesh.SubMeshes, destSubMeshes.Length);
-
-            for (var i = 0; i < destSourceVertexIndexMap.Length; i++)
-            {
-                var sourceIndex = destSourceVertexIndexMap[i];
-
-                destMesh.vertices[i] = srcMesh.vertices[sourceIndex];
-                destMesh.normals[i] = srcMesh.normals[sourceIndex];
-                destMesh.tangents[i] = srcMesh.tangents[sourceIndex];
-                destMesh.uv[i] = MapUV(srcMesh.uv[sourceIndex], destSourceRects[i]);
-
-                var boneWeights = boneWeightsPerVertex[sourceIndex];
-                weightsList.AddRange(boneWeights);
-                destMesh.BonesPerVertex[i] = (byte)boneWeights.Length;
-
-                // ReSharper disable once PossibleNullReferenceException
-                if (destMesh.colors32 != null)
-                    destMesh.colors32[i] = srcMesh.colors32[sourceIndex];
-                for (var j = 0; j < destMesh.BlendShapes.Length; j++)
-                {
-                    destMesh.BlendShapes[j].Item2.vertices[i] = srcMesh.BlendShapes[j].Item2.vertices[sourceIndex];
-                    destMesh.BlendShapes[j].Item2.normals[i] = srcMesh.BlendShapes[j].Item2.normals[sourceIndex];
-                    destMesh.BlendShapes[j].Item2.tangents[i] = srcMesh.BlendShapes[j].Item2.tangents[sourceIndex];
-                }
-            }
-
-            destMesh.AllBoneWeights = new NativeArray<BoneWeight1>(weightsList.Count, Allocator.Temp,
-                // will be initialized via copy
-                NativeArrayOptions.UninitializedMemory);
-            for (var i = 0; i < weightsList.Count; i++)
-                destMesh.AllBoneWeights[i] = weightsList[i];
-
-            // copy weight
-            for (var j = 0; j < destMesh.BlendShapes.Length; j++)
-                destMesh.BlendShapes[j].Item2.weight = srcMesh.BlendShapes[j].Item2.weight;
-
-            Array.Copy(srcMesh.bindposes, destMesh.bindposes, destMesh.bindposes.Length);
-            Array.Copy(srcMesh.bones, destMesh.bones, destMesh.bindposes.Length);
-
-            var mesh = session.MayInstantiate(Target.sharedMesh);
-            destMesh.WriteToMesh(mesh);
-            Target.sharedMesh = mesh;
-
-            Target.sharedMaterials = CreateMaterials(mergingIndices, Target.sharedMaterials, fast: false);
-            foreach (var targetSharedMaterial in Target.sharedMaterials)
+            // merge submeshes
+            var copied = target.SubMeshes.Where((_, i) => !mergingIndices[i]);
+            var merged = Component.merges.Select(x => new SubMesh(
+                x.source.SelectMany(src => target.SubMeshes[src.materialIndex].Triangles).ToList()));
+            target.SubMeshes = copied.Concat(merged).ToArray();
+            
+            target.SharedMaterials = CreateMaterials(mergingIndices, target.SharedMaterials, fast: false);
+            foreach (var targetSharedMaterial in target.SharedMaterials)
             {
                 session.AddToAsset(targetSharedMaterial);
                 session.AddToAsset(targetSharedMaterial.GetTexture(MainTexProp));
             }
         }
 
+        public override void Process(OptimizerSession session) => ProcessWithNew(session);
+
         private Vector2 MapUV(Vector2 vector2, Rect destSourceRect) =>
             vector2 * new Vector2(destSourceRect.width, destSourceRect.height) 
             + new Vector2(destSourceRect.x, destSourceRect.y);
-
-        /// <summary>
-        /// This method computes
-        /// <list type="bullet">
-        /// <item>dest -> source vertex index & rect mapping</item>
-        /// <item>triangles & SubMeshDescriptors</item>
-        /// </list>
-        /// </summary>
-        /// <param name="mergingIndices"></param>
-        /// <param name="mesh"></param>
-        (int[] destTriangles, SubMeshDescriptor[] destSubMeshes, int[] destSourceVertexIndexMap, Rect[] destSourceRects) 
-            ComputeVertexMapping(BitArray mergingIndices, MeshInfo mesh)
-        {
-            var verticesOfUnchangedSubMeshes = mesh.SubMeshes
-                .Where((_, i) => !mergingIndices[i])
-                .SelectMany(x => Enumerable.Range(x.indexStart, x.indexCount).Select(i => mesh.Triangles[i]))
-                .DistinctCountIntWithUpperLimit(mesh.vertices.Length);
-            var verticesOfChangedSubMeshes = mesh.SubMeshes
-                .Where((_, i) => mergingIndices[i])
-                .Sum(x => Enumerable.Range(x.indexStart, x.indexCount).Select(i => mesh.Triangles[i])
-                    .DistinctCountIntWithUpperLimit(mesh.vertices.Length));
-            var totalVertexCount = verticesOfUnchangedSubMeshes + verticesOfChangedSubMeshes;
-
-            var totalTriangleCount = mesh.SubMeshes.Sum(x => x.indexCount);
-            var destTriangles = new int[totalTriangleCount];
-            var totalSubMeshesCount = mergingIndices.CountFalse() + Component.merges.Length;
-            var destSubMeshes = new SubMeshDescriptor[totalSubMeshesCount];
-
-            var destSourceVertexIndexMap = new int[totalVertexCount];
-            var destSourceRects = new Rect[totalVertexCount];
-            
-            // instance of int[] is shared but must be reset as you use
-            var sourceDestVertexIndexMap = new int[mesh.vertices.Length];
-
-            var nextVertexIndex = 0;
-            var nextTriangleIndex = 0;
-            var nextSubMeshIndex = 0;
-            {
-                // process unchanged sub-meshes
-
-                // share vertices between sub-meshes because destSourceRect is same
-                Utils.FillArray(sourceDestVertexIndexMap, -1);
-
-                for (var i = 0; i < mesh.SubMeshes.Length; i++)
-                {
-                    if (mergingIndices[i]) continue;
-                    var sourceSubMesh = mesh.SubMeshes[i];
-
-                    var start = nextTriangleIndex;
-
-                    AppendToDestTriangles(
-                        sourceSubMesh: sourceSubMesh,
-                        destSourceRect: new Rect(0, 0, 1, 1),
-                        sourceTriangles: mesh.Triangles,
-                        sourceDestVertexIndexMap: sourceDestVertexIndexMap,
-                        destSourceVertexIndexMap: destSourceVertexIndexMap,
-                        destSourceRects: destSourceRects,
-                        nextTriangleIndex: ref nextTriangleIndex,
-                        nextVertexIndex: ref nextVertexIndex,
-                        destTriangles: destTriangles
-                    );
-
-                    destSubMeshes[nextSubMeshIndex++] = new SubMeshDescriptor(start, sourceSubMesh.indexCount);
-                }
-
-                Assert.AreEqual(mergingIndices.CountFalse(), nextSubMeshIndex);
-                Assert.AreEqual(verticesOfUnchangedSubMeshes, nextVertexIndex);
-            }
-
-            // process merged
-            foreach (var mergeInfo in Component.merges)
-            {
-                var indexStart = nextTriangleIndex;
-
-                foreach (var source in mergeInfo.source)
-                {
-                    // do not share between source sub-meshes because destSourceRect can be changed.
-                    Utils.FillArray(sourceDestVertexIndexMap, -1);
-                    AppendToDestTriangles(
-                        sourceSubMesh: mesh.SubMeshes[source.materialIndex],
-                        destSourceRect: source.targetRect,
-                        sourceTriangles: mesh.Triangles,
-                        sourceDestVertexIndexMap: sourceDestVertexIndexMap,
-                        destSourceVertexIndexMap: destSourceVertexIndexMap,
-                        destSourceRects: destSourceRects,
-                        nextTriangleIndex: ref nextTriangleIndex,
-                        nextVertexIndex: ref nextVertexIndex,
-                        destTriangles: destTriangles
-                    );
-                }
-
-                destSubMeshes[nextSubMeshIndex++] = new SubMeshDescriptor(indexStart, nextTriangleIndex - indexStart);
-            }
-
-            // check all elements are filled
-            Assert.AreEqual(totalSubMeshesCount, nextSubMeshIndex);
-            Assert.AreEqual(totalVertexCount, nextVertexIndex);
-
-            return (destTriangles, destSubMeshes, destSourceVertexIndexMap, destSourceRects);
-        }
-
-        void AppendToDestTriangles(
-            in SubMeshDescriptor sourceSubMesh,
-            Rect destSourceRect,
-            // source info
-            int[] sourceTriangles,
-            // maps
-            int[] sourceDestVertexIndexMap,
-            int[] destSourceVertexIndexMap,
-            Rect[] destSourceRects,
-            // dest info
-            ref int nextTriangleIndex,
-            ref int nextVertexIndex,
-            int[] destTriangles
-        )
-        {
-            Assert.AreEqual(MeshTopology.Triangles, sourceSubMesh.topology);
-
-            var start = nextTriangleIndex;
-
-            for (var j = 0; j < sourceSubMesh.indexCount; j++)
-            {
-                var vertexIndex = sourceTriangles[sourceSubMesh.indexStart + j];
-                var destVertexIndex = sourceDestVertexIndexMap[vertexIndex];
-                if (destVertexIndex == -1)
-                {
-                    destVertexIndex = nextVertexIndex++;
-                    sourceDestVertexIndexMap[vertexIndex] = destVertexIndex;
-                    destSourceVertexIndexMap[destVertexIndex] = vertexIndex;
-                    destSourceRects[destVertexIndex] = destSourceRect;
-                }
-
-                destTriangles[nextTriangleIndex++] = destVertexIndex;
-            }
-
-            Assert.AreEqual(start + sourceSubMesh.indexCount, nextTriangleIndex);
-        }
 
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////
