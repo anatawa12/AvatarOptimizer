@@ -2,11 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Unity.Collections;
 using UnityEngine;
-using UnityEngine.Assertions;
-using UnityEngine.Rendering;
-using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 {
@@ -18,56 +14,47 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         public override int ProcessOrder => -10000;
 
-        public override void Process(OptimizerSession session)
+        public override void Process(OptimizerSession session) => ProcessWithNew(session);
+
+        public override void Process(OptimizerSession session, MeshInfo2 target)
         {
-            var freezes = new HashSet<string>(Component.shapeKeys);
-            var mesh = session.MayInstantiate(Target.sharedMesh);
-            var vertices = mesh.vertices;
-            var normals = mesh.normals;
-            var tangents = mesh.tangents;
-            var verticesCount = mesh.vertices.Length;
-            var blendShapes = new (string, Vector3[], Vector3[], Vector3[], float)[mesh.blendShapeCount];
-            for (var i = 0; i < mesh.blendShapeCount; i++)
-            {
-                Assert.AreEqual(1, mesh.GetBlendShapeFrameCount(i));
-                Assert.AreEqual(100.0f, mesh.GetBlendShapeFrameWeight(i, 0));
-                var deltaVertices = new Vector3[verticesCount];
-                var deltaNormals = new Vector3[verticesCount];
-                var deltaTangents = new Vector3[verticesCount];
-                mesh.GetBlendShapeFrameVertices(i, 0, deltaVertices, deltaNormals, deltaTangents);
-                var shapeName = mesh.GetBlendShapeName(i);
-                var weight = Target.GetBlendShapeWeight(i);
-                blendShapes[i] = (shapeName, deltaVertices, deltaNormals, deltaTangents, weight);
-            }
+            var freezeNames = new HashSet<string>(Component.shapeKeys);
+            var freezes = new BitArray(target.BlendShapes.Length);
+            for (var i = 0; i < target.BlendShapes.Length; i++)
+                freezes[i] = freezeNames.Contains(target.BlendShapes[i].name);
 
-            mesh.ClearBlendShapes();
-            Target.sharedMesh = mesh;
-
-            for (int i = 0, j = 0; i < blendShapes.Length; i++)
+            foreach (var vertex in target.Vertices)
             {
-                var (shapeName, deltaVertices, deltaNormals, deltaTangents, weight) = blendShapes[i];
-                if (freezes.Contains(shapeName))
+                int srcI = 0, dstI = 0;
+                for (; srcI < vertex.BlendShapes.Length; srcI++)
                 {
-                    var weightZeroOne = weight / 100f;
-                    for (var k = 0; k < verticesCount; k++)
+                    if (freezes[srcI])
                     {
-                        vertices[k] += deltaVertices[k] * weightZeroOne;
-                        normals[k] += deltaNormals[k] * weightZeroOne;
-                        var t = (Vector3)tangents[k] + deltaTangents[k] * weightZeroOne;
-                        tangents[k] = new Vector4(t.x, t.y, t.z, tangents[k].w);
+                        vertex.Position += vertex.BlendShapes[srcI].position * target.BlendShapes[srcI].weight;
+                        vertex.Normal += vertex.BlendShapes[srcI].normal * target.BlendShapes[srcI].weight;
+                        var tangent = (Vector3)vertex.Tangent + vertex.BlendShapes[srcI].tangent * target.BlendShapes[srcI].weight;
+                        vertex.Tangent = new Vector4(tangent.x, tangent.y, tangent.z, vertex.Tangent.w);
+                    }
+                    else
+                    {
+                        vertex.BlendShapes[dstI++] = vertex.BlendShapes[srcI];
                     }
                 }
-                else
-                {
-                    mesh.AddBlendShapeFrame(shapeName, 100.0f, deltaVertices, deltaNormals, deltaTangents);
-                    Target.SetBlendShapeWeight(j++, weight);
-                }
-            }
-            mesh.vertices = vertices;
-            mesh.normals = normals;
-            mesh.tangents = tangents;
 
-            session.Destroy(Component);
+                vertex.BlendShapes = vertex.BlendShapes.AsSpan().Slice(0, dstI).ToArray();
+            }
+
+            {
+                int srcI = 0, dstI = 0;
+                for (; srcI < target.BlendShapes.Length; srcI++)
+                {
+                    if (!freezes[srcI])
+                    {
+                        target.BlendShapes[dstI++] = target.BlendShapes[srcI];
+                    }
+                }
+                target.BlendShapes = target.BlendShapes.AsSpan().Slice(0, dstI).ToArray();
+            }
         }
 
         public override IMeshInfoComputer GetComputer(IMeshInfoComputer upstream) => new MeshInfoComputer(this, upstream);
