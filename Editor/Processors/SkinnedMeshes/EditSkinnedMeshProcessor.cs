@@ -12,6 +12,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         public abstract int ProcessOrder { get; }
         public IEnumerable<SkinnedMeshRenderer> Dependencies => Array.Empty<SkinnedMeshRenderer>();
         protected TComponent Component { get; }
+        [Obsolete]
         public SkinnedMeshRenderer Target { get; }
 
         EditSkinnedMeshComponent IEditSkinnedMeshProcessor.Component => Component;
@@ -23,6 +24,26 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         }
 
         public abstract void Process(OptimizerSession session);
+
+        public virtual void Process(OptimizerSession session, MeshInfo2 target)
+        {
+            target.WriteToMesh(session.MayInstantiate(Target.sharedMesh));
+            Process(session);
+            session.Destroy(Component);
+            target.ReadSkinnedMesh(Target.sharedMesh);
+        }
+        
+        protected void ProcessWithNew(OptimizerSession session)
+        {
+            var target = new MeshInfo2(Target);
+            Process(session, target);
+            target.WriteToMesh(session.MayInstantiate(Target.sharedMesh));
+            for (var i = 0; i < target.BlendShapes.Length; i++)
+                Target.SetBlendShapeWeight(i, target.BlendShapes[i].weight);
+            Target.sharedMaterials = target.SharedMaterials;
+            Target.bones = target.Bones;
+        }
+
         public abstract IMeshInfoComputer GetComputer(IMeshInfoComputer upstream);
 
         protected bool Equals(EditSkinnedMeshProcessor<TComponent> other) => Component == other.Component;
