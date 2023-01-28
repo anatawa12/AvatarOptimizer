@@ -142,9 +142,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             }
 
             var triangles = mesh.triangles;
-            SubMeshes.Capacity = Math.Max(SubMeshes.Capacity, mesh.subMeshCount);
             SubMeshes.Clear();
-            for (var i = 0; i < SubMeshes.Count; i++)
+            SubMeshes.Capacity = Math.Max(SubMeshes.Capacity, mesh.subMeshCount);
+            for (var i = 0; i < mesh.subMeshCount; i++)
                 SubMeshes.Add(new SubMesh(Vertices, triangles, mesh.GetSubMesh(i)));
         }
 
