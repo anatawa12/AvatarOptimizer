@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -45,7 +44,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     if (!freezes[srcI])
                         target.BlendShapes[dstI++] = target.BlendShapes[srcI];
 
-                target.BlendShapes.RemoveRange(dstI, target.BlendShapes.Count);;
+                target.BlendShapes.RemoveRange(dstI, target.BlendShapes.Count - dstI);
             }
         }
 
