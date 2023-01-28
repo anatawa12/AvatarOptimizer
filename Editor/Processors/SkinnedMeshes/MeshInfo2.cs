@@ -94,7 +94,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 BlendShapes.Add((shapeName, 0.0f));
 
                 for (var j = 0; j < deltaNormals.Length; j++)
-                    Vertices[i].BlendShapes[shapeName] = (deltaVertices[j], deltaNormals[j], deltaTangents[j]);
+                    Vertices[j].BlendShapes[shapeName] = (deltaVertices[j], deltaNormals[j], deltaTangents[j]);
             }
         }
 
