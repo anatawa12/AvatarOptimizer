@@ -43,6 +43,11 @@ namespace Anatawa12.AvatarOptimizer
                 EditorGUILayout.LabelField("subMeshCount", _mesh.subMeshCount.ToString());
                 for (var i = 0; i < _mesh.subMeshCount; i++)
                     EditorGUILayout.LabelField($"subMesh #{i}", _mesh.GetSubMesh(i).ToString());
+                var attributes = _mesh.GetVertexAttributes();
+                for (var i = 0; i < attributes.Length; i++)
+                {
+                    EditorGUILayout.LabelField($"attr #{i}", attributes[i].ToString());
+                }
             }
         }
 
