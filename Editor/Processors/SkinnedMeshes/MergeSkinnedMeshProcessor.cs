@@ -44,7 +44,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
                 // add blend shape if not defined by name
                 foreach (var (name, weight) in meshInfo.BlendShapes)
-                    if (target.BlendShapes.FindIndex(x => x.name == name) != -1)
+                    if (target.BlendShapes.FindIndex(x => x.name == name) == -1)
                         target.BlendShapes.Add((name, weight));
 
                 target.Bones.AddRange(meshInfo.Bones);
