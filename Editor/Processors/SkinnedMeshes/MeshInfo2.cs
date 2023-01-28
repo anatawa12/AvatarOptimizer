@@ -21,9 +21,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         public readonly List<(string name, float weight)> BlendShapes = new List<(string name, float weight)>(0);
 
-        public Matrix4x4[] Bindposes;
-
-        public Transform[] Bones;
+        public readonly List<Bone> Bones = new List<Bone>();
 
         public bool HasColor { get; set; }
 
@@ -41,7 +39,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 SubMeshes[i].SharedMaterial = sourceMaterials[i];
 
             var bones = renderer.bones;
-            Array.Copy(bones, Bones, Math.Min(bones.Length, Bones.Length));
+            for (var i = 0; i < bones.Length; i++) Bones[i].Transform = bones[i];
         }
 
         public MeshInfo2(MeshRenderer renderer)
@@ -49,21 +47,24 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             var mesh = renderer.GetComponent<MeshFilter>().sharedMesh;
             ReadStaticMesh(mesh);
 
+            Bones.Add(new Bone(Matrix4x4.identity, renderer.transform));
+
             foreach (var vertex in Vertices)
-                vertex.BoneWeights = new[] { new BoneWeight1 { weight = 1, boneIndex = 0 } };
+                vertex.BoneWeights.Add((Bones[0], 1f));
 
             var sourceMaterials = renderer.sharedMaterials;
             var materialCount = Math.Min(sourceMaterials.Length, SubMeshes.Count);
             for (var i = 0; i < materialCount; i++)
                 SubMeshes[i].SharedMaterial = sourceMaterials[i];
-
-            Bindposes = new[] { Matrix4x4.identity };
-            Bones = new[] { renderer.transform };
         }
 
         public void ReadSkinnedMesh(Mesh mesh)
         {
             ReadStaticMesh(mesh);
+
+            Bones.Clear();
+            Bones.Capacity = Math.Max(Bones.Capacity, mesh.bindposes.Length);
+            Bones.AddRange(mesh.bindposes.Select(x => new Bone(x)));
 
             var bonesPerVertex = mesh.GetBonesPerVertex();
             var allBoneWeights = mesh.GetAllBoneWeights();
@@ -71,7 +72,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             for (var i = 0; i < bonesPerVertex.Length; i++)
             {
                 int count = bonesPerVertex[i];
-                Vertices[i].BoneWeights = allBoneWeights.AsReadOnlySpan().Slice(bonesBase, count).ToArray();
+                Vertices[i].BoneWeights.Capacity = count;
+                foreach (var boneWeight1 in allBoneWeights.AsReadOnlySpan().Slice(bonesBase, count))
+                    Vertices[i].BoneWeights.Add((Bones[boneWeight1.boneIndex], boneWeight1.weight));
                 bonesBase += count;
             }
 
@@ -93,9 +96,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 for (var j = 0; j < deltaNormals.Length; j++)
                     Vertices[i].BlendShapes[shapeName] = (deltaVertices[j], deltaNormals[j], deltaTangents[j]);
             }
-
-            Bindposes = mesh.bindposes;
-            Bones = new Transform[Bindposes.Length];
         }
 
         public void ReadStaticMesh(Mesh mesh)
@@ -175,6 +175,17 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 ((uint)value & TexCoordStatusMask) << (BitsPerTexCoordStatus * index));
         }
 
+        public void Clear()
+        {
+            Bounds = default;
+            Vertices.Clear();
+            _texCoordStatus = default;
+            SubMeshes.Clear();
+            BlendShapes.Clear();
+            Bones.Clear();
+            HasColor = false;
+        }
+
         public void WriteToMesh(Mesh destMesh)
         {
             destMesh.Clear();
@@ -239,7 +250,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             }
 
             // bones
-            destMesh.bindposes = Bindposes;
+            destMesh.bindposes = Bones.Select(x => x.Bindpose).ToArray();
 
             // triangles and SubMeshes
             {
@@ -264,18 +275,21 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             }
 
             // BoneWeights
-            if (Vertices.Any(x => x.BoneWeights.Length != 0)){
+            if (Vertices.Any(x => x.BoneWeights.Count != 0)){
+                for (var i = 0; i < Bones.Count; i++)
+                    Bones[i].AdditionalTemporal = i;
+
                 var bonesPerVertex = new NativeArray<byte>(Vertices.Count, Allocator.Temp);
                 var allBoneWeights =
-                    new NativeArray<BoneWeight1>(Vertices.Sum(x => x.BoneWeights.Length), Allocator.Temp);
+                    new NativeArray<BoneWeight1>(Vertices.Sum(x => x.BoneWeights.Count), Allocator.Temp);
                 var boneWeightsIndex = 0;
                 for (var i = 0; i < Vertices.Count; i++)
                 {
-                    bonesPerVertex[i] = (byte)Vertices[i].BoneWeights.Length;
-                    Array.Sort(Vertices[i].BoneWeights, (x, y) => -x.weight.CompareTo(y.weight));
-                    Vertices[i].BoneWeights.AsSpan()
-                        .CopyTo(allBoneWeights.AsSpan().Slice(boneWeightsIndex));
-                    boneWeightsIndex += Vertices[i].BoneWeights.Length;
+                    bonesPerVertex[i] = (byte)Vertices[i].BoneWeights.Count;
+                    Vertices[i].BoneWeights.Sort((x, y) => -x.weight.CompareTo(y.weight));
+                    foreach (var (bone, weight) in Vertices[i].BoneWeights)
+                        allBoneWeights[boneWeightsIndex++] = new BoneWeight1
+                            { boneIndex = bone.AdditionalTemporal, weight = weight };
                 }
 
                 destMesh.SetBoneWeights(bonesPerVertex, allBoneWeights);
@@ -350,7 +364,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         public Color32 Color { get; set; } = new Color32(0xff, 0xff, 0xff, 0xff);
 
         // SkinnedMesh related
-        public BoneWeight1[] BoneWeights = Array.Empty<BoneWeight1>();
+        public List<(Bone bone, float weight)> BoneWeights = new List<(Bone, float)>();
 
         public readonly Dictionary<string, (Vector3 position, Vector3 normal, Vector3 tangent)> BlendShapes = 
             new Dictionary<string, (Vector3 position, Vector3 normal, Vector3 tangent)>();
@@ -412,11 +426,22 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             TexCoord6 = vertex.TexCoord6;
             TexCoord7 = vertex.TexCoord7;
             Color = vertex.Color;
-            BoneWeights = vertex.BoneWeights.AsSpan().ToArray();
+            BoneWeights = vertex.BoneWeights.ToList();
             BlendShapes = new Dictionary<string, (Vector3, Vector3, Vector3)>(vertex.BlendShapes);
         }
 
         public Vertex Clone() => new Vertex(this);
+    }
+
+    internal class Bone
+    {
+        // You can use this value for your own usage but methods may clear this value.
+        public int AdditionalTemporal;
+        public Matrix4x4 Bindpose;
+        public Transform Transform;
+
+        public Bone(Matrix4x4 bindPose) : this(bindPose, null) {}
+        public Bone(Matrix4x4 bindPose, Transform transform) => (Bindpose, Transform) = (bindPose, transform);
     }
 
     internal enum TexCoordStatus
