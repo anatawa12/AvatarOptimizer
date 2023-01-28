@@ -27,6 +27,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     if (!freezes[i]) continue;
                     var (name, weight) = target.BlendShapes[i];
                     if (!vertex.BlendShapes.TryGetValue(name, out var value)) continue;
+                    weight /= 100;
 
                     vertex.Position += value.position * weight;
                     vertex.Normal += value.normal * weight;

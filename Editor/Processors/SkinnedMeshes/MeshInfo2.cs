@@ -439,7 +439,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             // first, apply blend shapes
             foreach (var (name, weight) in meshInfo2.BlendShapes)
                 if (BlendShapes.TryGetValue(name, out var shapeDiffer))
-                    position += shapeDiffer.position * weight;
+                    position += shapeDiffer.position * (weight / 100);
 
             // then, apply bones
             var matrix = Matrix4x4.zero;
