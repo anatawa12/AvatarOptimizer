@@ -13,8 +13,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         public override int ProcessOrder => -10000;
 
-        public override void Process(OptimizerSession session) => ProcessWithNew(session);
-
         public override void Process(OptimizerSession session, MeshInfo2 target)
         {
             var freezeNames = new HashSet<string>(Component.shapeKeys);

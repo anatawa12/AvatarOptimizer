@@ -50,8 +50,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             target.Vertices.RemoveAll(x => x.AdditionalTemporal == 0);
         }
 
-        public override void Process(OptimizerSession session) => ProcessWithNew(session);
-
         public override IMeshInfoComputer GetComputer(IMeshInfoComputer upstream) => new MeshInfoComputer(this, upstream);
 
         class MeshInfoComputer : AbstractMeshInfoComputer

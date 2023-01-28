@@ -58,7 +58,7 @@ namespace Anatawa12.AvatarOptimizer
             return processors;
         }
 
-        public static IEnumerable<List<IEditSkinnedMeshProcessor>> GetSortedProcessors(
+        public static IEnumerable<SkinnedMeshProcessors> GetSortedProcessors(
             IEnumerable<SkinnedMeshRenderer> targets)
         {
             var processors = new LinkedList<SkinnedMeshProcessors>(targets.Select(GetProcessors).Where(x => x != null));
@@ -73,11 +73,11 @@ namespace Anatawa12.AvatarOptimizer
                 var found = iterator.Value;
                 processors.Remove(iterator);
                 proceed.Add(found.Target);
-                yield return found.GetSorted();
+                yield return found;
             }
         }
 
-        private class SkinnedMeshProcessors
+        internal class SkinnedMeshProcessors
         {
             internal readonly SkinnedMeshRenderer Target;
             private readonly HashSet<IEditSkinnedMeshProcessor> _processors = new HashSet<IEditSkinnedMeshProcessor>();

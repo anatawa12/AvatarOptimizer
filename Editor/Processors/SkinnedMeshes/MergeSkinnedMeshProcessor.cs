@@ -12,8 +12,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         public override int ProcessOrder => int.MinValue;
 
-        public override void Process(OptimizerSession session) => ProcessWithNew(session);
-
         public override void Process(OptimizerSession session, MeshInfo2 target)
         {
             var meshInfos = Component.renderers.Select(x => new MeshInfo2(x))

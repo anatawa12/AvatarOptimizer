@@ -23,28 +23,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             Target = component.GetComponent<SkinnedMeshRenderer>();
         }
 
-        public abstract void Process(OptimizerSession session);
-
-        public virtual void Process(OptimizerSession session, MeshInfo2 target)
-        {
-            target.WriteToMesh(session.MayInstantiate(Target.sharedMesh));
-            Process(session);
-            session.Destroy(Component);
-            target.ReadSkinnedMesh(Target.sharedMesh);
-        }
-        
-        protected void ProcessWithNew(OptimizerSession session)
-        {
-            var target = new MeshInfo2(Target);
-            Process(session, target);
-            var mesh = Target.sharedMesh ? session.MayInstantiate(Target.sharedMesh) : session.AddToAsset(new Mesh());
-            target.WriteToMesh(mesh);
-            Target.sharedMesh = mesh;
-            for (var i = 0; i < target.BlendShapes.Count; i++)
-                Target.SetBlendShapeWeight(i, target.BlendShapes[i].weight);
-            Target.sharedMaterials = target.SubMeshes.Select(x => x.SharedMaterial).ToArray();
-            Target.bones = target.Bones.Select(x => x.Transform).ToArray();
-        }
+        public abstract void Process(OptimizerSession session, MeshInfo2 target);
 
         public abstract IMeshInfoComputer GetComputer(IMeshInfoComputer upstream);
 
@@ -64,7 +43,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         IEnumerable<SkinnedMeshRenderer> Dependencies { get; }
         SkinnedMeshRenderer Target { get; }
         EditSkinnedMeshComponent Component { get; }
-        void Process(OptimizerSession session);
         void Process(OptimizerSession session, MeshInfo2 target);
 
         [NotNull] IMeshInfoComputer GetComputer([NotNull] IMeshInfoComputer upstream);

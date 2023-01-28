@@ -81,8 +81,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             }
         }
 
-        public override void Process(OptimizerSession session) => ProcessWithNew(session);
-
         private Vector2 MapUV(Vector2 vector2, Rect destSourceRect) =>
             vector2 * new Vector2(destSourceRect.width, destSourceRect.height) 
             + new Vector2(destSourceRect.x, destSourceRect.y);
