@@ -19,8 +19,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         public readonly List<SubMesh> SubMeshes = new List<SubMesh>(0);
 
-        // Don't forget to sync with Vertex.BlendShapes
-        public (string name, float weight)[] BlendShapes = Array.Empty<(string name, float weight)>();
+        public readonly List<(string name, float weight)> BlendShapes = new List<(string name, float weight)>(0);
 
         public Matrix4x4[] Bindposes;
 
@@ -34,7 +33,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             ReadSkinnedMesh(mesh);
 
             for (var i = 0; i < mesh.blendShapeCount; i++)
-                BlendShapes[i].weight = renderer.GetBlendShapeWeight(i);
+                BlendShapes[i] = (BlendShapes[i].name, renderer.GetBlendShapeWeight(i));
 
             var sourceMaterials = renderer.sharedMaterials;
             var materialCount = Math.Min(sourceMaterials.Length, SubMeshes.Count);
@@ -76,10 +75,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 bonesBase += count;
             }
 
-            foreach (var vertex in Vertices)
-                vertex.BlendShapes = new (Vector3, Vector3, Vector3)[mesh.blendShapeCount];
-
-            BlendShapes = new (string, float)[mesh.blendShapeCount];
+            BlendShapes.Clear();
             var deltaVertices = new Vector3[Vertices.Count];
             var deltaNormals = new Vector3[Vertices.Count];
             var deltaTangents = new Vector3[Vertices.Count];
@@ -92,13 +88,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
                 var shapeName = mesh.GetBlendShapeName(i);
 
-                BlendShapes[i] = (shapeName, 0.0f);
+                BlendShapes.Add((shapeName, 0.0f));
 
-                // ReSharper disable AccessToModifiedClosure
-                CopyVertexAttr(deltaVertices, (x, v) => x.BlendShapes[i].position = v);
-                CopyVertexAttr(deltaNormals, (x, v) => x.BlendShapes[i].normal = v);
-                CopyVertexAttr(deltaTangents, (x, v) => x.BlendShapes[i].tangent = v);
-                // ReSharper restore AccessToModifiedClosure
+                for (var j = 0; j < deltaNormals.Length; j++)
+                    Vertices[i].BlendShapes[shapeName] = (deltaVertices[j], deltaNormals[j], deltaTangents[j]);
             }
 
             Bindposes = mesh.bindposes;
@@ -289,30 +282,28 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             }
 
             // BlendShapes
-            if (BlendShapes.Length != 0) {
-                var blendShapeData = new (Vector3[] position, Vector3[] normal, Vector3[] tangent)[BlendShapes.Length];
+            if (BlendShapes.Count != 0) {
+                var blendShapeData = new (Vector3[] position, Vector3[] normal, Vector3[] tangent)[BlendShapes.Count];
                 for (var i = 0; i < blendShapeData.Length; i++)
                     blendShapeData[i] = (new Vector3[Vertices.Count], new Vector3[Vertices.Count],
                         new Vector3[Vertices.Count]);
 
                 for (var vertexI = 0; vertexI < Vertices.Count; vertexI++)
                 {
-                    for (var blendShapeI = 0; blendShapeI < BlendShapes.Length; blendShapeI++)
+                    for (var blendShapeI = 0; blendShapeI < BlendShapes.Count; blendShapeI++)
                     {
                         blendShapeData[blendShapeI].position[vertexI] =
-                            Vertices[vertexI].BlendShapes[blendShapeI].position;
+                            Vertices[vertexI].TryGetBlendShape(BlendShapes[blendShapeI].name).position;
                         blendShapeData[blendShapeI].normal[vertexI] =
-                            Vertices[vertexI].BlendShapes[blendShapeI].normal;
+                            Vertices[vertexI].TryGetBlendShape(BlendShapes[blendShapeI].name).normal;
                         blendShapeData[blendShapeI].tangent[vertexI] =
-                            Vertices[vertexI].BlendShapes[blendShapeI].tangent;
+                            Vertices[vertexI].TryGetBlendShape(BlendShapes[blendShapeI].name).tangent;
                     }
                 }
 
-                for (var i = 0; i < BlendShapes.Length; i++)
-                {
+                for (var i = 0; i < BlendShapes.Count; i++)
                     destMesh.AddBlendShapeFrame(BlendShapes[i].name, 100,
                         blendShapeData[i].position, blendShapeData[i].normal, blendShapeData[i].tangent);
-                }
             }
         }
     }
@@ -361,8 +352,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         // SkinnedMesh related
         public BoneWeight1[] BoneWeights = Array.Empty<BoneWeight1>();
 
-        public (Vector3 position, Vector3 normal, Vector3 tangent)[] BlendShapes =
-            Array.Empty<(Vector3, Vector3, Vector3)>();
+        public readonly Dictionary<string, (Vector3 position, Vector3 normal, Vector3 tangent)> BlendShapes = 
+            new Dictionary<string, (Vector3 position, Vector3 normal, Vector3 tangent)>();
 
         public Vector4 GetTexCoord(int index)
         {
@@ -400,6 +391,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             }
         }
 
+        public (Vector3 position, Vector3 normal, Vector3 tangent) TryGetBlendShape(string name) => 
+            BlendShapes.TryGetValue(name, out var value) ? value : default;
+
         public Vertex()
         {
         }
@@ -419,7 +413,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             TexCoord7 = vertex.TexCoord7;
             Color = vertex.Color;
             BoneWeights = vertex.BoneWeights.AsSpan().ToArray();
-            BlendShapes = vertex.BlendShapes.AsSpan().ToArray();
+            BlendShapes = new Dictionary<string, (Vector3, Vector3, Vector3)>(vertex.BlendShapes);
         }
 
         public Vertex Clone() => new Vertex(this);

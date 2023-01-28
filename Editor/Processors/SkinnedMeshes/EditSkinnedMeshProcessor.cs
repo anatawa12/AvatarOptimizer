@@ -38,7 +38,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             var target = new MeshInfo2(Target);
             Process(session, target);
             target.WriteToMesh(session.MayInstantiate(Target.sharedMesh));
-            for (var i = 0; i < target.BlendShapes.Length; i++)
+            for (var i = 0; i < target.BlendShapes.Count; i++)
                 Target.SetBlendShapeWeight(i, target.BlendShapes[i].weight);
             Target.sharedMaterials = target.SubMeshes.Select(x => x.SharedMaterial).ToArray();
             Target.bones = target.Bones;
