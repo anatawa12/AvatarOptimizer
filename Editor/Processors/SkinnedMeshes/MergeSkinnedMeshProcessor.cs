@@ -12,10 +12,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         public override int ProcessOrder => int.MinValue;
 
-        public override void Process(OptimizerSession session, MeshInfo2 target)
+        public override void Process(OptimizerSession session, MeshInfo2 target, MeshInfo2Holder meshInfo2Holder)
         {
-            var meshInfos = Component.renderers.Select(x => new MeshInfo2(x))
-                .Concat(Component.staticRenderers.Select(x => new MeshInfo2(x)))
+            var meshInfos = Component.renderers.Select(meshInfo2Holder.GetMeshInfoFor)
+                .Concat(Component.staticRenderers.Select(x => meshInfo2Holder.GetMeshInfoFor(x)))
                 .ToArray();
 
             var (subMeshIndexMap, subMeshesTotalCount) = CreateSubMeshIndexMapping(Component.merges, meshInfos);

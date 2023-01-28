@@ -21,7 +21,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         public override int ProcessOrder => -10000;
 
-        public override void Process(OptimizerSession session, MeshInfo2 target)
+        public override void Process(OptimizerSession session, MeshInfo2 target, MeshInfo2Holder meshInfo2Holder)
         {
             // compute usages. AdditionalTemporal is usage count for now.
             // if #usages is not zero for merging triangles

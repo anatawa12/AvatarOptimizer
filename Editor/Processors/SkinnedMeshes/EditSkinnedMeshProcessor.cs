@@ -23,7 +23,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             Target = component.GetComponent<SkinnedMeshRenderer>();
         }
 
-        public abstract void Process(OptimizerSession session, MeshInfo2 target);
+        public abstract void Process(OptimizerSession session, MeshInfo2 target, MeshInfo2Holder meshInfo2Holder);
 
         public abstract IMeshInfoComputer GetComputer(IMeshInfoComputer upstream);
 
@@ -43,7 +43,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         IEnumerable<SkinnedMeshRenderer> Dependencies { get; }
         SkinnedMeshRenderer Target { get; }
         EditSkinnedMeshComponent Component { get; }
-        void Process(OptimizerSession session, MeshInfo2 target);
+        void Process(OptimizerSession session, MeshInfo2 target, MeshInfo2Holder meshInfo2Holder);
 
         [NotNull] IMeshInfoComputer GetComputer([NotNull] IMeshInfoComputer upstream);
     }

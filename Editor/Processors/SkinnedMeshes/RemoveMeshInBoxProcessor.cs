@@ -10,7 +10,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         public override int ProcessOrder => -10000;
 
-        public override void Process(OptimizerSession session, MeshInfo2 target)
+        public override void Process(OptimizerSession session, MeshInfo2 target, MeshInfo2Holder meshInfo2Holder)
         {
             // Vertex.AdditionalTemporal: 0 if in box, 1 if out of box
             foreach (var vertex in target.Vertices)
