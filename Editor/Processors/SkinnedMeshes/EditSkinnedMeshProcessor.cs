@@ -65,6 +65,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         SkinnedMeshRenderer Target { get; }
         EditSkinnedMeshComponent Component { get; }
         void Process(OptimizerSession session);
+        void Process(OptimizerSession session, MeshInfo2 target);
 
         [NotNull] IMeshInfoComputer GetComputer([NotNull] IMeshInfoComputer upstream);
     }
