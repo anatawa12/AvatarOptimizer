@@ -33,13 +33,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             // compute per-material data
             var mergingIndices = ComputeMergingIndices();
-            var targetRectForMaterial = new Rect[target.SubMeshes.Length];
+            var targetRectForMaterial = new Rect[target.SubMeshes.Count];
             foreach (var componentMerge in Component.merges)
             foreach (var mergeSource in componentMerge.source)
                 targetRectForMaterial[mergeSource.materialIndex] = mergeSource.targetRect;
 
             // map UVs
-            for (var subMeshI = 0; subMeshI < target.SubMeshes.Length; subMeshI++)
+            for (var subMeshI = 0; subMeshI < target.SubMeshes.Count; subMeshI++)
             {
                 if (mergingIndices[subMeshI])
                 {
@@ -66,15 +66,18 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             // merge submeshes
             var copied = target.SubMeshes.Where((_, i) => !mergingIndices[i]);
+            var materials = target.SubMeshes.Select(x => x.SharedMaterial).ToArray();
             var merged = Component.merges.Select(x => new SubMesh(
-                x.source.SelectMany(src => target.SubMeshes[src.materialIndex].Triangles).ToList()));
-            target.SubMeshes = copied.Concat(merged).ToArray();
+                x.source.SelectMany(src => target.SubMeshes[src.materialIndex].Triangles).ToList(),
+                CreateMaterial(GenerateTexture(x, materials))));
+            var subMeshes = copied.Concat(merged).ToList();
+            target.SubMeshes.Clear();
+            target.SubMeshes.AddRange(subMeshes);
             
-            target.SharedMaterials = CreateMaterials(mergingIndices, target.SharedMaterials, fast: false);
-            foreach (var targetSharedMaterial in target.SharedMaterials)
+            foreach (var subMesh in target.SubMeshes)
             {
-                session.AddToAsset(targetSharedMaterial);
-                session.AddToAsset(targetSharedMaterial.GetTexture(MainTexProp));
+                session.AddToAsset(subMesh.SharedMaterial);
+                session.AddToAsset(subMesh.SharedMaterial.GetTexture(MainTexProp));
             }
         }
 

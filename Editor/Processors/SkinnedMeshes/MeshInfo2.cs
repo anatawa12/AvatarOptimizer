@@ -12,20 +12,21 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
     internal class MeshInfo2
     {
         public Bounds Bounds;
-        public List<Vertex> Vertices;
+        public readonly List<Vertex> Vertices = new List<Vertex>(0);
 
         // TexCoordStatus which is 3 bits x 8 = 24 bits
         private ushort _texCoordStatus;
 
-        public SubMesh[] SubMeshes;
+        public readonly List<SubMesh> SubMeshes = new List<SubMesh>(0);
 
         // Don't forget to sync with Vertex.BlendShapes
         public (string name, float weight)[] BlendShapes = Array.Empty<(string name, float weight)>();
 
-        public Material[] SharedMaterials;
         public Matrix4x4[] Bindposes;
 
         public Transform[] Bones;
+
+        public bool HasColor { get; set; }
 
         public MeshInfo2(SkinnedMeshRenderer renderer)
         {
@@ -33,12 +34,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             ReadSkinnedMesh(mesh);
 
             for (var i = 0; i < mesh.blendShapeCount; i++)
-            {
-                var weight = renderer.GetBlendShapeWeight(i);
-                BlendShapes[i].weight = weight;
-            }
+                BlendShapes[i].weight = renderer.GetBlendShapeWeight(i);
+
             var sourceMaterials = renderer.sharedMaterials;
-            Array.Copy(sourceMaterials, SharedMaterials, Math.Min(sourceMaterials.Length, SharedMaterials.Length));
+            var materialCount = Math.Min(sourceMaterials.Length, SubMeshes.Count);
+            for (var i = 0; i < materialCount; i++)
+                SubMeshes[i].SharedMaterial = sourceMaterials[i];
+
             var bones = renderer.bones;
             Array.Copy(bones, Bones, Math.Min(bones.Length, Bones.Length));
         }
@@ -52,8 +54,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 vertex.BoneWeights = new[] { new BoneWeight1 { weight = 1, boneIndex = 0 } };
 
             var sourceMaterials = renderer.sharedMaterials;
-            SharedMaterials = new Material[mesh.subMeshCount];
-            Array.Copy(sourceMaterials, SharedMaterials, Math.Min(sourceMaterials.Length, SharedMaterials.Length));
+            var materialCount = Math.Min(sourceMaterials.Length, SubMeshes.Count);
+            for (var i = 0; i < materialCount; i++)
+                SubMeshes[i].SharedMaterial = sourceMaterials[i];
 
             Bindposes = new[] { Matrix4x4.identity };
             Bones = new[] { renderer.transform };
@@ -98,14 +101,14 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 // ReSharper restore AccessToModifiedClosure
             }
 
-            SharedMaterials = new Material[mesh.subMeshCount];
             Bindposes = mesh.bindposes;
             Bones = new Transform[Bindposes.Length];
         }
 
         public void ReadStaticMesh(Mesh mesh)
         {
-            Vertices = new List<Vertex>(mesh.vertexCount);
+            Vertices.Capacity = Math.Max(Vertices.Capacity, mesh.vertexCount);
+            Vertices.Clear();
             for (var i = 0; i < mesh.vertexCount; i++) Vertices.Add(new Vertex());
 
             CopyVertexAttr(mesh.vertices, (x, v) => x.Position = v);
@@ -146,9 +149,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             }
 
             var triangles = mesh.triangles;
-            SubMeshes = new SubMesh[mesh.subMeshCount];
-            for (var i = 0; i < SubMeshes.Length; i++)
-                SubMeshes[i] = new SubMesh(Vertices, triangles, mesh.GetSubMesh(i));
+            SubMeshes.Capacity = Math.Max(SubMeshes.Capacity, mesh.subMeshCount);
+            SubMeshes.Clear();
+            for (var i = 0; i < SubMeshes.Count; i++)
+                SubMeshes.Add(new SubMesh(Vertices, triangles, mesh.GetSubMesh(i)));
         }
 
         void CopyVertexAttr<T>(T[] attributes, Action<Vertex, T> assign)
@@ -165,8 +169,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         private const int BitsPerTexCoordStatus = 2;
         private const int TexCoordStatusMask = (1 << BitsPerTexCoordStatus) - 1;
-
-        public bool HasColor { get; set; }
 
         public TexCoordStatus GetTexCoordStatus(int index)
         {
@@ -253,9 +255,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     Vertices[i].AdditionalTemporal = i;
 
                 var triangles = new int[SubMeshes.Sum(x => x.Triangles.Count)];
-                var subMeshDescriptors = new SubMeshDescriptor[SubMeshes.Length];
+                var subMeshDescriptors = new SubMeshDescriptor[SubMeshes.Count];
                 var trianglesIndex = 0;
-                for (var i = 0; i < SubMeshes.Length; i++)
+                for (var i = 0; i < SubMeshes.Count; i++)
                 {
                     subMeshDescriptors[i] = new SubMeshDescriptor(trianglesIndex, SubMeshes[i].Triangles.Count);
                     foreach (var triangle in SubMeshes[i].Triangles)
@@ -263,8 +265,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 }
 
                 destMesh.triangles = triangles;
-                destMesh.subMeshCount = SubMeshes.Length;
-                for (var i = 0; i < SubMeshes.Length; i++)
+                destMesh.subMeshCount = SubMeshes.Count;
+                for (var i = 0; i < SubMeshes.Count; i++)
                     destMesh.SetSubMesh(i, subMeshDescriptors[i]);
             }
 
@@ -318,13 +320,16 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
     internal class SubMesh
     {
         // size of this must be 3 * n
-        public List<Vertex> Triangles = new List<Vertex>();
+        public readonly List<Vertex> Triangles = new List<Vertex>();
+        public Material SharedMaterial;
 
         public SubMesh()
         {
         }
 
         public SubMesh(List<Vertex> vertices) => Triangles = vertices;
+        public SubMesh(List<Vertex> vertices, Material sharedMaterial) => 
+            (Triangles, SharedMaterial) = (vertices, sharedMaterial);
 
         public SubMesh(List<Vertex> vertices, ReadOnlySpan<int> triangles, SubMeshDescriptor descriptor)
         {
