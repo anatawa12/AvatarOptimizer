@@ -1,4 +1,5 @@
 using System.Linq;
+using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 {
@@ -14,8 +15,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         {
             // Vertex.AdditionalTemporal: 0 if in box, 1 if out of box
             foreach (var vertex in target.Vertices)
-                vertex.AdditionalTemporal =
-                    Component.boxes.Any(x => x.ContainsVertex(vertex.Position)) ? 0 : 1;
+            {
+                Vector3 actualPosition = Target.transform.worldToLocalMatrix * vertex.ComputeActualPosition(target);
+                vertex.AdditionalTemporal = Component.boxes.Any(x => x.ContainsVertex(actualPosition)) ? 0 : 1;
+            }
 
             foreach (var subMesh in target.SubMeshes)
             {

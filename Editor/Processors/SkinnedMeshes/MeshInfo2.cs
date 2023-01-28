@@ -431,6 +431,47 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         }
 
         public Vertex Clone() => new Vertex(this);
+
+        public Vector3 ComputeActualPosition(MeshInfo2 meshInfo2)
+        {
+            var position = Position;
+
+            // first, apply blend shapes
+            foreach (var (name, weight) in meshInfo2.BlendShapes)
+                if (BlendShapes.TryGetValue(name, out var shapeDiffer))
+                    position += shapeDiffer.position * weight;
+
+            // then, apply bones
+            var matrix = Matrix4x4.zero;
+            foreach (var (bone, weight) in BoneWeights)
+            {
+                var transformMat = bone.Transform ? bone.Transform.localToWorldMatrix : Matrix4x4.identity;
+                var boneMat = transformMat * bone.Bindpose;
+                MulAdd(ref matrix, boneMat, weight);
+            }
+            return matrix * position;
+        }
+
+        // UnityEngine doesn't provide Matrix4x4 + Matrix4x4 and Matrix4x4 * float.
+        private void MulAdd(ref Matrix4x4 dst, in Matrix4x4 src, float weight)
+        {
+            dst.m00 += src.m00 * weight;
+            dst.m01 += src.m01 * weight;
+            dst.m02 += src.m02 * weight;
+            dst.m03 += src.m03 * weight;
+            dst.m10 += src.m10 * weight;
+            dst.m11 += src.m11 * weight;
+            dst.m12 += src.m12 * weight;
+            dst.m13 += src.m13 * weight;
+            dst.m20 += src.m20 * weight;
+            dst.m21 += src.m21 * weight;
+            dst.m22 += src.m22 * weight;
+            dst.m23 += src.m23 * weight;
+            dst.m30 += src.m30 * weight;
+            dst.m31 += src.m31 * weight;
+            dst.m32 += src.m32 * weight;
+            dst.m33 += src.m33 * weight;
+        }
     }
 
     internal class Bone
