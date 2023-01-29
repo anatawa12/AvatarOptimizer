@@ -155,9 +155,9 @@ Freeze & remove BlendShape from the mesh.
 
 #### Settings
 
-<img src="./.readme/freeze-blend-shape.png" width="436">
+<img src="./.readme/freeze-blend-shape.png" width="369">
 
-Click '+' to add blenshapes to be frozen. Select one and click '-' to remove.
+You'll see list of blend shapes and check to freeze blend shape.
 
 ### Merge Bone
 
