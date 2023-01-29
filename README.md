@@ -200,6 +200,29 @@ Click `Generate Preview` to generate each texture and see preview.
 
 <img src="./.readme/merge-toon-lit-material.png" width="430">
 
+### Remove Mesh in Box
+
+Remove some polygons in any of specified boxes.
+
+#### Settings
+
+Click Add Box button at the bottom to add box.
+For each box, you can change the center Position, Size, and Rotation of the box. 
+The center position is in local coordinate of the object.
+
+<img src="./.readme/remove-mesh-in-box.png" width="379">
+
+Click Edit This Box to show Gizmo to edit the box like above. You can scale, move and rotate the box.
+
+<img src=".readme/remove-mesh-in-box.gizmo.png" width="563">
+
+#### Example
+
+With boxes shown on upper/left image, meshes in the box will be removed as lower/right image shows.
+
+<img src=".readme/remove-mesh-in-box.example.pre.png" width="403">
+<img src=".readme/remove-mesh-in-box.example.ran.png" width="403">
+
 [vpm-repository]: https://vpm.anatawa12.com/vpm.json
 [github-latest]: https://github.com/anatawa12/AvatarOptimizer/releases/latest
 [vcc-cli]: https://vcc.docs.vrchat.com/vpm/cli
