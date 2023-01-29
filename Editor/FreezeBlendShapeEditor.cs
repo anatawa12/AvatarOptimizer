@@ -54,6 +54,28 @@ namespace Anatawa12.AvatarOptimizer
                 if (EditorGUI.EndChangeCheck()) prop.boolValue = set;
                 EditorGUI.EndProperty();
             }
+
+            using (new GUILayout.HorizontalScope())
+            {
+                if (GUILayout.Button("Check All"))
+                {
+                    for (var i = 0; i < _freezeFlags.arraySize; i++)
+                    {
+                        var prop = _freezeFlags.GetArrayElementAtIndex(i);
+                        prop.boolValue = true;
+                    }
+                }
+                
+                if (GUILayout.Button("Invert All"))
+                {
+                    for (var i = 0; i < _freezeFlags.arraySize; i++)
+                    {
+                        var prop = _freezeFlags.GetArrayElementAtIndex(i);
+                        prop.boolValue = !prop.boolValue;
+                    }
+                }
+            }
+
             serializedObject.ApplyModifiedProperties();
         }
     }
