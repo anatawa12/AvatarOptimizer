@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer
@@ -7,6 +6,9 @@ namespace Anatawa12.AvatarOptimizer
     [DisallowMultipleComponent]
     public class FreezeBlendShape : EditSkinnedMeshComponent
     {
+        // Traditional Way: list of frozen ShapeKeys
+        // New Way: list of all ShapeKeys and flags.
         public string[] shapeKeys;
+        public bool[] freezeFlags;
     }
 }

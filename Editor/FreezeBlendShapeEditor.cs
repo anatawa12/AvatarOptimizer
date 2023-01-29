@@ -1,7 +1,6 @@
-using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
-using UnityEditorInternal;
 using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer
@@ -9,41 +8,11 @@ namespace Anatawa12.AvatarOptimizer
     [CustomEditor(typeof(FreezeBlendShape))]
     public class FreezeBlendShapeEditor : Editor
     {
-        private ReorderableList _shapeKeys;
-        private SerializedProperty _shapeKeysProp;
+        private SerializedProperty _freezeFlags;
 
         private void OnEnable()
         {
-            var component = (FreezeBlendShape)target;
-
-            var shapes = EditSkinnedMeshComponentUtil.GetBlendShapes(component.GetComponent<SkinnedMeshRenderer>(), component);
-            _shapeKeysProp = serializedObject.FindProperty(nameof(FreezeBlendShape.shapeKeys));
-            _shapeKeys = new ReorderableList(serializedObject, _shapeKeysProp, true, false, true, true);
-            _shapeKeys.drawElementCallback = (rect, index, isActive, isFocused) =>
-            {
-                var arrayProp = _shapeKeysProp.GetArrayElementAtIndex(index);
-                var shapeKey = arrayProp.stringValue;
-                var candidates = shapes;
-                var foundIndex = Array.IndexOf(candidates, shapeKey);
-                if (foundIndex == -1)
-                {
-                    ArrayUtility.Insert(ref candidates, 0, shapeKey);
-                    foundIndex = 0;
-                }
-
-                var selected = EditorGUI.Popup(rect, foundIndex, candidates);
-                if (selected != foundIndex)
-                    arrayProp.stringValue = candidates[selected];
-            };
-        
-            _shapeKeys.onAddCallback = list =>
-            {
-                list.serializedProperty.arraySize += 1;
-                list.serializedProperty.GetArrayElementAtIndex(list.serializedProperty.arraySize - 1).stringValue = shapes.FirstOrDefault() ?? "";
-            };
-                
-            _shapeKeys.elementHeight = EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
-            _shapeKeys.headerHeight = 3;
+            _freezeFlags = serializedObject.FindProperty("freezeFlags");
         }
 
         public override void OnInspectorGUI()
@@ -54,8 +23,37 @@ namespace Anatawa12.AvatarOptimizer
                 return;
             }
 
+            var component = (FreezeBlendShape)target;
+
+            var shapes = EditSkinnedMeshComponentUtil.GetBlendShapes(component.GetComponent<SkinnedMeshRenderer>(), component);
+
+            void SetShapeKeys(HashSet<string> frozenKeys)
+            {
+                component.shapeKeys = shapes;
+                component.freezeFlags = new bool[shapes.Length];
+                for (var i = 0; i < component.shapeKeys.Length; i++)
+                    component.freezeFlags[i] = frozenKeys.Contains(component.shapeKeys[i]);
+                EditorUtility.SetDirty(component);
+            }
+
+            // Update ShapeKeys 
+            if (component.freezeFlags == null || component.shapeKeys.Length != component.freezeFlags.Length)
+                SetShapeKeys(new HashSet<string>(component.shapeKeys));
+            else if (!component.shapeKeys.SequenceEqual(shapes))
+                SetShapeKeys(new HashSet<string>(component.shapeKeys.Where((_, i) => component.freezeFlags[i])));
+
             serializedObject.Update();
-            _shapeKeys.DoLayoutList();
+            for (var i = 0; i < component.shapeKeys.Length; i++)
+            {
+                var rect = EditorGUILayout.GetControlRect();
+                var label = new GUIContent(component.shapeKeys[i]);
+                var prop = _freezeFlags.GetArrayElementAtIndex(i);
+                label = EditorGUI.BeginProperty(rect, label, prop);
+                EditorGUI.BeginChangeCheck();
+                var set = EditorGUI.ToggleLeft(rect, label, prop.boolValue);
+                if (EditorGUI.EndChangeCheck()) prop.boolValue = set;
+                EditorGUI.EndProperty();
+            }
             serializedObject.ApplyModifiedProperties();
         }
     }
