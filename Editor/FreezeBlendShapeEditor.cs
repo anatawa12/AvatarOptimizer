@@ -37,10 +37,8 @@ namespace Anatawa12.AvatarOptimizer
             }
 
             // Update ShapeKeys 
-            if (component.freezeFlags == null || component.shapeKeys.Length != component.freezeFlags.Length)
-                SetShapeKeys(new HashSet<string>(component.shapeKeys));
-            else if (!component.shapeKeys.SequenceEqual(shapes))
-                SetShapeKeys(new HashSet<string>(component.shapeKeys.Where((_, i) => component.freezeFlags[i])));
+            if (component.IsTraditionalForm || !component.shapeKeys.SequenceEqual(shapes))
+                SetShapeKeys(component.FreezingShapeKeys);
 
             serializedObject.Update();
             for (var i = 0; i < component.shapeKeys.Length; i++)

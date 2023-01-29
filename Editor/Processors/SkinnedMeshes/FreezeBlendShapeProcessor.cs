@@ -15,7 +15,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         public override void Process(OptimizerSession session, MeshInfo2 target, MeshInfo2Holder meshInfo2Holder)
         {
-            var freezeNames = new HashSet<string>(Component.shapeKeys);
+            var freezeNames = Component.FreezingShapeKeys;
             var freezes = new BitArray(target.BlendShapes.Count);
             for (var i = 0; i < target.BlendShapes.Count; i++)
                 freezes[i] = freezeNames.Contains(target.BlendShapes[i].name);
@@ -56,8 +56,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             public MeshInfoComputer(FreezeBlendShapeProcessor processor, IMeshInfoComputer upstream) : base(upstream)
                 => _processor = processor;
 
-            public override string[] BlendShapes() =>
-                base.BlendShapes().Where(x => !_processor.Component.shapeKeys.Contains(x)).ToArray();
+            public override string[] BlendShapes()
+            {
+                var set = _processor.Component.FreezingShapeKeys;
+                return base.BlendShapes().Where(x => !set.Contains(x)).ToArray();
+            }
         }
     }
 }
