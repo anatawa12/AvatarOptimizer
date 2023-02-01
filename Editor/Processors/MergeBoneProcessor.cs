@@ -26,7 +26,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
             foreach (var renderer in session.GetComponents<SkinnedMeshRenderer>())
             {
-                if (renderer.bones.Any(mergeMapping.ContainsKey))
+                if (renderer.bones.Where(x => x).Any(mergeMapping.ContainsKey))
                     DoBoneMap(session, renderer, mergeMapping);
             }
 
@@ -50,12 +50,12 @@ namespace Anatawa12.AvatarOptimizer.Processors
             var oldBindposes = mesh.bindposes;
             var boneMapping = new int[oldBones.Length];
 
-            var newBones = oldBones.Where(x => !mergeMapping.ContainsKey(x)).ToArray();
+            var newBones = oldBones.Where(x => !(x && mergeMapping.ContainsKey(x))).ToArray();
             var newBindposes = new Matrix4x4[newBones.Length];
 
             for (int i = 0, j = 0; i < oldBones.Length; i++)
             {
-                if (mergeMapping.TryGetValue(oldBones[i], out var mapped))
+                if (oldBones[i] && mergeMapping.TryGetValue(oldBones[i], out var mapped))
                 {
                     var newIndex = Array.IndexOf(newBones, mapped);
                     if (newIndex == -1)
