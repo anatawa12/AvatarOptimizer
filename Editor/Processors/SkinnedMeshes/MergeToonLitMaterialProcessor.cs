@@ -32,7 +32,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 v.AdditionalTemporal++;
 
             // compute per-material data
-            var mergingIndices = ComputeMergingIndices();
+            var mergingIndices = ComputeMergingIndices(target.SubMeshes.Count);
             var targetRectForMaterial = new Rect[target.SubMeshes.Count];
             foreach (var componentMerge in Component.merges)
             foreach (var mergeSource in componentMerge.source)
@@ -91,9 +91,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         /// <summary>
         /// </summary>
         /// <returns>bitarray[i] is true if the materials[i] ill be merged to other material</returns>
-        public BitArray ComputeMergingIndices()
+        public BitArray ComputeMergingIndices(int subMeshCount)
         {
-            var mergingIndices = new BitArray(Target.sharedMesh.subMeshCount);
+            var mergingIndices = new BitArray(subMeshCount);
             foreach (var mergeInfo in Component.merges)
             foreach (var source in mergeInfo.source)
                 mergingIndices[source.materialIndex] = true;
@@ -171,7 +171,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 => _processor = processor;
 
             public override Material[] Materials(bool fast = true) => 
-                _processor.CreateMaterials(_processor.ComputeMergingIndices(), base.Materials(fast), fast);
+                _processor.CreateMaterials(_processor.ComputeMergingIndices(
+                    _processor.Target.sharedMesh.subMeshCount), base.Materials(fast), fast);
         }
     }
 }
