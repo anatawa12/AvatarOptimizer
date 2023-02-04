@@ -152,11 +152,13 @@ namespace Anatawa12.AvatarOptimizer
             }            
         }
 
-        private void OnChanged()
+        private void OnChanged() => OnChanged(true);
+
+        private void OnChanged(bool dirty)
         {
             _generatedPreviews = null;
             var component = (MergeToonLitMaterial)target;
-            EditorUtility.SetDirty(component);
+            if (dirty) EditorUtility.SetDirty(component);
             var usedIndices = new HashSet<int>(component.merges.SelectMany(x => x.source.Select(y => y.materialIndex)));
             _candidateMaterials = _materials.Where(x => !usedIndices.Contains(x.index)).ToArray();
             _candidateNames = new []{""}.Concat(_candidateMaterials.Select(x => x.mat.name)).ToArray();
@@ -193,7 +195,7 @@ namespace Anatawa12.AvatarOptimizer
                 .Select((mat, index) => (mat, index))
                 .Where(x => x.mat.shader == Utils.ToonLitShader)
                 .ToArray();
-            OnChanged();
+            OnChanged(dirty: false);
         }
     }
 }
