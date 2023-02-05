@@ -432,7 +432,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         public Vertex Clone() => new Vertex(this);
 
-        public Vector3 ComputeActualPosition(MeshInfo2 meshInfo2)
+        public Vector3 ComputeActualPosition(MeshInfo2 meshInfo2, Matrix4x4 rendererWorldToLocalMatrix)
         {
             var position = Position;
 
@@ -449,7 +449,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 var boneMat = transformMat * bone.Bindpose;
                 MulAdd(ref matrix, boneMat, weight);
             }
-            return matrix * position;
+
+            matrix = rendererWorldToLocalMatrix * matrix;
+            return matrix * new Vector4(position.x, position.y, position.z, 1f);
         }
 
         // UnityEngine doesn't provide Matrix4x4 + Matrix4x4 and Matrix4x4 * float.
