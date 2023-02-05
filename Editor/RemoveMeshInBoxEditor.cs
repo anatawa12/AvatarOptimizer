@@ -107,10 +107,39 @@ namespace Anatawa12.AvatarOptimizer
 
             centerProp.vector3Value = Handles.PositionHandle(centerProp.vector3Value, Quaternion.identity);
             rotationProp.quaternionValue = Handles.RotationHandle(rotationProp.quaternionValue, centerProp.vector3Value);
-            sizeProp.vector3Value = Handles.ScaleHandle(sizeProp.vector3Value, centerProp.vector3Value, 
-                rotationProp.quaternionValue, HandleUtility.GetHandleSize(centerProp.vector3Value) * 1.5f);
+
+            var size = sizeProp.vector3Value;
+            var center = centerProp.vector3Value;
+            var halfSize = size / 2;
+            var x = rotationProp.quaternionValue * new Vector3(halfSize.x, 0, 0);
+            var y = rotationProp.quaternionValue * new Vector3(0, halfSize.y, 0);
+            var z = rotationProp.quaternionValue * new Vector3(0, 0, halfSize.z);
+
+            BoxFaceSlider(ref center, ref size.x, x);
+            BoxFaceSlider(ref center, ref size.x, -x);
+            BoxFaceSlider(ref center, ref size.y, y);
+            BoxFaceSlider(ref center, ref size.y, -y);
+            BoxFaceSlider(ref center, ref size.z, z);
+            BoxFaceSlider(ref center, ref size.z, -z);
+
+            sizeProp.vector3Value = size;
+            centerProp.vector3Value = center;
 
             serializedObject.ApplyModifiedProperties();
+        }
+
+        private void BoxFaceSlider(ref Vector3 center, ref float size, Vector3 directionInWorld)
+        {
+            var prev = center + directionInWorld;
+            var newer = Handles.Slider(prev, directionInWorld, 
+                HandleUtility.GetHandleSize(prev) / 3, Handles.CubeHandleCap, -1f);
+
+            if (prev != newer)
+            {
+                var opposite = center - directionInWorld;
+                size = (opposite - newer).magnitude;
+                center = (opposite + newer) / 2;
+            }
         }
 
         // ReSharper disable BitwiseOperatorOnEnumWithoutFlags
