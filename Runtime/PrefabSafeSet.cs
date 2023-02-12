@@ -12,10 +12,8 @@ namespace Anatawa12.AvatarOptimizer
         #region utilities
         private static int PrefabNestCount(Object instance)
         {
-            // TODO: nested prefab
             var nestCount = 0;
-            var root = PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(instance);
-            if (!string.IsNullOrEmpty(root))
+            while ((bool)(instance = PrefabUtility.GetCorrespondingObjectFromSource(instance)))
                 nestCount++;
 
             return nestCount;
