@@ -6,7 +6,7 @@ namespace Anatawa12.AvatarOptimizer
 {
     public class PrefabSafeSetTestComponent : MonoBehaviour
     {
-        public MaterialsSet materials;
+        [SerializeField] internal MaterialsSet materials;
 
         public PrefabSafeSetTestComponent()
         {
@@ -14,7 +14,7 @@ namespace Anatawa12.AvatarOptimizer
         }
 
         [Serializable]
-        public class MaterialsSet : PrefabSafeSet.Objects<Material, MaterialsLayer>
+        internal class MaterialsSet : PrefabSafeSet.PrefabSafeSet<Material, MaterialsLayer>
         {
             public MaterialsSet(Object outerObject) : base(outerObject)
             {
@@ -22,7 +22,7 @@ namespace Anatawa12.AvatarOptimizer
         }
 
         [Serializable]
-        public class MaterialsLayer : PrefabSafeSet.PrefabLayer<Material>
+        internal class MaterialsLayer : PrefabSafeSet.PrefabLayer<Material>
         {
         }
     }
