@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Serialization;
 using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer
@@ -10,6 +11,7 @@ namespace Anatawa12.AvatarOptimizer
     public class PrefabSafeSet
     {
         #region utilities
+
         private static int PrefabNestCount(Object instance)
         {
             var nestCount = 0;
@@ -87,7 +89,7 @@ namespace Anatawa12.AvatarOptimizer
             private readonly SerializedProperty _property;
             private readonly int _begin;
             private readonly int _end;
-            
+
             public ArrayPropertyEnumerable(SerializedProperty property)
             {
                 _property = property;
@@ -140,11 +142,16 @@ namespace Anatawa12.AvatarOptimizer
         /// </summary>
         /// <typeparam name="T"></typeparam>
         [Serializable]
-        public class Objects<T, TLayer> : ISerializationCallbackReceiver where T : Object where TLayer : PrefabLayer<T>
+        public class Objects<T, TLayer> : ISerializationCallbackReceiver where TLayer : PrefabLayer<T>
         {
             private readonly Object _outerObject;
+            [SerializeField, HideInInspector] internal T fakeSlot;
             [SerializeField] internal T[] mainSet = Array.Empty<T>();
             [SerializeField] internal TLayer[] prefabLayers = Array.Empty<TLayer>();
+
+            // for nestCount == 0, _checkedCurrentLayerAdditions is used
+            private T[] _checkedCurrentLayerRemoves;
+            private T[] _checkedCurrentLayerAdditions;
 
             protected Objects(Object outerObject)
             {
@@ -162,12 +169,39 @@ namespace Anatawa12.AvatarOptimizer
 
             public void OnBeforeSerialize()
             {
+                fakeSlot = default;
                 if (!_outerObject) return;
 
                 // match prefabLayers count.
                 var nestCount = PrefabNestCount(_outerObject);
 
-                if (prefabLayers.Length == nestCount) return; // nothing to do
+                if (prefabLayers.Length == nestCount)
+                {
+                    // check static contracts
+                    void DistinctCheckArray(ref T[] source, ref T[] checkedArray, Func<T, bool> filter)
+                    {
+                        if (checkedArray == source && source.All(filter)) return;
+                        var array = source.Distinct().Where(filter).ToArray();
+                        if (array.Length != source.Length)
+                            source = array;
+                        checkedArray = source;
+                    }
+
+                    if (nestCount == 0)
+                    {
+                        DistinctCheckArray(ref mainSet, ref _checkedCurrentLayerAdditions, x => x != null);
+                    }
+                    else
+                    {
+                        var currentLayer = prefabLayers[nestCount - 1];
+                        DistinctCheckArray(ref currentLayer.additions, ref _checkedCurrentLayerAdditions,
+                            x => x != null);
+                        DistinctCheckArray(ref currentLayer.removes, ref _checkedCurrentLayerRemoves,
+                            x => x != null && !currentLayer.additions.Contains(x));
+                    }
+
+                    return;
+                }
 
                 if (prefabLayers.Length > nestCount)
                 {
@@ -222,7 +256,7 @@ namespace Anatawa12.AvatarOptimizer
                     prefabLayers = new TLayer[nestCount];
                     for (var i = 0; i < src.Length; i++)
                         prefabLayers[i] = src[i];
-                    
+
                     return;
                 }
             }
@@ -234,7 +268,7 @@ namespace Anatawa12.AvatarOptimizer
         }
 
         [Serializable]
-        public abstract class PrefabLayer<T> where T : Object
+        public abstract class PrefabLayer<T>
         {
             // if some value is in both removes and additions, the values should be added
             [SerializeField] internal T[] removes = Array.Empty<T>();
@@ -252,15 +286,22 @@ namespace Anatawa12.AvatarOptimizer
         private static class EditorStatics
         {
             public static GUIContent MultiEditingNotSupported = new GUIContent("Multi editing not supported");
-            public static GUIContent ToAdd = new GUIContent("Element to add");
+
+            public static GUIContent ToAdd = new GUIContent("Element to add")
+            {
+                tooltip = "Drag & Drop value to here to add element to this set."
+            };
+
             public static GUIContent RemoveButton = new GUIContent("X")
             {
                 tooltip = "Remove Content"
             };
+
             public static GUIContent ForceAddButton = new GUIContent("+")
             {
                 tooltip = "Add this element in current prefab modifications."
             };
+
             public static GUIContent Restore = new GUIContent("+")
             {
                 tooltip = "Restore removed element"
@@ -270,68 +311,58 @@ namespace Anatawa12.AvatarOptimizer
         [CustomPropertyDrawer(typeof(Objects<,>), true)]
         private class ObjectsEditor : PropertyDrawer
         {
-            private static readonly float LineHeight =
-                EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
-
-            // heading line and fold 
-            private static readonly float ConstantHeightForExpanded =
-                EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing + EditorGUIUtility.singleLineHeight;
-
-            private void CollectPrevLayerValues(ListSet<Object> resultSet, SerializedProperty property, int nestCount)
+            public ObjectsEditor()
             {
-                var mainSet = property.FindPropertyRelative(nameof(Objects<Object, PrefabLayer<Object>>.mainSet));
-                for (var i = 0; i < mainSet.arraySize; i++)
-                    resultSet.Add(mainSet.GetArrayElementAtIndex(i).objectReferenceValue);
+                Debug.Log("ObjectsEditor Constructor");
+            }
 
-                // apply modifications until previous one
-                var prefabLayers = property.FindPropertyRelative(nameof(Objects<Object, PrefabLayer<Object>>.prefabLayers));
-                foreach (var layer in new ArrayPropertyEnumerable(prefabLayers).Take(nestCount - 1))
+            private int _nestCountCache = -1;
+
+            private int GetNestCount(Object obj) =>
+                _nestCountCache != -1 ? _nestCountCache : _nestCountCache = PrefabNestCount(obj);
+
+            private Type _typeCache;
+
+            private readonly Dictionary<string, PrefabSafeSetPrefabEditor> _caches =
+                new Dictionary<string, PrefabSafeSetPrefabEditor>();
+
+            private PrefabSafeSetPrefabEditor GetCache(SerializedProperty property)
+            {
+                if (!_caches.TryGetValue(property.propertyPath, out var cached))
                 {
-                    var removes = layer.FindPropertyRelative(nameof(PrefabLayer<Object>.removes));
-                    var additions = layer.FindPropertyRelative(nameof(PrefabLayer<Object>.additions));
+                    _caches[property.propertyPath] = cached =
+                        new PrefabSafeSetPrefabEditor(property, GetNestCount(property.serializedObject.targetObject));
+                }
 
-                    foreach (var prop in new ArrayPropertyEnumerable(removes))
-                        resultSet.Remove(prop.objectReferenceValue);
-                    
-                    foreach (var prop in new ArrayPropertyEnumerable(additions))
-                        resultSet.Add(prop.objectReferenceValue);
+                return cached;
+            }
+
+            class PrefabSafeSetPrefabEditor : PrefabSafeSetPrefabEditorBase<Object>
+            {
+                public PrefabSafeSetPrefabEditor(SerializedProperty property, int nestCount) : base(property, nestCount)
+                {
+                }
+
+                private protected override Object GetValue(SerializedProperty prop) => prop.objectReferenceValue;
+
+                private protected override void SetValue(SerializedProperty prop, Object value) =>
+                    prop.objectReferenceValue = value;
+
+                private protected override float GetAddRegionSize() => EditorGUIUtility.singleLineHeight;
+
+                private protected override void OnGUIAddRegion(Rect position)
+                {
+                    var addValue = Field(position, EditorStatics.ToAdd, default);
+                    if (addValue != null) DoAddValue(addValue);
                 }
             }
 
             public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
             {
-                if (property.serializedObject.isEditingMultipleObjects)
+                if (property.serializedObject.isEditingMultipleObjects || !property.isExpanded)
                     return EditorGUIUtility.singleLineHeight;
-                
-                if (!property.isExpanded) return EditorGUIUtility.singleLineHeight;
 
-                var nestCount = PrefabNestCount(property.serializedObject.targetObject);
-
-                if (nestCount == 0)
-                {
-                    return property.FindPropertyRelative(nameof(Objects<Object, PrefabLayer<Object>>.mainSet)).arraySize * LineHeight 
-                           + ConstantHeightForExpanded;
-                }
-
-                var resultSet = new ListSet<Object>(true);
-                CollectPrevLayerValues(resultSet, property, nestCount); 
-
-                // apply modifications until previous one
-                var prefabLayers = property.FindPropertyRelative(nameof(Objects<Object, PrefabLayer<Object>>.prefabLayers));
-
-                var layer = prefabLayers.GetArrayElementAtIndex(nestCount - 1);
-                if (layer != null) {
-                    var removes = layer.FindPropertyRelative(nameof(PrefabLayer<Object>.removes));
-                    var additions = layer.FindPropertyRelative(nameof(PrefabLayer<Object>.additions));
-
-                    foreach (var prop in new ArrayPropertyEnumerable(removes))
-                        resultSet.Add(prop.objectReferenceValue);
-
-                    foreach (var prop in new ArrayPropertyEnumerable(additions))
-                        resultSet.Add(prop.objectReferenceValue);
-                }
-
-                return resultSet.Count * LineHeight + ConstantHeightForExpanded;
+                return GetCache(property).GetPropertyHeight();
             }
 
             public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
@@ -347,238 +378,305 @@ namespace Anatawa12.AvatarOptimizer
                 property.isExpanded = EditorGUI.Foldout(position, property.isExpanded, label);
 
                 if (property.isExpanded)
+                    GetCache(property).OnGUI(position);
+            }
+        }
+
+        abstract class PrefabSafeSetPrefabEditorBase<T>
+        {
+            // common property
+            private readonly SerializedProperty _fakeSlot;
+
+            #region prefab overrides
+
+            private readonly List<Element> _elements;
+            private readonly int _upstreamElementCount;
+            private readonly SerializedProperty _currentRemoves;
+            private readonly SerializedProperty _currentAdditions;
+            private int _currentRemovesSize;
+            private int _currentAdditionsSize;
+
+            #endregion
+
+            #region root object
+
+            private readonly SerializedProperty _mainSet;
+
+            #endregion
+
+            // ReSharper disable StaticMemberInGenericType
+            private static readonly float LineHeight =
+                EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
+
+            private static readonly float ConstantHeightForExpanded =
+                EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
+            // ReSharper restore StaticMemberInGenericType
+
+            private protected abstract T GetValue(SerializedProperty prop);
+            private protected abstract void SetValue(SerializedProperty prop, T value);
+            private protected abstract float GetAddRegionSize();
+            private protected abstract void OnGUIAddRegion(Rect position);
+
+            // ReSharper disable VirtualMemberCallInConstructor
+            public PrefabSafeSetPrefabEditorBase(SerializedProperty property, int nestCount)
+            {
+                _fakeSlot = property.FindPropertyRelative(nameof(Objects<Object, PrefabLayer<Object>>.fakeSlot));
+
+                if (nestCount == 0)
                 {
-                    var nestCount = PrefabNestCount(property.serializedObject.targetObject);
-
-                    if (nestCount == 0)
+                    _mainSet = property.FindPropertyRelative(nameof(Objects<Object, PrefabLayer<Object>>.mainSet));
+                }
+                else
+                {
+                    _elements = new List<Element>();
+                    var upstreamValues = new HashSet<T>();
+                    var mainSet = property.FindPropertyRelative(nameof(Objects<Object, PrefabLayer<Object>>.mainSet));
+                    foreach (var valueProp in new ArrayPropertyEnumerable(mainSet))
                     {
-                        // simple set
-                        var mainSet = property.FindPropertyRelative(nameof(Objects<Object, PrefabLayer<Object>>.mainSet));
-
-                        var newLabel = new GUIContent("");
-                        var toRemoveIndex = -1;
-
-                        for (var i = 0; i < mainSet.arraySize; i++)
-                        {
-                            var prop = mainSet.GetArrayElementAtIndex(i);
-                            newLabel.text = $"Element {i}";
-                            
-                            position.y += LineHeight;
-
-                            switch (OneElement(position, newLabel, prop))
-                            {
-                                case OneElementResult.Nothing:
-                                    break;
-                                case OneElementResult.Removed:
-                                    toRemoveIndex = i;
-                                    break;
-                                case OneElementResult.Added:
-                                    break;
-                                default:
-                                    throw new ArgumentOutOfRangeException();
-                            }
-                        }
-
-                        if (toRemoveIndex != -1)
-                            RemoveArrayElementAt(mainSet, toRemoveIndex);
-
-                        // add element field
-                        position.y += LineHeight;
-                        var value = Field(position, EditorStatics.ToAdd, null);
-                        if (value != null)
-                        {
-                            var found = false;
-                            foreach (var prop in new ArrayPropertyEnumerable(mainSet))
-                                // ReSharper disable once AssignmentInConditionalExpression
-                                if (found |= prop.objectReferenceValue.Equals(value))
-                                    break;
-                            if (!found)
-                            {
-                                mainSet.arraySize += 1;
-                                mainSet.GetArrayElementAtIndex(mainSet.arraySize - 1).objectReferenceValue = value;
-                            }
-                        }
+                        var value = GetValue(valueProp);
+                        if (value == null) continue;
+                        if (upstreamValues.Contains(value)) continue;
+                        upstreamValues.Add(value);
+                        _elements.Add(new Element(value));
                     }
-                    else
-                    {
-                        var resultSet = new ListSet<Object>(false);
-                        CollectPrevLayerValues(resultSet, property, nestCount);
-                        
-                        var prefabLayers = property.FindPropertyRelative(nameof(Objects<Object, PrefabLayer<Object>>.prefabLayers));
-                        if (prefabLayers.arraySize < nestCount) prefabLayers.arraySize = nestCount;
 
-                        var layer = prefabLayers.GetArrayElementAtIndex(nestCount - 1);
+                    // apply modifications until previous one
+                    var prefabLayers =
+                        property.FindPropertyRelative(nameof(Objects<Object, PrefabLayer<Object>>.prefabLayers));
+                    foreach (var layer in new ArrayPropertyEnumerable(prefabLayers).Take(nestCount - 1))
+                    {
                         var removes = layer.FindPropertyRelative(nameof(PrefabLayer<Object>.removes));
                         var additions = layer.FindPropertyRelative(nameof(PrefabLayer<Object>.additions));
 
-                        // remove nulls which will be generated by reverting
-                        for (var i = 0; i < removes.arraySize; i++)
-                            if (!removes.GetArrayElementAtIndex(i).objectReferenceValue)
-                                RemoveArrayElementAt(removes, i--);
-                        for (var i = 0; i < additions.arraySize; i++)
-                            if (!additions.GetArrayElementAtIndex(i).objectReferenceValue)
-                                RemoveArrayElementAt(additions, i--);
-
-                        var removesArray = ToArray(removes);
-                        var additionsArray = ToArray(additions);
-
-                        var removesSet = new HashSet<Object>(removesArray);
-                        var addsSet = new HashSet<Object>(additionsArray);
-
-                        var elementI = 0;
-                        var newLabel = new GUIContent("");
-
-                        foreach (var value in resultSet)
+                        foreach (var prop in new ArrayPropertyEnumerable(removes))
                         {
-                            position.y += LineHeight;
-                            if (removesSet.Remove(value))
-                            {
-                                newLabel.text = "(Removed)";
-                                EditorGUI.BeginProperty(position, label,
-                                    removes.GetArrayElementAtIndex(Array.IndexOf(removesArray, value)));
-                                OnePrefabElement(position, newLabel, value, false, true);
-                                EditorGUI.EndProperty();
-                            }
-                            else if (addsSet.Remove(value))
-                            {
-                                newLabel.text = $"Element {elementI++} (Added twice)";
+                            var value = GetValue(prop);
+                            if (upstreamValues.Remove(value))
+                                _elements.RemoveAll(x => x.Value.Equals(value));
+                        }
 
-                                EditorGUI.BeginProperty(position, label,
-                                    additions.GetArrayElementAtIndex(Array.IndexOf(additionsArray, value)));
-                                switch (OnePrefabElement(position, newLabel, value, true, false))
+                        foreach (var prop in new ArrayPropertyEnumerable(additions))
+                        {
+                            var value = GetValue(prop);
+                            if (upstreamValues.Add(value))
+                                _elements.Add(new Element(value));
+                        }
+                    }
+
+                    _upstreamElementCount = _elements.Count;
+
+                    // process current layer
+                    if (prefabLayers.arraySize < nestCount) prefabLayers.arraySize = nestCount;
+
+                    var currentLayer = prefabLayers.GetArrayElementAtIndex(nestCount - 1);
+                    _currentRemoves = currentLayer.FindPropertyRelative(nameof(PrefabLayer<Object>.removes));
+                    _currentAdditions = currentLayer.FindPropertyRelative(nameof(PrefabLayer<Object>.additions));
+                }
+
+                DoInitialize();
+            }
+            // ReSharper restore VirtualMemberCallInConstructor
+
+            public void Initialize()
+            {
+                if (_mainSet != null) return;
+                if (_currentRemovesSize != _currentRemoves.arraySize ||
+                    _currentAdditionsSize != _currentAdditions.arraySize)
+                {
+                    DoInitialize();
+                }
+            }
+
+            public void DoInitialize()
+            {
+                if (_mainSet != null) return;
+                var removesArray = ToArray(_currentRemoves);
+                var removesSet = new HashSet<T>(removesArray);
+                var additionsArray = ToArray(_currentAdditions);
+                var addsSet = new HashSet<T>(additionsArray);
+
+                _elements.RemoveRange(_upstreamElementCount, _elements.Count - _upstreamElementCount);
+
+                for (var i = 0; i < _elements.Count; i++)
+                {
+                    var element = _elements[i];
+
+                    var value = element.Value;
+                    if (removesSet.Remove(value))
+                    {
+                        element.Status = Status.Removed;
+                        var index = Array.IndexOf(removesArray, value);
+                        element.IndexInModifierArray = index;
+                        element.ModifierProp = _currentRemoves.GetArrayElementAtIndex(index);
+                    }
+                    else if (addsSet.Remove(value))
+                    {
+                        element.Status = Status.AddedTwice;
+                        var index = Array.IndexOf(removesArray, value);
+                        element.IndexInModifierArray = index;
+                        element.ModifierProp = _currentAdditions.GetArrayElementAtIndex(index);
+                    }
+                    else
+                    {
+                        element.Status = Status.Natural;
+                        element.ModifierProp = null;
+                    }
+
+                    _elements[i] = element;
+                }
+
+                // newly added elements
+                for (var i = 0; i < additionsArray.Length; i++)
+                {
+                    var value = additionsArray[i];
+                    if (!addsSet.Contains(value)) continue; // it's duplicated addition
+
+                    _elements.Add(new Element(value, Status.NewElement,
+                        _currentAdditions.GetArrayElementAtIndex(i), i));
+                }
+
+                // fake removed elements
+                for (var i = 0; i < removesArray.Length; i++)
+                {
+                    var value = removesArray[i];
+                    if (!removesSet.Contains(value)) continue; // it's removed upper layer
+
+                    _elements.Add(new Element(value, Status.FakeRemoved,
+                        _currentRemoves.GetArrayElementAtIndex(i), i));
+                }
+
+                _currentRemovesSize = _currentRemoves.arraySize;
+                _currentAdditionsSize = _currentAdditions.arraySize;
+            }
+
+            public float GetPropertyHeight()
+            {
+                Initialize();
+                return (_mainSet?.arraySize ?? _elements.Count) * LineHeight +
+                       ConstantHeightForExpanded + GetAddRegionSize();
+            }
+
+            // position is 
+            public void OnGUI(Rect position)
+            {
+                Initialize();
+
+                if (_mainSet != null)
+                {
+                    var newLabel = new GUIContent("");
+
+                    for (var i = 0; i < _mainSet.arraySize; i++)
+                    {
+                        var prop = _mainSet.GetArrayElementAtIndex(i);
+                        newLabel.text = $"Element {i}";
+
+                        position.y += LineHeight;
+
+                        EditorGUI.PropertyField(position, prop, newLabel);
+                    }
+
+                    // add element field
+                    position.y += LineHeight;
+                }
+                else
+                {
+                    var elementI = 0;
+                    var newLabel = new GUIContent("");
+
+                    // to avoid changes in for loop
+                    var removeIndexInAdditions = -1;
+
+                    foreach (var element in _elements)
+                    {
+                        position.y += LineHeight;
+                        switch (element.Status)
+                        {
+                            case Status.Natural:
+                                newLabel.text = $"Element {elementI++}";
+
+                                switch (OnePrefabElement(position, newLabel, element.Value, false, false))
                                 {
                                     case OneElementResult.Nothing:
                                         break;
                                     case OneElementResult.Removed:
-                                        removes.arraySize += 1;
-                                        removes.GetArrayElementAtIndex(removes.arraySize - 1).objectReferenceValue = value;
+                                        SetValue(AddArrayElement(_currentRemoves), element.Value);
+                                        break;
+                                    case OneElementResult.Added:
+                                        SetValue(AddArrayElement(_currentRemoves), element.Value);
+                                        break;
+                                    default:
+                                        throw new ArgumentOutOfRangeException();
+                                }
+
+                                break;
+                            case Status.Removed:
+                                newLabel.text = "(Removed)";
+                                EditorGUI.BeginProperty(position, newLabel, element.ModifierProp);
+                                OnePrefabElement(position, newLabel, element.Value, false, true);
+                                EditorGUI.EndProperty();
+                                break;
+                            case Status.NewElement:
+                                newLabel.text = $"Element {elementI++}";
+                                EditorGUI.BeginProperty(position, newLabel, element.ModifierProp);
+                                switch (OnePrefabElement(position, newLabel, element.Value, true, false))
+                                {
+                                    case OneElementResult.Nothing:
+                                        break;
+                                    case OneElementResult.Removed:
+                                        removeIndexInAdditions = element.IndexInModifierArray;
+                                        break;
+                                    case OneElementResult.Added:
+                                        // Unreachable
+                                        break;
+                                    default:
+                                        throw new ArgumentOutOfRangeException();
+                                }
+
+                                EditorGUI.EndProperty();
+                                break;
+                            case Status.AddedTwice:
+                                newLabel.text = $"Element {elementI++} (Added twice)";
+
+                                EditorGUI.BeginProperty(position, newLabel, element.ModifierProp);
+                                switch (OnePrefabElement(position, newLabel, element.Value, true, false))
+                                {
+                                    case OneElementResult.Nothing:
+                                        break;
+                                    case OneElementResult.Removed:
+                                        removeIndexInAdditions = element.IndexInModifierArray;
+                                        SetValue(AddArrayElement(_currentRemoves), element.Value);
                                         break;
                                     case OneElementResult.Added:
                                         break;
                                     default:
                                         throw new ArgumentOutOfRangeException();
                                 }
+
                                 EditorGUI.EndProperty();
-                            }
-                            else
-                            {
-                                newLabel.text = $"Element {elementI++}";
-
-                                switch (OnePrefabElement(position, newLabel, value, false, false))
-                                {
-                                    case OneElementResult.Nothing:
-                                        break;
-                                    case OneElementResult.Removed:
-                                        removes.arraySize += 1;
-                                        removes.GetArrayElementAtIndex(removes.arraySize - 1).objectReferenceValue = value;
-                                        break;
-                                    case OneElementResult.Added:
-                                        additions.arraySize += 1;
-                                        additions.GetArrayElementAtIndex(additions.arraySize - 1).objectReferenceValue = value;
-                                        break;
-                                    default:
-                                        throw new ArgumentOutOfRangeException();
-                                }   
-                            }
-                        }
-
-                        // show added elements
-                        for (var i = 0; i < additionsArray.Length; i++)
-                        {
-                            var value = additionsArray[i];
-                            if (!addsSet.Contains(value)) continue; // it's duplicated addition
-
-                            position.y += LineHeight;
-                            newLabel.text = $"Element {elementI++}";
-                            resultSet.Add(value);
-
-                            EditorGUI.BeginProperty(position, label, additions.GetArrayElementAtIndex(i));
-                            switch (OnePrefabElement(position, newLabel, value, true, false))
-                            {
-                                case OneElementResult.Nothing:
-                                    break;
-                                case OneElementResult.Removed:
-                                    RemoveArrayElementAt(additions, i);
-                                    break;
-                                case OneElementResult.Added:
-                                    // Unreachable
-                                    break;
-                                default:
-                                    throw new ArgumentOutOfRangeException();
-                            }
-                            EditorGUI.EndProperty();
-                        }
-
-                        // show removed elements
-                        for (var i = 0; i < removesArray.Length; i++)
-                        {
-                            var value = removesArray[i];
-                            if (!removesSet.Contains(value)) continue; // it's removed upper layer
-                            position.y += LineHeight;
-                            newLabel.text = "(Removed)";
-                            EditorGUI.BeginProperty(position, label, removes.GetArrayElementAtIndex(i));
-                            OnePrefabElement(position, newLabel, value, false, true);
-                            EditorGUI.EndProperty();
-                        }
-
-                        position.y += LineHeight;
-
-                        var addValue = Field(position, EditorStatics.ToAdd, null);
-                        if (addValue != null)
-                        {
-                            if (!resultSet.Contains(addValue))
-                            {
-                                additions.arraySize += 1;
-                                additions.GetArrayElementAtIndex(additions.arraySize - 1).objectReferenceValue = addValue;                                
-                            }
+                                break;
+                            case Status.FakeRemoved:
+                                newLabel.text = "(Removed but not found)";
+                                EditorGUI.BeginProperty(position, newLabel, element.ModifierProp);
+                                OnePrefabElement(position, newLabel, element.Value, false, true);
+                                EditorGUI.EndProperty();
+                                break;
+                            default:
+                                throw new ArgumentOutOfRangeException();
                         }
                     }
-                }
-            }
 
-            private void RemoveArrayElementAt(SerializedProperty array, int index)
-            {
-                var prevProp = array.GetArrayElementAtIndex(index);
-                for (var i = index + 1; i < array.arraySize; i++)
-                {
-                    var curProp = array.GetArrayElementAtIndex(i);
-                    prevProp.objectReferenceValue = curProp.objectReferenceValue;
-                    prevProp = curProp;
+                    if (removeIndexInAdditions != -1)
+                        RemoveArrayElementAt(_currentRemoves, removeIndexInAdditions);
+
+                    position.y += LineHeight;
                 }
 
-                array.arraySize -= 1;
+                OnGUIAddRegion(position);
             }
 
-            private Object[] ToArray(SerializedProperty array)
-            {
-                var result = new Object[array.arraySize];
-                for (var i = 0; i < result.Length; i++)
-                    result[i] = array.GetArrayElementAtIndex(i).objectReferenceValue;
-                return result;
-            }
 
-            private OneElementResult OneElement(Rect position, GUIContent label, SerializedProperty property)
-            {
-                // layout
-                var fieldPosition = position;
-                fieldPosition.width -= EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
-                var removeButtonPosition = new Rect(
-                    fieldPosition.xMax + EditorGUIUtility.standardVerticalSpacing, position.y,
-                    EditorGUIUtility.singleLineHeight, position.height);
-
-                // field
-                EditorGUI.PropertyField(fieldPosition, property, label);
-
-                // button to remove
-                if (GUI.Button(removeButtonPosition, EditorStatics.RemoveButton))
-                {
-                    return OneElementResult.Removed;
-                }
-
-                return OneElementResult.Nothing;
-            }
-
-            private OneElementResult OnePrefabElement(Rect position, GUIContent label, Object value, bool added, bool removed)
+            private OneElementResult OnePrefabElement(Rect position, GUIContent label, T value, bool added,
+                bool removed)
             {
                 // layout
                 var fieldPosition = position;
@@ -596,14 +694,16 @@ namespace Anatawa12.AvatarOptimizer
 
                 EditorGUI.BeginDisabledGroup(removed);
                 // field
-                Field(fieldPosition, label, value);
+                var fieldValue = Field(fieldPosition, label, value);
+                if (fieldValue == null)
+                    result = OneElementResult.Removed;
 
                 EditorGUI.BeginDisabledGroup(added);
                 if (GUI.Button(addButtonPosition, removed ? EditorStatics.Restore : EditorStatics.ForceAddButton))
                     result = OneElementResult.Added;
                 EditorGUI.EndDisabledGroup();
 
-                    // button to remove
+                // button to remove
                 if (GUI.Button(removeButtonPosition, EditorStatics.RemoveButton))
                     result = OneElementResult.Removed;
 
@@ -612,12 +712,117 @@ namespace Anatawa12.AvatarOptimizer
                 return result;
             }
 
-            private protected Object Field(Rect position, GUIContent label, Object value)
+            protected void DoAddValue(T addValue)
             {
-                var type = fieldInfo.FieldType;
-                while (!(type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Objects<,>)))
-                    type = type.BaseType;
-                return EditorGUI.ObjectField(position, label, value, type.GetGenericArguments()[0], true);
+                if (_mainSet != null)
+                {
+                    foreach (var prop in new ArrayPropertyEnumerable(_mainSet))
+                        if (GetValue(prop).Equals(addValue))
+                            return;
+                    SetValue(AddArrayElement(_mainSet), addValue);
+                }
+
+                else
+                {
+                    var index = _elements.FindIndex(x => x.Value.Equals(addValue));
+                    if (index == -1)
+                    {
+                        // not on list: just add
+                        SetValue(AddArrayElement(_currentAdditions), addValue);
+                    }
+                    else
+                    {
+                        var element = _elements[index];
+                        switch (element.Status)
+                        {
+                            case Status.Natural:
+                                SetValue(AddArrayElement(_currentAdditions), element.Value);
+                                break;
+                            case Status.Removed:
+                                RemoveArrayElementAt(_currentRemoves, element.IndexInModifierArray);
+                                break;
+                            case Status.NewElement:
+                            case Status.AddedTwice:
+                                // already added: nothing to do
+                                break;
+                            case Status.FakeRemoved:
+                                RemoveArrayElementAt(_currentRemoves, element.IndexInModifierArray);
+                                SetValue(AddArrayElement(_currentAdditions), element.Value);
+                                break;
+                            default:
+                                throw new ArgumentOutOfRangeException();
+                        }
+                    }
+                }
+            }
+
+            protected T Field(Rect position, GUIContent label, T value)
+            {
+                SetValue(_fakeSlot, value);
+                EditorGUI.PropertyField(position, _fakeSlot, label);
+                value = GetValue(_fakeSlot);
+                return value;
+            }
+
+            struct Element
+            {
+                public readonly T Value;
+                public Status Status;
+                public SerializedProperty ModifierProp;
+                public int IndexInModifierArray;
+
+                public Element(T value)
+                {
+                    Value = value;
+                    Status = Status.Natural;
+                    ModifierProp = null;
+                    IndexInModifierArray = 0;
+                }
+
+                public Element(T value, Status status, SerializedProperty modifierProp, int index)
+                {
+                    if (value == null) throw new ArgumentNullException(nameof(value));
+                    Value = value;
+                    Status = status;
+                    ModifierProp = modifierProp ?? throw new ArgumentNullException(nameof(modifierProp));
+                    IndexInModifierArray = index;
+                }
+            }
+
+            enum Status
+            {
+                Natural,
+                Removed,
+                NewElement,
+                AddedTwice,
+                FakeRemoved,
+            }
+
+            private static SerializedProperty AddArrayElement(SerializedProperty array)
+            {
+                array.arraySize += 1;
+                return array.GetArrayElementAtIndex(array.arraySize - 1);
+            }
+
+            private static void RemoveArrayElementAt(SerializedProperty array, int index)
+            {
+                var prevProp = array.GetArrayElementAtIndex(index);
+                for (var i = index + 1; i < array.arraySize; i++)
+                {
+                    var curProp = array.GetArrayElementAtIndex(i);
+                    prevProp.objectReferenceValue = curProp.objectReferenceValue;
+                    prevProp = curProp;
+                }
+
+                array.arraySize -= 1;
+            }
+
+            private T[] ToArray(SerializedProperty array)
+            {
+                var result = new T[array.arraySize];
+                for (var i = 0; i < result.Length; i++)
+                    result[i] = GetValue(array.GetArrayElementAtIndex(i));
+                return result;
             }
 
             enum OneElementResult
