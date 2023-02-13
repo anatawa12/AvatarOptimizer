@@ -682,12 +682,8 @@ namespace Anatawa12.AvatarOptimizer
                 var fieldPosition = position;
                 // two buttons
                 fieldPosition.width -= EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
-                fieldPosition.width -= EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
                 var addButtonPosition = new Rect(
                     fieldPosition.xMax + EditorGUIUtility.standardVerticalSpacing, position.y,
-                    EditorGUIUtility.singleLineHeight, position.height);
-                var removeButtonPosition = new Rect(
-                    addButtonPosition.xMax + EditorGUIUtility.standardVerticalSpacing, position.y,
                     EditorGUIUtility.singleLineHeight, position.height);
 
                 var result = OneElementResult.Nothing;
@@ -702,10 +698,6 @@ namespace Anatawa12.AvatarOptimizer
                 if (GUI.Button(addButtonPosition, removed ? EditorStatics.Restore : EditorStatics.ForceAddButton))
                     result = OneElementResult.Added;
                 EditorGUI.EndDisabledGroup();
-
-                // button to remove
-                if (GUI.Button(removeButtonPosition, EditorStatics.RemoveButton))
-                    result = OneElementResult.Removed;
 
                 EditorGUI.EndDisabledGroup();
 
