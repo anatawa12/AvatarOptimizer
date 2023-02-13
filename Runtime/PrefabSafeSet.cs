@@ -1,6 +1,8 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -84,7 +86,7 @@ namespace Anatawa12.AvatarOptimizer
             public T[] ToArray() => _list?.ToArray() ?? throw new InvalidOperationException("set only");
         }
 
-        private readonly struct ArrayPropertyEnumerable
+        private readonly struct ArrayPropertyEnumerable : IEnumerable<SerializedProperty>
         {
             private readonly SerializedProperty _property;
             private readonly int _begin;
@@ -111,7 +113,10 @@ namespace Anatawa12.AvatarOptimizer
 
             public Enumerator GetEnumerator() => new Enumerator(this);
 
-            public struct Enumerator
+            IEnumerator<SerializedProperty> IEnumerable<SerializedProperty>.GetEnumerator() => GetEnumerator();
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+            public struct Enumerator : IEnumerator<SerializedProperty>
             {
                 private readonly SerializedProperty _property;
                 private int _index;
@@ -125,11 +130,19 @@ namespace Anatawa12.AvatarOptimizer
                 }
 
                 public SerializedProperty Current => _property.GetArrayElementAtIndex(_index);
+                SerializedProperty IEnumerator<SerializedProperty>.Current => Current;
+                object IEnumerator.Current => Current;
 
                 public bool MoveNext()
                 {
                     _index++;
                     return _index < _size;
+                }
+
+                public void Reset() => throw new NotSupportedException();
+
+                public void Dispose()
+                {
                 }
             }
         }
@@ -292,19 +305,9 @@ namespace Anatawa12.AvatarOptimizer
                 tooltip = "Drag & Drop value to here to add element to this set."
             };
 
-            public static GUIContent RemoveButton = new GUIContent("X")
-            {
-                tooltip = "Remove Content"
-            };
-
             public static GUIContent ForceAddButton = new GUIContent("+")
             {
                 tooltip = "Add this element in current prefab modifications."
-            };
-
-            public static GUIContent Restore = new GUIContent("+")
-            {
-                tooltip = "Restore removed element"
             };
         }
 
@@ -353,7 +356,7 @@ namespace Anatawa12.AvatarOptimizer
                 private protected override void OnGUIAddRegion(Rect position)
                 {
                     var addValue = Field(position, EditorStatics.ToAdd, default);
-                    if (addValue != null) DoAddValue(addValue);
+                    if (addValue != null) EditorUtil.AddValue(addValue);
                 }
             }
 
@@ -362,7 +365,7 @@ namespace Anatawa12.AvatarOptimizer
                 if (property.serializedObject.isEditingMultipleObjects || !property.isExpanded)
                     return EditorGUIUtility.singleLineHeight;
 
-                return GetCache(property).GetPropertyHeight();
+                return GetCache(property).GetPropertyHeight() + EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
             }
 
             public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
@@ -378,55 +381,225 @@ namespace Anatawa12.AvatarOptimizer
                 property.isExpanded = EditorGUI.Foldout(position, property.isExpanded, label);
 
                 if (property.isExpanded)
+                {
+                    position.y += EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
                     GetCache(property).OnGUI(position);
+                }
             }
         }
 
         abstract class PrefabSafeSetPrefabEditorBase<T>
         {
-            // common property
             private readonly SerializedProperty _fakeSlot;
-
-            #region prefab overrides
-
-            private readonly List<Element> _elements;
-            private readonly int _upstreamElementCount;
-            private readonly SerializedProperty _currentRemoves;
-            private readonly SerializedProperty _currentAdditions;
-            private int _currentRemovesSize;
-            private int _currentAdditionsSize;
-
-            #endregion
-
-            #region root object
-
-            private readonly SerializedProperty _mainSet;
-
-            #endregion
-
-            // ReSharper disable StaticMemberInGenericType
-            private static readonly float LineHeight =
-                EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
-
-            private static readonly float ConstantHeightForExpanded =
-                EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
-            // ReSharper restore StaticMemberInGenericType
+            protected readonly EditorUtil<T> EditorUtil;
+            // ReSharper disable VirtualMemberCallInConstructor
+            public PrefabSafeSetPrefabEditorBase(SerializedProperty property, int nestCount)
+            {
+                _fakeSlot = property.FindPropertyRelative(nameof(Objects<Object, PrefabLayer<Object>>.fakeSlot));
+                EditorUtil = EditorUtil<T>.Create(property, nestCount, GetValue, SetValue);
+            }
 
             private protected abstract T GetValue(SerializedProperty prop);
             private protected abstract void SetValue(SerializedProperty prop, T value);
             private protected abstract float GetAddRegionSize();
             private protected abstract void OnGUIAddRegion(Rect position);
+            
+            // ReSharper disable StaticMemberInGenericType
+            private static readonly float LineHeight =
+                EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
+            // ReSharper restore StaticMemberInGenericType
 
-            // ReSharper disable VirtualMemberCallInConstructor
-            public PrefabSafeSetPrefabEditorBase(SerializedProperty property, int nestCount)
+            public float GetPropertyHeight() =>
+                EditorUtil.ElementsCount * LineHeight + GetAddRegionSize();
+
+            // position is 
+            public void OnGUI(Rect position)
             {
-                _fakeSlot = property.FindPropertyRelative(nameof(Objects<Object, PrefabLayer<Object>>.fakeSlot));
+                var elementI = 0;
+                var newLabel = new GUIContent("");
 
-                if (nestCount == 0)
+                // to avoid changes in for loop
+                var modKind = ModificationKind.Natural;
+                T modValue = default;
+
+                foreach (var element in EditorUtil.Elements)
                 {
-                    _mainSet = property.FindPropertyRelative(nameof(Objects<Object, PrefabLayer<Object>>.mainSet));
+                    position.y += LineHeight;
+                    ModificationKind fieldModKind;
+
+                    switch (element.Status)
+                    {
+                        case ElementStatus.Natural:
+                            newLabel.text = $"Element {elementI++}";
+                            fieldModKind = ModificationKind.Natural;
+                            break;
+                        case ElementStatus.Removed:
+                            newLabel.text = "(Removed)";
+                            fieldModKind = ModificationKind.Remove;
+                            break;
+                        case ElementStatus.NewElement:
+                            newLabel.text = $"Element {elementI++}";
+                            fieldModKind = ModificationKind.Add;
+                            break;
+                        case ElementStatus.AddedTwice:
+                            newLabel.text = $"Element {elementI++} (Added twice)";
+                            fieldModKind = ModificationKind.Add;
+                            break;
+                        case ElementStatus.FakeRemoved:
+                            newLabel.text = "(Removed but not found)";
+                            fieldModKind = ModificationKind.Remove;
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
+
+                    var currentModKind = OnePrefabElement(position, newLabel, element.Value, fieldModKind, element.ModifierProp);
+                    if (currentModKind != ModificationKind.Natural)
+                        (modKind, modValue) = (currentModKind, element.Value);
                 }
-                else
+
+                switch (modKind)
+                {
+                    case ModificationKind.Natural:
+                        break;
+                    case ModificationKind.Remove:
+                        EditorUtil.AddValue(modValue);
+                        break;
+                    case ModificationKind.Add:
+                        EditorUtil.RemoveValue(modValue);
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+
+                position.y += LineHeight;
+
+                OnGUIAddRegion(position);
+            }
+
+            private enum ModificationKind
+            {
+                Natural,
+                Add,
+                Remove
+            }
+
+            private ModificationKind OnePrefabElement(Rect position, GUIContent label, T value, ModificationKind kind,
+                SerializedProperty modifierProp)
+            {
+                // layout
+                var fieldPosition = position;
+                // two buttons
+                fieldPosition.width -= EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
+                var addButtonPosition = new Rect(
+                    fieldPosition.xMax + EditorGUIUtility.standardVerticalSpacing, position.y,
+                    EditorGUIUtility.singleLineHeight, position.height);
+
+                var result = ModificationKind.Natural;
+
+                EditorGUI.BeginDisabledGroup(kind == ModificationKind.Remove);
+                if (modifierProp != null) EditorGUI.BeginProperty(fieldPosition, label, modifierProp);
+                // field
+                var fieldValue = Field(fieldPosition, label, value);
+                if (modifierProp != null) EditorGUI.EndProperty();
+                if (fieldValue == null)
+                    result = ModificationKind.Remove;
+
+                EditorGUI.BeginDisabledGroup(kind == ModificationKind.Add);
+                if (GUI.Button(addButtonPosition, EditorStatics.ForceAddButton))
+                    result = ModificationKind.Add;
+                EditorGUI.EndDisabledGroup();
+
+                EditorGUI.EndDisabledGroup();
+
+                return result;
+            }
+
+            protected T Field(Rect position, GUIContent label, T value)
+            {
+                SetValue(_fakeSlot, value);
+                EditorGUI.PropertyField(position, _fakeSlot, label);
+                value = GetValue(_fakeSlot);
+                return value;
+            }
+        }
+
+        public abstract class EditorUtil<T>
+        {
+            // common property;
+            [NotNull] private readonly Func<SerializedProperty, T> GetValue;
+            [NotNull] private readonly Action<SerializedProperty, T> SetValue;
+            public abstract IEnumerable<Element> Elements { get; }
+            public abstract int ElementsCount { get; }
+
+            public static EditorUtil<T> Create(SerializedProperty property, int nestCount,
+                Func<SerializedProperty, T> getValue,
+                Action<SerializedProperty, T> setValue)
+            {
+                if (nestCount == 0)
+                    return new Root(property, getValue, setValue);
+                return new PrefabModification(property, nestCount, getValue, setValue);
+            }
+
+            private EditorUtil(Func<SerializedProperty, T> getValue, Action<SerializedProperty, T> setValue)
+            {
+                GetValue = getValue ?? throw new ArgumentNullException(nameof(getValue));
+                SetValue = setValue ?? throw new ArgumentNullException(nameof(setValue));
+            }
+
+            public abstract void AddValue(T addValue);
+
+            public abstract void RemoveValue(T value);
+
+            private sealed class Root : EditorUtil<T>
+            {
+                [NotNull] private readonly SerializedProperty _mainSet;
+
+                public Root(SerializedProperty property, Func<SerializedProperty, T> getValue,
+                    Action<SerializedProperty, T> setValue) : base(getValue, setValue)
+                {
+                    _mainSet = property.FindPropertyRelative(nameof(Objects<Object, PrefabLayer<Object>>.mainSet))
+                               ?? throw new ArgumentException("mainSet not found", nameof(property));
+                }
+
+                public override IEnumerable<Element> Elements => new ArrayPropertyEnumerable(_mainSet)
+                    .Select(x => new Element(GetValue(x)));
+
+                public override int ElementsCount => _mainSet.arraySize;
+
+                public override void AddValue(T addValue)
+                {
+                    foreach (var prop in new ArrayPropertyEnumerable(_mainSet))
+                        if (GetValue(prop).Equals(addValue))
+                            return;
+                    SetValue(AddArrayElement(_mainSet), addValue);
+                }
+
+                public override void RemoveValue(T value)
+                {
+                    for (var i = 0; i < _mainSet.arraySize; i++)
+                    {
+                        if (GetValue(_mainSet.GetArrayElementAtIndex(i)).Equals(value))
+                        {
+                            RemoveArrayElementAt(_mainSet, i);
+                            return;
+                        }
+                    }
+                }
+            }
+
+            private sealed class PrefabModification : EditorUtil<T>
+            {
+                private readonly List<Element> _elements;
+                private readonly int _upstreamElementCount;
+                private readonly SerializedProperty _currentRemoves;
+                private readonly SerializedProperty _currentAdditions;
+                private int _currentRemovesSize;
+                private int _currentAdditionsSize;
+
+                public PrefabModification(SerializedProperty property, int nestCount,
+                    Func<SerializedProperty, T> getValue, Action<SerializedProperty, T> setValue) : base(getValue,
+                    setValue)
                 {
                     _elements = new List<Element>();
                     var upstreamValues = new HashSet<T>();
@@ -469,253 +642,91 @@ namespace Anatawa12.AvatarOptimizer
                     if (prefabLayers.arraySize < nestCount) prefabLayers.arraySize = nestCount;
 
                     var currentLayer = prefabLayers.GetArrayElementAtIndex(nestCount - 1);
-                    _currentRemoves = currentLayer.FindPropertyRelative(nameof(PrefabLayer<Object>.removes));
-                    _currentAdditions = currentLayer.FindPropertyRelative(nameof(PrefabLayer<Object>.additions));
-                }
+                    _currentRemoves = currentLayer.FindPropertyRelative(nameof(PrefabLayer<Object>.removes))
+                                      ?? throw new ArgumentException("prefabLayers.removes not found",
+                                          nameof(property));
+                    _currentAdditions = currentLayer.FindPropertyRelative(nameof(PrefabLayer<Object>.additions))
+                                        ?? throw new ArgumentException("prefabLayers.additions not found",
+                                            nameof(property));
 
-                DoInitialize();
-            }
-            // ReSharper restore VirtualMemberCallInConstructor
-
-            public void Initialize()
-            {
-                if (_mainSet != null) return;
-                if (_currentRemovesSize != _currentRemoves.arraySize ||
-                    _currentAdditionsSize != _currentAdditions.arraySize)
-                {
                     DoInitialize();
                 }
-            }
 
-            public void DoInitialize()
-            {
-                if (_mainSet != null) return;
-                var removesArray = ToArray(_currentRemoves);
-                var removesSet = new HashSet<T>(removesArray);
-                var additionsArray = ToArray(_currentAdditions);
-                var addsSet = new HashSet<T>(additionsArray);
+                public override IEnumerable<Element> Elements => _elements;
+                public override int ElementsCount => _elements.Count;
 
-                _elements.RemoveRange(_upstreamElementCount, _elements.Count - _upstreamElementCount);
-
-                for (var i = 0; i < _elements.Count; i++)
+                /// <summary>
+                /// initialize or update cache info if needed
+                /// </summary>
+                public void Initialize()
                 {
-                    var element = _elements[i];
-
-                    var value = element.Value;
-                    if (removesSet.Remove(value))
+                    if (_currentRemovesSize != _currentRemoves.arraySize ||
+                        _currentAdditionsSize != _currentAdditions.arraySize)
                     {
-                        element.Status = Status.Removed;
-                        var index = Array.IndexOf(removesArray, value);
-                        element.IndexInModifierArray = index;
-                        element.ModifierProp = _currentRemoves.GetArrayElementAtIndex(index);
+                        DoInitialize();
                     }
-                    else if (addsSet.Remove(value))
-                    {
-                        element.Status = Status.AddedTwice;
-                        var index = Array.IndexOf(removesArray, value);
-                        element.IndexInModifierArray = index;
-                        element.ModifierProp = _currentAdditions.GetArrayElementAtIndex(index);
-                    }
-                    else
-                    {
-                        element.Status = Status.Natural;
-                        element.ModifierProp = null;
-                    }
-
-                    _elements[i] = element;
                 }
 
-                // newly added elements
-                for (var i = 0; i < additionsArray.Length; i++)
+                /// <summary>
+                /// initialize or update cache info
+                /// </summary>
+                public void DoInitialize()
                 {
-                    var value = additionsArray[i];
-                    if (!addsSet.Contains(value)) continue; // it's duplicated addition
+                    var removesArray = ToArray(_currentRemoves);
+                    var removesSet = new HashSet<T>(removesArray);
+                    var additionsArray = ToArray(_currentAdditions);
+                    var addsSet = new HashSet<T>(additionsArray);
 
-                    _elements.Add(new Element(value, Status.NewElement,
-                        _currentAdditions.GetArrayElementAtIndex(i), i));
-                }
+                    _elements.RemoveRange(_upstreamElementCount, _elements.Count - _upstreamElementCount);
 
-                // fake removed elements
-                for (var i = 0; i < removesArray.Length; i++)
-                {
-                    var value = removesArray[i];
-                    if (!removesSet.Contains(value)) continue; // it's removed upper layer
-
-                    _elements.Add(new Element(value, Status.FakeRemoved,
-                        _currentRemoves.GetArrayElementAtIndex(i), i));
-                }
-
-                _currentRemovesSize = _currentRemoves.arraySize;
-                _currentAdditionsSize = _currentAdditions.arraySize;
-            }
-
-            public float GetPropertyHeight()
-            {
-                Initialize();
-                return (_mainSet?.arraySize ?? _elements.Count) * LineHeight +
-                       ConstantHeightForExpanded + GetAddRegionSize();
-            }
-
-            // position is 
-            public void OnGUI(Rect position)
-            {
-                Initialize();
-
-                if (_mainSet != null)
-                {
-                    var newLabel = new GUIContent("");
-
-                    for (var i = 0; i < _mainSet.arraySize; i++)
+                    for (var i = 0; i < _elements.Count; i++)
                     {
-                        var prop = _mainSet.GetArrayElementAtIndex(i);
-                        newLabel.text = $"Element {i}";
+                        var element = _elements[i];
 
-                        position.y += LineHeight;
-
-                        EditorGUI.PropertyField(position, prop, newLabel);
-                    }
-
-                    // add element field
-                    position.y += LineHeight;
-                }
-                else
-                {
-                    var elementI = 0;
-                    var newLabel = new GUIContent("");
-
-                    // to avoid changes in for loop
-                    var removeIndexInAdditions = -1;
-
-                    foreach (var element in _elements)
-                    {
-                        position.y += LineHeight;
-                        switch (element.Status)
+                        var value = element.Value;
+                        if (removesSet.Remove(value))
                         {
-                            case Status.Natural:
-                                newLabel.text = $"Element {elementI++}";
-
-                                switch (OnePrefabElement(position, newLabel, element.Value, false, false))
-                                {
-                                    case OneElementResult.Nothing:
-                                        break;
-                                    case OneElementResult.Removed:
-                                        SetValue(AddArrayElement(_currentRemoves), element.Value);
-                                        break;
-                                    case OneElementResult.Added:
-                                        SetValue(AddArrayElement(_currentRemoves), element.Value);
-                                        break;
-                                    default:
-                                        throw new ArgumentOutOfRangeException();
-                                }
-
-                                break;
-                            case Status.Removed:
-                                newLabel.text = "(Removed)";
-                                EditorGUI.BeginProperty(position, newLabel, element.ModifierProp);
-                                OnePrefabElement(position, newLabel, element.Value, false, true);
-                                EditorGUI.EndProperty();
-                                break;
-                            case Status.NewElement:
-                                newLabel.text = $"Element {elementI++}";
-                                EditorGUI.BeginProperty(position, newLabel, element.ModifierProp);
-                                switch (OnePrefabElement(position, newLabel, element.Value, true, false))
-                                {
-                                    case OneElementResult.Nothing:
-                                        break;
-                                    case OneElementResult.Removed:
-                                        removeIndexInAdditions = element.IndexInModifierArray;
-                                        break;
-                                    case OneElementResult.Added:
-                                        // Unreachable
-                                        break;
-                                    default:
-                                        throw new ArgumentOutOfRangeException();
-                                }
-
-                                EditorGUI.EndProperty();
-                                break;
-                            case Status.AddedTwice:
-                                newLabel.text = $"Element {elementI++} (Added twice)";
-
-                                EditorGUI.BeginProperty(position, newLabel, element.ModifierProp);
-                                switch (OnePrefabElement(position, newLabel, element.Value, true, false))
-                                {
-                                    case OneElementResult.Nothing:
-                                        break;
-                                    case OneElementResult.Removed:
-                                        removeIndexInAdditions = element.IndexInModifierArray;
-                                        SetValue(AddArrayElement(_currentRemoves), element.Value);
-                                        break;
-                                    case OneElementResult.Added:
-                                        break;
-                                    default:
-                                        throw new ArgumentOutOfRangeException();
-                                }
-
-                                EditorGUI.EndProperty();
-                                break;
-                            case Status.FakeRemoved:
-                                newLabel.text = "(Removed but not found)";
-                                EditorGUI.BeginProperty(position, newLabel, element.ModifierProp);
-                                OnePrefabElement(position, newLabel, element.Value, false, true);
-                                EditorGUI.EndProperty();
-                                break;
-                            default:
-                                throw new ArgumentOutOfRangeException();
+                            var index = Array.IndexOf(removesArray, value);
+                            element.ChangeState(ElementStatus.Removed, _currentRemoves, index);
                         }
+                        else if (addsSet.Remove(value))
+                        {
+                            var index = Array.IndexOf(removesArray, value);
+                            element.ChangeState(ElementStatus.AddedTwice, _currentAdditions, index);
+                        }
+                        else
+                        {
+                            element.ChangeStateToNatural();
+                        }
+
+                        _elements[i] = element;
                     }
 
-                    if (removeIndexInAdditions != -1)
-                        RemoveArrayElementAt(_currentRemoves, removeIndexInAdditions);
+                    // newly added elements
+                    for (var i = 0; i < additionsArray.Length; i++)
+                    {
+                        var value = additionsArray[i];
+                        if (!addsSet.Contains(value)) continue; // it's duplicated addition
 
-                    position.y += LineHeight;
+                        _elements.Add(new Element(value, ElementStatus.NewElement, _currentAdditions, i));
+                    }
+
+                    // fake removed elements
+                    for (var i = 0; i < removesArray.Length; i++)
+                    {
+                        var value = removesArray[i];
+                        if (!removesSet.Contains(value)) continue; // it's removed upper layer
+
+                        _elements.Add(new Element(value, ElementStatus.FakeRemoved, _currentRemoves, i));
+                    }
+
+                    _currentRemovesSize = _currentRemoves.arraySize;
+                    _currentAdditionsSize = _currentAdditions.arraySize;
                 }
 
-                OnGUIAddRegion(position);
-            }
-
-
-            private OneElementResult OnePrefabElement(Rect position, GUIContent label, T value, bool added,
-                bool removed)
-            {
-                // layout
-                var fieldPosition = position;
-                // two buttons
-                fieldPosition.width -= EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
-                var addButtonPosition = new Rect(
-                    fieldPosition.xMax + EditorGUIUtility.standardVerticalSpacing, position.y,
-                    EditorGUIUtility.singleLineHeight, position.height);
-
-                var result = OneElementResult.Nothing;
-
-                EditorGUI.BeginDisabledGroup(removed);
-                // field
-                var fieldValue = Field(fieldPosition, label, value);
-                if (fieldValue == null)
-                    result = OneElementResult.Removed;
-
-                EditorGUI.BeginDisabledGroup(added);
-                if (GUI.Button(addButtonPosition, removed ? EditorStatics.Restore : EditorStatics.ForceAddButton))
-                    result = OneElementResult.Added;
-                EditorGUI.EndDisabledGroup();
-
-                EditorGUI.EndDisabledGroup();
-
-                return result;
-            }
-
-            protected void DoAddValue(T addValue)
-            {
-                if (_mainSet != null)
+                public override void AddValue(T addValue)
                 {
-                    foreach (var prop in new ArrayPropertyEnumerable(_mainSet))
-                        if (GetValue(prop).Equals(addValue))
-                            return;
-                    SetValue(AddArrayElement(_mainSet), addValue);
-                }
-
-                else
-                {
+                    Initialize();
                     var index = _elements.FindIndex(x => x.Value.Equals(addValue));
                     if (index == -1)
                     {
@@ -727,17 +738,17 @@ namespace Anatawa12.AvatarOptimizer
                         var element = _elements[index];
                         switch (element.Status)
                         {
-                            case Status.Natural:
+                            case ElementStatus.Natural:
                                 SetValue(AddArrayElement(_currentAdditions), element.Value);
                                 break;
-                            case Status.Removed:
+                            case ElementStatus.Removed:
                                 RemoveArrayElementAt(_currentRemoves, element.IndexInModifierArray);
                                 break;
-                            case Status.NewElement:
-                            case Status.AddedTwice:
+                            case ElementStatus.NewElement:
+                            case ElementStatus.AddedTwice:
                                 // already added: nothing to do
                                 break;
-                            case Status.FakeRemoved:
+                            case ElementStatus.FakeRemoved:
                                 RemoveArrayElementAt(_currentRemoves, element.IndexInModifierArray);
                                 SetValue(AddArrayElement(_currentAdditions), element.Value);
                                 break;
@@ -746,48 +757,81 @@ namespace Anatawa12.AvatarOptimizer
                         }
                     }
                 }
-            }
 
-            protected T Field(Rect position, GUIContent label, T value)
-            {
-                SetValue(_fakeSlot, value);
-                EditorGUI.PropertyField(position, _fakeSlot, label);
-                value = GetValue(_fakeSlot);
-                return value;
-            }
-
-            struct Element
-            {
-                public readonly T Value;
-                public Status Status;
-                public SerializedProperty ModifierProp;
-                public int IndexInModifierArray;
-
-                public Element(T value)
+                public override void RemoveValue(T value)
                 {
+                    Initialize();
+                    var index = _elements.FindIndex(x => x.Value.Equals(value));
+                    if (index == -1)
+                    {
+                        // not found in the set: add fake removes
+                        SetValue(AddArrayElement(_currentRemoves), value);
+                    }
+                    else
+                    {
+                        var element = _elements[index];
+                        switch (element.Status)
+                        {
+                            case ElementStatus.Natural:
+                                SetValue(AddArrayElement(_currentRemoves), element.Value);
+                                break;
+                            case ElementStatus.Removed:
+                            case ElementStatus.FakeRemoved:
+                                // already removed: nothing to do
+                                break;
+                            case ElementStatus.NewElement:
+                                RemoveArrayElementAt(_currentAdditions, element.IndexInModifierArray);
+                                break;
+                            case ElementStatus.AddedTwice:
+                                RemoveArrayElementAt(_currentAdditions, element.IndexInModifierArray);
+                                SetValue(AddArrayElement(_currentRemoves), element.Value);
+                                break;
+                            default:
+                                throw new ArgumentOutOfRangeException();
+                        }
+                    }
+                }
+            }
+
+            public struct Element
+            {
+                public T Value { get; }
+                public ElementStatus Status { get; private set; }
+                internal SerializedProperty ModifierProp;
+                internal int IndexInModifierArray;
+
+                internal Element(T value)
+                {
+                    if (value == null) throw new ArgumentNullException(nameof(value));
                     Value = value;
-                    Status = Status.Natural;
+                    Status = ElementStatus.Natural;
                     ModifierProp = null;
                     IndexInModifierArray = 0;
                 }
 
-                public Element(T value, Status status, SerializedProperty modifierProp, int index)
+                internal Element(T value, ElementStatus status, SerializedProperty arrayProp, int index) : this(value)
                 {
-                    if (value == null) throw new ArgumentNullException(nameof(value));
-                    Value = value;
+                    if (status == ElementStatus.Natural) throw new ArgumentException("Use value only ctor", nameof(status));
+                    ChangeState(status, arrayProp, index);
+                }
+
+                internal void ChangeState(ElementStatus status, SerializedProperty arrayProp, int index)
+                {
+                    if (status == ElementStatus.Natural)
+                        throw new ArgumentException("Use ChangeStateToNatural");
+                    if (arrayProp == null) throw new ArgumentNullException(nameof(arrayProp));
                     Status = status;
-                    ModifierProp = modifierProp ?? throw new ArgumentNullException(nameof(modifierProp));
+                    ModifierProp = arrayProp.GetArrayElementAtIndex(index) ?? 
+                                   throw new ArgumentException("element not found", nameof(arrayProp));
                     IndexInModifierArray = index;
                 }
-            }
 
-            enum Status
-            {
-                Natural,
-                Removed,
-                NewElement,
-                AddedTwice,
-                FakeRemoved,
+                internal void ChangeStateToNatural()
+                {
+                    Status = ElementStatus.Natural;
+                    ModifierProp = null;
+                    IndexInModifierArray = 0;
+                }
             }
 
             private static SerializedProperty AddArrayElement(SerializedProperty array)
@@ -816,13 +860,15 @@ namespace Anatawa12.AvatarOptimizer
                     result[i] = GetValue(array.GetArrayElementAtIndex(i));
                 return result;
             }
+        }
 
-            enum OneElementResult
-            {
-                Nothing,
-                Removed,
-                Added,
-            }
+        public enum ElementStatus
+        {
+            Natural,
+            Removed,
+            NewElement,
+            AddedTwice,
+            FakeRemoved,
         }
     }
 }
