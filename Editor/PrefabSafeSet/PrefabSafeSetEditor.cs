@@ -228,6 +228,8 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 
         public PrefabSafeSetPrefabEditorBase(SerializedProperty property, int nestCount)
         {
+            if (property.serializedObject.isEditingMultipleObjects)
+                throw new ArgumentException("multi editing not supported", nameof(property));
             _fakeSlot = property.FindPropertyRelative(Names.FakeSlot)
                         ?? throw new ArgumentException("fakeSlot not found");
             EditorUtil = EditorUtil<T>.Create(property, nestCount, GetValue, SetValue);
