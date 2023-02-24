@@ -42,6 +42,8 @@ vpm add package com.anatawa12.avatar-optimizer
 
 Merges one or more SkinnedMeshRenderer and MeshRenderers into one SkinnedMeshRenderer.
 
+You should add MergeSkinnedMesh onto new GameObject with SkinnedMeshRenderer without specified Mesh.
+
 This component will merge mesh, bones, and BlendShapes but other settings will not be modified.
 Please edit SkinnedMeshRenderer component attached to same GameObject as MergeSkinnedMesh to set AnchorOverride or else.
 
