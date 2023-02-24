@@ -27,6 +27,13 @@ namespace Anatawa12.AvatarOptimizer
 
         public override void OnInspectorGUI()
         {
+            if (((MergeSkinnedMesh)target).GetComponent<SkinnedMeshRenderer>().sharedMesh)
+            {
+                GUILayout.Label($"Mesh of SkinnedMeshRenderer is not None!", Style.WarningStyle);
+                GUILayout.Label($"You should add MergeSkinnedMesh onto new GameObject with new SkinnedMeshRenderer!",
+                    Style.WarningStyle);
+            }
+
             var renderersProp = serializedObject.FindProperty("renderers");
             var staticRenderersProp = serializedObject.FindProperty("staticRenderers");
 
