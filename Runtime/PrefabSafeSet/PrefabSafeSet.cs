@@ -75,6 +75,15 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             return result;
         }
 
+        public List<T> GetAsList()
+        {
+            var set = new HashSet<T>(mainSet);
+            var result = new List<T>(mainSet);
+            foreach (var layer in prefabLayers)
+                layer.ApplyTo(set, result);
+            return result;
+        }
+
         public void OnBeforeSerialize()
         {
 #if UNITY_EDITOR
@@ -95,12 +104,14 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
         [SerializeField] internal T[] removes = Array.Empty<T>();
         [SerializeField] internal T[] additions = Array.Empty<T>();
 
-        public void ApplyTo(HashSet<T> result)
+        public void ApplyTo(HashSet<T> result, [CanBeNull] List<T> list = null)
         {
             foreach (var remove in removes)
-                result.Remove(remove);
+                if (result.Remove(remove))
+                    list?.Remove(remove);
             foreach (var addition in additions)
-                result.Add(addition);
+                if (result.Add(addition))
+                    list?.Add(addition);
         }
     }
     
