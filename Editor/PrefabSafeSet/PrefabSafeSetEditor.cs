@@ -615,6 +615,9 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             {
                 _elements = new List<Element>();
                 var upstreamValues = new HashSet<T>();
+
+                ClearNonLayerModifications(property, nestCount);
+
                 var mainSet = property.FindPropertyRelative(Names.MainSet);
                 foreach (var valueProp in new ArrayPropertyEnumerable(mainSet))
                 {
@@ -661,6 +664,35 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                                         nameof(property));
 
                 DoInitialize();
+            }
+
+            private void ClearNonLayerModifications(SerializedProperty property, int nestCount)
+            {
+                try
+                {
+                    var thisObjectPropPath = property.propertyPath;
+                    var arraySizeProp = property.FindPropertyRelative(Names.PrefabLayers).FindPropertyRelative("Array.size").propertyPath;
+                    var arrayValueProp = property.FindPropertyRelative(Names.PrefabLayers).GetArrayElementAtIndex(nestCount - 1).propertyPath;
+                    var serialized = property.serializedObject;
+                    var obj = serialized.targetObject;
+
+                    foreach (var modification in PrefabUtility.GetPropertyModifications(obj))
+                    {
+                        // if property is not of the object: do nothing
+                        if (!modification.propertyPath.StartsWith(thisObjectPropPath)) continue;
+                        // if property is Array.size or current layer of nest: allow modification
+                        if (modification.propertyPath.StartsWith(arraySizeProp)) continue;
+                        if (modification.propertyPath.StartsWith(arrayValueProp)) continue;
+                        // that modification is not allowed: revert
+                        PrefabUtility.RevertPropertyOverride(serialized.FindProperty(modification.propertyPath),
+                            InteractionMode.AutomatedAction);
+                    }
+                }
+                catch (Exception e)
+                {
+                    Debug.LogException(e);
+                    // ignored
+                }
             }
 
             public override IEnumerable<Element> Elements
