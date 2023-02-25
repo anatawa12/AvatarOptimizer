@@ -42,6 +42,8 @@ vpm add package com.anatawa12.avatar-optimizer
 
 Merges one or more SkinnedMeshRenderer and MeshRenderers into one SkinnedMeshRenderer.
 
+You should add MergeSkinnedMesh onto new GameObject with SkinnedMeshRenderer without specified Mesh.
+
 This component will merge mesh, bones, and BlendShapes but other settings will not be modified.
 Please edit SkinnedMeshRenderer component attached to same GameObject as MergeSkinnedMesh to set AnchorOverride or else.
 
@@ -227,6 +229,6 @@ With boxes shown on upper/left image, meshes in the box will be removed as lower
 [github-latest]: https://github.com/anatawa12/AvatarOptimizer/releases/latest
 [vcc-cli]: https://vcc.docs.vrchat.com/vpm/cli
 [vpm-resolver]: https://vcc.docs.vrchat.com/vpm/resolver
-[installer unitypackage]: https://github.com/anatawa12/AvatarOptimizer/raw/master/.readme/installer.unitypackage
+[installer unitypackage]: https://github.com/anatawa12/AvatarOptimizer/raw/master/.readme/AvatarOptimizer-0.1.x-installer.unitypackage
 [issues]: https://github.com/anatawa12/AvatarOptimizer/issues/new
 [VPAI]: https://github.com/anatawa12/VPMPackageAutoInstaller
