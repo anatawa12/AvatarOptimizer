@@ -30,7 +30,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
     }
 
     [UsedImplicitly] // used by reflection
-    internal static class OnBeforeSerializeImpl<T, TLayer> where TLayer : PrefabLayer<T>
+    internal static class OnBeforeSerializeImpl<T, TLayer> where TLayer : PrefabLayer<T>, new()
     {
         [UsedImplicitly] // used by reflection
         public static void Impl(PrefabSafeSet<T, TLayer> self)
@@ -68,7 +68,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             }
             else
             {
-                var currentLayer = self.prefabLayers[nestCount - 1];
+                var currentLayer = self.prefabLayers[nestCount - 1] ?? (self.prefabLayers[nestCount - 1] = new TLayer());
                 DistinctCheckArray(ref currentLayer.additions, ref self.CheckedCurrentLayerAdditions,
                     PrefabSafeSetUtil.IsNotNull);
                 DistinctCheckArray(ref currentLayer.removes, ref self.CheckedCurrentLayerRemoves,

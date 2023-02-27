@@ -45,7 +45,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
     /// <typeparam name="T">Element Type</typeparam>
     /// <typeparam name="TLayer">Layer Type</typeparam>
     [Serializable]
-    internal class PrefabSafeSet<T, TLayer> : ISerializationCallbackReceiver where TLayer : PrefabLayer<T>
+    internal class PrefabSafeSet<T, TLayer> : ISerializationCallbackReceiver where TLayer : PrefabLayer<T>, new()
     {
         [SerializeField] internal T[] mainSet = Array.Empty<T>();
         [SerializeField] internal TLayer[] prefabLayers = Array.Empty<TLayer>();
@@ -98,7 +98,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
     }
 
     [Serializable]
-    internal abstract class PrefabLayer<T>
+    internal class PrefabLayer<T>
     {
         // if some value is in both removes and additions, the values should be added
         [SerializeField] internal T[] removes = Array.Empty<T>();
