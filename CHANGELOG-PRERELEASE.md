@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Support for Prerelease in publish system `#19`
+- Changelogs (including ones for traditional releases) `#19`
 
 ### Changed
 
