@@ -219,6 +219,7 @@ Do you want to migrate project now?",
         private static readonly TypeId MigrateV1ToV2Types = new TypeId(new []
         {
             typeof(MergeSkinnedMesh),
+            typeof(FreezeBlendShape),
         });
 
         private static void MigrateV1ToV2(int nestCount, SerializedObject serialized)
@@ -244,6 +245,35 @@ Do you want to migrate project now?",
                     // v1 format will list up materials to not be merged.
                     break;
                 }
+                case 2:
+                {
+                    // FreezeBlendShape
+                    var shapeKeysProp = serialized.FindProperty(nameof(FreezeBlendShape.shapeKeys));
+                    var freezeFlagsProp = serialized.FindProperty(nameof(FreezeBlendShape.freezeFlags));
+                    var shapeKeysSetProp = serialized.FindProperty(nameof(FreezeBlendShape.shapeKeysSet));
+
+                    if (shapeKeysProp.arraySize == freezeFlagsProp.arraySize)
+                    {
+                        // new v1 format: check for flags
+                        var shapeKeys = ToArray(shapeKeysProp, x => x.stringValue);
+                        var freezeFlags = ToArray(freezeFlagsProp, x => x.boolValue);
+                        MigrateSet(shapeKeys.Where((_, i) => freezeFlags[i]),
+                            shapeKeysSetProp,
+                            nestCount,
+                            x => x.stringValue,
+                            (x, v) => x.stringValue = v);
+                    }
+                    else
+                    {
+                        // traditional v1 format: shapeKeysProp will have everything to be merged
+                        MigrateSet(shapeKeysProp,
+                            shapeKeysSetProp,
+                            nestCount,
+                            x => x.stringValue,
+                            (x, v) => x.stringValue = v);
+                    }
+                    break;
+                }
             }
         }
 #pragma warning restore CS0618
@@ -255,11 +285,27 @@ Do you want to migrate project now?",
             Func<SerializedProperty, T> getValue,
             Action<SerializedProperty, T> setValue)
         {
-            var renderersSet = EditorUtil<T>.Create(setProperty, nestCount, getValue, setValue);
+            MigrateSet(ToArray(arrayProperty, getValue), setProperty, nestCount, getValue, setValue);
+        }
+
+        private static T[] ToArray<T>(SerializedProperty arrayProperty, Func<SerializedProperty, T> getValue)
+        {
             var values = Enumerable.Range(0, arrayProperty.arraySize)
                 .Select(arrayProperty.GetArrayElementAtIndex)
                 .Select(getValue)
                 .ToArray();
+
+            return values;
+        }
+
+        private static void MigrateSet<T>(
+            IEnumerable<T> values,
+            SerializedProperty setProperty,
+            int nestCount,
+            Func<SerializedProperty, T> getValue,
+            Action<SerializedProperty, T> setValue)
+        {
+            var renderersSet = EditorUtil<T>.Create(setProperty, nestCount, getValue, setValue);
 
             renderersSet.Clear();
 
