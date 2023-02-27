@@ -962,13 +962,13 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             return array.GetArrayElementAtIndex(array.arraySize - 1);
         }
 
-        private static void RemoveArrayElementAt(SerializedProperty array, int index)
+        private void RemoveArrayElementAt(SerializedProperty array, int index)
         {
             var prevProp = array.GetArrayElementAtIndex(index);
             for (var i = index + 1; i < array.arraySize; i++)
             {
                 var curProp = array.GetArrayElementAtIndex(i);
-                prevProp.objectReferenceValue = curProp.objectReferenceValue;
+                _setValue(prevProp, _getValue(curProp));;
                 prevProp = curProp;
             }
 
