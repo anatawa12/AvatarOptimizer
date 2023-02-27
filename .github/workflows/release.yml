@@ -1,6 +1,15 @@
 on:
   workflow_dispatch:
     inputs:
+      release_kind:
+        type: choice
+        description: The type of release.
+        default: prerelease
+        required: true
+        options:
+          - prerelease
+          - start-rc
+          - stable
       publish:
         description: "True to publish release to git, vpm. if false, this creates release asset only"
         type: boolean
@@ -8,6 +17,7 @@ on:
 
 env:
   PKG_NAME: com.anatawa12.avatar-optimizer
+  SOMETHING_RELEASER_SEMVER: 1
 
 concurrency:
   group: publish
@@ -26,19 +36,74 @@ jobs:
           token: ${{ secrets.MASTER_GITHUB_PAT }}
       - uses: anatawa12/something-releaser@v2
       - uses: snow-actions/git-config-user@v1.0.0
-      - name: Check version is Snapshot
-        run: |
-          if ! [[ "$(get-version)" = *-SNAPSHOT ]]; then
-            echo 'VERSION IS NOT SNAPSHOT' >&2
-            exit 1
-          fi
 
       - name: Update Version Name
         id: update-version
         run: |
-          set-version "$(version-unsnapshot "$(get-version)")"
-          echo "VERSION=$(get-version)" >> $GITHUB_ENV
-          echo "version=$(get-version)" >> $GITHUB_OUTPUT
+          # set version name in properties file
+          case "$RELEASE_KIND_IN" in
+            "prerelease" )
+              set-version "$(version-next "$(get-version)")"
+              gh-export-variable PRERELEASE true
+              ;;
+            "start-rc" )
+              set-version "$(version-set-channel "$(get-version)" rc)"
+              gh-export-variable PRERELEASE true
+              ;;
+            "stable" )
+              set-version "$(version-set-channel "$(get-version)" stable)"
+              gh-export-variable PRERELEASE false
+              ;;
+            * )
+              echo "invalid release kind: $RELEASE_KIND_IN"
+              exit 255
+              ;;
+          esac
+
+          if [ "$GITHUB_REF_NAME" != "master" ]; then
+              echo "invalid release kind: $RELEASE_KIND_IN is not allowd for $GITHUB_REF_NAME"
+              exit 255
+          fi
+
+          gh-export-variable VERSION "$(get-version)"
+          gh-set-output version "$(get-version)"
+        env:
+          RELEASE_KIND_IN: ${{ github.event.inputs.release_kind }}
+
+      - name: Create Changelog
+        id: changelog
+        uses: anatawa12/sh-actions/changelog/prepare-release@master
+        with:
+          version: ${{ env.VERSION }}
+          prerelease: ${{ env.PRERELEASE }}
+          tag-prefix: v
+          prerelease-note-prefix: |
+            Version ${{ env.VERSION }}
+            ---
+            
+            **This is SNAPSHOT, not a stable release. make sure this may have many bugs.**
+          release-note-prefix: |
+            Version ${{ env.VERSION }}
+            ---
+      - name: Upload CHANGELOG.md
+        if: ${{ !fromJSON(env.PRERELEASE) }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: CHANGELOG
+          path: CHANGELOG.md
+      - name: Upload CHANGELOG-PRERELEASE.md
+        uses: actions/upload-artifact@v3
+        with:
+          name: CHANGELOG-PRERELEASE
+          path: CHANGELOG-PRERELEASE.md
+      - run: cp "${{ steps.changelog.outputs.release-note }}" release-note.md
+      - name: Upload release note
+        if: ${{ !fromJSON(env.PRERELEASE) }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: changelog
+          path: release-note.md
+      - run: rm release-note.md
 
       - name: Commit & tag version
         if: ${{ inputs.publish }}
@@ -79,11 +144,13 @@ jobs:
         if: ${{ inputs.publish }}
         env:
           GH_TOKEN: ${{ github.token }}
+          RELEASE_NOTE: ${{ steps.changelog.outputs.release-note }}
         shell: bash
         run: |
           sleep 1
           # upload release assets
           gh release create "v$VERSION" \
+            -F "$RELEASE_NOTE" \
             "build/$PKG_NAME-$VERSION.zip" \
             "build/$PKG_NAME-$VERSION.unitypackage" \
             "package.json" \
