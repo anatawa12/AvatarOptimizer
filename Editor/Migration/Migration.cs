@@ -220,6 +220,7 @@ Do you want to migrate project now?",
         {
             typeof(MergeSkinnedMesh),
             typeof(FreezeBlendShape),
+            typeof(MergePhysBone),
         });
 
         private static void MigrateV1ToV2(int nestCount, SerializedObject serialized)
@@ -272,6 +273,25 @@ Do you want to migrate project now?",
                             x => x.stringValue,
                             (x, v) => x.stringValue = v);
                     }
+                    break;
+                }
+                case 3:
+                {
+                    // MergePhysBone
+                    // renderers -> renderersSet
+                    MigrateSet(serialized.FindProperty(nameof(MergePhysBone.components)),
+                        serialized.FindProperty(nameof(MergePhysBone.componentsSet)), nestCount,
+                        x => x.objectReferenceValue, (x, y) => x.objectReferenceValue = y
+                    );
+                    
+                    // renderers -> staticRenderersSet
+                    MigrateSet(serialized.FindProperty(nameof(MergeSkinnedMesh.staticRenderers)),
+                        serialized.FindProperty(nameof(MergeSkinnedMesh.staticRenderersSet)), nestCount,
+                        x => x.objectReferenceValue, (x, y) => x.objectReferenceValue = y
+                    );
+
+                    // merges migration: do nothing: I recommend to merge materials &
+                    // v1 format will list up materials to not be merged.
                     break;
                 }
             }

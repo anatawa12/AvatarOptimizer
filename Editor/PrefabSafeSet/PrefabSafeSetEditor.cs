@@ -5,6 +5,7 @@ using System.Linq;
 using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
+using VRC.Dynamics;
 using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
@@ -543,6 +544,8 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 
         public abstract IEnumerable<Element> Elements { get; }
         public abstract int ElementsCount { get; }
+        public virtual int Count => Elements.Count(x => x.LiveValue);
+        public virtual IEnumerable<T> Values => Elements.Where(x => x.LiveValue).Select(x => x.Value);
 
         public static EditorUtil<T> Create(SerializedProperty property, int nestCount,
             Func<SerializedProperty, T> getValue,

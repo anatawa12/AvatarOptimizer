@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using JetBrains.Annotations;
 using UnityEngine;
+using VRC.Dynamics;
 using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
@@ -44,5 +45,14 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
         }
         [Serializable]
         public class Layer : PrefabLayer<String>{}
+    }
+    [Serializable]
+    internal class VRCPhysBoneBaseSet : PrefabSafeSet<VRCPhysBoneBase, VRCPhysBoneBaseSet.Layer>
+    {
+        public VRCPhysBoneBaseSet(Object outerObject) : base(outerObject)
+        {
+        }
+        [Serializable]
+        public class Layer : PrefabLayer<VRCPhysBoneBase>{}
     }
 }
