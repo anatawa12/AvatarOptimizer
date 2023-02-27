@@ -13,7 +13,7 @@ namespace Anatawa12.AvatarOptimizer.Migration
     internal static class PrereleaseStateDetector
     {
         private const string DataPath = "ProjectSettings/com.anatawa12.avatar-optimizer.v0.json";
-        private const int CurrentVersion = 1;
+        private const int CurrentVersion = 2;
         private static readonly JsonData Data = new JsonData();
 
         static PrereleaseStateDetector()
