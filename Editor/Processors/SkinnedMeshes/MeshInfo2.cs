@@ -335,6 +335,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         public SubMesh(List<Vertex> vertices) => Triangles = vertices;
         public SubMesh(List<Vertex> vertices, Material sharedMaterial) => 
             (Triangles, SharedMaterial) = (vertices, sharedMaterial);
+        public SubMesh(Material sharedMaterial) => 
+            SharedMaterial = sharedMaterial;
 
         public SubMesh(List<Vertex> vertices, ReadOnlySpan<int> triangles, SubMeshDescriptor descriptor)
         {

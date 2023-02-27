@@ -559,9 +559,29 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             _setValue = setValue ?? throw new ArgumentNullException(nameof(setValue));
         }
 
-        public abstract void AddValue(T addValue);
+        public void AddValue(T addValue) => DoAdd(addValue, true);
 
-        public abstract void RemoveValue(T value);
+        /// <summary>
+        /// add value if not added.
+        /// </summary>
+        /// <param name="addValue"></param>
+        public void EnsureAdded(T addValue) => DoAdd(addValue, false);
+
+        protected abstract void DoAdd(T addValue, bool forceAdd);
+
+        public void RemoveValue(T value) => DoRemove(value, true);
+
+        /// <summary>
+        /// remove value if exists.
+        /// </summary>
+        /// <param name="value"></param>
+        public void EnsureRemoved(T value) => DoRemove(value, false);
+        
+        protected abstract void DoRemove(T value, bool forceRemove);
+
+        public virtual bool Contains(T value) => Elements.Any(x => x.LiveValue && x.Value.Equals(value));
+
+        public abstract void Clear();
 
         private sealed class Root : EditorUtil<T>
         {
@@ -579,7 +599,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 
             public override int ElementsCount => _mainSet.arraySize;
 
-            public override void AddValue(T addValue)
+            protected override void DoAdd(T addValue, bool forceAdd)
             {
                 foreach (var prop in new ArrayPropertyEnumerable(_mainSet))
                     if (_getValue(prop).Equals(addValue))
@@ -587,7 +607,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                 _setValue(AddArrayElement(_mainSet), addValue);
             }
 
-            public override void RemoveValue(T value)
+            protected override void DoRemove(T value, bool forceRemove)
             {
                 for (var i = 0; i < _mainSet.arraySize; i++)
                 {
@@ -598,6 +618,8 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                     }
                 }
             }
+
+            public override void Clear() => _mainSet.arraySize = 0;
         }
 
         private sealed class PrefabModification : EditorUtil<T>
@@ -775,7 +797,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                 _currentAdditionsSize = _currentAdditions.arraySize;
             }
 
-            public override void AddValue(T addValue)
+            protected override void DoAdd(T addValue, bool forceAdd)
             {
                 Initialize();
                 var index = _elements.FindIndex(x => x.Value.Equals(addValue));
@@ -790,7 +812,8 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                     switch (element.Status)
                     {
                         case ElementStatus.Natural:
-                            _setValue(AddArrayElement(_currentAdditions), element.Value);
+                            if (forceAdd)
+                                _setValue(AddArrayElement(_currentAdditions), element.Value);
                             break;
                         case ElementStatus.Removed:
                             RemoveArrayElementAt(_currentRemoves, element.IndexInModifierArray);
@@ -809,18 +832,46 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                 }
             }
 
-            public override void RemoveValue(T value)
+            protected override void DoRemove(T value, bool forceRemove)
             {
                 Initialize();
                 var index = _elements.FindIndex(x => x.Value.Equals(value));
                 if (index == -1)
                 {
                     // not found in the set: add fake removes
-                    _setValue(AddArrayElement(_currentRemoves), value);
+                    if (forceRemove)
+                        _setValue(AddArrayElement(_currentRemoves), value);
                 }
                 else
                 {
                     var element = _elements[index];
+                    switch (element.Status)
+                    {
+                        case ElementStatus.Natural:
+                            _setValue(AddArrayElement(_currentRemoves), element.Value);
+                            break;
+                        case ElementStatus.Removed:
+                        case ElementStatus.FakeRemoved:
+                            // already removed: nothing to do
+                            break;
+                        case ElementStatus.NewElement:
+                            RemoveArrayElementAt(_currentAdditions, element.IndexInModifierArray);
+                            break;
+                        case ElementStatus.AddedTwice:
+                            RemoveArrayElementAt(_currentAdditions, element.IndexInModifierArray);
+                            _setValue(AddArrayElement(_currentRemoves), element.Value);
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
+                }
+            }
+
+            public override void Clear()
+            {
+                Initialize();
+                foreach (var element in _elements)
+                {
                     switch (element.Status)
                     {
                         case ElementStatus.Natural:
@@ -848,6 +899,26 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
         {
             public T Value { get; }
             public ElementStatus Status { get; private set; }
+
+            public bool LiveValue
+            {
+                get
+                {
+                    switch (Status)
+                    {
+                        case ElementStatus.Natural:
+                        case ElementStatus.NewElement:
+                        case ElementStatus.AddedTwice:
+                            return true;
+                        case ElementStatus.FakeRemoved:
+                        case ElementStatus.Removed:
+                            return false;
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
+                }
+            }
+
             internal SerializedProperty ModifierProp;
             internal int IndexInModifierArray;
 
