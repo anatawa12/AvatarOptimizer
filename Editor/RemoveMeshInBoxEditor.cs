@@ -44,12 +44,6 @@ namespace Anatawa12.AvatarOptimizer
                 {
                     using (new GUILayout.HorizontalScope())
                     {
-                        if (GUILayout.Button("Remove This Box"))
-                        {
-                            _boxes.DeleteArrayElementAtIndex(i);
-                            i--;
-                        }
-
                         if (GUILayout.Button(_editingBox == i ? "Finish Editing Box" : "Edit This Box"))
                         {
                             _editingBox = _editingBox == i ? -1 : i;
