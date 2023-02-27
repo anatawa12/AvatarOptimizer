@@ -1,0 +1,65 @@
+name: Conventional Commits Check
+
+on:
+  pull_request: {}
+
+jobs:
+  conventionalcommits-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: check label
+        id: check-label
+        env:
+          GH_REPO: ${{ github.repositoryUrl }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUM: ${{ github.event.number }}
+        run: |
+          json=$(mktemp)
+          gh pr view $PR_NUM --json=labels > $json
+
+          check_label() {
+            gh pr view $PR_NUM --json=labels | jq -r '.labels[].name' | grep -Fx "$1" > /dev/null || return 1
+          }
+
+          if check_label 'NO-COMMIT-CHECK'; then
+            echo "::notice ::check is suppressed by NO-COMMIT-CHECK label"
+            echo '::set-output name=disabled::yes'
+          fi
+
+      - name: treeless clone
+        if: steps.check-label.outputs.disabled != 'yes'
+        run: |
+          # git clone --filter tree:0 https://github.com/anatawa12/AvatarOptimizer.git $GITHUB_REF
+          # without checkout
+          git init
+          git remote add origin https://github.com/anatawa12/AvatarOptimizer.git
+          git config remote.origin.promisor true
+          git config remote.origin.partialclonefilter tree:0
+          git fetch origin $GITHUB_REF
+
+      - name: install commitlint
+        if: steps.check-label.outputs.disabled != 'yes'
+        run: npm install -g @commitlint/cli @commitlint/config-conventional
+
+      - name: run commitlint
+        if: steps.check-label.outputs.disabled != 'yes'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUM: ${{ github.event.number }}
+        run: |
+          json=$(mktemp)
+          gh pr view $PR_NUM --json=labels > $json
+
+          check_label() {
+            gh pr view $PR_NUM --json=labels | jq -r '.labels[].name' | grep -Fx "$1" > /dev/null || return 1
+          }
+
+          if check_label 'NO-COMMIT-CHECK'; then
+            echo "::notice ::check is suppressed by NO-COMMIT-CHECK label"
+            exit 0
+          fi
+
+          # fetch commitlint.config.js
+          git restore --source=FETCH_HEAD commitlint.config.js
+          commitlint --from ${{ github.event.pull_request.base.sha }} --to ${{ github.event.pull_request.head.sha }} --verbose
