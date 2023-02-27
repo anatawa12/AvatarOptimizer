@@ -98,7 +98,6 @@ jobs:
           path: CHANGELOG-PRERELEASE.md
       - run: cp "${{ steps.changelog.outputs.release-note }}" release-note.md
       - name: Upload release note
-        if: ${{ !fromJSON(env.PRERELEASE) }}
         uses: actions/upload-artifact@v3
         with:
           name: changelog
