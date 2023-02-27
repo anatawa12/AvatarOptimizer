@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog].
 ### Added
 - Support for Prerelease in publish system `#19`
 - Changelogs (including ones for traditional releases) `#19`
+- Prefab support `#11`
 
 ### Changed
 
