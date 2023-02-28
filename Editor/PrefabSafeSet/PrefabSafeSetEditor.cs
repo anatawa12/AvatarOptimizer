@@ -1026,7 +1026,10 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                             break;
                         case ElementStatus.NewSlot:
                             if (forceRemove)
+                            {
                                 AddToRemoves(ElementStatus.FakeRemoved);
+                                _container._elements.Add(this);
+                            }
                             break;
                         default:
                             throw new ArgumentOutOfRangeException();
