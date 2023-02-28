@@ -1131,6 +1131,17 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                     }
                     else
                     {
+                        void RemoveFromList(SerializedProperty sourceArrayProp, T value)
+                        {
+                            var foundIndex = Array.IndexOf(ToArray(sourceArrayProp), value);
+                            var serialized = new SerializedObject(componentOrGameObject);
+                            if (foundIndex == -1) return;
+                            var newArray = serialized.FindProperty(sourceArrayProp.propertyPath);
+                            RemoveArrayElementAt(newArray, foundIndex);
+                            serialized.ApplyModifiedProperties();
+                            PrefabUtility.SavePrefabAsset(rootGameObject);
+                        }
+
                         switch (elementImpl.Status)
                         {
                             case ElementStatus.Natural:
@@ -1143,8 +1154,28 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                                     // the value is already added in the Property
                                     genericMenu.AddItem(guiContent, false, _ =>
                                     {
-                                        // TODO: 
-                                        Debug.Log("apply modification: Removed");
+                                        if (nestCount == 0)
+                                        {
+                                            // apply target is base object: nestCount
+                                            RemoveFromList(_rootProperty.FindPropertyRelative(Names.MainSet),
+                                                elementImpl.Value);
+                                        }
+                                        else if (elementImpl.SourceNestCount == nestCount)
+                                        {
+                                            // apply target is addition
+                                            var additionProp = _rootProperty.FindPropertyRelative(Names.PrefabLayers +
+                                                $".Array.data[{nestCount}]." + Names.Additions);
+                                            RemoveFromList(additionProp, elementImpl.Value);
+                                        }
+                                        else
+                                        {
+                                            _setValue(
+                                                AddArrayElement(_rootProperty.FindPropertyRelative(Names.PrefabLayers +
+                                                    $".Array.data[{nestCount}]." + Names.Removes)), elementImpl.Value);
+                                        }
+
+                                        elementImpl.Revert();
+                                        ForceRebuildInspectors();
                                     }, null);
                                 }
                                 else
@@ -1180,10 +1211,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             private void HandleRevertMenuItem(GenericMenu genericMenu, ElementImpl element)
             {
                 var guiContent = new GUIContent(L10n.Tr("Revert"));
-                genericMenu.AddItem(guiContent, false, _ =>
-                {
-                    element.Revert();
-                }, null);
+                genericMenu.AddItem(guiContent, false, _ => element.Revert(), null);
             }
 
             private static List<Object> GetApplyTargets(
@@ -1224,6 +1252,18 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             {
                 var gameObject = GetGameObject(componentOrGameObject);
                 return gameObject == null ? null : gameObject.transform.root.gameObject;
+            }
+
+            private static void ForceRebuildInspectors()
+            {
+                var type = typeof(EditorUtility);
+                var method = type.GetMethod("ForceRebuildInspectors",
+                    System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic,
+                    null,
+                    Type.EmptyTypes, 
+                    null);
+                System.Diagnostics.Debug.Assert(method != null, nameof(method) + " != null");
+                method.Invoke(null, null);
             }
         }
 
