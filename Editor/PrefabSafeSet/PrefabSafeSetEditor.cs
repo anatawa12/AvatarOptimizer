@@ -567,6 +567,8 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
         public IElement<T> GetElementOf(T value) =>
             Elements.FirstOrDefault(x => x.Value.Equals(value)) ?? NewSlotElement(value);
 
+        public abstract void HandleApplyRevertMenuItems(IElement<T> element, GenericMenu genericMenu);
+
         private sealed class Root : EditorUtil<T>
         {
             private List<ElementImpl> _list;
@@ -584,7 +586,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             {
                 get
                 {
-                    if (_list.Count != _mainSet.arraySize)
+                    if (_list?.Count != _mainSet.arraySize)
                         _list = new ArrayPropertyEnumerable(_mainSet)
                             .Select((x, i) => new ElementImpl(this, x, i))
                             .ToList();
@@ -598,8 +600,14 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 
             protected override IElement<T> NewSlotElement(T value) => new ElementImpl(this, value);
 
+            public override void HandleApplyRevertMenuItems(IElement<T> element, GenericMenu genericMenu)
+            {
+                // logic failure
+            }
+
             private class ElementImpl : IElement<T>
             {
+                public EditorUtil<T> Container => _container;
                 public T Value { get; }
                 public ElementStatus Status => Contains ? ElementStatus.Natural : ElementStatus.NewSlot;
                 public bool Contains => _index >= 0;
@@ -650,7 +658,9 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
         private sealed class PrefabModification : EditorUtil<T>
         {
             private readonly List<ElementImpl> _elements;
-            private readonly int _upstreamElementCount;
+            private bool _needsUpstreamUpdate;
+            private int _upstreamElementCount;
+            private readonly SerializedProperty _rootProperty;
             private readonly SerializedProperty _currentRemoves;
             private readonly SerializedProperty _currentAdditions;
             private int _currentRemovesSize;
@@ -660,7 +670,8 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                 Func<SerializedProperty, T> getValue, Action<SerializedProperty, T> setValue) : base(getValue,
                 setValue)
             {
-                var valuesList = new List<T>();
+                _elements = new List<ElementImpl>();
+                _rootProperty = property;
                 var upstreamValues = new HashSet<T>();
 
                 ClearNonLayerModifications(property, nestCount);
@@ -672,13 +683,14 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                     if (value == null) continue;
                     if (upstreamValues.Contains(value)) continue;
                     upstreamValues.Add(value);
-                    valuesList.Add(value);
+                    _elements.Add(ElementImpl.Natural(this, value, 0));
                 }
 
                 // apply modifications until previous one
                 var prefabLayers = property.FindPropertyRelative(Names.PrefabLayers);
-                foreach (var layer in new ArrayPropertyEnumerable(prefabLayers).Take(nestCount - 1))
+                for (var i = 0; i < prefabLayers.arraySize; i++)
                 {
+                    var layer = prefabLayers.GetArrayElementAtIndex(i);
                     var removes = layer.FindPropertyRelative(Names.Removes);
                     var additions = layer.FindPropertyRelative(Names.Additions);
 
@@ -686,20 +698,18 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                     {
                         var value = _getValue(prop);
                         if (upstreamValues.Remove(value))
-                            valuesList.RemoveAll(x => x.Equals(value));
+                            _elements.RemoveAll(x => x.Value.Equals(value));
                     }
 
                     foreach (var prop in new ArrayPropertyEnumerable(additions))
                     {
                         var value = _getValue(prop);
                         if (upstreamValues.Add(value))
-                            valuesList.Add(value);
+                            _elements.Add(ElementImpl.Natural(this, value, i + 1));
                     }
                 }
 
-                _elements = valuesList.Select(x => ElementImpl.Natural(this, x)).ToList();
-
-                _upstreamElementCount = valuesList.Count;
+                _upstreamElementCount = _elements.Count;
 
                 // process current layer
                 if (prefabLayers.arraySize < nestCount) prefabLayers.arraySize = nestCount;
@@ -720,8 +730,10 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                 try
                 {
                     var thisObjectPropPath = property.propertyPath;
-                    var arraySizeProp = property.FindPropertyRelative(Names.PrefabLayers).FindPropertyRelative("Array.size").propertyPath;
-                    var arrayValueProp = property.FindPropertyRelative(Names.PrefabLayers).GetArrayElementAtIndex(nestCount - 1).propertyPath;
+                    var arraySizeProp = property.FindPropertyRelative(Names.PrefabLayers)
+                        .FindPropertyRelative("Array.size").propertyPath;
+                    var arrayValueProp = property.FindPropertyRelative(Names.PrefabLayers)
+                        .GetArrayElementAtIndex(nestCount - 1).propertyPath;
                     var serialized = property.serializedObject;
                     var obj = serialized.targetObject;
 
@@ -836,11 +848,13 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 
             private class ElementImpl : IElement<T>
             {
+                public EditorUtil<T> Container => _container;
                 private readonly PrefabModification _container;
                 private int _indexInModifier;
+                internal readonly int SourceNestCount;
                 public T Value { get; }
                 public ElementStatus Status { get; private set; }
-                
+
                 public bool Contains
                 {
                     get
@@ -863,28 +877,30 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 
                 public SerializedProperty ModifierProp { get; private set; }
 
-                private ElementImpl(PrefabModification container, int indexInModifier, T value, ElementStatus status, SerializedProperty modifierProp)
+                private ElementImpl(PrefabModification container, int indexInModifier, T value, ElementStatus status,
+                    int sourceNestCount, SerializedProperty modifierProp)
                 {
                     _container = container;
                     _indexInModifier = indexInModifier;
+                    SourceNestCount = sourceNestCount;
                     Value = value;
                     Status = status;
                     ModifierProp = modifierProp;
                 }
 
-                public static ElementImpl Natural(PrefabModification container, T value) => 
-                    new ElementImpl(container, -1, value, ElementStatus.Natural, null);
+                public static ElementImpl Natural(PrefabModification container, T value, int nestCount) =>
+                    new ElementImpl(container, -1, value, ElementStatus.Natural, nestCount, null);
 
-                public static ElementImpl NewElement(PrefabModification container, T value, int i) => 
-                    new ElementImpl(container, i, value, ElementStatus.NewElement, 
+                public static ElementImpl NewElement(PrefabModification container, T value, int i) =>
+                    new ElementImpl(container, i, value, ElementStatus.NewElement, -1,
                         container._currentAdditions.GetArrayElementAtIndex(i));
 
-                public static ElementImpl FakeRemoved(PrefabModification container, T value, int i) => 
-                    new ElementImpl(container, i, value, ElementStatus.FakeRemoved, 
-                        container._currentAdditions.GetArrayElementAtIndex(i));
+                public static ElementImpl FakeRemoved(PrefabModification container, T value, int i) =>
+                    new ElementImpl(container, i, value, ElementStatus.FakeRemoved, -1,
+                        container._currentRemoves.GetArrayElementAtIndex(i));
 
-                public static ElementImpl NewSlot(PrefabModification container, T value) => 
-                    new ElementImpl(container, -1, value, ElementStatus.NewSlot, null);
+                public static ElementImpl NewSlot(PrefabModification container, T value) =>
+                    new ElementImpl(container, -1, value, ElementStatus.NewSlot, -1, null);
 
                 public void EnsureAdded() => DoAdd(false);
                 public void Add() => DoAdd(true);
@@ -990,6 +1006,139 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                     Status = ElementStatus.Natural;
                 }
             }
+
+            public override void HandleApplyRevertMenuItems(IElement<T> element, GenericMenu genericMenu)
+            {
+                var elementImpl = (ElementImpl)element;
+                HandleApplyMenuItems(_currentAdditions.serializedObject.targetObject, elementImpl, genericMenu);
+                HandleRevertMenuItem(genericMenu, element);
+            }
+
+            private void HandleApplyMenuItems(Object instanceOrAssetObject,
+                ElementImpl elementImpl,
+                GenericMenu genericMenu,
+                bool defaultOverrideComparedToSomeSources = false)
+            {
+                var applyTargets = GetApplyTargets(instanceOrAssetObject,
+                    defaultOverrideComparedToSomeSources);
+                if (applyTargets == null || applyTargets.Count == 0)
+                    return;
+                for (var index = 0; index < applyTargets.Count; ++index)
+                {
+                    var componentOrGameObject = applyTargets[index];
+
+                    var rootGameObject = GetRootGameObject(componentOrGameObject);
+                    var format = L10n.Tr(index == applyTargets.Count - 1
+                        ? "Apply to Prefab '{0}'"
+                        : "Apply as Override in Prefab '{0}'");
+                    var guiContent = new GUIContent(string.Format(format, rootGameObject.name));
+
+                    var nestCount = applyTargets.Count - index - 1;
+
+                    if (!PrefabUtility.IsPartOfPrefabThatCanBeAppliedTo(GetRootGameObject(componentOrGameObject)))
+                    {
+                        genericMenu.AddDisabledItem(guiContent);
+                    }
+                    else if (EditorUtility.IsPersistent(_rootProperty.serializedObject.targetObject))
+                    {
+                        genericMenu.AddDisabledItem(guiContent);
+                    }
+                    else
+                    {
+                        switch (elementImpl.Status)
+                        {
+                            case ElementStatus.Natural:
+                                // logic failure: Natural means nothing to override
+                                genericMenu.AddDisabledItem(guiContent);
+                                break;
+                            case ElementStatus.Removed:
+                                if (elementImpl.SourceNestCount <= nestCount)
+                                {
+                                    // the value is already added in the Property
+                                    genericMenu.AddItem(guiContent, false, _ =>
+                                    {
+                                        // TODO: 
+                                        Debug.Log("apply modification: Removed");
+                                    }, null);
+                                }
+                                else
+                                {
+                                    genericMenu.AddDisabledItem(guiContent);
+                                }
+                                break;
+                            case ElementStatus.NewElement:
+                                // if possible, check for deleting this element in parent prefabs
+                                genericMenu.AddItem(guiContent, false, (_) =>
+                                {
+                                    // TODO: 
+                                    Debug.Log("apply modification: NewElement");
+                                }, null);
+                                break;
+                            case ElementStatus.AddedTwice:
+                                genericMenu.AddDisabledItem(guiContent);
+                                break;
+                            case ElementStatus.FakeRemoved:
+                                genericMenu.AddDisabledItem(guiContent);
+                                break;
+                            case ElementStatus.NewSlot:
+                                // logic faliure
+                                genericMenu.AddDisabledItem(guiContent);
+                                break;
+                            default:
+                                throw new ArgumentOutOfRangeException();
+                        }
+                    }
+                }
+            }
+
+            private void HandleRevertMenuItem(GenericMenu genericMenu, IElement<T> element)
+            {
+                var guiContent = new GUIContent(L10n.Tr("Revert"));
+                genericMenu.AddItem(guiContent, false, _ =>
+                {
+                    PrefabUtility.RevertPropertyOverride(element.ModifierProp, InteractionMode.UserAction);
+                }, null);
+            }
+
+            private static List<Object> GetApplyTargets(
+                Object instanceOrAssetObject,
+                bool defaultOverrideComparedToSomeSources)
+            {
+                var applyTargets = new List<Object>();
+                // verify the value is GameObject or Component
+                if (!(instanceOrAssetObject is GameObject)) _ = (Component)instanceOrAssetObject;
+                var obj = PrefabUtility.GetCorrespondingObjectFromSource(instanceOrAssetObject);
+                if (obj == null)
+                    return applyTargets;
+                for (; obj != null; obj = PrefabUtility.GetCorrespondingObjectFromSource(obj))
+                {
+                    if (defaultOverrideComparedToSomeSources)
+                    {
+                        var gameObject2 = GetGameObject(obj);
+                        if (gameObject2.transform.root == gameObject2.transform)
+                            break;
+                    }
+
+                    applyTargets.Add(obj);
+                }
+
+                return applyTargets;
+            }
+
+            private static GameObject GetGameObject(Object componentOrGameObject)
+            {
+                var gameObject = componentOrGameObject as GameObject;
+                if (gameObject)
+                    return gameObject;
+                var component = componentOrGameObject as Component;
+                return component ? component.gameObject : null;
+            }
+
+            private static GameObject GetRootGameObject(Object componentOrGameObject)
+            {
+                var gameObject = GetGameObject(componentOrGameObject);
+                return gameObject == null ? null : gameObject.transform.root.gameObject;
+            }
         }
 
         private static SerializedProperty AddArrayElement(SerializedProperty array)
@@ -1022,6 +1171,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 
     internal interface IElement<T>
     {
+        EditorUtil<T> Container { get; }
         T Value { get; }
         ElementStatus Status { get; }
         bool Contains { get; }
@@ -1053,15 +1203,20 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
         {
             if (_property != null)
             {
-                if (Event.current.type == EventType.ContextClick && _totalPosition.Contains(Event.current.mousePosition))
+                if (Event.current.type == EventType.ContextClick &&
+                    _totalPosition.Contains(Event.current.mousePosition))
                 {
                     var genericMenu = new GenericMenu();
-                    if (genericMenu.GetItemCount() == 0)
+                    if (!_property.serializedObject.isEditingMultipleObjects 
+                        && _property.isInstantiatedPrefab 
+                        && _property.prefabOverride)
                     {
                         Event.current.Use();
+                        Element.Container.HandleApplyRevertMenuItems(Element, genericMenu);
                         genericMenu.ShowAsContext();
                     }
                 }
+
                 EditorGUI.EndProperty();
             }
         }

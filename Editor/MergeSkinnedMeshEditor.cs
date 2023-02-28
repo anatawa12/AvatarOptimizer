@@ -121,7 +121,7 @@ namespace Anatawa12.AvatarOptimizer
                 var label = new GUIContent("Merge");
                 using (new PrefabSafeSet.PropertyScope<Material>(element, fieldPosition, label))
                 {
-                    var newMerges = EditorGUILayout.ToggleLeft(label, !element.Contains);
+                    var newMerges = EditorGUI.ToggleLeft(fieldPosition, label, !element.Contains);
                     if (newMerges) element.EnsureRemoved();
                     else element.EnsureAdded();
                 }
