@@ -37,13 +37,13 @@ namespace Anatawa12.AvatarOptimizer
             {
                 var rect = EditorGUILayout.GetControlRect();
                 label.text = shapeKeyName;
-                var contains = _shapeKeysSet.Contains(shapeKeyName);
+                var element = _shapeKeysSet.GetElementOf(shapeKeyName);
                 EditorGUI.BeginChangeCheck();
-                var set = EditorGUI.ToggleLeft(rect, label, contains);
+                var set = EditorGUI.ToggleLeft(rect, label, element.Contains);
                 if (EditorGUI.EndChangeCheck())
                 {
-                    if (set) _shapeKeysSet.EnsureAdded(shapeKeyName);
-                    else _shapeKeysSet.EnsureRemoved(shapeKeyName);
+                    if (set) element.EnsureAdded();
+                    else element.EnsureRemoved();
                 }
             }
 
@@ -52,16 +52,17 @@ namespace Anatawa12.AvatarOptimizer
                 if (GUILayout.Button("Check All"))
                 {
                     foreach (var shapeKeyName in shapes)
-                        _shapeKeysSet.EnsureAdded(shapeKeyName);
+                        _shapeKeysSet.GetElementOf(shapeKeyName).EnsureAdded();
                 }
                 
                 if (GUILayout.Button("Invert All"))
                 {
                     foreach (var shapeKeyName in shapes)
-                        if (_shapeKeysSet.Contains(shapeKeyName))
-                            _shapeKeysSet.EnsureRemoved(shapeKeyName);
-                        else
-                            _shapeKeysSet.EnsureAdded(shapeKeyName);
+                    {
+                        var element = _shapeKeysSet.GetElementOf(shapeKeyName);
+                        if (element.Contains) element.EnsureRemoved();
+                        else element.EnsureAdded();
+                    }
                 }
             }
 

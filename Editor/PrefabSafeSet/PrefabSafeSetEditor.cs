@@ -338,7 +338,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                 if (FakeSlot.propertyType == SerializedPropertyType.ObjectReference)
                 {
                     var addValue = Field(position, EditorStatics.ToAdd, default);
-                    if (addValue != null) EditorUtil.AddValue(addValue);
+                    if (addValue != null) EditorUtil.GetElementOf(addValue).Add();
                 }
                 else
                 {
@@ -427,8 +427,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             var newLabel = new GUIContent("");
 
             // to avoid changes in for loop
-            var modKind = ModificationKind.Natural;
-            T modValue = default;
+            Action action = null;
 
             foreach (var element in EditorUtil.Elements)
             {
@@ -462,24 +461,23 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 
                 var currentModKind =
                     OnePrefabElement(position, newLabel, element.Value, fieldModKind, element.ModifierProp);
-                if (currentModKind != ModificationKind.Natural)
-                    (modKind, modValue) = (currentModKind, element.Value);
+
+                switch (currentModKind)
+                {
+                    case ModificationKind.Natural:
+                        break;
+                    case ModificationKind.Remove:
+                        action = element.Remove;
+                        break;
+                    case ModificationKind.Add:
+                        action = element.Add;
+                        break;
+                }
+
                 position.y += FieldHeight() + EditorGUIUtility.standardVerticalSpacing;
             }
 
-            switch (modKind)
-            {
-                case ModificationKind.Natural:
-                    break;
-                case ModificationKind.Remove:
-                    EditorUtil.RemoveValue(modValue);
-                    break;
-                case ModificationKind.Add:
-                    EditorUtil.AddValue(modValue);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+            action?.Invoke();
 
             OnGUIAddRegion(position);
         }
@@ -542,10 +540,10 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
         [NotNull] private readonly Func<SerializedProperty, T> _getValue;
         [NotNull] private readonly Action<SerializedProperty, T> _setValue;
 
-        public abstract IEnumerable<Element> Elements { get; }
+        public abstract IEnumerable<IElement> Elements { get; }
         public abstract int ElementsCount { get; }
-        public virtual int Count => Elements.Count(x => x.LiveValue);
-        public virtual IEnumerable<T> Values => Elements.Where(x => x.LiveValue).Select(x => x.Value);
+        public virtual int Count => Elements.Count(x => x.Contains);
+        public virtual IEnumerable<T> Values => Elements.Where(x => x.Contains).Select(x => x.Value);
 
         public static EditorUtil<T> Create(SerializedProperty property, int nestCount,
             Func<SerializedProperty, T> getValue,
@@ -562,33 +560,18 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             _setValue = setValue ?? throw new ArgumentNullException(nameof(setValue));
         }
 
-        public void AddValue(T addValue) => DoAdd(addValue, true);
-
-        /// <summary>
-        /// add value if not added.
-        /// </summary>
-        /// <param name="addValue"></param>
-        public void EnsureAdded(T addValue) => DoAdd(addValue, false);
-
-        protected abstract void DoAdd(T addValue, bool forceAdd);
-
-        public void RemoveValue(T value) => DoRemove(value, true);
-
-        /// <summary>
-        /// remove value if exists.
-        /// </summary>
-        /// <param name="value"></param>
-        public void EnsureRemoved(T value) => DoRemove(value, false);
-        
-        protected abstract void DoRemove(T value, bool forceRemove);
-
-        public virtual bool Contains(T value) => Elements.Any(x => x.LiveValue && x.Value.Equals(value));
-
         public abstract void Clear();
+
+        protected abstract IElement NewSlotElement(T value);
+
+        public IElement GetElementOf(T value) =>
+            Elements.FirstOrDefault(x => x.Value.Equals(value)) ?? NewSlotElement(value);
 
         private sealed class Root : EditorUtil<T>
         {
+            private List<ElementImpl> _list;
             [NotNull] private readonly SerializedProperty _mainSet;
+            public override int Count => _mainSet.arraySize;
 
             public Root(SerializedProperty property, Func<SerializedProperty, T> getValue,
                 Action<SerializedProperty, T> setValue) : base(getValue, setValue)
@@ -597,37 +580,76 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                            ?? throw new ArgumentException("mainSet not found", nameof(property));
             }
 
-            public override IEnumerable<Element> Elements => new ArrayPropertyEnumerable(_mainSet)
-                .Select(x => new Element(_getValue(x)));
-
-            public override int ElementsCount => _mainSet.arraySize;
-
-            protected override void DoAdd(T addValue, bool forceAdd)
+            public override IEnumerable<IElement> Elements
             {
-                foreach (var prop in new ArrayPropertyEnumerable(_mainSet))
-                    if (_getValue(prop).Equals(addValue))
-                        return;
-                _setValue(AddArrayElement(_mainSet), addValue);
-            }
-
-            protected override void DoRemove(T value, bool forceRemove)
-            {
-                for (var i = 0; i < _mainSet.arraySize; i++)
+                get
                 {
-                    if (_getValue(_mainSet.GetArrayElementAtIndex(i)).Equals(value))
-                    {
-                        RemoveArrayElementAt(_mainSet, i);
-                        return;
-                    }
+                    if (_list.Count != _mainSet.arraySize)
+                        _list = new ArrayPropertyEnumerable(_mainSet)
+                            .Select((x, i) => new ElementImpl(this, x, i))
+                            .ToList();
+                    return _list;
                 }
             }
 
+            public override int ElementsCount => _mainSet.arraySize;
+
             public override void Clear() => _mainSet.arraySize = 0;
+
+            protected override IElement NewSlotElement(T value) => new ElementImpl(this, value);
+
+            private class ElementImpl : IElement
+            {
+                public T Value { get; }
+                public ElementStatus Status => Contains ? ElementStatus.Natural : ElementStatus.NewSlot;
+                public bool Contains => _index >= 0;
+                public SerializedProperty ModifierProp { get; private set; }
+
+                private readonly Root _container;
+                private int _index;
+
+                public ElementImpl(Root container, SerializedProperty prop, int index)
+                {
+                    Value = container._getValue(prop);
+                    _container = container;
+                    _index = index;
+                    ModifierProp = prop;
+                }
+
+                public ElementImpl(Root container, T value)
+                {
+                    Value = value;
+                    _container = container;
+                    _index = -1;
+                    ModifierProp = null;
+                }
+
+                public void EnsureAdded() => Add();
+
+                public void Add()
+                {
+                    if (Contains) return;
+                    _index = _container._mainSet.arraySize;
+                    _container._setValue(ModifierProp = AddArrayElement(_container._mainSet), Value);
+                    _container._list.Add(this);
+                }
+
+                public void EnsureRemoved() => Remove();
+
+                public void Remove()
+                {
+                    if (!Contains) return;
+                    _container.RemoveArrayElementAt(_container._mainSet, _index);
+                    _index = -1;
+                    ModifierProp = null;
+                    _container._list.Remove(this);
+                }
+            }
         }
 
         private sealed class PrefabModification : EditorUtil<T>
         {
-            private readonly List<Element> _elements;
+            private readonly List<ElementImpl> _elements;
             private readonly int _upstreamElementCount;
             private readonly SerializedProperty _currentRemoves;
             private readonly SerializedProperty _currentAdditions;
@@ -638,7 +660,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                 Func<SerializedProperty, T> getValue, Action<SerializedProperty, T> setValue) : base(getValue,
                 setValue)
             {
-                _elements = new List<Element>();
+                var valuesList = new List<T>();
                 var upstreamValues = new HashSet<T>();
 
                 ClearNonLayerModifications(property, nestCount);
@@ -650,7 +672,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                     if (value == null) continue;
                     if (upstreamValues.Contains(value)) continue;
                     upstreamValues.Add(value);
-                    _elements.Add(new Element(value));
+                    valuesList.Add(value);
                 }
 
                 // apply modifications until previous one
@@ -664,18 +686,20 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                     {
                         var value = _getValue(prop);
                         if (upstreamValues.Remove(value))
-                            _elements.RemoveAll(x => x.Value.Equals(value));
+                            valuesList.RemoveAll(x => x.Equals(value));
                     }
 
                     foreach (var prop in new ArrayPropertyEnumerable(additions))
                     {
                         var value = _getValue(prop);
                         if (upstreamValues.Add(value))
-                            _elements.Add(new Element(value));
+                            valuesList.Add(value);
                     }
                 }
 
-                _upstreamElementCount = _elements.Count;
+                _elements = valuesList.Select(x => ElementImpl.Natural(this, x)).ToList();
+
+                _upstreamElementCount = valuesList.Count;
 
                 // process current layer
                 if (prefabLayers.arraySize < nestCount) prefabLayers.arraySize = nestCount;
@@ -720,7 +744,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                 }
             }
 
-            public override IEnumerable<Element> Elements
+            public override IEnumerable<IElement> Elements
             {
                 get
                 {
@@ -763,16 +787,16 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                     if (removesSet.Remove(value))
                     {
                         var index = Array.IndexOf(removesArray, value);
-                        element.ChangeState(ElementStatus.Removed, _currentRemoves, index);
+                        element.MarkRemovedAt(index);
                     }
                     else if (addsSet.Remove(value))
                     {
                         var index = Array.IndexOf(additionsArray, value);
-                        element.ChangeState(ElementStatus.AddedTwice, _currentAdditions, index);
+                        element.MarkAddedTwiceAt(index);
                     }
                     else
                     {
-                        element.ChangeStateToNatural();
+                        element.MarkNatural();
                     }
 
                     _elements[i] = element;
@@ -784,7 +808,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                     var value = additionsArray[i];
                     if (!addsSet.Contains(value)) continue; // it's duplicated addition
 
-                    _elements.Add(new Element(value, ElementStatus.NewElement, _currentAdditions, i));
+                    _elements.Add(ElementImpl.NewElement(this, value, i));
                 }
 
                 // fake removed elements
@@ -793,170 +817,191 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                     var value = removesArray[i];
                     if (!removesSet.Contains(value)) continue; // it's removed upper layer
 
-                    _elements.Add(new Element(value, ElementStatus.FakeRemoved, _currentRemoves, i));
+                    _elements.Add(ElementImpl.FakeRemoved(this, value, i));
                 }
 
                 _currentRemovesSize = _currentRemoves.arraySize;
                 _currentAdditionsSize = _currentAdditions.arraySize;
             }
 
-            protected override void DoAdd(T addValue, bool forceAdd)
-            {
-                Initialize();
-                var index = _elements.FindIndex(x => x.Value.Equals(addValue));
-                if (index == -1)
-                {
-                    // not on list: just add
-                    _setValue(AddArrayElement(_currentAdditions), addValue);
-                }
-                else
-                {
-                    var element = _elements[index];
-                    switch (element.Status)
-                    {
-                        case ElementStatus.Natural:
-                            if (forceAdd)
-                                _setValue(AddArrayElement(_currentAdditions), element.Value);
-                            break;
-                        case ElementStatus.Removed:
-                            RemoveArrayElementAt(_currentRemoves, element.IndexInModifierArray);
-                            break;
-                        case ElementStatus.NewElement:
-                        case ElementStatus.AddedTwice:
-                            // already added: nothing to do
-                            break;
-                        case ElementStatus.FakeRemoved:
-                            RemoveArrayElementAt(_currentRemoves, element.IndexInModifierArray);
-                            _setValue(AddArrayElement(_currentAdditions), element.Value);
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException();
-                    }
-                }
-            }
-
-            protected override void DoRemove(T value, bool forceRemove)
-            {
-                Initialize();
-                var index = _elements.FindIndex(x => x.Value.Equals(value));
-                if (index == -1)
-                {
-                    // not found in the set: add fake removes
-                    if (forceRemove)
-                        _setValue(AddArrayElement(_currentRemoves), value);
-                }
-                else
-                {
-                    var element = _elements[index];
-                    switch (element.Status)
-                    {
-                        case ElementStatus.Natural:
-                            _setValue(AddArrayElement(_currentRemoves), element.Value);
-                            break;
-                        case ElementStatus.Removed:
-                        case ElementStatus.FakeRemoved:
-                            // already removed: nothing to do
-                            break;
-                        case ElementStatus.NewElement:
-                            RemoveArrayElementAt(_currentAdditions, element.IndexInModifierArray);
-                            break;
-                        case ElementStatus.AddedTwice:
-                            RemoveArrayElementAt(_currentAdditions, element.IndexInModifierArray);
-                            _setValue(AddArrayElement(_currentRemoves), element.Value);
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException();
-                    }
-                }
-            }
-
             public override void Clear()
             {
                 Initialize();
-                foreach (var element in _elements)
+                for (var i = _elements.Count - 1; i >= _upstreamElementCount; i--)
+                    _elements[i].EnsureRemoved();
+                _currentAdditionsSize = _currentAdditions.arraySize = 0;
+            }
+
+            protected override IElement NewSlotElement(T value) => ElementImpl.NewSlot(this, value);
+
+            private class ElementImpl : IElement
+            {
+                private readonly PrefabModification _container;
+                private int _indexInModifier;
+                public T Value { get; }
+                public ElementStatus Status { get; private set; }
+                
+                public bool Contains
                 {
-                    switch (element.Status)
+                    get
+                    {
+                        switch (Status)
+                        {
+                            case ElementStatus.Natural:
+                            case ElementStatus.NewElement:
+                            case ElementStatus.AddedTwice:
+                                return true;
+                            case ElementStatus.FakeRemoved:
+                            case ElementStatus.Removed:
+                            case ElementStatus.NewSlot:
+                                return false;
+                            default:
+                                throw new ArgumentOutOfRangeException();
+                        }
+                    }
+                }
+
+                public SerializedProperty ModifierProp { get; private set; }
+
+                private ElementImpl(PrefabModification container, int indexInModifier, T value, ElementStatus status, SerializedProperty modifierProp)
+                {
+                    _container = container;
+                    _indexInModifier = indexInModifier;
+                    Value = value;
+                    Status = status;
+                    ModifierProp = modifierProp;
+                }
+
+                public static ElementImpl Natural(PrefabModification container, T value) => 
+                    new ElementImpl(container, -1, value, ElementStatus.Natural, null);
+
+                public static ElementImpl NewElement(PrefabModification container, T value, int i) => 
+                    new ElementImpl(container, i, value, ElementStatus.NewElement, 
+                        container._currentAdditions.GetArrayElementAtIndex(i));
+
+                public static ElementImpl FakeRemoved(PrefabModification container, T value, int i) => 
+                    new ElementImpl(container, i, value, ElementStatus.FakeRemoved, 
+                        container._currentAdditions.GetArrayElementAtIndex(i));
+
+                public static ElementImpl NewSlot(PrefabModification container, T value) => 
+                    new ElementImpl(container, -1, value, ElementStatus.NewSlot, null);
+
+                public void EnsureAdded() => DoAdd(false);
+                public void Add() => DoAdd(true);
+                public void EnsureRemoved() => DoRemove(false);
+                public void Remove() => DoRemove(true);
+
+                private void DoAdd(bool forceAdd)
+                {
+                    void AddToAdditions(ElementStatus status)
+                    {
+                        _indexInModifier = _container._currentAdditions.arraySize;
+                        _container._setValue(ModifierProp = AddArrayElement(_container._currentAdditions), Value);
+                        _container._currentAdditionsSize += 1;
+                        Status = status;
+                    }
+
+                    switch (Status)
                     {
                         case ElementStatus.Natural:
-                            _setValue(AddArrayElement(_currentRemoves), element.Value);
+                            if (forceAdd)
+                                AddToAdditions(ElementStatus.AddedTwice);
+                            break;
+                        case ElementStatus.Removed:
+                            _container._currentRemovesSize -= 1;
+                            _container.RemoveArrayElementAt(_container._currentRemoves, _indexInModifier);
+                            Status = ElementStatus.Natural;
+                            ModifierProp = null;
+                            break;
+                        case ElementStatus.NewElement:
+                        case ElementStatus.AddedTwice:
+                            // already added
+                            break;
+                        case ElementStatus.FakeRemoved:
+                            _container._currentRemovesSize -= 1;
+                            _container.RemoveArrayElementAt(_container._currentRemoves, _indexInModifier);
+                            AddToAdditions(ElementStatus.NewElement);
+                            break;
+                        case ElementStatus.NewSlot:
+                            AddToAdditions(ElementStatus.NewElement);
+                            _container._elements.Add(this);
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
+                }
+
+                private void DoRemove(bool forceRemove)
+                {
+                    void AddToRemoves(ElementStatus status)
+                    {
+                        _indexInModifier = _container._currentRemoves.arraySize;
+                        _container._setValue(ModifierProp = AddArrayElement(_container._currentRemoves), Value);
+                        _container._currentRemovesSize += 1;
+                        Status = status;
+                    }
+
+                    switch (Status)
+                    {
+                        case ElementStatus.Natural:
+                            AddToRemoves(ElementStatus.Removed);
                             break;
                         case ElementStatus.Removed:
                         case ElementStatus.FakeRemoved:
                             // already removed: nothing to do
                             break;
                         case ElementStatus.NewElement:
-                            RemoveArrayElementAt(_currentAdditions, element.IndexInModifierArray);
+                            _container._currentAdditionsSize -= 1;
+                            _container.RemoveArrayElementAt(_container._currentAdditions, _indexInModifier);
+                            Status = ElementStatus.NewSlot;
+                            _container._elements.Remove(this);
+                            ModifierProp = null;
                             break;
                         case ElementStatus.AddedTwice:
-                            RemoveArrayElementAt(_currentAdditions, element.IndexInModifierArray);
-                            _setValue(AddArrayElement(_currentRemoves), element.Value);
+                            _container._currentAdditionsSize -= 1;
+                            _container.RemoveArrayElementAt(_container._currentAdditions, _indexInModifier);
+                            AddToRemoves(ElementStatus.Removed);
+                            break;
+                        case ElementStatus.NewSlot:
+                            if (forceRemove)
+                                AddToRemoves(ElementStatus.FakeRemoved);
                             break;
                         default:
                             throw new ArgumentOutOfRangeException();
                     }
+                }
+
+                public void MarkRemovedAt(int index)
+                {
+                    _indexInModifier = index;
+                    ModifierProp = _container._currentRemoves.GetArrayElementAtIndex(index);
+                    Status = ElementStatus.Removed;
+                }
+
+                public void MarkAddedTwiceAt(int index)
+                {
+                    _indexInModifier = index;
+                    ModifierProp = _container._currentAdditions.GetArrayElementAtIndex(index);
+                    Status = ElementStatus.AddedTwice;
+                }
+
+                public void MarkNatural()
+                {
+                    Status = ElementStatus.Natural;
                 }
             }
         }
 
-        public struct Element
+        public interface IElement
         {
-            public T Value { get; }
-            public ElementStatus Status { get; private set; }
-
-            public bool LiveValue
-            {
-                get
-                {
-                    switch (Status)
-                    {
-                        case ElementStatus.Natural:
-                        case ElementStatus.NewElement:
-                        case ElementStatus.AddedTwice:
-                            return true;
-                        case ElementStatus.FakeRemoved:
-                        case ElementStatus.Removed:
-                            return false;
-                        default:
-                            throw new ArgumentOutOfRangeException();
-                    }
-                }
-            }
-
-            internal SerializedProperty ModifierProp;
-            internal int IndexInModifierArray;
-
-            internal Element(T value)
-            {
-                if (value == null) throw new ArgumentNullException(nameof(value));
-                Value = value;
-                Status = ElementStatus.Natural;
-                ModifierProp = null;
-                IndexInModifierArray = 0;
-            }
-
-            internal Element(T value, ElementStatus status, SerializedProperty arrayProp, int index) : this(value)
-            {
-                if (status == ElementStatus.Natural) throw new ArgumentException("Use value only ctor", nameof(status));
-                ChangeState(status, arrayProp, index);
-            }
-
-            internal void ChangeState(ElementStatus status, SerializedProperty arrayProp, int index)
-            {
-                if (status == ElementStatus.Natural)
-                    throw new ArgumentException("Use ChangeStateToNatural");
-                if (arrayProp == null) throw new ArgumentNullException(nameof(arrayProp));
-                Status = status;
-                ModifierProp = arrayProp.GetArrayElementAtIndex(index) ??
-                               throw new ArgumentException("element not found", nameof(arrayProp));
-                IndexInModifierArray = index;
-            }
-
-            internal void ChangeStateToNatural()
-            {
-                Status = ElementStatus.Natural;
-                ModifierProp = null;
-                IndexInModifierArray = 0;
-            }
+            T Value { get; }
+            ElementStatus Status { get; }
+            bool Contains { get; }
+            SerializedProperty ModifierProp { get; }
+            void EnsureAdded();
+            void Add();
+            void EnsureRemoved();
+            void Remove();
         }
 
         private static SerializedProperty AddArrayElement(SerializedProperty array)
@@ -994,6 +1039,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
         NewElement,
         AddedTwice,
         FakeRemoved,
+        NewSlot,
     }
 
     internal readonly struct ArrayPropertyEnumerable : IEnumerable<SerializedProperty>

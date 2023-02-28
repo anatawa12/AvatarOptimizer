@@ -320,7 +320,7 @@ Do you want to migrate project now?",
             renderersSet.Clear();
 
             foreach (var value in values)
-                renderersSet.EnsureAdded(value);
+                renderersSet.GetElementOf(value).EnsureAdded();
         }
 
         private readonly struct TypeId

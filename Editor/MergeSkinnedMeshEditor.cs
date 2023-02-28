@@ -116,16 +116,10 @@ namespace Anatawa12.AvatarOptimizer
                 EditorGUI.EndDisabledGroup();
 
                 EditorGUI.indentLevel++;
-                var doNotMerge = _doNotMergeMaterials.Contains(group.Key);
-                var newMerges = EditorGUILayout.ToggleLeft("Merge", !doNotMerge);
-                if (newMerges)
-                {
-                    _doNotMergeMaterials.EnsureRemoved(group.Key);
-                }
-                else
-                {
-                    _doNotMergeMaterials.EnsureAdded(group.Key);
-                }
+                var element = _doNotMergeMaterials.GetElementOf(group.Key);
+                var newMerges = EditorGUILayout.ToggleLeft("Merge", !element.Contains);
+                if (newMerges) element.EnsureRemoved();
+                else element.EnsureAdded();
 
                 EditorGUILayout.LabelField("Renderers:");
                 EditorGUI.indentLevel++;
