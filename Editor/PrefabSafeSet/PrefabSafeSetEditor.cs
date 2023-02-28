@@ -655,6 +655,22 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             }
         }
 
+        private struct ArraySizeCheck
+        {
+            private int _size;
+            private readonly SerializedProperty _prop;
+
+            public ArraySizeCheck(SerializedProperty prop)
+            {
+                _prop = prop;
+                _size = _prop.intValue;
+            }
+
+            public bool Changed => _size != _prop.intValue;
+
+            public void Updated() => _size = _prop.intValue;
+        }
+
         private sealed class PrefabModification : EditorUtil<T>
         {
             private readonly List<ElementImpl> _elements;
@@ -666,17 +682,50 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             private int _currentRemovesSize;
             private int _currentAdditionsSize;
 
+            // upstream change check
+            private ArraySizeCheck _mainSet;
+            private readonly ArraySizeCheck[] _layerRemoves;
+            private readonly ArraySizeCheck[] _layerAdditions;
+
             public PrefabModification(SerializedProperty property, int nestCount,
                 Func<SerializedProperty, T> getValue, Action<SerializedProperty, T> setValue) : base(getValue,
                 setValue)
             {
                 _elements = new List<ElementImpl>();
                 _rootProperty = property;
-                var upstreamValues = new HashSet<T>();
 
                 ClearNonLayerModifications(property, nestCount);
 
                 var mainSet = property.FindPropertyRelative(Names.MainSet);
+                _mainSet = new ArraySizeCheck(mainSet.FindPropertyRelative("Array.size"));
+                _layerRemoves = new ArraySizeCheck[nestCount - 1];
+                _layerAdditions = new ArraySizeCheck[nestCount - 1];
+
+                // apply modifications until previous one
+                var prefabLayers = property.FindPropertyRelative(Names.PrefabLayers);
+                // process current layer
+                if (prefabLayers.arraySize < nestCount) prefabLayers.arraySize = nestCount;
+
+                DoInitializeUpstream();
+
+                var currentLayer = prefabLayers.GetArrayElementAtIndex(nestCount - 1);
+                _currentRemoves = currentLayer.FindPropertyRelative(Names.Removes)
+                                  ?? throw new ArgumentException("prefabLayers.removes not found",
+                                      nameof(property));
+                _currentAdditions = currentLayer.FindPropertyRelative(Names.Additions)
+                                    ?? throw new ArgumentException("prefabLayers.additions not found",
+                                        nameof(property));
+
+                DoInitialize();
+            }
+
+            private void DoInitializeUpstream()
+            {
+                _elements.Clear();
+                var upstreamValues = new HashSet<T>();
+
+                var mainSet = _rootProperty.FindPropertyRelative(Names.MainSet);
+
                 foreach (var valueProp in new ArrayPropertyEnumerable(mainSet))
                 {
                     var value = _getValue(valueProp);
@@ -686,9 +735,9 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                     _elements.Add(ElementImpl.Natural(this, value, 0));
                 }
 
-                // apply modifications until previous one
-                var prefabLayers = property.FindPropertyRelative(Names.PrefabLayers);
-                for (var i = 0; i < prefabLayers.arraySize; i++)
+                var prefabLayers = _rootProperty.FindPropertyRelative(Names.PrefabLayers);
+
+                for (var i = 0; i < prefabLayers.arraySize - 1; i++)
                 {
                     var layer = prefabLayers.GetArrayElementAtIndex(i);
                     var removes = layer.FindPropertyRelative(Names.Removes);
@@ -707,22 +756,13 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                         if (upstreamValues.Add(value))
                             _elements.Add(ElementImpl.Natural(this, value, i + 1));
                     }
+
+                    _layerRemoves[i] = new ArraySizeCheck(removes.FindPropertyRelative("Array.size"));
+                    _layerAdditions[i] = new ArraySizeCheck(additions.FindPropertyRelative("Array.size"));
                 }
 
                 _upstreamElementCount = _elements.Count;
-
-                // process current layer
-                if (prefabLayers.arraySize < nestCount) prefabLayers.arraySize = nestCount;
-
-                var currentLayer = prefabLayers.GetArrayElementAtIndex(nestCount - 1);
-                _currentRemoves = currentLayer.FindPropertyRelative(Names.Removes)
-                                  ?? throw new ArgumentException("prefabLayers.removes not found",
-                                      nameof(property));
-                _currentAdditions = currentLayer.FindPropertyRelative(Names.Additions)
-                                    ?? throw new ArgumentException("prefabLayers.additions not found",
-                                        nameof(property));
-
-                DoInitialize();
+                _mainSet.Updated();
             }
 
             private void ClearNonLayerModifications(SerializedProperty property, int nestCount)
@@ -772,6 +812,11 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             /// </summary>
             public void Initialize()
             {
+                if (_mainSet.Changed || _layerRemoves.Any(x => x.Changed) || _layerAdditions.Any(x => x.Changed))
+                {
+                    DoInitializeUpstream();
+                }
+
                 if (_currentRemovesSize != _currentRemoves.arraySize ||
                     _currentAdditionsSize != _currentAdditions.arraySize)
                 {
@@ -987,6 +1032,47 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                     }
                 }
 
+                internal void Revert()
+                {
+                    switch (Status)
+                    {
+                        case ElementStatus.Natural:
+                            break; // nop
+                        case ElementStatus.Removed:
+                            _container._currentRemovesSize -= 1;
+                            _container.RemoveArrayElementAt(_container._currentRemoves, _indexInModifier);
+                            Status = ElementStatus.Natural;
+                            ModifierProp = null;
+                            break;
+                        case ElementStatus.NewElement:
+                            _container._currentAdditionsSize -= 1;
+                            _container.RemoveArrayElementAt(_container._currentAdditions, _indexInModifier);
+                            Status = ElementStatus.NewSlot;
+                            _container._elements.Remove(this);
+                            ModifierProp = null;
+                            break;
+                        case ElementStatus.AddedTwice:
+                            _container._currentAdditionsSize -= 1;
+                            _container.RemoveArrayElementAt(_container._currentAdditions, _indexInModifier);
+                            Status = ElementStatus.Natural;
+                            ModifierProp = null;
+                            break;
+                        case ElementStatus.FakeRemoved:
+                            _container._currentRemovesSize -= 1;
+                            _container.RemoveArrayElementAt(_container._currentRemoves, _indexInModifier);
+                            Status = ElementStatus.NewSlot;
+                            _container._elements.Remove(this);
+                            ModifierProp = null;
+                            break;
+                        case ElementStatus.NewSlot:
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
+
+                    _container._rootProperty.serializedObject.ApplyModifiedProperties();
+                }
+
                 public void MarkRemovedAt(int index)
                 {
                     _indexInModifier = index;
@@ -1011,7 +1097,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             {
                 var elementImpl = (ElementImpl)element;
                 HandleApplyMenuItems(_currentAdditions.serializedObject.targetObject, elementImpl, genericMenu);
-                HandleRevertMenuItem(genericMenu, element);
+                HandleRevertMenuItem(genericMenu, elementImpl);
             }
 
             private void HandleApplyMenuItems(Object instanceOrAssetObject,
@@ -1091,12 +1177,12 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                 }
             }
 
-            private void HandleRevertMenuItem(GenericMenu genericMenu, IElement<T> element)
+            private void HandleRevertMenuItem(GenericMenu genericMenu, ElementImpl element)
             {
                 var guiContent = new GUIContent(L10n.Tr("Revert"));
                 genericMenu.AddItem(guiContent, false, _ =>
                 {
-                    PrefabUtility.RevertPropertyOverride(element.ModifierProp, InteractionMode.UserAction);
+                    element.Revert();
                 }, null);
             }
 
