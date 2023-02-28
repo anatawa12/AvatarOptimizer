@@ -1142,6 +1142,15 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                             PrefabUtility.SavePrefabAsset(rootGameObject);
                         }
 
+                        void AddToList(SerializedProperty sourceArrayProp, T value)
+                        {
+                            var serialized = new SerializedObject(componentOrGameObject);
+                            var newArray = serialized.FindProperty(sourceArrayProp.propertyPath);
+                            _setValue(AddArrayElement(newArray), value);
+                            serialized.ApplyModifiedProperties();
+                            PrefabUtility.SavePrefabAsset(rootGameObject);
+                        }
+
                         switch (elementImpl.Status)
                         {
                             case ElementStatus.Natural:
@@ -1164,14 +1173,14 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                                         {
                                             // apply target is addition
                                             var additionProp = _rootProperty.FindPropertyRelative(Names.PrefabLayers +
-                                                $".Array.data[{nestCount}]." + Names.Additions);
+                                                $".Array.data[{nestCount - 1}]." + Names.Additions);
                                             RemoveFromList(additionProp, elementImpl.Value);
                                         }
                                         else
                                         {
                                             _setValue(
                                                 AddArrayElement(_rootProperty.FindPropertyRelative(Names.PrefabLayers +
-                                                    $".Array.data[{nestCount}]." + Names.Removes)), elementImpl.Value);
+                                                    $".Array.data[{nestCount - 1}]." + Names.Removes)), elementImpl.Value);
                                         }
 
                                         elementImpl.Revert();
@@ -1187,8 +1196,18 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                                 // if possible, check for deleting this element in parent prefabs
                                 genericMenu.AddItem(guiContent, false, (_) =>
                                 {
-                                    // TODO: 
-                                    Debug.Log("apply modification: NewElement");
+                                    if (nestCount == 0)
+                                    {
+                                        AddToList(_rootProperty.FindPropertyRelative(Names.MainSet), elementImpl.Value);
+                                    }
+                                    else
+                                    {
+                                        AddToList(_rootProperty.FindPropertyRelative(Names.PrefabLayers +
+                                            $".Array.data[{nestCount - 1}]." + Names.Additions), elementImpl.Value);
+                                    }
+
+                                    elementImpl.Revert();
+                                    ForceRebuildInspectors();
                                 }, null);
                                 break;
                             case ElementStatus.AddedTwice:
