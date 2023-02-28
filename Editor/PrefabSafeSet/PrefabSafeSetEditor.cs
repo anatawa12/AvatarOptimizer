@@ -138,11 +138,6 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
     [CustomPropertyDrawer(typeof(PrefabSafeSet<,>), true)]
     internal class ObjectsEditor : PropertyDrawer
     {
-        public ObjectsEditor()
-        {
-            Debug.Log("ObjectsEditor Constructor");
-        }
-
         private int _nestCountCache = -1;
 
         private int GetNestCount(Object obj) =>
