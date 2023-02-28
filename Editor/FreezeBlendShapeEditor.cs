@@ -39,15 +39,7 @@ namespace Anatawa12.AvatarOptimizer
                 label.text = shapeKeyName;
                 var element = _shapeKeysSet.GetElementOf(shapeKeyName);
                 using (new PrefabSafeSet.PropertyScope<string>(element, rect, label))
-                {
-                    EditorGUI.BeginChangeCheck();
-                    var set = EditorGUI.ToggleLeft(rect, label, element.Contains);
-                    if (EditorGUI.EndChangeCheck())
-                    {
-                        if (set) element.EnsureAdded();
-                        else element.EnsureRemoved();
-                    }
-                }
+                    element.SetExistence(EditorGUI.ToggleLeft(rect, label, element.Contains));
             }
 
             using (new GUILayout.HorizontalScope())

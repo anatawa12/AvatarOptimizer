@@ -120,11 +120,7 @@ namespace Anatawa12.AvatarOptimizer
                 var fieldPosition = EditorGUILayout.GetControlRect();
                 var label = new GUIContent("Merge");
                 using (new PrefabSafeSet.PropertyScope<Material>(element, fieldPosition, label))
-                {
-                    var newMerges = EditorGUI.ToggleLeft(fieldPosition, label, !element.Contains);
-                    if (newMerges) element.EnsureRemoved();
-                    else element.EnsureAdded();
-                }
+                    element.SetExistence(!EditorGUI.ToggleLeft(fieldPosition, label, !element.Contains));
 
                 EditorGUILayout.LabelField("Renderers:");
                 EditorGUI.indentLevel++;

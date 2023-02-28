@@ -647,6 +647,12 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                     ModifierProp = null;
                     _container._list.Remove(this);
                 }
+
+                public void SetExistence(bool existence)
+                {
+                    if (existence) Add();
+                    else Remove();
+                }
             }
         }
 
@@ -1086,6 +1092,35 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                 {
                     Status = ElementStatus.Natural;
                 }
+
+                public void SetExistence(bool existence)
+                {
+                    if (existence != Contains)
+                    {
+                        switch (Status)
+                        {
+                            case ElementStatus.NewElement:
+                                Remove();
+                                Remove();
+                                break;
+                            case ElementStatus.Natural:
+                            case ElementStatus.AddedTwice:
+                                Remove();
+                                break;
+
+                            case ElementStatus.Removed:
+                                Add();
+                                Add();
+                                break;
+                            case ElementStatus.FakeRemoved:
+                            case ElementStatus.NewSlot:
+                                Add();
+                                break;
+                            default:
+                                throw new ArgumentOutOfRangeException();
+                        }
+                    }
+                }
             }
 
             public override void HandleApplyRevertMenuItems(IElement<T> element, GenericMenu genericMenu)
@@ -1320,6 +1355,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
         void Add();
         void EnsureRemoved();
         void Remove();
+        void SetExistence(bool existence);
     }
 
     internal readonly struct PropertyScope<T> : IDisposable
