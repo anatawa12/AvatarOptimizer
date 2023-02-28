@@ -459,8 +459,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                         throw new ArgumentOutOfRangeException();
                 }
 
-                var currentModKind =
-                    OnePrefabElement(position, newLabel, element.Value, fieldModKind, element.ModifierProp);
+                var currentModKind = OnePrefabElement(position, newLabel, element, fieldModKind);
 
                 switch (currentModKind)
                 {
@@ -489,8 +488,8 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             Remove
         }
 
-        private ModificationKind OnePrefabElement(Rect position, GUIContent label, T value, ModificationKind kind,
-            SerializedProperty modifierProp)
+        private ModificationKind OnePrefabElement(Rect position, GUIContent label, IElement<T> element, 
+            ModificationKind kind)
         {
             // layout
             var fieldPosition = position;
@@ -502,19 +501,20 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 
             var result = ModificationKind.Natural;
 
-            if (modifierProp != null) EditorGUI.BeginProperty(fieldPosition, label, modifierProp);
-            EditorGUI.BeginDisabledGroup(kind == ModificationKind.Remove);
-            // field
-            var fieldValue = Field(fieldPosition, label, value);
-            if (fieldValue == null)
-                result = ModificationKind.Remove;
+            using (new PropertyScope<T>(element, fieldPosition, label))
+            {
+                EditorGUI.BeginDisabledGroup(kind == ModificationKind.Remove);
+                // field
+                var fieldValue = Field(fieldPosition, label, element.Value);
+                if (fieldValue == null)
+                    result = ModificationKind.Remove;
 
-            EditorGUI.BeginDisabledGroup(kind == ModificationKind.Add);
-            if (GUI.Button(addButtonPosition, EditorStatics.ForceAddButton))
-                result = ModificationKind.Add;
-            EditorGUI.EndDisabledGroup();
-            EditorGUI.EndDisabledGroup();
-            if (modifierProp != null) EditorGUI.EndProperty();
+                EditorGUI.BeginDisabledGroup(kind == ModificationKind.Add);
+                if (GUI.Button(addButtonPosition, EditorStatics.ForceAddButton))
+                    result = ModificationKind.Add;
+                EditorGUI.EndDisabledGroup();
+                EditorGUI.EndDisabledGroup();
+            }
 
             return result;
         }
@@ -540,7 +540,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
         [NotNull] private readonly Func<SerializedProperty, T> _getValue;
         [NotNull] private readonly Action<SerializedProperty, T> _setValue;
 
-        public abstract IEnumerable<IElement> Elements { get; }
+        public abstract IEnumerable<IElement<T>> Elements { get; }
         public abstract int ElementsCount { get; }
         public virtual int Count => Elements.Count(x => x.Contains);
         public virtual IEnumerable<T> Values => Elements.Where(x => x.Contains).Select(x => x.Value);
@@ -562,9 +562,9 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 
         public abstract void Clear();
 
-        protected abstract IElement NewSlotElement(T value);
+        protected abstract IElement<T> NewSlotElement(T value);
 
-        public IElement GetElementOf(T value) =>
+        public IElement<T> GetElementOf(T value) =>
             Elements.FirstOrDefault(x => x.Value.Equals(value)) ?? NewSlotElement(value);
 
         private sealed class Root : EditorUtil<T>
@@ -580,7 +580,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                            ?? throw new ArgumentException("mainSet not found", nameof(property));
             }
 
-            public override IEnumerable<IElement> Elements
+            public override IEnumerable<IElement<T>> Elements
             {
                 get
                 {
@@ -596,9 +596,9 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 
             public override void Clear() => _mainSet.arraySize = 0;
 
-            protected override IElement NewSlotElement(T value) => new ElementImpl(this, value);
+            protected override IElement<T> NewSlotElement(T value) => new ElementImpl(this, value);
 
-            private class ElementImpl : IElement
+            private class ElementImpl : IElement<T>
             {
                 public T Value { get; }
                 public ElementStatus Status => Contains ? ElementStatus.Natural : ElementStatus.NewSlot;
@@ -744,7 +744,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                 }
             }
 
-            public override IEnumerable<IElement> Elements
+            public override IEnumerable<IElement<T>> Elements
             {
                 get
                 {
@@ -832,9 +832,9 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                 _currentAdditionsSize = _currentAdditions.arraySize = 0;
             }
 
-            protected override IElement NewSlotElement(T value) => ElementImpl.NewSlot(this, value);
+            protected override IElement<T> NewSlotElement(T value) => ElementImpl.NewSlot(this, value);
 
-            private class ElementImpl : IElement
+            private class ElementImpl : IElement<T>
             {
                 private readonly PrefabModification _container;
                 private int _indexInModifier;
@@ -992,18 +992,6 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             }
         }
 
-        public interface IElement
-        {
-            T Value { get; }
-            ElementStatus Status { get; }
-            bool Contains { get; }
-            SerializedProperty ModifierProp { get; }
-            void EnsureAdded();
-            void Add();
-            void EnsureRemoved();
-            void Remove();
-        }
-
         private static SerializedProperty AddArrayElement(SerializedProperty array)
         {
             array.arraySize += 1;
@@ -1031,6 +1019,54 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             return result;
         }
     }
+
+    internal interface IElement<T>
+    {
+        T Value { get; }
+        ElementStatus Status { get; }
+        bool Contains { get; }
+        SerializedProperty ModifierProp { get; }
+        void EnsureAdded();
+        void Add();
+        void EnsureRemoved();
+        void Remove();
+    }
+
+    internal readonly struct PropertyScope<T> : IDisposable
+    {
+        private readonly SerializedProperty _property;
+        private readonly Rect _totalPosition;
+        public readonly IElement<T> Element;
+        public readonly GUIContent Label;
+
+        public PropertyScope(IElement<T> element, Rect totalPosition, GUIContent label)
+        {
+            _property = element.ModifierProp;
+            Element = element;
+            _totalPosition = totalPosition;
+            Label = label;
+            if (_property != null)
+                Label = EditorGUI.BeginProperty(totalPosition, Label, _property);
+        }
+
+        public void Dispose()
+        {
+            if (_property != null)
+            {
+                if (Event.current.type == EventType.ContextClick && _totalPosition.Contains(Event.current.mousePosition))
+                {
+                    var genericMenu = new GenericMenu();
+                    if (genericMenu.GetItemCount() == 0)
+                    {
+                        Event.current.Use();
+                        genericMenu.ShowAsContext();
+                    }
+                }
+                EditorGUI.EndProperty();
+            }
+        }
+    }
+
 
     internal enum ElementStatus
     {
