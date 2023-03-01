@@ -1,10 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
+using Debug = System.Diagnostics.Debug;
 using Object = UnityEngine.Object;
+
 namespace Anatawa12.AvatarOptimizer.PrefabSafeList
 {
     /// <summary>
@@ -95,6 +98,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeList
                 EditorGUI.LabelField(position, label, EditorStatics.MultiEditingNotSupported);
                 return;
             }
+
             var cache = GetCache(property);
             if (cache == null)
             {
@@ -126,7 +130,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeList
         }
 
         public float GetPropertyHeight() =>
-            EditorUtil.Elements.Sum(x => FieldHeightOf(x) + EditorGUIUtility.standardVerticalSpacing) 
+            EditorUtil.Elements.Sum(x => FieldHeightOf(x) + EditorGUIUtility.standardVerticalSpacing)
             + GetAddRegionSize(); // add region
 
         private float FieldHeightOf(IElement element) =>
@@ -140,6 +144,9 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeList
 
             // to avoid changes in for loop
             Action action = null;
+            
+            var indentLevel = EditorGUI.indentLevel;
+            EditorGUI.indentLevel += 1;
 
             foreach (var element in EditorUtil.Elements)
             {
@@ -156,17 +163,20 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeList
                 {
                     position.height = FieldHeight(element.ValueProperty);
                     EditorGUI.BeginProperty(position, newLabel, element.ValueProperty);
-                    if (Field(position, newLabel, element.ValueProperty))
+                    if (Field(position, newLabel, element.ValueProperty.Copy()))
                         action = element.Remove;
                     EditorGUI.EndProperty();
                 }
+
                 position.y += position.height + EditorGUIUtility.standardVerticalSpacing;
             }
+
             action?.Invoke();
 
             position.height = EditorGUIUtility.singleLineHeight;
 
             OnGUIAddRegion(position);
+            EditorGUI.indentLevel = indentLevel;
         }
 
         private protected virtual float GetAddRegionSize() => EditorGUIUtility.singleLineHeight;
@@ -181,8 +191,8 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeList
 
         protected virtual float FieldHeight(SerializedProperty serializedProperty)
         {
-            if (HasVisibleChildFields(serializedProperty))
-                return EditorGUI.GetPropertyHeight(serializedProperty) 
+            if (HasVisibleChildFields(serializedProperty) && Reflection.HasPropertyDrawer(serializedProperty))
+                return EditorGUI.GetPropertyHeight(serializedProperty)
                        + EditorGUIUtility.standardVerticalSpacing + EditorGUIUtility.singleLineHeight; // remove button
             else
                 return EditorGUI.GetPropertyHeight(serializedProperty);
@@ -197,20 +207,27 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeList
         /// <returns>True if removing the value is requested</returns>
         protected virtual bool Field(Rect position, GUIContent label, SerializedProperty serializedProperty)
         {
+            var removeElement = false;
             if (HasVisibleChildFields(serializedProperty))
             {
-                var prevHeight = position.height;
-                position.height = EditorGUIUtility.singleLineHeight;
-                
-                if (GUI.Button(position, EditorStatics.RemoveButton))
-                    return true;
+                if (Reflection.HasPropertyDrawer(serializedProperty))
+                {
+                    var prevHeight = position.height;
+                    position.height = EditorGUIUtility.singleLineHeight;
 
-                position.y += EditorGUIUtility.standardVerticalSpacing + EditorGUIUtility.singleLineHeight;
-                position.height = prevHeight - EditorGUIUtility.standardVerticalSpacing +
-                                  EditorGUIUtility.singleLineHeight;
+                    if (GUI.Button(position, EditorStatics.RemoveButton))
+                        removeElement =  true;
 
-                EditorGUI.PropertyField(position, serializedProperty, label);
-                return false;
+                    position.y += EditorGUIUtility.standardVerticalSpacing + EditorGUIUtility.singleLineHeight;
+                    position.height = prevHeight - EditorGUIUtility.standardVerticalSpacing +
+                                      EditorGUIUtility.singleLineHeight;
+
+                    EditorGUI.PropertyField(position, serializedProperty, label);
+                }
+                else
+                {
+                    removeElement = FieldForFieldWithoutPropertyDrawer(position, label, serializedProperty);
+                }
             }
             else
             {
@@ -220,12 +237,12 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeList
                 position.width = EditorGUIUtility.singleLineHeight;
 
                 if (GUI.Button(position, EditorStatics.RemoveButton))
-                    return true;
-
-                return false;
+                    removeElement = true;
             }
+
+            return removeElement;
         }
-        
+
         internal static bool HasVisibleChildFields(SerializedProperty property)
         {
             switch (property.propertyType)
@@ -241,6 +258,110 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeList
                     return false;
                 default:
                     return property.hasVisibleChildren;
+            }
+        }
+
+        // The PropertyDrawer for property without propertyDrawer
+        private static bool FieldForFieldWithoutPropertyDrawer(Rect position, GUIContent label,
+            SerializedProperty property)
+        {
+            var doRemove = false;
+
+            var enabled = GUI.enabled;
+            var indentLevel = EditorGUI.indentLevel;
+            var num = indentLevel - property.depth;
+
+            var serializedProperty = property.Copy();
+            position.height = EditorGUI.GetPropertyHeight(serializedProperty.propertyType, label);
+            EditorGUI.indentLevel = serializedProperty.depth + num;
+
+            bool enterChildren;
+            {
+                var prevWidth = position.width;
+                position.width -= EditorGUIUtility.standardVerticalSpacing + EditorGUIUtility.singleLineHeight;
+                using (new EditorGUI.DisabledScope(!property.editable))
+                {
+                    var style = DragAndDrop.activeControlID == -10 ? EditorStyles.foldoutPreDrop : EditorStyles.foldout;
+                    enterChildren = EditorGUI.Foldout(position, property.isExpanded, label, true, style);
+                }
+
+                if (enterChildren != property.isExpanded)
+                {
+                    if (Event.current.alt)
+                        SetExpandedRecurse(property, enterChildren);
+                    else
+                        property.isExpanded = enterChildren;
+                }
+
+                position.x += position.width + EditorGUIUtility.standardVerticalSpacing;
+                position.width = EditorGUIUtility.singleLineHeight;
+
+                if (GUI.Button(position, EditorStatics.RemoveButton))
+                    doRemove = true;
+
+                position.width = prevWidth;
+                position.x -= prevWidth -
+                              (EditorGUIUtility.standardVerticalSpacing + EditorGUIUtility.singleLineHeight);
+            }
+
+            position.y += position.height + EditorGUIUtility.standardVerticalSpacing;
+
+            if (enterChildren)
+            {
+                var endProperty = serializedProperty.GetEndProperty();
+                while (serializedProperty.NextVisible(enterChildren) &&
+                       !SerializedProperty.EqualContents(serializedProperty, endProperty))
+                {
+                    EditorGUI.indentLevel = serializedProperty.depth + num;
+                    position.height = EditorGUI.GetPropertyHeight(serializedProperty, null, false);
+                    EditorGUI.BeginChangeCheck();
+                    enterChildren = EditorGUI.PropertyField(position, serializedProperty, null, false) &&
+                                    HasVisibleChildFields(serializedProperty);
+                    if (EditorGUI.EndChangeCheck())
+                        break;
+                    position.y += position.height + EditorGUIUtility.standardVerticalSpacing;
+                }
+            }
+
+            GUI.enabled = enabled;
+            EditorGUI.indentLevel = indentLevel;
+
+            return doRemove;
+        }
+
+        private static void SetExpandedRecurse(SerializedProperty property, bool expanded)
+        {
+            var serializedProperty = property.Copy();
+            serializedProperty.isExpanded = expanded;
+            var depth = serializedProperty.depth;
+            while (serializedProperty.NextVisible(true) && serializedProperty.depth > depth)
+                if (serializedProperty.hasVisibleChildren)
+                    serializedProperty.isExpanded = expanded;
+        }
+
+        private static class Reflection
+        {
+            static Reflection()
+            {
+                GetHandler = typeof(EditorGUI).Assembly
+                    .GetType("UnityEditor.ScriptAttributeUtility")
+                    .GetMethod("GetHandler", BindingFlags.Static | BindingFlags.NonPublic, null,
+                        new[] { typeof(SerializedProperty) }, null);
+                var property = typeof(EditorGUI).Assembly
+                    .GetType("UnityEditor.PropertyHandler")
+                    .GetProperty("hasPropertyDrawer",
+                        BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                Debug.Assert(property != null, nameof(property) + " != null");
+                GetHasPropertyDrawer = property.GetMethod;
+            }
+
+            private static readonly MethodInfo GetHandler;
+            private static readonly MethodInfo GetHasPropertyDrawer;
+
+            public static bool HasPropertyDrawer(SerializedProperty prop)
+            {
+                return (bool)GetHasPropertyDrawer.Invoke(GetHandler.Invoke(null, new object[]{prop}),
+                    Array.Empty<object>());
             }
         }
     }

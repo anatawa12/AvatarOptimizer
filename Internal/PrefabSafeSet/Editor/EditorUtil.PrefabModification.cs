@@ -31,10 +31,13 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             private bool _needsUpstreamUpdate;
             private int _upstreamElementCount;
             private readonly SerializedProperty _rootProperty;
-            private readonly SerializedProperty _currentRemoves;
-            private readonly SerializedProperty _currentAdditions;
+            private SerializedProperty _currentRemoves;
+            private SerializedProperty _currentAdditions;
             private int _currentRemovesSize;
             private int _currentAdditionsSize;
+
+            private int _nestCount;
+            private SerializedProperty _prefabLayers;
 
             // upstream change check
             private ArraySizeCheck _mainSet;
@@ -56,21 +59,22 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                 _layerAdditions = new ArraySizeCheck[nestCount - 1];
 
                 // apply modifications until previous one
-                var prefabLayers = property.FindPropertyRelative(Names.PrefabLayers);
-                // process current layer
-                if (prefabLayers.arraySize < nestCount) prefabLayers.arraySize = nestCount;
-
+                _prefabLayers = property.FindPropertyRelative(Names.PrefabLayers);
+                ResetLayers();
                 DoInitializeUpstream();
-
-                var currentLayer = prefabLayers.GetArrayElementAtIndex(nestCount - 1);
-                _currentRemoves = currentLayer.FindPropertyRelative(Names.Removes)
-                                  ?? throw new ArgumentException("prefabLayers.removes not found",
-                                      nameof(property));
-                _currentAdditions = currentLayer.FindPropertyRelative(Names.Additions)
-                                    ?? throw new ArgumentException("prefabLayers.additions not found",
-                                        nameof(property));
-
                 DoInitialize();
+            }
+
+            private void ResetLayers()
+            {
+                // process current layer
+                if (_prefabLayers.arraySize < _nestCount) _prefabLayers.arraySize = _nestCount;
+
+                var currentLayer = _prefabLayers.GetArrayElementAtIndex(_nestCount - 1);
+                _currentRemoves = currentLayer.FindPropertyRelative(Names.Removes)
+                                  ?? throw new InvalidOperationException("prefabLayers.removes not found");
+                _currentAdditions = currentLayer.FindPropertyRelative(Names.Additions)
+                                    ?? throw new InvalidOperationException("prefabLayers.additions not found");
             }
 
             private void DoInitializeUpstream()
@@ -89,11 +93,11 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                     _elements.Add(ElementImpl.Natural(this, value, 0));
                 }
 
-                var prefabLayers = _rootProperty.FindPropertyRelative(Names.PrefabLayers);
+                _prefabLayers = _rootProperty.FindPropertyRelative(Names.PrefabLayers);
 
-                for (var i = 0; i < prefabLayers.arraySize - 1; i++)
+                for (var i = 0; i < _prefabLayers.arraySize - 1; i++)
                 {
-                    var layer = prefabLayers.GetArrayElementAtIndex(i);
+                    var layer = _prefabLayers.GetArrayElementAtIndex(i);
                     var removes = layer.FindPropertyRelative(Names.Removes);
                     var additions = layer.FindPropertyRelative(Names.Additions);
 
@@ -166,9 +170,17 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             /// </summary>
             public void Initialize()
             {
+                if (_nestCount != _prefabLayers.arraySize)
+                {
+                    ResetLayers();
+                    DoInitializeUpstream();
+                    DoInitialize();
+                }
+
                 if (_mainSet.Changed || _layerRemoves.Any(x => x.Changed) || _layerAdditions.Any(x => x.Changed))
                 {
                     DoInitializeUpstream();
+                    DoInitialize();
                 }
 
                 if (_currentRemovesSize != _currentRemoves.arraySize ||

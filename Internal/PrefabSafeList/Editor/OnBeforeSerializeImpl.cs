@@ -14,8 +14,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeList
         public static void Impl(PrefabSafeList<T, TLayer, TContainer> self)
         {
             // fakeSlot must not be modified,
-            //self.fakeSlot = default;
-            if (!self.OuterObject) return;
+            if (self.OuterObject == null) return;
 
             // match prefabLayers count.
             var nestCount = PrefabSafeListUtil.PrefabNestCount(self.OuterObject);

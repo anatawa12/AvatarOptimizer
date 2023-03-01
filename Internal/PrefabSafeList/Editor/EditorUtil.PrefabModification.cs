@@ -32,6 +32,9 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeList
             private readonly SerializedProperty _firstLayerProp;
             private readonly SerializedProperty[] _layerElementsProps;
 
+            private readonly int _nestCount;
+            private readonly SerializedProperty _prefabLayers;
+
             // upstream change check
             private ArraySizeCheck _firstLayerCheck;
             private readonly ArraySizeCheck[] _layerChecks;
@@ -48,21 +51,11 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeList
                 _layerChecks = new ArraySizeCheck[nestCount];
                 _layerElementsProps = new SerializedProperty[nestCount];
 
+                _nestCount = nestCount;
 
                 // apply modifications until previous one
-                var prefabLayers = property.FindPropertyRelative(nameof(Names.prefabLayers));
-                // process current layer
-                if (prefabLayers.arraySize < nestCount) prefabLayers.arraySize = nestCount;
-
-                for (var i = 0; i < prefabLayers.arraySize; i++)
-                {
-                    var elements = prefabLayers.GetArrayElementAtIndex(i)
-                        .FindPropertyRelative(nameof(Names.Layer.elements));
-
-                    _layerElementsProps[i] = elements;
-                    _layerChecks[i] = new ArraySizeCheck(elements.FindPropertyRelative("Array.size"));
-                }
-
+                _prefabLayers = property.FindPropertyRelative(nameof(Names.prefabLayers));
+                ResetLayers();
                 DoInitialize();
             }
 
@@ -94,10 +87,29 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeList
             /// </summary>
             public void Initialize()
             {
+                if (_nestCount != _prefabLayers.arraySize)
+                    ResetLayers();
                 if (_firstLayerCheck.Changed || _layerChecks.Any(x => x.Changed))
                 {
                     DoInitialize();
                 }
+            }
+
+            private void ResetLayers()
+            {
+                // process current layer
+                if (_prefabLayers.arraySize < _nestCount) _prefabLayers.arraySize = _nestCount;
+
+                for (var i = 0; i < _prefabLayers.arraySize; i++)
+                {
+                    var elements = _prefabLayers.GetArrayElementAtIndex(i)
+                        .FindPropertyRelative(nameof(Names.Layer.elements));
+
+                    _layerElementsProps[i] = elements;
+                    _layerChecks[i] = new ArraySizeCheck(elements.FindPropertyRelative("Array.size"));
+                }
+
+                _elements.Clear();
             }
 
             /// <summary>
@@ -126,7 +138,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeList
 #if UNITY_ASSERTIONS
                 for (int i = 0, j = offset; i < prevSize && i < layerElements.arraySize && j < _elements.Count; i++, j++)
                 {
-                    Assert.AreEqual(_elements[j].ContainerProp, layerElements.GetArrayElementAtIndex(i));
+                    Assert.IsTrue(SerializedProperty.EqualContents(_elements[j].ContainerProp, layerElements.GetArrayElementAtIndex(i)));
                 }
 #endif
                 if (prevSize < layerElements.arraySize)
@@ -137,13 +149,13 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeList
                             new ElementImpl(this, layerElements.GetArrayElementAtIndex(index), index, original))
                         .ToArray();
 
-                    _elements.InsertRange(offset, addingElements);
+                    _elements.InsertRange(offset + prevSize, addingElements);
                 }
                 else if (prevSize > layerElements.arraySize)
                 {
                     // too big: remove elements
                     _elements.RemoveRange(offset + layerElements.arraySize,
-                        layerElements.arraySize - prevSize);
+                        prevSize - layerElements.arraySize);
                 }
             }
 
@@ -259,8 +271,8 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeList
                             break;
                         case PropStatus.Original:
                             var path = ContainerProp.propertyPath;
-                            var arrayProp = ContainerProp.FindPropertyRelative(path.Substring(0,
-                                path.LastIndexOf(".Array.data[", StringComparison.Ordinal)));
+                            path = path.Substring(0, path.LastIndexOf(".Array.data[", StringComparison.Ordinal));
+                            var arrayProp = ContainerProp.serializedObject.FindProperty(path);
                             arrayProp.DeleteArrayElementAtIndex(_index);
                             _status = PropStatus.Invalid;
                             break;
