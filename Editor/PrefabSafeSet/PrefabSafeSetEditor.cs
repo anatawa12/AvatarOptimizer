@@ -1003,7 +1003,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                         Status = status;
                     }
 
-                    switch (Status)
+                    switch (Status) 
                     {
                         case ElementStatus.Natural:
                             AddToRemoves(ElementStatus.Removed);
@@ -1142,6 +1142,8 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                     defaultOverrideComparedToSomeSources);
                 if (applyTargets == null || applyTargets.Count == 0)
                     return;
+
+                var valueIter = elementImpl.Value;
                 for (var index = 0; index < applyTargets.Count; ++index)
                 {
                     var componentOrGameObject = applyTargets[index];
@@ -1151,6 +1153,9 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                         ? "Apply to Prefab '{0}'"
                         : "Apply as Override in Prefab '{0}'");
                     var guiContent = new GUIContent(string.Format(format, rootGameObject.name));
+
+                    valueIter = ObjectOrCorrespondingObject(valueIter);
+                    var value = valueIter;
 
                     var nestCount = applyTargets.Count - index - 1;
 
@@ -1162,26 +1167,32 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                     {
                         genericMenu.AddDisabledItem(guiContent);
                     }
+                    else if (value == null)
+                    {
+                        genericMenu.AddDisabledItem(guiContent);
+                    }
                     else
                     {
-                        void RemoveFromList(SerializedProperty sourceArrayProp, T value)
+                        void RemoveFromList(SerializedProperty sourceArrayProp)
                         {
-                            var foundIndex = Array.IndexOf(ToArray(sourceArrayProp), value);
                             var serialized = new SerializedObject(componentOrGameObject);
-                            if (foundIndex == -1) return;
                             var newArray = serialized.FindProperty(sourceArrayProp.propertyPath);
+                            var foundIndex = Array.IndexOf(ToArray(newArray), value);
+                            if (foundIndex == -1) return;
                             RemoveArrayElementAt(newArray, foundIndex);
                             serialized.ApplyModifiedProperties();
                             PrefabUtility.SavePrefabAsset(rootGameObject);
+                            sourceArrayProp.serializedObject.Update();
                         }
 
-                        void AddToList(SerializedProperty sourceArrayProp, T value)
+                        void AddToList(SerializedProperty sourceArrayProp)
                         {
                             var serialized = new SerializedObject(componentOrGameObject);
                             var newArray = serialized.FindProperty(sourceArrayProp.propertyPath);
                             _setValue(AddArrayElement(newArray), value);
                             serialized.ApplyModifiedProperties();
                             PrefabUtility.SavePrefabAsset(rootGameObject);
+                            sourceArrayProp.serializedObject.Update();
                         }
 
                         switch (elementImpl.Status)
@@ -1199,15 +1210,14 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                                         if (nestCount == 0)
                                         {
                                             // apply target is base object: nestCount
-                                            RemoveFromList(_rootProperty.FindPropertyRelative(Names.MainSet),
-                                                elementImpl.Value);
+                                            RemoveFromList(_rootProperty.FindPropertyRelative(Names.MainSet));
                                         }
                                         else if (elementImpl.SourceNestCount == nestCount)
                                         {
                                             // apply target is addition
                                             var additionProp = _rootProperty.FindPropertyRelative(Names.PrefabLayers +
                                                 $".Array.data[{nestCount - 1}]." + Names.Additions);
-                                            RemoveFromList(additionProp, elementImpl.Value);
+                                            RemoveFromList(additionProp);
                                         }
                                         else
                                         {
@@ -1231,12 +1241,12 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                                 {
                                     if (nestCount == 0)
                                     {
-                                        AddToList(_rootProperty.FindPropertyRelative(Names.MainSet), elementImpl.Value);
+                                        AddToList(_rootProperty.FindPropertyRelative(Names.MainSet));
                                     }
                                     else
                                     {
                                         AddToList(_rootProperty.FindPropertyRelative(Names.PrefabLayers +
-                                            $".Array.data[{nestCount - 1}]." + Names.Additions), elementImpl.Value);
+                                            $".Array.data[{nestCount - 1}]." + Names.Additions));
                                     }
 
                                     elementImpl.Revert();
@@ -1316,6 +1326,15 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                     null);
                 System.Diagnostics.Debug.Assert(method != null, nameof(method) + " != null");
                 method.Invoke(null, null);
+            }
+
+            private static T ObjectOrCorrespondingObject(T value)
+            {
+                if (!(value is Object obj)) return value;
+                if (EditorUtility.IsPersistent(obj)) return value;
+                var corresponding = PrefabUtility.GetCorrespondingObjectFromSource(obj);
+                if (corresponding is T t) return t;
+                return default;
             }
         }
 
