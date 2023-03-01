@@ -1,13 +1,15 @@
 
 function generate(type: string) {
     console.log(`    [Serializable]`)
-    console.log(`    public class ${type}Set : PrefabSafeList<${type}, ${type}Set.Layer>`)
+    console.log(`    public class ${type}Set : PrefabSafeList<${type}, ${type}Set.Layer, ${type}Set.Container>`)
     console.log(`    {`)
     console.log(`        public ${type}Set(Object outerObject) : base(outerObject)`)
     console.log(`        {`)
     console.log(`        }`)
     console.log(`        [Serializable]`)
-    console.log(`        public class Layer : PrefabLayer<${type}>{}`)
+    console.log(`        public class Layer : PrefabLayer<${type}, Container>{}`)
+    console.log(`        [Serializable]`)
+    console.log(`        public class Container : ValueContainer<${type}>{}`)
     console.log(`    }`)
 }
 

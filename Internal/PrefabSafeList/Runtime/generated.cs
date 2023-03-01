@@ -11,48 +11,58 @@ using Object = UnityEngine.Object;
 namespace Anatawa12.AvatarOptimizer.PrefabSafeList
 {
     [Serializable]
-    public class SkinnedMeshRendererSet : PrefabSafeList<SkinnedMeshRenderer, SkinnedMeshRendererSet.Layer>
+    public class SkinnedMeshRendererSet : PrefabSafeList<SkinnedMeshRenderer, SkinnedMeshRendererSet.Layer, SkinnedMeshRendererSet.Container>
     {
         public SkinnedMeshRendererSet(Object outerObject) : base(outerObject)
         {
         }
         [Serializable]
-        public class Layer : PrefabLayer<SkinnedMeshRenderer>{}
+        public class Layer : PrefabLayer<SkinnedMeshRenderer, Container>{}
+        [Serializable]
+        public class Container : ValueContainer<SkinnedMeshRenderer>{}
     }
     [Serializable]
-    public class MeshRendererSet : PrefabSafeList<MeshRenderer, MeshRendererSet.Layer>
+    public class MeshRendererSet : PrefabSafeList<MeshRenderer, MeshRendererSet.Layer, MeshRendererSet.Container>
     {
         public MeshRendererSet(Object outerObject) : base(outerObject)
         {
         }
         [Serializable]
-        public class Layer : PrefabLayer<MeshRenderer>{}
+        public class Layer : PrefabLayer<MeshRenderer, Container>{}
+        [Serializable]
+        public class Container : ValueContainer<MeshRenderer>{}
     }
     [Serializable]
-    public class MaterialSet : PrefabSafeList<Material, MaterialSet.Layer>
+    public class MaterialSet : PrefabSafeList<Material, MaterialSet.Layer, MaterialSet.Container>
     {
         public MaterialSet(Object outerObject) : base(outerObject)
         {
         }
         [Serializable]
-        public class Layer : PrefabLayer<Material>{}
+        public class Layer : PrefabLayer<Material, Container>{}
+        [Serializable]
+        public class Container : ValueContainer<Material>{}
     }
     [Serializable]
-    public class StringSet : PrefabSafeList<String, StringSet.Layer>
+    public class StringSet : PrefabSafeList<String, StringSet.Layer, StringSet.Container>
     {
         public StringSet(Object outerObject) : base(outerObject)
         {
         }
         [Serializable]
-        public class Layer : PrefabLayer<String>{}
+        public class Layer : PrefabLayer<String, Container>{}
+        [Serializable]
+        public class Container : ValueContainer<String>{}
     }
     [Serializable]
-    public class VRCPhysBoneBaseSet : PrefabSafeList<VRCPhysBoneBase, VRCPhysBoneBaseSet.Layer>
+    public class VRCPhysBoneBaseSet : PrefabSafeList<VRCPhysBoneBase, VRCPhysBoneBaseSet.Layer, VRCPhysBoneBaseSet.Container>
     {
         public VRCPhysBoneBaseSet(Object outerObject) : base(outerObject)
         {
         }
         [Serializable]
-        public class Layer : PrefabLayer<VRCPhysBoneBase>{}
+        public class Layer : PrefabLayer<VRCPhysBoneBase, Container>{}
+        [Serializable]
+        public class Container : ValueContainer<VRCPhysBoneBase>{}
     }
 }
