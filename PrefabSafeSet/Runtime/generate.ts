@@ -1,7 +1,7 @@
 
 function generate(type: string) {
     console.log(`    [Serializable]`)
-    console.log(`    internal class ${type}Set : PrefabSafeSet<${type}, ${type}Set.Layer>`)
+    console.log(`    public class ${type}Set : PrefabSafeSet<${type}, ${type}Set.Layer>`)
     console.log(`    {`)
     console.log(`        public ${type}Set(Object outerObject) : base(outerObject)`)
     console.log(`        {`)

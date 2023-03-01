@@ -1,18 +1,15 @@
 {
-    "name": "com.anatawa12.avatar-optimizer.runtime",
+    "name": "com.anatawa12.avatar-optimizer.internal.prefab-safe-set.editor",
     "references": [
         "GUID:8542dbf824204440a818dbc2377cb4d6"
     ],
-    "includePlatforms": [],
+    "includePlatforms": [
+        "Editor"
+    ],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": true,
-    "precompiledReferences": [
-        "VRC.Dynamics.dll",
-        "VRC.SDK3.Dynamics.PhysBone.dll",
-        "VRCSDK3A.dll",
-        "VRCSDKBase.dll"
-    ],
+    "precompiledReferences": [],
     "autoReferenced": false,
     "defineConstraints": [],
     "versionDefines": [],

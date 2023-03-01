@@ -5,12 +5,11 @@ using System.Linq;
 using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
-using VRC.Dynamics;
 using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 {
-    internal static class PrefabSafeSetUtil
+    public static class PrefabSafeSetUtil
     {
         public static int PrefabNestCount(Object instance)
         {
@@ -21,7 +20,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             return nestCount;
         }
 
-        public static bool IsNotNull<T>(T arg)
+        internal static bool IsNotNull<T>(T arg)
         {
             if (arg == null) return false;
             if (typeof(Object).IsAssignableFrom(typeof(T)))
@@ -529,7 +528,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
     /// Utility to edit PrefabSafeSet in CustomEditor with SerializedProperty
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    internal abstract class EditorUtil<T>
+    public abstract class EditorUtil<T>
     {
         // common property;
         [NotNull] private readonly Func<SerializedProperty, T> _getValue;
@@ -1366,7 +1365,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
         }
     }
 
-    internal interface IElement<T>
+    public interface IElement<T>
     {
         EditorUtil<T> Container { get; }
         T Value { get; }
@@ -1380,7 +1379,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
         void SetExistence(bool existence);
     }
 
-    internal readonly struct PropertyScope<T> : IDisposable
+    public readonly struct PropertyScope<T> : IDisposable
     {
         private readonly SerializedProperty _property;
         private readonly Rect _totalPosition;
@@ -1421,7 +1420,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
     }
 
 
-    internal enum ElementStatus
+    public enum ElementStatus
     {
         Natural,
         Removed,

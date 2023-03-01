@@ -11,7 +11,7 @@ using Object = UnityEngine.Object;
 namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 {
     [Serializable]
-    internal class SkinnedMeshRendererSet : PrefabSafeSet<SkinnedMeshRenderer, SkinnedMeshRendererSet.Layer>
+    public class SkinnedMeshRendererSet : PrefabSafeSet<SkinnedMeshRenderer, SkinnedMeshRendererSet.Layer>
     {
         public SkinnedMeshRendererSet(Object outerObject) : base(outerObject)
         {
@@ -20,7 +20,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
         public class Layer : PrefabLayer<SkinnedMeshRenderer>{}
     }
     [Serializable]
-    internal class MeshRendererSet : PrefabSafeSet<MeshRenderer, MeshRendererSet.Layer>
+    public class MeshRendererSet : PrefabSafeSet<MeshRenderer, MeshRendererSet.Layer>
     {
         public MeshRendererSet(Object outerObject) : base(outerObject)
         {
@@ -29,7 +29,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
         public class Layer : PrefabLayer<MeshRenderer>{}
     }
     [Serializable]
-    internal class MaterialSet : PrefabSafeSet<Material, MaterialSet.Layer>
+    public class MaterialSet : PrefabSafeSet<Material, MaterialSet.Layer>
     {
         public MaterialSet(Object outerObject) : base(outerObject)
         {
@@ -38,7 +38,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
         public class Layer : PrefabLayer<Material>{}
     }
     [Serializable]
-    internal class StringSet : PrefabSafeSet<String, StringSet.Layer>
+    public class StringSet : PrefabSafeSet<String, StringSet.Layer>
     {
         public StringSet(Object outerObject) : base(outerObject)
         {
@@ -47,7 +47,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
         public class Layer : PrefabLayer<String>{}
     }
     [Serializable]
-    internal class VRCPhysBoneBaseSet : PrefabSafeSet<VRCPhysBoneBase, VRCPhysBoneBaseSet.Layer>
+    public class VRCPhysBoneBaseSet : PrefabSafeSet<VRCPhysBoneBase, VRCPhysBoneBaseSet.Layer>
     {
         public VRCPhysBoneBaseSet(Object outerObject) : base(outerObject)
         {
