@@ -56,10 +56,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeList
         [SerializeField] internal TLayer[] prefabLayers = Array.Empty<TLayer>();
 
 #if UNITY_EDITOR
-        [SerializeField, HideInInspector] internal T fakeSlot;
         internal readonly Object OuterObject;
-        internal T[] CheckedCurrentLayerRemoves;
-        internal T[] CheckedCurrentLayerAdditions;
         private static MethodInfo _onBeforeSerializeCallback = PrefabSafeListRuntimeUtil
             .GetOnBeforeSerializeCallbackMethod(typeof(T), typeof(TLayer), typeof(TContainer), 
                 typeof(PrefabSafeList<T, TLayer, TContainer>));
