@@ -39,8 +39,9 @@ jobs:
         with:
           name: Test results
           path: ${{ steps.gameci.outputs.artifactsPath }}
-      - uses: actions/upload-artifact@v2
-        if: always()
-        with:
-          name: Coverage results
-          path: ${{ steps.ganmeci.outputs.coveragePath }}
+      # Coverage not supported on unity 2019
+      #- uses: actions/upload-artifact@v2
+      #  if: always()
+      #  with:
+      #    name: Coverage results
+      #    path: ${{ steps.ganmeci.outputs.coveragePath }}
