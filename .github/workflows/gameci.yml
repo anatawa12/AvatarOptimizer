@@ -18,7 +18,7 @@ jobs:
           path: Packages/com.anatawa12.avatar-optimizer
       - uses: anatawa12/sh-actions/resolve-vpm-packages@master
 
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         with:
           path: Library
           key: Library-${{ matrix.projectPath }}
@@ -34,13 +34,14 @@ jobs:
           coverageOptions: generateAdditionalMetrics;generateHtmlReport;generateBadgeReport;assemblyFilters:+com.anatawa12.avatar-optimizer.*
           customParameters: -nographics -assemblyNames com.anatawa12.avatar-optimizer.test
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         if: always()
         with:
           name: Test results
           path: ${{ steps.gameci.outputs.artifactsPath }}
-      - uses: actions/upload-artifact@v2
-        if: always()
-        with:
-          name: Coverage results
-          path: ${{ steps.ganmeci.outputs.coveragePath }}
+      # Coverage not supported on unity 2019
+      #- uses: actions/upload-artifact@v3
+      #  if: always()
+      #  with:
+      #    name: Coverage results
+      #    path: ${{ steps.ganmeci.outputs.coveragePath }}
