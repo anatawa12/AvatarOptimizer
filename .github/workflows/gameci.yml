@@ -1,0 +1,46 @@
+on:
+  push:
+    branches: [master]
+  pull_request: {}
+  workflow_dispatch: {}
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    permissions:
+      checks: write
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: project-for-test
+      - uses: actions/checkout@v3
+        with:
+          path: Packages/com.anatawa12.avatar-optimizer
+      - uses: anatawa12/sh-actions/resolve-vpm-packages@master
+
+      - uses: actions/cache@v2
+        with:
+          path: Library
+          key: Library-${{ matrix.projectPath }}
+          restore-keys: Library-
+
+      - uses: game-ci/unity-test-runner@v2
+        id: gameci
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+        with:
+          testMode: EditMode
+          githubToken: ${{ github.token }}
+          coverageOptions: generateAdditionalMetrics;generateHtmlReport;generateBadgeReport;assemblyFilters:+com.anatawa12.avatar-optimizer.*
+          customParameters: -nographics -assemblyNames com.anatawa12.avatar-optimizer.test
+
+      - uses: actions/upload-artifact@v2
+        if: always()
+        with:
+          name: Test results
+          path: ${{ steps.gameci.outputs.artifactsPath }}
+      - uses: actions/upload-artifact@v2
+        if: always()
+        with:
+          name: Coverage results
+          path: ${{ steps.ganmeci.outputs.coveragePath }}
