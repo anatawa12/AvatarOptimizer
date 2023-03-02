@@ -34,13 +34,13 @@ jobs:
           coverageOptions: generateAdditionalMetrics;generateHtmlReport;generateBadgeReport;assemblyFilters:+com.anatawa12.avatar-optimizer.*
           customParameters: -nographics -assemblyNames com.anatawa12.avatar-optimizer.test
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         if: always()
         with:
           name: Test results
           path: ${{ steps.gameci.outputs.artifactsPath }}
       # Coverage not supported on unity 2019
-      #- uses: actions/upload-artifact@v2
+      #- uses: actions/upload-artifact@v3
       #  if: always()
       #  with:
       #    name: Coverage results
