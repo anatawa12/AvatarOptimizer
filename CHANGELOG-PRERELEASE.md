@@ -8,10 +8,6 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Support for Prerelease in publish system `#19`
-- Changelogs (including ones for traditional releases) `#19`
-- Auto Test `#23`
-- Prefab support `#11`
 
 ### Changed
 
@@ -22,6 +18,13 @@ The format is based on [Keep a Changelog].
 ### Fixed
 
 ### Security
+
+## [0.2.0-beta.1] - 2023-03-03
+### Added
+- Support for Prerelease in publish system [`#19`](https://github.com/anatawa12/AvatarOptimizer/pull/19)
+- Changelogs (including ones for traditional releases) [`#19`](https://github.com/anatawa12/AvatarOptimizer/pull/19)
+- Auto Test [`#23`](https://github.com/anatawa12/AvatarOptimizer/pull/23)
+- Prefab support [`#11`](https://github.com/anatawa12/AvatarOptimizer/pull/11)
 
 ## [0.1.4]
 ### Added
@@ -81,7 +84,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.1.4...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.0-beta.1...HEAD
+[0.2.0-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.1.4...v0.2.0-beta.1
 [0.1.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.1.3...v0.1.4
 [0.1.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.1.1...v0.1.2
