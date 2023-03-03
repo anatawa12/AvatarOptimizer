@@ -1,5 +1,5 @@
-using System;
-using System.Linq;
+using System.Collections.Generic;
+using Anatawa12.AvatarOptimizer.PrefabSafeList;
 using UnityEditor;
 using UnityEngine;
 
@@ -8,13 +8,13 @@ namespace Anatawa12.AvatarOptimizer
     [CustomEditor(typeof(RemoveMeshInBox))]
     internal class RemoveMeshInBoxEditor : Editor
     {
-        private SerializedProperty _boxes;
+        private ListEditor _boxList;
         private int _editingBox = -1;
-        private (Quaternion value, Vector3 euler)[] _eulerAngle = Array.Empty<(Quaternion, Vector3)>();
 
         private void OnEnable()
         {
-            _boxes = serializedObject.FindProperty("boxes");
+            var nestCount = PrefabSafeListUtil.PrefabNestCount(serializedObject.targetObject);
+            _boxList = new ListEditor(serializedObject.FindProperty("boxList"), nestCount);
         }
 
         public override void OnInspectorGUI()
@@ -25,74 +25,123 @@ namespace Anatawa12.AvatarOptimizer
                 return;
             }
 
-            if (_eulerAngle.Length < _boxes.arraySize)
-            {
-                _eulerAngle = _eulerAngle.Concat(Enumerable.Repeat(default((Quaternion, Vector3)),
-                        _boxes.arraySize - _eulerAngle.Length))
-                    .ToArray();
-            }
-
-            for (var i = 0; i < _boxes.arraySize; i++)
-            {
-                var box = _boxes.GetArrayElementAtIndex(i);
-                var centerProp = box.FindPropertyRelative("center");
-                var sizeProp = box.FindPropertyRelative("size");
-                var rotationProp = box.FindPropertyRelative("rotation");
-
-                EditorGUILayout.LabelField($"Box #{i}");
-                using (new EditorGUI.IndentLevelScope())
-                {
-                    using (new GUILayout.HorizontalScope())
-                    {
-                        if (GUILayout.Button(_editingBox == i ? "Finish Editing Box" : "Edit This Box"))
-                        {
-                            _editingBox = _editingBox == i ? -1 : i;
-                            SceneView.RepaintAll(); // to show/hide gizmo
-                        }
-                    }
-
-                    EditorGUILayout.PropertyField(centerProp);
-                    EditorGUILayout.PropertyField(sizeProp);
-                    if (_eulerAngle[i].value != rotationProp.quaternionValue)
-                    {
-                        _eulerAngle[i] = (rotationProp.quaternionValue, rotationProp.quaternionValue.eulerAngles);
-                    }
-
-                    // rotation in euler
-                    var label = new GUIContent("Rotation");
-                    var rect = EditorGUILayout.GetControlRect(true, 18f, EditorStyles.numberField);
-                    label = EditorGUI.BeginProperty(rect, label, rotationProp);
-                    EditorGUI.BeginChangeCheck();
-                    var euler = EditorGUI.Vector3Field(rect, label, _eulerAngle[i].euler);
-                    if (EditorGUI.EndChangeCheck())
-                    {
-                        var quot = Quaternion.Euler(euler);
-                        rotationProp.quaternionValue = quot;
-                        _eulerAngle[i] = (quot, euler);
-                    }
-                    EditorGUI.EndProperty();
-                }
-            }
-
-            if (GUILayout.Button($"Add Box"))
-            {
-                _boxes.arraySize += 1;
-                
-                var box = _boxes.GetArrayElementAtIndex(_boxes.arraySize - 1);
-                box.FindPropertyRelative("center").vector3Value = Vector3.zero;
-                box.FindPropertyRelative("size").vector3Value = Vector3.one;
-                box.FindPropertyRelative("rotation").quaternionValue = Quaternion.identity;
-                _editingBox = _boxes.arraySize - 1;
-            }
+            var rect = EditorGUILayout.GetControlRect(true, _boxList.GetPropertyHeight());
+            _boxList.OnGUI(rect);
 
             serializedObject.ApplyModifiedProperties();
         }
 
+        private class ListEditor : EditorBase
+        {
+            public string EditingBoxPropPath;
+
+            private readonly Dictionary<string, (Quaternion value, Vector3 euler)> _eulerAngle =
+                new Dictionary<string, (Quaternion value, Vector3 euler)>();
+
+            public ListEditor(SerializedProperty property, int nestCount) : base(property, nestCount)
+            {
+            }
+
+            protected override float FieldHeight(SerializedProperty serializedProperty)
+            {
+                return EditorGUIUtility.singleLineHeight // header
+                       + EditorGUIUtility.standardVerticalSpacing + EditorGUIUtility.singleLineHeight // center
+                       + EditorGUIUtility.standardVerticalSpacing + EditorGUIUtility.singleLineHeight // size
+                       + EditorGUIUtility.standardVerticalSpacing + EditorGUIUtility.singleLineHeight // rotation
+                       + EditorGUIUtility.standardVerticalSpacing + EditorGUIUtility.singleLineHeight //edit this box
+                    ;
+            }
+
+            protected override bool Field(Rect position, GUIContent label, SerializedProperty boxProp)
+            {
+                var removeElement = false;
+
+                position.height = EditorGUIUtility.singleLineHeight;
+                var prevWidth = position.width;
+                var prevX = position.x;
+                position.width -= EditorGUIUtility.standardVerticalSpacing + EditorGUIUtility.singleLineHeight;
+                EditorGUI.LabelField(position, label);
+                position.x += position.width + EditorGUIUtility.standardVerticalSpacing;
+                position.width = EditorGUIUtility.singleLineHeight;
+
+                if (GUI.Button(position, EditorStatics.RemoveButton))
+                    removeElement = true;
+
+                position.width = prevWidth;
+                position.x = prevX;
+
+                position.y += EditorGUIUtility.standardVerticalSpacing + EditorGUIUtility.singleLineHeight;
+
+                var centerProp = boxProp.FindPropertyRelative("center");
+                var sizeProp = boxProp.FindPropertyRelative("size");
+                var rotationProp = boxProp.FindPropertyRelative("rotation");
+
+                using (new EditorGUI.IndentLevelScope())
+                {
+                    using (new GUILayout.HorizontalScope())
+                    {
+                        var editingCurrent = EditingBoxPropPath == boxProp.propertyPath;
+                        if (GUI.Button(position, editingCurrent ? "Finish Editing Box" : "Edit This Box"))
+                        {
+                            EditingBoxPropPath = editingCurrent ? null : boxProp.propertyPath;
+                            SceneView.RepaintAll(); // to show/hide gizmo
+                        }
+                        position.y += EditorGUIUtility.standardVerticalSpacing + EditorGUIUtility.singleLineHeight;
+                    }
+
+                    EditorGUI.PropertyField(position, centerProp);
+                    position.y += EditorGUIUtility.standardVerticalSpacing + EditorGUIUtility.singleLineHeight;
+                    EditorGUI.PropertyField(position, sizeProp);
+                    position.y += EditorGUIUtility.standardVerticalSpacing + EditorGUIUtility.singleLineHeight;
+                    if (!_eulerAngle.TryGetValue(boxProp.propertyPath, out var eulerCache)
+                        || eulerCache.value != rotationProp.quaternionValue)
+                    {
+                        _eulerAngle[boxProp.propertyPath] = eulerCache = (rotationProp.quaternionValue,
+                            rotationProp.quaternionValue.eulerAngles);
+                    }
+
+                    // rotation in euler
+                    var rotationLabel = new GUIContent("Rotation");
+                    rotationLabel = EditorGUI.BeginProperty(position, rotationLabel, rotationProp);
+                    EditorGUI.BeginChangeCheck();
+                    var euler = EditorGUI.Vector3Field(position, rotationLabel, eulerCache.euler);
+                    if (EditorGUI.EndChangeCheck())
+                    {
+                        var quot = Quaternion.Euler(euler);
+                        rotationProp.quaternionValue = quot;
+                        _eulerAngle[boxProp.propertyPath] = (quot, euler);
+                    }
+                    EditorGUI.EndProperty();
+                    position.y += EditorGUIUtility.standardVerticalSpacing + EditorGUIUtility.singleLineHeight;
+                }
+
+                return removeElement;
+            }
+
+            protected override void InitializeNewElement(IElement element)
+            {
+                var box = element.ValueProperty;
+                box.FindPropertyRelative("center").vector3Value = Vector3.zero;
+                box.FindPropertyRelative("size").vector3Value = Vector3.one;
+                box.FindPropertyRelative("rotation").quaternionValue = Quaternion.identity;
+                EditingBoxPropPath = element.ValueProperty.propertyPath;
+            }
+
+            static class EditorStatics
+            {
+                public static readonly GUIContent RemoveButton = new GUIContent("x")
+                {
+                    tooltip = "Remove Element from the list."
+                };
+            }
+        }
+
         private void OnSceneGUI()
         {
-            if (_editingBox < 0 || _boxes.arraySize <= _editingBox || targets.Length != 1) return;
+            if (_boxList.EditingBoxPropPath == null) return;
+            var box = serializedObject.FindProperty(_boxList.EditingBoxPropPath);
+            if (box == null) return;
 
-            var box = _boxes.GetArrayElementAtIndex(_editingBox);
             var centerProp = box.FindPropertyRelative("center");
             var rotationProp = box.FindPropertyRelative("rotation");
             var sizeProp = box.FindPropertyRelative("size");
@@ -100,7 +149,8 @@ namespace Anatawa12.AvatarOptimizer
             Handles.matrix = ((Component)targets[0]).transform.localToWorldMatrix;
 
             centerProp.vector3Value = Handles.PositionHandle(centerProp.vector3Value, Quaternion.identity);
-            rotationProp.quaternionValue = Handles.RotationHandle(rotationProp.quaternionValue, centerProp.vector3Value);
+            rotationProp.quaternionValue =
+                Handles.RotationHandle(rotationProp.quaternionValue, centerProp.vector3Value);
 
             var size = sizeProp.vector3Value;
             var center = centerProp.vector3Value;
@@ -125,7 +175,7 @@ namespace Anatawa12.AvatarOptimizer
         private void BoxFaceSlider(ref Vector3 center, ref float size, Vector3 directionInWorld)
         {
             var prev = center + directionInWorld;
-            var newer = Handles.Slider(prev, directionInWorld, 
+            var newer = Handles.Slider(prev, directionInWorld,
                 HandleUtility.GetHandleSize(prev) / 3, Handles.CubeHandleCap, -1f);
 
             if (prev != newer)
@@ -152,7 +202,7 @@ namespace Anatawa12.AvatarOptimizer
                 Handles.matrix = script.transform.localToWorldMatrix;
                 Handles.color = Color.red;
 
-                foreach (var boundingBox in script.boxes)
+                foreach (var boundingBox in script.boxList.GetAsList())
                 {
                     var halfSize = boundingBox.size / 2;
                     var x = boundingBox.rotation * new Vector3(halfSize.x, 0, 0);

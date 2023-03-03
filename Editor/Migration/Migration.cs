@@ -6,6 +6,7 @@ using JetBrains.Annotations;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.Assertions;
 using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.Migration
@@ -221,6 +222,7 @@ Do you want to migrate project now?",
             typeof(MergeSkinnedMesh),
             typeof(FreezeBlendShape),
             typeof(MergePhysBone),
+            typeof(RemoveMeshInBox),
         });
 
         private static void MigrateV1ToV2(int nestCount, SerializedObject serialized)
@@ -284,6 +286,14 @@ Do you want to migrate project now?",
                     );
                     break;
                 }
+                case 4:
+                {
+                    // RemoveMeshInBox
+                    MigrateList(serialized.FindProperty(nameof(RemoveMeshInBox.boxes)),
+                        serialized.FindProperty(nameof(RemoveMeshInBox.boxList)), 
+                        nestCount);
+                    break;
+                }
             }
         }
 #pragma warning restore CS0618
@@ -321,6 +331,35 @@ Do you want to migrate project now?",
 
             foreach (var value in values)
                 renderersSet.GetElementOf(value).EnsureAdded();
+        }
+
+        private static void MigrateList(SerializedProperty arrayProperty, SerializedProperty listProperty,
+            int nestCount)
+        {
+            var list = PrefabSafeList.EditorUtil.Create(listProperty, nestCount);
+            int index = 0;
+            foreach (var element in list.Elements)
+            {
+                if (!element.Contains) continue;
+                if (index == arrayProperty.arraySize)
+                    element.RemovedProperty.boolValue = true;
+                else
+                {
+                    CopySerializedPropertyValue.Copy(
+                        arrayProperty.GetArrayElementAtIndex(index),
+                        element.ValueProperty);
+                    index++;
+                }
+            }
+
+            while (index < arrayProperty.arraySize)
+            {
+                var element = list.AddElement();
+                CopySerializedPropertyValue.Copy(
+                    arrayProperty.GetArrayElementAtIndex(index),
+                    element.ValueProperty);
+                index++;
+            }
         }
 
         private readonly struct TypeId
@@ -458,6 +497,137 @@ Do you want to migrate project now?",
                 throw new Exception($"Invalid DAG state: node '{vertex.Prefab}' was not visited.");
 
             return sortedVertices;
+        }
+    }
+
+    public static class CopySerializedPropertyValue
+    {
+        public static void Copy(SerializedProperty source, SerializedProperty dest)
+        {
+            if (dest.propertyType == SerializedPropertyType.Generic)
+                CopyBetweenTwoRecursively(source, dest);
+            else
+                CopyBetweenTwoValue(source, dest);
+        }
+
+        private static void CopyBetweenTwoRecursively(SerializedProperty source, SerializedProperty dest)
+        {
+            var srcIter = source.Copy();
+            var dstIter = dest.Copy();
+            var srcEnd = source.GetEndProperty();
+            var dstEnd = dest.GetEndProperty();
+            var enterChildren = true;
+            while (srcIter.Next(enterChildren) && !SerializedProperty.EqualContents(srcIter, srcEnd))
+            {
+                var destCheck = dstIter.Next(enterChildren) && !SerializedProperty.EqualContents(dstIter, dstEnd);
+                Assert.IsTrue(destCheck);
+
+                Debug.Log($"prop: {dstIter.propertyPath}: {dstIter.propertyType}");
+
+                switch (dstIter.propertyType)
+                {
+                    case SerializedPropertyType.FixedBufferSize:
+                        Assert.AreEqual(srcIter.fixedBufferSize, dstIter.fixedBufferSize);
+                        break;
+                    case SerializedPropertyType.Generic:
+                        break;
+                    default:
+                        CopyBetweenTwoValue(srcIter, dstIter);
+                        break;
+                }
+
+                enterChildren = dstIter.propertyType == SerializedPropertyType.Generic;
+            }
+
+            {
+                var destCheck = dstIter.NextVisible(enterChildren) && !SerializedProperty.EqualContents(dstIter, dstEnd);
+                Assert.IsFalse(destCheck);
+            }
+        }
+
+        private static void CopyBetweenTwoValue(SerializedProperty src, SerializedProperty dst)
+        {
+            switch (dst.propertyType)
+            {
+                case SerializedPropertyType.Generic:
+                    throw new InvalidOperationException("for generic, use CopyBetweenTwoRecursively");
+                case SerializedPropertyType.Integer:
+                    dst.intValue = src.intValue;
+                    break;
+                case SerializedPropertyType.Boolean:
+                    dst.boolValue = src.boolValue;
+                    break;
+                case SerializedPropertyType.Float:
+                    dst.floatValue = src.floatValue;
+                    break;
+                case SerializedPropertyType.String:
+                    dst.stringValue = src.stringValue;
+                    break;
+                case SerializedPropertyType.Color:
+                    dst.colorValue = src.colorValue;
+                    break;
+                case SerializedPropertyType.ObjectReference:
+                    dst.objectReferenceValue = src.objectReferenceValue;
+                    break;
+                case SerializedPropertyType.LayerMask:
+                    dst.intValue = src.intValue;
+                    break;
+                case SerializedPropertyType.Enum:
+                    dst.intValue = src.intValue;
+                    break;
+                case SerializedPropertyType.Vector2:
+                    dst.vector2Value = src.vector2Value;
+                    break;
+                case SerializedPropertyType.Vector3:
+                    dst.vector3Value = src.vector3Value;
+                    break;
+                case SerializedPropertyType.Vector4:
+                    dst.vector4Value = src.vector4Value;
+                    break;
+                case SerializedPropertyType.Rect:
+                    dst.rectValue = src.rectValue;
+                    break;
+                case SerializedPropertyType.ArraySize:
+                    dst.intValue = src.intValue;
+                    break;
+                case SerializedPropertyType.Character:
+                    dst.intValue = src.intValue;
+                    break;
+                case SerializedPropertyType.AnimationCurve:
+                    dst.animationCurveValue = src.animationCurveValue;
+                    break;
+                case SerializedPropertyType.Bounds:
+                    dst.boundsValue = src.boundsValue;
+                    break;
+                case SerializedPropertyType.Gradient:
+                    //dst.gradientValue = src.gradientValue;
+                    //break;
+                    throw new InvalidOperationException("unsupported type: Gradient");
+                case SerializedPropertyType.Quaternion:
+                    dst.quaternionValue = src.quaternionValue;
+                    break;
+                case SerializedPropertyType.ExposedReference:
+                    dst.exposedReferenceValue = src.exposedReferenceValue;
+                    break;
+                case SerializedPropertyType.FixedBufferSize:
+                    throw new InvalidOperationException("unsupported type: FixedBufferSize");
+                case SerializedPropertyType.Vector2Int:
+                    dst.vector2IntValue = src.vector2IntValue;
+                    break;
+                case SerializedPropertyType.Vector3Int:
+                    dst.vector3IntValue = src.vector3IntValue;
+                    break;
+                case SerializedPropertyType.RectInt:
+                    dst.rectIntValue = src.rectIntValue;
+                    break;
+                case SerializedPropertyType.BoundsInt:
+                    dst.boundsIntValue = src.boundsIntValue;
+                    break;
+                case SerializedPropertyType.ManagedReference:
+                    throw new InvalidOperationException("unsupported type: ManagedReference");
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
         }
     }
 }

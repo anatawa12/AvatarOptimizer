@@ -118,9 +118,9 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeList
         }
     }
 
-    internal abstract class EditorBase
+    public abstract class EditorBase
     {
-        protected readonly EditorUtil EditorUtil;
+        public readonly EditorUtil EditorUtil;
 
         public EditorBase(SerializedProperty property, int nestCount)
         {
@@ -179,14 +179,18 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeList
             EditorGUI.indentLevel = indentLevel;
         }
 
-        private protected virtual float GetAddRegionSize() => EditorGUIUtility.singleLineHeight;
+        protected virtual float GetAddRegionSize() => EditorGUIUtility.singleLineHeight;
 
-        private protected virtual void OnGUIAddRegion(Rect position)
+        protected virtual void OnGUIAddRegion(Rect position)
         {
             if (GUI.Button(position, EditorStatics.AddElement))
             {
-                EditorUtil.AddElement();
+                InitializeNewElement(EditorUtil.AddElement());
             }
+        }
+
+        protected virtual void InitializeNewElement(IElement element)
+        {
         }
 
         protected virtual float FieldHeight(SerializedProperty serializedProperty)

@@ -64,7 +64,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeList
                 // TODO
             }
 
-            public override IEnumerable<IElement> Elements
+            public override IReadOnlyList<IElement> Elements
             {
                 get
                 {

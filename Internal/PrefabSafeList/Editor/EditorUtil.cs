@@ -11,7 +11,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeList
     /// </summary>
     public abstract partial class EditorUtil
     {
-        public abstract IEnumerable<IElement> Elements { get; }
+        public abstract IReadOnlyList<IElement> Elements { get; }
         public abstract int ElementsCount { get; }
         public virtual int Count => Elements.Count(x => x.Contains);
 

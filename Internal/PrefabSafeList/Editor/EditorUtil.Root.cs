@@ -20,7 +20,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeList
                            ?? throw new ArgumentException(nameof(Names.firstLayer) + "not found", nameof(property));
             }
 
-            public override IEnumerable<IElement> Elements
+            public override IReadOnlyList<IElement> Elements
             {
                 get
                 {
