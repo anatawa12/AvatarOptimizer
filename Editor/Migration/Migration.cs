@@ -22,6 +22,7 @@ namespace Anatawa12.AvatarOptimizer.Migration
 
         private static void Update()
         {
+            if (PrereleaseStateDetector.AutoDetectionInProgress) return; // try next tick
             try
             {
                 if (PrereleaseStateDetector.MigrationRequired())
