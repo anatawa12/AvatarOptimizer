@@ -50,6 +50,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             {
                 _elements = new List<ElementImpl>();
                 _rootProperty = property;
+                _nestCount = nestCount;
 
                 ClearNonLayerModifications(property, nestCount);
 
@@ -154,7 +155,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                 }
             }
 
-            public override IEnumerable<IElement<T>> Elements
+            public override IReadOnlyList<IElement<T>> Elements
             {
                 get
                 {

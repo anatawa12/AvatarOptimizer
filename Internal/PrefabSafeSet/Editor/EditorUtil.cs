@@ -16,7 +16,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
         [NotNull] private readonly Func<SerializedProperty, T> _getValue;
         [NotNull] private readonly Action<SerializedProperty, T> _setValue;
 
-        public abstract IEnumerable<IElement<T>> Elements { get; }
+        public abstract IReadOnlyList<IElement<T>> Elements { get; }
         public abstract int ElementsCount { get; }
         public virtual int Count => Elements.Count(x => x.Contains);
         public virtual IEnumerable<T> Values => Elements.Where(x => x.Contains).Select(x => x.Value);

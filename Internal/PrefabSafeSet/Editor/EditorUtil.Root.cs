@@ -21,7 +21,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                            ?? throw new ArgumentException("mainSet not found", nameof(property));
             }
 
-            public override IEnumerable<IElement<T>> Elements
+            public override IReadOnlyList<IElement<T>> Elements
             {
                 get
                 {

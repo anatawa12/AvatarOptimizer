@@ -9,10 +9,12 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeList
 {
     internal static class PrefabSafeListRuntimeUtil
     {
-        public static T[] ResizeArray<T>(T[] source, int size)
+        public static T[] ResizeArray<T>(T[] source, int size) where T: new()
         {        
             var result = new T[size];
             Array.Copy(source, result, Math.Min(size, source.Length));
+            for (var i = source.Length; i < result.Length; i++)
+                result[i] = new T();
             return result;
         }
 

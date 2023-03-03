@@ -1,6 +1,7 @@
 {
     "name": "com.anatawa12.avatar-optimizer.test",
     "references": [
+        "GUID:aeaad65d10ca4136b1d0ee8d9bef1709",
         "GUID:7e6b618db39145b8a5eb4790d78c2972",
         "GUID:f69eeb3e25674f4a9bd20e6d7e69e0e6",
         "GUID:c85616d79bd2a41109c251ab53d14c20",
