@@ -84,9 +84,17 @@ jobs:
             ---
             
             **This is SNAPSHOT, not a stable release. make sure this may have many bugs.**
+
+            **If you're using v0.1.3 or older, Please upgrade to v0.1.4 before upgrading v0.2.x!**
+
+            **もし v0.1.3 以前を使用しているのであれば, v0.2.xに更新する前に v0.1.4 に更新してください!**
           release-note-heading: |
             Version ${{ env.VERSION }}
             ---
+
+            **If you're using v0.1.3 or older, Please upgrade to v0.1.4 before upgrading v0.2.x!**
+
+            **もし v0.1.3 以前を使用しているのであれば, v0.2.xに更新する前に v0.1.4 に更新してください!**
       - name: Upload CHANGELOG.md
         if: ${{ !fromJSON(env.PRERELEASE) }}
         uses: actions/upload-artifact@v3

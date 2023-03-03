@@ -24,6 +24,13 @@ With [VPAI] You can include this package just importing one unitypackage.
 2. Make sure your project contains [`vpm-resolver`][vpm-resolver]. If your project is VRChat Avatars/Worlds project with VCC, It's installed.
 3. Import the unitypackage into your project.
 
+<details>
+  <summary>other versions</summary>
+
+  - [0.x.x including beta releases][installer unitypackage 0.x beta]
+
+</details>
+
 ### Using VPM CommandLine Interface
 
 You may install this package using [VPM/VCC CLI][vcc-cli].
@@ -230,5 +237,6 @@ With boxes shown on upper/left image, meshes in the box will be removed as lower
 [vcc-cli]: https://vcc.docs.vrchat.com/vpm/cli
 [vpm-resolver]: https://vcc.docs.vrchat.com/vpm/resolver
 [installer unitypackage]: https://github.com/anatawa12/AvatarOptimizer/raw/master/.readme/AvatarOptimizer-0.1.x-installer.unitypackage
+[installer unitypackage 0.x beta]: https://github.com/anatawa12/AvatarOptimizer/raw/master/.readme/AvatarOptimizer-0.x.x-prerelease-installer.unitypackage
 [issues]: https://github.com/anatawa12/AvatarOptimizer/issues/new
 [VPAI]: https://github.com/anatawa12/VPMPackageAutoInstaller
