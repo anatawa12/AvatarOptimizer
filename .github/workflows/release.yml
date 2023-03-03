@@ -23,6 +23,8 @@ concurrency:
   group: publish
   cancel-in-progress: true
 
+permissions: write-all
+
 jobs:
   create-release:
     runs-on: ubuntu-latest
@@ -77,12 +79,12 @@ jobs:
           version: ${{ env.VERSION }}
           prerelease: ${{ env.PRERELEASE }}
           tag-prefix: v
-          prerelease-note-prefix: |
+          prerelease-note-heading: |
             Version ${{ env.VERSION }}
             ---
             
             **This is SNAPSHOT, not a stable release. make sure this may have many bugs.**
-          release-note-prefix: |
+          release-note-heading: |
             Version ${{ env.VERSION }}
             ---
       - name: Upload CHANGELOG.md
