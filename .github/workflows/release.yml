@@ -23,6 +23,8 @@ concurrency:
   group: publish
   cancel-in-progress: true
 
+permissions: write-all
+
 jobs:
   create-release:
     runs-on: ubuntu-latest
