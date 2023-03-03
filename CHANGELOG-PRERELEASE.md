@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog].
 - Support for Prerelease in publish system `#19`
 - Changelogs (including ones for traditional releases) `#19`
 - Auto Test `#23`
+- Prefab support `#11`
 
 ### Changed
 

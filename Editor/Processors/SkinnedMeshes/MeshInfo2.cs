@@ -33,7 +33,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             for (var i = 0; i < mesh.blendShapeCount; i++)
                 BlendShapes[i] = (BlendShapes[i].name, renderer.GetBlendShapeWeight(i));
 
-            var sourceMaterials = renderer.sharedMaterials;
+            var sourceMaterials = MaterialSaverUtility.GetMaterials(renderer);
             var materialCount = Math.Min(sourceMaterials.Length, SubMeshes.Count);
             for (var i = 0; i < materialCount; i++)
                 SubMeshes[i].SharedMaterial = sourceMaterials[i];
@@ -52,7 +52,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             foreach (var vertex in Vertices)
                 vertex.BoneWeights.Add((Bones[0], 1f));
 
-            var sourceMaterials = renderer.sharedMaterials;
+            var sourceMaterials = MaterialSaverUtility.GetMaterials(renderer);
             var materialCount = Math.Min(sourceMaterials.Length, SubMeshes.Count);
             for (var i = 0; i < materialCount; i++)
                 SubMeshes[i].SharedMaterial = sourceMaterials[i];
@@ -335,6 +335,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         public SubMesh(List<Vertex> vertices) => Triangles = vertices;
         public SubMesh(List<Vertex> vertices, Material sharedMaterial) => 
             (Triangles, SharedMaterial) = (vertices, sharedMaterial);
+        public SubMesh(Material sharedMaterial) => 
+            SharedMaterial = sharedMaterial;
 
         public SubMesh(List<Vertex> vertices, ReadOnlySpan<int> triangles, SubMeshDescriptor descriptor)
         {

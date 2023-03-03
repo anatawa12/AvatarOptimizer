@@ -11,6 +11,10 @@ namespace Anatawa12.AvatarOptimizer
     [DefaultExecutionOrder(-9990)] // run before av3emu
     public abstract class AvatarTagComponent : MonoBehaviour
     {
+        // saved format versions. saveVersions[0] is original asset and saveVersions[1] is prefab instance
+        // this is used for migration in 0.x v versions. in 1.x versions, this should be removed.
+        public int[] saveVersions;
+
         private void Awake()
         {
             if (!RuntimeUtil.isPlaying || this == null) return;

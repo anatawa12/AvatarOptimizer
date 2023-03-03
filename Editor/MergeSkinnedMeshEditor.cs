@@ -25,6 +25,22 @@ namespace Anatawa12.AvatarOptimizer
             };
         }
 
+        SerializedProperty _renderersSetProp;
+        SerializedProperty _staticRenderersSetProp;
+        PrefabSafeSet.EditorUtil<Material> _doNotMergeMaterials;
+
+        private void OnEnable()
+        {
+            _renderersSetProp = serializedObject.FindProperty("renderersSet");
+            _staticRenderersSetProp = serializedObject.FindProperty("staticRenderersSet");
+            var nestCount = PrefabSafeSet.PrefabSafeSetUtil.PrefabNestCount(serializedObject.targetObject);
+            _doNotMergeMaterials = PrefabSafeSet.EditorUtil<Material>.Create(
+                serializedObject.FindProperty("doNotMergeMaterials"),
+                nestCount,
+                x => x.objectReferenceValue as Material,
+                (x, v) => x.objectReferenceValue = v);
+        }
+
         public override void OnInspectorGUI()
         {
             if (((MergeSkinnedMesh)target).GetComponent<SkinnedMeshRenderer>().sharedMesh)
@@ -34,39 +50,8 @@ namespace Anatawa12.AvatarOptimizer
                     Style.WarningStyle);
             }
 
-            var renderersProp = serializedObject.FindProperty("renderers");
-            var staticRenderersProp = serializedObject.FindProperty("staticRenderers");
-
-            ShowRenderers("Skinned Renderers", renderersProp, (SkinnedMeshRenderer renderer) =>
-            {
-                var mesh = renderer.sharedMesh;
-                if (!mesh) return;
-
-                for (var j = 0; j < mesh.blendShapeCount; j++)
-                {
-                    if (mesh.GetBlendShapeFrameCount(j) != 1)
-                        GUILayout.Label($"BlendShapeCount of {mesh.GetBlendShapeName(j)} is not One",
-                            Style.ErrorStyle);
-                    // ReSharper disable once CompareOfFloatsByEqualityOperator
-                    if (mesh.GetBlendShapeFrameWeight(j, 0) != 100.0f)
-                        GUILayout.Label($"GetBlendShapeFrameWeight of {mesh.GetBlendShapeName(j)} is not 100",
-                            Style.ErrorStyle);
-                }
-            });
-
-            ShowRenderers("Static Renderers", staticRenderersProp, (MeshRenderer renderer) => { });
-
-            {
-                var prop = serializedObject.FindProperty("removeEmptyRendererObject");
-                var rect = EditorGUILayout.GetControlRect(true);
-                var label = new GUIContent("Remove Empty Renderer GameObject");
-                label = EditorGUI.BeginProperty(rect, label, prop);
-                EditorGUI.BeginChangeCheck();
-                var flag = EditorGUI.ToggleLeft(rect, label, prop.boolValue);
-                if (EditorGUI.EndChangeCheck())
-                    prop.boolValue = flag;
-                EditorGUI.EndProperty();
-            }
+            EditorGUILayout.PropertyField(_renderersSetProp);
+            EditorGUILayout.PropertyField(_staticRenderersSetProp);
 
             serializedObject.ApplyModifiedProperties();
 
@@ -112,8 +97,10 @@ namespace Anatawa12.AvatarOptimizer
         public void MergeMaterials(MergeSkinnedMesh merge)
         {
             var materials = new HashSet<Material>();
-            var ofRenderers = merge.renderers.Select(EditSkinnedMeshComponentUtil.GetMaterials);
-            var ofStatics = merge.staticRenderers.Select(x => x.sharedMaterials);
+            var renderersSetAsList = merge.renderersSet.GetAsList();
+            var staticRenderersSetAsList = merge.staticRenderersSet.GetAsList();
+            var ofRenderers = renderersSetAsList.Select(EditSkinnedMeshComponentUtil.GetMaterials);
+            var ofStatics = staticRenderersSetAsList.Select(x => x.sharedMaterials);
             foreach (var group in ofRenderers.Concat(ofStatics)
                          .SelectMany((x, renderer) => x.Select((mat, material) => (mat, renderer, material)))
                          .GroupBy(x => x.mat))
@@ -121,13 +108,6 @@ namespace Anatawa12.AvatarOptimizer
                 materials.Add(group.Key);
                 if (group.Count() == 1)
                 {
-                    var found = Array.FindIndex(merge.merges, x => x.target == group.Key);
-                    if (found >= 0)
-                    {
-                        EditorUtility.SetDirty(merge);
-                        ArrayUtility.RemoveAt(ref merge.merges, found);
-                    }
-
                     continue;
                 }
 
@@ -136,47 +116,22 @@ namespace Anatawa12.AvatarOptimizer
                 EditorGUI.EndDisabledGroup();
 
                 EditorGUI.indentLevel++;
-                var foundConfigIndex = Array.FindIndex(merge.merges, x => x.target == group.Key);
-                var oldMerges = foundConfigIndex >= 0;
-                var newMerges = EditorGUILayout.ToggleLeft("Merge", oldMerges);
-                if (newMerges)
-                {
-                    var mergesList = group.Select(x => ((ulong)x.renderer << 32) | (uint)x.material).ToArray();
-                    Array.Sort(mergesList);
-                    if (foundConfigIndex >= 0)
-                    {
-                        if (!merge.merges[foundConfigIndex].merges.SequenceEqual(mergesList))
-                        {
-                            EditorUtility.SetDirty(merge);
-                            merge.merges[foundConfigIndex].merges = mergesList;
-                        }
-                    }
-                    else
-                    {
-                        EditorUtility.SetDirty(merge);
-                        ArrayUtility.Add(ref merge.merges,
-                            new MergeSkinnedMesh.MergeConfig { target = group.Key, merges = mergesList });
-                    }
-                }
-                else
-                {
-                    if (foundConfigIndex >= 0)
-                    {
-                        EditorUtility.SetDirty(merge);
-                        ArrayUtility.RemoveAt(ref merge.merges, foundConfigIndex);
-                    }
-                }
+                var element = _doNotMergeMaterials.GetElementOf(group.Key);
+                var fieldPosition = EditorGUILayout.GetControlRect();
+                var label = new GUIContent("Merge");
+                using (new PrefabSafeSet.PropertyScope<Material>(element, fieldPosition, label))
+                    element.SetExistence(!EditorGUI.ToggleLeft(fieldPosition, label, !element.Contains));
 
                 EditorGUILayout.LabelField("Renderers:");
                 EditorGUI.indentLevel++;
                 EditorGUI.BeginDisabledGroup(true);
                 foreach (var (_, rendererIndex, _) in group)
                 {
-                    if (rendererIndex < merge.renderers.Length)
-                        EditorGUILayout.ObjectField(merge.renderers[rendererIndex], typeof(SkinnedMeshRenderer),
+                    if (rendererIndex < renderersSetAsList.Count)
+                        EditorGUILayout.ObjectField(renderersSetAsList[rendererIndex], typeof(SkinnedMeshRenderer),
                             true);
                     else
-                        EditorGUILayout.ObjectField(merge.staticRenderers[rendererIndex - merge.renderers.Length],
+                        EditorGUILayout.ObjectField(staticRenderersSetAsList[rendererIndex - renderersSetAsList.Count],
                             typeof(MeshRenderer), true);
                 }
 
@@ -185,16 +140,7 @@ namespace Anatawa12.AvatarOptimizer
                 EditorGUI.indentLevel--;
             }
 
-            // remove unused mapping
-            for (var i = 0; i < merge.merges.Length; i++)
-            {
-                if (!materials.Contains(merge.merges[i].target))
-                {
-                    EditorUtility.SetDirty(merge);
-                    ArrayUtility.RemoveAt(ref merge.merges, i);
-                    i--;
-                }
-            }
+            serializedObject.ApplyModifiedProperties();
         }
     }
 }

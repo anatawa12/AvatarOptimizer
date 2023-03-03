@@ -1,3 +1,5 @@
+name: GameCI
+
 on:
   push:
     branches: [master]
