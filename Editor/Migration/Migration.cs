@@ -155,8 +155,15 @@ Do you want to migrate project now?",
 
                 var modified = false;
 
-                foreach (var component in prefabAsset.GetComponentsInChildren<AvatarTagComponent>())
-                    modified |= MigrateComponent(component);
+                try
+                {
+                    foreach (var component in prefabAsset.GetComponentsInChildren<AvatarTagComponent>())
+                        modified |= MigrateComponent(component);
+                }
+                catch (Exception e)
+                {
+                    throw new Exception($"Migrating Prefab {prefabAsset.name}: {e.Message}", e);
+                }
 
                 if (modified)
                     PrefabUtility.SavePrefabAsset(prefabAsset);
@@ -175,9 +182,18 @@ Do you want to migrate project now?",
                 progressCallback(scene.name, i);
 
                 var modified = false;
-                foreach (var rootGameObject in scene.GetRootGameObjects())
-                foreach (var component in rootGameObject.GetComponentsInChildren<AvatarTagComponent>())
-                    modified |= MigrateComponent(component);
+
+                try
+                {
+                    foreach (var rootGameObject in scene.GetRootGameObjects())
+                    foreach (var component in rootGameObject.GetComponentsInChildren<AvatarTagComponent>())
+                        modified |= MigrateComponent(component);
+                }
+                catch (Exception e)
+                {
+                    throw new Exception($"Migrating Scene {scene.name}: {e.Message}", e);
+                }
+
                 if (modified)
                     EditorSceneManager.SaveScene(scene);
             }
@@ -330,8 +346,12 @@ Do you want to migrate project now?",
 
             renderersSet.Clear();
 
-            foreach (var value in values)
+            var valuesSet = new HashSet<T>(values);
+
+            foreach (var value in valuesSet)
                 renderersSet.GetElementOf(value).EnsureAdded();
+
+            Assert.IsTrue(valuesSet.SetEquals(renderersSet.Values));
         }
 
         private static void MigrateList(SerializedProperty arrayProperty, SerializedProperty listProperty,
