@@ -300,7 +300,7 @@ namespace Anatawa12.AvatarOptimizer.Test.PrefabSafeSet
             using (var scope = new PSSTestUtil.Scope())
             {
                 scope.PrefabEditorUtil.Clear();
-                Assert.That(scope.PrefabEditorUtil.Count, Is.EqualTo(5));
+                Assert.That(scope.PrefabEditorUtil.Count, Is.EqualTo(0));
             }
         }
         
@@ -310,7 +310,7 @@ namespace Anatawa12.AvatarOptimizer.Test.PrefabSafeSet
             using (var scope = new PSSTestUtil.Scope())
             {
                 scope.VariantEditorUtil.Clear();
-                Assert.That(scope.VariantEditorUtil.Count, Is.EqualTo(5));
+                Assert.That(scope.VariantEditorUtil.Count, Is.EqualTo(0));
             }
         }
         
@@ -321,7 +321,7 @@ namespace Anatawa12.AvatarOptimizer.Test.PrefabSafeSet
             using (var scope = new PSSTestUtil.Scope())
             {
                 scope.InstanceEditorUtil.Clear();
-                Assert.That(scope.InstanceEditorUtil.Count, Is.EqualTo(5));
+                Assert.That(scope.InstanceEditorUtil.Count, Is.EqualTo(0));
             }
         }
 
