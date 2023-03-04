@@ -21,6 +21,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - Fixed IndexOutOfError if there are more bones than bindposes `#30`
+- SkinnedMeshRenderers without bones will break mesh `#35`
 
 ### Security
 
