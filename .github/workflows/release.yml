@@ -167,10 +167,10 @@ jobs:
             "package.json" \
 
       - name: prepare next release & push
-        if: ${{ inputs.publish }}
+        if: inputs.publish && !fromJSON(env.PRERELEASE)
         run: |
           VERSION="$(version-next "$(get-version)")"
-          set-version "$(version-snapshot "$VERSION")"
+          set-version "$(version-set-channel "$VERSION" beta 0)"
           git commit -am "prepare for next version: $VERSION"
           git push && git push --tags
 
