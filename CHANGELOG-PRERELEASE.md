@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Forge Migration `#31`
+  - With this feature, you can re-migrate everything but you may lost changes you made in `v0.2`
 
 ### Changed
 

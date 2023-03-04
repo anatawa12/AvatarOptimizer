@@ -146,7 +146,46 @@ Do you want to migrate project now?",
             }
         }
 
-        private static void MigratePrefabs(List<GameObject> prefabAssets, Action<string, int> progressCallback)
+        [MenuItem("Tools/Avatar Optimizer/Force v0.1->0.2 Migrate Everything")]
+        private static void ForceMigrateEverything()
+        {
+            if (!EditorUtility.DisplayDialog("WARNING",
+                    "Force migration will LOST any changes you made in v0.2.x.\n" +
+                    "Do you ACTUALLY want to re-migrate everything?",
+                    "Migrate", "Cancel"))
+                return; // cancel
+
+            try
+            {
+                var prefabs = GetPrefabs();
+                var scenePaths = AssetDatabase.FindAssets("t:scene").Select(AssetDatabase.GUIDToAssetPath).ToList();
+                float totalCount = prefabs.Count + scenePaths.Count;
+
+                MigratePrefabs(prefabs, (name, i) => EditorUtility.DisplayProgressBar(
+                    "Force Migrating Everything",
+                    $"{name} (Prefabs) ({i} / {totalCount})",
+                    i / totalCount),
+                    forceVersion: 1);
+
+                MigrateAllScenes(scenePaths, (name, i) => EditorUtility.DisplayProgressBar(
+                    "Force Migrating Everything",
+                    $"{name} (Scenes) ({prefabs.Count + i} / {totalCount})",
+                    (prefabs.Count + i) / totalCount),
+                    forceVersion: 1);
+            }
+            catch
+            {
+                EditorUtility.DisplayDialog("Error!", "Error in migration process!", "OK");
+                throw;
+            }
+            finally
+            {
+                EditorUtility.ClearProgressBar();
+            }
+        }
+
+        private static void MigratePrefabs(List<GameObject> prefabAssets, Action<string, int> progressCallback, 
+            int forceVersion = int.MaxValue)
         {
             for (var i = 0; i < prefabAssets.Count; i++)
             {
@@ -158,7 +197,7 @@ Do you want to migrate project now?",
                 try
                 {
                     foreach (var component in prefabAsset.GetComponentsInChildren<AvatarTagComponent>())
-                        modified |= MigrateComponent(component);
+                        modified |= MigrateComponent(component, forceVersion);
                 }
                 catch (Exception e)
                 {
@@ -171,7 +210,8 @@ Do you want to migrate project now?",
             progressCallback("finish Prefabs", prefabAssets.Count);
         }
 
-        private static void MigrateAllScenes(List<string> scenePaths, Action<string, int> progressCallback)
+        private static void MigrateAllScenes(List<string> scenePaths, Action<string, int> progressCallback,
+            int forceVersion = int.MaxValue)
         {
             // load each scene and migrate scene
             for (var i = 0; i < scenePaths.Count; i++)
@@ -187,7 +227,7 @@ Do you want to migrate project now?",
                 {
                     foreach (var rootGameObject in scene.GetRootGameObjects())
                     foreach (var component in rootGameObject.GetComponentsInChildren<AvatarTagComponent>())
-                        modified |= MigrateComponent(component);
+                        modified |= MigrateComponent(component, forceVersion);
                 }
                 catch (Exception e)
                 {
@@ -201,7 +241,7 @@ Do you want to migrate project now?",
             progressCallback("finish Prefabs", scenePaths.Count);
         }
 
-        private static bool MigrateComponent(AvatarTagComponent component)
+        private static bool MigrateComponent(AvatarTagComponent component, int forceVersion)
         {
             var nestCount = NestCount(component);
             var serialized = new SerializedObject(component);
@@ -209,6 +249,8 @@ Do you want to migrate project now?",
             var version = nestCount < saveVersionsProp.arraySize
                 ? saveVersionsProp.GetArrayElementAtIndex(nestCount).intValue
                 : 0;
+            if (version < forceVersion) 
+                version = forceVersion;
             saveVersionsProp.arraySize = nestCount + 1;
             var versionProp = saveVersionsProp.GetArrayElementAtIndex(nestCount);
             var modified = false;
