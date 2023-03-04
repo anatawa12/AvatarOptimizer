@@ -330,8 +330,12 @@ Do you want to migrate project now?",
 
             renderersSet.Clear();
 
-            foreach (var value in values)
+            var valuesSet = new HashSet<T>(values);
+
+            foreach (var value in valuesSet)
                 renderersSet.GetElementOf(value).EnsureAdded();
+
+            Assert.IsTrue(valuesSet.SetEquals(renderersSet.Values));
         }
 
         private static void MigrateList(SerializedProperty arrayProperty, SerializedProperty listProperty,
