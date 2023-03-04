@@ -162,6 +162,7 @@ jobs:
           # upload release assets
           gh release create "v$VERSION" \
             -F "$RELEASE_NOTE" \
+            ${{ fromJSON(env.PRERELEASE) && '--prerelease' || '' }} \
             "build/$PKG_NAME-$VERSION.zip" \
             "build/$PKG_NAME-$VERSION.unitypackage" \
             "package.json" \
