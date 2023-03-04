@@ -291,5 +291,40 @@ namespace Anatawa12.AvatarOptimizer.Test.PrefabSafeSet
         }
 
         #endregion
+        
+        #region Elements
+
+        [Test]
+        public void PrefabClear()
+        {
+            using (var scope = new PSSTestUtil.Scope())
+            {
+                scope.PrefabEditorUtil.Clear();
+                Assert.That(scope.PrefabEditorUtil.Count, Is.EqualTo(5));
+            }
+        }
+        
+        [Test]
+        public void VariantClear()
+        {
+            using (var scope = new PSSTestUtil.Scope())
+            {
+                scope.VariantEditorUtil.Clear();
+                Assert.That(scope.VariantEditorUtil.Count, Is.EqualTo(5));
+            }
+        }
+        
+        
+        [Test]
+        public void InstanceClear()
+        {
+            using (var scope = new PSSTestUtil.Scope())
+            {
+                scope.InstanceEditorUtil.Clear();
+                Assert.That(scope.InstanceEditorUtil.Count, Is.EqualTo(5));
+            }
+        }
+
+        #endregion
     }
 }
