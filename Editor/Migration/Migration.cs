@@ -249,7 +249,7 @@ Do you want to migrate project now?",
             var version = nestCount < saveVersionsProp.arraySize
                 ? saveVersionsProp.GetArrayElementAtIndex(nestCount).intValue
                 : 0;
-            if (version < forceVersion) 
+            if (forceVersion < version) 
                 version = forceVersion;
             saveVersionsProp.arraySize = nestCount + 1;
             var versionProp = saveVersionsProp.GetArrayElementAtIndex(nestCount);
