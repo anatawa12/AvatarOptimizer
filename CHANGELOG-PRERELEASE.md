@@ -18,6 +18,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Migration of PrefabSafeSet prefab overrides is not well `#29`
 
 ### Security
 
