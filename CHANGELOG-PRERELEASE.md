@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- SkinnedMeshRenderers without bones will break mesh `#35`
 
 ### Security
 
