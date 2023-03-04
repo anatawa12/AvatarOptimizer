@@ -30,6 +30,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             var mesh = renderer.sharedMesh ? renderer.sharedMesh : new Mesh();
             ReadSkinnedMesh(mesh);
 
+            // if there's no bones: add one fake bone
+            if (Bones.Count == 0)
+                SetIdentityBone(renderer.rootBone ? renderer.rootBone : renderer.transform);
+
             for (var i = 0; i < mesh.blendShapeCount; i++)
                 BlendShapes[i] = (BlendShapes[i].name, renderer.GetBlendShapeWeight(i));
 
@@ -47,15 +51,20 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             var mesh = renderer.GetComponent<MeshFilter>().sharedMesh;
             ReadStaticMesh(mesh);
 
-            Bones.Add(new Bone(Matrix4x4.identity, renderer.transform));
-
-            foreach (var vertex in Vertices)
-                vertex.BoneWeights.Add((Bones[0], 1f));
+            SetIdentityBone(renderer.transform);
 
             var sourceMaterials = MaterialSaverUtility.GetMaterials(renderer);
             var materialCount = Math.Min(sourceMaterials.Length, SubMeshes.Count);
             for (var i = 0; i < materialCount; i++)
                 SubMeshes[i].SharedMaterial = sourceMaterials[i];
+        }
+
+        private void SetIdentityBone(Transform transform)
+        {
+            Bones.Add(new Bone(Matrix4x4.identity, transform));
+
+            foreach (var vertex in Vertices)
+                vertex.BoneWeights.Add((Bones[0], 1f));
         }
 
         public void ReadSkinnedMesh(Mesh mesh)
