@@ -8,8 +8,6 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Forge Migration `#31`
-  - With this feature, you can re-migrate everything but you may lost changes you made in `v0.2`
 
 ### Changed
 
@@ -18,10 +16,17 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Migration of PrefabSafeSet prefab overrides is not well `#29`
-- Fixed IndexOutOfError if there are more bones than bindposes `#30`
 
 ### Security
+
+## [0.2.0-beta.2] - 2023-03-04
+### Added
+- Forge Migration [`#31`](https://github.com/anatawa12/AvatarOptimizer/pull/31)
+  - With this feature, you can re-migrate everything but you may lost changes you made in `v0.2`
+
+### Fixed
+- Migration of PrefabSafeSet prefab overrides is not well [`#29`](https://github.com/anatawa12/AvatarOptimizer/pull/29)
+- Fixed IndexOutOfError if there are more bones than bindposes [`#30`](https://github.com/anatawa12/AvatarOptimizer/pull/30)
 
 ## [0.2.0-beta.1] - 2023-03-03
 ### Added
@@ -88,7 +93,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.0-beta.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.0-beta.2...HEAD
+[0.2.0-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.0-beta.1...v0.2.0-beta.2
 [0.2.0-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.1.4...v0.2.0-beta.1
 [0.1.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.1.3...v0.1.4
 [0.1.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.1.2...v0.1.3
