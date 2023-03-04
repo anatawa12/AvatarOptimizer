@@ -251,7 +251,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             public override void Clear()
             {
                 Initialize();
-                for (var i = _elements.Count - 1; i >= _upstreamElementCount; i--)
+                for (var i = _elements.Count - 1; i >= 0; i--)
                     _elements[i].EnsureRemoved();
                 _currentAdditionsSize = _currentAdditions.arraySize = 0;
             }
