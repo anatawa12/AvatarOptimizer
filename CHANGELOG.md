@@ -20,6 +20,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Fixed IndexOutOfError if there are more bones than bindposes `#30`
 
 ### Security
 

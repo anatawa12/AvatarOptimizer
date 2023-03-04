@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - Migration of PrefabSafeSet prefab overrides is not well `#29`
+- Fixed IndexOutOfError if there are more bones than bindposes `#30`
 
 ### Security
 
