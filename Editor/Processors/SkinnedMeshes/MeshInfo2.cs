@@ -39,7 +39,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 SubMeshes[i].SharedMaterial = sourceMaterials[i];
 
             var bones = renderer.bones;
-            for (var i = 0; i < bones.Length; i++) Bones[i].Transform = bones[i];
+            for (var i = 0; i < bones.Length && i < Bones.Count; i++) Bones[i].Transform = bones[i];
         }
 
         public MeshInfo2(MeshRenderer renderer)
