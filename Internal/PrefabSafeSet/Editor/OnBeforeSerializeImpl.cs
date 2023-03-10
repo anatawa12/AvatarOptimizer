@@ -39,15 +39,15 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             if (nestCount == 0)
             {
                 DistinctCheckArray(ref self.mainSet, ref self.CheckedCurrentLayerAdditions, 
-                    PrefabSafeSetUtil.IsNotNull);
+                    PrefabSafeSetRuntimeUtil.IsNotNull);
             }
             else
             {
                 var currentLayer = self.prefabLayers[nestCount - 1] ?? (self.prefabLayers[nestCount - 1] = new TLayer());
                 DistinctCheckArray(ref currentLayer.additions, ref self.CheckedCurrentLayerAdditions,
-                    PrefabSafeSetUtil.IsNotNull);
+                    PrefabSafeSetRuntimeUtil.IsNotNull);
                 DistinctCheckArray(ref currentLayer.removes, ref self.CheckedCurrentLayerRemoves,
-                    x => PrefabSafeSetUtil.IsNotNull(x) && !currentLayer.additions.Contains(x));
+                    x => x.IsNotNull() && !currentLayer.additions.Contains(x));
             }
         }
 

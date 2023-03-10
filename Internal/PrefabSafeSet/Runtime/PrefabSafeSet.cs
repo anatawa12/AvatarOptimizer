@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using JetBrains.Annotations;
 using UnityEngine;
@@ -17,6 +18,16 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                 result[i] = new T();
             return result;
         }
+
+        internal static bool IsNull<T>(this T arg)
+        {
+            if (arg == null) return true;
+            if (typeof(Object).IsAssignableFrom(typeof(T)))
+                return (Object)(object)arg == null;
+            return false;
+        }
+
+        internal static bool IsNotNull<T>(this T arg) => !arg.IsNull();
 
 #if UNITY_EDITOR
         private static readonly Type OnBeforeSerializeImplType;
@@ -79,8 +90,8 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 
         public List<T> GetAsList()
         {
-            var set = new HashSet<T>(mainSet);
-            var result = new List<T>(mainSet);
+            var result = new List<T>(mainSet.Where(x => x.IsNotNull()));
+            var set = new HashSet<T>(result);
             foreach (var layer in prefabLayers)
                 layer.ApplyTo(set, result);
             return result;
@@ -109,10 +120,10 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
         public void ApplyTo(HashSet<T> result, [CanBeNull] List<T> list = null)
         {
             foreach (var remove in removes)
-                if (result.Remove(remove))
+                if (remove.IsNotNull() && result.Remove(remove))
                     list?.Remove(remove);
             foreach (var addition in additions)
-                if (result.Add(addition))
+                if (addition.IsNotNull() && result.Add(addition))
                     list?.Add(addition);
         }
     }

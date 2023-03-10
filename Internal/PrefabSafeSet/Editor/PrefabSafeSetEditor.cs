@@ -390,7 +390,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                 EditorGUI.BeginDisabledGroup(kind == ModificationKind.Remove);
                 // field
                 var fieldValue = Field(fieldPosition, label, element.Value);
-                if (fieldValue == null)
+                if (fieldValue.IsNull())
                     result = ModificationKind.Remove;
 
                 EditorGUI.BeginDisabledGroup(kind == ModificationKind.Add);

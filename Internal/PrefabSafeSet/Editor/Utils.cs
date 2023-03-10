@@ -16,14 +16,6 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 
             return nestCount;
         }
-
-        internal static bool IsNotNull<T>(T arg)
-        {
-            if (arg == null) return false;
-            if (typeof(Object).IsAssignableFrom(typeof(T)))
-                return (Object)(object)arg;
-            return true;
-        }
     }
 
     internal readonly struct ArrayPropertyEnumerable : IEnumerable<SerializedProperty>
