@@ -36,6 +36,14 @@ The format is based on [Keep a Changelog].
 - Auto Test [`#23`](https://github.com/anatawa12/AvatarOptimizer/pull/23)
 - Prefab support [`#11`](https://github.com/anatawa12/AvatarOptimizer/pull/11)
 
+### Changed
+- **BREAKING** Save format for many components [`#11`](https://github.com/anatawa12/AvatarOptimizer/pull/11)
+  - Even if you added more elements than before on prefab, added elements on prefab instance will be kept.
+  - In previous implementation (unity default array prefab overrides implementation), can be broken easily.
+- **BREAKING** All materials are merged by default [`#11`](https://github.com/anatawa12/AvatarOptimizer/pull/11)
+  - Due to save format migration, every materials will be marked as merged.
+  - If you have some materials not to be merged, please re-reconfigure that.
+
 ## [0.1.4]
 ### Added
 - Support for feature Migration [`be0147b`](https://github.com/anatawa12/AvatarOptimizer/commit/be0147bb783cb9ecb5f7193c360f9d1483853e33)

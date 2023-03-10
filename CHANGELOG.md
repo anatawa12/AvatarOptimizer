@@ -14,6 +14,12 @@ The format is based on [Keep a Changelog].
 - Prefab support `#11`
 
 ### Changed
+- **BREAKING** Save format for many components `#11`
+  - Even if you added more elements than before on prefab, added elements on prefab instance will be kept.
+  - In previous implementation (unity default array prefab overrides implementation), can be broken easily.
+- **BREAKING** All materials are merged by default `#11`
+  - Due to save format migration, every materials will be marked as merged.
+  - If you have some materials not to be merged, please re-reconfigure that.
 
 ### Deprecated
 
