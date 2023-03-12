@@ -125,18 +125,6 @@ jobs:
       - name: Prepare build folder
         run: mkdir build
 
-      - name: Create unitypackage
-        uses: anatawa12/sh-actions/create-unitypackage@master
-        with:
-          output-path: build/${{ env.PKG_NAME }}-${{ env.VERSION }}.unitypackage
-          package-path: .
-          path-prefix: Packages/${{ env.PKG_NAME }}
-      - name: Upload unitypackage
-        uses: actions/upload-artifact@v3
-        with:
-          name: unitypackage
-          path: build/${{ env.PKG_NAME }}-${{ env.VERSION }}.unitypackage
-
       - name: Build VPM release
         run: |
           zip -r "build/$PKG_NAME-$VERSION.zip" . -x 'build*' '.*'
@@ -164,7 +152,6 @@ jobs:
             -F "$RELEASE_NOTE" \
             ${{ fromJSON(env.PRERELEASE) && '--prerelease' || '' }} \
             "build/$PKG_NAME-$VERSION.zip" \
-            "build/$PKG_NAME-$VERSION.unitypackage" \
             "package.json" \
 
       - name: prepare next release & push
