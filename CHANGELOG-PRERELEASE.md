@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- unnecessary logs on migration `#38`
 
 ### Security
 
