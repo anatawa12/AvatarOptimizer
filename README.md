@@ -234,7 +234,7 @@ With boxes shown on upper/left image, meshes in the box will be removed as lower
 <img src=".readme/remove-mesh-in-box.example.pre.png" width="403">
 <img src=".readme/remove-mesh-in-box.example.ran.png" width="403">
 
-[twitter]: https://go.anatawa12.com/twitter
+[twitter]: https://go.anatawa12.com/twitter.vrchat
 [misskey]: https://go.anatawa12.com/misskey.vrchat
 [vpm-repository]: https://vpm.anatawa12.com/vpm.json
 [github-latest]: https://github.com/anatawa12/AvatarOptimizer/releases/latest
