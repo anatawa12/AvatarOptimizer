@@ -143,9 +143,13 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                         // if property is Array.size or current layer of nest: allow modification
                         if (modification.propertyPath.StartsWith(arraySizeProp)) continue;
                         if (modification.propertyPath.StartsWith(arrayValueProp)) continue;
+                        var prop = serialized.FindProperty(modification.propertyPath);
+                        // allow to make null for ObjectReference to support removing prefab element
+                        if (prop.propertyType == SerializedPropertyType.ObjectReference &&
+                            prop.objectReferenceValue == null)
+                            continue;
                         // that modification is not allowed: revert
-                        PrefabUtility.RevertPropertyOverride(serialized.FindProperty(modification.propertyPath),
-                            InteractionMode.AutomatedAction);
+                        PrefabUtility.RevertPropertyOverride(prop, InteractionMode.AutomatedAction);
                     }
                 }
                 catch (Exception e)

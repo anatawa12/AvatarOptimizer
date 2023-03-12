@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
+using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
@@ -17,12 +18,55 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             return nestCount;
         }
 
-        internal static bool IsNotNull<T>(T arg)
+        public static bool IsNullOrMissing<T>(this T self, Object context) =>
+            self.IsNullOrMissing(new NullOrMissingContext(context));
+
+        public static bool IsNullOrMissing<T>(this T self, NullOrMissingContext context)
         {
-            if (arg == null) return false;
-            if (typeof(Object).IsAssignableFrom(typeof(T)))
-                return (Object)(object)arg;
-            return true;
+            if (default(T) != null) return false;
+
+            if (self == null) return true;
+
+            if (!(self is Object obj)) return false;
+
+            if (obj == null) return true;
+
+            if (obj is Component || obj is GameObject)
+            {
+                var contextPrefabAsset = context.IsPartOfPrefabAsset;
+                var selfPrefabAsset = PrefabUtility.IsPartOfPrefabAsset(obj);
+                if (contextPrefabAsset != selfPrefabAsset) return true;
+
+                if (selfPrefabAsset)
+                {
+                    // if it's prefab asset, check for root GameObject
+                    var selfRoot = (obj is GameObject selfGo ? selfGo.transform : ((Component)obj).transform).root;
+                    if (context.RootTransform != selfRoot) return true;
+                }
+            }
+
+            return false;
+        }
+
+        public readonly struct NullOrMissingContext
+        {
+            internal Transform RootTransform { get; }
+            internal bool IsPartOfPrefabAsset => (object)RootTransform != null;
+
+            public NullOrMissingContext(Object context)
+            {
+                var contextPrefabAsset = PrefabUtility.IsPartOfPrefabAsset(context);
+
+                if (contextPrefabAsset)
+                {
+                    // if it's prefab asset, check for root GameObject
+                    RootTransform = (context is GameObject go ? go.transform : ((Component)context).transform).root;
+                }
+                else
+                {
+                    RootTransform = null;
+                }
+            }
         }
     }
 

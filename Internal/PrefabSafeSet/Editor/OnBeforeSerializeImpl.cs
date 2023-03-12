@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using JetBrains.Annotations;
+using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 {
@@ -17,16 +18,37 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             // match prefabLayers count.
             var nestCount = PrefabSafeSetUtil.PrefabNestCount(self.OuterObject);
 
-            if (self.prefabLayers.Length == nestCount)
-                DistinctCheck(self, nestCount);
-            else if (self.prefabLayers.Length < nestCount)
+            if (self.prefabLayers.Length < nestCount)
                 self.prefabLayers = PrefabSafeSetRuntimeUtil.ResizeArray(self.prefabLayers, nestCount);
             else if (self.prefabLayers.Length > nestCount)
                 ApplyModificationsToLatestLayer(self, nestCount);
+
+            GeneralCheck(self, nestCount);
         }
 
-        private static void DistinctCheck(PrefabSafeSet<T, TLayer> self, int nestCount)
+        private static void GeneralCheck(PrefabSafeSet<T, TLayer> self, int nestCount)
         {
+            // first, replace missing with null
+            if (typeof(Object).IsAssignableFrom(typeof(T)))
+            {
+                var context = new PrefabSafeSetUtil.NullOrMissingContext(self.OuterObject);
+
+                void ReplaceMissingWithNull(T[] array)
+                {
+                    for (var i = 0; i < array.Length; i++)
+                        if (array[i].IsNullOrMissing(context))
+                            array[i] = default;
+                }
+
+                ReplaceMissingWithNull(self.mainSet);
+
+                foreach (var layer in self.prefabLayers)
+                {
+                    ReplaceMissingWithNull(layer.additions);
+                    ReplaceMissingWithNull(layer.removes);
+                }
+            }
+
             void DistinctCheckArray(ref T[] source, ref T[] checkedArray, Func<T, bool> filter)
             {
                 if (checkedArray == source && source.All(filter)) return;
@@ -39,15 +61,15 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             if (nestCount == 0)
             {
                 DistinctCheckArray(ref self.mainSet, ref self.CheckedCurrentLayerAdditions, 
-                    PrefabSafeSetUtil.IsNotNull);
+                    PrefabSafeSetRuntimeUtil.IsNotNull);
             }
             else
             {
                 var currentLayer = self.prefabLayers[nestCount - 1] ?? (self.prefabLayers[nestCount - 1] = new TLayer());
                 DistinctCheckArray(ref currentLayer.additions, ref self.CheckedCurrentLayerAdditions,
-                    PrefabSafeSetUtil.IsNotNull);
+                    PrefabSafeSetRuntimeUtil.IsNotNull);
                 DistinctCheckArray(ref currentLayer.removes, ref self.CheckedCurrentLayerRemoves,
-                    x => PrefabSafeSetUtil.IsNotNull(x) && !currentLayer.additions.Contains(x));
+                    x => x.IsNotNull() && !currentLayer.additions.Contains(x));
             }
         }
 
