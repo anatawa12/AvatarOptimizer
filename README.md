@@ -27,7 +27,8 @@ With [VPAI] You can include this package just importing one unitypackage.
 <details>
   <summary>other versions</summary>
 
-  - [0.x.x including beta releases][installer unitypackage 0.x beta]
+- [0.1.x][installer unitypackage 0.1.x]
+- [0.x.x including beta releases][installer unitypackage 0.x beta]
 
 </details>
 
@@ -236,7 +237,8 @@ With boxes shown on upper/left image, meshes in the box will be removed as lower
 [github-latest]: https://github.com/anatawa12/AvatarOptimizer/releases/latest
 [vcc-cli]: https://vcc.docs.vrchat.com/vpm/cli
 [vpm-resolver]: https://vcc.docs.vrchat.com/vpm/resolver
-[installer unitypackage]: https://github.com/anatawa12/AvatarOptimizer/raw/master/.readme/AvatarOptimizer-0.1.x-installer.unitypackage
+[installer unitypackage]: https://github.com/anatawa12/AvatarOptimizer/raw/master/.readme/AvatarOptimizer-0.2.x-installer.unitypackage
+[installer unitypackage 0.1.x]: https://github.com/anatawa12/AvatarOptimizer/raw/master/.readme/AvatarOptimizer-0.1.x-installer.unitypackage
 [installer unitypackage 0.x beta]: https://github.com/anatawa12/AvatarOptimizer/raw/master/.readme/AvatarOptimizer-0.x.x-prerelease-installer.unitypackage
 [issues]: https://github.com/anatawa12/AvatarOptimizer/issues/new
 [VPAI]: https://github.com/anatawa12/VPMPackageAutoInstaller
