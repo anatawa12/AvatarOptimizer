@@ -585,8 +585,6 @@ Do you want to migrate project now?",
                 var destCheck = dstIter.Next(enterChildren) && !SerializedProperty.EqualContents(dstIter, dstEnd);
                 Assert.IsTrue(destCheck);
 
-                Debug.Log($"prop: {dstIter.propertyPath}: {dstIter.propertyType}");
-
                 switch (dstIter.propertyType)
                 {
                     case SerializedPropertyType.FixedBufferSize:
