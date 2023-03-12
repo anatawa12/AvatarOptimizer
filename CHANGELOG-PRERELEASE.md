@@ -16,10 +16,13 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- SkinnedMeshRenderers without bones will break mesh `#35`
-- Reference to components in prefab asset will remain `#37`
 
 ### Security
+
+## [0.2.0-rc.1] - 2023-03-12
+### Fixed
+- SkinnedMeshRenderers without bones will break mesh [`#35`](https://github.com/anatawa12/AvatarOptimizer/pull/35)
+- Reference to components in prefab asset will remain [`#37`](https://github.com/anatawa12/AvatarOptimizer/pull/37)
 
 ## [0.2.0-beta.2] - 2023-03-04
 ### Added
@@ -103,7 +106,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.0-beta.2...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.0-rc.1...HEAD
+[0.2.0-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.0-beta.2...v0.2.0-rc.1
 [0.2.0-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.0-beta.1...v0.2.0-beta.2
 [0.2.0-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.1.4...v0.2.0-beta.1
 [0.1.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.1.3...v0.1.4
