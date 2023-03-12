@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - SkinnedMeshRenderers without bones will break mesh `#35`
+- Reference to components in prefab asset will remain `#37`
 
 ### Security
 
