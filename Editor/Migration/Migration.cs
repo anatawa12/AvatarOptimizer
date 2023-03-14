@@ -196,7 +196,7 @@ Do you want to migrate project now?",
 
                 try
                 {
-                    foreach (var component in prefabAsset.GetComponentsInChildren<AvatarTagComponent>())
+                    foreach (var component in prefabAsset.GetComponentsInChildren<AvatarTagComponent>(true))
                         modified |= MigrateComponent(component, forceVersion);
                 }
                 catch (Exception e)
@@ -226,7 +226,7 @@ Do you want to migrate project now?",
                 try
                 {
                     foreach (var rootGameObject in scene.GetRootGameObjects())
-                    foreach (var component in rootGameObject.GetComponentsInChildren<AvatarTagComponent>())
+                    foreach (var component in rootGameObject.GetComponentsInChildren<AvatarTagComponent>(true))
                         modified |= MigrateComponent(component, forceVersion);
                 }
                 catch (Exception e)
@@ -473,7 +473,7 @@ Do you want to migrate project now?",
                 .Select(AssetDatabase.LoadAssetAtPath<GameObject>)
                 .Where(x => x)
                 .Where(x => CheckPrefabType(PrefabUtility.GetPrefabAssetType(x)))
-                .Where(x => x.GetComponentsInChildren<AvatarTagComponent>().Length != 0)
+                .Where(x => x.GetComponentsInChildren<AvatarTagComponent>(true).Length != 0)
                 .ToArray();
 
             var sortedVertices = new List<GameObject>();
