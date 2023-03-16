@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Reopening scene after migration `#47`
 
 ### Changed
 
