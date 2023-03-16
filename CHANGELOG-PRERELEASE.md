@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - unnecessary logs on migration `#38`
+- We may forget checking components on disable objects `#46`
 
 ### Security
 

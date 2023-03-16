@@ -29,7 +29,7 @@ namespace Anatawa12.AvatarOptimizer
                 foreach (var renderer in Enumerable.Range(0, SceneManager.sceneCount)
                              .Select(SceneManager.GetSceneAt)
                              .SelectMany(x => x.GetRootGameObjects())
-                             .SelectMany(x => x.GetComponentsInChildren<Renderer>()))
+                             .SelectMany(x => x.GetComponentsInChildren<Renderer>(true)))
                 {
                     SessionState.instance.Mapping[renderer] = renderer.sharedMaterials;
                 }
