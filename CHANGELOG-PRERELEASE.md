@@ -8,7 +8,6 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Reopening scene after migration `#47`
 
 ### Changed
 
@@ -17,10 +16,16 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- unnecessary logs on migration `#38`
-- We may forget checking components on disable objects `#46`
 
 ### Security
+
+## [0.2.0-rc.2] - 2023-03-16
+### Added
+- Reopening scene after migration [`#47`](https://github.com/anatawa12/AvatarOptimizer/pull/47)
+
+### Fixed
+- unnecessary logs on migration [`#38`](https://github.com/anatawa12/AvatarOptimizer/pull/38)
+- We may forget checking components on disable objects [`#46`](https://github.com/anatawa12/AvatarOptimizer/pull/46)
 
 ## [0.2.0-rc.1] - 2023-03-12
 ### Fixed
@@ -109,7 +114,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.0-rc.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.0-rc.2...HEAD
+[0.2.0-rc.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.0-rc.1...v0.2.0-rc.2
 [0.2.0-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.0-beta.2...v0.2.0-rc.1
 [0.2.0-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.0-beta.1...v0.2.0-beta.2
 [0.2.0-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.1.4...v0.2.0-beta.1
