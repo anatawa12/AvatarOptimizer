@@ -7,6 +7,7 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.Assertions;
+using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.Migration
@@ -213,6 +214,9 @@ Do you want to migrate project now?",
         private static void MigrateAllScenes(List<string> scenePaths, Action<string, int> progressCallback,
             int forceVersion = int.MaxValue)
         {
+            var scenes = Enumerable.Range(0, SceneManager.sceneCount).Select(SceneManager.GetSceneAt).ToArray();
+            EditorSceneManager.SaveScenes(scenes);
+            var openingScenePaths = scenes.Select(x => x.path).ToArray();
             // load each scene and migrate scene
             for (var i = 0; i < scenePaths.Count; i++)
             {
@@ -239,6 +243,14 @@ Do you want to migrate project now?",
             }
             EditorSceneManager.NewScene(NewSceneSetup.EmptyScene);
             progressCallback("finish Prefabs", scenePaths.Count);
+
+            if (EditorUtility.DisplayDialog("Reopen?", "Do you want to reopen previously opened scenes?", "Yes",
+                    "No"))
+            {
+                EditorSceneManager.OpenScene(openingScenePaths[0]);
+                foreach (var openingScenePath in openingScenePaths.Skip(1))
+                    EditorSceneManager.OpenScene(openingScenePath, OpenSceneMode.Additive);
+            }
         }
 
         private static bool MigrateComponent(AvatarTagComponent component, int forceVersion)
