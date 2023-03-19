@@ -1,0 +1,17 @@
+{
+    "name": "com.anatawa12.avatar-optimizer.internal.prefab-safe-list.editor",
+    "references": [
+        "GUID:c85616d79bd2a41109c251ab53d14c20"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

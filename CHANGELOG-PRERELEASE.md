@@ -8,9 +8,6 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Support for Prerelease in publish system `#19`
-- Changelogs (including ones for traditional releases) `#19`
-- Auto Test `#23`
 
 ### Changed
 
@@ -21,6 +18,43 @@ The format is based on [Keep a Changelog].
 ### Fixed
 
 ### Security
+
+## [0.2.0-rc.2] - 2023-03-16
+### Added
+- Reopening scene after migration [`#47`](https://github.com/anatawa12/AvatarOptimizer/pull/47)
+
+### Fixed
+- unnecessary logs on migration [`#38`](https://github.com/anatawa12/AvatarOptimizer/pull/38)
+- We may forget checking components on disable objects [`#46`](https://github.com/anatawa12/AvatarOptimizer/pull/46)
+
+## [0.2.0-rc.1] - 2023-03-12
+### Fixed
+- SkinnedMeshRenderers without bones will break mesh [`#35`](https://github.com/anatawa12/AvatarOptimizer/pull/35)
+- Reference to components in prefab asset will remain [`#37`](https://github.com/anatawa12/AvatarOptimizer/pull/37)
+
+## [0.2.0-beta.2] - 2023-03-04
+### Added
+- Forge Migration [`#31`](https://github.com/anatawa12/AvatarOptimizer/pull/31)
+  - With this feature, you can re-migrate everything but you may lost changes you made in `v0.2`
+
+### Fixed
+- Migration of PrefabSafeSet prefab overrides is not well [`#29`](https://github.com/anatawa12/AvatarOptimizer/pull/29)
+- Fixed IndexOutOfError if there are more bones than bindposes [`#30`](https://github.com/anatawa12/AvatarOptimizer/pull/30)
+
+## [0.2.0-beta.1] - 2023-03-03
+### Added
+- Support for Prerelease in publish system [`#19`](https://github.com/anatawa12/AvatarOptimizer/pull/19)
+- Changelogs (including ones for traditional releases) [`#19`](https://github.com/anatawa12/AvatarOptimizer/pull/19)
+- Auto Test [`#23`](https://github.com/anatawa12/AvatarOptimizer/pull/23)
+- Prefab support [`#11`](https://github.com/anatawa12/AvatarOptimizer/pull/11)
+
+### Changed
+- **BREAKING** Save format for many components [`#11`](https://github.com/anatawa12/AvatarOptimizer/pull/11)
+  - Even if you added more elements than before on prefab, added elements on prefab instance will be kept.
+  - In previous implementation (unity default array prefab overrides implementation), can be broken easily.
+- **BREAKING** All materials are merged by default [`#11`](https://github.com/anatawa12/AvatarOptimizer/pull/11)
+  - Due to save format migration, every materials will be marked as merged.
+  - If you have some materials not to be merged, please re-reconfigure that.
 
 ## [0.1.4]
 ### Added
@@ -80,7 +114,11 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.1.4...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.0-rc.2...HEAD
+[0.2.0-rc.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.0-rc.1...v0.2.0-rc.2
+[0.2.0-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.0-beta.2...v0.2.0-rc.1
+[0.2.0-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.0-beta.1...v0.2.0-beta.2
+[0.2.0-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.1.4...v0.2.0-beta.1
 [0.1.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.1.3...v0.1.4
 [0.1.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.1.1...v0.1.2

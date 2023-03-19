@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -8,11 +6,16 @@ namespace Anatawa12.AvatarOptimizer
     [CustomEditor(typeof(FreezeBlendShape))]
     public class FreezeBlendShapeEditor : Editor
     {
-        private SerializedProperty _freezeFlags;
+        private PrefabSafeSet.EditorUtil<string> _shapeKeysSet;
 
         private void OnEnable()
         {
-            _freezeFlags = serializedObject.FindProperty("freezeFlags");
+            var nestCount = PrefabSafeSet.PrefabSafeSetUtil.PrefabNestCount(serializedObject.targetObject);
+            _shapeKeysSet = PrefabSafeSet.EditorUtil<string>.Create(
+                serializedObject.FindProperty("shapeKeysSet"),
+                nestCount,
+                x => x.stringValue,
+                (x, v) => x.stringValue = v);
         }
 
         public override void OnInspectorGUI()
@@ -27,49 +30,33 @@ namespace Anatawa12.AvatarOptimizer
 
             var shapes = EditSkinnedMeshComponentUtil.GetBlendShapes(component.GetComponent<SkinnedMeshRenderer>(), component);
 
-            void SetShapeKeys(HashSet<string> frozenKeys)
-            {
-                component.shapeKeys = shapes;
-                component.freezeFlags = new bool[shapes.Length];
-                for (var i = 0; i < component.shapeKeys.Length; i++)
-                    component.freezeFlags[i] = frozenKeys.Contains(component.shapeKeys[i]);
-                EditorUtility.SetDirty(component);
-            }
-
-            // Update ShapeKeys 
-            if (component.IsTraditionalForm || !component.shapeKeys.SequenceEqual(shapes))
-                SetShapeKeys(component.FreezingShapeKeys);
+            var label = new GUIContent();
 
             serializedObject.Update();
-            for (var i = 0; i < component.shapeKeys.Length; i++)
+            foreach (var shapeKeyName in shapes)
             {
                 var rect = EditorGUILayout.GetControlRect();
-                var label = new GUIContent(component.shapeKeys[i]);
-                var prop = _freezeFlags.GetArrayElementAtIndex(i);
-                label = EditorGUI.BeginProperty(rect, label, prop);
-                EditorGUI.BeginChangeCheck();
-                var set = EditorGUI.ToggleLeft(rect, label, prop.boolValue);
-                if (EditorGUI.EndChangeCheck()) prop.boolValue = set;
-                EditorGUI.EndProperty();
+                label.text = shapeKeyName;
+                var element = _shapeKeysSet.GetElementOf(shapeKeyName);
+                using (new PrefabSafeSet.PropertyScope<string>(element, rect, label))
+                    element.SetExistence(EditorGUI.ToggleLeft(rect, label, element.Contains));
             }
 
             using (new GUILayout.HorizontalScope())
             {
                 if (GUILayout.Button("Check All"))
                 {
-                    for (var i = 0; i < _freezeFlags.arraySize; i++)
-                    {
-                        var prop = _freezeFlags.GetArrayElementAtIndex(i);
-                        prop.boolValue = true;
-                    }
+                    foreach (var shapeKeyName in shapes)
+                        _shapeKeysSet.GetElementOf(shapeKeyName).EnsureAdded();
                 }
                 
                 if (GUILayout.Button("Invert All"))
                 {
-                    for (var i = 0; i < _freezeFlags.arraySize; i++)
+                    foreach (var shapeKeyName in shapes)
                     {
-                        var prop = _freezeFlags.GetArrayElementAtIndex(i);
-                        prop.boolValue = !prop.boolValue;
+                        var element = _shapeKeysSet.GetElementOf(shapeKeyName);
+                        if (element.Contains) element.EnsureRemoved();
+                        else element.EnsureAdded();
                     }
                 }
             }

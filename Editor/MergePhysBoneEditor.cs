@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using VRC.Dynamics;
@@ -23,119 +24,139 @@ namespace Anatawa12.AvatarOptimizer
             };
         }
 
+        private SerializedProperty _mergedComponentProp;
+        private SerializedProperty _rootTransformProp;
+        private SerializedProperty _forcesProp;
+        private SerializedProperty _pullProp;
+        private SerializedProperty _springProp;
+        private SerializedProperty _stiffnessProp;
+        private SerializedProperty _gravityProp;
+        private SerializedProperty _gravityFalloffProp;
+        private SerializedProperty _immobileProp;
+        private SerializedProperty _limitsProp;
+        private SerializedProperty _maxAngleXProp;
+        private SerializedProperty _limitRotationProp;
+        private SerializedProperty _maxAngleZProp;
+        private SerializedProperty _radiusProp;
+        private SerializedProperty _allowCollisionProp;
+        private SerializedProperty _collidersProp;
+        private SerializedProperty _allowGrabbingProp;
+        private SerializedProperty _grabMovementProp;
+        private SerializedProperty _allowPosingProp;
+        private SerializedProperty _maxStretchProp;
+        private SerializedProperty _isAnimatedProp;
+        private SerializedProperty _componentsSetProp;
+        private PrefabSafeSet.EditorUtil<VRCPhysBoneBase> _componentsSetEditorUtil;
+
+        private void OnEnable()
+        {
+            var nestCount = PrefabSafeSet.PrefabSafeSetUtil.PrefabNestCount(serializedObject.targetObject);
+            _mergedComponentProp = serializedObject.FindProperty("merged");
+            _rootTransformProp = serializedObject.FindProperty("rootTransform");
+            _forcesProp = serializedObject.FindProperty("forces");
+            _pullProp = serializedObject.FindProperty("pull");
+            _springProp = serializedObject.FindProperty("spring");
+            _stiffnessProp = serializedObject.FindProperty("stiffness");
+            _gravityProp = serializedObject.FindProperty("gravity");
+            _gravityFalloffProp = serializedObject.FindProperty("gravityFalloff");
+            _immobileProp = serializedObject.FindProperty("immobile");
+            _limitsProp = serializedObject.FindProperty("limits");
+            _maxAngleXProp = serializedObject.FindProperty("maxAngleX");
+            _limitRotationProp = serializedObject.FindProperty("limitRotation");
+            _maxAngleZProp = serializedObject.FindProperty("maxAngleZ");
+            _radiusProp = serializedObject.FindProperty("radius");
+            _allowCollisionProp = serializedObject.FindProperty("allowCollision");
+            _collidersProp = serializedObject.FindProperty("colliders");
+            _allowGrabbingProp = serializedObject.FindProperty("allowGrabbing");
+            _grabMovementProp = serializedObject.FindProperty("grabMovement");
+            _allowPosingProp = serializedObject.FindProperty("allowPosing");
+            _maxStretchProp = serializedObject.FindProperty("maxStretch");
+            _isAnimatedProp = serializedObject.FindProperty("isAnimated");
+            _componentsSetProp = serializedObject.FindProperty(nameof(MergePhysBone.componentsSet));
+            _componentsSetEditorUtil = PrefabSafeSet.EditorUtil<VRCPhysBoneBase>.Create(
+                _componentsSetProp, nestCount, x => (VRCPhysBoneBase)x.objectReferenceValue,
+                (x, v) => x.objectReferenceValue = v);
+        }
+
         public override void OnInspectorGUI()
         {
-            var mergedComponentProp = serializedObject.FindProperty("merged");
-            EditorGUI.BeginDisabledGroup(mergedComponentProp.objectReferenceValue != null);
-            EditorGUILayout.PropertyField(mergedComponentProp);
+            EditorGUI.BeginDisabledGroup(_mergedComponentProp.objectReferenceValue != null);
+            EditorGUILayout.PropertyField(_mergedComponentProp);
             EditorGUI.EndDisabledGroup();
-            
-            var rootTransformProp = serializedObject.FindProperty("rootTransform");
-            EditorGUILayout.PropertyField(rootTransformProp);
 
-            SerializedProperty forcesProp, limitsProp;
-            var componentsProp = serializedObject.FindProperty("components");
+            EditorGUILayout.PropertyField(_rootTransformProp);
+
 
             EditorGUILayout.LabelField("Overrides", EditorStyles.boldLabel);
             EditorGUI.indentLevel++;
             // == Forces ==
             EditorGUILayout.LabelField("Forces", EditorStyles.boldLabel);
             EditorGUI.indentLevel++;
-            EditorGUILayout.PropertyField(forcesProp = serializedObject.FindProperty("forces"));
-            EditorGUI.BeginDisabledGroup(forcesProp.boolValue);
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("pull"));
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("spring"));
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("stiffness"));
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("gravity"));
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("gravityFalloff"));
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("immobile"));
+            EditorGUILayout.PropertyField(_forcesProp);
+            EditorGUI.BeginDisabledGroup(_forcesProp.boolValue);
+            EditorGUILayout.PropertyField(_pullProp);
+            EditorGUILayout.PropertyField(_springProp);
+            EditorGUILayout.PropertyField(_stiffnessProp);
+            EditorGUILayout.PropertyField(_gravityProp);
+            EditorGUILayout.PropertyField(_gravityFalloffProp);
+            EditorGUILayout.PropertyField(_immobileProp);
             EditorGUI.EndDisabledGroup();
             EditorGUI.indentLevel--;
             // == Limits ==
             EditorGUILayout.LabelField("Limits", EditorStyles.boldLabel);
             EditorGUI.indentLevel++;
-            EditorGUILayout.PropertyField(limitsProp = serializedObject.FindProperty("limits"));
-            EditorGUI.BeginDisabledGroup(limitsProp.boolValue && componentsProp.arraySize != 0);
-            var physBoneBase = (VRCPhysBoneBase)(componentsProp.arraySize != 0
-                ? componentsProp.GetArrayElementAtIndex(0).objectReferenceValue
-                : null);
+            EditorGUILayout.PropertyField(_limitsProp);
+            EditorGUI.BeginDisabledGroup(_limitsProp.boolValue && _componentsSetEditorUtil.Count != 0);
+            var physBoneBase = _componentsSetEditorUtil.Count != 0 ? _componentsSetEditorUtil.Values.First() : null;
             switch (physBoneBase != null ? physBoneBase.limitType : VRCPhysBoneBase.LimitType.None)
             {
                 case VRCPhysBoneBase.LimitType.None:
                     break;
                 case VRCPhysBoneBase.LimitType.Angle:
                 case VRCPhysBoneBase.LimitType.Hinge:
-                    EditorGUILayout.PropertyField(serializedObject.FindProperty("maxAngleX"), new GUIContent("Max Angle"));
-                    EditorGUILayout.PropertyField(serializedObject.FindProperty("limitRotation"));
+                    EditorGUILayout.PropertyField(_maxAngleXProp, new GUIContent("Max Angle"));
+                    EditorGUILayout.PropertyField(_limitRotationProp);
                     break;
                 case VRCPhysBoneBase.LimitType.Polar:
-                    EditorGUILayout.PropertyField(serializedObject.FindProperty("maxAngleX"));
-                    EditorGUILayout.PropertyField(serializedObject.FindProperty("maxAngleZ"));
-                    EditorGUILayout.PropertyField(serializedObject.FindProperty("limitRotation"));
+                    EditorGUILayout.PropertyField(_maxAngleXProp);
+                    EditorGUILayout.PropertyField(_maxAngleZProp);
+                    EditorGUILayout.PropertyField(_limitRotationProp);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+
             EditorGUI.EndDisabledGroup();
             EditorGUI.indentLevel--;
             // == Collision ==
             EditorGUILayout.LabelField("Collision", EditorStyles.boldLabel);
             EditorGUI.indentLevel++;
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("radius"));
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("allowCollision"));
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("colliders"));
+            EditorGUILayout.PropertyField(_radiusProp);
+            EditorGUILayout.PropertyField(_allowCollisionProp);
+            EditorGUILayout.PropertyField(_collidersProp);
             EditorGUI.indentLevel--;
             // == Grab & Pose ==
             EditorGUILayout.LabelField("Collision", EditorStyles.boldLabel);
             EditorGUI.indentLevel++;
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("allowGrabbing"));
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("grabMovement"));
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("allowPosing"));
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("maxStretch"));
+            EditorGUILayout.PropertyField(_allowGrabbingProp);
+            EditorGUILayout.PropertyField(_grabMovementProp);
+            EditorGUILayout.PropertyField(_allowPosingProp);
+            EditorGUILayout.PropertyField(_maxStretchProp);
             EditorGUI.indentLevel--;
             // == Others ==
             EditorGUILayout.LabelField("Others", EditorStyles.boldLabel);
             EditorGUI.indentLevel++;
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("isAnimated"));
+            EditorGUILayout.PropertyField(_isAnimatedProp);
             EditorGUI.indentLevel--;
 
             EditorGUI.indentLevel--;
 
-            EditorGUILayout.LabelField("Components:", EditorStyles.boldLabel);
+            EditorGUILayout.PropertyField(_componentsSetProp);
 
-            EditorGUI.indentLevel++;
-            for (var i = 0; i < componentsProp.arraySize; i++)
-            {
-                var elementProp = componentsProp.GetArrayElementAtIndex(i);
-                EditorGUILayout.PropertyField(elementProp);
-
-                if (elementProp.objectReferenceValue == null)
-                {
-                    componentsProp.DeleteArrayElementAtIndex(i);
-                    i--;
-                }
-                else if (elementProp.objectReferenceValue is VRCPhysBoneBase bone)
-                {
-                    if (rootTransformProp.objectReferenceValue is Transform transform && !bone.GetTarget().IsChildOf(transform))
-                        GUILayout.Label("RootTransform is not valid", Style.ErrorStyle);
-                    if (bone.multiChildType != VRCPhysBoneBase.MultiChildType.Ignore)
-                        GUILayout.Label("Multi child type must be Ignore", Style.ErrorStyle);
-                    if (bone.parameter != "")
-                        GUILayout.Label("You cannot use individual parameter", Style.WarningStyle);
-                }
-            }
-
-            var toAdd = (VRCPhysBoneBase)EditorGUILayout.ObjectField($"Element {componentsProp.arraySize}", null,
-                typeof(VRCPhysBoneBase), true);
-            EditorGUI.indentLevel--;
-            if (toAdd != null)
-            {
-                componentsProp.arraySize += 1;
-                componentsProp.GetArrayElementAtIndex(componentsProp.arraySize - 1).objectReferenceValue = toAdd;
-            }
             serializedObject.ApplyModifiedProperties();
 
-            var differs = Processors.MergePhysBoneProcessor.CollectDifferentProps((MergePhysBone)target);
+            var differs = Processors.MergePhysBoneProcessor.CollectDifferentProps((MergePhysBone)target,
+                ((MergePhysBone)target).componentsSet.GetAsSet());
             if (differs.Count != 0)
             {
                 GUILayout.Label("The following properies are different", Style.ErrorStyle);

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -14,16 +15,17 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         public override void Process(OptimizerSession session, MeshInfo2 target, MeshInfo2Holder meshInfo2Holder)
         {
-            var meshInfos = Component.renderers.Select(meshInfo2Holder.GetMeshInfoFor)
-                .Concat(Component.staticRenderers.Select(x => meshInfo2Holder.GetMeshInfoFor(x)))
+            var meshInfos = Component.renderersSet.GetAsList().Select(meshInfo2Holder.GetMeshInfoFor)
+                .Concat(Component.staticRenderersSet.GetAsList().Select(meshInfo2Holder.GetMeshInfoFor))
                 .ToArray();
+            var sourceMaterials = meshInfos.Select(x => x.SubMeshes.Select(y => y.SharedMaterial).ToArray()).ToArray();
 
-            var (subMeshIndexMap, subMeshesTotalCount) = CreateSubMeshIndexMapping(Component.merges, meshInfos);
+            var (subMeshIndexMap, materials) = CreateMergedMaterialsAndSubMeshIndexMapping(sourceMaterials);
 
             target.Clear();
-            target.SubMeshes.Capacity = Math.Max(target.SubMeshes.Capacity, subMeshesTotalCount);
-            for (var i = 0; i < subMeshesTotalCount; i++)
-                target.SubMeshes.Add(new SubMesh());
+            target.SubMeshes.Capacity = Math.Max(target.SubMeshes.Capacity, materials.Count);
+            foreach (var material in materials)
+                target.SubMeshes.Add(new SubMesh(material));
 
             TexCoordStatus TexCoordStatusMax(TexCoordStatus x, TexCoordStatus y) =>
                 (TexCoordStatus)Math.Max((int)x, (int)y);
@@ -37,10 +39,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                         TexCoordStatusMax(target.GetTexCoordStatus(j), meshInfo.GetTexCoordStatus(j)));
 
                 for (var j = 0; j < meshInfo.SubMeshes.Count; j++)
-                {
-                    target.SubMeshes[subMeshIndexMap[i][j]].SharedMaterial = meshInfo.SubMeshes[j].SharedMaterial;
                     target.SubMeshes[subMeshIndexMap[i][j]].Triangles.AddRange(meshInfo.SubMeshes[j].Triangles);
-                }
 
                 // add blend shape if not defined by name
                 foreach (var (name, weight) in meshInfo.BlendShapes)
@@ -54,48 +53,61 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             session.Destroy(Component);
 
-            foreach (var renderer in Component.renderers)
+            var boneTransforms = new HashSet<Transform>(target.Bones.Select(x => x.Transform));
+
+            foreach (var renderer in Component.renderersSet.GetAsSet())
             {
                 session.AddObjectMapping(renderer, Target);
                 session.Destroy(renderer);
-                if (Component.removeEmptyRendererObject
-                    && renderer.gameObject.GetComponents<Component>()
-                        .All(x => x is AvatarTagComponent || x is Transform || x is SkinnedMeshRenderer))
-                    session.Destroy(renderer.gameObject);
+
+                // process removeEmptyRendererObject
+                if (!Component.removeEmptyRendererObject) continue;
+                // no other components should be exist
+                if (!renderer.gameObject.GetComponents<Component>().All(x =>
+                        x is AvatarTagComponent || x is Transform || x is SkinnedMeshRenderer)) continue;
+                // no children is required
+                if (renderer.transform.childCount != 0) continue;
+                // the SkinnedMeshRenderer may also be used as bone. it's not good to remove
+                if (boneTransforms.Contains(renderer.transform)) continue;
+                session.Destroy(renderer.gameObject);
             }
 
-            foreach (var renderer in Component.staticRenderers)
+            foreach (var renderer in Component.staticRenderersSet.GetAsSet())
             {
                 session.Destroy(renderer.GetComponent<MeshFilter>());
                 session.Destroy(renderer);
             }
         }
 
-        private (int[][] mapping, int subMeshTotalCount)
-            CreateSubMeshIndexMapping(MergeSkinnedMesh.MergeConfig[] merges, MeshInfo2[] infos)
+        private (int[][] mapping, List<Material> materials) CreateMergedMaterialsAndSubMeshIndexMapping(
+            Material[][] sourceMaterials)
         {
-            var result = new int[infos.Length][];
+            var doNotMerges = Component.doNotMergeMaterials.GetAsSet();
+            var resultMaterials = new List<Material>();
+            var resultIndices = new int[sourceMaterials.Length][];
 
-            // initialize with -1
-            for (var i = 0; i < infos.Length; i++)
+            for (var i = 0; i < sourceMaterials.Length; i++)
             {
-                result[i] = new int[infos[i].SubMeshes.Count];
-                for (var j = 0; j < result[i].Length; j++)
-                    result[i][j] = -1;
+                var materials = sourceMaterials[i];
+                var indices = resultIndices[i] = new int[materials.Length];
+
+                for (var j = 0; j < materials.Length; j++)
+                {
+                    var material = materials[j];
+                    var foundIndex = resultMaterials.IndexOf(material);
+                    if (doNotMerges.Contains(material) || foundIndex == -1)
+                    {
+                        indices[j] = resultMaterials.Count;
+                        resultMaterials.Add(material);
+                    }
+                    else
+                    {
+                        indices[j] = foundIndex;
+                    }
+                }
             }
 
-            for (var i = 0; i < merges.Length; i++)
-                foreach (var pair in merges[i].merges)
-                    result[(int)(pair >> 32)][(int)pair] = i;
-
-            var nextIndex = merges.Length;
-
-            foreach (var t in result)
-                for (var j = 0; j < t.Length; j++)
-                    if (t[j] == -1)
-                        t[j] = nextIndex++;
-
-            return (result, nextIndex);
+            return (resultIndices, resultMaterials);
         }
 
         public override IMeshInfoComputer GetComputer(IMeshInfoComputer upstream) => new MeshInfoComputer(this);
@@ -107,19 +119,21 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             public MeshInfoComputer(MergeSkinnedMeshProcessor processor) => _processor = processor;
 
             public string[] BlendShapes() =>
-                _processor.Component.renderers
+                _processor.Component.renderersSet.GetAsList()
                     .SelectMany(EditSkinnedMeshComponentUtil.GetBlendShapes)
                     .Distinct()
                     .ToArray();
 
-            public Material[] Materials(bool fast = true) =>
-                _processor.Component.merges
-                    .Select(x => x.target)
-                    .Concat(
-                        _processor.Component.renderers
-                            .SelectMany(EditSkinnedMeshComponentUtil.GetMaterials)
-                            .Where(x => _processor.Component.merges.All(y => y.target != x)))
+            public Material[] Materials(bool fast = true)
+            {
+                var sourceMaterials = _processor.Component.renderersSet.GetAsList().Select(x => x.materials)
+                    .Concat(_processor.Component.staticRenderersSet.GetAsList().Select(x => x.materials))
                     .ToArray();
+
+                return _processor.CreateMergedMaterialsAndSubMeshIndexMapping(sourceMaterials)
+                    .materials
+                    .ToArray();
+            }
         }
     }
 }

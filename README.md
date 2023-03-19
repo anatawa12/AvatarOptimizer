@@ -14,6 +14,8 @@ Avatar Optimizer
 Set of Anatawa12's Small Avatar Optimization Utilities.
 Those utilies are applied on entering play mode or building VRC Avatars.
 
+If you have problems or questions about this tool, please feel free to contact me on [twitter][twitter] or [Misskey (Activity Pub)][misskey]!
+
 ## Installation
 
 ### Using Installer UnityPackage with VPM
@@ -233,6 +235,8 @@ With boxes shown on upper/left image, meshes in the box will be removed as lower
 <img src=".readme/remove-mesh-in-box.example.pre.png" width="403">
 <img src=".readme/remove-mesh-in-box.example.ran.png" width="403">
 
+[twitter]: https://go.anatawa12.com/twitter.vrchat
+[misskey]: https://go.anatawa12.com/misskey.vrchat
 [vpm-repository]: https://vpm.anatawa12.com/vpm.json
 [github-latest]: https://github.com/anatawa12/AvatarOptimizer/releases/latest
 [vcc-cli]: https://vcc.docs.vrchat.com/vpm/cli

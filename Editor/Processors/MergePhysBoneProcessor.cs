@@ -21,10 +21,10 @@ namespace Anatawa12.AvatarOptimizer.Processors
         private static bool SetEq<T>(IEnumerable<T> a, IEnumerable<T> b) => 
             new HashSet<T>(a).SetEquals(b);
 
-        internal static HashSet<string> CollectDifferentProps(MergePhysBone merge)
+        internal static HashSet<string> CollectDifferentProps(MergePhysBone merge, IEnumerable<VRCPhysBoneBase> sources)
         {
             var differ = new HashSet<string>();
-            foreach (var (a, b) in merge.components.ZipWithNext())
+            foreach (var (a, b) in sources.ZipWithNext())
             {
                 // process common properties
                 {
@@ -49,15 +49,16 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
         internal static void DoMerge(MergePhysBone merge, OptimizerSession session)
         {
-            if (merge.components.Length == 0) return;
+            var sourceComponents = merge.componentsSet.GetAsList();
+            if (sourceComponents.Count == 0) return;
 
-            var differProps = CollectDifferentProps(merge);
-            if (CollectDifferentProps(merge).Count != 0)
+            var differProps = CollectDifferentProps(merge, sourceComponents);
+            if (differProps.Count != 0)
                 throw new InvalidOperationException(
                     "MergePhysBone requirements is not met: " +
                     $"property differ: {string.Join(", ", differProps)}");
 
-            var pb = merge.components[0];
+            var pb = sourceComponents[0];
             var merged = merge.merged;
 
             var root = merge.rootTransform
@@ -70,15 +71,15 @@ namespace Anatawa12.AvatarOptimizer.Processors
             {
                 // for components with rootTransform, add _dummy objects and add more ignoreTransforms.
 
-                if (merge.components.Any(physBone => !physBone.GetTarget().IsChildOf(merge.rootTransform)))
+                if (sourceComponents.Any(physBone => !physBone.GetTarget().IsChildOf(merge.rootTransform)))
                     throw new InvalidOperationException("MergePhysBone requirements is not met: rootTransform");
 
                 var transforms = new HashSet<Transform>(
-                    from component in merge.components
+                    from component in sourceComponents
                     from parent in component.GetTarget().ParentEnumerable().TakeWhile(x => x != root)
                     select parent);
 
-                var physBoneTransforms = new HashSet<Transform>(merge.components.Select(Utils.GetTarget));
+                var physBoneTransforms = new HashSet<Transform>(sourceComponents.Select(Utils.GetTarget));
 
                 merge.rootTransform.WalkChildren(child =>
                 {
@@ -104,12 +105,12 @@ namespace Anatawa12.AvatarOptimizer.Processors
             }
             else
             {
-                foreach (var physBone in merge.components)
+                foreach (var physBone in sourceComponents)
                     physBone.GetTarget().parent = root;
             }
 
             // clear endpoint position
-            foreach (var physBone in merge.components)
+            foreach (var physBone in sourceComponents)
                 ClearEndpointPositionProcessor.Process(physBone);
 
             // copy common properties
@@ -128,7 +129,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
             // copy other properties
             // === Transforms ===
             merged.rootTransform = root;
-            merged.ignoreTransforms = merge.components.SelectMany(x => x.ignoreTransforms)
+            merged.ignoreTransforms = sourceComponents.SelectMany(x => x.ignoreTransforms)
                 .Concat(additionalIgnoreTransforms).Distinct().ToList();
             merged.endpointPosition = Vector3.zero;
             merged.multiChildType = VRCPhysBoneBase.MultiChildType.Ignore;
@@ -138,7 +139,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                     merged.colliders = pb.colliders;
                     break;
                 case CollidersSettings.Merge:
-                    merged.colliders = merge.components.SelectMany(x => x.colliders).Distinct().ToList();
+                    merged.colliders = sourceComponents.SelectMany(x => x.colliders).Distinct().ToList();
                     break;
                 case CollidersSettings.Override:
                     // keep merged.colliders
@@ -147,9 +148,9 @@ namespace Anatawa12.AvatarOptimizer.Processors
                     throw new ArgumentOutOfRangeException();
             }
             // == Options ==
-            merged.isAnimated = merge.isAnimated || merge.components.Any(x => x.isAnimated);
+            merged.isAnimated = merge.isAnimated || sourceComponents.Any(x => x.isAnimated);
 
-            foreach (var physBone in merge.components) session.Destroy(physBone);
+            foreach (var physBone in sourceComponents) session.Destroy(physBone);
             session.Destroy(merge);
         }
 

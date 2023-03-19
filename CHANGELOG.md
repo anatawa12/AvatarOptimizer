@@ -11,14 +11,24 @@ The format is based on [Keep a Changelog].
 - Support for Prerelease in publish system `#19`
 - Changelogs (including ones for traditional releases) `#19`
 - Auto Test `#23`
+- Prefab support `#11`
 
 ### Changed
+- **BREAKING** Save format for many components `#11`
+  - Even if you added more elements than before on prefab, added elements on prefab instance will be kept.
+  - In previous implementation (unity default array prefab overrides implementation), can be broken easily.
+- **BREAKING** All materials are merged by default `#11`
+  - Due to save format migration, every materials will be marked as merged.
+  - If you have some materials not to be merged, please re-reconfigure that.
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
+- Fixed IndexOutOfError if there are more bones than bindposes `#30`
+- SkinnedMeshRenderers without bones will break mesh `#35`
+- We may forget checking components on disable objects `#46`
 
 ### Security
 

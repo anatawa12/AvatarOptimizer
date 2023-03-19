@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.Serialization;
 using VRC.Dynamics;
@@ -44,14 +42,19 @@ namespace Anatawa12.AvatarOptimizer
         // public bool overrideParameter; Always
         public bool isAnimated;
 
+        [Obsolete("traditional format")]
         [FormerlySerializedAs("component")] public VRCPhysBoneBase[] components;
+        public PrefabSafeSet.VRCPhysBoneBaseSet componentsSet;
+
+        public MergePhysBone()
+        {
+            componentsSet = new PrefabSafeSet.VRCPhysBoneBaseSet(this);
+        }
 
         void OnEnable()
         {
             if (merged == null)
                 merged = GetComponent<VRCPhysBoneBase>();
-            if (components == null)
-                components = Array.Empty<VRCPhysBoneBase>();
         }
     }
 
