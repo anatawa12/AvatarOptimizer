@@ -8,29 +8,36 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Support for Prerelease in publish system `#19`
-- Changelogs (including ones for traditional releases) `#19`
-- Auto Test `#23`
-- Prefab support `#11`
 
 ### Changed
-- **BREAKING** Save format for many components `#11`
-  - Even if you added more elements than before on prefab, added elements on prefab instance will be kept.
-  - In previous implementation (unity default array prefab overrides implementation), can be broken easily.
-- **BREAKING** All materials are merged by default `#11`
-  - Due to save format migration, every materials will be marked as merged.
-  - If you have some materials not to be merged, please re-reconfigure that.
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
-- Fixed IndexOutOfError if there are more bones than bindposes `#30`
-- SkinnedMeshRenderers without bones will break mesh `#35`
-- We may forget checking components on disable objects `#46`
 
 ### Security
+
+## [0.2.0] - 2023-03-19
+### Added
+- Support for Prerelease in publish system [`#19`](https://github.com/anatawa12/AvatarOptimizer/pull/19)
+- Changelogs (including ones for traditional releases) [`#19`](https://github.com/anatawa12/AvatarOptimizer/pull/19)
+- Auto Test [`#23`](https://github.com/anatawa12/AvatarOptimizer/pull/23)
+- Prefab support [`#11`](https://github.com/anatawa12/AvatarOptimizer/pull/11)
+
+### Changed
+- **BREAKING** Save format for many components [`#11`](https://github.com/anatawa12/AvatarOptimizer/pull/11)
+  - Even if you added more elements than before on prefab, added elements on prefab instance will be kept.
+  - In previous implementation (unity default array prefab overrides implementation), can be broken easily.
+- **BREAKING** All materials are merged by default [`#11`](https://github.com/anatawa12/AvatarOptimizer/pull/11)
+  - Due to save format migration, every materials will be marked as merged.
+  - If you have some materials not to be merged, please re-reconfigure that.
+
+### Fixed
+- Fixed IndexOutOfError if there are more bones than bindposes [`#30`](https://github.com/anatawa12/AvatarOptimizer/pull/30)
+- SkinnedMeshRenderers without bones will break mesh [`#35`](https://github.com/anatawa12/AvatarOptimizer/pull/35)
+- We may forget checking components on disable objects [`#46`](https://github.com/anatawa12/AvatarOptimizer/pull/46)
 
 ## [0.1.4]
 ### Added
@@ -90,7 +97,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.1.4...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.1.4...v0.2.0
 [0.1.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.1.3...v0.1.4
 [0.1.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.1.1...v0.1.2
