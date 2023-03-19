@@ -238,7 +238,7 @@ With boxes shown on upper/left image, meshes in the box will be removed as lower
 [vcc-cli]: https://vcc.docs.vrchat.com/vpm/cli
 [vpm-resolver]: https://vcc.docs.vrchat.com/vpm/resolver
 [installer unitypackage 0.2.x]: https://github.com/anatawa12/VPAI-unitypackages/raw/master/bin/AvatarOptimizer-0.2.x-installer.unitypackage
-[installer unitypackage 0.1.x]: https://github.com/anatawa12/VPAI-unitypackages/raw/master/bin/AvatarOptimizer-0.1.x-installer.unitypackagehttps://github.com/anatawa12/AvatarOptimizer/raw/master/.readme/AvatarOptimizer-0.1.x-installer.unitypackage
+[installer unitypackage 0.1.x]: https://github.com/anatawa12/VPAI-unitypackages/raw/master/bin/AvatarOptimizer-0.1.x-installer.unitypackage
 [installer unitypackage 0.x beta]: https://github.com/anatawa12/VPAI-unitypackages/raw/master/bin/AvatarOptimizer-0.x.x-beta-installer.unitypackage
 [issues]: https://github.com/anatawa12/AvatarOptimizer/issues/new
 [VPAI]: https://github.com/anatawa12/VPMPackageAutoInstaller
