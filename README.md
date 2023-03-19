@@ -23,8 +23,7 @@ If you have problems or questions about this tool, please feel free to contact m
 With [VPAI] You can include this package just importing one unitypackage.
 
 1. download installer unitypackage [here][installer unitypackage 0.2.x].
-2. Make sure your project contains [`vpm-resolver`][vpm-resolver]. If your project is VRChat Avatars/Worlds project with VCC, It's installed.
-3. Import the unitypackage into your project.
+2. Import the unitypackage into your project.
 
 <details>
   <summary>other versions</summary>
