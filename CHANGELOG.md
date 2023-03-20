@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- instantiating material occurs `#58`
 
 ### Security
 

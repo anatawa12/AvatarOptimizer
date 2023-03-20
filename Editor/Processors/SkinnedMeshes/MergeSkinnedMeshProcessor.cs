@@ -126,8 +126,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             public Material[] Materials(bool fast = true)
             {
-                var sourceMaterials = _processor.Component.renderersSet.GetAsList().Select(x => x.materials)
-                    .Concat(_processor.Component.staticRenderersSet.GetAsList().Select(x => x.materials))
+                var sourceMaterials = _processor.Component.renderersSet.GetAsList().Select(EditSkinnedMeshComponentUtil.GetMaterials)
+                    .Concat(_processor.Component.staticRenderersSet.GetAsList().Select(x => x.sharedMaterials))
                     .ToArray();
 
                 return _processor.CreateMergedMaterialsAndSubMeshIndexMapping(sourceMaterials)
