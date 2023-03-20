@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Migration failed if some renderer is None `#49`
 
 ### Security
 
