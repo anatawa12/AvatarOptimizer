@@ -16,9 +16,12 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- instantiating material occurs `#58`
 
 ### Security
+
+## [0.2.3] - 2023-03-20
+### Fixed
+- instantiating material occurs [`#58`](https://github.com/anatawa12/AvatarOptimizer/pull/58)
 
 ## [0.2.2] - 2023-03-20
 ### Added
@@ -132,7 +135,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.2...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.3...HEAD
+[0.2.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.2...v0.2.3
 [0.2.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.1-beta.1...v0.2.1
 [0.2.1-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.0...v0.2.1-beta.1
