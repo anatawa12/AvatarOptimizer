@@ -8,20 +8,27 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Make Children `#53`
 
 ### Changed
-- Do not use cache on applying components now `#56`
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
-- NullReferenceException if some component is removed `#54`
-- save version is not saved. this may break future migration `#55`
 
 ### Security
+
+## [0.2.2] - 2023-03-20
+### Added
+- Make Children [`#53`](https://github.com/anatawa12/AvatarOptimizer/pull/53)
+
+### Changed
+- Do not use cache on applying components now [`#56`](https://github.com/anatawa12/AvatarOptimizer/pull/56)
+
+### Fixed
+- NullReferenceException if some component is removed [`#54`](https://github.com/anatawa12/AvatarOptimizer/pull/54)
+- save version is not saved. this may break future migration [`#55`](https://github.com/anatawa12/AvatarOptimizer/pull/55)
 
 ## [0.2.1] - 2023-03-20
 ### Fixed
@@ -105,7 +112,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.2...HEAD
+[0.2.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.1.4...v0.2.0
 [0.1.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.1.3...v0.1.4
