@@ -49,9 +49,9 @@ namespace Anatawa12.AvatarOptimizer
         {
             if (Enabled && source == _armedSource && component != null)
             {
-                var avatar = RuntimeUtil.FindAvatarInParents(component.transform);
-                if (avatar == null) return;
-                OptimizerProcessor.ProcessObject(new OptimizerSession(avatar.gameObject, Generate));
+                var avatar = RuntimeUtil.FindAvatarInParents(component.transform)
+                if (avatar == null) return
+                OptimizerProcessor.ProcessObject(new OptimizerSession(avatar.gameObject, Generate))
             }
         }
 
