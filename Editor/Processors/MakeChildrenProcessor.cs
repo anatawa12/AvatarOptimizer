@@ -6,7 +6,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
         {
             foreach (var makeChildren in session.GetComponents<MakeChildren>())
             {
-                foreach (var makeChildrenChild in makeChildren.children)
+                foreach (var makeChildrenChild in makeChildren.children.GetAsSet())
                     if (makeChildrenChild)
                         makeChildrenChild.parent = makeChildren.transform;
             }
