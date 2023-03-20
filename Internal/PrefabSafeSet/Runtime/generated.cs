@@ -55,4 +55,13 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
         [Serializable]
         public class Layer : PrefabLayer<VRCPhysBoneBase>{}
     }
+    [Serializable]
+    public class TransformSet : PrefabSafeSet<Transform, TransformSet.Layer>
+    {
+        public TransformSet(Object outerObject) : base(outerObject)
+        {
+        }
+        [Serializable]
+        public class Layer : PrefabLayer<Transform>{}
+    }
 }

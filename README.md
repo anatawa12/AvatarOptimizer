@@ -234,6 +234,12 @@ With boxes shown on upper/left image, meshes in the box will be removed as lower
 <img src=".readme/remove-mesh-in-box.example.pre.png" width="403">
 <img src=".readme/remove-mesh-in-box.example.ran.png" width="403">
 
+### Make Children
+
+This the selected objects will be the children of this component at build time.
+
+<img src=".readme/make-children.png" width="401">
+
 [twitter]: https://go.anatawa12.com/twitter.vrchat
 [misskey]: https://go.anatawa12.com/misskey.vrchat
 [vpm-repository]: https://vpm.anatawa12.com/vpm.json
