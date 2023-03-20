@@ -260,7 +260,7 @@ Do you want to migrate project now?",
             var saveVersionsProp = serialized.FindProperty(nameof(AvatarTagComponent.saveVersions));
             var version = nestCount < saveVersionsProp.arraySize
                 ? saveVersionsProp.GetArrayElementAtIndex(nestCount).intValue
-                : 0;
+                : PrereleaseStateDetector.GetCurrentVersion();
             if (forceVersion < version) 
                 version = forceVersion;
             saveVersionsProp.arraySize = nestCount + 1;
@@ -268,7 +268,6 @@ Do you want to migrate project now?",
             var modified = false;
             switch (version)
             {
-                case 0:
                 case 1:
                     MigrateV1ToV2(nestCount, serialized);
                     versionProp.intValue = 2;

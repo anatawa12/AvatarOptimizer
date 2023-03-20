@@ -135,6 +135,8 @@ namespace Anatawa12.AvatarOptimizer.Migration
             return found;
         }
 
+        public static int GetCurrentVersion() => Data.currentSerializedVersion;
+
         public static bool MigrationRequired() =>
             Data.currentSerializedVersion != 0 && Data.currentSerializedVersion < CurrentVersion;
 
