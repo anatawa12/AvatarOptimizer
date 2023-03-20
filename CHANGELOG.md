@@ -18,6 +18,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - NullReferenceException if some component is removed `#54`
+- save version is not saved. this may break future migration `#55`
 
 ### Security
 
