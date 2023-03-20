@@ -16,9 +16,12 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Migration failed if some renderer is None `#49`
 
 ### Security
+
+## [0.2.1] - 2023-03-20
+### Fixed
+- Migration failed if some renderer is None [`#49`](https://github.com/anatawa12/AvatarOptimizer/pull/49)
 
 ## [0.2.0] - 2023-03-19
 ### Added
@@ -98,7 +101,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.1.4...v0.2.0
 [0.1.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.1.3...v0.1.4
 [0.1.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.1.2...v0.1.3
