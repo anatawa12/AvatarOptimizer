@@ -20,45 +20,76 @@ namespace Anatawa12.AvatarOptimizer
         // might be called by Processor to make sure the component is registered
         internal static void OnAwake(EditSkinnedMeshComponent component)
         {
+            EditorShared.AddComponent(component);
+        }
+
+        private static void OnDestroy(EditSkinnedMeshComponent component)
+        {
+            EditorShared.RemoveComponent(component);
+        }
+
+        public static bool IsModifiedByEditComponent(SkinnedMeshRenderer renderer) =>
+            EditorShared.IsModifiedByEditComponent(renderer);
+
+        public static string[] GetBlendShapes(SkinnedMeshRenderer renderer) => EditorShared.GetBlendShapes(renderer);
+
+        public static string[] GetBlendShapes(SkinnedMeshRenderer renderer, EditSkinnedMeshComponent before) =>
+            EditorShared.GetBlendShapes(renderer, before);
+
+        public static Material[] GetMaterials(SkinnedMeshRenderer renderer) => EditorShared.GetMaterials(renderer);
+
+        // Rider's problem, to call GetMaterials(renderer, fast: false)
+        // ReSharper disable once MethodOverloadWithOptionalParameter
+        public static Material[] GetMaterials(SkinnedMeshRenderer renderer, EditSkinnedMeshComponent before = null,
+            bool fast = true) => EditorShared.GetMaterials(renderer, before, fast);
+
+        private static readonly SkinnedMeshEditorSorter EditorShared = new SkinnedMeshEditorSorter();
+    }
+
+    internal class SkinnedMeshEditorSorter
+    {
+        // might be called by Processor to make sure the component is registered
+        public void AddComponent(EditSkinnedMeshComponent component)
+        {
             var processor = CreateProcessor(component);
             if (!ProcessorsByRenderer.TryGetValue(processor.Target, out var processors))
                 processors = ProcessorsByRenderer[processor.Target] = new SkinnedMeshProcessors(processor.Target);
             processors.AddProcessor(processor);
         }
 
-        private static void OnDestroy(EditSkinnedMeshComponent component)
+        public void RemoveComponent(EditSkinnedMeshComponent component)
         {
             var target = component.GetComponent<SkinnedMeshRenderer>();
             GetProcessors(target)?.RemoveProcessorOf(component);
         }
 
-        public static bool IsModifiedByEditComponent(SkinnedMeshRenderer renderer) =>
+        public bool IsModifiedByEditComponent(SkinnedMeshRenderer renderer) =>
             ProcessorsByRenderer.ContainsKey(renderer);
 
-        static readonly Dictionary<SkinnedMeshRenderer, SkinnedMeshProcessors> ProcessorsByRenderer =
+        readonly Dictionary<SkinnedMeshRenderer, SkinnedMeshProcessors> ProcessorsByRenderer =
             new Dictionary<SkinnedMeshRenderer, SkinnedMeshProcessors>();
 
-        public static string[] GetBlendShapes(SkinnedMeshRenderer renderer) => GetBlendShapes(renderer, null);
+        public string[] GetBlendShapes(SkinnedMeshRenderer renderer) => GetBlendShapes(renderer, null);
 
-        public static string[] GetBlendShapes(SkinnedMeshRenderer renderer, EditSkinnedMeshComponent before) =>
+        public string[] GetBlendShapes(SkinnedMeshRenderer renderer, EditSkinnedMeshComponent before) =>
             GetProcessors(renderer)?.GetBlendShapes(before) ?? SourceMeshInfoComputer.BlendShapes(renderer);
 
-        public static Material[] GetMaterials(SkinnedMeshRenderer renderer) => GetMaterials(renderer, null);
+        public Material[] GetMaterials(SkinnedMeshRenderer renderer) => GetMaterials(renderer, null);
 
         // Rider's problem, to call GetMaterials(renderer, fast: false)
         // ReSharper disable once MethodOverloadWithOptionalParameter
-        public static Material[] GetMaterials(SkinnedMeshRenderer renderer, EditSkinnedMeshComponent before = null,
+        public Material[] GetMaterials(SkinnedMeshRenderer renderer, EditSkinnedMeshComponent before = null,
             bool fast = true) =>
             GetProcessors(renderer)?.GetMaterials(before, fast) ?? SourceMeshInfoComputer.Materials(renderer);
 
         [CanBeNull]
-        private static SkinnedMeshProcessors GetProcessors(SkinnedMeshRenderer target)
+        private SkinnedMeshProcessors GetProcessors(SkinnedMeshRenderer target)
         {
             ProcessorsByRenderer.TryGetValue(target, out var processors);
             return processors;
         }
 
-        public static IEnumerable<SkinnedMeshProcessors> GetSortedProcessors(
+        public IEnumerable<SkinnedMeshProcessors> GetSortedProcessors(
             IEnumerable<SkinnedMeshRenderer> targets)
         {
             var processors = new LinkedList<SkinnedMeshProcessors>(targets.Select(GetProcessors).Where(x => x != null));

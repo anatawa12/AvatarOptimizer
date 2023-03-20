@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog].
 - Make Children `#53`
 
 ### Changed
+- Do not use cache on applying components now `#56`
 
 ### Deprecated
 
