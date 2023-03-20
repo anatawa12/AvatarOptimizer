@@ -82,7 +82,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 
         public HashSet<T> GetAsSet()
         {
-            var result = new HashSet<T>(mainSet);
+            var result = new HashSet<T>(mainSet.Where(x => x.IsNotNull()));
             foreach (var layer in prefabLayers)
                 layer.ApplyTo(result);
             return result;
