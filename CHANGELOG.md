@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- NullReferenceException if some component is removed `#54`
 
 ### Security
 
