@@ -400,7 +400,7 @@ Do you want to migrate project now?",
 
             renderersSet.Clear();
 
-            var valuesSet = new HashSet<T>(values);
+            var valuesSet = new HashSet<T>(values.Where(value => value != null));
 
             foreach (var value in valuesSet)
                 renderersSet.GetElementOf(value).EnsureAdded();
