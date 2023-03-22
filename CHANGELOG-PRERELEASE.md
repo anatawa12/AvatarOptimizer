@@ -10,17 +10,22 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
-- make accessing v1 error `#61`
-  - This reduces future mistakes like #59
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
-- RemoveMeshInBox refers old v1 configuration `#60`
 
 ### Security
+
+## [0.2.4] - 2023-03-22
+### Changed
+- make accessing v1 error [`#61`](https://github.com/anatawa12/AvatarOptimizer/pull/61)
+  - This reduces future mistakes like #59
+
+### Fixed
+- RemoveMeshInBox refers old v1 configuration [`#60`](https://github.com/anatawa12/AvatarOptimizer/pull/60)
 
 ## [0.2.3] - 2023-03-20
 ### Fixed
@@ -138,7 +143,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.3...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.4...HEAD
+[0.2.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.3...v0.2.4
 [0.2.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.2...v0.2.3
 [0.2.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.1-beta.1...v0.2.1
