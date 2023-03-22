@@ -268,12 +268,14 @@ Do you want to migrate project now?",
             var modified = false;
             switch (version)
             {
+#pragma warning disable CS0618
                 case 1:
                     MigrateV1ToV2(nestCount, serialized);
                     versionProp.intValue = 2;
                     modified = true;
                     goto case 2;
                 case 2:
+#pragma warning restore CS0618
                     // it's current version: save
                     serialized.ApplyModifiedProperties();
                     break;
@@ -295,6 +297,7 @@ Do you want to migrate project now?",
             typeof(RemoveMeshInBox),
         });
 
+        [Obsolete("migration process")]
         private static void MigrateV1ToV2(int nestCount, SerializedObject serialized)
         {
             switch (MigrateV1ToV2Types.GetType(serialized.targetObject.GetType()))

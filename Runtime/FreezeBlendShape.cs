@@ -12,12 +12,12 @@ namespace Anatawa12.AvatarOptimizer
 
         // Traditional Way: list of frozen ShapeKeys
         // New Way: list of all ShapeKeys and flags.
-        [Obsolete("traditional save format")]
+        [Obsolete("legacy v1", true)]
         public string[] shapeKeys = Array.Empty<string>();
-        [Obsolete("traditional save format")]
+        [Obsolete("legacy v1", true)]
         public bool[] freezeFlags;
 
-        [Obsolete("traditional save format")]
+        [Obsolete("legacy v1", true)]
         public bool IsTraditionalForm => freezeFlags == null || shapeKeys.Length != freezeFlags.Length;
 
         #endregion

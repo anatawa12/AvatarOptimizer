@@ -42,7 +42,7 @@ namespace Anatawa12.AvatarOptimizer
         // public bool overrideParameter; Always
         public bool isAnimated;
 
-        [Obsolete("traditional format")]
+        [Obsolete("legacy v1", true)]
         [FormerlySerializedAs("component")] public VRCPhysBoneBase[] components;
         public PrefabSafeSet.VRCPhysBoneBaseSet componentsSet;
 
