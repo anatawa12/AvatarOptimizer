@@ -17,7 +17,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             foreach (var vertex in target.Vertices)
             {
                 var actualPosition = vertex.ComputeActualPosition(target, Target.transform.worldToLocalMatrix);
-                vertex.AdditionalTemporal = Component.boxes.Any(x => x.ContainsVertex(actualPosition)) ? 0 : 1;
+                vertex.AdditionalTemporal = Component.boxList.GetAsList().Any(x => x.ContainsVertex(actualPosition)) ? 0 : 1;
             }
 
             foreach (var subMesh in target.SubMeshes)

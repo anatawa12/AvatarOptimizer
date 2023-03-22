@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- RemoveMeshInBox refers old v1 configuration `#60`
 
 ### Security
 
