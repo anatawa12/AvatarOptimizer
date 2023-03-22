@@ -10,7 +10,7 @@ namespace Anatawa12.AvatarOptimizer
     [DisallowMultipleComponent]
     internal class RemoveMeshInBox : EditSkinnedMeshComponent
     {
-        [Obsolete("legacy v1")]
+        [Obsolete("legacy v1", true)]
         public BoundingBox[] boxes = Array.Empty<BoundingBox>();
 
         public BoundingBoxList boxList;

@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
+- make accessing v1 error `#61`
+  - This reduces future mistakes like #59
 
 ### Deprecated
 

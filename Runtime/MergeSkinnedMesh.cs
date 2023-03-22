@@ -9,11 +9,11 @@ namespace Anatawa12.AvatarOptimizer
     internal class MergeSkinnedMesh : EditSkinnedMeshComponent
     {
         #region v1
-        [Obsolete("traditional save format")]
+        [Obsolete("legacy v1", true)]
         public SkinnedMeshRenderer[] renderers = Array.Empty<SkinnedMeshRenderer>();
-        [Obsolete("traditional save format")]
+        [Obsolete("legacy v1", true)]
         public MeshRenderer[] staticRenderers = Array.Empty<MeshRenderer>();
-        [Obsolete("traditional save format")]
+        [Obsolete("legacy v1", true)]
         public MergeConfig[] merges = Array.Empty<MergeConfig>();
         [Serializable]
         public class MergeConfig
