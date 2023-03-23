@@ -8,10 +8,12 @@ name: CHANGELOG check
 on:
   pull_request:
     branches: [ master ]
+    types: [ opened, synchronize, reopened, ready_for_review ]
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   releasenote-check:
+    if: ! github.event.pull_request.draft
     runs-on: ubuntu-latest
 
     # Steps represent a sequence of tasks that will be executed as part of the job
