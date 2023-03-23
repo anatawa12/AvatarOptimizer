@@ -25,7 +25,7 @@ namespace Anatawa12.AvatarOptimizer.Test.PrefabSafeSet
         {
             var newObject = (GameObject)PrefabUtility.InstantiatePrefab(basePrefab);
             var component = newObject.GetComponent<PrefabSafeSetComponent>();
-            component.stringSet.OnBeforeSerialize();
+            PrefabSafeSetRuntimeUtil.ResizeArray(ref component.stringSet.prefabLayers, 1);
             component.stringSet.prefabLayers[0].additions =
                 new[] { "addedTwiceInVariant", "addedInVariant", "addedInVariantRemovedInInstance" };
             component.stringSet.prefabLayers[0].removes = new[] { "removedInVariant", "fakeRemovedInVariant" };
@@ -38,7 +38,7 @@ namespace Anatawa12.AvatarOptimizer.Test.PrefabSafeSet
         {
             var newObject = (GameObject)PrefabUtility.InstantiatePrefab(baseObject);
             var component = newObject.GetComponent<PrefabSafeSetComponent>();
-            component.stringSet.OnBeforeSerialize();
+            PrefabSafeSetRuntimeUtil.ResizeArray(ref component.stringSet.prefabLayers, 2);
             component.stringSet.prefabLayers[1].additions = new[] { "addedTwiceInInstance", "addedInInstance" };
             component.stringSet.prefabLayers[1].removes = new[]
                 { "removedInInstance", "addedInVariantRemovedInInstance", "fakeRemovedInInstance" };

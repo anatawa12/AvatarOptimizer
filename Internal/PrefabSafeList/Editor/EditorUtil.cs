@@ -30,7 +30,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeList
 
         public abstract IElement AddElement();
 
-        private static SerializedProperty AddArrayElement(SerializedProperty array)
+        private static SerializedProperty AddArrayElement([NotNull] SerializedProperty array)
         {
             array.arraySize += 1;
             return array.GetArrayElementAtIndex(array.arraySize - 1);

@@ -19,7 +19,10 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             var nestCount = PrefabSafeSetUtil.PrefabNestCount(self.OuterObject);
 
             if (self.prefabLayers.Length < nestCount)
-                self.prefabLayers = PrefabSafeSetRuntimeUtil.ResizeArray(self.prefabLayers, nestCount);
+            {
+                // https://github.com/anatawa12/AvatarOptimizer/issues/52
+                // to avoid unnecessary modifications, resize is not performed later.
+            }
             else if (self.prefabLayers.Length > nestCount)
                 ApplyModificationsToLatestLayer(self, nestCount);
 
@@ -65,11 +68,15 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             }
             else
             {
-                var currentLayer = self.prefabLayers[nestCount - 1] ?? (self.prefabLayers[nestCount - 1] = new TLayer());
-                DistinctCheckArray(ref currentLayer.additions, ref self.CheckedCurrentLayerAdditions,
-                    PrefabSafeSetRuntimeUtil.IsNotNull);
-                DistinctCheckArray(ref currentLayer.removes, ref self.CheckedCurrentLayerRemoves,
-                    x => x.IsNotNull() && !currentLayer.additions.Contains(x));
+                if (nestCount < self.prefabLayers.Length)
+                {
+                    var currentLayer = self.prefabLayers[nestCount - 1] ??
+                                       (self.prefabLayers[nestCount - 1] = new TLayer());
+                    DistinctCheckArray(ref currentLayer.additions, ref self.CheckedCurrentLayerAdditions,
+                        PrefabSafeSetRuntimeUtil.IsNotNull);
+                    DistinctCheckArray(ref currentLayer.removes, ref self.CheckedCurrentLayerRemoves,
+                        x => x.IsNotNull() && !currentLayer.additions.Contains(x));
+                }
             }
         }
 
@@ -109,7 +116,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                 targetLayer.removes = removes.ToArray();
 
                 // resize array.               
-                self.prefabLayers = PrefabSafeSetRuntimeUtil.ResizeArray(self.prefabLayers, nestCount);
+                PrefabSafeSetRuntimeUtil.ResizeArray(ref self.prefabLayers, nestCount);
             }
         }
     }

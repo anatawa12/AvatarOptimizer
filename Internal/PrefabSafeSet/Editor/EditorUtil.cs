@@ -64,8 +64,9 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             array.arraySize -= 1;
         }
 
-        private T[] ToArray(SerializedProperty array)
+        private T[] ToArray([CanBeNull] SerializedProperty array)
         {
+            if (array == null) return Array.Empty<T>();
             var result = new T[array.arraySize];
             for (var i = 0; i < result.Length; i++)
                 result[i] = _getValue(array.GetArrayElementAtIndex(i));
