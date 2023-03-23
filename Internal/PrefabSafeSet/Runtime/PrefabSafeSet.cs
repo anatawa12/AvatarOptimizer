@@ -97,14 +97,14 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             return result;
         }
 
-        public void OnBeforeSerialize()
+        void ISerializationCallbackReceiver.OnBeforeSerialize()
         {
 #if UNITY_EDITOR
             _onBeforeSerializeCallback.Invoke(null, new object[] {this});
 #endif
         }
 
-        public void OnAfterDeserialize()
+        void ISerializationCallbackReceiver.OnAfterDeserialize()
         {
             // there's nothing to do after deserialization.
         }
