@@ -16,7 +16,7 @@ namespace Anatawa12.AvatarOptimizer
             // resize
             var old = component.saveVersions;
             component.saveVersions = new int[nestCount + 1];
-            System.Array.Copy(old, component.saveVersions, nestCount);
+            System.Array.Copy(old, component.saveVersions, old.Length);
             component.saveVersions[nestCount] = Migration.PrereleaseStateDetector.GetCurrentVersion();
             EditorUtility.SetDirty(component);
         }
