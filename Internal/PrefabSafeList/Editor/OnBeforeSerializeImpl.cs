@@ -19,12 +19,15 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeList
             // match prefabLayers count.
             var nestCount = PrefabSafeListUtil.PrefabNestCount(self.OuterObject);
 
-            if (self.prefabLayers.Length == nestCount)
-                RemoveCheckCheck(self, nestCount);
-            else if (self.prefabLayers.Length < nestCount)
-                self.prefabLayers = PrefabSafeListRuntimeUtil.ResizeArray(self.prefabLayers, nestCount);
+            if (self.prefabLayers.Length < nestCount)
+            {
+                // https://github.com/anatawa12/AvatarOptimizer/issues/52
+                // to avoid unnecessary modifications, resize is not performed later.
+            }
             else if (self.prefabLayers.Length > nestCount)
                 ApplyModificationsToLatestLayer(self, nestCount);
+
+            RemoveCheckCheck(self, nestCount);
         }
 
         private static void RemoveCheckCheck(PrefabSafeList<T, TLayer, TContainer> self, int nestCount)
@@ -35,11 +38,15 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeList
             }
             else
             {
-                var currentLayer = self.prefabLayers[nestCount - 1] ?? (self.prefabLayers[nestCount - 1] = new TLayer());
-                
-                var list = new List<T>();
-                currentLayer.ApplyTo(list);
-                currentLayer.elements = list.Select(x => new TContainer { value = x }).ToArray();
+                if (nestCount < self.prefabLayers.Length)
+                {
+                    var currentLayer = self.prefabLayers[nestCount - 1] ??
+                                       (self.prefabLayers[nestCount - 1] = new TLayer());
+
+                    var list = new List<T>();
+                    currentLayer.ApplyTo(list);
+                    currentLayer.elements = list.Select(x => new TContainer { value = x }).ToArray();
+                }
             }
         }
 
