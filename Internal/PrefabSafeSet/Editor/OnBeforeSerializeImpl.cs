@@ -109,7 +109,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                 targetLayer.removes = removes.ToArray();
 
                 // resize array.               
-                self.prefabLayers = PrefabSafeSetRuntimeUtil.ResizeArray(self.prefabLayers, nestCount);
+                PrefabSafeSetRuntimeUtil.ResizeArray(ref self.prefabLayers, nestCount);
             }
         }
     }
