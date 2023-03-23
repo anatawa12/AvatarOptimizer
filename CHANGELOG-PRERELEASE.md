@@ -10,18 +10,23 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
-- reduce unnecessary modification in PrefabSafeSet/List `#64`
-  - Previously PrefabSafeSet/List will always generates array size change modification.
-  - Now, array size change will be generated when added/removed elements from the collection.
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
-- save version is not saved again `#69`
 
 ### Security
+
+## [0.2.5-rc.1] - 2023-03-23
+### Changed
+- reduce unnecessary modification in PrefabSafeSet/List [`#64`](https://github.com/anatawa12/AvatarOptimizer/pull/64)
+  - Previously PrefabSafeSet/List will always generates array size change modification.
+  - Now, array size change will be generated when added/removed elements from the collection.
+
+### Fixed
+- save version is not saved again [`#69`](https://github.com/anatawa12/AvatarOptimizer/pull/69)
 
 ## [0.2.4] - 2023-03-22
 ### Changed
@@ -147,7 +152,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.4...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.5-rc.1...HEAD
+[0.2.5-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.4...v0.2.5-rc.1
 [0.2.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.3...v0.2.4
 [0.2.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.2...v0.2.3
 [0.2.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.1...v0.2.2
