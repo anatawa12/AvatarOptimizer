@@ -24,6 +24,7 @@ namespace Anatawa12.AvatarOptimizer
             };
         }
 
+        private readonly SaveVersionDrawer _saveVersion = new SaveVersionDrawer();
         private SerializedProperty _mergedComponentProp;
         private SerializedProperty _rootTransformProp;
         private SerializedProperty _forcesProp;
@@ -80,6 +81,7 @@ namespace Anatawa12.AvatarOptimizer
 
         public override void OnInspectorGUI()
         {
+            _saveVersion.Draw(serializedObject);
             EditorGUI.BeginDisabledGroup(_mergedComponentProp.objectReferenceValue != null);
             EditorGUILayout.PropertyField(_mergedComponentProp);
             EditorGUI.EndDisabledGroup();

@@ -25,6 +25,7 @@ namespace Anatawa12.AvatarOptimizer
             };
         }
 
+        private readonly SaveVersionDrawer _saveVersion = new SaveVersionDrawer();
         SerializedProperty _renderersSetProp;
         SerializedProperty _staticRenderersSetProp;
         PrefabSafeSet.EditorUtil<Material> _doNotMergeMaterials;
@@ -43,6 +44,7 @@ namespace Anatawa12.AvatarOptimizer
 
         public override void OnInspectorGUI()
         {
+            _saveVersion.Draw(serializedObject);
             if (((MergeSkinnedMesh)target).GetComponent<SkinnedMeshRenderer>().sharedMesh)
             {
                 GUILayout.Label($"Mesh of SkinnedMeshRenderer is not None!", Style.WarningStyle);

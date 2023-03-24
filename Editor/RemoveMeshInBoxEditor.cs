@@ -8,6 +8,7 @@ namespace Anatawa12.AvatarOptimizer
     [CustomEditor(typeof(RemoveMeshInBox))]
     internal class RemoveMeshInBoxEditor : Editor
     {
+        private readonly SaveVersionDrawer _saveVersion = new SaveVersionDrawer();
         private ListEditor _boxList;
         private int _editingBox = -1;
 
@@ -24,6 +25,8 @@ namespace Anatawa12.AvatarOptimizer
                 base.OnInspectorGUI();
                 return;
             }
+           
+            _saveVersion.Draw(serializedObject);
 
             var rect = EditorGUILayout.GetControlRect(true, _boxList.GetPropertyHeight());
             _boxList.OnGUI(rect);

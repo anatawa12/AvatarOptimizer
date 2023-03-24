@@ -7,6 +7,7 @@ namespace Anatawa12.AvatarOptimizer
     [CanEditMultipleObjects]
     internal class MakeChildrenEditor : Editor
     {
+        private readonly SaveVersionDrawer _saveVersion = new SaveVersionDrawer();
         private SerializedProperty _children;
 
         private void OnEnable()
@@ -17,6 +18,7 @@ namespace Anatawa12.AvatarOptimizer
         public override void OnInspectorGUI()
         {
             EditorGUILayout.HelpBox("This component will make children at build time", MessageType.Info);
+            _saveVersion.Draw(serializedObject);
             EditorGUILayout.PropertyField(_children);
             serializedObject.ApplyModifiedProperties();
         }

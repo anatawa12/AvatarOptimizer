@@ -6,6 +6,7 @@ namespace Anatawa12.AvatarOptimizer
     [CustomEditor(typeof(FreezeBlendShape))]
     public class FreezeBlendShapeEditor : Editor
     {
+        private readonly SaveVersionDrawer _saveVersion = new SaveVersionDrawer();
         private PrefabSafeSet.EditorUtil<string> _shapeKeysSet;
 
         private void OnEnable()
@@ -25,6 +26,8 @@ namespace Anatawa12.AvatarOptimizer
                 EditorGUILayout.LabelField("MultiTarget Editing is not supported");
                 return;
             }
+
+            _saveVersion.Draw(serializedObject);
 
             var component = (FreezeBlendShape)target;
 
