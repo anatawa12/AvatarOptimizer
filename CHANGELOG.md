@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Show SaveVersion internal property on editor. `#71`
+  - This makes it easier to make it easier to see prefab overrides
 
 ### Changed
 - reduce unnecessary modification in PrefabSafeSet/List `#64`
