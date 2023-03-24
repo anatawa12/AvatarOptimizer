@@ -9,7 +9,7 @@ namespace Anatawa12.AvatarOptimizer
     [AddComponentMenu("Optimizer/Merge PhysBone")]
     [RequireComponent(typeof(VRCPhysBone))]
     [DisallowMultipleComponent]
-    [ExecuteInEditMode]
+    [ExecuteAlways]
     internal class MergePhysBone : AvatarTagComponent
     {
         [FormerlySerializedAs("mergedComponent")] public VRCPhysBoneBase merged;

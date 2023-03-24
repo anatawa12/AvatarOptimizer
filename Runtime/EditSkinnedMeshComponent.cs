@@ -3,7 +3,7 @@ using UnityEngine;
 namespace Anatawa12.AvatarOptimizer
 {
     [RequireComponent(typeof(SkinnedMeshRenderer))]
-    [ExecuteInEditMode]
+    [ExecuteAlways]
     public abstract class EditSkinnedMeshComponent : AvatarTagComponent
     {
         private void OnEnable() => RuntimeUtil.OnAwakeEditSkinnedMesh?.Invoke(this);
