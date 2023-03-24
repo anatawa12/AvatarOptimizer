@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
+- use ExecuteAlways instead of ExecuteInEditMode `#72`
 
 ### Deprecated
 
