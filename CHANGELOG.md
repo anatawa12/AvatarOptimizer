@@ -23,6 +23,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - save version is not saved again `#69`
+- None is added/removed on the prefab modifications `#73`
 
 ### Security
 
