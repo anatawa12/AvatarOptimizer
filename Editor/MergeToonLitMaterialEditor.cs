@@ -11,6 +11,7 @@ namespace Anatawa12.AvatarOptimizer
     [CustomEditor(typeof(MergeToonLitMaterial))]
     internal class MergeToonLitMaterialEditor : Editor
     {
+        private readonly SaveVersionDrawer _saveVersion = new SaveVersionDrawer();
         private Material[] _upstreamMaterials;
         private (Material mat, int index)[] _materials;
         
@@ -97,6 +98,8 @@ namespace Anatawa12.AvatarOptimizer
         {
             EditorGUILayout.LabelField("The component to merge multiple VRChat ToonLit materials.");
             EditorGUILayout.LabelField("This is for quest avoid limitation");
+           
+            _saveVersion.Draw(serializedObject);
 
             if (targets.Length != 1)
             {
