@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog].
 - reduce unnecessary modification in PrefabSafeSet/List `#64`
   - Previously PrefabSafeSet/List will always generates array size change modification.
   - Now, array size change will be generated when added/removed elements from the collection.
+- use ExecuteAlways instead of ExecuteInEditMode `#72`
 
 ### Deprecated
 

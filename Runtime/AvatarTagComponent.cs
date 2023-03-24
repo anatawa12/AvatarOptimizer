@@ -9,7 +9,7 @@ namespace Anatawa12.AvatarOptimizer
      * This abstract base class is injected into the VRCSDK avatar component allowlist to avoid
      */
     [DefaultExecutionOrder(-9990)] // run before av3emu
-    [ExecuteInEditMode]
+    [ExecuteAlways]
     public abstract class AvatarTagComponent : MonoBehaviour
     {
         // saved format versions. saveVersions[0] is original asset and saveVersions[1] is prefab instance

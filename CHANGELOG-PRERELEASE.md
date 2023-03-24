@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog].
   - This makes it easier to make it easier to see prefab overrides
 
 ### Changed
+- use ExecuteAlways instead of ExecuteInEditMode `#72`
 
 ### Deprecated
 
