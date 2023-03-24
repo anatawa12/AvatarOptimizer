@@ -20,6 +20,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - None is added/removed on the prefab modifications `#73`
+- NullReferenceException in SetCurrentSaveVersion `#74`
 
 ### Security
 
