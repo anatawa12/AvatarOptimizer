@@ -122,6 +122,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                     foreach (var prop in new ArrayPropertyEnumerable(additions))
                     {
                         var value = _getValue(prop);
+                        if (value == null) continue;
                         if (upstreamValues.Add(value))
                             _elements.Add(ElementImpl.Natural(this, value, i + 1));
                     }
@@ -235,6 +236,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                 for (var i = 0; i < additionsArray.Length; i++)
                 {
                     var value = additionsArray[i];
+                    if (value == null) continue;
                     if (!addsSet.Contains(value)) continue; // it's duplicated addition
 
                     _elements.Add(ElementImpl.NewElement(this, value, i));
@@ -244,6 +246,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                 for (var i = 0; i < removesArray.Length; i++)
                 {
                     var value = removesArray[i];
+                    if (value == null) continue;
                     if (!removesSet.Contains(value)) continue; // it's removed upper layer
 
                     _elements.Add(ElementImpl.FakeRemoved(this, value, i));
@@ -262,7 +265,11 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                     _currentAdditionsSize = _currentAdditions.arraySize = 0;
             }
 
-            protected override IElement<T> NewSlotElement(T value) => ElementImpl.NewSlot(this, value);
+            protected override IElement<T> NewSlotElement([NotNull] T value)
+            {
+                if (value == null) throw new ArgumentNullException(nameof(value));
+                return ElementImpl.NewSlot(this, value);
+            }
 
             private class ElementImpl : IElement<T>
             {
@@ -298,6 +305,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                 private ElementImpl(PrefabModification container, int indexInModifier, T value, ElementStatus status,
                     int sourceNestCount, SerializedProperty modifierProp)
                 {
+                    if (value == null) throw new ArgumentNullException(nameof(value));
                     _container = container;
                     _indexInModifier = indexInModifier;
                     SourceNestCount = sourceNestCount;
