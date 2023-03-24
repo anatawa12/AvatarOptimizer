@@ -8,24 +8,31 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Show SaveVersion internal property on editor. `#71`
-  - This makes it easier to make it easier to see prefab overrides
 
 ### Changed
-- reduce unnecessary modification in PrefabSafeSet/List `#64`
-  - Previously PrefabSafeSet/List will always generates array size change modification.
-  - Now, array size change will be generated when added/removed elements from the collection.
-- use ExecuteAlways instead of ExecuteInEditMode `#72`
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
-- save version is not saved again `#69`
-- None is added/removed on the prefab modifications `#73`
 
 ### Security
+
+## [0.2.5] - 2023-03-24
+### Added
+- Show SaveVersion internal property on editor. [`#71`](https://github.com/anatawa12/AvatarOptimizer/pull/71)
+  - This makes it easier to make it easier to see prefab overrides
+
+### Changed
+- reduce unnecessary modification in PrefabSafeSet/List [`#64`](https://github.com/anatawa12/AvatarOptimizer/pull/64)
+  - Previously PrefabSafeSet/List will always generates array size change modification.
+  - Now, array size change will be generated when added/removed elements from the collection.
+- use ExecuteAlways instead of ExecuteInEditMode [`#72`](https://github.com/anatawa12/AvatarOptimizer/pull/72)
+
+### Fixed
+- save version is not saved again [`#69`](https://github.com/anatawa12/AvatarOptimizer/pull/69)
+- None is added/removed on the prefab modifications [`#73`](https://github.com/anatawa12/AvatarOptimizer/pull/73)
 
 ## [0.2.4] - 2023-03-22
 ### Changed
@@ -132,7 +139,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.4...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.5...HEAD
+[0.2.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.4...v0.2.5
 [0.2.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.3...v0.2.4
 [0.2.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.2...v0.2.3
 [0.2.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.1...v0.2.2

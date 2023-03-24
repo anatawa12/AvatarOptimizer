@@ -8,21 +8,28 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Show SaveVersion internal property on editor. `#71`
-  - This makes it easier to make it easier to see prefab overrides
 
 ### Changed
-- use ExecuteAlways instead of ExecuteInEditMode `#72`
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
-- None is added/removed on the prefab modifications `#73`
-- NullReferenceException in SetCurrentSaveVersion `#74`
 
 ### Security
+
+## [0.2.5] - 2023-03-24
+### Added
+- Show SaveVersion internal property on editor. [`#71`](https://github.com/anatawa12/AvatarOptimizer/pull/71)
+  - This makes it easier to make it easier to see prefab overrides
+
+### Changed
+- use ExecuteAlways instead of ExecuteInEditMode [`#72`](https://github.com/anatawa12/AvatarOptimizer/pull/72)
+
+### Fixed
+- None is added/removed on the prefab modifications [`#73`](https://github.com/anatawa12/AvatarOptimizer/pull/73)
+- NullReferenceException in SetCurrentSaveVersion [`#74`](https://github.com/anatawa12/AvatarOptimizer/pull/74)
 
 ## [0.2.5-rc.1] - 2023-03-23
 ### Changed
@@ -157,7 +164,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.5-rc.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.5...HEAD
+[0.2.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.5-rc.1...v0.2.5
 [0.2.5-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.4...v0.2.5-rc.1
 [0.2.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.3...v0.2.4
 [0.2.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.2...v0.2.3
