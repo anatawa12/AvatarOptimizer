@@ -11,12 +11,13 @@ namespace Anatawa12.AvatarOptimizer
         public static void SetCurrentSaveVersion(AvatarTagComponent component)
         {
             var nestCount = NestCount(component);
-            if (nestCount < component.saveVersions.Length)
+            if (component.saveVersions != null && nestCount <= component.saveVersions.Length)
                 return; // already defined: we don't have to update nestCount
             // resize
             var old = component.saveVersions;
             component.saveVersions = new int[nestCount + 1];
-            System.Array.Copy(old, component.saveVersions, old.Length);
+            if (old != null)
+                System.Array.Copy(old, component.saveVersions, old.Length);
             component.saveVersions[nestCount] = Migration.PrereleaseStateDetector.GetCurrentVersion();
             EditorUtility.SetDirty(component);
         }
