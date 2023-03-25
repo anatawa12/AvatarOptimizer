@@ -2,6 +2,46 @@ msgid ""
 msgstr ""
 "Language: en\n"
 
+# region PrefabSafeSet
+
+msgid "PrefabSafeSet:label:Multi editing not supported"
+msgstr "Multi editing not supported"
+
+msgid "PrefabSafeSet:label:Element type is not supported"
+msgstr "Element type is not supported"
+
+msgid "PrefabSafeSet:label:Add Not Supported"
+msgstr "Add Not Supported"
+
+msgid "PrefabSafeSet:label:Element to add"
+msgstr "Element to add"
+
+msgid "PrefabSafeSet:tooltip:Element to add"
+msgstr "Drag & Drop value to here to add element to this set."
+
+msgid "PrefabSafeSet:tooltip:Force Add Button"
+msgstr "Add this element in current prefab modifications."
+
+# , csharp-format
+msgid "PrefabSafeSet:label:Element {0}"
+msgstr "Element {0}"
+
+# , csharp-format
+msgid "PrefabSafeSet:label:(Removed)"
+msgstr "(Removed)"
+
+# , csharp-format
+msgid "PrefabSafeSet:label:Element {0} (Added twice)"
+msgstr "Element {0} (Added twice)"
+
+# , csharp-format
+msgid "PrefabSafeSet:label:(Removed but not found)"
+msgstr "(Removed but not found)"
+
+# endregion
+
+# start Avatar Optimizer core modules
+
 # region FreezeBlendShape
 
 msgid "FreezeBlendShape:button:Check All"
