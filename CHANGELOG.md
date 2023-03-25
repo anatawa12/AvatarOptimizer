@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Remove Empty Renderer Object is not shown on the inspector `#76`
 
 ### Security
 
