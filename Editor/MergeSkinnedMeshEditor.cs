@@ -1,9 +1,8 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
+using CustomLocalization4EditorExtension;
 using UnityEditor;
 using UnityEngine;
-using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer
 {
@@ -49,9 +48,7 @@ namespace Anatawa12.AvatarOptimizer
             _saveVersion.Draw(serializedObject);
             if (((MergeSkinnedMesh)target).GetComponent<SkinnedMeshRenderer>().sharedMesh)
             {
-                GUILayout.Label($"Mesh of SkinnedMeshRenderer is not None!", Style.WarningStyle);
-                GUILayout.Label($"You should add MergeSkinnedMesh onto new GameObject with new SkinnedMeshRenderer!",
-                    Style.WarningStyle);
+                EditorGUILayout.HelpBox(CL4EE.Tr("MergeSkinnedMesh:warning:MeshIsNotNone"), MessageType.Warning);
             }
 
             EditorGUILayout.PropertyField(_renderersSetProp);
@@ -60,43 +57,11 @@ namespace Anatawa12.AvatarOptimizer
 
             serializedObject.ApplyModifiedProperties();
 
-            EditorGUILayout.LabelField("Merge Materials:", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField(CL4EE.Tr("MergeSkinnedMesh:label:Merge Materials"), EditorStyles.boldLabel);
             if (targets.Length != 1)
                 EditorGUILayout.LabelField("MergeMaterial is not supported with Multi Target Editor");
             else
                 MergeMaterials((MergeSkinnedMesh)target);
-        }
-
-        public void ShowRenderers<T>(string property, SerializedProperty array, Action<T> validation)
-            where T : Object
-        {
-            EditorGUILayout.LabelField(property, EditorStyles.boldLabel);
-
-            EditorGUI.indentLevel++;
-            for (var i = 0; i < array.arraySize; i++)
-            {
-                var elementProp = array.GetArrayElementAtIndex(i);
-                EditorGUILayout.PropertyField(elementProp);
-
-                if (elementProp.objectReferenceValue == null)
-                {
-                    array.DeleteArrayElementAtIndex(i);
-                    i--;
-                }
-                else if (elementProp.objectReferenceValue is T renderer)
-                {
-                    validation(renderer);
-                }
-            }
-
-            var toAdd = (T)EditorGUILayout.ObjectField($"Element {array.arraySize}", null, typeof(T), true);
-            if (toAdd != null)
-            {
-                array.arraySize += 1;
-                array.GetArrayElementAtIndex(array.arraySize - 1).objectReferenceValue = toAdd;
-            }
-
-            EditorGUI.indentLevel--;
         }
 
         public void MergeMaterials(MergeSkinnedMesh merge)
@@ -123,11 +88,11 @@ namespace Anatawa12.AvatarOptimizer
                 EditorGUI.indentLevel++;
                 var element = _doNotMergeMaterials.GetElementOf(group.Key);
                 var fieldPosition = EditorGUILayout.GetControlRect();
-                var label = new GUIContent("Merge");
+                var label = new GUIContent(CL4EE.Tr("MergeSkinnedMesh:label:Merge"));
                 using (new PrefabSafeSet.PropertyScope<Material>(element, fieldPosition, label))
                     element.SetExistence(!EditorGUI.ToggleLeft(fieldPosition, label, !element.Contains));
 
-                EditorGUILayout.LabelField("Renderers:");
+                EditorGUILayout.LabelField(CL4EE.Tr("MergeSkinnedMesh:label:Renderers"));
                 EditorGUI.indentLevel++;
                 EditorGUI.BeginDisabledGroup(true);
                 foreach (var (_, rendererIndex, _) in group)

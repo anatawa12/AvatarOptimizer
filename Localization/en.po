@@ -1,3 +1,30 @@
 msgid ""
 msgstr ""
 "Language: en\n"
+
+# region MergeSkinnedMesh
+
+msgid "MergeSkinnedMesh:warning:MeshIsNotNone"
+msgstr ""
+""Mesh of SkinnedMeshRenderer is not None!\n"
+"You should add MergeSkinnedMesh onto new GameObject with new SkinnedMeshRenderer!"
+
+msgid "MergeSkinnedMesh:prop:renderers"
+msgstr "Skinned Renderers"
+
+msgid "MergeSkinnedMesh:prop:staticRenderers"
+msgstr "Static Renderers"
+
+msgid "MergeSkinnedMesh:prop:removeEmptyRendererObject"
+msgstr "Remove Empty Renderer Object"
+
+msgid "MergeSkinnedMesh:label:Merge Materials"
+msgstr "Merge Materials"
+
+msgid "MergeSkinnedMesh:label:Merge"
+msgstr "Merge"
+
+msgid "MergeSkinnedMesh:label:Renderers"
+msgstr "Renderers:"
+
+# endregion

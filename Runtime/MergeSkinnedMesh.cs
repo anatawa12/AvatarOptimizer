@@ -1,4 +1,5 @@
 using System;
+using CustomLocalization4EditorExtension;
 using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer
@@ -27,12 +28,15 @@ namespace Anatawa12.AvatarOptimizer
         #endregion
         
         #region v2
+        [CL4EELocalized("MergeSkinnedMesh:prop:renderers")]
         public PrefabSafeSet.SkinnedMeshRendererSet renderersSet;
+        [CL4EELocalized("MergeSkinnedMesh:prop:staticRenderers")]
         public PrefabSafeSet.MeshRendererSet staticRenderersSet;
         public PrefabSafeSet.MaterialSet doNotMergeMaterials;
         #endregion
 
         // common between v0 and v1
+        [CL4EELocalized("MergeSkinnedMesh:prop:removeEmptyRendererObject")]
         [ToggleLeft]
         public bool removeEmptyRendererObject;
 
