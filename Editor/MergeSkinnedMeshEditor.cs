@@ -28,12 +28,14 @@ namespace Anatawa12.AvatarOptimizer
         private readonly SaveVersionDrawer _saveVersion = new SaveVersionDrawer();
         SerializedProperty _renderersSetProp;
         SerializedProperty _staticRenderersSetProp;
+        SerializedProperty _removeEmptyRendererObjectProp;
         PrefabSafeSet.EditorUtil<Material> _doNotMergeMaterials;
 
         private void OnEnable()
         {
             _renderersSetProp = serializedObject.FindProperty("renderersSet");
             _staticRenderersSetProp = serializedObject.FindProperty("staticRenderersSet");
+            _removeEmptyRendererObjectProp = serializedObject.FindProperty("removeEmptyRendererObject");
             var nestCount = PrefabSafeSet.PrefabSafeSetUtil.PrefabNestCount(serializedObject.targetObject);
             _doNotMergeMaterials = PrefabSafeSet.EditorUtil<Material>.Create(
                 serializedObject.FindProperty("doNotMergeMaterials"),
@@ -54,6 +56,7 @@ namespace Anatawa12.AvatarOptimizer
 
             EditorGUILayout.PropertyField(_renderersSetProp);
             EditorGUILayout.PropertyField(_staticRenderersSetProp);
+            EditorGUILayout.PropertyField(_removeEmptyRendererObjectProp);
 
             serializedObject.ApplyModifiedProperties();
 

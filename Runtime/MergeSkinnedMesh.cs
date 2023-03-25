@@ -33,6 +33,7 @@ namespace Anatawa12.AvatarOptimizer
         #endregion
 
         // common between v0 and v1
+        [ToggleLeft]
         public bool removeEmptyRendererObject;
 
         public MergeSkinnedMesh()
