@@ -1,3 +1,4 @@
+using CustomLocalization4EditorExtension;
 using UnityEditor;
 using UnityEngine;
 
@@ -21,12 +22,6 @@ namespace Anatawa12.AvatarOptimizer
 
         public override void OnInspectorGUI()
         {
-            if (targets.Length != 1)
-            {
-                EditorGUILayout.LabelField("MultiTarget Editing is not supported");
-                return;
-            }
-
             _saveVersion.Draw(serializedObject);
 
             var component = (FreezeBlendShape)target;
@@ -47,13 +42,13 @@ namespace Anatawa12.AvatarOptimizer
 
             using (new GUILayout.HorizontalScope())
             {
-                if (GUILayout.Button("Check All"))
+                if (GUILayout.Button(CL4EE.Tr("FreezeBlendShape:button:Check All")))
                 {
                     foreach (var shapeKeyName in shapes)
                         _shapeKeysSet.GetElementOf(shapeKeyName).EnsureAdded();
                 }
                 
-                if (GUILayout.Button("Invert All"))
+                if (GUILayout.Button(CL4EE.Tr("FreezeBlendShape:button:Invert All")))
                 {
                     foreach (var shapeKeyName in shapes)
                     {

@@ -2,6 +2,16 @@ msgid ""
 msgstr ""
 "Language: en\n"
 
+# region FreezeBlendShape
+
+msgid "FreezeBlendShape:button:Check All"
+msgstr "Check All"
+
+msgid "FreezeBlendShape:button:Invert All"
+msgstr "Invert All"
+
+# endregion
+
 # region MergeSkinnedMesh
 
 msgid "MergeSkinnedMesh:warning:MeshIsNotNone"
