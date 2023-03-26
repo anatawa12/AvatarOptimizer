@@ -1,3 +1,4 @@
+using CustomLocalization4EditorExtension;
 using UnityEditor;
 
 namespace Anatawa12.AvatarOptimizer
@@ -8,7 +9,7 @@ namespace Anatawa12.AvatarOptimizer
         private SaveVersionDrawer _saveVersion = new SaveVersionDrawer();
         public override void OnInspectorGUI()
         {
-            EditorGUILayout.LabelField("You will remove this GameObject and merge bone to parent");
+            EditorGUILayout.HelpBox(CL4EE.Tr("MergeBone:description"), MessageType.None);
             _saveVersion.Draw(serializedObject);
         }
     }

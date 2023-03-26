@@ -74,6 +74,13 @@ msgstr "Children"
 
 # endregion
 
+# region MergeBone
+
+msgid "MergeBone:description"
+msgstr "You will remove this GameObject and merge bone to parent"
+
+# endregion
+
 # region MergeSkinnedMesh
 
 msgid "MergeSkinnedMesh:warning:MeshIsNotNone"
