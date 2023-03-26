@@ -5,7 +5,7 @@ using UnityEngine;
 namespace Anatawa12.AvatarOptimizer
 {
     [UsedImplicitly]
-    public class AvatarTagComponentEditor
+    public class AvatarTagComponentEditorImpl
     {
         [UsedImplicitly]
         public static void SetCurrentSaveVersion(AvatarTagComponent component)
