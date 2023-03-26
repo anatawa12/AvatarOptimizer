@@ -1,4 +1,5 @@
 using System;
+using CustomLocalization4EditorExtension;
 using UnityEditor;
 
 namespace Anatawa12.AvatarOptimizer
@@ -17,7 +18,7 @@ namespace Anatawa12.AvatarOptimizer
 
         public override void OnInspectorGUI()
         {
-            EditorGUILayout.HelpBox("This component will make children at build time", MessageType.Info);
+            EditorGUILayout.HelpBox(CL4EE.Tr("MakeChildren:description"), MessageType.None);
             _saveVersion.Draw(serializedObject);
             EditorGUILayout.PropertyField(_children);
             serializedObject.ApplyModifiedProperties();

@@ -64,6 +64,16 @@ msgstr "Invert All"
 
 # endregion
 
+# region MakeChildren
+
+msgid "MakeChildren:description"
+msgstr "This component will make children at build time"
+
+msgid "MakeChildren:prop:children"
+msgstr "Children"
+
+# endregion
+
 # region MergeSkinnedMesh
 
 msgid "MergeSkinnedMesh:warning:MeshIsNotNone"
