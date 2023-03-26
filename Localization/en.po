@@ -42,6 +42,18 @@ msgstr "(Removed but not found)"
 
 # start Avatar Optimizer core modules
 
+# region ClearEndpointPosition
+
+msgid "ClearEndpointPosition:description"
+msgstr ""
+"You clear Endpoint Position with _end bones.\n"
+"This can be useful for MergeBone component."
+
+msgid "ClearEndpointPosition:button:Apply and Remove Component"
+msgstr "Apply and Remove Component"
+
+# endregion
+
 # region FreezeBlendShape
 
 msgid "FreezeBlendShape:button:Check All"
