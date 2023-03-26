@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using CustomLocalization4EditorExtension;
 using UnityEditor;
 using UnityEngine;
 using VRC.Dynamics;
@@ -116,7 +117,8 @@ namespace Anatawa12.AvatarOptimizer
                     break;
                 case VRCPhysBoneBase.LimitType.Angle:
                 case VRCPhysBoneBase.LimitType.Hinge:
-                    EditorGUILayout.PropertyField(_maxAngleXProp, new GUIContent("Max Angle"));
+                    EditorGUILayout.PropertyField(_maxAngleXProp,
+                        new GUIContent(CL4EE.Tr("MergePhysBone:prop:Max Angle")));
                     EditorGUILayout.PropertyField(_limitRotationProp);
                     break;
                 case VRCPhysBoneBase.LimitType.Polar:

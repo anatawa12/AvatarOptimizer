@@ -81,6 +81,76 @@ msgstr "You will remove this GameObject and merge bone to parent"
 
 # endregion
 
+# region
+
+msgid "MergePhysBone:prop:merged"
+msgstr "Merged"
+
+msgid "MergePhysBone:prop:forces"
+msgstr "Forces"
+
+msgid "MergePhysBone:prop:pull"
+msgstr "Pull"
+
+msgid "MergePhysBone:prop:spring"
+msgstr "Spring"
+
+msgid "MergePhysBone:prop:stiffness"
+msgstr "Stiffness"
+
+msgid "MergePhysBone:prop:gravity"
+msgstr "Gravity"
+
+msgid "MergePhysBone:prop:gravityFalloff"
+msgstr "Gravity Falloff"
+
+msgid "MergePhysBone:prop:immobile"
+msgstr "Immobile"
+
+msgid "MergePhysBone:prop:limits"
+msgstr "Limits"
+
+msgid "MergePhysBone:prop:maxAngleX"
+msgstr "Max Angle X"
+
+msgid "MergePhysBone:prop:Max Angle"
+msgstr "Max Angle"
+
+msgid "MergePhysBone:prop:maxAngleZ"
+msgstr "Max Angle Z"
+
+msgid "MergePhysBone:prop:limitRotation"
+msgstr "Limit Rotation"
+
+msgid "MergePhysBone:prop:radius"
+msgstr "Radius"
+
+msgid "MergePhysBone:prop:allowCollision"
+msgstr "Allow Collision"
+
+msgid "MergePhysBone:prop:colliders"
+msgstr "Colliders"
+
+msgid "MergePhysBone:prop:allowGrabbing"
+msgstr "Allow Grabbing"
+
+msgid "MergePhysBone:prop:grabMovement"
+msgstr "Grab Movement"
+
+msgid "MergePhysBone:prop:allowPosing"
+msgstr "Allow Posing"
+
+msgid "MergePhysBone:prop:maxStretch"
+msgstr "Max Stretch"
+
+msgid "MergePhysBone:prop:isAnimated"
+msgstr "Is Animated"
+
+msgid "MergePhysBone:prop:components"
+msgstr "Components"
+
+# endregion
+
 # region MergeSkinnedMesh
 
 msgid "MergeSkinnedMesh:warning:MeshIsNotNone"
