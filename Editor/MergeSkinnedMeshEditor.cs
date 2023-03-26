@@ -7,7 +7,7 @@ using UnityEngine;
 namespace Anatawa12.AvatarOptimizer
 {
     [CustomEditor(typeof(MergeSkinnedMesh))]
-    internal class MergeSkinnedMeshEditor : Editor
+    internal class MergeSkinnedMeshEditor : AvatarTagComponentEditorBase
     {
         private static class Style
         {
@@ -24,7 +24,6 @@ namespace Anatawa12.AvatarOptimizer
             };
         }
 
-        private readonly SaveVersionDrawer _saveVersion = new SaveVersionDrawer();
         SerializedProperty _renderersSetProp;
         SerializedProperty _staticRenderersSetProp;
         SerializedProperty _removeEmptyRendererObjectProp;
@@ -43,9 +42,8 @@ namespace Anatawa12.AvatarOptimizer
                 (x, v) => x.objectReferenceValue = v);
         }
 
-        public override void OnInspectorGUI()
+        protected override void OnInspectorGUIInner()
         {
-            _saveVersion.Draw(serializedObject);
             if (((MergeSkinnedMesh)target).GetComponent<SkinnedMeshRenderer>().sharedMesh)
             {
                 EditorGUILayout.HelpBox(CL4EE.Tr("MergeSkinnedMesh:warning:MeshIsNotNone"), MessageType.Warning);

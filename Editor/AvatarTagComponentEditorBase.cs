@@ -17,15 +17,13 @@ namespace Anatawa12.AvatarOptimizer
             OnInspectorGUIInner();
         }
 
-        protected abstract string Description { get; }
+        protected virtual string Description => null;
         protected abstract void OnInspectorGUIInner();
     }
 
     [CustomEditor(typeof(AvatarTagComponent), true)]
     class DefaultAvatarTagComponentEditor : AvatarTagComponentEditorBase
     {
-        protected override string Description => null;
-
         protected override void OnInspectorGUIInner()
         {
             serializedObject.UpdateIfRequiredOrScript();

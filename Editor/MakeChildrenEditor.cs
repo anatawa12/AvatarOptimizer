@@ -6,9 +6,9 @@ namespace Anatawa12.AvatarOptimizer
 {
     [CustomEditor(typeof(MakeChildren))]
     [CanEditMultipleObjects]
-    internal class MakeChildrenEditor : Editor
+    internal class MakeChildrenEditor : AvatarTagComponentEditorBase
     {
-        private readonly SaveVersionDrawer _saveVersion = new SaveVersionDrawer();
+        protected override string Description => CL4EE.Tr("MakeChildren:description");
         private SerializedProperty _children;
 
         private void OnEnable()
@@ -16,10 +16,8 @@ namespace Anatawa12.AvatarOptimizer
             _children = serializedObject.FindProperty(nameof(MakeChildren.children));
         }
 
-        public override void OnInspectorGUI()
+        protected override void OnInspectorGUIInner()
         {
-            EditorGUILayout.HelpBox(CL4EE.Tr("MakeChildren:description"), MessageType.None);
-            _saveVersion.Draw(serializedObject);
             EditorGUILayout.PropertyField(_children);
             serializedObject.ApplyModifiedProperties();
         }

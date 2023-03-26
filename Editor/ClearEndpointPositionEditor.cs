@@ -7,15 +7,12 @@ using VRC.Dynamics;
 namespace Anatawa12.AvatarOptimizer
 {
     [CustomEditor(typeof(ClearEndpointPosition))]
-    internal class ClearEndpointPositionEditor : Editor
+    internal class ClearEndpointPositionEditor : AvatarTagComponentEditorBase
     {
-        private readonly SaveVersionDrawer _saveVersion = new SaveVersionDrawer();
-        public override void OnInspectorGUI()
+        protected override string Description => CL4EE.Tr("ClearEndpointPosition:description");
+
+        protected override void OnInspectorGUIInner()
         {
-            EditorGUILayout.HelpBox(CL4EE.Tr("ClearEndpointPosition:description"), MessageType.None);
-
-            _saveVersion.Draw(serializedObject);
-
             if (GUILayout.Button(CL4EE.Tr("ClearEndpointPosition:button:Apply and Remove Component")))
             {
                 ClearEndpointPositionProcessor.Process(((Component)target).GetComponent<VRCPhysBoneBase>());

@@ -8,7 +8,7 @@ using VRC.Dynamics;
 namespace Anatawa12.AvatarOptimizer
 {
     [CustomEditor(typeof(MergePhysBone))]
-    internal class MergePhysBoneEditor : Editor
+    internal class MergePhysBoneEditor : AvatarTagComponentEditorBase
     {
         private static class Style
         {
@@ -25,7 +25,6 @@ namespace Anatawa12.AvatarOptimizer
             };
         }
 
-        private readonly SaveVersionDrawer _saveVersion = new SaveVersionDrawer();
         private SerializedProperty _mergedComponentProp;
         private SerializedProperty _rootTransformProp;
         private SerializedProperty _forcesProp;
@@ -80,9 +79,8 @@ namespace Anatawa12.AvatarOptimizer
                 (x, v) => x.objectReferenceValue = v);
         }
 
-        public override void OnInspectorGUI()
+        protected override void OnInspectorGUIInner()
         {
-            _saveVersion.Draw(serializedObject);
             EditorGUI.BeginDisabledGroup(_mergedComponentProp.objectReferenceValue != null);
             EditorGUILayout.PropertyField(_mergedComponentProp);
             EditorGUI.EndDisabledGroup();

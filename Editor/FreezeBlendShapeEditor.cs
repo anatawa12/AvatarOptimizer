@@ -5,9 +5,8 @@ using UnityEngine;
 namespace Anatawa12.AvatarOptimizer
 {
     [CustomEditor(typeof(FreezeBlendShape))]
-    public class FreezeBlendShapeEditor : Editor
+    class FreezeBlendShapeEditor : AvatarTagComponentEditorBase
     {
-        private readonly SaveVersionDrawer _saveVersion = new SaveVersionDrawer();
         private PrefabSafeSet.EditorUtil<string> _shapeKeysSet;
 
         private void OnEnable()
@@ -20,10 +19,8 @@ namespace Anatawa12.AvatarOptimizer
                 (x, v) => x.stringValue = v);
         }
 
-        public override void OnInspectorGUI()
+        protected override void OnInspectorGUIInner()
         {
-            _saveVersion.Draw(serializedObject);
-
             var component = (FreezeBlendShape)target;
 
             var shapes = EditSkinnedMeshComponentUtil.GetBlendShapes(component.GetComponent<SkinnedMeshRenderer>(), component);

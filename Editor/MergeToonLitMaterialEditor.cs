@@ -10,9 +10,9 @@ using Debug = System.Diagnostics.Debug;
 namespace Anatawa12.AvatarOptimizer
 {
     [CustomEditor(typeof(MergeToonLitMaterial))]
-    internal class MergeToonLitMaterialEditor : Editor
+    internal class MergeToonLitMaterialEditor : AvatarTagComponentEditorBase
     {
-        private readonly SaveVersionDrawer _saveVersion = new SaveVersionDrawer();
+        protected override string Description => CL4EE.Tr("MergeToonLitMaterial:description");
         private Material[] _upstreamMaterials;
         private (Material mat, int index)[] _materials;
         
@@ -95,12 +95,8 @@ namespace Anatawa12.AvatarOptimizer
 
         }
 
-        public override void OnInspectorGUI()
+        protected override void OnInspectorGUIInner()
         {
-            EditorGUILayout.HelpBox(CL4EE.Tr("MergeToonLitMaterial:description"), MessageType.None);
-           
-            _saveVersion.Draw(serializedObject);
-
             EditorGUI.BeginChangeCheck();
 
             var component = (MergeToonLitMaterial)target;
