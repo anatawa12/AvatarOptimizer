@@ -1,3 +1,4 @@
+using CustomLocalization4EditorExtension;
 using UnityEditor;
 
 namespace Anatawa12.AvatarOptimizer
@@ -8,6 +9,8 @@ namespace Anatawa12.AvatarOptimizer
 
         public sealed override void OnInspectorGUI()
         {
+            CL4EE.DrawLanguagePicker();
+
             var description = Description;
             if (!string.IsNullOrEmpty(description))
                 EditorGUILayout.HelpBox(description, MessageType.None);
