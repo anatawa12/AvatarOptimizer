@@ -198,3 +198,16 @@ msgid "MergeToonLitMaterial:label:Texture Size"
 msgstr "Texture Size"
 
 # endregion
+
+# region RemoveMeshInBox
+
+msgid "RemoveMeshInBox:BoundingBox:prop:center"
+msgstr "Center"
+
+msgid "RemoveMeshInBox:BoundingBox:prop:size"
+msgstr "Size"
+
+msgid "RemoveMeshInBox:BoundingBox:prop:rotation"
+msgstr "Rotation"
+
+# endregion
