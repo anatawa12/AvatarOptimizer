@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
+using CustomLocalization4EditorExtension;
 using UnityEditor;
 using UnityEngine;
 using Debug = System.Diagnostics.Debug;
@@ -9,9 +10,9 @@ using Debug = System.Diagnostics.Debug;
 namespace Anatawa12.AvatarOptimizer
 {
     [CustomEditor(typeof(MergeToonLitMaterial))]
-    internal class MergeToonLitMaterialEditor : Editor
+    internal class MergeToonLitMaterialEditor : AvatarTagComponentEditorBase
     {
-        private readonly SaveVersionDrawer _saveVersion = new SaveVersionDrawer();
+        protected override string Description => CL4EE.Tr("MergeToonLitMaterial:description");
         private Material[] _upstreamMaterials;
         private (Material mat, int index)[] _materials;
         
@@ -94,26 +95,15 @@ namespace Anatawa12.AvatarOptimizer
 
         }
 
-        public override void OnInspectorGUI()
+        protected override void OnInspectorGUIInner()
         {
-            EditorGUILayout.LabelField("The component to merge multiple VRChat ToonLit materials.");
-            EditorGUILayout.LabelField("This is for quest avoid limitation");
-           
-            _saveVersion.Draw(serializedObject);
-
-            if (targets.Length != 1)
-            {
-                EditorGUILayout.LabelField("MultiTarget Editing is not supported");
-                return;
-            }
-
             EditorGUI.BeginChangeCheck();
 
             var component = (MergeToonLitMaterial)target;
 
-            DrawList(ref component.merges, "Add Merged Material", (componentMerge, i) =>
+            DrawList(ref component.merges, CL4EE.Tr("MergeToonLitMaterial:button:Add Merged Material"), (componentMerge, i) =>
                 {
-                    DrawList(ref componentMerge.source, "Add Source", (mergeSource, _2) =>
+                    DrawList(ref componentMerge.source, CL4EE.Tr("MergeToonLitMaterial:button:Add Source"), (mergeSource, _2) =>
                         {
                             var found = _materials.FirstOrDefault(x => x.index == mergeSource.materialIndex);
                             _candidateNames[0] = found.mat != null ? found.mat.name : "(invalid)";
@@ -132,7 +122,7 @@ namespace Anatawa12.AvatarOptimizer
                     );
 
                     componentMerge.textureSize =
-                        EditorGUILayout.Vector2IntField("Texture Size", componentMerge.textureSize);
+                        EditorGUILayout.Vector2IntField(CL4EE.Tr("MergeToonLitMaterial:label:Texture Size"), componentMerge.textureSize);
 
                     var preview = _generatedPreviews != null ? _generatedPreviews[i] : Utils.PreviewHereTex;
                     EditorGUILayout.LabelField(new GUIContent(preview), GUILayout.MaxHeight(256), GUILayout.MaxHeight(256));
@@ -149,7 +139,7 @@ namespace Anatawa12.AvatarOptimizer
             if (EditorGUI.EndChangeCheck())
                 OnChanged();
 
-            if (GUILayout.Button("Generate Preview"))
+            if (GUILayout.Button(CL4EE.Tr("MergeToonLitMaterial:button:Generate Preview")))
             {
                 _generatedPreviews = MergeToonLitMaterialProcessor.GenerateTextures(component, _upstreamMaterials);
             }            

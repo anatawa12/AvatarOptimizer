@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using CustomLocalization4EditorExtension;
 using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
@@ -9,18 +10,23 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 {
     internal static class EditorStatics
     {
-        public static readonly GUIContent MultiEditingNotSupported = new GUIContent("Multi editing not supported");
-        public static readonly GUIContent UnsupportedType = new GUIContent("Element type is not supported");
-        public static readonly GUIContent AddNotSupported = new GUIContent("Add Not Supported");
+        public static readonly GUIContent MultiEditingNotSupported =
+            new GUIContent(CL4EE.Tr("PrefabSafeSet:label:Multi editing not supported"));
 
-        public static readonly GUIContent ToAdd = new GUIContent("Element to add")
+        public static readonly GUIContent UnsupportedType =
+            new GUIContent(CL4EE.Tr("PrefabSafeSet:label:Element type is not supported"));
+
+        public static readonly GUIContent AddNotSupported =
+            new GUIContent(CL4EE.Tr("PrefabSafeSet:label:Add Not Supported"));
+
+        public static readonly GUIContent ToAdd = new GUIContent(CL4EE.Tr("PrefabSafeSet:label:Element to add"))
         {
-            tooltip = "Drag & Drop value to here to add element to this set."
+            tooltip = CL4EE.Tr("PrefabSafeSet:tooltip:Element to add")
         };
 
         public static readonly GUIContent ForceAddButton = new GUIContent("+")
         {
-            tooltip = "Add this element in current prefab modifications."
+            tooltip = CL4EE.Tr("PrefabSafeSet:tooltip:Force Add Button")
         };
     }
 
@@ -320,23 +326,25 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                 switch (element.Status)
                 {
                     case ElementStatus.Natural:
-                        newLabel.text = $"Element {elementI++}";
+                        newLabel.text = string.Format(CL4EE.Tr("PrefabSafeSet:label:Element {0}"), elementI++);
                         fieldModKind = ModificationKind.Natural;
                         break;
                     case ElementStatus.Removed:
-                        newLabel.text = "(Removed)";
+                        newLabel.text = CL4EE.Tr("PrefabSafeSet:label:(Removed)");
                         fieldModKind = ModificationKind.Remove;
                         break;
                     case ElementStatus.NewElement:
-                        newLabel.text = $"Element {elementI++}";
+                        newLabel.text = string.Format(CL4EE.Tr("PrefabSafeSet:label:Element {0}"), elementI++);
                         fieldModKind = ModificationKind.Add;
                         break;
                     case ElementStatus.AddedTwice:
-                        newLabel.text = $"Element {elementI++} (Added twice)";
+                        newLabel.text =
+                            string.Format(CL4EE.Tr("PrefabSafeSet:label:Element {0} (Added twice)"), elementI++);
                         fieldModKind = ModificationKind.Add;
                         break;
                     case ElementStatus.FakeRemoved:
-                        newLabel.text = "(Removed but not found)";
+                        newLabel.text =
+                            CL4EE.Tr("PrefabSafeSet:label:(Removed but not found)");
                         fieldModKind = ModificationKind.Remove;
                         break;
                     default:

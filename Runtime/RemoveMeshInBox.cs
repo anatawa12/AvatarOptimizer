@@ -1,5 +1,6 @@
 using System;
 using Anatawa12.AvatarOptimizer.PrefabSafeList;
+using CustomLocalization4EditorExtension;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -23,8 +24,11 @@ namespace Anatawa12.AvatarOptimizer
         [Serializable]
         public class BoundingBox
         {
+            [CL4EELocalized("RemoveMeshInBox:BoundingBox:prop:center")]
             public Vector3 center;
+            [CL4EELocalized("RemoveMeshInBox:BoundingBox:prop:size")]
             public Vector3 size = new Vector3(1, 1, 1);
+            [CL4EELocalized("RemoveMeshInBox:BoundingBox:prop:rotation")]
             public Quaternion rotation = Quaternion.identity;
 
             public bool ContainsVertex(Vector3 point)

@@ -1,0 +1,213 @@
+msgid ""
+msgstr ""
+"Language: en\n"
+
+# region PrefabSafeSet
+
+msgid "PrefabSafeSet:label:Multi editing not supported"
+msgstr "Multi editing not supported"
+
+msgid "PrefabSafeSet:label:Element type is not supported"
+msgstr "Element type is not supported"
+
+msgid "PrefabSafeSet:label:Add Not Supported"
+msgstr "Add Not Supported"
+
+msgid "PrefabSafeSet:label:Element to add"
+msgstr "Element to add"
+
+msgid "PrefabSafeSet:tooltip:Element to add"
+msgstr "Drag & Drop value to here to add element to this set."
+
+msgid "PrefabSafeSet:tooltip:Force Add Button"
+msgstr "Add this element in current prefab modifications."
+
+# , csharp-format
+msgid "PrefabSafeSet:label:Element {0}"
+msgstr "Element {0}"
+
+# , csharp-format
+msgid "PrefabSafeSet:label:(Removed)"
+msgstr "(Removed)"
+
+# , csharp-format
+msgid "PrefabSafeSet:label:Element {0} (Added twice)"
+msgstr "Element {0} (Added twice)"
+
+# , csharp-format
+msgid "PrefabSafeSet:label:(Removed but not found)"
+msgstr "(Removed but not found)"
+
+# endregion
+
+# start Avatar Optimizer core modules
+
+# region ClearEndpointPosition
+
+msgid "ClearEndpointPosition:description"
+msgstr ""
+"You clear Endpoint Position with _end bones.\n"
+"This can be useful for MergeBone component."
+
+msgid "ClearEndpointPosition:button:Apply and Remove Component"
+msgstr "Apply and Remove Component"
+
+# endregion
+
+# region FreezeBlendShape
+
+msgid "FreezeBlendShape:button:Check All"
+msgstr "Check All"
+
+msgid "FreezeBlendShape:button:Invert All"
+msgstr "Invert All"
+
+# endregion
+
+# region MakeChildren
+
+msgid "MakeChildren:description"
+msgstr "This component will make children at build time"
+
+msgid "MakeChildren:prop:children"
+msgstr "Children"
+
+# endregion
+
+# region MergeBone
+
+msgid "MergeBone:description"
+msgstr "You will remove this GameObject and merge bone to parent"
+
+# endregion
+
+# region
+
+msgid "MergePhysBone:prop:merged"
+msgstr "Merged"
+
+msgid "MergePhysBone:prop:forces"
+msgstr "Forces"
+
+msgid "MergePhysBone:prop:pull"
+msgstr "Pull"
+
+msgid "MergePhysBone:prop:spring"
+msgstr "Spring"
+
+msgid "MergePhysBone:prop:stiffness"
+msgstr "Stiffness"
+
+msgid "MergePhysBone:prop:gravity"
+msgstr "Gravity"
+
+msgid "MergePhysBone:prop:gravityFalloff"
+msgstr "Gravity Falloff"
+
+msgid "MergePhysBone:prop:immobile"
+msgstr "Immobile"
+
+msgid "MergePhysBone:prop:limits"
+msgstr "Limits"
+
+msgid "MergePhysBone:prop:maxAngleX"
+msgstr "Max Angle X"
+
+msgid "MergePhysBone:prop:Max Angle"
+msgstr "Max Angle"
+
+msgid "MergePhysBone:prop:maxAngleZ"
+msgstr "Max Angle Z"
+
+msgid "MergePhysBone:prop:limitRotation"
+msgstr "Limit Rotation"
+
+msgid "MergePhysBone:prop:radius"
+msgstr "Radius"
+
+msgid "MergePhysBone:prop:allowCollision"
+msgstr "Allow Collision"
+
+msgid "MergePhysBone:prop:colliders"
+msgstr "Colliders"
+
+msgid "MergePhysBone:prop:allowGrabbing"
+msgstr "Allow Grabbing"
+
+msgid "MergePhysBone:prop:grabMovement"
+msgstr "Grab Movement"
+
+msgid "MergePhysBone:prop:allowPosing"
+msgstr "Allow Posing"
+
+msgid "MergePhysBone:prop:maxStretch"
+msgstr "Max Stretch"
+
+msgid "MergePhysBone:prop:isAnimated"
+msgstr "Is Animated"
+
+msgid "MergePhysBone:prop:components"
+msgstr "Components"
+
+# endregion
+
+# region MergeSkinnedMesh
+
+msgid "MergeSkinnedMesh:warning:MeshIsNotNone"
+msgstr ""
+""Mesh of SkinnedMeshRenderer is not None!\n"
+"You should add MergeSkinnedMesh onto new GameObject with new SkinnedMeshRenderer!"
+
+msgid "MergeSkinnedMesh:prop:renderers"
+msgstr "Skinned Renderers"
+
+msgid "MergeSkinnedMesh:prop:staticRenderers"
+msgstr "Static Renderers"
+
+msgid "MergeSkinnedMesh:prop:removeEmptyRendererObject"
+msgstr "Remove Empty Renderer Object"
+
+msgid "MergeSkinnedMesh:label:Merge Materials"
+msgstr "Merge Materials"
+
+msgid "MergeSkinnedMesh:label:Merge"
+msgstr "Merge"
+
+msgid "MergeSkinnedMesh:label:Renderers"
+msgstr "Renderers:"
+
+# endregion
+
+# region MergeToonLitMaterial
+
+msgid "MergeToonLitMaterial:description"
+msgstr ""
+"The component to merge multiple VRChat ToonLit materials.\n"
+"This is for quest avoid limitation"
+
+msgid "MergeToonLitMaterial:button:Add Merged Material"
+msgstr "Add Merged Material"
+
+msgid "MergeToonLitMaterial:button:Add Source"
+msgstr "Add Source"
+
+msgid "MergeToonLitMaterial:button:Generate Preview"
+msgstr "Generate Preview"
+
+msgid "MergeToonLitMaterial:label:Texture Size"
+msgstr "Texture Size"
+
+# endregion
+
+# region RemoveMeshInBox
+
+msgid "RemoveMeshInBox:BoundingBox:prop:center"
+msgstr "Center"
+
+msgid "RemoveMeshInBox:BoundingBox:prop:size"
+msgstr "Size"
+
+msgid "RemoveMeshInBox:BoundingBox:prop:rotation"
+msgstr "Rotation"
+
+# endregion

@@ -8,6 +8,10 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Internationalization support `#77`
+  - This adds way to translate editor elements.
+  - However, no other language translation than English is not added yet.
+  - Please feel free to make PullRequest if you can maintain the translation.
 
 ### Changed
 

@@ -19,7 +19,7 @@ namespace Anatawa12.AvatarOptimizer
 #if UNITY_EDITOR
         private static readonly System.Reflection.MethodInfo OnEnableCallback =
             System.Reflection.Assembly.Load("com.anatawa12.avatar-optimizer.editor")
-                .GetType("Anatawa12.AvatarOptimizer.AvatarTagComponentEditor")
+                .GetType("Anatawa12.AvatarOptimizer.AvatarTagComponentEditorImpl")
                 .GetMethod("SetCurrentSaveVersion", new[] { typeof(AvatarTagComponent) });
 #endif
 

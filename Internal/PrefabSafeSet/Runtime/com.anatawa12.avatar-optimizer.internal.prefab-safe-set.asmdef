@@ -1,6 +1,8 @@
 {
     "name": "com.anatawa12.avatar-optimizer.internal.prefab-safe-set",
-    "references": [],
+    "references": [
+        "GUID:8264e72376854221affe9980c91c2fff"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

@@ -1,12 +1,12 @@
+using CustomLocalization4EditorExtension;
 using UnityEditor;
 using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer
 {
     [CustomEditor(typeof(FreezeBlendShape))]
-    public class FreezeBlendShapeEditor : Editor
+    class FreezeBlendShapeEditor : AvatarTagComponentEditorBase
     {
-        private readonly SaveVersionDrawer _saveVersion = new SaveVersionDrawer();
         private PrefabSafeSet.EditorUtil<string> _shapeKeysSet;
 
         private void OnEnable()
@@ -19,16 +19,8 @@ namespace Anatawa12.AvatarOptimizer
                 (x, v) => x.stringValue = v);
         }
 
-        public override void OnInspectorGUI()
+        protected override void OnInspectorGUIInner()
         {
-            if (targets.Length != 1)
-            {
-                EditorGUILayout.LabelField("MultiTarget Editing is not supported");
-                return;
-            }
-
-            _saveVersion.Draw(serializedObject);
-
             var component = (FreezeBlendShape)target;
 
             var shapes = EditSkinnedMeshComponentUtil.GetBlendShapes(component.GetComponent<SkinnedMeshRenderer>(), component);
@@ -47,13 +39,13 @@ namespace Anatawa12.AvatarOptimizer
 
             using (new GUILayout.HorizontalScope())
             {
-                if (GUILayout.Button("Check All"))
+                if (GUILayout.Button(CL4EE.Tr("FreezeBlendShape:button:Check All")))
                 {
                     foreach (var shapeKeyName in shapes)
                         _shapeKeysSet.GetElementOf(shapeKeyName).EnsureAdded();
                 }
                 
-                if (GUILayout.Button("Invert All"))
+                if (GUILayout.Button(CL4EE.Tr("FreezeBlendShape:button:Invert All")))
                 {
                     foreach (var shapeKeyName in shapes)
                     {
