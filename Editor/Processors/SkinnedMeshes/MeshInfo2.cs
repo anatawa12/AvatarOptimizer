@@ -207,8 +207,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 for (var i = 0; i < Vertices.Count; i++)
                 {
                     vertices[i] = Vertices[i].Position;
-                    normals[i] = Vertices[i].Normal;
-                    tangents[i] = Vertices[i].Tangent;
+                    normals[i] = Vertices[i].Normal.normalized;
+
+                    var tangent3 = (Vector3)Vertices[i].Tangent;
+                    var tangentW = Vertices[i].Tangent.w;
+                    tangent3.Normalize();
+                    tangents[i] = new Vector4(tangent3.x, tangent3.y, tangent3.z, tangentW);
                 }
 
                 destMesh.vertices = vertices;
