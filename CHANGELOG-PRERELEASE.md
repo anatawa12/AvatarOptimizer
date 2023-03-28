@@ -8,10 +8,6 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Internationalization support `#77`
-  - This adds way to translate editor elements.
-  - However, no other language translation than English is not added yet.
-  - Please feel free to make PullRequest if you can maintain the translation.
 
 ### Changed
 
@@ -20,11 +16,20 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Remove Empty Renderer Object is not shown on the inspector `#76`
-- normal vector and tangent vector might not be unit length `#81`
-  - This can be problem with FreezeBlendShape.
 
 ### Security
+
+## [0.2.6-rc.1] - 2023-03-28
+### Added
+- Internationalization support [`#77`](https://github.com/anatawa12/AvatarOptimizer/pull/77)
+  - This adds way to translate editor elements.
+  - However, no other language translation than English is not added yet.
+  - Please feel free to make PullRequest if you can maintain the translation.
+
+### Fixed
+- Remove Empty Renderer Object is not shown on the inspector [`#76`](https://github.com/anatawa12/AvatarOptimizer/pull/76)
+- normal vector and tangent vector might not be unit length [`#81`](https://github.com/anatawa12/AvatarOptimizer/pull/81)
+  - This can be problem with FreezeBlendShape.
 
 ## [0.2.5] - 2023-03-24
 ### Added
@@ -171,7 +176,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.5...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.6-rc.1...HEAD
+[0.2.6-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.5...v0.2.6-rc.1
 [0.2.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.5-rc.1...v0.2.5
 [0.2.5-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.4...v0.2.5-rc.1
 [0.2.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.3...v0.2.4
