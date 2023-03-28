@@ -21,6 +21,8 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - Remove Empty Renderer Object is not shown on the inspector `#76`
+- normal vector and tangent vector might not be unit length `#81`
+  - This can be problem with FreezeBlendShape.
 
 ### Security
 
