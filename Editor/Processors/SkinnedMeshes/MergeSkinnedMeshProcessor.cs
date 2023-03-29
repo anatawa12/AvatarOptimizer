@@ -33,6 +33,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             for (var i = 0; i < meshInfos.Length; i++)
             {
                 var meshInfo = meshInfos[i];
+
+                meshInfo.AssertInvariantContract($"processing source #{i} of {Target.gameObject.name}");
+
                 target.Vertices.AddRange(meshInfo.Vertices);
                 for (var j = 0; j < 8; j++)
                     target.SetTexCoordStatus(j,
@@ -49,6 +52,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 target.Bones.AddRange(meshInfo.Bones);
 
                 target.HasColor |= meshInfo.HasColor;
+
+                target.AssertInvariantContract($"processing meshInfo {Target.gameObject.name}");
             }
 
             session.Destroy(Component);

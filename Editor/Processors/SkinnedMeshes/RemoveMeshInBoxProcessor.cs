@@ -55,7 +55,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 usingVertices.Add(vertex);
 
             // remove unused vertices
-            target.Vertices.RemoveAll(usingVertices.Contains);
+            target.Vertices.RemoveAll(x => !usingVertices.Contains(x));
         }
 
         public override IMeshInfoComputer GetComputer(IMeshInfoComputer upstream) => new MeshInfoComputer(this, upstream);
