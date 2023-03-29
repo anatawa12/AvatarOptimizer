@@ -16,10 +16,13 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Assertion does not work well `#85`
-  - This can make invalid mesh
 
 ### Security
+
+## [0.2.6-rc.3] - 2023-03-29
+### Fixed
+- Assertion does not work well [`#85`](https://github.com/anatawa12/AvatarOptimizer/pull/85)
+  - This can make invalid mesh
 
 ## [0.2.6-rc.2] - 2023-03-29
 ## [0.2.6-rc.1] - 2023-03-28
@@ -179,7 +182,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.6-rc.2...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.6-rc.3...HEAD
+[0.2.6-rc.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.6-rc.2...v0.2.6-rc.3
 [0.2.6-rc.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.6-rc.1...v0.2.6-rc.2
 [0.2.6-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.5...v0.2.6-rc.1
 [0.2.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.5-rc.1...v0.2.5
