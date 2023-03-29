@@ -1,11 +1,13 @@
 #if true
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.Rendering;
+using Debug = UnityEngine.Debug;
 
 namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 {
@@ -44,6 +46,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             var bones = renderer.bones;
             for (var i = 0; i < bones.Length && i < Bones.Count; i++) Bones[i].Transform = bones[i];
+
+            AssertInvariantContract("SkinnedMeshRenderer");
         }
 
         public MeshInfo2(MeshRenderer renderer)
@@ -57,6 +61,19 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             var materialCount = Math.Min(sourceMaterials.Length, SubMeshes.Count);
             for (var i = 0; i < materialCount; i++)
                 SubMeshes[i].SharedMaterial = sourceMaterials[i];
+
+            AssertInvariantContract("MeshRenderer");
+        }
+
+        [Conditional("UNITY_ASSERTIONS")]
+        public void AssertInvariantContract(string context)
+        {
+            var vertices = new HashSet<Vertex>(Vertices);
+            Debug.Assert(SubMeshes.SelectMany(x => x.Triangles).All(vertices.Contains),
+                $"{context}: some SubMesh has invalid triangles");
+            var bones = new HashSet<Bone>(Bones);
+            Debug.Assert(Vertices.SelectMany(x => x.BoneWeights).Select(x => x.bone).All(bones.Contains),
+                $"{context}: some SubMesh has invalid bone weights");
         }
 
         private void SetIdentityBone(Transform transform)

@@ -22,7 +22,12 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 var target = holder.GetMeshInfoFor(processors.Target);
 
                 foreach (var processor in processors.GetSorted())
+                {
                     processor.Process(session, target, holder);
+                    target.AssertInvariantContract(
+                        $"after {processor.GetType().Name} " +
+                        $"for {processor.Target.gameObject.name}");
+                }
             }
 
             holder.SaveToMesh(session);
