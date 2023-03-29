@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog].
 
 ### Security
 
+## [0.2.6-rc.2] - 2023-03-29
 ## [0.2.6-rc.1] - 2023-03-28
 ### Added
 - Internationalization support [`#77`](https://github.com/anatawa12/AvatarOptimizer/pull/77)
@@ -176,7 +177,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.6-rc.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.6-rc.2...HEAD
+[0.2.6-rc.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.6-rc.1...v0.2.6-rc.2
 [0.2.6-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.5...v0.2.6-rc.1
 [0.2.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.5-rc.1...v0.2.5
 [0.2.5-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.4...v0.2.5-rc.1
