@@ -7,7 +7,7 @@ using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.Rendering;
-using Debug = UnityEngine.Debug;
+using Debug = System.Diagnostics.Debug;
 
 namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 {

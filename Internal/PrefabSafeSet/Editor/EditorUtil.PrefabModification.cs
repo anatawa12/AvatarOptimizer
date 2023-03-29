@@ -5,6 +5,7 @@ using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
+using Debug = System.Diagnostics.Debug;
 
 namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 {
@@ -163,7 +164,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                 }
                 catch (Exception e)
                 {
-                    Debug.LogException(e);
+                    UnityEngine.Debug.LogException(e);
                     // ignored
                 }
             }
