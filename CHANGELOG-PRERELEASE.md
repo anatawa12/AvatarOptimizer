@@ -16,6 +16,8 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Assertion does not work well `#85`
+  - This can make invalid mesh
 
 ### Security
 
