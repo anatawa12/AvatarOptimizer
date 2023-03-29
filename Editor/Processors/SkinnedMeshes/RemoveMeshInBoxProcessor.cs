@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -13,11 +14,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         public override void Process(OptimizerSession session, MeshInfo2 target, MeshInfo2Holder meshInfo2Holder)
         {
+            var inBoxVertices = new HashSet<Vertex>();
             // Vertex.AdditionalTemporal: 0 if in box, 1 if out of box
             foreach (var vertex in target.Vertices)
             {
                 var actualPosition = vertex.ComputeActualPosition(target, Target.transform.worldToLocalMatrix);
-                vertex.AdditionalTemporal = Component.boxList.GetAsList().Any(x => x.ContainsVertex(actualPosition)) ? 0 : 1;
+                if (Component.boxList.GetAsList().Any(x => x.ContainsVertex(actualPosition)))
+                    inBoxVertices.Add(vertex);
             }
 
             foreach (var subMesh in target.SubMeshes)
@@ -30,7 +33,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     var v1 = subMesh.Triangles[srcI + 1];
                     var v2 = subMesh.Triangles[srcI + 2];
 
-                    if (v0.AdditionalTemporal == 0 && v1.AdditionalTemporal == 0 && v2.AdditionalTemporal == 0)
+                    if (inBoxVertices.Contains(v0) && inBoxVertices.Contains(v1) && inBoxVertices.Contains(v2))
                         continue;
 
                     // some vertex is not in box: 
@@ -45,12 +48,14 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             // We don't need to reset AdditionalTemporal because if out of box, it always be used.
             // Vertex.AdditionalTemporal: 0 if unused, 1 if used
 
+            inBoxVertices.Clear();
+            var usingVertices = inBoxVertices;
             foreach (var subMesh in target.SubMeshes)
             foreach (var vertex in subMesh.Triangles)
-                vertex.AdditionalTemporal = 1;
+                usingVertices.Add(vertex);
 
             // remove unused vertices
-            target.Vertices.RemoveAll(x => x.AdditionalTemporal == 0);
+            target.Vertices.RemoveAll(usingVertices.Contains);
         }
 
         public override IMeshInfoComputer GetComputer(IMeshInfoComputer upstream) => new MeshInfoComputer(this, upstream);

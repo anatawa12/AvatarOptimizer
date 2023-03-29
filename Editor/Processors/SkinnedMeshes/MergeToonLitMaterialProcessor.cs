@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -25,11 +26,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         {
             // compute usages. AdditionalTemporal is usage count for now.
             // if #usages is not zero for merging triangles
-            foreach (var v in target.Vertices) v.AdditionalTemporal = 0;
+            var users = new Dictionary<Vertex, int>();
+
+            foreach (var v in target.Vertices) users[v] = 0;
 
             foreach (var targetSubMesh in target.SubMeshes)
             foreach (var v in targetSubMesh.Triangles)
-                v.AdditionalTemporal++;
+                users[v]++;
 
             // compute per-material data
             var mergingIndices = ComputeMergingIndices(target.SubMeshes.Count);
@@ -48,15 +51,15 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     var targetRect = targetRectForMaterial[subMeshI];
                     for (var i = 0; i < subMesh.Triangles.Count; i++)
                     {
-                        if (subMesh.Triangles[i].AdditionalTemporal != 1)
+                        if (users[subMesh.Triangles[i]] != 1)
                         {
                             // if there are multiple users for the vertex: duplicate it
                             var cloned = subMesh.Triangles[i].Clone();
                             target.Vertices.Add(cloned);
                             subMesh.Triangles[i] = cloned;
 
-                            subMesh.Triangles[i].AdditionalTemporal--;
-                            cloned.AdditionalTemporal = 1;
+                            users[subMesh.Triangles[i]]--;
+                            users[cloned] = 1;
                         }
 
                         subMesh.Triangles[i].TexCoord0 = MapUV(subMesh.Triangles[i].TexCoord0, targetRect);
@@ -170,9 +173,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             public MeshInfoComputer(MergeToonLitMaterialProcessor processor, IMeshInfoComputer upstream) : base(upstream)
                 => _processor = processor;
 
-            public override Material[] Materials(bool fast = true) => 
-                _processor.CreateMaterials(_processor.ComputeMergingIndices(
-                    _processor.Target.sharedMesh.subMeshCount), base.Materials(fast), fast);
+            public override Material[] Materials(bool fast = true)
+            {
+                var upstream = base.Materials(fast);
+                return _processor.CreateMaterials(_processor.ComputeMergingIndices(upstream.Length), upstream, fast);
+            }
         }
     }
 }

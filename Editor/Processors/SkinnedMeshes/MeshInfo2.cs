@@ -267,9 +267,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             // triangles and SubMeshes
             {
+                var vertexIndices = new Dictionary<Vertex, int>();
                 // first, set vertex indices
                 for (var i = 0; i < Vertices.Count; i++)
-                    Vertices[i].AdditionalTemporal = i;
+                    vertexIndices.Add(Vertices[i], i);
 
                 var triangles = new int[SubMeshes.Sum(x => x.Triangles.Count)];
                 var subMeshDescriptors = new SubMeshDescriptor[SubMeshes.Count];
@@ -278,7 +279,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 {
                     subMeshDescriptors[i] = new SubMeshDescriptor(trianglesIndex, SubMeshes[i].Triangles.Count);
                     foreach (var triangle in SubMeshes[i].Triangles)
-                        triangles[trianglesIndex++] = triangle.AdditionalTemporal;
+                        triangles[trianglesIndex++] = vertexIndices[triangle];
                 }
 
                 destMesh.triangles = triangles;
@@ -289,8 +290,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             // BoneWeights
             if (Vertices.Any(x => x.BoneWeights.Count != 0)){
+                var boneIndices = new Dictionary<Bone, int>();
                 for (var i = 0; i < Bones.Count; i++)
-                    Bones[i].AdditionalTemporal = i;
+                    boneIndices.Add(Bones[i], i);
 
                 var bonesPerVertex = new NativeArray<byte>(Vertices.Count, Allocator.Temp);
                 var allBoneWeights =
@@ -302,7 +304,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     Vertices[i].BoneWeights.Sort((x, y) => -x.weight.CompareTo(y.weight));
                     foreach (var (bone, weight) in Vertices[i].BoneWeights)
                         allBoneWeights[boneWeightsIndex++] = new BoneWeight1
-                            { boneIndex = bone.AdditionalTemporal, weight = weight };
+                            { boneIndex = boneIndices[bone], weight = weight };
                 }
 
                 destMesh.SetBoneWeights(bonesPerVertex, allBoneWeights);
@@ -362,8 +364,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
     internal class Vertex
     {
-        // You can use this value for your own usage but methods may clear this value.
-        public int AdditionalTemporal;
         public Vector3 Position { get; set; }
         public Vector3 Normal { get; set; }
         public Vector4 Tangent { get; set; }
@@ -493,8 +493,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
     internal class Bone
     {
-        // You can use this value for your own usage but methods may clear this value.
-        public int AdditionalTemporal;
         public Matrix4x4 Bindpose;
         public Transform Transform;
 
