@@ -18,6 +18,7 @@ The format is based on [Keep a Changelog].
 ### Fixed
 - Mesh is broken if more than 65536 vertices are exists `#87`
   - Because we didn't check for vertices count and index format, vertex index can be overflow before.
+- Generated assets are invisible for a while `#88`
 
 ### Security
 
