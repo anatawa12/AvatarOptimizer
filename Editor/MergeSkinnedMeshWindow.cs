@@ -12,9 +12,9 @@ namespace Anatawa12.AvatarOptimizer
             _mesh = (Mesh)EditorGUILayout.ObjectField(_mesh, typeof(Mesh), true);
             if (_mesh != null)
             {
-                //PrintInfo(nameof(_mesh.indexFormat), _mesh.indexFormat);
-                //PrintInfo(nameof(_mesh.vertexBufferCount), _mesh.vertexBufferCount);
-                //PrintInfo(nameof(_mesh.blendShapeCount), _mesh.blendShapeCount);
+                SelectableLabelField(nameof(_mesh.indexFormat), _mesh.indexFormat);
+                SelectableLabelField(nameof(_mesh.vertexBufferCount), _mesh.vertexBufferCount);
+                SelectableLabelField(nameof(_mesh.blendShapeCount), _mesh.blendShapeCount);
                 PrintInfo(nameof(_mesh.bindposes), _mesh.bindposes);
                 //PrintInfo(nameof(_mesh.isReadable), _mesh.isReadable);
                 //PrintInfo(nameof(_mesh.canAccess), _mesh.canAccess); internal
@@ -37,23 +37,30 @@ namespace Anatawa12.AvatarOptimizer
                 //PrintInfo(nameof(_mesh.vertexAttributeCount), _mesh.vertexAttributeCount);
                 PrintInfo(nameof(_mesh.triangles), _mesh.triangles);
                 PrintInfo(nameof(_mesh.boneWeights), _mesh.boneWeights);
-                EditorGUILayout.LabelField("BlendShape count", _mesh.blendShapeCount.ToString());
-                EditorGUILayout.LabelField("All Weights", _mesh.GetAllBoneWeights().Length.ToString());
-                EditorGUILayout.LabelField("BonesPerVertex", _mesh.GetBonesPerVertex().Length.ToString());
-                EditorGUILayout.LabelField("subMeshCount", _mesh.subMeshCount.ToString());
+                SelectableLabelField("BlendShape count", _mesh.blendShapeCount);
+                SelectableLabelField("All Weights", _mesh.GetAllBoneWeights().Length);
+                SelectableLabelField("BonesPerVertex", _mesh.GetBonesPerVertex().Length);
+                SelectableLabelField("subMeshCount", _mesh.subMeshCount);
                 for (var i = 0; i < _mesh.subMeshCount; i++)
-                    EditorGUILayout.LabelField($"subMesh #{i}", _mesh.GetSubMesh(i).ToString());
+                    SelectableLabelField($"subMesh #{i}", _mesh.GetSubMesh(i));
                 var attributes = _mesh.GetVertexAttributes();
                 for (var i = 0; i < attributes.Length; i++)
                 {
-                    EditorGUILayout.LabelField($"attr #{i}", attributes[i].ToString());
+                    SelectableLabelField($"attr #{i}", attributes[i]);
                 }
             }
         }
 
+        private void SelectableLabelField<T>(string label, T value)
+        {
+            var fullRect = EditorGUILayout.GetControlRect(true);
+            var elementRect = EditorGUI.PrefixLabel(fullRect, new GUIContent(label));
+            EditorGUI.SelectableLabel(elementRect, value.ToString());
+        }
+
         private void PrintInfo<T>(string prop, T[] array)
         {
-            EditorGUILayout.LabelField(prop, array == null ? "null" : array.Length.ToString());
+            SelectableLabelField(prop, array == null ? "null" : array.Length.ToString());
         }
 
         [MenuItem("Tools/Avatar Optimizer/Test GUI")]

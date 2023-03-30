@@ -25,6 +25,8 @@ The format is based on [Keep a Changelog].
   - This can be problem with FreezeBlendShape.
 - Assertion does not work well `#85`
   - This can make invalid mesh
+- Mesh is broken if more than 65536 vertices are exists `#87`
+  - Because we didn't check for vertices count and index format, vertex index can be overflow before. 
 
 ### Security
 
