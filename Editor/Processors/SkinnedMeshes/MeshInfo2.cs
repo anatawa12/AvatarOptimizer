@@ -299,6 +299,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                         triangles[trianglesIndex++] = vertexIndices[triangle];
                 }
 
+                destMesh.indexFormat = triangles.Length <= ushort.MaxValue ? IndexFormat.UInt16 : IndexFormat.UInt32;
                 destMesh.triangles = triangles;
                 destMesh.subMeshCount = SubMeshes.Count;
                 for (var i = 0; i < SubMeshes.Count; i++)
