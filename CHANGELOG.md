@@ -8,10 +8,6 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Internationalization support `#77`
-  - This adds way to translate editor elements. 
-  - However, no other language translation than English is not added yet. 
-  - Please feel free to make PullRequest if you can maintain the translation.
 
 ### Changed
 
@@ -20,16 +16,25 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Remove Empty Renderer Object is not shown on the inspector `#76`
-- normal vector and tangent vector might not be unit length `#81`
-  - This can be problem with FreezeBlendShape.
-- Assertion does not work well `#85`
-  - This can make invalid mesh
-- Mesh is broken if more than 65536 vertices are exists `#87`
-  - Because we didn't check for vertices count and index format, vertex index can be overflow before. 
-- Generated assets are invisible for a while `#88`
 
 ### Security
+
+## [0.2.6] - 2023-03-31
+### Added
+- Internationalization support [`#77`](https://github.com/anatawa12/AvatarOptimizer/pull/77)
+  - This adds way to translate editor elements. 
+  - However, no other language translation than English is not added yet. 
+  - Please feel free to make PullRequest if you can maintain the translation.
+
+### Fixed
+- Remove Empty Renderer Object is not shown on the inspector [`#76`](https://github.com/anatawa12/AvatarOptimizer/pull/76)
+- normal vector and tangent vector might not be unit length [`#81`](https://github.com/anatawa12/AvatarOptimizer/pull/81)
+  - This can be problem with FreezeBlendShape.
+- Assertion does not work well [`#85`](https://github.com/anatawa12/AvatarOptimizer/pull/85)
+  - This can make invalid mesh
+- Mesh is broken if more than 65536 vertices are exists [`#87`](https://github.com/anatawa12/AvatarOptimizer/pull/87)
+  - Because we didn't check for vertices count and index format, vertex index can be overflow before. 
+- Generated assets are invisible for a while [`#88`](https://github.com/anatawa12/AvatarOptimizer/pull/88)
 
 ## [0.2.5] - 2023-03-24
 ### Added
@@ -151,7 +156,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.5...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.6...HEAD
+[0.2.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.5...v0.2.6
 [0.2.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.4...v0.2.5
 [0.2.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.3...v0.2.4
 [0.2.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.2...v0.2.3
