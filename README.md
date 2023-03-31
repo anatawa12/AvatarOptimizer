@@ -18,6 +18,11 @@ If you have problems or questions about this tool, please feel free to contact m
 
 ## Installation
 
+### With VCC
+
+1. Click [this link][VCC-add-repo-link] to add anatawa12's repository.
+2. Add AvatarOptimizer from VCC.
+
 ### Using Installer UnityPackage with VPM
 
 With [VPAI] You can include this package just importing one unitypackage.
@@ -249,5 +254,6 @@ This the selected objects will be the children of this component at build time.
 [installer unitypackage 0.2.x]: https://github.com/anatawa12/VPAI-unitypackages/raw/master/bin/AvatarOptimizer-0.2.x-installer.unitypackage
 [installer unitypackage 0.1.x]: https://github.com/anatawa12/VPAI-unitypackages/raw/master/bin/AvatarOptimizer-0.1.x-installer.unitypackage
 [installer unitypackage 0.x beta]: https://github.com/anatawa12/VPAI-unitypackages/raw/master/bin/AvatarOptimizer-0.x.x-beta-installer.unitypackage
+[VCC-add-repo-link]: vcc://vpm/addRepo?url=https%3A%2F%2Fvpm.anatawa12.com%2Fvpm.json
 [issues]: https://github.com/anatawa12/AvatarOptimizer/issues/new
 [VPAI]: https://github.com/anatawa12/VPMPackageAutoInstaller
