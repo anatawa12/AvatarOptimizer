@@ -22,9 +22,9 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                 _size = _prop.intValue;
             }
 
-            public bool Changed => _size != _prop.intValue;
+            public bool Changed => _size != (_prop?.intValue ?? 0);
 
-            public void Updated() => _size = _prop.intValue;
+            public void Updated() => _size = _prop?.intValue ?? 0;
         }
 
         private sealed class PrefabModification : EditorUtil<T>
