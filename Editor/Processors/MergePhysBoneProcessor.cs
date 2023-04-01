@@ -184,7 +184,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
             }
             void Advanced(string arg1, string arg2)
             {
-#if PB_WITH_ADVANCED_BOOL
+#if VRCSDK_3_1_12
                 advancedCallback(arg1, arg2);
 #else
                 callback(arg1);
@@ -251,11 +251,17 @@ namespace Anatawa12.AvatarOptimizer.Processors
             // == Grab & Pose ==
             if (!merge.allowGrabbing) Advanced("allowGrabbing", "grabFilter");
             if (!merge.allowPosing) Advanced("allowPosing", "poseFilter");
+#if VRCSDK_3_1_12
+            if (!merge.snapToHand) Callback1("snapToHand");
+#endif
             if (!merge.grabMovement) Callback1("grabMovement");
             if (!merge.maxStretch) Callback2("maxStretch", "maxStretchCurve");
             // == Options ==
             // Parameter: ignore: must be empty
             // Is Animated: ignore: we can merge them.
+#if VRCSDK_3_1_12
+            if (!merge.resetWhenDisabled) Callback1("resetWhenDisabled");
+#endif
             // Gizmos: ignore: it should not affect actual behaviour
         }
     }

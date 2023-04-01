@@ -32,7 +32,7 @@
         {
             "name": "com.vrchat.avatars",
             "expression": "3.1.12",
-            "define": "PB_WITH_ADVANCED_BOOL"
+            "define": "VRCSDK_3_1_12"
         }
     ],
     "noEngineReferences": false

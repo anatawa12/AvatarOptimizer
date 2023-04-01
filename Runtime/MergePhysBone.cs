@@ -59,10 +59,14 @@ namespace Anatawa12.AvatarOptimizer
         public bool allowPosing;
         [CL4EELocalized("MergePhysBone:prop:maxStretch")]
         public bool maxStretch;
+        [CL4EELocalized("MergePhysBone:prop:snapToHand")]
+        public bool snapToHand;
         // == Others ==
         // public bool overrideParameter; Always
         [CL4EELocalized("MergePhysBone:prop:isAnimated")]
         public bool isAnimated;
+        [CL4EELocalized("MergePhysBone:prop:resetWhenDisabled")]
+        public bool resetWhenDisabled;
 
         [Obsolete("legacy v1", true)] [FormerlySerializedAs("component")]
         public VRCPhysBoneBase[] components;
