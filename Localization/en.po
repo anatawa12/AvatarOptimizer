@@ -143,8 +143,14 @@ msgstr "Allow Posing"
 msgid "MergePhysBone:prop:maxStretch"
 msgstr "Max Stretch"
 
+msgid "MergePhysBone:prop:snapToHand"
+msgstr "Snap To Hand"
+
 msgid "MergePhysBone:prop:isAnimated"
 msgstr "Is Animated"
+
+msgid "MergePhysBone:prop:resetWhenDisabled"
+msgstr "Reset When Disabled"
 
 msgid "MergePhysBone:prop:components"
 msgstr "Components"

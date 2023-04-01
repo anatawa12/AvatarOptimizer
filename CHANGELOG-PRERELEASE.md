@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Support for VRCSDK 3.1.12 and 3.1.13
 
 ### Changed
 

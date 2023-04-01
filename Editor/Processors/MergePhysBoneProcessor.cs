@@ -36,6 +36,15 @@ namespace Anatawa12.AvatarOptimizer.Processors
                         if (!SerializedProperty.DataEquals(aSerialized.FindProperty(property),
                                 bSerialized.FindProperty(property)))
                             differ.Add(property);
+                    }, (advancedBool, otherValue) =>
+                    {
+                        if (!SerializedProperty.DataEquals(aSerialized.FindProperty(advancedBool),
+                                bSerialized.FindProperty(advancedBool)))
+                            differ.Add(advancedBool);
+                        if (bSerialized.FindProperty(advancedBool).enumValueIndex != 2) return;
+                        if (!SerializedProperty.DataEquals(aSerialized.FindProperty(otherValue),
+                                bSerialized.FindProperty(otherValue)))
+                            differ.Add(otherValue);
                     });
                 }
 
@@ -122,6 +131,11 @@ namespace Anatawa12.AvatarOptimizer.Processors
                     property =>
                     {
                         mergedSerialized.FindProperty(property).CopyDataFrom(pbSerialized.FindProperty(property));
+                    }, (advancedBool, otherValue) =>
+                    {
+                        mergedSerialized.FindProperty(advancedBool).CopyDataFrom(pbSerialized.FindProperty(advancedBool));
+                        if (mergedSerialized.FindProperty(advancedBool).enumValueIndex != 2) return;
+                        mergedSerialized.FindProperty(otherValue).CopyDataFrom(pbSerialized.FindProperty(otherValue));
                     });
                 mergedSerialized.ApplyModifiedProperties();
             }
@@ -155,8 +169,9 @@ namespace Anatawa12.AvatarOptimizer.Processors
         }
 
         internal delegate void PropertyCallback(string prop);
+        internal delegate void AdvancedPropertyCallback(string advancedBoolCallback, string otherPropCallback);
 
-        internal static void ProcessProperties(MergePhysBone merge, VRCPhysBoneBase.LimitType limitType, PropertyCallback callback)
+        internal static void ProcessProperties(MergePhysBone merge, VRCPhysBoneBase.LimitType limitType, PropertyCallback callback, AdvancedPropertyCallback advancedCallback)
         {
             void Callback1(string arg1)
             {
@@ -166,6 +181,14 @@ namespace Anatawa12.AvatarOptimizer.Processors
             {
                 callback(arg1);
                 callback(arg2);
+            }
+            void Advanced(string arg1, string arg2)
+            {
+#if VRCSDK_3_1_12
+                advancedCallback(arg1, arg2);
+#else
+                callback(arg1);
+#endif
             }
 
             // == Forces ==
@@ -223,16 +246,22 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
             // == Collision ==
             if (!merge.radius) Callback2("radius", "radiusCurve");
-            if (!merge.allowCollision) Callback1("allowCollision");
+            if (!merge.allowCollision) Advanced("allowCollision", "collisionFilter");
             // colliders: There's no common part
             // == Grab & Pose ==
-            if (!merge.allowGrabbing) Callback1("allowGrabbing");
-            if (!merge.allowPosing) Callback1("allowPosing");
+            if (!merge.allowGrabbing) Advanced("allowGrabbing", "grabFilter");
+            if (!merge.allowPosing) Advanced("allowPosing", "poseFilter");
+#if VRCSDK_3_1_12
+            if (!merge.snapToHand) Callback1("snapToHand");
+#endif
             if (!merge.grabMovement) Callback1("grabMovement");
             if (!merge.maxStretch) Callback2("maxStretch", "maxStretchCurve");
             // == Options ==
             // Parameter: ignore: must be empty
             // Is Animated: ignore: we can merge them.
+#if VRCSDK_3_1_12
+            if (!merge.resetWhenDisabled) Callback1("resetWhenDisabled");
+#endif
             // Gizmos: ignore: it should not affect actual behaviour
         }
     }

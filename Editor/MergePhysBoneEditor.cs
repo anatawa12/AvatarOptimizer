@@ -45,7 +45,9 @@ namespace Anatawa12.AvatarOptimizer
         private SerializedProperty _grabMovementProp;
         private SerializedProperty _allowPosingProp;
         private SerializedProperty _maxStretchProp;
+        private SerializedProperty _snapToHandProp;
         private SerializedProperty _isAnimatedProp;
+        private SerializedProperty _resetWhenDisabledProp;
         private SerializedProperty _componentsSetProp;
         private PrefabSafeSet.EditorUtil<VRCPhysBoneBase> _componentsSetEditorUtil;
 
@@ -72,7 +74,9 @@ namespace Anatawa12.AvatarOptimizer
             _grabMovementProp = serializedObject.FindProperty("grabMovement");
             _allowPosingProp = serializedObject.FindProperty("allowPosing");
             _maxStretchProp = serializedObject.FindProperty("maxStretch");
+            _snapToHandProp = serializedObject.FindProperty("snapToHand");
             _isAnimatedProp = serializedObject.FindProperty("isAnimated");
+            _resetWhenDisabledProp = serializedObject.FindProperty("resetWhenDisabled");
             _componentsSetProp = serializedObject.FindProperty(nameof(MergePhysBone.componentsSet));
             _componentsSetEditorUtil = PrefabSafeSet.EditorUtil<VRCPhysBoneBase>.Create(
                 _componentsSetProp, nestCount, x => (VRCPhysBoneBase)x.objectReferenceValue,
@@ -144,11 +148,17 @@ namespace Anatawa12.AvatarOptimizer
             EditorGUILayout.PropertyField(_grabMovementProp);
             EditorGUILayout.PropertyField(_allowPosingProp);
             EditorGUILayout.PropertyField(_maxStretchProp);
+#if VRCSDK_3_1_12
+            EditorGUILayout.PropertyField(_snapToHandProp);
+#endif
             EditorGUI.indentLevel--;
             // == Others ==
             EditorGUILayout.LabelField("Others", EditorStyles.boldLabel);
             EditorGUI.indentLevel++;
             EditorGUILayout.PropertyField(_isAnimatedProp);
+#if VRCSDK_3_1_12
+            EditorGUILayout.PropertyField(_resetWhenDisabledProp);
+#endif
             EditorGUI.indentLevel--;
 
             EditorGUI.indentLevel--;
