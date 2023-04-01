@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- NullReferenceException with prefabs in editor for PrefabSafeSet `#92`
 
 ### Security
 
