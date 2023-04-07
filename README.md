@@ -254,6 +254,6 @@ This the selected objects will be the children of this component at build time.
 [installer unitypackage 0.2.x]: https://github.com/anatawa12/VPAI-unitypackages/raw/master/bin/AvatarOptimizer-0.2.x-installer.unitypackage
 [installer unitypackage 0.1.x]: https://github.com/anatawa12/VPAI-unitypackages/raw/master/bin/AvatarOptimizer-0.1.x-installer.unitypackage
 [installer unitypackage 0.x beta]: https://github.com/anatawa12/VPAI-unitypackages/raw/master/bin/AvatarOptimizer-0.x.x-beta-installer.unitypackage
-[VCC-add-repo-link]: vcc://vpm/addRepo?url=https%3A%2F%2Fvpm.anatawa12.com%2Fvpm.json
+[VCC-add-repo-link]: https://vpm.anatawa12.com/add-repo
 [issues]: https://github.com/anatawa12/AvatarOptimizer/issues/new
 [VPAI]: https://github.com/anatawa12/VPMPackageAutoInstaller
