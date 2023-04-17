@@ -1,8 +1,6 @@
 using System;
-using Anatawa12.AvatarOptimizer.PrefabSafeList;
 using CustomLocalization4EditorExtension;
 using UnityEngine;
-using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer
 {

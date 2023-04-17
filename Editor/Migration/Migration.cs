@@ -491,35 +491,6 @@ Do you want to migrate project now?",
             Assert.IsTrue(valuesSet.SetEquals(renderersSet.Values));
         }
 
-        private static void MigrateList(SerializedProperty arrayProperty, SerializedProperty listProperty,
-            int nestCount)
-        {
-            var list = PrefabSafeList.EditorUtil.Create(listProperty, nestCount);
-            int index = 0;
-            foreach (var element in list.Elements)
-            {
-                if (!element.Contains) continue;
-                if (index == arrayProperty.arraySize)
-                    element.RemovedProperty.boolValue = true;
-                else
-                {
-                    CopySerializedPropertyValue.Copy(
-                        arrayProperty.GetArrayElementAtIndex(index),
-                        element.ValueProperty);
-                    index++;
-                }
-            }
-
-            while (index < arrayProperty.arraySize)
-            {
-                var element = list.AddElement();
-                CopySerializedPropertyValue.Copy(
-                    arrayProperty.GetArrayElementAtIndex(index),
-                    element.ValueProperty);
-                index++;
-            }
-        }
-
         private readonly struct TypeId
         {
             [CanBeNull] private readonly Dictionary<Type, int> _map;
