@@ -26,7 +26,6 @@ namespace Anatawa12.AvatarOptimizer
         }
 
         private SerializedProperty _mergedComponentProp;
-        private SerializedProperty _rootTransformProp;
         private SerializedProperty _forcesProp;
         private SerializedProperty _pullProp;
         private SerializedProperty _springProp;
@@ -55,7 +54,6 @@ namespace Anatawa12.AvatarOptimizer
         {
             var nestCount = PrefabSafeSet.PrefabSafeSetUtil.PrefabNestCount(serializedObject.targetObject);
             _mergedComponentProp = serializedObject.FindProperty("merged");
-            _rootTransformProp = serializedObject.FindProperty("rootTransform");
             _forcesProp = serializedObject.FindProperty("forces");
             _pullProp = serializedObject.FindProperty("pull");
             _springProp = serializedObject.FindProperty("spring");
@@ -88,8 +86,6 @@ namespace Anatawa12.AvatarOptimizer
             EditorGUI.BeginDisabledGroup(_mergedComponentProp.objectReferenceValue != null);
             EditorGUILayout.PropertyField(_mergedComponentProp);
             EditorGUI.EndDisabledGroup();
-
-            EditorGUILayout.PropertyField(_rootTransformProp);
 
 
             EditorGUILayout.LabelField("Overrides", EditorStyles.boldLabel);

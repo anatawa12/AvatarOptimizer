@@ -17,6 +17,7 @@ namespace Anatawa12.AvatarOptimizer
         [CL4EELocalized("MergePhysBone:prop:merged")]
         public VRCPhysBoneBase merged;
 
+        [Obsolete("v2 legacy", true)]
         public Transform rootTransform;
 
         // == Forces ==

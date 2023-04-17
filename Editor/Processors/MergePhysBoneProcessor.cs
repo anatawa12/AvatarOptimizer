@@ -49,7 +49,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 }
 
                 // other props
-                if (!merge.rootTransform && a.GetTarget().parent != b.GetTarget().parent)
+                if (a.GetTarget().parent != b.GetTarget().parent)
                     differ.Add("Parent of target Transform");
                 if (merge.colliders != CollidersSettings.Copy && !SetEq(a.colliders, b.colliders)) differ.Add("colliders");
             }
@@ -70,53 +70,10 @@ namespace Anatawa12.AvatarOptimizer.Processors
             var pb = sourceComponents[0];
             var merged = merge.merged;
 
-            var root = merge.rootTransform
-                ? merge.rootTransform
-                : Utils.NewGameObject("PhysBoneRoot", pb.GetTarget().parent).transform;
-            
-            var additionalIgnoreTransforms = new List<Transform>();
+            var root = Utils.NewGameObject("PhysBoneRoot", pb.GetTarget().parent).transform;
 
-            if (merge.rootTransform)
-            {
-                // for components with rootTransform, add _dummy objects and add more ignoreTransforms.
-
-                if (sourceComponents.Any(physBone => !physBone.GetTarget().IsChildOf(merge.rootTransform)))
-                    throw new InvalidOperationException("MergePhysBone requirements is not met: rootTransform");
-
-                var transforms = new HashSet<Transform>(
-                    from component in sourceComponents
-                    from parent in component.GetTarget().ParentEnumerable().TakeWhile(x => x != root)
-                    select parent);
-
-                var physBoneTransforms = new HashSet<Transform>(sourceComponents.Select(Utils.GetTarget));
-
-                merge.rootTransform.WalkChildren(child =>
-                {
-                    // it's PhysBone transform: do nothing 
-                    if (physBoneTransforms.Contains(child))
-                        return false;
-
-                    if (!transforms.Contains(child))
-                    {
-                        // it's not on path for PhysBone: ignore transform
-                        additionalIgnoreTransforms.Add(child);
-                        return false;
-                    }
-
-                    // it's on path to PhysBone transform: make it ignored with multiChildType = Ignore.
-                    var childPhysBones = child.DirectChildrenEnumerable().Count(x => !transforms.Contains(x));
-
-                    if (childPhysBones == 1)
-                        physBoneTransforms.Add(Utils.NewGameObject("_dummy", child).transform);
-
-                    return true;
-                });
-            }
-            else
-            {
-                foreach (var physBone in sourceComponents)
-                    physBone.GetTarget().parent = root;
-            }
+            foreach (var physBone in sourceComponents)
+                physBone.GetTarget().parent = root;
 
             // clear endpoint position
             foreach (var physBone in sourceComponents)
@@ -143,8 +100,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
             // copy other properties
             // === Transforms ===
             merged.rootTransform = root;
-            merged.ignoreTransforms = sourceComponents.SelectMany(x => x.ignoreTransforms)
-                .Concat(additionalIgnoreTransforms).Distinct().ToList();
+            merged.ignoreTransforms = sourceComponents.SelectMany(x => x.ignoreTransforms).Distinct().ToList();
             merged.endpointPosition = Vector3.zero;
             merged.multiChildType = VRCPhysBoneBase.MultiChildType.Ignore;
             switch (merge.colliders)
