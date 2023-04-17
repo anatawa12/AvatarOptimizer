@@ -41,13 +41,13 @@ namespace Anatawa12.AvatarOptimizer
             public Layer[] prefabLayers = Array.Empty<Layer>();
 
             [Serializable]
-            public class Layer : PrefabLayer<BoundingBox, Container>
+            public class Layer
             {
                 public Container[] elements = Array.Empty<Container>();
             }
 
             [Serializable]
-            public class Container : ValueContainer<BoundingBox>
+            public class Container
             {
                 public BoundingBox value;
                 public bool removed;
