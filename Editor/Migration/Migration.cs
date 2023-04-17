@@ -270,11 +270,23 @@ Do you want to migrate project now?",
             {
 #pragma warning disable CS0618
                 case 1:
+                    if (serialized.targetObject.GetType() == typeof(RemoveMeshInBox))
+                    {
+                        // format for RemoveMeshInBox is reverted to v1 in v3 so skip.
+                        versionProp.intValue = 3;
+                        modified = true;
+                        goto case 3;
+                    }
                     MigrateV1ToV2(nestCount, serialized);
                     versionProp.intValue = 2;
                     modified = true;
                     goto case 2;
                 case 2:
+                    MigrateV2ToV3(nestCount, serialized);
+                    versionProp.intValue = 2;
+                    modified = true;
+                    goto case 3;
+                case 3:
 #pragma warning restore CS0618
                     // it's current version: save
                     serialized.ApplyModifiedProperties();
@@ -362,9 +374,78 @@ Do you want to migrate project now?",
                 case 4:
                 {
                     // RemoveMeshInBox
-                    MigrateList(serialized.FindProperty(nameof(RemoveMeshInBox.boxes)),
-                        serialized.FindProperty(nameof(RemoveMeshInBox.boxList)), 
-                        nestCount);
+                    throw new Exception("V1 to V2 migration for RemoveMeshInBox has been removed");
+                }
+            }
+        }
+
+        private static readonly TypeId MigrateV2ToV3Types = new TypeId(new []
+        {
+            typeof(RemoveMeshInBox),
+        });
+
+        [Obsolete("migration process")]
+        private static void MigrateV2ToV3(int nestCount, SerializedObject serialized)
+        {
+            switch (MigrateV2ToV3Types.GetType(serialized.targetObject.GetType()))
+            {
+                case 1:
+                {
+                    // RemoveMeshInBox
+                    SerializedProperty[] GetContainers()
+                    {
+                        var psList = serialized.FindProperty(nameof(RemoveMeshInBox.boxList));
+                        // Container[]
+                        var firstLayer =
+                            psList.FindPropertyRelative(nameof(RemoveMeshInBox.BoundingBoxList.firstLayer));
+                        // Layer[]
+                        var prefabLayers =
+                            psList.FindPropertyRelative(nameof(RemoveMeshInBox.BoundingBoxList.prefabLayers));
+                        // Container[][]
+                        var layerArrays = new SerializedProperty[prefabLayers.arraySize + 1];
+
+                        layerArrays[0] = firstLayer;
+
+                        for (var i = 0; i < prefabLayers.arraySize; ++i)
+                            layerArrays[i + 1] = prefabLayers.GetArrayElementAtIndex(i)
+                                .FindPropertyRelative(nameof(RemoveMeshInBox.BoundingBoxList.Layer.elements));
+
+                        var count = layerArrays.Sum(x => x.arraySize);
+                        var result = new SerializedProperty[count];
+
+                        var k = 0;
+                        foreach (var ary in layerArrays)
+                            for (var j = 0; j < ary.arraySize; ++j)
+                                result[k++] = ary.GetArrayElementAtIndex(j);
+
+                        return result;
+                    }
+
+                    var containers = GetContainers();
+                    var array = serialized.FindProperty(nameof(RemoveMeshInBox.boxes));
+                    if (array.arraySize != containers.Length)
+                        array.arraySize = containers.Length;
+
+                    for (var i = 0; i < containers.Length; i++)
+                    {
+                        var container = containers[i];
+                        var removed =
+                            container.FindPropertyRelative(nameof(RemoveMeshInBox.BoundingBoxList.Container.removed));
+                        var value = container.FindPropertyRelative(nameof(RemoveMeshInBox.BoundingBoxList.Container
+                            .value));
+                        var field = array.GetArrayElementAtIndex(i);
+
+                        field.FindPropertyRelative(nameof(RemoveMeshInBox.BoundingBox.size)).vector3Value =
+                            removed.boolValue
+                                ? Vector3.zero
+                                : value.FindPropertyRelative(nameof(RemoveMeshInBox.BoundingBox.size)).vector3Value;
+
+                        field.FindPropertyRelative(nameof(RemoveMeshInBox.BoundingBox.center)).vector3Value =
+                            field.FindPropertyRelative(nameof(RemoveMeshInBox.BoundingBox.center)).vector3Value;
+
+                        field.FindPropertyRelative(nameof(RemoveMeshInBox.BoundingBox.rotation)).quaternionValue =
+                            field.FindPropertyRelative(nameof(RemoveMeshInBox.BoundingBox.rotation)).quaternionValue;
+                    }
                     break;
                 }
             }
@@ -408,35 +489,6 @@ Do you want to migrate project now?",
                 renderersSet.GetElementOf(value).EnsureAdded();
 
             Assert.IsTrue(valuesSet.SetEquals(renderersSet.Values));
-        }
-
-        private static void MigrateList(SerializedProperty arrayProperty, SerializedProperty listProperty,
-            int nestCount)
-        {
-            var list = PrefabSafeList.EditorUtil.Create(listProperty, nestCount);
-            int index = 0;
-            foreach (var element in list.Elements)
-            {
-                if (!element.Contains) continue;
-                if (index == arrayProperty.arraySize)
-                    element.RemovedProperty.boolValue = true;
-                else
-                {
-                    CopySerializedPropertyValue.Copy(
-                        arrayProperty.GetArrayElementAtIndex(index),
-                        element.ValueProperty);
-                    index++;
-                }
-            }
-
-            while (index < arrayProperty.arraySize)
-            {
-                var element = list.AddElement();
-                CopySerializedPropertyValue.Copy(
-                    arrayProperty.GetArrayElementAtIndex(index),
-                    element.ValueProperty);
-                index++;
-            }
         }
 
         private readonly struct TypeId

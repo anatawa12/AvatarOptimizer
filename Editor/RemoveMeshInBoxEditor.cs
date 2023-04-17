@@ -1,5 +1,6 @@
+using System;
 using System.Collections.Generic;
-using Anatawa12.AvatarOptimizer.PrefabSafeList;
+using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
 
@@ -8,34 +9,48 @@ namespace Anatawa12.AvatarOptimizer
     [CustomEditor(typeof(RemoveMeshInBox))]
     internal class RemoveMeshInBoxEditor : AvatarTagComponentEditorBase
     {
-        private ListEditor _boxList;
+        private SerializedProperty _boxes;
+        private string _editingBoxPropPath;
+        private readonly Dictionary<string, (Quaternion value, Vector3 euler)> _eulerAngles =
+            new Dictionary<string, (Quaternion value, Vector3 euler)>();
 
         private void OnEnable()
         {
-            var nestCount = PrefabSafeListUtil.PrefabNestCount(serializedObject.targetObject);
-            _boxList = new ListEditor(serializedObject.FindProperty("boxList"), nestCount);
+            _boxes = serializedObject.FindProperty(nameof(RemoveMeshInBox.boxes));
         }
 
         protected override void OnInspectorGUIInner()
         {
-            var rect = EditorGUILayout.GetControlRect(true, _boxList.GetPropertyHeight());
-            _boxList.OnGUI(rect);
+            // size prop
+            _boxes.isExpanded = true;
+            using (new BoundingBoxEditor.EditorScope(this))
+                EditorGUILayout.PropertyField(_boxes);
 
             serializedObject.ApplyModifiedProperties();
         }
 
-        private class ListEditor : EditorBase
+        [CustomPropertyDrawer(typeof(RemoveMeshInBox.BoundingBox))]
+        class BoundingBoxEditor : PropertyDrawer
         {
-            public string EditingBoxPropPath;
+            [CanBeNull] private static RemoveMeshInBoxEditor _upstreamEditor;
 
-            private readonly Dictionary<string, (Quaternion value, Vector3 euler)> _eulerAngle =
-                new Dictionary<string, (Quaternion value, Vector3 euler)>();
-
-            public ListEditor(SerializedProperty property, int nestCount) : base(property, nestCount)
+            public readonly struct EditorScope : IDisposable
             {
+                private readonly RemoveMeshInBoxEditor _oldEditor;
+
+                public EditorScope(RemoveMeshInBoxEditor editor)
+                {
+                    _oldEditor = _upstreamEditor;
+                    _upstreamEditor = editor;
+                }
+
+                public void Dispose()
+                {
+                    _upstreamEditor = _oldEditor;
+                }
             }
 
-            protected override float FieldHeight(SerializedProperty serializedProperty)
+            public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
             {
                 return EditorGUIUtility.singleLineHeight // header
                        + EditorGUIUtility.standardVerticalSpacing + EditorGUIUtility.singleLineHeight // center
@@ -45,40 +60,36 @@ namespace Anatawa12.AvatarOptimizer
                     ;
             }
 
-            protected override bool Field(Rect position, GUIContent label, SerializedProperty boxProp)
+            public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
             {
-                var removeElement = false;
-
                 position.height = EditorGUIUtility.singleLineHeight;
-                var prevWidth = position.width;
-                var prevX = position.x;
-                position.width -= EditorGUIUtility.standardVerticalSpacing + EditorGUIUtility.singleLineHeight;
                 EditorGUI.LabelField(position, label);
-                position.x += position.width + EditorGUIUtility.standardVerticalSpacing;
-                position.width = EditorGUIUtility.singleLineHeight;
-
-                if (GUI.Button(position, EditorStatics.RemoveButton))
-                    removeElement = true;
-
-                position.width = prevWidth;
-                position.x = prevX;
 
                 position.y += EditorGUIUtility.standardVerticalSpacing + EditorGUIUtility.singleLineHeight;
 
-                var centerProp = boxProp.FindPropertyRelative("center");
-                var sizeProp = boxProp.FindPropertyRelative("size");
-                var rotationProp = boxProp.FindPropertyRelative("rotation");
+                var centerProp = property.FindPropertyRelative("center");
+                var sizeProp = property.FindPropertyRelative("size");
+                var rotationProp = property.FindPropertyRelative("rotation");
 
                 using (new EditorGUI.IndentLevelScope())
                 {
                     using (new GUILayout.HorizontalScope())
                     {
-                        var editingCurrent = EditingBoxPropPath == boxProp.propertyPath;
-                        if (GUI.Button(position, editingCurrent ? "Finish Editing Box" : "Edit This Box"))
+                        if (_upstreamEditor)
                         {
-                            EditingBoxPropPath = editingCurrent ? null : boxProp.propertyPath;
-                            SceneView.RepaintAll(); // to show/hide gizmo
+                            var editingCurrent = _upstreamEditor._editingBoxPropPath == property.propertyPath;
+                            if (GUI.Button(position, editingCurrent ? "Finish Editing Box" : "Edit This Box"))
+                            {
+                                _upstreamEditor._editingBoxPropPath = editingCurrent ? null : property.propertyPath;
+                                SceneView.RepaintAll(); // to show/hide gizmo
+                            }
                         }
+                        else
+                        {
+                            using (new EditorGUI.DisabledScope(true))
+                                GUI.Button(position, "Cannot edit in this context");
+                        }
+
                         position.y += EditorGUIUtility.standardVerticalSpacing + EditorGUIUtility.singleLineHeight;
                     }
 
@@ -86,11 +97,13 @@ namespace Anatawa12.AvatarOptimizer
                     position.y += EditorGUIUtility.standardVerticalSpacing + EditorGUIUtility.singleLineHeight;
                     EditorGUI.PropertyField(position, sizeProp);
                     position.y += EditorGUIUtility.standardVerticalSpacing + EditorGUIUtility.singleLineHeight;
-                    if (!_eulerAngle.TryGetValue(boxProp.propertyPath, out var eulerCache)
-                        || eulerCache.value != rotationProp.quaternionValue)
+
+                    if (!_upstreamEditor ||
+                        !_upstreamEditor._eulerAngles.TryGetValue(property.propertyPath, out var eulerCache) ||
+                        eulerCache.value != rotationProp.quaternionValue)
                     {
-                        _eulerAngle[boxProp.propertyPath] = eulerCache = (rotationProp.quaternionValue,
-                            rotationProp.quaternionValue.eulerAngles);
+                        eulerCache = (value: rotationProp.quaternionValue,
+                            euler: rotationProp.quaternionValue.eulerAngles);
                     }
 
                     // rotation in euler
@@ -102,37 +115,22 @@ namespace Anatawa12.AvatarOptimizer
                     {
                         var quot = Quaternion.Euler(euler);
                         rotationProp.quaternionValue = quot;
-                        _eulerAngle[boxProp.propertyPath] = (quot, euler);
+                        eulerCache = (quot, euler);
                     }
+
+                    if (_upstreamEditor)
+                        _upstreamEditor._eulerAngles[property.propertyPath] = eulerCache;
+
                     EditorGUI.EndProperty();
                     position.y += EditorGUIUtility.standardVerticalSpacing + EditorGUIUtility.singleLineHeight;
                 }
-
-                return removeElement;
-            }
-
-            protected override void InitializeNewElement(IElement element)
-            {
-                var box = element.ValueProperty;
-                box.FindPropertyRelative("center").vector3Value = Vector3.zero;
-                box.FindPropertyRelative("size").vector3Value = Vector3.one;
-                box.FindPropertyRelative("rotation").quaternionValue = Quaternion.identity;
-                EditingBoxPropPath = element.ValueProperty.propertyPath;
-            }
-
-            static class EditorStatics
-            {
-                public static readonly GUIContent RemoveButton = new GUIContent("x")
-                {
-                    tooltip = "Remove Element from the list."
-                };
             }
         }
 
         private void OnSceneGUI()
         {
-            if (_boxList.EditingBoxPropPath == null) return;
-            var box = serializedObject.FindProperty(_boxList.EditingBoxPropPath);
+            if (_editingBoxPropPath == null) return;
+            var box = serializedObject.FindProperty(_editingBoxPropPath);
             if (box == null) return;
 
             var centerProp = box.FindPropertyRelative("center");
@@ -195,7 +193,7 @@ namespace Anatawa12.AvatarOptimizer
                 Handles.matrix = script.transform.localToWorldMatrix;
                 Handles.color = Color.red;
 
-                foreach (var boundingBox in script.boxList.GetAsList())
+                foreach (var boundingBox in script.boxes)
                 {
                     var halfSize = boundingBox.size / 2;
                     var x = boundingBox.rotation * new Vector3(halfSize.x, 0, 0);
