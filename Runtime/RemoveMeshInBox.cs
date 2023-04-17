@@ -11,15 +11,10 @@ namespace Anatawa12.AvatarOptimizer
     [DisallowMultipleComponent]
     internal class RemoveMeshInBox : EditSkinnedMeshComponent
     {
-        [Obsolete("legacy v1", true)]
         public BoundingBox[] boxes = Array.Empty<BoundingBox>();
 
-        public BoundingBoxList boxList;
-
-        public RemoveMeshInBox()
-        {
-            boxList = new BoundingBoxList(this);
-        }
+        [Obsolete("legacy v2", true)]
+        public BoundingBoxList boxList = new BoundingBoxList();
 
         [Serializable]
         public class BoundingBox
@@ -42,15 +37,22 @@ namespace Anatawa12.AvatarOptimizer
         }
 
         [Serializable]
-        public class BoundingBoxList : PrefabSafeList<BoundingBox, BoundingBoxList.Layer, BoundingBoxList.Container>
+        public class BoundingBoxList
         {
-            [Serializable]
-            public class Layer : PrefabLayer<BoundingBox, Container> {}
-            [Serializable]
-            public class Container : ValueContainer<BoundingBox> {}
+            public Container[] firstLayer = Array.Empty<Container>();
+            public Layer[] prefabLayers = Array.Empty<Layer>();
 
-            public BoundingBoxList(Object outerObject) : base(outerObject)
+            [Serializable]
+            public class Layer : PrefabLayer<BoundingBox, Container>
             {
+                public Container[] elements = Array.Empty<Container>();
+            }
+
+            [Serializable]
+            public class Container : ValueContainer<BoundingBox>
+            {
+                public BoundingBox value;
+                public bool removed;
             }
         }
     }
