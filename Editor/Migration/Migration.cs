@@ -283,7 +283,7 @@ Do you want to migrate project now?",
                     goto case 2;
                 case 2:
                     MigrateV2ToV3(nestCount, serialized);
-                    versionProp.intValue = 2;
+                    versionProp.intValue = 3;
                     modified = true;
                     goto case 3;
                 case 3:
