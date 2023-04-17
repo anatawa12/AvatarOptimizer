@@ -11,7 +11,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Clone this repo
-        run: git clone --filter=tree:0 --bare "${{ github.repositoryUrl }}" .
+        env:
+          REPO: ${{ github.server_url }}/${{ github.repository }}.git
+        run: git clone --filter=tree:0 --bare "$REPO" .
       - name: Check requirements
         run: |
           DISALLOWED_COMMIT="08f9dd4b6ac368bd8573787bce8105f071e9cd3d"
