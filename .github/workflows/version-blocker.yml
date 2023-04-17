@@ -18,9 +18,9 @@ jobs:
         run: |
           DISALLOWED_COMMIT="08f9dd4b6ac368bd8573787bce8105f071e9cd3d"
           if git log --pretty=%H | grep "$DISALLOWED_COMMIT" > /dev/null; then
-            echo "there is no disallowed commit"
-            exit 0
-          else
             echo "there is disallowed commit"
             exit 1
+          else
+            echo "there is no disallowed commit"
+            exit 0
           fi
