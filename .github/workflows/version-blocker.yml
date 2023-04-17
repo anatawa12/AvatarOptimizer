@@ -2,7 +2,6 @@ name: 0.3 blocker
 
 on:
   pull_request:
-    branches: [ master ]
     types: [ opened, synchronize, reopened, ready_for_review ]
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
@@ -11,10 +10,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Clone this repo
+        if: github.base_ref == 'master'
         env:
           REPO: ${{ github.server_url }}/${{ github.repository }}.git
         run: git clone --filter=tree:0 --bare "$REPO" .
       - name: Check requirements
+        if: github.base_ref == 'master'
         run: |
           DISALLOWED_COMMIT="ba8550f62c356a89cdddf9f218f9ad227b21403c"
           if git log --pretty=%H | grep "$DISALLOWED_COMMIT" > /dev/null; then
