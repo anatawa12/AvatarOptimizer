@@ -18,7 +18,7 @@ jobs:
         if: github.base_ref == 'master'
         run: |
           DISALLOWED_COMMIT="ba8550f62c356a89cdddf9f218f9ad227b21403c"
-          if git log "$GITHUB_REF" --pretty=%H | grep "$DISALLOWED_COMMIT" > /dev/null; then
+          if git log "$GITHUB_SHA" --pretty=%H | grep "$DISALLOWED_COMMIT" > /dev/null; then
             echo "there is disallowed commit"
             exit 1
           else
