@@ -70,10 +70,19 @@ namespace Anatawa12.AvatarOptimizer.Processors
             var pb = sourceComponents[0];
             var merged = merge.merged;
 
-            var root = Utils.NewGameObject("PhysBoneRoot", pb.GetTarget().parent).transform;
+            // optimization: if All children of the parent is to be merged,
+            //    reuse that parent GameObject instead of creating new one.
+            Transform root;
+            if (sourceComponents.Count == pb.GetTarget().parent.childCount)
+            {
+                root = pb.GetTarget().parent;
+            } else
+            {
+                root = Utils.NewGameObject("PhysBoneRoot", pb.GetTarget().parent).transform;
 
-            foreach (var physBone in sourceComponents)
-                physBone.GetTarget().parent = root;
+                foreach (var physBone in sourceComponents)
+                    physBone.GetTarget().parent = root;
+            }
 
             // clear endpoint position
             foreach (var physBone in sourceComponents)
