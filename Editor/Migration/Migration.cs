@@ -223,8 +223,12 @@ Do you want to migrate project now?",
             int forceVersion = int.MaxValue)
         {
             var scenes = Enumerable.Range(0, SceneManager.sceneCount).Select(SceneManager.GetSceneAt).ToArray();
-            EditorSceneManager.SaveScenes(scenes);
+            // skip saving
+            if (scenes.Any(x => x.isDirty))
+                EditorSceneManager.SaveScenes(scenes);
             var openingScenePaths = scenes.Select(x => x.path).ToArray();
+            if (openingScenePaths.Any(string.IsNullOrEmpty))
+                openingScenePaths = null;
             // load each scene and migrate scene
             for (var i = 0; i < scenePaths.Count; i++)
             {
@@ -249,10 +253,12 @@ Do you want to migrate project now?",
                 if (modified)
                     EditorSceneManager.SaveScene(scene);
             }
+
             EditorSceneManager.NewScene(NewSceneSetup.EmptyScene);
             progressCallback("finish Prefabs", scenePaths.Count);
 
-            if (EditorUtility.DisplayDialog("Reopen?", "Do you want to reopen previously opened scenes?", "Yes",
+            if (openingScenePaths != null
+                && EditorUtility.DisplayDialog("Reopen?", "Do you want to reopen previously opened scenes?", "Yes",
                     "No"))
             {
                 EditorSceneManager.OpenScene(openingScenePaths[0]);
