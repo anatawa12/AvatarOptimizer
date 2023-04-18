@@ -83,6 +83,15 @@ msgstr "You will remove this GameObject and merge bone to parent"
 
 # region
 
+msgid "MergePhysBone:prop:makeParent"
+msgstr "Make Children of Me"
+
+msgid "MergePhysBone:tooltip:makeParent"
+msgstr "Make every PhysBones child of this GameObject"
+
+msgid "MergePhysBone:error:makeParentWithChildren"
+msgstr "There's children with Make Children of Me enabled."
+
 msgid "MergePhysBone:prop:merged"
 msgstr "Merged"
 
