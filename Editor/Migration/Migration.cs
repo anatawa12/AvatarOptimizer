@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Anatawa12.AvatarOptimizer.PrefabSafeSet;
 using JetBrains.Annotations;
 using UnityEditor;
@@ -76,6 +77,7 @@ Do you want to migrate project now?",
         {
             try
             {
+                PreMigration();
                 var prefabs = GetPrefabs();
 
                 MigratePrefabs(prefabs, (name, i) => EditorUtility.DisplayProgressBar(
@@ -91,6 +93,7 @@ Do you want to migrate project now?",
             finally
             {
                 EditorUtility.ClearProgressBar();
+                PostMigration();
             }
         }
 
@@ -99,6 +102,7 @@ Do you want to migrate project now?",
         {
             try
             {
+                PreMigration();
                 var scenePaths = AssetDatabase.FindAssets("t:scene").Select(AssetDatabase.GUIDToAssetPath).ToList();
 
                 MigrateAllScenes(scenePaths, (name, i) => EditorUtility.DisplayProgressBar(
@@ -114,6 +118,7 @@ Do you want to migrate project now?",
             finally
             {
                 EditorUtility.ClearProgressBar();
+                PostMigration();
             }
         }
 
@@ -122,6 +127,7 @@ Do you want to migrate project now?",
         {
             try
             {
+                PreMigration();
                 var prefabs = GetPrefabs();
                 var scenePaths = AssetDatabase.FindAssets("t:scene").Select(AssetDatabase.GUIDToAssetPath).ToList();
                 float totalCount = prefabs.Count + scenePaths.Count;
@@ -144,6 +150,7 @@ Do you want to migrate project now?",
             finally
             {
                 EditorUtility.ClearProgressBar();
+                PostMigration();
             }
         }
 
@@ -451,6 +458,66 @@ Do you want to migrate project now?",
             }
         }
 #pragma warning restore CS0618
+
+        // incompatibility warnings
+        enum IncompatibilityKind
+        {
+        }
+
+        // IncompatibilityKind -> asset path[]
+        private static readonly Dictionary<IncompatibilityKind, HashSet<string>> IncompatibleAssets =
+            new Dictionary<IncompatibilityKind, HashSet<string>>();
+
+        private static void PreMigration()
+        {
+            IncompatibleAssets.Clear();
+        }
+
+        private static void FoundIncompatibleAsset(IncompatibilityKind kind, Object asset)
+        {
+            if (!IncompatibleAssets.TryGetValue(kind, out var set))
+                IncompatibleAssets[kind] = set = new HashSet<string>();
+            var id = GlobalObjectId.GetGlobalObjectIdSlow(asset);
+            var path = AssetDatabase.GUIDToAssetPath(id.assetGUID.ToString());
+            Debug.Log($"{kind} found for {path}");
+            set.Add(path);
+        }
+
+        private static void PostMigration()
+        {
+            (string, string) IncompatibilityMessage(IncompatibilityKind kind)
+            {
+                switch (kind)
+                {
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(kind), kind, null);
+                }
+            }
+            foreach (var keyValuePair in IncompatibleAssets)
+            {
+                if (keyValuePair.Value.Count != 0)
+                {
+                    var (message, link) = IncompatibilityMessage(keyValuePair.Key);
+                    var messageBuilder = new StringBuilder(message);
+                    messageBuilder.Append("\n This change affects the following assets:");
+                    foreach (var path in keyValuePair.Value)
+                        messageBuilder.Append(path).Append("\n");
+                    messageBuilder.Append("\n for more details, click 'Read more' to read more details about this changes on github");
+
+                    switch (EditorUtility.DisplayDialogComplex("Incompatibility Detected", messageBuilder.ToString(), 
+                                "OK", "Dismiss", "Read More"))
+                    {
+                        case 0:
+                        case 1:
+                            break;
+                        case 2:
+                            Application.OpenURL(link);
+                            break;
+                    }
+                }
+            }
+            IncompatibleAssets.Clear();
+        }
 
         private static void MigrateSet<T>(
             SerializedProperty arrayProperty,
