@@ -9,6 +9,7 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.SceneManagement;
+using VRC.Dynamics;
 using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.Migration
@@ -389,6 +390,7 @@ Do you want to migrate project now?",
         private static readonly TypeId MigrateV2ToV3Types = new TypeId(new []
         {
             typeof(RemoveMeshInBox),
+            typeof(MergePhysBone),
         });
 
         [Obsolete("migration process")]
@@ -455,6 +457,30 @@ Do you want to migrate project now?",
                     }
                     break;
                 }
+                case 2:
+                {
+                    // MergePhysBone
+
+                    // check rootTransform deletion
+                    var root = serialized.FindProperty(nameof(MergePhysBone.rootTransform));
+                    if (root.objectReferenceValue)
+                    {
+                        // might be incompatible changes.
+                        var parent = (Transform)root.objectReferenceValue;
+                        var components = EditorUtil<VRCPhysBoneBase>.Create(serialized.FindProperty(nameof(MergePhysBone.componentsSet)), nestCount,
+                            x => (VRCPhysBoneBase)x.objectReferenceValue, (x, y) => x.objectReferenceValue = y)
+                            .Values.ToList();
+
+                        if (components.Count != 0)
+                        {
+                            var targetParent = components[0].GetTarget().parent;
+                            if (targetParent != parent || components.Count != parent.childCount)
+                                FoundIncompatibleAsset(IncompatibilityKind.MergePhysBoneRootBone,
+                                    serialized.targetObject);
+                        }
+                    }
+                    break;
+                }
             }
         }
 #pragma warning restore CS0618
@@ -462,6 +488,7 @@ Do you want to migrate project now?",
         // incompatibility warnings
         enum IncompatibilityKind
         {
+            MergePhysBoneRootBone
         }
 
         // IncompatibilityKind -> asset path[]
@@ -489,6 +516,9 @@ Do you want to migrate project now?",
             {
                 switch (kind)
                 {
+                    case IncompatibilityKind.MergePhysBoneRootBone:
+                        return ("We've removed root bone configuration of MergePhysBone in v0.3.0.",
+                            "https://github.com/anatawa12/AvatarOptimizer/issues/62#issuecomment-1512586282");
                     default:
                         throw new ArgumentOutOfRangeException(nameof(kind), kind, null);
                 }
