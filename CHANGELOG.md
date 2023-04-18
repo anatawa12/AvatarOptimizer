@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Make Children of Me `#100`
+  - As a alternative of feature removal in same pull request
 
 ### Changed
 - **BREAKING** Removed Prefab Safe List `#95`
