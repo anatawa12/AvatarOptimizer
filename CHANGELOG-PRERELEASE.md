@@ -11,6 +11,10 @@ The format is based on [Keep a Changelog].
 
 ### Changed
 - **BREAKING** Removed Prefab Safe List `#95`
+- **BREAKING** Removed RootTransform feature from MergePhysBone `#100`
+  - See [this issue comment][about-root-transform] for more datails.
+
+[about-root-transform]: https://github.com/anatawa12/AvatarOptimizer/issues/62#issuecomment-1512586282
 
 ### Deprecated
 
