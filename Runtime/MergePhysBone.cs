@@ -20,6 +20,9 @@ namespace Anatawa12.AvatarOptimizer
         [Obsolete("v2 legacy", true)]
         public Transform rootTransform;
 
+        [CL4EELocalized("MergePhysBone:prop:makeParent", "MergePhysBone:tooltip:makeParent")]
+        public bool makeParent;
+
         // == Forces ==
         [FormerlySerializedAs("force")] [CL4EELocalized("MergePhysBone:prop:forces")]
         public bool forces;

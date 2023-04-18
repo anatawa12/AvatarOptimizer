@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using CustomLocalization4EditorExtension;
 using UnityEditor;
 using UnityEngine;
 using VRC.Dynamics;
@@ -49,7 +50,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 }
 
                 // other props
-                if (a.GetTarget().parent != b.GetTarget().parent)
+                if (!merge.makeParent && a.GetTarget().parent != b.GetTarget().parent)
                     differ.Add("Parent of target Transform");
                 if (merge.colliders != CollidersSettings.Copy && !SetEq(a.colliders, b.colliders)) differ.Add("colliders");
             }
@@ -73,7 +74,17 @@ namespace Anatawa12.AvatarOptimizer.Processors
             // optimization: if All children of the parent is to be merged,
             //    reuse that parent GameObject instead of creating new one.
             Transform root;
-            if (sourceComponents.Count == pb.GetTarget().parent.childCount)
+            if (merge.makeParent)
+            {
+                root = merge.transform;
+
+                if (root.childCount != 0)
+                    throw new InvalidOperationException(CL4EE.Tr("MergePhysBone:error:makeParentWithChildren"));
+
+                foreach (var physBone in sourceComponents)
+                        physBone.GetTarget().parent = root;
+            }
+            else if (sourceComponents.Count == pb.GetTarget().parent.childCount)
             {
                 root = pb.GetTarget().parent;
             } else
