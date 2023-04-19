@@ -65,13 +65,14 @@ jobs:
           esac
 
           case "$GITHUB_REF_NAME" in
-            master ) ;;
-            master-* ) ;;
+            master | master-* )
+              echo "head is master or master-*"
+              ;;
             * )
               echo "invalid release kind: $RELEASE_KIND_IN is not allowd for $GITHUB_REF_NAME"
               exit 255
               ;;
-          csac
+          esac
 
           gh-export-variable VERSION "$(get-version)"
           gh-set-output version "$(get-version)"
