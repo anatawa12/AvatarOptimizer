@@ -4,6 +4,7 @@ using CustomLocalization4EditorExtension;
 using UnityEditor;
 using UnityEngine;
 using VRC.Dynamics;
+using VRC.SDK3.Dynamics.PhysBone.Components;
 
 namespace Anatawa12.AvatarOptimizer
 {
@@ -26,7 +27,7 @@ namespace Anatawa12.AvatarOptimizer
         }
 
         private SerializedProperty _mergedComponentProp;
-        private SerializedProperty _rootTransformProp;
+        private SerializedProperty _makeParent;
         private SerializedProperty _forcesProp;
         private SerializedProperty _pullProp;
         private SerializedProperty _springProp;
@@ -55,7 +56,7 @@ namespace Anatawa12.AvatarOptimizer
         {
             var nestCount = PrefabSafeSet.PrefabSafeSetUtil.PrefabNestCount(serializedObject.targetObject);
             _mergedComponentProp = serializedObject.FindProperty("merged");
-            _rootTransformProp = serializedObject.FindProperty("rootTransform");
+            _makeParent = serializedObject.FindProperty("makeParent");
             _forcesProp = serializedObject.FindProperty("forces");
             _pullProp = serializedObject.FindProperty("pull");
             _springProp = serializedObject.FindProperty("spring");
@@ -89,8 +90,9 @@ namespace Anatawa12.AvatarOptimizer
             EditorGUILayout.PropertyField(_mergedComponentProp);
             EditorGUI.EndDisabledGroup();
 
-            EditorGUILayout.PropertyField(_rootTransformProp);
-
+            EditorGUILayout.PropertyField(_makeParent);
+            if (_makeParent.boolValue && ((Component)target).transform.childCount != 0)
+                EditorGUILayout.HelpBox(CL4EE.Tr("MergePhysBone:error:makeParentWithChildren"), MessageType.Error);
 
             EditorGUILayout.LabelField("Overrides", EditorStyles.boldLabel);
             EditorGUI.indentLevel++;

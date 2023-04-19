@@ -19,7 +19,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             foreach (var vertex in target.Vertices)
             {
                 var actualPosition = vertex.ComputeActualPosition(target, Target.transform.worldToLocalMatrix);
-                if (Component.boxList.GetAsList().Any(x => x.ContainsVertex(actualPosition)))
+                if (Component.boxes.Any(x => x.ContainsVertex(actualPosition)))
                     inBoxVertices.Add(vertex);
             }
 

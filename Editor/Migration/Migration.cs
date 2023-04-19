@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Anatawa12.AvatarOptimizer.PrefabSafeSet;
 using JetBrains.Annotations;
 using UnityEditor;
@@ -8,6 +9,7 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.SceneManagement;
+using VRC.Dynamics;
 using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.Migration
@@ -76,6 +78,7 @@ Do you want to migrate project now?",
         {
             try
             {
+                PreMigration();
                 var prefabs = GetPrefabs();
 
                 MigratePrefabs(prefabs, (name, i) => EditorUtility.DisplayProgressBar(
@@ -91,6 +94,7 @@ Do you want to migrate project now?",
             finally
             {
                 EditorUtility.ClearProgressBar();
+                PostMigration();
             }
         }
 
@@ -99,6 +103,7 @@ Do you want to migrate project now?",
         {
             try
             {
+                PreMigration();
                 var scenePaths = AssetDatabase.FindAssets("t:scene").Select(AssetDatabase.GUIDToAssetPath).ToList();
 
                 MigrateAllScenes(scenePaths, (name, i) => EditorUtility.DisplayProgressBar(
@@ -114,6 +119,7 @@ Do you want to migrate project now?",
             finally
             {
                 EditorUtility.ClearProgressBar();
+                PostMigration();
             }
         }
 
@@ -122,6 +128,7 @@ Do you want to migrate project now?",
         {
             try
             {
+                PreMigration();
                 var prefabs = GetPrefabs();
                 var scenePaths = AssetDatabase.FindAssets("t:scene").Select(AssetDatabase.GUIDToAssetPath).ToList();
                 float totalCount = prefabs.Count + scenePaths.Count;
@@ -144,6 +151,7 @@ Do you want to migrate project now?",
             finally
             {
                 EditorUtility.ClearProgressBar();
+                PostMigration();
             }
         }
 
@@ -215,8 +223,12 @@ Do you want to migrate project now?",
             int forceVersion = int.MaxValue)
         {
             var scenes = Enumerable.Range(0, SceneManager.sceneCount).Select(SceneManager.GetSceneAt).ToArray();
-            EditorSceneManager.SaveScenes(scenes);
+            // skip saving
+            if (scenes.Any(x => x.isDirty))
+                EditorSceneManager.SaveScenes(scenes);
             var openingScenePaths = scenes.Select(x => x.path).ToArray();
+            if (openingScenePaths.Any(string.IsNullOrEmpty))
+                openingScenePaths = null;
             // load each scene and migrate scene
             for (var i = 0; i < scenePaths.Count; i++)
             {
@@ -241,10 +253,12 @@ Do you want to migrate project now?",
                 if (modified)
                     EditorSceneManager.SaveScene(scene);
             }
+
             EditorSceneManager.NewScene(NewSceneSetup.EmptyScene);
             progressCallback("finish Prefabs", scenePaths.Count);
 
-            if (EditorUtility.DisplayDialog("Reopen?", "Do you want to reopen previously opened scenes?", "Yes",
+            if (openingScenePaths != null
+                && EditorUtility.DisplayDialog("Reopen?", "Do you want to reopen previously opened scenes?", "Yes",
                     "No"))
             {
                 EditorSceneManager.OpenScene(openingScenePaths[0]);
@@ -270,11 +284,23 @@ Do you want to migrate project now?",
             {
 #pragma warning disable CS0618
                 case 1:
+                    if (serialized.targetObject.GetType() == typeof(RemoveMeshInBox))
+                    {
+                        // format for RemoveMeshInBox is reverted to v1 in v3 so skip.
+                        versionProp.intValue = 3;
+                        modified = true;
+                        goto case 3;
+                    }
                     MigrateV1ToV2(nestCount, serialized);
                     versionProp.intValue = 2;
                     modified = true;
                     goto case 2;
                 case 2:
+                    MigrateV2ToV3(nestCount, serialized);
+                    versionProp.intValue = 3;
+                    modified = true;
+                    goto case 3;
+                case 3:
 #pragma warning restore CS0618
                     // it's current version: save
                     serialized.ApplyModifiedProperties();
@@ -362,14 +388,172 @@ Do you want to migrate project now?",
                 case 4:
                 {
                     // RemoveMeshInBox
-                    MigrateList(serialized.FindProperty(nameof(RemoveMeshInBox.boxes)),
-                        serialized.FindProperty(nameof(RemoveMeshInBox.boxList)), 
-                        nestCount);
+                    throw new Exception("V1 to V2 migration for RemoveMeshInBox has been removed");
+                }
+            }
+        }
+
+        private static readonly TypeId MigrateV2ToV3Types = new TypeId(new []
+        {
+            typeof(RemoveMeshInBox),
+            typeof(MergePhysBone),
+        });
+
+        [Obsolete("migration process")]
+        private static void MigrateV2ToV3(int nestCount, SerializedObject serialized)
+        {
+            switch (MigrateV2ToV3Types.GetType(serialized.targetObject.GetType()))
+            {
+                case 1:
+                {
+                    // RemoveMeshInBox
+                    SerializedProperty[] GetContainers()
+                    {
+                        var psList = serialized.FindProperty(nameof(RemoveMeshInBox.boxList));
+                        // Container[]
+                        var firstLayer =
+                            psList.FindPropertyRelative(nameof(RemoveMeshInBox.BoundingBoxList.firstLayer));
+                        // Layer[]
+                        var prefabLayers =
+                            psList.FindPropertyRelative(nameof(RemoveMeshInBox.BoundingBoxList.prefabLayers));
+                        // Container[][]
+                        var layerArrays = new SerializedProperty[prefabLayers.arraySize + 1];
+
+                        layerArrays[0] = firstLayer;
+
+                        for (var i = 0; i < prefabLayers.arraySize; ++i)
+                            layerArrays[i + 1] = prefabLayers.GetArrayElementAtIndex(i)
+                                .FindPropertyRelative(nameof(RemoveMeshInBox.BoundingBoxList.Layer.elements));
+
+                        var count = layerArrays.Sum(x => x.arraySize);
+                        var result = new SerializedProperty[count];
+
+                        var k = 0;
+                        foreach (var ary in layerArrays)
+                            for (var j = 0; j < ary.arraySize; ++j)
+                                result[k++] = ary.GetArrayElementAtIndex(j);
+
+                        return result;
+                    }
+
+                    var containers = GetContainers();
+                    var array = serialized.FindProperty(nameof(RemoveMeshInBox.boxes));
+                    if (array.arraySize != containers.Length)
+                        array.arraySize = containers.Length;
+
+                    for (var i = 0; i < containers.Length; i++)
+                    {
+                        var container = containers[i];
+                        var removed =
+                            container.FindPropertyRelative(nameof(RemoveMeshInBox.BoundingBoxList.Container.removed));
+                        var value = container.FindPropertyRelative(nameof(RemoveMeshInBox.BoundingBoxList.Container
+                            .value));
+                        var field = array.GetArrayElementAtIndex(i);
+
+                        field.FindPropertyRelative(nameof(RemoveMeshInBox.BoundingBox.size)).vector3Value =
+                            removed.boolValue
+                                ? Vector3.zero
+                                : value.FindPropertyRelative(nameof(RemoveMeshInBox.BoundingBox.size)).vector3Value;
+
+                        field.FindPropertyRelative(nameof(RemoveMeshInBox.BoundingBox.center)).vector3Value =
+                            field.FindPropertyRelative(nameof(RemoveMeshInBox.BoundingBox.center)).vector3Value;
+
+                        field.FindPropertyRelative(nameof(RemoveMeshInBox.BoundingBox.rotation)).quaternionValue =
+                            field.FindPropertyRelative(nameof(RemoveMeshInBox.BoundingBox.rotation)).quaternionValue;
+                    }
+                    break;
+                }
+                case 2:
+                {
+                    // MergePhysBone
+
+                    // check rootTransform deletion
+                    var root = serialized.FindProperty(nameof(MergePhysBone.rootTransform));
+                    if (root.objectReferenceValue)
+                    {
+                        // might be incompatible changes.
+                        var parent = (Transform)root.objectReferenceValue;
+                        var components = EditorUtil<VRCPhysBoneBase>.Create(serialized.FindProperty(nameof(MergePhysBone.componentsSet)), nestCount,
+                            x => (VRCPhysBoneBase)x.objectReferenceValue, (x, y) => x.objectReferenceValue = y)
+                            .Values.ToList();
+
+                        if (components.Count != 0)
+                        {
+                            var targetParent = components[0].GetTarget().parent;
+                            if (targetParent != parent || components.Count != parent.childCount)
+                                FoundIncompatibleAsset(IncompatibilityKind.MergePhysBoneRootBone,
+                                    serialized.targetObject);
+                        }
+                    }
                     break;
                 }
             }
         }
 #pragma warning restore CS0618
+
+        // incompatibility warnings
+        enum IncompatibilityKind
+        {
+            MergePhysBoneRootBone
+        }
+
+        // IncompatibilityKind -> asset path[]
+        private static readonly Dictionary<IncompatibilityKind, HashSet<string>> IncompatibleAssets =
+            new Dictionary<IncompatibilityKind, HashSet<string>>();
+
+        private static void PreMigration()
+        {
+            IncompatibleAssets.Clear();
+        }
+
+        private static void FoundIncompatibleAsset(IncompatibilityKind kind, Object asset)
+        {
+            if (!IncompatibleAssets.TryGetValue(kind, out var set))
+                IncompatibleAssets[kind] = set = new HashSet<string>();
+            var id = GlobalObjectId.GetGlobalObjectIdSlow(asset);
+            var path = AssetDatabase.GUIDToAssetPath(id.assetGUID.ToString());
+            Debug.Log($"{kind} found for {path}");
+            set.Add(path);
+        }
+
+        private static void PostMigration()
+        {
+            (string, string) IncompatibilityMessage(IncompatibilityKind kind)
+            {
+                switch (kind)
+                {
+                    case IncompatibilityKind.MergePhysBoneRootBone:
+                        return ("We've removed root bone configuration of MergePhysBone in v0.3.0.",
+                            "https://github.com/anatawa12/AvatarOptimizer/issues/62#issuecomment-1512586282");
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(kind), kind, null);
+                }
+            }
+            foreach (var keyValuePair in IncompatibleAssets)
+            {
+                if (keyValuePair.Value.Count != 0)
+                {
+                    var (message, link) = IncompatibilityMessage(keyValuePair.Key);
+                    var messageBuilder = new StringBuilder(message);
+                    messageBuilder.Append("\n This change affects the following assets:");
+                    foreach (var path in keyValuePair.Value)
+                        messageBuilder.Append(path).Append("\n");
+                    messageBuilder.Append("\n for more details, click 'Read more' to read more details about this changes on github");
+
+                    switch (EditorUtility.DisplayDialogComplex("Incompatibility Detected", messageBuilder.ToString(), 
+                                "OK", "Dismiss", "Read More"))
+                    {
+                        case 0:
+                        case 1:
+                            break;
+                        case 2:
+                            Application.OpenURL(link);
+                            break;
+                    }
+                }
+            }
+            IncompatibleAssets.Clear();
+        }
 
         private static void MigrateSet<T>(
             SerializedProperty arrayProperty,
@@ -408,35 +592,6 @@ Do you want to migrate project now?",
                 renderersSet.GetElementOf(value).EnsureAdded();
 
             Assert.IsTrue(valuesSet.SetEquals(renderersSet.Values));
-        }
-
-        private static void MigrateList(SerializedProperty arrayProperty, SerializedProperty listProperty,
-            int nestCount)
-        {
-            var list = PrefabSafeList.EditorUtil.Create(listProperty, nestCount);
-            int index = 0;
-            foreach (var element in list.Elements)
-            {
-                if (!element.Contains) continue;
-                if (index == arrayProperty.arraySize)
-                    element.RemovedProperty.boolValue = true;
-                else
-                {
-                    CopySerializedPropertyValue.Copy(
-                        arrayProperty.GetArrayElementAtIndex(index),
-                        element.ValueProperty);
-                    index++;
-                }
-            }
-
-            while (index < arrayProperty.arraySize)
-            {
-                var element = list.AddElement();
-                CopySerializedPropertyValue.Copy(
-                    arrayProperty.GetArrayElementAtIndex(index),
-                    element.ValueProperty);
-                index++;
-            }
         }
 
         private readonly struct TypeId

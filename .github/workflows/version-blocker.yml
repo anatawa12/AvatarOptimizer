@@ -10,12 +10,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Clone this repo
-        if: github.base_ref == 'master'
+        if: github.base_ref == 'master' && github.head_ref != 'master-0.3'
         env:
           REPO: ${{ github.server_url }}/${{ github.repository }}.git
         run: git clone --filter=tree:0 --bare "$REPO" .
       - name: Check requirements
-        if: github.base_ref == 'master'
+        if: github.base_ref == 'master' && github.head_ref != 'master-0.3'
         run: |
           DISALLOWED_COMMIT="ba8550f62c356a89cdddf9f218f9ad227b21403c"
           if git log "$GITHUB_SHA" --pretty=%H | grep "$DISALLOWED_COMMIT" > /dev/null; then
