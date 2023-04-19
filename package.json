@@ -1,6 +1,6 @@
 {
   "name": "com.anatawa12.avatar-optimizer",
-  "version": "0.2.8-beta.0",
+  "version": "0.2.8-rc.1",
   "unity": "2019.4",
   "description": "Set of Anatawa12's Small Avatar Optimization Utilities",
   "displayName": "Anatawa12's AvatarOpitmizer",
