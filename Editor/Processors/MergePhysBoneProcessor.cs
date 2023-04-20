@@ -5,6 +5,7 @@ using CustomLocalization4EditorExtension;
 using UnityEditor;
 using UnityEngine;
 using VRC.Dynamics;
+using VRC.SDK3.Dynamics.PhysBone.Components;
 using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.Processors
@@ -69,7 +70,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                     $"property differ: {string.Join(", ", differProps)}");
 
             var pb = sourceComponents[0];
-            var merged = merge.merged;
+            var merged = merge.GetComponent<VRCPhysBone>();
 
             // optimization: if All children of the parent is to be merged,
             //    reuse that parent GameObject instead of creating new one.
