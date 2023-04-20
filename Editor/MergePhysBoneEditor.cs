@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using CustomLocalization4EditorExtension;
+using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
 using VRC.Dynamics;
@@ -26,14 +27,9 @@ namespace Anatawa12.AvatarOptimizer
             };
         }
 
+        private SerializedObject _mergedPhysBone;
+        [CanBeNull] private SerializedObject _sourcePhysBone;
         private SerializedProperty _makeParent;
-        private SerializedProperty _forcesProp;
-        private SerializedProperty _pullProp;
-        private SerializedProperty _springProp;
-        private SerializedProperty _stiffnessProp;
-        private SerializedProperty _gravityProp;
-        private SerializedProperty _gravityFalloffProp;
-        private SerializedProperty _immobileProp;
         private SerializedProperty _limitsProp;
         private SerializedProperty _maxAngleXProp;
         private SerializedProperty _limitRotationProp;
@@ -54,14 +50,9 @@ namespace Anatawa12.AvatarOptimizer
         private void OnEnable()
         {
             var nestCount = PrefabSafeSet.PrefabSafeSetUtil.PrefabNestCount(serializedObject.targetObject);
+            _mergedPhysBone =
+                new SerializedObject(((Component)serializedObject.targetObject).GetComponent<VRCPhysBone>());
             _makeParent = serializedObject.FindProperty("makeParent");
-            _forcesProp = serializedObject.FindProperty("forces");
-            _pullProp = serializedObject.FindProperty("pull");
-            _springProp = serializedObject.FindProperty("spring");
-            _stiffnessProp = serializedObject.FindProperty("stiffness");
-            _gravityProp = serializedObject.FindProperty("gravity");
-            _gravityFalloffProp = serializedObject.FindProperty("gravityFalloff");
-            _immobileProp = serializedObject.FindProperty("immobile");
             _limitsProp = serializedObject.FindProperty("limits");
             _maxAngleXProp = serializedObject.FindProperty("maxAngleX");
             _limitRotationProp = serializedObject.FindProperty("limitRotation");
@@ -84,24 +75,26 @@ namespace Anatawa12.AvatarOptimizer
 
         protected override void OnInspectorGUIInner()
         {
+            _mergedPhysBone.Update();
             EditorGUILayout.PropertyField(_makeParent);
             if (_makeParent.boolValue && ((Component)target).transform.childCount != 0)
                 EditorGUILayout.HelpBox(CL4EE.Tr("MergePhysBone:error:makeParentWithChildren"), MessageType.Error);
 
-            EditorGUILayout.LabelField("Overrides", EditorStyles.boldLabel);
-            EditorGUI.indentLevel++;
+            var sourcePysBone = _componentsSetEditorUtil.Values.FirstOrDefault();
+            _sourcePhysBone = sourcePysBone == null ? null : new SerializedObject(sourcePysBone);
+
             // == Forces ==
             EditorGUILayout.LabelField("Forces", EditorStyles.boldLabel);
             EditorGUI.indentLevel++;
-            EditorGUILayout.PropertyField(_forcesProp);
-            EditorGUI.BeginDisabledGroup(_forcesProp.boolValue);
-            EditorGUILayout.PropertyField(_pullProp);
-            EditorGUILayout.PropertyField(_springProp);
-            EditorGUILayout.PropertyField(_stiffnessProp);
-            EditorGUILayout.PropertyField(_gravityProp);
-            EditorGUILayout.PropertyField(_gravityFalloffProp);
-            EditorGUILayout.PropertyField(_immobileProp);
-            EditorGUI.EndDisabledGroup();
+            PbProp("Integration Type", "integrationType", "forces");
+            PbCurveProp("Pull", "pull", "pullCurve", "pull", "forces");
+            // TODO: change Spring or Momentum with Siffness depends on type
+            PbCurveProp("Spring", "spring", "springCurve", "spring", "forces");
+            PbCurveProp("Momentum", "spring", "springCurve", "spring", "forces");
+            PbCurveProp("Stiffness", "stiffness", "stiffnessCurve", "stiffness", "forces");
+            PbCurveProp("Gravity", "gravity", "gravityCurve", "gravity", "forces");
+            PbCurveProp("Gravity Falloff", "gravityFalloff", "gravityFalloffCurve", "gravityFalloff", "forces");
+            PbCurveProp("Immobile", "immobile", "immobileCurve", "immobile", "forces");
             EditorGUI.indentLevel--;
             // == Limits ==
             EditorGUILayout.LabelField("Limits", EditorStyles.boldLabel);
@@ -153,8 +146,6 @@ namespace Anatawa12.AvatarOptimizer
             EditorGUILayout.PropertyField(_resetWhenDisabledProp);
             EditorGUI.indentLevel--;
 
-            EditorGUI.indentLevel--;
-
             EditorGUILayout.PropertyField(_componentsSetProp);
 
             serializedObject.ApplyModifiedProperties();
@@ -167,6 +158,140 @@ namespace Anatawa12.AvatarOptimizer
                 foreach (var differ in differs)
                     GUILayout.Label($"  {differ}", Style.ErrorStyle);
             }
+
+            _mergedPhysBone.ApplyModifiedProperties();
+        }
+
+        private void PbProp([NotNull] string label, 
+            [NotNull] string pbPropName, 
+            [NotNull] string overridePropName,
+            [ItemNotNull] [NotNull] params string[] overrides)
+        {
+            PbPropImpl(label, overridePropName, overrides, 
+                (valueRect, obj, labelContent) => EditorGUI.PropertyField(valueRect, _mergedPhysBone.FindProperty(pbPropName), labelContent) );
+        }
+
+        private void PbCurveProp([NotNull] string label,
+            [NotNull] string pbPropName,
+            [NotNull] string pbCurvePropName,
+            [NotNull] string overridePropName,
+            [ItemNotNull] [NotNull] params string[] overrides)
+        {
+            PbPropImpl(label, overridePropName, overrides, (rect, obj, labelContent) =>
+            {
+                var valueRect = rect;
+                valueRect.width -= EditorGUIUtility.standardVerticalSpacing + EditorGUIUtility.singleLineHeight;
+                var buttonRect = rect;
+                buttonRect.x = valueRect.xMax + EditorGUIUtility.standardVerticalSpacing;
+                buttonRect.width = EditorGUIUtility.singleLineHeight;
+
+                var valueProp = obj.FindProperty(pbPropName);
+                var curveProp = obj.FindProperty(pbCurvePropName);
+
+                if (curveProp.animationCurveValue != null && curveProp.animationCurveValue.length > 0)
+                {
+                    // with curve
+                    EditorGUI.PropertyField(valueRect, valueProp, labelContent);
+                    
+                    if (GUI.Button(buttonRect, "X"))
+                    {
+                        curveProp.animationCurveValue = new AnimationCurve();
+                    }
+                    
+                    EditorGUI.BeginChangeCheck();
+                    var cur = EditorGUILayout.CurveField(" ", curveProp.animationCurveValue, Color.cyan,
+                        new Rect(0.0f, 0.0f, 1f, 1f));
+                    if (EditorGUI.EndChangeCheck())
+                        curveProp.animationCurveValue = cur;
+                }
+                else
+                {
+                    // with out curve: constant
+                    EditorGUI.PropertyField(valueRect, valueProp, labelContent);
+                    
+                    if (GUI.Button(buttonRect, "C"))
+                    {
+                        var curve = new AnimationCurve();
+                        curve.AddKey(new Keyframe(0.0f, 1f));
+                        curve.AddKey(new Keyframe(1f, 1f));
+                        curveProp.animationCurveValue = curve;
+                    }
+                }
+            });
+        }
+
+        private static readonly string[] copyOverride = new[] { "Copy", "Override" };
+
+        private void PbPropImpl([NotNull] string label, 
+            [NotNull] string overridePropName, 
+            [ItemNotNull] [NotNull] string[] overrides, 
+            [NotNull] Action<Rect, SerializedObject, GUIContent> renderer)
+        {
+            var labelContent = new GUIContent(label);
+            var overrideProp = serializedObject.FindProperty(overridePropName);
+            var forceOverride = overrides.Select(serializedObject.FindProperty).Any(x => x.boolValue);
+
+            const float overrideWidth = 48f;
+            var propRect = EditorGUILayout.GetControlRect(true, EditorGUIUtility.singleLineHeight);
+            
+            var valueRect = propRect;
+            valueRect.width -= EditorGUIUtility.standardVerticalSpacing + overrideWidth;
+            var overrideRect = propRect;
+            overrideRect.x = valueRect.xMax + EditorGUIUtility.standardVerticalSpacing;
+            overrideRect.width = overrideWidth;
+
+            if (forceOverride || overrideProp.boolValue)
+            {
+                // Override mode
+
+                renderer(valueRect, _mergedPhysBone, labelContent);
+
+                if (forceOverride)
+                {
+                    EditorGUI.BeginDisabledGroup(true);
+                    PopupNoIndent(overrideRect, 1, copyOverride);
+                    EditorGUI.EndDisabledGroup();
+                }
+                else
+                {
+                    EditorGUI.BeginProperty(overrideRect, null, overrideProp);
+                    var selected = PopupNoIndent(overrideRect, 1, copyOverride);
+                    if (selected != 1)
+                        overrideProp.boolValue = false;
+                    EditorGUI.EndProperty();
+                }
+            }
+            else
+            {
+                // Copy mode
+                if (_sourcePhysBone == null)
+                {
+                    EditorGUI.LabelField(valueRect, labelContent, new GUIContent("No source PhysBones are specified"));
+                }
+                else
+                {
+                    EditorGUI.BeginDisabledGroup(true);
+                    renderer(valueRect, _sourcePhysBone, labelContent);
+                    EditorGUI.EndDisabledGroup();
+                }
+
+                EditorGUI.BeginProperty(overrideRect, null, overrideProp);
+                var selected = PopupNoIndent(overrideRect, 0, copyOverride);
+                if (selected != 0)
+                    overrideProp.boolValue = true;
+                EditorGUI.EndProperty();
+
+                // TODO: warn if value differs between pbs
+            }
+        }
+
+        private static int PopupNoIndent(Rect position, int selectedIndex, string[] displayedOptions)
+        {
+            var indent = EditorGUI.indentLevel;
+            EditorGUI.indentLevel = 0;
+            var result = EditorGUI.Popup(position, selectedIndex, displayedOptions);
+            EditorGUI.indentLevel = indent;
+            return result;
         }
     }
 }
