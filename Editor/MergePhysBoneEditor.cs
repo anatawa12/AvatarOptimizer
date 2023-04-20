@@ -150,17 +150,13 @@ namespace Anatawa12.AvatarOptimizer
             EditorGUILayout.PropertyField(_grabMovementProp);
             EditorGUILayout.PropertyField(_allowPosingProp);
             EditorGUILayout.PropertyField(_maxStretchProp);
-#if VRCSDK_3_1_12
             EditorGUILayout.PropertyField(_snapToHandProp);
-#endif
             EditorGUI.indentLevel--;
             // == Others ==
             EditorGUILayout.LabelField("Others", EditorStyles.boldLabel);
             EditorGUI.indentLevel++;
             EditorGUILayout.PropertyField(_isAnimatedProp);
-#if VRCSDK_3_1_12
             EditorGUILayout.PropertyField(_resetWhenDisabledProp);
-#endif
             EditorGUI.indentLevel--;
 
             EditorGUI.indentLevel--;

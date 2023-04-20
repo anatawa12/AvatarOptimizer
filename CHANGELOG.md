@@ -15,6 +15,8 @@ The format is based on [Keep a Changelog].
 - **BREAKING** Removed Prefab Safe List `#95`
 - **BREAKING** Removed RootTransform feature from MergePhysBone `#100`
   - See [this issue comment][about-root-transform] for more datails.
+- **BREAKING** Dropped support for VRCSDK 3.1.12 or older `#101`
+  - Now, we require VRCSDK since 3.1.13 (including) until 3.2.0 (excluding)
 
 [about-root-transform]: https://github.com/anatawa12/AvatarOptimizer/issues/62#issuecomment-1512586282
 
