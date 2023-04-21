@@ -8,14 +8,16 @@ using VRC.SDK3.Dynamics.PhysBone.Components;
 namespace Anatawa12.AvatarOptimizer
 {
     [AddComponentMenu("Optimizer/Merge PhysBone")]
-    [RequireComponent(typeof(VRCPhysBone))]
     [DisallowMultipleComponent]
     [ExecuteAlways]
     internal class MergePhysBone : AvatarTagComponent
     {
+        public VRCPhysBoneBase Merged => merged;
+
         [FormerlySerializedAs("mergedComponent")]
         [CL4EELocalized("MergePhysBone:prop:merged")]
-        public VRCPhysBoneBase merged;
+        [SerializeField]
+        private VRCPhysBoneBase merged;
 
         [Obsolete("v2 legacy", true)]
         public Transform rootTransform;
@@ -24,8 +26,10 @@ namespace Anatawa12.AvatarOptimizer
         public bool makeParent;
 
         // == Forces ==
-        [FormerlySerializedAs("force")] [CL4EELocalized("MergePhysBone:prop:forces")]
-        public bool forces;
+        [FormerlySerializedAs("force")]
+        [FormerlySerializedAs("forces")]
+        [CL4EELocalized("MergePhysBone:prop:forces")]
+        public bool integrationType;
         [CL4EELocalized("MergePhysBone:prop:pull")]
         public bool pull;
         [CL4EELocalized("MergePhysBone:prop:spring")]
@@ -36,6 +40,8 @@ namespace Anatawa12.AvatarOptimizer
         public bool gravity;
         [CL4EELocalized("MergePhysBone:prop:gravityFalloff")]
         public bool gravityFalloff;
+        [CL4EELocalized("MergePhysBone:prop:immobileType")]
+        public bool immobileType;
         [CL4EELocalized("MergePhysBone:prop:immobile")]
         public bool immobile;
         // == Limits ==
@@ -82,11 +88,23 @@ namespace Anatawa12.AvatarOptimizer
             componentsSet = new PrefabSafeSet.VRCPhysBoneBaseSet(this);
         }
 
-        void OnEnable()
+#if UNITY_EDITOR
+        private void OnEnable()
         {
             if (merged == null)
-                merged = GetComponent<VRCPhysBoneBase>();
+            {
+                merged = gameObject.AddComponent<VRCPhysBone>();
+                UnityEditor.EditorUtility.SetDirty(this);
+            }
+            merged.hideFlags |= HideFlags.HideInInspector | HideFlags.HideInHierarchy;
         }
+
+        void OnValidate()
+        {
+            if (merged != null)
+                merged.hideFlags |= HideFlags.HideInInspector | HideFlags.HideInHierarchy;
+        }
+#endif
     }
 
     public enum CollidersSettings

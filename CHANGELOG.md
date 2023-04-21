@@ -18,6 +18,15 @@ The format is based on [Keep a Changelog].
 - **BREAKING** Dropped support for VRCSDK 3.1.12 or older `#101`
   - Now, we require VRCSDK since 3.1.13 (including) until 3.2.0 (excluding)
 - Use IEditorOnly instead of mokeypatching VRCSDK `#102`
+- Move the toggle for Override and the setting of the value after Override closer together. `#105`
+  - With this changes, the merged PhysBone is now hidden.
+  - The merged PhysBone will be shown in Play mode.
+- Now we can Copy (instead of Override) `Pull`, `Gravity`, `Immobile` properties even if `Integration Type` is overriden. `#105`
+  - During migration, if `Integration Type` (previously called `Force`) is configured to be Override, `Pull`, `Gravity`, `Immobile` will be configured to be Override.
+  - This is **BREAKING** changes.
+- Now we can Copy / Override `Immobile Type` and `Immobile` (strength) separately. `#105`
+  - Previously, if you override `Immobile Type`, you also required to override `Immobile` but no longer required.
+  - This is **BREAKING** changes in the semantics of `immobile` property.
 
 [about-root-transform]: https://github.com/anatawa12/AvatarOptimizer/issues/62#issuecomment-1512586282
 

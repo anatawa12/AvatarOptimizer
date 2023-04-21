@@ -473,8 +473,9 @@ Do you want to migrate project now?",
                     {
                         // might be incompatible changes.
                         var parent = (Transform)root.objectReferenceValue;
-                        var components = EditorUtil<VRCPhysBoneBase>.Create(serialized.FindProperty(nameof(MergePhysBone.componentsSet)), nestCount,
-                            x => (VRCPhysBoneBase)x.objectReferenceValue, (x, y) => x.objectReferenceValue = y)
+                        var components = EditorUtil<VRCPhysBoneBase>.Create(
+                                serialized.FindProperty(nameof(MergePhysBone.componentsSet)), nestCount,
+                                x => (VRCPhysBoneBase)x.objectReferenceValue, (x, y) => x.objectReferenceValue = y)
                             .Values.ToList();
 
                         if (components.Count != 0)
@@ -484,6 +485,22 @@ Do you want to migrate project now?",
                                 FoundIncompatibleAsset(IncompatibilityKind.MergePhysBoneRootBone,
                                     serialized.targetObject);
                         }
+                    }
+
+                    serialized.FindProperty(nameof(MergePhysBone.immobileType)).boolValue
+                        = serialized.FindProperty(nameof(MergePhysBone.immobile)).boolValue;
+
+                    // integrationType was previously force
+                    if (serialized.FindProperty(nameof(MergePhysBone.integrationType)).boolValue)
+                    {
+                        serialized.FindProperty(nameof(MergePhysBone.pull)).boolValue = true;
+                        // They are force overriden by integrationType so there's no need to override
+                        //serialized.FindProperty(nameof(MergePhysBone.spring)).boolValue = true;
+                        //serialized.FindProperty(nameof(MergePhysBone.stiffness)).boolValue = true;
+                        serialized.FindProperty(nameof(MergePhysBone.gravity)).boolValue = true;
+                        serialized.FindProperty(nameof(MergePhysBone.gravityFalloff)).boolValue = true;
+                        serialized.FindProperty(nameof(MergePhysBone.immobileType)).boolValue = true;
+                        serialized.FindProperty(nameof(MergePhysBone.immobile)).boolValue = true;
                     }
                     break;
                 }

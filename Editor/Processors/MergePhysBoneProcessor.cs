@@ -22,54 +22,13 @@ namespace Anatawa12.AvatarOptimizer.Processors
         private static bool SetEq<T>(IEnumerable<T> a, IEnumerable<T> b) => 
             new HashSet<T>(a).SetEquals(b);
 
-        internal static HashSet<string> CollectDifferentProps(MergePhysBone merge, IEnumerable<VRCPhysBoneBase> sources)
-        {
-            var differ = new HashSet<string>();
-            foreach (var (a, b) in sources.ZipWithNext())
-            {
-                // process common properties
-                {
-                    var aSerialized = new SerializedObject(a);
-                    var bSerialized = new SerializedObject(b);
-
-                    ProcessProperties(merge, a.limitType, property =>
-                    {
-                        if (!SerializedProperty.DataEquals(aSerialized.FindProperty(property),
-                                bSerialized.FindProperty(property)))
-                            differ.Add(property);
-                    }, (advancedBool, otherValue) =>
-                    {
-                        if (!SerializedProperty.DataEquals(aSerialized.FindProperty(advancedBool),
-                                bSerialized.FindProperty(advancedBool)))
-                            differ.Add(advancedBool);
-                        if (bSerialized.FindProperty(advancedBool).enumValueIndex != 2) return;
-                        if (!SerializedProperty.DataEquals(aSerialized.FindProperty(otherValue),
-                                bSerialized.FindProperty(otherValue)))
-                            differ.Add(otherValue);
-                    });
-                }
-
-                // other props
-                if (!merge.makeParent && a.GetTarget().parent != b.GetTarget().parent)
-                    differ.Add("Parent of target Transform");
-                if (merge.colliders != CollidersSettings.Copy && !SetEq(a.colliders, b.colliders)) differ.Add("colliders");
-            }
-            return differ;
-        }
-
         internal static void DoMerge(MergePhysBone merge, OptimizerSession session)
         {
             var sourceComponents = merge.componentsSet.GetAsList();
             if (sourceComponents.Count == 0) return;
 
-            var differProps = CollectDifferentProps(merge, sourceComponents);
-            if (differProps.Count != 0)
-                throw new InvalidOperationException(
-                    "MergePhysBone requirements is not met: " +
-                    $"property differ: {string.Join(", ", differProps)}");
-
             var pb = sourceComponents[0];
-            var merged = merge.merged;
+            var merged = merge.Merged;
 
             // optimization: if All children of the parent is to be merged,
             //    reuse that parent GameObject instead of creating new one.
@@ -100,22 +59,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 ClearEndpointPositionProcessor.Process(physBone);
 
             // copy common properties
-            {
-                var mergedSerialized = new SerializedObject(merged);
-                var pbSerialized = new SerializedObject(pb);
-
-                ProcessProperties(merge, pb.limitType,
-                    property =>
-                    {
-                        mergedSerialized.FindProperty(property).CopyDataFrom(pbSerialized.FindProperty(property));
-                    }, (advancedBool, otherValue) =>
-                    {
-                        mergedSerialized.FindProperty(advancedBool).CopyDataFrom(pbSerialized.FindProperty(advancedBool));
-                        if (mergedSerialized.FindProperty(advancedBool).enumValueIndex != 2) return;
-                        mergedSerialized.FindProperty(otherValue).CopyDataFrom(pbSerialized.FindProperty(otherValue));
-                    });
-                mergedSerialized.ApplyModifiedProperties();
-            }
+            new MergePhysBoneMerger(new SerializedObject(merge)).DoProcess();
 
             // copy other properties
             // === Transforms ===
@@ -140,97 +84,158 @@ namespace Anatawa12.AvatarOptimizer.Processors
             // == Options ==
             merged.isAnimated = merge.isAnimated || sourceComponents.Any(x => x.isAnimated);
 
+            // show the new PhysBone
+            merged.hideFlags &= ~(HideFlags.HideInHierarchy | HideFlags.HideInInspector);
+
             foreach (var physBone in sourceComponents) session.Destroy(physBone);
             session.Destroy(merge);
         }
 
-        internal delegate void PropertyCallback(string prop);
-        internal delegate void AdvancedPropertyCallback(string advancedBoolCallback, string otherPropCallback);
-
-        internal static void ProcessProperties(MergePhysBone merge, VRCPhysBoneBase.LimitType limitType, PropertyCallback callback, AdvancedPropertyCallback advancedCallback)
+        sealed class MergePhysBoneMerger : MergePhysBoneEditorModificationUtils
         {
-            void Callback1(string arg1)
+            public MergePhysBoneMerger(SerializedObject serializedObject) : base(serializedObject)
             {
-                callback(arg1);
-            }
-            void Callback2(string arg1, string arg2)
-            {
-                callback(arg1);
-                callback(arg2);
-            }
-            void Advanced(string arg1, string arg2)
-            {
-                advancedCallback(arg1, arg2);
             }
 
-            // == Forces ==
-            if (!merge.forces)
+            protected override void BeginSections(string name)
             {
-                Callback1("integrationType");
-                if (!merge.pull) Callback2("pull", "pullCurve");
-                if (!merge.spring) Callback2("spring", "springCurve");
-                if (!merge.stiffness) Callback2("stiffness", "stiffnessCurve");
-                if (!merge.gravity) Callback2("gravity", "gravityCurve");
-                if (!merge.gravityFalloff) Callback2("gravityFalloff", "gravityFalloffCurve");
-                if (!merge.immobile)
+            }
+
+            protected override void NextSection(string name)
+            {
+            }
+
+            protected override void EndSections()
+            {
+            }
+
+            protected override void NoSource() => throw new InvalidOperationException("No sources");
+
+            protected override void TransformSection()
+            {
+                var multiChildType = _sourcePhysBone.FindProperty(nameof(VRCPhysBoneBase.multiChildType));
+                if (multiChildType.enumValueIndex != 0 || multiChildType.hasMultipleDifferentValues)
+                    throw new InvalidOperationException("Some PysBone has multi child type != Ignore");
+            }
+
+            protected override void OptionParameter()
+            {
+                // nothing to do
+            }
+
+            protected override void OptionIsAnimated()
+            {
+                // nothing to do: _isAnimatedProp is merged later
+            }
+
+            protected override void PbProp(string label,
+                string pbPropName,
+                SerializedProperty overridePropName,
+                params SerializedProperty[] overrides)
+            {
+                PbPropImpl(label, overridePropName, overrides, () =>
                 {
-                    Callback1("immobileType");
-                    Callback2("immobile", "immobileCurve");
+                    var sourceProp = _sourcePhysBone.FindProperty(pbPropName);
+                    _mergedPhysBone.FindProperty(pbPropName).CopyDataFrom(sourceProp);
+                    return sourceProp.hasMultipleDifferentValues;
+                });
+            }
+
+            protected override void PbCurveProp(string label,
+                string pbPropName,
+                string pbCurvePropName,
+                SerializedProperty overridePropName,
+                params SerializedProperty[] overrides)
+            {
+                PbPropImpl(label, overridePropName, overrides, () =>
+                {
+                    var sourceValueProp = _sourcePhysBone.FindProperty(pbPropName);
+                    _mergedPhysBone.FindProperty(pbPropName).CopyDataFrom(sourceValueProp);
+                    var sourceCurveProp = _sourcePhysBone.FindProperty(pbCurvePropName);
+                    _mergedPhysBone.FindProperty(pbCurvePropName).CopyDataFrom(sourceCurveProp);
+
+                    return sourceValueProp.hasMultipleDifferentValues || sourceCurveProp.hasMultipleDifferentValues;
+                });
+            }
+
+            protected override void PbPermissionProp(string label,
+                string pbPropName,
+                string pbFilterPropName,
+                SerializedProperty overridePropName,
+                params SerializedProperty[] overrides)
+            {
+                PbPropImpl(label, overridePropName, overrides, () =>
+                {
+                    var sourceValueProp = _sourcePhysBone.FindProperty(pbPropName);
+                    _mergedPhysBone.FindProperty(pbPropName).CopyDataFrom(sourceValueProp);
+
+                    if (sourceValueProp.enumValueIndex == 2)
+                    {
+                        var sourceFilterProp = _sourcePhysBone.FindProperty(pbFilterPropName);
+                        var mergedFilterProp = _mergedPhysBone.FindProperty(pbFilterPropName);
+
+                        var sourceAllowSelf = sourceFilterProp.FindPropertyRelative("allowSelf");
+                        mergedFilterProp.FindPropertyRelative("allowSelf").CopyDataFrom(sourceAllowSelf);
+                        var sourceAllowOthers = sourceFilterProp.FindPropertyRelative("allowOthers");
+                        mergedFilterProp.FindPropertyRelative("allowOthers").CopyDataFrom(sourceAllowOthers);
+                        
+                        return sourceValueProp.hasMultipleDifferentValues || sourceFilterProp.hasMultipleDifferentValues;
+                    }
+                    else
+                    {
+                        return sourceValueProp.hasMultipleDifferentValues;
+                    }
+                });
+            }
+
+            protected override void Pb3DCurveProp(string label,
+                string pbPropName,
+                string pbXCurveLabel, string pbXCurvePropName,
+                string pbYCurveLabel, string pbYCurvePropName,
+                string pbZCurveLabel, string pbZCurvePropName,
+                SerializedProperty overridePropName,
+                params SerializedProperty[] overrides)
+            {
+                PbPropImpl(label, overridePropName, overrides, () =>
+                {
+                    var sourceValueProp = _sourcePhysBone.FindProperty(pbPropName);
+                    var sourceXCurveProp = _sourcePhysBone.FindProperty(pbXCurvePropName);
+                    var sourceYCurveProp = _sourcePhysBone.FindProperty(pbYCurvePropName);
+                    var sourceZCurveProp = _sourcePhysBone.FindProperty(pbZCurvePropName);
+                    _mergedPhysBone.FindProperty(pbPropName).CopyDataFrom(sourceValueProp);
+                    _mergedPhysBone.FindProperty(pbXCurvePropName).CopyDataFrom(sourceXCurveProp);
+                    _mergedPhysBone.FindProperty(pbYCurvePropName).CopyDataFrom(sourceYCurveProp);
+                    _mergedPhysBone.FindProperty(pbZCurvePropName).CopyDataFrom(sourceZCurveProp);
+
+                    return sourceValueProp.hasMultipleDifferentValues
+                           || sourceXCurveProp.hasMultipleDifferentValues
+                           || sourceYCurveProp.hasMultipleDifferentValues
+                           || sourceZCurveProp.hasMultipleDifferentValues;
+                });
+            }
+
+            private void PbPropImpl(string label,
+                SerializedProperty overrideProp,
+                SerializedProperty[] overrides,
+                Func<bool> copy)
+            {
+                if (overrides.Any(x => x.boolValue) || overrideProp.boolValue) return;
+
+                // Copy mode
+                var differ = copy();
+
+                if (differ)
+                {
+                    throw new InvalidOperationException(
+                        $"The value of {label} is differ between two or more sources. " +
+                        "You have to set same value OR override this property");
                 }
             }
 
-            // == Limits ==
-            if (!merge.limits)
+            protected override void ColliderProp(string label, string pbProp, SerializedProperty overrideProp)
             {
-                Callback1("limitType");
-                switch (limitType)
-                {
-                    case VRCPhysBoneBase.LimitType.None:
-                        break;
-                    case VRCPhysBoneBase.LimitType.Angle:
-                    case VRCPhysBoneBase.LimitType.Hinge:
-                        if (!merge.maxAngleX) Callback2("maxAngleX", "maxAngleXCurve");
-                        if (!merge.limitRotation)
-                        {
-                            Callback1("limitRotation");
-                            Callback1("limitRotationXCurve");
-                            Callback1("limitRotationYCurve");
-                            Callback1("limitRotationZCurve");
-                        }
-
-                        break;
-                    case VRCPhysBoneBase.LimitType.Polar:
-                        if (!merge.maxAngleX) Callback2("maxAngleX", "maxAngleXCurve");
-                        if (!merge.maxAngleZ) Callback2("maxAngleZ", "maxAngleZCurve");
-                        if (!merge.limitRotation)
-                        {
-                            Callback1("limitRotation");
-                            Callback1("limitRotationXCurve");
-                            Callback1("limitRotationYCurve");
-                            Callback1("limitRotationZCurve");
-                        }
-
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
+                // merged later
             }
-
-            // == Collision ==
-            if (!merge.radius) Callback2("radius", "radiusCurve");
-            if (!merge.allowCollision) Advanced("allowCollision", "collisionFilter");
-            // colliders: There's no common part
-            // == Grab & Pose ==
-            if (!merge.allowGrabbing) Advanced("allowGrabbing", "grabFilter");
-            if (!merge.allowPosing) Advanced("allowPosing", "poseFilter");
-            if (!merge.snapToHand) Callback1("snapToHand");
-            if (!merge.grabMovement) Callback1("grabMovement");
-            if (!merge.maxStretch) Callback2("maxStretch", "maxStretchCurve");
-            // == Options ==
-            // Parameter: ignore: must be empty
-            // Is Animated: ignore: we can merge them.
-            if (!merge.resetWhenDisabled) Callback1("resetWhenDisabled");
-            // Gizmos: ignore: it should not affect actual behaviour
         }
     }
 }
