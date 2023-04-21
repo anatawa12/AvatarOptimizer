@@ -485,6 +485,9 @@ Do you want to migrate project now?",
                                     serialized.targetObject);
                         }
                     }
+
+                    serialized.FindProperty(nameof(MergePhysBone.immobileType)).boolValue
+                        = serialized.FindProperty(nameof(MergePhysBone.immobile)).boolValue;
                     break;
                 }
             }
