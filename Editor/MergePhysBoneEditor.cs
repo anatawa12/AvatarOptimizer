@@ -38,6 +38,7 @@ namespace Anatawa12.AvatarOptimizer
         private SerializedProperty _stiffnessProp;
         private SerializedProperty _gravityProp;
         private SerializedProperty _gravityFalloffProp;
+        private SerializedProperty _immobileTypeProp;
         private SerializedProperty _immobileProp;
         private SerializedProperty _limitsProp;
         private SerializedProperty _maxAngleXProp;
@@ -68,6 +69,7 @@ namespace Anatawa12.AvatarOptimizer
             _stiffnessProp = serializedObject.FindProperty("stiffness");
             _gravityProp = serializedObject.FindProperty("gravity");
             _gravityFalloffProp = serializedObject.FindProperty("gravityFalloff");
+            _immobileTypeProp = serializedObject.FindProperty("immobileType");
             _immobileProp = serializedObject.FindProperty("immobile");
             _limitsProp = serializedObject.FindProperty("limits");
             _maxAngleXProp = serializedObject.FindProperty("maxAngleX");
@@ -127,6 +129,7 @@ namespace Anatawa12.AvatarOptimizer
                 PbCurveProp("Gravity", "gravity", "gravityCurve", _gravityProp, _forcesProp);
                 PbCurveProp("Gravity Falloff", "gravityFalloff", "gravityFalloffCurve", _gravityFalloffProp,
                     _forcesProp);
+                PbProp("Immobile Type", "immobileType", _immobileTypeProp, _forcesProp);
                 PbCurveProp("Immobile", "immobile", "immobileCurve", _immobileProp, _forcesProp);
                 EditorGUI.indentLevel--;
                 // == Limits ==

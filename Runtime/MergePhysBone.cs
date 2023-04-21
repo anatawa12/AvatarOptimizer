@@ -32,6 +32,8 @@ namespace Anatawa12.AvatarOptimizer
         public bool gravity;
         [CL4EELocalized("MergePhysBone:prop:gravityFalloff")]
         public bool gravityFalloff;
+        [CL4EELocalized("MergePhysBone:prop:immobileType")]
+        public bool immobileType;
         [CL4EELocalized("MergePhysBone:prop:immobile")]
         public bool immobile;
         // == Limits ==
