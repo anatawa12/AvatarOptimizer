@@ -116,7 +116,7 @@ namespace Anatawa12.AvatarOptimizer
                 EditorGUI.indentLevel++;
                 PbProp("Integration Type", "integrationType", _forcesProp);
                 var isSimplified = GetPb(_forcesProp).FindProperty("integrationType").enumValueIndex == 0;
-                PbCurveProp("Pull", "pull", "pullCurve", _pullProp, _forcesProp);
+                PbCurveProp("Pull", "pull", "pullCurve", _pullProp);
                 if (isSimplified)
                 {
                     PbCurveProp("Spring", "spring", "springCurve", _springProp, _forcesProp);
@@ -126,11 +126,10 @@ namespace Anatawa12.AvatarOptimizer
                     PbCurveProp("Momentum", "spring", "springCurve", _springProp, _forcesProp);
                     PbCurveProp("Stiffness", "stiffness", "stiffnessCurve", _stiffnessProp, _forcesProp);
                 }
-                PbCurveProp("Gravity", "gravity", "gravityCurve", _gravityProp, _forcesProp);
-                PbCurveProp("Gravity Falloff", "gravityFalloff", "gravityFalloffCurve", _gravityFalloffProp,
-                    _forcesProp);
-                PbProp("Immobile Type", "immobileType", _immobileTypeProp, _forcesProp);
-                PbCurveProp("Immobile", "immobile", "immobileCurve", _immobileProp, _forcesProp);
+                PbCurveProp("Gravity", "gravity", "gravityCurve", _gravityProp);
+                PbCurveProp("Gravity Falloff", "gravityFalloff", "gravityFalloffCurve", _gravityFalloffProp);
+                PbProp("Immobile Type", "immobileType", _immobileTypeProp);
+                PbCurveProp("Immobile", "immobile", "immobileCurve", _immobileProp);
                 EditorGUI.indentLevel--;
                 // == Limits ==
                 EditorGUILayout.LabelField("Limits", EditorStyles.boldLabel);
