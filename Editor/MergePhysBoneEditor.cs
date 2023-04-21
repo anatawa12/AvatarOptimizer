@@ -128,23 +128,32 @@ namespace Anatawa12.AvatarOptimizer
                 // == Limits ==
                 EditorGUILayout.LabelField("Limits", EditorStyles.boldLabel);
                 EditorGUI.indentLevel++;
-                EditorGUILayout.PropertyField(_limitsProp);
-                EditorGUI.BeginDisabledGroup(_limitsProp.boolValue && _componentsSetEditorUtil.Count != 0);
-                var physBoneBase = _componentsSetEditorUtil.Count != 0 ? _componentsSetEditorUtil.Values.First() : null;
-                switch (physBoneBase != null ? physBoneBase.limitType : VRCPhysBoneBase.LimitType.None)
+                PbProp("Limit Type", "limitType", _limitsProp);
+                var limitType =
+                    (VRCPhysBoneBase.LimitType)(_limitsProp.boolValue ? _mergedPhysBone : _sourcePhysBone)
+                    .FindProperty("limitType").enumValueIndex;
+                
+                switch (limitType)
                 {
                     case VRCPhysBoneBase.LimitType.None:
                         break;
                     case VRCPhysBoneBase.LimitType.Angle:
                     case VRCPhysBoneBase.LimitType.Hinge:
-                        EditorGUILayout.PropertyField(_maxAngleXProp,
-                            new GUIContent(CL4EE.Tr("MergePhysBone:prop:Max Angle")));
-                        EditorGUILayout.PropertyField(_limitRotationProp);
+                        PbCurveProp("Max Angle", "maxAngleX", "maxAngleXCurve", _maxAngleXProp, _limitsProp);
+                        Pb3DCurveProp("Rotation", "limitRotation", 
+                            "Pitch", "limitRotationXCurve", 
+                            "Roll", "limitRotationYCurve", 
+                            "Yaw", "limitRotationZCurve",
+                            _limitRotationProp, _limitsProp);
                         break;
                     case VRCPhysBoneBase.LimitType.Polar:
-                        EditorGUILayout.PropertyField(_maxAngleXProp);
-                        EditorGUILayout.PropertyField(_maxAngleZProp);
-                        EditorGUILayout.PropertyField(_limitRotationProp);
+                        PbCurveProp("Max Angle X", "maxAngleX", "maxAngleXCurve", _maxAngleXProp, _limitsProp);
+                        PbCurveProp("Max Angle Z", "maxAngleZ", "maxAngleZCurve", _maxAngleZProp, _limitsProp);
+                        Pb3DCurveProp("Rotation", "limitRotation", 
+                            "Pitch", "limitRotationXCurve", 
+                            "Roll", "limitRotationYCurve", 
+                            "Yaw", "limitRotationZCurve",
+                            _limitRotationProp, _limitsProp);
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -245,6 +254,96 @@ namespace Anatawa12.AvatarOptimizer
                         curve.AddKey(new Keyframe(0.0f, 1f));
                         curve.AddKey(new Keyframe(1f, 1f));
                         curveProp.animationCurveValue = curve;
+                    }
+                }
+            });
+        }
+
+        private void Pb3DCurveProp([NotNull] string label,
+            [NotNull] string pbPropName,
+            [NotNull] string pbXCurveLabel, [NotNull] string pbXCurvePropName,
+            [NotNull] string pbYCurveLabel, [NotNull] string pbYCurvePropName,
+            [NotNull] string pbZCurveLabel, [NotNull] string pbZCurvePropName,
+            [NotNull] SerializedProperty overridePropName,
+            [ItemNotNull] [NotNull] params SerializedProperty[] overrides)
+        {
+            PbPropImpl(label, overridePropName, overrides, (rect, obj, labelContent) =>
+            {
+                var valueRect = rect;
+                valueRect.width -= EditorGUIUtility.standardVerticalSpacing + EditorGUIUtility.singleLineHeight;
+                var buttonRect = rect;
+                buttonRect.x = valueRect.xMax + EditorGUIUtility.standardVerticalSpacing;
+                buttonRect.width = EditorGUIUtility.singleLineHeight;
+
+                var valueProp = obj.FindProperty(pbPropName);
+                var xCurveProp = obj.FindProperty(pbXCurvePropName);
+                var yCurveProp = obj.FindProperty(pbYCurvePropName);
+                var zCurveProp = obj.FindProperty(pbZCurvePropName);
+
+                bool IsCurve(SerializedProperty prop) =>
+                    prop.animationCurveValue != null && prop.animationCurveValue.length > 0;
+
+                if (IsCurve(xCurveProp) || IsCurve(yCurveProp) || IsCurve(zCurveProp))
+                {
+                    // with curve
+                    EditorGUI.PropertyField(valueRect, valueProp, labelContent);
+                    DrawCurve(pbXCurveLabel, xCurveProp);
+                    DrawCurve(pbYCurveLabel, yCurveProp);
+                    DrawCurve(pbZCurveLabel, zCurveProp);
+
+                    void DrawCurve(string curveLabel, SerializedProperty curveProp)
+                    {
+                        if (IsCurve(curveProp))
+                        {
+                            var curveRect = EditorGUILayout.GetControlRect(true);
+                            curveRect.width = valueRect.width;
+                            var curveButtonRect = curveRect;
+                            curveButtonRect.x = buttonRect.x;
+                            curveButtonRect.width = buttonRect.width;
+                            EditorGUI.BeginChangeCheck();
+                            var cur = EditorGUI.CurveField(curveRect, 
+                                curveLabel, curveProp.animationCurveValue, Color.cyan,
+                                new Rect(0.0f, 0.0f, 1f, 1f));
+                            if (EditorGUI.EndChangeCheck())
+                                curveProp.animationCurveValue = cur;
+                            
+                            if (GUI.Button(curveButtonRect, "X"))
+                            {
+                                curveProp.animationCurveValue = new AnimationCurve();
+                            }
+                        }
+                        else
+                        {
+                            var curveRect = EditorGUILayout.GetControlRect(true);
+                            curveRect.width = valueRect.width;
+                            var curveButtonRect = curveRect;
+                            curveButtonRect.x = buttonRect.x;
+                            curveButtonRect.width = buttonRect.width;
+                            EditorGUI.LabelField(curveRect, curveLabel);
+
+                            if (GUI.Button(curveButtonRect, "C"))
+                            {
+                                var curve = new AnimationCurve();
+                                curve.AddKey(new Keyframe(0.0f, 1f));
+                                curve.AddKey(new Keyframe(1f, 1f));
+                                curveProp.animationCurveValue = curve;
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    // with out curve: constant
+                    EditorGUI.PropertyField(valueRect, valueProp, labelContent);
+                    
+                    if (GUI.Button(buttonRect, "C"))
+                    {
+                        var curve = new AnimationCurve();
+                        curve.AddKey(new Keyframe(0.0f, 1f));
+                        curve.AddKey(new Keyframe(1f, 1f));
+                        xCurveProp.animationCurveValue = curve;
+                        yCurveProp.animationCurveValue = curve;
+                        zCurveProp.animationCurveValue = curve;
                     }
                 }
             });
