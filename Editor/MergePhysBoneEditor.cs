@@ -107,11 +107,19 @@ namespace Anatawa12.AvatarOptimizer
                 EditorGUILayout.LabelField("Forces", EditorStyles.boldLabel);
                 EditorGUI.indentLevel++;
                 PbProp("Integration Type", "integrationType", _forcesProp);
+                var isSimplified = (_forcesProp.boolValue ? _mergedPhysBone : _sourcePhysBone)
+                    .FindProperty("integrationType")
+                    .enumValueIndex == 0;
                 PbCurveProp("Pull", "pull", "pullCurve", _pullProp, _forcesProp);
-                // TODO: change Spring or Momentum with Siffness depends on type
-                PbCurveProp("Spring", "spring", "springCurve", _springProp, _forcesProp);
-                PbCurveProp("Momentum", "spring", "springCurve", _springProp, _forcesProp);
-                PbCurveProp("Stiffness", "stiffness", "stiffnessCurve", _stiffnessProp, _forcesProp);
+                if (isSimplified)
+                {
+                    PbCurveProp("Spring", "spring", "springCurve", _springProp, _forcesProp);
+                }
+                else
+                {
+                    PbCurveProp("Momentum", "spring", "springCurve", _springProp, _forcesProp);
+                    PbCurveProp("Stiffness", "stiffness", "stiffnessCurve", _stiffnessProp, _forcesProp);
+                }
                 PbCurveProp("Gravity", "gravity", "gravityCurve", _gravityProp, _forcesProp);
                 PbCurveProp("Gravity Falloff", "gravityFalloff", "gravityFalloffCurve", _gravityFalloffProp,
                     _forcesProp);
