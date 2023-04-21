@@ -6,6 +6,7 @@ using UnityEditor;
 using UnityEngine;
 using VRC.Dynamics;
 using VRC.SDK3.Dynamics.PhysBone.Components;
+using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer
 {
@@ -95,7 +96,9 @@ namespace Anatawa12.AvatarOptimizer
                 EditorGUILayout.HelpBox(CL4EE.Tr("MergePhysBone:error:makeParentWithChildren"), MessageType.Error);
 
             var sourcePysBone = _componentsSetEditorUtil.Values.FirstOrDefault();
-            _sourcePhysBone = sourcePysBone == null ? null : new SerializedObject(sourcePysBone);
+            _sourcePhysBone = sourcePysBone == null
+                ? null
+                : new SerializedObject(_componentsSetEditorUtil.Values.Cast<Object>().ToArray());
 
             if (_sourcePhysBone == null)
             {
@@ -103,13 +106,13 @@ namespace Anatawa12.AvatarOptimizer
             }
             else
             {
+                SerializedObject GetPb(SerializedProperty prop) => prop.boolValue ? _mergedPhysBone : _sourcePhysBone;
+
                 // == Forces ==
                 EditorGUILayout.LabelField("Forces", EditorStyles.boldLabel);
                 EditorGUI.indentLevel++;
                 PbProp("Integration Type", "integrationType", _forcesProp);
-                var isSimplified = (_forcesProp.boolValue ? _mergedPhysBone : _sourcePhysBone)
-                    .FindProperty("integrationType")
-                    .enumValueIndex == 0;
+                var isSimplified = GetPb(_forcesProp).FindProperty("integrationType").enumValueIndex == 0;
                 PbCurveProp("Pull", "pull", "pullCurve", _pullProp, _forcesProp);
                 if (isSimplified)
                 {
@@ -129,9 +132,7 @@ namespace Anatawa12.AvatarOptimizer
                 EditorGUILayout.LabelField("Limits", EditorStyles.boldLabel);
                 EditorGUI.indentLevel++;
                 PbProp("Limit Type", "limitType", _limitsProp);
-                var limitType =
-                    (VRCPhysBoneBase.LimitType)(_limitsProp.boolValue ? _mergedPhysBone : _sourcePhysBone)
-                    .FindProperty("limitType").enumValueIndex;
+                var limitType = (VRCPhysBoneBase.LimitType)GetPb(_limitsProp).FindProperty("limitType").enumValueIndex;
                 
                 switch (limitType)
                 {
@@ -164,24 +165,28 @@ namespace Anatawa12.AvatarOptimizer
                 // == Collision ==
                 EditorGUILayout.LabelField("Collision", EditorStyles.boldLabel);
                 EditorGUI.indentLevel++;
-                EditorGUILayout.PropertyField(_radiusProp);
-                EditorGUILayout.PropertyField(_allowCollisionProp);
-                EditorGUILayout.PropertyField(_collidersProp);
+                PbCurveProp("Radius", "radius", "radiusCurve", _radiusProp);
+                PbPermissionProp("Allow Collision", "allowCollision", "collisionFilter", _allowCollisionProp);
+                EditorGUI.BeginChangeCheck();
+                PbProp("Colliders", "colliders", _collidersProp);
+                if (EditorGUI.EndChangeCheck())
+                    foreach (var targetPb in GetPb(_limitsProp).targetObjects)
+                        ((VRCPhysBoneBase)targetPb).collidersHaveUpdated = true;
                 EditorGUI.indentLevel--;
                 // == Grab & Pose ==
-                EditorGUILayout.LabelField("Collision", EditorStyles.boldLabel);
+                EditorGUILayout.LabelField("Grab & Pose", EditorStyles.boldLabel);
                 EditorGUI.indentLevel++;
-                EditorGUILayout.PropertyField(_allowGrabbingProp);
-                EditorGUILayout.PropertyField(_grabMovementProp);
-                EditorGUILayout.PropertyField(_allowPosingProp);
-                EditorGUILayout.PropertyField(_maxStretchProp);
-                EditorGUILayout.PropertyField(_snapToHandProp);
+                PbPermissionProp("Allow Grabbing", "allowGrabbing", "grabFilter", _allowGrabbingProp);
+                PbPermissionProp("Allow Posing", "allowPosing", "poseFilter", _allowPosingProp);
+                PbProp("Grab Movement", "grabMovement", _grabMovementProp);
+                PbCurveProp("Max Stretch", "maxStretch", "maxStretchCurve", _maxStretchProp);
+                PbProp("Snap To Hand", "snapToHand", _snapToHandProp);
                 EditorGUI.indentLevel--;
                 // == Others ==
                 EditorGUILayout.LabelField("Others", EditorStyles.boldLabel);
                 EditorGUI.indentLevel++;
                 EditorGUILayout.PropertyField(_isAnimatedProp);
-                EditorGUILayout.PropertyField(_resetWhenDisabledProp);
+                PbProp("Reset When Disabled", "resetWhenDisabled", _resetWhenDisabledProp);
                 EditorGUI.indentLevel--;
             }
 
@@ -281,6 +286,29 @@ namespace Anatawa12.AvatarOptimizer
                 EditorGUI.PropertyField(valueRect, valueProp, labelContent);
                 DrawCurveFieldWithButton(curveProp, buttonRect, 
                     () => SplitRect(EditorGUILayout.GetControlRect(), OverrideWidth).restRect);
+            });
+        }
+
+        private void PbPermissionProp([NotNull] string label,
+            [NotNull] string pbPropName,
+            [NotNull] string pbFilterPropName,
+            [NotNull] SerializedProperty overridePropName,
+            [ItemNotNull] [NotNull] params SerializedProperty[] overrides)
+        {
+            PbPropImpl(label, overridePropName, overrides, (rect, obj, labelContent) =>
+            {
+                var valueProp = obj.FindProperty(pbPropName);
+
+                EditorGUI.PropertyField(rect, valueProp, labelContent);
+                if (valueProp.enumValueIndex == 2)
+                {
+                    var allowSelf = obj.FindProperty($"{pbFilterPropName}.allowSelf");
+                    var allowOthers = obj.FindProperty($"{pbFilterPropName}.allowOthers");
+                    EditorGUI.indentLevel++;
+                    EditorGUILayout.PropertyField(allowSelf);
+                    EditorGUILayout.PropertyField(allowOthers);
+                    EditorGUI.indentLevel--;
+                }
             });
         }
 
