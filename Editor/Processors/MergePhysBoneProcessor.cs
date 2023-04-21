@@ -173,11 +173,8 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 if (!merge.stiffness) Callback2("stiffness", "stiffnessCurve");
                 if (!merge.gravity) Callback2("gravity", "gravityCurve");
                 if (!merge.gravityFalloff) Callback2("gravityFalloff", "gravityFalloffCurve");
-                if (!merge.immobile)
-                {
-                    Callback1("immobileType");
-                    Callback2("immobile", "immobileCurve");
-                }
+                if (!merge.immobileType) Callback1("immobileType");
+                if (!merge.immobile) Callback2("immobile", "immobileCurve");
             }
 
             // == Limits ==
