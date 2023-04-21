@@ -236,8 +236,12 @@ namespace Anatawa12.AvatarOptimizer
             [NotNull] SerializedProperty overridePropName,
             [ItemNotNull] [NotNull] params SerializedProperty[] overrides)
         {
-            PbPropImpl(label, overridePropName, overrides, 
-                (valueRect, obj, labelContent) => EditorGUI.PropertyField(valueRect, obj.FindProperty(pbPropName), labelContent) );
+            PbPropImpl(label, overridePropName, overrides, (valueRect, obj, labelContent) =>
+            {
+                var prop = obj.FindProperty(pbPropName);
+                EditorGUI.PropertyField(valueRect, prop, labelContent);
+                return prop.hasMultipleDifferentValues;
+            });
         }
 
         private void DrawCurveFieldWithButton(SerializedProperty curveProp, Rect buttonRect, Func<Rect> curveRect)
@@ -286,6 +290,8 @@ namespace Anatawa12.AvatarOptimizer
                 EditorGUI.PropertyField(valueRect, valueProp, labelContent);
                 DrawCurveFieldWithButton(curveProp, buttonRect, 
                     () => SplitRect(EditorGUILayout.GetControlRect(), OverrideWidth).restRect);
+
+                return valueProp.hasMultipleDifferentValues || curveProp.hasMultipleDifferentValues;
             });
         }
 
@@ -302,12 +308,18 @@ namespace Anatawa12.AvatarOptimizer
                 EditorGUI.PropertyField(rect, valueProp, labelContent);
                 if (valueProp.enumValueIndex == 2)
                 {
-                    var allowSelf = obj.FindProperty($"{pbFilterPropName}.allowSelf");
-                    var allowOthers = obj.FindProperty($"{pbFilterPropName}.allowOthers");
+                    var filterProp = obj.FindProperty(pbFilterPropName);
+                    var allowSelf = filterProp.FindPropertyRelative("allowSelf");
+                    var allowOthers = filterProp.FindPropertyRelative("allowOthers");
                     EditorGUI.indentLevel++;
                     EditorGUILayout.PropertyField(allowSelf);
                     EditorGUILayout.PropertyField(allowOthers);
                     EditorGUI.indentLevel--;
+                    return valueProp.hasMultipleDifferentValues || filterProp.hasMultipleDifferentValues;
+                }
+                else
+                {
+                    return valueProp.hasMultipleDifferentValues;
                 }
             });
         }
@@ -361,6 +373,11 @@ namespace Anatawa12.AvatarOptimizer
                         zCurveProp.animationCurveValue = curve;
                     }
                 }
+
+                return valueProp.hasMultipleDifferentValues
+                       || xCurveProp.hasMultipleDifferentValues
+                       || yCurveProp.hasMultipleDifferentValues
+                       || zCurveProp.hasMultipleDifferentValues;
             });
         }
 
@@ -369,7 +386,7 @@ namespace Anatawa12.AvatarOptimizer
         private void PbPropImpl([NotNull] string label, 
             [NotNull] SerializedProperty overrideProp, 
             [ItemNotNull] [NotNull] SerializedProperty[] overrides, 
-            [NotNull] Action<Rect, SerializedObject, GUIContent> renderer)
+            [NotNull] Func<Rect, SerializedObject, GUIContent, bool> renderer)
         {
             var labelContent = new GUIContent(label);
             var forceOverride = overrides.Any(x => x.boolValue);
@@ -402,7 +419,7 @@ namespace Anatawa12.AvatarOptimizer
             {
                 // Copy mode
                 EditorGUI.BeginDisabledGroup(true);
-                renderer(valueRect, _sourcePhysBone, labelContent);
+                var differ = renderer(valueRect, _sourcePhysBone, labelContent);
                 EditorGUI.EndDisabledGroup();
 
                 EditorGUI.BeginProperty(overrideRect, null, overrideProp);
@@ -412,6 +429,13 @@ namespace Anatawa12.AvatarOptimizer
                 EditorGUI.EndProperty();
 
                 // TODO: warn if value differs between pbs
+                if (differ)
+                {
+                    EditorGUILayout.HelpBox(
+                        "The value is differ between two or more sources. " +
+                        "You have to set same value OR override this property", 
+                        MessageType.Error);
+                }
             }
         }
 
