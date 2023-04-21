@@ -186,9 +186,12 @@ namespace Anatawa12.AvatarOptimizer
                 PbCurveProp("Max Stretch", "maxStretch", "maxStretchCurve", _maxStretchProp);
                 PbProp("Snap To Hand", "snapToHand", _snapToHandProp);
                 EditorGUI.indentLevel--;
-                // == Others ==
-                EditorGUILayout.LabelField("Others", EditorStyles.boldLabel);
+                // == Options ==
+                EditorGUILayout.LabelField("Options", EditorStyles.boldLabel);
                 EditorGUI.indentLevel++;
+                EditorGUILayout.PropertyField(_mergedPhysBone.FindProperty("parameter"));
+                EditorGUILayout.HelpBox("See VRCPhysBone editor's text OR docs for more info about Parameter.",
+                    MessageType.Info);
                 EditorGUILayout.PropertyField(_isAnimatedProp);
                 PbProp("Reset When Disabled", "resetWhenDisabled", _resetWhenDisabledProp);
                 EditorGUI.indentLevel--;
