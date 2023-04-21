@@ -29,6 +29,7 @@ namespace Anatawa12.AvatarOptimizer
             };
         }
 
+        private SerializedProperty _mergedComponentProp;
         private SerializedObject _mergedPhysBone;
         [CanBeNull] private SerializedObject _sourcePhysBone;
         private SerializedProperty _makeParent;
@@ -62,6 +63,7 @@ namespace Anatawa12.AvatarOptimizer
             var nestCount = PrefabSafeSet.PrefabSafeSetUtil.PrefabNestCount(serializedObject.targetObject);
             _mergedPhysBone =
                 new SerializedObject(((Component)serializedObject.targetObject).GetComponent<VRCPhysBone>());
+            _mergedComponentProp = serializedObject.FindProperty("merged");
             _makeParent = serializedObject.FindProperty("makeParent");
             _forcesProp = serializedObject.FindProperty("forces");
             _pullProp = serializedObject.FindProperty("pull");
@@ -94,6 +96,10 @@ namespace Anatawa12.AvatarOptimizer
         protected override void OnInspectorGUIInner()
         {
             _mergedPhysBone.Update();
+            EditorGUI.BeginDisabledGroup(_mergedComponentProp.objectReferenceValue != null);
+            EditorGUILayout.PropertyField(_mergedComponentProp);
+            EditorGUI.EndDisabledGroup();
+
             EditorGUILayout.PropertyField(_makeParent);
             if (_makeParent.boolValue && ((Component)target).transform.childCount != 0)
                 EditorGUILayout.HelpBox(CL4EE.Tr("MergePhysBone:error:makeParentWithChildren"), MessageType.Error);

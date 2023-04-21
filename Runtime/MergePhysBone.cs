@@ -13,6 +13,10 @@ namespace Anatawa12.AvatarOptimizer
     [ExecuteAlways]
     internal class MergePhysBone : AvatarTagComponent
     {
+        [FormerlySerializedAs("mergedComponent")]
+        [CL4EELocalized("MergePhysBone:prop:merged")]
+        public VRCPhysBoneBase merged;
+
         [Obsolete("v2 legacy", true)]
         public Transform rootTransform;
 
@@ -78,6 +82,12 @@ namespace Anatawa12.AvatarOptimizer
         public MergePhysBone()
         {
             componentsSet = new PrefabSafeSet.VRCPhysBoneBaseSet(this);
+        }
+
+        void OnEnable()
+        {
+            if (merged == null)
+                merged = GetComponent<VRCPhysBoneBase>();
         }
     }
 
