@@ -97,68 +97,76 @@ namespace Anatawa12.AvatarOptimizer
             var sourcePysBone = _componentsSetEditorUtil.Values.FirstOrDefault();
             _sourcePhysBone = sourcePysBone == null ? null : new SerializedObject(sourcePysBone);
 
-            // == Forces ==
-            EditorGUILayout.LabelField("Forces", EditorStyles.boldLabel);
-            EditorGUI.indentLevel++;
-            PbProp("Integration Type", "integrationType", _forcesProp);
-            PbCurveProp("Pull", "pull", "pullCurve", _pullProp, _forcesProp);
-            // TODO: change Spring or Momentum with Siffness depends on type
-            PbCurveProp("Spring", "spring", "springCurve", _springProp, _forcesProp);
-            PbCurveProp("Momentum", "spring", "springCurve", _springProp, _forcesProp);
-            PbCurveProp("Stiffness", "stiffness", "stiffnessCurve", _stiffnessProp, _forcesProp);
-            PbCurveProp("Gravity", "gravity", "gravityCurve", _gravityProp, _forcesProp);
-            PbCurveProp("Gravity Falloff", "gravityFalloff", "gravityFalloffCurve", _gravityFalloffProp, _forcesProp);
-            PbCurveProp("Immobile", "immobile", "immobileCurve", _immobileProp, _forcesProp);
-            EditorGUI.indentLevel--;
-            // == Limits ==
-            EditorGUILayout.LabelField("Limits", EditorStyles.boldLabel);
-            EditorGUI.indentLevel++;
-            EditorGUILayout.PropertyField(_limitsProp);
-            EditorGUI.BeginDisabledGroup(_limitsProp.boolValue && _componentsSetEditorUtil.Count != 0);
-            var physBoneBase = _componentsSetEditorUtil.Count != 0 ? _componentsSetEditorUtil.Values.First() : null;
-            switch (physBoneBase != null ? physBoneBase.limitType : VRCPhysBoneBase.LimitType.None)
+            if (_sourcePhysBone == null)
             {
-                case VRCPhysBoneBase.LimitType.None:
-                    break;
-                case VRCPhysBoneBase.LimitType.Angle:
-                case VRCPhysBoneBase.LimitType.Hinge:
-                    EditorGUILayout.PropertyField(_maxAngleXProp,
-                        new GUIContent(CL4EE.Tr("MergePhysBone:prop:Max Angle")));
-                    EditorGUILayout.PropertyField(_limitRotationProp);
-                    break;
-                case VRCPhysBoneBase.LimitType.Polar:
-                    EditorGUILayout.PropertyField(_maxAngleXProp);
-                    EditorGUILayout.PropertyField(_maxAngleZProp);
-                    EditorGUILayout.PropertyField(_limitRotationProp);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
+                EditorGUILayout.HelpBox(CL4EE.Tr("MergePhysBone:error:noSources"), MessageType.Error);
             }
+            else
+            {
+                // == Forces ==
+                EditorGUILayout.LabelField("Forces", EditorStyles.boldLabel);
+                EditorGUI.indentLevel++;
+                PbProp("Integration Type", "integrationType", _forcesProp);
+                PbCurveProp("Pull", "pull", "pullCurve", _pullProp, _forcesProp);
+                // TODO: change Spring or Momentum with Siffness depends on type
+                PbCurveProp("Spring", "spring", "springCurve", _springProp, _forcesProp);
+                PbCurveProp("Momentum", "spring", "springCurve", _springProp, _forcesProp);
+                PbCurveProp("Stiffness", "stiffness", "stiffnessCurve", _stiffnessProp, _forcesProp);
+                PbCurveProp("Gravity", "gravity", "gravityCurve", _gravityProp, _forcesProp);
+                PbCurveProp("Gravity Falloff", "gravityFalloff", "gravityFalloffCurve", _gravityFalloffProp,
+                    _forcesProp);
+                PbCurveProp("Immobile", "immobile", "immobileCurve", _immobileProp, _forcesProp);
+                EditorGUI.indentLevel--;
+                // == Limits ==
+                EditorGUILayout.LabelField("Limits", EditorStyles.boldLabel);
+                EditorGUI.indentLevel++;
+                EditorGUILayout.PropertyField(_limitsProp);
+                EditorGUI.BeginDisabledGroup(_limitsProp.boolValue && _componentsSetEditorUtil.Count != 0);
+                var physBoneBase = _componentsSetEditorUtil.Count != 0 ? _componentsSetEditorUtil.Values.First() : null;
+                switch (physBoneBase != null ? physBoneBase.limitType : VRCPhysBoneBase.LimitType.None)
+                {
+                    case VRCPhysBoneBase.LimitType.None:
+                        break;
+                    case VRCPhysBoneBase.LimitType.Angle:
+                    case VRCPhysBoneBase.LimitType.Hinge:
+                        EditorGUILayout.PropertyField(_maxAngleXProp,
+                            new GUIContent(CL4EE.Tr("MergePhysBone:prop:Max Angle")));
+                        EditorGUILayout.PropertyField(_limitRotationProp);
+                        break;
+                    case VRCPhysBoneBase.LimitType.Polar:
+                        EditorGUILayout.PropertyField(_maxAngleXProp);
+                        EditorGUILayout.PropertyField(_maxAngleZProp);
+                        EditorGUILayout.PropertyField(_limitRotationProp);
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
 
-            EditorGUI.EndDisabledGroup();
-            EditorGUI.indentLevel--;
-            // == Collision ==
-            EditorGUILayout.LabelField("Collision", EditorStyles.boldLabel);
-            EditorGUI.indentLevel++;
-            EditorGUILayout.PropertyField(_radiusProp);
-            EditorGUILayout.PropertyField(_allowCollisionProp);
-            EditorGUILayout.PropertyField(_collidersProp);
-            EditorGUI.indentLevel--;
-            // == Grab & Pose ==
-            EditorGUILayout.LabelField("Collision", EditorStyles.boldLabel);
-            EditorGUI.indentLevel++;
-            EditorGUILayout.PropertyField(_allowGrabbingProp);
-            EditorGUILayout.PropertyField(_grabMovementProp);
-            EditorGUILayout.PropertyField(_allowPosingProp);
-            EditorGUILayout.PropertyField(_maxStretchProp);
-            EditorGUILayout.PropertyField(_snapToHandProp);
-            EditorGUI.indentLevel--;
-            // == Others ==
-            EditorGUILayout.LabelField("Others", EditorStyles.boldLabel);
-            EditorGUI.indentLevel++;
-            EditorGUILayout.PropertyField(_isAnimatedProp);
-            EditorGUILayout.PropertyField(_resetWhenDisabledProp);
-            EditorGUI.indentLevel--;
+                EditorGUI.EndDisabledGroup();
+                EditorGUI.indentLevel--;
+                // == Collision ==
+                EditorGUILayout.LabelField("Collision", EditorStyles.boldLabel);
+                EditorGUI.indentLevel++;
+                EditorGUILayout.PropertyField(_radiusProp);
+                EditorGUILayout.PropertyField(_allowCollisionProp);
+                EditorGUILayout.PropertyField(_collidersProp);
+                EditorGUI.indentLevel--;
+                // == Grab & Pose ==
+                EditorGUILayout.LabelField("Collision", EditorStyles.boldLabel);
+                EditorGUI.indentLevel++;
+                EditorGUILayout.PropertyField(_allowGrabbingProp);
+                EditorGUILayout.PropertyField(_grabMovementProp);
+                EditorGUILayout.PropertyField(_allowPosingProp);
+                EditorGUILayout.PropertyField(_maxStretchProp);
+                EditorGUILayout.PropertyField(_snapToHandProp);
+                EditorGUI.indentLevel--;
+                // == Others ==
+                EditorGUILayout.LabelField("Others", EditorStyles.boldLabel);
+                EditorGUI.indentLevel++;
+                EditorGUILayout.PropertyField(_isAnimatedProp);
+                EditorGUILayout.PropertyField(_resetWhenDisabledProp);
+                EditorGUI.indentLevel--;
+            }
 
             EditorGUILayout.PropertyField(_componentsSetProp);
 
@@ -277,16 +285,9 @@ namespace Anatawa12.AvatarOptimizer
             else
             {
                 // Copy mode
-                if (_sourcePhysBone == null)
-                {
-                    EditorGUI.LabelField(valueRect, labelContent, new GUIContent("No source PhysBones are specified"));
-                }
-                else
-                {
-                    EditorGUI.BeginDisabledGroup(true);
-                    renderer(valueRect, _sourcePhysBone, labelContent);
-                    EditorGUI.EndDisabledGroup();
-                }
+                EditorGUI.BeginDisabledGroup(true);
+                renderer(valueRect, _sourcePhysBone, labelContent);
+                EditorGUI.EndDisabledGroup();
 
                 EditorGUI.BeginProperty(overrideRect, null, overrideProp);
                 var selected = PopupNoIndent(overrideRect, 0, copyOverride);
