@@ -127,10 +127,10 @@ namespace Anatawa12.AvatarOptimizer
                     var preview = _generatedPreviews != null ? _generatedPreviews[i] : Utils.PreviewHereTex;
                     EditorGUILayout.LabelField(new GUIContent(preview), GUILayout.MaxHeight(256), GUILayout.MaxHeight(256));
 
-                    HorizontalLine();
+                    Utils.HorizontalLine();
                 },
                 _candidateMaterials.Length != 0 ? _createNewMergeInfo : null,
-                postButtons: () => HorizontalLine(),
+                postButtons: () => Utils.HorizontalLine(),
                 onMoved: OnChanged,
                 onAdded: _ => OnChanged(),
                 onRemoved: _ => OnChanged()
@@ -155,26 +155,6 @@ namespace Anatawa12.AvatarOptimizer
             var usedIndices = new HashSet<int>(component.merges.SelectMany(x => x.source.Select(y => y.materialIndex)));
             _candidateMaterials = _materials.Where(x => !usedIndices.Contains(x.index)).ToArray();
             _candidateNames = new []{""}.Concat(_candidateMaterials.Select(x => x.mat.name)).ToArray();
-        }
-
-        private void HorizontalLine(bool marginTop = true, bool marginBottom = true)
-        {
-            const float margin = 17f / 2;
-            var maxHeight = 1f;
-            if (marginTop) maxHeight += margin;
-            if (marginBottom) maxHeight += margin;
-
-            var rect = GUILayoutUtility.GetRect(
-                EditorGUIUtility.fieldWidth, float.MaxValue, 
-                1, maxHeight, GUIStyle.none);
-            if (marginTop && marginBottom)
-                rect.y += rect.height / 2 - 0.5f;
-            else if (marginTop)
-                rect.y += rect.height - 1f;
-            else if (marginBottom)
-                rect.y += 0;
-            rect.height = 1;
-            EditorGUI.DrawRect(rect, new Color(0.5f, 0.5f, 0.5f, 1));
         }
 
         private void OnEnable()
