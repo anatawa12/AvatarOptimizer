@@ -26,34 +26,35 @@ namespace Anatawa12.AvatarOptimizer.Processors
         internal static HashSet<string> CollectDifferentProps(MergePhysBone merge, IEnumerable<VRCPhysBoneBase> sources)
         {
             var differ = new HashSet<string>();
-            foreach (var (a, b) in sources.ZipWithNext())
+            var physBones = sources as VRCPhysBoneBase[] ?? sources.ToArray();
+            // ReSharper disable once CoVariantArrayConversion
+            var serializedObject = new SerializedObject(physBones);
             {
                 // process common properties
                 {
-                    var aSerialized = new SerializedObject(a);
-                    var bSerialized = new SerializedObject(b);
-
-                    ProcessProperties(merge, a.limitType, property =>
+                    ProcessProperties(merge, physBones[0].limitType, property =>
                     {
-                        if (!SerializedProperty.DataEquals(aSerialized.FindProperty(property),
-                                bSerialized.FindProperty(property)))
+                        if (serializedObject.FindProperty(property).hasMultipleDifferentValues)
                             differ.Add(property);
                     }, (advancedBool, otherValue) =>
                     {
-                        if (!SerializedProperty.DataEquals(aSerialized.FindProperty(advancedBool),
-                                bSerialized.FindProperty(advancedBool)))
+                        var advancedBoolProp = serializedObject.FindProperty(advancedBool);
+                        if (advancedBoolProp.hasMultipleDifferentValues)
                             differ.Add(advancedBool);
-                        if (bSerialized.FindProperty(advancedBool).enumValueIndex != 2) return;
-                        if (!SerializedProperty.DataEquals(aSerialized.FindProperty(otherValue),
-                                bSerialized.FindProperty(otherValue)))
+                        if (advancedBoolProp.enumValueIndex != 2) return;
+                        if (serializedObject.FindProperty(otherValue).hasMultipleDifferentValues)
                             differ.Add(otherValue);
                     });
                 }
+            }
 
+            foreach (var (a, b) in physBones.ZipWithNext())
+            {
                 // other props
                 if (!merge.makeParent && a.GetTarget().parent != b.GetTarget().parent)
                     differ.Add("Parent of target Transform");
-                if (merge.colliders != CollidersSettings.Copy && !SetEq(a.colliders, b.colliders)) differ.Add("colliders");
+                if (merge.colliders == CollidersSettings.Copy &&
+                    !SetEq(a.colliders, b.colliders)) differ.Add("colliders");
             }
             return differ;
         }
