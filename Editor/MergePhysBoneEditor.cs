@@ -198,7 +198,7 @@ namespace Anatawa12.AvatarOptimizer
             [ItemNotNull] [NotNull] params SerializedProperty[] overrides)
         {
             PbPropImpl(label, overridePropName, overrides, 
-                (valueRect, obj, labelContent) => EditorGUI.PropertyField(valueRect, _mergedPhysBone.FindProperty(pbPropName), labelContent) );
+                (valueRect, obj, labelContent) => EditorGUI.PropertyField(valueRect, obj.FindProperty(pbPropName), labelContent) );
         }
 
         private void PbCurveProp([NotNull] string label,
