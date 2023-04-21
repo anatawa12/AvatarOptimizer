@@ -88,11 +88,17 @@ namespace Anatawa12.AvatarOptimizer
             componentsSet = new PrefabSafeSet.VRCPhysBoneBaseSet(this);
         }
 
-        void OnValidate()
+        private void OnEnable()
         {
             if (merged == null)
                 merged = gameObject.AddComponent<VRCPhysBone>();
             merged.hideFlags |= HideFlags.HideInInspector | HideFlags.HideInHierarchy;
+        }
+
+        void OnValidate()
+        {
+            if (merged != null)
+                merged.hideFlags |= HideFlags.HideInInspector | HideFlags.HideInHierarchy;
         }
     }
 
