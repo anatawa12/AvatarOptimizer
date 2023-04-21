@@ -5,7 +5,6 @@ using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
 using VRC.Dynamics;
-using VRC.SDK3.Dynamics.PhysBone.Components;
 using Debug = System.Diagnostics.Debug;
 using Object = UnityEngine.Object;
 
@@ -14,54 +13,74 @@ namespace Anatawa12.AvatarOptimizer
     [CustomEditor(typeof(MergePhysBone))]
     internal class MergePhysBoneEditor : AvatarTagComponentEditorBase
     {
-        private static class Style
-        {
-            public static readonly GUIStyle ErrorStyle = new GUIStyle
-            {
-                normal = { textColor = Color.red },
-                wordWrap = false,
-            };
-
-            public static readonly GUIStyle WarningStyle = new GUIStyle
-            {
-                normal = { textColor = Color.yellow },
-                wordWrap = false,
-            };
-        }
-
         private SerializedObject _mergedPhysBone;
-        [CanBeNull] private SerializedObject _sourcePhysBone;
+        private MergePhysBoneEditorRenderer _renderer;
         private SerializedProperty _makeParent;
-        private SerializedProperty _integrationTypeProp;
-        private SerializedProperty _pullProp;
-        private SerializedProperty _springProp;
-        private SerializedProperty _stiffnessProp;
-        private SerializedProperty _gravityProp;
-        private SerializedProperty _gravityFalloffProp;
-        private SerializedProperty _immobileTypeProp;
-        private SerializedProperty _immobileProp;
-        private SerializedProperty _limitsProp;
-        private SerializedProperty _maxAngleXProp;
-        private SerializedProperty _limitRotationProp;
-        private SerializedProperty _maxAngleZProp;
-        private SerializedProperty _radiusProp;
-        private SerializedProperty _allowCollisionProp;
-        private SerializedProperty _collidersProp;
-        private SerializedProperty _allowGrabbingProp;
-        private SerializedProperty _grabMovementProp;
-        private SerializedProperty _allowPosingProp;
-        private SerializedProperty _maxStretchProp;
-        private SerializedProperty _snapToHandProp;
-        private SerializedProperty _isAnimatedProp;
-        private SerializedProperty _resetWhenDisabledProp;
         private SerializedProperty _componentsSetProp;
-        private PrefabSafeSet.EditorUtil<VRCPhysBoneBase> _componentsSetEditorUtil;
 
         private void OnEnable()
         {
-            var nestCount = PrefabSafeSet.PrefabSafeSetUtil.PrefabNestCount(serializedObject.targetObject);
+            _renderer = new MergePhysBoneEditorRenderer(serializedObject);
             _mergedPhysBone = new SerializedObject(serializedObject.FindProperty("merged").objectReferenceValue);
             _makeParent = serializedObject.FindProperty("makeParent");
+            _componentsSetProp = serializedObject.FindProperty(nameof(MergePhysBone.componentsSet));
+        }
+
+        protected override void OnInspectorGUIInner()
+        {
+            _mergedPhysBone.Update();
+
+            EditorGUILayout.PropertyField(_makeParent);
+            if (_makeParent.boolValue && ((Component)target).transform.childCount != 0)
+                EditorGUILayout.HelpBox(CL4EE.Tr("MergePhysBone:error:makeParentWithChildren"), MessageType.Error);
+
+            EditorGUILayout.PropertyField(_componentsSetProp);
+
+            // draw custom editor
+            _renderer.DoProcess();
+
+            serializedObject.ApplyModifiedProperties();
+            _mergedPhysBone.ApplyModifiedProperties();
+        }
+    }
+
+    internal abstract class MergePhysBoneEditorModificationUtils
+    {
+        // for historical reasons, InconsistentNaming
+        // ReSharper disable InconsistentNaming
+        // ReSharper disable MemberCanBePrivate.Global
+        protected SerializedObject _sourcePhysBone;
+        protected readonly SerializedObject _mergedPhysBone;
+        protected readonly SerializedProperty _integrationTypeProp;
+        protected readonly SerializedProperty _pullProp;
+        protected readonly SerializedProperty _springProp;
+        protected readonly SerializedProperty _stiffnessProp;
+        protected readonly SerializedProperty _gravityProp;
+        protected readonly SerializedProperty _gravityFalloffProp;
+        protected readonly SerializedProperty _immobileTypeProp;
+        protected readonly SerializedProperty _immobileProp;
+        protected readonly SerializedProperty _limitsProp;
+        protected readonly SerializedProperty _maxAngleXProp;
+        protected readonly SerializedProperty _limitRotationProp;
+        protected readonly SerializedProperty _maxAngleZProp;
+        protected readonly SerializedProperty _radiusProp;
+        protected readonly SerializedProperty _allowCollisionProp;
+        protected readonly SerializedProperty _collidersProp;
+        protected readonly SerializedProperty _allowGrabbingProp;
+        protected readonly SerializedProperty _grabMovementProp;
+        protected readonly SerializedProperty _allowPosingProp;
+        protected readonly SerializedProperty _maxStretchProp;
+        protected readonly SerializedProperty _snapToHandProp;
+        protected readonly SerializedProperty _isAnimatedProp;
+        protected readonly SerializedProperty _resetWhenDisabledProp;
+        protected readonly PrefabSafeSet.EditorUtil<VRCPhysBoneBase> _componentsSetEditorUtil;
+        // ReSharper restore InconsistentNaming
+        // ReSharper restore MemberCanBePrivate.Global
+
+        public MergePhysBoneEditorModificationUtils(SerializedObject serializedObject)
+        {
+            var nestCount = PrefabSafeSet.PrefabSafeSetUtil.PrefabNestCount(serializedObject.targetObject);
+            _mergedPhysBone = new SerializedObject(serializedObject.FindProperty("merged").objectReferenceValue);
             _integrationTypeProp = serializedObject.FindProperty("integrationType");
             _pullProp = serializedObject.FindProperty("pull");
             _springProp = serializedObject.FindProperty("spring");
@@ -84,51 +103,35 @@ namespace Anatawa12.AvatarOptimizer
             _snapToHandProp = serializedObject.FindProperty("snapToHand");
             _isAnimatedProp = serializedObject.FindProperty("isAnimated");
             _resetWhenDisabledProp = serializedObject.FindProperty("resetWhenDisabled");
-            _componentsSetProp = serializedObject.FindProperty(nameof(MergePhysBone.componentsSet));
+            var componentsSetProp = serializedObject.FindProperty(nameof(MergePhysBone.componentsSet));
             _componentsSetEditorUtil = PrefabSafeSet.EditorUtil<VRCPhysBoneBase>.Create(
-                _componentsSetProp, nestCount, x => (VRCPhysBoneBase)x.objectReferenceValue,
+                componentsSetProp, nestCount, x => (VRCPhysBoneBase)x.objectReferenceValue,
                 (x, v) => x.objectReferenceValue = v);
         }
 
-        protected override void OnInspectorGUIInner()
+        public void DoProcess()
         {
             _mergedPhysBone.Update();
-
-            EditorGUILayout.PropertyField(_makeParent);
-            if (_makeParent.boolValue && ((Component)target).transform.childCount != 0)
-                EditorGUILayout.HelpBox(CL4EE.Tr("MergePhysBone:error:makeParentWithChildren"), MessageType.Error);
 
             var sourcePysBone = _componentsSetEditorUtil.Values.FirstOrDefault();
             _sourcePhysBone = sourcePysBone == null
                 ? null
                 : new SerializedObject(_componentsSetEditorUtil.Values.Cast<Object>().ToArray());
 
-            EditorGUILayout.PropertyField(_componentsSetProp);
-
             if (_sourcePhysBone == null)
             {
-                EditorGUILayout.HelpBox(CL4EE.Tr("MergePhysBone:error:noSources"), MessageType.Error);
+                NoSource();
             }
             else
             {
-                Utils.HorizontalLine();
-
                 SerializedObject GetPb(SerializedProperty prop) => prop.boolValue ? _mergedPhysBone : _sourcePhysBone;
 
                 // == Transform ==
-                EditorGUILayout.LabelField("Transform", EditorStyles.boldLabel);
-                EditorGUI.indentLevel++;
-                EditorGUILayout.LabelField("Root Transform", "Auto Generated");
-                EditorGUILayout.LabelField("Ignore Transforms", "Automatically Merged");
-                EditorGUILayout.LabelField("Endpoint Position", "Cleared to zero");
-                EditorGUILayout.LabelField("Multi Child Type", "Must be Ignore");
-                var multiChildType = _sourcePhysBone.FindProperty("multiChildType");
-                if (multiChildType.enumValueIndex != 0 || multiChildType.hasMultipleDifferentValues)
-                    EditorGUILayout.HelpBox("Some PysBone has multi child type != Ignore", MessageType.Error);
-                EditorGUI.indentLevel--;
+                BeginSections("Transform");
+                TransformSection();
+
                 // == Forces ==
-                EditorGUILayout.LabelField("Forces", EditorStyles.boldLabel);
-                EditorGUI.indentLevel++;
+                NextSection("Forces");
                 PbProp("Integration Type", "integrationType", _integrationTypeProp);
                 var isSimplified = GetPb(_integrationTypeProp).FindProperty("integrationType").enumValueIndex == 0;
                 PbCurveProp("Pull", "pull", "pullCurve", _pullProp);
@@ -145,10 +148,9 @@ namespace Anatawa12.AvatarOptimizer
                 PbCurveProp("Gravity Falloff", "gravityFalloff", "gravityFalloffCurve", _gravityFalloffProp);
                 PbProp("Immobile Type", "immobileType", _immobileTypeProp);
                 PbCurveProp("Immobile", "immobile", "immobileCurve", _immobileProp);
-                EditorGUI.indentLevel--;
+
                 // == Limits ==
-                EditorGUILayout.LabelField("Limits", EditorStyles.boldLabel);
-                EditorGUI.indentLevel++;
+                NextSection("Limits");
                 PbProp("Limit Type", "limitType", _limitsProp);
                 var limitType = (VRCPhysBoneBase.LimitType)GetPb(_limitsProp).FindProperty("limitType").enumValueIndex;
                 
@@ -178,51 +180,113 @@ namespace Anatawa12.AvatarOptimizer
                         throw new ArgumentOutOfRangeException();
                 }
 
-                EditorGUI.EndDisabledGroup();
-                EditorGUI.indentLevel--;
                 // == Collision ==
-                EditorGUILayout.LabelField("Collision", EditorStyles.boldLabel);
-                EditorGUI.indentLevel++;
+                NextSection("Collision");
                 PbCurveProp("Radius", "radius", "radiusCurve", _radiusProp);
                 PbPermissionProp("Allow Collision", "allowCollision", "collisionFilter", _allowCollisionProp);
-                EditorGUI.BeginChangeCheck();
                 ColliderProp("Colliders", "colliders", _collidersProp);
-                if (EditorGUI.EndChangeCheck())
-                    foreach (var targetPb in GetPb(_limitsProp).targetObjects)
-                        ((VRCPhysBoneBase)targetPb).collidersHaveUpdated = true;
-                EditorGUI.indentLevel--;
+
                 // == Grab & Pose ==
-                EditorGUILayout.LabelField("Grab & Pose", EditorStyles.boldLabel);
-                EditorGUI.indentLevel++;
+                NextSection("Grab & Pose");
                 PbPermissionProp("Allow Grabbing", "allowGrabbing", "grabFilter", _allowGrabbingProp);
                 PbPermissionProp("Allow Posing", "allowPosing", "poseFilter", _allowPosingProp);
                 PbProp("Grab Movement", "grabMovement", _grabMovementProp);
                 PbCurveProp("Max Stretch", "maxStretch", "maxStretchCurve", _maxStretchProp);
                 PbProp("Snap To Hand", "snapToHand", _snapToHandProp);
-                EditorGUI.indentLevel--;
+
                 // == Options ==
-                EditorGUILayout.LabelField("Options", EditorStyles.boldLabel);
-                EditorGUI.indentLevel++;
-                EditorGUILayout.PropertyField(_mergedPhysBone.FindProperty("parameter"));
-                EditorGUILayout.HelpBox("See VRCPhysBone editor's text OR docs for more info about Parameter.",
-                    MessageType.Info);
-                EditorGUILayout.PropertyField(_isAnimatedProp);
+                NextSection("Options");
+                OptionParameter();
+                OptionIsAnimated();
                 PbProp("Reset When Disabled", "resetWhenDisabled", _resetWhenDisabledProp);
-                EditorGUI.indentLevel--;
-            }
 
-            serializedObject.ApplyModifiedProperties();
-
-            var differs = Processors.MergePhysBoneProcessor.CollectDifferentProps((MergePhysBone)target,
-                ((MergePhysBone)target).componentsSet.GetAsSet());
-            if (differs.Count != 0)
-            {
-                GUILayout.Label("The following properies are different", Style.ErrorStyle);
-                foreach (var differ in differs)
-                    GUILayout.Label($"  {differ}", Style.ErrorStyle);
+                EndSections();
             }
 
             _mergedPhysBone.ApplyModifiedProperties();
+        }
+
+        protected abstract void BeginSections(string name);
+        protected abstract void NextSection(string name);
+        protected abstract void EndSections();
+
+        protected abstract void NoSource();
+
+        protected abstract void TransformSection();
+        protected abstract void OptionParameter();
+        protected abstract void OptionIsAnimated();
+
+        protected abstract void PbProp([NotNull] string label,
+            [NotNull] string pbPropName,
+            [NotNull] SerializedProperty overridePropName,
+            [ItemNotNull] [NotNull] params SerializedProperty[] overrides);
+
+        protected abstract void PbCurveProp([NotNull] string label,
+            [NotNull] string pbPropName,
+            [NotNull] string pbCurvePropName,
+            [NotNull] SerializedProperty overridePropName,
+            [ItemNotNull] [NotNull] params SerializedProperty[] overrides);
+
+        protected abstract void PbPermissionProp([NotNull] string label,
+            [NotNull] string pbPropName,
+            [NotNull] string pbFilterPropName,
+            [NotNull] SerializedProperty overridePropName,
+            [ItemNotNull] [NotNull] params SerializedProperty[] overrides);
+
+        protected abstract void Pb3DCurveProp([NotNull] string label,
+            [NotNull] string pbPropName,
+            [NotNull] string pbXCurveLabel, [NotNull] string pbXCurvePropName,
+            [NotNull] string pbYCurveLabel, [NotNull] string pbYCurvePropName,
+            [NotNull] string pbZCurveLabel, [NotNull] string pbZCurvePropName,
+            [NotNull] SerializedProperty overridePropName,
+            [ItemNotNull] [NotNull] params SerializedProperty[] overrides);
+
+        protected abstract void ColliderProp([NotNull] string label,
+            [NotNull] string pbProp,
+            [NotNull] SerializedProperty overrideProp);
+    }
+
+    sealed class MergePhysBoneEditorRenderer : MergePhysBoneEditorModificationUtils
+    {
+        public MergePhysBoneEditorRenderer(SerializedObject serializedObject) : base(serializedObject)
+        {
+        }
+
+        protected override void BeginSections(string name) {
+            Utils.HorizontalLine();
+            EditorGUILayout.LabelField(name, EditorStyles.boldLabel);
+            EditorGUI.indentLevel++;
+        }
+        protected override void NextSection(string name) {
+            EditorGUI.indentLevel--;
+            EditorGUILayout.LabelField(name, EditorStyles.boldLabel);
+            EditorGUI.indentLevel++;
+        }
+
+        protected override void EndSections() {
+            EditorGUI.indentLevel--;
+        }
+
+        protected override void NoSource() {
+            EditorGUILayout.HelpBox(CL4EE.Tr("MergePhysBone:error:noSources"), MessageType.Error);
+        }
+
+        protected override void TransformSection() {
+            EditorGUILayout.LabelField("Root Transform", "Auto Generated");
+            EditorGUILayout.LabelField("Ignore Transforms", "Automatically Merged");
+            EditorGUILayout.LabelField("Endpoint Position", "Cleared to zero");
+            EditorGUILayout.LabelField("Multi Child Type", "Must be Ignore");
+            var multiChildType = _sourcePhysBone.FindProperty("multiChildType");
+            if (multiChildType.enumValueIndex != 0 || multiChildType.hasMultipleDifferentValues)
+                EditorGUILayout.HelpBox("Some PysBone has multi child type != Ignore", MessageType.Error);
+        }
+        protected override void OptionParameter() {
+            EditorGUILayout.PropertyField(_mergedPhysBone.FindProperty("parameter"));
+            EditorGUILayout.HelpBox("See VRCPhysBone editor's text OR docs for more info about Parameter.",
+                MessageType.Info);
+        }
+        protected override void OptionIsAnimated() {
+            EditorGUILayout.PropertyField(_isAnimatedProp);
         }
 
         const float OverrideWidth = 30f;
@@ -250,10 +314,10 @@ namespace Anatawa12.AvatarOptimizer
             prop.animationCurveValue != null && prop.animationCurveValue.length > 0;
 
 
-        private void PbProp([NotNull] string label, 
-            [NotNull] string pbPropName, 
-            [NotNull] SerializedProperty overridePropName,
-            [ItemNotNull] [NotNull] params SerializedProperty[] overrides)
+        protected override void PbProp(string label, 
+            string pbPropName, 
+            SerializedProperty overridePropName,
+            params SerializedProperty[] overrides)
         {
             PbPropImpl(label, overridePropName, overrides, (valueRect, obj, labelContent) =>
             {
@@ -293,11 +357,11 @@ namespace Anatawa12.AvatarOptimizer
             }
         }
 
-        private void PbCurveProp([NotNull] string label,
-            [NotNull] string pbPropName,
-            [NotNull] string pbCurvePropName,
-            [NotNull] SerializedProperty overridePropName,
-            [ItemNotNull] [NotNull] params SerializedProperty[] overrides)
+        protected override void PbCurveProp(string label,
+            string pbPropName,
+            string pbCurvePropName,
+            SerializedProperty overridePropName,
+            params SerializedProperty[] overrides)
         {
             PbPropImpl(label, overridePropName, overrides, (rect, obj, labelContent) =>
             {
@@ -314,11 +378,11 @@ namespace Anatawa12.AvatarOptimizer
             });
         }
 
-        private void PbPermissionProp([NotNull] string label,
-            [NotNull] string pbPropName,
-            [NotNull] string pbFilterPropName,
-            [NotNull] SerializedProperty overridePropName,
-            [ItemNotNull] [NotNull] params SerializedProperty[] overrides)
+        protected override void PbPermissionProp(string label,
+            string pbPropName,
+            string pbFilterPropName,
+            SerializedProperty overridePropName,
+            params SerializedProperty[] overrides)
         {
             PbPropImpl(label, overridePropName, overrides, (rect, obj, labelContent) =>
             {
@@ -343,13 +407,13 @@ namespace Anatawa12.AvatarOptimizer
             });
         }
 
-        private void Pb3DCurveProp([NotNull] string label,
-            [NotNull] string pbPropName,
-            [NotNull] string pbXCurveLabel, [NotNull] string pbXCurvePropName,
-            [NotNull] string pbYCurveLabel, [NotNull] string pbYCurvePropName,
-            [NotNull] string pbZCurveLabel, [NotNull] string pbZCurvePropName,
-            [NotNull] SerializedProperty overridePropName,
-            [ItemNotNull] [NotNull] params SerializedProperty[] overrides)
+        protected override void Pb3DCurveProp(string label,
+            string pbPropName,
+            string pbXCurveLabel, string pbXCurvePropName,
+            string pbYCurveLabel, string pbYCurvePropName,
+            string pbZCurveLabel, string pbZCurvePropName,
+            SerializedProperty overridePropName,
+            params SerializedProperty[] overrides)
         {
             PbPropImpl(label, overridePropName, overrides, (rect, obj, labelContent) =>
             {
@@ -457,9 +521,7 @@ namespace Anatawa12.AvatarOptimizer
             }
         }
 
-        private void ColliderProp([NotNull] string label,
-            [NotNull] string pbProp,
-            [NotNull] SerializedProperty overrideProp)
+        protected override void ColliderProp(string label, string pbProp, SerializedProperty overrideProp)
         {
             var labelContent = new GUIContent(label);
 
