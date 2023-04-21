@@ -141,6 +141,9 @@ namespace Anatawa12.AvatarOptimizer.Processors
             // == Options ==
             merged.isAnimated = merge.isAnimated || sourceComponents.Any(x => x.isAnimated);
 
+            // show the new PhysBone
+            merged.hideFlags &= ~(HideFlags.HideInHierarchy | HideFlags.HideInInspector);
+
             foreach (var physBone in sourceComponents) session.Destroy(physBone);
             session.Destroy(merge);
         }
