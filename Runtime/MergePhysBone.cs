@@ -88,10 +88,14 @@ namespace Anatawa12.AvatarOptimizer
             componentsSet = new PrefabSafeSet.VRCPhysBoneBaseSet(this);
         }
 
+#if UNITY_EDITOR
         private void OnEnable()
         {
             if (merged == null)
+            {
                 merged = gameObject.AddComponent<VRCPhysBone>();
+                UnityEditor.EditorUtility.SetDirty(this);
+            }
             merged.hideFlags |= HideFlags.HideInInspector | HideFlags.HideInHierarchy;
         }
 
@@ -100,6 +104,7 @@ namespace Anatawa12.AvatarOptimizer
             if (merged != null)
                 merged.hideFlags |= HideFlags.HideInInspector | HideFlags.HideInHierarchy;
         }
+#endif
     }
 
     public enum CollidersSettings
