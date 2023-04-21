@@ -6,6 +6,7 @@ using UnityEditor;
 using UnityEngine;
 using VRC.Dynamics;
 using VRC.SDK3.Dynamics.PhysBone.Components;
+using Debug = System.Diagnostics.Debug;
 using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer
@@ -168,7 +169,7 @@ namespace Anatawa12.AvatarOptimizer
                 PbCurveProp("Radius", "radius", "radiusCurve", _radiusProp);
                 PbPermissionProp("Allow Collision", "allowCollision", "collisionFilter", _allowCollisionProp);
                 EditorGUI.BeginChangeCheck();
-                PbProp("Colliders", "colliders", _collidersProp);
+                ColliderProp("Colliders", "colliders", _collidersProp);
                 if (EditorGUI.EndChangeCheck())
                     foreach (var targetPb in GetPb(_limitsProp).targetObjects)
                         ((VRCPhysBoneBase)targetPb).collidersHaveUpdated = true;
@@ -428,7 +429,6 @@ namespace Anatawa12.AvatarOptimizer
                     overrideProp.boolValue = true;
                 EditorGUI.EndProperty();
 
-                // TODO: warn if value differs between pbs
                 if (differ)
                 {
                     EditorGUILayout.HelpBox(
@@ -437,6 +437,79 @@ namespace Anatawa12.AvatarOptimizer
                         MessageType.Error);
                 }
             }
+        }
+
+        private void ColliderProp([NotNull] string label,
+            [NotNull] string pbProp,
+            [NotNull] SerializedProperty overrideProp)
+        {
+            var labelContent = new GUIContent(label);
+
+            Rect valueRect, overrideRect;
+
+            switch ((CollidersSettings)overrideProp.enumValueIndex)
+            {
+                case CollidersSettings.Copy:
+                {
+                    Debug.Assert(_sourcePhysBone != null, nameof(_sourcePhysBone) + " != null");
+                    var colliders = _sourcePhysBone.FindProperty(pbProp);
+
+                    var height = EditorGUI.GetPropertyHeight(colliders, null, true);
+
+                    (valueRect, overrideRect) = SplitRect(EditorGUILayout.GetControlRect(true, height), OverrideWidth);
+
+                    EditorGUI.BeginDisabledGroup(true);
+                    EditorGUI.PropertyField(valueRect, colliders, labelContent, true);
+                    EditorGUI.EndDisabledGroup();
+
+                    if (colliders.hasMultipleDifferentValues)
+                    {
+                        EditorGUILayout.HelpBox(
+                            "The value is differ between two or more sources. " +
+                            "You have to set same value OR override this property",
+                            MessageType.Error);
+                    }
+                }
+                    break;
+                case CollidersSettings.Merge:
+                {
+                    (valueRect, overrideRect) =
+                        SplitRect(EditorGUILayout.GetControlRect(true, EditorGUIUtility.singleLineHeight), OverrideWidth);
+
+                    var colliders = _componentsSetEditorUtil.Values.SelectMany(x => x.colliders).Distinct().ToList();
+                    var mergedProp = _mergedPhysBone.FindProperty(pbProp);
+                    EditorGUI.BeginDisabledGroup(true);
+                    mergedProp.isExpanded = EditorGUI.Foldout(valueRect, mergedProp.isExpanded, labelContent);
+                    if (mergedProp.isExpanded)
+                    {
+                        EditorGUILayout.IntField("Size", colliders.Count);
+                        for (var i = 0; i < colliders.Count; i++)
+                            EditorGUILayout.ObjectField($"Element {i}", colliders[i], typeof(VRCPhysBoneColliderBase),
+                                true);
+                    }
+
+                    EditorGUI.EndDisabledGroup();
+                }
+                    break;
+                case CollidersSettings.Override:
+                {
+                    var colliders = _mergedPhysBone.FindProperty(pbProp);
+
+                    var height = EditorGUI.GetPropertyHeight(colliders, null, true);
+
+                    (valueRect, overrideRect) = SplitRect(EditorGUILayout.GetControlRect(true, height), OverrideWidth);
+
+                    EditorGUI.PropertyField(valueRect, colliders, labelContent, true);
+                }
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+
+            EditorGUI.BeginProperty(overrideRect, null, overrideProp);
+            var selected = PopupNoIndent(overrideRect, overrideProp.enumValueIndex, overrideProp.enumDisplayNames);
+            if (selected != 0) overrideProp.enumValueIndex = selected;
+            EditorGUI.EndProperty();
         }
 
         private static int PopupNoIndent(Rect position, int selectedIndex, string[] displayedOptions)
