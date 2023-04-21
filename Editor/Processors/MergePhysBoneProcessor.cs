@@ -165,17 +165,14 @@ namespace Anatawa12.AvatarOptimizer.Processors
             }
 
             // == Forces ==
-            if (!merge.forces)
-            {
-                Callback1("integrationType");
-                if (!merge.pull) Callback2("pull", "pullCurve");
-                if (!merge.spring) Callback2("spring", "springCurve");
-                if (!merge.stiffness) Callback2("stiffness", "stiffnessCurve");
-                if (!merge.gravity) Callback2("gravity", "gravityCurve");
-                if (!merge.gravityFalloff) Callback2("gravityFalloff", "gravityFalloffCurve");
-                if (!merge.immobileType) Callback1("immobileType");
-                if (!merge.immobile) Callback2("immobile", "immobileCurve");
-            }
+            if (!merge.integrationType) Callback1("integrationType");
+            if (!merge.pull) Callback2("pull", "pullCurve");
+            if (!merge.integrationType && !merge.spring) Callback2("spring", "springCurve");
+            if (!merge.integrationType && !merge.stiffness) Callback2("stiffness", "stiffnessCurve");
+            if (!merge.gravity) Callback2("gravity", "gravityCurve");
+            if (!merge.gravityFalloff) Callback2("gravityFalloff", "gravityFalloffCurve");
+            if (!merge.immobileType) Callback1("immobileType");
+            if (!merge.immobile) Callback2("immobile", "immobileCurve");
 
             // == Limits ==
             if (!merge.limits)

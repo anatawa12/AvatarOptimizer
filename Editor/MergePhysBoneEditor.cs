@@ -32,7 +32,7 @@ namespace Anatawa12.AvatarOptimizer
         private SerializedObject _mergedPhysBone;
         [CanBeNull] private SerializedObject _sourcePhysBone;
         private SerializedProperty _makeParent;
-        private SerializedProperty _forcesProp;
+        private SerializedProperty _integrationTypeProp;
         private SerializedProperty _pullProp;
         private SerializedProperty _springProp;
         private SerializedProperty _stiffnessProp;
@@ -62,7 +62,7 @@ namespace Anatawa12.AvatarOptimizer
             var nestCount = PrefabSafeSet.PrefabSafeSetUtil.PrefabNestCount(serializedObject.targetObject);
             _mergedPhysBone = new SerializedObject(serializedObject.FindProperty("merged").objectReferenceValue);
             _makeParent = serializedObject.FindProperty("makeParent");
-            _forcesProp = serializedObject.FindProperty("forces");
+            _integrationTypeProp = serializedObject.FindProperty("integrationType");
             _pullProp = serializedObject.FindProperty("pull");
             _springProp = serializedObject.FindProperty("spring");
             _stiffnessProp = serializedObject.FindProperty("stiffness");
@@ -114,17 +114,17 @@ namespace Anatawa12.AvatarOptimizer
                 // == Forces ==
                 EditorGUILayout.LabelField("Forces", EditorStyles.boldLabel);
                 EditorGUI.indentLevel++;
-                PbProp("Integration Type", "integrationType", _forcesProp);
-                var isSimplified = GetPb(_forcesProp).FindProperty("integrationType").enumValueIndex == 0;
+                PbProp("Integration Type", "integrationType", _integrationTypeProp);
+                var isSimplified = GetPb(_integrationTypeProp).FindProperty("integrationType").enumValueIndex == 0;
                 PbCurveProp("Pull", "pull", "pullCurve", _pullProp);
                 if (isSimplified)
                 {
-                    PbCurveProp("Spring", "spring", "springCurve", _springProp, _forcesProp);
+                    PbCurveProp("Spring", "spring", "springCurve", _springProp, _integrationTypeProp);
                 }
                 else
                 {
-                    PbCurveProp("Momentum", "spring", "springCurve", _springProp, _forcesProp);
-                    PbCurveProp("Stiffness", "stiffness", "stiffnessCurve", _stiffnessProp, _forcesProp);
+                    PbCurveProp("Momentum", "spring", "springCurve", _springProp, _integrationTypeProp);
+                    PbCurveProp("Stiffness", "stiffness", "stiffnessCurve", _stiffnessProp, _integrationTypeProp);
                 }
                 PbCurveProp("Gravity", "gravity", "gravityCurve", _gravityProp);
                 PbCurveProp("Gravity Falloff", "gravityFalloff", "gravityFalloffCurve", _gravityFalloffProp);
