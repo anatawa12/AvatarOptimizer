@@ -103,12 +103,16 @@ namespace Anatawa12.AvatarOptimizer
                 ? null
                 : new SerializedObject(_componentsSetEditorUtil.Values.Cast<Object>().ToArray());
 
+            EditorGUILayout.PropertyField(_componentsSetProp);
+
             if (_sourcePhysBone == null)
             {
                 EditorGUILayout.HelpBox(CL4EE.Tr("MergePhysBone:error:noSources"), MessageType.Error);
             }
             else
             {
+                Utils.HorizontalLine();
+
                 SerializedObject GetPb(SerializedProperty prop) => prop.boolValue ? _mergedPhysBone : _sourcePhysBone;
 
                 // == Transform ==
@@ -206,8 +210,6 @@ namespace Anatawa12.AvatarOptimizer
                 PbProp("Reset When Disabled", "resetWhenDisabled", _resetWhenDisabledProp);
                 EditorGUI.indentLevel--;
             }
-
-            EditorGUILayout.PropertyField(_componentsSetProp);
 
             serializedObject.ApplyModifiedProperties();
 
