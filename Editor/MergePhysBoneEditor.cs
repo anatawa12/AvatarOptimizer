@@ -30,6 +30,13 @@ namespace Anatawa12.AvatarOptimizer
         private SerializedObject _mergedPhysBone;
         [CanBeNull] private SerializedObject _sourcePhysBone;
         private SerializedProperty _makeParent;
+        private SerializedProperty _forcesProp;
+        private SerializedProperty _pullProp;
+        private SerializedProperty _springProp;
+        private SerializedProperty _stiffnessProp;
+        private SerializedProperty _gravityProp;
+        private SerializedProperty _gravityFalloffProp;
+        private SerializedProperty _immobileProp;
         private SerializedProperty _limitsProp;
         private SerializedProperty _maxAngleXProp;
         private SerializedProperty _limitRotationProp;
@@ -53,6 +60,13 @@ namespace Anatawa12.AvatarOptimizer
             _mergedPhysBone =
                 new SerializedObject(((Component)serializedObject.targetObject).GetComponent<VRCPhysBone>());
             _makeParent = serializedObject.FindProperty("makeParent");
+            _forcesProp = serializedObject.FindProperty("forces");
+            _pullProp = serializedObject.FindProperty("pull");
+            _springProp = serializedObject.FindProperty("spring");
+            _stiffnessProp = serializedObject.FindProperty("stiffness");
+            _gravityProp = serializedObject.FindProperty("gravity");
+            _gravityFalloffProp = serializedObject.FindProperty("gravityFalloff");
+            _immobileProp = serializedObject.FindProperty("immobile");
             _limitsProp = serializedObject.FindProperty("limits");
             _maxAngleXProp = serializedObject.FindProperty("maxAngleX");
             _limitRotationProp = serializedObject.FindProperty("limitRotation");
