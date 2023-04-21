@@ -101,69 +101,26 @@ Check Merge to merge those MaterialSlots (SubMeshes) into one MaterialSlot. This
 
 This component merges multiple PhysBone Components into one Component with MultiChildType == Ignore.
 
-#### Settings
-
-<img src="./.readme/merge-physbone.png" width="428">
-
-##### Root Transform
-
-The RootComponent the VRCPhysBone will be applyed to.
-If this is set, all GameObjects on the path to VRCPhysBone Component will be disabled via multi child and Ignore Transforms.
-If this is not set, parent GameObject of all VRCPhysBone components must be same & one GameObject for Root Transform will be generated.
-
-If RootTransform is set
-```
-GameObject1 - The RootTransform
- +- GameObject2
- |   +- GameObject3
- |   |   +- GameObject4 - The PhysBone will be merged
- |   |   |   `- Children
- |   |   `- _dummy - the GameObject will be generated for MultiChildType == Ignore
- |   `- _dummy - the GameObject will be generated for MultiChildType == Ignore
- +- GameObject5 - The PhysBone will be merged
- |   `- Children
- `- GameObhect6 - This GameObject will be added to Ignore Transforms
-     `- Children
- There's no _dummy for GameObject1 because there's multiple PhysBone targets
-```
-
-If RootTransform is not set, This GameObject Graph 
-```
-GameObject1
- +- GameObject2 - The PhysBone will be merged
- |   `- Children
- +- GameObject3 - The PhysBone will be merged
- |   `- Children
- `- GameObhect4
-     `- Children
-```
-
-Will Transformed to the following
-```
-GameObject1 - RootTransform is set
- +- GameObhect4
- |   `- Children
- `- PhysBoneRoot - The Root Transform added by MergePhysBone
-     +- GameObject2 - The PhysBone will be merged
-     |   `- Children
-     `- GameObject3 - The PhysBone will be merged
-         `- Children
-```
-
 In addition, Endpoint Position will be replaced to zero and `_EndPhysBone` GameObject will be added.
 This operation is same as [Clear Endpoint Position](#clear-endpoint-position).
 
-##### Overrides
+#### Settings
 
-The list of properties to be merged.
-If you check some of this, the value of Merged Component will be used.
-If not checked, MergePhysBone will check all PhysBone Components have same value and the value will be used.
+<img src="./.readme/merge-physbone.png" width="488">
 
 ##### Components
 
 The list of PhysBone Component.
 
 Drop to None element at the bottom to add renderer and reset to None to remove from the list.
+
+##### Overrides
+
+Below the configurations, there's configurations like VRCPhysBone.
+For each property, you may select `Copy` to copy value from source property 
+(only available if values from the sources are same) or `Override` to set new value instead.
+
+For colliders, you can select `Merge` to merge colliders array from source physbones.
 
 ### Freeze BlendShape
 
