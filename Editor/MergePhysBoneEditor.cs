@@ -100,15 +100,15 @@ namespace Anatawa12.AvatarOptimizer
             // == Forces ==
             EditorGUILayout.LabelField("Forces", EditorStyles.boldLabel);
             EditorGUI.indentLevel++;
-            PbProp("Integration Type", "integrationType", "forces");
-            PbCurveProp("Pull", "pull", "pullCurve", "pull", "forces");
+            PbProp("Integration Type", "integrationType", _forcesProp);
+            PbCurveProp("Pull", "pull", "pullCurve", _pullProp, _forcesProp);
             // TODO: change Spring or Momentum with Siffness depends on type
-            PbCurveProp("Spring", "spring", "springCurve", "spring", "forces");
-            PbCurveProp("Momentum", "spring", "springCurve", "spring", "forces");
-            PbCurveProp("Stiffness", "stiffness", "stiffnessCurve", "stiffness", "forces");
-            PbCurveProp("Gravity", "gravity", "gravityCurve", "gravity", "forces");
-            PbCurveProp("Gravity Falloff", "gravityFalloff", "gravityFalloffCurve", "gravityFalloff", "forces");
-            PbCurveProp("Immobile", "immobile", "immobileCurve", "immobile", "forces");
+            PbCurveProp("Spring", "spring", "springCurve", _springProp, _forcesProp);
+            PbCurveProp("Momentum", "spring", "springCurve", _springProp, _forcesProp);
+            PbCurveProp("Stiffness", "stiffness", "stiffnessCurve", _stiffnessProp, _forcesProp);
+            PbCurveProp("Gravity", "gravity", "gravityCurve", _gravityProp, _forcesProp);
+            PbCurveProp("Gravity Falloff", "gravityFalloff", "gravityFalloffCurve", _gravityFalloffProp, _forcesProp);
+            PbCurveProp("Immobile", "immobile", "immobileCurve", _immobileProp, _forcesProp);
             EditorGUI.indentLevel--;
             // == Limits ==
             EditorGUILayout.LabelField("Limits", EditorStyles.boldLabel);
@@ -178,8 +178,8 @@ namespace Anatawa12.AvatarOptimizer
 
         private void PbProp([NotNull] string label, 
             [NotNull] string pbPropName, 
-            [NotNull] string overridePropName,
-            [ItemNotNull] [NotNull] params string[] overrides)
+            [NotNull] SerializedProperty overridePropName,
+            [ItemNotNull] [NotNull] params SerializedProperty[] overrides)
         {
             PbPropImpl(label, overridePropName, overrides, 
                 (valueRect, obj, labelContent) => EditorGUI.PropertyField(valueRect, _mergedPhysBone.FindProperty(pbPropName), labelContent) );
@@ -188,8 +188,8 @@ namespace Anatawa12.AvatarOptimizer
         private void PbCurveProp([NotNull] string label,
             [NotNull] string pbPropName,
             [NotNull] string pbCurvePropName,
-            [NotNull] string overridePropName,
-            [ItemNotNull] [NotNull] params string[] overrides)
+            [NotNull] SerializedProperty overridePropName,
+            [ItemNotNull] [NotNull] params SerializedProperty[] overrides)
         {
             PbPropImpl(label, overridePropName, overrides, (rect, obj, labelContent) =>
             {
@@ -237,13 +237,12 @@ namespace Anatawa12.AvatarOptimizer
         private static readonly string[] copyOverride = new[] { "Copy", "Override" };
 
         private void PbPropImpl([NotNull] string label, 
-            [NotNull] string overridePropName, 
-            [ItemNotNull] [NotNull] string[] overrides, 
+            [NotNull] SerializedProperty overrideProp, 
+            [ItemNotNull] [NotNull] SerializedProperty[] overrides, 
             [NotNull] Action<Rect, SerializedObject, GUIContent> renderer)
         {
             var labelContent = new GUIContent(label);
-            var overrideProp = serializedObject.FindProperty(overridePropName);
-            var forceOverride = overrides.Select(serializedObject.FindProperty).Any(x => x.boolValue);
+            var forceOverride = overrides.Any(x => x.boolValue);
 
             const float overrideWidth = 48f;
             var propRect = EditorGUILayout.GetControlRect(true, EditorGUIUtility.singleLineHeight);
