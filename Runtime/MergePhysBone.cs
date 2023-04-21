@@ -8,7 +8,6 @@ using VRC.SDK3.Dynamics.PhysBone.Components;
 namespace Anatawa12.AvatarOptimizer
 {
     [AddComponentMenu("Optimizer/Merge PhysBone")]
-    [RequireComponent(typeof(VRCPhysBone))]
     [DisallowMultipleComponent]
     [ExecuteAlways]
     internal class MergePhysBone : AvatarTagComponent
@@ -90,7 +89,10 @@ namespace Anatawa12.AvatarOptimizer
         void OnEnable()
         {
             if (merged == null)
-                merged = GetComponent<VRCPhysBoneBase>();
+            {
+                merged = gameObject.AddComponent<VRCPhysBone>();
+                merged.hideFlags = HideFlags.HideInInspector | HideFlags.HideInHierarchy;
+            }
         }
     }
 
