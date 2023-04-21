@@ -201,6 +201,31 @@ namespace Anatawa12.AvatarOptimizer
             _mergedPhysBone.ApplyModifiedProperties();
         }
 
+        const float OverrideWidth = 48f;
+        const float CurveButtonWidth = 20f;
+
+        private (Rect restRect, Rect fixedRect) SplitRect(Rect propRect, float width)
+        {
+            var restRect = propRect;
+            restRect.width -= EditorGUIUtility.standardVerticalSpacing + width;
+            var fixedRect = propRect;
+            fixedRect.x = restRect.xMax + EditorGUIUtility.standardVerticalSpacing;
+            fixedRect.width = width;
+            return (restRect, fixedRect);
+        }
+
+        private (Rect restRect, Rect fixedRect0, Rect fixedRect1) SplitRect(Rect propRect, float width0, float width1)
+        {
+            var (tmp, fixedRect1) = SplitRect(propRect, width1);
+            var (restRect, fixedRect0) = SplitRect(tmp, width0);
+            return (restRect, fixedRect0, fixedRect1);
+        }
+
+        
+        bool IsCurveWithValue(SerializedProperty prop) =>
+            prop.animationCurveValue != null && prop.animationCurveValue.length > 0;
+
+
         private void PbProp([NotNull] string label, 
             [NotNull] string pbPropName, 
             [NotNull] SerializedProperty overridePropName,
@@ -208,6 +233,36 @@ namespace Anatawa12.AvatarOptimizer
         {
             PbPropImpl(label, overridePropName, overrides, 
                 (valueRect, obj, labelContent) => EditorGUI.PropertyField(valueRect, obj.FindProperty(pbPropName), labelContent) );
+        }
+
+        private void DrawCurveFieldWithButton(SerializedProperty curveProp, Rect buttonRect, Func<Rect> curveRect)
+        {
+            if (IsCurveWithValue(curveProp))
+            {
+                if (GUI.Button(buttonRect, "X"))
+                {
+                    curveProp.animationCurveValue = new AnimationCurve();
+                }
+
+                var rect = curveRect();
+                EditorGUI.BeginProperty(rect, null, curveProp);
+                EditorGUI.BeginChangeCheck();
+                var cur = EditorGUI.CurveField(rect, " ", curveProp.animationCurveValue, Color.cyan,
+                    new Rect(0.0f, 0.0f, 1f, 1f));
+                if (EditorGUI.EndChangeCheck())
+                    curveProp.animationCurveValue = cur;
+                EditorGUI.EndProperty();
+            }
+            else
+            {
+                if (GUI.Button(buttonRect, "C"))
+                {
+                    var curve = new AnimationCurve();
+                    curve.AddKey(new Keyframe(0.0f, 1f));
+                    curve.AddKey(new Keyframe(1f, 1f));
+                    curveProp.animationCurveValue = curve;
+                }
+            }
         }
 
         private void PbCurveProp([NotNull] string label,
@@ -218,44 +273,14 @@ namespace Anatawa12.AvatarOptimizer
         {
             PbPropImpl(label, overridePropName, overrides, (rect, obj, labelContent) =>
             {
-                var valueRect = rect;
-                valueRect.width -= EditorGUIUtility.standardVerticalSpacing + EditorGUIUtility.singleLineHeight;
-                var buttonRect = rect;
-                buttonRect.x = valueRect.xMax + EditorGUIUtility.standardVerticalSpacing;
-                buttonRect.width = EditorGUIUtility.singleLineHeight;
+                var (valueRect, buttonRect) = SplitRect(rect, CurveButtonWidth);
 
                 var valueProp = obj.FindProperty(pbPropName);
                 var curveProp = obj.FindProperty(pbCurvePropName);
 
-                if (curveProp.animationCurveValue != null && curveProp.animationCurveValue.length > 0)
-                {
-                    // with curve
-                    EditorGUI.PropertyField(valueRect, valueProp, labelContent);
-                    
-                    if (GUI.Button(buttonRect, "X"))
-                    {
-                        curveProp.animationCurveValue = new AnimationCurve();
-                    }
-                    
-                    EditorGUI.BeginChangeCheck();
-                    var cur = EditorGUILayout.CurveField(" ", curveProp.animationCurveValue, Color.cyan,
-                        new Rect(0.0f, 0.0f, 1f, 1f));
-                    if (EditorGUI.EndChangeCheck())
-                        curveProp.animationCurveValue = cur;
-                }
-                else
-                {
-                    // with out curve: constant
-                    EditorGUI.PropertyField(valueRect, valueProp, labelContent);
-                    
-                    if (GUI.Button(buttonRect, "C"))
-                    {
-                        var curve = new AnimationCurve();
-                        curve.AddKey(new Keyframe(0.0f, 1f));
-                        curve.AddKey(new Keyframe(1f, 1f));
-                        curveProp.animationCurveValue = curve;
-                    }
-                }
+                EditorGUI.PropertyField(valueRect, valueProp, labelContent);
+                DrawCurveFieldWithButton(curveProp, buttonRect, 
+                    () => SplitRect(EditorGUILayout.GetControlRect(), OverrideWidth).restRect);
             });
         }
 
@@ -269,71 +294,33 @@ namespace Anatawa12.AvatarOptimizer
         {
             PbPropImpl(label, overridePropName, overrides, (rect, obj, labelContent) =>
             {
-                var valueRect = rect;
-                valueRect.width -= EditorGUIUtility.standardVerticalSpacing + EditorGUIUtility.singleLineHeight;
-                var buttonRect = rect;
-                buttonRect.x = valueRect.xMax + EditorGUIUtility.standardVerticalSpacing;
-                buttonRect.width = EditorGUIUtility.singleLineHeight;
+                var (valueRect, buttonRect) = SplitRect(rect, CurveButtonWidth);
 
                 var valueProp = obj.FindProperty(pbPropName);
                 var xCurveProp = obj.FindProperty(pbXCurvePropName);
                 var yCurveProp = obj.FindProperty(pbYCurvePropName);
                 var zCurveProp = obj.FindProperty(pbZCurvePropName);
 
-                bool IsCurve(SerializedProperty prop) =>
-                    prop.animationCurveValue != null && prop.animationCurveValue.length > 0;
+                void DrawCurve(string curveLabel, SerializedProperty curveProp)
+                {
+                    var (curveRect, curveButtonRect, _) = SplitRect(EditorGUILayout.GetControlRect(true),
+                        CurveButtonWidth, OverrideWidth);
 
-                if (IsCurve(xCurveProp) || IsCurve(yCurveProp) || IsCurve(zCurveProp))
+                    EditorGUI.LabelField(curveRect, curveLabel, " ");
+                    DrawCurveFieldWithButton(curveProp, curveButtonRect, () => curveRect);
+                }
+
+                if (IsCurveWithValue(xCurveProp) || IsCurveWithValue(yCurveProp) || IsCurveWithValue(zCurveProp))
                 {
                     // with curve
                     EditorGUI.PropertyField(valueRect, valueProp, labelContent);
                     DrawCurve(pbXCurveLabel, xCurveProp);
                     DrawCurve(pbYCurveLabel, yCurveProp);
                     DrawCurve(pbZCurveLabel, zCurveProp);
-
-                    void DrawCurve(string curveLabel, SerializedProperty curveProp)
-                    {
-                        if (IsCurve(curveProp))
-                        {
-                            var curveRect = EditorGUILayout.GetControlRect(true);
-                            curveRect.width = valueRect.width;
-                            var curveButtonRect = curveRect;
-                            curveButtonRect.x = buttonRect.x;
-                            curveButtonRect.width = buttonRect.width;
-                            EditorGUI.BeginChangeCheck();
-                            var cur = EditorGUI.CurveField(curveRect, 
-                                curveLabel, curveProp.animationCurveValue, Color.cyan,
-                                new Rect(0.0f, 0.0f, 1f, 1f));
-                            if (EditorGUI.EndChangeCheck())
-                                curveProp.animationCurveValue = cur;
-                            
-                            if (GUI.Button(curveButtonRect, "X"))
-                            {
-                                curveProp.animationCurveValue = new AnimationCurve();
-                            }
-                        }
-                        else
-                        {
-                            var curveRect = EditorGUILayout.GetControlRect(true);
-                            curveRect.width = valueRect.width;
-                            var curveButtonRect = curveRect;
-                            curveButtonRect.x = buttonRect.x;
-                            curveButtonRect.width = buttonRect.width;
-                            EditorGUI.LabelField(curveRect, curveLabel);
-
-                            if (GUI.Button(curveButtonRect, "C"))
-                            {
-                                var curve = new AnimationCurve();
-                                curve.AddKey(new Keyframe(0.0f, 1f));
-                                curve.AddKey(new Keyframe(1f, 1f));
-                                curveProp.animationCurveValue = curve;
-                            }
-                        }
-                    }
                 }
                 else
                 {
-                    // with out curve: constant
+                    // without curve: constant
                     EditorGUI.PropertyField(valueRect, valueProp, labelContent);
                     
                     if (GUI.Button(buttonRect, "C"))
@@ -349,7 +336,7 @@ namespace Anatawa12.AvatarOptimizer
             });
         }
 
-        private static readonly string[] copyOverride = new[] { "Copy", "Override" };
+        private static readonly string[] CopyOverride = { "Copy", "Override" };
 
         private void PbPropImpl([NotNull] string label, 
             [NotNull] SerializedProperty overrideProp, 
@@ -359,14 +346,8 @@ namespace Anatawa12.AvatarOptimizer
             var labelContent = new GUIContent(label);
             var forceOverride = overrides.Any(x => x.boolValue);
 
-            const float overrideWidth = 48f;
-            var propRect = EditorGUILayout.GetControlRect(true, EditorGUIUtility.singleLineHeight);
-            
-            var valueRect = propRect;
-            valueRect.width -= EditorGUIUtility.standardVerticalSpacing + overrideWidth;
-            var overrideRect = propRect;
-            overrideRect.x = valueRect.xMax + EditorGUIUtility.standardVerticalSpacing;
-            overrideRect.width = overrideWidth;
+            var (valueRect, overrideRect) =
+                SplitRect(EditorGUILayout.GetControlRect(true, EditorGUIUtility.singleLineHeight), OverrideWidth);
 
             if (forceOverride || overrideProp.boolValue)
             {
@@ -377,13 +358,13 @@ namespace Anatawa12.AvatarOptimizer
                 if (forceOverride)
                 {
                     EditorGUI.BeginDisabledGroup(true);
-                    PopupNoIndent(overrideRect, 1, copyOverride);
+                    PopupNoIndent(overrideRect, 1, CopyOverride);
                     EditorGUI.EndDisabledGroup();
                 }
                 else
                 {
                     EditorGUI.BeginProperty(overrideRect, null, overrideProp);
-                    var selected = PopupNoIndent(overrideRect, 1, copyOverride);
+                    var selected = PopupNoIndent(overrideRect, 1, CopyOverride);
                     if (selected != 1)
                         overrideProp.boolValue = false;
                     EditorGUI.EndProperty();
@@ -397,7 +378,7 @@ namespace Anatawa12.AvatarOptimizer
                 EditorGUI.EndDisabledGroup();
 
                 EditorGUI.BeginProperty(overrideRect, null, overrideProp);
-                var selected = PopupNoIndent(overrideRect, 0, copyOverride);
+                var selected = PopupNoIndent(overrideRect, 0, CopyOverride);
                 if (selected != 0)
                     overrideProp.boolValue = true;
                 EditorGUI.EndProperty();
