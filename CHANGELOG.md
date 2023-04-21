@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog].
   - See [this issue comment][about-root-transform] for more datails.
 - **BREAKING** Dropped support for VRCSDK 3.1.12 or older `#101`
   - Now, we require VRCSDK since 3.1.13 (including) until 3.2.0 (excluding)
+- Use IEditorOnly instead of mokeypatching VRCSDK `#102`
 - Move the toggle for Override and the setting of the value after Override closer together. `#105`
   - With this changes, the merged PhysBone is now hidden.
   - The merged PhysBone will be shown in Play mode.
