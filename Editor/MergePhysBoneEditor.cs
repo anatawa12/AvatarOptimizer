@@ -111,6 +111,17 @@ namespace Anatawa12.AvatarOptimizer
             {
                 SerializedObject GetPb(SerializedProperty prop) => prop.boolValue ? _mergedPhysBone : _sourcePhysBone;
 
+                // == Transform ==
+                EditorGUILayout.LabelField("Transform", EditorStyles.boldLabel);
+                EditorGUI.indentLevel++;
+                EditorGUILayout.LabelField("Root Transform", "Auto Generated");
+                EditorGUILayout.LabelField("Ignore Transforms", "Automatically Merged");
+                EditorGUILayout.LabelField("Endpoint Position", "Cleared to zero");
+                EditorGUILayout.LabelField("Multi Child Type", "Must be Ignore");
+                var multiChildType = _sourcePhysBone.FindProperty("multiChildType");
+                if (multiChildType.enumValueIndex != 0 || multiChildType.hasMultipleDifferentValues)
+                    EditorGUILayout.HelpBox("Some PysBone has multi child type != Ignore", MessageType.Error);
+                EditorGUI.indentLevel--;
                 // == Forces ==
                 EditorGUILayout.LabelField("Forces", EditorStyles.boldLabel);
                 EditorGUI.indentLevel++;
