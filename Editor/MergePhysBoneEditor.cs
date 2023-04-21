@@ -225,7 +225,7 @@ namespace Anatawa12.AvatarOptimizer
             _mergedPhysBone.ApplyModifiedProperties();
         }
 
-        const float OverrideWidth = 48f;
+        const float OverrideWidth = 30f;
         const float CurveButtonWidth = 20f;
 
         private (Rect restRect, Rect fixedRect) SplitRect(Rect propRect, float width)
@@ -400,7 +400,7 @@ namespace Anatawa12.AvatarOptimizer
             });
         }
 
-        private static readonly string[] CopyOverride = { "Copy", "Override" };
+        private static readonly string[] CopyOverride = { "C:Copy", "O:Override" };
 
         private void PbPropImpl([NotNull] string label, 
             [NotNull] SerializedProperty overrideProp, 
