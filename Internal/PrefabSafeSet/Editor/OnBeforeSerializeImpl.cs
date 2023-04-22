@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using JetBrains.Annotations;
+using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
@@ -31,24 +32,28 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 
         private static void GeneralCheck(PrefabSafeSet<T, TLayer> self, int nestCount)
         {
-            // first, replace missing with null
+            // first, replace missing with corresponding object
             if (typeof(Object).IsAssignableFrom(typeof(T)))
             {
+                // TODO: add to removed of current layer if replaced with correspondingObject
                 var context = new PrefabSafeSetUtil.NullOrMissingContext(self.OuterObject);
 
-                void ReplaceMissingWithNull(T[] array)
+                void ReplaceMissingWithCorrespondingObject(T[] array, Object[] correspondingObjects)
                 {
                     for (var i = 0; i < array.Length; i++)
                         if (array[i].IsNullOrMissing(context))
-                            array[i] = default;
+                        {
+                            var correspondingObject = correspondingObjects[i];
+                            array[i] = correspondingObject is null ? default : (T)(object)correspondingObject;
+                        }
                 }
 
-                ReplaceMissingWithNull(self.mainSet);
+                ReplaceMissingWithCorrespondingObject(self.mainSet, self.MainSetCorrespondingObjects);
 
                 foreach (var layer in self.prefabLayers)
                 {
-                    ReplaceMissingWithNull(layer.additions);
-                    ReplaceMissingWithNull(layer.removes);
+                    ReplaceMissingWithCorrespondingObject(layer.additions, layer.AdditionsCorrespondingObjects);
+                    ReplaceMissingWithCorrespondingObject(layer.removes, layer.RemovesCorrespondingObjects);
                 }
             }
 

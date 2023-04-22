@@ -66,6 +66,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 
 #if UNITY_EDITOR
         [SerializeField, HideInInspector] internal T fakeSlot;
+        [CanBeNull] internal Object[] MainSetCorrespondingObjects;
         internal readonly Object OuterObject;
         internal T[] CheckedCurrentLayerRemoves;
         internal T[] CheckedCurrentLayerAdditions;
@@ -107,7 +108,30 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 
         void ISerializationCallbackReceiver.OnAfterDeserialize()
         {
-            // there's nothing to do after deserialization.
+#if UNITY_EDITOR
+            if (typeof(Object).IsAssignableFrom(typeof(T)))
+            {
+                UnityEditor.EditorApplication.delayCall += () =>
+                {
+                    Object[] GetCorrespondingObjects(T[] values)
+                    {
+                        return values.Select(x =>
+                            {
+                                var asObj = (Object)(object)x;
+                                return asObj ? UnityEditor.PrefabUtility.GetCorrespondingObjectFromSource(asObj) : null;
+                            })
+                            .ToArray();
+                    }
+
+                    MainSetCorrespondingObjects = GetCorrespondingObjects(mainSet);
+                    foreach (var prefabLayer in prefabLayers)
+                    {
+                        prefabLayer.AdditionsCorrespondingObjects = GetCorrespondingObjects(prefabLayer.additions);
+                        prefabLayer.RemovesCorrespondingObjects = GetCorrespondingObjects(prefabLayer.removes);
+                    }
+                };
+            }
+#endif
         }
     }
 
@@ -117,6 +141,10 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
         // if some value is in both removes and additions, the values should be added
         [SerializeField] internal T[] removes = Array.Empty<T>();
         [SerializeField] internal T[] additions = Array.Empty<T>();
+#if UNITY_EDITOR
+        internal Object[] RemovesCorrespondingObjects;
+        internal Object[] AdditionsCorrespondingObjects;
+#endif
 
         public void ApplyTo(HashSet<T> result, [CanBeNull] List<T> list = null)
         {

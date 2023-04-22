@@ -18,54 +18,56 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             return nestCount;
         }
 
-        public static bool IsNullOrMissing<T>(this T self, Object context) =>
-            self.IsNullOrMissing(new NullOrMissingContext(context));
-
         public static bool IsNullOrMissing<T>(this T self, NullOrMissingContext context)
         {
-            if (default(T) != null) return false;
-
-            if (self == null) return true;
-
-            if (!(self is Object obj)) return false;
-
-            if (obj == null) return true;
-
-            if (obj is Component || obj is GameObject)
-            {
-                var contextPrefabAsset = context.IsPartOfPrefabAsset;
-                var selfPrefabAsset = PrefabUtility.IsPartOfPrefabAsset(obj);
-                if (contextPrefabAsset != selfPrefabAsset) return true;
-
-                if (selfPrefabAsset)
-                {
-                    // if it's prefab asset, check for root GameObject
-                    var selfRoot = (obj is GameObject selfGo ? selfGo.transform : ((Component)obj).transform).root;
-                    if (context.RootTransform != selfRoot) return true;
-                }
-            }
-
-            return false;
+            return context.IsNullOrMissing(self);
         }
 
         public readonly struct NullOrMissingContext
         {
-            internal Transform RootTransform { get; }
-            internal bool IsPartOfPrefabAsset => (object)RootTransform != null;
+            private readonly Transform _rootTransform;
+            private readonly bool _isPartOfPrefabAsset;
 
             public NullOrMissingContext(Object context)
             {
-                var contextPrefabAsset = PrefabUtility.IsPartOfPrefabAsset(context);
+                _isPartOfPrefabAsset = PrefabUtility.IsPartOfPrefabAsset(context);
 
-                if (contextPrefabAsset)
+                var prefab = _isPartOfPrefabAsset ? context : PrefabUtility.GetCorrespondingObjectFromSource(context);
+                _rootTransform = !prefab
+                    ? null
+                    : (prefab is GameObject go ? go.transform : ((Component)prefab).transform).root;
+            }
+            
+            public bool IsNullOrMissing<T>(T self)
+            {
+                if (default(T) != null) return false;
+
+                if (self == null) return true;
+
+                if (!(self is Object obj)) return false;
+
+                if (obj == null) return true;
+
+                if (obj is Component || obj is GameObject)
                 {
+                    var contextPrefabAsset = _isPartOfPrefabAsset;
+                    var selfPrefabAsset = PrefabUtility.IsPartOfPrefabAsset(obj);
+
+                    // For PrefabAsset, non-prefab value is not allowed: assume as null
+                    if (contextPrefabAsset && !selfPrefabAsset) return true;
+                    // If both are scene asset, it's ok: not null
+                    if (!contextPrefabAsset && !selfPrefabAsset) return false;
+
+                    System.Diagnostics.Debug.Assert(selfPrefabAsset);
+
+                    var selfRoot = (obj is GameObject selfGo ? selfGo.transform : ((Component)obj).transform).root;
+
+                    // for Scene GameObject, prefab with same root is the only allowed
                     // if it's prefab asset, check for root GameObject
-                    RootTransform = (context is GameObject go ? go.transform : ((Component)context).transform).root;
+                    if (_rootTransform != selfRoot) return true;
                 }
-                else
-                {
-                    RootTransform = null;
-                }
+
+                return false;
             }
         }
     }
