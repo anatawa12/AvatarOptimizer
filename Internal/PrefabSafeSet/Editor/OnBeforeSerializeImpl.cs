@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using JetBrains.Annotations;
+using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -38,22 +39,37 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                 // TODO: add to removed of current layer if replaced with correspondingObject
                 var context = new PrefabSafeSetUtil.NullOrMissingContext(self.OuterObject);
 
-                void ReplaceMissingWithCorrespondingObject(T[] array, Object[] correspondingObjects)
+                void ReplaceMissingWithCorrespondingObject(ref T[] array, Object[] correspondingObjects, bool remove)
                 {
                     for (var i = 0; i < array.Length; i++)
-                        if (array[i].IsNullOrMissing(context))
+                    {
+                        if (!array[i].IsNullOrMissing(context)) continue;
+
+                        var correspondingObject = correspondingObjects[i];
+                        if (correspondingObject)
                         {
-                            var correspondingObject = correspondingObjects[i];
-                            array[i] = correspondingObject is null ? default : (T)(object)correspondingObject;
+                            array[i] = (T)(object)correspondingObject;
                         }
+                        else
+                        {
+                            if (remove)
+                            {
+                                ArrayUtility.RemoveAt(ref array, i);
+                                i--; // process array[i] again
+                            }
+                        }
+                    }
                 }
 
-                ReplaceMissingWithCorrespondingObject(self.mainSet, self.MainSetCorrespondingObjects);
+                ReplaceMissingWithCorrespondingObject(ref self.mainSet, self.MainSetCorrespondingObjects, 
+                    self.prefabLayers.Length == 0);
 
-                foreach (var layer in self.prefabLayers)
+                for (var i = 0; i < self.prefabLayers.Length; i++)
                 {
-                    ReplaceMissingWithCorrespondingObject(layer.additions, layer.AdditionsCorrespondingObjects);
-                    ReplaceMissingWithCorrespondingObject(layer.removes, layer.RemovesCorrespondingObjects);
+                    var layer = self.prefabLayers[i];
+                    var remove = self.prefabLayers.Length - 1 == i;
+                    ReplaceMissingWithCorrespondingObject(ref layer.additions, layer.AdditionsCorrespondingObjects, remove);
+                    ReplaceMissingWithCorrespondingObject(ref layer.removes, layer.RemovesCorrespondingObjects, remove);
                 }
             }
 
