@@ -30,6 +30,9 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 
         internal static bool IsNotNull<T>(this T arg) => !arg.IsNull();
 
+        internal static Transform GetPrefabRoot(this Object obj) =>
+            (obj is GameObject go ? go.transform : ((Component)obj).transform).root;
+
 #if UNITY_EDITOR
         private static readonly Type OnBeforeSerializeImplType;
 
@@ -113,12 +116,18 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             {
                 UnityEditor.EditorApplication.delayCall += () =>
                 {
+                    var outerObjectCorrespondingRoot = UnityEditor.PrefabUtility
+                        .GetCorrespondingObjectFromSource(OuterObject)?.GetPrefabRoot();
                     Object[] GetCorrespondingObjects(T[] values)
                     {
                         return values.Select(x =>
                             {
                                 var asObj = (Object)(object)x;
-                                return asObj ? UnityEditor.PrefabUtility.GetCorrespondingObjectFromSource(asObj) : null;
+                                if (!asObj) return default;
+                                var corresponding = UnityEditor.PrefabUtility.GetCorrespondingObjectFromSource(asObj);
+                                if (!corresponding) return default;
+                                // ReSharper disable once Unity.NoNullPropagation
+                                return corresponding.GetPrefabRoot() == outerObjectCorrespondingRoot ? corresponding : default;
                             })
                             .ToArray();
                     }

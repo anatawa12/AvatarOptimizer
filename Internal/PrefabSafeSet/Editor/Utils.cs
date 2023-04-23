@@ -33,9 +33,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                 _isPartOfPrefabAsset = PrefabUtility.IsPartOfPrefabAsset(context);
 
                 var prefab = _isPartOfPrefabAsset ? context : PrefabUtility.GetCorrespondingObjectFromSource(context);
-                _rootTransform = !prefab
-                    ? null
-                    : (prefab is GameObject go ? go.transform : ((Component)prefab).transform).root;
+                _rootTransform = !prefab ? null : prefab.GetPrefabRoot();
             }
             
             public bool IsNullOrMissing<T>(T self)
@@ -60,7 +58,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 
                     System.Diagnostics.Debug.Assert(selfPrefabAsset);
 
-                    var selfRoot = (obj is GameObject selfGo ? selfGo.transform : ((Component)obj).transform).root;
+                    var selfRoot = obj.GetPrefabRoot();
 
                     // for Scene GameObject, prefab with same root is the only allowed
                     // if it's prefab asset, check for root GameObject
