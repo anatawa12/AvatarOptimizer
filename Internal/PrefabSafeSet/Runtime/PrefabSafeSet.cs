@@ -106,11 +106,16 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
         {
 #if UNITY_EDITOR
             _onBeforeSerializeCallback.Invoke(null, new object[] {this});
+            SetCorrespondingArray();
 #endif
         }
 
         void ISerializationCallbackReceiver.OnAfterDeserialize()
         {
+            SetCorrespondingArray();
+        }
+
+        void SetCorrespondingArray() {
 #if UNITY_EDITOR
             if (typeof(Object).IsAssignableFrom(typeof(T)))
             {
@@ -118,25 +123,27 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                 {
                     var outerObjectCorrespondingRoot = UnityEditor.PrefabUtility
                         .GetCorrespondingObjectFromSource(OuterObject)?.GetPrefabRoot();
-                    Object[] GetCorrespondingObjects(T[] values)
+
+                    void GetCorrespondingObjects(T[] values, ref Object[] correspondingObjects)
                     {
-                        return values.Select(x =>
+                        if (correspondingObjects?.Length == values.Length) return;
+                        correspondingObjects = values.Select(x =>
                             {
                                 var asObj = (Object)(object)x;
-                                if (!asObj) return default;
+                                if (asObj == null) return default;
                                 var corresponding = UnityEditor.PrefabUtility.GetCorrespondingObjectFromSource(asObj);
-                                if (!corresponding) return default;
-                                // ReSharper disable once Unity.NoNullPropagation
-                                return corresponding.GetPrefabRoot() == outerObjectCorrespondingRoot ? corresponding : default;
+                                if (corresponding == null) return default;
+                                if (corresponding.GetPrefabRoot() != outerObjectCorrespondingRoot) return default;
+                                return corresponding;
                             })
                             .ToArray();
                     }
 
-                    MainSetCorrespondingObjects = GetCorrespondingObjects(mainSet);
+                    GetCorrespondingObjects(mainSet, ref MainSetCorrespondingObjects);
                     foreach (var prefabLayer in prefabLayers)
                     {
-                        prefabLayer.AdditionsCorrespondingObjects = GetCorrespondingObjects(prefabLayer.additions);
-                        prefabLayer.RemovesCorrespondingObjects = GetCorrespondingObjects(prefabLayer.removes);
+                        GetCorrespondingObjects(prefabLayer.additions, ref prefabLayer.AdditionsCorrespondingObjects);
+                        GetCorrespondingObjects(prefabLayer.removes, ref prefabLayer.RemovesCorrespondingObjects);
                     }
                 };
             }
