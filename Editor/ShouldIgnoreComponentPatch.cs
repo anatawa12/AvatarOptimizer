@@ -24,7 +24,7 @@ namespace Anatawa12.AvatarOptimizer
             {
                 // TODO: cache for performance
                 if (Object.FindObjectsOfType<MergePhysBone>()
-                    .SelectMany(x => x.components)
+                    .SelectMany(x => x.componentsSet.GetAsSet())
                     .Any(x => x == component))
                 {
                     return true;
