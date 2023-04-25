@@ -35,6 +35,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- ShouldIgnoreComponentPatch cases compilation error `#108`
 
 ### Security
 
