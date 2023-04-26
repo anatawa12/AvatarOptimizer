@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - ShouldIgnoreComponentPatch cases compilation error `#108`
+- Not working on the build time `#114`
 
 ### Security
 
