@@ -32,6 +32,11 @@ namespace Anatawa12.AvatarOptimizer
         public void Destroy(Object merge) => _toDestroy.Add(merge);
         internal List<Object> GetObjectsToDestroy() => _toDestroy;
 
+        public T GetRootComponent<T>() where T : Component
+        {
+            return _rootObject != null ? _rootObject.GetComponent<T>() : null;
+        }
+
         public IEnumerable<T> GetComponents<T>() where T : Component
         {
             return (_rootObject != null ? _rootObject.GetComponentsInChildren<T>(true) : Object.FindObjectsOfType<T>())
