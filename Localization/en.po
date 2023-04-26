@@ -236,10 +236,3 @@ msgid "DeleteEditorOnlyGameObjects:NotOnAvatarDescriptor"
 msgstr "This component must be set on root of Avatar (GameObject with AvatarDescriptor)"
 
 # endregion
-
-# region DeleteEditorOnlyGameObjects
-
-msgid "DeleteEditorOnlyGameObjects:description"
-msgstr "Removes GameObjects with EditorOnly tag"
-
-# endregion

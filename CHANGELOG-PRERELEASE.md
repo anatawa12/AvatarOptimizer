@@ -8,7 +8,6 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Delete EditorOnly GameObjects `#109`
 
 ### Changed
 
