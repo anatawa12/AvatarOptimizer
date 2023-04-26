@@ -8,7 +8,6 @@ namespace Anatawa12.AvatarOptimizer
     [CanEditMultipleObjects]
     internal class MakeChildrenEditor : AvatarTagComponentEditorBase
     {
-        protected override string Description => CL4EE.Tr("MakeChildren:description");
         private SerializedProperty _children;
 
         private void OnEnable()
