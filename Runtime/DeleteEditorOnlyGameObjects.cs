@@ -4,7 +4,7 @@ namespace Anatawa12.AvatarOptimizer
 {
     [AddComponentMenu("Optimizer/Delete EditorOnly GameObjects")]
     [DisallowMultipleComponent]
-    internal class DeleteEditorOnlyGameObjects : AvatarTagComponent
+    internal class DeleteEditorOnlyGameObjects : AvatarGlobalComponent
     {
     }
 }
