@@ -243,3 +243,10 @@ msgid "DeleteEditorOnlyGameObjects:description"
 msgstr "Removes GameObjects with EditorOnly tag"
 
 # endregion
+
+# region UnusedBonesByReferencesTool
+
+msgid "UnusedBonesByReferencesTool:description"
+msgstr "Applies UnusedBonesByReferencesTool (https://narazaka.booth.pm/items/3831781) by Narazaka"
+
+# endregion
