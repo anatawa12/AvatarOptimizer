@@ -249,4 +249,18 @@ msgstr "Removes GameObjects with EditorOnly tag"
 msgid "UnusedBonesByReferencesTool:description"
 msgstr "Applies UnusedBonesByReferencesTool (https://narazaka.booth.pm/items/3831781) by Narazaka"
 
+msgid "UnusedBonesByReferencesTool:prop:preserveEndBone"
+msgstr "Preserve EndBone"
+
+# "親がactiveなendボーンを削除しない(ON推奨)"
+msgid "UnusedBonesByReferencesTool:tooltip:preserveEndBone"
+msgstr "Do not remove end bones with active parent"
+
+msgid "UnusedBonesByReferencesTool:prop:detectExtraChild"
+msgstr "Detect Extra Children"
+
+# "子にボーン以外を持つボーンを削除しない"
+msgid "UnusedBonesByReferencesTool:tooltip:detectExtraChild"
+msgstr "Do not remove bones with non-bone children"
+
 # endregion
