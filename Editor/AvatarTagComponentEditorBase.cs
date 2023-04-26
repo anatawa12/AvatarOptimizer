@@ -20,7 +20,17 @@ namespace Anatawa12.AvatarOptimizer
             OnInspectorGUIInner();
         }
 
-        protected virtual string Description => null;
+        private string _descriptionKey;
+        protected virtual string Description
+        {
+            get
+            {
+                if (_descriptionKey == null)
+                    _descriptionKey = $"{serializedObject.targetObject.GetType().Name}:description";
+                return CL4EE.Tr(_descriptionKey);
+            }
+        }
+
         protected abstract void OnInspectorGUIInner();
     }
 

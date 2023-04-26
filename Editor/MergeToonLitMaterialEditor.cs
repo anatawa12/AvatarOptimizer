@@ -12,7 +12,6 @@ namespace Anatawa12.AvatarOptimizer
     [CustomEditor(typeof(MergeToonLitMaterial))]
     internal class MergeToonLitMaterialEditor : AvatarTagComponentEditorBase
     {
-        protected override string Description => CL4EE.Tr("MergeToonLitMaterial:description");
         private Material[] _upstreamMaterials;
         private (Material mat, int index)[] _materials;
         

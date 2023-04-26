@@ -15,6 +15,7 @@ namespace Anatawa12.AvatarOptimizer
     {
         // saved format versions. saveVersions[0] is original asset and saveVersions[1] is prefab instance
         // this is used for migration in 0.x v versions. in 1.x versions, this should be removed.
+        [HideInInspector]
         public int[] saveVersions;
 
 #if UNITY_EDITOR
