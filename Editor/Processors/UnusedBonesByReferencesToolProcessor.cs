@@ -13,7 +13,8 @@ namespace Anatawa12.AvatarOptimizer.Processors
             var configuration = session.GetRootComponent<UnusedBonesByReferencesTool>();
             if (!configuration) return;
 
-            throw new NotImplementedException();
+            UnusedBonesByReferences.Make(BoneReference.Make(configuration.transform, true), true)
+                .SetEditorOnlyToBones();
         }
 
         #region UnusedBonesByReferencesTool
