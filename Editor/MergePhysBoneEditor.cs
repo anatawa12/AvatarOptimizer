@@ -128,12 +128,14 @@ namespace Anatawa12.AvatarOptimizer
                 SerializedObject GetPb(SerializedProperty prop) => prop.boolValue ? _mergedPhysBone : _sourcePhysBone;
 
                 // == Transform ==
-                if (BeginSections("Transform"))
+                if (BeginSections("Transform", "transforms"))
                 {
                     TransformSection();
+                }
 
-                    // == Forces ==
-                    NextSection("Forces");
+                // == Forces ==
+                if (NextSection("Forces", "forces"))
+                {
                     PbProp("Integration Type", "integrationType", _integrationTypeProp);
                     var isSimplified = GetPb(_integrationTypeProp).FindProperty("integrationType").enumValueIndex == 0;
                     PbCurveProp("Pull", "pull", "pullCurve", _pullProp);
@@ -154,7 +156,7 @@ namespace Anatawa12.AvatarOptimizer
                 }
 
                 // == Limits ==
-                if (NextSection("Limits"))
+                if (NextSection("Limits", "limits"))
                 {
                     PbProp("Limit Type", "limitType", _limitsProp);
                     var limitType =
@@ -188,7 +190,7 @@ namespace Anatawa12.AvatarOptimizer
                 }
 
                 // == Collision ==
-                if (NextSection("Collision"))
+                if (NextSection("Collision", "collision"))
                 {
                     PbCurveProp("Radius", "radius", "radiusCurve", _radiusProp);
                     PbPermissionProp("Allow Collision", "allowCollision", "collisionFilter", _allowCollisionProp);
@@ -196,7 +198,7 @@ namespace Anatawa12.AvatarOptimizer
                 }
 
                 // == Grab & Pose ==
-                if (NextSection("Grab & Pose"))
+                if (NextSection("Grab & Pose", "grab--pose"))
                 {
                     PbPermissionProp("Allow Grabbing", "allowGrabbing", "grabFilter", _allowGrabbingProp);
                     PbPermissionProp("Allow Posing", "allowPosing", "poseFilter", _allowPosingProp);
@@ -206,7 +208,7 @@ namespace Anatawa12.AvatarOptimizer
                 }
 
                 // == Options ==
-                if (NextSection("Options"))
+                if (NextSection("Options", "options"))
                 {
                     OptionParameter();
                     OptionIsAnimated();
@@ -219,8 +221,8 @@ namespace Anatawa12.AvatarOptimizer
             _mergedPhysBone.ApplyModifiedProperties();
         }
 
-        protected abstract bool BeginSections(string name);
-        protected abstract bool NextSection(string name);
+        protected abstract bool BeginSections(string name, string docTag);
+        protected abstract bool NextSection(string name, string docTag);
         protected abstract void EndSections();
 
         protected abstract void NoSource();
@@ -267,22 +269,26 @@ namespace Anatawa12.AvatarOptimizer
 
         private readonly Dictionary<string, bool> _sectionFolds = new Dictionary<string, bool>();
 
-        protected override bool BeginSections(string name)
+        protected override bool BeginSections(string name, string docTag)
         {
             Utils.HorizontalLine();
-            return BeginSection(name);
+            return BeginSection(name, docTag);
         }
 
-        private bool BeginSection(string name) {
+        private bool BeginSection(string name, string docTag) {
             if (!_sectionFolds.TryGetValue(name, out var open)) open = true;
-            open = EditorGUILayout.Foldout(open, name, EditorStyles.foldoutHeader);
+            var rect = GUILayoutUtility.GetRect(EditorGUIUtility.fieldWidth, EditorGUIUtility.fieldWidth, 18f, 18f, EditorStyles.foldoutHeader);
+            var (foldout, button) = SplitRect(rect, OverrideWidth);
+            open = EditorGUI.Foldout(foldout, open, name, EditorStyles.foldoutHeader);
             _sectionFolds[name] = open;
+            if (GUI.Button(button, "?"))
+                Application.OpenURL("https://docs.vrchat.com/docs/physbones#" + docTag);
             EditorGUI.indentLevel++;
             return open;
         }
-        protected override bool NextSection(string name) {
+        protected override bool NextSection(string name, string docTag) {
             EditorGUI.indentLevel--;
-            return BeginSection(name);
+            return BeginSection(name, docTag);
         }
 
         protected override void EndSections() {
