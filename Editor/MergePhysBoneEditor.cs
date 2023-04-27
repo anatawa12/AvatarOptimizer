@@ -127,8 +127,10 @@ namespace Anatawa12.AvatarOptimizer
             {
                 SerializedObject GetPb(SerializedProperty prop) => prop.boolValue ? _mergedPhysBone : _sourcePhysBone;
 
+                BeginPbConfig();
+
                 // == Transform ==
-                if (BeginSections("Transform", "transforms"))
+                if (BeginSection("Transform", "transforms"))
                 {
                     TransformSection();
                 }
@@ -220,15 +222,26 @@ namespace Anatawa12.AvatarOptimizer
                     PbProp("Reset When Disabled", "resetWhenDisabled", _resetWhenDisabledProp);
                 }
 
-                EndSections();
+                EndSection();
+
+                EndPbConfig();
             }
 
             _mergedPhysBone.ApplyModifiedProperties();
         }
 
-        protected abstract bool BeginSections(string name, string docTag);
-        protected abstract bool NextSection(string name, string docTag);
-        protected abstract void EndSections();
+        protected abstract void BeginPbConfig();
+
+        protected abstract bool BeginSection(string name, string docTag);
+        protected abstract void EndSection();
+
+        protected abstract void EndPbConfig();
+
+        private bool NextSection(string name, string docTag)
+        {
+            EndSection();
+            return BeginSection(name, docTag);
+        }
 
         protected abstract void NoSource();
 
@@ -274,13 +287,12 @@ namespace Anatawa12.AvatarOptimizer
 
         private readonly Dictionary<string, bool> _sectionFolds = new Dictionary<string, bool>();
 
-        protected override bool BeginSections(string name, string docTag)
+        protected override void BeginPbConfig()
         {
             Utils.HorizontalLine();
-            return BeginSection(name, docTag);
         }
 
-        private bool BeginSection(string name, string docTag) {
+        protected override bool BeginSection(string name, string docTag) {
             if (!_sectionFolds.TryGetValue(name, out var open)) open = true;
             var rect = GUILayoutUtility.GetRect(EditorGUIUtility.fieldWidth, EditorGUIUtility.fieldWidth, 18f, 18f, EditorStyles.foldoutHeader);
             var (foldout, button) = SplitRect(rect, OverrideWidth);
@@ -291,13 +303,13 @@ namespace Anatawa12.AvatarOptimizer
             EditorGUI.indentLevel++;
             return open;
         }
-        protected override bool NextSection(string name, string docTag) {
+
+        protected override void EndSection() {
             EditorGUI.indentLevel--;
-            return BeginSection(name, docTag);
         }
 
-        protected override void EndSections() {
-            EditorGUI.indentLevel--;
+        protected override void EndPbConfig()
+        {
         }
 
         protected override void NoSource() {
