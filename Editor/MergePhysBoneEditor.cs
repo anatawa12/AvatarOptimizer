@@ -71,7 +71,9 @@ namespace Anatawa12.AvatarOptimizer
         protected readonly SerializedProperty _allowGrabbingProp;
         protected readonly SerializedProperty _grabMovementProp;
         protected readonly SerializedProperty _allowPosingProp;
+        protected readonly SerializedProperty _stretchMotion;
         protected readonly SerializedProperty _maxStretchProp;
+        protected readonly SerializedProperty _maxSquish;
         protected readonly SerializedProperty _snapToHandProp;
         protected readonly SerializedProperty _isAnimatedProp;
         protected readonly SerializedProperty _resetWhenDisabledProp;
@@ -102,7 +104,9 @@ namespace Anatawa12.AvatarOptimizer
             _allowGrabbingProp = serializedObject.FindProperty("allowGrabbing");
             _grabMovementProp = serializedObject.FindProperty("grabMovement");
             _allowPosingProp = serializedObject.FindProperty("allowPosing");
+            _stretchMotion = serializedObject.FindProperty("stretchMotion");
             _maxStretchProp = serializedObject.FindProperty("maxStretch");
+            _maxSquish = serializedObject.FindProperty("maxSquish");
             _snapToHandProp = serializedObject.FindProperty("snapToHand");
             _isAnimatedProp = serializedObject.FindProperty("isAnimated");
             _resetWhenDisabledProp = serializedObject.FindProperty("resetWhenDisabled");
@@ -138,12 +142,14 @@ namespace Anatawa12.AvatarOptimizer
                 switch (version)
                 {
                     case VRCPhysBoneBase.Version.Version_1_0:
+                    case VRCPhysBoneBase.Version.Version_1_1:
                         break;
-                    //case VRCPhysBoneBase.Version.Version_1_1:
                     default:
                         UnsupportedPbVersion();
                         break;
                 }
+
+                bool CheckMinVersion(VRCPhysBoneBase.Version require) => version >= require;
 
                 // == Transform ==
                 if (BeginSection("Transform", "transforms"))
@@ -218,7 +224,11 @@ namespace Anatawa12.AvatarOptimizer
                 // == Stretch & Squish ==
                 if (NextSection("Stretch & Squish", "stretch--squish"))
                 {
+                    if (CheckMinVersion(VRCPhysBoneBase.Version.Version_1_1))
+                        PbCurveProp("Stretch Motion", "stretchMotion", "stretchMotionCurve", _stretchMotion);
                     PbCurveProp("Max Stretch", "maxStretch", "maxStretchCurve", _maxStretchProp);
+                    if (CheckMinVersion(VRCPhysBoneBase.Version.Version_1_1))
+                        PbCurveProp("Max Squish", "maxSquish", "maxSquishCurve", _maxSquish);
                 }
 
                 // == Grab & Pose ==

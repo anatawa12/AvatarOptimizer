@@ -69,8 +69,12 @@ namespace Anatawa12.AvatarOptimizer
         public bool grabMovement;
         [CL4EELocalized("MergePhysBone:prop:allowPosing")]
         public bool allowPosing;
+        [CL4EELocalized("MergePhysBone:prop:stretchMotion")]
+        public bool stretchMotion;
         [CL4EELocalized("MergePhysBone:prop:maxStretch")]
         public bool maxStretch;
+        [CL4EELocalized("MergePhysBone:prop:maxSquish")]
+        public bool maxSquish;
         [CL4EELocalized("MergePhysBone:prop:snapToHand")]
         public bool snapToHand;
         // == Others ==
