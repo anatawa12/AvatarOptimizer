@@ -197,13 +197,18 @@ namespace Anatawa12.AvatarOptimizer
                     ColliderProp("Colliders", "colliders", _collidersProp);
                 }
 
+                // == Stretch & Squish ==
+                if (NextSection("Stretch & Squish", "stretch--squish"))
+                {
+                    PbCurveProp("Max Stretch", "maxStretch", "maxStretchCurve", _maxStretchProp);
+                }
+
                 // == Grab & Pose ==
                 if (NextSection("Grab & Pose", "grab--pose"))
                 {
                     PbPermissionProp("Allow Grabbing", "allowGrabbing", "grabFilter", _allowGrabbingProp);
                     PbPermissionProp("Allow Posing", "allowPosing", "poseFilter", _allowPosingProp);
                     PbProp("Grab Movement", "grabMovement", _grabMovementProp);
-                    PbCurveProp("Max Stretch", "maxStretch", "maxStretchCurve", _maxStretchProp);
                     PbProp("Snap To Hand", "snapToHand", _snapToHandProp);
                 }
 
