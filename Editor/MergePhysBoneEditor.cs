@@ -456,13 +456,11 @@ namespace Anatawa12.AvatarOptimizer
                 if (prevValue != prop.enumValueIndex)
                 {
                     switch (EditorUtility.DisplayDialogComplex(
-                                "Version Info", 
-                                "Changing VRCPhysBone versions will change the way your component works.\n" +
-                                "Some values may act differently and will need to be manually changed.\n\n" +
-                                "Please read our online documentation for information on version differences.", 
-                                "Open Documentation", 
-                                "Revert",
-                                "Continue Without Documentation"))
+                                CL4EE.Tr("MergePhysBone:dialog:versionInfo:title"), 
+                                CL4EE.Tr("MergePhysBone:dialog:versionInfo:message"),
+                                CL4EE.Tr("MergePhysBone:dialog:versionInfo:openDoc"), 
+                                CL4EE.Tr("MergePhysBone:dialog:versionInfo:revert"),
+                                CL4EE.Tr("MergePhysBone:dialog:versionInfo:continue")))
                     {
                         case 0:
                             Application.OpenURL(docURL);
