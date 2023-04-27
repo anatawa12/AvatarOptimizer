@@ -453,7 +453,8 @@ namespace Anatawa12.AvatarOptimizer
                 var prop = obj.FindProperty(pbPropName);
                 var prevValue = prop.enumValueIndex;
                 EditorGUI.PropertyField(valueRect, prop, labelContent);
-                if (prevValue != prop.enumValueIndex)
+                var newValue = prop.enumValueIndex;
+                if (prevValue != newValue)
                 {
                     switch (EditorUtility.DisplayDialogComplex(
                                 CL4EE.Tr("MergePhysBone:dialog:versionInfo:title"), 
@@ -469,7 +470,7 @@ namespace Anatawa12.AvatarOptimizer
                             prop.enumValueIndex = prevValue;
                             break;
                         case 2:
-                            // continue
+                            prop.enumValueIndex = newValue;
                             break;
                     }
                 }
