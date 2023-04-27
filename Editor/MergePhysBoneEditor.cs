@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using CustomLocalization4EditorExtension;
 using JetBrains.Annotations;
@@ -127,78 +128,90 @@ namespace Anatawa12.AvatarOptimizer
                 SerializedObject GetPb(SerializedProperty prop) => prop.boolValue ? _mergedPhysBone : _sourcePhysBone;
 
                 // == Transform ==
-                BeginSections("Transform");
-                TransformSection();
+                if (BeginSections("Transform"))
+                {
+                    TransformSection();
 
-                // == Forces ==
-                NextSection("Forces");
-                PbProp("Integration Type", "integrationType", _integrationTypeProp);
-                var isSimplified = GetPb(_integrationTypeProp).FindProperty("integrationType").enumValueIndex == 0;
-                PbCurveProp("Pull", "pull", "pullCurve", _pullProp);
-                if (isSimplified)
-                {
-                    PbCurveProp("Spring", "spring", "springCurve", _springProp, _integrationTypeProp);
+                    // == Forces ==
+                    NextSection("Forces");
+                    PbProp("Integration Type", "integrationType", _integrationTypeProp);
+                    var isSimplified = GetPb(_integrationTypeProp).FindProperty("integrationType").enumValueIndex == 0;
+                    PbCurveProp("Pull", "pull", "pullCurve", _pullProp);
+                    if (isSimplified)
+                    {
+                        PbCurveProp("Spring", "spring", "springCurve", _springProp, _integrationTypeProp);
+                    }
+                    else
+                    {
+                        PbCurveProp("Momentum", "spring", "springCurve", _springProp, _integrationTypeProp);
+                        PbCurveProp("Stiffness", "stiffness", "stiffnessCurve", _stiffnessProp, _integrationTypeProp);
+                    }
+
+                    PbCurveProp("Gravity", "gravity", "gravityCurve", _gravityProp);
+                    PbCurveProp("Gravity Falloff", "gravityFalloff", "gravityFalloffCurve", _gravityFalloffProp);
+                    PbProp("Immobile Type", "immobileType", _immobileTypeProp);
+                    PbCurveProp("Immobile", "immobile", "immobileCurve", _immobileProp);
                 }
-                else
-                {
-                    PbCurveProp("Momentum", "spring", "springCurve", _springProp, _integrationTypeProp);
-                    PbCurveProp("Stiffness", "stiffness", "stiffnessCurve", _stiffnessProp, _integrationTypeProp);
-                }
-                PbCurveProp("Gravity", "gravity", "gravityCurve", _gravityProp);
-                PbCurveProp("Gravity Falloff", "gravityFalloff", "gravityFalloffCurve", _gravityFalloffProp);
-                PbProp("Immobile Type", "immobileType", _immobileTypeProp);
-                PbCurveProp("Immobile", "immobile", "immobileCurve", _immobileProp);
 
                 // == Limits ==
-                NextSection("Limits");
-                PbProp("Limit Type", "limitType", _limitsProp);
-                var limitType = (VRCPhysBoneBase.LimitType)GetPb(_limitsProp).FindProperty("limitType").enumValueIndex;
-                
-                switch (limitType)
+                if (NextSection("Limits"))
                 {
-                    case VRCPhysBoneBase.LimitType.None:
-                        break;
-                    case VRCPhysBoneBase.LimitType.Angle:
-                    case VRCPhysBoneBase.LimitType.Hinge:
-                        PbCurveProp("Max Angle", "maxAngleX", "maxAngleXCurve", _maxAngleXProp, _limitsProp);
-                        Pb3DCurveProp("Rotation", "limitRotation", 
-                            "Pitch", "limitRotationXCurve", 
-                            "Roll", "limitRotationYCurve", 
-                            "Yaw", "limitRotationZCurve",
-                            _limitRotationProp, _limitsProp);
-                        break;
-                    case VRCPhysBoneBase.LimitType.Polar:
-                        PbCurveProp("Max Angle X", "maxAngleX", "maxAngleXCurve", _maxAngleXProp, _limitsProp);
-                        PbCurveProp("Max Angle Z", "maxAngleZ", "maxAngleZCurve", _maxAngleZProp, _limitsProp);
-                        Pb3DCurveProp("Rotation", "limitRotation", 
-                            "Pitch", "limitRotationXCurve", 
-                            "Roll", "limitRotationYCurve", 
-                            "Yaw", "limitRotationZCurve",
-                            _limitRotationProp, _limitsProp);
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
+                    PbProp("Limit Type", "limitType", _limitsProp);
+                    var limitType =
+                        (VRCPhysBoneBase.LimitType)GetPb(_limitsProp).FindProperty("limitType").enumValueIndex;
+
+                    switch (limitType)
+                    {
+                        case VRCPhysBoneBase.LimitType.None:
+                            break;
+                        case VRCPhysBoneBase.LimitType.Angle:
+                        case VRCPhysBoneBase.LimitType.Hinge:
+                            PbCurveProp("Max Angle", "maxAngleX", "maxAngleXCurve", _maxAngleXProp, _limitsProp);
+                            Pb3DCurveProp("Rotation", "limitRotation",
+                                "Pitch", "limitRotationXCurve",
+                                "Roll", "limitRotationYCurve",
+                                "Yaw", "limitRotationZCurve",
+                                _limitRotationProp, _limitsProp);
+                            break;
+                        case VRCPhysBoneBase.LimitType.Polar:
+                            PbCurveProp("Max Angle X", "maxAngleX", "maxAngleXCurve", _maxAngleXProp, _limitsProp);
+                            PbCurveProp("Max Angle Z", "maxAngleZ", "maxAngleZCurve", _maxAngleZProp, _limitsProp);
+                            Pb3DCurveProp("Rotation", "limitRotation",
+                                "Pitch", "limitRotationXCurve",
+                                "Roll", "limitRotationYCurve",
+                                "Yaw", "limitRotationZCurve",
+                                _limitRotationProp, _limitsProp);
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
                 }
 
                 // == Collision ==
-                NextSection("Collision");
-                PbCurveProp("Radius", "radius", "radiusCurve", _radiusProp);
-                PbPermissionProp("Allow Collision", "allowCollision", "collisionFilter", _allowCollisionProp);
-                ColliderProp("Colliders", "colliders", _collidersProp);
+                if (NextSection("Collision"))
+                {
+                    PbCurveProp("Radius", "radius", "radiusCurve", _radiusProp);
+                    PbPermissionProp("Allow Collision", "allowCollision", "collisionFilter", _allowCollisionProp);
+                    ColliderProp("Colliders", "colliders", _collidersProp);
+                }
 
                 // == Grab & Pose ==
-                NextSection("Grab & Pose");
-                PbPermissionProp("Allow Grabbing", "allowGrabbing", "grabFilter", _allowGrabbingProp);
-                PbPermissionProp("Allow Posing", "allowPosing", "poseFilter", _allowPosingProp);
-                PbProp("Grab Movement", "grabMovement", _grabMovementProp);
-                PbCurveProp("Max Stretch", "maxStretch", "maxStretchCurve", _maxStretchProp);
-                PbProp("Snap To Hand", "snapToHand", _snapToHandProp);
+                if (NextSection("Grab & Pose"))
+                {
+                    PbPermissionProp("Allow Grabbing", "allowGrabbing", "grabFilter", _allowGrabbingProp);
+                    PbPermissionProp("Allow Posing", "allowPosing", "poseFilter", _allowPosingProp);
+                    PbProp("Grab Movement", "grabMovement", _grabMovementProp);
+                    PbCurveProp("Max Stretch", "maxStretch", "maxStretchCurve", _maxStretchProp);
+                    PbProp("Snap To Hand", "snapToHand", _snapToHandProp);
+                }
 
                 // == Options ==
-                NextSection("Options");
-                OptionParameter();
-                OptionIsAnimated();
-                PbProp("Reset When Disabled", "resetWhenDisabled", _resetWhenDisabledProp);
+                if (NextSection("Options"))
+                {
+                    OptionParameter();
+                    OptionIsAnimated();
+                    PbProp("Reset When Disabled", "resetWhenDisabled", _resetWhenDisabledProp);
+                }
 
                 EndSections();
             }
@@ -206,8 +219,8 @@ namespace Anatawa12.AvatarOptimizer
             _mergedPhysBone.ApplyModifiedProperties();
         }
 
-        protected abstract void BeginSections(string name);
-        protected abstract void NextSection(string name);
+        protected abstract bool BeginSections(string name);
+        protected abstract bool NextSection(string name);
         protected abstract void EndSections();
 
         protected abstract void NoSource();
@@ -252,15 +265,24 @@ namespace Anatawa12.AvatarOptimizer
         {
         }
 
-        protected override void BeginSections(string name) {
+        private readonly Dictionary<string, bool> _sectionFolds = new Dictionary<string, bool>();
+
+        protected override bool BeginSections(string name)
+        {
             Utils.HorizontalLine();
-            EditorGUILayout.LabelField(name, EditorStyles.boldLabel);
-            EditorGUI.indentLevel++;
+            return BeginSection(name);
         }
-        protected override void NextSection(string name) {
-            EditorGUI.indentLevel--;
-            EditorGUILayout.LabelField(name, EditorStyles.boldLabel);
+
+        private bool BeginSection(string name) {
+            if (!_sectionFolds.TryGetValue(name, out var open)) open = true;
+            open = EditorGUILayout.Foldout(open, name, EditorStyles.foldoutHeader);
+            _sectionFolds[name] = open;
             EditorGUI.indentLevel++;
+            return open;
+        }
+        protected override bool NextSection(string name) {
+            EditorGUI.indentLevel--;
+            return BeginSection(name);
         }
 
         protected override void EndSections() {

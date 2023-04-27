@@ -97,12 +97,14 @@ namespace Anatawa12.AvatarOptimizer.Processors
             {
             }
 
-            protected override void BeginSections(string name)
+            protected override bool BeginSections(string name)
             {
+                return true;
             }
 
-            protected override void NextSection(string name)
+            protected override bool NextSection(string name)
             {
+                return true;
             }
 
             protected override void EndSections()
