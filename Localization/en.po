@@ -95,6 +95,10 @@ msgstr "There's children with Make Children of Me enabled."
 msgid "MergePhysBone:error:noSources"
 msgstr "There's no source PhysBones"
 
+msgid "MergePhysBone:error:unsupportedPbVersion"
+msgstr "The PhysBone Version is not supported (yet) by Avatar Optimizer.\n"
+"Please tell author on twitter (@anatawa12_vrc) or GitHub (anatawa12/AvatarOptimizer)!"
+
 msgid "MergePhysBone:prop:merged"
 msgstr "Merged"
 

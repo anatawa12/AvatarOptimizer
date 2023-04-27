@@ -133,6 +133,18 @@ namespace Anatawa12.AvatarOptimizer
 
                 PbVersionProp("Version", "version", _version);
 
+                var version = (VRCPhysBoneBase.Version)GetPb(_version).FindProperty("version").enumValueIndex;
+
+                switch (version)
+                {
+                    case VRCPhysBoneBase.Version.Version_1_0:
+                        break;
+                    //case VRCPhysBoneBase.Version.Version_1_1:
+                    default:
+                        UnsupportedPbVersion();
+                        break;
+                }
+
                 // == Transform ==
                 if (BeginSection("Transform", "transforms"))
                 {
@@ -253,6 +265,8 @@ namespace Anatawa12.AvatarOptimizer
         protected abstract void OptionParameter();
         protected abstract void OptionIsAnimated();
 
+        protected abstract void UnsupportedPbVersion();
+
         protected abstract void PbVersionProp([NotNull] string label,
             [NotNull] string pbPropName,
             [NotNull] SerializedProperty overridePropName,
@@ -319,6 +333,11 @@ namespace Anatawa12.AvatarOptimizer
 
         protected override void EndPbConfig()
         {
+        }
+
+        protected override void UnsupportedPbVersion()
+        {
+            EditorGUILayout.HelpBox(CL4EE.Tr("MergePhysBone:error:unsupportedPbVersion"), MessageType.Error);
         }
 
         protected override void NoSource() {

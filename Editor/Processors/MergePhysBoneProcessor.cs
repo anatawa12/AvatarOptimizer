@@ -116,6 +116,9 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
             protected override void NoSource() => throw new InvalidOperationException("No sources");
 
+            protected override void UnsupportedPbVersion() =>
+                throw new InvalidOperationException("Unsupported Pb Version");
+
             protected override void TransformSection()
             {
                 var multiChildType = _sourcePhysBone.FindProperty(nameof(VRCPhysBoneBase.multiChildType));
