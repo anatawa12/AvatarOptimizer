@@ -133,6 +133,10 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 // nothing to do: _isAnimatedProp is merged later
             }
 
+            protected override void PbVersionProp(string label, string pbPropName, SerializedProperty overridePropName,
+                params SerializedProperty[] overrides) =>
+                PbProp(label, pbPropName, overridePropName, overrides);
+
             protected override void PbProp(string label,
                 string pbPropName,
                 SerializedProperty overridePropName,

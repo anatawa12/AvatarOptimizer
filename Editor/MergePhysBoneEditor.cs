@@ -52,6 +52,7 @@ namespace Anatawa12.AvatarOptimizer
         // ReSharper disable MemberCanBePrivate.Global
         protected SerializedObject _sourcePhysBone;
         protected readonly SerializedObject _mergedPhysBone;
+        protected readonly SerializedProperty _version;
         protected readonly SerializedProperty _integrationTypeProp;
         protected readonly SerializedProperty _pullProp;
         protected readonly SerializedProperty _springProp;
@@ -82,6 +83,7 @@ namespace Anatawa12.AvatarOptimizer
         {
             var nestCount = PrefabSafeSet.PrefabSafeSetUtil.PrefabNestCount(serializedObject.targetObject);
             _mergedPhysBone = new SerializedObject(serializedObject.FindProperty("merged").objectReferenceValue);
+            _version = serializedObject.FindProperty("version");
             _integrationTypeProp = serializedObject.FindProperty("integrationType");
             _pullProp = serializedObject.FindProperty("pull");
             _springProp = serializedObject.FindProperty("spring");
@@ -128,6 +130,8 @@ namespace Anatawa12.AvatarOptimizer
                 SerializedObject GetPb(SerializedProperty prop) => prop.boolValue ? _mergedPhysBone : _sourcePhysBone;
 
                 BeginPbConfig();
+
+                PbVersionProp("Version", "version", _version);
 
                 // == Transform ==
                 if (BeginSection("Transform", "transforms"))
@@ -249,6 +253,11 @@ namespace Anatawa12.AvatarOptimizer
         protected abstract void OptionParameter();
         protected abstract void OptionIsAnimated();
 
+        protected abstract void PbVersionProp([NotNull] string label,
+            [NotNull] string pbPropName,
+            [NotNull] SerializedProperty overridePropName,
+            [ItemNotNull] [NotNull] params SerializedProperty[] overrides);
+
         protected abstract void PbProp([NotNull] string label,
             [NotNull] string pbPropName,
             [NotNull] SerializedProperty overridePropName,
@@ -357,6 +366,99 @@ namespace Anatawa12.AvatarOptimizer
         
         bool IsCurveWithValue(SerializedProperty prop) =>
             prop.animationCurveValue != null && prop.animationCurveValue.length > 0;
+
+        protected override void PbVersionProp(string label, 
+            string pbPropName, 
+            SerializedProperty overrideProp,
+            params SerializedProperty[] overrides)
+        {
+            var labelContent = new GUIContent(label);
+            var forceOverride = overrides.Any(x => x.boolValue);
+
+            var (valueRect, buttonRect, overrideRect) =
+                SplitRect(EditorGUILayout.GetControlRect(true, EditorGUIUtility.singleLineHeight), CurveButtonWidth,
+                    OverrideWidth);
+
+            if (forceOverride || overrideProp.boolValue)
+            {
+                // Override mode
+
+                renderer(_mergedPhysBone);
+
+                if (forceOverride)
+                {
+                    EditorGUI.BeginDisabledGroup(true);
+                    PopupNoIndent(overrideRect, 1, CopyOverride);
+                    EditorGUI.EndDisabledGroup();
+                }
+                else
+                {
+                    EditorGUI.BeginProperty(overrideRect, null, overrideProp);
+                    var selected = PopupNoIndent(overrideRect, 1, CopyOverride);
+                    if (selected != 1)
+                        overrideProp.boolValue = false;
+                    EditorGUI.EndProperty();
+                }
+            }
+            else
+            {
+                // Copy mode
+                EditorGUI.BeginDisabledGroup(true);
+                var differ = renderer(_sourcePhysBone);
+                EditorGUI.EndDisabledGroup();
+
+                EditorGUI.BeginProperty(overrideRect, null, overrideProp);
+                var selected = PopupNoIndent(overrideRect, 0, CopyOverride);
+                if (selected != 0)
+                    overrideProp.boolValue = true;
+                EditorGUI.EndProperty();
+
+                if (differ)
+                {
+                    EditorGUILayout.HelpBox(
+                        "The value is differ between two or more sources. " +
+                        "You have to set same value OR override this property", 
+                        MessageType.Error);
+                }
+            }
+            
+            const string docURL = "https://docs.vrchat.com/docs/physbones#versions";
+
+            if (GUI.Button(buttonRect, "?"))
+            {
+                Application.OpenURL(docURL);
+            }
+
+            bool renderer(SerializedObject obj)
+            {
+                var prop = obj.FindProperty(pbPropName);
+                var prevValue = prop.enumValueIndex;
+                EditorGUI.PropertyField(valueRect, prop, labelContent);
+                if (prevValue != prop.enumValueIndex)
+                {
+                    switch (EditorUtility.DisplayDialogComplex(
+                                "Version Info", 
+                                "Changing VRCPhysBone versions will change the way your component works.\n" +
+                                "Some values may act differently and will need to be manually changed.\n\n" +
+                                "Please read our online documentation for information on version differences.", 
+                                "Open Documentation", 
+                                "Revert",
+                                "Continue Without Documentation"))
+                    {
+                        case 0:
+                            Application.OpenURL(docURL);
+                            break;
+                        case 1:
+                            prop.enumValueIndex = prevValue;
+                            break;
+                        case 2:
+                            // continue
+                            break;
+                    }
+                }
+                return prop.hasMultipleDifferentValues;
+            }
+        }
 
 
         protected override void PbProp(string label, 
