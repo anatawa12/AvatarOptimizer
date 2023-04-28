@@ -21,7 +21,7 @@ The format is based on [Keep a Changelog].
 
 ## [0.3.0-beta.3] - 2023-04-28
 ### Added
-- UnusedBonesByReferencesTool [`#122`](https://github.com/anatawa12/AvatarOptimizer/pull/122)
+- UnusedBonesByReferencesTool [`#112`](https://github.com/anatawa12/AvatarOptimizer/pull/112)
   - This is port of [UnusedBonesByReferencesTool by Narazaka][UnusedBonesByReferencesTool]
 - Support for VRCSDK 3.2.0! [`#117`](https://github.com/anatawa12/AvatarOptimizer/pull/117)
   - This includes support for PhysBone Versions and PhysBone 1.1

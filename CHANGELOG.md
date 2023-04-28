@@ -10,7 +10,7 @@ The format is based on [Keep a Changelog].
 ### Added
 - Make Children of Me `#100`
   - As a alternative of feature removal in same pull request
-- UnusedBonesByReferencesTool `#122`
+- UnusedBonesByReferencesTool `#112`
   - This is port of [UnusedBonesByReferencesTool by Narazaka][UnusedBonesByReferencesTool]
 - Support for VRCSDK 3.2.0! `#117`
   - This includes support for PhysBone Versions and PhysBone 1.1
