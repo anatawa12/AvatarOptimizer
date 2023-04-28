@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using CustomLocalization4EditorExtension;
 using JetBrains.Annotations;
@@ -51,6 +52,7 @@ namespace Anatawa12.AvatarOptimizer
         // ReSharper disable MemberCanBePrivate.Global
         protected SerializedObject _sourcePhysBone;
         protected readonly SerializedObject _mergedPhysBone;
+        protected readonly SerializedProperty _version;
         protected readonly SerializedProperty _integrationTypeProp;
         protected readonly SerializedProperty _pullProp;
         protected readonly SerializedProperty _springProp;
@@ -69,7 +71,9 @@ namespace Anatawa12.AvatarOptimizer
         protected readonly SerializedProperty _allowGrabbingProp;
         protected readonly SerializedProperty _grabMovementProp;
         protected readonly SerializedProperty _allowPosingProp;
+        protected readonly SerializedProperty _stretchMotion;
         protected readonly SerializedProperty _maxStretchProp;
+        protected readonly SerializedProperty _maxSquish;
         protected readonly SerializedProperty _snapToHandProp;
         protected readonly SerializedProperty _isAnimatedProp;
         protected readonly SerializedProperty _resetWhenDisabledProp;
@@ -81,6 +85,7 @@ namespace Anatawa12.AvatarOptimizer
         {
             var nestCount = PrefabSafeSet.PrefabSafeSetUtil.PrefabNestCount(serializedObject.targetObject);
             _mergedPhysBone = new SerializedObject(serializedObject.FindProperty("merged").objectReferenceValue);
+            _version = serializedObject.FindProperty("version");
             _integrationTypeProp = serializedObject.FindProperty("integrationType");
             _pullProp = serializedObject.FindProperty("pull");
             _springProp = serializedObject.FindProperty("spring");
@@ -99,7 +104,9 @@ namespace Anatawa12.AvatarOptimizer
             _allowGrabbingProp = serializedObject.FindProperty("allowGrabbing");
             _grabMovementProp = serializedObject.FindProperty("grabMovement");
             _allowPosingProp = serializedObject.FindProperty("allowPosing");
+            _stretchMotion = serializedObject.FindProperty("stretchMotion");
             _maxStretchProp = serializedObject.FindProperty("maxStretch");
+            _maxSquish = serializedObject.FindProperty("maxSquish");
             _snapToHandProp = serializedObject.FindProperty("snapToHand");
             _isAnimatedProp = serializedObject.FindProperty("isAnimated");
             _resetWhenDisabledProp = serializedObject.FindProperty("resetWhenDisabled");
@@ -126,95 +133,154 @@ namespace Anatawa12.AvatarOptimizer
             {
                 SerializedObject GetPb(SerializedProperty prop) => prop.boolValue ? _mergedPhysBone : _sourcePhysBone;
 
-                // == Transform ==
-                BeginSections("Transform");
-                TransformSection();
+                BeginPbConfig();
 
-                // == Forces ==
-                NextSection("Forces");
-                PbProp("Integration Type", "integrationType", _integrationTypeProp);
-                var isSimplified = GetPb(_integrationTypeProp).FindProperty("integrationType").enumValueIndex == 0;
-                PbCurveProp("Pull", "pull", "pullCurve", _pullProp);
-                if (isSimplified)
-                {
-                    PbCurveProp("Spring", "spring", "springCurve", _springProp, _integrationTypeProp);
-                }
-                else
-                {
-                    PbCurveProp("Momentum", "spring", "springCurve", _springProp, _integrationTypeProp);
-                    PbCurveProp("Stiffness", "stiffness", "stiffnessCurve", _stiffnessProp, _integrationTypeProp);
-                }
-                PbCurveProp("Gravity", "gravity", "gravityCurve", _gravityProp);
-                PbCurveProp("Gravity Falloff", "gravityFalloff", "gravityFalloffCurve", _gravityFalloffProp);
-                PbProp("Immobile Type", "immobileType", _immobileTypeProp);
-                PbCurveProp("Immobile", "immobile", "immobileCurve", _immobileProp);
+                PbVersionProp("Version", "version", _version);
 
-                // == Limits ==
-                NextSection("Limits");
-                PbProp("Limit Type", "limitType", _limitsProp);
-                var limitType = (VRCPhysBoneBase.LimitType)GetPb(_limitsProp).FindProperty("limitType").enumValueIndex;
-                
-                switch (limitType)
+                var version = (VRCPhysBoneBase.Version)GetPb(_version).FindProperty("version").enumValueIndex;
+
+                switch (version)
                 {
-                    case VRCPhysBoneBase.LimitType.None:
-                        break;
-                    case VRCPhysBoneBase.LimitType.Angle:
-                    case VRCPhysBoneBase.LimitType.Hinge:
-                        PbCurveProp("Max Angle", "maxAngleX", "maxAngleXCurve", _maxAngleXProp, _limitsProp);
-                        Pb3DCurveProp("Rotation", "limitRotation", 
-                            "Pitch", "limitRotationXCurve", 
-                            "Roll", "limitRotationYCurve", 
-                            "Yaw", "limitRotationZCurve",
-                            _limitRotationProp, _limitsProp);
-                        break;
-                    case VRCPhysBoneBase.LimitType.Polar:
-                        PbCurveProp("Max Angle X", "maxAngleX", "maxAngleXCurve", _maxAngleXProp, _limitsProp);
-                        PbCurveProp("Max Angle Z", "maxAngleZ", "maxAngleZCurve", _maxAngleZProp, _limitsProp);
-                        Pb3DCurveProp("Rotation", "limitRotation", 
-                            "Pitch", "limitRotationXCurve", 
-                            "Roll", "limitRotationYCurve", 
-                            "Yaw", "limitRotationZCurve",
-                            _limitRotationProp, _limitsProp);
+                    case VRCPhysBoneBase.Version.Version_1_0:
+                    case VRCPhysBoneBase.Version.Version_1_1:
                         break;
                     default:
-                        throw new ArgumentOutOfRangeException();
+                        UnsupportedPbVersion();
+                        break;
+                }
+
+                bool CheckMinVersion(VRCPhysBoneBase.Version require) => version >= require;
+
+                // == Transform ==
+                if (BeginSection("Transform", "transforms"))
+                {
+                    TransformSection();
+                }
+
+                // == Forces ==
+                if (NextSection("Forces", "forces"))
+                {
+                    PbProp("Integration Type", "integrationType", _integrationTypeProp);
+                    var isSimplified = GetPb(_integrationTypeProp).FindProperty("integrationType").enumValueIndex == 0;
+                    PbCurveProp("Pull", "pull", "pullCurve", _pullProp);
+                    if (isSimplified)
+                    {
+                        PbCurveProp("Spring", "spring", "springCurve", _springProp, _integrationTypeProp);
+                    }
+                    else
+                    {
+                        PbCurveProp("Momentum", "spring", "springCurve", _springProp, _integrationTypeProp);
+                        PbCurveProp("Stiffness", "stiffness", "stiffnessCurve", _stiffnessProp, _integrationTypeProp);
+                    }
+
+                    PbCurveProp("Gravity", "gravity", "gravityCurve", _gravityProp);
+                    PbCurveProp("Gravity Falloff", "gravityFalloff", "gravityFalloffCurve", _gravityFalloffProp);
+                    PbProp("Immobile Type", "immobileType", _immobileTypeProp);
+                    PbCurveProp("Immobile", "immobile", "immobileCurve", _immobileProp);
+                }
+
+                // == Limits ==
+                if (NextSection("Limits", "limits"))
+                {
+                    PbProp("Limit Type", "limitType", _limitsProp);
+                    var limitType =
+                        (VRCPhysBoneBase.LimitType)GetPb(_limitsProp).FindProperty("limitType").enumValueIndex;
+
+                    switch (limitType)
+                    {
+                        case VRCPhysBoneBase.LimitType.None:
+                            break;
+                        case VRCPhysBoneBase.LimitType.Angle:
+                        case VRCPhysBoneBase.LimitType.Hinge:
+                            PbCurveProp("Max Angle", "maxAngleX", "maxAngleXCurve", _maxAngleXProp, _limitsProp);
+                            Pb3DCurveProp("Rotation", "limitRotation",
+                                "Pitch", "limitRotationXCurve",
+                                "Roll", "limitRotationYCurve",
+                                "Yaw", "limitRotationZCurve",
+                                _limitRotationProp, _limitsProp);
+                            break;
+                        case VRCPhysBoneBase.LimitType.Polar:
+                            PbCurveProp("Max Angle X", "maxAngleX", "maxAngleXCurve", _maxAngleXProp, _limitsProp);
+                            PbCurveProp("Max Angle Z", "maxAngleZ", "maxAngleZCurve", _maxAngleZProp, _limitsProp);
+                            Pb3DCurveProp("Rotation", "limitRotation",
+                                "Pitch", "limitRotationXCurve",
+                                "Roll", "limitRotationYCurve",
+                                "Yaw", "limitRotationZCurve",
+                                _limitRotationProp, _limitsProp);
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
                 }
 
                 // == Collision ==
-                NextSection("Collision");
-                PbCurveProp("Radius", "radius", "radiusCurve", _radiusProp);
-                PbPermissionProp("Allow Collision", "allowCollision", "collisionFilter", _allowCollisionProp);
-                ColliderProp("Colliders", "colliders", _collidersProp);
+                if (NextSection("Collision", "collision"))
+                {
+                    PbCurveProp("Radius", "radius", "radiusCurve", _radiusProp);
+                    PbPermissionProp("Allow Collision", "allowCollision", "collisionFilter", _allowCollisionProp);
+                    ColliderProp("Colliders", "colliders", _collidersProp);
+                }
+
+                // == Stretch & Squish ==
+                if (NextSection("Stretch & Squish", "stretch--squish"))
+                {
+                    if (CheckMinVersion(VRCPhysBoneBase.Version.Version_1_1))
+                        PbCurveProp("Stretch Motion", "stretchMotion", "stretchMotionCurve", _stretchMotion);
+                    PbCurveProp("Max Stretch", "maxStretch", "maxStretchCurve", _maxStretchProp);
+                    if (CheckMinVersion(VRCPhysBoneBase.Version.Version_1_1))
+                        PbCurveProp("Max Squish", "maxSquish", "maxSquishCurve", _maxSquish);
+                }
 
                 // == Grab & Pose ==
-                NextSection("Grab & Pose");
-                PbPermissionProp("Allow Grabbing", "allowGrabbing", "grabFilter", _allowGrabbingProp);
-                PbPermissionProp("Allow Posing", "allowPosing", "poseFilter", _allowPosingProp);
-                PbProp("Grab Movement", "grabMovement", _grabMovementProp);
-                PbCurveProp("Max Stretch", "maxStretch", "maxStretchCurve", _maxStretchProp);
-                PbProp("Snap To Hand", "snapToHand", _snapToHandProp);
+                if (NextSection("Grab & Pose", "grab--pose"))
+                {
+                    PbPermissionProp("Allow Grabbing", "allowGrabbing", "grabFilter", _allowGrabbingProp);
+                    PbPermissionProp("Allow Posing", "allowPosing", "poseFilter", _allowPosingProp);
+                    PbProp("Grab Movement", "grabMovement", _grabMovementProp);
+                    PbProp("Snap To Hand", "snapToHand", _snapToHandProp);
+                }
 
                 // == Options ==
-                NextSection("Options");
-                OptionParameter();
-                OptionIsAnimated();
-                PbProp("Reset When Disabled", "resetWhenDisabled", _resetWhenDisabledProp);
+                if (NextSection("Options", "options"))
+                {
+                    OptionParameter();
+                    OptionIsAnimated();
+                    PbProp("Reset When Disabled", "resetWhenDisabled", _resetWhenDisabledProp);
+                }
 
-                EndSections();
+                EndSection();
+
+                EndPbConfig();
             }
 
             _mergedPhysBone.ApplyModifiedProperties();
         }
 
-        protected abstract void BeginSections(string name);
-        protected abstract void NextSection(string name);
-        protected abstract void EndSections();
+        protected abstract void BeginPbConfig();
+
+        protected abstract bool BeginSection(string name, string docTag);
+        protected abstract void EndSection();
+
+        protected abstract void EndPbConfig();
+
+        private bool NextSection(string name, string docTag)
+        {
+            EndSection();
+            return BeginSection(name, docTag);
+        }
 
         protected abstract void NoSource();
 
         protected abstract void TransformSection();
         protected abstract void OptionParameter();
         protected abstract void OptionIsAnimated();
+
+        protected abstract void UnsupportedPbVersion();
+
+        protected abstract void PbVersionProp([NotNull] string label,
+            [NotNull] string pbPropName,
+            [NotNull] SerializedProperty overridePropName,
+            [ItemNotNull] [NotNull] params SerializedProperty[] overrides);
 
         protected abstract void PbProp([NotNull] string label,
             [NotNull] string pbPropName,
@@ -252,19 +318,36 @@ namespace Anatawa12.AvatarOptimizer
         {
         }
 
-        protected override void BeginSections(string name) {
+        private readonly Dictionary<string, bool> _sectionFolds = new Dictionary<string, bool>();
+
+        protected override void BeginPbConfig()
+        {
             Utils.HorizontalLine();
-            EditorGUILayout.LabelField(name, EditorStyles.boldLabel);
-            EditorGUI.indentLevel++;
-        }
-        protected override void NextSection(string name) {
-            EditorGUI.indentLevel--;
-            EditorGUILayout.LabelField(name, EditorStyles.boldLabel);
-            EditorGUI.indentLevel++;
         }
 
-        protected override void EndSections() {
+        protected override bool BeginSection(string name, string docTag) {
+            if (!_sectionFolds.TryGetValue(name, out var open)) open = true;
+            var rect = GUILayoutUtility.GetRect(EditorGUIUtility.fieldWidth, EditorGUIUtility.fieldWidth, 18f, 18f, EditorStyles.foldoutHeader);
+            var (foldout, button) = SplitRect(rect, OverrideWidth);
+            open = EditorGUI.Foldout(foldout, open, name, EditorStyles.foldoutHeader);
+            _sectionFolds[name] = open;
+            if (GUI.Button(button, "?"))
+                Application.OpenURL("https://docs.vrchat.com/docs/physbones#" + docTag);
+            EditorGUI.indentLevel++;
+            return open;
+        }
+
+        protected override void EndSection() {
             EditorGUI.indentLevel--;
+        }
+
+        protected override void EndPbConfig()
+        {
+        }
+
+        protected override void UnsupportedPbVersion()
+        {
+            EditorGUILayout.HelpBox(CL4EE.Tr("MergePhysBone:error:unsupportedPbVersion"), MessageType.Error);
         }
 
         protected override void NoSource() {
@@ -312,6 +395,98 @@ namespace Anatawa12.AvatarOptimizer
         
         bool IsCurveWithValue(SerializedProperty prop) =>
             prop.animationCurveValue != null && prop.animationCurveValue.length > 0;
+
+        protected override void PbVersionProp(string label, 
+            string pbPropName, 
+            SerializedProperty overrideProp,
+            params SerializedProperty[] overrides)
+        {
+            var labelContent = new GUIContent(label);
+            var forceOverride = overrides.Any(x => x.boolValue);
+
+            var (valueRect, buttonRect, overrideRect) =
+                SplitRect(EditorGUILayout.GetControlRect(true, EditorGUIUtility.singleLineHeight), CurveButtonWidth,
+                    OverrideWidth);
+
+            if (forceOverride || overrideProp.boolValue)
+            {
+                // Override mode
+
+                renderer(_mergedPhysBone);
+
+                if (forceOverride)
+                {
+                    EditorGUI.BeginDisabledGroup(true);
+                    PopupNoIndent(overrideRect, 1, CopyOverride);
+                    EditorGUI.EndDisabledGroup();
+                }
+                else
+                {
+                    EditorGUI.BeginProperty(overrideRect, null, overrideProp);
+                    var selected = PopupNoIndent(overrideRect, 1, CopyOverride);
+                    if (selected != 1)
+                        overrideProp.boolValue = false;
+                    EditorGUI.EndProperty();
+                }
+            }
+            else
+            {
+                // Copy mode
+                EditorGUI.BeginDisabledGroup(true);
+                var differ = renderer(_sourcePhysBone);
+                EditorGUI.EndDisabledGroup();
+
+                EditorGUI.BeginProperty(overrideRect, null, overrideProp);
+                var selected = PopupNoIndent(overrideRect, 0, CopyOverride);
+                if (selected != 0)
+                    overrideProp.boolValue = true;
+                EditorGUI.EndProperty();
+
+                if (differ)
+                {
+                    EditorGUILayout.HelpBox(
+                        "The value is differ between two or more sources. " +
+                        "You have to set same value OR override this property", 
+                        MessageType.Error);
+                }
+            }
+            
+            const string docURL = "https://docs.vrchat.com/docs/physbones#versions";
+
+            if (GUI.Button(buttonRect, "?"))
+            {
+                Application.OpenURL(docURL);
+            }
+
+            bool renderer(SerializedObject obj)
+            {
+                var prop = obj.FindProperty(pbPropName);
+                var prevValue = prop.enumValueIndex;
+                EditorGUI.PropertyField(valueRect, prop, labelContent);
+                var newValue = prop.enumValueIndex;
+                if (prevValue != newValue)
+                {
+                    switch (EditorUtility.DisplayDialogComplex(
+                                CL4EE.Tr("MergePhysBone:dialog:versionInfo:title"), 
+                                CL4EE.Tr("MergePhysBone:dialog:versionInfo:message"),
+                                CL4EE.Tr("MergePhysBone:dialog:versionInfo:openDoc"), 
+                                CL4EE.Tr("MergePhysBone:dialog:versionInfo:revert"),
+                                CL4EE.Tr("MergePhysBone:dialog:versionInfo:continue")))
+                    {
+                        case 0:
+                            Application.OpenURL(docURL);
+                            break;
+                        case 1:
+                            prop.enumValueIndex = prevValue;
+                            break;
+                        case 2:
+                            prop.enumValueIndex = newValue;
+                            break;
+                    }
+                }
+                return prop.hasMultipleDifferentValues;
+            }
+        }
 
 
         protected override void PbProp(string label, 

@@ -95,6 +95,28 @@ msgstr "There's children with Make Children of Me enabled."
 msgid "MergePhysBone:error:noSources"
 msgstr "There's no source PhysBones"
 
+msgid "MergePhysBone:error:unsupportedPbVersion"
+msgstr "The PhysBone Version is not supported (yet) by Avatar Optimizer.\n"
+"Please tell author on twitter (@anatawa12_vrc) or GitHub (anatawa12/AvatarOptimizer)!"
+
+msgid "MergePhysBone:dialog:versionInfo:title"
+msgstr "Version Info" 
+
+msgid "MergePhysBone:dialog:versionInfo:message"
+msgstr ""
+"Changing VRCPhysBone versions will change the way your component works.\n" 
+"Some values may act differently and will need to be manually changed.\n\n" 
+"Please read our online documentation for information on version differences." 
+
+msgid "MergePhysBone:dialog:versionInfo:openDoc"
+msgstr "Open Documentation" 
+
+msgid "MergePhysBone:dialog:versionInfo:revert"
+msgstr "Revert"
+
+msgid "MergePhysBone:dialog:versionInfo:continue"
+msgstr "Continue Without Documentation"
+
 msgid "MergePhysBone:prop:merged"
 msgstr "Merged"
 

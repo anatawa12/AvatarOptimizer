@@ -97,19 +97,27 @@ namespace Anatawa12.AvatarOptimizer.Processors
             {
             }
 
-            protected override void BeginSections(string name)
+            protected override void BeginPbConfig()
             {
             }
 
-            protected override void NextSection(string name)
+            protected override bool BeginSection(string name, string docTag)
+            {
+                return true;
+            }
+
+            protected override void EndSection()
             {
             }
 
-            protected override void EndSections()
+            protected override void EndPbConfig()
             {
             }
 
             protected override void NoSource() => throw new InvalidOperationException("No sources");
+
+            protected override void UnsupportedPbVersion() =>
+                throw new InvalidOperationException("Unsupported Pb Version");
 
             protected override void TransformSection()
             {
@@ -127,6 +135,10 @@ namespace Anatawa12.AvatarOptimizer.Processors
             {
                 // nothing to do: _isAnimatedProp is merged later
             }
+
+            protected override void PbVersionProp(string label, string pbPropName, SerializedProperty overridePropName,
+                params SerializedProperty[] overrides) =>
+                PbProp(label, pbPropName, overridePropName, overrides);
 
             protected override void PbProp(string label,
                 string pbPropName,
