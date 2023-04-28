@@ -206,6 +206,16 @@ This the selected objects will be the children of this component at build time.
 
 <img src=".readme/make-children.png" width="401">
 
+### UnusedBonesByReferencesTool
+
+Marks it as EditorOnly that bones referenced only from EditorOnly meshes.
+
+This is port of [UnusedBonesByReferencesTool by Narazaka][UnusedBonesByReferencesTool] but run at build time.
+
+[UnusedBonesByReferencesTool]: https://narazaka.booth.pm/items/3831781
+
+<img src=".readme/unused-bones-by-references-tool.png" width="390">
+
 [twitter]: https://go.anatawa12.com/twitter.vrchat
 [misskey]: https://go.anatawa12.com/misskey.vrchat
 [vpm-repository]: https://vpm.anatawa12.com/vpm.json

@@ -6,6 +6,52 @@ using VRC.SDKBase.Editor.BuildPipeline;
 
 namespace Anatawa12.AvatarOptimizer
 {
+    /// <summary>
+    /// the Processor runs before removing EditorOnly
+    /// </summary>
+    internal class EarlyOptimizerProcessor : IVRCSDKPreprocessAvatarCallback
+    {
+        public int callbackOrder => -2048;
+
+        public bool OnPreprocessAvatar(GameObject avatarGameObject)
+        {
+            try
+            {
+                ProcessObject(new OptimizerSession(avatarGameObject, true));
+                return true;
+            }
+            catch (Exception e)
+            {
+                Debug.LogError(e);
+                return false;
+            }
+        }
+
+        private static bool _processing;
+
+        private static void ProcessObject(OptimizerSession session)
+        {
+            if (_processing) return;
+            try
+            {
+                AssetDatabase.StartAssetEditing();
+                _processing = true;
+                DoProcessObject(session);
+            }
+            finally
+            {
+                _processing = false;
+                AssetDatabase.SaveAssets();
+            }
+        }
+        
+        private static void DoProcessObject(OptimizerSession session)
+        {
+            new Processors.UnusedBonesByReferencesToolEarlyProcessor().Process(session);
+            session.MarkDirtyAll();
+        }
+    }
+
     internal class OptimizerProcessor : IVRCSDKPreprocessAvatarCallback, IVRCSDKPostprocessAvatarCallback
     {
         public int callbackOrder => 0;
