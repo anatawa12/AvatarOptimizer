@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
+- Upgrade CL4EE to 1.0.0 `#121`
 
 ### Deprecated
 

@@ -28,6 +28,7 @@ The format is based on [Keep a Changelog].
 - Now we can Copy / Override `Immobile Type` and `Immobile` (strength) separately. `#105`
   - Previously, if you override `Immobile Type`, you also required to override `Immobile` but no longer required.
   - This is **BREAKING** changes in the semantics of `immobile` property.
+- Upgrade CL4EE to 1.0.0 `#121`
 
 ### Deprecated
 
