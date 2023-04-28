@@ -35,8 +35,6 @@ The format is based on [Keep a Changelog].
 - **BREAKING** Removed Prefab Safe List `#95`
 - **BREAKING** Removed RootTransform feature from MergePhysBone `#100`
   - See [this issue comment][about-root-transform] for more datails.
-- **BREAKING** Dropped support for VRCSDK 3.1.12 or older `#101`
-  - Now, we require VRCSDK since 3.1.13 (including) until 3.2.0 (excluding)
 - Removed support for VRCSDK 3.1.x. `#117`
   - Dropping VRCSDK support is a **BREAKING** changes.
   - However, we may drop old VRCSDK support in the minor releases of AvatarOptimizer in the feature.
