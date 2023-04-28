@@ -41,11 +41,6 @@ The format is based on [Keep a Changelog].
   - As a alternative of feature removal in same pull request
 
 ### Changed
-- **BREAKING** Removed Prefab Safe List [`#95`](https://github.com/anatawa12/AvatarOptimizer/pull/95)
-- **BREAKING** Removed RootTransform feature from MergePhysBone [`#100`](https://github.com/anatawa12/AvatarOptimizer/pull/100)
-  - See [this issue comment][about-root-transform] for more datails.
-- **BREAKING** Dropped support for VRCSDK 3.1.12 or older [`#101`](https://github.com/anatawa12/AvatarOptimizer/pull/101)
-  - Now, we require VRCSDK since 3.1.13 (including) until 3.2.0 (excluding)
 - Use IEditorOnly instead of mokeypatching VRCSDK [`#102`](https://github.com/anatawa12/AvatarOptimizer/pull/102)
 - Move the toggle for Override and the setting of the value after Override closer together. [`#105`](https://github.com/anatawa12/AvatarOptimizer/pull/105)
   - With this changes, the merged PhysBone is now hidden.
@@ -56,6 +51,13 @@ The format is based on [Keep a Changelog].
 - Now we can Copy / Override `Immobile Type` and `Immobile` (strength) separately. [`#105`](https://github.com/anatawa12/AvatarOptimizer/pull/105)
   - Previously, if you override `Immobile Type`, you also required to override `Immobile` but no longer required.
   - This is **BREAKING** changes in the semantics of `immobile` property.
+
+### Removed
+- **BREAKING** Removed Prefab Safe List [`#95`](https://github.com/anatawa12/AvatarOptimizer/pull/95)
+- **BREAKING** Removed RootTransform feature from MergePhysBone [`#100`](https://github.com/anatawa12/AvatarOptimizer/pull/100)
+  - See [this issue comment][about-root-transform] for more datails.
+- **BREAKING** Dropped support for VRCSDK 3.1.12 or older [`#101`](https://github.com/anatawa12/AvatarOptimizer/pull/101)
+  - Now, we require VRCSDK since 3.1.13 (including) until 3.2.0 (excluding)
 
 [about-root-transform]: https://github.com/anatawa12/AvatarOptimizer/issues/62#issuecomment-1512586282
 
