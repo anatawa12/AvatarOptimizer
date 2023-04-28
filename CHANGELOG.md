@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog].
 ### Added
 - Make Children of Me `#100`
   - As a alternative of feature removal in same pull request
+- Support for VRCSDK 3.2.0! `#117`
+  - This includes support for PhysBone Versions and PhysBone 1.1
 
 ### Changed
 - **BREAKING** Removed Prefab Safe List `#95`
@@ -33,6 +35,11 @@ The format is based on [Keep a Changelog].
 ### Deprecated
 
 ### Removed
+- Removed support for VRCSDK 3.1.x. `#117`
+  - Dropping VRCSDK support is a **BREAKING** changes.
+  - However, we may drop old VRCSDK support in the minor releases of AvatarOptimizer in the feature.
+  - In the other hand, we promise we'll never drop old VRCSDK support in the patch releases.
+  - Notice: in the 0.x.y release, y is a minor releases in this project.
 
 ### Fixed
 - ShouldIgnoreComponentPatch cases compilation error `#108`
