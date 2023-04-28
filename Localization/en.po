@@ -236,3 +236,27 @@ msgid "DeleteEditorOnlyGameObjects:NotOnAvatarDescriptor"
 msgstr "This component must be set on root of Avatar (GameObject with AvatarDescriptor)"
 
 # endregion
+
+# region UnusedBonesByReferencesTool
+
+# EditorOnlyなメッシュのみから参照されているボーンをEditorOnlyにします
+msgid "UnusedBonesByReferencesTool:description"
+msgstr ""
+"Applies UnusedBonesByReferencesTool (https://narazaka.booth.pm/items/3831781) by Narazaka\n"
+"This tool marks it as EditorOnly that bones referenced only from EditorOnly meshes"
+
+msgid "UnusedBonesByReferencesTool:prop:preserveEndBone"
+msgstr "Preserve EndBone"
+
+# "親がactiveなendボーンを削除しない(ON推奨)"
+msgid "UnusedBonesByReferencesTool:tooltip:preserveEndBone"
+msgstr "If checked, this tool does not remove end bones with active parent."
+
+msgid "UnusedBonesByReferencesTool:prop:detectExtraChild"
+msgstr "Detect Extra Children"
+
+# "子にボーン以外を持つボーンを削除しない"
+msgid "UnusedBonesByReferencesTool:tooltip:detectExtraChild"
+msgstr "If checked, this tool does not remove bones with non-bone children."
+
+# endregion

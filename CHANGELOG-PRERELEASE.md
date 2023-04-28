@@ -8,6 +8,10 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- UnusedBonesByReferencesTool `#122`
+  - This is port of [UnusedBonesByReferencesTool by Narazaka][UnusedBonesByReferencesTool]
+
+[UnusedBonesByReferencesTool]: https://narazaka.booth.pm/items/3831781
 
 ### Changed
 
