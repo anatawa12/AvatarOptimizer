@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer.Processors
 {
-    class UnusedBonesByReferencesToolProcessor
+    class UnusedBonesByReferencesToolEarlyProcessor
     {
         public void Process(OptimizerSession session)
         {
