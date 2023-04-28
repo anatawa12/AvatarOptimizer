@@ -237,13 +237,6 @@ msgstr "This component must be set on root of Avatar (GameObject with AvatarDesc
 
 # endregion
 
-# region DeleteEditorOnlyGameObjects
-
-msgid "DeleteEditorOnlyGameObjects:description"
-msgstr "Removes GameObjects with EditorOnly tag"
-
-# endregion
-
 # region UnusedBonesByReferencesTool
 
 # EditorOnlyなメッシュのみから参照されているボーンをEditorOnlyにします

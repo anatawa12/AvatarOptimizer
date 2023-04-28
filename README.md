@@ -23,6 +23,10 @@ If you have problems or questions about this tool, please feel free to contact m
 1. Click [this link][VCC-add-repo-link] to add anatawa12's repository.
 2. Add AvatarOptimizer from VCC.
 
+**IMPORTANT: Current VCC installs beta versions of AvatarOptimizer because of [this bug][vcc-bug]. PLEASE install latest stable version!**
+
+[vcc-bug]: https://github.com/vrchat-community/creator-companion/issues/252#issuecomment-1513381955
+
 ### Using Installer UnityPackage with VPM
 
 With [VPAI] You can include this package just importing one unitypackage.
@@ -211,12 +215,6 @@ This is port of [UnusedBonesByReferencesTool by Narazaka][UnusedBonesByReference
 [UnusedBonesByReferencesTool]: https://narazaka.booth.pm/items/3831781
 
 <img src=".readme/unused-bones-by-references-tool.png" width="390">
-
-### Delete EditorOnly GameObject
-
-Removes the GameObjects with EditorOnly tag. This may reduces avatar size.
-
-<img src=".readme/delete-editor-only-game-objects.png" width="387">
 
 [twitter]: https://go.anatawa12.com/twitter.vrchat
 [misskey]: https://go.anatawa12.com/misskey.vrchat

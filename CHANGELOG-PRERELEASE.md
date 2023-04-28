@@ -8,7 +8,6 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Delete EditorOnly GameObjects `#109`
 - UnusedBonesByReferencesTool `#122`
   - This is port of [UnusedBonesByReferencesTool by Narazaka][UnusedBonesByReferencesTool]
 
@@ -21,9 +20,13 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- ShouldIgnoreComponentPatch cases compilation error `#108`
 
 ### Security
+
+## [0.3.0-beta.2] - 2023-04-26
+### Fixed
+- ShouldIgnoreComponentPatch cases compilation error [`#108`](https://github.com/anatawa12/AvatarOptimizer/pull/108)
+- Not working on the build time [`#114`](https://github.com/anatawa12/AvatarOptimizer/pull/114)
 
 ## [0.3.0-beta.1] - 2023-04-24
 ### Added
@@ -229,7 +232,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.3.0-beta.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.3.0-beta.2...HEAD
+[0.3.0-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.3.0-beta.1...v0.3.0-beta.2
 [0.3.0-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.8...v0.3.0-beta.1
 [0.2.8]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.8-rc.1...v0.2.8
 [0.2.8-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.7...v0.2.8-rc.1
