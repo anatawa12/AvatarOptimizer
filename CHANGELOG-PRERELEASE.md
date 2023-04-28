@@ -8,27 +8,32 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- UnusedBonesByReferencesTool `#122`
-  - This is port of [UnusedBonesByReferencesTool by Narazaka][UnusedBonesByReferencesTool]
-- Support for VRCSDK 3.2.0! `#117`
-  - This includes support for PhysBone Versions and PhysBone 1.1
-
-[UnusedBonesByReferencesTool]: https://narazaka.booth.pm/items/3831781
 
 ### Changed
 
 ### Deprecated
 
 ### Removed
-- Removed support for VRCSDK 3.1.x. `#117`
-  - Dropping VRCSDK support is a **BREAKING** changes.
-  - However, we may drop old VRCSDK support in the minor releases of AvatarOptimizer in the feature.
-  - In the other hand, we promise we'll never drop old VRCSDK support in the patch releases.
-  - Notice: in the 0.x.y release, y is a minor releases in this project.
 
 ### Fixed
 
 ### Security
+
+## [0.3.0-beta.3] - 2023-04-28
+### Added
+- UnusedBonesByReferencesTool [`#122`](https://github.com/anatawa12/AvatarOptimizer/pull/122)
+  - This is port of [UnusedBonesByReferencesTool by Narazaka][UnusedBonesByReferencesTool]
+- Support for VRCSDK 3.2.0! [`#117`](https://github.com/anatawa12/AvatarOptimizer/pull/117)
+  - This includes support for PhysBone Versions and PhysBone 1.1
+
+[UnusedBonesByReferencesTool]: https://narazaka.booth.pm/items/3831781
+
+### Removed
+- Removed support for VRCSDK 3.1.x. [`#117`](https://github.com/anatawa12/AvatarOptimizer/pull/117)
+  - Dropping VRCSDK support is a **BREAKING** changes.
+  - However, we may drop old VRCSDK support in the minor releases of AvatarOptimizer in the feature.
+  - In the other hand, we promise we'll never drop old VRCSDK support in the patch releases.
+  - Notice: in the 0.x.y release, y is a minor releases in this project.
 
 ## [0.3.0-beta.2] - 2023-04-26
 ### Fixed
@@ -241,7 +246,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.3.0-beta.2...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.3.0-beta.3...HEAD
+[0.3.0-beta.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.3.0-beta.2...v0.3.0-beta.3
 [0.3.0-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.3.0-beta.1...v0.3.0-beta.2
 [0.3.0-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.8...v0.3.0-beta.1
 [0.2.8]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.8-rc.1...v0.2.8
