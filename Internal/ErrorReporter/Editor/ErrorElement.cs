@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using CustomLocalization4EditorExtension;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -55,7 +56,7 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
             if (!string.IsNullOrWhiteSpace(log.stacktrace))
             {
                 var foldout = new Foldout();
-                foldout.text = Localization.S("error.stack_trace");
+                foldout.text = CL4EE.Tr("ErrorReporting:error.stack_trace");
                 var field = new TextField();
                 field.value = log.stacktrace;
                 field.isReadOnly = true;
@@ -91,7 +92,8 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
 
             try
             {
-                return string.Format(Localization.S(log.messageCode), objArray);
+                // TODO: use CL4EE for each assembly
+                return string.Format(CL4EE.Tr(log.messageCode), objArray);
             }
             catch (FormatException e)
             {
