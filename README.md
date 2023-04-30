@@ -21,9 +21,9 @@ If you have problems or questions about this tool, please feel free to contact m
 ### With VCC
 
 1. Click [this link][VCC-add-repo-link] to add anatawa12's repository.
-2. Add AvatarOptimizer from VCC.
+2. Add Avatar Optimizer from VCC.
 
-**IMPORTANT: Current VCC installs beta versions of AvatarOptimizer because of [this bug][vcc-bug]. PLEASE install latest stable version!**
+**IMPORTANT: Current VCC installs beta versions of Avatar Optimizer because of [this bug][vcc-bug]. PLEASE install latest stable version!**
 
 [vcc-bug]: https://github.com/vrchat-community/creator-companion/issues/252#issuecomment-1513381955
 
