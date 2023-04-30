@@ -92,11 +92,11 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
 
             if (obj is Component c)
             {
-                path = RuntimeUtil.RelativePath(null, c.gameObject);
+                path = Utils.RelativePath(null, c.gameObject);
             }
             else if (obj is GameObject go)
             {
-                path = RuntimeUtil.RelativePath(null, go);
+                path = Utils.RelativePath(null, go);
             }
             else
             {

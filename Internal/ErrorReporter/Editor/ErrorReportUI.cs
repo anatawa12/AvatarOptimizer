@@ -106,9 +106,13 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
             GameObject activeAvatarObject = null;
             if (Selection.gameObjects.Length == 1)
             {
-                activeAvatarObject = RuntimeUtil.FindAvatarInParents(Selection.activeGameObject.transform)?.gameObject;
-                activeAvatar = BuildReport.CurrentReport.Avatars.FirstOrDefault(av =>
-                    av.objectRef.path == RuntimeUtil.RelativePath(null, activeAvatarObject));
+                activeAvatarObject = Utils.FindAvatarInParents(Selection.activeGameObject.transform)?.gameObject;
+                if (activeAvatarObject != null)
+                {
+                    var foundAvatarPath = Utils.RelativePath(null, activeAvatarObject);
+                    activeAvatar = BuildReport.CurrentReport.Avatars
+                            .FirstOrDefault(av => av.objectRef.path == foundAvatarPath);
+                }
 
                 if (activeAvatar == null)
                 {
