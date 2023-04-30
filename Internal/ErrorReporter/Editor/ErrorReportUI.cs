@@ -44,8 +44,8 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
 
             Selection.selectionChanged += ScheduleRender;
             EditorApplication.hierarchyChanged += ScheduleRender;
-            AvatarTagComponent.OnChangeAction += ScheduleRender;
-            Localization.OnLangChange += RenderContent;
+            //AvatarTagComponent.OnChangeAction += ScheduleRender;
+            //Localization.OnLangChange += RenderContent;
         }
 
         private void OnDisable()
@@ -53,8 +53,8 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
             reloadErrorReport = () => { };
             Selection.selectionChanged -= ScheduleRender;
             EditorApplication.hierarchyChanged -= ScheduleRender;
-            AvatarTagComponent.OnChangeAction -= ScheduleRender;
-            Localization.OnLangChange -= RenderContent;
+            //AvatarTagComponent.OnChangeAction -= ScheduleRender;
+            //Localization.OnLangChange -= RenderContent;
         }
 
         private readonly int RefreshDelayTime = 500;
