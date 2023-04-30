@@ -13,7 +13,7 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
     {
         internal static Action reloadErrorReport = () => { };
 
-        [MenuItem("Tools/Modular Avatar/Show error report", false, 100)]
+        [MenuItem("Tools/Avatar Optimizer/Show error report", false, 100)]
         public static void OpenErrorReportUI()
         {
             GetWindow<ErrorReportUI>().Show();
