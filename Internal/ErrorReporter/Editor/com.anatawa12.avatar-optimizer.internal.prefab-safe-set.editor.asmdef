@@ -1,0 +1,18 @@
+{
+    "name": "com.anatawa12.avatar-optimizer.internal.error-reporter.editor",
+    "references": [
+        "GUID:295ffbe0b63504ae3a7879cf089501ba",
+        "GUID:8264e72376854221affe9980c91c2fff"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
