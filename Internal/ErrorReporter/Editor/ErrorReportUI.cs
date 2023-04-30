@@ -94,7 +94,7 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
             root.name = "Root";
             rootVisualElement.Add(root);
 
-            root.Add(CreateLogo());
+            //root.Add(CreateLogo());
 
             var box = new ScrollView();
             var lookupCache = new ObjectRefLookupCache();
@@ -166,21 +166,21 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
             */
         }
 
-        private VisualElement CreateLogo()
-        {
-            var img = new Image();
-            img.image = LogoDisplay.LOGO_ASSET;
-
-            // I've given up trying to get USS to resize proportionally for now :|
-            float height = 64;
-            img.style.height = new StyleLength(new Length(height, LengthUnit.Pixel));
-            img.style.width = new StyleLength(new Length(LogoDisplay.ImageWidth(height), LengthUnit.Pixel));
-
-            var box = new Box();
-            box.name = "logo";
-            box.Add(img);
-            return box;
-        }
+        // private VisualElement CreateLogo()
+        // {
+        //     var img = new Image();
+        //     img.image = LogoDisplay.LOGO_ASSET;
+        //
+        //     // I've given up trying to get USS to resize proportionally for now :|
+        //     float height = 64;
+        //     img.style.height = new StyleLength(new Length(height, LengthUnit.Pixel));
+        //     img.style.width = new StyleLength(new Length(LogoDisplay.ImageWidth(height), LengthUnit.Pixel));
+        //
+        //     var box = new Box();
+        //     box.name = "logo";
+        //     box.Add(img);
+        //     return box;
+        // }
 
         private VisualElement BuildErrorBox()
         {
