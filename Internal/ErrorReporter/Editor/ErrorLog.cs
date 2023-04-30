@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using Newtonsoft.Json;
+//using Newtonsoft.Json;
 using UnityEngine;
 using VRC.SDK3.Avatars.Components;
 using UnityEditor;
@@ -15,11 +15,11 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
 {
     internal class AvatarReport
     {
-        [JsonProperty] internal ObjectRef objectRef;
+        /*[JsonProperty]*/ internal ObjectRef objectRef;
 
-        [JsonProperty] internal bool successful;
+        /*[JsonProperty]*/ internal bool successful;
 
-        [JsonProperty] internal List<ErrorLog> logs = new List<ErrorLog>();
+        /*[JsonProperty]*/ internal List<ErrorLog> logs = new List<ErrorLog>();
     }
 
     internal class ObjectRefLookupCache
@@ -63,10 +63,10 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
 
     internal struct ObjectRef
     {
-        [JsonProperty] internal string guid;
-        [JsonProperty] internal long? localId;
-        [JsonProperty] internal string path, name;
-        [JsonProperty] internal string typeName;
+        /*[JsonProperty]*/ internal string guid;
+        /*[JsonProperty]*/ internal long? localId;
+        /*[JsonProperty]*/ internal string path, name;
+        /*[JsonProperty]*/ internal string typeName;
 
         internal ObjectRef(Object obj)
         {
@@ -165,11 +165,11 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
 
     internal class ErrorLog
     {
-        [JsonProperty] internal List<ObjectRef> referencedObjects;
-        [JsonProperty] internal ReportLevel reportLevel;
-        [JsonProperty] internal string messageCode;
-        [JsonProperty] internal string[] substitutions;
-        [JsonProperty] internal string stacktrace;
+        /*[JsonProperty]*/ internal List<ObjectRef> referencedObjects;
+        /*[JsonProperty]*/ internal ReportLevel reportLevel;
+        /*[JsonProperty]*/ internal string messageCode;
+        /*[JsonProperty]*/ internal string[] substitutions;
+        /*[JsonProperty]*/ internal string stacktrace;
 
         internal ErrorLog(ReportLevel level, string code, string[] strings, params object[] args)
         {
@@ -214,7 +214,7 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
         private AvatarReport _currentAvatar;
         private Stack<UnityEngine.Object> _references = new Stack<Object>();
 
-        [JsonProperty] internal List<AvatarReport> Avatars = new List<AvatarReport>();
+        /*[JsonProperty]*/ internal List<AvatarReport> Avatars = new List<AvatarReport>();
         internal AvatarReport CurrentAvatar => _currentAvatar;
 
         public static BuildReport CurrentReport
@@ -242,10 +242,11 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
 
         private static BuildReport LoadReport()
         {
+            return null;
             try
             {
                 var data = File.ReadAllText(Path);
-                return JsonConvert.DeserializeObject<BuildReport>(data);
+                //return JsonConvert.DeserializeObject<BuildReport>(data);
             }
             catch (Exception e)
             {
@@ -256,9 +257,9 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
         internal static void SaveReport()
         {
             var report = CurrentReport;
-            var json = JsonConvert.SerializeObject(report);
+            //var json = JsonConvert.SerializeObject(report);
 
-            File.WriteAllText(Path, json);
+            //File.WriteAllText(Path, json);
 
             ErrorReportUI.reloadErrorReport();
         }
