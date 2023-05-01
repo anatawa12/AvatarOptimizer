@@ -102,7 +102,7 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
             if (!typeof(IStaticValidated).IsAssignableFrom(type))
                 throw new ArgumentException(
                     "You cannot register Validator for class does not implements IStaticValidated.");
-            if (!typeof(ISelfStaticValidated).IsAssignableFrom(type))
+            if (typeof(ISelfStaticValidated).IsAssignableFrom(type))
                 throw new ArgumentException(
                     "You cannot register Validator for class does implements ISelfStaticValidated.");
 
