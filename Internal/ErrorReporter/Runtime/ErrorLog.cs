@@ -5,7 +5,6 @@ using System.Linq;
 using System.Runtime.InteropServices;
 //using Newtonsoft.Json;
 using UnityEngine;
-using VRC.SDK3.Avatars.Components;
 using UnityEditor;
 using UnityEngine.SceneManagement;
 using UnityEngine.Serialization;
@@ -211,11 +210,10 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
         private const string Path = "Library/ModularAvatarBuildReport.json";
 
         private static BuildReport _report;
-        private AvatarReport _currentAvatar;
         private Stack<UnityEngine.Object> _references = new Stack<Object>();
 
         /*[JsonProperty]*/ internal List<AvatarReport> Avatars = new List<AvatarReport>();
-        internal AvatarReport CurrentAvatar => _currentAvatar;
+        internal AvatarReport CurrentAvatar { get; set; }
 
         public static BuildReport CurrentReport
         {
@@ -254,49 +252,12 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
             }
         }
 
-        internal static void SaveReport()
-        {
-            var report = CurrentReport;
-            //var json = JsonConvert.SerializeObject(report);
-
-            //File.WriteAllText(Path, json);
-
-            ErrorReportUI.reloadErrorReport();
-        }
-
-        private class AvatarReportScope : IDisposable
-        {
-            public void Dispose()
-            {
-                var successful = CurrentReport._currentAvatar.successful;
-                CurrentReport._currentAvatar = null;
-                BuildReport.SaveReport();
-                if (!successful) throw new Exception("Avatar processing failed");
-            }
-        }
-
-        internal IDisposable ReportingOnAvatar(VRCAvatarDescriptor descriptor)
-        {
-            if (descriptor != null)
-            {
-                AvatarReport report = new AvatarReport();
-                report.objectRef = new ObjectRef(descriptor.gameObject);
-                Avatars.Add(report);
-                _currentAvatar = report;
-                _currentAvatar.successful = true;
-
-                _currentAvatar.logs.AddRange(ComponentValidation.ValidateAll(descriptor.gameObject));
-            }
-
-            return new AvatarReportScope();
-        }
-
         internal static void Log(ReportLevel level, string code, object[] strings, params Object[] objects)
         {
             ErrorLog errorLog =
                 new ErrorLog(level, code, strings: strings.Select(s => s.ToString()).ToArray(), objects);
 
-            var avatarReport = CurrentReport._currentAvatar;
+            var avatarReport = CurrentReport.CurrentAvatar;
             if (avatarReport == null)
             {
                 Debug.LogWarning("Error logged when not processing an avatar: " + errorLog);
@@ -309,9 +270,9 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
         internal static void LogFatal(string code, object[] strings, params Object[] objects)
         {
             Log(ReportLevel.Error, code, strings: strings, objects: objects);
-            if (CurrentReport._currentAvatar != null)
+            if (CurrentReport.CurrentAvatar != null)
             {
-                CurrentReport._currentAvatar.successful = false;
+                CurrentReport.CurrentAvatar.successful = false;
             }
             else
             {
@@ -321,7 +282,7 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
 
         internal static void LogException(Exception e, string additionalStackTrace = "")
         {
-            var avatarReport = CurrentReport._currentAvatar;
+            var avatarReport = CurrentReport.CurrentAvatar;
             if (avatarReport == null)
             {
                 Debug.LogException(e);
@@ -369,21 +330,6 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
         public static void Clear()
         {
             _report = new BuildReport();
-        }
-
-        public static void RemapPaths(string original, string cloned)
-        {
-            foreach (var av in CurrentReport.Avatars)
-            {
-                av.objectRef = av.objectRef.Remap(original, cloned);
-
-                foreach (var log in av.logs)
-                {
-                    log.referencedObjects = log.referencedObjects.Select(o => o.Remap(original, cloned)).ToList();
-                }
-            }
-
-            ErrorReportUI.reloadErrorReport();
         }
     }
 }
