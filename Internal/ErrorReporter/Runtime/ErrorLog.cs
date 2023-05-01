@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 //using Newtonsoft.Json;
 using UnityEngine;
@@ -153,7 +154,7 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
         }
     }
 
-    internal enum ReportLevel
+    public enum ReportLevel
     {
         Validation,
         Info,
@@ -164,15 +165,19 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
 
     public class ErrorLog
     {
-        /*[JsonProperty]*/ internal List<ObjectRef> referencedObjects;
-        /*[JsonProperty]*/ internal ReportLevel reportLevel;
-        /*[JsonProperty]*/ internal string messageCode;
-        /*[JsonProperty]*/ internal string[] substitutions;
-        /*[JsonProperty]*/ internal string stacktrace;
+        /*[JsonProperty]*/ internal readonly List<ObjectRef> referencedObjects;
+        /*[JsonProperty]*/ internal readonly ReportLevel reportLevel;
+        internal Assembly messageAssembly;
+        /*[JsonProperty]*/ internal readonly string messageAssemblyName;
+        /*[JsonProperty]*/ internal readonly string messageCode;
+        /*[JsonProperty]*/ internal readonly string[] substitutions;
+        /*[JsonProperty]*/ internal readonly string stacktrace;
 
-        internal ErrorLog(ReportLevel level, string code, string[] strings, params object[] args)
+        public ErrorLog(ReportLevel level, string code, string[] strings, object[] args, Assembly callerAssembly)
         {
             reportLevel = level;
+            messageAssembly = callerAssembly;
+            messageAssemblyName = messageAssembly.GetName().Name;
 
             substitutions = strings.Select(s => s.ToString()).ToArray();
 
@@ -185,17 +190,23 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
             stacktrace = null;
         }
 
-        internal ErrorLog(ReportLevel level, string code, params object[] args) : this(level, code,
-            Array.Empty<string>(), args)
+        public ErrorLog(ReportLevel level, string code, string[] strings, params object[] args)
+            : this(level, code, strings, args, Assembly.GetCallingAssembly())
+        {
+        }
+
+        public ErrorLog(ReportLevel level, string code, params object[] args)
+            : this(level, code, Array.Empty<string>(), args, Assembly.GetCallingAssembly())
         {
         }
 
         internal ErrorLog(Exception e, string additionalStackTrace = "")
+            : this(ReportLevel.InternalError, 
+                "error.internal_error", 
+                new [] {e.Message, e.TargetSite?.Name}, 
+                Array.Empty<object>(),
+                typeof(ErrorLog).Assembly)
         {
-            reportLevel = ReportLevel.InternalError;
-            messageCode = "error.internal_error";
-            substitutions = new string[] {e.Message, e.TargetSite?.Name};
-            referencedObjects = BuildReport.CurrentReport.GetActiveReferences().ToList();
             stacktrace = e.ToString() + additionalStackTrace;
         }
 
