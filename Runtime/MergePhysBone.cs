@@ -1,4 +1,5 @@
 using System;
+using Anatawa12.AvatarOptimizer.ErrorReporting;
 using CustomLocalization4EditorExtension;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -10,7 +11,7 @@ namespace Anatawa12.AvatarOptimizer
     [AddComponentMenu("Optimizer/Merge PhysBone")]
     [DisallowMultipleComponent]
     [ExecuteAlways]
-    internal class MergePhysBone : AvatarTagComponent
+    internal class MergePhysBone : AvatarTagComponent, IStaticValidated
     {
         public VRCPhysBoneBase Merged => merged;
 

@@ -102,6 +102,9 @@ msgid "MergePhysBone:error:unsupportedPbVersion"
 msgstr "The PhysBone Version is not supported (yet) by Avatar Optimizer.\n"
 "Please tell author on twitter (@anatawa12_vrc) or GitHub (anatawa12/AvatarOptimizer)!"
 
+msgid "MergePhysBone:error:differValues"
+msgstr "The values is differ between two or more sources. You have to set same value OR override this property: {0}"
+
 msgid "MergePhysBone:dialog:versionInfo:title"
 msgstr "Version Info" 
 
