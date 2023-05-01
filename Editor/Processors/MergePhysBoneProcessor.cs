@@ -123,7 +123,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
             {
                 var multiChildType = _sourcePhysBone.FindProperty(nameof(VRCPhysBoneBase.multiChildType));
                 if (multiChildType.enumValueIndex != 0 || multiChildType.hasMultipleDifferentValues)
-                    throw new InvalidOperationException("Some PysBone has multi child type != Ignore");
+                    throw new InvalidOperationException(CL4EE.Tr("MergePhysBone:error:multiChildType"));
             }
 
             protected override void OptionParameter()

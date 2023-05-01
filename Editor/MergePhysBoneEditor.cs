@@ -361,7 +361,7 @@ namespace Anatawa12.AvatarOptimizer
             EditorGUILayout.LabelField("Multi Child Type", "Must be Ignore");
             var multiChildType = _sourcePhysBone.FindProperty("multiChildType");
             if (multiChildType.enumValueIndex != 0 || multiChildType.hasMultipleDifferentValues)
-                EditorGUILayout.HelpBox("Some PysBone has multi child type != Ignore", MessageType.Error);
+                EditorGUILayout.HelpBox(CL4EE.Tr("MergePhysBone:error:multiChildType"), MessageType.Error);
         }
         protected override void OptionParameter() {
             EditorGUILayout.PropertyField(_mergedPhysBone.FindProperty("parameter"));
