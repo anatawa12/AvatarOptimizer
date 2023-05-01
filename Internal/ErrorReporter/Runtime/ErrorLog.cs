@@ -162,7 +162,7 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
         InternalError,
     }
 
-    internal class ErrorLog
+    public class ErrorLog
     {
         /*[JsonProperty]*/ internal List<ObjectRef> referencedObjects;
         /*[JsonProperty]*/ internal ReportLevel reportLevel;
