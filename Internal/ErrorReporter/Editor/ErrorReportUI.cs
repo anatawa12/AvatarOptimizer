@@ -44,7 +44,7 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
 
             Selection.selectionChanged += ScheduleRender;
             EditorApplication.hierarchyChanged += ScheduleRender;
-            //AvatarTagComponent.OnChangeAction += ScheduleRender;
+            ErrorReporterRuntime.OnChangeAction += ScheduleRender;
             //Localization.OnLangChange += RenderContent;
         }
 
@@ -53,7 +53,7 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
             reloadErrorReport = () => { };
             Selection.selectionChanged -= ScheduleRender;
             EditorApplication.hierarchyChanged -= ScheduleRender;
-            //AvatarTagComponent.OnChangeAction -= ScheduleRender;
+            ErrorReporterRuntime.OnChangeAction -= ScheduleRender;
             //Localization.OnLangChange -= RenderContent;
         }
 

@@ -1,3 +1,5 @@
+using System;
+using Anatawa12.AvatarOptimizer.ErrorReporting;
 using UnityEngine;
 using VRC.SDKBase;
 
@@ -51,6 +53,13 @@ namespace Anatawa12.AvatarOptimizer
                 Activator.CreateIfNotPresent(gameObject.scene);
 #endif
             });
+
+            ErrorReporterRuntime.TriggerChange();
+        }
+
+        private void OnDestroy()
+        {
+            ErrorReporterRuntime.TriggerChange();
         }
     }
 }
