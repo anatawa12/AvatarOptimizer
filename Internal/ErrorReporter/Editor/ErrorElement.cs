@@ -92,8 +92,11 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
 
             try
             {
-                // TODO: use CL4EE for each assembly
-                return string.Format(CL4EE.Tr(log.messageCode), objArray);
+                var assembly = log.MessageAssembly;
+                if (assembly == null)
+                    return string.Format(log.messageCode, objArray);
+                return string.Format(CL4EE.GetLocalization(log.messageAssembly)?.Tr(log.messageCode) ?? log.messageCode,
+                    objArray);
             }
             catch (FormatException e)
             {

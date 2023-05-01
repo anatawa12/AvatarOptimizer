@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using JetBrains.Annotations;
 //using Newtonsoft.Json;
 using UnityEngine;
 using UnityEditor;
@@ -172,6 +173,27 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
         /*[JsonProperty]*/ internal readonly string messageCode;
         /*[JsonProperty]*/ internal readonly string[] substitutions;
         /*[JsonProperty]*/ internal readonly string stacktrace;
+
+        [CanBeNull]
+        internal Assembly MessageAssembly
+        {
+            get
+            {
+                if (messageAssembly == null)
+                {
+                    try
+                    {
+                        messageAssembly = Assembly.Load(messageAssemblyName);
+                    }
+                    catch
+                    {
+                        // ignored
+                    }
+                }
+
+                return messageAssembly;
+            }
+        }
 
         public ErrorLog(ReportLevel level, string code, string[] strings, object[] args, Assembly callerAssembly)
         {
