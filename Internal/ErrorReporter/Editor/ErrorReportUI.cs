@@ -37,7 +37,7 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
         {
             titleContent = new GUIContent("Error Report");
 
-            rootVisualElement.styleSheets.Add(Resources.Load<StyleSheet>("ModularAvatarErrorReport"));
+            rootVisualElement.styleSheets.Add(Resources.Load<StyleSheet>("com.anatawa12.avatar-optimizer.error-report"));
             RenderContent();
 
             reloadErrorReport = RenderContent;
