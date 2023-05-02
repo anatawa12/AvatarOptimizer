@@ -238,7 +238,7 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
         }
     }
 
-    internal class BuildReport
+    public class BuildReport
     {
         private const string Path = "Library/ModularAvatarBuildReport.json";
 
@@ -248,7 +248,7 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
         /*[JsonProperty]*/ internal List<AvatarReport> Avatars = new List<AvatarReport>();
         internal AvatarReport CurrentAvatar { get; set; }
 
-        public static BuildReport CurrentReport
+        internal static BuildReport CurrentReport
         {
             get
             {
@@ -327,7 +327,7 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
             }
         }
 
-        internal static T ReportingObject<T>(UnityEngine.Object obj, Func<T> action)
+        public static T ReportingObject<T>(UnityEngine.Object obj, Func<T> action)
         {
             if (obj != null) CurrentReport._references.Push(obj);
             try
@@ -346,13 +346,19 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
             }
         }
 
-        internal static void ReportingObject(UnityEngine.Object obj, Action action)
+        public static void ReportingObject(UnityEngine.Object obj, Action action)
         {
             ReportingObject(obj, () =>
             {
                 action();
                 return true;
             });
+        }
+
+        public static void ReportingObjects<T>(IEnumerable<T> objs, Action<T> action) where T : Object
+        {
+            foreach (var obj in objs)
+                ReportingObject(obj, () => action(obj));
         }
 
         internal IEnumerable<ObjectRef> GetActiveReferences()
