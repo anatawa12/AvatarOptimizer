@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Anatawa12.AvatarOptimizer.ErrorReporting;
 using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Assertions;
@@ -24,11 +25,11 @@ namespace Anatawa12.AvatarOptimizer.Processors
             // normalize map
             mergeMapping.FlattenMapping();
 
-            foreach (var renderer in session.GetComponents<SkinnedMeshRenderer>())
+            BuildReport.ReportingObjects(session.GetComponents<SkinnedMeshRenderer>(), renderer =>
             {
                 if (renderer.bones.Where(x => x).Any(mergeMapping.ContainsKey))
                     DoBoneMap(session, renderer, mergeMapping);
-            }
+            });
 
             foreach (var pair in mergeMapping)
             {

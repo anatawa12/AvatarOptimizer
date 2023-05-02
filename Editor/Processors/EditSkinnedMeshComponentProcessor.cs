@@ -23,6 +23,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
                 foreach (var processor in processors.GetSorted())
                 {
+                    // TODO
                     processor.Process(session, target, holder);
                     target.AssertInvariantContract(
                         $"after {processor.GetType().Name} " +

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Anatawa12.AvatarOptimizer.ErrorReporting;
 using CustomLocalization4EditorExtension;
 using UnityEditor;
 using UnityEngine;
@@ -13,10 +14,8 @@ namespace Anatawa12.AvatarOptimizer.Processors
     {
         public void Process(OptimizerSession session)
         {
-            foreach (var mergePhysBone in session.GetComponents<MergePhysBone>())
-            {
-                DoMerge(mergePhysBone, session);
-            }
+            BuildReport.ReportingObjects(session.GetComponents<MergePhysBone>(),
+                mergePhysBone => DoMerge(mergePhysBone, session));
         }
 
         private static bool SetEq<T>(IEnumerable<T> a, IEnumerable<T> b) => 
