@@ -227,8 +227,7 @@ namespace Anatawa12.AvatarOptimizer
                     if (CheckMinVersion(VRCPhysBoneBase.Version.Version_1_1))
                         PbCurveProp("Stretch Motion", "stretchMotion", "stretchMotionCurve", _stretchMotion);
                     PbCurveProp("Max Stretch", "maxStretch", "maxStretchCurve", _maxStretchProp);
-                    if (CheckMinVersion(VRCPhysBoneBase.Version.Version_1_1))
-                        PbCurveProp("Max Squish", "maxSquish", "maxSquishCurve", _maxSquish);
+                    PbCurveProp("Max Squish", "maxSquish", "maxSquishCurve", _maxSquish);
                 }
 
                 // == Grab & Pose ==
