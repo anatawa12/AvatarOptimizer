@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Max Squish is not shown if we're using PhysBone 1.0 `#127`
 
 ### Security
 
