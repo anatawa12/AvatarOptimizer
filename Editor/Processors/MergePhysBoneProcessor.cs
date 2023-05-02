@@ -43,15 +43,27 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 foreach (var physBone in sourceComponents)
                         physBone.GetTarget().parent = root;
             }
-            else if (sourceComponents.Count == pb.GetTarget().parent.childCount)
+            else
             {
-                root = pb.GetTarget().parent;
-            } else
-            {
-                root = Utils.NewGameObject("PhysBoneRoot", pb.GetTarget().parent).transform;
+                var parentDiffer = sourceComponents
+                    .Select(x => x.transform.parent)
+                    .ZipWithNext()
+                    .Any(x => x.Item1 != x.Item2);
+                
+                if (parentDiffer)
+                    throw new InvalidOperationException(CL4EE.Tr("MergePhysBone:error:parentDiffer"));
 
-                foreach (var physBone in sourceComponents)
-                    physBone.GetTarget().parent = root;
+                if (sourceComponents.Count == pb.GetTarget().parent.childCount)
+                {
+                    root = pb.GetTarget().parent;
+                }
+                else
+                {
+                    root = Utils.NewGameObject("PhysBoneRoot", pb.GetTarget().parent).transform;
+
+                    foreach (var physBone in sourceComponents)
+                        physBone.GetTarget().parent = root;
+                }
             }
 
             // clear endpoint position

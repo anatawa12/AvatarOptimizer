@@ -52,6 +52,7 @@ namespace Anatawa12.AvatarOptimizer
         // ReSharper disable MemberCanBePrivate.Global
         protected SerializedObject _sourcePhysBone;
         protected readonly SerializedObject _mergedPhysBone;
+        protected readonly SerializedProperty _makeParent;
         protected readonly SerializedProperty _version;
         protected readonly SerializedProperty _integrationTypeProp;
         protected readonly SerializedProperty _pullProp;
@@ -85,6 +86,7 @@ namespace Anatawa12.AvatarOptimizer
         {
             var nestCount = PrefabSafeSet.PrefabSafeSetUtil.PrefabNestCount(serializedObject.targetObject);
             _mergedPhysBone = new SerializedObject(serializedObject.FindProperty("merged").objectReferenceValue);
+            _makeParent = serializedObject.FindProperty("makeParent");
             _version = serializedObject.FindProperty("version");
             _integrationTypeProp = serializedObject.FindProperty("integrationType");
             _pullProp = serializedObject.FindProperty("pull");
@@ -355,6 +357,15 @@ namespace Anatawa12.AvatarOptimizer
 
         protected override void TransformSection() {
             EditorGUILayout.LabelField("Root Transform", "Auto Generated");
+            if (!_makeParent.boolValue)
+            {
+                var differ = _sourcePhysBone.targetObjects.Cast<Component>()
+                    .Select(x => x.transform.parent)
+                    .ZipWithNext()
+                    .Any(x => x.Item1 != x.Item2);
+                if (differ)
+                    EditorGUILayout.HelpBox(CL4EE.Tr("MergePhysBone:error:parentDiffer"), MessageType.Error);
+            }
             EditorGUILayout.LabelField("Ignore Transforms", "Automatically Merged");
             EditorGUILayout.LabelField("Endpoint Position", "Cleared to zero");
             EditorGUILayout.LabelField("Multi Child Type", "Must be Ignore");
