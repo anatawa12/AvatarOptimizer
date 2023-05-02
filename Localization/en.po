@@ -92,6 +92,9 @@ msgstr "Make every PhysBones child of this GameObject"
 msgid "MergePhysBone:error:makeParentWithChildren"
 msgstr "There's children with Make Children of Me enabled."
 
+msgid "MergePhysBone:error:parentDiffer"
+msgstr "Parent of source PhysBone are differ. move to same parent OR use Make Children of Me."
+
 msgid "MergePhysBone:error:noSources"
 msgstr "There's no source PhysBones"
 

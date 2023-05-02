@@ -46,6 +46,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - ShouldIgnoreComponentPatch cases compilation error `#108`
+- Merge PhysBone is working even if parents are differ `#129`
 
 ### Security
 
