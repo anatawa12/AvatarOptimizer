@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Parent differ error is gone `#129`
 
 ### Security
 
