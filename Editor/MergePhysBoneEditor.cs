@@ -838,6 +838,15 @@ namespace Anatawa12.AvatarOptimizer
 
         protected override void TransformSection()
         {
+            if (!_mergePhysBone.makeParent)
+            {
+                var differ = _sourcePhysBone.targetObjects.Cast<Component>()
+                    .Select(x => x.transform.parent)
+                    .ZipWithNext()
+                    .Any(x => x.Item1 != x.Item2);
+                if (differ)
+                    _errorLogs.Add(ErrorLog.Validation("MergePhysBone:error:parentDiffer", this));
+            }
             var multiChildType = _sourcePhysBone.FindProperty(nameof(VRCPhysBoneBase.multiChildType));
             if (multiChildType.enumValueIndex != 0 || multiChildType.hasMultipleDifferentValues)
                 _errorLogs.Add(ErrorLog.Validation("MergePhysBone:error:multiChildType", this));
