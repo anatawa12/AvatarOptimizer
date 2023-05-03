@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using UnityEditor;
 using UnityEngine;
 using VRC.SDK3.Avatars.Components;
@@ -27,6 +28,9 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
         private Stack<Object> _references = new Stack<Object>();
 
         /*[JsonProperty]*/ internal List<AvatarReport> Avatars = new List<AvatarReport>();
+
+        internal ConditionalWeakTable<VRCAvatarDescriptor, AvatarReport> AvatarsByObject =
+            new ConditionalWeakTable<VRCAvatarDescriptor, AvatarReport>();
         private AvatarReport CurrentAvatar { get; set; }
 
         internal static BuildReport CurrentReport
@@ -84,24 +88,39 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
                 var successful = CurrentReport.CurrentAvatar.successful;
                 CurrentReport.CurrentAvatar = null;
                 BuildReport.SaveReport();
+                ErrorReportUI.MaybeOpenErrorReportUI();
                 if (!successful) throw new Exception("Avatar processing failed");
             }
         }
 
-        internal IDisposable ReportingOnAvatar(VRCAvatarDescriptor descriptor)
+        public static IDisposable ReportingOnAvatar(VRCAvatarDescriptor descriptor)
         {
             if (descriptor != null)
             {
-                AvatarReport report = new AvatarReport();
-                report.objectRef = new ObjectRef(descriptor.gameObject);
-                Avatars.Add(report);
-                CurrentAvatar = report;
-                CurrentAvatar.successful = true;
-
-                CurrentAvatar.logs.AddRange(ComponentValidation.ValidateAll(descriptor.gameObject));
+                if (!CurrentReport.AvatarsByObject.TryGetValue(descriptor, out var report))
+                {
+                    Debug.LogWarning("Reporting on Avatar is called before ErrorReporting Initializer Processor");
+                    report = CurrentReport.Initialize(descriptor);
+                }
+                CurrentReport.CurrentAvatar = report;
             }
 
             return new AvatarReportScope();
+        }
+
+        internal AvatarReport Initialize(VRCAvatarDescriptor descriptor)
+        {
+            if (descriptor == null) return null;
+
+            AvatarReport report = new AvatarReport();
+            report.objectRef = new ObjectRef(descriptor.gameObject);
+            Avatars.Add(report);
+            report.successful = true;
+
+            report.logs.AddRange(ComponentValidation.ValidateAll(descriptor.gameObject));
+
+            AvatarsByObject.Add(descriptor, report);
+            return report;
         }
 
         internal static void Log(ReportLevel level, string code, object[] strings, params Object[] objects)
