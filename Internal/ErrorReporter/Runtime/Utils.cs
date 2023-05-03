@@ -53,5 +53,7 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
 
             return string.Join("/", components);
         }
+
+        internal static Func<IEnumerable<ObjectRef>> GetCurrentReportActiveReferences = () => Array.Empty<ObjectRef>();
     }
 }
