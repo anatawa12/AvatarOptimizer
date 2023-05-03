@@ -1,7 +1,9 @@
 
 using System;
+using Anatawa12.AvatarOptimizer.ErrorReporting;
 using UnityEditor;
 using UnityEngine;
+using VRC.SDK3.Avatars.Components;
 using VRC.SDKBase.Editor.BuildPipeline;
 
 namespace Anatawa12.AvatarOptimizer
@@ -80,22 +82,25 @@ namespace Anatawa12.AvatarOptimizer
         public static void ProcessObject(OptimizerSession session)
         {
             if (_processing) return;
-            try
+            using (BuildReport.ReportingOnAvatar(session.GetRootComponent<VRCAvatarDescriptor>()))
             {
-                AssetDatabase.StartAssetEditing();
-                _processing = true;
-                DoProcessObject(session);
-            }
-            finally
-            {
-                _processing = false;
-                AssetDatabase.StopAssetEditing();
-                foreach (var component in session.GetComponents<AvatarTagComponent>())
-                    UnityEngine.Object.DestroyImmediate(component);
-                foreach (var activator in session.GetComponents<AvatarActivator>())
-                    UnityEngine.Object.DestroyImmediate(activator);
+                try
+                {
+                    AssetDatabase.StartAssetEditing();
+                    _processing = true;
+                    DoProcessObject(session);
+                }
+                finally
+                {
+                    _processing = false;
+                    AssetDatabase.StopAssetEditing();
+                    foreach (var component in session.GetComponents<AvatarTagComponent>())
+                        UnityEngine.Object.DestroyImmediate(component);
+                    foreach (var activator in session.GetComponents<AvatarActivator>())
+                        UnityEngine.Object.DestroyImmediate(activator);
 
-                AssetDatabase.SaveAssets();
+                    AssetDatabase.SaveAssets();
+                }
             }
         }
         
