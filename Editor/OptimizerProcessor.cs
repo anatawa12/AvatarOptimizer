@@ -49,8 +49,11 @@ namespace Anatawa12.AvatarOptimizer
         
         private static void DoProcessObject(OptimizerSession session)
         {
-            new Processors.UnusedBonesByReferencesToolEarlyProcessor().Process(session);
-            session.MarkDirtyAll();
+            using (BuildReport.ReportingOnAvatar(session.GetRootComponent<VRCAvatarDescriptor>()))
+            {
+                new Processors.UnusedBonesByReferencesToolEarlyProcessor().Process(session);
+                session.MarkDirtyAll();
+            }
         }
     }
 
