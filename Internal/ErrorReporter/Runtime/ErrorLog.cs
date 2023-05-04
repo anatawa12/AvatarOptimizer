@@ -215,7 +215,7 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
 
         internal ErrorLog(Exception e, string additionalStackTrace = "")
             : this(ReportLevel.InternalError, 
-                "error.internal_error", 
+                "ErrorReporter:error.internal_error", 
                 new [] {e.Message, e.TargetSite?.Name}, 
                 Array.Empty<object>(),
                 typeof(ErrorLog).Assembly)
