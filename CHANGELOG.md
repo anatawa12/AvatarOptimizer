@@ -8,35 +8,46 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Make Children of Me `#100`
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [0.3.0] - 2023-05-04
+### Added
+- Make Children of Me [`#100`](https://github.com/anatawa12/AvatarOptimizer/pull/100)
   - As a alternative of feature removal in same pull request
-- UnusedBonesByReferencesTool `#112`
+- UnusedBonesByReferencesTool [`#112`](https://github.com/anatawa12/AvatarOptimizer/pull/112)
   - This is port of [UnusedBonesByReferencesTool by Narazaka][UnusedBonesByReferencesTool]
-- Support for VRCSDK 3.2.0! `#117`
+- Support for VRCSDK 3.2.0! [`#117`](https://github.com/anatawa12/AvatarOptimizer/pull/117)
   - This includes support for PhysBone Versions and PhysBone 1.1
 
 [UnusedBonesByReferencesTool]: https://narazaka.booth.pm/items/3831781
 
 ### Changed
-- Use IEditorOnly instead of mokeypatching VRCSDK `#102`
-- Move the toggle for Override and the setting of the value after Override closer together. `#105`
+- Use IEditorOnly instead of mokeypatching VRCSDK [`#102`](https://github.com/anatawa12/AvatarOptimizer/pull/102)
+- Move the toggle for Override and the setting of the value after Override closer together. [`#105`](https://github.com/anatawa12/AvatarOptimizer/pull/105)
   - With this changes, the merged PhysBone is now hidden.
   - The merged PhysBone will be shown in Play mode.
-- Now we can Copy (instead of Override) `Pull`, `Gravity`, `Immobile` properties even if `Integration Type` is overriden. `#105`
+- Now we can Copy (instead of Override) `Pull`, `Gravity`, `Immobile` properties even if `Integration Type` is overriden. [`#105`](https://github.com/anatawa12/AvatarOptimizer/pull/105)
   - During migration, if `Integration Type` (previously called `Force`) is configured to be Override, `Pull`, `Gravity`, `Immobile` will be configured to be Override.
   - This is **BREAKING** changes.
-- Now we can Copy / Override `Immobile Type` and `Immobile` (strength) separately. `#105`
+- Now we can Copy / Override `Immobile Type` and `Immobile` (strength) separately. [`#105`](https://github.com/anatawa12/AvatarOptimizer/pull/105)
   - Previously, if you override `Immobile Type`, you also required to override `Immobile` but no longer required.
   - This is **BREAKING** changes in the semantics of `immobile` property.
-- Upgrade CL4EE to 1.0.0 `#121`
-
-### Deprecated
+- Upgrade CL4EE to 1.0.0 [`#121`](https://github.com/anatawa12/AvatarOptimizer/pull/121)
 
 ### Removed
-- **BREAKING** Removed Prefab Safe List `#95`
-- **BREAKING** Removed RootTransform feature from MergePhysBone `#100`
+- **BREAKING** Removed Prefab Safe List [`#95`](https://github.com/anatawa12/AvatarOptimizer/pull/95)
+- **BREAKING** Removed RootTransform feature from MergePhysBone [`#100`](https://github.com/anatawa12/AvatarOptimizer/pull/100)
   - See [this issue comment][about-root-transform] for more datails.
-- Removed support for VRCSDK 3.1.x. `#117`
+- Removed support for VRCSDK 3.1.x. [`#117`](https://github.com/anatawa12/AvatarOptimizer/pull/117)
   - Dropping VRCSDK support is a **BREAKING** changes.
   - However, we may drop old VRCSDK support in the minor releases of AvatarOptimizer in the feature.
   - In the other hand, we promise we'll never drop old VRCSDK support in the patch releases.
@@ -45,10 +56,8 @@ The format is based on [Keep a Changelog].
 [about-root-transform]: https://github.com/anatawa12/AvatarOptimizer/issues/62#issuecomment-1512586282
 
 ### Fixed
-- ShouldIgnoreComponentPatch cases compilation error `#108`
-- Merge PhysBone is working even if parents are differ `#129`
-
-### Security
+- ShouldIgnoreComponentPatch cases compilation error [`#108`](https://github.com/anatawa12/AvatarOptimizer/pull/108)
+- Merge PhysBone is working even if parents are differ [`#129`](https://github.com/anatawa12/AvatarOptimizer/pull/129)
 
 ## [0.2.8] - 2023-04-19
 ### Fixed
@@ -195,7 +204,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.8...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.8...v0.3.0
 [0.2.8]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.7...v0.2.8
 [0.2.7]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.6...v0.2.7
 [0.2.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.5...v0.2.6
