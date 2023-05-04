@@ -1,12 +1,25 @@
+using Anatawa12.AvatarOptimizer.ErrorReporting;
 using CustomLocalization4EditorExtension;
 using UnityEditor;
 using UnityEngine;
+using VRC.Core;
 using VRC.SDK3.Avatars.Components;
 
 namespace Anatawa12.AvatarOptimizer
 {
+    [InitializeOnLoad]
     abstract class AvatarGlobalComponentEditorBase : AvatarTagComponentEditorBase
     {
+        static AvatarGlobalComponentEditorBase()
+        {
+            ComponentValidation.RegisterValidator<AvatarGlobalComponent>(component =>
+            {
+                if (!component.GetComponent<VRCAvatarDescriptor>())
+                    return new[] { ErrorLog.Error("AvatarGlobalComponent:NotOnAvatarDescriptor", component) };
+                return null;
+            });
+        }
+
         protected override void OnInspectorGUIInner()
         {
             if (!((Component)serializedObject.targetObject).GetComponent<VRCAvatarDescriptor>())
