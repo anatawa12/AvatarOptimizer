@@ -37,7 +37,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 root = merge.transform;
 
                 if (root.childCount != 0)
-                    throw new InvalidOperationException(CL4EE.Tr("MergePhysBone:error:makeParentWithChildren"));
+                    return; // error reported by validator
 
                 foreach (var physBone in sourceComponents)
                         physBone.GetTarget().parent = root;
@@ -50,7 +50,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                     .Any(x => x.Item1 != x.Item2);
                 
                 if (parentDiffer)
-                    throw new InvalidOperationException(CL4EE.Tr("MergePhysBone:error:parentDiffer"));
+                    return; // differ error reported by validator
 
                 if (sourceComponents.Count == pb.GetTarget().parent.childCount)
                 {
@@ -125,16 +125,19 @@ namespace Anatawa12.AvatarOptimizer.Processors
             {
             }
 
-            protected override void NoSource() => throw new InvalidOperationException("No sources");
+            protected override void NoSource()
+            {
+                // differ error reported by validator
+            }
 
-            protected override void UnsupportedPbVersion() =>
-                throw new InvalidOperationException("Unsupported Pb Version");
+            protected override void UnsupportedPbVersion()
+            {
+                // differ error reported by validator
+            }
 
             protected override void TransformSection()
             {
-                var multiChildType = _sourcePhysBone.FindProperty(nameof(VRCPhysBoneBase.multiChildType));
-                if (multiChildType.enumValueIndex != 0 || multiChildType.hasMultipleDifferentValues)
-                    throw new InvalidOperationException(CL4EE.Tr("MergePhysBone:error:multiChildType"));
+                // differ error reported by validator
             }
 
             protected override void OptionParameter()
@@ -156,12 +159,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 SerializedProperty overridePropName,
                 params SerializedProperty[] overrides)
             {
-                PbPropImpl(label, overridePropName, overrides, () =>
-                {
-                    var sourceProp = _sourcePhysBone.FindProperty(pbPropName);
-                    _mergedPhysBone.FindProperty(pbPropName).CopyDataFrom(sourceProp);
-                    return sourceProp.hasMultipleDifferentValues;
-                });
+                PbPropImpl(label, overridePropName, overrides, pbPropName);
             }
 
             protected override void PbCurveProp(string label,
@@ -170,15 +168,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 SerializedProperty overridePropName,
                 params SerializedProperty[] overrides)
             {
-                PbPropImpl(label, overridePropName, overrides, () =>
-                {
-                    var sourceValueProp = _sourcePhysBone.FindProperty(pbPropName);
-                    _mergedPhysBone.FindProperty(pbPropName).CopyDataFrom(sourceValueProp);
-                    var sourceCurveProp = _sourcePhysBone.FindProperty(pbCurvePropName);
-                    _mergedPhysBone.FindProperty(pbCurvePropName).CopyDataFrom(sourceCurveProp);
-
-                    return sourceValueProp.hasMultipleDifferentValues || sourceCurveProp.hasMultipleDifferentValues;
-                });
+                PbPropImpl(label, overridePropName, overrides, pbPropName, pbCurvePropName);
             }
 
             protected override void PbPermissionProp(string label,
@@ -187,28 +177,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 SerializedProperty overridePropName,
                 params SerializedProperty[] overrides)
             {
-                PbPropImpl(label, overridePropName, overrides, () =>
-                {
-                    var sourceValueProp = _sourcePhysBone.FindProperty(pbPropName);
-                    _mergedPhysBone.FindProperty(pbPropName).CopyDataFrom(sourceValueProp);
-
-                    if (sourceValueProp.enumValueIndex == 2)
-                    {
-                        var sourceFilterProp = _sourcePhysBone.FindProperty(pbFilterPropName);
-                        var mergedFilterProp = _mergedPhysBone.FindProperty(pbFilterPropName);
-
-                        var sourceAllowSelf = sourceFilterProp.FindPropertyRelative("allowSelf");
-                        mergedFilterProp.FindPropertyRelative("allowSelf").CopyDataFrom(sourceAllowSelf);
-                        var sourceAllowOthers = sourceFilterProp.FindPropertyRelative("allowOthers");
-                        mergedFilterProp.FindPropertyRelative("allowOthers").CopyDataFrom(sourceAllowOthers);
-                        
-                        return sourceValueProp.hasMultipleDifferentValues || sourceFilterProp.hasMultipleDifferentValues;
-                    }
-                    else
-                    {
-                        return sourceValueProp.hasMultipleDifferentValues;
-                    }
-                });
+                PbPropImpl(label, overridePropName, overrides, pbPropName, pbFilterPropName);
             }
 
             protected override void Pb3DCurveProp(string label,
@@ -219,40 +188,21 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 SerializedProperty overridePropName,
                 params SerializedProperty[] overrides)
             {
-                PbPropImpl(label, overridePropName, overrides, () =>
-                {
-                    var sourceValueProp = _sourcePhysBone.FindProperty(pbPropName);
-                    var sourceXCurveProp = _sourcePhysBone.FindProperty(pbXCurvePropName);
-                    var sourceYCurveProp = _sourcePhysBone.FindProperty(pbYCurvePropName);
-                    var sourceZCurveProp = _sourcePhysBone.FindProperty(pbZCurvePropName);
-                    _mergedPhysBone.FindProperty(pbPropName).CopyDataFrom(sourceValueProp);
-                    _mergedPhysBone.FindProperty(pbXCurvePropName).CopyDataFrom(sourceXCurveProp);
-                    _mergedPhysBone.FindProperty(pbYCurvePropName).CopyDataFrom(sourceYCurveProp);
-                    _mergedPhysBone.FindProperty(pbZCurvePropName).CopyDataFrom(sourceZCurveProp);
-
-                    return sourceValueProp.hasMultipleDifferentValues
-                           || sourceXCurveProp.hasMultipleDifferentValues
-                           || sourceYCurveProp.hasMultipleDifferentValues
-                           || sourceZCurveProp.hasMultipleDifferentValues;
-                });
+                PbPropImpl(label, overridePropName, overrides, pbPropName,
+                    pbXCurvePropName, pbYCurvePropName, pbZCurvePropName);
             }
 
             private void PbPropImpl(string label,
                 SerializedProperty overrideProp,
                 SerializedProperty[] overrides,
-                Func<bool> copy)
+                params string[] props)
             {
                 if (overrides.Any(x => x.boolValue) || overrideProp.boolValue) return;
 
                 // Copy mode
-                var differ = copy();
-
-                if (differ)
-                {
-                    throw new InvalidOperationException(
-                        $"The value of {label} is differ between two or more sources. " +
-                        "You have to set same value OR override this property");
-                }
+                // differ error reported by validator
+                foreach (var prop in props)
+                    _mergedPhysBone.FindProperty(prop).CopyDataFrom(_sourcePhysBone.FindProperty(prop));
             }
 
             protected override void ColliderProp(string label, string pbProp, SerializedProperty overrideProp)
