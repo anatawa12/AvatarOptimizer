@@ -71,7 +71,7 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
         /// <li>The type implements ISelfStaticValidated</li>
         /// </ul>
         /// </exception>
-        public static void RegisterValidator<T>(Func<T, List<ErrorLog>> validator)
+        public static void RegisterValidator<T>(Func<T, IEnumerable<ErrorLog>> validator)
             where T : IStaticValidated
         {
             RegisterValidator(typeof(T), x => validator((T)x));
