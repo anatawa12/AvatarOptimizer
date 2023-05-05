@@ -22,6 +22,12 @@ The format is based on [Keep a Changelog].
 
 ### Security
 
+## [0.3.1] - 2023-05-05
+### Fixed
+- Can't remove SkinnedMeshRenderer error [`#133`](https://github.com/anatawa12/AvatarOptimizer/pull/133)
+  - This error should do nothing bad but it confuses everyone
+- Bad behaviour with VRCFury on build [`#134`](https://github.com/anatawa12/AvatarOptimizer/pull/134)
+
 ## [0.3.0] - 2023-05-04
 ### Fixed
 - Parent differ error is gone [`#129`](https://github.com/anatawa12/AvatarOptimizer/pull/129)
@@ -261,7 +267,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.3.1...HEAD
+[0.3.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.3.0-rc.2...v0.3.0
 [0.3.0-rc.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.3.0-rc.1...v0.3.0-rc.2
 [0.3.0-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.3.0-beta.3...v0.3.0-rc.1
