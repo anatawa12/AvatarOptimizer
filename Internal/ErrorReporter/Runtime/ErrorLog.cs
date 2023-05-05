@@ -14,40 +14,20 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
 {
     internal class ObjectRefLookupCache
     {
-        private Dictionary<string, Dictionary<long, Object>> _cache =
-            new Dictionary<string, Dictionary<long, Object>>();
+        private readonly Dictionary<(string, long), Object> _cache = new Dictionary<(string, long), Object>();
 
         internal Object FindByGuidAndLocalId(string guid, long localId)
         {
-            if (!_cache.TryGetValue(guid, out var fileContents))
+            if (!_cache.TryGetValue((guid, localId), out var obj))
             {
-                var path = AssetDatabase.GUIDToAssetPath(guid);
-                if (string.IsNullOrEmpty(path))
+                if (GlobalObjectId.TryParse($"GlobalObjectId_V1-{1}-{guid}-{localId}-{0}", out var goid))
                 {
-                    return null;
+                    obj = GlobalObjectId.GlobalObjectIdentifierToObjectSlow(goid);
+                    if (obj) _cache[(guid, localId)] = obj;
                 }
-
-                var assets = AssetDatabase.LoadAllAssetsAtPath(path);
-                fileContents = new Dictionary<long, Object>(assets.Length);
-                foreach (var asset in assets)
-                {
-                    if (AssetDatabase.TryGetGUIDAndLocalFileIdentifier(asset, out var _, out long detectedId))
-                    {
-                        fileContents[detectedId] = asset;
-                    }
-                }
-
-                _cache[guid] = fileContents;
             }
 
-            if (fileContents.TryGetValue(localId, out var obj))
-            {
-                return obj;
-            }
-            else
-            {
-                return null;
-            }
+            return obj;
         }
     }
 
