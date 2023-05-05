@@ -33,22 +33,14 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
             if (Validators.TryGetValue(type, out var validator))
                 return validator;
 
-            if (typeof(ISelfStaticValidated).IsAssignableFrom(type))
+            // find validators
+            var finding = type;
+            while (finding != null && typeof(IStaticValidated).IsAssignableFrom(finding))
             {
-                // if the type is ISelfStaticValidated, use the validator
-                validator = x => ((ISelfStaticValidated)x).CheckComponent();
-            }
-            else
-            {
-                // if not, find validators
-                var finding = type;
-                while (finding != null && typeof(IStaticValidated).IsAssignableFrom(finding))
-                {
-                    if (Validators.TryGetValue(finding, out validator))
-                        break;
+                if (Validators.TryGetValue(finding, out validator))
+                    break;
 
-                    finding = finding.BaseType;
-                }
+                finding = finding.BaseType;
             }
 
             if (validator == null)
@@ -92,7 +84,6 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
         /// <li>The type is interface</li>
         /// <li>The type is static class</li>
         /// <li>The type does not implements IStaticValidated, or</li>
-        /// <li>The type implements ISelfStaticValidated</li>
         /// </ul>
         /// </exception>
         public static void RegisterValidator([NotNull] Type type, [NotNull] Validator validator)
@@ -106,9 +97,6 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
             if (!typeof(IStaticValidated).IsAssignableFrom(type))
                 throw new ArgumentException(
                     "You cannot register Validator for class does not implements IStaticValidated.");
-            if (typeof(ISelfStaticValidated).IsAssignableFrom(type))
-                throw new ArgumentException(
-                    "You cannot register Validator for class does implements ISelfStaticValidated.");
 
             Validators.Add(type, validator);
         }
