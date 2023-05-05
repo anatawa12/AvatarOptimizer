@@ -189,7 +189,7 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
             referencedObjects = args.Where(o => o is Component || o is GameObject)
                 .Select(o => new ObjectRef(o is Component c ? c.gameObject : (GameObject) o))
                 .ToList();
-            referencedObjects.AddRange(Utils.GetCurrentReportActiveReferences());
+            referencedObjects.AddRange(BuildReport.CurrentReport.GetActiveReferences());
 
             messageCode = code;
             stacktrace = null;

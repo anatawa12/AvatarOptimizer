@@ -54,7 +54,6 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
                         break;
                 }
             };
-            Utils.GetCurrentReportActiveReferences = () => CurrentReport.GetActiveReferences();
         }
 
         private static BuildReport LoadReport()

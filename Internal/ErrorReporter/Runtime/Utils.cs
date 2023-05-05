@@ -55,8 +55,6 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
             return string.Join("/", components);
         }
 
-        internal static Func<IEnumerable<ObjectRef>> GetCurrentReportActiveReferences = () => Array.Empty<ObjectRef>();
-
         internal static IEnumerable<T> OnEach<T>(this IEnumerable<T> self, Action<T> action)
         {
             if (self == null) throw new ArgumentNullException(nameof(self));
