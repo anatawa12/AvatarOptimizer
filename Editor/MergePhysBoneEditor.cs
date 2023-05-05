@@ -829,12 +829,12 @@ namespace Anatawa12.AvatarOptimizer
             if (_differProps.Count != 0)
             {
                 _errorLogs.Add(ErrorLog.Validation("MergePhysBone:error:differValues",
-                    new[] { string.Join(", ", _differProps) }, _mergePhysBone));
+                    new[] { string.Join(", ", _differProps) }));
             }
         }
 
         protected override void NoSource() =>
-            _errorLogs.Add(ErrorLog.Validation("MergePhysBone:error:noSources", _mergePhysBone));
+            _errorLogs.Add(ErrorLog.Validation("MergePhysBone:error:noSources"));
 
         protected override void TransformSection()
         {
@@ -845,18 +845,18 @@ namespace Anatawa12.AvatarOptimizer
                     .ZipWithNext()
                     .Any(x => x.Item1 != x.Item2);
                 if (differ)
-                    _errorLogs.Add(ErrorLog.Validation("MergePhysBone:error:parentDiffer", this));
+                    _errorLogs.Add(ErrorLog.Validation("MergePhysBone:error:parentDiffer"));
             }
             var multiChildType = _sourcePhysBone.FindProperty(nameof(VRCPhysBoneBase.multiChildType));
             if (multiChildType.enumValueIndex != 0 || multiChildType.hasMultipleDifferentValues)
-                _errorLogs.Add(ErrorLog.Validation("MergePhysBone:error:multiChildType", this));
+                _errorLogs.Add(ErrorLog.Validation("MergePhysBone:error:multiChildType"));
         }
 
         protected override void OptionParameter() => Void();
         protected override void OptionIsAnimated() => Void();
 
         protected override void UnsupportedPbVersion() =>
-            _errorLogs.Add(ErrorLog.Validation("MergePhysBone:error:unsupportedPbVersion", _mergePhysBone));
+            _errorLogs.Add(ErrorLog.Validation("MergePhysBone:error:unsupportedPbVersion"));
 
         protected override void PbVersionProp(string label, string pbPropName, SerializedProperty overridePropName,
             params SerializedProperty[] overrides)
@@ -916,8 +916,7 @@ namespace Anatawa12.AvatarOptimizer
             if (_mergePhysBone.colliders == CollidersSettings.Copy)
             {
                 if (_sourcePhysBone.FindProperty(pbProp).hasMultipleDifferentValues)
-                    _errorLogs.Add(ErrorLog.Validation("MergePhysBone:error:differValue", new[] { label },
-                        _mergePhysBone));
+                    _errorLogs.Add(ErrorLog.Validation("MergePhysBone:error:differValue", new[] { label }));
             }
         }
     }

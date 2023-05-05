@@ -15,7 +15,7 @@ namespace Anatawa12.AvatarOptimizer
             ComponentValidation.RegisterValidator<AvatarGlobalComponent>(component =>
             {
                 if (!component.GetComponent<VRCAvatarDescriptor>())
-                    return new[] { ErrorLog.Error("AvatarGlobalComponent:NotOnAvatarDescriptor", component) };
+                    return new[] { ErrorLog.Validation("AvatarGlobalComponent:NotOnAvatarDescriptor") };
                 return null;
             });
         }

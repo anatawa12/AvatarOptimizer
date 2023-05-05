@@ -31,7 +31,7 @@ namespace Anatawa12.AvatarOptimizer
             ComponentValidation.RegisterValidator<MergeSkinnedMesh>(component =>
             {
                 if (component.GetComponent<SkinnedMeshRenderer>().sharedMesh)
-                    return new[] { ErrorLog.Warning("MergeSkinnedMesh:warning:MeshIsNotNone", component) };
+                    return new[] { ErrorLog.Warning("MergeSkinnedMesh:warning:MeshIsNotNone") };
                 return null;
             });
         }

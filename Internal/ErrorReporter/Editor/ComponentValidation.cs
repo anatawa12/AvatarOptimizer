@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using JetBrains.Annotations;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.ErrorReporting
 {
@@ -21,7 +22,10 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
         }
 
         private static IEnumerable<ErrorLog> Validate(IStaticValidated component) =>
-            GetValidator(component.GetType())?.Invoke(component) ?? Array.Empty<ErrorLog>();
+            GetValidator(component.GetType())
+                ?.Invoke(component)
+                ?.OnEach(x => x.referencedObjects.Add(new ObjectRef((Object)component)))
+            ?? Array.Empty<ErrorLog>();
 
         private static Validator GetValidator(Type type)
         {
