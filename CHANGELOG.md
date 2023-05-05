@@ -16,6 +16,8 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Can't remove SkinnedMeshRenderer error `#133`
+  - This error should do nothing bad but it confuses everyone
 
 ### Security
 
