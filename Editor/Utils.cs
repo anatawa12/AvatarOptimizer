@@ -328,6 +328,33 @@ namespace Anatawa12.AvatarOptimizer
             source.AsReadOnlySpan().Slice(0, length).CopyTo(res.AsSpan());
             return res;
         }
+
+        public static AssetEditingScope StartEditingScope(bool saveAssets) => AssetEditingScope.Start(saveAssets);
+
+        internal readonly struct AssetEditingScope : IDisposable
+        {
+            // 0: default: skip stop
+            // 1: stop asset editing
+            // 2: stop editing & save assets
+            private readonly int _flags;
+
+            private AssetEditingScope(int flags)
+            {
+                _flags = flags;
+            }
+
+            public static AssetEditingScope Start(bool saveAssets)
+            {
+                AssetDatabase.StartAssetEditing();
+                return new AssetEditingScope(1 | (saveAssets ? 2 : 0));
+            }
+
+            public void Dispose()
+            {
+                if ((_flags & 1) != 0) AssetDatabase.StopAssetEditing();
+                if ((_flags & 2) != 0) AssetDatabase.SaveAssets();
+            }
+        }
     }
 
     internal struct ArraySerializedPropertyEnumerable : IEnumerable<SerializedProperty>

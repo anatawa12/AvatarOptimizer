@@ -18,6 +18,7 @@ The format is based on [Keep a Changelog].
 ### Fixed
 - Can't remove SkinnedMeshRenderer error `#133`
   - This error should do nothing bad but it confuses everyone
+- Bad behaviour with VRCFury on build `#134`
 
 ### Security
 
