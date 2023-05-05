@@ -32,16 +32,18 @@ namespace Anatawa12.AvatarOptimizer
         private static void ProcessObject(OptimizerSession session)
         {
             if (_processing) return;
-            try
+            using (Utils.StartEditingScope(true))
             {
-                AssetDatabase.StartAssetEditing();
-                _processing = true;
-                DoProcessObject(session);
-            }
-            finally
-            {
-                _processing = false;
-                AssetDatabase.SaveAssets();
+                try
+                {
+                    _processing = true;
+                    DoProcessObject(session);
+                }
+                finally
+                {
+                    _processing = false;
+                    session.MarkDirtyAll();
+                }
             }
         }
         
@@ -80,22 +82,23 @@ namespace Anatawa12.AvatarOptimizer
         public static void ProcessObject(OptimizerSession session)
         {
             if (_processing) return;
-            try
+            using (Utils.StartEditingScope(true))
             {
-                AssetDatabase.StartAssetEditing();
-                _processing = true;
-                DoProcessObject(session);
-            }
-            finally
-            {
-                _processing = false;
-                AssetDatabase.StopAssetEditing();
-                foreach (var component in session.GetComponents<AvatarTagComponent>())
-                    UnityEngine.Object.DestroyImmediate(component);
-                foreach (var activator in session.GetComponents<AvatarActivator>())
-                    UnityEngine.Object.DestroyImmediate(activator);
+                try
+                {
+                    _processing = true;
+                    DoProcessObject(session);
+                }
+                finally
+                {
+                    _processing = false;
+                    foreach (var component in session.GetComponents<AvatarTagComponent>())
+                        UnityEngine.Object.DestroyImmediate(component);
+                    foreach (var activator in session.GetComponents<AvatarActivator>())
+                        UnityEngine.Object.DestroyImmediate(activator);
 
-                AssetDatabase.SaveAssets();
+                    session.MarkDirtyAll();
+                }
             }
         }
         
