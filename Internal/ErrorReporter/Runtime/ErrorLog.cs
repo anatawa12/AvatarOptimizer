@@ -7,7 +7,6 @@ using JetBrains.Annotations;
 using UnityEngine;
 using UnityEditor;
 using UnityEngine.SceneManagement;
-using UnityEngine.Serialization;
 using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.ErrorReporting
@@ -31,13 +30,14 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
         }
     }
 
-    internal readonly struct ObjectRef
+    [Serializable]
+    internal struct ObjectRef
     {
-        /*[JsonProperty]*/ internal readonly string guid;
+        [SerializeField] internal string guid;
         // 0 is null.
-        /*[JsonProperty]*/ internal readonly long localId;
-        /*[JsonProperty]*/ internal readonly string path, name;
-        /*[JsonProperty]*/ internal readonly string typeName;
+        [SerializeField] internal long localId;
+        [SerializeField] internal string path, name;
+        [SerializeField] internal string typeName;
 
         internal ObjectRef(Object obj)
         {
@@ -146,15 +146,16 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
         InternalError,
     }
 
+    [Serializable]
     public partial class ErrorLog
     {
-        /*[JsonProperty]*/ internal readonly List<ObjectRef> referencedObjects;
-        /*[JsonProperty]*/ internal readonly ReportLevel reportLevel;
+        [SerializeField] internal List<ObjectRef> referencedObjects;
+        [SerializeField] internal ReportLevel reportLevel;
         internal Assembly messageAssembly;
-        /*[JsonProperty]*/ internal readonly string messageAssemblyName;
-        /*[JsonProperty]*/ internal readonly string messageCode;
-        /*[JsonProperty]*/ internal readonly string[] substitutions;
-        /*[JsonProperty]*/ internal readonly string stacktrace;
+        [SerializeField] internal string messageAssemblyName;
+        [SerializeField] internal string messageCode;
+        [SerializeField] internal string[] substitutions;
+        [SerializeField] internal string stacktrace;
 
         [CanBeNull]
         internal Assembly MessageAssembly

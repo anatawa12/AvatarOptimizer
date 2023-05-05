@@ -10,24 +10,24 @@ using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.ErrorReporting
 {
+    [Serializable]
     internal class AvatarReport
     {
-        /*[JsonProperty]*/ internal ObjectRef objectRef;
-
-        /*[JsonProperty]*/ internal bool successful;
-
-        /*[JsonProperty]*/ internal List<ErrorLog> logs = new List<ErrorLog>();
+        [SerializeField] internal ObjectRef objectRef;
+        [SerializeField] internal bool successful;
+        [SerializeField] internal List<ErrorLog> logs = new List<ErrorLog>();
     }
 
     [InitializeOnLoad]
+    [Serializable]
     public class BuildReport
     {
-        private const string Path = "Library/ModularAvatarBuildReport.json";
+        private const string Path = "Library/com.anatawa12.error-reporting.json";
 
         private static BuildReport _report;
         private Stack<Object> _references = new Stack<Object>();
 
-        /*[JsonProperty]*/ internal List<AvatarReport> Avatars = new List<AvatarReport>();
+        [SerializeField] internal List<AvatarReport> avatars = new List<AvatarReport>();
 
         internal ConditionalWeakTable<VRCAvatarDescriptor, AvatarReport> AvatarsByObject =
             new ConditionalWeakTable<VRCAvatarDescriptor, AvatarReport>();
@@ -59,11 +59,10 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
 
         private static BuildReport LoadReport()
         {
-            return null;
             try
             {
                 var data = File.ReadAllText(Path);
-                //return JsonConvert.DeserializeObject<BuildReport>(data);
+                return JsonUtility.FromJson<BuildReport>(data);
             }
             catch (Exception e)
             {
@@ -73,10 +72,10 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
 
         internal static void SaveReport()
         {
-            //var report = CurrentReport;
-            //var json = JsonConvert.SerializeObject(report);
+            var report = CurrentReport;
+            var json = JsonUtility.ToJson(report);
 
-            //File.WriteAllText(Path, json);
+            File.WriteAllText(Path, json);
 
             ErrorReportUI.reloadErrorReport();
         }
@@ -114,7 +113,7 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
 
             AvatarReport report = new AvatarReport();
             report.objectRef = new ObjectRef(descriptor.gameObject);
-            Avatars.Add(report);
+            avatars.Add(report);
             report.successful = true;
 
             report.logs.AddRange(ComponentValidation.ValidateAll(descriptor.gameObject));

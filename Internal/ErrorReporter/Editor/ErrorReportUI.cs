@@ -21,7 +21,7 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
 
         public static void MaybeOpenErrorReportUI()
         {
-            if (BuildReport.CurrentReport.Avatars.Any(av => av.logs.Count > 0))
+            if (BuildReport.CurrentReport.avatars.Any(av => av.logs.Count > 0))
             {
                 OpenErrorReportUI();
             }
@@ -110,7 +110,7 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
                 if (activeAvatarObject != null)
                 {
                     var foundAvatarPath = Utils.RelativePath(null, activeAvatarObject);
-                    activeAvatar = BuildReport.CurrentReport.Avatars
+                    activeAvatar = BuildReport.CurrentReport.avatars
                             .FirstOrDefault(av => av.objectRef.path == foundAvatarPath);
                 }
 
@@ -123,7 +123,7 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
 
             if (activeAvatar == null)
             {
-                activeAvatar = BuildReport.CurrentReport.Avatars.LastOrDefault();
+                activeAvatar = BuildReport.CurrentReport.avatars.LastOrDefault();
             }
 
             if (activeAvatar != null)
@@ -197,7 +197,7 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
             selectAvatar.Clear();
             _avatarButtons.Clear();
 
-            var avatars = BuildReport.CurrentReport.Avatars;
+            var avatars = BuildReport.CurrentReport.avatars;
             for (int i = 0; i < avatars.Count; i++)
             {
                 var btn = new Button(() => SelectAvatar(i));
@@ -234,7 +234,7 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
 
             AvatarReport selected = null;
             EditorGUILayout.BeginVertical(GUILayout.MaxHeight(150), GUILayout.Width(position.width));
-            if (report.Avatars.Count == 0)
+            if (report.avatars.Count == 0)
             {
                 GUILayout.Label("<no build messages>");
             }
@@ -242,9 +242,9 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
             {
                 _avatarScrollPos = EditorGUILayout.BeginScrollView(_avatarScrollPos, false, true);
 
-                for (int i = 0; i < report.Avatars.Count; i++)
+                for (int i = 0; i < report.avatars.Count; i++)
                 {
-                    var avatarReport = report.Avatars[i];
+                    var avatarReport = report.avatars[i];
 
                     EditorGUILayout.Space();
                     if (GUILayout.Toggle(_selectedAvatar == i, avatarReport.objectRef.name, EditorStyles.toggle))
@@ -270,9 +270,9 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
                                 - GUI.skin.scrollView.padding.horizontal),
                 GUILayout.ExpandWidth(false));
 
-            if (_selectedAvatar >= 0 && _selectedAvatar < BuildReport.CurrentReport.Avatars.Count)
+            if (_selectedAvatar >= 0 && _selectedAvatar < BuildReport.CurrentReport.avatars.Count)
             {
-                foreach (var logEntry in BuildReport.CurrentReport.Avatars[_selectedAvatar].logs)
+                foreach (var logEntry in BuildReport.CurrentReport.avatars[_selectedAvatar].logs)
                 {
                     imguiRenderLogEntry(logEntry);
                 }
