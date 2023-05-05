@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using JetBrains.Annotations;
 //using Newtonsoft.Json;
 using UnityEngine;
@@ -16,10 +14,10 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
 {
     internal class ObjectRefLookupCache
     {
-        private Dictionary<string, Dictionary<long, UnityEngine.Object>> _cache =
+        private Dictionary<string, Dictionary<long, Object>> _cache =
             new Dictionary<string, Dictionary<long, Object>>();
 
-        internal UnityEngine.Object FindByGuidAndLocalId(string guid, long localId)
+        internal Object FindByGuidAndLocalId(string guid, long localId)
         {
             if (!_cache.TryGetValue(guid, out var fileContents))
             {
@@ -53,65 +51,74 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
         }
     }
 
-    internal struct ObjectRef
+    internal readonly struct ObjectRef
     {
-        /*[JsonProperty]*/ internal string guid;
-        /*[JsonProperty]*/ internal long? localId;
-        /*[JsonProperty]*/ internal string path, name;
-        /*[JsonProperty]*/ internal string typeName;
+        /*[JsonProperty]*/ internal readonly string guid;
+        // 0 is null.
+        /*[JsonProperty]*/ internal readonly long localId;
+        /*[JsonProperty]*/ internal readonly string path, name;
+        /*[JsonProperty]*/ internal readonly string typeName;
 
         internal ObjectRef(Object obj)
         {
-            this.guid = null;
-            localId = null;
-
             if (obj == null)
             {
-                this.guid = path = name = null;
-                localId = null;
-                typeName = null;
-                return;
-            }
-
-            typeName = obj.GetType().Name;
-
-            long id;
-            if (AssetDatabase.TryGetGUIDAndLocalFileIdentifier(obj, out var guid, out id))
-            {
-                this.guid = guid;
-                localId = id;
-            }
-
-            if (obj is Component c)
-            {
-                path = Utils.RelativePath(null, c.gameObject);
-            }
-            else if (obj is GameObject go)
-            {
-                path = Utils.RelativePath(null, go);
+                this = default;
             }
             else
             {
-                path = null;
+                var name = string.IsNullOrWhiteSpace(obj.name) ? "<???>" : obj.name;
+                if (obj is Component c)
+                {
+                    this = new ObjectRef(
+                        path: Utils.RelativePath(null, c.gameObject),
+                        name: name,
+                        typeName: obj.GetType().Name);
+                }
+                else if (obj is GameObject go)
+                {
+                    this = new ObjectRef(
+                        path: Utils.RelativePath(null, go), 
+                        name: name, 
+                        typeName: obj.GetType().Name);
+                }
+                else if (AssetDatabase.TryGetGUIDAndLocalFileIdentifier(obj, out var guid, out long id))
+                {
+                    this = new ObjectRef(guid, id, name, obj.GetType().Name);
+                }
+                else
+                {
+                    this = default; // fallback
+                }
             }
-
-            name = string.IsNullOrWhiteSpace(obj.name) ? "<???>" : obj.name;
         }
 
-        internal UnityEngine.Object Lookup(ObjectRefLookupCache cache)
+        private ObjectRef([NotNull] string path, [NotNull] string name, [NotNull] string typeName)
+        {
+            guid = null;
+            localId = 0;
+            this.path = path ?? throw new ArgumentNullException(nameof(path));
+            this.name = name ?? throw new ArgumentNullException(nameof(name));
+            this.typeName = typeName ?? throw new ArgumentNullException(nameof(typeName));
+        }
+
+        private ObjectRef([NotNull] string guid, long localId, [NotNull] string name, [NotNull] string typeName)
+        {
+            this.guid = guid ?? throw new ArgumentNullException(nameof(guid));
+            if (localId == 0) throw new ArgumentOutOfRangeException(nameof(guid), "guid must not be zero");
+            this.localId = localId;
+            path = null;
+            this.name = name ?? throw new ArgumentNullException(nameof(name));
+            this.typeName = typeName ?? throw new ArgumentNullException(nameof(typeName));
+        }
+
+        internal Object Lookup(ObjectRefLookupCache cache)
         {
             if (path != null)
-            {
                 return FindObject(path);
-            }
-            else if (guid != null && localId.HasValue)
-            {
-                return cache.FindByGuidAndLocalId(guid, localId.Value);
-            }
-            else
-            {
-                return null;
-            }
+            if (guid != null && localId != 0)
+                return cache.FindByGuidAndLocalId(guid, localId);
+            return null;
         }
 
         private static GameObject FindObject(string path)
@@ -120,7 +127,7 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
             foreach (var root in scene.GetRootGameObjects())
             {
                 if (root.name == path) return root;
-                if (path.StartsWith(root.name + "/"))
+                if (path.StartsWith(root.name + "/", StringComparison.Ordinal))
                 {
                     return root.transform.Find(path.Substring(root.name.Length + 1))?.gameObject;
                 }
@@ -133,13 +140,17 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
         {
             if (path == cloned)
             {
-                path = original;
-                name = path.Substring(path.LastIndexOf('/') + 1);
+                return new ObjectRef(
+                    path: original,
+                    name: path.Substring(path.LastIndexOf('/') + 1),
+                    typeName: typeName);
             }
-            else if (path != null && path.StartsWith(cloned + "/"))
+            if (path != null && path.StartsWith(cloned + "/", StringComparison.Ordinal))
             {
-                path = original + path.Substring(cloned.Length);
-                name = path.Substring(path.LastIndexOf('/') + 1);
+                return new ObjectRef(
+                    path: original + path.Substring(cloned.Length),
+                    name: path.Substring(path.LastIndexOf('/') + 1),
+                    typeName: typeName);
             }
 
             return this;

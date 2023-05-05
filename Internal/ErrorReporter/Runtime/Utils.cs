@@ -29,6 +29,7 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
         /// <returns>relative path to child. null if parent is not parent of child</returns>
         /// <exception cref="ArgumentNullException"></exception>
         [CanBeNull]
+        [ContractAnnotation("parent:null, child:notnull => notnull")]
         public static string RelativePath([CanBeNull] GameObject parent, [NotNull] GameObject child)
         {
             if (child == null) throw new ArgumentNullException(nameof(child));
