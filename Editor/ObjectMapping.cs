@@ -24,6 +24,13 @@ namespace Anatawa12.AvatarOptimizer
             oldVGameObject.MoveTo(newParentVGameObject);
         }
 
+        public void RecordRemoveGameObject(GameObject component)
+        {
+            var oldPath = Utils.RelativePath(null, component.transform);
+            _tree.GetGameObject(oldPath).Remove();
+        }
+
+
         public void RecordMoveComponent(Component from, GameObject newGameObject)
         {
             var oldPath = Utils.RelativePath(null, from.transform);
@@ -33,6 +40,13 @@ namespace Anatawa12.AvatarOptimizer
             var newParentVGameObject = _tree.GetGameObject(newParentPath);
 
             component.MoveTo(newParentVGameObject);
+        }
+
+        public void RecordRemoveComponent(Component component)
+        {
+            var oldPath = Utils.RelativePath(null, component.transform);
+            var vComponent = _tree.GetGameObject(oldPath).GetComponent(component.GetType());
+            vComponent.Remove();
         }
 
         /// <summary> Represents a GameObject in Hierarchy </summary>
@@ -77,6 +91,13 @@ namespace Anatawa12.AvatarOptimizer
                 component.NewGameObject = newGameObject;
             }
 
+            public void RemoveComponent(VComponent component)
+            {
+                if (component.NewGameObject != this) throw new ArgumentException("bad newGameObject", nameof(component));
+                Debug.Assert(GetComponents(component.Type).Remove(component));
+                component.NewGameObject = null;
+            }
+
             public VGameObject GetGameObject([NotNull] string path)
             {
                 if (path == null) throw new ArgumentNullException(nameof(path));
@@ -113,6 +134,12 @@ namespace Anatawa12.AvatarOptimizer
                 newList.Add(this);
                 _newParent = newParent;
             }
+
+            public void Remove()
+            {
+                System.Diagnostics.Debug.Assert(_newParent.ChildListWithName(_newName).Remove(this));
+                _newParent = null;
+            }
         }
 
         /// <summary> Represents a component </summary>
@@ -131,6 +158,11 @@ namespace Anatawa12.AvatarOptimizer
             }
 
             public void MoveTo(VGameObject newGameObject) => NewGameObject.MoveComponentTo(this, newGameObject);
+
+            public void Remove()
+            {
+                NewGameObject.RemoveComponent(this);
+            }
         }
 
         /// <summary> Represents a property </summary>
