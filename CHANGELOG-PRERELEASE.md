@@ -16,6 +16,8 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Migration fails with scenes/prefabs in read-only packages `#136`
+  - Now, migration process doesn't see any scenes/prefabs in read-only packages.
 
 ### Security
 

@@ -5,6 +5,7 @@ using System.Text;
 using Anatawa12.AvatarOptimizer.PrefabSafeSet;
 using JetBrains.Annotations;
 using UnityEditor;
+using UnityEditor.PackageManager;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.Assertions;
@@ -233,6 +234,9 @@ Do you want to migrate project now?",
             for (var i = 0; i < scenePaths.Count; i++)
             {
                 var scenePath = scenePaths[i];
+                if (IsReadOnlyPath(scenePath))
+                    continue;
+
                 var scene = EditorSceneManager.OpenScene(scenePath);
 
                 progressCallback(scene.name, i);
@@ -635,6 +639,13 @@ Do you want to migrate project now?",
             return nestCount;
         }
 
+        private static bool IsReadOnlyPath(string path)
+        {
+            var packageInfo = UnityEditor.PackageManager.PackageInfo.FindForAssetPath(path);
+
+            return packageInfo != null && packageInfo.source != PackageSource.Embedded && packageInfo.source != PackageSource.Local;
+        }
+
         private class PrefabInfo
         {
             public readonly GameObject Prefab;
@@ -656,6 +667,7 @@ Do you want to migrate project now?",
 
             var allPrefabRoots = AssetDatabase.FindAssets("t:prefab")
                 .Select(AssetDatabase.GUIDToAssetPath)
+                .Where(s => !IsReadOnlyPath(s))
                 .Select(AssetDatabase.LoadAssetAtPath<GameObject>)
                 .Where(x => x)
                 .Where(x => CheckPrefabType(PrefabUtility.GetPrefabAssetType(x)))
