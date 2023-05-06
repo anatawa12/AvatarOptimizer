@@ -104,7 +104,7 @@ Do you want to migrate project now?",
             try
             {
                 PreMigration();
-                var scenePaths = AssetDatabase.FindAssets("t:scene", new []{"Assets/"}).Select(AssetDatabase.GUIDToAssetPath).ToList();
+                var scenePaths = AssetDatabase.FindAssets("t:scene").Select(AssetDatabase.GUIDToAssetPath).ToList();
 
                 MigrateAllScenes(scenePaths, (name, i) => EditorUtility.DisplayProgressBar(
                     "Migrating Scenes",
@@ -130,7 +130,7 @@ Do you want to migrate project now?",
             {
                 PreMigration();
                 var prefabs = GetPrefabs();
-                var scenePaths = AssetDatabase.FindAssets("t:scene", new []{"Assets/"}).Select(AssetDatabase.GUIDToAssetPath).ToList();
+                var scenePaths = AssetDatabase.FindAssets("t:scene").Select(AssetDatabase.GUIDToAssetPath).ToList();
                 float totalCount = prefabs.Count + scenePaths.Count;
 
                 MigratePrefabs(prefabs, (name, i) => EditorUtility.DisplayProgressBar(
@@ -167,7 +167,7 @@ Do you want to migrate project now?",
             try
             {
                 var prefabs = GetPrefabs();
-                var scenePaths = AssetDatabase.FindAssets("t:scene", new []{"Assets/"}).Select(AssetDatabase.GUIDToAssetPath).ToList();
+                var scenePaths = AssetDatabase.FindAssets("t:scene").Select(AssetDatabase.GUIDToAssetPath).ToList();
                 float totalCount = prefabs.Count + scenePaths.Count;
 
                 MigratePrefabs(prefabs, (name, i) => EditorUtility.DisplayProgressBar(
@@ -654,7 +654,7 @@ Do you want to migrate project now?",
                 type != PrefabAssetType.MissingAsset && type != PrefabAssetType.Model &&
                 type != PrefabAssetType.NotAPrefab;
 
-            var allPrefabRoots = AssetDatabase.FindAssets("t:prefab", new []{"Assets/"})
+            var allPrefabRoots = AssetDatabase.FindAssets("t:prefab")
                 .Select(AssetDatabase.GUIDToAssetPath)
                 .Select(AssetDatabase.LoadAssetAtPath<GameObject>)
                 .Where(x => x)
