@@ -24,6 +24,17 @@ namespace Anatawa12.AvatarOptimizer
             oldVGameObject.MoveTo(newParentVGameObject);
         }
 
+        public void RecordMoveComponent(Component from, GameObject newGameObject)
+        {
+            var oldPath = Utils.RelativePath(null, from.transform);
+            var newParentPath = Utils.RelativePath(null, newGameObject.transform);
+
+            var component = _tree.GetGameObject(oldPath).GetComponent(from.GetType());
+            var newParentVGameObject = _tree.GetGameObject(newParentPath);
+
+            component.MoveTo(newParentVGameObject);
+        }
+
         /// <summary> Represents a GameObject in Hierarchy </summary>
         class VGameObject
         {
@@ -36,7 +47,7 @@ namespace Anatawa12.AvatarOptimizer
             private readonly Dictionary<string, List<VGameObject>> _newChildren = new Dictionary<string, List<VGameObject>>();
 
             private readonly Dictionary<Type, VComponent> _originalComponents = new Dictionary<Type, VComponent>();
-            private readonly Dictionary<Type, VComponent> _newComponents = new Dictionary<Type, VComponent>();
+            private readonly Dictionary<Type, List<VComponent>> _newComponents = new Dictionary<Type, List<VComponent>>();
 
             public VGameObject(VGameObject parent, string name)
             {
@@ -44,11 +55,26 @@ namespace Anatawa12.AvatarOptimizer
                 _originalName = _newName = name;
             }
 
+            private List<VComponent> GetComponents(Type type) =>
+                _newComponents.TryGetValue(type, out var newList)
+                    ? newList
+                    : _newComponents[type] = new List<VComponent>();
+
             public VComponent GetComponent(Type type)
             {
-                if (_newComponents.TryGetValue(type, out var component))
-                    return component;
-                return _newComponents[type] = _originalComponents[type] = new VComponent();
+                var list = GetComponents(type);
+                if (list.Count == 0)
+                    list.Add(_originalComponents[type] = new VComponent(this, type));
+                return list[0];
+            }
+
+            public void MoveComponentTo(VComponent component, VGameObject newGameObject)
+            {
+                if (component.NewGameObject != this) throw new ArgumentException("bad newGameObject", nameof(component));
+                var components = GetComponents(component.Type);
+                Debug.Assert(components.Remove(component));
+                newGameObject.GetComponents(component.Type).Add(component);
+                component.NewGameObject = newGameObject;
             }
 
             public VGameObject GetGameObject([NotNull] string path)
@@ -92,8 +118,19 @@ namespace Anatawa12.AvatarOptimizer
         /// <summary> Represents a component </summary>
         class VComponent
         {
+            public readonly VGameObject OriginalGameObject;
+            public VGameObject NewGameObject;
+            public readonly Type Type;
             private readonly Dictionary<string, VProperty> _originalProperties = new Dictionary<string, VProperty>();
             private readonly Dictionary<string, VProperty> _newProperties = new Dictionary<string, VProperty>();
+
+            public VComponent(VGameObject gameObject, Type type)
+            {
+                OriginalGameObject = NewGameObject = gameObject;
+                Type = type;
+            }
+
+            public void MoveTo(VGameObject newGameObject) => NewGameObject.MoveComponentTo(this, newGameObject);
         }
 
         /// <summary> Represents a property </summary>
