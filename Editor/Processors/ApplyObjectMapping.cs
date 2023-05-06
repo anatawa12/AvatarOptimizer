@@ -13,7 +13,8 @@ namespace Anatawa12.AvatarOptimizer.Processors
     {
         public void Apply(OptimizerSession session)
         {
-            var mapping = session.GetMapping();
+            // TODO: reimplement with ObjectMapping
+            var mapping = new Dictionary<Object, Object>();//session.GetMapping();
             mapping.FlattenMapping();
 
             // replace all objects

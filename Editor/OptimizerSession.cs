@@ -12,6 +12,9 @@ namespace Anatawa12.AvatarOptimizer
         private readonly List<Object> _toDestroy = new List<Object>();
         private readonly HashSet<Object> _added = new HashSet<Object>();
         private readonly DummyObject _assetFileObject;
+        private readonly ObjectMappingBuilder _mappingBuilder = new ObjectMappingBuilder();
+
+        public ObjectMappingBuilder MappingBuilder => _mappingBuilder;
 
         public OptimizerSession(GameObject rootObject, bool addToAsset)
         {
@@ -27,7 +30,6 @@ namespace Anatawa12.AvatarOptimizer
         }
 
         public void AddObjectMapping<T>(T oldValue, T newValue) where T : Object => _mapping[oldValue] = newValue;
-        internal Dictionary<Object, Object> GetMapping() => _mapping;
 
         public void Destroy(Object merge) => _toDestroy.Add(merge);
         internal List<Object> GetObjectsToDestroy() => _toDestroy;
