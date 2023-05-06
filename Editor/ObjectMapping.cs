@@ -33,7 +33,7 @@ namespace Anatawa12.AvatarOptimizer
             private string _newName;
 
             private readonly Dictionary<string, VGameObject> _originalChildren = new Dictionary<string, VGameObject>();
-            private readonly Dictionary<string, VGameObject> _newChildren = new Dictionary<string, VGameObject>();
+            private readonly Dictionary<string, List<VGameObject>> _newChildren = new Dictionary<string, List<VGameObject>>();
 
             private readonly Dictionary<Type, VComponent> _originalComponents = new Dictionary<Type, VComponent>();
             private readonly Dictionary<Type, VComponent> _newComponents = new Dictionary<Type, VComponent>();
@@ -58,26 +58,33 @@ namespace Anatawa12.AvatarOptimizer
                 var cursor = this;
                 foreach (var pathComponent in path.Split('/'))
                 {
-                    if (!cursor._newChildren.TryGetValue(pathComponent, out var child))
+                    var children = cursor.ChildListWithName(pathComponent);
+
+                    if (children.Count == 0)
                     {
-                        cursor._newChildren[pathComponent] =
-                            cursor._originalChildren[pathComponent] =
-                                child = new VGameObject(cursor, pathComponent);
+                        var child = new VGameObject(cursor, pathComponent);
+                        cursor._originalChildren[pathComponent] = child;
+                        children.Add(child);
                     }
 
-                    cursor = child;
+                    cursor = children[0];
                 }
 
                 return cursor;
             }
 
+            private List<VGameObject> ChildListWithName(string name) =>
+                _newChildren.TryGetValue(name, out var newList)
+                    ? newList
+                    : _newChildren[name] = new List<VGameObject>();
+
             public void MoveTo(VGameObject newParent)
             {
                 if (_newParent == newParent) return; // nothing to move
-                System.Diagnostics.Debug.Assert(_newParent._newChildren.ContainsKey(_newName));
-                System.Diagnostics.Debug.Assert(!newParent._newChildren.ContainsKey(_newName));
-                _newParent._newChildren.Remove(_newName);
-                newParent._newChildren[_newName] = this;
+                var currentList = _newParent.ChildListWithName(_newName);
+                var newList = newParent.ChildListWithName(_newName);
+                System.Diagnostics.Debug.Assert(currentList.Remove(this));
+                newList.Add(this);
                 _newParent = newParent;
             }
         }
