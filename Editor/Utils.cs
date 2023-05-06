@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using JetBrains.Annotations;
 using Unity.Collections;
 using UnityEditor;
 using UnityEngine;
@@ -66,6 +67,8 @@ namespace Anatawa12.AvatarOptimizer
             }
         }
 
+        [ContractAnnotation("root:null => notnull")]
+        [ContractAnnotation("root:notnull => canbenull")]
         public static string RelativePath(Transform root, Transform child)
         {
             if (root == child) return "";
@@ -73,9 +76,9 @@ namespace Anatawa12.AvatarOptimizer
             var pathSegments = new List<string>();
             while (child != root)
             {
+                if (child == null) return null;
                 pathSegments.Add(child.name);
                 child = child.transform.parent;
-                if (child == null) return null;
             }
 
             pathSegments.Reverse();
