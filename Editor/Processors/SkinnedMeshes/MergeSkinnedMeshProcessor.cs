@@ -45,9 +45,19 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     target.SubMeshes[subMeshIndexMap[i][j]].Triangles.AddRange(meshInfo.SubMeshes[j].Triangles);
 
                 // add blend shape if not defined by name
-                foreach (var (name, weight) in meshInfo.BlendShapes)
-                    if (target.BlendShapes.FindIndex(x => x.name == name) == -1)
+                for (var sourceI = 0; sourceI < meshInfo.BlendShapes.Count; sourceI++)
+                {
+                    var (name, weight) = meshInfo.BlendShapes[sourceI];
+                    var newIndex = target.BlendShapes.FindIndex(x => x.name == name);
+                    if (newIndex == -1)
+                    {
+                        newIndex = target.BlendShapes.Count - 1;
                         target.BlendShapes.Add((name, weight));
+                    }
+
+                    session.MappingBuilder.RecordMoveProperty(meshInfo.SourceRenderer, 
+                        VProp.BlendShapeIndex(sourceI), VProp.BlendShapeIndex(newIndex));
+                }
 
                 target.Bones.AddRange(meshInfo.Bones);
 
