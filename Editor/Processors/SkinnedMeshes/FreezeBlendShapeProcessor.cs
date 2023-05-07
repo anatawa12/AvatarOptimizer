@@ -40,8 +40,22 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             {
                 int srcI = 0, dstI = 0;
                 for (; srcI < target.BlendShapes.Count; srcI++)
+                {
                     if (!freezes[srcI])
+                    {
+                        // for keep prop: move the BlendShape index. name is not changed.
+                        session.MappingBuilder.RecordMoveProperty(Target, 
+                            VProp.BlendShapeIndex(srcI), 
+                            VProp.BlendShapeIndex(dstI));
                         target.BlendShapes[dstI++] = target.BlendShapes[srcI];
+                    }
+                    else
+                    {
+                        // for frozen prop: remove that BlendShape
+                        session.MappingBuilder.RecordRemoveProperty(Target, VProp.BlendShapeIndex(srcI));
+                        session.MappingBuilder.RecordRemoveProperty(Target, $"blendShape.{target.BlendShapes[srcI].name}");
+                    }
+                }
 
                 target.BlendShapes.RemoveRange(dstI, target.BlendShapes.Count - dstI);
             }

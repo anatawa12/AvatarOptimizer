@@ -205,4 +205,10 @@ namespace Anatawa12.AvatarOptimizer
         {
         }
     }
+
+    static class VProp
+    {
+        private const string EXTRA_PROP = "AvatarOptimizerExtraProps";
+        public static string BlendShapeIndex(int index) => $"{EXTRA_PROP}.BlendShapeIndex.{index}";
+    }
 }
