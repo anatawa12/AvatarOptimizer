@@ -12,11 +12,19 @@ namespace Anatawa12.AvatarOptimizer
     {
         // Those may not be an actual GameObject, may be a hierarchy root 'null'
         private readonly VGameObject _tree = new VGameObject(null, "<root gameobject>");
+        private readonly GameObject _rootObject;
+
+        public ObjectMappingBuilder([CanBeNull] GameObject rootObject)
+        {
+            _rootObject = rootObject;
+        }
 
         public void RecordMoveObject(GameObject from, GameObject newParent)
         {
-            var oldPath = Utils.RelativePath(null, from.transform);
-            var newParentPath = Utils.RelativePath(null, newParent.transform);
+            var oldPath = Utils.RelativePath(_rootObject.transform, from.transform)
+                          ?? throw new ArgumentException("not of root GameObject", nameof(from));
+            var newParentPath = Utils.RelativePath(_rootObject.transform, newParent.transform)
+                                ?? throw new ArgumentException("not of root GameObject", nameof(newParent));
 
             var oldVGameObject = _tree.GetGameObject(oldPath);
             var newParentVGameObject = _tree.GetGameObject(newParentPath);
@@ -26,15 +34,18 @@ namespace Anatawa12.AvatarOptimizer
 
         public void RecordRemoveGameObject(GameObject component)
         {
-            var oldPath = Utils.RelativePath(null, component.transform);
+            var oldPath = Utils.RelativePath(_rootObject.transform, component.transform)
+                          ?? throw new ArgumentException("not of root GameObject", nameof(component));
             _tree.GetGameObject(oldPath).Remove();
         }
 
 
         public void RecordMoveComponent(Component from, GameObject newGameObject)
         {
-            var oldPath = Utils.RelativePath(null, from.transform);
-            var newParentPath = Utils.RelativePath(null, newGameObject.transform);
+            var oldPath = Utils.RelativePath(_rootObject.transform, from.transform)
+                          ?? throw new ArgumentException("not of root GameObject", nameof(from));
+            var newParentPath = Utils.RelativePath(_rootObject.transform, newGameObject.transform)
+                                ?? throw new ArgumentException("not of root GameObject", nameof(newGameObject));
 
             var component = _tree.GetGameObject(oldPath).GetComponent(from.GetType(), from.GetInstanceID());
             var newParentVGameObject = _tree.GetGameObject(newParentPath);
@@ -44,23 +55,26 @@ namespace Anatawa12.AvatarOptimizer
 
         public void RecordRemoveComponent(Component component)
         {
-            var oldPath = Utils.RelativePath(null, component.transform);
+            var oldPath = Utils.RelativePath(_rootObject.transform, component.transform)
+                          ?? throw new ArgumentException("not of root GameObject", nameof(component));
             var vComponent = _tree.GetGameObject(oldPath).GetComponent(component.GetType(), component.GetInstanceID());
             vComponent.Remove();
         }
 
         public void RecordMoveProperty(Component from, string oldProp, string newProp)
         {
-            var component = _tree.GetGameObject(Utils.RelativePath(null, from.transform))
-                .GetComponent(from.GetType(), from.GetInstanceID());
+            var path = Utils.RelativePath(_rootObject.transform, from.transform)
+                       ?? throw new ArgumentException("not of root GameObject", nameof(from));
+            var component = _tree.GetGameObject(path).GetComponent(from.GetType(), from.GetInstanceID());
 
             component.MoveProperty(oldProp, newProp);
         }
 
         public void RecordRemoveProperty(Component from, string oldProp)
         {
-            var component = _tree.GetGameObject(Utils.RelativePath(null, from.transform))
-                .GetComponent(from.GetType(), from.GetInstanceID());
+            var path = Utils.RelativePath(_rootObject.transform, from.transform)
+                       ?? throw new ArgumentException("not of root GameObject", nameof(from));
+            var component = _tree.GetGameObject(path).GetComponent(from.GetType(), from.GetInstanceID());
 
             component.RemoveProperty(oldProp);
         }
@@ -74,10 +88,14 @@ namespace Anatawa12.AvatarOptimizer
             private string _newName;
 
             private readonly Dictionary<string, VGameObject> _originalChildren = new Dictionary<string, VGameObject>();
-            private readonly Dictionary<string, List<VGameObject>> _newChildren = new Dictionary<string, List<VGameObject>>();
+
+            private readonly Dictionary<string, List<VGameObject>> _newChildren =
+                new Dictionary<string, List<VGameObject>>();
 
             private readonly Dictionary<Type, VComponent> _originalComponents = new Dictionary<Type, VComponent>();
-            private readonly Dictionary<Type, List<VComponent>> _newComponents = new Dictionary<Type, List<VComponent>>();
+
+            private readonly Dictionary<Type, List<VComponent>> _newComponents =
+                new Dictionary<Type, List<VComponent>>();
 
             public VGameObject(VGameObject parent, string name)
             {
@@ -100,7 +118,8 @@ namespace Anatawa12.AvatarOptimizer
 
             public void MoveComponentTo(VComponent component, VGameObject newGameObject)
             {
-                if (component.NewGameObject != this) throw new ArgumentException("bad newGameObject", nameof(component));
+                if (component.NewGameObject != this)
+                    throw new ArgumentException("bad newGameObject", nameof(component));
                 var components = GetComponents(component.Type);
                 Debug.Assert(components.Remove(component));
                 newGameObject.GetComponents(component.Type).Add(component);
@@ -109,7 +128,8 @@ namespace Anatawa12.AvatarOptimizer
 
             public void RemoveComponent(VComponent component)
             {
-                if (component.NewGameObject != this) throw new ArgumentException("bad newGameObject", nameof(component));
+                if (component.NewGameObject != this)
+                    throw new ArgumentException("bad newGameObject", nameof(component));
                 Debug.Assert(GetComponents(component.Type).Remove(component));
                 component.NewGameObject = null;
             }
