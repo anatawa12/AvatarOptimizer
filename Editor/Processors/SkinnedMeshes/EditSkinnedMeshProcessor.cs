@@ -12,7 +12,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         public abstract int ProcessOrder { get; }
         public IEnumerable<SkinnedMeshRenderer> Dependencies => Array.Empty<SkinnedMeshRenderer>();
         protected TComponent Component { get; }
-        [Obsolete]
         public SkinnedMeshRenderer Target { get; }
 
         EditSkinnedMeshComponent IEditSkinnedMeshProcessor.Component => Component;
