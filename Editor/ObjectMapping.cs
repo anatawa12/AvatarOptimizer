@@ -36,7 +36,7 @@ namespace Anatawa12.AvatarOptimizer
             var oldPath = Utils.RelativePath(null, from.transform);
             var newParentPath = Utils.RelativePath(null, newGameObject.transform);
 
-            var component = _tree.GetGameObject(oldPath).GetComponent(from.GetType());
+            var component = _tree.GetGameObject(oldPath).GetComponent(from.GetType(), from.GetInstanceID());
             var newParentVGameObject = _tree.GetGameObject(newParentPath);
 
             component.MoveTo(newParentVGameObject);
@@ -45,7 +45,7 @@ namespace Anatawa12.AvatarOptimizer
         public void RecordRemoveComponent(Component component)
         {
             var oldPath = Utils.RelativePath(null, component.transform);
-            var vComponent = _tree.GetGameObject(oldPath).GetComponent(component.GetType());
+            var vComponent = _tree.GetGameObject(oldPath).GetComponent(component.GetType(), component.GetInstanceID());
             vComponent.Remove();
         }
 
@@ -74,11 +74,11 @@ namespace Anatawa12.AvatarOptimizer
                     ? newList
                     : _newComponents[type] = new List<VComponent>();
 
-            public VComponent GetComponent(Type type)
+            public VComponent GetComponent(Type type, int instanceId)
             {
                 var list = GetComponents(type);
                 if (list.Count == 0)
-                    list.Add(_originalComponents[type] = new VComponent(this, type));
+                    list.Add(_originalComponents[type] = new VComponent(this, type, instanceId));
                 return list[0];
             }
 
@@ -150,10 +150,12 @@ namespace Anatawa12.AvatarOptimizer
             public readonly Type Type;
             private readonly Dictionary<string, VProperty> _originalProperties = new Dictionary<string, VProperty>();
             private readonly Dictionary<string, VProperty> _newProperties = new Dictionary<string, VProperty>();
+            public int InstanceId { get; }
 
-            public VComponent(VGameObject gameObject, Type type)
+            public VComponent(VGameObject gameObject, Type type, int instanceId)
             {
                 OriginalGameObject = NewGameObject = gameObject;
+                InstanceId = instanceId;
                 Type = type;
             }
 
