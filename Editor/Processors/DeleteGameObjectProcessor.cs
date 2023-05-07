@@ -8,8 +8,8 @@ namespace Anatawa12.AvatarOptimizer.Processors
         {
             foreach (var mergePhysBone in session.GetComponents<DeleteGameObject>())
             {
-                mergePhysBone.transform.parent = null;
                 session.MappingBuilder.RecordRemoveGameObject(mergePhysBone.gameObject);
+                mergePhysBone.transform.parent = null;
                 session.Destroy(mergePhysBone.gameObject);
             }
         }
