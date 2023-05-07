@@ -13,6 +13,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 {
     internal class MeshInfo2
     {
+        public readonly Renderer SourceRenderer;
         public Bounds Bounds;
         public readonly List<Vertex> Vertices = new List<Vertex>(0);
 
@@ -29,6 +30,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         public MeshInfo2(SkinnedMeshRenderer renderer)
         {
+            SourceRenderer = renderer;
             var mesh = renderer.sharedMesh ? renderer.sharedMesh : new Mesh();
             ReadSkinnedMesh(mesh);
 
@@ -52,6 +54,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         public MeshInfo2(MeshRenderer renderer)
         {
+            SourceRenderer = renderer;
             var mesh = renderer.GetComponent<MeshFilter>().sharedMesh;
             ReadStaticMesh(mesh);
 
