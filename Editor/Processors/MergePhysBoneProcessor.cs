@@ -41,7 +41,11 @@ namespace Anatawa12.AvatarOptimizer.Processors
                     throw new InvalidOperationException(CL4EE.Tr("MergePhysBone:error:makeParentWithChildren"));
 
                 foreach (var physBone in sourceComponents)
-                        physBone.GetTarget().parent = root;
+                {
+                    var pbTarget = physBone.GetTarget();
+                    session.MappingBuilder.RecordMoveObject(pbTarget.gameObject, root.gameObject);
+                    pbTarget.parent = root;
+                }
             }
             else
             {
@@ -59,10 +63,14 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 }
                 else
                 {
-                    root = Utils.NewGameObject("PhysBoneRoot", pb.GetTarget().parent).transform;
+                    root = Utils.NewGameObject($"PhysBoneRoot-{Guid.NewGuid()}", pb.GetTarget().parent).transform;
 
                     foreach (var physBone in sourceComponents)
-                        physBone.GetTarget().parent = root;
+                    {
+                        var pbTarget = physBone.GetTarget();
+                        session.MappingBuilder.RecordMoveObject(pbTarget.gameObject, root.gameObject);
+                        pbTarget.parent = root;
+                    }
                 }
             }
 
