@@ -49,6 +49,22 @@ namespace Anatawa12.AvatarOptimizer
             vComponent.Remove();
         }
 
+        public void RecordMoveProperty(Component from, string oldProp, string newProp)
+        {
+            var component = _tree.GetGameObject(Utils.RelativePath(null, from.transform))
+                .GetComponent(from.GetType(), from.GetInstanceID());
+
+            component.MoveProperty(oldProp, newProp);
+        }
+
+        public void RecordRemoveProperty(Component from, string oldProp)
+        {
+            var component = _tree.GetGameObject(Utils.RelativePath(null, from.transform))
+                .GetComponent(from.GetType(), from.GetInstanceID());
+
+            component.RemoveProperty(oldProp);
+        }
+
         /// <summary> Represents a GameObject in Hierarchy </summary>
         class VGameObject
         {
@@ -164,6 +180,23 @@ namespace Anatawa12.AvatarOptimizer
             public void Remove()
             {
                 NewGameObject.RemoveComponent(this);
+            }
+
+            public void MoveProperty(string oldProp, string newProp)
+            {
+                if (!_newProperties.TryGetValue(oldProp, out var prop))
+                    prop = _newProperties[oldProp] = _newProperties[oldProp] = new VProperty();
+
+                _newProperties.Remove(oldProp);
+                _newProperties[newProp] = prop;
+            }
+
+            public void RemoveProperty(string oldProp)
+            {
+                if (!_newProperties.TryGetValue(oldProp, out var prop))
+                    prop = _newProperties[oldProp] = _newProperties[oldProp] = new VProperty();
+
+                _newProperties.Remove(oldProp);
             }
         }
 
