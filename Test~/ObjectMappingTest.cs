@@ -149,6 +149,30 @@ namespace Anatawa12.AvatarOptimizer.Test
                 Is.EqualTo(B("child1", typeof(SkinnedMeshRenderer), "blendShapes.changed")));
         }
 
+        [Test]
+        public void RecordRemovePropertyTest()
+        {
+            var root = new GameObject();
+            var child1 = Utils.NewGameObject("child1", root.transform);
+            var child1Component = child1.AddComponent<SkinnedMeshRenderer>();
+
+            var builder = new ObjectMappingBuilder(root);
+            builder.RecordRemoveProperty(child1Component, "blendShapes.test");
+            Object.DestroyImmediate(child1Component);
+
+            var built = builder.BuildObjectMapping();
+
+            // should not affect to other component
+            Assert.That(
+                built.MapPath("", B("child2", typeof(SkinnedMeshRenderer), "blendShapes.test")),
+                Is.EqualTo(B("child2", typeof(SkinnedMeshRenderer), "blendShapes.test")));
+            
+            // but should affect to component
+            Assert.That(
+                built.MapPath("", B("child1", typeof(SkinnedMeshRenderer), "blendShapes.test")),
+                Is.EqualTo(Default));
+        }
+
 
         private static (string, Type, string) B(string path, Type type, string prop) => (path, type, prop);
         private static (string, Type, string) Default = default;
