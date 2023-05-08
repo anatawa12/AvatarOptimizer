@@ -358,6 +358,20 @@ namespace Anatawa12.AvatarOptimizer
                 if ((_flags & 2) != 0) AssetDatabase.SaveAssets();
             }
         }
+
+        [NotNull]
+        public static GameObject GetGameObjectRelative([NotNull] GameObject rootObject, [NotNull] string path)
+        {
+            if (path == "") return rootObject;
+            var cursor = rootObject.transform;
+            foreach (var pathComponent in path.Split('/'))
+            {
+                cursor = cursor.Find(pathComponent);
+                if (!cursor) throw new InvalidOperationException($"{path} not found");
+            }
+
+            return cursor.gameObject;
+        }
     }
 
     internal struct ArraySerializedPropertyEnumerable : IEnumerable<SerializedProperty>

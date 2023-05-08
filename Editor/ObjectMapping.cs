@@ -87,20 +87,27 @@ namespace Anatawa12.AvatarOptimizer
             var goMapping = goOldPath.ToDictionary(x => x.Value, x => goNewPath[x.Key]);
 
             var componentMapping = new Dictionary<(Type, string), (string, Dictionary<string, string>)>();
+            var instanceIdToComponent = new Dictionary<int, (Type, string, Component)>();
+            var newGameObjectCache = new Dictionary<string, GameObject>();
 
             foreach (var component in _tree.GetAllComponents())
             {
-                var key = (component.Type, goOldPath[component.OriginalGameObject]);
+                var oldPath = goOldPath[component.OriginalGameObject];
                 var newPath = goNewPath[component.NewGameObject];
                 var propertyMapping = new Dictionary<string, string>();
                 var newMapping = component.NewProperties.ToDictionary(kvp => kvp.Value, kvp => kvp.Key);
                 foreach (var kvp in component.OriginalProperties)
                     propertyMapping[kvp.Key] = newMapping[kvp.Value];
 
-                componentMapping[key] = (newPath, propertyMapping);
+                componentMapping[(component.Type, oldPath)] = (newPath, propertyMapping);
+
+                if (!newGameObjectCache.TryGetValue(newPath, out var newGameObject))
+                    newGameObject = newGameObjectCache[newPath] = Utils.GetGameObjectRelative(_rootObject, newPath);
+                instanceIdToComponent[component.InstanceId] =
+                    (component.Type, oldPath, newGameObject.GetComponent(component.Type));
             }
 
-            return new ObjectMapping(goMapping, componentMapping);
+            return new ObjectMapping(goMapping, componentMapping, instanceIdToComponent);
         }
 
         /// <summary> Represents a GameObject in Hierarchy </summary>
@@ -297,14 +304,18 @@ namespace Anatawa12.AvatarOptimizer
     internal class ObjectMapping
     {
         public ObjectMapping(Dictionary<string, string> goMapping,
-            Dictionary<(Type, string), (string, Dictionary<string, string>)> componentMapping)
+            Dictionary<(Type, string), (string, Dictionary<string, string>)> componentMapping,
+            Dictionary<int, (Type, string, Component)> instanceIdToComponent)
         {
             GameObjectPathMapping = goMapping;
             ComponentMapping = componentMapping;
+            InstanceIdToComponent = instanceIdToComponent;
         }
+
 
         public Dictionary<(Type, string),(string newPath, Dictionary<string,string> propMapping)> ComponentMapping { get; }
         public Dictionary<string, string> GameObjectPathMapping { get; }
+        public Dictionary<int,(Type, string, Component)> InstanceIdToComponent { get; }
     }
 
     static class VProp
