@@ -2,6 +2,7 @@ using System;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.Test
 {
@@ -29,6 +30,36 @@ namespace Anatawa12.AvatarOptimizer.Test
                 built.MapPath("", B("child1/child11/child111", typeof(GameObject), "m_Enabled")),
                 Is.EqualTo(B("child2/child11/child111", typeof(GameObject), "m_Enabled")));
             
+            Assert.That(
+                built.MapPath("child1", B("child11", typeof(GameObject), "m_Enabled")),
+                Is.EqualTo(Default));
+        }
+
+        [Test]
+        public void RecordRemoveGameObject()
+        {
+            var root = new GameObject();
+            var child1 = Utils.NewGameObject("child1", root.transform);
+            var child11 = Utils.NewGameObject("child11", child1.transform);
+
+            var builder = new ObjectMappingBuilder(root);
+            builder.RecordRemoveGameObject(child11);
+            Object.DestroyImmediate(child11);
+
+            var built = builder.BuildObjectMapping();
+
+            Assert.That(
+                built.MapPath("", B("child1/child11", typeof(GameObject), "m_Enabled")),
+                Is.EqualTo(Default));
+
+            Assert.That(
+                built.MapPath("", B("child1", typeof(GameObject), "m_Enabled")),
+                Is.EqualTo(B("child1", typeof(GameObject), "m_Enabled")));
+
+            Assert.That(
+                built.MapPath("", B("child1/child11/child111", typeof(GameObject), "m_Enabled")),
+                Is.EqualTo(Default));
+
             Assert.That(
                 built.MapPath("child1", B("child11", typeof(GameObject), "m_Enabled")),
                 Is.EqualTo(Default));
