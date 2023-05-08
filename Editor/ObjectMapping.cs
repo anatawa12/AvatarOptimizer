@@ -341,6 +341,7 @@ namespace Anatawa12.AvatarOptimizer
             {
                 if (path == null) return null;
                 if (parent == path) return "";
+                if (parent == "") return path;
                 if (path.StartsWith($"{parent}{sep}", StringComparison.Ordinal))
                     return parent.Substring(parent.Length + 1);
                 return null;
@@ -371,12 +372,15 @@ namespace Anatawa12.AvatarOptimizer
             }
 
             // then, try as GameObject
-            if (GameObjectPathMapping.TryGetValue(oldPath, out var newGoPath))
+            foreach (var (path, rest) in Utils.FindSubPaths(oldPath, '/'))
             {
-                newGoPath = StripPrefixPath(rootPath, newGoPath, '/');
-                if (newGoPath == null) return default;
-                binding.path = newGoPath;
-                return binding;
+                if (GameObjectPathMapping.TryGetValue(path, out var newPath))
+                {
+                    newPath = StripPrefixPath(rootPath, newPath, '/');
+                    if (newPath == null) return default;
+                    binding.path = newPath + rest;
+                    return binding;
+                }
             }
 
             return binding;
