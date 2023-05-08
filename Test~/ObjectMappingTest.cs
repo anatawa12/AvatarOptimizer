@@ -92,7 +92,7 @@ namespace Anatawa12.AvatarOptimizer.Test
                 Is.EqualTo(B("child2", typeof(SkinnedMeshRenderer), "blendShapes.test")));
 
             // check for component replication
-            Assert.That(built.InstanceIdToComponent[child1ComponentId], Is.SameAs(child2Component));
+            Assert.That(built.InstanceIdToComponent[child1ComponentId].component, Is.SameAs(child2Component));
         }
 
         [Test]
@@ -120,7 +120,7 @@ namespace Anatawa12.AvatarOptimizer.Test
                 Is.EqualTo(Default));
 
             // check for component replication
-            Assert.That(built.InstanceIdToComponent[child1ComponentId], Is.SameAs(null));
+            Assert.That(built.InstanceIdToComponent[child1ComponentId].component, Is.SameAs(null));
         }
 
         [Test]
@@ -239,7 +239,7 @@ namespace Anatawa12.AvatarOptimizer.Test
                 built.MapPath("", B("child1/child11", typeof(SkinnedMeshRenderer), "blendShapes.moved")),
                 Is.EqualTo(B("child2/child11", typeof(SkinnedMeshRenderer), "blendShapes.movedChanged")));
 
-            Assert.That(built.InstanceIdToComponent[child11Component.GetInstanceID()], Is.SameAs(child11Component));
+            Assert.That(built.InstanceIdToComponent[child11Component.GetInstanceID()].component, Is.SameAs(child11Component));
         }
 
 

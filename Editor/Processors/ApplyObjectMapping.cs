@@ -26,7 +26,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                     {
                         if (mapping.InstanceIdToComponent.TryGetValue(p.objectReferenceInstanceIDValue,
                                 out var mappedComponent))
-                            p.objectReferenceValue = mappedComponent;
+                            p.objectReferenceValue = mappedComponent.component;
 
                         if (p.objectReferenceValue is AnimatorController controller)
                         {

@@ -94,7 +94,7 @@ namespace Anatawa12.AvatarOptimizer
                 });
 
             var componentMapping = new Dictionary<ObjectMapping.ComponentKey, ObjectMapping.MappedComponent>();
-            var instanceIdToComponent = new Dictionary<int, Component>();
+            var instanceIdToComponent = new Dictionary<int, (Component, ObjectMapping.MappedComponent)>();
             var newGameObjectCache = new Dictionary<string, GameObject>();
 
             foreach (var component in _tree.GetAllComponents())
@@ -104,7 +104,7 @@ namespace Anatawa12.AvatarOptimizer
                 {
                     componentMapping[new ObjectMapping.ComponentKey(oldPath, component.Type)] =
                         ObjectMapping.MappedComponent.Removed;
-                    instanceIdToComponent[component.InstanceId] = null;
+                    instanceIdToComponent[component.InstanceId] = (null, null);
                 }
                 else
                 {
@@ -117,12 +117,13 @@ namespace Anatawa12.AvatarOptimizer
                         propertyMapping[kvp.Key] = newPropName;
                     }
 
-                    componentMapping[new ObjectMapping.ComponentKey(oldPath, component.Type)] = 
-                        new ObjectMapping.MappedComponent(newPath, propertyMapping);
+                    var mapped = new ObjectMapping.MappedComponent(newPath, propertyMapping);
+                    componentMapping[new ObjectMapping.ComponentKey(oldPath, component.Type)] = mapped;
 
                     if (!newGameObjectCache.TryGetValue(newPath, out var newGameObject))
                         newGameObject = newGameObjectCache[newPath] = Utils.GetGameObjectRelative(_rootObject, newPath);
-                    instanceIdToComponent[component.InstanceId] = newGameObject.GetComponent(component.Type);
+                    var actualComponent = newGameObject.GetComponent(component.Type);
+                    instanceIdToComponent[component.InstanceId] = (actualComponent, mapped);
                 }
             }
 
@@ -329,17 +330,16 @@ namespace Anatawa12.AvatarOptimizer
     {
         public ObjectMapping(Dictionary<string, string> goMapping,
             Dictionary<ComponentKey, MappedComponent> componentMapping,
-            Dictionary<int, Component> instanceIdToComponent)
+            Dictionary<int, (Component, MappedComponent)> instanceIdToComponent)
         {
             GameObjectPathMapping = goMapping;
             ComponentMapping = componentMapping;
             InstanceIdToComponent = instanceIdToComponent;
         }
 
-
         public Dictionary<ComponentKey, MappedComponent> ComponentMapping { get; }
         public Dictionary<string, string> GameObjectPathMapping { get; }
-        public Dictionary<int, Component> InstanceIdToComponent { get; }
+        public Dictionary<int, (Component component, MappedComponent mapping)> InstanceIdToComponent { get; }
 
         public EditorCurveBinding MapPath(string rootPath, EditorCurveBinding binding)
         {
