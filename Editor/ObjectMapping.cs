@@ -93,8 +93,8 @@ namespace Anatawa12.AvatarOptimizer
                     return newPath;
                 });
 
-            var componentMapping = new Dictionary<(Type, string), (string, Dictionary<string, string>)>();
-            var instanceIdToComponent = new Dictionary<int, (Type, string, Component)>();
+            var componentMapping = new Dictionary<ObjectMapping.ComponentKey, ObjectMapping.MappedComponent>();
+            var instanceIdToComponent = new Dictionary<int, Component>();
             var newGameObjectCache = new Dictionary<string, GameObject>();
 
             foreach (var component in _tree.GetAllComponents())
@@ -102,8 +102,9 @@ namespace Anatawa12.AvatarOptimizer
                 var oldPath = goOldPath[component.OriginalGameObject];
                 if (component.NewGameObject == null)
                 {
-                    componentMapping[(component.Type, oldPath)] = (null, null);
-                    instanceIdToComponent[component.InstanceId] = (component.Type, oldPath, null);
+                    componentMapping[new ObjectMapping.ComponentKey(oldPath, component.Type)] =
+                        ObjectMapping.MappedComponent.Removed;
+                    instanceIdToComponent[component.InstanceId] = null;
                 }
                 else
                 {
@@ -116,12 +117,12 @@ namespace Anatawa12.AvatarOptimizer
                         propertyMapping[kvp.Key] = newPropName;
                     }
 
-                    componentMapping[(component.Type, oldPath)] = (newPath, propertyMapping);
+                    componentMapping[new ObjectMapping.ComponentKey(oldPath, component.Type)] = 
+                        new ObjectMapping.MappedComponent(newPath, propertyMapping);
 
                     if (!newGameObjectCache.TryGetValue(newPath, out var newGameObject))
                         newGameObject = newGameObjectCache[newPath] = Utils.GetGameObjectRelative(_rootObject, newPath);
-                    instanceIdToComponent[component.InstanceId] =
-                        (component.Type, oldPath, newGameObject.GetComponent(component.Type));
+                    instanceIdToComponent[component.InstanceId] = newGameObject.GetComponent(component.Type);
                 }
             }
 
@@ -327,8 +328,8 @@ namespace Anatawa12.AvatarOptimizer
     internal class ObjectMapping
     {
         public ObjectMapping(Dictionary<string, string> goMapping,
-            Dictionary<(Type, string), (string, Dictionary<string, string>)> componentMapping,
-            Dictionary<int, (Type, string, Component)> instanceIdToComponent)
+            Dictionary<ComponentKey, MappedComponent> componentMapping,
+            Dictionary<int, Component> instanceIdToComponent)
         {
             GameObjectPathMapping = goMapping;
             ComponentMapping = componentMapping;
@@ -336,9 +337,9 @@ namespace Anatawa12.AvatarOptimizer
         }
 
 
-        public Dictionary<(Type, string),(string newPath, Dictionary<string,string> propMapping)> ComponentMapping { get; }
+        public Dictionary<ComponentKey, MappedComponent> ComponentMapping { get; }
         public Dictionary<string, string> GameObjectPathMapping { get; }
-        public Dictionary<int,(Type, string, Component)> InstanceIdToComponent { get; }
+        public Dictionary<int, Component> InstanceIdToComponent { get; }
 
         public EditorCurveBinding MapPath(string rootPath, EditorCurveBinding binding)
         {
@@ -356,17 +357,16 @@ namespace Anatawa12.AvatarOptimizer
             var oldPath = Join(rootPath, binding.path);
 
             // try as component first
-            if (ComponentMapping.TryGetValue((binding.type, oldPath), out var componentInfo))
+            if (ComponentMapping.TryGetValue(new ComponentKey(oldPath, binding.type), out var mapped))
             {
-                var (newPath, propMapping) = componentInfo;
-                newPath = StripPrefixPath(rootPath, newPath, '/');
-                if (newPath == null || propMapping == null) return default;
+                var newPath = StripPrefixPath(rootPath, mapped.MappedGameObjectPath, '/');
+                if (newPath == null || mapped.PropertyMapping == null) return default;
 
                 binding.path = newPath;
 
                 foreach (var (prop, rest) in Utils.FindSubPaths(binding.propertyName, '.'))
                 {
-                    if (propMapping.TryGetValue(prop, out var newProp))
+                    if (mapped.PropertyMapping.TryGetValue(prop, out var newProp))
                     {
                         if (newProp == null) return default;
                         var newFullProp = newProp + rest;
@@ -390,6 +390,51 @@ namespace Anatawa12.AvatarOptimizer
             }
 
             return binding;
+        }
+
+        public readonly struct ComponentKey
+        {
+            public readonly string GameObjectPath;
+            public readonly Type Type;
+
+            public ComponentKey(string gameObjectPath, Type type)
+            {
+                GameObjectPath = gameObjectPath;
+                Type = type;
+            }
+
+            public bool Equals(ComponentKey other)
+            {
+                return GameObjectPath == other.GameObjectPath && Type == other.Type;
+            }
+
+            public override bool Equals(object obj)
+            {
+                return obj is ComponentKey other && Equals(other);
+            }
+
+            public override int GetHashCode()
+            {
+                unchecked
+                {
+                    return ((GameObjectPath != null ? GameObjectPath.GetHashCode() : 0) * 397) ^
+                           (Type != null ? Type.GetHashCode() : 0);
+                }
+            }
+        }
+
+        public class MappedComponent
+        {
+            public readonly string MappedGameObjectPath;
+            public readonly IReadOnlyDictionary<string, string> PropertyMapping;
+
+            public MappedComponent(string mappedGameObjectPath, IReadOnlyDictionary<string, string> propertyMapping)
+            {
+                MappedGameObjectPath = mappedGameObjectPath;
+                PropertyMapping = propertyMapping;
+            }
+
+            public static MappedComponent Removed = new MappedComponent(null, null);
         }
     }
 
