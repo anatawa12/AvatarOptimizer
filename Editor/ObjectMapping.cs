@@ -280,7 +280,7 @@ namespace Anatawa12.AvatarOptimizer
             public void MoveProperty(string oldProp, string newProp)
             {
                 if (!NewProperties.TryGetValue(oldProp, out var prop))
-                    prop = NewProperties[oldProp] = NewProperties[oldProp] = new VProperty();
+                    prop = NewProperties[oldProp] = OriginalProperties[oldProp] = new VProperty();
 
                 NewProperties.Remove(oldProp);
                 NewProperties[newProp] = prop;
@@ -289,7 +289,7 @@ namespace Anatawa12.AvatarOptimizer
             public void RemoveProperty(string oldProp)
             {
                 if (!NewProperties.TryGetValue(oldProp, out var prop))
-                    prop = NewProperties[oldProp] = NewProperties[oldProp] = new VProperty();
+                    prop = NewProperties[oldProp] = OriginalProperties[oldProp] = new VProperty();
 
                 NewProperties.Remove(oldProp);
             }
