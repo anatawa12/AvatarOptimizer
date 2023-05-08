@@ -357,7 +357,7 @@ namespace Anatawa12.AvatarOptimizer
 
                 binding.path = newPath;
 
-                foreach (var (prop, rest) in Utils.FindSubProps(binding.propertyName))
+                foreach (var (prop, rest) in Utils.FindSubPaths(binding.propertyName, '.'))
                 {
                     if (propMapping.TryGetValue(prop, out var newProp))
                     {

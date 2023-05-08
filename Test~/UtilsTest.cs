@@ -10,17 +10,17 @@ namespace Anatawa12.AvatarOptimizer.Test
         [Test]
         public void FindSubProps()
         {
-            Assert.That(Utils.FindSubProps("").ToList(), Is.EquivalentTo(new [] { ("", "") }));
-            Assert.That(Utils.FindSubProps("test").ToList(), 
+            Assert.That(Utils.FindSubPaths("", '.').ToList(), Is.EquivalentTo(new [] { ("", "") }));
+            Assert.That(Utils.FindSubPaths("test", '.').ToList(), 
                 Is.EquivalentTo(new [] { ("test", "") }));
 
-            Assert.That(Utils.FindSubProps("test.collection").ToList(), Is.EquivalentTo(new []
+            Assert.That(Utils.FindSubPaths("test.collection", '.').ToList(), Is.EquivalentTo(new []
             {
                 ("test.collection", ""),
                 ("test", ".collection"),
             }));
             
-            Assert.That(Utils.FindSubProps("test.collection.sub").ToList(), Is.EquivalentTo(new []
+            Assert.That(Utils.FindSubPaths("test.collection.sub", '.').ToList(), Is.EquivalentTo(new []
             {
                 ("test.collection.sub", ""),
                 ("test.collection", ".sub"),
