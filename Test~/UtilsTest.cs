@@ -19,6 +19,13 @@ namespace Anatawa12.AvatarOptimizer.Test
                 ("test.collection", ""),
                 ("test", ".collection"),
             }));
+            
+            Assert.That(Utils.FindSubProps("test.collection.sub").ToList(), Is.EquivalentTo(new []
+            {
+                ("test.collection.sub", ""),
+                ("test.collection", ".sub"),
+                ("test", ".collection.sub"),
+            }));
         }
 
         #endregion
