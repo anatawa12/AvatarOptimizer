@@ -1,7 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer
 {
@@ -66,6 +68,12 @@ namespace Anatawa12.AvatarOptimizer
         {
             foreach (var o in _added)
                 EditorUtility.SetDirty(o);
+        }
+
+        public string RelativePath(Transform child)
+        {
+            return Utils.RelativePath(_rootObject.transform, child) ??
+                   throw new ArgumentException("child is not child of rootObject", nameof(child));
         }
     }
 }

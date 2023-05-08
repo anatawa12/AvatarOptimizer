@@ -4,7 +4,6 @@ using System.Linq;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
-using UnityEngine.Assertions;
 using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.Processors
@@ -13,9 +12,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
     {
         public void Apply(OptimizerSession session)
         {
-            // TODO: reimplement with ObjectMapping
-            var mapping = new Dictionary<Object, Object>();//session.GetMapping();
-            mapping.FlattenMapping();
+            var mapping = session.MappingBuilder.BuildObjectMapping();
 
             // replace all objects
             foreach (var component in session.GetComponents<Component>())
@@ -27,13 +24,15 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 {
                     if (p.propertyType == SerializedPropertyType.ObjectReference)
                     {
-                        if (p.objectReferenceValue != null)
-                            if (mapping.TryGetValue(p.objectReferenceValue, out var mapped))
-                                p.objectReferenceValue = mapped;
+                        if (mapping.InstanceIdToComponent.TryGetValue(p.objectReferenceInstanceIDValue,
+                                out var mappedComponent))
+                            p.objectReferenceValue = mappedComponent.Item3;
+
                         if (p.objectReferenceValue is AnimatorController controller)
                         {
                             if (mapper == null)
-                                mapper = new AnimatorControllerMapper(mapping, component.transform, session);
+                                mapper = new AnimatorControllerMapper(mapping,
+                                    session.RelativePath(component.transform), session);
 
                             var mapped = mapper.MapAnimatorController(controller);
                             if (mapped != null)
@@ -49,26 +48,17 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
     internal class AnimatorControllerMapper
     {
-        private readonly Dictionary<(string, Type), string> _mapping = new Dictionary<(string, Type), string>();
+        private readonly ObjectMapping _mapping;
         private readonly Dictionary<Object, Object> _cache = new Dictionary<Object, Object>();
         private readonly OptimizerSession _session;
+        private readonly string _rootPath;
         private bool _mapped = false;
 
-        public AnimatorControllerMapper(Dictionary<Object, Object> mapping, Transform root, OptimizerSession session)
+        public AnimatorControllerMapper(ObjectMapping mapping, string rootPath, OptimizerSession session)
         {
             _session = session;
-            foreach (var kvp in mapping)
-            {
-                if (!(kvp.Key is Component key)) continue;
-                if (kvp.Value == null) continue;
-                Assert.AreEqual(key.GetType(), kvp.Value.GetType());
-                var value = (Component) kvp.Value;
-                var relativeKey = Utils.RelativePath(root, key.transform);
-                if (relativeKey == null) continue;
-                var relativeValue = Utils.RelativePath(root, value.transform);
-                if (relativeValue == null) continue;
-                _mapping[(relativeKey, key.GetType())] = relativeValue;
-            }
+            _mapping = mapping;
+            _rootPath = rootPath;
         }
 
         public AnimatorController MapAnimatorController(AnimatorController controller)
@@ -113,16 +103,16 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
                 foreach (var binding in AnimationUtility.GetCurveBindings(clip))
                 {
-                    var newBinding = binding;
-                    newBinding.path = MapPath(binding.path, binding.type);
+                    var newBinding = MapPath(binding);
+                    if (newBinding.type == null) continue;
                     newClip.SetCurve(newBinding.path, newBinding.type, newBinding.propertyName,
                         AnimationUtility.GetEditorCurve(clip, binding));
                 }
 
                 foreach (var objBinding in AnimationUtility.GetObjectReferenceCurveBindings(clip))
                 {
-                    var newBinding = objBinding;
-                    newBinding.path = MapPath(objBinding.path, objBinding.type);
+                    var newBinding = MapPath(objBinding);
+                    if (newBinding.type == null) continue;
                     AnimationUtility.SetObjectReferenceCurve(newClip, newBinding,
                         AnimationUtility.GetObjectReferenceCurve(clip, objBinding));
                 }
@@ -141,12 +131,77 @@ namespace Anatawa12.AvatarOptimizer.Processors
             }
         }
 
-        private string MapPath(string bindingPath, Type bindingType)
+        private EditorCurveBinding MapPath(EditorCurveBinding binding)
         {
-            if (!_mapping.TryGetValue((bindingPath, bindingType), out var newPath))
-                return bindingPath;
-            _mapped = true;
-            return newPath;
+            string Join(string a, string b, char sep) => a == "" ? b : b == "" ? a : $"{a}{sep}{b}";
+            string StripPrefixPath(string parent, string path, char sep)
+            {
+                if (path == null) return null;
+                if (parent == path) return "";
+                if (path.StartsWith($"{parent}{sep}", StringComparison.Ordinal))
+                    return parent.Substring(parent.Length + 1);
+                return null;
+            }
+            // Properties detailed first and nothing last
+            IEnumerable<(string prop, string rest)> FindProps(string prop)
+            {
+                var rest = "";
+                for (;;)
+                {
+                    yield return (prop, rest);
+
+                    var index = prop.LastIndexOf('.');
+                    if (index == -1) yield break;
+
+                    rest = prop.Substring(index) + rest;
+                    prop = prop.Substring(0, index);
+                }
+            }
+
+            var oldPath = Join(_rootPath, binding.path, '/');
+
+            // try as component first
+            if (_mapping.ComponentMapping.TryGetValue((binding.type, oldPath), out var componentInfo))
+            {
+                var (newPath, propMapping) = componentInfo;
+                newPath = StripPrefixPath(_rootPath, newPath, '/');
+                if (newPath == null || propMapping == null)
+                {
+                    _mapped = true;
+                    return default;
+                }
+
+                _mapped |= binding.path != newPath;
+                binding.path = newPath;
+
+                foreach (var (prop, rest) in FindProps(binding.propertyName))
+                {
+                    if (propMapping.TryGetValue(prop, out var newProp))
+                    {
+                        var newFullProp = newProp + rest;
+                        _mapped |= binding.propertyName != newFullProp;
+                        binding.propertyName = newFullProp;
+                        break;
+                    }
+                }
+                return binding;
+            }
+
+            // then, try as GameObject
+            if (_mapping.GameObjectPathMapping.TryGetValue(oldPath, out var newGoPath))
+            {
+                newGoPath = StripPrefixPath(_rootPath, newGoPath, '/');
+                if (newGoPath == null)
+                {
+                    _mapped = true;
+                    return default;
+                }
+                _mapped |= binding.path != newGoPath;
+                binding.path = newGoPath;
+                return binding;
+            }
+
+            return binding;
         }
 
         // https://github.com/bdunderscore/modular-avatar/blob/db49e2e210bc070671af963ff89df853ae4514a5/Packages/nadena.dev.modular-avatar/Editor/AnimatorMerger.cs#LL242-L340C10
