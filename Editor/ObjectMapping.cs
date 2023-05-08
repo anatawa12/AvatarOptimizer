@@ -49,36 +49,37 @@ namespace Anatawa12.AvatarOptimizer
             var newParentPath = Utils.RelativePath(_rootObject.transform, newGameObject.transform)
                                 ?? throw new ArgumentException("not of root GameObject", nameof(newGameObject));
 
-            var component = _tree.GetGameObject(oldPath).GetComponent(from.GetType(), from.GetInstanceID());
+            var components = _tree.GetGameObject(oldPath).GetComponents(from.GetType(), from.GetInstanceID());
             var newParentVGameObject = _tree.GetGameObject(newParentPath);
 
-            component.MoveTo(newParentVGameObject);
+            foreach (var component in components.ToArray())
+                component.MoveTo(newParentVGameObject);
         }
 
         public void RecordRemoveComponent(Component component)
         {
             var oldPath = Utils.RelativePath(_rootObject.transform, component.transform)
                           ?? throw new ArgumentException("not of root GameObject", nameof(component));
-            var vComponent = _tree.GetGameObject(oldPath).GetComponent(component.GetType(), component.GetInstanceID());
-            vComponent.Remove();
+            foreach (var vComponent in _tree.GetGameObject(oldPath)
+                         .GetComponents(component.GetType(), component.GetInstanceID()).ToArray())
+                vComponent.Remove();
         }
 
         public void RecordMoveProperty(Component from, string oldProp, string newProp)
         {
             var path = Utils.RelativePath(_rootObject.transform, from.transform)
                        ?? throw new ArgumentException("not of root GameObject", nameof(from));
-            var component = _tree.GetGameObject(path).GetComponent(from.GetType(), from.GetInstanceID());
-
-            component.MoveProperty(oldProp, newProp);
+            foreach (var component in _tree.GetGameObject(path).GetComponents(from.GetType(), from.GetInstanceID()))
+                component.MoveProperty(oldProp, newProp);
         }
 
         public void RecordRemoveProperty(Component from, string oldProp)
         {
             var path = Utils.RelativePath(_rootObject.transform, from.transform)
                        ?? throw new ArgumentException("not of root GameObject", nameof(from));
-            var component = _tree.GetGameObject(path).GetComponent(from.GetType(), from.GetInstanceID());
+            foreach (var component in _tree.GetGameObject(path).GetComponents(from.GetType(), from.GetInstanceID()))
+                component.RemoveProperty(oldProp);
 
-            component.RemoveProperty(oldProp);
         }
 
         public ObjectMapping BuildObjectMapping()
@@ -156,12 +157,17 @@ namespace Anatawa12.AvatarOptimizer
                     ? newList
                     : _newComponents[type] = new List<VComponent>();
 
-            public VComponent GetComponent(Type type, int instanceId)
+            public IEnumerable<VComponent> GetComponents(Type type, int instanceId)
             {
                 var list = GetComponents(type);
-                if (list.Count == 0)
-                    list.Add(_originalComponents[type] = new VComponent(this, type, instanceId));
-                return list[0];
+                if (list.All(x => x.InstanceId != instanceId))
+                {
+                    var newComponent = new VComponent(this, type, instanceId);
+                    list.Add(newComponent);
+                    if (!_originalComponents.ContainsKey(type))
+                        _originalComponents.Add(type, newComponent);
+                }
+                return list;
             }
 
             public void MoveComponentTo(VComponent component, VGameObject newGameObject)
