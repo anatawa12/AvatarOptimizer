@@ -110,7 +110,10 @@ namespace Anatawa12.AvatarOptimizer
                     var propertyMapping = new Dictionary<string, string>();
                     var newMapping = component.NewProperties.ToDictionary(kvp => kvp.Value, kvp => kvp.Key);
                     foreach (var kvp in component.OriginalProperties)
-                        propertyMapping[kvp.Key] = newMapping[kvp.Value];
+                    {
+                        newMapping.TryGetValue(kvp.Value, out var newPropName);
+                        propertyMapping[kvp.Key] = newPropName;
+                    }
 
                     componentMapping[(component.Type, oldPath)] = (newPath, propertyMapping);
 
@@ -358,6 +361,7 @@ namespace Anatawa12.AvatarOptimizer
                 {
                     if (propMapping.TryGetValue(prop, out var newProp))
                     {
+                        if (newProp == null) return default;
                         var newFullProp = newProp + rest;
                         binding.propertyName = newFullProp;
                         break;
