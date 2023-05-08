@@ -93,18 +93,26 @@ namespace Anatawa12.AvatarOptimizer
             foreach (var component in _tree.GetAllComponents())
             {
                 var oldPath = goOldPath[component.OriginalGameObject];
-                var newPath = goNewPath[component.NewGameObject];
-                var propertyMapping = new Dictionary<string, string>();
-                var newMapping = component.NewProperties.ToDictionary(kvp => kvp.Value, kvp => kvp.Key);
-                foreach (var kvp in component.OriginalProperties)
-                    propertyMapping[kvp.Key] = newMapping[kvp.Value];
+                if (component.NewGameObject == null)
+                {
+                    componentMapping[(component.Type, oldPath)] = (null, null);
+                    instanceIdToComponent[component.InstanceId] = (component.Type, oldPath, null);
+                }
+                else
+                {
+                    var newPath = goNewPath[component.NewGameObject];
+                    var propertyMapping = new Dictionary<string, string>();
+                    var newMapping = component.NewProperties.ToDictionary(kvp => kvp.Value, kvp => kvp.Key);
+                    foreach (var kvp in component.OriginalProperties)
+                        propertyMapping[kvp.Key] = newMapping[kvp.Value];
 
-                componentMapping[(component.Type, oldPath)] = (newPath, propertyMapping);
+                    componentMapping[(component.Type, oldPath)] = (newPath, propertyMapping);
 
-                if (!newGameObjectCache.TryGetValue(newPath, out var newGameObject))
-                    newGameObject = newGameObjectCache[newPath] = Utils.GetGameObjectRelative(_rootObject, newPath);
-                instanceIdToComponent[component.InstanceId] =
-                    (component.Type, oldPath, newGameObject.GetComponent(component.Type));
+                    if (!newGameObjectCache.TryGetValue(newPath, out var newGameObject))
+                        newGameObject = newGameObjectCache[newPath] = Utils.GetGameObjectRelative(_rootObject, newPath);
+                    instanceIdToComponent[component.InstanceId] =
+                        (component.Type, oldPath, newGameObject.GetComponent(component.Type));
+                }
             }
 
             return new ObjectMapping(goMapping, componentMapping, instanceIdToComponent);
