@@ -173,6 +173,50 @@ namespace Anatawa12.AvatarOptimizer.Test
                 Is.EqualTo(Default));
         }
 
+        [Test]
+        public void RecordMovePropertyThenComponentThenPropertyTest()
+        {
+            var root = new GameObject();
+            var child1 = Utils.NewGameObject("child1", root.transform);
+            var child2 = Utils.NewGameObject("child2", root.transform);
+            var child1Component = child1.AddComponent<SkinnedMeshRenderer>();
+            var child2Component = child2.AddComponent<SkinnedMeshRenderer>();
+
+            var builder = new ObjectMappingBuilder(root);
+            builder.RecordMoveProperty(child2Component, "blendShapes.child2", "blendShapes.child2Changed");
+            builder.RecordMoveProperty(child1Component, "blendShapes.child1", "blendShapes.child1Changed");
+            builder.RecordMoveComponent(child1Component, child2);
+            builder.RecordMoveProperty(child2Component, "blendShapes.moved", "blendShapes.movedChanged");
+
+            var built = builder.BuildObjectMapping();
+
+            Assert.That(
+                built.MapPath("", B("child1", typeof(SkinnedMeshRenderer), "blendShapes.child1")),
+                Is.EqualTo(B("child2", typeof(SkinnedMeshRenderer), "blendShapes.child1Changed")));
+            Assert.That(
+                built.MapPath("", B("child1", typeof(SkinnedMeshRenderer), "blendShapes.child2")),
+                Is.EqualTo(B("child2", typeof(SkinnedMeshRenderer), "blendShapes.child2")));
+            Assert.That(
+                built.MapPath("", B("child1", typeof(SkinnedMeshRenderer), "blendShapes.child1Other")),
+                Is.EqualTo(B("child2", typeof(SkinnedMeshRenderer), "blendShapes.child1Other")));
+            Assert.That(
+                built.MapPath("", B("child1", typeof(SkinnedMeshRenderer), "blendShapes.moved")),
+                Is.EqualTo(B("child2", typeof(SkinnedMeshRenderer), "blendShapes.movedChanged")));
+
+            Assert.That(
+                built.MapPath("", B("child2", typeof(SkinnedMeshRenderer), "blendShapes.child1")),
+                Is.EqualTo(B("child2", typeof(SkinnedMeshRenderer), "blendShapes.child1")));
+            Assert.That(
+                built.MapPath("", B("child2", typeof(SkinnedMeshRenderer), "blendShapes.child2")),
+                Is.EqualTo(B("child2", typeof(SkinnedMeshRenderer), "blendShapes.child2Changed")));
+            Assert.That(
+                built.MapPath("", B("child2", typeof(SkinnedMeshRenderer), "blendShapes.child2Other")),
+                Is.EqualTo(B("child2", typeof(SkinnedMeshRenderer), "blendShapes.child2Other")));
+            Assert.That(
+                built.MapPath("", B("child2", typeof(SkinnedMeshRenderer), "blendShapes.moved")),
+                Is.EqualTo(B("child2", typeof(SkinnedMeshRenderer), "blendShapes.movedChanged")));
+        }
+
 
         private static (string, Type, string) B(string path, Type type, string prop) => (path, type, prop);
         private static (string, Type, string) Default = default;
