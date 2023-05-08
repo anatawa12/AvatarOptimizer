@@ -31,10 +31,11 @@ namespace Anatawa12.AvatarOptimizer.Test
             
             Assert.That(
                 built.MapPath("child1", B("child11", typeof(GameObject), "m_Enabled")),
-                Is.EqualTo(B(null, null, "m_Enabled")));
+                Is.EqualTo(Default));
         }
 
         private static (string, Type, string) B(string path, Type type, string prop) => (path, type, prop);
+        private static (string, Type, string) Default = default;
     }
 
     static class ObjectMappingTestUtils
