@@ -342,21 +342,6 @@ namespace Anatawa12.AvatarOptimizer
                     return parent.Substring(parent.Length + 1);
                 return null;
             }
-            // Properties detailed first and nothing last
-            IEnumerable<(string prop, string rest)> FindProps(string prop)
-            {
-                var rest = "";
-                for (;;)
-                {
-                    yield return (prop, rest);
-
-                    var index = prop.LastIndexOf('.');
-                    if (index == -1) yield break;
-
-                    rest = prop.Substring(index) + rest;
-                    prop = prop.Substring(0, index);
-                }
-            }
 
             var oldPath = Join(rootPath, binding.path);
 
@@ -369,7 +354,7 @@ namespace Anatawa12.AvatarOptimizer
 
                 binding.path = newPath;
 
-                foreach (var (prop, rest) in FindProps(binding.propertyName))
+                foreach (var (prop, rest) in Utils.FindSubProps(binding.propertyName))
                 {
                     if (propMapping.TryGetValue(prop, out var newProp))
                     {

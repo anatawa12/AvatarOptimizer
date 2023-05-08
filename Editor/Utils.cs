@@ -372,6 +372,22 @@ namespace Anatawa12.AvatarOptimizer
 
             return cursor.gameObject;
         }
+
+        // Properties detailed first and nothing last
+        public static IEnumerable<(string prop, string rest)> FindSubProps(string prop)
+        {
+            var rest = "";
+            for (;;)
+            {
+                yield return (prop, rest);
+
+                var index = prop.LastIndexOf('.');
+                if (index == -1) yield break;
+
+                rest = prop.Substring(index) + rest;
+                prop = prop.Substring(0, index);
+            }
+        }
     }
 
     internal struct ArraySerializedPropertyEnumerable : IEnumerable<SerializedProperty>
