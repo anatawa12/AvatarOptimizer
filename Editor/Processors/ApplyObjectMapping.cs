@@ -103,18 +103,20 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
                 foreach (var binding in AnimationUtility.GetCurveBindings(clip))
                 {
-                    var newBinding = MapPath(binding);
+                    var newBinding = _mapping.MapPath(_rootPath, binding);
+                    _mapped |= newBinding != binding;
                     if (newBinding.type == null) continue;
                     newClip.SetCurve(newBinding.path, newBinding.type, newBinding.propertyName,
                         AnimationUtility.GetEditorCurve(clip, binding));
                 }
 
-                foreach (var objBinding in AnimationUtility.GetObjectReferenceCurveBindings(clip))
+                foreach (var binding in AnimationUtility.GetObjectReferenceCurveBindings(clip))
                 {
-                    var newBinding = MapPath(objBinding);
+                    var newBinding = _mapping.MapPath(_rootPath, binding);
+                    _mapped |= newBinding != binding;
                     if (newBinding.type == null) continue;
                     AnimationUtility.SetObjectReferenceCurve(newClip, newBinding,
-                        AnimationUtility.GetObjectReferenceCurve(clip, objBinding));
+                        AnimationUtility.GetObjectReferenceCurve(clip, binding));
                 }
 
                 newClip.wrapMode = clip.wrapMode;
@@ -129,79 +131,6 @@ namespace Anatawa12.AvatarOptimizer.Processors
             {
                 return null;
             }
-        }
-
-        private EditorCurveBinding MapPath(EditorCurveBinding binding)
-        {
-            string Join(string a, string b, char sep) => a == "" ? b : b == "" ? a : $"{a}{sep}{b}";
-            string StripPrefixPath(string parent, string path, char sep)
-            {
-                if (path == null) return null;
-                if (parent == path) return "";
-                if (path.StartsWith($"{parent}{sep}", StringComparison.Ordinal))
-                    return parent.Substring(parent.Length + 1);
-                return null;
-            }
-            // Properties detailed first and nothing last
-            IEnumerable<(string prop, string rest)> FindProps(string prop)
-            {
-                var rest = "";
-                for (;;)
-                {
-                    yield return (prop, rest);
-
-                    var index = prop.LastIndexOf('.');
-                    if (index == -1) yield break;
-
-                    rest = prop.Substring(index) + rest;
-                    prop = prop.Substring(0, index);
-                }
-            }
-
-            var oldPath = Join(_rootPath, binding.path, '/');
-
-            // try as component first
-            if (_mapping.ComponentMapping.TryGetValue((binding.type, oldPath), out var componentInfo))
-            {
-                var (newPath, propMapping) = componentInfo;
-                newPath = StripPrefixPath(_rootPath, newPath, '/');
-                if (newPath == null || propMapping == null)
-                {
-                    _mapped = true;
-                    return default;
-                }
-
-                _mapped |= binding.path != newPath;
-                binding.path = newPath;
-
-                foreach (var (prop, rest) in FindProps(binding.propertyName))
-                {
-                    if (propMapping.TryGetValue(prop, out var newProp))
-                    {
-                        var newFullProp = newProp + rest;
-                        _mapped |= binding.propertyName != newFullProp;
-                        binding.propertyName = newFullProp;
-                        break;
-                    }
-                }
-                return binding;
-            }
-
-            // then, try as GameObject
-            if (_mapping.GameObjectPathMapping.TryGetValue(oldPath, out var newGoPath))
-            {
-                newGoPath = StripPrefixPath(_rootPath, newGoPath, '/');
-                if (newGoPath == null)
-                {
-                    _mapped = true;
-                    return default;
-                }
-                _mapped |= binding.path != newGoPath;
-                binding.path = newGoPath;
-                return binding;
-            }
-
-            return binding;
         }
 
         // https://github.com/bdunderscore/modular-avatar/blob/db49e2e210bc070671af963ff89df853ae4514a5/Packages/nadena.dev.modular-avatar/Editor/AnimatorMerger.cs#LL242-L340C10

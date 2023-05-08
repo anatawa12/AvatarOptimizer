@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
+using UnityEditor;
 using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer
@@ -329,6 +330,68 @@ namespace Anatawa12.AvatarOptimizer
         public Dictionary<(Type, string),(string newPath, Dictionary<string,string> propMapping)> ComponentMapping { get; }
         public Dictionary<string, string> GameObjectPathMapping { get; }
         public Dictionary<int,(Type, string, Component)> InstanceIdToComponent { get; }
+
+        public EditorCurveBinding MapPath(string rootPath, EditorCurveBinding binding)
+        {
+            string Join(string a, string b) => a == "" ? b : b == "" ? a : $"{a}/{b}";
+            string StripPrefixPath(string parent, string path, char sep)
+            {
+                if (path == null) return null;
+                if (parent == path) return "";
+                if (path.StartsWith($"{parent}{sep}", StringComparison.Ordinal))
+                    return parent.Substring(parent.Length + 1);
+                return null;
+            }
+            // Properties detailed first and nothing last
+            IEnumerable<(string prop, string rest)> FindProps(string prop)
+            {
+                var rest = "";
+                for (;;)
+                {
+                    yield return (prop, rest);
+
+                    var index = prop.LastIndexOf('.');
+                    if (index == -1) yield break;
+
+                    rest = prop.Substring(index) + rest;
+                    prop = prop.Substring(0, index);
+                }
+            }
+
+            var oldPath = Join(rootPath, binding.path);
+
+            // try as component first
+            if (ComponentMapping.TryGetValue((binding.type, oldPath), out var componentInfo))
+            {
+                var (newPath, propMapping) = componentInfo;
+                newPath = StripPrefixPath(rootPath, newPath, '/');
+                if (newPath == null || propMapping == null) return default;
+
+                binding.path = newPath;
+
+                foreach (var (prop, rest) in FindProps(binding.propertyName))
+                {
+                    if (propMapping.TryGetValue(prop, out var newProp))
+                    {
+                        var newFullProp = newProp + rest;
+                        binding.propertyName = newFullProp;
+                        break;
+                    }
+                }
+                return binding;
+            }
+
+            // then, try as GameObject
+            if (GameObjectPathMapping.TryGetValue(oldPath, out var newGoPath))
+            {
+                newGoPath = StripPrefixPath(rootPath, newGoPath, '/');
+                if (newGoPath == null) return default;
+                binding.path = newGoPath;
+                return binding;
+            }
+
+            return binding;
+        }
     }
 
     static class VProp
