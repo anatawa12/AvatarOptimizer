@@ -10,6 +10,10 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
+- Improved & reimplemented Animation (re)generation system `#137`
+  - This is completely internal changes. Should not break your project
+  - In previous implementation, animations for GameObjects moved by MergeBone, MergePhysBone or else doesn't work well
+  - This reimplementation should fix this problem
 
 ### Deprecated
 
