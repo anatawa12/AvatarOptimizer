@@ -84,7 +84,12 @@ namespace Anatawa12.AvatarOptimizer
         {
             var goNewPath = _tree.BuildNewPathMapping();
             var goOldPath = _tree.BuildOldPathMapping();
-            var goMapping = goOldPath.ToDictionary(x => x.Value, x => goNewPath[x.Key]);
+            var goMapping = goOldPath.ToDictionary(x => x.Value,
+                x =>
+                {
+                    goNewPath.TryGetValue(x.Key, out var newPath);
+                    return newPath;
+                });
 
             var componentMapping = new Dictionary<(Type, string), (string, Dictionary<string, string>)>();
             var instanceIdToComponent = new Dictionary<int, (Type, string, Component)>();
