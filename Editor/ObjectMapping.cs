@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using JetBrains.Annotations;
 using UnityEngine;
 
@@ -77,6 +78,15 @@ namespace Anatawa12.AvatarOptimizer
             var component = _tree.GetGameObject(path).GetComponent(from.GetType(), from.GetInstanceID());
 
             component.RemoveProperty(oldProp);
+        }
+
+        public ObjectMapping BuildObjectMapping()
+        {
+            var goNewPath = _tree.BuildNewPathMapping();
+            var goOldPath = _tree.BuildOldPathMapping();
+            var goMapping = goOldPath.ToDictionary(x => x.Value, x => goNewPath[x.Key]);
+
+            return new ObjectMapping(goMapping);
         }
 
         /// <summary> Represents a GameObject in Hierarchy </summary>
@@ -176,6 +186,34 @@ namespace Anatawa12.AvatarOptimizer
                 System.Diagnostics.Debug.Assert(_newParent.ChildListWithName(_newName).Remove(this));
                 _newParent = null;
             }
+
+            public Dictionary<VGameObject, string> BuildNewPathMapping() => BuildMapping(x => x
+                ._newChildren.Select(pair => new KeyValuePair<string, IEnumerable<VGameObject>>(pair.Key, pair.Value)));
+            public Dictionary<VGameObject, string> BuildOldPathMapping() => BuildMapping(x => x
+                ._originalChildren.Select(pair => new KeyValuePair<string, IEnumerable<VGameObject>>(pair.Key, new []{pair.Value})));
+
+            private Dictionary<VGameObject, string> BuildMapping(Func<VGameObject, IEnumerable<KeyValuePair<string, IEnumerable<VGameObject>>>> mappingGetter)
+            {
+                var result = new Dictionary<VGameObject, string>();
+                var queue = new Queue<(string, VGameObject)>();
+
+                foreach (var keyValuePair in mappingGetter(this))
+                foreach (var gameObject in keyValuePair.Value)
+                    queue.Enqueue((keyValuePair.Key, gameObject));
+
+                while (queue.Count != 0)
+                {
+                    var (name, go) = queue.Dequeue();
+                    result.Add(go, name);
+
+                    
+                    foreach (var keyValuePair in mappingGetter(go))
+                    foreach (var gameObject in keyValuePair.Value)
+                        queue.Enqueue(($"{name}/{keyValuePair.Key}", gameObject));
+                }
+
+                return result;
+            }
         }
 
         /// <summary> Represents a component </summary>
@@ -224,6 +262,16 @@ namespace Anatawa12.AvatarOptimizer
         class VProperty
         {
         }
+    }
+
+    internal class ObjectMapping
+    {
+        public ObjectMapping(Dictionary<string,string> goMapping)
+        {
+            GameObjectPathMapping = goMapping;
+        }
+
+        public Dictionary<string, string> GameObjectPathMapping { get; set; }
     }
 
     static class VProp
