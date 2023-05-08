@@ -86,7 +86,21 @@ namespace Anatawa12.AvatarOptimizer
             var goOldPath = _tree.BuildOldPathMapping();
             var goMapping = goOldPath.ToDictionary(x => x.Value, x => goNewPath[x.Key]);
 
-            return new ObjectMapping(goMapping);
+            var componentMapping = new Dictionary<(Type, string), (string, Dictionary<string, string>)>();
+
+            foreach (var component in _tree.GetAllComponents())
+            {
+                var key = (component.Type, goOldPath[component.OriginalGameObject]);
+                var newPath = goNewPath[component.NewGameObject];
+                var propertyMapping = new Dictionary<string, string>();
+                var newMapping = component.NewProperties.ToDictionary(kvp => kvp.Value, kvp => kvp.Key);
+                foreach (var kvp in component.OriginalProperties)
+                    propertyMapping[kvp.Key] = newMapping[kvp.Value];
+
+                componentMapping[key] = (newPath, propertyMapping);
+            }
+
+            return new ObjectMapping(goMapping, componentMapping);
         }
 
         /// <summary> Represents a GameObject in Hierarchy </summary>
@@ -214,6 +228,22 @@ namespace Anatawa12.AvatarOptimizer
 
                 return result;
             }
+
+            public IEnumerable<VComponent> GetAllComponents()
+            {
+                var queue = new Queue<VGameObject>();
+                queue.Enqueue(this);
+
+                while (queue.Count != 0)
+                {
+                    var go = queue.Dequeue();
+                    foreach (var component in go._originalComponents.Values)
+                        yield return component;
+
+                    foreach (var gameObject in go._originalChildren.Values)
+                        queue.Enqueue(gameObject);
+                }
+            }
         }
 
         /// <summary> Represents a component </summary>
@@ -222,8 +252,8 @@ namespace Anatawa12.AvatarOptimizer
             public readonly VGameObject OriginalGameObject;
             public VGameObject NewGameObject;
             public readonly Type Type;
-            private readonly Dictionary<string, VProperty> _originalProperties = new Dictionary<string, VProperty>();
-            private readonly Dictionary<string, VProperty> _newProperties = new Dictionary<string, VProperty>();
+            public readonly Dictionary<string, VProperty> OriginalProperties = new Dictionary<string, VProperty>();
+            public readonly Dictionary<string, VProperty> NewProperties = new Dictionary<string, VProperty>();
             public int InstanceId { get; }
 
             public VComponent(VGameObject gameObject, Type type, int instanceId)
@@ -242,19 +272,19 @@ namespace Anatawa12.AvatarOptimizer
 
             public void MoveProperty(string oldProp, string newProp)
             {
-                if (!_newProperties.TryGetValue(oldProp, out var prop))
-                    prop = _newProperties[oldProp] = _newProperties[oldProp] = new VProperty();
+                if (!NewProperties.TryGetValue(oldProp, out var prop))
+                    prop = NewProperties[oldProp] = NewProperties[oldProp] = new VProperty();
 
-                _newProperties.Remove(oldProp);
-                _newProperties[newProp] = prop;
+                NewProperties.Remove(oldProp);
+                NewProperties[newProp] = prop;
             }
 
             public void RemoveProperty(string oldProp)
             {
-                if (!_newProperties.TryGetValue(oldProp, out var prop))
-                    prop = _newProperties[oldProp] = _newProperties[oldProp] = new VProperty();
+                if (!NewProperties.TryGetValue(oldProp, out var prop))
+                    prop = NewProperties[oldProp] = NewProperties[oldProp] = new VProperty();
 
-                _newProperties.Remove(oldProp);
+                NewProperties.Remove(oldProp);
             }
         }
 
@@ -266,12 +296,15 @@ namespace Anatawa12.AvatarOptimizer
 
     internal class ObjectMapping
     {
-        public ObjectMapping(Dictionary<string,string> goMapping)
+        public ObjectMapping(Dictionary<string, string> goMapping,
+            Dictionary<(Type, string), (string, Dictionary<string, string>)> componentMapping)
         {
             GameObjectPathMapping = goMapping;
+            ComponentMapping = componentMapping;
         }
 
-        public Dictionary<string, string> GameObjectPathMapping { get; set; }
+        public Dictionary<(Type, string),(string newPath, Dictionary<string,string> propMapping)> ComponentMapping { get; }
+        public Dictionary<string, string> GameObjectPathMapping { get; }
     }
 
     static class VProp
