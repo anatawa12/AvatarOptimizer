@@ -96,6 +96,36 @@ namespace Anatawa12.AvatarOptimizer.Test
                 Is.SameAs(child2Component));
         }
 
+        [Test]
+        public void RecordRemoveComponentTest()
+        {
+            var root = new GameObject();
+            var child1 = Utils.NewGameObject("child1", root.transform);
+            var child1Component = child1.AddComponent<SkinnedMeshRenderer>();
+
+            var builder = new ObjectMappingBuilder(root);
+            builder.RecordRemoveComponent(child1Component);
+            Object.DestroyImmediate(child1Component);
+            var child1ComponentId = child1Component.GetInstanceID(); 
+
+            var built = builder.BuildObjectMapping();
+
+            // should not affect to GameObject itself
+            Assert.That(
+                built.MapPath("", B("child1", typeof(GameObject), "m_Enabled")),
+                Is.EqualTo(B("child1", typeof(GameObject), "m_Enabled")));
+
+            // but should affect to component
+            Assert.That(
+                built.MapPath("", B("child1", typeof(SkinnedMeshRenderer), "blendShapes.test")),
+                Is.EqualTo(Default));
+
+            // check for component replication
+            Assert.That(built.InstanceIdToComponent[child1ComponentId].Item3,
+                Is.SameAs(null));
+        }
+
+
         private static (string, Type, string) B(string path, Type type, string prop) => (path, type, prop);
         private static (string, Type, string) Default = default;
     }
