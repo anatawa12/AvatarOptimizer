@@ -217,6 +217,34 @@ namespace Anatawa12.AvatarOptimizer.Test
                 Is.EqualTo(B("child2", typeof(SkinnedMeshRenderer), "blendShapes.movedChanged")));
         }
 
+        [Test]
+        public void RecordMovePropertyThenGameObjectThenPropertyTest()
+        {
+            var root = new GameObject();
+            var child1 = Utils.NewGameObject("child1", root.transform);
+            var child11 = Utils.NewGameObject("child11", child1.transform);
+            var child11Component = child11.AddComponent<SkinnedMeshRenderer>();
+            var child2 = Utils.NewGameObject("child2", root.transform);
+
+            var builder = new ObjectMappingBuilder(root);
+            builder.RecordMoveProperty(child11Component, "blendShapes.child11", "blendShapes.child11Changed");
+            builder.RecordMoveObject(child11, child2);
+            child11.transform.parent = child2.transform;
+            builder.RecordMoveProperty(child11Component, "blendShapes.moved", "blendShapes.movedChanged");
+
+            var built = builder.BuildObjectMapping();
+
+            Assert.That(
+                built.MapPath("", B("child1/child11", typeof(SkinnedMeshRenderer), "blendShapes.child11")),
+                Is.EqualTo(B("child2/child11", typeof(SkinnedMeshRenderer), "blendShapes.child11Changed")));
+            Assert.That(
+                built.MapPath("", B("child1/child11", typeof(SkinnedMeshRenderer), "blendShapes.moved")),
+                Is.EqualTo(B("child2/child11", typeof(SkinnedMeshRenderer), "blendShapes.movedChanged")));
+
+            Assert.That(built.InstanceIdToComponent[child11Component.GetInstanceID()].Item3,
+                Is.SameAs(child11Component));
+        }
+
 
         private static (string, Type, string) B(string path, Type type, string prop) => (path, type, prop);
         private static (string, Type, string) Default = default;
