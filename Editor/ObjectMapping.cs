@@ -16,9 +16,20 @@ namespace Anatawa12.AvatarOptimizer
         private readonly VGameObject _tree = new VGameObject(null, "<root gameobject>");
         private readonly GameObject _rootObject;
 
-        public ObjectMappingBuilder([CanBeNull] GameObject rootObject)
+        public ObjectMappingBuilder([NotNull] GameObject rootObject)
         {
-            _rootObject = rootObject;
+            _rootObject = rootObject ? rootObject : throw new ArgumentNullException(nameof(rootObject));
+            RegisterAll(_rootObject, _rootObject.GetComponentsInChildren(typeof(Component), true));
+        }
+
+        private void RegisterAll(GameObject rootObject, Component[] components)
+        {
+            foreach (var component in components)
+            {
+                var path = Utils.RelativePath(rootObject.transform, rootObject.transform);
+                System.Diagnostics.Debug.Assert(path != null, nameof(path) + " != null");
+                _tree.GetGameObject(path).GetComponents(component.GetType(), component.GetInstanceID());
+            }
         }
 
         public void RecordMoveObject(GameObject from, GameObject newParent)
