@@ -8,6 +8,9 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Error Reporting System `#124`
+  - This adds window shows errors on build
+  - This is based on Modular Avatar's Error Reporting Window. thanks `@bdunderscore` 
 
 ### Changed
 - Improved & reimplemented Animation (re)generation system `#137`
@@ -20,6 +23,8 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Migration fails with scenes/prefabs in read-only packages `#136`
+  - Now, migration process doesn't see any scenes/prefabs in read-only packages.
 
 ### Security
 

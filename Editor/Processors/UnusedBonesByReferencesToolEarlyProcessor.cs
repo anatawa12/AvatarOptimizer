@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Anatawa12.AvatarOptimizer.ErrorReporting;
 using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer.Processors
@@ -13,9 +14,12 @@ namespace Anatawa12.AvatarOptimizer.Processors
             var configuration = session.GetRootComponent<UnusedBonesByReferencesTool>();
             if (!configuration) return;
 
-            UnusedBonesByReferences.Make(BoneReference.Make(configuration.transform, 
-                    configuration.detectExtraChild), configuration.preserveEndBone)
-                .SetEditorOnlyToBones();
+            BuildReport.ReportingObject(configuration, () =>
+            {
+                UnusedBonesByReferences.Make(BoneReference.Make(configuration.transform,
+                        configuration.detectExtraChild), configuration.preserveEndBone)
+                    .SetEditorOnlyToBones();
+            });
         }
 
         #region UnusedBonesByReferencesTool

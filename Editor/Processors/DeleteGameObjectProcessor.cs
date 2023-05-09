@@ -1,3 +1,4 @@
+using Anatawa12.AvatarOptimizer.ErrorReporting;
 using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer.Processors
@@ -6,12 +7,12 @@ namespace Anatawa12.AvatarOptimizer.Processors
     {
         public void Process(OptimizerSession session)
         {
-            foreach (var mergePhysBone in session.GetComponents<DeleteGameObject>())
+            BuildReport.ReportingObjects(session.GetComponents<DeleteGameObject>(), mergePhysBone =>
             {
                 session.MappingBuilder.RecordRemoveGameObject(mergePhysBone.gameObject);
                 mergePhysBone.transform.parent = null;
                 session.Destroy(mergePhysBone.gameObject);
-            }
+            });
         }
     }
 }

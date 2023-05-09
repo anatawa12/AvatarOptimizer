@@ -1,7 +1,9 @@
 
 using System;
+using Anatawa12.AvatarOptimizer.ErrorReporting;
 using UnityEditor;
 using UnityEngine;
+using VRC.SDK3.Avatars.Components;
 using VRC.SDKBase.Editor.BuildPipeline;
 
 namespace Anatawa12.AvatarOptimizer
@@ -49,8 +51,11 @@ namespace Anatawa12.AvatarOptimizer
         
         private static void DoProcessObject(OptimizerSession session)
         {
-            new Processors.UnusedBonesByReferencesToolEarlyProcessor().Process(session);
-            session.MarkDirtyAll();
+            using (BuildReport.ReportingOnAvatar(session.GetRootComponent<VRCAvatarDescriptor>()))
+            {
+                new Processors.UnusedBonesByReferencesToolEarlyProcessor().Process(session);
+                session.MarkDirtyAll();
+            }
         }
     }
 
@@ -83,6 +88,7 @@ namespace Anatawa12.AvatarOptimizer
         {
             if (_processing) return;
             using (Utils.StartEditingScope(true))
+            using (BuildReport.ReportingOnAvatar(session.GetRootComponent<VRCAvatarDescriptor>()))
             {
                 try
                 {

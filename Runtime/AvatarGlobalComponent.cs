@@ -1,3 +1,4 @@
+using Anatawa12.AvatarOptimizer.ErrorReporting;
 using UnityEngine;
 using VRC.SDKBase;
 
@@ -7,7 +8,7 @@ namespace Anatawa12.AvatarOptimizer
     /// Base class for Avatar-Global configurations
     /// 
     /// </summary>
-    abstract class AvatarGlobalComponent : AvatarTagComponent
+    abstract class AvatarGlobalComponent : AvatarTagComponent, IStaticValidated
     {
     }
 }

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Anatawa12.AvatarOptimizer.ErrorReporting;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
@@ -34,7 +35,9 @@ namespace Anatawa12.AvatarOptimizer.Processors
                                 mapper = new AnimatorControllerMapper(mapping,
                                     session.RelativePath(component.transform), session);
 
-                            var mapped = mapper.MapAnimatorController(controller);
+                            // ReSharper disable once AccessToModifiedClosure
+                            var mapped = BuildReport.ReportingObject(controller,
+                                () => mapper.MapAnimatorController(controller));
                             if (mapped != null)
                                 p.objectReferenceValue = mapped;
                         }

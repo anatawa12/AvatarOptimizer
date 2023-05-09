@@ -5,7 +5,7 @@ namespace Anatawa12.AvatarOptimizer
 {
     [AddComponentMenu("Optimizer/UnusedBonesByReferencesTool")]
     [DisallowMultipleComponent]
-    internal class UnusedBonesByReferencesTool : AvatarTagComponent
+    internal class UnusedBonesByReferencesTool : AvatarGlobalComponent
     {
         [CL4EELocalized("UnusedBonesByReferencesTool:prop:preserveEndBone", 
         "UnusedBonesByReferencesTool:tooltip:preserveEndBone")]

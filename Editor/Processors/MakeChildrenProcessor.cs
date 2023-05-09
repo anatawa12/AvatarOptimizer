@@ -1,3 +1,4 @@
+using Anatawa12.AvatarOptimizer.ErrorReporting;
 using System.Linq;
 
 namespace Anatawa12.AvatarOptimizer.Processors
@@ -6,14 +7,14 @@ namespace Anatawa12.AvatarOptimizer.Processors
     {
         public void Process(OptimizerSession session)
         {
-            foreach (var makeChildren in session.GetComponents<MakeChildren>())
+            BuildReport.ReportingObjects(session.GetComponents<MakeChildren>(), makeChildren =>
             {
                 foreach (var makeChildrenChild in makeChildren.children.GetAsSet().Where(x => x))
                 {
                     session.MappingBuilder.RecordMoveObject(makeChildrenChild.gameObject, makeChildren.gameObject);
                     makeChildrenChild.parent = makeChildren.transform;
                 }
-            }
+            });
         }
     }
 }
