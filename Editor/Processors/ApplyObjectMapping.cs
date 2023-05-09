@@ -5,7 +5,6 @@ using Anatawa12.AvatarOptimizer.ErrorReporting;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
-using UnityEngine.Assertions;
 using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.Processors
@@ -14,8 +13,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
     {
         public void Apply(OptimizerSession session)
         {
-            var mapping = session.GetMapping();
-            mapping.FlattenMapping();
+            var mapping = session.MappingBuilder.BuildObjectMapping();
 
             // replace all objects
             foreach (var component in session.GetComponents<Component>())
@@ -27,13 +25,15 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 {
                     if (p.propertyType == SerializedPropertyType.ObjectReference)
                     {
-                        if (p.objectReferenceValue != null)
-                            if (mapping.TryGetValue(p.objectReferenceValue, out var mapped))
-                                p.objectReferenceValue = mapped;
+                        if (mapping.InstanceIdToComponent.TryGetValue(p.objectReferenceInstanceIDValue,
+                                out var mappedComponent))
+                            p.objectReferenceValue = mappedComponent.component;
+
                         if (p.objectReferenceValue is AnimatorController controller)
                         {
                             if (mapper == null)
-                                mapper = new AnimatorControllerMapper(mapping, component.transform, session);
+                                mapper = new AnimatorControllerMapper(mapping,
+                                    session.RelativePath(component.transform), session);
 
                             // ReSharper disable once AccessToModifiedClosure
                             var mapped = BuildReport.ReportingObject(controller,
@@ -51,26 +51,17 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
     internal class AnimatorControllerMapper
     {
-        private readonly Dictionary<(string, Type), string> _mapping = new Dictionary<(string, Type), string>();
+        private readonly ObjectMapping _mapping;
         private readonly Dictionary<Object, Object> _cache = new Dictionary<Object, Object>();
         private readonly OptimizerSession _session;
+        private readonly string _rootPath;
         private bool _mapped = false;
 
-        public AnimatorControllerMapper(Dictionary<Object, Object> mapping, Transform root, OptimizerSession session)
+        public AnimatorControllerMapper(ObjectMapping mapping, string rootPath, OptimizerSession session)
         {
             _session = session;
-            foreach (var kvp in mapping)
-            {
-                if (!(kvp.Key is Component key)) continue;
-                if (kvp.Value == null) continue;
-                Assert.AreEqual(key.GetType(), kvp.Value.GetType());
-                var value = (Component) kvp.Value;
-                var relativeKey = Utils.RelativePath(root, key.transform);
-                if (relativeKey == null) continue;
-                var relativeValue = Utils.RelativePath(root, value.transform);
-                if (relativeValue == null) continue;
-                _mapping[(relativeKey, key.GetType())] = relativeValue;
-            }
+            _mapping = mapping;
+            _rootPath = rootPath;
         }
 
         public AnimatorController MapAnimatorController(AnimatorController controller)
@@ -115,18 +106,20 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
                 foreach (var binding in AnimationUtility.GetCurveBindings(clip))
                 {
-                    var newBinding = binding;
-                    newBinding.path = MapPath(binding.path, binding.type);
+                    var newBinding = _mapping.MapPath(_rootPath, binding);
+                    _mapped |= newBinding != binding;
+                    if (newBinding.type == null) continue;
                     newClip.SetCurve(newBinding.path, newBinding.type, newBinding.propertyName,
                         AnimationUtility.GetEditorCurve(clip, binding));
                 }
 
-                foreach (var objBinding in AnimationUtility.GetObjectReferenceCurveBindings(clip))
+                foreach (var binding in AnimationUtility.GetObjectReferenceCurveBindings(clip))
                 {
-                    var newBinding = objBinding;
-                    newBinding.path = MapPath(objBinding.path, objBinding.type);
+                    var newBinding = _mapping.MapPath(_rootPath, binding);
+                    _mapped |= newBinding != binding;
+                    if (newBinding.type == null) continue;
                     AnimationUtility.SetObjectReferenceCurve(newClip, newBinding,
-                        AnimationUtility.GetObjectReferenceCurve(clip, objBinding));
+                        AnimationUtility.GetObjectReferenceCurve(clip, binding));
                 }
 
                 newClip.wrapMode = clip.wrapMode;
@@ -141,14 +134,6 @@ namespace Anatawa12.AvatarOptimizer.Processors
             {
                 return null;
             }
-        }
-
-        private string MapPath(string bindingPath, Type bindingType)
-        {
-            if (!_mapping.TryGetValue((bindingPath, bindingType), out var newPath))
-                return bindingPath;
-            _mapped = true;
-            return newPath;
         }
 
         // https://github.com/bdunderscore/modular-avatar/blob/db49e2e210bc070671af963ff89df853ae4514a5/Packages/nadena.dev.modular-avatar/Editor/AnimatorMerger.cs#LL242-L340C10

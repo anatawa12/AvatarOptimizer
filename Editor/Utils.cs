@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using JetBrains.Annotations;
 using Unity.Collections;
 using UnityEditor;
 using UnityEngine;
@@ -66,6 +67,8 @@ namespace Anatawa12.AvatarOptimizer
             }
         }
 
+        [ContractAnnotation("root:null => notnull")]
+        [ContractAnnotation("root:notnull => canbenull")]
         public static string RelativePath(Transform root, Transform child)
         {
             if (root == child) return "";
@@ -73,9 +76,9 @@ namespace Anatawa12.AvatarOptimizer
             var pathSegments = new List<string>();
             while (child != root)
             {
+                if (child == null) return null;
                 pathSegments.Add(child.name);
                 child = child.transform.parent;
-                if (child == null) return null;
             }
 
             pathSegments.Reverse();
@@ -353,6 +356,36 @@ namespace Anatawa12.AvatarOptimizer
             {
                 if ((_flags & 1) != 0) AssetDatabase.StopAssetEditing();
                 if ((_flags & 2) != 0) AssetDatabase.SaveAssets();
+            }
+        }
+
+        [NotNull]
+        public static GameObject GetGameObjectRelative([NotNull] GameObject rootObject, [NotNull] string path)
+        {
+            if (path == "") return rootObject;
+            var cursor = rootObject.transform;
+            foreach (var pathComponent in path.Split('/'))
+            {
+                cursor = cursor.Find(pathComponent);
+                if (!cursor) throw new InvalidOperationException($"{path} not found");
+            }
+
+            return cursor.gameObject;
+        }
+
+        // Properties detailed first and nothing last
+        public static IEnumerable<(string prop, string rest)> FindSubPaths(string prop, char sep)
+        {
+            var rest = "";
+            for (;;)
+            {
+                yield return (prop, rest);
+
+                var index = prop.LastIndexOf(sep);
+                if (index == -1) yield break;
+
+                rest = prop.Substring(index) + rest;
+                prop = prop.Substring(0, index);
             }
         }
     }

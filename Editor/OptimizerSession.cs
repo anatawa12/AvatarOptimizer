@@ -1,7 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer
 {
@@ -12,6 +14,7 @@ namespace Anatawa12.AvatarOptimizer
         private readonly List<Object> _toDestroy = new List<Object>();
         private readonly HashSet<Object> _added = new HashSet<Object>();
         private readonly DummyObject _assetFileObject;
+        public ObjectMappingBuilder MappingBuilder { get; }
 
         public OptimizerSession(GameObject rootObject, bool addToAsset)
         {
@@ -24,10 +27,11 @@ namespace Anatawa12.AvatarOptimizer
             {
                 _assetFileObject = null;
             }
+
+            MappingBuilder = new ObjectMappingBuilder(rootObject);
         }
 
         public void AddObjectMapping<T>(T oldValue, T newValue) where T : Object => _mapping[oldValue] = newValue;
-        internal Dictionary<Object, Object> GetMapping() => _mapping;
 
         public void Destroy(Object merge) => _toDestroy.Add(merge);
         internal List<Object> GetObjectsToDestroy() => _toDestroy;
@@ -64,6 +68,12 @@ namespace Anatawa12.AvatarOptimizer
         {
             foreach (var o in _added)
                 EditorUtility.SetDirty(o);
+        }
+
+        public string RelativePath(Transform child)
+        {
+            return Utils.RelativePath(_rootObject.transform, child) ??
+                   throw new ArgumentException("child is not child of rootObject", nameof(child));
         }
     }
 }
