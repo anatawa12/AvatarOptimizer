@@ -8,25 +8,32 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Error Reporting System `#124`
-  - This adds window shows errors on build
-  - This is based on Modular Avatar's Error Reporting Window. thanks `@bdunderscore`
 
 ### Changed
-- Improved & reimplemented Animation (re)generation system `#137`
-  - This is completely internal changes. Should not break your project
-  - In previous implementation, animations for GameObjects moved by MergeBone, MergePhysBone or else doesn't work well
-  - This reimplementation should fix this problem
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
-- Migration fails with scenes/prefabs in read-only packages `#136`
-  - Now, migration process doesn't see any scenes/prefabs in read-only packages.
 
 ### Security
+
+## [0.3.2-beta.1] - 2023-05-09
+### Added
+- Error Reporting System [`#124`](https://github.com/anatawa12/AvatarOptimizer/pull/124)
+  - This adds window shows errors on build
+  - This is based on Modular Avatar's Error Reporting Window. thanks `@bdunderscore`
+
+### Changed
+- Improved & reimplemented Animation (re)generation system [`#137`](https://github.com/anatawa12/AvatarOptimizer/pull/137)
+  - This is completely internal changes. Should not break your project
+  - In previous implementation, animations for GameObjects moved by MergeBone, MergePhysBone or else doesn't work well
+  - This reimplementation should fix this problem
+
+### Fixed
+- Migration fails with scenes/prefabs in read-only packages [`#136`](https://github.com/anatawa12/AvatarOptimizer/pull/136)
+  - Now, migration process doesn't see any scenes/prefabs in read-only packages.
 
 ## [0.3.1] - 2023-05-05
 ### Fixed
@@ -273,7 +280,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.3.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.3.2-beta.1...HEAD
+[0.3.2-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.3.1...v0.3.2-beta.1
 [0.3.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.3.0-rc.2...v0.3.0
 [0.3.0-rc.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.3.0-rc.1...v0.3.0-rc.2
