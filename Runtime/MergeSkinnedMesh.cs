@@ -1,4 +1,5 @@
 using System;
+using Anatawa12.AvatarOptimizer.ErrorReporting;
 using CustomLocalization4EditorExtension;
 using UnityEngine;
 
@@ -7,7 +8,7 @@ namespace Anatawa12.AvatarOptimizer
     [AddComponentMenu("Optimizer/Merge Skinned Mesh")]
     [RequireComponent(typeof(SkinnedMeshRenderer))]
     [DisallowMultipleComponent]
-    internal class MergeSkinnedMesh : EditSkinnedMeshComponent
+    internal class MergeSkinnedMesh : EditSkinnedMeshComponent, IStaticValidated
     {
         #region v1
         [Obsolete("legacy v1", true)]

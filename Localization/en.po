@@ -98,9 +98,15 @@ msgstr "Parent of source PhysBone are differ. move to same parent OR use Make Ch
 msgid "MergePhysBone:error:noSources"
 msgstr "There's no source PhysBones"
 
+msgid "MergePhysBone:error:multiChildType"
+msgstr "Some PysBone has multi child type != Ignore"
+
 msgid "MergePhysBone:error:unsupportedPbVersion"
 msgstr "The PhysBone Version is not supported (yet) by Avatar Optimizer.\n"
 "Please tell author on twitter (@anatawa12_vrc) or GitHub (anatawa12/AvatarOptimizer)!"
+
+msgid "MergePhysBone:error:differValues"
+msgstr "The values is differ between two or more sources. You have to set same value OR override this property: {0}"
 
 msgid "MergePhysBone:dialog:versionInfo:title"
 msgstr "Version Info" 
@@ -283,5 +289,12 @@ msgstr "Detect Extra Children"
 # "子にボーン以外を持つボーンを削除しない"
 msgid "UnusedBonesByReferencesTool:tooltip:detectExtraChild"
 msgstr "If checked, this tool does not remove bones with non-bone children."
+
+# endregion
+
+# region ErrorReporter
+
+msgid "ErrorReporter:error.internal_error"
+msgstr "An internal error has occurred: {0} when processing:"
 
 # endregion

@@ -8,6 +8,9 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Error Reporting System `#124`
+  - This adds window shows errors on build
+  - This is based on Modular Avatar's Error Reporting Window. thanks `@bdunderscore` 
 
 ### Changed
 

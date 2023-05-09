@@ -1,3 +1,4 @@
+using Anatawa12.AvatarOptimizer.ErrorReporting;
 using UnityEditor;
 using UnityEngine;
 using VRC.Dynamics;
@@ -9,7 +10,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
         public void Process(OptimizerSession session)
         {
             foreach (var component in session.GetComponents<ClearEndpointPosition>())
-                Process(component.GetComponent<VRCPhysBoneBase>());
+                BuildReport.ReportingObject(component, () => Process(component.GetComponent<VRCPhysBoneBase>()));
         }
         
         public static void Process(VRCPhysBoneBase pb)

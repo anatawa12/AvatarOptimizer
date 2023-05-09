@@ -1,17 +1,13 @@
 {
-    "name": "com.anatawa12.avatar-optimizer.runtime",
+    "name": "com.anatawa12.avatar-optimizer.internal.error-reporter.runtime",
     "references": [
-        "GUID:b23bdfe8d18741a29e869995d47026d0",
-        "GUID:8264e72376854221affe9980c91c2fff",
-        "GUID:8542dbf824204440a818dbc2377cb4d6"
+        "GUID:8264e72376854221affe9980c91c2fff"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": true,
     "precompiledReferences": [
-        "VRC.Dynamics.dll",
-        "VRC.SDK3.Dynamics.PhysBone.dll",
         "VRCSDK3A.dll",
         "VRCSDKBase.dll"
     ],

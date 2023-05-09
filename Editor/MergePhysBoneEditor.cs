@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Anatawa12.AvatarOptimizer.ErrorReporting;
 using CustomLocalization4EditorExtension;
 using JetBrains.Annotations;
 using UnityEditor;
@@ -371,7 +372,7 @@ namespace Anatawa12.AvatarOptimizer
             EditorGUILayout.LabelField("Multi Child Type", "Must be Ignore");
             var multiChildType = _sourcePhysBone.FindProperty("multiChildType");
             if (multiChildType.enumValueIndex != 0 || multiChildType.hasMultipleDifferentValues)
-                EditorGUILayout.HelpBox("Some PysBone has multi child type != Ignore", MessageType.Error);
+                EditorGUILayout.HelpBox(CL4EE.Tr("MergePhysBone:error:multiChildType"), MessageType.Error);
         }
         protected override void OptionParameter() {
             EditorGUILayout.PropertyField(_mergedPhysBone.FindProperty("parameter"));
@@ -786,4 +787,138 @@ namespace Anatawa12.AvatarOptimizer
             return result;
         }
     }
+
+    [InitializeOnLoad]
+    sealed class MergePhysBoneValidator : MergePhysBoneEditorModificationUtils
+    {
+        private readonly List<ErrorLog> _errorLogs;
+        private readonly List<string> _differProps = new List<string>();
+        private readonly MergePhysBone _mergePhysBone;
+
+        static MergePhysBoneValidator()
+        {
+            ComponentValidation.RegisterValidator<MergePhysBone>(Validate);
+        }
+
+        private static List<ErrorLog> Validate(MergePhysBone mergePhysBone)
+        {
+            var list = new List<ErrorLog>();
+            if (mergePhysBone.makeParent && mergePhysBone.transform.childCount != 0)
+                list.Add(ErrorLog.Validation("MergePhysBone:error:makeParentWithChildren", mergePhysBone));
+
+            new MergePhysBoneValidator(list, mergePhysBone).DoProcess();
+
+            return list;
+        }
+
+        public MergePhysBoneValidator(List<ErrorLog> errorLogs, MergePhysBone mergePhysBone)
+            : base(new SerializedObject(mergePhysBone))
+        {
+            _errorLogs = errorLogs;
+            _mergePhysBone = mergePhysBone;
+        }
+
+        private static void Void()
+        {
+        }
+
+        protected override void BeginPbConfig() => Void();
+        protected override bool BeginSection(string name, string docTag) => true;
+        protected override void EndSection() => Void();
+        protected override void EndPbConfig() {
+            if (_differProps.Count != 0)
+            {
+                _errorLogs.Add(ErrorLog.Validation("MergePhysBone:error:differValues",
+                    new[] { string.Join(", ", _differProps) }));
+            }
+        }
+
+        protected override void NoSource() =>
+            _errorLogs.Add(ErrorLog.Validation("MergePhysBone:error:noSources"));
+
+        protected override void TransformSection()
+        {
+            if (!_mergePhysBone.makeParent)
+            {
+                var differ = _sourcePhysBone.targetObjects.Cast<Component>()
+                    .Select(x => x.transform.parent)
+                    .ZipWithNext()
+                    .Any(x => x.Item1 != x.Item2);
+                if (differ)
+                    _errorLogs.Add(ErrorLog.Validation("MergePhysBone:error:parentDiffer"));
+            }
+            var multiChildType = _sourcePhysBone.FindProperty(nameof(VRCPhysBoneBase.multiChildType));
+            if (multiChildType.enumValueIndex != 0 || multiChildType.hasMultipleDifferentValues)
+                _errorLogs.Add(ErrorLog.Validation("MergePhysBone:error:multiChildType"));
+        }
+
+        protected override void OptionParameter() => Void();
+        protected override void OptionIsAnimated() => Void();
+
+        protected override void UnsupportedPbVersion() =>
+            _errorLogs.Add(ErrorLog.Validation("MergePhysBone:error:unsupportedPbVersion"));
+
+        protected override void PbVersionProp(string label, string pbPropName, SerializedProperty overridePropName,
+            params SerializedProperty[] overrides)
+            => PbProp(label, pbPropName, overridePropName, overrides);
+
+        protected override void PbProp(string label, string pbPropName, SerializedProperty overridePropName,
+            params SerializedProperty[] overrides) =>
+            PbPropImpl(label, overridePropName, overrides,
+                () => _sourcePhysBone.FindProperty(pbPropName).hasMultipleDifferentValues);
+
+        protected override void PbCurveProp(string label, string pbPropName, string pbCurvePropName,
+            SerializedProperty overridePropName,
+            params SerializedProperty[] overrides) =>
+            PbPropImpl(label, overridePropName, overrides,
+                () => _sourcePhysBone.FindProperty(pbPropName).hasMultipleDifferentValues
+                      || _sourcePhysBone.FindProperty(pbCurvePropName).hasMultipleDifferentValues);
+
+        protected override void PbPermissionProp(string label, string pbPropName, string pbFilterPropName,
+            SerializedProperty overridePropName,
+            params SerializedProperty[] overrides)
+        {
+            PbPropImpl(label, overridePropName, overrides, () =>
+            {
+                var sourceValueProp = _sourcePhysBone.FindProperty(pbPropName);
+                var sourceFilterProp = _sourcePhysBone.FindProperty(pbFilterPropName);
+                return sourceValueProp.hasMultipleDifferentValues
+                       || sourceValueProp.enumValueIndex == 2 && sourceFilterProp.hasMultipleDifferentValues;
+            });
+        }
+
+        protected override void Pb3DCurveProp(string label, string pbPropName, string pbXCurveLabel,
+            string pbXCurvePropName, string pbYCurveLabel,
+            string pbYCurvePropName, string pbZCurveLabel, string pbZCurvePropName, SerializedProperty overridePropName,
+            params SerializedProperty[] overrides) =>
+            PbPropImpl(label, overridePropName, overrides, () =>
+                _sourcePhysBone.FindProperty(pbPropName).hasMultipleDifferentValues ||
+                _sourcePhysBone.FindProperty(pbXCurvePropName).hasMultipleDifferentValues ||
+                _sourcePhysBone.FindProperty(pbYCurvePropName).hasMultipleDifferentValues ||
+                _sourcePhysBone.FindProperty(pbZCurvePropName).hasMultipleDifferentValues);
+
+        private void PbPropImpl(string label,
+            SerializedProperty overrideProp,
+            SerializedProperty[] overrides,
+            Func<bool> copy)
+        {
+            if (overrides.Any(x => x.boolValue) || overrideProp.boolValue) return;
+
+            // Copy mode
+            var differ = copy();
+
+            if (differ)
+                _differProps.Add(label);
+        }
+
+        protected override void ColliderProp(string label, string pbProp, SerializedProperty overrideProp)
+        {
+            if (_mergePhysBone.colliders == CollidersSettings.Copy)
+            {
+                if (_sourcePhysBone.FindProperty(pbProp).hasMultipleDifferentValues)
+                    _errorLogs.Add(ErrorLog.Validation("MergePhysBone:error:differValue", new[] { label }));
+            }
+        }
+    }
+
 }
