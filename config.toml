@@ -12,3 +12,6 @@ languageName = 'English'
 [languages.ja]
 weight = 1
 languageName = '日本語'
+
+[markup.goldmark.renderer]
+unsafe = true
