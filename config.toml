@@ -15,3 +15,6 @@ languageName = '日本語'
 
 [markup.goldmark.renderer]
 unsafe = true
+
+[params]
+BookTheme = 'auto'
