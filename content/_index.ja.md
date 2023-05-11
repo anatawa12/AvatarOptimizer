@@ -5,27 +5,29 @@ type: docs
 
 # Avatar Optimizer
 
-Set of Anatawa12's non-Destructive Small Avatar Optimization Utilities.
-Those utilities are applied on entering play mode or building VRC Avatars.
+Anatawa12による小さな非破壊アバター軽量化ユーティリティのセット
+このユーティリティはPlayモードに入るときかアバターをビルドするときに適用されます。
 
-## Installation {#installation}
+## インストール {#installation}
 
-Avatar Optimizer is published with [VPM][vpm] repository so you can install this package using any vpm clients.
+Avatar Optimizerは[VPM][vpm]レポジトリを使用して公開されているため、任意のvpmクライアントを使用してインストールできます。
 
-### With VCC (Recommended) {#installation-vcc}
+### VCC を使用する (推奨) {#installation-vcc}
 
-1. Click [this link][VCC-add-repo-link] to add anatawa12's repository.
-2. Add Avatar Optimizer from VCC.
+[VCC]
 
-### Using Installer UnityPackage with VPAI {#installation-vpai}
+1. [このリンク][VCC-add-repo-link]をクリックしてanataw12のレポジトリを追加する
+2. VCCでAvatar Optimizerを追加する。
 
-With [VPAI] You can install this tool with just importing one unitypackage.
+### VPAIによるインストーラUnityPackageを使用する {#installation-vpai}
 
-1. download installer unitypackage [here][installer unitypackage 0.3.x].
-2. Import the unitypackage into your project.
+[VPAI]により、unitypackageをインポートするだけでこのツールをインストールできます。
+
+1. [ここ][installer unitypackage 0.3.x]からインストーラunitypackageをダウンロードする。
+2. unitypackageをプロジェクトにインポートする
 
 <details>
-<summary>Installer for other versions</summary>
+<summary>他のバージョン用のインストーラ</summary>
 
 - [0.1.x][installer unitypackage 0.1.x]
 - [0.2.x][installer unitypackage 0.2.x]
@@ -33,9 +35,9 @@ With [VPAI] You can install this tool with just importing one unitypackage.
 
 </details>
 
-### Using vrc-get {#installation-vrc-get}
+### vrc-getを使用する {#installation-vrc-get}
 
-If you're familiar with command line, You may install this package using [vrc-get][vrc-get].
+もしコマンドラインに精通しているのであれば、[vrc-get][vrc-get]を使用してインストールできます。
 
 ```bash
 # add our vpm repository
@@ -45,9 +47,9 @@ cd /path/to/your-unity-project
 vrc-get install com.anatawa12.avatar-optimizer
 ```
 
-### Using VPM CommandLine Interface {#installation-vpm-cli}
+### VPMコマンドラインインターフェースを使用する {#installation-vpm-cli}
 
-If you're familiar with command line, You may install this package using [VPM/VCC CLI][vcc-cli].
+もしコマンドラインに精通しているのであれば、[VPM/VCC CLI][vcc-cli]を使用してインストールできます。
 
 ```bash
 # add our vpm repository
