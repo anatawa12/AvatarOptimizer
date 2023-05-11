@@ -1,0 +1,10 @@
+{{ $AOBaseNoSlash := strings.TrimSuffix "/" .Site.BaseURL }}
+{{ $AORelativePath := strings.TrimPrefix $AOBaseNoSlash .Page.Permalink }}
+{{ $AOGlobalRoot := strings.TrimSuffix "/beta" $AOBaseNoSlash }}
+{{ $AOIsBeta := ne $AOGlobalRoot $AOBaseNoSlash }}
+
+{{ if $AOIsBeta }}
+<a class="ao-stable-beta" href="{{ $AOGlobalRoot }}{{ $AORelativePath }}">Goto Stable Docs</a>
+{{ else }}
+<a class="ao-stable-beta" href="{{ $AOGlobalRoot }}/beta{{ $AORelativePath }}">Goto Beta Docs</a>
+{{ end }}
