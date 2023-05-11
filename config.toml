@@ -2,3 +2,13 @@ baseURL = 'https://vpm.anatawa12.com/avatar-optimizer/beta'
 languageCode = 'en-us'
 title = 'Avatar Optimizer'
 theme = 'hugo-book'
+defaultContentLanguage = 'en'
+disableLanguages = ['ja']
+
+[languages.en]
+weight = 1
+languageName = 'English'
+
+[languages.ja]
+weight = 1
+languageName = '日本語'
