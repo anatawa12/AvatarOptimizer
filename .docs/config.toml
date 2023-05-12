@@ -1,6 +1,6 @@
 baseURL = 'https://vpm.anatawa12.com/avatar-optimizer/beta'
 languageCode = 'en-us'
-title = 'Avatar Optimizer (SNAPSHOT)'
+title = 'Avatar Optimizer (0.3.2-beta.2)'
 theme = 'hugo-book'
 defaultContentLanguage = 'en'
 defaultContentLanguageInSubdir = true

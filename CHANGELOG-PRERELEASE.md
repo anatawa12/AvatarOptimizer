@@ -8,9 +8,6 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Website for AvatarOptimizer `#139`
-  - Will be available at <https://vpm.anatawa12.com/avatar-optimizer/>
-  - For now, beta site is only available at <https://vpm.anatawa12.com/avatar-optimizer/beta>
 
 ### Changed
 
@@ -21,6 +18,12 @@ The format is based on [Keep a Changelog].
 ### Fixed
 
 ### Security
+
+## [0.3.2-beta.2] - 2023-05-12
+### Added
+- Website for AvatarOptimizer [`#139`](https://github.com/anatawa12/AvatarOptimizer/pull/139)
+  - Will be available at <https://vpm.anatawa12.com/avatar-optimizer/>
+  - For now, beta site is only available at <https://vpm.anatawa12.com/avatar-optimizer/beta>
 
 ## [0.3.2-beta.1] - 2023-05-09
 ### Added
@@ -283,7 +286,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.3.2-beta.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.3.2-beta.2...HEAD
+[0.3.2-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.3.2-beta.1...v0.3.2-beta.2
 [0.3.2-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.3.1...v0.3.2-beta.1
 [0.3.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.3.0-rc.2...v0.3.0
