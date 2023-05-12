@@ -38,8 +38,14 @@ jobs:
       - uses: actions/checkout@v3
         with:
           token: ${{ secrets.MASTER_GITHUB_PAT }}
+          submodule: recursive
       - uses: anatawa12/something-releaser@v2
       - uses: snow-actions/git-config-user@v1.0.0
+      - name: Setup Hugo
+        uses: peaceiris/actions-hugo@v2
+        with:
+          hugo-version: '0.111.3+'
+          extended: true
 
       - name: Update Version Name
         id: update-version
@@ -79,6 +85,7 @@ jobs:
         env:
           RELEASE_KIND_IN: ${{ github.event.inputs.release_kind }}
 
+      # region changelog
       - name: Create Changelog
         id: changelog
         uses: anatawa12/sh-actions/changelog/prepare-release@master
@@ -128,6 +135,12 @@ jobs:
           name: changelog
           path: release-note.md
       - run: rm release-note.md
+      # endregion changelog
+      
+      # region docs config
+      - name: Update .docs/config.toml
+        run: sed -i'.bak' -e "s/(SNAPSHOT)/($VERSION)/" .docs/config.toml && rm .docs/config.toml.bak
+      # endregion docs config
 
       - name: Commit & tag version
         if: ${{ inputs.publish }}
@@ -135,9 +148,11 @@ jobs:
           git commit -am "$VERSION"
           git tag "v$VERSION"
 
+      # region building
       - name: Prepare build folder
         run: mkdir build
 
+      # region vpm release
       - name: Build VPM release
         run: |
           zip -r "build/$PKG_NAME-$VERSION.zip" . -x 'build*' '.*'
@@ -146,6 +161,31 @@ jobs:
         with:
           name: vpm-package
           path: build/${{ env.PKG_NAME }}-${{ env.VERSION }}.zip
+      # endregion vpm release
+
+      # region docs
+      - name: Build docs as a beta docs
+        working-directory: .docs
+        run: hugo --minify --baseURL 'https://vpm.anatawa12.com/avatar-optimizer/beta'
+
+      - name: Copy to beta dir if it's release
+        if: ${{ !fromJSON(env.PRERELEASE) }}
+        working-directory: .docs
+        run: mkdir -p static && mv public static/beta
+      - name: Build docs as a release docs if it's release
+        if: ${{ !fromJSON(env.PRERELEASE) }}
+        working-directory: .docs
+        run: hugo --minify --baseURL 'https://vpm.anatawa12.com/avatar-optimizer'
+
+      - name: zip docs
+        run: cd .docs/public && zip ../../build/website.zip -r .
+      - name: Upload docs
+        uses: actions/upload-artifact@v3
+        with:
+          name: website
+          path: .docs/public
+      # endregion docs
+      # endregion building
 
       - name: Publish Release
         if: ${{ inputs.publish }}
@@ -165,6 +205,7 @@ jobs:
             -F "$RELEASE_NOTE" \
             ${{ fromJSON(env.PRERELEASE) && '--prerelease' || '' }} \
             "build/$PKG_NAME-$VERSION.zip" \
+            build/website.zip \
             "package.json" \
 
       - name: prepare next release & push
@@ -172,6 +213,7 @@ jobs:
         run: |
           VERSION="$(version-next "$(get-version)")"
           set-version "$(version-set-channel "$VERSION" beta 0)"
+          git restore --source=HEAD^ .docs/config.toml
           git commit -am "prepare for next version: $VERSION"
           git push && git push --tags
 
@@ -182,5 +224,7 @@ jobs:
     with:
       version: ${{ needs.create-release.outputs.version }}
       environment: vpm.anatawa12.com
+      website_zip: https://github.com/anatawa12/AvatarOptimizer/releases/download/v${{ needs.create-release.outputs.version }}/website.zip
+      website_path: ${{ contains(needs.create-release.outputs.version, '-') && 'beta' || '' }}
     secrets:
       TOKEN: ${{ secrets.VPM_GITHUB_PAT }}

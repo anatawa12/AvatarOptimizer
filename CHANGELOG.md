@@ -11,6 +11,8 @@ The format is based on [Keep a Changelog].
 - Error Reporting System `#124`
   - This adds window shows errors on build
   - This is based on Modular Avatar's Error Reporting Window. thanks `@bdunderscore` 
+- Website for AvatarOptimizer `#139`
+  - Available at <https://vpm.anatawa12.com/avatar-optimizer/>
 
 ### Changed
 - Improved & reimplemented Animation (re)generation system `#137`

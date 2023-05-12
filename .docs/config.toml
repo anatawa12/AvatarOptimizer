@@ -1,0 +1,20 @@
+baseURL = 'https://vpm.anatawa12.com/avatar-optimizer/beta'
+languageCode = 'en-us'
+title = 'Avatar Optimizer (SNAPSHOT)'
+theme = 'hugo-book'
+defaultContentLanguage = 'en'
+defaultContentLanguageInSubdir = true
+
+[languages.en]
+weight = 1
+languageName = 'English'
+
+[languages.ja]
+weight = 1
+languageName = '日本語'
+
+[markup.goldmark.renderer]
+unsafe = true
+
+[params]
+BookTheme = 'auto'
