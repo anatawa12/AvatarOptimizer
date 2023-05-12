@@ -1,0 +1,186 @@
+name: Create Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_kind:
+        type: choice
+        description: The type of release.
+        default: prerelease
+        required: true
+        options:
+          - prerelease
+          - start-rc
+          - stable
+      publish:
+        description: "True to publish release to git, vpm. if false, this creates release asset only"
+        type: boolean
+        required: false
+
+env:
+  PKG_NAME: com.anatawa12.avatar-optimizer
+  SOMETHING_RELEASER_SEMVER: 1
+
+concurrency:
+  group: publish
+  cancel-in-progress: true
+
+permissions: write-all
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    environment:
+      name: master branch
+    outputs:
+      version: ${{ steps.update-version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.MASTER_GITHUB_PAT }}
+      - uses: anatawa12/something-releaser@v2
+      - uses: snow-actions/git-config-user@v1.0.0
+
+      - name: Update Version Name
+        id: update-version
+        run: |
+          # set version name in properties file
+          case "$RELEASE_KIND_IN" in
+            "prerelease" )
+              set-version "$(version-next "$(get-version)")"
+              gh-export-variable PRERELEASE true
+              ;;
+            "start-rc" )
+              set-version "$(version-set-channel "$(get-version)" rc)"
+              gh-export-variable PRERELEASE true
+              ;;
+            "stable" )
+              set-version "$(version-set-channel "$(get-version)" stable)"
+              gh-export-variable PRERELEASE false
+              ;;
+            * )
+              echo "invalid release kind: $RELEASE_KIND_IN"
+              exit 255
+              ;;
+          esac
+
+          case "$GITHUB_REF_NAME" in
+            master | master-* )
+              echo "head is master or master-*"
+              ;;
+            * )
+              echo "invalid release kind: $RELEASE_KIND_IN is not allowd for $GITHUB_REF_NAME"
+              exit 255
+              ;;
+          esac
+
+          gh-export-variable VERSION "$(get-version)"
+          gh-set-output version "$(get-version)"
+        env:
+          RELEASE_KIND_IN: ${{ github.event.inputs.release_kind }}
+
+      - name: Create Changelog
+        id: changelog
+        uses: anatawa12/sh-actions/changelog/prepare-release@master
+        with:
+          version: ${{ env.VERSION }}
+          prerelease: ${{ env.PRERELEASE }}
+          tag-prefix: v
+          prerelease-note-heading: |
+            Version ${{ env.VERSION }}
+            ---
+            
+            Installer unitypackage for this version is [here][installer for this].
+
+            [installer for this]: https://api.anatawa12.com/create-vpai/?name=AvatarOptimizer-{}-installer.unitypackage&repo=https://vpm.anatawa12.com/vpm.json&package=com.anatawa12.avatar-optimizer&version=${{ env.VERSION }}
+            
+            **This is SNAPSHOT, not a stable release. make sure this may have many bugs.**
+
+            **If you're using v0.1.3 or older, Please upgrade to v0.1.4 before upgrading v0.2.x!**
+
+            **もし v0.1.3 以前を使用しているのであれば, v0.2.xに更新する前に v0.1.4 に更新してください!**
+          release-note-heading: |
+            Version ${{ env.VERSION }}
+            ---
+            
+            Installer unitypackage for this version is [here][installer for this].
+
+            [installer for this]: https://api.anatawa12.com/create-vpai/?name=AvatarOptimizer-{}-installer.unitypackage&repo=https://vpm.anatawa12.com/vpm.json&package=com.anatawa12.avatar-optimizer&version=${{ env.VERSION }}
+
+            **If you're using v0.1.3 or older, Please upgrade to v0.1.4 before upgrading v0.2.x!**
+
+            **もし v0.1.3 以前を使用しているのであれば, v0.2.xに更新する前に v0.1.4 に更新してください!**
+      - name: Upload CHANGELOG.md
+        if: ${{ !fromJSON(env.PRERELEASE) }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: CHANGELOG
+          path: CHANGELOG.md
+      - name: Upload CHANGELOG-PRERELEASE.md
+        uses: actions/upload-artifact@v3
+        with:
+          name: CHANGELOG-PRERELEASE
+          path: CHANGELOG-PRERELEASE.md
+      - run: cp "${{ steps.changelog.outputs.release-note }}" release-note.md
+      - name: Upload release note
+        uses: actions/upload-artifact@v3
+        with:
+          name: changelog
+          path: release-note.md
+      - run: rm release-note.md
+
+      - name: Commit & tag version
+        if: ${{ inputs.publish }}
+        run: |
+          git commit -am "$VERSION"
+          git tag "v$VERSION"
+
+      - name: Prepare build folder
+        run: mkdir build
+
+      - name: Build VPM release
+        run: |
+          zip -r "build/$PKG_NAME-$VERSION.zip" . -x 'build*' '.*'
+      - name: Upload VPM release
+        uses: actions/upload-artifact@v3
+        with:
+          name: vpm-package
+          path: build/${{ env.PKG_NAME }}-${{ env.VERSION }}.zip
+
+      - name: Publish Release
+        if: ${{ inputs.publish }}
+        run: |
+          git push && git push origin "v$VERSION"
+
+      - name: Publish release to github
+        if: ${{ inputs.publish }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_NOTE: ${{ steps.changelog.outputs.release-note }}
+        shell: bash
+        run: |
+          sleep 1
+          # upload release assets
+          gh release create "v$VERSION" \
+            -F "$RELEASE_NOTE" \
+            ${{ fromJSON(env.PRERELEASE) && '--prerelease' || '' }} \
+            "build/$PKG_NAME-$VERSION.zip" \
+            "package.json" \
+
+      - name: prepare next release & push
+        if: inputs.publish && !fromJSON(env.PRERELEASE)
+        run: |
+          VERSION="$(version-next "$(get-version)")"
+          set-version "$(version-set-channel "$VERSION" beta 0)"
+          git commit -am "prepare for next version: $VERSION"
+          git push && git push --tags
+
+  publish-vpm:
+    uses: anatawa12/vpm.anatawa12.com/.github/workflows/update-package.yml@master
+    needs: create-release
+    if: inputs.publish
+    with:
+      version: ${{ needs.create-release.outputs.version }}
+      environment: vpm.anatawa12.com
+    secrets:
+      TOKEN: ${{ secrets.VPM_GITHUB_PAT }}

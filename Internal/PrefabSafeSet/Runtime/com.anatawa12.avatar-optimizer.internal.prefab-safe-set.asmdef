@@ -1,0 +1,17 @@
+{
+    "name": "com.anatawa12.avatar-optimizer.internal.prefab-safe-set",
+    "references": [
+        "GUID:8264e72376854221affe9980c91c2fff"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "VRC.Dynamics.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

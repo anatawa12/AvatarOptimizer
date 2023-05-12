@@ -1,0 +1,17 @@
+{
+  "name": "com.anatawa12.avatar-optimizer",
+  "version": "0.3.2-beta.1",
+  "unity": "2019.4",
+  "description": "Set of Anatawa12's Small Avatar Optimization Utilities",
+  "displayName": "Anatawa12's AvatarOpitmizer",
+  "author": {
+    "name": "anatawa12",
+    "url": "https://anatawa12.com/"
+  },
+  "url": "https://github.com/anatawa12/AvatarOptimizer",
+  "repo": "https://vpm.anatawa12.com/vpm.json",
+  "vpmDependencies": {
+    "com.anatawa12.custom-localization-for-editor-extension": "^1.0.0",
+    "com.vrchat.avatars": "~3.2.0-beta.1"
+  }
+}
