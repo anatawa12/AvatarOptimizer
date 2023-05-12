@@ -41,6 +41,11 @@ jobs:
           submodule: recursive
       - uses: anatawa12/something-releaser@v2
       - uses: snow-actions/git-config-user@v1.0.0
+      - name: Setup Hugo
+        uses: peaceiris/actions-hugo@v2
+        with:
+          hugo-version: '0.111.3+'
+          extended: true
 
       - name: Update Version Name
         id: update-version
