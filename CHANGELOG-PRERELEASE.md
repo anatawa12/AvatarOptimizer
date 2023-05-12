@@ -8,6 +8,9 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Website for AvatarOptimizer `#139`
+  - Will be available at <https://vpm.anatawa12.com/avatar-optimizer/>
+  - For now, beta site is only available at <https://vpm.anatawa12.com/avatar-optimizer/beta>
 
 ### Changed
 
