@@ -3,11 +3,11 @@ using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer.Processors
 {
-    internal class DeleteGameObjectProcessor
+    internal class RemoveGameObjectProcessor
     {
         public void Process(OptimizerSession session)
         {
-            BuildReport.ReportingObjects(session.GetComponents<DeleteGameObject>(), mergePhysBone =>
+            BuildReport.ReportingObjects(session.GetComponents<RemoveGameObject>(), mergePhysBone =>
             {
                 session.MappingBuilder.RecordRemoveGameObject(mergePhysBone.gameObject);
                 mergePhysBone.transform.parent = null;

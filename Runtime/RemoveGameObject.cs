@@ -3,9 +3,9 @@ using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer
 {
-    [AddComponentMenu("Optimizer/Delete Game Object")]
+    [AddComponentMenu("Optimizer/Remove Game Object")]
     [DisallowMultipleComponent]
-    public class DeleteGameObject : AvatarTagComponent
+    public class RemoveGameObject : AvatarTagComponent
     {
     }
 }
