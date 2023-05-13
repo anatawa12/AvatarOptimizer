@@ -5,8 +5,13 @@ type: docs
 
 # Avatar Optimizer
 
-Anatawa12による小さな非破壊アバター軽量化ユーティリティのセット
+Anatawa12による小さな非破壊アバター軽量化ユーティリティのセット。
 このユーティリティはPlayモードに入るときかアバターをビルドするときに適用されます。
+
+Avatar Optimizerは[GitHub]上で開発され、[MIT License]で公開されてるオープンソースソフトウェアです。
+
+[GitHub]: https://github.com/anatawa12/AvatarOptimizer
+[MIT License]: https://github.com/anatawa12/AvatarOptimizer/blob/HEAD/LICENSE
 
 ## インストール {#installation}
 

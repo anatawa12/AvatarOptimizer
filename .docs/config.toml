@@ -18,3 +18,5 @@ unsafe = true
 
 [params]
 BookTheme = 'auto'
+BookRepo = 'https://github.com/anatawa12/AvatarOptimizer'
+BookEditPath = 'edit/master/.docs'

@@ -8,6 +8,11 @@ type: docs
 Set of Anatawa12's non-Destructive Small Avatar Optimization Utilities.
 Those utilities are applied on entering play mode or building VRC Avatars.
 
+Avatar Optimizer is a Open Source Software developed on [GitHub] published under the [MIT License].
+
+[GitHub]: https://github.com/anatawa12/AvatarOptimizer
+[MIT License]: https://github.com/anatawa12/AvatarOptimizer/blob/HEAD/LICENSE
+
 ## Installation {#installation}
 
 Avatar Optimizer is published with [VPM][vpm] repository so you can install this package using any vpm clients.
