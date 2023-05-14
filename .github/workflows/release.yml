@@ -136,11 +136,6 @@ jobs:
           path: release-note.md
       - run: rm release-note.md
       # endregion changelog
-      
-      # region docs config
-      - name: Update .docs/config.toml
-        run: sed -i'.bak' -e "s/(SNAPSHOT)/($VERSION)/" .docs/config.toml && rm .docs/config.toml.bak
-      # endregion docs config
 
       - name: Commit & tag version
         if: ${{ inputs.publish }}
@@ -164,6 +159,9 @@ jobs:
       # endregion vpm release
 
       # region docs
+      - name: Update .docs/config.toml
+        run: sed -i'.bak' -e "s/(SNAPSHOT)/($VERSION)/" .docs/config.toml && rm .docs/config.toml.bak
+
       - name: Build docs as a beta docs
         working-directory: .docs
         run: hugo --minify --baseURL 'https://vpm.anatawa12.com/avatar-optimizer/beta'
@@ -184,6 +182,9 @@ jobs:
         with:
           name: website
           path: .docs/public
+
+      - name: Restore .docs/config.toml
+        run: git restore --staged --worktree .docs/config.toml
       # endregion docs
       # endregion building
 
@@ -213,7 +214,6 @@ jobs:
         run: |
           VERSION="$(version-next "$(get-version)")"
           set-version "$(version-set-channel "$VERSION" beta 0)"
-          git restore --source=HEAD^ .docs/config.toml
           git commit -am "prepare for next version: $VERSION"
           git push && git push --tags
 
