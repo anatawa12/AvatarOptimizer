@@ -305,6 +305,7 @@ namespace Anatawa12.AvatarOptimizer
         }
 
         private const string TemporalDirPath = "Assets/9999-OptimizerGeneratedTemporalAssets";
+        private const string OutputDirPath = "Assets/AvatarOptimizerOutput";
 
         public static void DeleteTemporalDirectory()
         {
@@ -319,6 +320,28 @@ namespace Anatawa12.AvatarOptimizer
             Directory.CreateDirectory(TemporalDirPath);
             AssetDatabase.CreateAsset(obj, $"{TemporalDirPath}/{GUID.Generate()}.asset");
             return obj;
+        }
+
+        public static DummyObject CreateOutputAssetFile(string name)
+        {
+            Directory.CreateDirectory(OutputDirPath);
+            var path = GetUniqueFileName($"{OutputDirPath}/{name}", "asset");
+            var obj = ScriptableObject.CreateInstance<DummyObject>();
+            AssetDatabase.CreateAsset(obj, path);
+            return obj;
+        }
+
+        private static string GetUniqueFileName(string name, string extension)
+        {
+            // TOCTOU is allowed for now
+            string PathIfNotExists(string path) => File.Exists(path) || Directory.Exists(path) ? null : path;
+
+            if (PathIfNotExists($"{name}.{extension}") is string firstTry) return firstTry;
+
+            for (var number = 0; ; number++)
+            {
+                if (PathIfNotExists($"{name} ({number}).{extension}") is string otherTry) return otherTry;
+            }
         }
 
         public static ZipWithNextEnumerable<T> ZipWithNext<T>(this IEnumerable<T> enumerable) =>

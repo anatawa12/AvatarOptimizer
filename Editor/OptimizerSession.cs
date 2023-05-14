@@ -16,18 +16,15 @@ namespace Anatawa12.AvatarOptimizer
         private readonly DummyObject _assetFileObject;
         public ObjectMappingBuilder MappingBuilder { get; }
 
-        public OptimizerSession(GameObject rootObject, bool addToAsset)
+        public OptimizerSession(GameObject rootObject, bool addToAsset) :
+            this(rootObject, addToAsset ? Utils.CreateAssetFile() : null)
         {
-            this._rootObject = rootObject;
-            if (addToAsset)
-            {
-                _assetFileObject = Utils.CreateAssetFile();
-            }
-            else
-            {
-                _assetFileObject = null;
-            }
+        }
 
+        public OptimizerSession(GameObject rootObject, DummyObject assetFileObject)
+        {
+            _rootObject = rootObject;
+            _assetFileObject = assetFileObject;
             MappingBuilder = new ObjectMappingBuilder(rootObject);
         }
 

@@ -206,5 +206,20 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
         {
             _report = new BuildReport();
         }
+
+        public static void RemapPaths(string original, string cloned)
+        {
+            foreach (var av in CurrentReport.avatars)
+            {
+                av.objectRef = av.objectRef.Remap(original, cloned);
+
+                foreach (var log in av.logs)
+                {
+                    log.referencedObjects = log.referencedObjects.Select(o => o.Remap(original, cloned)).ToList();
+                }
+            }
+
+            ErrorReportUI.reloadErrorReport();
+        }
     }
 }
