@@ -13,6 +13,8 @@ The format is based on [Keep a Changelog].
   - This is based on Modular Avatar's Error Reporting Window. thanks `@bdunderscore` 
 - Website for AvatarOptimizer `#139`
   - Available at <https://vpm.anatawa12.com/avatar-optimizer/>
+- Manual Bake Avatar `#147`
+  - Left click the avatar and click `[AvatarOptimizer] Manual Bake Avatar`
 
 ### Changed
 - Improved & reimplemented Animation (re)generation system `#137`

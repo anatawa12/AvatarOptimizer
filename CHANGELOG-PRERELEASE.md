@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Manual Bake Avatar `#147`
+  - Left click the avatar and click `[AvatarOptimizer] Manual Bake Avatar`
 
 ### Changed
 
