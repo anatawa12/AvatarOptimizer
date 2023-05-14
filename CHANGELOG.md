@@ -8,29 +8,36 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Error Reporting System `#124`
-  - This adds window shows errors on build
-  - This is based on Modular Avatar's Error Reporting Window. thanks `@bdunderscore` 
-- Website for AvatarOptimizer `#139`
-  - Available at <https://vpm.anatawa12.com/avatar-optimizer/>
-- Manual Bake Avatar `#147`
-  - Left click the avatar and click `[AvatarOptimizer] Manual Bake Avatar`
 
 ### Changed
-- Improved & reimplemented Animation (re)generation system `#137`
-  - This is completely internal changes. Should not break your project
-  - In previous implementation, animations for GameObjects moved by MergeBone, MergePhysBone or else doesn't work well
-  - This reimplementation should fix this problem
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
-- Migration fails with scenes/prefabs in read-only packages `#136`
-  - Now, migration process doesn't see any scenes/prefabs in read-only packages.
 
 ### Security
+
+## [0.3.2] - 2023-05-14
+### Added
+- Error Reporting System [`#124`](https://github.com/anatawa12/AvatarOptimizer/pull/124)
+  - This adds window shows errors on build
+  - This is based on Modular Avatar's Error Reporting Window. thanks `@bdunderscore` 
+- Website for AvatarOptimizer [`#139`](https://github.com/anatawa12/AvatarOptimizer/pull/139)
+  - Available at <https://vpm.anatawa12.com/avatar-optimizer/>
+- Manual Bake Avatar [`#147`](https://github.com/anatawa12/AvatarOptimizer/pull/147)
+  - Left click the avatar and click `[AvatarOptimizer] Manual Bake Avatar`
+
+### Changed
+- Improved & reimplemented Animation (re)generation system [`#137`](https://github.com/anatawa12/AvatarOptimizer/pull/137)
+  - This is completely internal changes. Should not break your project
+  - In previous implementation, animations for GameObjects moved by MergeBone, MergePhysBone or else doesn't work well
+  - This reimplementation should fix this problem
+
+### Fixed
+- Migration fails with scenes/prefabs in read-only packages [`#136`](https://github.com/anatawa12/AvatarOptimizer/pull/136)
+  - Now, migration process doesn't see any scenes/prefabs in read-only packages.
 
 ## [0.3.1] - 2023-05-05
 ### Fixed
@@ -223,7 +230,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.3.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.3.2...HEAD
+[0.3.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.8...v0.3.0
 [0.2.8]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.2.7...v0.2.8
