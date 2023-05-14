@@ -31,7 +31,7 @@ namespace Anatawa12.AvatarOptimizer
 
         private static bool _processing;
 
-        private static void ProcessObject(OptimizerSession session)
+        internal static void ProcessObject(OptimizerSession session)
         {
             if (_processing) return;
             using (Utils.StartEditingScope(true))
