@@ -18,9 +18,10 @@ If you have problems or questions about this tool, please feel free to contact m
 
 For more information, check out the [documentation].
 
-**READMEにあった情報はほぼ全て [documentation] に移動しました**
+**READMEにあった情報はほぼ全て [documentation][documentation-ja] に移動しました**
 
-[documentation]: https://vpm.anatawa12.com/avatar-optimizer/
+[documentation]: https://vpm.anatawa12.com/avatar-optimizer/en/
+[documentation-ja]: https://vpm.anatawa12.com/avatar-optimizer/ja/
 
 [twitter]: https://go.anatawa12.com/twitter.vrchat
 [misskey]: https://go.anatawa12.com/misskey.vrchat
