@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
+- Internal Errors not relates to any Object are now reported `#160`
 
 ### Deprecated
 
