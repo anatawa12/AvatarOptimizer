@@ -466,5 +466,15 @@ namespace Anatawa12.AvatarOptimizer
     {
         private const string EXTRA_PROP = "AvatarOptimizerExtraProps";
         public static string BlendShapeIndex(int index) => $"{EXTRA_PROP}.BlendShapeIndex.{index}";
+
+        public static int ParseBlendShapeIndex(string prop)
+        {
+            if (!prop.StartsWith($"{EXTRA_PROP}.BlendShapeIndex.", StringComparison.Ordinal))
+                throw new ArgumentException($"The property {prop} is not BlendShapeIndex", nameof(prop));
+            var indexStr = prop.Substring($"{EXTRA_PROP}.BlendShapeIndex.".Length);
+            if (!int.TryParse(indexStr, out var index))
+                throw new ArgumentException($"The property {prop} is not BlendShapeIndex", nameof(prop));
+            return index;
+        }
     }
 }

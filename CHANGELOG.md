@@ -16,9 +16,13 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Reference to Component will become None `#156`
 
 ### Security
+
+## [0.3.4] - 2023-05-15
+### Fixed
+- Reference to Component will become None [`#156`](https://github.com/anatawa12/AvatarOptimizer/pull/156)
+- BlendShapes for Eyelids can be broken with FreezeBlendShape [`#154`](https://github.com/anatawa12/AvatarOptimizer/pull/154)
 
 ## [0.3.3] - 2023-05-14
 ## [0.3.2] - 2023-05-14
@@ -232,7 +236,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.3.3...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.3.4...HEAD
+[0.3.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.3.3...v0.3.4
 [0.3.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.3.2...v0.3.3
 [0.3.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.3.0...v0.3.1
