@@ -13,7 +13,7 @@ Click Add Box button at the bottom to add box.
 For each box, you can change the center Position, Size, and Rotation of the box.
 The center position is in local coordinate of the object.
 
-<img src="component.png" width="379">
+![component.png](component.png)
 
 Click Edit This Box to show Gizmo to edit the box like above. You can scale, move and rotate the box.
 

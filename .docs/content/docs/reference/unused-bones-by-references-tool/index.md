@@ -11,4 +11,4 @@ This is port of [UnusedBonesByReferencesTool by Narazaka][UnusedBonesByReference
 
 [UnusedBonesByReferencesTool]: https://narazaka.booth.pm/items/3831781
 
-<img src="component.png" width="390">
+![component.png](component.png)

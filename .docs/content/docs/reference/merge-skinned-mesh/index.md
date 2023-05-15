@@ -21,7 +21,7 @@ This component is good for Merging your clothes and body.
 
 ## Settings
 
-<img src="component.png" width="421">
+![component.png](component.png)
 
 ### Skinned Renderers
 

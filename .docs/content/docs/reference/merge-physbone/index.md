@@ -12,7 +12,7 @@ This operation is same as [Clear Endpoint Position](../clear-endpoint-position).
 
 ## Settings
 
-<img src="component.png" width="488">
+![component.png](component.png)
 
 ### Components
 

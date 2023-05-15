@@ -13,4 +13,4 @@ All children of GameObject this component is applied to will belongs to parent o
 
 This Component doesn't have any configuration for now.
 
-<img src="./component.png" width="431">
+![component.png](component.png)
