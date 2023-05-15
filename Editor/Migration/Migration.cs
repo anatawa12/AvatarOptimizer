@@ -305,6 +305,16 @@ Do you want to migrate project now?",
                     modified = true;
                     goto case 3;
                 case 3:
+                    if (serialized.targetObject is DeleteGameObject deleteGameObject)
+                    {
+                        deleteGameObject.gameObject.tag = "EditorOnly";
+                        Object.DestroyImmediate(serialized.targetObject, true);
+                        return true;
+                    }
+                    versionProp.intValue = 4;
+                    modified = true;
+                    goto case 4;
+                case 4:
 #pragma warning restore CS0618
                     // it's current version: save
                     serialized.ApplyModifiedProperties();
