@@ -114,7 +114,6 @@ namespace Anatawa12.AvatarOptimizer
             new Processors.MergePhysBoneProcessor().Process(session);
             new Processors.EditSkinnedMeshComponentProcessor().Process(session);
             new Processors.MergeBoneProcessor().Process(session);
-            new Processors.DeleteGameObjectProcessor().Process(session);
             new Processors.MakeChildrenProcessor().Process(session);
 
             new Processors.ApplyObjectMapping().Apply(session);
