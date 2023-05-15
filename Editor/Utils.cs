@@ -386,13 +386,8 @@ namespace Anatawa12.AvatarOptimizer
         public static GameObject GetGameObjectRelative([NotNull] GameObject rootObject, [NotNull] string path)
         {
             if (path == "") return rootObject;
-            var cursor = rootObject.transform;
-            foreach (var pathComponent in path.Split('/'))
-            {
-                cursor = cursor.Find(pathComponent);
-                if (!cursor) throw new InvalidOperationException($"{path} not found");
-            }
-
+            var cursor = rootObject.transform.Find(path);
+            if (!cursor) throw new InvalidOperationException($"{path} not found");
             return cursor.gameObject;
         }
 
