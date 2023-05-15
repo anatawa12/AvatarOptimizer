@@ -19,8 +19,9 @@ namespace Anatawa12.AvatarOptimizer.Processors
             foreach (var component in session.GetComponents<Component>())
             {
                 var serialized = new SerializedObject(component);
-                var p = serialized.GetIterator();
                 AnimatorControllerMapper mapper = null;
+                SpecialMappingApplier.Apply(component.GetType(), serialized, mapping, ref mapper);
+                var p = serialized.GetIterator();
                 while (p.Next(true))
                 {
                     if (p.propertyType == SerializedPropertyType.ObjectReference)
@@ -46,6 +47,14 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
                 serialized.ApplyModifiedProperties();
             }
+        }
+    }
+
+    internal static class SpecialMappingApplier
+    {
+        public static void Apply(Type type, SerializedObject serialized, 
+            ObjectMapping mapping, ref AnimatorControllerMapper mapper)
+        {
         }
     }
 
