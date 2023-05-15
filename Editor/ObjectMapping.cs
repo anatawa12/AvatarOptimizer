@@ -26,7 +26,7 @@ namespace Anatawa12.AvatarOptimizer
         {
             foreach (var component in components)
             {
-                var path = Utils.RelativePath(rootObject.transform, rootObject.transform);
+                var path = Utils.RelativePath(rootObject.transform, component.transform);
                 System.Diagnostics.Debug.Assert(path != null, nameof(path) + " != null");
                 _tree.GetGameObject(path).GetComponents(component.GetType(), component.GetInstanceID());
             }
