@@ -204,6 +204,7 @@ namespace Anatawa12.AvatarOptimizer
             public VGameObject GetGameObject([NotNull] string path)
             {
                 if (path == null) throw new ArgumentNullException(nameof(path));
+                if (path == "") return this;
 
                 var cursor = this;
                 foreach (var pathComponent in path.Split('/'))
@@ -223,10 +224,13 @@ namespace Anatawa12.AvatarOptimizer
                 return cursor;
             }
 
-            private List<VGameObject> ChildListWithName(string name) =>
-                _newChildren.TryGetValue(name, out var newList)
+            private List<VGameObject> ChildListWithName(string name)
+            {
+                if (name == "") throw new ArgumentException("name must not null");
+                return _newChildren.TryGetValue(name, out var newList)
                     ? newList
                     : _newChildren[name] = new List<VGameObject>();
+            }
 
             public void MoveTo(VGameObject newParent)
             {
