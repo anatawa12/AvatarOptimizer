@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Error if there are multiple GameObjects with same path `#159`
 
 ### Security
 
