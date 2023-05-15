@@ -26,7 +26,7 @@ namespace Anatawa12.AvatarOptimizer
         {
             foreach (var component in components)
             {
-                var path = Utils.RelativePath(rootObject.transform, rootObject.transform);
+                var path = Utils.RelativePath(rootObject.transform, component.transform);
                 System.Diagnostics.Debug.Assert(path != null, nameof(path) + " != null");
                 _tree.GetGameObject(path).GetComponents(component.GetType(), component.GetInstanceID());
             }
@@ -111,15 +111,8 @@ namespace Anatawa12.AvatarOptimizer
             foreach (var component in _tree.GetAllComponents())
             {
                 var oldPath = goOldPath[component.OriginalGameObject];
-                if (component.NewGameObject == null)
+                if (component.NewGameObject != null && goNewPath.TryGetValue(component.NewGameObject, out var newPath))
                 {
-                    componentMapping[new ObjectMapping.ComponentKey(oldPath, component.Type)] =
-                        ObjectMapping.MappedComponent.Removed;
-                    instanceIdToComponent[component.InstanceId] = (null, null);
-                }
-                else
-                {
-                    var newPath = goNewPath[component.NewGameObject];
                     var propertyMapping = new Dictionary<string, string>();
                     var newMapping = component.NewProperties.ToDictionary(kvp => kvp.Value, kvp => kvp.Key);
                     foreach (var kvp in component.OriginalProperties)
@@ -135,6 +128,13 @@ namespace Anatawa12.AvatarOptimizer
                         newGameObject = newGameObjectCache[newPath] = Utils.GetGameObjectRelative(_rootObject, newPath);
                     var actualComponent = newGameObject.GetComponent(component.Type);
                     instanceIdToComponent[component.InstanceId] = (actualComponent, mapped);
+                }
+                else
+                {
+                    // GameObject or Component is removed
+                    componentMapping[new ObjectMapping.ComponentKey(oldPath, component.Type)] =
+                        ObjectMapping.MappedComponent.Removed;
+                    instanceIdToComponent[component.InstanceId] = (null, null);
                 }
             }
 
@@ -204,6 +204,7 @@ namespace Anatawa12.AvatarOptimizer
             public VGameObject GetGameObject([NotNull] string path)
             {
                 if (path == null) throw new ArgumentNullException(nameof(path));
+                if (path == "") return this;
 
                 var cursor = this;
                 foreach (var pathComponent in path.Split('/'))
@@ -223,10 +224,13 @@ namespace Anatawa12.AvatarOptimizer
                 return cursor;
             }
 
-            private List<VGameObject> ChildListWithName(string name) =>
-                _newChildren.TryGetValue(name, out var newList)
+            private List<VGameObject> ChildListWithName(string name)
+            {
+                if (name == "") throw new ArgumentException("name must not null");
+                return _newChildren.TryGetValue(name, out var newList)
                     ? newList
                     : _newChildren[name] = new List<VGameObject>();
+            }
 
             public void MoveTo(VGameObject newParent)
             {
@@ -254,6 +258,7 @@ namespace Anatawa12.AvatarOptimizer
                 var result = new Dictionary<VGameObject, string>();
                 var queue = new Queue<(string, VGameObject)>();
 
+                result.Add(this, "");
                 foreach (var keyValuePair in mappingGetter(this))
                 foreach (var gameObject in keyValuePair.Value)
                     queue.Enqueue((keyValuePair.Key, gameObject));

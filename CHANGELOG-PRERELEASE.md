@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Reference to Component will become None `#156`
 - BlendShapes for Eyelids can be broken with FreezeBlendShape `#154`
 
 ### Security

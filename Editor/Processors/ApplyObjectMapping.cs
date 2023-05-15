@@ -20,6 +20,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
             foreach (var component in session.GetComponents<Component>())
             {
                 var serialized = new SerializedObject(component);
+                if (component is Transform) continue;
                 AnimatorControllerMapper mapper = null;
                 SpecialMappingApplier.Apply(component.GetType(), serialized, mapping, ref mapper);
                 var p = serialized.GetIterator();
