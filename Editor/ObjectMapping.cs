@@ -118,15 +118,23 @@ namespace Anatawa12.AvatarOptimizer
                     foreach (var kvp in component.OriginalProperties)
                     {
                         newMapping.TryGetValue(kvp.Value, out var newPropName);
-                        propertyMapping[kvp.Key] = newPropName;
+                        if (kvp.Key != newPropName)
+                            propertyMapping[kvp.Key] = newPropName;
                     }
+
+                    // if nothing is changed
+                    if (propertyMapping.Count == 0 && oldPath == newPath) continue;
 
                     var mapped = new ObjectMapping.MappedComponent(newPath, propertyMapping);
                     componentMapping[new ObjectMapping.ComponentKey(oldPath, component.Type)] = mapped;
 
                     if (!newGameObjectCache.TryGetValue(newPath, out var newGameObject))
-                        newGameObject = newGameObjectCache[newPath] = Utils.GetGameObjectRelative(_rootObject, newPath);
+                        newGameObject = newGameObjectCache[newPath] =
+                            Utils.GetGameObjectRelative(_rootObject, newPath);
                     var actualComponent = newGameObject.GetComponent(component.Type);
+
+                    // if nothing is changed
+                    if (propertyMapping.Count == 0 && actualComponent.GetInstanceID() == component.InstanceId) continue;
                     instanceIdToComponent[component.InstanceId] = (actualComponent, mapped);
                 }
                 else
