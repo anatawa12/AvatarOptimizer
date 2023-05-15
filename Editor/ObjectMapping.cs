@@ -111,15 +111,8 @@ namespace Anatawa12.AvatarOptimizer
             foreach (var component in _tree.GetAllComponents())
             {
                 var oldPath = goOldPath[component.OriginalGameObject];
-                if (component.NewGameObject == null)
+                if (component.NewGameObject != null && goNewPath.TryGetValue(component.NewGameObject, out var newPath))
                 {
-                    componentMapping[new ObjectMapping.ComponentKey(oldPath, component.Type)] =
-                        ObjectMapping.MappedComponent.Removed;
-                    instanceIdToComponent[component.InstanceId] = (null, null);
-                }
-                else
-                {
-                    var newPath = goNewPath[component.NewGameObject];
                     var propertyMapping = new Dictionary<string, string>();
                     var newMapping = component.NewProperties.ToDictionary(kvp => kvp.Value, kvp => kvp.Key);
                     foreach (var kvp in component.OriginalProperties)
@@ -135,6 +128,13 @@ namespace Anatawa12.AvatarOptimizer
                         newGameObject = newGameObjectCache[newPath] = Utils.GetGameObjectRelative(_rootObject, newPath);
                     var actualComponent = newGameObject.GetComponent(component.Type);
                     instanceIdToComponent[component.InstanceId] = (actualComponent, mapped);
+                }
+                else
+                {
+                    // GameObject or Component is removed
+                    componentMapping[new ObjectMapping.ComponentKey(oldPath, component.Type)] =
+                        ObjectMapping.MappedComponent.Removed;
+                    instanceIdToComponent[component.InstanceId] = (null, null);
                 }
             }
 
