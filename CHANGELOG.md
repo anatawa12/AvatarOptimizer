@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- BlendShapes for Eyelids can be broken with FreezeBlendShape `#154`
 
 ### Security
 
