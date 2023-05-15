@@ -11,4 +11,4 @@ This component doesn't have any configuration for now but there's one button on 
 Clicking `Apply and Remove component` will applies this operation and removes this component.
 This may be useful for developing avatars.
 
-<img src="component.png" width="427">
+![component.png](component.png)

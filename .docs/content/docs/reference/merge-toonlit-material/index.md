@@ -20,6 +20,6 @@ For each source material, you must set where to the texture will placed to.
 Please change X, Y, W, H to fit to where you want.
 Click `Generate Preview` to generate each texture and see preview.
 
-<img src="component.png" width="430">
+![component.png](component.png)
 
 [issue]: https://github.com/anatawa12/AvatarOptimizer/issues/new/choose

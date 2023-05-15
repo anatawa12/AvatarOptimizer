@@ -7,4 +7,4 @@ weight: 1
 
 This the selected objects will be the children of this component at build time.
 
-<img src="component.png" width="401">
+![component.png](component.png)
