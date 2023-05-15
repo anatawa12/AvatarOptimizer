@@ -258,6 +258,7 @@ namespace Anatawa12.AvatarOptimizer
                 var result = new Dictionary<VGameObject, string>();
                 var queue = new Queue<(string, VGameObject)>();
 
+                result.Add(this, "");
                 foreach (var keyValuePair in mappingGetter(this))
                 foreach (var gameObject in keyValuePair.Value)
                     queue.Enqueue((keyValuePair.Key, gameObject));
