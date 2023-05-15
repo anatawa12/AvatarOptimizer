@@ -10,16 +10,21 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
-- Internal Errors not relates to any Object are now reported `#160`
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
-- Error if there are multiple GameObjects with same path `#159`
 
 ### Security
+
+## [0.3.5] - 2023-05-15
+### Changed
+- Internal Errors not relates to any Object are now reported [`#160`](https://github.com/anatawa12/AvatarOptimizer/pull/160)
+
+### Fixed
+- Error if there are multiple GameObjects with same path [`#159`](https://github.com/anatawa12/AvatarOptimizer/pull/159)
 
 ## [0.3.4] - 2023-05-15
 ### Fixed
@@ -299,7 +304,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.3.4...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.3.5...HEAD
+[0.3.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.3.4...v0.3.5
 [0.3.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.3.3...v0.3.4
 [0.3.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.3.2...v0.3.3
 [0.3.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.3.2-beta.2...v0.3.2
