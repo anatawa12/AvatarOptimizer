@@ -14,6 +14,8 @@ The format is based on [Keep a Changelog].
 ### Deprecated
 
 ### Removed
+- Delete GameObject feature `#153`
+  - Use `EditorOnly` tag instead
 
 ### Fixed
 
