@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Japanese Translation: 日本語化 `#152`
 
 ### Changed
 
