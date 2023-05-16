@@ -35,11 +35,17 @@ namespace Anatawa12.AvatarOptimizer
         {
             if (_processing) return;
             using (Utils.StartEditingScope(true))
+            using (BuildReport.ReportingOnAvatar(session.GetRootComponent<VRCAvatarDescriptor>()))
             {
                 try
                 {
                     _processing = true;
                     DoProcessObject(session);
+                }
+                catch (Exception e)
+                {
+                    BuildReport.ReportInternalError(e);
+                    throw;
                 }
                 finally
                 {
@@ -48,14 +54,11 @@ namespace Anatawa12.AvatarOptimizer
                 }
             }
         }
-        
+
         private static void DoProcessObject(OptimizerSession session)
         {
-            using (BuildReport.ReportingOnAvatar(session.GetRootComponent<VRCAvatarDescriptor>()))
-            {
-                new Processors.UnusedBonesByReferencesToolEarlyProcessor().Process(session);
-                session.MarkDirtyAll();
-            }
+            new Processors.UnusedBonesByReferencesToolEarlyProcessor().Process(session);
+            session.MarkDirtyAll();
         }
     }
 
@@ -94,6 +97,11 @@ namespace Anatawa12.AvatarOptimizer
                 {
                     _processing = true;
                     DoProcessObject(session);
+                }
+                catch (Exception e)
+                {
+                    BuildReport.ReportInternalError(e);
+                    throw;
                 }
                 finally
                 {

@@ -5,6 +5,7 @@ using Anatawa12.AvatarOptimizer.ErrorReporting;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
+using VRC.SDK3.Avatars.Components;
 using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.Processors
@@ -19,8 +20,10 @@ namespace Anatawa12.AvatarOptimizer.Processors
             foreach (var component in session.GetComponents<Component>())
             {
                 var serialized = new SerializedObject(component);
-                var p = serialized.GetIterator();
+                if (component is Transform) continue;
                 AnimatorControllerMapper mapper = null;
+                SpecialMappingApplier.Apply(component.GetType(), serialized, mapping, ref mapper);
+                var p = serialized.GetIterator();
                 while (p.Next(true))
                 {
                     if (p.propertyType == SerializedPropertyType.ObjectReference)
@@ -45,6 +48,45 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 }
 
                 serialized.ApplyModifiedProperties();
+            }
+        }
+    }
+
+    internal static class SpecialMappingApplier
+    {
+        public static void Apply(Type type, SerializedObject serialized, 
+            ObjectMapping mapping, ref AnimatorControllerMapper mapper)
+        {
+            if (type.IsAssignableFrom(typeof(VRCAvatarDescriptor)))
+                VRCAvatarDescriptor(serialized, mapping, ref mapper);
+        }
+        
+        // customEyeLookSettings.eyelidsBlendshapes is index
+        private static void VRCAvatarDescriptor(SerializedObject serialized,
+            ObjectMapping mapping, ref AnimatorControllerMapper mapper)
+        {
+            var eyelidsSkinnedMesh = serialized.FindProperty("customEyeLookSettings.eyelidsSkinnedMesh");
+            var eyelidsBlendshapes = serialized.FindProperty("customEyeLookSettings.eyelidsBlendshapes");
+            if (eyelidsSkinnedMesh == null || eyelidsBlendshapes == null) return;
+
+            if (!mapping.InstanceIdToComponent.TryGetValue(
+                    eyelidsSkinnedMesh.objectReferenceInstanceIDValue, 
+                    out var mappedComponent))
+                return;
+            if (mappedComponent.component == null || mappedComponent.mapping == null)
+                return;
+
+            eyelidsSkinnedMesh.objectReferenceValue = mappedComponent.component;
+
+            for (var i = 0; i < eyelidsBlendshapes.arraySize; i++)
+            {
+                var indexProp = eyelidsBlendshapes.GetArrayElementAtIndex(i);
+                if (mappedComponent.mapping.PropertyMapping.TryGetValue(
+                        VProp.BlendShapeIndex(indexProp.intValue),
+                        out var mappedPropName))
+                {
+                    indexProp.intValue = VProp.ParseBlendShapeIndex(mappedPropName);
+                }
             }
         }
     }

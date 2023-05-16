@@ -172,14 +172,22 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
             }
             catch (Exception e)
             {
-                var additionalStackTrace = string.Join("\n", Environment.StackTrace.Split('\n').Skip(1)) + "\n";
-                LogException(e, additionalStackTrace);
+                ReportInternalError(e, 2);
                 return default;
             }
             finally
             {
                 if (obj != null) CurrentReport._references.Pop();
             }
+        }
+
+        public static void ReportInternalError(Exception exception) => ReportInternalError(exception, 2);
+
+        private static void ReportInternalError(Exception exception, int strips)
+        {
+            var additionalStackTrace = string.Join("\n", 
+                Environment.StackTrace.Split('\n').Skip(strips)) + "\n";
+            LogException(exception, additionalStackTrace);
         }
 
         public static void ReportingObject(UnityEngine.Object obj, Action action)
