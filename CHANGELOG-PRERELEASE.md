@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Error with Animator at non-root GameObject `#164`
 
 ### Security
 
