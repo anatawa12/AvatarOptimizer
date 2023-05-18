@@ -108,6 +108,16 @@ namespace Anatawa12.AvatarOptimizer
 
         void OnValidate()
         {
+            if (merged.gameObject != gameObject)
+            {
+                merged = null;
+                UnityEditor.EditorUtility.SetDirty(this);
+            }
+            if (merged == null)
+            {
+                merged = gameObject.AddComponent<VRCPhysBone>();
+                UnityEditor.EditorUtility.SetDirty(this);
+            }
             if (merged != null)
                 merged.hideFlags |= HideFlags.HideInInspector | HideFlags.HideInHierarchy;
         }

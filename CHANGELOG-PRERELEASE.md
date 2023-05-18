@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - Error with Animator at non-root GameObject `#164`
+- Error with copied MergePhysBone component `#165`
 
 ### Security
 
