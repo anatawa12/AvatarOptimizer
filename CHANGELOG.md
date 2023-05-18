@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog].
   - Use `EditorOnly` tag instead
 
 ### Fixed
+- Error with Animator at non-root GameObject `#164`
 
 ### Security
 

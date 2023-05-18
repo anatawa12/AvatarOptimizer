@@ -374,7 +374,7 @@ namespace Anatawa12.AvatarOptimizer
                 if (parent == path) return "";
                 if (parent == "") return path;
                 if (path.StartsWith($"{parent}{sep}", StringComparison.Ordinal))
-                    return parent.Substring(parent.Length + 1);
+                    return path.Substring(parent.Length + 1);
                 return null;
             }
 
