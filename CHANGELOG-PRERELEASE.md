@@ -10,19 +10,24 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
-- Save format for MergePhysBone `#166`
-  - Previously used backed PhysBone component for override values are removed.
-  - There are no changes in behaviour. Just migrate your assets.
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
-- Error with Animator at non-root GameObject `#164`
-- Error with copied MergePhysBone component `#165`
 
 ### Security
+
+## [0.4.0-rc.1] - 2023-05-19
+### Changed
+- Save format for MergePhysBone [`#166`](https://github.com/anatawa12/AvatarOptimizer/pull/166)
+  - Previously used backed PhysBone component for override values are removed.
+  - There are no changes in behaviour. Just migrate your assets.
+
+### Fixed
+- Error with Animator at non-root GameObject [`#164`](https://github.com/anatawa12/AvatarOptimizer/pull/164)
+- Error with copied MergePhysBone component [`#165`](https://github.com/anatawa12/AvatarOptimizer/pull/165)
 
 ## [0.4.0-beta.1] - 2023-05-16
 ### Added
@@ -317,7 +322,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.0-beta.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.0-rc.1...HEAD
+[0.4.0-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.0-beta.1...v0.4.0-rc.1
 [0.4.0-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.3.5...v0.4.0-beta.1
 [0.3.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.3.4...v0.3.5
 [0.3.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.3.3...v0.3.4
