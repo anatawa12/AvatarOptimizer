@@ -13,7 +13,6 @@ namespace Anatawa12.AvatarOptimizer
     [CustomEditor(typeof(MergePhysBone))]
     internal class MergePhysBoneEditor : AvatarTagComponentEditorBase
     {
-        private SerializedObject _mergedPhysBone;
         private MergePhysBoneEditorRenderer _renderer;
         private SerializedProperty _makeParent;
         private SerializedProperty _componentsSetProp;
@@ -21,15 +20,12 @@ namespace Anatawa12.AvatarOptimizer
         private void OnEnable()
         {
             _renderer = new MergePhysBoneEditorRenderer(serializedObject);
-            _mergedPhysBone = new SerializedObject(serializedObject.FindProperty("merged").objectReferenceValue);
             _makeParent = serializedObject.FindProperty("makeParent");
             _componentsSetProp = serializedObject.FindProperty(nameof(MergePhysBone.componentsSet));
         }
 
         protected override void OnInspectorGUIInner()
         {
-            _mergedPhysBone.Update();
-
             EditorGUILayout.PropertyField(_makeParent);
             if (_makeParent.boolValue && ((Component)target).transform.childCount != 0)
                 EditorGUILayout.HelpBox(CL4EE.Tr("MergePhysBone:error:makeParentWithChildren"), MessageType.Error);
@@ -40,7 +36,6 @@ namespace Anatawa12.AvatarOptimizer
             _renderer.DoProcess();
 
             serializedObject.ApplyModifiedProperties();
-            _mergedPhysBone.ApplyModifiedProperties();
         }
     }
 
