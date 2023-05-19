@@ -86,6 +86,11 @@ Do you want to migrate project now?",
                     "Migrating Prefabs",
                     $"{name} ({i} / {prefabs.Count})",
                     i / (float)prefabs.Count));
+
+                MigratePrefabsPass2(prefabs, (name, i) => EditorUtility.DisplayProgressBar(
+                    "Migrating Prefabs",
+                    $"{name} ({i} / {prefabs.Count})",
+                    i / (float)prefabs.Count));
             }
             catch
             {
@@ -108,7 +113,12 @@ Do you want to migrate project now?",
                 var scenePaths = AssetDatabase.FindAssets("t:scene").Select(AssetDatabase.GUIDToAssetPath).ToList();
 
                 MigrateAllScenes(scenePaths, (name, i) => EditorUtility.DisplayProgressBar(
-                    "Migrating Scenes",
+                    "Migrating Scenes (pass 1)",
+                    $"{name} ({i} / {scenePaths.Count})",
+                    i / (float)scenePaths.Count));
+                
+                MigrateAllScenesPass2(scenePaths, (name, i) => EditorUtility.DisplayProgressBar(
+                    "Migrating Scenes (pass 2)",
                     $"{name} ({i} / {scenePaths.Count})",
                     i / (float)scenePaths.Count));
             }
@@ -135,12 +145,22 @@ Do you want to migrate project now?",
                 float totalCount = prefabs.Count + scenePaths.Count;
 
                 MigratePrefabs(prefabs, (name, i) => EditorUtility.DisplayProgressBar(
-                    "Migrating Everything",
+                    "Migrating Everything (pass 1)",
                     $"{name} (Prefabs) ({i} / {totalCount})",
                     i / totalCount));
 
                 MigrateAllScenes(scenePaths, (name, i) => EditorUtility.DisplayProgressBar(
-                    "Migrating Everything",
+                    "Migrating Everything (pass 1)",
+                    $"{name} (Scenes) ({prefabs.Count + i} / {totalCount})",
+                    (prefabs.Count + i) / totalCount));
+
+                MigratePrefabsPass2(prefabs, (name, i) => EditorUtility.DisplayProgressBar(
+                    "Migrating Everything (pass 2)",
+                    $"{name} (Prefabs) ({i} / {totalCount})",
+                    i / totalCount));
+
+                MigrateAllScenesPass2(scenePaths, (name, i) => EditorUtility.DisplayProgressBar(
+                    "Migrating Everything (pass 2)",
                     $"{name} (Scenes) ({prefabs.Count + i} / {totalCount})",
                     (prefabs.Count + i) / totalCount));
             }
@@ -167,20 +187,34 @@ Do you want to migrate project now?",
 
             try
             {
+                PreMigration();
+
                 var prefabs = GetPrefabs();
                 var scenePaths = AssetDatabase.FindAssets("t:scene").Select(AssetDatabase.GUIDToAssetPath).ToList();
                 float totalCount = prefabs.Count + scenePaths.Count;
 
                 MigratePrefabs(prefabs, (name, i) => EditorUtility.DisplayProgressBar(
-                    "Force Migrating Everything",
-                    $"{name} (Prefabs) ({i} / {totalCount})",
-                    i / totalCount),
+                        "Force Migrating Everything (pass 1)",
+                        $"{name} (Prefabs) ({i} / {totalCount})",
+                        i / totalCount),
                     forceVersion: 1);
 
                 MigrateAllScenes(scenePaths, (name, i) => EditorUtility.DisplayProgressBar(
-                    "Force Migrating Everything",
-                    $"{name} (Scenes) ({prefabs.Count + i} / {totalCount})",
-                    (prefabs.Count + i) / totalCount),
+                        "Force Migrating Everything (pass 1)",
+                        $"{name} (Scenes) ({prefabs.Count + i} / {totalCount})",
+                        (prefabs.Count + i) / totalCount),
+                    forceVersion: 1);
+                
+                MigratePrefabsPass2(prefabs, (name, i) => EditorUtility.DisplayProgressBar(
+                        "Force Migrating Everything (pass 2)",
+                        $"{name} (Prefabs) ({i} / {totalCount})",
+                        i / totalCount),
+                    forceVersion: 1);
+
+                MigrateAllScenesPass2(scenePaths, (name, i) => EditorUtility.DisplayProgressBar(
+                        "Force Migrating Everything (pass 2)",
+                        $"{name} (Scenes) ({prefabs.Count + i} / {totalCount})",
+                        (prefabs.Count + i) / totalCount),
                     forceVersion: 1);
             }
             catch
@@ -191,11 +225,24 @@ Do you want to migrate project now?",
             finally
             {
                 EditorUtility.ClearProgressBar();
+                PostMigration();
             }
         }
 
         private static void MigratePrefabs(List<GameObject> prefabAssets, Action<string, int> progressCallback, 
             int forceVersion = int.MaxValue)
+        {
+            MigratePrefabsImpl(prefabAssets, progressCallback, MigrateComponent, forceVersion);
+        }
+
+        private static void MigratePrefabsPass2(List<GameObject> prefabAssets, Action<string, int> progressCallback, 
+            int forceVersion = int.MaxValue)
+        {
+            MigratePrefabsImpl(prefabAssets, progressCallback, MigrateComponentPass2, forceVersion);
+        }
+
+        private static void MigratePrefabsImpl(List<GameObject> prefabAssets, Action<string, int> progressCallback,
+            Func<AvatarTagComponent, int, bool> migrator, int forceVersion = int.MaxValue)
         {
             for (var i = 0; i < prefabAssets.Count; i++)
             {
@@ -207,7 +254,7 @@ Do you want to migrate project now?",
                 try
                 {
                     foreach (var component in prefabAsset.GetComponentsInChildren<AvatarTagComponent>(true))
-                        modified |= MigrateComponent(component, forceVersion);
+                        modified |= migrator(component, forceVersion);
                 }
                 catch (Exception e)
                 {
@@ -223,13 +270,18 @@ Do you want to migrate project now?",
         private static void MigrateAllScenes(List<string> scenePaths, Action<string, int> progressCallback,
             int forceVersion = int.MaxValue)
         {
-            var scenes = Enumerable.Range(0, SceneManager.sceneCount).Select(SceneManager.GetSceneAt).ToArray();
-            // skip saving
-            if (scenes.Any(x => x.isDirty))
-                EditorSceneManager.SaveScenes(scenes);
-            var openingScenePaths = scenes.Select(x => x.path).ToArray();
-            if (openingScenePaths.Any(string.IsNullOrEmpty))
-                openingScenePaths = null;
+            MigrateAllScenesImpl(scenePaths, progressCallback, MigrateComponent, forceVersion);
+        }
+
+        private static void MigrateAllScenesPass2(List<string> scenePaths, Action<string, int> progressCallback,
+            int forceVersion = int.MaxValue)
+        {
+            MigrateAllScenesImpl(scenePaths, progressCallback, MigrateComponentPass2, forceVersion);
+        }
+
+        private static void MigrateAllScenesImpl(List<string> scenePaths, Action<string, int> progressCallback,
+            Func<AvatarTagComponent, int, bool> migrator, int forceVersion = int.MaxValue)
+        {
             // load each scene and migrate scene
             for (var i = 0; i < scenePaths.Count; i++)
             {
@@ -247,7 +299,7 @@ Do you want to migrate project now?",
                 {
                     foreach (var rootGameObject in scene.GetRootGameObjects())
                     foreach (var component in rootGameObject.GetComponentsInChildren<AvatarTagComponent>(true))
-                        modified |= MigrateComponent(component, forceVersion);
+                        modified |= migrator(component, forceVersion);
                 }
                 catch (Exception e)
                 {
@@ -259,16 +311,7 @@ Do you want to migrate project now?",
             }
 
             EditorSceneManager.NewScene(NewSceneSetup.EmptyScene);
-            progressCallback("finish Prefabs", scenePaths.Count);
-
-            if (openingScenePaths != null
-                && EditorUtility.DisplayDialog("Reopen?", "Do you want to reopen previously opened scenes?", "Yes",
-                    "No"))
-            {
-                EditorSceneManager.OpenScene(openingScenePaths[0]);
-                foreach (var openingScenePath in openingScenePaths.Skip(1))
-                    EditorSceneManager.OpenScene(openingScenePath, OpenSceneMode.Additive);
-            }
+            progressCallback("finish Scenes", scenePaths.Count);
         }
 
         private static bool MigrateComponent(AvatarTagComponent component, int forceVersion)
@@ -311,6 +354,7 @@ Do you want to migrate project now?",
                         Object.DestroyImmediate(serialized.targetObject, true);
                         return true;
                     }
+                    MigrateV3ToV4(nestCount, serialized);
                     versionProp.intValue = 4;
                     modified = true;
                     goto case 4;
@@ -325,6 +369,32 @@ Do you want to migrate project now?",
             }
 
             return modified;
+        }
+
+        private static readonly TypeId Pass2Types = new TypeId(new []
+        {
+            typeof(MergePhysBone),
+        });
+
+        private static bool MigrateComponentPass2(AvatarTagComponent component, int forceVersion)
+        {
+            var serialized = new SerializedObject(component);
+            switch (Pass2Types.GetType(component.GetType()))
+            {
+                case 1:
+                {
+                    // MergePhysBone
+                    var mergedPb = serialized.FindProperty("merged").objectReferenceValue;
+                    if (mergedPb)
+                    {
+                        Object.DestroyImmediate(mergedPb, true);
+                        return true;
+                    }
+                    break;
+                }
+            }
+
+            return false;
         }
 
         // migration
@@ -520,6 +590,89 @@ Do you want to migrate project now?",
                 }
             }
         }
+        private static readonly TypeId MigrateV3ToV4Types = new TypeId(new []
+        {
+            typeof(MergePhysBone),
+        });
+
+        [Obsolete("migration process")]
+        private static void MigrateV3ToV4(int nestCount, SerializedObject serialized)
+        {
+            switch (MigrateV3ToV4Types.GetType(serialized.targetObject.GetType()))
+            {
+                case 1:
+                {
+                    // MergePhysBone
+                    var mergedPb = serialized.FindProperty("merged").objectReferenceValue;
+                    // might be null if 
+                    // - Added but not awake
+                    // - Migrating Scenes after migrating Prefabs
+                    var serializedPb = mergedPb ? new SerializedObject(mergedPb) : null;
+
+                    void Migrate(string name, string overrideName = null)
+                    {
+                        var configProp = serialized.FindProperty(name + "Config");
+
+                        configProp.FindPropertyRelative("override")
+                            .CopyDataFrom(serialized.FindProperty(overrideName ?? name));
+                        if (serializedPb != null)
+                            configProp.FindPropertyRelative("value").CopyDataFrom(serializedPb.FindProperty(name));
+
+                        // if curve founds, save that
+                        var curveConfigProp = configProp.FindPropertyRelative("curve");
+                        if (curveConfigProp != null)
+                        {
+                            if (serializedPb != null)
+                                curveConfigProp.CopyDataFrom(serializedPb.FindProperty(name + "Curve"));
+                        }
+                    }
+
+                    void MigratePermission(string name, string filterName)
+                    {
+                        var configProp = serialized.FindProperty(name + "Config");
+
+                        configProp.FindPropertyRelative("override").CopyDataFrom(serialized.FindProperty(name));
+                        if (serializedPb != null)
+                        {
+                            configProp.FindPropertyRelative("value").CopyDataFrom(serializedPb.FindProperty(name));
+                            configProp.FindPropertyRelative("filter")
+                                .CopyDataFrom(serializedPb.FindProperty(filterName));
+                        }
+                    }
+
+                    // copy values from data
+                    Migrate("integrationType");
+                    Migrate("pull");
+                    Migrate("spring");
+                    Migrate("stiffness");
+                    Migrate("gravity");
+                    Migrate("gravityFalloff");
+                    Migrate("immobileType");
+                    Migrate("immobile");
+                    Migrate("limitType", "limits");
+                    Migrate("maxAngleX");
+                    Migrate("maxAngleZ");
+                    Migrate("limitRotation");
+                    Migrate("radius");
+                    MigratePermission("allowCollision", "collisionFilter");
+                    Migrate("colliders");
+                    Migrate("stretchMotion");
+                    Migrate("maxStretch");
+                    Migrate("maxSquish");
+                    MigratePermission("allowGrabbing", "grabFilter");
+                    MigratePermission("allowPosing", "poseFilter");
+                    Migrate("grabMovement");
+                    Migrate("snapToHand");
+                    if (serializedPb != null)
+                        serialized.FindProperty("parameterConfig.value")
+                            .CopyDataFrom(serializedPb.FindProperty("parameter"));
+                    serialized.FindProperty("isAnimatedConfig.value")
+                        .CopyDataFrom(serialized.FindProperty("isAnimated"));
+                    Migrate("resetWhenDisabled");
+                    break;
+                }
+            }
+        }
 #pragma warning restore CS0618
 
         // incompatibility warnings
@@ -531,10 +684,17 @@ Do you want to migrate project now?",
         // IncompatibilityKind -> asset path[]
         private static readonly Dictionary<IncompatibilityKind, HashSet<string>> IncompatibleAssets =
             new Dictionary<IncompatibilityKind, HashSet<string>>();
+        private static string[] _openingScenePaths;
 
         private static void PreMigration()
         {
             IncompatibleAssets.Clear();
+            var scenes = Enumerable.Range(0, SceneManager.sceneCount).Select(SceneManager.GetSceneAt).ToArray();
+            if (scenes.Any(x => x.isDirty))
+                EditorSceneManager.SaveScenes(scenes);
+            _openingScenePaths = scenes.Select(x => x.path).ToArray();
+            if (_openingScenePaths.Any(string.IsNullOrEmpty))
+                _openingScenePaths = null;
         }
 
         private static void FoundIncompatibleAsset(IncompatibilityKind kind, Object asset)
@@ -584,6 +744,15 @@ Do you want to migrate project now?",
                 }
             }
             IncompatibleAssets.Clear();
+            
+            if (_openingScenePaths != null
+                && EditorUtility.DisplayDialog("Reopen?", "Do you want to reopen previously opened scenes?", "Yes",
+                    "No"))
+            {
+                EditorSceneManager.OpenScene(_openingScenePaths[0]);
+                foreach (var openingScenePath in _openingScenePaths.Skip(1))
+                    EditorSceneManager.OpenScene(openingScenePath, OpenSceneMode.Additive);
+            }
         }
 
         private static void MigrateSet<T>(
