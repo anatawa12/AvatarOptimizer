@@ -2,11 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.ErrorReporting;
-using CustomLocalization4EditorExtension;
 using UnityEditor;
 using UnityEngine;
 using VRC.Dynamics;
-using Object = UnityEngine.Object;
+using VRC.SDK3.Dynamics.PhysBone.Components;
 
 namespace Anatawa12.AvatarOptimizer.Processors
 {
@@ -27,7 +26,6 @@ namespace Anatawa12.AvatarOptimizer.Processors
             if (sourceComponents.Count == 0) return;
 
             var pb = sourceComponents[0];
-            var merged = merge.Merged;
 
             // optimization: if All children of the parent is to be merged,
             //    reuse that parent GameObject instead of creating new one.
@@ -77,8 +75,10 @@ namespace Anatawa12.AvatarOptimizer.Processors
             foreach (var physBone in sourceComponents)
                 ClearEndpointPositionProcessor.Process(physBone);
 
+            var merged = merge.gameObject.AddComponent<VRCPhysBone>();
+
             // copy common properties
-            new MergePhysBoneMerger(new SerializedObject(merge)).DoProcess();
+            new MergePhysBoneMerger(new SerializedObject(merge), new SerializedObject(merged)).DoProcess();
 
             // copy other properties
             // === Transforms ===
@@ -86,22 +86,22 @@ namespace Anatawa12.AvatarOptimizer.Processors
             merged.ignoreTransforms = sourceComponents.SelectMany(x => x.ignoreTransforms).Distinct().ToList();
             merged.endpointPosition = Vector3.zero;
             merged.multiChildType = VRCPhysBoneBase.MultiChildType.Ignore;
-            switch (merge.colliders)
+            switch (merge.collidersConfig.@override)
             {
-                case CollidersSettings.Copy:
+                case MergePhysBone.CollidersConfig.CollidersOverride.Copy:
                     merged.colliders = pb.colliders;
                     break;
-                case CollidersSettings.Merge:
+                case MergePhysBone.CollidersConfig.CollidersOverride.Merge:
                     merged.colliders = sourceComponents.SelectMany(x => x.colliders).Distinct().ToList();
                     break;
-                case CollidersSettings.Override:
-                    // keep merged.colliders
+                case MergePhysBone.CollidersConfig.CollidersOverride.Override:
+                    merged.colliders = merge.collidersConfig.value;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
             // == Options ==
-            merged.isAnimated = merge.isAnimated || sourceComponents.Any(x => x.isAnimated);
+            merged.isAnimated = merge.isAnimatedConfig.value || sourceComponents.Any(x => x.isAnimated);
 
             // show the new PhysBone
             merged.hideFlags &= ~(HideFlags.HideInHierarchy | HideFlags.HideInInspector);
@@ -112,8 +112,10 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
         sealed class MergePhysBoneMerger : MergePhysBoneEditorModificationUtils
         {
-            public MergePhysBoneMerger(SerializedObject serializedObject) : base(serializedObject)
+            private SerializedObject _mergedPhysBone;
+            public MergePhysBoneMerger(SerializedObject serializedObject, SerializedObject mergedPhysBone) : base(serializedObject)
             {
+                _mergedPhysBone = mergedPhysBone;
             }
 
             protected override void BeginPbConfig()
@@ -158,62 +160,30 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 // nothing to do: _isAnimatedProp is merged later
             }
 
-            protected override void PbVersionProp(string label, string pbPropName, SerializedProperty overridePropName,
-                params SerializedProperty[] overrides) =>
-                PbProp(label, pbPropName, overridePropName, overrides);
+            protected override void PbVersionProp(string label, ValueConfigProp prop, bool forceOverride = false)
+                => PbProp(label, prop, forceOverride);
 
-            protected override void PbProp(string label,
-                string pbPropName,
-                SerializedProperty overridePropName,
-                params SerializedProperty[] overrides)
+            protected override void PbProp(string label, ValueConfigProp prop, bool forceOverride = false)
+                => PbPropImpl(label, prop, forceOverride);
+
+            protected override void PbCurveProp(string label, CurveConfigProp prop, bool forceOverride = false)
+                => PbPropImpl(label, prop, forceOverride);
+
+            protected override void Pb3DCurveProp(string label, string pbXCurveLabel, string pbYCurveLabel, string pbZCurveLabel,
+                CurveVector3ConfigProp prop, bool forceOverride = false)
+                => PbPropImpl(label, prop, forceOverride);
+
+            protected override void PbPermissionProp(string label, PermissionConfigProp prop, bool forceOverride = false)
+                => PbPropImpl(label, prop, forceOverride);
+
+            private void PbPropImpl(string label, OverridePropBase prop, bool forceOverride)
             {
-                PbPropImpl(label, overridePropName, overrides, pbPropName);
+                var @override = forceOverride || prop.IsOverride;
+                foreach (var (pbName, property) in prop.GetActiveProps(@override))
+                    _mergedPhysBone.FindProperty(pbName).CopyDataFrom(property);
             }
 
-            protected override void PbCurveProp(string label,
-                string pbPropName,
-                string pbCurvePropName,
-                SerializedProperty overridePropName,
-                params SerializedProperty[] overrides)
-            {
-                PbPropImpl(label, overridePropName, overrides, pbPropName, pbCurvePropName);
-            }
-
-            protected override void PbPermissionProp(string label,
-                string pbPropName,
-                string pbFilterPropName,
-                SerializedProperty overridePropName,
-                params SerializedProperty[] overrides)
-            {
-                PbPropImpl(label, overridePropName, overrides, pbPropName, pbFilterPropName);
-            }
-
-            protected override void Pb3DCurveProp(string label,
-                string pbPropName,
-                string pbXCurveLabel, string pbXCurvePropName,
-                string pbYCurveLabel, string pbYCurvePropName,
-                string pbZCurveLabel, string pbZCurvePropName,
-                SerializedProperty overridePropName,
-                params SerializedProperty[] overrides)
-            {
-                PbPropImpl(label, overridePropName, overrides, pbPropName,
-                    pbXCurvePropName, pbYCurvePropName, pbZCurvePropName);
-            }
-
-            private void PbPropImpl(string label,
-                SerializedProperty overrideProp,
-                SerializedProperty[] overrides,
-                params string[] props)
-            {
-                if (overrides.Any(x => x.boolValue) || overrideProp.boolValue) return;
-
-                // Copy mode
-                // differ error reported by validator
-                foreach (var prop in props)
-                    _mergedPhysBone.FindProperty(prop).CopyDataFrom(_sourcePhysBone.FindProperty(prop));
-            }
-
-            protected override void ColliderProp(string label, string pbProp, SerializedProperty overrideProp)
+            protected override void CollidersProp(string label, CollidersConfigProp prop)
             {
                 // merged later
             }

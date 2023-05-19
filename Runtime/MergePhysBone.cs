@@ -1,10 +1,11 @@
 using System;
+using System.Collections.Generic;
 using Anatawa12.AvatarOptimizer.ErrorReporting;
 using CustomLocalization4EditorExtension;
+using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.Serialization;
 using VRC.Dynamics;
-using VRC.SDK3.Dynamics.PhysBone.Components;
 
 namespace Anatawa12.AvatarOptimizer
 {
@@ -13,10 +14,11 @@ namespace Anatawa12.AvatarOptimizer
     [ExecuteAlways]
     internal class MergePhysBone : AvatarTagComponent, IStaticValidated
     {
+        [Obsolete("v3 legacy", true)]
         public VRCPhysBoneBase Merged => merged;
 
+        [Obsolete("v3 legacy", true)]
         [FormerlySerializedAs("mergedComponent")]
-        [CL4EELocalized("MergePhysBone:prop:merged")]
         [SerializeField]
         private VRCPhysBoneBase merged;
 
@@ -26,64 +28,261 @@ namespace Anatawa12.AvatarOptimizer
         [CL4EELocalized("MergePhysBone:prop:makeParent", "MergePhysBone:tooltip:makeParent")]
         public bool makeParent;
 
-        [CL4EELocalized("MergePhysBone:prop:version")]
         public bool version;
+        
+        #region legacy v3
         // == Forces ==
         [FormerlySerializedAs("force")]
         [FormerlySerializedAs("forces")]
-        [CL4EELocalized("MergePhysBone:prop:forces")]
+        [Obsolete("v3 legacy", true)]
         public bool integrationType;
-        [CL4EELocalized("MergePhysBone:prop:pull")]
+        [Obsolete("v3 legacy", true)]
         public bool pull;
-        [CL4EELocalized("MergePhysBone:prop:spring")]
+        [Obsolete("v3 legacy", true)]
         public bool spring;
-        [CL4EELocalized("MergePhysBone:prop:stiffness")]
+        [Obsolete("v3 legacy", true)]
         public bool stiffness;
-        [CL4EELocalized("MergePhysBone:prop:gravity")]
+        [Obsolete("v3 legacy", true)]
         public bool gravity;
-        [CL4EELocalized("MergePhysBone:prop:gravityFalloff")]
+        [Obsolete("v3 legacy", true)]
         public bool gravityFalloff;
-        [CL4EELocalized("MergePhysBone:prop:immobileType")]
+        [Obsolete("v3 legacy", true)]
         public bool immobileType;
-        [CL4EELocalized("MergePhysBone:prop:immobile")]
+        [Obsolete("v3 legacy", true)]
         public bool immobile;
         // == Limits ==
-        [CL4EELocalized("MergePhysBone:prop:limits")]
+        [Obsolete("v3 legacy", true)]
         public bool limits;
-        [CL4EELocalized("MergePhysBone:prop:maxAngleX")]
+        [Obsolete("v3 legacy", true)]
         public bool maxAngleX;
-        [CL4EELocalized("MergePhysBone:prop:maxAngleZ")]
+        [Obsolete("v3 legacy", true)]
         public bool maxAngleZ;
-        [CL4EELocalized("MergePhysBone:prop:limitRotation")]
+        [Obsolete("v3 legacy", true)]
         public bool limitRotation;
         // == Collision ==
-        [CL4EELocalized("MergePhysBone:prop:radius")]
+        [Obsolete("v3 legacy", true)]
         public bool radius;
-        [CL4EELocalized("MergePhysBone:prop:allowCollision")]
+        [Obsolete("v3 legacy", true)]
         public bool allowCollision;
-        [CL4EELocalized("MergePhysBone:prop:colliders")]
+        [Obsolete("v3 legacy", true)]
         public CollidersSettings colliders;
         // == Grab & Pose ==
-        [CL4EELocalized("MergePhysBone:prop:allowGrabbing")]
+        [Obsolete("v3 legacy", true)]
         public bool allowGrabbing;
-        [CL4EELocalized("MergePhysBone:prop:grabMovement")]
+        [Obsolete("v3 legacy", true)]
         public bool grabMovement;
-        [CL4EELocalized("MergePhysBone:prop:allowPosing")]
+        [Obsolete("v3 legacy", true)]
         public bool allowPosing;
-        [CL4EELocalized("MergePhysBone:prop:stretchMotion")]
+        [Obsolete("v3 legacy", true)]
         public bool stretchMotion;
-        [CL4EELocalized("MergePhysBone:prop:maxStretch")]
+        [Obsolete("v3 legacy", true)]
         public bool maxStretch;
-        [CL4EELocalized("MergePhysBone:prop:maxSquish")]
+        [Obsolete("v3 legacy", true)]
         public bool maxSquish;
-        [CL4EELocalized("MergePhysBone:prop:snapToHand")]
+        [Obsolete("v3 legacy", true)]
         public bool snapToHand;
         // == Others ==
         // public bool overrideParameter; Always
-        [CL4EELocalized("MergePhysBone:prop:isAnimated")]
+        [Obsolete("v3 legacy", true)]
         public bool isAnimated;
-        [CL4EELocalized("MergePhysBone:prop:resetWhenDisabled")]
+        [Obsolete("v3 legacy", true)]
         public bool resetWhenDisabled;
+        #endregion
+
+        #region OverrideAndValue
+
+        public VersionConfig versionConfig;
+
+        #region == Transform ==
+        // rootTransform
+        // ignoreTransforms
+        // endpointPosition
+        // multiChildType
+        #endregion
+
+        #region == Forces ==
+        public IntegrationTypeConfig integrationTypeConfig;
+        public Curve0To1Config pullConfig;
+        // spring a.k.a. Momentum
+        public Curve0To1Config springConfig;
+        public Curve0To1Config stiffnessConfig;
+        public CurveM1To1Config gravityConfig;
+        public Curve0To1Config gravityFalloffConfig;
+        public ImmobileTypeConfig immobileTypeConfig;
+        public Curve0To1Config immobileConfig;
+        #endregion
+        #region == Limits ==
+        public LimitTypeConfig limitTypeConfig;
+        public Curve0To180Config maxAngleXConfig = new Curve0To180Config(45f);
+        public Curve0To90Config maxAngleZConfig = new Curve0To90Config(45f);
+        public CurveVector3Config limitRotationConfig;
+        #endregion
+        #region == Collision ==
+        public CurveNoLimitConfig radiusConfig;
+        public PermissionConfig allowCollisionConfig;
+        public CollidersConfig collidersConfig;
+        #endregion
+        #region == Stretch & Squish ==
+        public Curve0To1Config stretchMotionConfig;
+        public CurveNoLimitConfig maxStretchConfig;
+        public Curve0To1Config maxSquishConfig;
+        #endregion
+        #region == Grab & Pose ==
+        public PermissionConfig allowGrabbingConfig;
+        public PermissionConfig allowPosingConfig;
+        public Float0To1Config grabMovementConfig;
+        public BoolConfig snapToHandConfig;
+        #endregion
+        #region == Options ==
+        public ParameterConfig parameterConfig;
+        public IsAnimatedConfig isAnimatedConfig;
+        public BoolConfig resetWhenDisabledConfig;
+        #endregion
+
+        [Serializable]
+        public struct Curve0To1Config
+        {
+            public bool @override;
+            [Range(0f, 1f)]
+            public float value;
+            public AnimationCurve curve;
+        }
+
+        [Serializable]
+        public struct CurveM1To1Config
+        {
+            public bool @override;
+            [Range(-1f, 1f)]
+            public float value;
+            public AnimationCurve curve;
+        }
+
+        [Serializable]
+        public struct Curve0To180Config
+        {
+            public bool @override;
+            [Range(0f, 180f)]
+            public float value;
+            public AnimationCurve curve;
+            
+            public Curve0To180Config(float value) : this()
+            {
+                this.value = value;
+            }
+        }
+
+        [Serializable]
+        public struct Curve0To90Config
+        {
+            public bool @override;
+            [Range(0f, 90f)]
+            public float value;
+            public AnimationCurve curve;
+
+            public Curve0To90Config(float value) : this()
+            {
+                this.value = value;
+            }
+        }
+
+        [Serializable]
+        public struct CurveNoLimitConfig
+        {
+            public bool @override;
+            public float value;
+            public AnimationCurve curve;
+        }
+
+        [Serializable]
+        public struct CurveVector3Config
+        {
+            public bool @override;
+            public Vector3 value;
+            public AnimationCurve curveX;
+            public AnimationCurve curveY;
+            public AnimationCurve curveZ;
+        }
+
+        [Serializable]
+        public struct Float0To1Config
+        {
+            public bool @override;
+            [Range(0f, 1f)]
+            public float value;
+        }
+
+        [Serializable]
+        public struct BoolConfig
+        {
+            public bool @override;
+            public bool value;
+        }
+
+        [Serializable]
+        public struct VersionConfig
+        {
+            public bool @override;
+            public VRCPhysBoneBase.Version value;
+        }
+
+        [Serializable]
+        public struct IntegrationTypeConfig
+        {
+            public bool @override;
+            public VRCPhysBoneBase.IntegrationType value;
+        }
+
+        [Serializable]
+        public struct ImmobileTypeConfig
+        {
+            public bool @override;
+            public VRCPhysBoneBase.ImmobileType value;
+        }
+
+        [Serializable]
+        public struct LimitTypeConfig
+        {
+            public bool @override;
+            public VRCPhysBoneBase.LimitType value;
+        }
+
+        [Serializable]
+        public struct PermissionConfig
+        {
+            public bool @override;
+            public VRCPhysBoneBase.AdvancedBool value;
+            public VRCPhysBoneBase.PermissionFilter filter;
+        }
+
+        [Serializable]
+        public struct CollidersConfig
+        {
+            public CollidersOverride @override;
+            [CanBeNull] public List<VRCPhysBoneColliderBase> value;
+            
+            public enum CollidersOverride
+            {
+                Copy,
+                Override,
+                Merge,
+            }
+        }
+
+        [Serializable]
+        public struct ParameterConfig
+        {
+            //public bool @override; // always
+            public string value;
+        }
+
+        [Serializable]
+        public struct IsAnimatedConfig
+        {
+            //public bool @override; // always
+            public bool value;
+        }
+
+        #endregion
 
         [Obsolete("legacy v1", true)] [FormerlySerializedAs("component")]
         public VRCPhysBoneBase[] components;
@@ -94,34 +293,6 @@ namespace Anatawa12.AvatarOptimizer
         {
             componentsSet = new PrefabSafeSet.VRCPhysBoneBaseSet(this);
         }
-
-#if UNITY_EDITOR
-        private void OnEnable()
-        {
-            if (merged == null)
-            {
-                merged = gameObject.AddComponent<VRCPhysBone>();
-                UnityEditor.EditorUtility.SetDirty(this);
-            }
-            merged.hideFlags |= HideFlags.HideInInspector | HideFlags.HideInHierarchy;
-        }
-
-        void OnValidate()
-        {
-            if (merged.gameObject != gameObject)
-            {
-                merged = null;
-                UnityEditor.EditorUtility.SetDirty(this);
-            }
-            if (merged == null)
-            {
-                merged = gameObject.AddComponent<VRCPhysBone>();
-                UnityEditor.EditorUtility.SetDirty(this);
-            }
-            if (merged != null)
-                merged.hideFlags |= HideFlags.HideInInspector | HideFlags.HideInHierarchy;
-        }
-#endif
     }
 
     public enum CollidersSettings

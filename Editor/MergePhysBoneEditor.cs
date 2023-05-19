@@ -7,8 +7,6 @@ using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
 using VRC.Dynamics;
-using Debug = System.Diagnostics.Debug;
-using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer
 {
@@ -44,274 +42,6 @@ namespace Anatawa12.AvatarOptimizer
             serializedObject.ApplyModifiedProperties();
             _mergedPhysBone.ApplyModifiedProperties();
         }
-    }
-
-    internal abstract class MergePhysBoneEditorModificationUtils
-    {
-        // for historical reasons, InconsistentNaming
-        // ReSharper disable InconsistentNaming
-        // ReSharper disable MemberCanBePrivate.Global
-        protected SerializedObject _sourcePhysBone;
-        protected readonly SerializedObject _mergedPhysBone;
-        protected readonly SerializedProperty _makeParent;
-        protected readonly SerializedProperty _version;
-        protected readonly SerializedProperty _integrationTypeProp;
-        protected readonly SerializedProperty _pullProp;
-        protected readonly SerializedProperty _springProp;
-        protected readonly SerializedProperty _stiffnessProp;
-        protected readonly SerializedProperty _gravityProp;
-        protected readonly SerializedProperty _gravityFalloffProp;
-        protected readonly SerializedProperty _immobileTypeProp;
-        protected readonly SerializedProperty _immobileProp;
-        protected readonly SerializedProperty _limitsProp;
-        protected readonly SerializedProperty _maxAngleXProp;
-        protected readonly SerializedProperty _limitRotationProp;
-        protected readonly SerializedProperty _maxAngleZProp;
-        protected readonly SerializedProperty _radiusProp;
-        protected readonly SerializedProperty _allowCollisionProp;
-        protected readonly SerializedProperty _collidersProp;
-        protected readonly SerializedProperty _allowGrabbingProp;
-        protected readonly SerializedProperty _grabMovementProp;
-        protected readonly SerializedProperty _allowPosingProp;
-        protected readonly SerializedProperty _stretchMotion;
-        protected readonly SerializedProperty _maxStretchProp;
-        protected readonly SerializedProperty _maxSquish;
-        protected readonly SerializedProperty _snapToHandProp;
-        protected readonly SerializedProperty _isAnimatedProp;
-        protected readonly SerializedProperty _resetWhenDisabledProp;
-        protected readonly PrefabSafeSet.EditorUtil<VRCPhysBoneBase> _componentsSetEditorUtil;
-        // ReSharper restore InconsistentNaming
-        // ReSharper restore MemberCanBePrivate.Global
-
-        public MergePhysBoneEditorModificationUtils(SerializedObject serializedObject)
-        {
-            var nestCount = PrefabSafeSet.PrefabSafeSetUtil.PrefabNestCount(serializedObject.targetObject);
-            _mergedPhysBone = new SerializedObject(serializedObject.FindProperty("merged").objectReferenceValue);
-            _makeParent = serializedObject.FindProperty("makeParent");
-            _version = serializedObject.FindProperty("version");
-            _integrationTypeProp = serializedObject.FindProperty("integrationType");
-            _pullProp = serializedObject.FindProperty("pull");
-            _springProp = serializedObject.FindProperty("spring");
-            _stiffnessProp = serializedObject.FindProperty("stiffness");
-            _gravityProp = serializedObject.FindProperty("gravity");
-            _gravityFalloffProp = serializedObject.FindProperty("gravityFalloff");
-            _immobileTypeProp = serializedObject.FindProperty("immobileType");
-            _immobileProp = serializedObject.FindProperty("immobile");
-            _limitsProp = serializedObject.FindProperty("limits");
-            _maxAngleXProp = serializedObject.FindProperty("maxAngleX");
-            _limitRotationProp = serializedObject.FindProperty("limitRotation");
-            _maxAngleZProp = serializedObject.FindProperty("maxAngleZ");
-            _radiusProp = serializedObject.FindProperty("radius");
-            _allowCollisionProp = serializedObject.FindProperty("allowCollision");
-            _collidersProp = serializedObject.FindProperty("colliders");
-            _allowGrabbingProp = serializedObject.FindProperty("allowGrabbing");
-            _grabMovementProp = serializedObject.FindProperty("grabMovement");
-            _allowPosingProp = serializedObject.FindProperty("allowPosing");
-            _stretchMotion = serializedObject.FindProperty("stretchMotion");
-            _maxStretchProp = serializedObject.FindProperty("maxStretch");
-            _maxSquish = serializedObject.FindProperty("maxSquish");
-            _snapToHandProp = serializedObject.FindProperty("snapToHand");
-            _isAnimatedProp = serializedObject.FindProperty("isAnimated");
-            _resetWhenDisabledProp = serializedObject.FindProperty("resetWhenDisabled");
-            var componentsSetProp = serializedObject.FindProperty(nameof(MergePhysBone.componentsSet));
-            _componentsSetEditorUtil = PrefabSafeSet.EditorUtil<VRCPhysBoneBase>.Create(
-                componentsSetProp, nestCount, x => (VRCPhysBoneBase)x.objectReferenceValue,
-                (x, v) => x.objectReferenceValue = v);
-        }
-
-        public void DoProcess()
-        {
-            _mergedPhysBone.Update();
-
-            var sourcePysBone = _componentsSetEditorUtil.Values.FirstOrDefault();
-            _sourcePhysBone = sourcePysBone == null
-                ? null
-                : new SerializedObject(_componentsSetEditorUtil.Values.Cast<Object>().ToArray());
-
-            if (_sourcePhysBone == null)
-            {
-                NoSource();
-            }
-            else
-            {
-                SerializedObject GetPb(SerializedProperty prop) => prop.boolValue ? _mergedPhysBone : _sourcePhysBone;
-
-                BeginPbConfig();
-
-                PbVersionProp("Version", "version", _version);
-
-                var version = (VRCPhysBoneBase.Version)GetPb(_version).FindProperty("version").enumValueIndex;
-
-                switch (version)
-                {
-                    case VRCPhysBoneBase.Version.Version_1_0:
-                    case VRCPhysBoneBase.Version.Version_1_1:
-                        break;
-                    default:
-                        UnsupportedPbVersion();
-                        break;
-                }
-
-                bool CheckMinVersion(VRCPhysBoneBase.Version require) => version >= require;
-
-                // == Transform ==
-                if (BeginSection("Transform", "transforms"))
-                {
-                    TransformSection();
-                }
-
-                // == Forces ==
-                if (NextSection("Forces", "forces"))
-                {
-                    PbProp("Integration Type", "integrationType", _integrationTypeProp);
-                    var isSimplified = GetPb(_integrationTypeProp).FindProperty("integrationType").enumValueIndex == 0;
-                    PbCurveProp("Pull", "pull", "pullCurve", _pullProp);
-                    if (isSimplified)
-                    {
-                        PbCurveProp("Spring", "spring", "springCurve", _springProp, _integrationTypeProp);
-                    }
-                    else
-                    {
-                        PbCurveProp("Momentum", "spring", "springCurve", _springProp, _integrationTypeProp);
-                        PbCurveProp("Stiffness", "stiffness", "stiffnessCurve", _stiffnessProp, _integrationTypeProp);
-                    }
-
-                    PbCurveProp("Gravity", "gravity", "gravityCurve", _gravityProp);
-                    PbCurveProp("Gravity Falloff", "gravityFalloff", "gravityFalloffCurve", _gravityFalloffProp);
-                    PbProp("Immobile Type", "immobileType", _immobileTypeProp);
-                    PbCurveProp("Immobile", "immobile", "immobileCurve", _immobileProp);
-                }
-
-                // == Limits ==
-                if (NextSection("Limits", "limits"))
-                {
-                    PbProp("Limit Type", "limitType", _limitsProp);
-                    var limitType =
-                        (VRCPhysBoneBase.LimitType)GetPb(_limitsProp).FindProperty("limitType").enumValueIndex;
-
-                    switch (limitType)
-                    {
-                        case VRCPhysBoneBase.LimitType.None:
-                            break;
-                        case VRCPhysBoneBase.LimitType.Angle:
-                        case VRCPhysBoneBase.LimitType.Hinge:
-                            PbCurveProp("Max Angle", "maxAngleX", "maxAngleXCurve", _maxAngleXProp, _limitsProp);
-                            Pb3DCurveProp("Rotation", "limitRotation",
-                                "Pitch", "limitRotationXCurve",
-                                "Roll", "limitRotationYCurve",
-                                "Yaw", "limitRotationZCurve",
-                                _limitRotationProp, _limitsProp);
-                            break;
-                        case VRCPhysBoneBase.LimitType.Polar:
-                            PbCurveProp("Max Angle X", "maxAngleX", "maxAngleXCurve", _maxAngleXProp, _limitsProp);
-                            PbCurveProp("Max Angle Z", "maxAngleZ", "maxAngleZCurve", _maxAngleZProp, _limitsProp);
-                            Pb3DCurveProp("Rotation", "limitRotation",
-                                "Pitch", "limitRotationXCurve",
-                                "Roll", "limitRotationYCurve",
-                                "Yaw", "limitRotationZCurve",
-                                _limitRotationProp, _limitsProp);
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException();
-                    }
-                }
-
-                // == Collision ==
-                if (NextSection("Collision", "collision"))
-                {
-                    PbCurveProp("Radius", "radius", "radiusCurve", _radiusProp);
-                    PbPermissionProp("Allow Collision", "allowCollision", "collisionFilter", _allowCollisionProp);
-                    ColliderProp("Colliders", "colliders", _collidersProp);
-                }
-
-                // == Stretch & Squish ==
-                if (NextSection("Stretch & Squish", "stretch--squish"))
-                {
-                    if (CheckMinVersion(VRCPhysBoneBase.Version.Version_1_1))
-                        PbCurveProp("Stretch Motion", "stretchMotion", "stretchMotionCurve", _stretchMotion);
-                    PbCurveProp("Max Stretch", "maxStretch", "maxStretchCurve", _maxStretchProp);
-                    PbCurveProp("Max Squish", "maxSquish", "maxSquishCurve", _maxSquish);
-                }
-
-                // == Grab & Pose ==
-                if (NextSection("Grab & Pose", "grab--pose"))
-                {
-                    PbPermissionProp("Allow Grabbing", "allowGrabbing", "grabFilter", _allowGrabbingProp);
-                    PbPermissionProp("Allow Posing", "allowPosing", "poseFilter", _allowPosingProp);
-                    PbProp("Grab Movement", "grabMovement", _grabMovementProp);
-                    PbProp("Snap To Hand", "snapToHand", _snapToHandProp);
-                }
-
-                // == Options ==
-                if (NextSection("Options", "options"))
-                {
-                    OptionParameter();
-                    OptionIsAnimated();
-                    PbProp("Reset When Disabled", "resetWhenDisabled", _resetWhenDisabledProp);
-                }
-
-                EndSection();
-
-                EndPbConfig();
-            }
-
-            _mergedPhysBone.ApplyModifiedProperties();
-        }
-
-        protected abstract void BeginPbConfig();
-
-        protected abstract bool BeginSection(string name, string docTag);
-        protected abstract void EndSection();
-
-        protected abstract void EndPbConfig();
-
-        private bool NextSection(string name, string docTag)
-        {
-            EndSection();
-            return BeginSection(name, docTag);
-        }
-
-        protected abstract void NoSource();
-
-        protected abstract void TransformSection();
-        protected abstract void OptionParameter();
-        protected abstract void OptionIsAnimated();
-
-        protected abstract void UnsupportedPbVersion();
-
-        protected abstract void PbVersionProp([NotNull] string label,
-            [NotNull] string pbPropName,
-            [NotNull] SerializedProperty overridePropName,
-            [ItemNotNull] [NotNull] params SerializedProperty[] overrides);
-
-        protected abstract void PbProp([NotNull] string label,
-            [NotNull] string pbPropName,
-            [NotNull] SerializedProperty overridePropName,
-            [ItemNotNull] [NotNull] params SerializedProperty[] overrides);
-
-        protected abstract void PbCurveProp([NotNull] string label,
-            [NotNull] string pbPropName,
-            [NotNull] string pbCurvePropName,
-            [NotNull] SerializedProperty overridePropName,
-            [ItemNotNull] [NotNull] params SerializedProperty[] overrides);
-
-        protected abstract void PbPermissionProp([NotNull] string label,
-            [NotNull] string pbPropName,
-            [NotNull] string pbFilterPropName,
-            [NotNull] SerializedProperty overridePropName,
-            [ItemNotNull] [NotNull] params SerializedProperty[] overrides);
-
-        protected abstract void Pb3DCurveProp([NotNull] string label,
-            [NotNull] string pbPropName,
-            [NotNull] string pbXCurveLabel, [NotNull] string pbXCurvePropName,
-            [NotNull] string pbYCurveLabel, [NotNull] string pbYCurvePropName,
-            [NotNull] string pbZCurveLabel, [NotNull] string pbZCurvePropName,
-            [NotNull] SerializedProperty overridePropName,
-            [ItemNotNull] [NotNull] params SerializedProperty[] overrides);
-
-        protected abstract void ColliderProp([NotNull] string label,
-            [NotNull] string pbProp,
-            [NotNull] SerializedProperty overrideProp);
     }
 
     sealed class MergePhysBoneEditorRenderer : MergePhysBoneEditorModificationUtils
@@ -358,9 +88,9 @@ namespace Anatawa12.AvatarOptimizer
 
         protected override void TransformSection() {
             EditorGUILayout.LabelField("Root Transform", "Auto Generated");
-            if (!_makeParent.boolValue)
+            if (!MakeParent.boolValue)
             {
-                var differ = _sourcePhysBone.targetObjects.Cast<Component>()
+                var differ = SourcePhysBones.Cast<Component>()
                     .Select(x => x.transform.parent)
                     .ZipWithNext()
                     .Any(x => x.Item1 != x.Item2);
@@ -370,17 +100,17 @@ namespace Anatawa12.AvatarOptimizer
             EditorGUILayout.LabelField("Ignore Transforms", "Automatically Merged");
             EditorGUILayout.LabelField("Endpoint Position", "Cleared to zero");
             EditorGUILayout.LabelField("Multi Child Type", "Must be Ignore");
-            var multiChildType = _sourcePhysBone.FindProperty("multiChildType");
+            var multiChildType = GetSourceProperty("multiChildType");
             if (multiChildType.enumValueIndex != 0 || multiChildType.hasMultipleDifferentValues)
                 EditorGUILayout.HelpBox(CL4EE.Tr("MergePhysBone:error:multiChildType"), MessageType.Error);
         }
         protected override void OptionParameter() {
-            EditorGUILayout.PropertyField(_mergedPhysBone.FindProperty("parameter"));
+            EditorGUILayout.PropertyField(Parameter.OverrideValue);
             EditorGUILayout.HelpBox("See VRCPhysBone editor's text OR docs for more info about Parameter.",
                 MessageType.Info);
         }
         protected override void OptionIsAnimated() {
-            EditorGUILayout.PropertyField(_isAnimatedProp);
+            EditorGUILayout.PropertyField(IsAnimated.OverrideValue);
         }
 
         const float OverrideWidth = 30f;
@@ -407,23 +137,20 @@ namespace Anatawa12.AvatarOptimizer
         bool IsCurveWithValue(SerializedProperty prop) =>
             prop.animationCurveValue != null && prop.animationCurveValue.length > 0;
 
-        protected override void PbVersionProp(string label, 
-            string pbPropName, 
-            SerializedProperty overrideProp,
-            params SerializedProperty[] overrides)
+        protected override void PbVersionProp(string label,
+            ValueConfigProp prop, bool forceOverride = false)
         {
             var labelContent = new GUIContent(label);
-            var forceOverride = overrides.Any(x => x.boolValue);
 
             var (valueRect, buttonRect, overrideRect) =
                 SplitRect(EditorGUILayout.GetControlRect(true, EditorGUIUtility.singleLineHeight), CurveButtonWidth,
                     OverrideWidth);
 
-            if (forceOverride || overrideProp.boolValue)
+            if (forceOverride || prop.IsOverride)
             {
                 // Override mode
 
-                renderer(_mergedPhysBone);
+                renderer(prop.OverrideValue);
 
                 if (forceOverride)
                 {
@@ -433,10 +160,10 @@ namespace Anatawa12.AvatarOptimizer
                 }
                 else
                 {
-                    EditorGUI.BeginProperty(overrideRect, null, overrideProp);
+                    EditorGUI.BeginProperty(overrideRect, null, prop.IsOverrideProperty);
                     var selected = PopupNoIndent(overrideRect, 1, CopyOverride);
                     if (selected != 1)
-                        overrideProp.boolValue = false;
+                        prop.IsOverrideProperty.boolValue = false;
                     EditorGUI.EndProperty();
                 }
             }
@@ -444,13 +171,13 @@ namespace Anatawa12.AvatarOptimizer
             {
                 // Copy mode
                 EditorGUI.BeginDisabledGroup(true);
-                var differ = renderer(_sourcePhysBone);
+                var differ = renderer(prop.SourceValue);
                 EditorGUI.EndDisabledGroup();
 
-                EditorGUI.BeginProperty(overrideRect, null, overrideProp);
+                EditorGUI.BeginProperty(overrideRect, null, prop.IsOverrideProperty);
                 var selected = PopupNoIndent(overrideRect, 0, CopyOverride);
                 if (selected != 0)
-                    overrideProp.boolValue = true;
+                    prop.IsOverrideProperty.boolValue = true;
                 EditorGUI.EndProperty();
 
                 if (differ)
@@ -469,12 +196,11 @@ namespace Anatawa12.AvatarOptimizer
                 Application.OpenURL(docURL);
             }
 
-            bool renderer(SerializedObject obj)
+            bool renderer(SerializedProperty property)
             {
-                var prop = obj.FindProperty(pbPropName);
-                var prevValue = prop.enumValueIndex;
-                EditorGUI.PropertyField(valueRect, prop, labelContent);
-                var newValue = prop.enumValueIndex;
+                var prevValue = property.enumValueIndex;
+                EditorGUI.PropertyField(valueRect, property, labelContent);
+                var newValue = property.enumValueIndex;
                 if (prevValue != newValue)
                 {
                     switch (EditorUtility.DisplayDialogComplex(
@@ -488,28 +214,25 @@ namespace Anatawa12.AvatarOptimizer
                             Application.OpenURL(docURL);
                             break;
                         case 1:
-                            prop.enumValueIndex = prevValue;
+                            property.enumValueIndex = prevValue;
                             break;
                         case 2:
-                            prop.enumValueIndex = newValue;
+                            property.enumValueIndex = newValue;
                             break;
                     }
                 }
-                return prop.hasMultipleDifferentValues;
+                return property.hasMultipleDifferentValues;
             }
         }
 
 
-        protected override void PbProp(string label, 
-            string pbPropName, 
-            SerializedProperty overridePropName,
-            params SerializedProperty[] overrides)
+        protected override void PbProp(string label, ValueConfigProp prop, bool forceOverride = false)
         {
-            PbPropImpl(label, overridePropName, overrides, (valueRect, obj, labelContent) =>
+            PbPropImpl(label, prop, forceOverride, (valueRect, merged, labelContent) =>
             {
-                var prop = obj.FindProperty(pbPropName);
-                EditorGUI.PropertyField(valueRect, prop, labelContent);
-                return prop.hasMultipleDifferentValues;
+                var property = prop.GetValueProperty(merged);
+                EditorGUI.PropertyField(valueRect, property, labelContent);
+                return property.hasMultipleDifferentValues;
             });
         }
 
@@ -543,18 +266,14 @@ namespace Anatawa12.AvatarOptimizer
             }
         }
 
-        protected override void PbCurveProp(string label,
-            string pbPropName,
-            string pbCurvePropName,
-            SerializedProperty overridePropName,
-            params SerializedProperty[] overrides)
+        protected override void PbCurveProp(string label, CurveConfigProp prop, bool forceOverride = false)
         {
-            PbPropImpl(label, overridePropName, overrides, (rect, obj, labelContent) =>
+            PbPropImpl(label, prop, forceOverride, (rect, merged, labelContent) =>
             {
                 var (valueRect, buttonRect) = SplitRect(rect, CurveButtonWidth);
 
-                var valueProp = obj.FindProperty(pbPropName);
-                var curveProp = obj.FindProperty(pbCurvePropName);
+                var valueProp = prop.GetValueProperty(merged);
+                var curveProp = prop.GetCurveProperty(merged);
 
                 EditorGUI.PropertyField(valueRect, valueProp, labelContent);
                 DrawCurveFieldWithButton(curveProp, buttonRect, 
@@ -564,20 +283,16 @@ namespace Anatawa12.AvatarOptimizer
             });
         }
 
-        protected override void PbPermissionProp(string label,
-            string pbPropName,
-            string pbFilterPropName,
-            SerializedProperty overridePropName,
-            params SerializedProperty[] overrides)
+        protected override void PbPermissionProp(string label, PermissionConfigProp prop, bool forceOverride = false)
         {
-            PbPropImpl(label, overridePropName, overrides, (rect, obj, labelContent) =>
+            PbPropImpl(label, prop, forceOverride, (rect, merged, labelContent) =>
             {
-                var valueProp = obj.FindProperty(pbPropName);
+                var valueProp = prop.GetValueProperty(merged);
 
                 EditorGUI.PropertyField(rect, valueProp, labelContent);
                 if (valueProp.enumValueIndex == 2)
                 {
-                    var filterProp = obj.FindProperty(pbFilterPropName);
+                    var filterProp = prop.GetFilterProperty(merged);
                     var allowSelf = filterProp.FindPropertyRelative("allowSelf");
                     var allowOthers = filterProp.FindPropertyRelative("allowOthers");
                     EditorGUI.indentLevel++;
@@ -594,21 +309,17 @@ namespace Anatawa12.AvatarOptimizer
         }
 
         protected override void Pb3DCurveProp(string label,
-            string pbPropName,
-            string pbXCurveLabel, string pbXCurvePropName,
-            string pbYCurveLabel, string pbYCurvePropName,
-            string pbZCurveLabel, string pbZCurvePropName,
-            SerializedProperty overridePropName,
-            params SerializedProperty[] overrides)
+            string pbXCurveLabel, string pbYCurveLabel, string pbZCurveLabel, 
+            CurveVector3ConfigProp prop, bool forceOverride = false)
         {
-            PbPropImpl(label, overridePropName, overrides, (rect, obj, labelContent) =>
+            PbPropImpl(label, prop, forceOverride, (rect, merged, labelContent) =>
             {
                 var (valueRect, buttonRect) = SplitRect(rect, CurveButtonWidth);
 
-                var valueProp = obj.FindProperty(pbPropName);
-                var xCurveProp = obj.FindProperty(pbXCurvePropName);
-                var yCurveProp = obj.FindProperty(pbYCurvePropName);
-                var zCurveProp = obj.FindProperty(pbZCurvePropName);
+                var valueProp = prop.GetValueProperty(merged);
+                var xCurveProp = prop.GetCurveXProperty(merged);
+                var yCurveProp = prop.GetCurveYProperty(merged);
+                var zCurveProp = prop.GetCurveZProperty(merged);
 
                 void DrawCurve(string curveLabel, SerializedProperty curveProp)
                 {
@@ -653,21 +364,20 @@ namespace Anatawa12.AvatarOptimizer
         private static readonly string[] CopyOverride = { "C:Copy", "O:Override" };
 
         private void PbPropImpl([NotNull] string label, 
-            [NotNull] SerializedProperty overrideProp, 
-            [ItemNotNull] [NotNull] SerializedProperty[] overrides, 
-            [NotNull] Func<Rect, SerializedObject, GUIContent, bool> renderer)
+            [NotNull] OverridePropBase prop, 
+            bool forceOverride, 
+            [NotNull] Func<Rect, bool, GUIContent, bool> renderer)
         {
             var labelContent = new GUIContent(label);
-            var forceOverride = overrides.Any(x => x.boolValue);
 
             var (valueRect, overrideRect) =
                 SplitRect(EditorGUILayout.GetControlRect(true, EditorGUIUtility.singleLineHeight), OverrideWidth);
 
-            if (forceOverride || overrideProp.boolValue)
+            if (forceOverride || prop.IsOverride)
             {
                 // Override mode
 
-                renderer(valueRect, _mergedPhysBone, labelContent);
+                renderer(valueRect, true, labelContent);
 
                 if (forceOverride)
                 {
@@ -677,10 +387,10 @@ namespace Anatawa12.AvatarOptimizer
                 }
                 else
                 {
-                    EditorGUI.BeginProperty(overrideRect, null, overrideProp);
+                    EditorGUI.BeginProperty(overrideRect, null, prop.IsOverrideProperty);
                     var selected = PopupNoIndent(overrideRect, 1, CopyOverride);
                     if (selected != 1)
-                        overrideProp.boolValue = false;
+                        prop.IsOverrideProperty.boolValue = false;
                     EditorGUI.EndProperty();
                 }
             }
@@ -688,13 +398,13 @@ namespace Anatawa12.AvatarOptimizer
             {
                 // Copy mode
                 EditorGUI.BeginDisabledGroup(true);
-                var differ = renderer(valueRect, _sourcePhysBone, labelContent);
+                var differ = renderer(valueRect, false, labelContent);
                 EditorGUI.EndDisabledGroup();
 
-                EditorGUI.BeginProperty(overrideRect, null, overrideProp);
+                EditorGUI.BeginProperty(overrideRect, null, prop.IsOverrideProperty);
                 var selected = PopupNoIndent(overrideRect, 0, CopyOverride);
                 if (selected != 0)
-                    overrideProp.boolValue = true;
+                    prop.IsOverrideProperty.boolValue = true;
                 EditorGUI.EndProperty();
 
                 if (differ)
@@ -707,18 +417,17 @@ namespace Anatawa12.AvatarOptimizer
             }
         }
 
-        protected override void ColliderProp(string label, string pbProp, SerializedProperty overrideProp)
+        protected override void CollidersProp(string label, CollidersConfigProp prop)
         {
             var labelContent = new GUIContent(label);
 
             Rect valueRect, overrideRect;
 
-            switch ((CollidersSettings)overrideProp.enumValueIndex)
+            switch ((MergePhysBone.CollidersConfig.CollidersOverride)prop.OverrideProperty.enumValueIndex)
             {
-                case CollidersSettings.Copy:
+                case MergePhysBone.CollidersConfig.CollidersOverride.Copy:
                 {
-                    Debug.Assert(_sourcePhysBone != null, nameof(_sourcePhysBone) + " != null");
-                    var colliders = _sourcePhysBone.FindProperty(pbProp);
+                    var colliders = prop.PhysBoneValue;
 
                     var height = EditorGUI.GetPropertyHeight(colliders, null, true);
 
@@ -737,13 +446,13 @@ namespace Anatawa12.AvatarOptimizer
                     }
                 }
                     break;
-                case CollidersSettings.Merge:
+                case MergePhysBone.CollidersConfig.CollidersOverride.Merge:
                 {
                     (valueRect, overrideRect) =
                         SplitRect(EditorGUILayout.GetControlRect(true, EditorGUIUtility.singleLineHeight), OverrideWidth);
 
-                    var colliders = _componentsSetEditorUtil.Values.SelectMany(x => x.colliders).Distinct().ToList();
-                    var mergedProp = _mergedPhysBone.FindProperty(pbProp);
+                    var colliders = ComponentsSetEditorUtil.Values.SelectMany(x => x.colliders).Distinct().ToList();
+                    var mergedProp = prop.ValueProperty;
                     EditorGUI.BeginDisabledGroup(true);
                     mergedProp.isExpanded = EditorGUI.Foldout(valueRect, mergedProp.isExpanded, labelContent);
                     if (mergedProp.isExpanded)
@@ -757,9 +466,9 @@ namespace Anatawa12.AvatarOptimizer
                     EditorGUI.EndDisabledGroup();
                 }
                     break;
-                case CollidersSettings.Override:
+                case MergePhysBone.CollidersConfig.CollidersOverride.Override:
                 {
-                    var colliders = _mergedPhysBone.FindProperty(pbProp);
+                    var colliders = prop.ValueProperty;
 
                     var height = EditorGUI.GetPropertyHeight(colliders, null, true);
 
@@ -772,9 +481,9 @@ namespace Anatawa12.AvatarOptimizer
                     throw new ArgumentOutOfRangeException();
             }
 
-            EditorGUI.BeginProperty(overrideRect, null, overrideProp);
-            var selected = PopupNoIndent(overrideRect, overrideProp.enumValueIndex, overrideProp.enumDisplayNames);
-            if (selected != 0) overrideProp.enumValueIndex = selected;
+            EditorGUI.BeginProperty(overrideRect, null, prop.OverrideProperty);
+            var selected = PopupNoIndent(overrideRect, prop.OverrideProperty.enumValueIndex, prop.OverrideProperty.enumDisplayNames);
+            if (selected != 0) prop.OverrideProperty.enumValueIndex = selected;
             EditorGUI.EndProperty();
         }
 
@@ -840,14 +549,14 @@ namespace Anatawa12.AvatarOptimizer
         {
             if (!_mergePhysBone.makeParent)
             {
-                var differ = _sourcePhysBone.targetObjects.Cast<Component>()
+                var differ = SourcePhysBones
                     .Select(x => x.transform.parent)
                     .ZipWithNext()
                     .Any(x => x.Item1 != x.Item2);
                 if (differ)
                     _errorLogs.Add(ErrorLog.Validation("MergePhysBone:error:parentDiffer"));
             }
-            var multiChildType = _sourcePhysBone.FindProperty(nameof(VRCPhysBoneBase.multiChildType));
+            var multiChildType = GetSourceProperty(nameof(VRCPhysBoneBase.multiChildType));
             if (multiChildType.enumValueIndex != 0 || multiChildType.hasMultipleDifferentValues)
                 _errorLogs.Add(ErrorLog.Validation("MergePhysBone:error:multiChildType"));
         }
@@ -858,67 +567,38 @@ namespace Anatawa12.AvatarOptimizer
         protected override void UnsupportedPbVersion() =>
             _errorLogs.Add(ErrorLog.Validation("MergePhysBone:error:unsupportedPbVersion"));
 
-        protected override void PbVersionProp(string label, string pbPropName, SerializedProperty overridePropName,
-            params SerializedProperty[] overrides)
-            => PbProp(label, pbPropName, overridePropName, overrides);
+        protected override void PbVersionProp(string label, ValueConfigProp prop, bool forceOverride = false)
+            => PbProp(label, prop, forceOverride);
 
-        protected override void PbProp(string label, string pbPropName, SerializedProperty overridePropName,
-            params SerializedProperty[] overrides) =>
-            PbPropImpl(label, overridePropName, overrides,
-                () => _sourcePhysBone.FindProperty(pbPropName).hasMultipleDifferentValues);
+        protected override void PbProp(string label, ValueConfigProp prop, bool forceOverride = false)
+            => PbPropImpl(label, prop, forceOverride);
 
-        protected override void PbCurveProp(string label, string pbPropName, string pbCurvePropName,
-            SerializedProperty overridePropName,
-            params SerializedProperty[] overrides) =>
-            PbPropImpl(label, overridePropName, overrides,
-                () => _sourcePhysBone.FindProperty(pbPropName).hasMultipleDifferentValues
-                      || _sourcePhysBone.FindProperty(pbCurvePropName).hasMultipleDifferentValues);
+        protected override void PbCurveProp(string label, CurveConfigProp prop, bool forceOverride = false)
+            => PbPropImpl(label, prop, forceOverride);
 
-        protected override void PbPermissionProp(string label, string pbPropName, string pbFilterPropName,
-            SerializedProperty overridePropName,
-            params SerializedProperty[] overrides)
+        protected override void Pb3DCurveProp(string label, string pbXCurveLabel, string pbYCurveLabel, string pbZCurveLabel,
+            CurveVector3ConfigProp prop, bool forceOverride = false)
+            => PbPropImpl(label, prop, forceOverride);
+
+        protected override void PbPermissionProp(string label, PermissionConfigProp prop, bool forceOverride = false)
+            => PbPropImpl(label, prop, forceOverride);
+
+        private void PbPropImpl(string label, OverridePropBase prop, bool forceOverride)
         {
-            PbPropImpl(label, overridePropName, overrides, () =>
-            {
-                var sourceValueProp = _sourcePhysBone.FindProperty(pbPropName);
-                var sourceFilterProp = _sourcePhysBone.FindProperty(pbFilterPropName);
-                return sourceValueProp.hasMultipleDifferentValues
-                       || sourceValueProp.enumValueIndex == 2 && sourceFilterProp.hasMultipleDifferentValues;
-            });
-        }
-
-        protected override void Pb3DCurveProp(string label, string pbPropName, string pbXCurveLabel,
-            string pbXCurvePropName, string pbYCurveLabel,
-            string pbYCurvePropName, string pbZCurveLabel, string pbZCurvePropName, SerializedProperty overridePropName,
-            params SerializedProperty[] overrides) =>
-            PbPropImpl(label, overridePropName, overrides, () =>
-                _sourcePhysBone.FindProperty(pbPropName).hasMultipleDifferentValues ||
-                _sourcePhysBone.FindProperty(pbXCurvePropName).hasMultipleDifferentValues ||
-                _sourcePhysBone.FindProperty(pbYCurvePropName).hasMultipleDifferentValues ||
-                _sourcePhysBone.FindProperty(pbZCurvePropName).hasMultipleDifferentValues);
-
-        private void PbPropImpl(string label,
-            SerializedProperty overrideProp,
-            SerializedProperty[] overrides,
-            Func<bool> copy)
-        {
-            if (overrides.Any(x => x.boolValue) || overrideProp.boolValue) return;
-
-            // Copy mode
-            var differ = copy();
-
-            if (differ)
+            if (forceOverride || prop.IsOverride) return;
+            
+            if (prop.GetActiveProps(false).Any(x => x.Item2.hasMultipleDifferentValues))
                 _differProps.Add(label);
         }
 
-        protected override void ColliderProp(string label, string pbProp, SerializedProperty overrideProp)
+        protected override void CollidersProp(string label, CollidersConfigProp prop)
         {
-            if (_mergePhysBone.colliders == CollidersSettings.Copy)
+            // 0: copy
+            if (prop.OverrideProperty.enumValueIndex == 0)
             {
-                if (_sourcePhysBone.FindProperty(pbProp).hasMultipleDifferentValues)
-                    _errorLogs.Add(ErrorLog.Validation("MergePhysBone:error:differValue", new[] { label }));
+                if (prop.PhysBoneValue.hasMultipleDifferentValues)
+                    _differProps.Add(label);
             }
         }
     }
-
 }

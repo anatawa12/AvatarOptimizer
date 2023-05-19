@@ -11,6 +11,9 @@ The format is based on [Keep a Changelog].
 - Japanese Translation: 日本語化 `#152`
 
 ### Changed
+- Save format for MergePhysBone `#166`
+  - Previously used backed PhysBone component for override values are removed.
+  - There are no changes in behaviour. Just migrate your assets.
 
 ### Deprecated
 
