@@ -37,7 +37,7 @@ namespace Anatawa12.AvatarOptimizer
         [NotNull] protected readonly CurveConfigProp Immobile;
         #endregion
         #region == Limits ==
-        [NotNull] protected readonly ValueConfigProp Limits;
+        [NotNull] protected readonly ValueConfigProp LimitType;
         [NotNull] protected readonly CurveConfigProp MaxAngleX;
         [NotNull] protected readonly CurveConfigProp MaxAngleZ;
         [NotNull] protected readonly CurveVector3ConfigProp LimitRotation;
@@ -84,7 +84,7 @@ namespace Anatawa12.AvatarOptimizer
             ImmobileType = ValueProp(nameof(MergePhysBone.immobileTypeConfig), nameof(VRCPhysBoneBase.immobileType));
             Immobile = CurveProp(nameof(MergePhysBone.immobileConfig), nameof(VRCPhysBoneBase.immobile), nameof(VRCPhysBoneBase.immobileCurve));
             // == Limits ==
-            Limits = ValueProp(nameof(MergePhysBone.limitsConfig), nameof(VRCPhysBoneBase.limitType));
+            LimitType = ValueProp(nameof(MergePhysBone.limitTypeConfig), nameof(VRCPhysBoneBase.limitType));
             MaxAngleX = CurveProp(nameof(MergePhysBone.maxAngleXConfig), nameof(VRCPhysBoneBase.maxAngleX), nameof(VRCPhysBoneBase.maxAngleXCurve));
             MaxAngleZ = CurveProp(nameof(MergePhysBone.maxAngleZConfig), nameof(VRCPhysBoneBase.maxAngleZ), nameof(VRCPhysBoneBase.maxAngleZCurve));
             LimitRotation = CurveVector3Prop(nameof(MergePhysBone.limitRotationConfig), nameof(VRCPhysBoneBase.limitRotation), 
@@ -199,9 +199,9 @@ namespace Anatawa12.AvatarOptimizer
                 // == Limits ==
                 if (NextSection("Limits", "limits"))
                 {
-                    PbProp("Limit Type", Limits);
-                    var limitType = (VRCPhysBoneBase.LimitType)Limits.GetValueProperty(Limits.IsOverride).enumValueIndex;
-                    var forceOverride = Limits.IsOverride;
+                    PbProp("Limit Type", LimitType);
+                    var limitType = (VRCPhysBoneBase.LimitType)LimitType.GetValueProperty(LimitType.IsOverride).enumValueIndex;
+                    var forceOverride = LimitType.IsOverride;
 
                     switch (limitType)
                     {

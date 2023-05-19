@@ -112,7 +112,7 @@ namespace Anatawa12.AvatarOptimizer
         public Curve0To1Config immobileConfig;
         #endregion
         #region == Limits ==
-        public LimitTypeConfig limitsConfig;
+        public LimitTypeConfig limitTypeConfig;
         public Curve0To180Config maxAngleXConfig = new Curve0To180Config(45f);
         public Curve0To90Config maxAngleZConfig = new Curve0To90Config(45f);
         public CurveVector3Config limitRotationConfig;
