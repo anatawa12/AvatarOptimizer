@@ -22,10 +22,28 @@ namespace Anatawa12.AvatarOptimizer
 
         public bool MapComponentInstance(int instanceId, out Component component)
         {
+            if (instanceId == 0)
+            {
+                component = null;
+                return false;
+            }
             var mergedInto = _componentMapping.TryGetValue(instanceId, out var info) ? info.MergedInto : instanceId;
 
-            component = EditorUtility.InstanceIDToObject(mergedInto) as Component;
-            return instanceId != mergedInto || component == null;
+            var found = EditorUtility.InstanceIDToObject(mergedInto);
+            if (!found)
+            {
+                component = null;
+                return true;
+            }
+
+            if (found is Component c)
+            {
+                component = c;
+                return instanceId != mergedInto;
+            }
+
+            component = default;
+            return false;
         }
 
         // null means nothing to map
