@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog].
 
 ### Security
 
+## [0.4.0] - 2023-05-20
 ## [0.4.0-rc.2] - 2023-05-19
 ### Fixed
 - Error when we opened Editor of MergePhysBone component [`#167`](https://github.com/anatawa12/AvatarOptimizer/pull/167)
@@ -326,7 +327,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.0-rc.2...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.0-rc.2...v0.4.0
 [0.4.0-rc.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.0-rc.1...v0.4.0-rc.2
 [0.4.0-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.0-beta.1...v0.4.0-rc.1
 [0.4.0-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.3.5...v0.4.0-beta.1

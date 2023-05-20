@@ -8,24 +8,33 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Japanese Translation: 日本語化 `#152`
 
 ### Changed
-- Save format for MergePhysBone `#166`
-  - Previously used backed PhysBone component for override values are removed.
-  - There are no changes in behaviour. Just migrate your assets.
 
 ### Deprecated
 
 ### Removed
-- Delete GameObject feature `#153`
+
+### Fixed
+
+### Security
+
+## [0.4.0] - 2023-05-20
+### Added
+- Japanese Translation: 日本語化 [`#152`](https://github.com/anatawa12/AvatarOptimizer/pull/152)
+
+### Changed
+- Save format for MergePhysBone [`#166`](https://github.com/anatawa12/AvatarOptimizer/pull/166)
+  - Previously used backed PhysBone component for override values are removed.
+  - There are no changes in behaviour. Just migrate your assets.
+
+### Removed
+- Delete GameObject feature [`#153`](https://github.com/anatawa12/AvatarOptimizer/pull/153)
   - Use `EditorOnly` tag instead
 
 ### Fixed
-- Error with Animator at non-root GameObject `#164`
-- Error with copied MergePhysBone component `#165`
-
-### Security
+- Error with Animator at non-root GameObject [`#164`](https://github.com/anatawa12/AvatarOptimizer/pull/164)
+- Error with copied MergePhysBone component [`#165`](https://github.com/anatawa12/AvatarOptimizer/pull/165)
 
 ## [0.3.5] - 2023-05-15
 ### Changed
@@ -251,7 +260,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.3.5...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.3.5...v0.4.0
 [0.3.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.3.4...v0.3.5
 [0.3.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.3.3...v0.3.4
 [0.3.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.3.2...v0.3.3
