@@ -10,17 +10,22 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
-- Reimplemented Animation Mapping System Completely `#168`
-  - This should fixes problem with objects/components at same place.
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
-- Error is not cleared on build `#170`
 
 ### Security
+
+## [0.4.1-beta.1] - 2023-05-20
+### Changed
+- Reimplemented Animation Mapping System Completely [`#168`](https://github.com/anatawa12/AvatarOptimizer/pull/168)
+  - This should fixes problem with objects/components at same place.
+
+### Fixed
+- Error is not cleared on build [`#170`](https://github.com/anatawa12/AvatarOptimizer/pull/170)
 
 ## [0.4.0] - 2023-05-20
 ## [0.4.0-rc.2] - 2023-05-19
@@ -330,7 +335,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.1-beta.1...HEAD
+[0.4.1-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.0...v0.4.1-beta.1
 [0.4.0]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.0-rc.2...v0.4.0
 [0.4.0-rc.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.0-rc.1...v0.4.0-rc.2
 [0.4.0-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.0-beta.1...v0.4.0-rc.1
