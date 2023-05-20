@@ -28,14 +28,13 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 {
                     if (p.propertyType == SerializedPropertyType.ObjectReference)
                     {
-                        if (mapping.InstanceIdToComponent.TryGetValue(p.objectReferenceInstanceIDValue,
-                                out var mappedComponent))
-                            p.objectReferenceValue = mappedComponent.component;
+                        if (mapping.MapComponentInstance(p.objectReferenceInstanceIDValue, out var mappedComponent))
+                            p.objectReferenceValue = mappedComponent;
 
                         if (p.objectReferenceValue is AnimatorController controller)
                         {
                             if (mapper == null)
-                                mapper = new AnimatorControllerMapper(mapping,
+                                mapper = new AnimatorControllerMapper(mapping.CreateAnimationMapper(component.gameObject),
                                     session.RelativePath(component.transform), session);
 
                             // ReSharper disable once AccessToModifiedClosure
@@ -69,19 +68,15 @@ namespace Anatawa12.AvatarOptimizer.Processors
             var eyelidsBlendshapes = serialized.FindProperty("customEyeLookSettings.eyelidsBlendshapes");
             if (eyelidsSkinnedMesh == null || eyelidsBlendshapes == null) return;
 
-            if (!mapping.InstanceIdToComponent.TryGetValue(
-                    eyelidsSkinnedMesh.objectReferenceInstanceIDValue, 
-                    out var mappedComponent))
-                return;
-            if (mappedComponent.component == null || mappedComponent.mapping == null)
-                return;
+            var info = mapping.GetComponentMapping(eyelidsSkinnedMesh.objectReferenceInstanceIDValue);
+            if (info == null) return;
 
-            eyelidsSkinnedMesh.objectReferenceValue = mappedComponent.component;
+            eyelidsSkinnedMesh.objectReferenceValue = EditorUtility.InstanceIDToObject(info.MergedInto);
 
             for (var i = 0; i < eyelidsBlendshapes.arraySize; i++)
             {
                 var indexProp = eyelidsBlendshapes.GetArrayElementAtIndex(i);
-                if (mappedComponent.mapping.PropertyMapping.TryGetValue(
+                if (info.PropertyMapping.TryGetValue(
                         VProp.BlendShapeIndex(indexProp.intValue),
                         out var mappedPropName))
                 {
@@ -93,13 +88,13 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
     internal class AnimatorControllerMapper
     {
-        private readonly ObjectMapping _mapping;
+        private readonly AnimationObjectMapper _mapping;
         private readonly Dictionary<Object, Object> _cache = new Dictionary<Object, Object>();
         private readonly OptimizerSession _session;
         private readonly string _rootPath;
         private bool _mapped = false;
 
-        public AnimatorControllerMapper(ObjectMapping mapping, string rootPath, OptimizerSession session)
+        public AnimatorControllerMapper(AnimationObjectMapper mapping, string rootPath, OptimizerSession session)
         {
             _session = session;
             _mapping = mapping;
@@ -148,7 +143,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
                 foreach (var binding in AnimationUtility.GetCurveBindings(clip))
                 {
-                    var newBinding = _mapping.MapPath(_rootPath, binding);
+                    var newBinding = _mapping.MapBinding(binding);
                     _mapped |= newBinding != binding;
                     if (newBinding.type == null) continue;
                     newClip.SetCurve(newBinding.path, newBinding.type, newBinding.propertyName,
@@ -157,7 +152,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
                 foreach (var binding in AnimationUtility.GetObjectReferenceCurveBindings(clip))
                 {
-                    var newBinding = _mapping.MapPath(_rootPath, binding);
+                    var newBinding = _mapping.MapBinding(binding);
                     _mapped |= newBinding != binding;
                     if (newBinding.type == null) continue;
                     AnimationUtility.SetObjectReferenceCurve(newClip, newBinding,

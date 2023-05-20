@@ -36,13 +36,9 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 var mapping = pair.Key;
                 var mapped = pair.Value;
                 foreach (var child in mapping.DirectChildrenEnumerable())
-                {
-                    session.MappingBuilder.RecordMoveObject(child.gameObject, mapped.gameObject);
                     child.parent = mapped;
-                }
 
                 session.Destroy(mapping.gameObject);
-                session.MappingBuilder.RecordRemoveGameObject(mapping.gameObject);
             }
         }
 
