@@ -13,6 +13,7 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
 
         public bool OnPreprocessAvatar(GameObject avatarGameObject)
         {
+            BuildReport.Clear();
             BuildReport.CurrentReport.Initialize(avatarGameObject.GetComponent<VRCAvatarDescriptor>());
             return true;
         }
