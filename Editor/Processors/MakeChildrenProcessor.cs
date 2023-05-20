@@ -11,7 +11,6 @@ namespace Anatawa12.AvatarOptimizer.Processors
             {
                 foreach (var makeChildrenChild in makeChildren.children.GetAsSet().Where(x => x))
                 {
-                    session.MappingBuilder.RecordMoveObject(makeChildrenChild.gameObject, makeChildren.gameObject);
                     makeChildrenChild.parent = makeChildren.transform;
                 }
             });

@@ -72,7 +72,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             foreach (var renderer in Component.renderersSet.GetAsSet())
             {
-                session.MappingBuilder.RecordMoveComponent(renderer, Component.gameObject);
+                session.MappingBuilder.RecordMergeComponent(renderer, Component);
                 session.Destroy(renderer);
 
                 // process removeEmptyRendererObject

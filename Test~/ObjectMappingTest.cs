@@ -14,24 +14,26 @@ namespace Anatawa12.AvatarOptimizer.Test
             var root = new GameObject();
             var child1 = Utils.NewGameObject("child1", root.transform);
             var child11 = Utils.NewGameObject("child11", child1.transform);
+            var child111 = Utils.NewGameObject("child111", child11.transform);
             var child2 = Utils.NewGameObject("child2", root.transform);
 
             var builder = new ObjectMappingBuilder(root);
-            builder.RecordMoveObject(child11, child2);
             child11.transform.parent = child2.transform;
 
             var built = builder.BuildObjectMapping();
 
+            var rootMapper = built.CreateAnimationMapper(root);
             Assert.That(
-                built.MapPath("", B("child1/child11", typeof(GameObject), "m_Enabled")),
+                rootMapper.MapBinding(B("child1/child11", typeof(GameObject), "m_Enabled")),
                 Is.EqualTo(B("child2/child11", typeof(GameObject), "m_Enabled")));
             
             Assert.That(
-                built.MapPath("", B("child1/child11/child111", typeof(GameObject), "m_Enabled")),
+                rootMapper.MapBinding(B("child1/child11/child111", typeof(GameObject), "m_Enabled")),
                 Is.EqualTo(B("child2/child11/child111", typeof(GameObject), "m_Enabled")));
             
+            var child1Mapper = built.CreateAnimationMapper(child1);
             Assert.That(
-                built.MapPath("child1", B("child11", typeof(GameObject), "m_Enabled")),
+                child1Mapper.MapBinding(B("child11", typeof(GameObject), "m_Enabled")),
                 Is.EqualTo(Default));
         }
 
@@ -41,27 +43,29 @@ namespace Anatawa12.AvatarOptimizer.Test
             var root = new GameObject();
             var child1 = Utils.NewGameObject("child1", root.transform);
             var child11 = Utils.NewGameObject("child11", child1.transform);
+            var child111 = Utils.NewGameObject("child111", child11.transform);
 
             var builder = new ObjectMappingBuilder(root);
-            builder.RecordRemoveGameObject(child11);
             Object.DestroyImmediate(child11);
 
             var built = builder.BuildObjectMapping();
 
+            var rootMapper = built.CreateAnimationMapper(root);
             Assert.That(
-                built.MapPath("", B("child1/child11", typeof(GameObject), "m_Enabled")),
+                rootMapper.MapBinding(B("child1/child11", typeof(GameObject), "m_Enabled")),
                 Is.EqualTo(Default));
 
             Assert.That(
-                built.MapPath("", B("child1", typeof(GameObject), "m_Enabled")),
+                rootMapper.MapBinding(B("child1", typeof(GameObject), "m_Enabled")),
                 Is.EqualTo(B("child1", typeof(GameObject), "m_Enabled")));
 
             Assert.That(
-                built.MapPath("", B("child1/child11/child111", typeof(GameObject), "m_Enabled")),
+                rootMapper.MapBinding(B("child1/child11/child111", typeof(GameObject), "m_Enabled")),
                 Is.EqualTo(Default));
 
+            var child1Mapper = built.CreateAnimationMapper(child1);
             Assert.That(
-                built.MapPath("child1", B("child11", typeof(GameObject), "m_Enabled")),
+                child1Mapper.MapBinding(B("child11", typeof(GameObject), "m_Enabled")),
                 Is.EqualTo(Default));
         }
 
@@ -75,24 +79,26 @@ namespace Anatawa12.AvatarOptimizer.Test
             var child2Component = child2.AddComponent<SkinnedMeshRenderer>();
 
             var builder = new ObjectMappingBuilder(root);
-            builder.RecordMoveComponent(child1Component, child2);
+            builder.RecordMergeComponent(child1Component, child2Component);
             Object.DestroyImmediate(child1Component);
             var child1ComponentId = child1Component.GetInstanceID();
 
             var built = builder.BuildObjectMapping();
 
+            var rootMapper = built.CreateAnimationMapper(root);
             // should not affect to GameObject
             Assert.That(
-                built.MapPath("", B("child1", typeof(GameObject), "m_Enabled")),
+                rootMapper.MapBinding(B("child1", typeof(GameObject), "m_Enabled")),
                 Is.EqualTo(B("child1", typeof(GameObject), "m_Enabled")));
             
             // but should affect to component
             Assert.That(
-                built.MapPath("", B("child1", typeof(SkinnedMeshRenderer), "blendShapes.test")),
+                rootMapper.MapBinding(B("child1", typeof(SkinnedMeshRenderer), "blendShapes.test")),
                 Is.EqualTo(B("child2", typeof(SkinnedMeshRenderer), "blendShapes.test")));
 
             // check for component replication
-            Assert.That(built.InstanceIdToComponent[child1ComponentId].component, Is.SameAs(child2Component));
+            Assert.That(built.MapComponentInstance(child1ComponentId, out var component), Is.True);
+            Assert.That(component, Is.SameAs(child2Component));
         }
 
         [Test]
@@ -103,24 +109,26 @@ namespace Anatawa12.AvatarOptimizer.Test
             var child1Component = child1.AddComponent<SkinnedMeshRenderer>();
 
             var builder = new ObjectMappingBuilder(root);
-            builder.RecordRemoveComponent(child1Component);
             Object.DestroyImmediate(child1Component);
             var child1ComponentId = child1Component.GetInstanceID(); 
 
             var built = builder.BuildObjectMapping();
 
+            var rootMapper = built.CreateAnimationMapper(root);
+
             // should not affect to GameObject itself
             Assert.That(
-                built.MapPath("", B("child1", typeof(GameObject), "m_Enabled")),
+                rootMapper.MapBinding(B("child1", typeof(GameObject), "m_Enabled")),
                 Is.EqualTo(B("child1", typeof(GameObject), "m_Enabled")));
 
             // but should affect to component
             Assert.That(
-                built.MapPath("", B("child1", typeof(SkinnedMeshRenderer), "blendShapes.test")),
+                rootMapper.MapBinding(B("child1", typeof(SkinnedMeshRenderer), "blendShapes.test")),
                 Is.EqualTo(Default));
 
             // check for component replication
-            Assert.That(built.InstanceIdToComponent[child1ComponentId].component, Is.SameAs(null));
+            Assert.That(built.MapComponentInstance(child1ComponentId, out var component), Is.True);
+            Assert.That(component, Is.SameAs(null));
         }
 
         [Test]
@@ -132,18 +140,19 @@ namespace Anatawa12.AvatarOptimizer.Test
 
             var builder = new ObjectMappingBuilder(root);
             builder.RecordMoveProperty(child1Component, "blendShapes.test", "blendShapes.changed");
-            Object.DestroyImmediate(child1Component);
 
             var built = builder.BuildObjectMapping();
 
+            var rootMapper = built.CreateAnimationMapper(root);
+
             // should not affect to other component
             Assert.That(
-                built.MapPath("", B("child2", typeof(SkinnedMeshRenderer), "blendShapes.test")),
+                rootMapper.MapBinding(B("child2", typeof(SkinnedMeshRenderer), "blendShapes.test")),
                 Is.EqualTo(B("child2", typeof(SkinnedMeshRenderer), "blendShapes.test")));
             
             // but should affect to component
             Assert.That(
-                built.MapPath("", B("child1", typeof(SkinnedMeshRenderer), "blendShapes.test")),
+                rootMapper.MapBinding(B("child1", typeof(SkinnedMeshRenderer), "blendShapes.test")),
                 Is.EqualTo(B("child1", typeof(SkinnedMeshRenderer), "blendShapes.changed")));
         }
 
@@ -160,14 +169,16 @@ namespace Anatawa12.AvatarOptimizer.Test
 
             var built = builder.BuildObjectMapping();
 
+            var rootMapper = built.CreateAnimationMapper(root);
+
             // should not affect to other component
             Assert.That(
-                built.MapPath("", B("child2", typeof(SkinnedMeshRenderer), "blendShapes.test")),
+                rootMapper.MapBinding(B("child2", typeof(SkinnedMeshRenderer), "blendShapes.test")),
                 Is.EqualTo(B("child2", typeof(SkinnedMeshRenderer), "blendShapes.test")));
             
             // but should affect to component
             Assert.That(
-                built.MapPath("", B("child1", typeof(SkinnedMeshRenderer), "blendShapes.test")),
+                rootMapper.MapBinding(B("child1", typeof(SkinnedMeshRenderer), "blendShapes.test")),
                 Is.EqualTo(Default));
         }
 
@@ -183,35 +194,37 @@ namespace Anatawa12.AvatarOptimizer.Test
             var builder = new ObjectMappingBuilder(root);
             builder.RecordMoveProperty(child2Component, "blendShapes.child2", "blendShapes.child2Changed");
             builder.RecordMoveProperty(child1Component, "blendShapes.child1", "blendShapes.child1Changed");
-            builder.RecordMoveComponent(child1Component, child2);
+            builder.RecordMergeComponent(child1Component, child2Component);
             builder.RecordMoveProperty(child2Component, "blendShapes.moved", "blendShapes.movedChanged");
 
             var built = builder.BuildObjectMapping();
+            
+            var rootMapper = built.CreateAnimationMapper(root);
 
             Assert.That(
-                built.MapPath("", B("child1", typeof(SkinnedMeshRenderer), "blendShapes.child1")),
+                rootMapper.MapBinding(B("child1", typeof(SkinnedMeshRenderer), "blendShapes.child1")),
                 Is.EqualTo(B("child2", typeof(SkinnedMeshRenderer), "blendShapes.child1Changed")));
             Assert.That(
-                built.MapPath("", B("child1", typeof(SkinnedMeshRenderer), "blendShapes.child2")),
+                rootMapper.MapBinding(B("child1", typeof(SkinnedMeshRenderer), "blendShapes.child2")),
                 Is.EqualTo(B("child2", typeof(SkinnedMeshRenderer), "blendShapes.child2")));
             Assert.That(
-                built.MapPath("", B("child1", typeof(SkinnedMeshRenderer), "blendShapes.child1Other")),
+                rootMapper.MapBinding(B("child1", typeof(SkinnedMeshRenderer), "blendShapes.child1Other")),
                 Is.EqualTo(B("child2", typeof(SkinnedMeshRenderer), "blendShapes.child1Other")));
             Assert.That(
-                built.MapPath("", B("child1", typeof(SkinnedMeshRenderer), "blendShapes.moved")),
+                rootMapper.MapBinding(B("child1", typeof(SkinnedMeshRenderer), "blendShapes.moved")),
                 Is.EqualTo(B("child2", typeof(SkinnedMeshRenderer), "blendShapes.movedChanged")));
 
             Assert.That(
-                built.MapPath("", B("child2", typeof(SkinnedMeshRenderer), "blendShapes.child1")),
+                rootMapper.MapBinding(B("child2", typeof(SkinnedMeshRenderer), "blendShapes.child1")),
                 Is.EqualTo(B("child2", typeof(SkinnedMeshRenderer), "blendShapes.child1")));
             Assert.That(
-                built.MapPath("", B("child2", typeof(SkinnedMeshRenderer), "blendShapes.child2")),
+                rootMapper.MapBinding(B("child2", typeof(SkinnedMeshRenderer), "blendShapes.child2")),
                 Is.EqualTo(B("child2", typeof(SkinnedMeshRenderer), "blendShapes.child2Changed")));
             Assert.That(
-                built.MapPath("", B("child2", typeof(SkinnedMeshRenderer), "blendShapes.child2Other")),
+                rootMapper.MapBinding(B("child2", typeof(SkinnedMeshRenderer), "blendShapes.child2Other")),
                 Is.EqualTo(B("child2", typeof(SkinnedMeshRenderer), "blendShapes.child2Other")));
             Assert.That(
-                built.MapPath("", B("child2", typeof(SkinnedMeshRenderer), "blendShapes.moved")),
+                rootMapper.MapBinding(B("child2", typeof(SkinnedMeshRenderer), "blendShapes.moved")),
                 Is.EqualTo(B("child2", typeof(SkinnedMeshRenderer), "blendShapes.movedChanged")));
         }
 
@@ -226,20 +239,21 @@ namespace Anatawa12.AvatarOptimizer.Test
 
             var builder = new ObjectMappingBuilder(root);
             builder.RecordMoveProperty(child11Component, "blendShapes.child11", "blendShapes.child11Changed");
-            builder.RecordMoveObject(child11, child2);
             child11.transform.parent = child2.transform;
             builder.RecordMoveProperty(child11Component, "blendShapes.moved", "blendShapes.movedChanged");
 
             var built = builder.BuildObjectMapping();
+            
+            var rootMapper = built.CreateAnimationMapper(root);
 
             Assert.That(
-                built.MapPath("", B("child1/child11", typeof(SkinnedMeshRenderer), "blendShapes.child11")),
+                rootMapper.MapBinding(B("child1/child11", typeof(SkinnedMeshRenderer), "blendShapes.child11")),
                 Is.EqualTo(B("child2/child11", typeof(SkinnedMeshRenderer), "blendShapes.child11Changed")));
             Assert.That(
-                built.MapPath("", B("child1/child11", typeof(SkinnedMeshRenderer), "blendShapes.moved")),
+                rootMapper.MapBinding(B("child1/child11", typeof(SkinnedMeshRenderer), "blendShapes.moved")),
                 Is.EqualTo(B("child2/child11", typeof(SkinnedMeshRenderer), "blendShapes.movedChanged")));
 
-            Assert.That(built.InstanceIdToComponent[child11Component.GetInstanceID()].component, Is.SameAs(child11Component));
+            Assert.That(built.MapComponentInstance(child11Component.GetInstanceID(), out var component), Is.False);
         }
 
 
@@ -249,10 +263,9 @@ namespace Anatawa12.AvatarOptimizer.Test
 
     static class ObjectMappingTestUtils
     {
-        public static (string, Type, string) MapPath(this ObjectMapping mapping, string rootPath, (string, Type, string) binding)
+        public static (string, Type, string) MapBinding(this AnimationObjectMapper mapping, (string, Type, string) binding)
         {
-            var result = mapping.MapPath(rootPath,
-                EditorCurveBinding.PPtrCurve(binding.Item1, binding.Item2, binding.Item3));
+            var result = mapping.MapBinding(EditorCurveBinding.PPtrCurve(binding.Item1, binding.Item2, binding.Item3));
 
             return (result.path, result.type, result.propertyName);
         }

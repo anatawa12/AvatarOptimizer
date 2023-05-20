@@ -38,11 +38,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                     return; // error reported by validator
 
                 foreach (var physBone in sourceComponents)
-                {
-                    var pbTarget = physBone.GetTarget();
-                    session.MappingBuilder.RecordMoveObject(pbTarget.gameObject, root.gameObject);
-                    pbTarget.parent = root;
-                }
+                    physBone.GetTarget().parent = root;
             }
             else
             {
@@ -63,11 +59,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                     root = Utils.NewGameObject($"PhysBoneRoot-{Guid.NewGuid()}", pb.GetTarget().parent).transform;
 
                     foreach (var physBone in sourceComponents)
-                    {
-                        var pbTarget = physBone.GetTarget();
-                        session.MappingBuilder.RecordMoveObject(pbTarget.gameObject, root.gameObject);
-                        pbTarget.parent = root;
-                    }
+                        physBone.GetTarget().parent = root;
                 }
             }
 
