@@ -18,6 +18,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Error is not cleared on build `#170`
 
 ### Security
 
