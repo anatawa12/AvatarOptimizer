@@ -6,6 +6,7 @@ using UnityEditor;
 using UnityEngine;
 using VRC.Dynamics;
 using VRC.SDK3.Dynamics.PhysBone.Components;
+using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.Processors
 {
@@ -98,8 +99,8 @@ namespace Anatawa12.AvatarOptimizer.Processors
             // show the new PhysBone
             merged.hideFlags &= ~(HideFlags.HideInHierarchy | HideFlags.HideInInspector);
 
-            foreach (var physBone in sourceComponents) session.Destroy(physBone);
-            session.Destroy(merge);
+            foreach (var physBone in sourceComponents) Object.DestroyImmediate(physBone);
+            Object.DestroyImmediate(merge);
         }
 
         sealed class MergePhysBoneMerger : MergePhysBoneEditorModificationUtils

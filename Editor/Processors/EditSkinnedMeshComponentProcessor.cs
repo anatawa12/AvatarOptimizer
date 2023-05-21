@@ -28,7 +28,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                     target.AssertInvariantContract(
                         $"after {processor.GetType().Name} " +
                         $"for {processor.Target.gameObject.name}");
-                    session.Destroy(processor.Component);
+                    Object.DestroyImmediate(processor.Component);
                 }
             }
 
@@ -59,6 +59,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
             foreach (var keyValuePair in _skinnedCache)
             {
                 var targetRenderer = keyValuePair.Key;
+                if (!targetRenderer) continue;
                 var meshInfo = keyValuePair.Value;
 
                 var mesh = targetRenderer.sharedMesh
@@ -75,6 +76,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
             foreach (var keyValuePair in _staticCache)
             {
                 var targetRenderer = keyValuePair.Key;
+                if (!targetRenderer) continue;
                 var meshInfo = keyValuePair.Value;
                 var meshFilter = targetRenderer.GetComponent<MeshFilter>();
 
