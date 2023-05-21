@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
+- Improve Animation Mapping System `#172`
+  - This should reduce build time
 
 ### Deprecated
 

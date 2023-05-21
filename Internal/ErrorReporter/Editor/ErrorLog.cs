@@ -184,7 +184,7 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
             messageAssembly = callerAssembly;
             messageAssemblyName = messageAssembly.GetName().Name;
 
-            substitutions = strings.Select(s => s.ToString()).ToArray();
+            substitutions = strings.Select(s => $"{s}").ToArray();
 
             referencedObjects = args.Where(o => o is Component || o is GameObject)
                 .Select(o => new ObjectRef(o is Component c ? c.gameObject : (GameObject) o))

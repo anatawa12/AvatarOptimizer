@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 {
@@ -66,31 +67,30 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 target.AssertInvariantContract($"processing meshInfo {Target.gameObject.name}");
             }
 
-            session.Destroy(Component);
-
             var boneTransforms = new HashSet<Transform>(target.Bones.Select(x => x.Transform));
 
             foreach (var renderer in Component.renderersSet.GetAsSet())
             {
-                session.MappingBuilder.RecordMergeComponent(renderer, Component);
-                session.Destroy(renderer);
+                session.MappingBuilder.RecordMergeComponent(renderer, Target);
+                var rendererGameObject = renderer.gameObject;
+                Object.DestroyImmediate(renderer);
 
                 // process removeEmptyRendererObject
                 if (!Component.removeEmptyRendererObject) continue;
                 // no other components should be exist
-                if (!renderer.gameObject.GetComponents<Component>().All(x =>
+                if (!rendererGameObject.GetComponents<Component>().All(x =>
                         x is AvatarTagComponent || x is Transform || x is SkinnedMeshRenderer)) continue;
                 // no children is required
-                if (renderer.transform.childCount != 0) continue;
+                if (rendererGameObject.transform.childCount != 0) continue;
                 // the SkinnedMeshRenderer may also be used as bone. it's not good to remove
-                if (boneTransforms.Contains(renderer.transform)) continue;
-                session.Destroy(renderer.gameObject);
+                if (boneTransforms.Contains(rendererGameObject.transform)) continue;
+                Object.DestroyImmediate(rendererGameObject);
             }
 
             foreach (var renderer in Component.staticRenderersSet.GetAsSet())
             {
-                session.Destroy(renderer.GetComponent<MeshFilter>());
-                session.Destroy(renderer);
+                Object.DestroyImmediate(renderer.GetComponent<MeshFilter>());
+                Object.DestroyImmediate(renderer);
             }
         }
 

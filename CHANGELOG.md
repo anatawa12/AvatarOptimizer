@@ -12,6 +12,8 @@ The format is based on [Keep a Changelog].
 ### Changed
 - Reimplemented Animation Mapping System Completely `#168`
   - This should fixes problem with objects/components at same place.
+- Improve Animation Mapping System `#172`
+  - This should reduce build time
 
 ### Deprecated
 

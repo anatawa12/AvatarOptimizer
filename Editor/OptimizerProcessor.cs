@@ -125,7 +125,6 @@ namespace Anatawa12.AvatarOptimizer
             new Processors.MakeChildrenProcessor().Process(session);
 
             new Processors.ApplyObjectMapping().Apply(session);
-            new Processors.ApplyDestroy().Apply(session);
 
             session.MarkDirtyAll();
         }

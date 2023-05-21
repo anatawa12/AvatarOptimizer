@@ -24,7 +24,8 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 AnimatorControllerMapper mapper = null;
                 SpecialMappingApplier.Apply(component.GetType(), serialized, mapping, ref mapper);
                 var p = serialized.GetIterator();
-                while (p.Next(true))
+                var enterChildren = true;
+                while (p.Next(enterChildren))
                 {
                     if (p.propertyType == SerializedPropertyType.ObjectReference)
                     {
@@ -43,6 +44,41 @@ namespace Anatawa12.AvatarOptimizer.Processors
                             if (mapped != null)
                                 p.objectReferenceValue = mapped;
                         }
+                    }
+
+                    switch (p.propertyType)
+                    {
+                        case SerializedPropertyType.String:
+                        case SerializedPropertyType.Integer:
+                        case SerializedPropertyType.Boolean:
+                        case SerializedPropertyType.Float:
+                        case SerializedPropertyType.Color:
+                        case SerializedPropertyType.ObjectReference:
+                        case SerializedPropertyType.LayerMask:
+                        case SerializedPropertyType.Enum:
+                        case SerializedPropertyType.Vector2:
+                        case SerializedPropertyType.Vector3:
+                        case SerializedPropertyType.Vector4:
+                        case SerializedPropertyType.Rect:
+                        case SerializedPropertyType.ArraySize:
+                        case SerializedPropertyType.Character:
+                        case SerializedPropertyType.AnimationCurve:
+                        case SerializedPropertyType.Bounds:
+                        case SerializedPropertyType.Gradient:
+                        case SerializedPropertyType.Quaternion:
+                        case SerializedPropertyType.FixedBufferSize:
+                        case SerializedPropertyType.Vector2Int:
+                        case SerializedPropertyType.Vector3Int:
+                        case SerializedPropertyType.RectInt:
+                        case SerializedPropertyType.BoundsInt:
+                            enterChildren = false;
+                            break;
+                        case SerializedPropertyType.Generic:
+                        case SerializedPropertyType.ExposedReference:
+                        case SerializedPropertyType.ManagedReference:
+                        default:
+                            enterChildren = true;
+                            break;
                     }
                 }
 

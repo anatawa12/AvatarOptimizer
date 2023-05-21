@@ -37,9 +37,11 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 var mapped = pair.Value;
                 foreach (var child in mapping.DirectChildrenEnumerable())
                     child.parent = mapped;
-
-                session.Destroy(mapping.gameObject);
+                mapping.parent = null;
             }
+
+            foreach (var pair in mergeMapping.Keys)
+                Object.DestroyImmediate(pair.gameObject);
         }
 
         private void DoBoneMap(OptimizerSession session, SkinnedMeshRenderer renderer, 
