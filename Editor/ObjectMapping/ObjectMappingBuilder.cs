@@ -45,7 +45,7 @@ namespace Anatawa12.AvatarOptimizer
 #endif
         }
 
-        public void RecordMergeComponent(Component from, Component mergeTo) =>
+        public void RecordMergeComponent<T>(T from, T mergeTo) where T: Component =>
             GetComponentInfo(from).MergedTo(GetComponentInfo(mergeTo));
 
         public void RecordMoveProperty(Component from, string oldProp, string newProp) =>
