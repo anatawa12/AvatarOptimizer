@@ -39,7 +39,7 @@ Drop to None element at the bottom to add renderer and reset to None to remove f
 
 ## Remove Empty Renderer GameObject
 
-If this checkbox is checked and the GameObject SkinnedRenderer belongs to does not have
+If this checkbox is checked and the GameObject SkinnedMeshRenderer belongs to does not have
 any other components than SkinnedMeshRenderer, the GameObject will be removed from Hierarchy.
 
 ## Merge Materials
