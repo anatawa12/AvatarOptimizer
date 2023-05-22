@@ -23,6 +23,7 @@ The format is based on [Keep a Changelog].
 - Error is not cleared on build `#170`
 - Merge PhysBone is not working `#177`
   - Previously, values are not copied correctly
+- The help box for description of components without description were shown `#178`
 
 ### Security
 
