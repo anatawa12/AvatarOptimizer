@@ -100,12 +100,12 @@ namespace Anatawa12.AvatarOptimizer
                 EditorGUILayout.HelpBox(CL4EE.Tr("MergePhysBone:error:multiChildType"), MessageType.Error);
         }
         protected override void OptionParameter() {
-            EditorGUILayout.PropertyField(Parameter.OverrideValue);
+            EditorGUILayout.PropertyField(Parameter.OverrideValue, new GUIContent("Parameter"));
             EditorGUILayout.HelpBox("See VRCPhysBone editor's text OR docs for more info about Parameter.",
                 MessageType.Info);
         }
         protected override void OptionIsAnimated() {
-            EditorGUILayout.PropertyField(IsAnimated.OverrideValue);
+            EditorGUILayout.PropertyField(IsAnimated.OverrideValue, new GUIContent("Is Animated"));
         }
 
         const float OverrideWidth = 30f;
