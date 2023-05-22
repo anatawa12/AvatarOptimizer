@@ -46,4 +46,4 @@ any other components than SkinnedMeshRenderer, the GameObject will be removed fr
 
 If MergeSkinnedMesh component found some Materials used in multiple renderers, the Materials will be listed here.
 
-Check Merge to merge those MaterialSlots (SubMeshes) into one MaterialSlot. This reduces DrawCalls.
+Check `Merge` to merge those MaterialSlots (SubMeshes) into one MaterialSlot. This reduces DrawCalls.
