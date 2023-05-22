@@ -1,4 +1,5 @@
 using CustomLocalization4EditorExtension;
+using JetBrains.Annotations;
 using UnityEditor;
 
 namespace Anatawa12.AvatarOptimizer
@@ -21,13 +22,14 @@ namespace Anatawa12.AvatarOptimizer
         }
 
         private string _descriptionKey;
+        [CanBeNull]
         protected virtual string Description
         {
             get
             {
                 if (_descriptionKey == null)
                     _descriptionKey = $"{serializedObject.targetObject.GetType().Name}:description";
-                return CL4EE.Tr(_descriptionKey);
+                return CL4EE.GetLocalization()?.TryTr(_descriptionKey);
             }
         }
 
