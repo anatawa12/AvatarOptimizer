@@ -21,6 +21,8 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - Error is not cleared on build `#170`
+- Merge PhysBone is not working `#177`
+  - Previously, values are not copied correctly
 
 ### Security
 
