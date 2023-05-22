@@ -16,15 +16,21 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Errors in Animation Mapping System `#176`
-  - Error with removed property
-  - Error with Property moved twice
-- Merge PhysBone is not working `#177`
-  - Previously, values are not copied correctly
-- The help box for description of components without description were shown `#178`
+- Name of Is Animated and Parameter field are not correct `#183`
+- We cannot set override setting of Colliders to Copy `#183`
+- Error with MergeToonLit `#185`
 - Poor word choice in Japanese Translation `#174`
 
 ### Security
+
+## [0.4.1-rc.2] - 2023-05-22
+### Fixed
+- Errors in Animation Mapping System [`#176`](https://github.com/anatawa12/AvatarOptimizer/pull/176)
+  - Error with removed property
+  - Error with Property moved twice
+- Merge PhysBone is not working [`#177`](https://github.com/anatawa12/AvatarOptimizer/pull/177)
+  - Previously, values are not copied correctly
+- The help box for description of components without description were shown [`#178`](https://github.com/anatawa12/AvatarOptimizer/pull/178)
 
 ## [0.4.1-rc.1] - 2023-05-21
 ### Changed
@@ -347,7 +353,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.1-rc.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.1-rc.2...HEAD
+[0.4.1-rc.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.1-rc.1...v0.4.1-rc.2
 [0.4.1-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.1-beta.1...v0.4.1-rc.1
 [0.4.1-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.0...v0.4.1-beta.1
 [0.4.0]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.0-rc.2...v0.4.0

@@ -24,6 +24,9 @@ The format is based on [Keep a Changelog].
 - Merge PhysBone is not working `#177`
   - Previously, values are not copied correctly
 - The help box for description of components without description were shown `#178`
+- Name of Is Animated and Parameter field are not correct `#183`
+- We cannot set override setting of Colliders to Copy `#183`
+- Error with MergeToonLit `#185`
 - Poor word choice in Japanese Translation `#174`
 
 ### Security
