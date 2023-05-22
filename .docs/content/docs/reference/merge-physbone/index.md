@@ -18,7 +18,7 @@ This operation is same as [Clear Endpoint Position](../clear-endpoint-position).
 
 The list of PhysBone Component.
 
-Drop to None element at the bottom to add renderer and reset to None to remove from the list.
+Drop to None element at the bottom to add PhysBone and reset to None to remove from the list.
 
 ### Overrides
 

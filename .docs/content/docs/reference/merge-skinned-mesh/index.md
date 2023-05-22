@@ -39,11 +39,11 @@ Drop to None element at the bottom to add renderer and reset to None to remove f
 
 ## Remove Empty Renderer GameObject
 
-If this checkbox is checked and the GameObject SkinnedRenderer belongs to does not have
+If this checkbox is checked and the GameObject SkinnedMeshRenderer belongs to does not have
 any other components than SkinnedMeshRenderer, the GameObject will be removed from Hierarchy.
 
 ## Merge Materials
 
 If MergeSkinnedMesh component found some Materials used in multiple renderers, the Materials will be listed here.
 
-Check Merge to merge those MaterialSlots (SubMeshes) into one MaterialSlot. This reduces DrawCalls.
+Check `Merge` to merge those MaterialSlots (SubMeshes) into one MaterialSlot. This reduces DrawCalls.
