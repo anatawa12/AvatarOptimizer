@@ -5,10 +5,10 @@ type: docs
 
 # Avatar Optimizer
 
-Anatawa12による小さな非破壊アバター軽量化ユーティリティのセット。
-このユーティリティはPlayモードに入るときかアバターをビルドするときに適用されます。
+anatawa12によるアバター軽量化用のちょっとした非破壊ユーティリティ群です。
+これらのユーティリティはPlayモードに入るときかアバターをビルドするときに適用されます。
 
-Avatar Optimizerは[GitHub]上で開発され、[MIT License]で公開されてるオープンソースソフトウェアです。
+Avatar Optimizerは[GitHub]上で開発され、[MIT License]で公開されているオープンソースソフトウェアです。
 
 [GitHub]: https://github.com/anatawa12/AvatarOptimizer
 [MIT License]: https://github.com/anatawa12/AvatarOptimizer/blob/HEAD/LICENSE
@@ -21,7 +21,7 @@ Avatar Optimizerは[VPM][vpm]レポジトリを使用して公開されている
 
 [VCC]
 
-1. [このリンク][VCC-add-repo-link]をクリックしてanataw12のレポジトリを追加する
+1. [このリンク][VCC-add-repo-link]をクリックしてanatawa12のレポジトリを追加する。
 2. VCCでAvatar Optimizerを追加する。
 
 ### VPAIによるインストーラUnityPackageを使用する {#installation-vpai}
@@ -29,7 +29,7 @@ Avatar Optimizerは[VPM][vpm]レポジトリを使用して公開されている
 [VPAI]により、unitypackageをインポートするだけでこのツールをインストールできます。
 
 1. [ここ][installer unitypackage 0.3.x]からインストーラunitypackageをダウンロードする。
-2. unitypackageをプロジェクトにインポートする
+2. unitypackageをプロジェクトにインポートする。
 
 <details>
 <summary>他のバージョン用のインストーラ</summary>
