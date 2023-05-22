@@ -56,10 +56,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                             // if there are multiple users for the vertex: duplicate it
                             var cloned = subMesh.Triangles[i].Clone();
                             target.Vertices.Add(cloned);
-                            subMesh.Triangles[i] = cloned;
 
                             users[subMesh.Triangles[i]]--;
                             users[cloned] = 1;
+
+                            subMesh.Triangles[i] = cloned;
                         }
 
                         subMesh.Triangles[i].TexCoord0 = MapUV(subMesh.Triangles[i].TexCoord0, targetRect);
