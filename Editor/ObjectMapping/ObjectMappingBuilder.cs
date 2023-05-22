@@ -105,7 +105,7 @@ namespace Anatawa12.AvatarOptimizer
                     _afterPropertyIds.Remove(oldProp);
                     _afterPropertyIds[newProp] = propId;
                     if (!_beforePropertyIds.ContainsKey(oldProp))
-                        _beforePropertyIds.Add(newProp, propId);
+                        _beforePropertyIds.Add(oldProp, propId);
                 }
                 else
                 {
