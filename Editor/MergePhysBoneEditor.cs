@@ -478,7 +478,8 @@ namespace Anatawa12.AvatarOptimizer
 
             EditorGUI.BeginProperty(overrideRect, null, prop.OverrideProperty);
             var selected = PopupNoIndent(overrideRect, prop.OverrideProperty.enumValueIndex, prop.OverrideProperty.enumDisplayNames);
-            if (selected != 0) prop.OverrideProperty.enumValueIndex = selected;
+            if (selected != prop.OverrideProperty.enumValueIndex)
+                prop.OverrideProperty.enumValueIndex = selected;
             EditorGUI.EndProperty();
         }
 
