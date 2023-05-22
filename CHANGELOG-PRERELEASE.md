@@ -16,6 +16,9 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Errors in Animation Mapping System `#176`
+  - Error with removed property
+  - Error with Property moved twice
 
 ### Security
 

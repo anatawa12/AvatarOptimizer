@@ -103,7 +103,10 @@ namespace Anatawa12.AvatarOptimizer
                 binding.path = newPath;
 
                 if (componentInfo.PropertyMapping.TryGetValue(binding.propertyName, out var newProp))
+                {
+                    if (newProp == null) return default;
                     binding.propertyName = newProp;
+                }
             }
             else
             {
