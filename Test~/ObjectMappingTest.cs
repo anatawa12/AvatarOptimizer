@@ -165,7 +165,6 @@ namespace Anatawa12.AvatarOptimizer.Test
 
             var builder = new ObjectMappingBuilder(root);
             builder.RecordRemoveProperty(child1Component, "blendShapes.test");
-            Object.DestroyImmediate(child1Component);
 
             var built = builder.BuildObjectMapping();
 
