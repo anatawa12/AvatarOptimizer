@@ -168,7 +168,7 @@ msgstr "レンダラー:"
 
 msgid "MergeToonLitMaterial:description"
 msgstr ""
-"複数のVRChat ToonLitマテリアルを統合するためのマテリアルです。\n"
+"複数のVRChat Mobile ToonLitマテリアルを統合するためのマテリアルです。\n"
 "Questの制限を回避するためのコンポーネントです。"
 
 msgid "MergeToonLitMaterial:button:Add Merged Material"
