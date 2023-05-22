@@ -16,6 +16,12 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Errors in Animation Mapping System `#176`
+  - Error with removed property
+  - Error with Property moved twice
+- Merge PhysBone is not working `#177`
+  - Previously, values are not copied correctly
+- The help box for description of components without description were shown `#178`
 
 ### Security
 

@@ -337,15 +337,15 @@ namespace Anatawa12.AvatarOptimizer
             {
                 if (@override) 
                 {
-                    if (SourceValue.enumValueIndex == 2)
-                        return new[] { (PhysBoneValueName, SourceValue), (PhysBoneFilterName, SourceFilter) };
-                    return new[] { (PhysBoneValueName, SourceValue) };
-                }
-                else
-                {
                     if (OverrideValue.enumValueIndex == 2)
                         return new[] { (PhysBoneValueName, OverrideValue), (PhysBoneFilterName, OverrideFilter) };
                     return new[] { (PhysBoneValueName, OverrideValue) };
+                }
+                else
+                {
+                    if (SourceValue.enumValueIndex == 2)
+                        return new[] { (PhysBoneValueName, SourceValue), (PhysBoneFilterName, SourceFilter) };
+                    return new[] { (PhysBoneValueName, SourceValue) };
                 }
             }
         }

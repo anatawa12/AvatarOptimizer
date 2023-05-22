@@ -39,13 +39,13 @@ namespace Anatawa12.AvatarOptimizer
             public override IEnumerable<(string, SerializedProperty)> GetActiveProps(bool @override) {
                 if (@override)
                     return new[] {
-                        (PhysBoneValueName, SourceValue),
-                        (PhysBoneCurveName, SourceCurve),
+                        (PhysBoneValueName, OverrideValue),
+                        (PhysBoneCurveName, OverrideCurve),
                     };
                 else
                     return new[] {
-                        (PhysBoneValueName, OverrideValue),
-                        (PhysBoneCurveName, OverrideCurve),
+                        (PhysBoneValueName, SourceValue),
+                        (PhysBoneCurveName, SourceCurve),
                     };
             }
         }
@@ -96,17 +96,17 @@ namespace Anatawa12.AvatarOptimizer
             public override IEnumerable<(string, SerializedProperty)> GetActiveProps(bool @override) {
                 if (@override)
                     return new[] {
-                        (PhysBoneValueName, SourceValue),
-                        (PhysBoneCurveXName, SourceCurveX),
-                        (PhysBoneCurveYName, SourceCurveY),
-                        (PhysBoneCurveZName, SourceCurveZ),
-                    };
-                else
-                    return new[] {
                         (PhysBoneValueName, OverrideValue),
                         (PhysBoneCurveXName, OverrideCurveX),
                         (PhysBoneCurveYName, OverrideCurveY),
                         (PhysBoneCurveZName, OverrideCurveZ),
+                    };
+                else
+                    return new[] {
+                        (PhysBoneValueName, SourceValue),
+                        (PhysBoneCurveXName, SourceCurveX),
+                        (PhysBoneCurveYName, SourceCurveY),
+                        (PhysBoneCurveZName, SourceCurveZ),
                     };
             }
         }
@@ -162,11 +162,11 @@ namespace Anatawa12.AvatarOptimizer
             public override IEnumerable<(string, SerializedProperty)> GetActiveProps(bool @override) {
                 if (@override)
                     return new[] {
-                        (PhysBoneValueName, SourceValue),
+                        (PhysBoneValueName, OverrideValue),
                     };
                 else
                     return new[] {
-                        (PhysBoneValueName, OverrideValue),
+                        (PhysBoneValueName, SourceValue),
                     };
             }
         }
