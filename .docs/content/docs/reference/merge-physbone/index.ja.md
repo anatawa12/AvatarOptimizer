@@ -11,7 +11,7 @@ MultiChildTypeはIgnoreになります。
 加えて、Endpoint Positionの値は0に置換され、`_EndPhysBone`GameObjectが追加されます。
 これは[Clear Endpoint Position](../clear-endpoint-position)の動作と同じです。
 
-## 設定 {#Settings}
+## 設定 {#settings}
 
 ![component.png](component.png)
 

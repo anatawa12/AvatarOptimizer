@@ -7,7 +7,7 @@ weight: 1
 
 ブレンドシェイプをメッシュに固定する、或いはメッシュから除去することが出来ます。
 
-## 設定 {#Settings}
+## 設定 {#settings}
 
 ![component.png](component.png)
 
