@@ -8,7 +8,7 @@ name: CHANGELOG check
 on:
   pull_request:
     branches: [ master, master-* ]
-    types: [ opened, synchronize, reopened, ready_for_review ]
+    types: [ opened, synchronize, reopened, ready_for_review, labeled, unlabeled ]
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
