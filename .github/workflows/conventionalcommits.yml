@@ -1,7 +1,8 @@
 name: Conventional Commits Check
 
 on:
-  pull_request: {}
+  pull_request:
+    types: [ opened, synchronize, reopened, labeled, unlabeled ]
 
 jobs:
   conventionalcommits-check:
