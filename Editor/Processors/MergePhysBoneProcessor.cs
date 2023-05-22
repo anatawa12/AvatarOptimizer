@@ -71,7 +71,9 @@ namespace Anatawa12.AvatarOptimizer.Processors
             var merged = merge.gameObject.AddComponent<VRCPhysBone>();
 
             // copy common properties
-            new MergePhysBoneMerger(new SerializedObject(merge), new SerializedObject(merged)).DoProcess();
+            var mergedSerialized = new SerializedObject(merged);
+            new MergePhysBoneMerger(new SerializedObject(merge), mergedSerialized).DoProcess();
+            mergedSerialized.ApplyModifiedPropertiesWithoutUndo();
 
             // copy other properties
             // === Transforms ===

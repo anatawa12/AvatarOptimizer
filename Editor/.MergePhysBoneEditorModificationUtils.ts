@@ -88,13 +88,13 @@ for (let [type, info] of Object.entries(config)) {
         console.log(`                if (@override)`)
         console.log(`                    return new[] {`)
         for (let [value] of info.values) {
-            console.log(`                        (PhysBone${value}Name, Source${value}),`)
+            console.log(`                        (PhysBone${value}Name, Override${value}),`)
         }
         console.log(`                    };`)
         console.log(`                else`)
         console.log(`                    return new[] {`)
         for (let [value] of info.values) {
-            console.log(`                        (PhysBone${value}Name, Override${value}),`)
+            console.log(`                        (PhysBone${value}Name, Source${value}),`)
         }
         console.log(`                    };`)
         console.log(`            }`)
