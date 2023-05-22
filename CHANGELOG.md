@@ -28,6 +28,7 @@ The format is based on [Keep a Changelog].
 - We cannot set override setting of Colliders to Copy `#183`
 - Error with MergeToonLit `#185`
 - Poor word choice in Japanese Translation `#174`
+- Localization is not applied for some fields `#186`
 
 ### Security
 

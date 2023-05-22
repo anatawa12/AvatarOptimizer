@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using CustomLocalization4EditorExtension;
 using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
@@ -107,7 +108,7 @@ namespace Anatawa12.AvatarOptimizer
                     }
 
                     // rotation in euler
-                    var rotationLabel = new GUIContent("Rotation");
+                    var rotationLabel = new GUIContent(CL4EE.Tr("RemoveMeshInBox:BoundingBox:prop:rotation"));
                     rotationLabel = EditorGUI.BeginProperty(position, rotationLabel, rotationProp);
                     EditorGUI.BeginChangeCheck();
                     var euler = EditorGUI.Vector3Field(position, rotationLabel, eulerCache.euler);
