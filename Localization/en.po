@@ -231,7 +231,7 @@ msgstr "Renderers:"
 
 msgid "MergeToonLitMaterial:description"
 msgstr ""
-"The component to merge multiple VRChat ToonLit materials.\n"
+"The component to merge multiple VRChat Mobile ToonLit materials.\n"
 "This is for quest avoid limitation"
 
 msgid "MergeToonLitMaterial:button:Add Merged Material"

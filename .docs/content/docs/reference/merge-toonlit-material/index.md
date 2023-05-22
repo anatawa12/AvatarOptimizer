@@ -5,11 +5,11 @@ weight: 1
 
 # Merge ToonLit Material
 
-Merge `VRChat/Mobbile/Toon Lit` materials to one material with Manual Texture Packing.
+Merge `VRChat/Mobile/Toon Lit` materials to one material by packing texture manually.
 
-This component currently only supports `Toon Lit` because I believe there are big demands
-but I may add support for other materials. (also for third-party shaders)
-If you have some materials, please write a [issue][issue]
+This component currently only supports `VRChat/Mobile/Toon Lit` because I believe there are big demands
+but I may add support for other shaders. (also for third-party shaders)
+If you want other shader support, please write a [issue][issue]
 
 ## Settings
 

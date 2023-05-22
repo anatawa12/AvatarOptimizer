@@ -5,6 +5,6 @@ weight: 1
 
 # Make Children
 
-This the selected objects will be the children of this component at build time.
+These specified objects will be the children of this GameObject at build time.
 
 ![component.png](component.png)
