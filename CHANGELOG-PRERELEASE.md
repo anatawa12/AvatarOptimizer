@@ -16,6 +16,8 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Name of Is Animated and Parameter field are not correct `#183`
+- We cannot set override setting of Colliders to Copy `#183`
 
 ### Security
 
