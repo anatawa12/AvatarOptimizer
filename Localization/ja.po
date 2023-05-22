@@ -148,7 +148,7 @@ msgid "MergeSkinnedMesh:prop:renderers"
 msgstr "スキンメッシュレンダラー"
 
 msgid "MergeSkinnedMesh:prop:staticRenderers"
-msgstr "メッシュレンダラー"
+msgstr "静的レンダラー"
 
 msgid "MergeSkinnedMesh:prop:removeEmptyRendererObject"
 msgstr "空のレンダラーオブジェクトを削除する"
