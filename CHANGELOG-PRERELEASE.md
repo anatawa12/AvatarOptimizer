@@ -16,13 +16,16 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Name of Is Animated and Parameter field are not correct `#183`
-- We cannot set override setting of Colliders to Copy `#183`
-- Error with MergeToonLit `#185`
-- Poor word choice in Japanese Translation `#174`
-- Localization is not applied for some fields `#186`
 
 ### Security
+
+## [0.4.1-rc.3] - 2023-05-22
+### Fixed
+- Name of Is Animated and Parameter field are not correct [`#183`](https://github.com/anatawa12/AvatarOptimizer/pull/183)
+- We cannot set override setting of Colliders to Copy [`#183`](https://github.com/anatawa12/AvatarOptimizer/pull/183)
+- Error with MergeToonLit [`#185`](https://github.com/anatawa12/AvatarOptimizer/pull/185)
+- Poor word choice in Japanese Translation [`#174`](https://github.com/anatawa12/AvatarOptimizer/pull/174)
+- Localization is not applied for some fields [`#186`](https://github.com/anatawa12/AvatarOptimizer/pull/186)
 
 ## [0.4.1-rc.2] - 2023-05-22
 ### Fixed
@@ -354,7 +357,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.1-rc.2...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.1-rc.3...HEAD
+[0.4.1-rc.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.1-rc.2...v0.4.1-rc.3
 [0.4.1-rc.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.1-rc.1...v0.4.1-rc.2
 [0.4.1-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.1-beta.1...v0.4.1-rc.1
 [0.4.1-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.0...v0.4.1-beta.1
