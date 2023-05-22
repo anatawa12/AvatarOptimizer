@@ -8,22 +8,22 @@ msgstr "日本語"
 # region PrefabSafeSet
 
 msgid "PrefabSafeSet:label:Multi editing not supported"
-msgstr "複数選択は対応してません。"
+msgstr "複数選択には対応していません"
 
 msgid "PrefabSafeSet:label:Element type is not supported"
-msgstr "非対応の要素の型です"
+msgstr "非対応の要素です"
 
 msgid "PrefabSafeSet:label:Add Not Supported"
-msgstr "追加は対応してません"
+msgstr "追加には対応していません"
 
 msgid "PrefabSafeSet:label:Element to add"
-msgstr "追加要素"
+msgstr "追加する要素"
 
 msgid "PrefabSafeSet:tooltip:Element to add"
-msgstr "ここにドロップしてこのsetに追加する"
+msgstr "ここにドラッグ&ドロップして要素を追加する"
 
 msgid "PrefabSafeSet:tooltip:Force Add Button"
-msgstr "この要素をこのprefabオーバーライドでも追加する"
+msgstr "この要素を現在のprefabオーバーライドにも追加する"
 
 # , csharp-format
 msgid "PrefabSafeSet:label:Element {0}"
@@ -39,7 +39,7 @@ msgstr "要素 {0} (二重)"
 
 # , csharp-format
 msgid "PrefabSafeSet:label:(Removed but not found)"
-msgstr "(見つからない削除済)"
+msgstr "(見つからないが削除済)"
 
 # endregion
 
@@ -50,10 +50,10 @@ msgstr "(見つからない削除済)"
 msgid "ClearEndpointPosition:description"
 msgstr ""
 "_endボーンを追加してEndpoint Positionをクリアする。\n"
-"MergeBoneを使用するときに使用すると便利です"
+"MergeBoneを使用するときに便利です。"
 
 msgid "ClearEndpointPosition:button:Apply and Remove Component"
-msgstr "てきようしてcomponentを削除する"
+msgstr "適用して今すぐcomponentを削除する"
 
 # endregion
 
@@ -63,14 +63,14 @@ msgid "FreezeBlendShape:button:Check All"
 msgstr "すべて有効にする"
 
 msgid "FreezeBlendShape:button:Invert All"
-msgstr "すべて入れ替える"
+msgstr "すべての有効/無効を入れ替える"
 
 # endregion
 
 # region MakeChildren
 
 msgid "MakeChildren:description"
-msgstr "ビルド時に指定されたGameObjectを子にする。"
+msgstr "ビルド時に、指定されたGameObjectを子にする。"
 
 msgid "MakeChildren:prop:children"
 msgstr "子"
@@ -80,45 +80,45 @@ msgstr "子"
 # region MergeBone
 
 msgid "MergeBone:description"
-msgstr "このGameObjectを削除して親に統合する"
+msgstr "このGameObjectを削除して親に統合する。"
 
 # endregion
 
 # region
 
 msgid "MergePhysBone:prop:makeParent"
-msgstr "この子にする"
+msgstr "このGameObjectの子にする"
 
 msgid "MergePhysBone:tooltip:makeParent"
-msgstr "PhysBoneをすべてこのGameObjectの子にする"
+msgstr "すべてのPhysBoneをこのGameObjectの子にする"
 
 msgid "MergePhysBone:error:makeParentWithChildren"
-msgstr "'この子にする'が有効なのにも関わらずすでに子が存在する"
+msgstr "'このGameObjectの子にする'が有効であるにも関わらず、すでに子が存在します。"
 
 msgid "MergePhysBone:error:parentDiffer"
-msgstr "ソースPhysBoneの親が違います。同じ親の子にするか、'この子にする'を使用してください。"
+msgstr "統合対象のPhysBoneの親が違います。同じ親の子にするか、'このGameObjectの子にする'を使用してください。"
 
 msgid "MergePhysBone:error:noSources"
-msgstr "ソースPhysBonesがありません"
+msgstr "統合対象のPhysBoneがありません。"
 
 msgid "MergePhysBone:error:multiChildType"
-msgstr "Multi Child TypeがIgnoreでないPhysBoneがあります"
+msgstr "Multi Child TypeがIgnoreでないPhysBoneがあります。"
 
 msgid "MergePhysBone:error:unsupportedPbVersion"
-msgstr "このPhysBoneバージョンは(まだ)Avatar Optimizerによって対応されてません。\n"
+msgstr "このPhysBoneバージョンは(まだ)Avatar Optimizerによって対応されていません。\n"
 "作者にtwitter (@anatawa12_vrc)またはGitHub (anatawa12/AvatarOptimizer)で連絡してください!"
 
 msgid "MergePhysBone:error:differValues"
-msgstr "この値が複数のソースの間でさいがあります。同じ値にするかOverrideする必要があります。 {0}"
+msgstr "複数の統合対象の間で値に差異があります。以下の値は同じ値にするかOverrideする必要があります:  {0}"
 
 msgid "MergePhysBone:dialog:versionInfo:title"
 msgstr "バージョンについて" 
 
 msgid "MergePhysBone:dialog:versionInfo:message"
 msgstr ""
-"VRCPhysBoneのバージョンを変更するとcomponentの動作を変更します。\n" 
+"VRCPhysBoneのバージョンを変更するとcomponentの動作が変わります。\n" 
 "一部の値が違った動作をし、手動で再設定が必要な場合があります。\n\n" 
-"バージョンによる差異についてはドキィメントを読んでください。" 
+"バージョンによる差異についてはドキュメントを読んでください。" 
 
 msgid "MergePhysBone:dialog:versionInfo:openDoc"
 msgstr "ドキュメントを開く(英語)" 
@@ -130,10 +130,10 @@ msgid "MergePhysBone:dialog:versionInfo:continue"
 msgstr "そのまま続行する"
 
 msgid "MergePhysBone:prop:merged"
-msgstr "マージ済"
+msgstr "統合済み"
 
 msgid "MergePhysBone:prop:components"
-msgstr "コンポーネンツ"
+msgstr "コンポーネント"
 
 # endregion
 
@@ -141,17 +141,17 @@ msgstr "コンポーネンツ"
 
 msgid "MergeSkinnedMesh:warning:MeshIsNotNone"
 msgstr ""
-"SkinnedMeshRendererのMeshがNoneではないです!\n"
-"MergeSkinnedMeshは新しいSkinnedMeshRendererのついたGameObjectに指定すべきです!"
+"SkinnedMeshRendererのMeshがNoneではありません!\n"
+"MergeSkinnedMeshは新規のSkinnedMeshRendererがついたGameObjectに追加するべきです!"
 
 msgid "MergeSkinnedMesh:prop:renderers"
-msgstr "スキンドレンダラ"
+msgstr "スキンメッシュレンダラー"
 
 msgid "MergeSkinnedMesh:prop:staticRenderers"
-msgstr "静的レンダラ"
+msgstr "静的レンダラー"
 
 msgid "MergeSkinnedMesh:prop:removeEmptyRendererObject"
-msgstr "空のレンダラオブジェクトを削除する"
+msgstr "空のレンダラーオブジェクトを削除する"
 
 msgid "MergeSkinnedMesh:label:Merge Materials"
 msgstr "マテリアルの統合"
@@ -160,7 +160,7 @@ msgid "MergeSkinnedMesh:label:Merge"
 msgstr "統合する"
 
 msgid "MergeSkinnedMesh:label:Renderers"
-msgstr "レンダラ:"
+msgstr "レンダラー:"
 
 # endregion
 
@@ -168,14 +168,14 @@ msgstr "レンダラ:"
 
 msgid "MergeToonLitMaterial:description"
 msgstr ""
-"複数のVRChat ToonLitマテリアルを統合するためのマテリアルです.\n"
-"Questの制限を回避するためのコンポーネントです"
+"複数のVRChat Mobile ToonLitマテリアルを統合するためのマテリアルです。\n"
+"Questの制限を回避するためのコンポーネントです。"
 
 msgid "MergeToonLitMaterial:button:Add Merged Material"
-msgstr "結合したマテリアルを追加"
+msgstr "統合したマテリアルを追加"
 
 msgid "MergeToonLitMaterial:button:Add Source"
-msgstr "ソースを追加"
+msgstr "統合対象を追加"
 
 msgid "MergeToonLitMaterial:button:Generate Preview"
 msgstr "プレビューを生成"
@@ -188,7 +188,7 @@ msgstr "テクスチャのサイズ"
 # region RemoveMeshInBox
 
 msgid "RemoveMeshInBox:BoundingBox:prop:center"
-msgstr "中央"
+msgstr "中心"
 
 msgid "RemoveMeshInBox:BoundingBox:prop:size"
 msgstr "大きさ"
@@ -210,22 +210,22 @@ msgstr "このコンポーネントはアバターの最上位に付ける必要
 # EditorOnlyなメッシュのみから参照されているボーンをEditorOnlyにします
 msgid "UnusedBonesByReferencesTool:description"
 msgstr ""
-"NarazakaさんによるUnusedBonesByReferencesTool (https://narazaka.booth.pm/items/3831781)を実行します\n"
+"NarazakaさんによるUnusedBonesByReferencesTool (https://narazaka.booth.pm/items/3831781)を実行します。\n"
 "EditorOnlyなメッシュからしか参照がないボーンをEditorOnlyにするツールです。"
 
 msgid "UnusedBonesByReferencesTool:prop:preserveEndBone"
-msgstr "end boneを残す"
+msgstr "endボーンを残す"
 
 # "親がactiveなendボーンを削除しない(ON推奨)"
 msgid "UnusedBonesByReferencesTool:tooltip:preserveEndBone"
-msgstr "もしチェックされてると、親がactiveなendボーンを削除しません."
+msgstr "チェックされている場合、親がactiveなendボーンを削除しません。"
 
 msgid "UnusedBonesByReferencesTool:prop:detectExtraChild"
-msgstr "余計な子を認識する"
+msgstr "他の子オブジェクトを認識する"
 
 # "子にボーン以外を持つボーンを削除しない"
 msgid "UnusedBonesByReferencesTool:tooltip:detectExtraChild"
-msgstr "もしチェックされてると、子にボーン以外を持つボーンを削除しません。"
+msgstr "チェックされている場合、子にボーン以外を持つボーンを削除しません。"
 
 # endregion
 
