@@ -111,6 +111,9 @@ msgstr "このPhysBoneバージョンは(まだ)Avatar Optimizerによって対�
 msgid "MergePhysBone:error:differValues"
 msgstr "複数の統合対象の間で値に差異があります。以下の値は同じ値にするかOverrideする必要があります:  {0}"
 
+msgid "MergePhysBone:error:differValueSingle"
+msgstr "複数の統合対象の間で値に差異があります。同じ値にするかOverrideする必要があります"
+
 msgid "MergePhysBone:dialog:versionInfo:title"
 msgstr "バージョンについて" 
 
