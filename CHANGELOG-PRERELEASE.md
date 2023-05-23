@@ -10,6 +10,10 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
+- Disable animating `m_Enabled` of source SkinnedMeshRenderer `#190`
+  - Animating `m_Enabled` of source SkinnedMeshRenderer now doesn't affects merged SkinnedMeshRenderer
+  - If you actually want to enable/disable merged SkinnedMeshRenderer,
+    animate `m_Enabled` of merged SkinnedMeshRenderer instead.
 
 ### Deprecated
 

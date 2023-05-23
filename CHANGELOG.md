@@ -14,6 +14,10 @@ The format is based on [Keep a Changelog].
   - This should fixes problem with objects/components at same place.
 - Improve Animation Mapping System `#172`
   - This should reduce build time
+- Disable animating `m_Enabled` of source SkinnedMeshRenderer `#190`
+  - Animating `m_Enabled` of source SkinnedMeshRenderer now doesn't affects merged SkinnedMeshRenderer
+  - If you actually want to enable/disable merged SkinnedMeshRenderer, 
+    animate `m_Enabled` of merged SkinnedMeshRenderer instead.
 
 ### Deprecated
 
