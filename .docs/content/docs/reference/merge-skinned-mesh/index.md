@@ -12,12 +12,14 @@ You should add MergeSkinnedMesh onto new GameObject with SkinnedMeshRenderer wit
 This component will merge mesh, bones, and BlendShapes but other settings will not be modified.
 Please edit SkinnedMeshRenderer component attached to same GameObject as MergeSkinnedMesh to set AnchorOverride or else.
 
-BlendShapes is a heavy feature proportion to the count of vertices.
-Merging SkinedMesh increases vertices so It's better to freeze & remove static BlendShape before or after merging SkinnedMesh.
-There's component for this operation [Freeze BlendShape](../freeze-blendshape). You can add Freeze BlendShape to either / both merge source SkinnedMeshRenderer or / and merged SkinnedMeshRenderer.
-If you have variable blend shapes, you should not merge too many SkinnedMeshes.
-For example, if you have separated mesh between body and face, you should not merge body and face Meshes because blendshape of face will be used to change facial expression but body mesh not.
-This component is good for Merging your clothes and body.
+This component is good for merging your cloth meshes and body meshes but not good for face meshes because BlendShape can cause performance impact.
+BlendShape is a feature became heavier in proportion to the count of vertices and BlendShapes.
+Merging SkinnedMesh increases vertices and face mesh usually have many BlendShapes.
+That's why it's not good to merge face meshes.
+
+In addition, because of same reasons, you should freeze & remove unchanging BlendShapes for body / cloth meshes.
+You can freeze & remove BlendShape using [Freeze BlendShape](../freeze-blendshape) component.
+Add this component to both/either merge source SkinnedMeshRenderer and/or merged SkinnedMeshRenderer to freeze & remove BlendShapes.
 
 ## Settings
 
