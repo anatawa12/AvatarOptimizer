@@ -71,6 +71,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             foreach (var renderer in Component.renderersSet.GetAsSet())
             {
+                // Avatars can have animation to hide source meshes.
+                // Such a animation often intended to hide/show some accessories but
+                // after we merge mesh, it affects to big merged mesh.
+                // This often be a unexpected behavior so we invalidate changing m_Enabled
+                // property for original mesh in animation.
+                // This invalidation doesn't affect to m_Enabled property of merged mesh.
+                session.MappingBuilder.RecordRemoveProperty(renderer, "m_Enabled");
                 session.MappingBuilder.RecordMergeComponent(renderer, Target);
                 var rendererGameObject = renderer.gameObject;
                 Object.DestroyImmediate(renderer);

@@ -278,6 +278,37 @@ namespace Anatawa12.AvatarOptimizer.Test
             Assert.That(built.MapComponentInstance(child11Component.GetInstanceID(), out var component), Is.False);
         }
 
+        [Test]
+        public void RecordRemovePropertyThenMergeComponent()
+        {
+            var root = new GameObject();
+            var child1 = Utils.NewGameObject("child1", root.transform);
+            var child1Component = child1.AddComponent<SkinnedMeshRenderer>();
+            var child2 = Utils.NewGameObject("child2", root.transform);
+            var child2Component = child2.AddComponent<SkinnedMeshRenderer>();
+
+            var builder = new ObjectMappingBuilder(root);
+            builder.RecordRemoveProperty(child1Component, "m_Enabled");
+            builder.RecordMergeComponent(child1Component, child2Component);
+            Object.DestroyImmediate(child1Component);
+            var child1ComponentId = child1Component.GetInstanceID();
+
+            var built = builder.BuildObjectMapping();
+
+            var rootMapper = built.CreateAnimationMapper(root);
+
+            Assert.That(
+                rootMapper.MapBinding(B("child1", typeof(SkinnedMeshRenderer), "m_Enabled")),
+                Is.EqualTo(Default));
+            Assert.That(
+                rootMapper.MapBinding(B("child2", typeof(SkinnedMeshRenderer), "m_Enabled")),
+                Is.EqualTo(B("child2", typeof(SkinnedMeshRenderer), "m_Enabled")));
+
+            // check for component replication
+            Assert.That(built.MapComponentInstance(child1ComponentId, out var component), Is.True);
+            Assert.That(component, Is.SameAs(child2Component));
+        }
+
 
         private static (string, Type, string) B(string path, Type type, string prop) => (path, type, prop);
         private static (string, Type, string) Default = default;
