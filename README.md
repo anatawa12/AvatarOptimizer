@@ -18,7 +18,14 @@ If you have problems or questions about this tool, please feel free to contact m
 
 For more information, check out the [documentation].
 
-**READMEにあった情報はほぼ全て [documentation][documentation-ja] に移動しました**
+---
+
+anatawa12によるアバター軽量化用のちょっとした非破壊ユーティリティ群です。
+これらのユーティリティはPlayモードに入るときかアバターをビルドするときに適用されます。
+
+本ツールについて不具合や不明な点などがございましたら、[twitter][twitter]や[Misskey (Activity Pub)][misskey]からお気軽にご連絡ください!
+
+詳細情報については[documentation][documentation-ja]をご覧ください。
 
 [documentation]: https://vpm.anatawa12.com/avatar-optimizer/en/
 [documentation-ja]: https://vpm.anatawa12.com/avatar-optimizer/ja/
