@@ -5,20 +5,19 @@ weight: 1
 
 # Merge Skinned Mesh
 
-1つ以上のSkinnedMeshRendererやMeshRendererを1つのSkinnedMeshRendererに統合(マージ)することが出来ます。
+1つ以上のSkinnedMeshRendererやMeshRendererを1つのSkinnedMeshRendererに統合することが出来ます。
 
 MergeSkinnedMeshは、メッシュを指定していないSkinnedMeshRendererを持つ新しいGameObjectに追加するべきです。
 
 このコンポーネントはメッシュ・ボーン・ブレンドシェイプを統合しますが、その他の設定については変更しないため、AnchorOverride等の設定を行うには、MergeSkinnedMeshのあるGameObject上のSkinnedMeshRendererを編集してください。
 
-このコンポーネントは、服のメッシュや体のメッシュのマージには適していますが、顔のメッシュにはブレンドシェイプが原因となって重くなるため、あまり適していません。
-ブレンドシェイプは、頂点とブレンドシェイプの数に比例して負荷が大きくなります。
-SkinnedMeshの統合は頂点数を増加させ、また顔のメッシュは一般的に多くのブレンドシェイプを持っています。
+このコンポーネントは、服のメッシュや体のメッシュを統合するのには適していますが、顔のメッシュを統合するのには適していません。
+ブレンドシェイプは、頂点とブレンドシェイプの数に比例して負荷が大きくなる機能です。
+顔のメッシュは一般的に多くのブレンドシェイプを持っており、メッシュの統合はその頂点数を増加させるため、負荷を大きくしてしまいます。
 そのため、顔のメッシュは統合するべきではありません。
 
-また、同じ理由で、体/服のメッシュのブレンドシェイプを固定・除去することを推奨します。
-ブレンドシェイプの固定・除去には、[Freeze BlendShape](../freeze-blendshape)コンポーネントを使用できます。
-このコンポーネントを統合対象・統合先のSkinnedMeshRendererのいずれか(または両方)に追加すると、ブレンドシェイプを固定・除去できます。
+同様に、体や服のメッシュのブレンドシェイプは固定・除去することを推奨します。
+[Freeze BlendShape](../freeze-blendshape)コンポーネントを統合対象・統合先のSkinnedMeshRendererのいずれか(または両方)に追加して、ブレンドシェイプを固定・除去することが出来ます。
 
 ## 設定 {#settings}
 
