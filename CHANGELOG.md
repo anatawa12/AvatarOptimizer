@@ -10,31 +10,36 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
-- Reimplemented Animation Mapping System Completely `#168`
-  - This should fixes problem with objects/components at same place.
-- Improve Animation Mapping System `#172`
-  - This should reduce build time
-- Disable animating `m_Enabled` of source SkinnedMeshRenderer `#190`
-  - Animating `m_Enabled` of source SkinnedMeshRenderer now doesn't affects merged SkinnedMeshRenderer
-  - If you actually want to enable/disable merged SkinnedMeshRenderer, 
-    animate `m_Enabled` of merged SkinnedMeshRenderer instead.
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
-- Error is not cleared on build `#170`
-- Merge PhysBone is not working `#177`
-  - Previously, values are not copied correctly
-- The help box for description of components without description were shown `#178`
-- Name of Is Animated and Parameter field are not correct `#183`
-- We cannot set override setting of Colliders to Copy `#183`
-- Error with MergeToonLit `#185`
-- Poor word choice in Japanese Translation `#174`
-- Localization is not applied for some fields `#186`
 
 ### Security
+
+## [0.4.1] - 2023-05-23
+### Changed
+- Reimplemented Animation Mapping System Completely [`#168`](https://github.com/anatawa12/AvatarOptimizer/pull/168)
+  - This should fixes problem with objects/components at same place.
+- Improve Animation Mapping System [`#172`](https://github.com/anatawa12/AvatarOptimizer/pull/172)
+  - This should reduce build time
+- Disable animating `m_Enabled` of source SkinnedMeshRenderer [`#190`](https://github.com/anatawa12/AvatarOptimizer/pull/190)
+  - Animating `m_Enabled` of source SkinnedMeshRenderer now doesn't affects merged SkinnedMeshRenderer
+  - If you actually want to enable/disable merged SkinnedMeshRenderer, 
+    animate `m_Enabled` of merged SkinnedMeshRenderer instead.
+
+### Fixed
+- Error is not cleared on build [`#170`](https://github.com/anatawa12/AvatarOptimizer/pull/170)
+- Merge PhysBone is not working [`#177`](https://github.com/anatawa12/AvatarOptimizer/pull/177)
+  - Previously, values are not copied correctly
+- The help box for description of components without description were shown [`#178`](https://github.com/anatawa12/AvatarOptimizer/pull/178)
+- Name of Is Animated and Parameter field are not correct [`#183`](https://github.com/anatawa12/AvatarOptimizer/pull/183)
+- We cannot set override setting of Colliders to Copy [`#183`](https://github.com/anatawa12/AvatarOptimizer/pull/183)
+- Error with MergeToonLit [`#185`](https://github.com/anatawa12/AvatarOptimizer/pull/185)
+- Poor word choice in Japanese Translation [`#174`](https://github.com/anatawa12/AvatarOptimizer/pull/174)
+- Localization is not applied for some fields [`#186`](https://github.com/anatawa12/AvatarOptimizer/pull/186)
 
 ## [0.4.0] - 2023-05-20
 ### Added
@@ -277,7 +282,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.1...HEAD
+[0.4.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.3.5...v0.4.0
 [0.3.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.3.4...v0.3.5
 [0.3.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.3.3...v0.3.4

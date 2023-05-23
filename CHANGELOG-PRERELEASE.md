@@ -10,10 +10,6 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
-- Disable animating `m_Enabled` of source SkinnedMeshRenderer `#190`
-  - Animating `m_Enabled` of source SkinnedMeshRenderer now doesn't affects merged SkinnedMeshRenderer
-  - If you actually want to enable/disable merged SkinnedMeshRenderer,
-    animate `m_Enabled` of merged SkinnedMeshRenderer instead.
 
 ### Deprecated
 
@@ -22,6 +18,13 @@ The format is based on [Keep a Changelog].
 ### Fixed
 
 ### Security
+
+## [0.4.1] - 2023-05-23
+### Changed
+- Disable animating `m_Enabled` of source SkinnedMeshRenderer [`#190`](https://github.com/anatawa12/AvatarOptimizer/pull/190)
+  - Animating `m_Enabled` of source SkinnedMeshRenderer now doesn't affects merged SkinnedMeshRenderer
+  - If you actually want to enable/disable merged SkinnedMeshRenderer,
+    animate `m_Enabled` of merged SkinnedMeshRenderer instead.
 
 ## [0.4.1-rc.3] - 2023-05-22
 ### Fixed
@@ -361,7 +364,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.1-rc.3...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.1...HEAD
+[0.4.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.1-rc.3...v0.4.1
 [0.4.1-rc.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.1-rc.2...v0.4.1-rc.3
 [0.4.1-rc.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.1-rc.1...v0.4.1-rc.2
 [0.4.1-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.1-beta.1...v0.4.1-rc.1
