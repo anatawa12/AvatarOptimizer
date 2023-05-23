@@ -177,10 +177,7 @@ namespace Anatawa12.AvatarOptimizer
 
                 if (differ)
                 {
-                    EditorGUILayout.HelpBox(
-                        "The value is differ between two or more sources. " +
-                        "You have to set same value OR override this property", 
-                        MessageType.Error);
+                    EditorGUILayout.HelpBox(CL4EE.Tr("MergePhysBone:error:differValueSingle"), MessageType.Error);
                 }
             }
             
@@ -404,10 +401,7 @@ namespace Anatawa12.AvatarOptimizer
 
                 if (differ)
                 {
-                    EditorGUILayout.HelpBox(
-                        "The value is differ between two or more sources. " +
-                        "You have to set same value OR override this property", 
-                        MessageType.Error);
+                    EditorGUILayout.HelpBox(CL4EE.Tr("MergePhysBone:error:differValueSingle"), MessageType.Error);
                 }
             }
         }
@@ -434,10 +428,7 @@ namespace Anatawa12.AvatarOptimizer
 
                     if (colliders.hasMultipleDifferentValues)
                     {
-                        EditorGUILayout.HelpBox(
-                            "The value is differ between two or more sources. " +
-                            "You have to set same value OR override this property",
-                            MessageType.Error);
+                        EditorGUILayout.HelpBox(CL4EE.Tr("MergePhysBone:error:differValueSingle"), MessageType.Error);
                     }
                 }
                     break;

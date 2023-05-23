@@ -10,24 +10,34 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 {
     internal static class EditorStatics
     {
-        public static readonly GUIContent MultiEditingNotSupported =
-            new GUIContent(CL4EE.Tr("PrefabSafeSet:label:Multi editing not supported"));
-
-        public static readonly GUIContent UnsupportedType =
-            new GUIContent(CL4EE.Tr("PrefabSafeSet:label:Element type is not supported"));
-
-        public static readonly GUIContent AddNotSupported =
-            new GUIContent(CL4EE.Tr("PrefabSafeSet:label:Add Not Supported"));
-
-        public static readonly GUIContent ToAdd = new GUIContent(CL4EE.Tr("PrefabSafeSet:label:Element to add"))
+        private static GUIContent WithLocalization(GUIContent content, string key, string tooltip = null)
         {
-            tooltip = CL4EE.Tr("PrefabSafeSet:tooltip:Element to add")
-        };
+            content.text = CL4EE.Tr(key);
+            if (tooltip != null)
+                content.tooltip = CL4EE.Tr(tooltip);
+            return content;
+        }
 
-        public static readonly GUIContent ForceAddButton = new GUIContent("+")
-        {
-            tooltip = CL4EE.Tr("PrefabSafeSet:tooltip:Force Add Button")
-        };
+        private static readonly GUIContent MultiEditingNotSupportedBacked = new GUIContent();
+        public static GUIContent MultiEditingNotSupported =>
+            WithLocalization(MultiEditingNotSupportedBacked, "PrefabSafeSet:label:Multi editing not supported");
+
+        private static readonly GUIContent UnsupportedTypeBacked = new GUIContent();
+        public static GUIContent UnsupportedType =>
+            WithLocalization(UnsupportedTypeBacked, "PrefabSafeSet:label:Element type is not supported");
+
+        private static readonly GUIContent AddNotSupportedBacked = new GUIContent();
+        public static GUIContent AddNotSupported =>
+            WithLocalization(AddNotSupportedBacked, "PrefabSafeSet:label:Add Not Supported");
+
+        private static readonly GUIContent ToAddBacked = new GUIContent();
+        public static GUIContent ToAdd => WithLocalization(ToAddBacked, 
+            "PrefabSafeSet:label:Element to add",
+            "PrefabSafeSet:tooltip:Element to add");
+
+        private static readonly GUIContent ForceAddButtonBacked = new GUIContent();
+        public static GUIContent ForceAddButton => WithLocalization(ForceAddButtonBacked, 
+            "+", "PrefabSafeSet:tooltip:Force Add Button");
     }
 
     [CustomPropertyDrawer(typeof(PrefabSafeSet<,>), true)]

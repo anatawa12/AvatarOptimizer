@@ -108,6 +108,9 @@ msgstr "The PhysBone Version is not supported (yet) by Avatar Optimizer.\n"
 msgid "MergePhysBone:error:differValues"
 msgstr "The values is differ between two or more sources. You have to set same value OR override this property: {0}"
 
+msgid "MergePhysBone:error:differValueSingle"
+msgstr "The value is differ between two or more sources. You have to set same value OR override this property"
+
 msgid "MergePhysBone:dialog:versionInfo:title"
 msgstr "Version Info" 
 
