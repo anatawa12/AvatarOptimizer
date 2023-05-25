@@ -154,6 +154,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                         if (modification.propertyPath.StartsWith(arraySizeProp, StringComparison.Ordinal)) continue;
                         if (modification.propertyPath.StartsWith(arrayValueProp, StringComparison.Ordinal)) continue;
                         var prop = serialized.FindProperty(modification.propertyPath);
+                        if (prop is null) continue;
                         // allow to make null for ObjectReference to support removing prefab element
                         if (prop.propertyType == SerializedPropertyType.ObjectReference &&
                             prop.objectReferenceValue == null)

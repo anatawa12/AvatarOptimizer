@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - MergeSkinnedMesh depends on other EditSkinnedMesh components does not working `#195`
+- Error with removed modified property in PrefabSafeSet Editor `#196`
 
 ### Security
 
