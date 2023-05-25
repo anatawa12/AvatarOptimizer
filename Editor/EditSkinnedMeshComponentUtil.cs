@@ -95,6 +95,13 @@ namespace Anatawa12.AvatarOptimizer
             var processors = new LinkedList<SkinnedMeshProcessors>(targets.Select(GetProcessors).Where(x => x != null));
 
             var proceed = new HashSet<SkinnedMeshRenderer>();
+            foreach (var renderer in processors
+                         .SelectMany(p => p.GetSorted())
+                         .SelectMany(x => x.Dependencies))
+                proceed.Add(renderer);
+            foreach (var renderer in processors.Select(p => p.Target))
+                proceed.Remove(renderer);
+
             while (processors.Count != 0)
             {
                 var iterator = processors.First;

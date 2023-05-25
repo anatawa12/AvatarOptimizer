@@ -10,7 +10,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         where TComponent : EditSkinnedMeshComponent
     {
         public abstract int ProcessOrder { get; }
-        public IEnumerable<SkinnedMeshRenderer> Dependencies => Array.Empty<SkinnedMeshRenderer>();
+        public virtual IEnumerable<SkinnedMeshRenderer> Dependencies => Array.Empty<SkinnedMeshRenderer>();
         protected TComponent Component { get; }
         public SkinnedMeshRenderer Target { get; }
 

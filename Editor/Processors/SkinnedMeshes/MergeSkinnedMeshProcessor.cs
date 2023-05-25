@@ -12,6 +12,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         {
         }
 
+        public override IEnumerable<SkinnedMeshRenderer> Dependencies => Component.renderersSet.GetAsList();
+
         public override int ProcessOrder => int.MinValue;
 
         public override void Process(OptimizerSession session, MeshInfo2 target, MeshInfo2Holder meshInfo2Holder)
