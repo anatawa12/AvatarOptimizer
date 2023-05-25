@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- MergeSkinnedMesh depends on other EditSkinnedMesh components does not working `#195`
 
 ### Security
 
