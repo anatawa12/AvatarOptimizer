@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog].
 ### Added
 - Adding multiple values to PrefabSafeSet `#200`
   - See [this video](https://github.com/anatawa12/AvatarOptimizer/issues/128#issue-1692158034) for more details.
+- Overriden PrefabSafeSet properties are now highlighted as blue and bold `#200`
 
 ### Changed
 
