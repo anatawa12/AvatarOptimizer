@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Adding multiple values to PrefabSafeSet `#200`
+  - See [this video](https://github.com/anatawa12/AvatarOptimizer/issues/128#issue-1692158034) for more details.
 
 ### Changed
 
