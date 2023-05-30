@@ -18,6 +18,9 @@ The format is based on [Keep a Changelog].
 ### Deprecated
 
 ### Removed
+- Save format migration system `#199`
+  - We no longer see save data in format of v0.3.x or older.
+  - Please migrate to v0.4.x format before installing v1.0.0.
 
 ### Fixed
 
