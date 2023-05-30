@@ -46,13 +46,13 @@ namespace Anatawa12.AvatarOptimizer
         {
             if (RuntimeUtil.isPlaying) return;
 
-            RuntimeUtil.delayCall(() =>
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.delayCall += () =>
             {
                 if (this == null) return;
-#if UNITY_EDITOR
                 Activator.CreateIfNotPresent(gameObject.scene);
+            };
 #endif
-            });
 
             ErrorReporterRuntime.TriggerChange();
         }
