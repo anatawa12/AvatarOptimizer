@@ -46,13 +46,13 @@ namespace Anatawa12.AvatarOptimizer.Migration
                 if (isJapanese)
                 {
                     title = "MIGRATION REQUIRED";
-                    message = "AvatarOptimizer v0.3.xまたはそれ以前のバージョンがインストールされているようです。\n" +
+                    message = "AvatarOptimizer v0.3.xまたはそれ以前のバージョンがインストールされていたようです。\n" +
                               "v1.x.xにアップグレードする前に、v0.4.xをインストールし、設定フォーマットを移行する必要があります。\n" +
                               "移行しないと、AvatarOptimizerの設定が失われます。\n" +
                               "\n" +
                               "以下の手順でプロジェクトを移行してください。\n" +
                               "1. アセットを保存せずにUnityを終了する\n" +
-                              "*v1.x.xをインストールしてから保存したAvatarOptimizerを含むアセットがある場合にはコンフィグレーションが失われます*\n" +
+                              "*v1.x.xをインストールしてから保存したAvatarOptimizerを含むアセットがある場合には設定が失われます*\n" +
                               "2. AvatarOptimizerをv0.4.xにダウングレードする\n" +
                               "3. Unityを起動し、v0.4.xへのマイグレーションを実行する\n" +
                               "4. AvatarOptimizerを再度アップグレードする";
