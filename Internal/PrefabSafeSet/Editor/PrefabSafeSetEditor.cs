@@ -241,8 +241,28 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             {
                 if (FakeSlot.propertyType == SerializedPropertyType.ObjectReference)
                 {
-                    var addValue = Field(position, EditorStatics.ToAdd, default);
-                    if (addValue != null) EditorUtil.GetElementOf(addValue).Add();
+                    var current = Event.current;
+                    var eventType = current.type;
+                    switch (eventType)
+                    {
+                        case EventType.DragUpdated:
+                        case EventType.DragPerform:
+                        case EventType.DragExited:
+                        {
+                            var controlId = GUIUtility.GetControlID("s_PPtrHash".GetHashCode(), FocusType.Keyboard, position);
+                            position = EditorGUI.PrefixLabel(position, controlId, EditorStatics.ToAdd);
+                            HandleDragEvent(position, controlId, current, this);
+                            break;
+                        }
+                        default:
+                        {
+                            SetValue(FakeSlot, default);
+                            EditorGUI.PropertyField(position, FakeSlot, EditorStatics.ToAdd);
+                            var addValue = FakeSlot.objectReferenceValue;
+                            if (addValue != null) EditorUtil.GetElementOf(addValue).Add();
+                            break;
+                        }
+                    }
                 }
                 else
                 {
@@ -308,6 +328,16 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             property.isExpanded = isExpanded;
 
             int lastControlId = GetLastControlId();
+
+            HandleDragEvent(position, lastControlId, @event, editor);
+
+            if (hasOverride)
+                EditorGUI.EndProperty();
+            return isExpanded;
+        }
+
+        private static void HandleDragEvent(Rect position, int lastControlId, Event @event, Editor editor)
+        {
             switch (@event.type)
             {
                 case EventType.DragUpdated:
@@ -346,10 +376,6 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                         HandleUtility.Repaint();
                     break;
             }
-
-            if (hasOverride)
-                EditorGUI.EndProperty();
-            return isExpanded;
         }
 
         private static readonly FieldInfo LastControlIdField =
@@ -409,7 +435,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 
     internal abstract class EditorBase<T>
     {
-        protected readonly SerializedProperty FakeSlot;
+        [NotNull] protected readonly SerializedProperty FakeSlot;
         protected readonly EditorUtil<T> EditorUtil;
 
         public EditorBase(SerializedProperty property, int nestCount)
