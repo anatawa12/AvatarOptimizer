@@ -279,8 +279,10 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 
             if (property.isExpanded)
             {
+                EditorGUI.indentLevel++;
                 position.y += EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
                 cache.OnGUI(position);
+                EditorGUI.indentLevel--;
             }
         }
     }
