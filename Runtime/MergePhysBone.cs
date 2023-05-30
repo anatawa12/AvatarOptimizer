@@ -4,7 +4,6 @@ using Anatawa12.AvatarOptimizer.ErrorReporting;
 using CustomLocalization4EditorExtension;
 using JetBrains.Annotations;
 using UnityEngine;
-using UnityEngine.Serialization;
 using VRC.Dynamics;
 
 namespace Anatawa12.AvatarOptimizer
@@ -14,80 +13,8 @@ namespace Anatawa12.AvatarOptimizer
     [ExecuteAlways]
     internal class MergePhysBone : AvatarTagComponent, IStaticValidated
     {
-        [Obsolete("v3 legacy", true)]
-        public VRCPhysBoneBase Merged => merged;
-
-        [Obsolete("v3 legacy", true)]
-        [FormerlySerializedAs("mergedComponent")]
-        [SerializeField]
-        private VRCPhysBoneBase merged;
-
-        [Obsolete("v2 legacy", true)]
-        public Transform rootTransform;
-
         [CL4EELocalized("MergePhysBone:prop:makeParent", "MergePhysBone:tooltip:makeParent")]
         public bool makeParent;
-
-        public bool version;
-        
-        #region legacy v3
-        // == Forces ==
-        [FormerlySerializedAs("force")]
-        [FormerlySerializedAs("forces")]
-        [Obsolete("v3 legacy", true)]
-        public bool integrationType;
-        [Obsolete("v3 legacy", true)]
-        public bool pull;
-        [Obsolete("v3 legacy", true)]
-        public bool spring;
-        [Obsolete("v3 legacy", true)]
-        public bool stiffness;
-        [Obsolete("v3 legacy", true)]
-        public bool gravity;
-        [Obsolete("v3 legacy", true)]
-        public bool gravityFalloff;
-        [Obsolete("v3 legacy", true)]
-        public bool immobileType;
-        [Obsolete("v3 legacy", true)]
-        public bool immobile;
-        // == Limits ==
-        [Obsolete("v3 legacy", true)]
-        public bool limits;
-        [Obsolete("v3 legacy", true)]
-        public bool maxAngleX;
-        [Obsolete("v3 legacy", true)]
-        public bool maxAngleZ;
-        [Obsolete("v3 legacy", true)]
-        public bool limitRotation;
-        // == Collision ==
-        [Obsolete("v3 legacy", true)]
-        public bool radius;
-        [Obsolete("v3 legacy", true)]
-        public bool allowCollision;
-        [Obsolete("v3 legacy", true)]
-        public CollidersSettings colliders;
-        // == Grab & Pose ==
-        [Obsolete("v3 legacy", true)]
-        public bool allowGrabbing;
-        [Obsolete("v3 legacy", true)]
-        public bool grabMovement;
-        [Obsolete("v3 legacy", true)]
-        public bool allowPosing;
-        [Obsolete("v3 legacy", true)]
-        public bool stretchMotion;
-        [Obsolete("v3 legacy", true)]
-        public bool maxStretch;
-        [Obsolete("v3 legacy", true)]
-        public bool maxSquish;
-        [Obsolete("v3 legacy", true)]
-        public bool snapToHand;
-        // == Others ==
-        // public bool overrideParameter; Always
-        [Obsolete("v3 legacy", true)]
-        public bool isAnimated;
-        [Obsolete("v3 legacy", true)]
-        public bool resetWhenDisabled;
-        #endregion
 
         #region OverrideAndValue
 
@@ -284,8 +211,6 @@ namespace Anatawa12.AvatarOptimizer
 
         #endregion
 
-        [Obsolete("legacy v1", true)] [FormerlySerializedAs("component")]
-        public VRCPhysBoneBase[] components;
         [CL4EELocalized("MergePhysBone:prop:components")]
         public PrefabSafeSet.VRCPhysBoneBaseSet componentsSet;
 
