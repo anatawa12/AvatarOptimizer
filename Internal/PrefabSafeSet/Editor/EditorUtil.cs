@@ -40,6 +40,8 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 
         protected abstract IElement<T> NewSlotElement(T value);
 
+        public abstract bool HasPrefabOverride();
+
         public IElement<T> GetElementOf(T value) =>
             Elements.FirstOrDefault(x => x.Value.Equals(value)) ?? NewSlotElement(value);
 

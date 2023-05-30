@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using CustomLocalization4EditorExtension;
 using JetBrains.Annotations;
 using UnityEditor;
@@ -107,6 +108,9 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             public Editor(SerializedProperty property, int nestCount) : base(property, nestCount)
             {
             }
+
+            public EditorUtil<object> GetEditorUtil() => EditorUtil;
+            public SerializedProperty GetFakeSlot() => FakeSlot;
 
             private protected override object GetValue(SerializedProperty prop)
             {
@@ -237,8 +241,28 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             {
                 if (FakeSlot.propertyType == SerializedPropertyType.ObjectReference)
                 {
-                    var addValue = Field(position, EditorStatics.ToAdd, default);
-                    if (addValue != null) EditorUtil.GetElementOf(addValue).Add();
+                    var current = Event.current;
+                    var eventType = current.type;
+                    switch (eventType)
+                    {
+                        case EventType.DragUpdated:
+                        case EventType.DragPerform:
+                        case EventType.DragExited:
+                        {
+                            var controlId = GUIUtility.GetControlID("s_PPtrHash".GetHashCode(), FocusType.Keyboard, position);
+                            position = EditorGUI.PrefixLabel(position, controlId, EditorStatics.ToAdd);
+                            HandleDragEvent(position, controlId, current, this);
+                            break;
+                        }
+                        default:
+                        {
+                            SetValue(FakeSlot, default);
+                            EditorGUI.PropertyField(position, FakeSlot, EditorStatics.ToAdd);
+                            var addValue = FakeSlot.objectReferenceValue;
+                            if (addValue != null) EditorUtil.GetElementOf(addValue).Add();
+                            break;
+                        }
+                    }
                 }
                 else
                 {
@@ -266,6 +290,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                 EditorGUI.LabelField(position, label, EditorStatics.MultiEditingNotSupported);
                 return;
             }
+
             var cache = GetCache(property);
             if (cache == null)
             {
@@ -275,14 +300,125 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 
             position.height = EditorGUIUtility.singleLineHeight;
 
-            property.isExpanded = EditorGUI.Foldout(position, property.isExpanded, label);
+            property.isExpanded = PropertyGUI(position, property, label, cache);
 
             if (property.isExpanded)
             {
+                EditorGUI.indentLevel++;
                 position.y += EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
                 cache.OnGUI(position);
+                EditorGUI.indentLevel--;
             }
         }
+
+        private bool PropertyGUI(Rect position, SerializedProperty property, GUIContent label, Editor editor)
+        {
+            var hasOverride = editor.GetEditorUtil().HasPrefabOverride();
+            if (hasOverride)
+                EditorGUI.BeginProperty(position, label, property);
+
+            var @event = new Event(Event.current);
+            var isExpanded = property.isExpanded;
+            using (new EditorGUI.DisabledScope(!property.editable))
+            {
+                var style = DragAndDrop.activeControlID == -10 ? EditorStyles.foldoutPreDrop : EditorStyles.foldout;
+                isExpanded = EditorGUI.Foldout(position, isExpanded, label, true, style);
+            }
+
+            property.isExpanded = isExpanded;
+
+            int lastControlId = GetLastControlId();
+
+            HandleDragEvent(position, lastControlId, @event, editor);
+
+            if (hasOverride)
+                EditorGUI.EndProperty();
+            return isExpanded;
+        }
+
+        private static void HandleDragEvent(Rect position, int lastControlId, Event @event, Editor editor)
+        {
+            switch (@event.type)
+            {
+                case EventType.DragUpdated:
+                case EventType.DragPerform:
+                    if (position.Contains(@event.mousePosition) && GUI.enabled)
+                    {
+                        var objectReferences = DragAndDrop.objectReferences;
+                        var referencesCache = new Object[1];
+                        var flag3 = false;
+                        foreach (var object1 in objectReferences)
+                        {
+                            referencesCache[0] = object1;
+                            var object2 = ValidateObjectFieldAssignment(referencesCache, editor.GetFakeSlot());
+                            if (object2 == null) continue;
+                            DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
+                            if (@event.type == EventType.DragPerform)
+                            {
+                                editor.GetEditorUtil().GetElementOf(object2).EnsureAdded();
+                                flag3 = true;
+                                DragAndDrop.activeControlID = 0;
+                            }
+                            else
+                                DragAndDrop.activeControlID = lastControlId;
+                        }
+
+                        if (flag3)
+                        {
+                            GUI.changed = true;
+                            DragAndDrop.AcceptDrag();
+                        }
+                    }
+
+                    break;
+                case EventType.DragExited:
+                    if (GUI.enabled)
+                        HandleUtility.Repaint();
+                    break;
+            }
+        }
+
+        private static readonly FieldInfo LastControlIdField =
+            typeof(EditorGUIUtility).GetField("s_LastControlID", BindingFlags.Static | BindingFlags.NonPublic);
+
+        private static int GetLastControlId()
+        {
+            if (LastControlIdField == null)
+            {
+                Debug.LogError("Compatibility with Unity broke: can't find s_LastControlID field in EditorGUIUtility");
+                return 0;
+            }
+
+            return (int)LastControlIdField.GetValue(null);
+        }
+
+        private static readonly MethodInfo ValidateObjectFieldAssignmentMethod =
+            typeof(EditorGUI).GetMethod("ValidateObjectFieldAssignment", BindingFlags.Static | BindingFlags.NonPublic);
+
+        private static readonly Type ObjectFieldValidatorOptionsType =
+            typeof(EditorGUI).Assembly.GetType("UnityEditor.EditorGUI+ObjectFieldValidatorOptions");
+
+        private static Object ValidateObjectFieldAssignment(Object[] references,
+            SerializedProperty property)
+        {
+            if (ValidateObjectFieldAssignmentMethod == null)
+            {
+                Debug.LogError(
+                    "Compatibility with Unity broke: can't find ValidateObjectFieldAssignment method in EditorGUI");
+                return null;
+            }
+
+            if (ObjectFieldValidatorOptionsType == null)
+            {
+                Debug.LogError(
+                    "Compatibility with Unity broke: can't find ObjectFieldValidatorOptions type in EditorGUI");
+                return null;
+            }
+
+            return ValidateObjectFieldAssignmentMethod.Invoke(null,
+                new[] { references, null, property, Enum.ToObject(ObjectFieldValidatorOptionsType, 0) }) as Object;
+        }
+
     }
 
     /// <summary>
@@ -299,7 +435,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 
     internal abstract class EditorBase<T>
     {
-        protected readonly SerializedProperty FakeSlot;
+        [NotNull] protected readonly SerializedProperty FakeSlot;
         protected readonly EditorUtil<T> EditorUtil;
 
         public EditorBase(SerializedProperty property, int nestCount)
