@@ -16,11 +16,14 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- MergeSkinnedMesh depends on other EditSkinnedMesh components does not working `#195`
-- Error with removed modified property in PrefabSafeSet Editor `#196`
-- Apply on Play may not work `#198`
 
 ### Security
+
+## [0.4.2] - 2023-05-30
+### Fixed
+- MergeSkinnedMesh depends on other EditSkinnedMesh components does not working [`#195`](https://github.com/anatawa12/AvatarOptimizer/pull/195)
+- Error with removed modified property in PrefabSafeSet Editor [`#196`](https://github.com/anatawa12/AvatarOptimizer/pull/196)
+- Apply on Play may not work [`#198`](https://github.com/anatawa12/AvatarOptimizer/pull/198)
 
 ## [0.4.1] - 2023-05-23
 ### Changed
@@ -285,7 +288,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.2...HEAD
+[0.4.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.1...v0.4.2
 [0.4.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.3.5...v0.4.0
 [0.3.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.3.4...v0.3.5
