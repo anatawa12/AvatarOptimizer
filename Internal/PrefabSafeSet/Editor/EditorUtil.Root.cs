@@ -39,6 +39,8 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 
             protected override IElement<T> NewSlotElement(T value) => new ElementImpl(this, value);
 
+            public override bool HasPrefabOverride() => false;
+
             public override void HandleApplyRevertMenuItems(IElement<T> element, GenericMenu genericMenu)
             {
                 // logic failure

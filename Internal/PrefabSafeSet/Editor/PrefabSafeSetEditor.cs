@@ -270,6 +270,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                 EditorGUI.LabelField(position, label, EditorStatics.MultiEditingNotSupported);
                 return;
             }
+
             var cache = GetCache(property);
             if (cache == null)
             {
@@ -292,8 +293,9 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 
         private bool PropertyGUI(Rect position, SerializedProperty property, GUIContent label, Editor editor)
         {
-            // TODO: make bold there is prefab override
-            //label = EditorGUI.BeginProperty(position, label, property);
+            var hasOverride = editor.GetEditorUtil().HasPrefabOverride();
+            if (hasOverride)
+                EditorGUI.BeginProperty(position, label, property);
 
             var @event = new Event(Event.current);
             var isExpanded = property.isExpanded;
@@ -345,18 +347,22 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                     break;
             }
 
-            //EditorGUI.EndProperty();
+            if (hasOverride)
+                EditorGUI.EndProperty();
             return isExpanded;
         }
 
         private static readonly FieldInfo LastControlIdField =
             typeof(EditorGUIUtility).GetField("s_LastControlID", BindingFlags.Static | BindingFlags.NonPublic);
 
-        private static int GetLastControlId(){
-            if(LastControlIdField==null){
+        private static int GetLastControlId()
+        {
+            if (LastControlIdField == null)
+            {
                 Debug.LogError("Compatibility with Unity broke: can't find s_LastControlID field in EditorGUIUtility");
                 return 0;
             }
+
             return (int)LastControlIdField.GetValue(null);
         }
 

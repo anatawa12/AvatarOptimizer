@@ -273,6 +273,8 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                 return ElementImpl.NewSlot(this, value);
             }
 
+            public override bool HasPrefabOverride() => _elements.Any(x => x.IsPrefabOverride());
+
             private class ElementImpl : IElement<T>
             {
                 public EditorUtil<T> Container => _container;
@@ -516,6 +518,23 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                             default:
                                 throw new ArgumentOutOfRangeException();
                         }
+                    }
+                }
+
+                public bool IsPrefabOverride()
+                {
+                    switch (Status)
+                    {
+                        case ElementStatus.Natural:
+                        case ElementStatus.NewSlot:
+                            return false;
+                        case ElementStatus.Removed:
+                        case ElementStatus.NewElement:
+                        case ElementStatus.AddedTwice:
+                        case ElementStatus.FakeRemoved:
+                            return true;
+                        default:
+                            throw new ArgumentOutOfRangeException();
                     }
                 }
             }
