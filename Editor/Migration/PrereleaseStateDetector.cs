@@ -1,17 +1,7 @@
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
 using UnityEditor;
-using UnityEditor.SceneManagement;
 using UnityEngine;
-using UnityEngine.SceneManagement;
-using Debug = UnityEngine.Debug;
 
 namespace Anatawa12.AvatarOptimizer.Migration
 {
@@ -22,36 +12,84 @@ namespace Anatawa12.AvatarOptimizer.Migration
     internal static class PrereleaseStateDetector
     {
         private const string DataPath = "ProjectSettings/com.anatawa12.avatar-optimizer.v0.json";
-        private const int CurrentVersion = 4;
-        private static readonly JsonData Data = new JsonData();
-        internal static bool AutoDetectionInProgress = false;
 
         static PrereleaseStateDetector()
         {
-            if (File.Exists(DataPath))
+            if (!File.Exists(DataPath))
             {
-                Data = JsonUtility.FromJson<JsonData>(File.ReadAllText(DataPath));
+                // This pass can be one of
+                // - installed 0.1.2 / older
+                // - installed 1.0.0 / newer
+                // - not installed yet
+                // We ignore 0.1.2 / older. If it's 1.0.0, no migration is required so nothing to do here.
+                return;
             }
-            else
+            var data = JsonUtility.FromJson<JsonData>(File.ReadAllText(DataPath));
+            Debug.Log($"[AvatarOptimizer.Migration] We found AvatarOptimizer v0.{data.currentSerializedVersion}.x save format.");
+            if (data.currentSerializedVersion == 4)
             {
-                Save();
+                Debug.Log($"[AvatarOptimizer.Migration] It's compatible with v1.x.x. removing v0.x version data file.");
+                File.Delete(DataPath);
+                return;
             }
+            Debug.Log($"[AvatarOptimizer.Migration] We will show warning dialog");
+            EditorApplication.delayCall += ShowMigrationRequiredWarning;
         }
 
-        public static int GetCurrentVersion() => Data.currentSerializedVersion;
-
-        public static bool MigrationRequired() =>
-            Data.currentSerializedVersion != 0 && Data.currentSerializedVersion < CurrentVersion;
-
-        public static void MigrationFinished()
+        private static void ShowMigrationRequiredWarning()
         {
-            Data.currentSerializedVersion = CurrentVersion;
-            Save();
-        }
+            var isJapanese = true;
 
-        private static void Save()
-        {
-            File.WriteAllText(DataPath, JsonUtility.ToJson(Data, true));
+            while (true)
+            {
+                string title, message, ok, cancel, alt;
+                if (isJapanese)
+                {
+                    title = "MIGRATION REQUIRED";
+                    message = "AvatarOptimizer v0.3.xまたはそれ以前のバージョンがインストールされているようです。\n" +
+                              "v1.x.xにアップグレードする前に、v0.4.xをインストールし、設定フォーマットを移行する必要があります。\n" +
+                              "移行しないと、AvatarOptimizerの設定が失われます。\n" +
+                              "\n" +
+                              "以下の手順でプロジェクトを移行してください。\n" +
+                              "1. アセットを保存せずにUnityを終了する\n" +
+                              "*v1.x.xをインストールしてから保存したAvatarOptimizerを含むアセットがある場合にはコンフィグレーションが失われます*\n" +
+                              "2. AvatarOptimizerをv0.4.xにダウングレードする\n" +
+                              "3. Unityを起動し、v0.4.xへのマイグレーションを実行する\n" +
+                              "4. AvatarOptimizerを再度アップグレードする";
+                    ok = "保存せずにUnityを閉じる";
+                    cancel = "閉じる";
+                    alt = "Read in English";
+                }
+                else
+                {
+                    title = "MIGRATION REQUIRED";
+                    message = "We found previously AvatarOptimizer v0.3.x or older is installed!\n" +
+                              "Before upgrading to v1.x.x, you have to install v0.4.x and migrate your configuration format.\n" +
+                              "Without migration, you'll lost the configurations of AvatarOptimizer.\n" +
+                              "\n" +
+                              "Please follow the following steps to migrate your project.\n" +
+                              "1. Close Unity WITHOUT saving assets. \n" +
+                              "*If you saved some assets with AvatarOptimizer after upgrading to v1.0.0, You will lost configuration.*\n" +
+                              "2. Downgrade AvatarOptimizer to v0.4.x.\n" +
+                              "3. Open Unity and run migration\n" +
+                              "4. Upgrade AvatarOptimizer again.";
+                    ok = "Exit Unity without saving anything";
+                    cancel = "Close";
+                    alt = "日本語で読む";
+                }
+            
+                switch (EditorUtility.DisplayDialogComplex(title, message, ok, cancel, alt))
+                {
+                    case 0: // OK: Exit
+                        EditorApplication.Exit(0);
+                        return;
+                    case 1: // Cancel: Close
+                        return;
+                    case 2: // Show in another language
+                        isJapanese = !isJapanese;
+                        break;
+                }
+            }
         }
 
         [Serializable]
