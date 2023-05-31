@@ -19,6 +19,13 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Error when we removed some modification in PrefabSafeSet `#201`
+  - There are several situations for this problem:
+    - When we removed value in original component
+    - When we removed new value in overrides
+    - When we reverted added twice in overrides
+    - When we reverted deletion in overrides
+    - When we reverted fake deletion in overrides
 
 ### Security
 
