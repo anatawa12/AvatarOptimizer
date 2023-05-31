@@ -43,6 +43,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 
             // upstream change check
             private ArraySizeCheck _mainSet;
+            private ArraySizeCheck _prefabLayersSize;
             private readonly ArraySizeCheck[] _layerRemoves;
             private readonly ArraySizeCheck[] _layerAdditions;
 
@@ -64,6 +65,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 
                 // apply modifications until previous one
                 _prefabLayers = property.FindPropertyRelative(Names.PrefabLayers);
+                _prefabLayersSize = new ArraySizeCheck(_prefabLayers.FindPropertyRelative("Array.size"));
                 InitCurrentLayer();
                 DoInitializeUpstream();
                 DoInitialize();
@@ -87,6 +89,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                     _currentAdditions = currentLayer.FindPropertyRelative(Names.Additions)
                                         ?? throw new InvalidOperationException("prefabLayers.additions not found");
                 }
+                _prefabLayersSize.Updated();
             }
 
             private void DoInitializeUpstream()
@@ -186,6 +189,9 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             /// </summary>
             public void Initialize()
             {
+                if (_prefabLayersSize.Changed)
+                    InitCurrentLayer();
+
                 if (_mainSet.Changed || _layerRemoves.Any(x => x.Changed) || _layerAdditions.Any(x => x.Changed))
                 {
                     DoInitializeUpstream();
