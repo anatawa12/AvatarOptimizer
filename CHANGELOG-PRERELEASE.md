@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog].
 [Keep a Changelog]: https://keepachangelog.com/en/1.0.0/
 
 ## [Unreleased]
+**If you're using v0.3.x or older, Please upgrade to v0.4.x before upgrading v1.x.x!**
+
+**もし v0.3.x 以前を使用しているのであれば, v1.x.xに更新する前に v0.4.x に更新してください!**
+
 ### Added
 - Adding multiple values to PrefabSafeSet `#200`
   - See [this video](https://github.com/anatawa12/AvatarOptimizer/issues/128#issuecomment-1568540903) for more details.
@@ -17,6 +21,9 @@ The format is based on [Keep a Changelog].
 ### Deprecated
 
 ### Removed
+- Save format migration system `#199`
+  - We no longer see save data in format of v0.3.x or older.
+  - Please migrate to v0.4.x format before installing v1.0.0.
 
 ### Fixed
 - Error when we removed some modification in PrefabSafeSet `#201`
