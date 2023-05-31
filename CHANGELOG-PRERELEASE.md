@@ -26,6 +26,7 @@ The format is based on [Keep a Changelog].
     - When we reverted added twice in overrides
     - When we reverted deletion in overrides
     - When we reverted fake deletion in overrides
+- Error when we reverted whole PrefabSafeSet with modifications `#201`
 
 ### Security
 
