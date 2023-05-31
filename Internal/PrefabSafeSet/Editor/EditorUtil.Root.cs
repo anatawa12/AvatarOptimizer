@@ -33,6 +33,12 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                 }
             }
 
+            private void ReIndexAll()
+            {
+                for (var i = 0; i < _list.Count; i++)
+                    _list[i].UpdateIndex(i);
+            }
+
             public override int ElementsCount => _mainSet.arraySize;
 
             public override void Clear() => _mainSet.arraySize = 0;
@@ -81,6 +87,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                     _index = _container._mainSet.arraySize;
                     _container._setValue(ModifierProp = AddArrayElement(_container._mainSet), Value);
                     _container._list.Add(this);
+                    //_container.ReIndexAll(); // appending does not change index so no reindex is required
                 }
 
                 public void EnsureRemoved() => Remove();
@@ -92,12 +99,19 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                     _index = -1;
                     ModifierProp = null;
                     _container._list.Remove(this);
+                    _container.ReIndexAll();
                 }
 
                 public void SetExistence(bool existence)
                 {
                     if (existence) Add();
                     else Remove();
+                }
+
+                public void UpdateIndex(int index)
+                {
+                    _index = index;
+                    ModifierProp = _container._mainSet.GetArrayElementAtIndex(index);
                 }
             }
         }

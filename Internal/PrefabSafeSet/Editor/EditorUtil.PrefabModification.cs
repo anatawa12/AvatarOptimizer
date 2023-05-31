@@ -279,7 +279,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             {
                 public EditorUtil<T> Container => _container;
                 private readonly PrefabModification _container;
-                private int _indexInModifier;
+                internal int IndexInModifier;
                 internal readonly int SourceNestCount;
                 public T Value { get; }
                 public ElementStatus Status { get; private set; }
@@ -304,14 +304,14 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                     }
                 }
 
-                public SerializedProperty ModifierProp { get; private set; }
+                public SerializedProperty ModifierProp { get; internal set; }
 
                 private ElementImpl(PrefabModification container, int indexInModifier, T value, ElementStatus status,
                     int sourceNestCount, SerializedProperty modifierProp)
                 {
                     if (value == null) throw new ArgumentNullException(nameof(value));
                     _container = container;
-                    _indexInModifier = indexInModifier;
+                    IndexInModifier = indexInModifier;
                     SourceNestCount = sourceNestCount;
                     Value = value;
                     Status = status;
@@ -345,25 +345,17 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 
                 private void DoAdd(bool forceAdd)
                 {
-                    void AddToAdditions(ElementStatus status)
-                    {
-                        _container.InitCurrentLayer(true);
-                        Debug.Assert(_container._currentAdditions != null, "_container._currentAdditions != null");
-                        _indexInModifier = _container._currentAdditions.arraySize;
-                        _container._setValue(ModifierProp = AddArrayElement(_container._currentAdditions), Value);
-                        _container._currentAdditionsSize += 1;
-                        Status = status;
-                    }
-
                     switch (Status)
                     {
                         case ElementStatus.Natural:
                             if (forceAdd)
-                                AddToAdditions(ElementStatus.AddedTwice);
+                            {
+                                (IndexInModifier, ModifierProp) = _container.AddToAdditions(Value);
+                                Status = ElementStatus.AddedTwice;
+                            }
                             break;
                         case ElementStatus.Removed:
-                            _container._currentRemovesSize -= 1;
-                            _container.RemoveArrayElementAt(_container._currentRemoves, _indexInModifier);
+                            _container.RemoveRemovesAt(IndexInModifier);
                             Status = ElementStatus.Natural;
                             ModifierProp = null;
                             break;
@@ -372,56 +364,49 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                             // already added
                             break;
                         case ElementStatus.FakeRemoved:
-                            _container._currentRemovesSize -= 1;
-                            _container.RemoveArrayElementAt(_container._currentRemoves, _indexInModifier);
-                            AddToAdditions(ElementStatus.NewElement);
+                            _container.RemoveRemovesAt(IndexInModifier);
+                            (IndexInModifier, ModifierProp) = _container.AddToAdditions(Value);
+                            Status = ElementStatus.NewElement;
                             break;
                         case ElementStatus.NewSlot:
-                            AddToAdditions(ElementStatus.NewElement);
+                            (IndexInModifier, ModifierProp) = _container.AddToAdditions(Value);
+                            Status = ElementStatus.NewElement;
                             _container._elements.Add(this);
                             break;
                         default:
                             throw new ArgumentOutOfRangeException();
                     }
                 }
+                
 
                 private void DoRemove(bool forceRemove)
                 {
-                    void AddToRemoves(ElementStatus status)
-                    {
-                        _container.InitCurrentLayer(true);
-                        Debug.Assert(_container._currentRemoves != null, "_container._currentRemoves != null");
-                        _indexInModifier = _container._currentRemoves.arraySize;
-                        _container._setValue(ModifierProp = AddArrayElement(_container._currentRemoves), Value);
-                        _container._currentRemovesSize += 1;
-                        Status = status;
-                    }
-
                     switch (Status) 
                     {
                         case ElementStatus.Natural:
-                            AddToRemoves(ElementStatus.Removed);
+                            (IndexInModifier, ModifierProp) = _container.AddToRemoves(Value);
+                            Status = ElementStatus.Removed;
                             break;
                         case ElementStatus.Removed:
                         case ElementStatus.FakeRemoved:
                             // already removed: nothing to do
                             break;
                         case ElementStatus.NewElement:
-                            _container._currentAdditionsSize -= 1;
-                            _container.RemoveArrayElementAt(_container._currentAdditions, _indexInModifier);
+                            _container.RemoveAdditionsAt(IndexInModifier);
                             Status = ElementStatus.NewSlot;
                             _container._elements.Remove(this);
                             ModifierProp = null;
                             break;
                         case ElementStatus.AddedTwice:
-                            _container._currentAdditionsSize -= 1;
-                            _container.RemoveArrayElementAt(_container._currentAdditions, _indexInModifier);
-                            AddToRemoves(ElementStatus.Removed);
+                            _container.RemoveAdditionsAt(IndexInModifier);
+                            (IndexInModifier, ModifierProp) = _container.AddToRemoves(Value);
+                            Status = ElementStatus.Removed;
                             break;
                         case ElementStatus.NewSlot:
                             if (forceRemove)
                             {
-                                AddToRemoves(ElementStatus.FakeRemoved);
+                                (IndexInModifier, ModifierProp) = _container.AddToRemoves(Value);
+                                Status = ElementStatus.FakeRemoved;
                                 _container._elements.Add(this);
                             }
                             break;
@@ -437,27 +422,23 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                         case ElementStatus.Natural:
                             break; // nop
                         case ElementStatus.Removed:
-                            _container._currentRemovesSize -= 1;
-                            _container.RemoveArrayElementAt(_container._currentRemoves, _indexInModifier);
+                            _container.RemoveRemovesAt(IndexInModifier);
                             Status = ElementStatus.Natural;
                             ModifierProp = null;
                             break;
                         case ElementStatus.NewElement:
-                            _container._currentAdditionsSize -= 1;
-                            _container.RemoveArrayElementAt(_container._currentAdditions, _indexInModifier);
+                            _container.RemoveAdditionsAt(IndexInModifier);
                             Status = ElementStatus.NewSlot;
                             _container._elements.Remove(this);
                             ModifierProp = null;
                             break;
                         case ElementStatus.AddedTwice:
-                            _container._currentAdditionsSize -= 1;
-                            _container.RemoveArrayElementAt(_container._currentAdditions, _indexInModifier);
+                            _container.RemoveAdditionsAt(IndexInModifier);
                             Status = ElementStatus.Natural;
                             ModifierProp = null;
                             break;
                         case ElementStatus.FakeRemoved:
-                            _container._currentRemovesSize -= 1;
-                            _container.RemoveArrayElementAt(_container._currentRemoves, _indexInModifier);
+                            _container.RemoveRemovesAt(IndexInModifier);
                             Status = ElementStatus.NewSlot;
                             _container._elements.Remove(this);
                             ModifierProp = null;
@@ -474,7 +455,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                 public void MarkRemovedAt(int index)
                 {
                     Debug.Assert(_container._currentRemoves != null, "_container._currentRemoves != null");
-                    _indexInModifier = index;
+                    IndexInModifier = index;
                     ModifierProp = _container._currentRemoves.GetArrayElementAtIndex(index);
                     Status = ElementStatus.Removed;
                 }
@@ -482,7 +463,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                 public void MarkAddedTwiceAt(int index)
                 {
                     Debug.Assert(_container._currentAdditions != null, "_container._currentAdditions != null");
-                    _indexInModifier = index;
+                    IndexInModifier = index;
                     ModifierProp = _container._currentAdditions.GetArrayElementAtIndex(index);
                     Status = ElementStatus.AddedTwice;
                 }
@@ -536,6 +517,52 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                         default:
                             throw new ArgumentOutOfRangeException();
                     }
+                }
+            }
+
+            private (int indexInModifier, SerializedProperty modifierProp) AddToAdditions(T value) => 
+                AddToModifications(value, ref _currentAdditionsSize, ref _currentAdditions);
+            
+            private (int indexInModifier, SerializedProperty modifierProp) AddToRemoves(T value) => 
+                AddToModifications(value, ref _currentRemovesSize, ref _currentRemoves);
+
+            private (int indexInModifier, SerializedProperty modifierProp) AddToModifications(T value,
+                ref int currentModificationSize,
+                ref SerializedProperty currentModifications)
+            {
+                InitCurrentLayer(true);
+                Debug.Assert(currentModifications != null, "currentModifications != null");
+                var indexInModifier = currentModifications.arraySize;
+                var modifierProp = AddArrayElement(currentModifications);
+                _setValue(modifierProp, value);
+                currentModificationSize += 1;
+                return (indexInModifier, modifierProp);
+            }
+
+            private void RemoveAdditionsAt(int indexInModifier) =>
+                RemoveModificationsAt(indexInModifier, ref _currentAdditionsSize, _currentAdditions,
+                    ElementStatus.NewElement, ElementStatus.AddedTwice);
+
+            private void RemoveRemovesAt(int indexInModifier) =>
+                RemoveModificationsAt(indexInModifier, ref _currentRemovesSize, _currentRemoves,
+                    ElementStatus.Removed, ElementStatus.FakeRemoved);
+
+            private void RemoveModificationsAt(int indexInModifier, 
+                ref int currentModificationSize,
+                SerializedProperty currentModifications,
+                ElementStatus userState1, ElementStatus userState2)
+            {
+                currentModificationSize -= 1;
+                RemoveArrayElementAt(currentModifications, indexInModifier);
+                foreach (var elementImpl in _elements)
+                {
+                    if (elementImpl.Status == userState1 || elementImpl.Status == userState2)
+                        if (elementImpl.IndexInModifier > indexInModifier)
+                        {
+                            elementImpl.IndexInModifier--;
+                            elementImpl.ModifierProp =
+                                currentModifications.GetArrayElementAtIndex(elementImpl.IndexInModifier);
+                        }
                 }
             }
 
