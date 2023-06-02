@@ -8,9 +8,6 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Adding multiple values to PrefabSafeSet `#200`
-  - See [this video](https://github.com/anatawa12/AvatarOptimizer/issues/128#issuecomment-1568540903) for more details.
-- Overriden PrefabSafeSet properties are now highlighted as blue and bold `#200`
 
 ### Changed
 
@@ -19,16 +16,24 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Error when we removed some modification in PrefabSafeSet `#201`
+
+### Security
+
+## [0.4.3] - 2023-06-02
+### Added
+- Adding multiple values to PrefabSafeSet [`#200`](https://github.com/anatawa12/AvatarOptimizer/pull/200)
+  - See [this video](https://github.com/anatawa12/AvatarOptimizer/issues/128#issuecomment-1568540903) for more details.
+- Overriden PrefabSafeSet properties are now highlighted as blue and bold [`#200`](https://github.com/anatawa12/AvatarOptimizer/pull/200)
+
+### Fixed
+- Error when we removed some modification in PrefabSafeSet [`#201`](https://github.com/anatawa12/AvatarOptimizer/pull/201)
   - There are several situations for this problem:
     - When we removed value in original component
     - When we removed new value in overrides
     - When we reverted added twice in overrides
     - When we reverted deletion in overrides
     - When we reverted fake deletion in overrides
-- Error when we reverted whole PrefabSafeSet with modifications `#201`
-
-### Security
+- Error when we reverted whole PrefabSafeSet with modifications [`#201`](https://github.com/anatawa12/AvatarOptimizer/pull/201)
 
 ## [0.4.2] - 2023-05-30
 ### Fixed
@@ -299,7 +304,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.2...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.3...HEAD
+[0.4.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.2...v0.4.3
 [0.4.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.1...v0.4.2
 [0.4.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.3.5...v0.4.0
