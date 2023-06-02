@@ -6,6 +6,6 @@ on:
 jobs:
   check-conventional-commit:
     runs-on: ubuntu-latest
-    if: !contains(github.event.pull_request.labels.*.name, 'NO-COMMIT-CHECK')
+    if: ${{ !contains(github.event.pull_request.labels.*.name, 'NO-COMMIT-CHECK') }}
     steps:
       - uses: anatawa12/sh-actions/conventional-commitlint@master
