@@ -15,18 +15,6 @@ namespace Anatawa12.AvatarOptimizer
     [ExecuteAlways]
     public abstract class AvatarTagComponent : MonoBehaviour, IEditorOnly
     {
-        // saved format versions. saveVersions[0] is original asset and saveVersions[1] is prefab instance
-        // this is used for migration in 0.x v versions. in 1.x versions, this should be removed.
-        [HideInInspector]
-        public int[] saveVersions;
-
-#if UNITY_EDITOR
-        private static readonly System.Reflection.MethodInfo OnEnableCallback =
-            System.Reflection.Assembly.Load("com.anatawa12.avatar-optimizer.editor")
-                .GetType("Anatawa12.AvatarOptimizer.AvatarTagComponentEditorImpl")
-                .GetMethod("SetCurrentSaveVersion", new[] { typeof(AvatarTagComponent) });
-#endif
-
         private void Awake()
         {
             if (!RuntimeUtil.isPlaying || this == null) return;
@@ -35,9 +23,6 @@ namespace Anatawa12.AvatarOptimizer
 
         private void Start()
         {
-#if UNITY_EDITOR
-            if (!RuntimeUtil.isPlaying) OnEnableCallback.Invoke(null, new object[] { this });
-#endif
             if (!RuntimeUtil.isPlaying || this == null) return;
             RuntimeUtil.OnDemandProcessAvatar(RuntimeUtil.OnDemandSource.Start, this);
         }

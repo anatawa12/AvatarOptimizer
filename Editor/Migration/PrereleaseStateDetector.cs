@@ -1,17 +1,7 @@
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
 using UnityEditor;
-using UnityEditor.SceneManagement;
 using UnityEngine;
-using UnityEngine.SceneManagement;
-using Debug = UnityEngine.Debug;
 
 namespace Anatawa12.AvatarOptimizer.Migration
 {
@@ -22,133 +12,84 @@ namespace Anatawa12.AvatarOptimizer.Migration
     internal static class PrereleaseStateDetector
     {
         private const string DataPath = "ProjectSettings/com.anatawa12.avatar-optimizer.v0.json";
-        private const int CurrentVersion = 4;
-        private static readonly JsonData Data = new JsonData();
-        internal static bool AutoDetectionInProgress = false;
 
         static PrereleaseStateDetector()
         {
-            if (File.Exists(DataPath))
+            if (!File.Exists(DataPath))
             {
-                Data = JsonUtility.FromJson<JsonData>(File.ReadAllText(DataPath));
+                // This pass can be one of
+                // - installed 0.1.2 / older
+                // - installed 1.0.0 / newer
+                // - not installed yet
+                // We ignore 0.1.2 / older. If it's 1.0.0, no migration is required so nothing to do here.
+                return;
             }
-            else
+            var data = JsonUtility.FromJson<JsonData>(File.ReadAllText(DataPath));
+            Debug.Log($"[AvatarOptimizer.Migration] We found AvatarOptimizer v0.{data.currentSerializedVersion}.x save format.");
+            if (data.currentSerializedVersion == 4)
             {
-                AutoDetectionInProgress = true;
-                EditorApplication.CallbackFunction callback = null;
-                callback = AutoDetection;
-                EditorApplication.update += callback;
-                void AutoDetection()
-                {
-                    AutoDetectionInProgress = false;
-                    // ReSharper disable once AccessToModifiedClosure
-                    EditorApplication.update -= callback;
-                    try
-                    {
-                        if (FindAOComponent())
-                        {
-                            Data.currentSerializedVersion = 1;
-                        }
-                    }
-                    catch
-                    {
-                        // ignore
-                    }
-
-                    Save();
-                }
-                
+                Debug.Log($"[AvatarOptimizer.Migration] It's compatible with v1.x.x. removing v0.x version data file.");
+                File.Delete(DataPath);
+                return;
             }
+            Debug.Log($"[AvatarOptimizer.Migration] We will show warning dialog");
+            EditorApplication.delayCall += ShowMigrationRequiredWarning;
         }
 
-        private static bool FindAOComponent()
+        private static void ShowMigrationRequiredWarning()
         {
-            bool CheckPrefabType(PrefabAssetType type) =>
-                type != PrefabAssetType.MissingAsset && type != PrefabAssetType.Model &&
-                type != PrefabAssetType.NotAPrefab;
+            var isJapanese = true;
 
-            if (AssetDatabase
-                .FindAssets("t:prefab")
-                .Select(AssetDatabase.GUIDToAssetPath)
-                .Select(AssetDatabase.LoadAssetAtPath<GameObject>)
-                .Where(x => x)
-                .Where(x => CheckPrefabType(PrefabUtility.GetPrefabAssetType(x)))
-                .Any(x => x.GetComponentsInChildren<AvatarTagComponent>(true).Length != 0))
-                return true;
+            while (true)
+            {
+                string title, message, ok, cancel, alt;
+                if (isJapanese)
+                {
+                    title = "MIGRATION REQUIRED";
+                    message = "AvatarOptimizer v0.3.xまたはそれ以前のバージョンがインストールされていたようです。\n" +
+                              "v1.x.xにアップグレードする前に、v0.4.xをインストールし、設定フォーマットを移行する必要があります。\n" +
+                              "移行しないと、AvatarOptimizerの設定が失われます。\n" +
+                              "\n" +
+                              "以下の手順でプロジェクトを移行してください。\n" +
+                              "1. アセットを保存せずにUnityを終了する\n" +
+                              "*v1.x.xをインストールしてから保存したAvatarOptimizerを含むアセットがある場合には設定が失われます*\n" +
+                              "2. AvatarOptimizerをv0.4.xにダウングレードする\n" +
+                              "3. Unityを起動し、v0.4.xへのマイグレーションを実行する\n" +
+                              "4. AvatarOptimizerを再度アップグレードする";
+                    ok = "保存せずにUnityを閉じる";
+                    cancel = "閉じる";
+                    alt = "Read in English";
+                }
+                else
+                {
+                    title = "MIGRATION REQUIRED";
+                    message = "We found previously AvatarOptimizer v0.3.x or older is installed!\n" +
+                              "Before upgrading to v1.x.x, you have to install v0.4.x and migrate your configuration format.\n" +
+                              "Without migration, you'll lost the configurations of AvatarOptimizer.\n" +
+                              "\n" +
+                              "Please follow the following steps to migrate your project.\n" +
+                              "1. Close Unity WITHOUT saving assets. \n" +
+                              "*If you saved some assets with AvatarOptimizer after upgrading to v1.0.0, You will lost configuration.*\n" +
+                              "2. Downgrade AvatarOptimizer to v0.4.x.\n" +
+                              "3. Open Unity and run migration\n" +
+                              "4. Upgrade AvatarOptimizer again.";
+                    ok = "Exit Unity without saving anything";
+                    cancel = "Close";
+                    alt = "日本語で読む";
+                }
             
-            // guids of scripts in v0.1.3
-            var guids = string.Join("|", new[]
-            {
-                "20329659ce304935acccbb043aeb3c9c",
-                "42fdd72c6d8349358bf15109de81a373",
-                "63d518a37a53491c80d63a7f46a178af",
-                "50d2f7c45b304f669b10d2f85c065464",
-                "7b78da52962c457aa3fc301eaba981aa",
-                "0556b75ec8ef4868ab20ce8404c1edae",
-                "1d42113ec3c34311b1548e7f0cbf46f2",
-                "2650884bd6834672915418cf56ffbfde",
-                "d95379eb5690423ebd102a3902be341b",
-                "885785ecaa724d6d8bb45dd0d62241f7",
-                "a9fd0617dd174314b0a375fb2188510c",
-                "3a3212f462e5430a81a74acb08e41adb",
-                "3c0e29fd88964bcdbaa605adf7d8ead9",
-                "f69eeb3e25674f4a9bd20e6d7e69e0e6",
-            });
-            var regex = new Regex(guids);
-
-            var assetsInfo = new DirectoryInfo("Assets");
-
-            var found = false;
-
-            async Task ProcessFile(FileInfo file)
-            {
-                Debug.Log($"processing {file.Name}");
-                try
+                switch (EditorUtility.DisplayDialogComplex(title, message, ok, cancel, alt))
                 {
-                    var sb = new StringBuilder();
-                    using (var sr = new StreamReader(file.OpenRead(), Encoding.UTF8,
-                               detectEncodingFromByteOrderMarks: true))
-                    {
-                        var buffer = new char[4096];
-                        while (true)
-                        {
-                            if (Volatile.Read(ref found)) return;
-                            var read = await sr.ReadAsync(buffer, 0, buffer.Length).ConfigureAwait(false);
-                            if (read == 0)
-                                break;
-                            sb.Append(buffer, 0, read);
-                        }
-                    }
-
-                    if (regex.IsMatch(sb.ToString()))
-                        Volatile.Write(ref found, true);
-                }
-                catch
-                {
-                    // ignored
+                    case 0: // OK: Exit
+                        EditorApplication.Exit(0);
+                        return;
+                    case 1: // Cancel: Close
+                        return;
+                    case 2: // Show in another language
+                        isJapanese = !isJapanese;
+                        break;
                 }
             }
-
-            Task.WaitAll(assetsInfo.GetFiles("*.unity", SearchOption.AllDirectories)
-                .Select(ProcessFile).ToArray());
-
-            return found;
-        }
-
-        public static int GetCurrentVersion() => Data.currentSerializedVersion;
-
-        public static bool MigrationRequired() =>
-            Data.currentSerializedVersion != 0 && Data.currentSerializedVersion < CurrentVersion;
-
-        public static void MigrationFinished()
-        {
-            Data.currentSerializedVersion = CurrentVersion;
-            Save();
-        }
-
-        private static void Save()
-        {
-            File.WriteAllText(DataPath, JsonUtility.ToJson(Data, true));
         }
 
         [Serializable]
