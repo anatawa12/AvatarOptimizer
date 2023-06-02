@@ -16,48 +16,28 @@ jobs:
     if: ${{ ! github.event.pull_request.draft }}
     runs-on: ubuntu-latest
 
+    env:
+      DOCUMENTATION: ${{ contains(github.event.pull_request.labels.*.name, 'documentation') }}
+      NO_CHANGELOG: ${{ contains(github.event.pull_request.labels.*.name, 'NO-CHANGELOG') }}
+      SNAPSHOT_ONLY: ${{ contains(github.event.pull_request.labels.*.name, 'SNAPSHOT-ONLY') }}
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      - name: Changelog check
+      - name: Fetch pull_request info
         env:
           GH_REPO: ${{ github.repositoryUrl }}
           GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
           PR_NUM: ${{ github.event.number }}
         run: |
-          json=$(mktemp)
-          gh pr view $PR_NUM --json=files,labels > $json
-
-          check_label() {
-            jq -r '.labels[].name' < $json | grep -Fx "$1" > /dev/null || return 1
-          }
-
-          if check_label 'dependencies'; then
-            # if there's dependencies tag, skip all checks
-            echo "::notice ::check is suppressed by dependencies label"
-            exit 0
+          gh pr view $PR_NUM --json=files | jq --raw-output '.files[].path' > files.txt
+      - name: Changelog check for CHANGELOG.md
+        if: always() && !(env.DOCUMENTATION || env.NO_CHANGELOG || env.SNAPSHOT_ONLY)
+        run: |
+          if ! grep -e '^CHANGELOG.md$' < files.txt > /dev/null; then
+            echo "::error::CHANGELOG.md is not updated!"
           fi
-
-          # list of error message.
-          EXIT_CODE=0
-
-          check_update() {
-            FILE="$1"
-            shift
-
-            for LABEL in "$@"; do
-              if check_label "$LABEL"; then
-                echo "::notice ::check for $FILE is suppressed by $LABEL label"
-                return 0
-              fi
-            done
-
-            if ! jq -r '.files[].path' < $json | grep -Fx "$FILE"; then
-              echo "::error ::$FILE is not updated!"
-              EXIT_CODE=1
-            fi
-          }
-
-          check_update CHANGELOG.md            documentation NO-CHANGELOG
-          check_update CHANGELOG-PRERELEASE.md documentation NO-CHANGELOG-PRERELEASE
-
-          exit $EXIT_CODE
+      - name: Changelog check for CHANGELOG-PRERELEASE.md
+        if: always() && !(env.DOCUMENTATION || env.NO_CHANGELOG)
+        run: |
+          if ! grep -e '^CHANGELOG-PRERELEASE.md' < files.txt > /dev/null; then
+            echo "::error::CHANGELOG-PRERELEASE.md is not updated!"
+          fi
