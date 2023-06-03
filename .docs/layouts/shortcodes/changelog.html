@@ -1,0 +1,39 @@
+{{ $AOBaseNoSlash := strings.TrimSuffix "/" .Site.BaseURL }}
+{{ $AORelativePath := strings.TrimPrefix $AOBaseNoSlash .Page.Permalink }}
+{{ $AOGlobalRoot := strings.TrimSuffix "/beta" $AOBaseNoSlash }}
+{{ $AOIsBeta := ne $AOGlobalRoot $AOBaseNoSlash }}
+
+{{ $changelog := "" }}
+
+{{ if $AOIsBeta }}
+  {{ $changelog = partial "changelog/CHANGELOG-PRERELEASE.md" }}
+{{ else }}
+  {{ $changelog = partial "changelog/CHANGELOG.md" }}
+{{ end }}
+
+{{ $changelog = $changelog | replaceRE `(?ms)\A.*?^##[^#].*?^(##[^#])` "$1" }}
+{{ $changelog = $changelog | replaceRE `(?m)^## \[([0-9a-zA-Z.+-]*)\](.*)$` "## [$1]$2 {#$1}" }}
+{{ $changelog = split ($changelog | replaceRE `(?ms)(.)^(## )` "$1================\n$2") "================\n" }}
+{{ $changelog1 := slice }}
+
+{{ range $version_part := $changelog }}
+
+  {{ $version_name := index ( $version_part | findRESubmatch `^## \[([0-9a-zA-Z.+-]+)\]` ) 0 1 }}
+
+  {{ $sections := split ($version_part | replaceRE `(?ms)(.)^(### )` "$1================\n$2") "================\n" }}
+
+  {{ range $section := $sections }}
+    {{ $section_name := index ( $section | findRESubmatch `^### (.*)` ) 0 1 }}
+
+    {{ if ne $section_name nil }}
+      {{ $section_name = lower $section_name }}
+      {{ $section = $section | replaceRE `^.*` (printf "$0 {#%s-%s}" $version_name $section_name ) }}
+    {{ end }}
+
+    {{ $changelog1 = $changelog1 | append $section }}
+  {{ end }}
+{{ end }}
+
+{{ $changelog := delimit $changelog1 "" }}
+
+{{ $changelog | markdownify }}
