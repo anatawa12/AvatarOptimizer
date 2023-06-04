@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
+- Make `Remove Empty Renderer Object` enabled by default `#208`
 
 ### Deprecated
 
