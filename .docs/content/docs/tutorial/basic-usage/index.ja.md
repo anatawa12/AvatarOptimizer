@@ -43,7 +43,7 @@ SkinnedMeshを結合するとメッシュを変形させる処理の回数が減
 
 ![lock-inspector.png](./lock-inspector.png)
 
-それではHierarchyで顔のメッシュであるBody以外の`Skinned Mesh Renderer`を選択してどロックバンドドロップでSkinned Renderersに指定しましょう！
+それではHierarchyで顔のメッシュであるBody以外の`Skinned Mesh Renderer`を選択してドラックアンドドロップでSkinned Renderersに指定しましょう！
 
 ![drag-and-drop.png](./drag-and-drop.png)
 
