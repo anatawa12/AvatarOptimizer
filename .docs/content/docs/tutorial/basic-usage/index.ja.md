@@ -36,7 +36,7 @@ SkinnedMeshを結合するとメッシュを変形させる処理の回数が減
 すると`Merge Skinned Mesh`と`Skinned Mesh Renderer`が追加されます。
 
 この`Merge Skinned Mesh`コンポーネントは、指定された`Skinned Mesh Renderer`を一緒についている`Skinned Mesh Renderer`にマージするコンポーネントです。
-マージを機能させるために`Merge Skinned Mesh`にマージする`Skinned Mesh Renderer`を指定しましょう。
+マージを機能させるために`Merge Skinned Mesh`にマージする`Skinned Mesh Renderer`を指定しましょう！
 
 指定を楽にするために、`MergedMesh`を選択した状態でinspectorをロックしましょう。
 こうすることで複数のS`Skinned Mesh Renderer`をまとめてドラックアンドドロップできるようになります。[^tip-lock-inspector]
@@ -57,3 +57,34 @@ BlendShapeは頂点数とBlendShape数の積に比例して重くなる処理で
 {{< /hint >}}
 
 [^tip-lock-inspector]: PhysBoneに複数のコライダーを指定するのにも使えたり、色んなところで使えるので覚えておくと便利だと思います。
+
+BlendShapeを固定する {#freeze-blendshape}
+---
+
+また、Avatar Optimizerを使用すると簡単にBlendShapeを固定することができます！
+
+{{< hint info >}}
+
+**なせBlendShapeを固定するの？**
+
+前述のように、BlendShapeは頂点数とBlendShape数の積に比例して重くなる処理です。
+また、BlendShapeはweightに関わらず存在するだけで負荷になってしまいます。
+そのためPerformance Rankには反映されませんが固定することが軽量化になります。
+可能であれば結合したメッシュはBlendShapeが存在しないmeshにすると良いです。
+
+{{< /hint >}}
+
+それでは使わない素体や服のの体型変更用のBlendShapeを結合してみましょう！
+
+頂点数が増えたメッシュである先程の`MergedMesh`に`Freeze BlendShapes`を追加しましょう！
+
+![add-freeze-blendshape.png](add-freeze-blendshape.png)
+
+`Freeze BlendShape`は一緒についている`Skinned Mesh Renderer`のBlendShapeを固定するコンポーネントです。
+
+マージを機能させるために固定するBlendShapeを指定しましょう！
+チェックボックスにチェックするとそのBlendShapeは固定されます。
+
+![freeze-blendshape.png](freeze-blendshape.png)
+
+これでBlendShapeの固定の設定は終わりです！
