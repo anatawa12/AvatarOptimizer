@@ -39,7 +39,7 @@ namespace Anatawa12.AvatarOptimizer
         // common between v0 and v1
         [CL4EELocalized("MergeSkinnedMesh:prop:removeEmptyRendererObject")]
         [ToggleLeft]
-        public bool removeEmptyRendererObject;
+        public bool removeEmptyRendererObject = true;
 
         public MergeSkinnedMesh()
         {
