@@ -35,7 +35,7 @@ SkinnedMeshを結合するとメッシュを変形させる処理の回数が減
 
 すると`Merge Skinned Mesh`と`Skinned Mesh Renderer`が追加されます。
 
-この`Merge Skinned Mesh`コンポーネントは、指定された`Skinned Mesh Renderer`を一緒についている`Skinned Mesh Renderer`にマージするコンポーネントです。
+この`Merge Skinned Mesh`は、指定された`Skinned Mesh Renderer`を一緒についている`Skinned Mesh Renderer`にマージします。
 マージを機能させるために`Merge Skinned Mesh`にマージする`Skinned Mesh Renderer`を指定しましょう！
 
 指定を楽にするために、`MergedMesh`を選択した状態でinspectorをロックしましょう。
@@ -87,7 +87,7 @@ BlendShapeを固定する {#freeze-blendshape}
 
 ![add-freeze-blendshape.png](add-freeze-blendshape.png)
 
-`Freeze BlendShape`は一緒についている`Skinned Mesh Renderer`のBlendShapeを固定するコンポーネントです。
+`Freeze BlendShape`は一緒についている`Skinned Mesh Renderer`のBlendShapeを固定します。
 
 マージを機能させるために固定するBlendShapeを指定しましょう！
 チェックボックスにチェックするとそのBlendShapeは固定されます。
