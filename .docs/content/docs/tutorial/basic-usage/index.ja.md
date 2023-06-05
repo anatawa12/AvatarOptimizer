@@ -51,7 +51,7 @@ SkinnedMeshを結合するとメッシュを変形させる処理の回数が減
 
 **なせ顔のメッシュを結合しないの？**
 
-BlendShapeは頂点数とBlendShape数の積に比例して重くなる処理です。
+BlendShape(シェイプキー)[^blend-shape]は頂点数とBlendShape数の積に比例して重くなる処理です。
 そのため、BlendShapeの数が多い顔のメッシュを頂点数の多い体のメッシュと結合するとかえって重くなってしまうため、顔は別のままにするのを推奨しています
 
 {{< /hint >}}
@@ -69,7 +69,7 @@ Anchor Overrideは素体のを、Root BoneはHipsを指定するとうまくい�
 BlendShapeを固定する {#freeze-blendshape}
 ---
 
-また、Avatar Optimizerを使用すると簡単にBlendShapeを固定することができます！
+また、Avatar Optimizerを使用すると簡単にBlendShape(シェイプキー)[^blend-shape]を固定することができます！
 
 {{< hint info >}}
 
@@ -96,3 +96,5 @@ BlendShapeを固定する {#freeze-blendshape}
 ![freeze-blendshape.png](freeze-blendshape.png)
 
 これでBlendShapeの固定の設定は終わりです！
+
+[^blend-shape]: BlendShapeはUnity上のシェイプキーの名前です。UnityやMayaではBlend Shape、BlenderではShape Key、MetasequoiaやMMDではモーフと呼ばれます。
