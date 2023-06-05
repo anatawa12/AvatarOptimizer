@@ -25,11 +25,11 @@ SkinnedMeshを結合するとメッシュを変形させる処理の回数が減
 
 まず初めにマージ先のGameObjectを作りましょう。
 アバターのGameObjectを右クリックから `Create Empty` をクリックして新たなGameObjectを作ります。
-そしたらわかりやすい名前に変えておいてください。この記事では`MergedMesh`とします
+そしたらわかりやすい名前に変えておいてください。この記事では`Anon_Merged`とします
 
 ![create-empty.png](./create-empty.png)
 
-そしたら`Merged Mesh`に`Merge Skinned Mesh`を追加しましょう。
+そしたら`Anon_Merged`に`Merge Skinned Mesh`を追加しましょう。
 
 ![add-merge-skinned-mesh.png](./add-merge-skinned-mesh.png)
 
@@ -38,7 +38,7 @@ SkinnedMeshを結合するとメッシュを変形させる処理の回数が減
 この`Merge Skinned Mesh`は、指定されたメッシュ[^mesh]を一緒についているメッシュにマージします。
 マージを機能させるために`Merge Skinned Mesh`にマージするメッシュを指定しましょう！
 
-指定を楽にするために、`MergedMesh`を選択した状態でinspectorをロックしましょう。
+指定を楽にするために、`Anon_Merged`を選択した状態でinspectorをロックしましょう。
 こうすることで複数のメッシュをまとめてドラックアンドドロップできるようになります。[^tip-lock-inspector]
 
 ![lock-inspector.png](./lock-inspector.png)
@@ -56,7 +56,7 @@ BlendShape(シェイプキー)[^blend-shape]は頂点数とBlendShape数の積�
 
 {{< /hint >}}
 
-続いて、`MergedMesh`の設定をしましょう！
+続いて、`Anon_Merged`の設定をしましょう！
 
 `Merge Skinned Mesh`は諸事情[^merge-skinned-mesh]によりボーン、メッシュ、マテリアル以外の設定を自動的には行いません。
 そのため、Bounds, Root Bone, Anchor Override等を手動で設定してください。
@@ -84,7 +84,7 @@ BlendShapeを固定する {#freeze-blendshape}
 
 それでは使わない素体や服のの体型変更用のBlendShapeを結合してみましょう！
 
-頂点数が増えたメッシュである先程の`MergedMesh`に`Freeze BlendShapes`を追加しましょう！
+頂点数が増えたメッシュである先程の`Anon_Merged`に`Freeze BlendShapes`を追加しましょう！
 
 ![add-freeze-blendshape.png](add-freeze-blendshape.png)
 
