@@ -48,8 +48,11 @@ namespace Anatawa12.AvatarOptimizer
         public void RecordMergeComponent<T>(T from, T mergeTo) where T: Component =>
             GetComponentInfo(from).MergedTo(GetComponentInfo(mergeTo));
 
+        public void RecordMoveProperties(Component from, params (string old, string @new)[] props) =>
+            GetComponentInfo(from).MoveProperties(props);
+
         public void RecordMoveProperty(Component from, string oldProp, string newProp) =>
-            GetComponentInfo(from).MoveProperty(oldProp, newProp);
+            GetComponentInfo(from).MoveProperties((oldProp, newProp));
 
         public void RecordRemoveProperty(Component from, string oldProp) =>
             GetComponentInfo(from).RemoveProperty(oldProp);
@@ -96,26 +99,45 @@ namespace Anatawa12.AvatarOptimizer
                 _mergedInto = mergeTo;
             }
 
-            public void MoveProperty(string oldProp, string newProp)
+            public void MoveProperties(params (string old, string @new)[] props)
             {
-                foreach (var mergeSource in MergeSources) mergeSource.MoveProperty(oldProp, newProp);
+                foreach (var mergeSource in MergeSources) mergeSource.MoveProperties(props);
 
-                if (_afterPropertyIds.TryGetValue(oldProp, out var propId))
+                var propertyIds = new int[props.Length];
+                for (var i = 0; i < props.Length; i++)
                 {
+                    var (oldProp, newProp) = props[i];
+                    if (_afterPropertyIds.TryGetValue(oldProp, out var propId))
+                    {
+                        propertyIds[i] = propId;
+                    }
+                    else
+                    {
+                        if (!_beforePropertyIds.ContainsKey(oldProp))
+                        {
+                            if (_afterPropertyIds.ContainsKey(newProp) && props.All(x => x.old != newProp))
+                                throw new InvalidOperationException("Merging property");
+                            propertyIds[i] = _nextPropertyId++;
+                        }
+                    }
+                }
+
+                for (var i = 0; i < propertyIds.Length; i++)
+                {
+                    var propId = propertyIds[i];
+                    var (oldProp, _) = props[i];
+                    if (propId == 0) continue;
                     _afterPropertyIds.Remove(oldProp);
+                }
+
+                for (var i = 0; i < propertyIds.Length; i++)
+                {
+                    var propId = propertyIds[i];
+                    var (oldProp, newProp) = props[i];
+                    if (propId == 0) continue;
                     _afterPropertyIds[newProp] = propId;
                     if (!_beforePropertyIds.ContainsKey(oldProp))
                         _beforePropertyIds.Add(oldProp, propId);
-                }
-                else
-                {
-                    if (!_beforePropertyIds.ContainsKey(oldProp))
-                    {
-                        if (_afterPropertyIds.ContainsKey(newProp))
-                            throw new InvalidOperationException("Merging property");
-                        _beforePropertyIds.Add(oldProp, propId = _nextPropertyId++);
-                        _afterPropertyIds.Add(newProp, propId);
-                    }
                 }
             }
 

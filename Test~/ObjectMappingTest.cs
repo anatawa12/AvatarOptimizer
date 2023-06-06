@@ -157,6 +157,32 @@ namespace Anatawa12.AvatarOptimizer.Test
         }
 
         [Test]
+        public void RecordSwapPropertyTest()
+        {
+            var root = new GameObject();
+            var child1 = Utils.NewGameObject("child1", root.transform);
+            var child1Component = child1.AddComponent<SkinnedMeshRenderer>();
+
+            var builder = new ObjectMappingBuilder(root);
+            builder.RecordMoveProperties(child1Component, 
+                ("blendShapes.first", "blendShapes.second"),
+                ("blendShapes.second", "blendShapes.first"));
+
+            var built = builder.BuildObjectMapping();
+
+            var rootMapper = built.CreateAnimationMapper(root);
+
+            // but should affect to component
+            Assert.That(
+                rootMapper.MapBinding(B("child1", typeof(SkinnedMeshRenderer), "blendShapes.first")),
+                Is.EqualTo(B("child1", typeof(SkinnedMeshRenderer), "blendShapes.second")));
+
+            Assert.That(
+                rootMapper.MapBinding(B("child1", typeof(SkinnedMeshRenderer), "blendShapes.second")),
+                Is.EqualTo(B("child1", typeof(SkinnedMeshRenderer), "blendShapes.first")));
+        }
+
+        [Test]
         public void RecordMovePropertyTwiceTest()
         {
             var root = new GameObject();

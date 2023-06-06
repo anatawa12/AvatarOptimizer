@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Error in MergeSkinnedMeshProcessor with RecordMoveProperty `#214`
 
 ### Security
 
