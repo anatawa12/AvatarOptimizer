@@ -16,9 +16,12 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Error in MergeSkinnedMeshProcessor with RecordMoveProperty `#214`
 
 ### Security
+
+## [0.4.5] - 2023-06-06
+### Fixed
+- Error in MergeSkinnedMeshProcessor with RecordMoveProperty [`#214`](https://github.com/anatawa12/AvatarOptimizer/pull/214)
 
 ## [0.4.4] - 2023-06-04
 ### Changed
@@ -309,7 +312,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.4...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.5...HEAD
+[0.4.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.4...v0.4.5
 [0.4.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.3...v0.4.4
 [0.4.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.2...v0.4.3
 [0.4.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.1...v0.4.2
