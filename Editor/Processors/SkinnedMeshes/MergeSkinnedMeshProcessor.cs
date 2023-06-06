@@ -33,6 +33,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             TexCoordStatus TexCoordStatusMax(TexCoordStatus x, TexCoordStatus y) =>
                 (TexCoordStatus)Math.Max((int)x, (int)y);
 
+            var mappings = new List<(string, string)>();
+
             for (var i = 0; i < meshInfos.Length; i++)
             {
                 var meshInfo = meshInfos[i];
@@ -47,6 +49,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 for (var j = 0; j < meshInfo.SubMeshes.Count; j++)
                     target.SubMeshes[subMeshIndexMap[i][j]].Triangles.AddRange(meshInfo.SubMeshes[j].Triangles);
 
+                mappings.Clear();
+
                 // add blend shape if not defined by name
                 for (var sourceI = 0; sourceI < meshInfo.BlendShapes.Count; sourceI++)
                 {
@@ -58,9 +62,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                         target.BlendShapes.Add((name, weight));
                     }
 
-                    session.MappingBuilder.RecordMoveProperty(meshInfo.SourceRenderer, 
-                        VProp.BlendShapeIndex(sourceI), VProp.BlendShapeIndex(newIndex));
+                    // this can cause merge prop error.
+                    mappings.Add((VProp.BlendShapeIndex(sourceI), VProp.BlendShapeIndex(newIndex)));
                 }
+
+                session.MappingBuilder.RecordMoveProperties(meshInfo.SourceRenderer, mappings.ToArray());
 
                 target.Bones.AddRange(meshInfo.Bones);
 
