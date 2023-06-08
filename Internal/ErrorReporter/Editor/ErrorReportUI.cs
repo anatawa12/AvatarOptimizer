@@ -52,27 +52,35 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
         }
 
         private const int RefreshDelayTime = 500;
-        private Stopwatch DelayTimer = new Stopwatch();
+        private Stopwatch _delayTimer;
         private HeaderBox _header;
         private GameObject _defaultAvatarObject;
 
         private void ScheduleRender()
         {
-            DelayTimer.Restart();
-            EditorApplication.delayCall += StartRenderTimer;
+            if (_delayTimer == null)
+            {
+                _delayTimer = Stopwatch.StartNew();
+                EditorApplication.delayCall += StartRenderTimer;
+            }
+            else
+            {
+                _delayTimer.Restart();
+            }
         }
 
         private async void StartRenderTimer()
         {
-            while (DelayTimer.ElapsedMilliseconds < RefreshDelayTime)
+            while (_delayTimer.ElapsedMilliseconds < RefreshDelayTime)
             {
-                long remaining = RefreshDelayTime - DelayTimer.ElapsedMilliseconds;
+                long remaining = RefreshDelayTime - _delayTimer.ElapsedMilliseconds;
                 if (remaining > 0)
                 {
                     await Task.Delay((int) remaining);
                 }
             }
 
+            _delayTimer = null;
             RenderContent();
             Repaint();
         }
