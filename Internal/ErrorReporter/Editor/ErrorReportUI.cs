@@ -28,12 +28,6 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
             }
         }
 
-        private Vector2 _avatarScrollPos, _errorScrollPos;
-        private int _selectedAvatar = -1;
-        private List<Button> _avatarButtons = new List<Button>();
-
-        private Box selectAvatar;
-
         private void OnEnable()
         {
             titleContent = new GUIContent("Error Report");
@@ -94,8 +88,6 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
             root.Clear();
             root.name = "Root";
             rootVisualElement.Add(root);
-
-            //root.Add(CreateLogo());
 
             int reported = 0;
 
@@ -185,141 +177,6 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
                 root.Add(container);
             }
             */
-        }
-
-        // private VisualElement CreateLogo()
-        // {
-        //     var img = new Image();
-        //     img.image = LogoDisplay.LOGO_ASSET;
-        //
-        //     // I've given up trying to get USS to resize proportionally for now :|
-        //     float height = 64;
-        //     img.style.height = new StyleLength(new Length(height, LengthUnit.Pixel));
-        //     img.style.width = new StyleLength(new Length(LogoDisplay.ImageWidth(height), LengthUnit.Pixel));
-        //
-        //     var box = new Box();
-        //     box.name = "logo";
-        //     box.Add(img);
-        //     return box;
-        // }
-
-        private VisualElement BuildErrorBox()
-        {
-            return new Box();
-        }
-
-        private VisualElement BuildSelectAvatarBox()
-        {
-            if (selectAvatar == null) selectAvatar = new Box();
-            selectAvatar.Clear();
-            _avatarButtons.Clear();
-
-            var avatars = BuildReport.CurrentReport.avatars;
-            for (int i = 0; i < avatars.Count; i++)
-            {
-                var btn = new Button(() => SelectAvatar(i));
-                btn.text = avatars[i].objectRef.name;
-                _avatarButtons.Add(btn);
-                selectAvatar.Add(btn);
-            }
-
-            SelectAvatar(_selectedAvatar);
-
-            return selectAvatar;
-        }
-
-        private void SelectAvatar(int idx)
-        {
-            _selectedAvatar = idx;
-
-            for (int i = 0; i < _avatarButtons.Count; i++)
-            {
-                if (_selectedAvatar == i)
-                {
-                    _avatarButtons[i].AddToClassList("selected");
-                }
-                else
-                {
-                    _avatarButtons[i].RemoveFromClassList("selected");
-                }
-            }
-        }
-
-        private void OnGUI___()
-        {
-            var report = BuildReport.CurrentReport;
-
-            AvatarReport selected = null;
-            EditorGUILayout.BeginVertical(GUILayout.MaxHeight(150), GUILayout.Width(position.width));
-            if (report.avatars.Count == 0)
-            {
-                GUILayout.Label("<no build messages>");
-            }
-            else
-            {
-                _avatarScrollPos = EditorGUILayout.BeginScrollView(_avatarScrollPos, false, true);
-
-                for (int i = 0; i < report.avatars.Count; i++)
-                {
-                    var avatarReport = report.avatars[i];
-
-                    EditorGUILayout.Space();
-                    if (GUILayout.Toggle(_selectedAvatar == i, avatarReport.objectRef.name, EditorStyles.toggle))
-                    {
-                        _selectedAvatar = i;
-                    }
-                }
-
-                EditorGUILayout.EndScrollView();
-            }
-
-            EditorGUILayout.EndVertical();
-
-            EditorGUILayout.Space();
-
-            var rect = EditorGUILayout.BeginVertical(GUILayout.Width(position.width));
-
-            _errorScrollPos = EditorGUILayout.BeginScrollView(_errorScrollPos, false, true);
-
-            EditorGUILayout.BeginVertical(
-                GUILayout.Width(rect.width
-                                - GUI.skin.scrollView.margin.horizontal
-                                - GUI.skin.scrollView.padding.horizontal),
-                GUILayout.ExpandWidth(false));
-
-            if (_selectedAvatar >= 0 && _selectedAvatar < BuildReport.CurrentReport.avatars.Count)
-            {
-                foreach (var logEntry in BuildReport.CurrentReport.avatars[_selectedAvatar].logs)
-                {
-                    imguiRenderLogEntry(logEntry);
-                }
-            }
-
-            EditorGUILayout.EndVertical();
-
-            EditorGUILayout.EndScrollView();
-
-            EditorGUILayout.EndVertical();
-        }
-
-        private static void imguiRenderLogEntry(ErrorLog logEntry)
-        {
-            MessageType ty = MessageType.Error;
-            switch (logEntry.reportLevel)
-            {
-                case ReportLevel.InternalError:
-                case ReportLevel.Error:
-                    ty = MessageType.Error;
-                    break;
-                case ReportLevel.Warning:
-                    ty = MessageType.Warning;
-                    break;
-                case ReportLevel.Info:
-                    ty = MessageType.Info;
-                    break;
-            }
-
-            EditorGUILayout.HelpBox(logEntry.ToString(), ty);
         }
     }
 }
