@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using UnityEditor;
+using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -96,9 +97,6 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
 
             //root.Add(CreateLogo());
 
-            var box = new ScrollView();
-            var lookupCache = new ObjectRefLookupCache();
-
             int reported = 0;
 
             AvatarReport activeAvatar = null;
@@ -126,17 +124,26 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
                 activeAvatar = BuildReport.CurrentReport.avatars.LastOrDefault();
             }
 
+            var header = new Box();
+            header.Add(new Label("Error report for "));
+            var list = BuildReport.CurrentReport.avatars.ToList();
+            if (!list.Contains(activeAvatar)) list.Add(activeAvatar);
+            list.Reverse();
+            var field = new PopupField<AvatarReport>(list, activeAvatar, 
+                x => x.objectRef.name, 
+                x => x.objectRef.name);
+            header.Add(field);
+            header.AddToClassList("avatarHeader");
+            root.Add(header);
+
+
             if (activeAvatar != null)
             {
+                var box = new ScrollView();
+                var lookupCache = new ObjectRefLookupCache();
                 reported++;
-
                 var avBox = new Box();
                 avBox.AddToClassList("avatarBox");
-
-                var header = new Box();
-                header.Add(new Label("Error report for " + activeAvatar.objectRef.name));
-                header.AddToClassList("avatarHeader");
-                avBox.Add(header);
 
                 List<ErrorLog> errorLogs = activeAvatar.logs
                     .Where(l => activeAvatarObject == null || l.reportLevel != ReportLevel.Validation).ToList();
@@ -150,6 +157,16 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
 
                 foreach (var ev in activeAvatar.logs)
                 {
+                    avBox.Add(new ErrorElement(ev, lookupCache));
+                    avBox.Add(new ErrorElement(ev, lookupCache));
+                    avBox.Add(new ErrorElement(ev, lookupCache));
+                    avBox.Add(new ErrorElement(ev, lookupCache));
+                    avBox.Add(new ErrorElement(ev, lookupCache));
+                    avBox.Add(new ErrorElement(ev, lookupCache));
+                    avBox.Add(new ErrorElement(ev, lookupCache));
+                    avBox.Add(new ErrorElement(ev, lookupCache));
+                    avBox.Add(new ErrorElement(ev, lookupCache));
+                    avBox.Add(new ErrorElement(ev, lookupCache));
                     avBox.Add(new ErrorElement(ev, lookupCache));
                 }
 
