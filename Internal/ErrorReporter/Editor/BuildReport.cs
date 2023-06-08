@@ -83,10 +83,14 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
         {
             public void Dispose()
             {
-                var successful = CurrentReport.CurrentAvatar.successful;
+                var avatar = CurrentReport.CurrentAvatar;
                 CurrentReport.CurrentAvatar = null;
+                var successful = avatar.successful;
                 BuildReport.SaveReport();
-                ErrorReportUI.MaybeOpenErrorReportUI();
+                if (avatar.logs.Any())
+                    ErrorReportUI.OpenErrorReportUIFor(avatar);
+                else
+                    ErrorReportUI.MaybeOpenErrorReportUI();
                 if (!successful) throw new Exception("Avatar processing failed");
             }
         }

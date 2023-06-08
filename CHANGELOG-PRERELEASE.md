@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
+- Improve ErrorReport window on build error `#216`
 
 ### Deprecated
 
