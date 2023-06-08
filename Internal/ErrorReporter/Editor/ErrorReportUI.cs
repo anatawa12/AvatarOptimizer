@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
@@ -111,21 +112,7 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
                 }
             }
 
-            if (activeAvatar == null)
-            {
-                activeAvatar = BuildReport.CurrentReport.avatars.LastOrDefault();
-            }
-
-            var header = new Box();
-            header.Add(new Label("Error report for "));
-            var list = BuildReport.CurrentReport.avatars.ToList();
-            if (!list.Contains(activeAvatar)) list.Add(activeAvatar);
-            list.Reverse();
-            var field = new PopupField<AvatarReport>(list, activeAvatar, 
-                x => x.objectRef.name, 
-                x => x.objectRef.name);
-            header.Add(field);
-            header.AddToClassList("avatarHeader");
+            var header = new HeaderBox(activeAvatar);
             root.Add(header);
 
 
@@ -177,6 +164,67 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
                 root.Add(container);
             }
             */
+        }
+    }
+
+    class HeaderBox : Box
+    {
+        [CanBeNull] private PopupField<AvatarReport> _field;
+        [CanBeNull] private AvatarReport _defaultValue;
+
+        [CanBeNull]
+        public AvatarReport DefaultValue
+        {
+            get => _defaultValue;
+            set
+            {
+                _defaultValue = value;
+                UpdateList();
+            }
+        }
+
+        public event Action<AvatarReport> SelectionChanged;
+
+        public HeaderBox(AvatarReport defaultValue)
+        {
+            AddToClassList("avatarHeader");
+            _defaultValue = defaultValue;
+            UpdateList();
+        }
+
+        public void UpdateList()
+        {
+            var list = BuildReport.CurrentReport.avatars;
+            if (DefaultValue != null && !list.Contains(DefaultValue))
+                list.Add(DefaultValue);
+            list.Reverse();
+
+            if (list.Count == 0)
+            {
+                Clear();
+                Add(new Label("No avatars for Error Report"));
+                _field = null;
+            }
+            else
+            {
+                AvatarReport value;
+                if (_field != null && list.Contains(_field.value))
+                    value = _field.value;
+                else if (DefaultValue != null)
+                    value = DefaultValue;
+                else
+                    value = list.First();
+
+                _field = new PopupField<AvatarReport>(list, value,
+                    x => x.objectRef.name,
+                    x => x.objectRef.name);
+
+                _field.RegisterValueChangedCallback(e => { SelectionChanged?.Invoke(e.newValue); });
+
+                Clear();
+                Add(new Label("Error report for "));
+                Add(_field);
+            }
         }
     }
 }
