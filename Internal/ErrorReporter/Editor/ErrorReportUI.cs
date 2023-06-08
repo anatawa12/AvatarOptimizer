@@ -20,6 +20,13 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
             GetWindow<ErrorReportUI>().Show();
         }
 
+        public static void OpenErrorReportUIFor(AvatarReport avatar)
+        {
+            var window = GetWindow<ErrorReportUI>();
+            window.Show();
+            window._header.Value = avatar;
+        }
+
         public static void MaybeOpenErrorReportUI()
         {
             if (BuildReport.CurrentReport.avatars.Any(av => av.logs.Count > 0))
@@ -193,7 +200,11 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
             }
         }
 
-        [CanBeNull] public AvatarReport Value => _field?.value;
+        [CanBeNull] public AvatarReport Value
+        {
+            get => _field?.value;
+            set => UpdateList(value);
+        }
 
         public event Action<AvatarReport> SelectionChanged;
 
@@ -204,7 +215,7 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
             UpdateList();
         }
 
-        public void UpdateList()
+        public void UpdateList(AvatarReport setValue = null)
         {
             var list = BuildReport.CurrentReport.avatars.ToList();
             if (DefaultValue != null && !list.Contains(DefaultValue))
@@ -221,7 +232,9 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
             {
                 AvatarReport oldValue = _field?.value;
                 AvatarReport value;
-                if (_field != null && list.Contains(_field.value))
+                if (setValue != null)
+                    value = setValue;
+                else if (_field != null && list.Contains(_field.value))
                     value = _field.value;
                 else if (DefaultValue != null)
                     value = DefaultValue;
