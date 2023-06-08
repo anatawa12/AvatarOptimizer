@@ -195,8 +195,9 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
             get => _defaultValue;
             set
             {
+                var oldDefaultValue = _defaultValue;
                 _defaultValue = value;
-                UpdateList();
+                UpdateList(oldDefaultValue: oldDefaultValue);
             }
         }
 
@@ -215,7 +216,10 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
             UpdateList();
         }
 
-        public void UpdateList(AvatarReport setValue = null)
+        public void UpdateList(
+            AvatarReport setValue = null,
+            AvatarReport oldDefaultValue = null
+        )
         {
             var list = BuildReport.CurrentReport.avatars.ToList();
             if (DefaultValue != null && !list.Contains(DefaultValue))
@@ -234,6 +238,8 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
                 AvatarReport value;
                 if (setValue != null)
                     value = setValue;
+                else if (DefaultValue != null && oldDefaultValue == _field?.value)
+                    value = DefaultValue;
                 else if (_field != null && list.Contains(_field.value))
                     value = _field.value;
                 else if (DefaultValue != null)
