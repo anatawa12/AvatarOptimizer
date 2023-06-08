@@ -162,16 +162,6 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
                 foreach (var ev in activeAvatar.logs)
                 {
                     avBox.Add(new ErrorElement(ev, lookupCache));
-                    avBox.Add(new ErrorElement(ev, lookupCache));
-                    avBox.Add(new ErrorElement(ev, lookupCache));
-                    avBox.Add(new ErrorElement(ev, lookupCache));
-                    avBox.Add(new ErrorElement(ev, lookupCache));
-                    avBox.Add(new ErrorElement(ev, lookupCache));
-                    avBox.Add(new ErrorElement(ev, lookupCache));
-                    avBox.Add(new ErrorElement(ev, lookupCache));
-                    avBox.Add(new ErrorElement(ev, lookupCache));
-                    avBox.Add(new ErrorElement(ev, lookupCache));
-                    avBox.Add(new ErrorElement(ev, lookupCache));
                 }
             }
 
