@@ -152,7 +152,10 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
 
             if (activeAvatar.logs.Count == 0)
             {
-                avBox.Add(new Label("Nothing to report!"));
+                var container = new Box();
+                container.name = "no-errors";
+                container.Add(new Label("Nothing to report!"));
+                avBox.Add(container);
             }
             else
             {
