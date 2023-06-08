@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
@@ -34,7 +33,6 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
             titleContent = new GUIContent("Error Report");
 
             rootVisualElement.styleSheets.Add(Resources.Load<StyleSheet>("com.anatawa12.avatar-optimizer.error-report"));
-            RenderContent();
 
             reloadErrorReport = RenderContent;
 
@@ -55,6 +53,8 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
 
         private const int RefreshDelayTime = 500;
         private Stopwatch DelayTimer = new Stopwatch();
+        private HeaderBox _header;
+        private GameObject _defaultAvatarObject;
 
         private void ScheduleRender()
         {
@@ -77,20 +77,31 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
             Repaint();
         }
 
-        private void RenderContent()
+        private void CreateGUI()
         {
-            rootVisualElement.Clear();
-
             var root = new Box();
             root.Clear();
             root.name = "Root";
             rootVisualElement.Add(root);
 
-            int reported = 0;
+            var (activeAvatar, activeAvatarObject) = GetDefaultAvatar();
+            _defaultAvatarObject = activeAvatarObject;
 
+            _header = new HeaderBox(activeAvatar);
+            root.Add(_header);
+
+            var box = new ScrollView();
+            root.Add(box);
+            if (_header.Value != null)
+                UpdateErrorList(box, _header.Value);
+            _header.SelectionChanged += x => UpdateErrorList(box, x);
+        }
+
+        private (AvatarReport activeAvatar, GameObject activeAvatarObject) GetDefaultAvatar()
+        {
             AvatarReport activeAvatar = null;
-
             GameObject activeAvatarObject = null;
+
             if (Selection.gameObjects.Length == 1)
             {
                 activeAvatarObject = Utils.FindAvatarInParents(Selection.activeGameObject.transform)?.gameObject;
@@ -98,38 +109,45 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
                 {
                     var foundAvatarPath = Utils.RelativePath(null, activeAvatarObject);
                     activeAvatar = BuildReport.CurrentReport.avatars
-                            .FirstOrDefault(av => av.objectRef.path == foundAvatarPath);
+                        .FirstOrDefault(av => av.objectRef.path == foundAvatarPath);
                 }
 
-                if (activeAvatar == null)
+                if (activeAvatarObject != null && activeAvatar == null)
                 {
                     activeAvatar = new AvatarReport();
                     activeAvatar.objectRef = new ObjectRef(activeAvatarObject);
                 }
             }
 
-            var header = new HeaderBox(activeAvatar);
-            root.Add(header);
+            return (activeAvatar, activeAvatarObject);
+        }
 
+        private void UpdateErrorList(VisualElement box, [NotNull] AvatarReport activeAvatar)
+        {
+            var activeAvatarObject = activeAvatar == _header.DefaultValue ? _defaultAvatarObject : null;
+            var lookupCache = new ObjectRefLookupCache();
+            var avBox = new Box();
+            avBox.AddToClassList("avatarBox");
 
-            if (activeAvatar != null)
+            var errorLogs = activeAvatar.logs.ToList();
+
+            if (activeAvatarObject != null)
             {
-                var box = new ScrollView();
-                var lookupCache = new ObjectRefLookupCache();
-                reported++;
-                var avBox = new Box();
-                avBox.AddToClassList("avatarBox");
+                errorLogs.RemoveAll(l => l.reportLevel == ReportLevel.Validation);
 
-                List<ErrorLog> errorLogs = activeAvatar.logs
-                    .Where(l => activeAvatarObject == null || l.reportLevel != ReportLevel.Validation).ToList();
+                activeAvatar.logs = errorLogs;
 
-                if (activeAvatarObject != null)
-                {
-                    activeAvatar.logs = errorLogs;
+                activeAvatar.logs.AddRange(ComponentValidation.ValidateAll(activeAvatarObject));
+            }
 
-                    activeAvatar.logs.AddRange(ComponentValidation.ValidateAll(activeAvatarObject));
-                }
+            activeAvatar.logs.Sort((a, b) => a.reportLevel.CompareTo(b.reportLevel));
 
+            if (activeAvatar.logs.Count == 0)
+            {
+                avBox.Add(new Label("Nothing to report!"));
+            }
+            else
+            {
                 foreach (var ev in activeAvatar.logs)
                 {
                     avBox.Add(new ErrorElement(ev, lookupCache));
@@ -144,22 +162,17 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
                     avBox.Add(new ErrorElement(ev, lookupCache));
                     avBox.Add(new ErrorElement(ev, lookupCache));
                 }
-
-                activeAvatar.logs.Sort((a, b) => a.reportLevel.CompareTo(b.reportLevel));
-
-                box.Add(avBox);
-                root.Add(box);
             }
 
-            /*
-            if (reported == 0)
-            {
-                var container = new Box();
-                container.name = "no-errors";
-                container.Add(new Label("Nothing to report!"));
-                root.Add(container);
-            }
-            */
+            box.Clear();
+            box.Add(avBox);
+        }
+
+        private void RenderContent()
+        {
+            var (activeAvatar, activeAvatarObject) = GetDefaultAvatar();
+            _defaultAvatarObject = activeAvatarObject;
+            _header.DefaultValue = activeAvatar;
         }
     }
 
@@ -179,6 +192,8 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
             }
         }
 
+        [CanBeNull] public AvatarReport Value => _field?.value;
+
         public event Action<AvatarReport> SelectionChanged;
 
         public HeaderBox(AvatarReport defaultValue)
@@ -190,7 +205,7 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
 
         public void UpdateList()
         {
-            var list = BuildReport.CurrentReport.avatars;
+            var list = BuildReport.CurrentReport.avatars.ToList();
             if (DefaultValue != null && !list.Contains(DefaultValue))
                 list.Add(DefaultValue);
             list.Reverse();
@@ -203,6 +218,7 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
             }
             else
             {
+                AvatarReport oldValue = _field?.value;
                 AvatarReport value;
                 if (_field != null && list.Contains(_field.value))
                     value = _field.value;
@@ -220,7 +236,10 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
                 Clear();
                 Add(new Label("Error report for "));
                 Add(_field);
+
+                if (oldValue != value) SelectionChanged?.Invoke(value);
             }
+            MarkDirtyRepaint();
         }
     }
 }
