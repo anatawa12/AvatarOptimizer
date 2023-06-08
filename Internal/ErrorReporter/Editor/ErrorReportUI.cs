@@ -53,14 +53,11 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
             //Localization.OnLangChange -= RenderContent;
         }
 
-        private readonly int RefreshDelayTime = 500;
+        private const int RefreshDelayTime = 500;
         private Stopwatch DelayTimer = new Stopwatch();
-        private bool RenderPending = false;
 
         private void ScheduleRender()
         {
-            if (RenderPending) return;
-            RenderPending = true;
             DelayTimer.Restart();
             EditorApplication.delayCall += StartRenderTimer;
         }
@@ -76,7 +73,6 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
                 }
             }
 
-            RenderPending = false;
             RenderContent();
             Repaint();
         }
