@@ -84,25 +84,18 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
 
         private string GetLabelText()
         {
-            var objArray = new object[log.substitutions.Length];
-            for (int i = 0; i < log.substitutions.Length; i++)
-            {
-                objArray[i] = log.substitutions[i];
-            }
-
             try
             {
                 var assembly = log.MessageAssembly;
-                if (assembly == null)
-                    return string.Format(log.messageCode, objArray);
-                return string.Format(CL4EE.GetLocalization(assembly)?.Tr(log.messageCode) ?? log.messageCode,
-                    objArray);
+                var localization = assembly != null ? CL4EE.GetLocalization(assembly) : null;
+                var formatKey = localization != null ? localization.Tr(log.messageCode) : log.messageCode;
+                return string.Format(formatKey, log.substitutions.ToArray<object>());
             }
             catch (FormatException e)
             {
                 Debug.LogError("Error formatting message code: " + log.messageCode);
                 Debug.LogException(e);
-                return log.messageCode + "\n" + string.Join("\n", objArray);
+                return log.messageCode + "\n" + string.Join("\n", log.substitutions);
             }
         }
     }
