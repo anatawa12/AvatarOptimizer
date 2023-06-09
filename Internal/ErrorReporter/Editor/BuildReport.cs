@@ -64,7 +64,7 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
                 var data = File.ReadAllText(Path);
                 return JsonUtility.FromJson<BuildReport>(data);
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return null;
             }
