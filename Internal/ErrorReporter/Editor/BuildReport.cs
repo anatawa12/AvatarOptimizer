@@ -77,7 +77,7 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
 
             File.WriteAllText(Path, json);
 
-            ErrorReportUI.reloadErrorReport();
+            ErrorReportUI.ReloadErrorReport();
         }
 
         private class AvatarReportScope : IDisposable
@@ -235,7 +235,7 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
                 }
             }
 
-            ErrorReportUI.reloadErrorReport();
+            ErrorReportUI.ReloadErrorReport();
         }
     }
 }
