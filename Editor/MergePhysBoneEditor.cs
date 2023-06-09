@@ -500,7 +500,7 @@ namespace Anatawa12.AvatarOptimizer
         {
             var list = new List<ErrorLog>();
             if (mergePhysBone.makeParent && mergePhysBone.transform.childCount != 0)
-                list.Add(ErrorLog.Validation("MergePhysBone:error:makeParentWithChildren", mergePhysBone));
+                list.Add(ErrorLog.Validation("MergePhysBone:error:makeParentWithChildren").WithContext(mergePhysBone));
 
             new MergePhysBoneValidator(list, mergePhysBone).DoProcess();
 
@@ -525,7 +525,7 @@ namespace Anatawa12.AvatarOptimizer
             if (_differProps.Count != 0)
             {
                 _errorLogs.Add(ErrorLog.Validation("MergePhysBone:error:differValues",
-                    new[] { string.Join(", ", _differProps) }));
+                    string.Join(", ", _differProps)));
             }
         }
 
