@@ -215,7 +215,7 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
             stacktrace = e.ToString() + additionalStackTrace;
         }
 
-        public string ToString()
+        public override string ToString()
         {
             return "[" + reportLevel + "] " + messageCode + " " + "subst: " + string.Join(", ", substitutions);
         }
