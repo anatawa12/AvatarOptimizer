@@ -95,7 +95,7 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
                 var assembly = log.MessageAssembly;
                 if (assembly == null)
                     return string.Format(log.messageCode, objArray);
-                return string.Format(CL4EE.GetLocalization(log.messageAssembly)?.Tr(log.messageCode) ?? log.messageCode,
+                return string.Format(CL4EE.GetLocalization(assembly)?.Tr(log.messageCode) ?? log.messageCode,
                     objArray);
             }
             catch (FormatException e)

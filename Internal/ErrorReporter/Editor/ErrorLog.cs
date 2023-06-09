@@ -147,26 +147,26 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
     }
 
     [Serializable]
-    public partial class ErrorLog
+    public class ErrorLog
     {
         [SerializeField] internal List<ObjectRef> referencedObjects;
         [SerializeField] internal ReportLevel reportLevel;
-        internal Assembly messageAssembly;
         [SerializeField] internal string messageAssemblyName;
         [SerializeField] internal string messageCode;
         [SerializeField] internal string[] substitutions;
         [SerializeField] internal string stacktrace;
 
+        [CanBeNull] private Assembly _messageAssembly;
         [CanBeNull]
         internal Assembly MessageAssembly
         {
             get
             {
-                if (messageAssembly == null)
+                if (_messageAssembly == null)
                 {
                     try
                     {
-                        messageAssembly = Assembly.Load(messageAssemblyName);
+                        _messageAssembly = Assembly.Load(messageAssemblyName);
                     }
                     catch
                     {
@@ -174,15 +174,15 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
                     }
                 }
 
-                return messageAssembly;
+                return _messageAssembly;
             }
         }
 
         public ErrorLog(ReportLevel level, string code, string[] strings, Assembly callerAssembly)
         {
             reportLevel = level;
-            messageAssembly = callerAssembly;
-            messageAssemblyName = messageAssembly.GetName().Name;
+            _messageAssembly = callerAssembly;
+            messageAssemblyName = _messageAssembly.GetName().Name;
 
             substitutions = strings.Select(s => $"{s}").ToArray();
 
