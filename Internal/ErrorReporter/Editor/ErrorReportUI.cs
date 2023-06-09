@@ -12,7 +12,8 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
 {
     internal class ErrorReportUI : EditorWindow
     {
-        internal static Action reloadErrorReport = () => { };
+        internal static void ReloadErrorReport() => ReloadErrorReportEvent?.Invoke();
+        private static event Action ReloadErrorReportEvent;
 
         [MenuItem("Tools/Avatar Optimizer/Show error report", false, 100)]
         public static void OpenErrorReportUI()
@@ -41,7 +42,7 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
 
             rootVisualElement.styleSheets.Add(Resources.Load<StyleSheet>("com.anatawa12.avatar-optimizer.error-report"));
 
-            reloadErrorReport = RenderContent;
+            ReloadErrorReportEvent += RenderContent;
 
             Selection.selectionChanged += ScheduleRender;
             EditorApplication.hierarchyChanged += ScheduleRender;
@@ -51,7 +52,7 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
 
         private void OnDisable()
         {
-            reloadErrorReport = () => { };
+            ReloadErrorReportEvent -= RenderContent;
             Selection.selectionChanged -= ScheduleRender;
             EditorApplication.hierarchyChanged -= ScheduleRender;
             ErrorReporterRuntime.OnChangeAction -= ScheduleRender;
