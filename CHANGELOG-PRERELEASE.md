@@ -10,7 +10,6 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
-- Improve ErrorReport window on build error `#216`
 
 ### Deprecated
 
@@ -19,6 +18,10 @@ The format is based on [Keep a Changelog].
 ### Fixed
 
 ### Security
+
+## [0.4.6] - 2023-06-10
+### Changed
+- Improve ErrorReport window on build error [`#216`](https://github.com/anatawa12/AvatarOptimizer/pull/216)
 
 ## [0.4.5] - 2023-06-06
 ### Fixed
@@ -397,7 +400,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.5...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.6...HEAD
+[0.4.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.5...v0.4.6
 [0.4.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.5-beta.1...v0.4.5
 [0.4.5-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.4...v0.4.5-beta.1
 [0.4.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.4-rc.1...v0.4.4
