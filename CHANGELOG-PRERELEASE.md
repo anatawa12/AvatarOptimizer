@@ -27,6 +27,16 @@ The format is based on [Keep a Changelog].
 ### Fixed
 - Error in MergeSkinnedMeshProcessor with RecordMoveProperty [`#214`](https://github.com/anatawa12/AvatarOptimizer/pull/214)
 
+## [1.0.0-beta.1] - 2023-06-05
+**If you're using v0.3.x or older, Please upgrade to v0.4.x before upgrading v1.x.x!**
+
+**もし v0.3.x 以前を使用しているのであれば, v1.x.xに更新する前に v0.4.x に更新してください!**
+
+### Removed
+- Save format migration system [`#199`](https://github.com/anatawa12/AvatarOptimizer/pull/199)
+  - We no longer see save data in format of v0.3.x or older.
+  - Please migrate to v0.4.x format before installing v1.0.0.
+
 ## [0.4.5-beta.1] - 2023-06-05
 ## [0.4.4] - 2023-06-04
 ## [0.4.4-rc.1] - 2023-06-04
@@ -400,7 +410,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.6...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.0.0-beta.1...HEAD
+[1.0.0-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.6...v1.0.0-beta.1
 [0.4.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.5...v0.4.6
 [0.4.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.5-beta.1...v0.4.5
 [0.4.5-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.4...v0.4.5-beta.1
