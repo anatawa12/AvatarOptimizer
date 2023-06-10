@@ -4,7 +4,7 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
 {
     public static class ErrorReporterRuntime
     {
-        public static event Action OnChangeAction;
+        internal static event Action OnChangeAction;
 
         public static void TriggerChange()
         {

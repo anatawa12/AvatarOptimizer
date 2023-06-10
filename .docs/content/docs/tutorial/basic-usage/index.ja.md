@@ -25,25 +25,25 @@ SkinnedMeshを結合するとメッシュを変形させる処理の回数が減
 
 まず初めにマージ先のGameObjectを作りましょう。
 アバターのGameObjectを右クリックから `Create Empty` をクリックして新たなGameObjectを作ります。
-そしたらわかりやすい名前に変えておいてください。この記事では`MergedMesh`とします
+そしたらわかりやすい名前に変えておいてください。この記事では`Anon_Merged`とします
 
 ![create-empty.png](./create-empty.png)
 
-そしたら`Merged Mesh`に`Merge Skinned Mesh`を追加しましょう。
+そしたら`Anon_Merged`に`Merge Skinned Mesh`を追加しましょう。
 
 ![add-merge-skinned-mesh.png](./add-merge-skinned-mesh.png)
 
 すると`Merge Skinned Mesh`と`Skinned Mesh Renderer`が追加されます。
 
-この`Merge Skinned Mesh`コンポーネントは、指定された`Skinned Mesh Renderer`を一緒についている`Skinned Mesh Renderer`にマージするコンポーネントです。
-マージを機能させるために`Merge Skinned Mesh`にマージする`Skinned Mesh Renderer`を指定しましょう！
+この`Merge Skinned Mesh`は、指定されたメッシュ[^mesh]を一緒についているメッシュにマージします。
+マージを機能させるために`Merge Skinned Mesh`にマージするメッシュを指定しましょう！
 
-指定を楽にするために、`MergedMesh`を選択した状態でinspectorをロックしましょう。
-こうすることで複数のS`Skinned Mesh Renderer`をまとめてドラックアンドドロップできるようになります。[^tip-lock-inspector]
+指定を楽にするために、`Anon_Merged`を選択した状態でinspectorをロックしましょう。
+こうすることで複数のメッシュをまとめてドラックアンドドロップできるようになります。[^tip-lock-inspector]
 
 ![lock-inspector.png](./lock-inspector.png)
 
-それではHierarchyで顔のメッシュであるBody以外の`Skinned Mesh Renderer`を選択してドラックアンドドロップでSkinned Renderersに指定しましょう！
+それではHierarchyで顔のメッシュであるBody以外のメッシュを選択してドラックアンドドロップでSkinned Renderersに指定しましょう！
 
 ![drag-and-drop.png](./drag-and-drop.png)
 
@@ -51,12 +51,12 @@ SkinnedMeshを結合するとメッシュを変形させる処理の回数が減
 
 **なせ顔のメッシュを結合しないの？**
 
-BlendShapeは頂点数とBlendShape数の積に比例して重くなる処理です。
+BlendShape(シェイプキー)[^blend-shape]は頂点数とBlendShape数の積に比例して重くなる処理です。
 そのため、BlendShapeの数が多い顔のメッシュを頂点数の多い体のメッシュと結合するとかえって重くなってしまうため、顔は別のままにするのを推奨しています
 
 {{< /hint >}}
 
-続いて、`MergedMesh`の`Skinned Mesh Renderer`の設定をしましょう！
+続いて、`Anon_Merged`の設定をしましょう！
 
 `Merge Skinned Mesh`は諸事情[^merge-skinned-mesh]によりボーン、メッシュ、マテリアル以外の設定を自動的には行いません。
 そのため、Bounds, Root Bone, Anchor Override等を手動で設定してください。
@@ -64,11 +64,12 @@ Anchor Overrideは素体のを、Root BoneはHipsを指定するとうまくい�
 
 [^tip-lock-inspector]: PhysBoneに複数のコライダーを指定するのにも使えたり、色んなところで使えるので覚えておくと便利だと思います。
 [^merge-skinned-mesh]: Boundsは大きな箱にすることで今後対応予定、Root Bone/Anchor Overrideは等しくないとマージできないため対応予定がないです。もし良いアルゴリズムを教えてください。
+[^mesh]: この記事ではメッシュはUnityのMesh assetではなくSkinnedMeshRendererの意味で使用しています。
 
 BlendShapeを固定する {#freeze-blendshape}
 ---
 
-また、Avatar Optimizerを使用すると簡単にBlendShapeを固定することができます！
+また、Avatar Optimizerを使用すると簡単にBlendShape(シェイプキー)[^blend-shape]を固定することができます！
 
 {{< hint info >}}
 
@@ -83,11 +84,11 @@ BlendShapeを固定する {#freeze-blendshape}
 
 それでは使わない素体や服のの体型変更用のBlendShapeを結合してみましょう！
 
-頂点数が増えたメッシュである先程の`MergedMesh`に`Freeze BlendShapes`を追加しましょう！
+頂点数が増えたメッシュである先程の`Anon_Merged`に`Freeze BlendShapes`を追加しましょう！
 
 ![add-freeze-blendshape.png](add-freeze-blendshape.png)
 
-`Freeze BlendShape`は一緒についている`Skinned Mesh Renderer`のBlendShapeを固定するコンポーネントです。
+`Freeze BlendShape`は一緒についているメッシュのBlendShapeを固定します。
 
 マージを機能させるために固定するBlendShapeを指定しましょう！
 チェックボックスにチェックするとそのBlendShapeは固定されます。
@@ -95,3 +96,5 @@ BlendShapeを固定する {#freeze-blendshape}
 ![freeze-blendshape.png](freeze-blendshape.png)
 
 これでBlendShapeの固定の設定は終わりです！
+
+[^blend-shape]: BlendShapeはUnity上のシェイプキーの名前です。UnityやMayaではBlend Shape、BlenderではShape Key、MetasequoiaやMMDではモーフと呼ばれます。

@@ -1,9 +1,10 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 using UnityEditor;
+using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -11,12 +12,20 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
 {
     internal class ErrorReportUI : EditorWindow
     {
-        internal static Action reloadErrorReport = () => { };
+        internal static void ReloadErrorReport() => ReloadErrorReportEvent?.Invoke();
+        private static event Action ReloadErrorReportEvent;
 
         [MenuItem("Tools/Avatar Optimizer/Show error report", false, 100)]
         public static void OpenErrorReportUI()
         {
             GetWindow<ErrorReportUI>().Show();
+        }
+
+        public static void OpenErrorReportUIFor(AvatarReport avatar)
+        {
+            var window = GetWindow<ErrorReportUI>();
+            window.Show();
+            window._header.Value = avatar;
         }
 
         public static void MaybeOpenErrorReportUI()
@@ -27,20 +36,13 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
             }
         }
 
-        private Vector2 _avatarScrollPos, _errorScrollPos;
-        private int _selectedAvatar = -1;
-        private List<Button> _avatarButtons = new List<Button>();
-
-        private Box selectAvatar;
-
         private void OnEnable()
         {
             titleContent = new GUIContent("Error Report");
 
             rootVisualElement.styleSheets.Add(Resources.Load<StyleSheet>("com.anatawa12.avatar-optimizer.error-report"));
-            RenderContent();
 
-            reloadErrorReport = RenderContent;
+            ReloadErrorReportEvent += RenderContent;
 
             Selection.selectionChanged += ScheduleRender;
             EditorApplication.hierarchyChanged += ScheduleRender;
@@ -50,60 +52,72 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
 
         private void OnDisable()
         {
-            reloadErrorReport = () => { };
+            ReloadErrorReportEvent -= RenderContent;
             Selection.selectionChanged -= ScheduleRender;
             EditorApplication.hierarchyChanged -= ScheduleRender;
             ErrorReporterRuntime.OnChangeAction -= ScheduleRender;
             //Localization.OnLangChange -= RenderContent;
         }
 
-        private readonly int RefreshDelayTime = 500;
-        private Stopwatch DelayTimer = new Stopwatch();
-        private bool RenderPending = false;
+        private const int RefreshDelayTime = 500;
+        private Stopwatch _delayTimer;
+        private HeaderBox _header;
+        private GameObject _defaultAvatarObject;
 
         private void ScheduleRender()
         {
-            if (RenderPending) return;
-            RenderPending = true;
-            DelayTimer.Restart();
-            EditorApplication.delayCall += StartRenderTimer;
+            if (_delayTimer == null)
+            {
+                _delayTimer = Stopwatch.StartNew();
+                EditorApplication.delayCall += StartRenderTimer;
+            }
+            else
+            {
+                _delayTimer.Restart();
+            }
         }
 
         private async void StartRenderTimer()
         {
-            while (DelayTimer.ElapsedMilliseconds < RefreshDelayTime)
+            while (_delayTimer.ElapsedMilliseconds < RefreshDelayTime)
             {
-                long remaining = RefreshDelayTime - DelayTimer.ElapsedMilliseconds;
+                long remaining = RefreshDelayTime - _delayTimer.ElapsedMilliseconds;
                 if (remaining > 0)
                 {
                     await Task.Delay((int) remaining);
                 }
             }
 
-            RenderPending = false;
+            _delayTimer = null;
             RenderContent();
             Repaint();
         }
 
-        private void RenderContent()
+        private void CreateGUI()
         {
-            rootVisualElement.Clear();
-
             var root = new Box();
             root.Clear();
             root.name = "Root";
             rootVisualElement.Add(root);
 
-            //root.Add(CreateLogo());
+            var (activeAvatar, activeAvatarObject) = GetDefaultAvatar();
+            _defaultAvatarObject = activeAvatarObject;
+
+            _header = new HeaderBox(activeAvatar);
+            root.Add(_header);
 
             var box = new ScrollView();
-            var lookupCache = new ObjectRefLookupCache();
+            root.Add(box);
+            if (_header.Value != null)
+                UpdateErrorList(box, _header.Value);
+            _header.SelectionChanged += x => UpdateErrorList(box, x);
+        }
 
-            int reported = 0;
-
+        private (AvatarReport activeAvatar, GameObject activeAvatarObject) GetDefaultAvatar()
+        {
             AvatarReport activeAvatar = null;
-
             GameObject activeAvatarObject = null;
+
             if (Selection.gameObjects.Length == 1)
             {
                 activeAvatarObject = Utils.FindAvatarInParents(Selection.activeGameObject.transform)?.gameObject;
@@ -111,198 +125,142 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
                 {
                     var foundAvatarPath = Utils.RelativePath(null, activeAvatarObject);
                     activeAvatar = BuildReport.CurrentReport.avatars
-                            .FirstOrDefault(av => av.objectRef.path == foundAvatarPath);
+                        .FirstOrDefault(av => av.objectRef.path == foundAvatarPath);
                 }
 
-                if (activeAvatar == null)
+                if (activeAvatarObject != null && activeAvatar == null)
                 {
                     activeAvatar = new AvatarReport();
                     activeAvatar.objectRef = new ObjectRef(activeAvatarObject);
                 }
             }
 
-            if (activeAvatar == null)
+            return (activeAvatar, activeAvatarObject);
+        }
+
+        private void UpdateErrorList(VisualElement box, [NotNull] AvatarReport activeAvatar)
+        {
+            var activeAvatarObject = activeAvatar == _header.DefaultValue ? _defaultAvatarObject : null;
+            var lookupCache = new ObjectRefLookupCache();
+            var avBox = new Box();
+            avBox.AddToClassList("avatarBox");
+
+            var errorLogs = activeAvatar.logs.ToList();
+
+            if (activeAvatarObject != null)
             {
-                activeAvatar = BuildReport.CurrentReport.avatars.LastOrDefault();
+                errorLogs.RemoveAll(l => l.reportLevel == ReportLevel.Validation);
+
+                activeAvatar.logs = errorLogs;
+
+                activeAvatar.logs.AddRange(ComponentValidation.ValidateAll(activeAvatarObject));
             }
 
-            if (activeAvatar != null)
-            {
-                reported++;
+            activeAvatar.logs.Sort((a, b) => a.reportLevel.CompareTo(b.reportLevel));
 
-                var avBox = new Box();
-                avBox.AddToClassList("avatarBox");
-
-                var header = new Box();
-                header.Add(new Label("Error report for " + activeAvatar.objectRef.name));
-                header.AddToClassList("avatarHeader");
-                avBox.Add(header);
-
-                List<ErrorLog> errorLogs = activeAvatar.logs
-                    .Where(l => activeAvatarObject == null || l.reportLevel != ReportLevel.Validation).ToList();
-
-                if (activeAvatarObject != null)
-                {
-                    activeAvatar.logs = errorLogs;
-
-                    activeAvatar.logs.AddRange(ComponentValidation.ValidateAll(activeAvatarObject));
-                }
-
-                foreach (var ev in activeAvatar.logs)
-                {
-                    avBox.Add(new ErrorElement(ev, lookupCache));
-                }
-
-                activeAvatar.logs.Sort((a, b) => a.reportLevel.CompareTo(b.reportLevel));
-
-                box.Add(avBox);
-                root.Add(box);
-            }
-
-            /*
-            if (reported == 0)
+            if (activeAvatar.logs.Count == 0)
             {
                 var container = new Box();
                 container.name = "no-errors";
                 container.Add(new Label("Nothing to report!"));
-                root.Add(container);
-            }
-            */
-        }
-
-        // private VisualElement CreateLogo()
-        // {
-        //     var img = new Image();
-        //     img.image = LogoDisplay.LOGO_ASSET;
-        //
-        //     // I've given up trying to get USS to resize proportionally for now :|
-        //     float height = 64;
-        //     img.style.height = new StyleLength(new Length(height, LengthUnit.Pixel));
-        //     img.style.width = new StyleLength(new Length(LogoDisplay.ImageWidth(height), LengthUnit.Pixel));
-        //
-        //     var box = new Box();
-        //     box.name = "logo";
-        //     box.Add(img);
-        //     return box;
-        // }
-
-        private VisualElement BuildErrorBox()
-        {
-            return new Box();
-        }
-
-        private VisualElement BuildSelectAvatarBox()
-        {
-            if (selectAvatar == null) selectAvatar = new Box();
-            selectAvatar.Clear();
-            _avatarButtons.Clear();
-
-            var avatars = BuildReport.CurrentReport.avatars;
-            for (int i = 0; i < avatars.Count; i++)
-            {
-                var btn = new Button(() => SelectAvatar(i));
-                btn.text = avatars[i].objectRef.name;
-                _avatarButtons.Add(btn);
-                selectAvatar.Add(btn);
-            }
-
-            SelectAvatar(_selectedAvatar);
-
-            return selectAvatar;
-        }
-
-        private void SelectAvatar(int idx)
-        {
-            _selectedAvatar = idx;
-
-            for (int i = 0; i < _avatarButtons.Count; i++)
-            {
-                if (_selectedAvatar == i)
-                {
-                    _avatarButtons[i].AddToClassList("selected");
-                }
-                else
-                {
-                    _avatarButtons[i].RemoveFromClassList("selected");
-                }
-            }
-        }
-
-        private void OnGUI___()
-        {
-            var report = BuildReport.CurrentReport;
-
-            AvatarReport selected = null;
-            EditorGUILayout.BeginVertical(GUILayout.MaxHeight(150), GUILayout.Width(position.width));
-            if (report.avatars.Count == 0)
-            {
-                GUILayout.Label("<no build messages>");
+                avBox.Add(container);
             }
             else
             {
-                _avatarScrollPos = EditorGUILayout.BeginScrollView(_avatarScrollPos, false, true);
-
-                for (int i = 0; i < report.avatars.Count; i++)
+                foreach (var ev in activeAvatar.logs)
                 {
-                    var avatarReport = report.avatars[i];
-
-                    EditorGUILayout.Space();
-                    if (GUILayout.Toggle(_selectedAvatar == i, avatarReport.objectRef.name, EditorStyles.toggle))
-                    {
-                        _selectedAvatar = i;
-                    }
-                }
-
-                EditorGUILayout.EndScrollView();
-            }
-
-            EditorGUILayout.EndVertical();
-
-            EditorGUILayout.Space();
-
-            var rect = EditorGUILayout.BeginVertical(GUILayout.Width(position.width));
-
-            _errorScrollPos = EditorGUILayout.BeginScrollView(_errorScrollPos, false, true);
-
-            EditorGUILayout.BeginVertical(
-                GUILayout.Width(rect.width
-                                - GUI.skin.scrollView.margin.horizontal
-                                - GUI.skin.scrollView.padding.horizontal),
-                GUILayout.ExpandWidth(false));
-
-            if (_selectedAvatar >= 0 && _selectedAvatar < BuildReport.CurrentReport.avatars.Count)
-            {
-                foreach (var logEntry in BuildReport.CurrentReport.avatars[_selectedAvatar].logs)
-                {
-                    imguiRenderLogEntry(logEntry);
+                    avBox.Add(new ErrorElement(ev, lookupCache));
                 }
             }
 
-            EditorGUILayout.EndVertical();
-
-            EditorGUILayout.EndScrollView();
-
-            EditorGUILayout.EndVertical();
+            box.Clear();
+            box.Add(avBox);
         }
 
-        private static void imguiRenderLogEntry(ErrorLog logEntry)
+        private void RenderContent()
         {
-            MessageType ty = MessageType.Error;
-            switch (logEntry.reportLevel)
-            {
-                case ReportLevel.InternalError:
-                case ReportLevel.Error:
-                    ty = MessageType.Error;
-                    break;
-                case ReportLevel.Warning:
-                    ty = MessageType.Warning;
-                    break;
-                case ReportLevel.Info:
-                    ty = MessageType.Info;
-                    break;
-            }
+            var (activeAvatar, activeAvatarObject) = GetDefaultAvatar();
+            _defaultAvatarObject = activeAvatarObject;
+            _header.DefaultValue = activeAvatar;
+        }
+    }
 
-            EditorGUILayout.HelpBox(logEntry.ToString(), ty);
+    class HeaderBox : Box
+    {
+        [CanBeNull] private PopupField<AvatarReport> _field;
+        [CanBeNull] private AvatarReport _defaultValue;
+
+        [CanBeNull]
+        public AvatarReport DefaultValue
+        {
+            get => _defaultValue;
+            set
+            {
+                var oldDefaultValue = _defaultValue;
+                _defaultValue = value;
+                UpdateList(oldDefaultValue: oldDefaultValue);
+            }
+        }
+
+        [CanBeNull] public AvatarReport Value
+        {
+            get => _field?.value;
+            set => UpdateList(value);
+        }
+
+        public event Action<AvatarReport> SelectionChanged;
+
+        public HeaderBox(AvatarReport defaultValue)
+        {
+            AddToClassList("avatarHeader");
+            _defaultValue = defaultValue;
+            UpdateList();
+        }
+
+        public void UpdateList(
+            AvatarReport setValue = null,
+            AvatarReport oldDefaultValue = null
+        )
+        {
+            var list = BuildReport.CurrentReport.avatars.ToList();
+            if (DefaultValue != null && !list.Contains(DefaultValue))
+                list.Add(DefaultValue);
+            list.Reverse();
+
+            if (list.Count == 0)
+            {
+                Clear();
+                Add(new Label("No avatars for Error Report"));
+                _field = null;
+            }
+            else
+            {
+                AvatarReport oldValue = _field?.value;
+                AvatarReport value;
+                if (setValue != null)
+                    value = setValue;
+                else if (DefaultValue != null && oldDefaultValue == _field?.value)
+                    value = DefaultValue;
+                else if (_field != null && list.Contains(_field.value))
+                    value = _field.value;
+                else if (DefaultValue != null)
+                    value = DefaultValue;
+                else
+                    value = list.First();
+
+                _field = new PopupField<AvatarReport>(list, value,
+                    x => x.objectRef.name,
+                    x => x.objectRef.name);
+
+                _field.RegisterValueChangedCallback(e => { SelectionChanged?.Invoke(e.newValue); });
+
+                Clear();
+                Add(new Label("Error report for "));
+                Add(_field);
+
+                if (oldValue != value) SelectionChanged?.Invoke(value);
+            }
+            MarkDirtyRepaint();
         }
     }
 }

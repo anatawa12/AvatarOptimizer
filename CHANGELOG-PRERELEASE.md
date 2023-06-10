@@ -7,7 +7,12 @@ The format is based on [Keep a Changelog].
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 
 ## [Unreleased]
+**If you're using v0.3.x or older, Please upgrade to v0.4.x before upgrading v1.x.x!**
+
+**もし v0.3.x 以前を使用しているのであれば, v1.x.xに更新する前に v0.4.x に更新してください!**
+
 ### Added
+- Merged changes in 0.4.5 and 0.4.6 `#218`
 
 ### Changed
 
@@ -19,6 +24,14 @@ The format is based on [Keep a Changelog].
 
 ### Security
 
+## [0.4.6] - 2023-06-10
+### Changed
+- Improve ErrorReport window on build error [`#216`](https://github.com/anatawa12/AvatarOptimizer/pull/216)
+
+## [0.4.5] - 2023-06-06
+### Fixed
+- Error in MergeSkinnedMeshProcessor with RecordMoveProperty [`#214`](https://github.com/anatawa12/AvatarOptimizer/pull/214)
+
 ## [1.0.0-beta.1] - 2023-06-05
 **If you're using v0.3.x or older, Please upgrade to v0.4.x before upgrading v1.x.x!**
 
@@ -29,6 +42,7 @@ The format is based on [Keep a Changelog].
   - We no longer see save data in format of v0.3.x or older.
   - Please migrate to v0.4.x format before installing v1.0.0.
 
+## [0.4.5-beta.1] - 2023-06-05
 ## [0.4.4] - 2023-06-04
 ## [0.4.4-rc.1] - 2023-06-04
 ### Changed
@@ -402,7 +416,10 @@ The format is based on [Keep a Changelog].
 - Clear Endpoint Position
 
 [Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.0.0-beta.1...HEAD
-[1.0.0-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.4...v1.0.0-beta.1
+[1.0.0-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.6...v1.0.0-beta.1
+[0.4.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.5...v0.4.6
+[0.4.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.5-beta.1...v0.4.5
+[0.4.5-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.4...v0.4.5-beta.1
 [0.4.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.4-rc.1...v0.4.4
 [0.4.4-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.3...v0.4.4-rc.1
 [0.4.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.2...v0.4.3

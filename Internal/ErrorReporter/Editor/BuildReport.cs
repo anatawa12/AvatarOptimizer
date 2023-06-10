@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
 using VRC.SDK3.Avatars.Components;
@@ -63,7 +64,7 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
                 var data = File.ReadAllText(Path);
                 return JsonUtility.FromJson<BuildReport>(data);
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return null;
             }
@@ -76,17 +77,21 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
 
             File.WriteAllText(Path, json);
 
-            ErrorReportUI.reloadErrorReport();
+            ErrorReportUI.ReloadErrorReport();
         }
 
         private class AvatarReportScope : IDisposable
         {
             public void Dispose()
             {
-                var successful = CurrentReport.CurrentAvatar.successful;
+                var avatar = CurrentReport.CurrentAvatar;
                 CurrentReport.CurrentAvatar = null;
+                var successful = avatar.successful;
                 BuildReport.SaveReport();
-                ErrorReportUI.MaybeOpenErrorReportUI();
+                if (avatar.logs.Any())
+                    ErrorReportUI.OpenErrorReportUIFor(avatar);
+                else
+                    ErrorReportUI.MaybeOpenErrorReportUI();
                 if (!successful) throw new Exception("Avatar processing failed");
             }
         }
@@ -121,24 +126,26 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
             return report;
         }
 
-        internal static void Log(ReportLevel level, string code, object[] strings, params Object[] objects)
+        [CanBeNull]
+        internal static ErrorLog Log(ReportLevel level, string code, object[] strings)
         {
-            ErrorLog errorLog =
-                new ErrorLog(level, code, strings: strings.Select(s => s.ToString()).ToArray(), objects);
+            var errorLog = new ErrorLog(level, code, strings: strings.Select(s => s.ToString()).ToArray());
 
             var avatarReport = CurrentReport.CurrentAvatar;
             if (avatarReport == null)
             {
                 Debug.LogWarning("Error logged when not processing an avatar: " + errorLog);
-                return;
+                return null;
             }
 
             avatarReport.logs.Add(errorLog);
+            return errorLog;
         }
 
-        internal static void LogFatal(string code, object[] strings, params Object[] objects)
+        [CanBeNull]
+        internal static ErrorLog LogFatal(string code, object[] strings)
         {
-            Log(ReportLevel.Error, code, strings: strings, objects: objects);
+            var log = Log(ReportLevel.Error, code, strings: strings);
             if (CurrentReport.CurrentAvatar != null)
             {
                 CurrentReport.CurrentAvatar.successful = false;
@@ -147,6 +154,7 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
             {
                 throw new Exception("Fatal error without error reporting scope");
             }
+            return log;
         }
 
         internal static void LogException(Exception e, string additionalStackTrace = "")
@@ -227,7 +235,7 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
                 }
             }
 
-            ErrorReportUI.reloadErrorReport();
+            ErrorReportUI.ReloadErrorReport();
         }
     }
 }

@@ -147,26 +147,26 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
     }
 
     [Serializable]
-    public partial class ErrorLog
+    public class ErrorLog
     {
         [SerializeField] internal List<ObjectRef> referencedObjects;
         [SerializeField] internal ReportLevel reportLevel;
-        internal Assembly messageAssembly;
         [SerializeField] internal string messageAssemblyName;
         [SerializeField] internal string messageCode;
         [SerializeField] internal string[] substitutions;
         [SerializeField] internal string stacktrace;
 
+        [CanBeNull] private Assembly _messageAssembly;
         [CanBeNull]
         internal Assembly MessageAssembly
         {
             get
             {
-                if (messageAssembly == null)
+                if (_messageAssembly == null)
                 {
                     try
                     {
-                        messageAssembly = Assembly.Load(messageAssemblyName);
+                        _messageAssembly = Assembly.Load(messageAssemblyName);
                     }
                     catch
                     {
@@ -174,50 +174,62 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
                     }
                 }
 
-                return messageAssembly;
+                return _messageAssembly;
             }
         }
 
-        public ErrorLog(ReportLevel level, string code, string[] strings, object[] args, Assembly callerAssembly)
+        public ErrorLog(ReportLevel level, string code, string[] strings, Assembly callerAssembly)
         {
             reportLevel = level;
-            messageAssembly = callerAssembly;
-            messageAssemblyName = messageAssembly.GetName().Name;
+            _messageAssembly = callerAssembly;
+            messageAssemblyName = _messageAssembly.GetName().Name;
 
             substitutions = strings.Select(s => $"{s}").ToArray();
 
-            referencedObjects = args.Where(o => o is Component || o is GameObject)
-                .Select(o => new ObjectRef(o is Component c ? c.gameObject : (GameObject) o))
-                .ToList();
-            referencedObjects.AddRange(BuildReport.CurrentReport.GetActiveReferences());
+            referencedObjects = BuildReport.CurrentReport.GetActiveReferences().ToList();
 
             messageCode = code;
             stacktrace = null;
         }
 
-        public ErrorLog(ReportLevel level, string code, string[] strings, params object[] args)
-            : this(level, code, strings, args, Assembly.GetCallingAssembly())
+        public ErrorLog(ReportLevel level, string code, string[] strings)
+            : this(level, code, strings, Assembly.GetCallingAssembly())
         {
         }
 
-        public ErrorLog(ReportLevel level, string code, params object[] args)
-            : this(level, code, Array.Empty<string>(), args, Assembly.GetCallingAssembly())
+        public ErrorLog WithContext(params object[] args)
         {
+            referencedObjects.InsertRange(0,
+                args.Where(o => o is Component || o is GameObject)
+                    .Select(o => new ObjectRef(o is Component c ? c.gameObject : (GameObject)o))
+                    .ToList());
+            return this;
         }
 
         internal ErrorLog(Exception e, string additionalStackTrace = "")
-            : this(ReportLevel.InternalError, 
-                "ErrorReporter:error.internal_error", 
-                new [] {e.Message, e.TargetSite?.Name}, 
-                Array.Empty<object>(),
+            : this(ReportLevel.InternalError,
+                "ErrorReporter:error.internal_error",
+                new[] { e.Message, e.TargetSite?.Name },
                 typeof(ErrorLog).Assembly)
         {
             stacktrace = e.ToString() + additionalStackTrace;
         }
 
-        public string ToString()
+        public override string ToString()
         {
             return "[" + reportLevel + "] " + messageCode + " " + "subst: " + string.Join(", ", substitutions);
         }
+
+        public static ErrorLog Validation(string code, params string[] strings)
+            => new ErrorLog(ReportLevel.Validation, code, strings, Assembly.GetCallingAssembly());
+
+        public static ErrorLog Info(string code, params string[] strings)
+            => new ErrorLog(ReportLevel.Info, code, strings, Assembly.GetCallingAssembly());
+
+        public static ErrorLog Warning(string code, params string[] strings)
+            => new ErrorLog(ReportLevel.Warning, code, strings, Assembly.GetCallingAssembly());
+
+        public static ErrorLog Error(string code, params string[] strings)
+            => new ErrorLog(ReportLevel.Error, code, strings, Assembly.GetCallingAssembly());
     }
 }
