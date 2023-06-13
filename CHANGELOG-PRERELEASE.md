@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - Dropping PhysBone to MergePhysBone is not working `#221`
+- First box will be size of zero `#223`
 
 ### Security
 
