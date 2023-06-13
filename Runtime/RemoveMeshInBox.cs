@@ -11,6 +11,11 @@ namespace Anatawa12.AvatarOptimizer
     {
         public BoundingBox[] boxes = Array.Empty<BoundingBox>();
 
+        private void Reset()
+        {
+            boxes = new[] { new BoundingBox() };
+        }
+
         [Serializable]
         public class BoundingBox
         {

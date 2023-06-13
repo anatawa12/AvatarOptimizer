@@ -26,6 +26,11 @@ The format is based on [Keep a Changelog].
 
 ### Security
 
+## [0.4.7] - 2023-06-13
+### Fixed
+- Dropping PhysBone to MergePhysBone is not working [`#221`](https://github.com/anatawa12/AvatarOptimizer/pull/221)
+- First box will be size of zero [`#223`](https://github.com/anatawa12/AvatarOptimizer/pull/223)
+
 ## [0.4.6] - 2023-06-10
 ### Changed
 - Improve ErrorReport window on build error [`#216`](https://github.com/anatawa12/AvatarOptimizer/pull/216)
@@ -323,7 +328,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.6...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.7...HEAD
+[0.4.7]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.6...v0.4.7
 [0.4.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.5...v0.4.6
 [0.4.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.4...v0.4.5
 [0.4.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.3...v0.4.4
