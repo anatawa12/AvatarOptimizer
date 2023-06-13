@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Dropping PhysBone to MergePhysBone is not working `#221`
 
 ### Security
 
