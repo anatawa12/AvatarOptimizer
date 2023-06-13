@@ -32,6 +32,8 @@ namespace Anatawa12.AvatarOptimizer
 
             EditorGUILayout.PropertyField(_componentsSetProp);
 
+            serializedObject.ApplyModifiedProperties();
+
             // draw custom editor
             _renderer.DoProcess();
 
