@@ -6,8 +6,6 @@ namespace Anatawa12.AvatarOptimizer
 {
     abstract class AvatarTagComponentEditorBase : Editor
     {
-        private readonly SaveVersionDrawer _saveVersion = new SaveVersionDrawer();
-
         public sealed override void OnInspectorGUI()
         {
             CL4EE.DrawLanguagePicker();
@@ -15,8 +13,6 @@ namespace Anatawa12.AvatarOptimizer
             var description = Description;
             if (!string.IsNullOrEmpty(description))
                 EditorGUILayout.HelpBox(description, MessageType.None);
-
-            _saveVersion.Draw(serializedObject);
 
             OnInspectorGUIInner();
         }

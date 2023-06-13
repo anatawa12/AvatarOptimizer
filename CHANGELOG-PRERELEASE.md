@@ -24,6 +24,14 @@ The format is based on [Keep a Changelog].
 - Dropping PhysBone to MergePhysBone is not working [`#221`](https://github.com/anatawa12/AvatarOptimizer/pull/221)
 - First box will be size of zero [`#223`](https://github.com/anatawa12/AvatarOptimizer/pull/223)
 
+## [1.0.0-beta.2] - 2023-06-10
+**If you're using v0.3.x or older, Please upgrade to v0.4.x before upgrading v1.x.x!**
+
+**もし v0.3.x 以前を使用しているのであれば, v1.x.xに更新する前に v0.4.x に更新してください!**
+
+### Added
+- Merged changes in 0.4.5 and 0.4.6 [`#218`](https://github.com/anatawa12/AvatarOptimizer/pull/218)
+
 ## [0.4.6] - 2023-06-10
 ### Changed
 - Improve ErrorReport window on build error [`#216`](https://github.com/anatawa12/AvatarOptimizer/pull/216)
@@ -31,6 +39,16 @@ The format is based on [Keep a Changelog].
 ## [0.4.5] - 2023-06-06
 ### Fixed
 - Error in MergeSkinnedMeshProcessor with RecordMoveProperty [`#214`](https://github.com/anatawa12/AvatarOptimizer/pull/214)
+
+## [1.0.0-beta.1] - 2023-06-05
+**If you're using v0.3.x or older, Please upgrade to v0.4.x before upgrading v1.x.x!**
+
+**もし v0.3.x 以前を使用しているのであれば, v1.x.xに更新する前に v0.4.x に更新してください!**
+
+### Removed
+- Save format migration system [`#199`](https://github.com/anatawa12/AvatarOptimizer/pull/199)
+  - We no longer see save data in format of v0.3.x or older.
+  - Please migrate to v0.4.x format before installing v1.0.0.
 
 ## [0.4.5-beta.1] - 2023-06-05
 ## [0.4.4] - 2023-06-04
@@ -406,7 +424,9 @@ The format is based on [Keep a Changelog].
 - Clear Endpoint Position
 
 [Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.7...HEAD
-[0.4.7]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.6...v0.4.7
+[0.4.7]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.0.0-beta.2...v0.4.7
+[1.0.0-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.0.0-beta.1...v1.0.0-beta.2
+[1.0.0-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.6...v1.0.0-beta.1
 [0.4.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.5...v0.4.6
 [0.4.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.5-beta.1...v0.4.5
 [0.4.5-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.4...v0.4.5-beta.1
