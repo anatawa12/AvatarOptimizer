@@ -7,12 +7,7 @@ The format is based on [Keep a Changelog].
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 
 ## [Unreleased]
-**If you're using v0.3.x or older, Please upgrade to v0.4.x before upgrading v1.x.x!**
-
-**もし v0.3.x 以前を使用しているのであれば, v1.x.xに更新する前に v0.4.x に更新してください!**
-
 ### Added
-- Merged changes in 0.4.7 [`#224`](https://github.com/anatawa12/AvatarOptimizer/pull/224)
 
 ### Changed
 
@@ -23,6 +18,14 @@ The format is based on [Keep a Changelog].
 ### Fixed
 
 ### Security
+
+## [1.0.0-beta.3] - 2023-06-13
+**If you're using v0.3.x or older, Please upgrade to v0.4.x before upgrading v1.x.x!**
+
+**もし v0.3.x 以前を使用しているのであれば, v1.x.xに更新する前に v0.4.x に更新してください!**
+
+### Added
+- Merged changes in 0.4.7 [`#224`](https://github.com/anatawa12/AvatarOptimizer/pull/224)
 
 ## [0.4.7] - 2023-06-13
 ### Fixed
@@ -428,7 +431,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.7...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.0.0-beta.3...HEAD
+[1.0.0-beta.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.7...v1.0.0-beta.3
 [0.4.7]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.0.0-beta.2...v0.4.7
 [1.0.0-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.0.0-beta.1...v1.0.0-beta.2
 [1.0.0-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.6...v1.0.0-beta.1
