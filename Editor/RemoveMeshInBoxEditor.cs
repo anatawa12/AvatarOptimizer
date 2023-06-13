@@ -24,8 +24,18 @@ namespace Anatawa12.AvatarOptimizer
         {
             // size prop
             _boxes.isExpanded = true;
+            var sizeOld = _boxes.arraySize;
             using (new BoundingBoxEditor.EditorScope(this))
                 EditorGUILayout.PropertyField(_boxes);
+            // UnityEditor will set box size to zero for first box.
+            // However, it's not good so If I found zero box, so resize to (1, 1, 1)
+            for (var i = sizeOld; i < _boxes.arraySize; i++)
+            {
+                var property = _boxes.FindPropertyRelative(
+                    $"Array.data[{i}].{nameof(RemoveMeshInBox.BoundingBox.size)}");
+                if (property.vector3Value == Vector3.zero)
+                    property.vector3Value = Vector3.one;
+            }
 
             serializedObject.ApplyModifiedProperties();
         }
