@@ -32,6 +32,10 @@ namespace Anatawa12.AvatarOptimizer
 
             EditorGUILayout.PropertyField(_componentsSetProp);
 
+            // on DragPerform, in DoProcess, new HelpBox invocation throws ExitGUIException
+            // so I ApplyModifiedProperties here.
+            serializedObject.ApplyModifiedProperties();
+
             // draw custom editor
             _renderer.DoProcess();
 
