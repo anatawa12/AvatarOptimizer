@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- NullReferenceException if window is in background `#226`
 
 ### Security
 
