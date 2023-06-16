@@ -23,6 +23,7 @@ The format is based on [Keep a Changelog].
   - Please migrate to v0.4.x format before installing v1.0.0.
 
 ### Fixed
+- NullReferenceException if window is in background `#226`
 
 ### Security
 
