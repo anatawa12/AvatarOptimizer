@@ -7,6 +7,7 @@ using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Debug = System.Diagnostics.Debug;
 
 namespace Anatawa12.AvatarOptimizer.ErrorReporting
 {
@@ -25,7 +26,8 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
         {
             var window = GetWindow<ErrorReportUI>();
             window.Show();
-            window._header.Value = avatar;
+            if (window._header != null)
+                window._header.Value = avatar;
         }
 
         public static void MaybeOpenErrorReportUI()
@@ -60,9 +62,9 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
         }
 
         private const int RefreshDelayTime = 500;
-        private Stopwatch _delayTimer;
-        private HeaderBox _header;
-        private GameObject _defaultAvatarObject;
+        [CanBeNull] private Stopwatch _delayTimer;
+        [CanBeNull] private HeaderBox _header;
+        [CanBeNull] private GameObject _defaultAvatarObject;
 
         private void ScheduleRender()
         {
@@ -79,6 +81,7 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
 
         private async void StartRenderTimer()
         {
+            Debug.Assert(_delayTimer != null, nameof(_delayTimer) + " != null");
             while (_delayTimer.ElapsedMilliseconds < RefreshDelayTime)
             {
                 long remaining = RefreshDelayTime - _delayTimer.ElapsedMilliseconds;
@@ -140,6 +143,7 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
 
         private void UpdateErrorList(VisualElement box, [NotNull] AvatarReport activeAvatar)
         {
+            Debug.Assert(_header != null, nameof(_header) + " != null");
             var activeAvatarObject = activeAvatar == _header.DefaultValue ? _defaultAvatarObject : null;
             var lookupCache = new ObjectRefLookupCache();
             var avBox = new Box();
@@ -181,7 +185,8 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
         {
             var (activeAvatar, activeAvatarObject) = GetDefaultAvatar();
             _defaultAvatarObject = activeAvatarObject;
-            _header.DefaultValue = activeAvatar;
+            if (_header != null)
+                _header.DefaultValue = activeAvatar;
         }
     }
 
