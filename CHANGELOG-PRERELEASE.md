@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- PrefabSafesSet's prefab modifications on latest layer are invisible on inspector `#229`
 
 ### Security
 

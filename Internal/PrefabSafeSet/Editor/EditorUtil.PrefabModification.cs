@@ -110,7 +110,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 
                 _prefabLayers = _rootProperty.FindPropertyRelative(Names.PrefabLayers);
 
-                for (var i = 0; i < _prefabLayers.arraySize - 1; i++)
+                for (var i = 0; i < _nestCount - 1 && i < _prefabLayers.arraySize; i++)
                 {
                     var layer = _prefabLayers.GetArrayElementAtIndex(i);
                     var removes = layer.FindPropertyRelative(Names.Removes);
