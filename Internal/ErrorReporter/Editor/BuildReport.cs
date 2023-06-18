@@ -127,9 +127,11 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
         }
 
         [CanBeNull]
-        internal static ErrorLog Log(ReportLevel level, string code, object[] strings)
+        internal static ErrorLog Log(ReportLevel level, string code, params string[] strings)
         {
-            var errorLog = new ErrorLog(level, code, strings: strings.Select(s => s.ToString()).ToArray());
+            for (var i = 0; i < strings.Length; i++)
+                strings[i] = strings[i] ?? "";
+            var errorLog = new ErrorLog(level, code, strings);
 
             var avatarReport = CurrentReport.CurrentAvatar;
             if (avatarReport == null)
@@ -143,7 +145,7 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
         }
 
         [CanBeNull]
-        internal static ErrorLog LogFatal(string code, object[] strings)
+        public static ErrorLog LogFatal(string code, params string[] strings)
         {
             var log = Log(ReportLevel.Error, code, strings: strings);
             if (CurrentReport.CurrentAvatar != null)
