@@ -17,10 +17,10 @@ namespace Anatawa12.AvatarOptimizer.Processors
             var mapping = session.MappingBuilder.BuildObjectMapping();
 
             // replace all objects
-            foreach (var component in session.GetComponents<Component>())
+            BuildReport.ReportingObjects(session.GetComponents<Component>(), component =>
             {
+                if (component is Transform) return;
                 var serialized = new SerializedObject(component);
-                if (component is Transform) continue;
                 AnimatorControllerMapper mapper = null;
                 SpecialMappingApplier.Apply(component.GetType(), serialized, mapping, ref mapper);
                 var p = serialized.GetIterator();
@@ -35,7 +35,8 @@ namespace Anatawa12.AvatarOptimizer.Processors
                         if (p.objectReferenceValue is AnimatorController controller)
                         {
                             if (mapper == null)
-                                mapper = new AnimatorControllerMapper(mapping.CreateAnimationMapper(component.gameObject),
+                                mapper = new AnimatorControllerMapper(
+                                    mapping.CreateAnimationMapper(component.gameObject),
                                     session.RelativePath(component.transform), session);
 
                             // ReSharper disable once AccessToModifiedClosure
@@ -83,7 +84,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 }
 
                 serialized.ApplyModifiedProperties();
-            }
+            });
         }
     }
 
