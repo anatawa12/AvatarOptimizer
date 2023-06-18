@@ -232,6 +232,13 @@ msgstr "チェックされている場合、子にボーン以外を持つボー
 
 # endregion
 
+#region ApplyObjectMapping
+
+msgid "ApplyObjectMapping:VRCAvatarDescriptor:eyelids BlendShape Removed"
+msgstr "瞬き用のBlendShapeが削除・固定されています"
+
+#endregion
+
 # region ErrorReporter
 
 msgid "ErrorReporter:error.internal_error"

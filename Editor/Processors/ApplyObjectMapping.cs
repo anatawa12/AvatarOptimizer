@@ -121,6 +121,11 @@ namespace Anatawa12.AvatarOptimizer.Processors
                             VProp.BlendShapeIndex(indexProp.intValue),
                             out var mappedPropName))
                     {
+                        if (mappedPropName == null)
+                        {
+                            BuildReport.LogFatal("ApplyObjectMapping:VRCAvatarDescriptor:eyelids BlendShape Removed");
+                            return;
+                        }
                         indexProp.intValue = VProp.ParseBlendShapeIndex(mappedPropName);
                     }
                 }
