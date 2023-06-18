@@ -10,12 +10,15 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
+- Show error with user friendly message if blendshape for eyelids are removed / frozen. `#253`
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
+- eyelids BlendShape settings are mapped even if it's disabled `#235`
+  - This fixes error if internally eyelids BlendShape are frozen.
 
 ### Security
 
