@@ -100,23 +100,28 @@ namespace Anatawa12.AvatarOptimizer.Processors
         private static void VRCAvatarDescriptor(SerializedObject serialized,
             ObjectMapping mapping, ref AnimatorControllerMapper mapper)
         {
+            var eyelidsEnabled = serialized.FindProperty("enableEyeLook");
+            var eyelidType = serialized.FindProperty("customEyeLookSettings.eyelidType");
             var eyelidsSkinnedMesh = serialized.FindProperty("customEyeLookSettings.eyelidsSkinnedMesh");
             var eyelidsBlendshapes = serialized.FindProperty("customEyeLookSettings.eyelidsBlendshapes");
-            if (eyelidsSkinnedMesh == null || eyelidsBlendshapes == null) return;
 
-            var info = mapping.GetComponentMapping(eyelidsSkinnedMesh.objectReferenceInstanceIDValue);
-            if (info == null) return;
-
-            eyelidsSkinnedMesh.objectReferenceValue = EditorUtility.InstanceIDToObject(info.MergedInto);
-
-            for (var i = 0; i < eyelidsBlendshapes.arraySize; i++)
+            if (eyelidsEnabled.boolValue && 
+                eyelidType.enumValueIndex == (int)VRC.SDK3.Avatars.Components.VRCAvatarDescriptor.EyelidType.Blendshapes)
             {
-                var indexProp = eyelidsBlendshapes.GetArrayElementAtIndex(i);
-                if (info.PropertyMapping.TryGetValue(
-                        VProp.BlendShapeIndex(indexProp.intValue),
-                        out var mappedPropName))
+                var info = mapping.GetComponentMapping(eyelidsSkinnedMesh.objectReferenceInstanceIDValue);
+                if (info == null) return;
+
+                eyelidsSkinnedMesh.objectReferenceValue = EditorUtility.InstanceIDToObject(info.MergedInto);
+
+                for (var i = 0; i < eyelidsBlendshapes.arraySize; i++)
                 {
-                    indexProp.intValue = VProp.ParseBlendShapeIndex(mappedPropName);
+                    var indexProp = eyelidsBlendshapes.GetArrayElementAtIndex(i);
+                    if (info.PropertyMapping.TryGetValue(
+                            VProp.BlendShapeIndex(indexProp.intValue),
+                            out var mappedPropName))
+                    {
+                        indexProp.intValue = VProp.ParseBlendShapeIndex(mappedPropName);
+                    }
                 }
             }
         }
