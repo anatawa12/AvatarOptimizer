@@ -10,17 +10,22 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
-- Show error with user friendly message if blendshape for eyelids are removed / frozen. `#253`
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
-- eyelids BlendShape settings are mapped even if it's disabled `#235`
-  - This fixes error if internally eyelids BlendShape are frozen.
 
 ### Security
+
+## [0.4.11] - 2023-06-19
+### Changed
+- Show error with user friendly message if blendshape for eyelids are removed / frozen. [`#253`](https://github.com/anatawa12/AvatarOptimizer/pull/253)
+
+### Fixed
+- eyelids BlendShape settings are mapped even if it's disabled [`#235`](https://github.com/anatawa12/AvatarOptimizer/pull/235)
+  - This fixes error if internally eyelids BlendShape are frozen.
 
 ## [0.4.10] - 2023-06-17
 ### Fixed
@@ -333,7 +338,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.10...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.11...HEAD
+[0.4.11]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.10...v0.4.11
 [0.4.10]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.9...v0.4.10
 [0.4.9]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.8...v0.4.9
 [0.4.8]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.7...v0.4.8
