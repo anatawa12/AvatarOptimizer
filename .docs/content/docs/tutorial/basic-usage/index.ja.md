@@ -62,6 +62,20 @@ BlendShape(シェイプキー)[^blend-shape]は頂点数とBlendShape数の積�
 そのため、Bounds, Root Bone, Anchor Override等を手動で設定してください。
 Anchor Overrideは素体のを、Root BoneはHipsを指定するとうまくいくことが多いと思います。
 
+{{< hint info >}}
+
+### UploadせずにPerformance Rankを見る方法 {#performance-rank-without-upload}
+
+このAvatar Optimizerは非破壊改変ツールのため、VRCSDKのControl Panel上のPerformance Rankはあてにならなくなります。
+
+その代わりにPlayモードに入った際のPerformance Rankをanatawa12's Gist PackのActual Performance Windowを使用してみられます。
+詳しくは[anatawa12's Gist Packの使い方][gists-basic-usage]および[Actual Performance Windowのドキュメント][Actual Performance Window]を参照してください。
+
+[gists-basic-usage]: https://vpm.anatawa12.com/gists/ja/docs/basic-usage/
+[Actual Performance Window]: https://vpm.anatawa12.com/gists/ja/docs/reference/actual-performance-window/
+
+{{< /hint >}}
+
 [^tip-lock-inspector]: PhysBoneに複数のコライダーを指定するのにも使えたり、色んなところで使えるので覚えておくと便利だと思います。
 [^merge-skinned-mesh]: Boundsは大きな箱にすることで今後対応予定、Root Bone/Anchor Overrideは等しくないとマージできないため対応予定がないです。もし良いアルゴリズムを教えてください。
 [^mesh]: この記事ではメッシュはUnityのMesh assetではなくSkinnedMeshRendererの意味で使用しています。

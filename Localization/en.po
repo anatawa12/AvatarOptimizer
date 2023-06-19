@@ -295,6 +295,13 @@ msgstr "If checked, this tool does not remove bones with non-bone children."
 
 # endregion
 
+#region ApplyObjectMapping
+
+msgid "ApplyObjectMapping:VRCAvatarDescriptor:eyelids BlendShape Removed"
+msgstr "BlendShape(s) for eyelids are Removed / frozen."
+
+#endregion
+
 # region ErrorReporter
 
 msgid "ErrorReporter:error.internal_error"

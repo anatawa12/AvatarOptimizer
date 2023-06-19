@@ -7,19 +7,41 @@ The format is based on [Keep a Changelog].
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 
 ## [Unreleased]
+**If you're using v0.3.x or older, Please upgrade to v0.4.x before upgrading v1.x.x!**
+
+**もし v0.3.x 以前を使用しているのであれば, v1.x.xに更新する前に v0.4.x に更新してください!**
+
 ### Added
 
 ### Changed
+- Merged changes in 0.4.8, 0.4.9, 0.4.10, and 0.4.11
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
-- NullReferenceException if window is in background `#226`
 
 ### Security
 
+## [0.4.11] - 2023-06-19
+### Changed
+- Show error with user friendly message if blendshape for eyelids are removed / frozen. [`#253`](https://github.com/anatawa12/AvatarOptimizer/pull/253) 
+
+### Fixed
+- eyelids BlendShape settings are mapped even if it's disabled [`#235`](https://github.com/anatawa12/AvatarOptimizer/pull/235)
+  - This fixes error if internally eyelids BlendShape are frozen.
+
+## [0.4.10] - 2023-06-17
+## [0.4.10-beta.1] - 2023-06-17
+### Fixed
+- PrefabSafesSet's prefab modifications on latest layer are invisible on inspector [`#229`](https://github.com/anatawa12/AvatarOptimizer/pull/229)
+
+## [0.4.9] - 2023-06-16
+### Fixed
+- NullReferenceException if window is in background [`#226`](https://github.com/anatawa12/AvatarOptimizer/pull/226)
+
+## [0.4.8] - 2023-06-16
 ## [1.0.0-beta.3] - 2023-06-13
 **If you're using v0.3.x or older, Please upgrade to v0.4.x before upgrading v1.x.x!**
 
@@ -433,10 +455,15 @@ The format is based on [Keep a Changelog].
 - Clear Endpoint Position
 
 [Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.0.0-beta.3...HEAD
-[1.0.0-beta.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.7...v1.0.0-beta.3
-[0.4.7]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.0.0-beta.2...v0.4.7
+[1.0.0-beta.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.0.0-beta.2...v1.0.0-beta.3
 [1.0.0-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.0.0-beta.1...v1.0.0-beta.2
-[1.0.0-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.6...v1.0.0-beta.1
+[1.0.0-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.10...v1.0.0-beta.1
+[0.4.11]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.10...v0.4.11
+[0.4.10]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.10-beta.1...v0.4.10
+[0.4.10-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.9...v0.4.10-beta.1
+[0.4.9]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.8...v0.4.9
+[0.4.8]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.7...v0.4.8
+[0.4.7]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.6...v0.4.7
 [0.4.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.5...v0.4.6
 [0.4.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.5-beta.1...v0.4.5
 [0.4.5-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.4...v0.4.5-beta.1

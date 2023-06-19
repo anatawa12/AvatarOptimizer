@@ -23,10 +23,26 @@ The format is based on [Keep a Changelog].
   - Please migrate to v0.4.x format before installing v1.0.0.
 
 ### Fixed
-- NullReferenceException if window is in background `#226`
 
 ### Security
 
+## [0.4.11] - 2023-06-19
+### Changed
+- Show error with user friendly message if blendshape for eyelids are removed / frozen. [`#253`](https://github.com/anatawa12/AvatarOptimizer/pull/253)
+
+### Fixed
+- eyelids BlendShape settings are mapped even if it's disabled [`#235`](https://github.com/anatawa12/AvatarOptimizer/pull/235)
+  - This fixes error if internally eyelids BlendShape are frozen.
+
+## [0.4.10] - 2023-06-17
+### Fixed
+- PrefabSafesSet's prefab modifications on latest layer are invisible on inspector [`#229`](https://github.com/anatawa12/AvatarOptimizer/pull/229)
+
+## [0.4.9] - 2023-06-16
+### Fixed
+- NullReferenceException if window is in background [`#226`](https://github.com/anatawa12/AvatarOptimizer/pull/226)
+
+## [0.4.8] - 2023-06-16
 ## [0.4.7] - 2023-06-13
 ### Fixed
 - Dropping PhysBone to MergePhysBone is not working [`#221`](https://github.com/anatawa12/AvatarOptimizer/pull/221)
@@ -329,7 +345,11 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.7...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.11...HEAD
+[0.4.11]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.10...v0.4.11
+[0.4.10]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.9...v0.4.10
+[0.4.9]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.8...v0.4.9
+[0.4.8]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.7...v0.4.8
 [0.4.7]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.6...v0.4.7
 [0.4.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.5...v0.4.6
 [0.4.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.4...v0.4.5
