@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
+- MergePhysBone without ClearEndpointPosition `#239`
+  - Instead of ClearEndpointPosition, you can use original value, or override Endpoint Position.
 
 ### Deprecated
 
