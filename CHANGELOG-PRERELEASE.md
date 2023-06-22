@@ -10,8 +10,6 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
-- MergePhysBone without ClearEndpointPosition `#239`
-  - Instead of ClearEndpointPosition, you can use original value, or override Endpoint Position.
 
 ### Deprecated
 
@@ -20,6 +18,11 @@ The format is based on [Keep a Changelog].
 ### Fixed
 
 ### Security
+
+## [0.4.12] - 2023-06-22
+### Changed
+- MergePhysBone without ClearEndpointPosition [`#239`](https://github.com/anatawa12/AvatarOptimizer/pull/239)
+  - Instead of ClearEndpointPosition, you can use original value, or override Endpoint Position.
 
 ## [0.4.11] - 2023-06-19
 ### Changed
@@ -425,7 +428,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.11...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.12...HEAD
+[0.4.12]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.11...v0.4.12
 [0.4.11]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.10...v0.4.11
 [0.4.10]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.10-beta.1...v0.4.10
 [0.4.10-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.9...v0.4.10-beta.1
