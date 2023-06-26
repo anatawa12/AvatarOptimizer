@@ -19,8 +19,6 @@ Avatar Optimizerは[VPM][vpm]レポジトリを使用して公開されている
 
 ### VCC を使用する (推奨) {#installation-vcc}
 
-[VCC]
-
 1. [このリンク][VCC-add-repo-link]をクリックしてanatawa12のレポジトリを追加する。
 2. VCCでAvatar Optimizerを追加する。
 
