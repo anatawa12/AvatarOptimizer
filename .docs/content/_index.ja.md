@@ -28,7 +28,7 @@ Avatar Optimizerは[VPM][vpm]レポジトリを使用して公開されている
 
 [VPAI]により、unitypackageをインポートするだけでこのツールをインストールできます。
 
-1. [ここ][installer unitypackage 0.3.x]からインストーラunitypackageをダウンロードする。
+1. [ここ][installer unitypackage 1.x.x]からインストーラunitypackageをダウンロードする。
 2. unitypackageをプロジェクトにインポートする。
 
 <details>
@@ -36,7 +36,9 @@ Avatar Optimizerは[VPM][vpm]レポジトリを使用して公開されている
 
 - [0.1.x][installer unitypackage 0.1.x]
 - [0.2.x][installer unitypackage 0.2.x]
-- [0.x.x including beta releases][installer unitypackage 0.x beta]
+- [0.3.x][installer unitypackage 0.3.x]
+- [0.4.x][installer unitypackage 0.4.x]
+- [0.x.x including beta releases][installer unitypackage x.x beta]
 
 </details>
 
@@ -70,7 +72,9 @@ vpm add package com.anatawa12.avatar-optimizer
 [vrc-get]: https://github.com/anatawa12/vrc-get
 [VCC-add-repo-link]: https://vpm.anatawa12.com/add-repo
 
+[installer unitypackage 1.x.x]: https://api.anatawa12.com/create-vpai/?name=AvatarOptimizer-{}-installer.unitypackage&repo=https://vpm.anatawa12.com/vpm.json&package=com.anatawa12.avatar-optimizer&version=1.x.x
+[installer unitypackage 0.4.x]: https://api.anatawa12.com/create-vpai/?name=AvatarOptimizer-{}-installer.unitypackage&repo=https://vpm.anatawa12.com/vpm.json&package=com.anatawa12.avatar-optimizer&version=0.4.x
 [installer unitypackage 0.3.x]: https://api.anatawa12.com/create-vpai/?name=AvatarOptimizer-{}-installer.unitypackage&repo=https://vpm.anatawa12.com/vpm.json&package=com.anatawa12.avatar-optimizer&version=0.3.x
 [installer unitypackage 0.2.x]: https://api.anatawa12.com/create-vpai/?name=AvatarOptimizer-{}-installer.unitypackage&repo=https://vpm.anatawa12.com/vpm.json&package=com.anatawa12.avatar-optimizer&version=0.2.x
 [installer unitypackage 0.1.x]: https://api.anatawa12.com/create-vpai/?name=AvatarOptimizer-{}-installer.unitypackage&repo=https://vpm.anatawa12.com/vpm.json&package=com.anatawa12.avatar-optimizer&version=0.1.x
-[installer unitypackage 0.x beta]: https://api.anatawa12.com/create-vpai/?name=AvatarOptimizer-{}-beta-installer.unitypackage&repo=https://vpm.anatawa12.com/vpm.json&package=com.anatawa12.avatar-optimizer&version=0.x.x&prerelease
+[installer unitypackage x.x beta]: https://api.anatawa12.com/create-vpai/?name=AvatarOptimizer-{}-beta-installer.unitypackage&repo=https://vpm.anatawa12.com/vpm.json&package=com.anatawa12.avatar-optimizer&version=x.x.x&prerelease
