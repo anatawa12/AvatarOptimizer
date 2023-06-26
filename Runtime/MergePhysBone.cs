@@ -23,7 +23,7 @@ namespace Anatawa12.AvatarOptimizer
         #region == Transform ==
         // rootTransform
         // ignoreTransforms
-        // endpointPosition
+        public EndPointPositionConfig endpointPositionConfig;
         // multiChildType
         #endregion
 
@@ -65,6 +65,20 @@ namespace Anatawa12.AvatarOptimizer
         public IsAnimatedConfig isAnimatedConfig;
         public BoolConfig resetWhenDisabledConfig;
         #endregion
+
+        [Serializable]
+        public struct EndPointPositionConfig
+        {
+            public Override @override;
+            public Vector3 value;
+
+            public enum Override
+            {
+                Clear,
+                Copy,
+                Override,
+            }
+        }
 
         [Serializable]
         public struct Curve0To1Config
