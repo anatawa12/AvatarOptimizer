@@ -13,7 +13,7 @@ namespace Anatawa12.AvatarOptimizer
      */
     [DefaultExecutionOrder(-9990)] // run before av3emu
     [ExecuteAlways]
-    public abstract class AvatarTagComponent : MonoBehaviour, IEditorOnly
+    internal abstract class AvatarTagComponent : MonoBehaviour, IEditorOnly
     {
         private void Awake()
         {

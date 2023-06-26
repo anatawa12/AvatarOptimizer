@@ -234,7 +234,7 @@ namespace Anatawa12.AvatarOptimizer
         }
     }
 
-    public enum CollidersSettings
+    internal enum CollidersSettings
     {
         Copy,
         Merge,

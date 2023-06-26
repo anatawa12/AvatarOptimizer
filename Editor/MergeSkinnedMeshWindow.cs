@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer
 {
-    public class MergeSkinnedMeshWindow : EditorWindow
+    internal class MergeSkinnedMeshWindow : EditorWindow
     {
         private Mesh _mesh;
 

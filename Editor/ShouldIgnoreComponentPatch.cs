@@ -8,7 +8,7 @@ using VRC.SDKBase.Validation.Performance;
 namespace Anatawa12.AvatarOptimizer
 {
     [InitializeOnLoad]
-    public static class ShouldIgnoreComponentPatch
+    internal static class ShouldIgnoreComponentPatch
     {
         static ShouldIgnoreComponentPatch()
         {
