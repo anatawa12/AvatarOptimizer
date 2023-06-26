@@ -23,7 +23,7 @@ namespace Anatawa12.AvatarOptimizer
     [AddComponentMenu("")]
     [ExecuteInEditMode]
     [DefaultExecutionOrder(-9989)]
-    public class Activator : MonoBehaviour
+    internal class Activator : MonoBehaviour
     {
         private const string TAG_OBJECT_NAME = "AvatarOptimizerInternal_Activator";
 
@@ -111,7 +111,7 @@ namespace Anatawa12.AvatarOptimizer
     [AddComponentMenu("")]
     [ExecuteInEditMode]
     [DefaultExecutionOrder(-9997)]
-    public class AvatarActivator : MonoBehaviour
+    internal class AvatarActivator : MonoBehaviour
     {
         private void Awake()
         {

@@ -1,5 +1,5 @@
 {
-    "name": "com.anatawa12.avatar-optimizer.unsafe",
+    "name": "com.anatawa12.avatar-optimizer.internal.unsafe",
     "references": [],
     "includePlatforms": [],
     "excludePlatforms": [],

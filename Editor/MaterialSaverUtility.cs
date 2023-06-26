@@ -9,7 +9,7 @@ using UnityEngine.Serialization;
 namespace Anatawa12.AvatarOptimizer
 {
     [InitializeOnLoad]
-    public static class MaterialSaverUtility
+    internal static class MaterialSaverUtility
     {
         static MaterialSaverUtility()
         {
