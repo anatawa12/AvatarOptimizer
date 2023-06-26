@@ -21,7 +21,7 @@ namespace Anatawa12.AvatarOptimizer
         #region == Transform ==
         // rootTransform
         // ignoreTransforms
-        // endpointPosition
+        [NotNull] protected readonly EndpointPositionConfigProp EndpointPosition;
         // multiChildType
         #endregion
 
@@ -74,6 +74,8 @@ namespace Anatawa12.AvatarOptimizer
             MakeParent = serializedObject.FindProperty(nameof(MergePhysBone.makeParent));
 
             Version = ValueProp(nameof(MergePhysBone.versionConfig), nameof(VRCPhysBoneBase.version));
+            // == Transform ==
+            EndpointPosition = EndpointPositionProp(nameof(MergePhysBone.endpointPositionConfig), nameof(VRCPhysBoneBase.endpointPosition));
             //  == Forces ==
             IntegrationType = ValueProp(nameof(MergePhysBone.integrationTypeConfig), nameof(VRCPhysBoneBase.integrationType));
             Pull = CurveProp(nameof(MergePhysBone.pullConfig), nameof(VRCPhysBoneBase.pull), nameof(VRCPhysBoneBase.pullCurve));
@@ -130,6 +132,8 @@ namespace Anatawa12.AvatarOptimizer
             AddProp(new PermissionConfigProp(_serializedObject.FindProperty(configName), pbValueName, pbFilterName));
         private CollidersConfigProp CollidersProp(string configName, string pbValueName) =>
             AddProp(new CollidersConfigProp(_serializedObject.FindProperty(configName), pbValueName));
+        private EndpointPositionConfigProp EndpointPositionProp(string configName, string pbValueName) =>
+            AddProp(new EndpointPositionConfigProp(_serializedObject.FindProperty(configName), pbValueName));
         private NoOverrideValueConfigProp NoOverrideProp(string configName, string pbName) =>
             AddProp(new NoOverrideValueConfigProp(_serializedObject.FindProperty(configName), pbName));
 
@@ -359,6 +363,29 @@ namespace Anatawa12.AvatarOptimizer
             public readonly string PhysBoneValueName;
 
             public CollidersConfigProp(
+                [NotNull] SerializedProperty rootProperty, 
+                [NotNull] string physBoneValueName) : base(rootProperty)
+            {
+                OverrideProperty = rootProperty.FindPropertyRelative("override");
+                ValueProperty = rootProperty.FindPropertyRelative("value");
+                PhysBoneValueName = physBoneValueName ?? throw new ArgumentNullException(nameof(physBoneValueName));
+            }
+
+            internal override void UpdateSource(SerializedObject sourcePb)
+            {
+                PhysBoneValue = sourcePb.FindProperty(PhysBoneValueName);
+            }
+        }
+
+        // Very Special Case
+        protected class EndpointPositionConfigProp : PropBase
+        {
+            public readonly SerializedProperty OverrideProperty;
+            public readonly SerializedProperty ValueProperty;
+            public SerializedProperty PhysBoneValue { get; private set; } 
+            public readonly string PhysBoneValueName;
+
+            public EndpointPositionConfigProp(
                 [NotNull] SerializedProperty rootProperty, 
                 [NotNull] string physBoneValueName) : base(rootProperty)
             {

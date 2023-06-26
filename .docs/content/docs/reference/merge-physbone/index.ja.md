@@ -8,9 +8,6 @@ weight: 1
 このコンポーネントは、複数のPhysBoneコンポーネントを1つに統合します。
 MultiChildTypeはIgnoreになります。
 
-加えて、Endpoint Positionの値は0に置換され、`_EndPhysBone`GameObjectが追加されます。
-これは[Clear Endpoint Position](../clear-endpoint-position)の動作と同じです。
-
 ## 設定 {#settings}
 
 ![component.png](component.png)
@@ -28,3 +25,5 @@ MultiChildTypeはIgnoreになります。
 代わりに新しい値を設定する場合は`Override`を選択してください。
 
 コライダーについては、`Merge`を選択して統合対象のコライダー一覧を統合することも出来ます。
+
+Endpoint Positionについては、`Clear`を選択して[Clear Endpoint Position](../clear-endpoint-position)を使用することもできます。

@@ -65,8 +65,9 @@ namespace Anatawa12.AvatarOptimizer.Processors
             }
 
             // clear endpoint position
-            foreach (var physBone in sourceComponents)
-                ClearEndpointPositionProcessor.Process(physBone);
+            if (merge.endpointPositionConfig.@override == MergePhysBone.EndPointPositionConfig.Override.Clear)
+                foreach (var physBone in sourceComponents)
+                    ClearEndpointPositionProcessor.Process(physBone);
 
             var merged = merge.gameObject.AddComponent<VRCPhysBone>();
 
@@ -79,7 +80,22 @@ namespace Anatawa12.AvatarOptimizer.Processors
             // === Transforms ===
             merged.rootTransform = root;
             merged.ignoreTransforms = sourceComponents.SelectMany(x => x.ignoreTransforms).Distinct().ToList();
-            merged.endpointPosition = Vector3.zero;
+
+            switch (merge.endpointPositionConfig.@override)
+            {
+                case MergePhysBone.EndPointPositionConfig.Override.Clear:
+                    merged.endpointPosition = Vector3.zero;
+                    break;
+                case MergePhysBone.EndPointPositionConfig.Override.Copy:
+                    merged.endpointPosition = pb.endpointPosition;
+                    break;
+                case MergePhysBone.EndPointPositionConfig.Override.Override:
+                    merged.endpointPosition = merge.endpointPositionConfig.value;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+
             merged.multiChildType = VRCPhysBoneBase.MultiChildType.Ignore;
             switch (merge.collidersConfig.@override)
             {
@@ -143,6 +159,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
             protected override void TransformSection()
             {
                 // differ error reported by validator
+                // merge of endpointPosition proceed later
             }
 
             protected override void OptionParameter()

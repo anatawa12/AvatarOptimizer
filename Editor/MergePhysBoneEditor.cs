@@ -97,7 +97,7 @@ namespace Anatawa12.AvatarOptimizer
                     EditorGUILayout.HelpBox(CL4EE.Tr("MergePhysBone:error:parentDiffer"), MessageType.Error);
             }
             EditorGUILayout.LabelField("Ignore Transforms", "Automatically Merged");
-            EditorGUILayout.LabelField("Endpoint Position", "Cleared to zero");
+            EndpointPositionProp("Endpoint Position", EndpointPosition);
             EditorGUILayout.LabelField("Multi Child Type", "Must be Ignore");
             var multiChildType = GetSourceProperty("multiChildType");
             if (multiChildType.enumValueIndex != 0 || multiChildType.hasMultipleDifferentValues)
@@ -478,6 +478,62 @@ namespace Anatawa12.AvatarOptimizer
             EditorGUI.EndProperty();
         }
 
+        private void EndpointPositionProp(string label, EndpointPositionConfigProp prop)
+        {
+            var labelContent = new GUIContent(label);
+
+            Rect valueRect, overrideRect;
+
+            switch ((MergePhysBone.EndPointPositionConfig.Override)prop.OverrideProperty.enumValueIndex)
+            {
+                case MergePhysBone.EndPointPositionConfig.Override.Clear:
+                {
+                    (valueRect, overrideRect) =
+                        SplitRect(EditorGUILayout.GetControlRect(true, EditorGUIUtility.singleLineHeight), OverrideWidth);
+
+                    EditorGUI.LabelField(valueRect, labelContent, new GUIContent("Cleared to zero"));
+                }
+                    break;
+                case MergePhysBone.EndPointPositionConfig.Override.Copy:
+                {
+                    var valueProperty = prop.PhysBoneValue;
+
+                    var height = EditorGUI.GetPropertyHeight(valueProperty, null, true);
+
+                    (valueRect, overrideRect) = SplitRect(EditorGUILayout.GetControlRect(true, height), OverrideWidth);
+
+                    EditorGUI.BeginDisabledGroup(true);
+                    EditorGUI.PropertyField(valueRect, valueProperty, labelContent, true);
+                    EditorGUI.EndDisabledGroup();
+
+                    if (valueProperty.hasMultipleDifferentValues)
+                    {
+                        EditorGUILayout.HelpBox(CL4EE.Tr("MergePhysBone:error:differValueSingle"), MessageType.Error);
+                    }
+                }
+                    break;
+                case MergePhysBone.EndPointPositionConfig.Override.Override:
+                {
+                    var valueProperty = prop.ValueProperty;
+
+                    var height = EditorGUI.GetPropertyHeight(valueProperty, null, true);
+
+                    (valueRect, overrideRect) = SplitRect(EditorGUILayout.GetControlRect(true, height), OverrideWidth);
+
+                    EditorGUI.PropertyField(valueRect, valueProperty, labelContent, true);
+                }
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+
+            EditorGUI.BeginProperty(overrideRect, null, prop.OverrideProperty);
+            var selected = PopupNoIndent(overrideRect, prop.OverrideProperty.enumValueIndex, prop.OverrideProperty.enumDisplayNames);
+            if (selected != prop.OverrideProperty.enumValueIndex)
+                prop.OverrideProperty.enumValueIndex = selected;
+            EditorGUI.EndProperty();
+        }
+
         private static int PopupNoIndent(Rect position, int selectedIndex, string[] displayedOptions)
         {
             var indent = EditorGUI.indentLevel;
@@ -547,6 +603,14 @@ namespace Anatawa12.AvatarOptimizer
                 if (differ)
                     _errorLogs.Add(ErrorLog.Validation("MergePhysBone:error:parentDiffer"));
             }
+
+            if (EndpointPosition.OverrideProperty.enumValueIndex ==
+                (int)MergePhysBone.EndPointPositionConfig.Override.Copy)
+            {
+                if (EndpointPosition.PhysBoneValue.hasMultipleDifferentValues)
+                    _differProps.Add("Endpoint Position");
+            }
+
             var multiChildType = GetSourceProperty(nameof(VRCPhysBoneBase.multiChildType));
             if (multiChildType.enumValueIndex != 0 || multiChildType.hasMultipleDifferentValues)
                 _errorLogs.Add(ErrorLog.Validation("MergePhysBone:error:multiChildType"));
