@@ -2,7 +2,8 @@ Avatar Optimizer
 
 anatawa12によるアバター軽量化用のちょっとした非破壊ユーティリティ群です。
 
-https://vpm.anatawa12.com/avatar-optimizer/en/
+詳しい情報は公式サイトを参照してください:
+  https://vpm.anatawa12.com/avatar-optimizer/ja/
 
 インストール方法
 

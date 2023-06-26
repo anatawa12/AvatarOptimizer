@@ -2,7 +2,8 @@ Avatar Optimizer
 
 Set of Anatawa12’s non-Destructive Small Avatar Optimization Utilities. 
 
-https://vpm.anatawa12.com/avatar-optimizer/en/
+For detailed information, see official site:
+  https://vpm.anatawa12.com/avatar-optimizer/ja/
 
 Installation
 
