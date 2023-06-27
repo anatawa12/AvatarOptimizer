@@ -34,3 +34,9 @@ anatawa12によるアバター軽量化用のちょっとした非破壊ユー�
 [misskey]: https://go.anatawa12.com/misskey.vrchat
 [vpm-repository]: https://vpm.anatawa12.com/
 [github-latest]: https://github.com/anatawa12/AvatarOptimizer/releases/latest
+
+## API Stability Note
+
+This project doesn't have any public stable APIs for now.
+The Semantic Versioning will be applied to save format of the components, but not for scripting usage for now.
+Even if any parts of this project is exposed as public in C# code, it can be changed / removed in future release.
