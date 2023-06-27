@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog].
 
 ### Security
 
+## [1.0.0] - 2023-06-27
 ## [1.0.0-beta.5] - 2023-06-26
 **If you're using v0.3.x or older, Please upgrade to v0.4.x before upgrading v1.x.x!**
 
@@ -470,7 +471,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.0.0-beta.5...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.0.0-beta.5...v1.0.0
 [1.0.0-beta.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.0.0-beta.4...v1.0.0-beta.5
 [1.0.0-beta.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.0.0-beta.3...v1.0.0-beta.4
 [1.0.0-beta.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.0.0-beta.2...v1.0.0-beta.3

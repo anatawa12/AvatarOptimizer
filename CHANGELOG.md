@@ -7,10 +7,6 @@ The format is based on [Keep a Changelog].
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 
 ## [Unreleased]
-**If you're using v0.3.x or older, Please upgrade to v0.4.x before upgrading v1.x.x!**
-
-**もし v0.3.x 以前を使用しているのであれば, v1.x.xに更新する前に v0.4.x に更新してください!**
-
 ### Added
 
 ### Changed
@@ -18,13 +14,20 @@ The format is based on [Keep a Changelog].
 ### Deprecated
 
 ### Removed
-- Save format migration system `#199`
-  - We no longer see save data in format of v0.3.x or older.
-  - Please migrate to v0.4.x format before installing v1.0.0.
 
 ### Fixed
 
 ### Security
+
+## [1.0.0] - 2023-06-27
+**If you're using v0.3.x or older, Please upgrade to v0.4.x before upgrading v1.x.x!**
+
+**もし v0.3.x 以前を使用しているのであれば, v1.x.xに更新する前に v0.4.x に更新してください!**
+
+### Removed
+- Save format migration system [`#199`](https://github.com/anatawa12/AvatarOptimizer/pull/199)
+  - We no longer see save data in format of v0.3.x or older.
+  - Please migrate to v0.4.x format before installing v1.0.0.
 
 ## [0.4.12] - 2023-06-22
 ### Added
@@ -350,7 +353,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.12...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.12...v1.0.0
 [0.4.12]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.11...v0.4.12
 [0.4.11]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.10...v0.4.11
 [0.4.10]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.9...v0.4.10
