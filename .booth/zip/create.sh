@@ -12,6 +12,7 @@ curl -sL "https://api.anatawa12.com/create-vpai/?repo=https%3A%2F%2Fvpm.anatawa1
 zip "AvatarOptimizer-1.x.x.zip" \
   README.ja.txt \
   README.en.txt \
+  LICENSE.txt \
   AvatarOptimizer-1.x.x-installer.unitypackage \
   add-repo.url
 
