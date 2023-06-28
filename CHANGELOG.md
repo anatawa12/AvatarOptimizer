@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
+- Move Components into `Avatar Optimizer` folder `#247`
+  - Previously they are `Optimizer` folder
 
 ### Deprecated
 

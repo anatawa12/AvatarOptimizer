@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer
 {
-    [AddComponentMenu("Optimizer/Remove Mesh in Box")]
+    [AddComponentMenu("Avatar Optimizer/Remove Mesh in Box")]
     [RequireComponent(typeof(SkinnedMeshRenderer))]
     [DisallowMultipleComponent]
     internal class RemoveMeshInBox : EditSkinnedMeshComponent
