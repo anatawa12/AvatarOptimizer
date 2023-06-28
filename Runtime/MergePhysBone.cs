@@ -8,7 +8,7 @@ using VRC.Dynamics;
 
 namespace Anatawa12.AvatarOptimizer
 {
-    [AddComponentMenu("Optimizer/Merge PhysBone")]
+    [AddComponentMenu("Avatar Optimizer/Merge PhysBone")]
     [DisallowMultipleComponent]
     [ExecuteAlways]
     internal class MergePhysBone : AvatarTagComponent, IStaticValidated
