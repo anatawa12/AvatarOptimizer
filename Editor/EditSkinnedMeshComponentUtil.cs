@@ -5,6 +5,7 @@ using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
 using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace Anatawa12.AvatarOptimizer
 {
@@ -15,6 +16,17 @@ namespace Anatawa12.AvatarOptimizer
         {
             RuntimeUtil.OnAwakeEditSkinnedMesh += OnAwake;
             RuntimeUtil.OnDestroyEditSkinnedMesh += OnDestroy;
+
+            AssemblyReloadEvents.afterAssemblyReload += AfterAssemblyReload;
+        }
+
+        private static void AfterAssemblyReload()
+        {
+            foreach (var component in Enumerable.Range(0, SceneManager.sceneCount)
+                         .Select(SceneManager.GetSceneAt)
+                         .SelectMany(x => x.GetRootGameObjects())
+                         .SelectMany(x => x.GetComponentsInChildren<EditSkinnedMeshComponent>(true)))
+                OnAwake(component);
         }
 
         // might be called by Processor to make sure the component is registered
