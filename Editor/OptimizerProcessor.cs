@@ -1,5 +1,6 @@
 
 using System;
+using Anatawa12.AvatarOptimizer.ApplyOnPlay;
 using Anatawa12.AvatarOptimizer.ErrorReporting;
 using UnityEditor;
 using UnityEngine;
@@ -11,9 +12,15 @@ namespace Anatawa12.AvatarOptimizer
     /// <summary>
     /// the Processor runs before removing EditorOnly
     /// </summary>
-    internal class EarlyOptimizerProcessor : IVRCSDKPreprocessAvatarCallback
+    internal class EarlyOptimizerProcessor : IVRCSDKPreprocessAvatarCallback, IApplyOnPlayCallback
     {
         public int callbackOrder => -2048;
+
+        public bool ApplyOnPlay(GameObject avatarGameObject)
+        {
+            ProcessObject(new OptimizerSession(avatarGameObject, true));
+            return true;
+        }
 
         public bool OnPreprocessAvatar(GameObject avatarGameObject)
         {
@@ -62,9 +69,15 @@ namespace Anatawa12.AvatarOptimizer
         }
     }
 
-    internal class OptimizerProcessor : IVRCSDKPreprocessAvatarCallback, IVRCSDKPostprocessAvatarCallback
+    internal class OptimizerProcessor : IVRCSDKPreprocessAvatarCallback, IVRCSDKPostprocessAvatarCallback, IApplyOnPlayCallback
     {
         public int callbackOrder => 0;
+
+        public bool ApplyOnPlay(GameObject avatarGameObject)
+        {
+            ProcessObject(new OptimizerSession(avatarGameObject, true));
+            return true;
+        }
 
         public bool OnPreprocessAvatar(GameObject avatarGameObject)
         {

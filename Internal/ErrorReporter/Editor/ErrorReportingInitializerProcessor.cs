@@ -1,3 +1,4 @@
+using Anatawa12.AvatarOptimizer.ApplyOnPlay;
 using UnityEngine;
 using VRC.SDK3.Avatars.Components;
 using VRC.SDKBase.Editor.BuildPipeline;
@@ -7,9 +8,11 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
     /// <summary>
     /// Initializes Error Reporting System
     /// </summary>
-    internal class ErrorReportingInitializerProcessor : IVRCSDKPreprocessAvatarCallback
+    internal class ErrorReportingInitializerProcessor : IVRCSDKPreprocessAvatarCallback, IApplyOnPlayCallback
     {
         public int callbackOrder => int.MinValue;
+
+        public bool ApplyOnPlay(GameObject avatarGameObject) => OnPreprocessAvatar(avatarGameObject);
 
         public bool OnPreprocessAvatar(GameObject avatarGameObject)
         {

@@ -1,6 +1,7 @@
 {
     "name": "com.anatawa12.avatar-optimizer.editor",
     "references": [
+        "GUID:8d9ff9f975de4bf0b86c6cc50332d028",
         "GUID:b23bdfe8d18741a29e869995d47026d0",
         "GUID:c03011c168164e1a954438f640cbd728",
         "GUID:295ffbe0b63504ae3a7879cf089501ba",
