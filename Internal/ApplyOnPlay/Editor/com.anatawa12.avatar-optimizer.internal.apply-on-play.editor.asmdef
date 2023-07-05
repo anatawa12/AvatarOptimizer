@@ -1,6 +1,8 @@
 {
     "name": "com.anatawa12.avatar-optimizer.internal.apply-on-play.editor",
-    "references": [],
+    "references": [
+        "GUID:5ce33783346c3124990afbe7b0390a06"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
@@ -11,6 +13,12 @@
     ],
     "autoReferenced": false,
     "defineConstraints": [],
-    "versionDefines": [],
+    "versionDefines": [
+        {
+            "name": "nadena.dev.modular-avatar",
+            "expression": "[1.0.0,2.0.0)",
+            "define": "MODULAR_AVATAR"
+        }
+    ],
     "noEngineReferences": false
 }
