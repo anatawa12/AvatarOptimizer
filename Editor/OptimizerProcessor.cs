@@ -1,7 +1,7 @@
 
 using System;
+using Anatawa12.ApplyOnPlay;
 using Anatawa12.AvatarOptimizer.ErrorReporting;
-using UnityEditor;
 using UnityEngine;
 using VRC.SDK3.Avatars.Components;
 using VRC.SDKBase.Editor.BuildPipeline;
@@ -11,9 +11,17 @@ namespace Anatawa12.AvatarOptimizer
     /// <summary>
     /// the Processor runs before removing EditorOnly
     /// </summary>
-    internal class EarlyOptimizerProcessor : IVRCSDKPreprocessAvatarCallback
+    internal class EarlyOptimizerProcessor : IVRCSDKPreprocessAvatarCallback, IApplyOnPlayCallback
     {
         public int callbackOrder => -2048;
+        public string CallbackName => "Avatar Optimizer Early (Before IEditorOnly Deletion)";
+        public string CallbackId => "com.anatawa12.avatar-optimizer.early";
+
+        public bool ApplyOnPlay(GameObject avatarGameObject)
+        {
+            ProcessObject(new OptimizerSession(avatarGameObject, ApplyOnPlayConfig.Generate));
+            return true;
+        }
 
         public bool OnPreprocessAvatar(GameObject avatarGameObject)
         {
@@ -62,9 +70,17 @@ namespace Anatawa12.AvatarOptimizer
         }
     }
 
-    internal class OptimizerProcessor : IVRCSDKPreprocessAvatarCallback, IVRCSDKPostprocessAvatarCallback
+    internal class OptimizerProcessor : IVRCSDKPreprocessAvatarCallback, IVRCSDKPostprocessAvatarCallback, IApplyOnPlayCallback
     {
         public int callbackOrder => 0;
+        public string CallbackName => "Avatar Optimizer Main";
+        public string CallbackId => "com.anatawa12.avatar-optimizer.main";
+
+        public bool ApplyOnPlay(GameObject avatarGameObject)
+        {
+            ProcessObject(new OptimizerSession(avatarGameObject, ApplyOnPlayConfig.Generate));
+            return true;
+        }
 
         public bool OnPreprocessAvatar(GameObject avatarGameObject)
         {

@@ -6,8 +6,8 @@ namespace Anatawa12.AvatarOptimizer
     [ExecuteAlways]
     internal abstract class EditSkinnedMeshComponent : AvatarTagComponent
     {
-        private void OnEnable() => RuntimeUtil.OnAwakeEditSkinnedMesh?.Invoke(this);
+        private void Awake() => RuntimeUtil.OnAwakeEditSkinnedMesh?.Invoke(this);
         
-        private void OnDisable() => RuntimeUtil.OnDestroyEditSkinnedMesh?.Invoke(this);
+        private void OnDestroy() => RuntimeUtil.OnDestroyEditSkinnedMesh?.Invoke(this);
     }
 }

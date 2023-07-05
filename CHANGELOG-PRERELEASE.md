@@ -12,6 +12,9 @@ The format is based on [Keep a Changelog].
 ### Changed
 - Move Components into `Avatar Optimizer` folder `#247`
   - Previously they are `Optimizer` folder
+- Completely rewrite apply on play system `#249`
+  - This replaces way to awake modular-avatar by bdunderscore.
+  - The framework for this changes will be published as separated framework when ready.
 
 ### Deprecated
 

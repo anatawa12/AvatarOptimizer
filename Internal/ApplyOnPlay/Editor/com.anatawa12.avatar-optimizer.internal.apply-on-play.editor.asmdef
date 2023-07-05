@@ -1,10 +1,8 @@
 {
-    "name": "com.anatawa12.avatar-optimizer.internal.error-reporter.editor",
+    "name": "com.anatawa12.avatar-optimizer.internal.apply-on-play.editor",
     "references": [
-        "GUID:8d9ff9f975de4bf0b86c6cc50332d028",
         "GUID:295ffbe0b63504ae3a7879cf089501ba",
-        "GUID:8264e72376854221affe9980c91c2fff",
-        "GUID:b23bdfe8d18741a29e869995d47026d0"
+        "GUID:5ce33783346c3124990afbe7b0390a06"
     ],
     "includePlatforms": [
         "Editor"
@@ -14,11 +12,16 @@
     "overrideReferences": true,
     "precompiledReferences": [
         "VRCSDK3A.dll",
-        "VRCSDKBase.dll",
-        "VRCSDKBase-Editor.dll"
+        "VRCSDKBase.dll"
     ],
     "autoReferenced": false,
     "defineConstraints": [],
-    "versionDefines": [],
+    "versionDefines": [
+        {
+            "name": "nadena.dev.modular-avatar",
+            "expression": "[1.0.0,2.0.0)",
+            "define": "MODULAR_AVATAR"
+        }
+    ],
     "noEngineReferences": false
 }

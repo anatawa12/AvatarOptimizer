@@ -41,7 +41,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             for (var i = 0; i < mesh.blendShapeCount; i++)
                 BlendShapes[i] = (BlendShapes[i].name, renderer.GetBlendShapeWeight(i));
 
-            var sourceMaterials = MaterialSaverUtility.GetMaterials(renderer);
+            var sourceMaterials = renderer.sharedMaterials;
             var materialCount = Math.Min(sourceMaterials.Length, SubMeshes.Count);
             for (var i = 0; i < materialCount; i++)
                 SubMeshes[i].SharedMaterial = sourceMaterials[i];
@@ -60,7 +60,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             SetIdentityBone(renderer.transform);
 
-            var sourceMaterials = MaterialSaverUtility.GetMaterials(renderer);
+            var sourceMaterials = renderer.sharedMaterials;
             var materialCount = Math.Min(sourceMaterials.Length, SubMeshes.Count);
             for (var i = 0; i < materialCount; i++)
                 SubMeshes[i].SharedMaterial = sourceMaterials[i];
