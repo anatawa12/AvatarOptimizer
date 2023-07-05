@@ -25,6 +25,9 @@ namespace Anatawa12.AvatarOptimizer.ApplyOnPlay
             _processor = processor;
         }
 
+        [MenuItem("Tools/Modular Avatar/Apply on Play config has been moved", false, 1000 - 1)]
+        private static void ToggleApplyOnPlay() => ApplyOnPlayConfiguration.OpenWindow();
+
         public int callbackOrder => _processor.callbackOrder;
 
         public string CallbackName => "Modular Avatar";

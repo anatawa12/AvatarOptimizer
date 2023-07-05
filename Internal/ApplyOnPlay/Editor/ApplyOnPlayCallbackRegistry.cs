@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
@@ -9,7 +10,8 @@ namespace Anatawa12.AvatarOptimizer.ApplyOnPlay
     [InitializeOnLoad]
     public static class ApplyOnPlayCallbackRegistry
     {
-        private static readonly List<IApplyOnPlayCallback> _callbacks = new List<IApplyOnPlayCallback>();
+        internal static readonly List<IApplyOnPlayCallback> Callbacks = new List<IApplyOnPlayCallback>();
+        internal const string ENABLE_EDITOR_PREFS_PREFIX = "com.anatawa12.apply-on-play.enabled.";
 
         static ApplyOnPlayCallbackRegistry()
         {
@@ -52,12 +54,14 @@ namespace Anatawa12.AvatarOptimizer.ApplyOnPlay
         [PublicAPI]
         public static void RegisterCallback(IApplyOnPlayCallback callback)
         {
-            _callbacks.Add(callback);
+            Callbacks.Add(callback);
         }
 
         internal static IApplyOnPlayCallback[] GetCallbacks()
         {
-            var copied = _callbacks.ToArray();
+            var copied = Callbacks
+                .Where(x => EditorPrefs.GetBool(ENABLE_EDITOR_PREFS_PREFIX + x.CallbackId, true))
+                .ToArray();
             Array.Sort(copied, (a, b) => a.callbackOrder.CompareTo(b.callbackOrder));
             return copied;
         }

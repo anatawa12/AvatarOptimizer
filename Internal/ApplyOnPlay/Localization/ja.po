@@ -1,0 +1,12 @@
+msgid ""
+msgstr ""
+"Language: ja\n"
+
+msgid "locale:ja"
+msgstr "日本語"
+
+msgid "window description"
+msgstr ""
+"非破壊アバター改変ツールのプレイ時の適用を無効にすることができます。\n"
+"チェックが入っていると有効、チェックが入っていないと無効になります。\n"
+"この設定はプロジェクト間で共有されます。"
