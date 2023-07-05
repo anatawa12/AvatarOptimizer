@@ -27,6 +27,9 @@ namespace Anatawa12.AvatarOptimizer.ApplyOnPlay
 
         public int callbackOrder => _processor.callbackOrder;
 
+        public string CallbackName => "Modular Avatar";
+        public string CallbackId => "com.anatawa12.apply-on-play.modular-avatar";
+
         public bool ApplyOnPlay(GameObject avatarGameObject)
         {
             return _processor.OnPreprocessAvatar(avatarGameObject);

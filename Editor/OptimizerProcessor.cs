@@ -15,6 +15,8 @@ namespace Anatawa12.AvatarOptimizer
     internal class EarlyOptimizerProcessor : IVRCSDKPreprocessAvatarCallback, IApplyOnPlayCallback
     {
         public int callbackOrder => -2048;
+        public string CallbackName => "Avatar Optimizer Early (Before IEditorOnly Deletion)";
+        public string CallbackId => "com.anatawa12.avatar-optimizer.early";
 
         public bool ApplyOnPlay(GameObject avatarGameObject)
         {
@@ -72,6 +74,8 @@ namespace Anatawa12.AvatarOptimizer
     internal class OptimizerProcessor : IVRCSDKPreprocessAvatarCallback, IVRCSDKPostprocessAvatarCallback, IApplyOnPlayCallback
     {
         public int callbackOrder => 0;
+        public string CallbackName => "Avatar Optimizer Main";
+        public string CallbackId => "com.anatawa12.avatar-optimizer.main";
 
         public bool ApplyOnPlay(GameObject avatarGameObject)
         {

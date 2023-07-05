@@ -14,6 +14,16 @@ namespace Anatawa12.AvatarOptimizer.ApplyOnPlay
      */
     public interface IApplyOnPlayCallback : IOrderedCallback
     {
+        /// <summary>
+        ///  The name of callback will be shown in the configuration window
+        /// </summary>
+        string CallbackName { get; }
+        
+        /// <summary>
+        /// Callback identifier. This ID is used as part of the name of the EditorPrefs key.
+        /// </summary>
+        string CallbackId { get; }
+
         bool ApplyOnPlay(GameObject avatarGameObject);
     }
 }
