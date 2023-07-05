@@ -4,7 +4,7 @@ using nadena.dev.modular_avatar.core.editor;
 using UnityEditor;
 using UnityEngine;
 
-namespace Anatawa12.AvatarOptimizer.ApplyOnPlay
+namespace Anatawa12.ApplyOnPlay
 {
     [InitializeOnLoad]
     internal class ModularAvatarSupport : IApplyOnPlayCallback

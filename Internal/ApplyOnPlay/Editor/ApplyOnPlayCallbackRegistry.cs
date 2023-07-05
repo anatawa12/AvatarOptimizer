@@ -5,7 +5,7 @@ using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
 
-namespace Anatawa12.AvatarOptimizer.ApplyOnPlay
+namespace Anatawa12.ApplyOnPlay
 {
     [InitializeOnLoad]
     public static class ApplyOnPlayCallbackRegistry

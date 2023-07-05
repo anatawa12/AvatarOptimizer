@@ -1,6 +1,6 @@
 
 using System;
-using Anatawa12.AvatarOptimizer.ApplyOnPlay;
+using Anatawa12.ApplyOnPlay;
 using Anatawa12.AvatarOptimizer.ErrorReporting;
 using UnityEditor;
 using UnityEngine;

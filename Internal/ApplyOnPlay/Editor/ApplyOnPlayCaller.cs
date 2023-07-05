@@ -7,7 +7,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using VRC.SDK3.Avatars.Components;
 
-namespace Anatawa12.AvatarOptimizer.ApplyOnPlay
+namespace Anatawa12.ApplyOnPlay
 {
     internal class ApplyOnPlayCaller : IProcessSceneWithReport
     {

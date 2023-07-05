@@ -1,4 +1,4 @@
-using Anatawa12.AvatarOptimizer.ApplyOnPlay;
+using Anatawa12.ApplyOnPlay;
 using UnityEngine;
 using VRC.SDK3.Avatars.Components;
 using VRC.SDKBase.Editor.BuildPipeline;

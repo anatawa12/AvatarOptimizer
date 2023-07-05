@@ -3,7 +3,7 @@ using CustomLocalization4EditorExtension;
 using UnityEditor;
 using UnityEngine;
 
-namespace Anatawa12.AvatarOptimizer.ApplyOnPlay
+namespace Anatawa12.ApplyOnPlay
 {
     internal class ApplyOnPlayConfiguration : EditorWindow
     {

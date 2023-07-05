@@ -1,7 +1,7 @@
 using UnityEditor.Build;
 using UnityEngine;
 
-namespace Anatawa12.AvatarOptimizer.ApplyOnPlay
+namespace Anatawa12.ApplyOnPlay
 {
     /**
      * The callback will be called on entering play mode.
