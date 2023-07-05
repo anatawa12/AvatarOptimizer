@@ -15,30 +15,9 @@ namespace Anatawa12.AvatarOptimizer
     [ExecuteAlways]
     internal abstract class AvatarTagComponent : MonoBehaviour, IEditorOnly
     {
-        private void Awake()
-        {
-            if (!RuntimeUtil.isPlaying || this == null) return;
-            RuntimeUtil.OnDemandProcessAvatar(RuntimeUtil.OnDemandSource.Awake, this);
-        }
-
-        private void Start()
-        {
-            if (!RuntimeUtil.isPlaying || this == null) return;
-            RuntimeUtil.OnDemandProcessAvatar(RuntimeUtil.OnDemandSource.Start, this);
-        }
-
         private void OnValidate()
         {
             if (RuntimeUtil.isPlaying) return;
-
-#if UNITY_EDITOR
-            UnityEditor.EditorApplication.delayCall += () =>
-            {
-                if (this == null) return;
-                Activator.CreateIfNotPresent(gameObject.scene);
-            };
-#endif
-
             ErrorReporterRuntime.TriggerChange();
         }
 
