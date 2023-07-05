@@ -2,9 +2,6 @@ using UnityEditor;
 
 namespace Anatawa12.AvatarOptimizer
 {
-    // https://github.com/bdunderscore/modular-avatar/blob/db49e2e210bc070671af963ff89df853ae4514a5/Packages/nadena.dev.modular-avatar/Editor/ApplyOnPlay.cs#L54
-    // Originally under MIT License
-    // Copyright (c) 2022 bd_
     [InitializeOnLoad]
     internal static class ApplyOnPlayConfig
     {
