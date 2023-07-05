@@ -2,7 +2,6 @@
 using System;
 using Anatawa12.ApplyOnPlay;
 using Anatawa12.AvatarOptimizer.ErrorReporting;
-using UnityEditor;
 using UnityEngine;
 using VRC.SDK3.Avatars.Components;
 using VRC.SDKBase.Editor.BuildPipeline;
@@ -20,7 +19,7 @@ namespace Anatawa12.AvatarOptimizer
 
         public bool ApplyOnPlay(GameObject avatarGameObject)
         {
-            ProcessObject(new OptimizerSession(avatarGameObject, true));
+            ProcessObject(new OptimizerSession(avatarGameObject, ApplyOnPlayConfig.Generate));
             return true;
         }
 
@@ -79,7 +78,7 @@ namespace Anatawa12.AvatarOptimizer
 
         public bool ApplyOnPlay(GameObject avatarGameObject)
         {
-            ProcessObject(new OptimizerSession(avatarGameObject, true));
+            ProcessObject(new OptimizerSession(avatarGameObject, ApplyOnPlayConfig.Generate));
             return true;
         }
 
