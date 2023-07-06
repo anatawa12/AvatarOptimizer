@@ -38,8 +38,8 @@ namespace Anatawa12.AvatarOptimizer
             ARGB32 = TextureFormat.ARGB32,
             RGB565 = TextureFormat.RGB565,
             R16 = TextureFormat.R16,
-            //DXT1 = TextureFormat.DXT1,
-            //DXT5 = TextureFormat.DXT5,
+            DXT1 = TextureFormat.DXT1,
+            DXT5 = TextureFormat.DXT5,
             RGBA4444 = TextureFormat.RGBA4444,
             BGRA32 = TextureFormat.BGRA32,
             //RHalf = TextureFormat.RHalf, // floating point

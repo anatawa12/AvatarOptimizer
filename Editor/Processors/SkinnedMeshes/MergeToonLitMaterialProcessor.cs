@@ -157,6 +157,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 case MergeToonLitMaterial.MergedTextureFormat.RG16:
                 case MergeToonLitMaterial.MergedTextureFormat.R8:
                     return (TextureFormat) finalFormat;
+                case MergeToonLitMaterial.MergedTextureFormat.DXT1:
+                    return TextureFormat.RGB24;
+                case MergeToonLitMaterial.MergedTextureFormat.DXT5:
+                    return TextureFormat.RGBA32;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(finalFormat), finalFormat, null);
             }
@@ -178,6 +182,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 case MergeToonLitMaterial.MergedTextureFormat.RG16:
                 case MergeToonLitMaterial.MergedTextureFormat.R8:
                     return CompressionType.UseRaw;
+                case MergeToonLitMaterial.MergedTextureFormat.DXT1:
+                case MergeToonLitMaterial.MergedTextureFormat.DXT5:
+                    return CompressionType.UseCompressMethod;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(finalFormat), finalFormat, null);
             }
@@ -197,6 +204,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 case MergeToonLitMaterial.MergedTextureFormat.RGBA32:
                 case MergeToonLitMaterial.MergedTextureFormat.ARGB32:
                 case MergeToonLitMaterial.MergedTextureFormat.BGRA32:
+                case MergeToonLitMaterial.MergedTextureFormat.DXT1:
+                case MergeToonLitMaterial.MergedTextureFormat.DXT5:
                     return RenderTextureFormat.ARGB32;
                 case MergeToonLitMaterial.MergedTextureFormat.RGB565:
                     return RenderTextureFormat.RGB565;
@@ -249,7 +258,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                         texture = CopyFromRenderTarget(target, finalFormat);
                         break;
                     case CompressionType.UseCompressMethod:
-                        throw new NotImplementedException("PvrTexTool Invocation");
+                        // DXT formats can be generated using Compress function
+                        texture = CopyFromRenderTarget(target, finalFormat);
+                        texture.Compress(true);
+                        break;
                     case CompressionType.UsePvrTexTool:
                         throw new NotImplementedException("PvrTexTool Invocation");
                     default:
