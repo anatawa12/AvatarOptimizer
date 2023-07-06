@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
+using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 {
@@ -249,31 +250,23 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 Graphics.Blit(sourceTex, target, HelperMaterial);
             }
 
-            Texture2D texture;
+            var texture = CopyFromRenderTarget(target, finalFormat);
 
-            if (compress)
+            Object.DestroyImmediate(target);
+
+            switch (compress ? GetCompressionType(finalFormat) : CompressionType.UseRaw)
             {
-                switch (GetCompressionType(finalFormat))
-                {
-                    case CompressionType.UseRaw:
-                        // Nothing to do.
-                        texture = CopyFromRenderTarget(target, finalFormat);
-                        break;
-                    case CompressionType.UseCompressMethod:
-                        // DXT formats can be generated using Compress function
-                        texture = CopyFromRenderTarget(target, finalFormat);
-                        texture.Compress(true);
-                        break;
-                    case CompressionType.UsePvrTexTool:
-                        throw new NotImplementedException("PvrTexTool Invocation");
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-            }
-            else
-            {
-                // without compress, just a preview
-                texture = CopyFromRenderTarget(target, finalFormat);
+                case CompressionType.UseRaw:
+                    // Nothing to do.
+                    break;
+                case CompressionType.UseCompressMethod:
+                    // DXT formats can be generated using Compress function
+                    texture.Compress(true);
+                    break;
+                case CompressionType.UsePvrTexTool:
+                    throw new NotImplementedException("PvrTexTool Invocation");
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
 
             System.Diagnostics.Debug.Assert(texture.format == (TextureFormat)finalFormat, 
