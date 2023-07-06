@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Experimental.Rendering;
 
 namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 {
@@ -192,7 +193,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         private static RenderTextureFormat GetRenderTarget(MergeToonLitMaterial.MergedTextureFormat finalFormat)
         {
-            // SystemInfo.IsFormatSupported is marked as experimental so use automatic fallback
             switch (finalFormat)
             {
                 case MergeToonLitMaterial.MergedTextureFormat.ARGB4444:
@@ -231,7 +231,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             var finalFormat = mergeInfo.mergedFormat;
             if (finalFormat == 0) finalFormat = MergeToonLitMaterial.MergedTextureFormat.RGBA32;
 
-            var targetFormat = GetRenderTarget(finalFormat);
+            // use compatible format
+            var targetFormat = GraphicsFormatUtility.GetGraphicsFormat(GetRenderTarget(finalFormat), RenderTextureReadWrite.Default);
+            targetFormat = SystemInfo.GetCompatibleFormat(targetFormat, FormatUsage.Render);
             var target = new RenderTexture(texWidth, texHeight, 0, targetFormat);
 
             foreach (var source in mergeInfo.source)
