@@ -73,7 +73,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             var materials = target.SubMeshes.Select(x => x.SharedMaterial).ToArray();
             var merged = Component.merges.Select(x => new SubMesh(
                 x.source.SelectMany(src => target.SubMeshes[src.materialIndex].Triangles).ToList(),
-                CreateMaterial(GenerateTexture(x, materials))));
+                CreateMaterial(GenerateTexture(x, materials, true))));
             var subMeshes = copied.Concat(merged).ToList();
             target.SubMeshes.Clear();
             target.SubMeshes.AddRange(subMeshes);
@@ -114,7 +114,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             else
             {
                 // slow mode: generate texture actually
-                return copied.Concat(GenerateTextures(Component, upstream).Select(CreateMaterial)).ToArray();
+                return copied.Concat(GenerateTextures(Component, upstream, false).Select(CreateMaterial)).ToArray();
             }
         }
 
@@ -125,16 +125,22 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             return mat;
         }
 
-        public static Texture[] GenerateTextures(MergeToonLitMaterial config, Material[] materials)
+        public static Texture[] GenerateTextures(MergeToonLitMaterial config, Material[] materials, bool compress)
         {
-            return config.merges.Select(x => GenerateTexture(x, materials)).ToArray();
+            return config.merges.Select(x => GenerateTexture(x, materials, compress)).ToArray();
         }
 
-        private static Texture GenerateTexture(MergeToonLitMaterial.MergeInfo mergeInfo, Material[] materials)
+        private static Texture GenerateTexture(
+            MergeToonLitMaterial.MergeInfo mergeInfo,
+            Material[] materials,
+            bool compress
+        )
         {
             var texWidth = mergeInfo.textureSize.x;
             var texHeight = mergeInfo.textureSize.y;
-            var texture = new Texture2D(texWidth, texHeight);
+            compress &= mergeInfo.mergedFormat != 0;
+            var textureFormat = compress ? (TextureFormat)mergeInfo.mergedFormat : TextureFormat.RGBA32;
+            var texture = new Texture2D(texWidth, texHeight, textureFormat, true);
             var target = new RenderTexture(texWidth, texHeight, 0, RenderTextureFormat.ARGB32);
 
             foreach (var source in mergeInfo.source)
