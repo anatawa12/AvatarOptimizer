@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -130,6 +131,86 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             return config.merges.Select(x => GenerateTexture(x, materials, compress)).ToArray();
         }
 
+        private enum CompressionType
+        {
+            // writing to Texture2D finishes compression
+            UseRaw,
+            // we use Texture2d.Compress method to compress image
+            UseCompressMethod,
+            // use PVRTexTool in unity installation
+            UsePvrTexTool,
+        }
+
+        private static TextureFormat BaseTextureFormat(MergeToonLitMaterial.MergedTextureFormat finalFormat)
+        {
+            switch (finalFormat)
+            {
+                case MergeToonLitMaterial.MergedTextureFormat.Alpha8:
+                case MergeToonLitMaterial.MergedTextureFormat.ARGB4444:
+                case MergeToonLitMaterial.MergedTextureFormat.RGB24:
+                case MergeToonLitMaterial.MergedTextureFormat.RGBA32:
+                case MergeToonLitMaterial.MergedTextureFormat.ARGB32:
+                case MergeToonLitMaterial.MergedTextureFormat.RGB565:
+                case MergeToonLitMaterial.MergedTextureFormat.R16:
+                case MergeToonLitMaterial.MergedTextureFormat.RGBA4444:
+                case MergeToonLitMaterial.MergedTextureFormat.BGRA32:
+                case MergeToonLitMaterial.MergedTextureFormat.RG16:
+                case MergeToonLitMaterial.MergedTextureFormat.R8:
+                    return (TextureFormat) finalFormat;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(finalFormat), finalFormat, null);
+            }
+        }
+
+        private static CompressionType GetCompressionType(MergeToonLitMaterial.MergedTextureFormat finalFormat)
+        {
+            switch (finalFormat)
+            {
+                case MergeToonLitMaterial.MergedTextureFormat.Alpha8:
+                case MergeToonLitMaterial.MergedTextureFormat.ARGB4444:
+                case MergeToonLitMaterial.MergedTextureFormat.RGB24:
+                case MergeToonLitMaterial.MergedTextureFormat.RGBA32:
+                case MergeToonLitMaterial.MergedTextureFormat.ARGB32:
+                case MergeToonLitMaterial.MergedTextureFormat.RGB565:
+                case MergeToonLitMaterial.MergedTextureFormat.R16:
+                case MergeToonLitMaterial.MergedTextureFormat.RGBA4444:
+                case MergeToonLitMaterial.MergedTextureFormat.BGRA32:
+                case MergeToonLitMaterial.MergedTextureFormat.RG16:
+                case MergeToonLitMaterial.MergedTextureFormat.R8:
+                    return CompressionType.UseRaw;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(finalFormat), finalFormat, null);
+            }
+        }
+
+        private static RenderTextureFormat GetRenderTarget(MergeToonLitMaterial.MergedTextureFormat finalFormat)
+        {
+            // SystemInfo.IsFormatSupported is marked as experimental so use automatic fallback
+            switch (finalFormat)
+            {
+                case MergeToonLitMaterial.MergedTextureFormat.ARGB4444:
+                case MergeToonLitMaterial.MergedTextureFormat.RGBA4444:
+                    return RenderTextureFormat.ARGB4444;
+                // 8 bit for each channel
+                case MergeToonLitMaterial.MergedTextureFormat.Alpha8:
+                case MergeToonLitMaterial.MergedTextureFormat.RGB24:
+                case MergeToonLitMaterial.MergedTextureFormat.RGBA32:
+                case MergeToonLitMaterial.MergedTextureFormat.ARGB32:
+                case MergeToonLitMaterial.MergedTextureFormat.BGRA32:
+                    return RenderTextureFormat.ARGB32;
+                case MergeToonLitMaterial.MergedTextureFormat.RGB565:
+                    return RenderTextureFormat.RGB565;
+                case MergeToonLitMaterial.MergedTextureFormat.R16:
+                    return RenderTextureFormat.R16;
+                case MergeToonLitMaterial.MergedTextureFormat.RG16:
+                    return RenderTextureFormat.RG16;
+                case MergeToonLitMaterial.MergedTextureFormat.R8:
+                    return RenderTextureFormat.R8;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(finalFormat), finalFormat, null);
+            }
+        }
+
         private static Texture GenerateTexture(
             MergeToonLitMaterial.MergeInfo mergeInfo,
             Material[] materials,
@@ -138,10 +219,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         {
             var texWidth = mergeInfo.textureSize.x;
             var texHeight = mergeInfo.textureSize.y;
-            compress &= mergeInfo.mergedFormat != 0;
-            var textureFormat = compress ? (TextureFormat)mergeInfo.mergedFormat : TextureFormat.RGBA32;
-            var texture = new Texture2D(texWidth, texHeight, textureFormat, true);
-            var target = new RenderTexture(texWidth, texHeight, 0, RenderTextureFormat.ARGB32);
+            var finalFormat = mergeInfo.mergedFormat;
+            if (finalFormat == 0) finalFormat = MergeToonLitMaterial.MergedTextureFormat.RGBA32;
+
+            var targetFormat = GetRenderTarget(finalFormat);
+            var target = new RenderTexture(texWidth, texHeight, 0, targetFormat);
 
             foreach (var source in mergeInfo.source)
             {
@@ -156,10 +238,44 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 Graphics.Blit(sourceTex, target, HelperMaterial);
             }
 
+            Texture2D texture;
+
+            if (compress)
+            {
+                switch (GetCompressionType(finalFormat))
+                {
+                    case CompressionType.UseRaw:
+                        // Nothing to do.
+                        texture = CopyFromRenderTarget(target, finalFormat);
+                        break;
+                    case CompressionType.UseCompressMethod:
+                        throw new NotImplementedException("PvrTexTool Invocation");
+                    case CompressionType.UsePvrTexTool:
+                        throw new NotImplementedException("PvrTexTool Invocation");
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+            else
+            {
+                // without compress, just a preview
+                texture = CopyFromRenderTarget(target, finalFormat);
+            }
+
+            System.Diagnostics.Debug.Assert(texture.format == (TextureFormat)finalFormat, 
+                $"TextureFormat mismatch: expected {finalFormat} but was {texture.format}");
+
+            return texture;
+        }
+
+        private static Texture2D CopyFromRenderTarget(RenderTexture source, MergeToonLitMaterial.MergedTextureFormat finalFormat)
+        {
             var prev = RenderTexture.active;
+            var texture = new Texture2D(source.width, source.height, BaseTextureFormat(finalFormat), true);
+            
             try
             {
-                RenderTexture.active = target;
+                RenderTexture.active = source;
                 texture.ReadPixels(new Rect(0, 0, texture.width, texture.height), 0, 0);
                 texture.Apply();
             }
