@@ -325,6 +325,7 @@ namespace Anatawa12.AvatarOptimizer
         public static DummyObject CreateOutputAssetFile(string name)
         {
             Directory.CreateDirectory(OutputDirPath);
+            name = string.Join("_", name.Split(Path.GetInvalidFileNameChars()));
             var path = GetUniqueFileName($"{OutputDirPath}/{name}", "asset");
             var obj = ScriptableObject.CreateInstance<DummyObject>();
             AssetDatabase.CreateAsset(obj, path);
