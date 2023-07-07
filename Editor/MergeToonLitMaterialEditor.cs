@@ -142,7 +142,7 @@ namespace Anatawa12.AvatarOptimizer
 
             if (GUILayout.Button(CL4EE.Tr("MergeToonLitMaterial:button:Generate Preview")))
             {
-                _generatedPreviews = MergeToonLitMaterialProcessor.GenerateTextures(component, _upstreamMaterials, true);
+                _generatedPreviews = MergeToonLitMaterialProcessor.GenerateTextures(component, _upstreamMaterials, false);
             }            
         }
 
