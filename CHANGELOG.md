@@ -9,6 +9,8 @@ The format is based on [Keep a Changelog].
 ## [Unreleased]
 ### Added
 - Now we can choose texture format for Merge Toon Lit Material `#251`
+  - This includes one tiny **BREAKING CHANGES**.
+  - Previously MergeToonLit uses ARGB32 as texture format but for now, it use ASTC 6x6 or DXT5 by default based on platform.
 
 ### Changed
 - Move Components into `Avatar Optimizer` folder `#247`
