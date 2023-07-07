@@ -8,26 +8,33 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Now we can choose texture format for Merge Toon Lit Material `#251`
-  - This includes one tiny **BREAKING CHANGES**.
-  - Previously MergeToonLit uses ARGB32 as texture format but for now, it use ASTC 6x6 or DXT5 by default based on platform.
 
 ### Changed
-- Move Components into `Avatar Optimizer` folder `#247`
-  - Previously they are `Optimizer` folder
-- Completely rewrite apply on play system `#249`
-  - This replaces way to awake modular-avatar by bdunderscore.
-  - The framework for this changes will be published as separated framework when ready.
-- Use binary form of asset file in avatar optimizer output `#252`
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
-- Manual bake not working with avatars with invalid file name chars `#253`
 
 ### Security
+
+## [1.1.0-beta.1] - 2023-07-07
+### Added
+- Now we can choose texture format for Merge Toon Lit Material [`#251`](https://github.com/anatawa12/AvatarOptimizer/pull/251)
+  - This includes one tiny **BREAKING CHANGES**.
+  - Previously MergeToonLit uses ARGB32 as texture format but for now, it use ASTC 6x6 or DXT5 by default based on platform.
+
+### Changed
+- Move Components into `Avatar Optimizer` folder [`#247`](https://github.com/anatawa12/AvatarOptimizer/pull/247)
+  - Previously they are `Optimizer` folder
+- Completely rewrite apply on play system [`#249`](https://github.com/anatawa12/AvatarOptimizer/pull/249)
+  - This replaces way to awake modular-avatar by bdunderscore.
+  - The framework for this changes will be published as separated framework when ready.
+- Use binary form of asset file in avatar optimizer output [`#252`](https://github.com/anatawa12/AvatarOptimizer/pull/252)
+
+### Fixed
+- Manual bake not working with avatars with invalid file name chars [`#253`](https://github.com/anatawa12/AvatarOptimizer/pull/253)
 
 ## [1.0.0] - 2023-06-27
 ## [1.0.0-beta.5] - 2023-06-26
@@ -481,7 +488,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.1.0-beta.1...HEAD
+[1.1.0-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.0.0...v1.1.0-beta.1
 [1.0.0]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.0.0-beta.5...v1.0.0
 [1.0.0-beta.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.0.0-beta.4...v1.0.0-beta.5
 [1.0.0-beta.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.0.0-beta.3...v1.0.0-beta.4
