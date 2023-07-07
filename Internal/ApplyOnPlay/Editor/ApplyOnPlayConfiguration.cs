@@ -7,7 +7,7 @@ namespace Anatawa12.ApplyOnPlay
 {
     internal class ApplyOnPlayConfiguration : EditorWindow
     {
-        [MenuItem("Tools/Apply on Play Configuration", false, 100)]
+        [MenuItem("Tools/Apply on Play/Configuration", false, 100)]
         internal static void OpenWindow() => GetWindow<ApplyOnPlayConfiguration>("Apply on Play Config").Show();
 
         [AssemblyCL4EELocalization] private static Localization Localization { get; } = new Localization("588f55b2626b4d7fb0b79d34fc67de42", "en");

@@ -1,14 +1,14 @@
-using Anatawa12.AvatarOptimizer.ErrorReporting;
 using UnityEditor;
 using UnityEngine;
 using VRC.SDK3.Avatars.Components;
+using Object = UnityEngine.Object;
 
-namespace Anatawa12.AvatarOptimizer
+namespace Anatawa12.ApplyOnPlay
 {
     internal static class ManualBake
     {
-        private const string ManualBakeMenuName = "Tools/Avatar Optimizer/Manual Bake Avatar";
-        private const string ManualBakeContextMenuName = "GameObject/[AvatarOptimizer] Manual Bake Avatar";
+        private const string ManualBakeMenuName = "Tools/Apply on Play/Manual Bake Avatar";
+        private const string ManualBakeContextMenuName = "GameObject/[Apply on Play] Manual Bake Avatar";
         private const int ManualBakeContextMenuPriority = 49;
 
         [MenuItem(ManualBakeMenuName, true)]
@@ -28,21 +28,18 @@ namespace Anatawa12.AvatarOptimizer
             if (avatar == null || avatarDescriptor == null) return;
 
             var original = avatar;
-            var originalBasePath = RuntimeUtil.RelativePath(null, avatar);
             avatar = Object.Instantiate(avatar);
             avatar.transform.position += Vector3.forward * 2;
-            var clonedBasePath = RuntimeUtil.RelativePath(null, avatar);
+            
+            var callbacks = ApplyOnPlayCallbackRegistry.GetCallbacks();
 
-            BuildReport.Clear();
             try
             {
-                var session = new OptimizerSession(avatar, Utils.CreateOutputAssetFile(original.name));
-                EarlyOptimizerProcessor.ProcessObject(session);
-                OptimizerProcessor.ProcessObject(session);
+                ApplyOnPlayCaller.ProcessAvatar(avatar, "Manual Bake", callbacks);
             }
             finally
             {
-                BuildReport.RemapPaths(originalBasePath, clonedBasePath);
+                ApplyOnPlayCaller.CallManualBakeFinalizer(ApplyOnPlayCallbackRegistry.GetFinalizers(), original, avatar);
                 Selection.objects = new Object[] { avatar };
             }
         }

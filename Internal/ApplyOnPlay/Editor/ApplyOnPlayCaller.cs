@@ -22,11 +22,11 @@ namespace Anatawa12.ApplyOnPlay
 
             foreach (var vrcAvatarDescriptor in components)
             {
-                ProcessAvatar(vrcAvatarDescriptor.gameObject, callbacks);
+                ProcessAvatar(vrcAvatarDescriptor.gameObject, "ApplyOnPlay", callbacks);
             }
         }
 
-        private bool ProcessAvatar(GameObject avatarGameObject, IApplyOnPlayCallback[] callbacks)
+        internal static bool ProcessAvatar(GameObject avatarGameObject, string action, IApplyOnPlayCallback[] callbacks)
         {
             foreach (var applyOnPlayCallback in callbacks)
             {
@@ -34,7 +34,7 @@ namespace Anatawa12.ApplyOnPlay
                 {
                     if (!applyOnPlayCallback.ApplyOnPlay(avatarGameObject))
                     {
-                        var message = $"The ApplyOnPlay for {avatarGameObject} was aborted because " +
+                        var message = $"The {action} for {avatarGameObject} was aborted because " +
                                       "'{applyOnPlayCallback.GetType().Name}' reported a failure.";
                         Debug.LogError(message);
                         return false;
@@ -42,7 +42,7 @@ namespace Anatawa12.ApplyOnPlay
                 }
                 catch (Exception ex)
                 {
-                    var message = $"The ApplyOnPlay for {avatarGameObject} was aborted because " +
+                    var message = $"The {action} for {avatarGameObject} was aborted because " +
                                   "'{applyOnPlayCallback.GetType().Name}' threw an exception.";
                     Debug.LogError(message);
                     Debug.LogException(ex);
@@ -51,6 +51,21 @@ namespace Anatawa12.ApplyOnPlay
             }
 
             return true;
+        }
+
+        public static void CallManualBakeFinalizer(IManualBakeFinalizer[] finalizers, GameObject original, GameObject avatar)
+        {
+            foreach (var manualBakeFinalizer in finalizers)
+            {
+                try
+                {
+                    manualBakeFinalizer.FinalizeManualBake(original, avatar);
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogException(ex);
+                }
+            }
         }
     }
 }

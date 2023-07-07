@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
@@ -11,6 +12,7 @@ namespace Anatawa12.ApplyOnPlay
     public static class ApplyOnPlayCallbackRegistry
     {
         internal static readonly List<IApplyOnPlayCallback> Callbacks = new List<IApplyOnPlayCallback>();
+        internal static readonly List<IManualBakeFinalizer> Finalizers = new List<IManualBakeFinalizer>();
         internal const string ENABLE_EDITOR_PREFS_PREFIX = "com.anatawa12.apply-on-play.enabled.";
 
         static ApplyOnPlayCallbackRegistry()
@@ -24,17 +26,8 @@ namespace Anatawa12.ApplyOnPlay
                     var types = assembly.GetTypes();
                     foreach (var type in types)
                     {
-                        if (!typeof(IApplyOnPlayCallback).IsAssignableFrom(type)) continue;
-                        var constructor = type.GetConstructor(Type.EmptyTypes);
-                        if (constructor == null) continue;
-                        try
-                        {
-                            RegisterCallback((IApplyOnPlayCallback)constructor.Invoke(Array.Empty<object>()));
-                        }
-                        catch (Exception e)
-                        {
-                            LogException($"Instantiating {type.Name}", e);
-                        }
+                        DoCallback<IApplyOnPlayCallback>(type, RegisterCallback);
+                        DoCallback<IManualBakeFinalizer>(type, RegisterFinalizer);
                     }
                 }
                 catch (Exception e)
@@ -51,10 +44,31 @@ namespace Anatawa12.ApplyOnPlay
             }
         }
 
+        private static void DoCallback<T>(Type type, Action<T> add)
+        {
+            if (!typeof(T).IsAssignableFrom(type)) return;
+            var constructor = type.GetConstructor(Type.EmptyTypes);
+            if (constructor == null) return;
+            try
+            {
+                add((T)constructor.Invoke(Array.Empty<object>()));
+            }
+            catch (Exception e)
+            {
+                LogException($"Instantiating {type.Name}", e);
+            }
+        }
+
         [PublicAPI]
         public static void RegisterCallback(IApplyOnPlayCallback callback)
         {
             Callbacks.Add(callback);
+        }
+
+        [PublicAPI]
+        public static void RegisterFinalizer(IManualBakeFinalizer callback)
+        {
+            Finalizers.Add(callback);
         }
 
         internal static IApplyOnPlayCallback[] GetCallbacks()
@@ -62,6 +76,13 @@ namespace Anatawa12.ApplyOnPlay
             var copied = Callbacks
                 .Where(x => EditorPrefs.GetBool(ENABLE_EDITOR_PREFS_PREFIX + x.CallbackId, true))
                 .ToArray();
+            Array.Sort(copied, (a, b) => a.callbackOrder.CompareTo(b.callbackOrder));
+            return copied;
+        }
+
+        internal static IManualBakeFinalizer[] GetFinalizers()
+        {
+            var copied = Finalizers.ToArray();
             Array.Sort(copied, (a, b) => a.callbackOrder.CompareTo(b.callbackOrder));
             return copied;
         }
