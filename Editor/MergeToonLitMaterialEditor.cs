@@ -123,6 +123,8 @@ namespace Anatawa12.AvatarOptimizer
                     componentMerge.textureSize =
                         EditorGUILayout.Vector2IntField(CL4EE.Tr("MergeToonLitMaterial:label:Texture Size"), componentMerge.textureSize);
 
+                    componentMerge.mergedFormat = (MergeToonLitMaterial.MergedTextureFormat)EditorGUILayout.EnumPopup("Format", componentMerge.mergedFormat);
+
                     var preview = _generatedPreviews != null ? _generatedPreviews[i] : Utils.PreviewHereTex;
                     EditorGUILayout.LabelField(new GUIContent(preview), GUILayout.MaxHeight(256), GUILayout.MaxHeight(256));
 
@@ -140,7 +142,7 @@ namespace Anatawa12.AvatarOptimizer
 
             if (GUILayout.Button(CL4EE.Tr("MergeToonLitMaterial:button:Generate Preview")))
             {
-                _generatedPreviews = MergeToonLitMaterialProcessor.GenerateTextures(component, _upstreamMaterials);
+                _generatedPreviews = MergeToonLitMaterialProcessor.GenerateTextures(component, _upstreamMaterials, false);
             }            
         }
 
