@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Anatawa12.ApplyOnPlay;
 using UnityEngine;
 using VRC.SDK3.Avatars.Components;
@@ -8,7 +9,7 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
     /// <summary>
     /// Initializes Error Reporting System
     /// </summary>
-    internal class ErrorReportingInitializerProcessor : IVRCSDKPreprocessAvatarCallback, IApplyOnPlayCallback
+    internal class ErrorReportingInitializerProcessor : IVRCSDKPreprocessAvatarCallback, IApplyOnPlayCallback, IManualBakeFinalizer
     {
         public int callbackOrder => int.MinValue;
 
@@ -22,6 +23,29 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
             BuildReport.Clear();
             BuildReport.CurrentReport.Initialize(avatarGameObject.GetComponent<VRCAvatarDescriptor>());
             return true;
+        }
+
+        public void FinalizeManualBake(GameObject original, GameObject cloned)
+        {
+            var originalBasePath = GlobalPath(original);
+            var clonedBasePath = GlobalPath(cloned);
+
+            BuildReport.RemapPaths(originalBasePath, clonedBasePath);
+        }
+
+        private static string GlobalPath(GameObject child)
+        {
+            if (null == child) return "";
+
+            var pathSegments = new List<string>();
+            while (child != null)
+            {
+                pathSegments.Add(child.name);
+                child = child.transform.parent != null ? child.transform.parent.gameObject : null;
+            }
+
+            pathSegments.Reverse();
+            return string.Join("/", pathSegments);
         }
     }
 }
