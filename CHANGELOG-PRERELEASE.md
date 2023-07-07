@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog].
 - Completely rewrite apply on play system `#249`
   - This replaces way to awake modular-avatar by bdunderscore.
   - The framework for this changes will be published as separated framework when ready.
+- Use binary form of asset file in avatar optimizer output `#252`
 
 ### Deprecated
 
