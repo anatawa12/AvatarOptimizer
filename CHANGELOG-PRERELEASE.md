@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Now we can choose texture format for Merge Toon Lit Material `#251`
 
 ### Changed
 - Move Components into `Avatar Optimizer` folder `#247`
