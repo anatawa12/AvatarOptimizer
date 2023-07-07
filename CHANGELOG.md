@@ -24,6 +24,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Manual bake not working with avatars with invalid file name chars `#253`
 
 ### Security
 
