@@ -169,6 +169,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 case MergeToonLitMaterial.MergedTextureFormat.ASTC_6x6:
                 case MergeToonLitMaterial.MergedTextureFormat.ASTC_8x8:
                     return TextureFormat.RGBA32;
+                case MergeToonLitMaterial.MergedTextureFormat.Default:
                 default:
                     throw new ArgumentOutOfRangeException(nameof(finalFormat), finalFormat, null);
             }
@@ -198,6 +199,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 case MergeToonLitMaterial.MergedTextureFormat.ASTC_6x6:
                 case MergeToonLitMaterial.MergedTextureFormat.ASTC_8x8:
                     return CompressionType.UseIspcAstc;
+                case MergeToonLitMaterial.MergedTextureFormat.Default:
                 default:
                     throw new ArgumentOutOfRangeException(nameof(finalFormat), finalFormat, null);
             }
@@ -232,6 +234,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 case MergeToonLitMaterial.MergedTextureFormat.ASTC_6x6:
                 case MergeToonLitMaterial.MergedTextureFormat.ASTC_8x8:
                     return RenderTextureFormat.ARGB32;
+                case MergeToonLitMaterial.MergedTextureFormat.Default:
                 default:
                     throw new ArgumentOutOfRangeException(nameof(finalFormat), finalFormat, null);
             }
@@ -246,7 +249,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             var texWidth = mergeInfo.textureSize.x;
             var texHeight = mergeInfo.textureSize.y;
             var finalFormat = mergeInfo.mergedFormat;
-            if (finalFormat == 0) finalFormat = MergeToonLitMaterial.MergedTextureFormat.RGBA32;
+            if (finalFormat == MergeToonLitMaterial.MergedTextureFormat.Default)
+#if UNITY_ANDROID || UNITY_IOS
+                finalFormat = MergeToonLitMaterial.MergedTextureFormat.ASTC_6x6;
+#else
+                finalFormat = MergeToonLitMaterial.MergedTextureFormat.DXT5;
+#endif
 
             // use compatible format
             var targetFormat = GraphicsFormatUtility.GetGraphicsFormat(GetRenderTarget(finalFormat), RenderTextureReadWrite.Default);

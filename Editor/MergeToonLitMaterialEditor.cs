@@ -123,8 +123,6 @@ namespace Anatawa12.AvatarOptimizer
                     componentMerge.textureSize =
                         EditorGUILayout.Vector2IntField(CL4EE.Tr("MergeToonLitMaterial:label:Texture Size"), componentMerge.textureSize);
 
-                    if (componentMerge.mergedFormat == 0)
-                        componentMerge.mergedFormat = MergeToonLitMaterial.MergedTextureFormat.RGBA32;
                     componentMerge.mergedFormat = (MergeToonLitMaterial.MergedTextureFormat)EditorGUILayout.EnumPopup("Format", componentMerge.mergedFormat);
 
                     var preview = _generatedPreviews != null ? _generatedPreviews[i] : Utils.PreviewHereTex;

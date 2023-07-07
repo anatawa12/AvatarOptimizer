@@ -29,6 +29,12 @@ namespace Anatawa12.AvatarOptimizer
         public enum MergedTextureFormat
         {
             // There We forced non-linear color space for now so I disabled floating point image formats.
+#if UNITY_ANDROID || UNITY_IOS
+            [InspectorName("Default (ASTC 6x6)")]
+#else
+            [InspectorName("Default (DXT5)")]
+#endif
+            Default = 0,
 
             // ReSharper disable InconsistentNaming
             Alpha8 = TextureFormat.Alpha8,
