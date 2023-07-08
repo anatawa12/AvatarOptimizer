@@ -33,7 +33,7 @@ namespace Anatawa12.ApplyOnPlay
         public string CallbackName => "Modular Avatar";
         public string CallbackId => "com.anatawa12.apply-on-play.modular-avatar";
 
-        public bool ApplyOnPlay(GameObject avatarGameObject)
+        public bool ApplyOnPlay(GameObject avatarGameObject, ApplyReason reason)
         {
             return _processor.OnPreprocessAvatar(avatarGameObject);
         }

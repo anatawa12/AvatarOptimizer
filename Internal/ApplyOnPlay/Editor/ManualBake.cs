@@ -35,7 +35,7 @@ namespace Anatawa12.ApplyOnPlay
 
             try
             {
-                ApplyOnPlayCaller.ProcessAvatar(avatar, "Manual Bake", callbacks);
+                ApplyOnPlayCaller.ProcessAvatar(avatar, ApplyReason.ManualBake, callbacks);
             }
             finally
             {
