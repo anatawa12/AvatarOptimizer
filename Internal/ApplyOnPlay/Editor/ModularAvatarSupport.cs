@@ -1,8 +1,11 @@
 #if MODULAR_AVATAR
+using System;
+using System.IO;
 using System.Reflection;
 using nadena.dev.modular_avatar.core.editor;
 using UnityEditor;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace Anatawa12.ApplyOnPlay
 {
@@ -35,7 +38,51 @@ namespace Anatawa12.ApplyOnPlay
 
         public bool ApplyOnPlay(GameObject avatarGameObject, ApplyReason reason)
         {
-            return _processor.OnPreprocessAvatar(avatarGameObject);
+            try
+            {
+                return _processor.OnPreprocessAvatar(avatarGameObject);
+            }
+            finally
+            {
+                if (reason == ApplyReason.ManualBake)
+                {
+                    MoveModularAvatarAssets(avatarGameObject);
+                }
+            }
+        }
+
+        private static void MoveModularAvatarAssets(GameObject avatarGameObject)
+        {
+            try
+            {
+                var maGeneratedPath = "Assets/999_Modular_Avatar_Generated";
+                var outputPath = $"Assets/ModularAvatarOutput";
+                if (!Directory.Exists(maGeneratedPath)) return;
+
+                var avatarName = avatarGameObject.name;
+                if (avatarName.EndsWith("(Clone)", StringComparison.Ordinal))
+                    avatarName = avatarName.Substring(0, avatarName.Length - "(Clone)".Length);
+
+                avatarName = string.Join("_", avatarName.Split(Path.GetInvalidFileNameChars()));
+
+                var basePath = $"Assets/ModularAvatarOutput/{avatarName}";
+                var savePath = basePath;
+
+                var extension = 0;
+
+                while (File.Exists(savePath) || Directory.Exists(savePath))
+                {
+                    savePath = basePath + " " + (++extension);
+                }
+
+                Directory.CreateDirectory(outputPath);
+                Directory.Move(maGeneratedPath, savePath);
+                AssetDatabase.Refresh();
+            }
+            catch (Exception e)
+            {
+                Debug.LogException(e);
+            }
         }
     }
 }
