@@ -24,6 +24,12 @@ namespace Anatawa12.ApplyOnPlay
         /// </summary>
         string CallbackId { get; }
 
-        bool ApplyOnPlay(GameObject avatarGameObject);
+        bool ApplyOnPlay(GameObject avatarGameObject, ApplyReason reason);
+    }
+
+    public enum ApplyReason
+    {
+        EnteringPlayMode,
+        ManualBake,
     }
 }

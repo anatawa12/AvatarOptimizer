@@ -22,17 +22,30 @@ namespace Anatawa12.ApplyOnPlay
 
             foreach (var vrcAvatarDescriptor in components)
             {
-                ProcessAvatar(vrcAvatarDescriptor.gameObject, "ApplyOnPlay", callbacks);
+                ProcessAvatar(vrcAvatarDescriptor.gameObject, ApplyReason.EnteringPlayMode, callbacks);
             }
         }
 
-        internal static bool ProcessAvatar(GameObject avatarGameObject, string action, IApplyOnPlayCallback[] callbacks)
+        internal static bool ProcessAvatar(GameObject avatarGameObject, ApplyReason reason, IApplyOnPlayCallback[] callbacks)
         {
+            string action;
+            switch (reason)
+            {
+                case ApplyReason.EnteringPlayMode:
+                    action = "Apply on Play";
+                    break;
+                case ApplyReason.ManualBake:
+                    action = "Manual Bake";
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(reason), reason, null);
+            }
+
             foreach (var applyOnPlayCallback in callbacks)
             {
                 try
                 {
-                    if (!applyOnPlayCallback.ApplyOnPlay(avatarGameObject))
+                    if (!applyOnPlayCallback.ApplyOnPlay(avatarGameObject, reason))
                     {
                         var message = $"The {action} for {avatarGameObject} was aborted because " +
                                       "'{applyOnPlayCallback.GetType().Name}' reported a failure.";

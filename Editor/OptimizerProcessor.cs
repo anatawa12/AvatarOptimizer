@@ -17,9 +17,9 @@ namespace Anatawa12.AvatarOptimizer
         public string CallbackName => "Avatar Optimizer Early (Before IEditorOnly Deletion)";
         public string CallbackId => "com.anatawa12.avatar-optimizer.early";
 
-        public bool ApplyOnPlay(GameObject avatarGameObject)
+        public bool ApplyOnPlay(GameObject avatarGameObject, ApplyReason reason)
         {
-            ProcessObject(new OptimizerSession(avatarGameObject, ApplyOnPlayConfig.Generate));
+            ProcessObject(new OptimizerSession(avatarGameObject, Utils.CreateOutputAssetFile(avatarGameObject, reason)));
             return true;
         }
 
@@ -76,9 +76,9 @@ namespace Anatawa12.AvatarOptimizer
         public string CallbackName => "Avatar Optimizer Main";
         public string CallbackId => "com.anatawa12.avatar-optimizer.main";
 
-        public bool ApplyOnPlay(GameObject avatarGameObject)
+        public bool ApplyOnPlay(GameObject avatarGameObject, ApplyReason reason)
         {
-            ProcessObject(new OptimizerSession(avatarGameObject, ApplyOnPlayConfig.Generate));
+            ProcessObject(new OptimizerSession(avatarGameObject, Utils.CreateOutputAssetFile(avatarGameObject, reason)));
             return true;
         }
 

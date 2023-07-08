@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Anatawa12.ApplyOnPlay;
 using JetBrains.Annotations;
 using Unity.Collections;
 using UnityEditor;
@@ -314,12 +315,33 @@ namespace Anatawa12.AvatarOptimizer
             FileUtil.DeleteFileOrDirectory(TemporalDirPath);
         }
 
+        [CanBeNull]
+        public static DummyObject CreateOutputAssetFile(GameObject avatarGameObject, ApplyReason reason)
+        {
+            switch (reason)
+            {
+                case ApplyReason.EnteringPlayMode:
+                    return ApplyOnPlayConfig.Generate ? CreateAssetFile() : null;
+                case ApplyReason.ManualBake:
+                default:
+                    return CreateOutputAssetFile(avatarGameObject);
+            }
+        }
+
         public static DummyObject CreateAssetFile()
         {
             var obj = ScriptableObject.CreateInstance<DummyObject>();
             Directory.CreateDirectory(TemporalDirPath);
             AssetDatabase.CreateAsset(obj, $"{TemporalDirPath}/{GUID.Generate()}.asset");
             return obj;
+        }
+
+        public static DummyObject CreateOutputAssetFile(GameObject avatar)
+        {
+            var name = avatar.name;
+            if (name.EndsWith("(Clone)", StringComparison.Ordinal))
+                name = name.Substring(0, name.Length - "(Clone)".Length);
+            return CreateOutputAssetFile(name);
         }
 
         public static DummyObject CreateOutputAssetFile(string name)

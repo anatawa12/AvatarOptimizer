@@ -16,7 +16,7 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
         public string CallbackName => "Error Reporting Initialization";
         public string CallbackId => "com.anatawa12.error-reporting";
 
-        public bool ApplyOnPlay(GameObject avatarGameObject) => OnPreprocessAvatar(avatarGameObject);
+        public bool ApplyOnPlay(GameObject avatarGameObject, ApplyReason reason) => OnPreprocessAvatar(avatarGameObject);
 
         public bool OnPreprocessAvatar(GameObject avatarGameObject)
         {

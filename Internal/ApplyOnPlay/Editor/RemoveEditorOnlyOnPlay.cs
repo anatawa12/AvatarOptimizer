@@ -9,7 +9,7 @@ namespace Anatawa12.ApplyOnPlay
         public string CallbackName => "Remove Editor Only";
         public string CallbackId => "com.anatawa12.apply-on-play.remove-editor-only";
 
-        public bool ApplyOnPlay(GameObject avatarGameObject)
+        public bool ApplyOnPlay(GameObject avatarGameObject, ApplyReason reason)
         {
             foreach (var transform in avatarGameObject.GetComponentsInChildren<Transform>(true))
                 if (transform && transform.CompareTag("EditorOnly"))

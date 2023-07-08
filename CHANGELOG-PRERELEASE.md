@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Asset files are not generated with Manual Bake `#255`
 
 ### Security
 
