@@ -34,7 +34,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             foreach (var v in target.Vertices) users[v] = 0;
 
             foreach (var targetSubMesh in target.SubMeshes)
-            foreach (var v in targetSubMesh.Triangles)
+            foreach (var v in targetSubMesh.Triangles.Distinct())
                 users[v]++;
 
             // compute per-material data
@@ -52,8 +52,14 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     // the material is for merge.
                     var subMesh = target.SubMeshes[subMeshI];
                     var targetRect = targetRectForMaterial[subMeshI];
+                    var vertexCache = new Dictionary<Vertex, Vertex>();
                     for (var i = 0; i < subMesh.Triangles.Count; i++)
                     {
+                        if (vertexCache.TryGetValue(subMesh.Triangles[i], out var cached))
+                        {
+                            subMesh.Triangles[i] = cached;
+                            continue;
+                        }
                         if (users[subMesh.Triangles[i]] != 1)
                         {
                             // if there are multiple users for the vertex: duplicate it
@@ -61,9 +67,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                             target.Vertices.Add(cloned);
 
                             users[subMesh.Triangles[i]]--;
-                            users[cloned] = 1;
 
+                            vertexCache[subMesh.Triangles[i]] = cloned;
                             subMesh.Triangles[i] = cloned;
+                        }
+                        else
+                        {
+                            vertexCache[subMesh.Triangles[i]] = subMesh.Triangles[i];
                         }
 
                         subMesh.Triangles[i].TexCoord0 = MapUV(subMesh.Triangles[i].TexCoord0, targetRect);

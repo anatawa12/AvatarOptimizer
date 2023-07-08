@@ -26,6 +26,8 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - Manual bake not working with avatars with invalid file name chars `#253`
+- Merge Toon Lit duplicates vertex too many `#256`
+  - This could causes huge increase in avatar size. this is now fixed.
 
 ### Security
 
