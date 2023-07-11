@@ -16,9 +16,15 @@ The format is based on [Keep a Changelog].
 - Move Components into `Avatar Optimizer` folder `#247`
   - Previously they are `Optimizer` folder
 - Completely rewrite apply on play system `#249`
-  - This replaces way to awake modular-avatar by bdunderscore.
+  - This will remove EditorOnly on play.
+  - This enable UnusedBonesByReferencesTool component on play.
+  - This replaces way to apply [modular-avatar by bdunderscore] on play.
+    - modular avatar will be applied before AvatarOptimizer main logic and after removing EditorOnly.
+  - This will remove enable/disable checkbox on components, which had no meaning.
   - The framework for this changes will be published as separated framework when ready.
 - Use binary form of asset file in avatar optimizer output `#252`
+
+[modular-avatar]: https://modular-avatar.nadena.dev/
 
 ### Deprecated
 
