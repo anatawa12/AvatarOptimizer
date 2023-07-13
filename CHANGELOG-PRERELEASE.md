@@ -10,7 +10,6 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
-- Do not compress MergeToonLit generated texture on play `#258`
 
 ### Deprecated
 
@@ -19,6 +18,10 @@ The format is based on [Keep a Changelog].
 ### Fixed
 
 ### Security
+
+## [1.1.0] - 2023-07-13
+### Changed
+- Do not compress MergeToonLit generated texture on play [`#258`](https://github.com/anatawa12/AvatarOptimizer/pull/258)
 
 ## [1.1.0-rc.1] - 2023-07-10
 ## [1.1.0-beta.2] - 2023-07-08
@@ -496,7 +499,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.1.0-rc.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.1.0-rc.1...v1.1.0
 [1.1.0-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.1.0-beta.2...v1.1.0-rc.1
 [1.1.0-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.1.0-beta.1...v1.1.0-beta.2
 [1.1.0-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.0.0...v1.1.0-beta.1

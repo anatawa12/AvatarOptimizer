@@ -8,34 +8,41 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Now we can choose texture format for Merge Toon Lit Material `#251`
-  - This includes one tiny **BREAKING CHANGES**.
-  - Previously MergeToonLit uses ARGB32 as texture format but for now, it use ASTC 6x6 or DXT5 by default based on platform.
 
 ### Changed
-- Move Components into `Avatar Optimizer` folder `#247`
-  - Previously they are `Optimizer` folder
-- Completely rewrite apply on play system `#249`
-  - This will remove EditorOnly on play.
-  - This enable UnusedBonesByReferencesTool component on play.
-  - This replaces way to apply [modular-avatar by bdunderscore] on play.
-    - modular avatar will be applied before AvatarOptimizer main logic and after removing EditorOnly.
-  - This will remove enable/disable checkbox on components, which had no meaning.
-  - The framework for this changes will be published as separated framework when ready.
-- Use binary form of asset file in avatar optimizer output `#252`
-
-[modular-avatar]: https://modular-avatar.nadena.dev/
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
-- Manual bake not working with avatars with invalid file name chars `#253`
-- Merge Toon Lit duplicates vertex too many `#256`
-  - This could causes huge increase in avatar size. this is now fixed.
 
 ### Security
+
+## [1.1.0] - 2023-07-13
+### Added
+- Now we can choose texture format for Merge Toon Lit Material [`#251`](https://github.com/anatawa12/AvatarOptimizer/pull/251)
+  - This includes one tiny **BREAKING CHANGES**.
+  - Previously MergeToonLit uses ARGB32 as texture format but for now, it use ASTC 6x6 or DXT5 by default based on platform.
+
+### Changed
+- Move Components into `Avatar Optimizer` folder [`#247`](https://github.com/anatawa12/AvatarOptimizer/pull/247)
+  - Previously they are `Optimizer` folder
+- Completely rewrite apply on play system [`#249`](https://github.com/anatawa12/AvatarOptimizer/pull/249)
+  - This will remove EditorOnly on play.
+  - This enable UnusedBonesByReferencesTool component on play.
+  - This replaces way to apply [modular-avatar by bdunderscore] on play.
+    - modular avatar will be applied before AvatarOptimizer main logic and after removing EditorOnly.
+  - This will remove enable/disable checkbox on components, which had no meaning.
+  - The framework for this changes will be published as separated framework when ready.
+- Use binary form of asset file in avatar optimizer output [`#252`](https://github.com/anatawa12/AvatarOptimizer/pull/252)
+
+[modular-avatar]: https://modular-avatar.nadena.dev/
+
+### Fixed
+- Manual bake not working with avatars with invalid file name chars [`#253`](https://github.com/anatawa12/AvatarOptimizer/pull/253)
+- Merge Toon Lit duplicates vertex too many [`#256`](https://github.com/anatawa12/AvatarOptimizer/pull/256)
+  - This could causes huge increase in avatar size. this is now fixed.
 
 ## [1.0.0] - 2023-06-27
 **If you're using v0.3.x or older, Please upgrade to v0.4.x before upgrading v1.x.x!**
@@ -371,7 +378,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.12...v1.0.0
 [0.4.12]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.11...v0.4.12
 [0.4.11]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.10...v0.4.11
