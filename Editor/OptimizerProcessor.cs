@@ -19,7 +19,8 @@ namespace Anatawa12.AvatarOptimizer
 
         public bool ApplyOnPlay(GameObject avatarGameObject, ApplyReason reason)
         {
-            ProcessObject(new OptimizerSession(avatarGameObject, Utils.CreateOutputAssetFile(avatarGameObject, reason)));
+            ProcessObject(new OptimizerSession(avatarGameObject, Utils.CreateOutputAssetFile(avatarGameObject, reason),
+                reason == ApplyReason.EnteringPlayMode));
             return true;
         }
 
@@ -27,7 +28,7 @@ namespace Anatawa12.AvatarOptimizer
         {
             try
             {
-                ProcessObject(new OptimizerSession(avatarGameObject, true));
+                ProcessObject(new OptimizerSession(avatarGameObject, true, false));
                 return true;
             }
             catch (Exception e)
@@ -78,7 +79,8 @@ namespace Anatawa12.AvatarOptimizer
 
         public bool ApplyOnPlay(GameObject avatarGameObject, ApplyReason reason)
         {
-            ProcessObject(new OptimizerSession(avatarGameObject, Utils.CreateOutputAssetFile(avatarGameObject, reason)));
+            ProcessObject(new OptimizerSession(avatarGameObject, Utils.CreateOutputAssetFile(avatarGameObject, reason),
+                reason == ApplyReason.EnteringPlayMode));
             return true;
         }
 
@@ -86,7 +88,7 @@ namespace Anatawa12.AvatarOptimizer
         {
             try
             {
-                ProcessObject(new OptimizerSession(avatarGameObject, true));
+                ProcessObject(new OptimizerSession(avatarGameObject, true, false));
                 return true;
             }
             catch (Exception e)
