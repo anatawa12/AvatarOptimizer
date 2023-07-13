@@ -86,7 +86,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             var materials = target.SubMeshes.Select(x => x.SharedMaterial).ToArray();
             var merged = Component.merges.Select(x => new SubMesh(
                 x.source.SelectMany(src => target.SubMeshes[src.materialIndex].Triangles).ToList(),
-                CreateMaterial(GenerateTexture(x, materials, true))));
+                CreateMaterial(GenerateTexture(x, materials, !session.IsTest))));
             var subMeshes = copied.Concat(merged).ToList();
             target.SubMeshes.Clear();
             target.SubMeshes.AddRange(subMeshes);

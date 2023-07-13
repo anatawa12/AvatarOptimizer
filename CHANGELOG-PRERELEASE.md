@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
+- Do not compress MergeToonLit generated texture on play `#258`
 
 ### Deprecated
 
