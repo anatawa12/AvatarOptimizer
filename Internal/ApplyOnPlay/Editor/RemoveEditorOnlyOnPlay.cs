@@ -12,7 +12,7 @@ namespace Anatawa12.ApplyOnPlay
         public bool ApplyOnPlay(GameObject avatarGameObject, ApplyReason reason)
         {
             foreach (var transform in avatarGameObject.GetComponentsInChildren<Transform>(true))
-                if (transform && transform.CompareTag("EditorOnly"))
+                if (transform && transform != avatarGameObject.transform && transform.gameObject.CompareTag("EditorOnly"))
                     Object.DestroyImmediate(transform.gameObject);
             return true;
         }
