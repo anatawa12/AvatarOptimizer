@@ -16,12 +16,22 @@ namespace Anatawa12.ApplyOnPlay
     {
         public int callbackOrder => 0;
 
+        public const string SkipApplyingIfInactiveName = "com.anatawa12.apply-on-play.skip-if-inactive";
+
+        public static bool SkipApplyingIfInactive
+        {
+            get => EditorPrefs.GetBool(SkipApplyingIfInactiveName, true);
+            set => EditorPrefs.SetBool(SkipApplyingIfInactiveName, value);
+        }
+
         public void OnProcessScene(Scene scene, BuildReport report)
         {
             var components = scene.GetRootGameObjects()
                 .SelectMany(x => x.GetComponentsInChildren<VRCAvatarDescriptor>(true)).ToArray();
 
             var callbacks = ApplyOnPlayCallbackRegistry.GetCallbacks();
+
+            var skipIfInactive = SkipApplyingIfInactive;
 
             var stopwatch = Stopwatch.StartNew();
             try
@@ -30,6 +40,7 @@ namespace Anatawa12.ApplyOnPlay
 
                 foreach (var vrcAvatarDescriptor in components)
                 {
+                    if (skipIfInactive && !vrcAvatarDescriptor.gameObject.activeInHierarchy) continue;
                     ProcessAvatar(vrcAvatarDescriptor.gameObject, ApplyReason.EnteringPlayMode, callbacks);
                 }
             }

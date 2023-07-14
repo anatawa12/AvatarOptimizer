@@ -10,3 +10,6 @@ msgstr ""
 "非破壊アバター改変ツールのプレイ時の適用を無効にすることができます。\n"
 "チェックが入っていると有効、チェックが入っていないと無効になります。\n"
 "この設定はプロジェクト間で共有されます。"
+
+msgid "skip applying if avtar is not active"
+msgstr "activeでないアバターではapplyしないようにする"
