@@ -48,7 +48,7 @@ namespace Anatawa12.ApplyOnPlay
                     if (!applyOnPlayCallback.ApplyOnPlay(avatarGameObject, reason))
                     {
                         var message = $"The {action} for {avatarGameObject} was aborted because " +
-                                      "'{applyOnPlayCallback.GetType().Name}' reported a failure.";
+                                      $"'{applyOnPlayCallback.GetType().Name}' reported a failure.";
                         Debug.LogError(message);
                         return false;
                     }
@@ -56,7 +56,7 @@ namespace Anatawa12.ApplyOnPlay
                 catch (Exception ex)
                 {
                     var message = $"The {action} for {avatarGameObject} was aborted because " +
-                                  "'{applyOnPlayCallback.GetType().Name}' threw an exception.";
+                                  $"'{applyOnPlayCallback.GetType().Name}' threw an exception.";
                     Debug.LogError(message);
                     Debug.LogException(ex);
                     return false;
