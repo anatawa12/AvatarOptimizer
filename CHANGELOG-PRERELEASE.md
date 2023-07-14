@@ -10,18 +10,23 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
-- Avatar GameObject marked as EditorOnly no longer be removed `#261`
-  - Previously, if avatar GameObject is marked as EditorOnly, whole avatar is removed and this confuses users.
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
-- Name of failed ApplyOnPlayCallback is not included in error message `#260`
-- Entering play mode can be extremely slow if you have many avatar on the scene `#262`
 
 ### Security
+
+## [1.1.1] - 2023-07-14
+### Changed
+- Avatar GameObject marked as EditorOnly no longer be removed [`#261`](https://github.com/anatawa12/AvatarOptimizer/pull/261)
+  - Previously, if avatar GameObject is marked as EditorOnly, whole avatar is removed and this confuses users.
+
+### Fixed
+- Name of failed ApplyOnPlayCallback is not included in error message [`#260`](https://github.com/anatawa12/AvatarOptimizer/pull/260)
+- Entering play mode can be extremely slow if you have many avatar on the scene [`#262`](https://github.com/anatawa12/AvatarOptimizer/pull/262)
 
 ## [1.1.0] - 2023-07-13
 ### Changed
@@ -503,7 +508,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.1.1...HEAD
+[1.1.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.1.0-rc.1...v1.1.0
 [1.1.0-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.1.0-beta.2...v1.1.0-rc.1
 [1.1.0-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.1.0-beta.1...v1.1.0-beta.2
