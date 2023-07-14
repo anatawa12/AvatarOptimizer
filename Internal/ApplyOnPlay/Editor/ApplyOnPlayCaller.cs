@@ -1,11 +1,14 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using UnityEditor;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using VRC.SDK3.Avatars.Components;
+using Debug = UnityEngine.Debug;
 
 namespace Anatawa12.ApplyOnPlay
 {
@@ -20,9 +23,20 @@ namespace Anatawa12.ApplyOnPlay
 
             var callbacks = ApplyOnPlayCallbackRegistry.GetCallbacks();
 
-            foreach (var vrcAvatarDescriptor in components)
+            var stopwatch = Stopwatch.StartNew();
+            try
             {
-                ProcessAvatar(vrcAvatarDescriptor.gameObject, ApplyReason.EnteringPlayMode, callbacks);
+                AssetDatabase.StartAssetEditing();
+
+                foreach (var vrcAvatarDescriptor in components)
+                {
+                    ProcessAvatar(vrcAvatarDescriptor.gameObject, ApplyReason.EnteringPlayMode, callbacks);
+                }
+            }
+            finally
+            {
+                AssetDatabase.StopAssetEditing();
+                Debug.Log($"time to process apply on play: {stopwatch.Elapsed}");
             }
         }
 
