@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
+- Avatar GameObject marked as EditorOnly no longer be removed `#261`
+  - Previously, if avatar GameObject is marked as EditorOnly, whole avatar is removed and this confuses users.
 
 ### Deprecated
 
