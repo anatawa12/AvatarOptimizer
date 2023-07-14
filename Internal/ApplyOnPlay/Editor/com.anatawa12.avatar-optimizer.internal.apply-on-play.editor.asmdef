@@ -2,7 +2,8 @@
     "name": "com.anatawa12.avatar-optimizer.internal.apply-on-play.editor",
     "references": [
         "GUID:295ffbe0b63504ae3a7879cf089501ba",
-        "GUID:5ce33783346c3124990afbe7b0390a06"
+        "GUID:5ce33783346c3124990afbe7b0390a06",
+        "GUID:fc900867c0f47cd49b6e2ae4ef907300"
     ],
     "includePlatforms": [
         "Editor"

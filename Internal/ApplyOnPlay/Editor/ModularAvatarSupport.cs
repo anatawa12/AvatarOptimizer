@@ -3,6 +3,7 @@ using System;
 using System.IO;
 using System.Reflection;
 using nadena.dev.modular_avatar.core.editor;
+using nadena.dev.modular_avatar.core;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -38,6 +39,8 @@ namespace Anatawa12.ApplyOnPlay
 
         public bool ApplyOnPlay(GameObject avatarGameObject, ApplyReason reason)
         {
+            if (!avatarGameObject.GetComponentInChildren<AvatarTagComponent>())
+                return true; // skip avatar without MA components
             try
             {
                 return _processor.OnPreprocessAvatar(avatarGameObject);
