@@ -26,6 +26,11 @@ namespace Anatawa12.ApplyOnPlay
         private void OnGUI()
         {
             CL4EE.DrawLanguagePicker();
+
+            ApplyOnPlayCaller.SkipApplyingIfInactive
+                = EditorGUILayout.ToggleLeft(CL4EE.Tr("skip applying if avtar is not active"), 
+                    ApplyOnPlayCaller.SkipApplyingIfInactive);
+
             EditorGUILayout.HelpBox(CL4EE.Tr("window description"), MessageType.None);
 
             _scroll = EditorGUILayout.BeginScrollView(_scroll);

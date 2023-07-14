@@ -1,17 +1,28 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using UnityEditor;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using VRC.SDK3.Avatars.Components;
+using Debug = UnityEngine.Debug;
 
 namespace Anatawa12.ApplyOnPlay
 {
     internal class ApplyOnPlayCaller : IProcessSceneWithReport
     {
         public int callbackOrder => 0;
+
+        public const string SkipApplyingIfInactiveName = "com.anatawa12.apply-on-play.skip-if-inactive";
+
+        public static bool SkipApplyingIfInactive
+        {
+            get => EditorPrefs.GetBool(SkipApplyingIfInactiveName, true);
+            set => EditorPrefs.SetBool(SkipApplyingIfInactiveName, value);
+        }
 
         public void OnProcessScene(Scene scene, BuildReport report)
         {
@@ -20,9 +31,23 @@ namespace Anatawa12.ApplyOnPlay
 
             var callbacks = ApplyOnPlayCallbackRegistry.GetCallbacks();
 
-            foreach (var vrcAvatarDescriptor in components)
+            var skipIfInactive = SkipApplyingIfInactive;
+
+            var stopwatch = Stopwatch.StartNew();
+            try
             {
-                ProcessAvatar(vrcAvatarDescriptor.gameObject, ApplyReason.EnteringPlayMode, callbacks);
+                AssetDatabase.StartAssetEditing();
+
+                foreach (var vrcAvatarDescriptor in components)
+                {
+                    if (skipIfInactive && !vrcAvatarDescriptor.gameObject.activeInHierarchy) continue;
+                    ProcessAvatar(vrcAvatarDescriptor.gameObject, ApplyReason.EnteringPlayMode, callbacks);
+                }
+            }
+            finally
+            {
+                AssetDatabase.StopAssetEditing();
+                Debug.Log($"time to process apply on play: {stopwatch.Elapsed}");
             }
         }
 

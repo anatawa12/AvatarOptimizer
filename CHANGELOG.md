@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - Name of failed ApplyOnPlayCallback is not included in error message `#260`
+- Entering play mode can be extremely slow if you have many avatar on the scene `#262`
 
 ### Security
 
