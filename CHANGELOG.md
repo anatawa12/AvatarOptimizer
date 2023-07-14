@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Name of failed ApplyOnPlayCallback is not included in error message `#260`
 
 ### Security
 
