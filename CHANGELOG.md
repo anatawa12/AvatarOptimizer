@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
+- Support newly activated avatars in play mode for apply on play `#263`
 
 ### Deprecated
 
