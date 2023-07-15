@@ -9,14 +9,28 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using VRC.SDK3.Avatars.Components;
 using Debug = UnityEngine.Debug;
+using Object = UnityEngine.Object;
 
 namespace Anatawa12.ApplyOnPlay
 {
+    [InitializeOnLoad]
     internal class ApplyOnPlayCaller : IProcessSceneWithReport
     {
         public int callbackOrder => 0;
 
         public const string SkipApplyingIfInactiveName = "com.anatawa12.apply-on-play.skip-if-inactive";
+
+        static ApplyOnPlayCaller()
+        {
+            ApplyOnPlayActivator.processAvatar = activator =>
+            {
+                var component = activator.gameObject.GetComponent<VRCAvatarDescriptor>();
+                Object.DestroyImmediate(activator);
+                if (component)
+                    ProcessAvatar(component.gameObject, ApplyReason.EnteringPlayMode,
+                        ApplyOnPlayCallbackRegistry.GetCallbacks());
+            };
+        }
 
         public static bool SkipApplyingIfInactive
         {
@@ -40,8 +54,15 @@ namespace Anatawa12.ApplyOnPlay
 
                 foreach (var vrcAvatarDescriptor in components)
                 {
-                    if (skipIfInactive && !vrcAvatarDescriptor.gameObject.activeInHierarchy) continue;
-                    ProcessAvatar(vrcAvatarDescriptor.gameObject, ApplyReason.EnteringPlayMode, callbacks);
+                    if (skipIfInactive && !vrcAvatarDescriptor.gameObject.activeInHierarchy)
+                    {
+                        var activator = vrcAvatarDescriptor.gameObject.AddComponent<ApplyOnPlayActivator>();
+                        activator.hideFlags = HideFlags.HideInHierarchy | HideFlags.HideInInspector;
+                    }
+                    else
+                    {
+                        ProcessAvatar(vrcAvatarDescriptor.gameObject, ApplyReason.EnteringPlayMode, callbacks);
+                    }
                 }
             }
             finally
