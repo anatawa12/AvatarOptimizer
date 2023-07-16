@@ -1,10 +1,16 @@
+using System;
+using System.Collections.Generic;
+using UnityEngine;
+
 namespace Anatawa12.AvatarOptimizer.Processors
 {
     internal partial class AutomaticConfigurationProcessor
     {
         private AutomaticConfiguration _config;
         private OptimizerSession _session;
-        
+
+        private Dictionary<Component, HashSet<string>> _modifiedProperties =
+            new Dictionary<Component, HashSet<string>>();
 
         public void Process(OptimizerSession session)
         {
@@ -13,6 +19,14 @@ namespace Anatawa12.AvatarOptimizer.Processors
             if (!_config) return;
 
             // TODO: implement
+            GatherAnimationModifications();
+        }
+
+        private IReadOnlyCollection<string> GetModifiedProperties(Component component)
+        {
+            return _modifiedProperties.TryGetValue(component, out var value)
+                ? (IReadOnlyCollection<string>)value
+                : Array.Empty<string>();
         }
     }
 }
