@@ -71,6 +71,10 @@ namespace Anatawa12.AvatarOptimizer.Processors
                     targetRenderer.SetBlendShapeWeight(i, meshInfo.BlendShapes[i].weight);
                 targetRenderer.sharedMaterials = meshInfo.SubMeshes.Select(x => x.SharedMaterial).ToArray();
                 targetRenderer.bones = meshInfo.Bones.Select(x => x.Transform).ToArray();
+
+                targetRenderer.rootBone = meshInfo.RootBone;
+                if (meshInfo.Bounds != default)
+                    targetRenderer.localBounds = meshInfo.Bounds;
             }
 
             foreach (var keyValuePair in _staticCache)

@@ -14,6 +14,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
     internal class MeshInfo2
     {
         public readonly Renderer SourceRenderer;
+        public Transform RootBone;
         public Bounds Bounds;
         public readonly List<Vertex> Vertices = new List<Vertex>(0);
 
@@ -38,6 +39,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             if (Bones.Count == 0)
                 SetIdentityBone(renderer.rootBone ? renderer.rootBone : renderer.transform);
 
+            Bounds = renderer.localBounds;
+            RootBone = renderer.rootBone ? renderer.rootBone : renderer.transform;
+
             for (var i = 0; i < mesh.blendShapeCount; i++)
                 BlendShapes[i] = (BlendShapes[i].name, renderer.GetBlendShapeWeight(i));
 
@@ -59,6 +63,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             ReadStaticMesh(mesh);
 
             SetIdentityBone(renderer.transform);
+
+            Bounds = mesh.bounds;
+            RootBone = renderer.transform;
 
             var sourceMaterials = renderer.sharedMaterials;
             var materialCount = Math.Min(sourceMaterials.Length, SubMeshes.Count);
