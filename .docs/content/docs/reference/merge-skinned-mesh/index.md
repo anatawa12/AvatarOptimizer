@@ -9,7 +9,7 @@ Merges one or more SkinnedMeshRenderer and MeshRenderers into one SkinnedMeshRen
 
 You should add MergeSkinnedMesh onto new GameObject with SkinnedMeshRenderer without specified Mesh.
 
-This component will merge mesh, bones, and BlendShapes but other settings will not be modified.
+This component will merge mesh, bones, Materials, BlendShapes, and Bounds but other settings will not be modified.
 Please edit SkinnedMeshRenderer component attached to same GameObject as MergeSkinnedMesh to set AnchorOverride or else.
 
 This component is good for merging your cloth meshes and body meshes but not good for face meshes because BlendShape can cause performance impact.
