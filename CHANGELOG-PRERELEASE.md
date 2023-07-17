@@ -13,7 +13,7 @@ The format is based on [Keep a Changelog].
   - Currently FreezeBlendShape can be automatically configured.
 
 ### Changed
--   `#263`
+- Support newly activated avatars in play mode for apply on play `#263`
 
 ### Deprecated
 
