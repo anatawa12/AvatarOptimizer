@@ -21,7 +21,8 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
             // TODO: implement
             GatherAnimationModifications();
-            AutoFreezeBlendShape();
+            if (_config.freezeBlendShape)
+                AutoFreezeBlendShape();
         }
 
         private IReadOnlyDictionary<string, AnimationProperty> GetModifiedProperties(Component component)

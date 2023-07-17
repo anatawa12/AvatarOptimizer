@@ -300,6 +300,12 @@ msgstr "If checked, this tool does not remove bones with non-bone children."
 msgid "AutomaticConfiguration:description"
 msgstr "When you added this component to your avatar, AvatarOptimizer will configure components based on your animation or else."
 
+msgid "AutomaticConfiguration:prop:freezeBlendShape"
+msgstr "Configure Freeze Blend Shape"
+
+msgid "AutomaticConfiguration:prop:dontFreezeMmdShapes"
+msgstr "Don't Freeze MMD BlendShapes (ShapeKeys)"
+
 # endregion
 
 #region ApplyObjectMapping
