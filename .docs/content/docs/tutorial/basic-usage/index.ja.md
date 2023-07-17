@@ -98,6 +98,20 @@ BlendShapeを固定する {#freeze-blendshape}
 
 それでは使わない素体や服のの体型変更用のBlendShapeを結合してみましょう！
 
+AvatarOptimizer v1.2.0以降では変更されないBlendShapeを自動的に固定する方法が追加されました！
+
+もしFX Layer等で体型を変形していなければこの方法で問題なくBlendShapeを固定できます。
+また、顔のメッシュで使用してないBlendShape(例えば区切り線等)も自動的に固定できます。
+
+アバターのルートに`Automatic Configuration`を追加しましょう！
+
+![add-automatic-configuration.png](add-automatic-configuration.png)
+
+自動的な固定のための設定はこれで終わりです！
+
+もしFX Layer等で体型を変形するなどしている場合は以下の手動の手順を使用できます。
+顔のメッシュは自動設定し、体のメッシュだけ手動設定する事もできます。
+
 頂点数が増えたメッシュである先程の`Anon_Merged`に`Freeze BlendShapes`を追加しましょう！
 
 ![add-freeze-blendshape.png](add-freeze-blendshape.png)
@@ -108,7 +122,5 @@ BlendShapeを固定する {#freeze-blendshape}
 チェックボックスにチェックするとそのBlendShapeは固定されます。
 
 ![freeze-blendshape.png](freeze-blendshape.png)
-
-これでBlendShapeの固定の設定は終わりです！
 
 [^blend-shape]: BlendShapeはUnity上のシェイプキーの名前です。UnityやMayaではBlend Shape、BlenderではShape Key、MetasequoiaやMMDではモーフと呼ばれます。
