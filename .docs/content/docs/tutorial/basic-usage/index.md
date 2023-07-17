@@ -100,6 +100,21 @@ It's better for the merged mesh not to have any BlendShapes if possible.
 
 Now let's freeze the BlendShapes for the unused body and clothing body shape changes!
 
+Since AvatarOptimizer v1.2.0, it has easy way to freeze unused BlendShapes.
+
+The only step to enable settings for automatic freezing BlendShapes is adding `Automatic Configuration` to avatar root!
+
+![add-automatic-configuration.png](add-automatic-configuration.png)
+
+`Automatic Configuration` freezes unused BlendShapes with scanning all animations and some else!
+
+If you don't change body BlendShape in FX Layer or else, you can easily freeze the BlendShape with this way.
+Also, you can freeze unused BlendShapes in your Face Mesh.
+
+If you want to force freeze BlendShapes used in your FX Layer or else, you can use the following manual steps.
+You can partially configure freezing manually.
+For example, automatically freeze BlendShape in your face mesh and manually in the body.
+
 First, add `Freeze BlendShapes` to `Anon_Merged`, which is the mesh increased vertex count.
 
 ![add-freeze-blendshape.png](add-freeze-blendshape.png)
@@ -108,12 +123,10 @@ First, add `Freeze BlendShapes` to `Anon_Merged`, which is the mesh increased ve
 
 To make it working freezing, 
 
-To make the merge work, specify the BlendShape to be frozen!
+To make the freezing work, specify the BlendShape to be frozen.
 
 If the checkbox is checked, the BlendShape will be frozen.
 
 ![freeze-blendshape.png](freeze-blendshape.png)
-
-This completes the settings for freezing BlendShape!
 
 [^blend-shape]: BlendShape is the name of Shape Keys in Unity. Unity and Maya call them as Blend Shape, Blender calls them as Shape Key, Metasequoia and MMD call them as Morph.
