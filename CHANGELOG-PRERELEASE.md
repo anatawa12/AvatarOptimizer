@@ -8,12 +8,8 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Automatic bounds computation in MergeSkinnedMesh `#264`
-- Automatic Configuration System `#265`
-  - Currently FreezeBlendShape can be automatically configured.
 
 ### Changed
-- Support newly activated avatars in play mode for apply on play `#263`
 
 ### Deprecated
 
@@ -22,6 +18,15 @@ The format is based on [Keep a Changelog].
 ### Fixed
 
 ### Security
+
+## [1.2.0-beta.1] - 2023-07-17
+### Added
+- Automatic bounds computation in MergeSkinnedMesh [`#264`](https://github.com/anatawa12/AvatarOptimizer/pull/264)
+- Automatic Configuration System [`#265`](https://github.com/anatawa12/AvatarOptimizer/pull/265)
+  - Currently FreezeBlendShape can be automatically configured.
+
+### Changed
+- Support newly activated avatars in play mode for apply on play [`#263`](https://github.com/anatawa12/AvatarOptimizer/pull/263)
 
 ## [1.1.2-beta.1] - 2023-07-17
 This release is mistake.
@@ -515,7 +520,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.1.2-beta.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.2.0-beta.1...HEAD
+[1.2.0-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.1.2-beta.1...v1.2.0-beta.1
 [1.1.2-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.1.1...v1.1.2-beta.1
 [1.1.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.1.0-rc.1...v1.1.0
