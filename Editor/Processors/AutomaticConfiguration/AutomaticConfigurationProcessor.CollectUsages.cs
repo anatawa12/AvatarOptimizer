@@ -40,8 +40,9 @@ namespace Anatawa12.AvatarOptimizer.Processors
                     {
                         var skinnedMeshRenderer = descriptor.VisemeSkinnedMesh;
                         if (!_modifiedProperties.TryGetValue(skinnedMeshRenderer, out var set))
-                            _modifiedProperties.Add(skinnedMeshRenderer, set = new HashSet<string>());
-                        set.UnionWith(descriptor.VisemeBlendShapes.Select(x => $"blendShape.{x}"));
+                            _modifiedProperties.Add(skinnedMeshRenderer, set = new Dictionary<string, AnimationProperty>());
+                        foreach (var prop in descriptor.VisemeBlendShapes.Select(x => $"blendShape.{x}"))
+                            set[prop] = AnimationProperty.Variable();
                         break;
                     }
                     case VRC_AvatarDescriptor.LipSyncStyle.JawFlapBlendShape when descriptor.VisemeSkinnedMesh != null:
@@ -50,8 +51,8 @@ namespace Anatawa12.AvatarOptimizer.Processors
                         var shape = descriptor.MouthOpenBlendShapeName;
 
                         if (!_modifiedProperties.TryGetValue(skinnedMeshRenderer, out var set))
-                            _modifiedProperties.Add(skinnedMeshRenderer, set = new HashSet<string>());
-                        set.Add($"blendShape.{shape}");
+                            _modifiedProperties.Add(skinnedMeshRenderer, set = new Dictionary<string, AnimationProperty>());
+                        set[$"blendShape.{shape}"] = AnimationProperty.Variable();
                         break;
                     }
                 }
@@ -65,13 +66,13 @@ namespace Anatawa12.AvatarOptimizer.Processors
                     var mesh = skinnedMeshRenderer.sharedMesh;
 
                     if (!_modifiedProperties.TryGetValue(skinnedMeshRenderer, out var set))
-                        _modifiedProperties.Add(skinnedMeshRenderer, set = new HashSet<string>());
+                        _modifiedProperties.Add(skinnedMeshRenderer, set = new Dictionary<string, AnimationProperty>());
 
-                    set.UnionWith(
-                        from index in descriptor.customEyeLookSettings.eyelidsBlendshapes
-                        where 0 <= index && index < mesh.blendShapeCount
-                        let name = mesh.GetBlendShapeName(index)
-                        select $"blendShape.{name}");
+                    foreach (var prop in from index in descriptor.customEyeLookSettings.eyelidsBlendshapes
+                             where 0 <= index && index < mesh.blendShapeCount
+                             let name = mesh.GetBlendShapeName(index)
+                             select $"blendShape.{name}")
+                        set[prop] = AnimationProperty.Variable();
                 }
 
                 var bodySkinnedMesh = descriptor.transform.Find("Body")?.GetComponent<SkinnedMeshRenderer>();
@@ -79,9 +80,9 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 if (bodySkinnedMesh)
                 {
                     if (!_modifiedProperties.TryGetValue(bodySkinnedMesh, out var set))
-                        _modifiedProperties.Add(bodySkinnedMesh, set = new HashSet<string>());
+                        _modifiedProperties.Add(bodySkinnedMesh, set = new Dictionary<string, AnimationProperty>());
 
-                    set.UnionWith(new[]
+                    var mmdShapes = new[]
                     {
                         // https://booth.pm/ja/items/3341221
                         // https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/i/0b7b5e4b-c62e-41f7-8ced-1f3e58c4f5bf/d5nbmvp-5779f5ac-d476-426c-8ee6-2111eff8e76c.png
@@ -210,26 +211,82 @@ namespace Anatawa12.AvatarOptimizer.Processors
                         "しいたけ",
                         "照れ",
                         "涙",
-                    });
+                    };
+
+                    foreach (var shape in mmdShapes)
+                        set[$"blendShape.{shape}"] = AnimationProperty.Variable();
                 }
             }
         }
 
+        private readonly Dictionary<(GameObject, AnimationClip), ParsedAnimation> _parsedAnimationCache =
+            new Dictionary<(GameObject, AnimationClip), ParsedAnimation>();
+
         private void GatherAnimationModificationsInController(GameObject root, RuntimeAnimatorController controller)
         {
             if (controller == null) return;
+            
             foreach (var clip in controller.animationClips)
             {
+                if (!_parsedAnimationCache.TryGetValue((root, clip), out var parsed))
+                    _parsedAnimationCache.Add((root, clip), parsed = ParsedAnimation.Parse(root, clip));
+
+                foreach (var keyValuePair in parsed.Components)
+                {
+                    if (!_modifiedProperties.TryGetValue(keyValuePair.Key, out var properties))
+                        _modifiedProperties.Add(keyValuePair.Key, properties = new Dictionary<string, AnimationProperty>());
+                    foreach (var prop in keyValuePair.Value)
+                    {
+
+                        if (properties.TryGetValue(prop.Key, out var property))
+                            properties[prop.Key] = property.Merge(prop.Value.PartiallyApplied());
+                        else
+                            properties.Add(prop.Key, prop.Value.PartiallyApplied());
+                    }
+                }
+            }
+        }
+
+        readonly struct ParsedAnimation
+        {
+            public readonly IReadOnlyDictionary<Component, IReadOnlyDictionary<string, AnimationProperty>> Components;
+
+            public ParsedAnimation(IReadOnlyDictionary<Component, IReadOnlyDictionary<string, AnimationProperty>> components)
+            {
+                Components = components;
+            }
+
+            public static ParsedAnimation Parse(GameObject root, AnimationClip clip)
+            {
+                var components = new Dictionary<Component, IReadOnlyDictionary<string, AnimationProperty>>();
+
                 foreach (var binding in AnimationUtility.GetCurveBindings(clip))
                 {
                     if (!typeof(Component).IsAssignableFrom(binding.type)) continue;
                     var obj = (Component)AnimationUtility.GetAnimatedObject(root, binding);
                     if (obj == null) continue;
 
-                    if (!_modifiedProperties.TryGetValue(obj, out var set))
-                        _modifiedProperties.Add(obj, set = new HashSet<string>());
-                    set.Add(binding.propertyName);
+                    var curve = AnimationUtility.GetEditorCurve(clip, binding);
+                    var currentPropertyMayNull = AnimationProperty.ParseProperty(curve);
+
+                    if (!(currentPropertyMayNull is AnimationProperty currentProperty)) continue;
+
+                    if (currentProperty.IsConst)
+                        // ReSharper disable once CompareOfFloatsByEqualityOperator
+                        if (curve[0].time == 0 && curve[curve.length - 1].time == clip.length)
+                            currentProperty = currentProperty.AlwaysApplied();
+
+                    if (!components.TryGetValue(obj, out var propertiesItf))
+                        components.Add(obj, propertiesItf = new Dictionary<string, AnimationProperty>());
+                    var properties = (Dictionary<string, AnimationProperty>)propertiesItf;
+
+                    if (properties.TryGetValue(binding.propertyName, out var property))
+                        properties[binding.propertyName] = property.Merge(currentProperty);
+                    else
+                        properties.Add(binding.propertyName, currentProperty);
                 }
+
+                return new ParsedAnimation(components);
             }
         }
     }

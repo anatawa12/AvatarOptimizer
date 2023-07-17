@@ -18,9 +18,24 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 if (skinnedMeshRenderer.GetComponent<FreezeBlendShape>()) continue;
 
                 var modifies = GetModifiedProperties(skinnedMeshRenderer);
+                var blendShapeValues = Enumerable.Range(0, mesh.blendShapeCount)
+                    .Select(i => skinnedMeshRenderer.GetBlendShapeWeight(i)).ToArray();
                 var notChanged = Enumerable.Range(0, mesh.blendShapeCount)
                     .Select(i => mesh.GetBlendShapeName(i))
-                    .Where(name => !modifies.Contains($"blendShape.{name}"))
+                    .Where((name, i) =>
+                    {
+                        if (!modifies.TryGetValue($"blendShape.{name}", out var prop)) return true;
+
+                        if (!prop.IsConst) return false;
+
+                        if (prop.IsAlwaysApplied)
+                        {
+                            blendShapeValues[i] = prop.ConstValue;
+                            return true;
+                        }
+
+                        return prop.ConstValue.CompareTo(blendShapeValues[i]) == 0;
+                    })
                     .ToArray();
 
                 if (notChanged.Length == 0) continue;
