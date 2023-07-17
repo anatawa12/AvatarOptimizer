@@ -106,16 +106,16 @@ FX Layer等で変更していない体型変更用BlendShapeや、 表情アニ�
 
 ![add-automatic-configuration.png](add-automatic-configuration.png)
 
-もしFX Layer等で体型を変形するなどしている場合は以下の手動の手順を使用できます。
+もしFX Layer等で体型を変形などしているBlendShapeを強制的に固定するには以下の手動の手順を使用できます。
 顔のメッシュは自動設定し体のメッシュだけ手動設定するのように、一部のメッシュだけ手動で設定することも可能です。
 
-頂点数が増えたメッシュである先程の`Anon_Merged`に`Freeze BlendShapes`を追加しましょう！
+まず、頂点数が増えたメッシュである先程の`Anon_Merged`に`Freeze BlendShapes`を追加してください。
 
 ![add-freeze-blendshape.png](add-freeze-blendshape.png)
 
 `Freeze BlendShape`は一緒についているメッシュのBlendShapeを固定します。
 
-マージを機能させるために固定するBlendShapeを指定しましょう！
+マージを機能させるために固定するBlendShapeを指定してください。
 チェックボックスにチェックするとそのBlendShapeは固定されます。
 
 ![freeze-blendshape.png](freeze-blendshape.png)

@@ -109,7 +109,7 @@ The only step to enable settings for automatic freezing BlendShapes is adding `A
 
 ![add-automatic-configuration.png](add-automatic-configuration.png)
 
-If your FX Layer changes Body shape, you can use the following manual steps.
+If you want to force freeze BlendShapes used in your FX Layer or else, you can use the following manual steps.
 You can partially configure freezing manually.
 For example, automatically freeze BlendShape in your face mesh and manually in the body.
 
@@ -121,7 +121,7 @@ First, add `Freeze BlendShapes` to `Anon_Merged`, which is the mesh increased ve
 
 To make it working freezing, 
 
-To make the merge work, specify the BlendShape to be frozen!
+To make the freezing work, specify the BlendShape to be frozen.
 
 If the checkbox is checked, the BlendShape will be frozen.
 
