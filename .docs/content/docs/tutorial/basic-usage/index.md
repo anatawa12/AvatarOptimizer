@@ -100,16 +100,14 @@ It's better for the merged mesh not to have any BlendShapes if possible.
 
 Now let's freeze the BlendShapes for the unused body and clothing body shape changes!
 
-Since AvatarOptimizer v1.2.0, it has easy way to freeze unchanged BlendShapes.
+Since AvatarOptimizer v1.2.0, it has easy way to freeze unused BlendShapes.
 
 If you don't change body shape in FX Layer or else, you can easily freeze BlendShape with this way!
 Also, you can freeze unused BlendShapes in your Face Mesh.
 
-First, add `Automatic Configuration` to avatar root!
+The only step to enable settings for automatic freezing BlendShapes is adding `Automatic Configuration` to avatar root!
 
 ![add-automatic-configuration.png](add-automatic-configuration.png)
-
-This completes the settings for automatic freezing BlendShapes!
 
 If your FX Layer changes Body shape, you can use the following manual steps.
 You can partially configure freezing manually.

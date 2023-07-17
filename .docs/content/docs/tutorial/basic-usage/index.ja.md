@@ -96,18 +96,15 @@ BlendShapeを固定する {#freeze-blendshape}
 
 {{< /hint >}}
 
-それでは使わない素体や服のの体型変更用のBlendShapeを結合してみましょう！
+それでは使われていない素体や服の体型変更用のBlendShapeを固定してみましょう！
 
-AvatarOptimizer v1.2.0以降では変更されないBlendShapeを自動的に固定する方法が追加されました！
+AvatarOptimizer v1.2.0以降では使用されていないBlendShapeを自動的に固定する方法が追加されました！
 
-もしFX Layer等で体型を変形していなければこの方法で問題なくBlendShapeを固定できます。
-また、顔のメッシュで使用してないBlendShape(例えば区切り線等)も自動的に固定できます。
+FX Layer等で変更していない体型変更用BlendShapeや、 表情アニメーションで利用していないBlendShape(区切り線等も)などはこの方法で問題なく固定することができます。
 
-アバターのルートに`Automatic Configuration`を追加しましょう！
+自動的な固定のための設定は、アバターのルートに`Automatic Configuration`を追加するだけで終わりです！
 
 ![add-automatic-configuration.png](add-automatic-configuration.png)
-
-自動的な固定のための設定はこれで終わりです！
 
 もしFX Layer等で体型を変形するなどしている場合は以下の手動の手順を使用できます。
 顔のメッシュは自動設定し体のメッシュだけ手動設定するのように、一部のメッシュだけ手動で設定することも可能です。
