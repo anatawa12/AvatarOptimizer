@@ -12,4 +12,8 @@ weight: 1
 - [FreezeBlendShape](../freeze-blendshape)
   アニメーションなどで使われていないBlendShapeを自動的に固定・除去します。
 
+また、以下の設定で自動設定を調節できます。
+- `MMDワールドとの互換性`
+  MMDワールドで使われるBlendShapeを固定しないなど、MMDワールドとの互換性を考慮した軽量化を行います。
+
 ![component.png](component.png)

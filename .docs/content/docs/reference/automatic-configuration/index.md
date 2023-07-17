@@ -12,4 +12,8 @@ Currently the following features can be configured automatically
 - [FreezeBlendShape](../freeze-blendshape)
   Automatically freezes unused BlendShapes in animation or else.
 
+Also, You can adjust automatic configuration with the following settings
+- `MMD World Compatibility`
+  Configure with considering compatibility with MMD Worlds. e.g. Not freezing BlendShapes used by MMD Worlds.
+
 ![component.png](component.png)
