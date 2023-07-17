@@ -41,7 +41,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                         var skinnedMeshRenderer = descriptor.VisemeSkinnedMesh;
                         if (!_modifiedProperties.TryGetValue(skinnedMeshRenderer, out var set))
                             _modifiedProperties.Add(skinnedMeshRenderer, set = new HashSet<string>());
-                        set.UnionWith(descriptor.VisemeBlendShapes.Select(x => $"blendShapes.{x}"));
+                        set.UnionWith(descriptor.VisemeBlendShapes.Select(x => $"blendShape.{x}"));
                         break;
                     }
                     case VRC_AvatarDescriptor.LipSyncStyle.JawFlapBlendShape when descriptor.VisemeSkinnedMesh != null:
@@ -51,7 +51,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
                         if (!_modifiedProperties.TryGetValue(skinnedMeshRenderer, out var set))
                             _modifiedProperties.Add(skinnedMeshRenderer, set = new HashSet<string>());
-                        set.Add($"blendShapes.{shape}");
+                        set.Add($"blendShape.{shape}");
                         break;
                     }
                 }
@@ -71,7 +71,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                         from index in descriptor.customEyeLookSettings.eyelidsBlendshapes
                         where 0 <= index && index < mesh.blendShapeCount
                         let name = mesh.GetBlendShapeName(index)
-                        select $"blendShapes.{name}");
+                        select $"blendShape.{name}");
                 }
 
                 var bodySkinnedMesh = descriptor.transform.Find("Body")?.GetComponent<SkinnedMeshRenderer>();
