@@ -58,8 +58,8 @@ BlendShape(シェイプキー)[^blend-shape]は頂点数とBlendShape数の積�
 
 続いて、`Anon_Merged`の設定をしましょう！
 
-`Merge Skinned Mesh`は諸事情[^merge-skinned-mesh]によりボーン、メッシュ、マテリアル以外の設定を自動的には行いません。
-そのため、Bounds, Root Bone, Anchor Override等を手動で設定してください。
+`Merge Skinned Mesh`は諸事情[^merge-skinned-mesh]によりボーン、メッシュ、マテリアル、BlendShape、Bounds以外の設定を自動的には行いません。
+そのため、Root Bone, Anchor Override等を手動で設定してください。
 Anchor Overrideは素体のを、Root BoneはHipsを指定するとうまくいくことが多いと思います。
 
 {{< hint info >}}
@@ -77,7 +77,7 @@ Anchor Overrideは素体のを、Root BoneはHipsを指定するとうまくい�
 {{< /hint >}}
 
 [^tip-lock-inspector]: PhysBoneに複数のコライダーを指定するのにも使えたり、色んなところで使えるので覚えておくと便利だと思います。
-[^merge-skinned-mesh]: Boundsは大きな箱にすることで今後対応予定、Root Bone/Anchor Overrideは等しくないとマージできないため対応予定がないです。もし良いアルゴリズムを教えてください。
+[^merge-skinned-mesh]: Root Bone/Anchor Overrideは等しくないとマージできないため対応予定がないです。もし良いアルゴリズムを教えてください。
 [^mesh]: この記事ではメッシュはUnityのMesh assetではなくSkinnedMeshRendererの意味で使用しています。
 
 BlendShapeを固定する {#freeze-blendshape}

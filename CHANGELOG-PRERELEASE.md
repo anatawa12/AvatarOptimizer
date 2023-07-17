@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Automatic bounds computation in MergeSkinnedMesh `#264`
 
 ### Changed
 -   `#263`

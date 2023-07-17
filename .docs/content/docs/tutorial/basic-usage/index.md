@@ -59,8 +59,8 @@ so I recommend not to merge face mesh.
 
 Next, configure `Anon_Merged`!
 
-Because of many reasons[^merge-skinned-mesh], `Merge Skinned Mesh` doesn't configure anything except of bones, meshes, and materials.
-So, please configure Bounds, Root Bone, Anchor Override and else yourself.
+Because of many reasons[^merge-skinned-mesh], `Merge Skinned Mesh` doesn't configure anything except of bones, meshes, materials, BlendShapes and bounds.
+So, please configure Root Bone, Anchor Override and else yourself.
 I think specifying Anchor Override of your body and setting Hips as the Root Bone will work well.
 
 {{< hint info >}}
@@ -79,7 +79,7 @@ Please check [basic usages of anatawa12's Gist Pack][gists-basic-usage] and [doc
 {{< /hint >}}
 
 [^tip-lock-inspector]: It is useful to keep in mind that it can be used in many other places such as specifying multiple colliders for PhysBone.
-[^merge-skinned-mesh]: It's planned to support specifying Bounds, and Root Bone and Anchor Override are impossible to merge so it's not planned. If you know any good algorithm, please tel me that.
+[^merge-skinned-mesh]: Root Bone and Anchor Override are impossible to merge automatically I think. If you know any good algorithm, please tel me that.
 [^mesh]: In this document mesh means SkinnedMeshRenderer, not the Mesh asset in Unity.
 
 Freezing BlendShape {#freeze-blendshape}
