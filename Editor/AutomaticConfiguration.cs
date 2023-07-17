@@ -1,4 +1,5 @@
 using UnityEditor;
+using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer
 {
@@ -6,12 +7,12 @@ namespace Anatawa12.AvatarOptimizer
     internal class AutomaticConfigurationEditor : AvatarGlobalComponentEditorBase
     {
         private SerializedProperty _freezeBlendShape;
-        private SerializedProperty _dontFreezeMmdShapes;
+        private SerializedProperty _mmdWorldCompatibility;
 
         private void OnEnable()
         {
             _freezeBlendShape = serializedObject.FindProperty(nameof(AutomaticConfiguration.freezeBlendShape));
-            _dontFreezeMmdShapes = serializedObject.FindProperty(nameof(AutomaticConfiguration.dontFreezeMmdShapes));
+            _mmdWorldCompatibility = serializedObject.FindProperty(nameof(AutomaticConfiguration.mmdWorldCompatibility));
         }
 
         protected override void OnInspectorGUIInner()
@@ -19,13 +20,10 @@ namespace Anatawa12.AvatarOptimizer
             base.OnInspectorGUIInner();
             serializedObject.UpdateIfRequiredOrScript();
 
+            GUILayout.Label("General Settings", EditorStyles.boldLabel);
+            EditorGUILayout.PropertyField(_mmdWorldCompatibility);
+            GUILayout.Label("Features", EditorStyles.boldLabel);
             EditorGUILayout.PropertyField(_freezeBlendShape);
-            if (_freezeBlendShape.boolValue)
-            {
-                EditorGUI.indentLevel++;
-                EditorGUILayout.PropertyField(_dontFreezeMmdShapes);
-                EditorGUI.indentLevel--;
-            }
 
             serializedObject.ApplyModifiedProperties();
         }

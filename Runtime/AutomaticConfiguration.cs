@@ -1,5 +1,6 @@
 using CustomLocalization4EditorExtension;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Anatawa12.AvatarOptimizer
 {
@@ -10,8 +11,9 @@ namespace Anatawa12.AvatarOptimizer
         [CL4EELocalized("AutomaticConfiguration:prop:freezeBlendShape")]
         [ToggleLeft]
         public bool freezeBlendShape = true;
-        [CL4EELocalized("AutomaticConfiguration:prop:dontFreezeMmdShapes")]
+        [CL4EELocalized("AutomaticConfiguration:prop:mmdWorldCompatibility",
+            "AutomaticConfiguration:tooltip:mmdWorldCompatibility")]
         [ToggleLeft]
-        public bool dontFreezeMmdShapes = true;
+        public bool mmdWorldCompatibility = true;
     }
 }

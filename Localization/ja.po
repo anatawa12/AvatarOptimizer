@@ -240,8 +240,11 @@ msgstr "このコンポーネントをアバターにつけると、アニメー
 msgid "AutomaticConfiguration:prop:freezeBlendShape"
 msgstr "Freeze Blend Shapeを自動設定する"
 
-msgid "AutomaticConfiguration:prop:dontFreezeMmdShapes"
-msgstr "MMD用BlendShapes(ShapeKeys)を固定・除去しない"
+msgid "AutomaticConfiguration:prop:mmdWorldCompatibility"
+msgstr "MMDワールドとの互換性"
+
+msgid "AutomaticConfiguration:tooltip:mmdWorldCompatibility"
+msgstr "MMD用BlendShapeを固定しないなどのMMDワールドとの互換性機能を有効化します"
 
 # endregion
 

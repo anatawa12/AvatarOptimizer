@@ -77,7 +77,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
                 var bodySkinnedMesh = descriptor.transform.Find("Body")?.GetComponent<SkinnedMeshRenderer>();
 
-                if (_config.dontFreezeMmdShapes && bodySkinnedMesh)
+                if (_config.mmdWorldCompatibility && bodySkinnedMesh)
                 {
                     if (!_modifiedProperties.TryGetValue(bodySkinnedMesh, out var set))
                         _modifiedProperties.Add(bodySkinnedMesh, set = new Dictionary<string, AnimationProperty>());
