@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Automatic Configuration System `#265`
+  - Currently FreezeBlendShape can be automatically configured.
 
 ### Changed
 -   `#263`
