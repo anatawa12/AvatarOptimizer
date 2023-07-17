@@ -9,7 +9,7 @@ weight: 1
 
 MergeSkinnedMeshは、メッシュを指定していないSkinnedMeshRendererを持つ新しいGameObjectに追加するべきです。
 
-このコンポーネントはメッシュ・ボーン・ブレンドシェイプを統合しますが、その他の設定については変更しないため、AnchorOverride等の設定を行うには、MergeSkinnedMeshのあるGameObject上のSkinnedMeshRendererを編集してください。
+このコンポーネントはメッシュ・ボーン・マテリアル・BlendShape・Boundsを統合しますが、その他の設定については変更しないため、AnchorOverride等の設定を行うには、MergeSkinnedMeshのあるGameObject上のSkinnedMeshRendererを編集してください。
 
 このコンポーネントは、服のメッシュや体のメッシュを統合するのには適していますが、顔のメッシュを統合するのには適していません。
 ブレンドシェイプは、頂点とブレンドシェイプの数に比例して負荷が大きくなる機能です。
