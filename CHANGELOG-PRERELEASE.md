@@ -8,8 +8,12 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Automatic bounds computation in MergeSkinnedMesh `#264`
+- Automatic Configuration System `#265`
+  - Currently FreezeBlendShape can be automatically configured.
 
 ### Changed
+- Support newly activated avatars in play mode for apply on play `#263`
 
 ### Deprecated
 
@@ -20,13 +24,7 @@ The format is based on [Keep a Changelog].
 ### Security
 
 ## [1.1.2-beta.1] - 2023-07-17
-### Added
-- Automatic bounds computation in MergeSkinnedMesh [`#264`](https://github.com/anatawa12/AvatarOptimizer/pull/264)
-- Automatic Configuration System [`#265`](https://github.com/anatawa12/AvatarOptimizer/pull/265)
-  - Currently FreezeBlendShape can be automatically configured.
-
-### Changed
-- Support newly activated avatars in play mode for apply on play [`#263`](https://github.com/anatawa12/AvatarOptimizer/pull/263)
+This release is mistake.
 
 ## [1.1.1] - 2023-07-14
 ### Changed
