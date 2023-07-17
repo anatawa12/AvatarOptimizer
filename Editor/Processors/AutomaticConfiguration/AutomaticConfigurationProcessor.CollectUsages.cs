@@ -224,6 +224,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 {
                     if (!typeof(Component).IsAssignableFrom(binding.type)) continue;
                     var obj = (Component)AnimationUtility.GetAnimatedObject(root, binding);
+                    if (obj == null) continue;
 
                     if (!_modifiedProperties.TryGetValue(obj, out var set))
                         _modifiedProperties.Add(obj, set = new HashSet<string>());
