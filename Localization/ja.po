@@ -232,6 +232,13 @@ msgstr "チェックされている場合、子にボーン以外を持つボー
 
 # endregion
 
+# region AutomaticConfiguration
+
+msgid "AutomaticConfiguration:description"
+msgstr "アバターにこのコンポーネントをつけると、アニメーションなどを参考に自動的にAvatarOptimizerの設定を行います。"
+
+# endregion
+
 #region ApplyObjectMapping
 
 msgid "ApplyObjectMapping:VRCAvatarDescriptor:eyelids BlendShape Removed"

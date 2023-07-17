@@ -295,6 +295,13 @@ msgstr "If checked, this tool does not remove bones with non-bone children."
 
 # endregion
 
+# region AutomaticConfiguration
+
+msgid "AutomaticConfiguration:description"
+msgstr "When you added this component to your avatar, AvatarOptimizer will configure components based on your animation or else."
+
+# endregion
+
 #region ApplyObjectMapping
 
 msgid "ApplyObjectMapping:VRCAvatarDescriptor:eyelids BlendShape Removed"
