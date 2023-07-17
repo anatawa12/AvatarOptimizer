@@ -40,6 +40,10 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
                 if (notChanged.Length == 0) continue;
 
+                for (var i = 0; i < blendShapeValues.Length; i++)
+                    skinnedMeshRenderer.SetBlendShapeWeight(i, blendShapeValues[i]);
+                EditorUtility.SetDirty(skinnedMeshRenderer);
+
                 var freeze = skinnedMeshRenderer.gameObject.AddComponent<FreezeBlendShape>();
                 var serialized = new SerializedObject(freeze);
                 var editorUtil = PrefabSafeSet.EditorUtil<string>.Create(
