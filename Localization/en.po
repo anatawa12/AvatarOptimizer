@@ -295,6 +295,22 @@ msgstr "If checked, this tool does not remove bones with non-bone children."
 
 # endregion
 
+# region AutomaticConfiguration
+
+msgid "AutomaticConfiguration:description"
+msgstr "When you added this component to your avatar, AvatarOptimizer will configure components based on your animation or else."
+
+msgid "AutomaticConfiguration:prop:freezeBlendShape"
+msgstr "Configure Freeze Blend Shape"
+
+msgid "AutomaticConfiguration:prop:mmdWorldCompatibility"
+msgstr "MMD World Compatibility"
+
+msgid "AutomaticConfiguration:tooltip:mmdWorldCompatibility"
+msgstr "Enable MMD World Compatibility features such as keeping some BlendShapes"
+
+# endregion
+
 #region ApplyObjectMapping
 
 msgid "ApplyObjectMapping:VRCAvatarDescriptor:eyelids BlendShape Removed"
