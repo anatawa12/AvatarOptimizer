@@ -20,6 +20,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
             // TODO: implement
             GatherAnimationModifications();
+            AutoFreezeBlendShape();
         }
 
         private IReadOnlyCollection<string> GetModifiedProperties(Component component)
