@@ -100,6 +100,21 @@ It's better for the merged mesh not to have any BlendShapes if possible.
 
 Now let's freeze the BlendShapes for the unused body and clothing body shape changes!
 
+Since AvatarOptimizer v1.2.0, it has easy way to freeze unchanged BlendShapes.
+
+If you don't change body shape in FX Layer or else, you can easily freeze BlendShape with this way!
+Also, you can freeze unused BlendShapes in your Face Mesh.
+
+First, add `Automatic Configuration` to avatar root!
+
+![add-automatic-configuration.png](add-automatic-configuration.png)
+
+This completes the settings for automatic freezing BlendShapes!
+
+If your FX Layer changes Body shape, you can use the following manual steps.
+You can partially configure freezing manually.
+For example, automatically freeze BlendShape in your face mesh and manually in the body.
+
 First, add `Freeze BlendShapes` to `Anon_Merged`, which is the mesh increased vertex count.
 
 ![add-freeze-blendshape.png](add-freeze-blendshape.png)
@@ -113,7 +128,5 @@ To make the merge work, specify the BlendShape to be frozen!
 If the checkbox is checked, the BlendShape will be frozen.
 
 ![freeze-blendshape.png](freeze-blendshape.png)
-
-This completes the settings for freezing BlendShape!
 
 [^blend-shape]: BlendShape is the name of Shape Keys in Unity. Unity and Maya call them as Blend Shape, Blender calls them as Shape Key, Metasequoia and MMD call them as Morph.
