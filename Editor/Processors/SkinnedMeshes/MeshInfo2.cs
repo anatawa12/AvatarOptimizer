@@ -28,6 +28,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         public readonly List<Bone> Bones = new List<Bone>();
 
         public bool HasColor { get; set; }
+        public bool HasTangent { get; set; }
 
         public MeshInfo2(SkinnedMeshRenderer renderer)
         {
@@ -142,7 +143,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             CopyVertexAttr(mesh.vertices, (x, v) => x.Position = v);
             CopyVertexAttr(mesh.normals, (x, v) => x.Normal = v);
-            CopyVertexAttr(mesh.tangents, (x, v) => x.Tangent = v);
+            if (mesh.GetVertexAttributeDimension(VertexAttribute.Tangent) != 0)
+            {
+                HasTangent = true;
+                CopyVertexAttr(mesh.tangents, (x, v) => x.Tangent = v);
+            }
             if (mesh.GetVertexAttributeDimension(VertexAttribute.Color) != 0)
             {
                 HasColor = true;
@@ -220,30 +225,38 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             BlendShapes.Clear();
             Bones.Clear();
             HasColor = false;
+            HasTangent = false;
         }
 
         public void WriteToMesh(Mesh destMesh)
         {
             destMesh.Clear();
 
-            // Basic Vertex Attributes: vertices, normals, tangents
+            // Basic Vertex Attributes: vertices, normals
             {
                 var vertices = new Vector3[Vertices.Count];
                 var normals = new Vector3[Vertices.Count];
-                var tangents = new Vector4[Vertices.Count];
                 for (var i = 0; i < Vertices.Count; i++)
                 {
                     vertices[i] = Vertices[i].Position;
                     normals[i] = Vertices[i].Normal.normalized;
+                }
 
+                destMesh.vertices = vertices;
+                destMesh.normals = normals;
+            }
+
+            // tangents
+            if (HasTangent)
+            {
+                var tangents = new Vector4[Vertices.Count];
+                for (var i = 0; i < Vertices.Count; i++)
+                {
                     var tangent3 = (Vector3)Vertices[i].Tangent;
                     var tangentW = Vertices[i].Tangent.w;
                     tangent3.Normalize();
                     tangents[i] = new Vector4(tangent3.x, tangent3.y, tangent3.z, tangentW);
                 }
-
-                destMesh.vertices = vertices;
-                destMesh.normals = normals;
                 destMesh.tangents = tangents;
             }
 
