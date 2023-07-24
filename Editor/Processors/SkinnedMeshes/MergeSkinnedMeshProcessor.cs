@@ -94,6 +94,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 target.Bones.AddRange(meshInfo.Bones);
 
                 target.HasColor |= meshInfo.HasColor;
+                target.HasTangent |= meshInfo.HasTangent;
 
                 target.AssertInvariantContract($"processing meshInfo {Target.gameObject.name}");
             }
