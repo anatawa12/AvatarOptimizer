@@ -20,6 +20,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Breaks mesh without tangent `#271`
 
 ### Security
 
