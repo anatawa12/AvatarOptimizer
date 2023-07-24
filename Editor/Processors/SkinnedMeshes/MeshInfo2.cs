@@ -407,7 +407,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
     {
         public Vector3 Position { get; set; }
         public Vector3 Normal { get; set; }
-        public Vector4 Tangent { get; set; }
+        public Vector4 Tangent { get; set; } = new Vector4(1, 0, 0, 1);
         public Vector4 TexCoord0 { get; set; }
         public Vector4 TexCoord1 { get; set; }
         public Vector4 TexCoord2 { get; set; }
