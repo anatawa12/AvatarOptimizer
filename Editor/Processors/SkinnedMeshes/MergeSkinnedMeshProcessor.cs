@@ -44,6 +44,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             for (var i = 0; i < meshInfos.Length; i++)
             {
                 var meshInfo = meshInfos[i];
+                mappings.Clear();
 
                 meshInfo.AssertInvariantContract($"processing source #{i} of {Target.gameObject.name}");
 
@@ -53,9 +54,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                         TexCoordStatusMax(target.GetTexCoordStatus(j), meshInfo.GetTexCoordStatus(j)));
 
                 for (var j = 0; j < meshInfo.SubMeshes.Count; j++)
-                    target.SubMeshes[subMeshIndexMap[i][j]].Triangles.AddRange(meshInfo.SubMeshes[j].Triangles);
+                {
+                    var targetSubMeshIndex = subMeshIndexMap[i][j];
+                    target.SubMeshes[targetSubMeshIndex].Triangles.AddRange(meshInfo.SubMeshes[j].Triangles);
+                    mappings.Add(($"m_Materials.Array.data[{j}]",
+                        $"m_Materials.Array.data[{targetSubMeshIndex}]"));
+                }
 
-                mappings.Clear();
 
                 // add blend shape if not defined by name
                 for (var sourceI = 0; sourceI < meshInfo.BlendShapes.Count; sourceI++)
@@ -68,7 +73,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                         target.BlendShapes.Add((name, weight));
                     }
 
-                    // this can cause merge prop error.
                     mappings.Add((VProp.BlendShapeIndex(sourceI), VProp.BlendShapeIndex(newIndex)));
                 }
 
