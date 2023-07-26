@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Support for material swapping animation in MergeSkinnedMesh `#274`
 
 ### Changed
 
