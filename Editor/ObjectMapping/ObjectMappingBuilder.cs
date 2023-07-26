@@ -115,8 +115,6 @@ namespace Anatawa12.AvatarOptimizer
                     {
                         if (!_beforePropertyIds.ContainsKey(oldProp))
                         {
-                            if (_afterPropertyIds.ContainsKey(newProp) && props.All(x => x.old != newProp))
-                                throw new InvalidOperationException("Merging property");
                             propertyIds[i] = _nextPropertyId++;
                         }
                     }
