@@ -8,7 +8,6 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Support for material swapping animation in MergeSkinnedMesh `#274`
 
 ### Changed
 
@@ -19,6 +18,10 @@ The format is based on [Keep a Changelog].
 ### Fixed
 
 ### Security
+
+## [1.2.0] - 2023-07-26
+### Added
+- Support for material swapping animation in MergeSkinnedMesh [`#274`](https://github.com/anatawa12/AvatarOptimizer/pull/274)
 
 ## [1.2.0-rc.1] - 2023-07-24
 ### Fixed
@@ -525,7 +528,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.2.0-rc.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.2.0-rc.1...v1.2.0
 [1.2.0-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.2.0-beta.1...v1.2.0-rc.1
 [1.2.0-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.1.2-beta.1...v1.2.0-beta.1
 [1.1.2-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.1.1...v1.1.2-beta.1

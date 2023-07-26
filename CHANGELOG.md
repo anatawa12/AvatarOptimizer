@@ -8,22 +8,29 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Automatic bounds computation in MergeSkinnedMesh `#264`
-- Automatic Configuration System `#265`
-  - Currently FreezeBlendShape can be automatically configured.
-- Support for material swapping animation in MergeSkinnedMesh `#274`
 
 ### Changed
-- Support newly activated avatars in play mode for apply on play `#263`
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
-- Breaks mesh without tangent `#271`
 
 ### Security
+
+## [1.2.0] - 2023-07-26
+### Added
+- Automatic bounds computation in MergeSkinnedMesh [`#264`](https://github.com/anatawa12/AvatarOptimizer/pull/264)
+- Automatic Configuration System [`#265`](https://github.com/anatawa12/AvatarOptimizer/pull/265)
+  - Currently FreezeBlendShape can be automatically configured.
+- Support for material swapping animation in MergeSkinnedMesh [`#274`](https://github.com/anatawa12/AvatarOptimizer/pull/274)
+
+### Changed
+- Support newly activated avatars in play mode for apply on play [`#263`](https://github.com/anatawa12/AvatarOptimizer/pull/263)
+
+### Fixed
+- Breaks mesh without tangent [`#271`](https://github.com/anatawa12/AvatarOptimizer/pull/271)
 
 ## [1.1.1] - 2023-07-14
 ### Changed
@@ -393,7 +400,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.1.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.1.1...v1.2.0
 [1.1.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/anatawa12/AvatarOptimizer/compare/v0.4.12...v1.0.0
