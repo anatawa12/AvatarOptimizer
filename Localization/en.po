@@ -264,6 +264,19 @@ msgstr "Rotation"
 
 # endregion
 
+# region RemoveMeshByBlendShape
+
+msgid "RemoveMeshByBlendShape:prop:Tolerance"
+msgstr "Tolerance"
+
+msgid "RemoveMeshByBlendShape:button:Check All"
+msgstr "Check All"
+
+msgid "RemoveMeshByBlendShape:button:Invert All"
+msgstr "Invert All"
+
+# endregion
+
 # region AvatarGlobalComponent
 
 msgid "DeleteEditorOnlyGameObjects:NotOnAvatarDescriptor"

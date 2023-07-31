@@ -201,6 +201,19 @@ msgstr "回転"
 
 # endregion
 
+# region RemoveMeshByBlendShape
+
+msgid "RemoveMeshByBlendShape:prop:Tolerance"
+msgstr "許容差"
+
+msgid "RemoveMeshByBlendShape:button:Check All"
+msgstr "すべて有効にする"
+
+msgid "RemoveMeshByBlendShape:button:Invert All"
+msgstr "すべての有効/無効を入れ替える"
+
+# endregion
+
 # region AvatarGlobalComponent
 
 msgid "DeleteEditorOnlyGameObjects:NotOnAvatarDescriptor"
