@@ -160,14 +160,21 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 case MergeToonLitMaterial.MergedTextureFormat.RG16:
                 case MergeToonLitMaterial.MergedTextureFormat.R8:
                     return (TextureFormat) finalFormat;
+                case MergeToonLitMaterial.MergedTextureFormat.BC4:
+                    return TextureFormat.R8;
+                case MergeToonLitMaterial.MergedTextureFormat.BC5:
+                    return TextureFormat.RG16;
                 case MergeToonLitMaterial.MergedTextureFormat.DXT1:
                     return TextureFormat.RGB24;
                 case MergeToonLitMaterial.MergedTextureFormat.DXT5:
+                case MergeToonLitMaterial.MergedTextureFormat.BC7:
                     return TextureFormat.RGBA32;
                 case MergeToonLitMaterial.MergedTextureFormat.ASTC_4x4:
                 case MergeToonLitMaterial.MergedTextureFormat.ASTC_5x5:
                 case MergeToonLitMaterial.MergedTextureFormat.ASTC_6x6:
                 case MergeToonLitMaterial.MergedTextureFormat.ASTC_8x8:
+                case MergeToonLitMaterial.MergedTextureFormat.ASTC_10x10:
+                case MergeToonLitMaterial.MergedTextureFormat.ASTC_12x12:
                     return TextureFormat.RGBA32;
                 case MergeToonLitMaterial.MergedTextureFormat.Default:
                 default:
@@ -193,10 +200,15 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     return false;
                 case MergeToonLitMaterial.MergedTextureFormat.DXT1:
                 case MergeToonLitMaterial.MergedTextureFormat.DXT5:
+                case MergeToonLitMaterial.MergedTextureFormat.BC7:
+                case MergeToonLitMaterial.MergedTextureFormat.BC4:
+                case MergeToonLitMaterial.MergedTextureFormat.BC5:
                 case MergeToonLitMaterial.MergedTextureFormat.ASTC_4x4:
                 case MergeToonLitMaterial.MergedTextureFormat.ASTC_5x5:
                 case MergeToonLitMaterial.MergedTextureFormat.ASTC_6x6:
                 case MergeToonLitMaterial.MergedTextureFormat.ASTC_8x8:
+                case MergeToonLitMaterial.MergedTextureFormat.ASTC_10x10:
+                case MergeToonLitMaterial.MergedTextureFormat.ASTC_12x12:
                     return true;
                 case MergeToonLitMaterial.MergedTextureFormat.Default:
                 default:
@@ -219,19 +231,24 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 case MergeToonLitMaterial.MergedTextureFormat.BGRA32:
                 case MergeToonLitMaterial.MergedTextureFormat.DXT1:
                 case MergeToonLitMaterial.MergedTextureFormat.DXT5:
+                case MergeToonLitMaterial.MergedTextureFormat.BC7:
                     return RenderTextureFormat.ARGB32;
                 case MergeToonLitMaterial.MergedTextureFormat.RGB565:
                     return RenderTextureFormat.RGB565;
                 case MergeToonLitMaterial.MergedTextureFormat.R16:
                     return RenderTextureFormat.R16;
                 case MergeToonLitMaterial.MergedTextureFormat.RG16:
+                case MergeToonLitMaterial.MergedTextureFormat.BC5:
                     return RenderTextureFormat.RG16;
                 case MergeToonLitMaterial.MergedTextureFormat.R8:
+                case MergeToonLitMaterial.MergedTextureFormat.BC4:
                     return RenderTextureFormat.R8;
                 case MergeToonLitMaterial.MergedTextureFormat.ASTC_4x4:
                 case MergeToonLitMaterial.MergedTextureFormat.ASTC_5x5:
                 case MergeToonLitMaterial.MergedTextureFormat.ASTC_6x6:
                 case MergeToonLitMaterial.MergedTextureFormat.ASTC_8x8:
+                case MergeToonLitMaterial.MergedTextureFormat.ASTC_10x10:
+                case MergeToonLitMaterial.MergedTextureFormat.ASTC_12x12:
                     return RenderTextureFormat.ARGB32;
                 case MergeToonLitMaterial.MergedTextureFormat.Default:
                 default:
