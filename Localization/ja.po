@@ -240,6 +240,12 @@ msgstr "このコンポーネントをアバターにつけると、アニメー
 msgid "AutomaticConfiguration:prop:freezeBlendShape"
 msgstr "Freeze Blend Shapeを自動設定する"
 
+msgid "AutomaticConfiguration:prop:removeUnusedObjects"
+msgstr "使われていないGameObjectを自動的に削除する"
+
+msgid "AutomaticConfiguration:tooltip:removeUnusedObjects"
+msgstr "存在価値のないGameObjectを自動的に削除します。"
+
 msgid "AutomaticConfiguration:prop:mmdWorldCompatibility"
 msgstr "MMDワールドとの互換性"
 

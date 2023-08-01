@@ -24,6 +24,8 @@ namespace Anatawa12.AvatarOptimizer.Processors
             GatherAnimationModifications();
             if (_config.freezeBlendShape)
                 AutoFreezeBlendShape();
+            if (_config.removeUnusedObjects)
+                FindUnusedObjects();
         }
 
         private IReadOnlyDictionary<string, AnimationProperty> GetModifiedProperties(Component component)

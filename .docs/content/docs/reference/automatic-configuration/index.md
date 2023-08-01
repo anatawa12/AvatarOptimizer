@@ -11,6 +11,8 @@ You can enable/disable some automatic configuration features with checkboxes.
 Currently the following features can be configured automatically
 - [FreezeBlendShape](../freeze-blendshape)
   Automatically freezes unused BlendShapes in animation or else.
+- `Remove unused GameObjects`
+  Automatically removes unused (meaningless) GameObjects.
 
 Also, You can adjust automatic configuration with the following settings
 - `MMD World Compatibility`
