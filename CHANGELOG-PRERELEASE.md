@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Remove always disabled objects `#278`
 
 ### Changed
 - Use UnityEditor api to compress texture `#276`
