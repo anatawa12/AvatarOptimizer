@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
+- Use UnityEditor api to compress texture `#276`
+  - This also adds some supported texture formats.
 
 ### Deprecated
 

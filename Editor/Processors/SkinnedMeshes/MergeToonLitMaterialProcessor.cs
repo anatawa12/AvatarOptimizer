@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
 using Object = UnityEngine.Object;
@@ -143,17 +144,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             return config.merges.Select(x => GenerateTexture(x, materials, compress)).ToArray();
         }
 
-        private enum CompressionType
-        {
-            // writing to Texture2D finishes compression
-            UseRaw,
-            // we use Texture2d.Compress method to compress image
-            UseCompressMethod,
-            UseIspcAstc,
-            // use PVRTexTool in unity installation
-            UsePvrTexTool,
-        }
-
         private static TextureFormat BaseTextureFormat(MergeToonLitMaterial.MergedTextureFormat finalFormat)
         {
             switch (finalFormat)
@@ -170,14 +160,21 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 case MergeToonLitMaterial.MergedTextureFormat.RG16:
                 case MergeToonLitMaterial.MergedTextureFormat.R8:
                     return (TextureFormat) finalFormat;
+                case MergeToonLitMaterial.MergedTextureFormat.BC4:
+                    return TextureFormat.R8;
+                case MergeToonLitMaterial.MergedTextureFormat.BC5:
+                    return TextureFormat.RG16;
                 case MergeToonLitMaterial.MergedTextureFormat.DXT1:
                     return TextureFormat.RGB24;
                 case MergeToonLitMaterial.MergedTextureFormat.DXT5:
+                case MergeToonLitMaterial.MergedTextureFormat.BC7:
                     return TextureFormat.RGBA32;
                 case MergeToonLitMaterial.MergedTextureFormat.ASTC_4x4:
                 case MergeToonLitMaterial.MergedTextureFormat.ASTC_5x5:
                 case MergeToonLitMaterial.MergedTextureFormat.ASTC_6x6:
                 case MergeToonLitMaterial.MergedTextureFormat.ASTC_8x8:
+                case MergeToonLitMaterial.MergedTextureFormat.ASTC_10x10:
+                case MergeToonLitMaterial.MergedTextureFormat.ASTC_12x12:
                     return TextureFormat.RGBA32;
                 case MergeToonLitMaterial.MergedTextureFormat.Default:
                 default:
@@ -185,7 +182,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             }
         }
 
-        private static CompressionType GetCompressionType(MergeToonLitMaterial.MergedTextureFormat finalFormat)
+        private static bool IsCompressedFormat(MergeToonLitMaterial.MergedTextureFormat finalFormat)
         {
             switch (finalFormat)
             {
@@ -200,15 +197,19 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 case MergeToonLitMaterial.MergedTextureFormat.BGRA32:
                 case MergeToonLitMaterial.MergedTextureFormat.RG16:
                 case MergeToonLitMaterial.MergedTextureFormat.R8:
-                    return CompressionType.UseRaw;
+                    return false;
                 case MergeToonLitMaterial.MergedTextureFormat.DXT1:
                 case MergeToonLitMaterial.MergedTextureFormat.DXT5:
-                    return CompressionType.UseCompressMethod;
+                case MergeToonLitMaterial.MergedTextureFormat.BC7:
+                case MergeToonLitMaterial.MergedTextureFormat.BC4:
+                case MergeToonLitMaterial.MergedTextureFormat.BC5:
                 case MergeToonLitMaterial.MergedTextureFormat.ASTC_4x4:
                 case MergeToonLitMaterial.MergedTextureFormat.ASTC_5x5:
                 case MergeToonLitMaterial.MergedTextureFormat.ASTC_6x6:
                 case MergeToonLitMaterial.MergedTextureFormat.ASTC_8x8:
-                    return CompressionType.UseIspcAstc;
+                case MergeToonLitMaterial.MergedTextureFormat.ASTC_10x10:
+                case MergeToonLitMaterial.MergedTextureFormat.ASTC_12x12:
+                    return true;
                 case MergeToonLitMaterial.MergedTextureFormat.Default:
                 default:
                     throw new ArgumentOutOfRangeException(nameof(finalFormat), finalFormat, null);
@@ -230,19 +231,24 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 case MergeToonLitMaterial.MergedTextureFormat.BGRA32:
                 case MergeToonLitMaterial.MergedTextureFormat.DXT1:
                 case MergeToonLitMaterial.MergedTextureFormat.DXT5:
+                case MergeToonLitMaterial.MergedTextureFormat.BC7:
                     return RenderTextureFormat.ARGB32;
                 case MergeToonLitMaterial.MergedTextureFormat.RGB565:
                     return RenderTextureFormat.RGB565;
                 case MergeToonLitMaterial.MergedTextureFormat.R16:
                     return RenderTextureFormat.R16;
                 case MergeToonLitMaterial.MergedTextureFormat.RG16:
+                case MergeToonLitMaterial.MergedTextureFormat.BC5:
                     return RenderTextureFormat.RG16;
                 case MergeToonLitMaterial.MergedTextureFormat.R8:
+                case MergeToonLitMaterial.MergedTextureFormat.BC4:
                     return RenderTextureFormat.R8;
                 case MergeToonLitMaterial.MergedTextureFormat.ASTC_4x4:
                 case MergeToonLitMaterial.MergedTextureFormat.ASTC_5x5:
                 case MergeToonLitMaterial.MergedTextureFormat.ASTC_6x6:
                 case MergeToonLitMaterial.MergedTextureFormat.ASTC_8x8:
+                case MergeToonLitMaterial.MergedTextureFormat.ASTC_10x10:
+                case MergeToonLitMaterial.MergedTextureFormat.ASTC_12x12:
                     return RenderTextureFormat.ARGB32;
                 case MergeToonLitMaterial.MergedTextureFormat.Default:
                 default:
@@ -288,41 +294,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             Object.DestroyImmediate(target);
 
-            switch (compress ? GetCompressionType(finalFormat) : CompressionType.UseRaw)
-            {
-                case CompressionType.UseRaw:
-                    // Nothing to do.
-                    break;
-                case CompressionType.UseCompressMethod:
-                    // DXT formats can be generated using Compress function
-                    texture.Compress(true);
-                    break;
-                case CompressionType.UseIspcAstc:
-                    int size;
-                    switch (finalFormat)
-                    {
-                        case MergeToonLitMaterial.MergedTextureFormat.ASTC_4x4:
-                            size = 4;
-                            break;
-                        case MergeToonLitMaterial.MergedTextureFormat.ASTC_5x5:
-                            size = 5;
-                            break;
-                        case MergeToonLitMaterial.MergedTextureFormat.ASTC_6x6:
-                            size = 6;
-                            break;
-                        case MergeToonLitMaterial.MergedTextureFormat.ASTC_8x8:
-                            size = 8;
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException();
-                    }
-                    texture = IspcTexCompressor.GenerateAstc(texture, size);
-                    break;
-                case CompressionType.UsePvrTexTool:
-                    throw new NotImplementedException("PvrTexTool Invocation");
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+            if (compress && IsCompressedFormat(finalFormat))
+                EditorUtility.CompressTexture(texture, (TextureFormat)finalFormat, TextureCompressionQuality.Normal);
 
             System.Diagnostics.Debug.Assert(texture.format == (TextureFormat)finalFormat, 
                 $"TextureFormat mismatch: expected {finalFormat} but was {texture.format}");
@@ -347,11 +320,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             }
 
             return texture;
-        }
-
-        private static Texture2D CompressWithPvrTexTool(Texture2D texture, MergeToonLitMaterial.MergedTextureFormat finalFormat)
-        {
-            throw new NotImplementedException();
         }
 
         public override IMeshInfoComputer GetComputer(IMeshInfoComputer upstream) => new MeshInfoComputer(this, upstream);
