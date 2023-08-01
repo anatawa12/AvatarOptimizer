@@ -249,21 +249,20 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
         readonly struct ParsedAnimation
         {
-            public readonly IReadOnlyDictionary<Component, IReadOnlyDictionary<string, AnimationProperty>> Components;
+            public readonly IReadOnlyDictionary<Object, IReadOnlyDictionary<string, AnimationProperty>> Components;
 
-            public ParsedAnimation(IReadOnlyDictionary<Component, IReadOnlyDictionary<string, AnimationProperty>> components)
+            public ParsedAnimation(IReadOnlyDictionary<Object, IReadOnlyDictionary<string, AnimationProperty>> components)
             {
                 Components = components;
             }
 
             public static ParsedAnimation Parse(GameObject root, AnimationClip clip)
             {
-                var components = new Dictionary<Component, IReadOnlyDictionary<string, AnimationProperty>>();
+                var components = new Dictionary<Object, IReadOnlyDictionary<string, AnimationProperty>>();
 
                 foreach (var binding in AnimationUtility.GetCurveBindings(clip))
                 {
-                    if (!typeof(Component).IsAssignableFrom(binding.type)) continue;
-                    var obj = (Component)AnimationUtility.GetAnimatedObject(root, binding);
+                    var obj = AnimationUtility.GetAnimatedObject(root, binding);
                     if (obj == null) continue;
 
                     var curve = AnimationUtility.GetEditorCurve(clip, binding);

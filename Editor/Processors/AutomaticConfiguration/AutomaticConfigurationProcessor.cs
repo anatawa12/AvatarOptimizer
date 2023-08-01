@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.Processors
 {
@@ -10,8 +11,8 @@ namespace Anatawa12.AvatarOptimizer.Processors
         private AutomaticConfiguration _config;
         private OptimizerSession _session;
 
-        private Dictionary<Component, Dictionary<string, AnimationProperty>> _modifiedProperties =
-            new Dictionary<Component, Dictionary<string, AnimationProperty>>();
+        private Dictionary<Object, Dictionary<string, AnimationProperty>> _modifiedProperties =
+            new Dictionary<Object, Dictionary<string, AnimationProperty>>();
 
         public void Process(OptimizerSession session)
         {
@@ -26,6 +27,11 @@ namespace Anatawa12.AvatarOptimizer.Processors
         }
 
         private IReadOnlyDictionary<string, AnimationProperty> GetModifiedProperties(Component component)
+        {
+            return _modifiedProperties.TryGetValue(component, out var value) ? value : EmptyProperties;
+        }
+
+        private IReadOnlyDictionary<string, AnimationProperty> GetModifiedProperties(GameObject component)
         {
             return _modifiedProperties.TryGetValue(component, out var value) ? value : EmptyProperties;
         }
