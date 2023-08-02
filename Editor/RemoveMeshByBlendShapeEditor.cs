@@ -8,6 +8,7 @@ namespace Anatawa12.AvatarOptimizer
     internal class RemoveMeshByBlendShapeEditor : AvatarTagComponentEditorBase
     {
         private PrefabSafeSet.EditorUtil<string> _shapeKeysSet;
+        private SerializedProperty _toleranceProp;
 
         private void OnEnable()
         {
@@ -17,6 +18,7 @@ namespace Anatawa12.AvatarOptimizer
                 nestCount,
                 x => x.stringValue,
                 (x, v) => x.stringValue = v);
+            _toleranceProp = serializedObject.FindProperty(nameof(RemoveMeshByBlendShape.Tolerance));
         }
 
         protected override void OnInspectorGUIInner()
@@ -24,9 +26,7 @@ namespace Anatawa12.AvatarOptimizer
             var component = (RemoveMeshByBlendShape)target;
 
             serializedObject.Update();
-
-            var toleranceProp = serializedObject.FindProperty(nameof(RemoveMeshByBlendShape.Tolerance));
-            EditorGUI.PropertyField(EditorGUILayout.GetControlRect(), toleranceProp);
+            EditorGUILayout.PropertyField(_toleranceProp);
 
             var shapes = EditSkinnedMeshComponentUtil.GetBlendShapes(component.GetComponent<SkinnedMeshRenderer>(), component);
 
