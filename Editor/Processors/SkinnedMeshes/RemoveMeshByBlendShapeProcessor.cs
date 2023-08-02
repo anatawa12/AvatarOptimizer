@@ -34,10 +34,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     var v1 = subMesh.Triangles[srcI + 1];
                     var v2 = subMesh.Triangles[srcI + 2];
 
-                    if (byBlendShapeVertices.Contains(v0) && byBlendShapeVertices.Contains(v1) && byBlendShapeVertices.Contains(v2))
+                    if (byBlendShapeVertices.Contains(v0) || byBlendShapeVertices.Contains(v1) || byBlendShapeVertices.Contains(v2))
                         continue;
 
-                    // some vertex is not affected by the blend shape: 
+                    // no vertex is affected by the blend shape: 
                     subMesh.Triangles[dstI + 0] = v0;
                     subMesh.Triangles[dstI + 1] = v1;
                     subMesh.Triangles[dstI + 2] = v2;
@@ -46,14 +46,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 subMesh.Triangles.RemoveRange(dstI, subMesh.Triangles.Count - dstI);
             }
 
-            byBlendShapeVertices.Clear();
-            var usingVertices = byBlendShapeVertices;
-            foreach (var subMesh in target.SubMeshes)
-            foreach (var vertex in subMesh.Triangles)
-                usingVertices.Add(vertex);
-
             // remove unused vertices
-            target.Vertices.RemoveAll(x => !usingVertices.Contains(x));
+            target.Vertices.RemoveAll(x => byBlendShapeVertices.Contains(x));
         }
 
         public override IMeshInfoComputer GetComputer(IMeshInfoComputer upstream) => new MeshInfoComputer(this, upstream);
