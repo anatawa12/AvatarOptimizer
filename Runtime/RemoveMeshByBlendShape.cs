@@ -10,7 +10,8 @@ namespace Anatawa12.AvatarOptimizer
     internal class RemoveMeshByBlendShape : EditSkinnedMeshComponent
     {
         public PrefabSafeSet.StringSet shapeKeysSet;
-        [CL4EELocalized("RemoveMeshByBlendShape:prop:Tolerance")]
+        [CL4EELocalized("RemoveMeshByBlendShape:prop:Tolerance",
+            "RemoveMeshByBlendShape:tooltip:Tolerance")]
         public double Tolerance = 0.001;
 
         public RemoveMeshByBlendShape()
