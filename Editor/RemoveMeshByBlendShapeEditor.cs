@@ -18,7 +18,7 @@ namespace Anatawa12.AvatarOptimizer
                 nestCount,
                 x => x.stringValue,
                 (x, v) => x.stringValue = v);
-            _toleranceProp = serializedObject.FindProperty(nameof(RemoveMeshByBlendShape.Tolerance));
+            _toleranceProp = serializedObject.FindProperty(nameof(RemoveMeshByBlendShape.tolerance));
         }
 
         protected override void OnInspectorGUIInner()

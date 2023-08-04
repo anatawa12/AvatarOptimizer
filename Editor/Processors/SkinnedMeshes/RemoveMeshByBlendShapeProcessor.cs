@@ -14,7 +14,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         public override void Process(OptimizerSession session, MeshInfo2 target, MeshInfo2Holder meshInfo2Holder)
         {
             var byBlendShapeVertices = new HashSet<Vertex>();
-            var sqrTolerance = Component.Tolerance * Component.Tolerance;
+            var sqrTolerance = Component.tolerance * Component.tolerance;
 
             foreach (var vertex in target.Vertices)
             foreach (var shapeName in Component.RemovingShapeKeys)

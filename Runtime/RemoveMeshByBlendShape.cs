@@ -12,7 +12,7 @@ namespace Anatawa12.AvatarOptimizer
         public PrefabSafeSet.StringSet shapeKeysSet;
         [CL4EELocalized("RemoveMeshByBlendShape:prop:Tolerance",
             "RemoveMeshByBlendShape:tooltip:Tolerance")]
-        public double Tolerance = 0.001;
+        public double tolerance = 0.001;
 
         public RemoveMeshByBlendShape()
         {
