@@ -309,9 +309,6 @@ msgstr "MMD World Compatibility"
 msgid "AutomaticConfiguration:prop:removeUnusedObjects"
 msgstr "Remove unused GameObjects"
 
-msgid "AutomaticConfiguration:tooltip:removeUnusedObjects"
-msgstr "Removes GameObjects doesn't have meaning."
-
 msgid "AutomaticConfiguration:tooltip:mmdWorldCompatibility"
 msgstr "Enable MMD World Compatibility features such as keeping some BlendShapes"
 

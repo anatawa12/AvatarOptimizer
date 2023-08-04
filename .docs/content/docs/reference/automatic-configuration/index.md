@@ -12,7 +12,7 @@ Currently the following features can be configured automatically
 - [FreezeBlendShape](../freeze-blendshape)
   Automatically freezes unused BlendShapes in animation or else.
 - `Remove unused GameObjects`
-  Automatically removes unused (meaningless) GameObjects.
+  By scanning animation, etc., Automatically removes unused GameObjects.
 
 Also, You can adjust automatic configuration with the following settings
 - `MMD World Compatibility`

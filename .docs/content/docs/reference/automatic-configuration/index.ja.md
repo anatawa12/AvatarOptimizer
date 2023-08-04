@@ -12,7 +12,7 @@ weight: 1
 - [FreezeBlendShape](../freeze-blendshape)
   アニメーションなどで使われていないBlendShapeを自動的に固定・除去します。
 - `使われていないGameObjectを自動的に削除する`
-  使われていない、存在価値のないGameObjectを自動的に削除します
+  アニメーションなどを走査して、使われていないGameObjectを自動的に削除します。
 
 また、以下の設定で自動設定を調節できます。
 - `MMDワールドとの互換性`
