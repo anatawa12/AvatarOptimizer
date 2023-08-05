@@ -31,7 +31,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
             foreach (var keyValuePair in _modifiedProperties)
             {
                 if (!(keyValuePair.Key is GameObject gameObject)) continue;
-                if (!keyValuePair.Value.TryGetValue("m_Active", out _)) continue;
+                if (!keyValuePair.Value.TryGetValue("m_IsActive", out _)) continue;
 
                 AddGameObject(gameObject);
             }
