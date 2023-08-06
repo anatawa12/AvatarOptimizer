@@ -32,7 +32,6 @@ namespace Anatawa12.AvatarOptimizer
 
             var label = new GUIContent();
 
-            serializedObject.Update();
             foreach (var shapeKeyName in shapes)
             {
                 var rect = EditorGUILayout.GetControlRect();
