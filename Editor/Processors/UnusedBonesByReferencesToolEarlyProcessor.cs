@@ -58,6 +58,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 foreach (var renderer in renderers)
                 {
                     if (renderer.bones == null) continue;
+                    if (renderer.sharedMesh == null) continue;
                     var weights = renderer.sharedMesh.GetAllBoneWeights();
                     var boneIndexes = weights.Where(w => w.weight > 0).Select(w => w.boneIndex).ToArray();
                     foreach (var boneIndex in boneIndexes)

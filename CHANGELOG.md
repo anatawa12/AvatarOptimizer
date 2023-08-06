@@ -8,15 +8,19 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Remove always disabled objects `#278`
 - The new Remove Mesh By Blend Shape component removes mesh data based on blend shapes. [`#275`](https://github.com/anatawa12/AvatarOptimizer/pull/275)
 
 ### Changed
+- Use UnityEditor api to compress texture `#276`
+  - This also adds some supported texture formats.
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
+- UnusedBonesByReferenceTool error with SMR without mesh `#280`
 
 ### Security
 

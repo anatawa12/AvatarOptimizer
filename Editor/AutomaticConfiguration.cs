@@ -7,11 +7,13 @@ namespace Anatawa12.AvatarOptimizer
     internal class AutomaticConfigurationEditor : AvatarGlobalComponentEditorBase
     {
         private SerializedProperty _freezeBlendShape;
+        private SerializedProperty _removeUnusedObjects;
         private SerializedProperty _mmdWorldCompatibility;
 
         private void OnEnable()
         {
             _freezeBlendShape = serializedObject.FindProperty(nameof(AutomaticConfiguration.freezeBlendShape));
+            _removeUnusedObjects = serializedObject.FindProperty(nameof(AutomaticConfiguration.removeUnusedObjects));
             _mmdWorldCompatibility = serializedObject.FindProperty(nameof(AutomaticConfiguration.mmdWorldCompatibility));
         }
 
@@ -24,6 +26,7 @@ namespace Anatawa12.AvatarOptimizer
             EditorGUILayout.PropertyField(_mmdWorldCompatibility);
             GUILayout.Label("Features", EditorStyles.boldLabel);
             EditorGUILayout.PropertyField(_freezeBlendShape);
+            EditorGUILayout.PropertyField(_removeUnusedObjects);
 
             serializedObject.ApplyModifiedProperties();
         }

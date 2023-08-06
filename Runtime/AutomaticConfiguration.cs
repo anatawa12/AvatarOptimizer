@@ -11,6 +11,9 @@ namespace Anatawa12.AvatarOptimizer
         [CL4EELocalized("AutomaticConfiguration:prop:freezeBlendShape")]
         [ToggleLeft]
         public bool freezeBlendShape = true;
+        [CL4EELocalized("AutomaticConfiguration:prop:removeUnusedObjects")]
+        [ToggleLeft]
+        public bool removeUnusedObjects = true;
         [CL4EELocalized("AutomaticConfiguration:prop:mmdWorldCompatibility",
             "AutomaticConfiguration:tooltip:mmdWorldCompatibility")]
         [ToggleLeft]
