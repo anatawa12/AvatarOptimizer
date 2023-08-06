@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- UnusedBonesByReferenceTool error with SMR without mesh `#280`
 
 ### Security
 
