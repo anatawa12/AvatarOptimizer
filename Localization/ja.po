@@ -203,6 +203,9 @@ msgstr "回転"
 
 # region RemoveMeshByBlendShape
 
+msgid "RemoveMeshByBlendShape:description"
+msgstr "指定されたブレンドシェイプによって動かされる頂点とそのポリゴンを削除します"
+
 msgid "RemoveMeshByBlendShape:prop:Tolerance"
 msgstr "許容差"
 

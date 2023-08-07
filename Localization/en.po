@@ -266,6 +266,9 @@ msgstr "Rotation"
 
 # region RemoveMeshByBlendShape
 
+msgid "RemoveMeshByBlendShape:description"
+msgstr "Remove vertices transformed by specified BlendShape and their polygons."
+
 msgid "RemoveMeshByBlendShape:prop:Tolerance"
 msgstr "Tolerance"
 
