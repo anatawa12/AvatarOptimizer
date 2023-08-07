@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 {
@@ -61,6 +62,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             public MeshInfoComputer(RemoveMeshByBlendShapeProcessor processor, IMeshInfoComputer upstream) : base(upstream)
                 => _processor = processor;
+
+            public override string[] BlendShapes()
+            {
+                var set = _processor.Component.RemovingShapeKeys;
+                return base.BlendShapes().Where(x => !set.Contains(x)).ToArray();
+            }
         }
     }
 }
