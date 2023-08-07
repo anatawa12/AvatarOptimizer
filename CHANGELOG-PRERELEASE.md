@@ -21,6 +21,7 @@ The format is based on [Keep a Changelog].
 ### Fixed
 - UnusedBonesByReferenceTool error with SMR without mesh `#280`
 - MergeSkinnedMesh doesn't work well with eyelids `#284`
+- Animating Behaviour.m_Enabled not working `#287`
 
 ### Security
 

@@ -154,6 +154,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
             _mapped = false;
             var newController = new AnimatorController
             {
+                name = controller.name + " (rebased)",
                 parameters = controller.parameters,
                 layers = controller.layers.Select(MapAnimatorControllerLayer).ToArray()
             };

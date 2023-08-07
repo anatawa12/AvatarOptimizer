@@ -80,8 +80,20 @@ namespace Anatawa12.AvatarOptimizer
             
             var componentByType = new Dictionary<Type, int>();
             foreach (var component in components)
-                if (!componentByType.ContainsKey(component.GetType()))
-                    componentByType.Add(component.GetType(), component.GetInstanceID());
+            {
+                // some animation may affects to base class. e.g.
+                // To affect Animator component, we may animate Behaviour.m_Enabled.
+                var type = component.GetType();
+                while (type != typeof(Component))
+                {
+                    if (!componentByType.ContainsKey(type))
+                        componentByType.Add(type, component.GetInstanceID());
+                    type = type.BaseType;
+                    if (type == null)
+                        throw new InvalidOperationException("logic failure: component which doesn't extend Component");
+                }
+            }
+
             ComponentInstanceIdByType = componentByType;
         }
     }
