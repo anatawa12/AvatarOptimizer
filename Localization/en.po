@@ -264,6 +264,25 @@ msgstr "Rotation"
 
 # endregion
 
+# region RemoveMeshByBlendShape
+
+msgid "RemoveMeshByBlendShape:prop:Tolerance"
+msgstr "Tolerance"
+
+msgid "RemoveMeshByBlendShape:tooltip:Tolerance"
+msgstr ""
+"If a vertex is transformed by more than this amount by any of the selected blendshapes, it will be deleted.\n"
+"Try increasing this value if vertices are unexpectedly deleted or decreasing it if vertices are unexpectedly not deleted.\n"
+"This is typically a small value."
+
+msgid "RemoveMeshByBlendShape:button:Check All"
+msgstr "Check All"
+
+msgid "RemoveMeshByBlendShape:button:Invert All"
+msgstr "Invert All"
+
+# endregion
+
 # region AvatarGlobalComponent
 
 msgid "DeleteEditorOnlyGameObjects:NotOnAvatarDescriptor"
