@@ -69,7 +69,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     var newIndex = target.BlendShapes.FindIndex(x => x.name == name);
                     if (newIndex == -1)
                     {
-                        newIndex = target.BlendShapes.Count - 1;
+                        newIndex = target.BlendShapes.Count;
                         target.BlendShapes.Add((name, weight));
                     }
 
