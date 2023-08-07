@@ -206,6 +206,12 @@ msgstr "回転"
 msgid "RemoveMeshByBlendShape:prop:Tolerance"
 msgstr "許容差"
 
+msgid "RemoveMeshByBlendShape:tooltip:Tolerance"
+msgstr ""
+"もし頂点がこの値より大きく選択されたBlendShapeのいずれかに動かされていたら、その頂点が削除されます。\n"
+"もし予期せぬ頂点が削除されたらこの値を大きくしてみてください。もし思った頂点が削除されてなかったらこの多胎を小さくしてみてください。\n"
+"の値は通常、小さいです。"
+
 msgid "RemoveMeshByBlendShape:button:Check All"
 msgstr "すべて有効にする"
 
