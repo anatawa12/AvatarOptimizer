@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer
 {
-    [AddComponentMenu("Avatar Optimizer/Remove Mesh By BlendShape")]
+    [AddComponentMenu("Avatar Optimizer/AAO Remove Mesh By BlendShape")]
     [RequireComponent(typeof(SkinnedMeshRenderer))]
     [DisallowMultipleComponent]
     internal class RemoveMeshByBlendShape : EditSkinnedMeshComponent

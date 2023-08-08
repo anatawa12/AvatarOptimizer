@@ -15,7 +15,7 @@ namespace Anatawa12.AvatarOptimizer.Test
         {
             var addComponentMenu = type.GetCustomAttribute<AddComponentMenu>();
             Assert.That(addComponentMenu, Is.Not.Null);
-            Assert.That(addComponentMenu.componentMenu, Does.StartWith("Avatar Optimizer/").Or.Empty);
+            Assert.That(addComponentMenu.componentMenu, Does.StartWith("Avatar Optimizer/AAO ").Or.Empty);
         }
 
         static IEnumerable<Type> ComponentTypes()

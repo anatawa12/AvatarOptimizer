@@ -14,6 +14,8 @@ The format is based on [Keep a Changelog].
 ### Changed
 - Use UnityEditor api to compress texture `#276`
   - This also adds some supported texture formats.
+- Every component have `AAO` prefix in their name now `#290`
+  - The official shorthand for this tools is `AAO`!
 
 ### Deprecated
 
