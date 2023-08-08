@@ -4,7 +4,7 @@ using UnityEngine.Serialization;
 
 namespace Anatawa12.AvatarOptimizer
 {
-    [AddComponentMenu("Avatar Optimizer/Automatic Configuration")]
+    [AddComponentMenu("Avatar Optimizer/AAO Automatic Configuration")]
     [DisallowMultipleComponent]
     internal class AutomaticConfiguration : AvatarGlobalComponent
     {

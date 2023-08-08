@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer
 {
-    [AddComponentMenu("Avatar Optimizer/Freeze BlendShapes")]
+    [AddComponentMenu("Avatar Optimizer/AAO Freeze BlendShapes")]
     [DisallowMultipleComponent]
     internal class FreezeBlendShape : EditSkinnedMeshComponent
     {

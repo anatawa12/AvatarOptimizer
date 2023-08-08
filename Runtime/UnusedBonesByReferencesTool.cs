@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer
 {
-    [AddComponentMenu("Avatar Optimizer/UnusedBonesByReferencesTool")]
+    [AddComponentMenu("Avatar Optimizer/AAO UnusedBonesByReferencesTool")]
     [DisallowMultipleComponent]
     internal class UnusedBonesByReferencesTool : AvatarGlobalComponent
     {
