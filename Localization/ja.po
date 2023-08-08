@@ -213,7 +213,7 @@ msgid "RemoveMeshByBlendShape:tooltip:Tolerance"
 msgstr ""
 "選択されたブレンドシェイプのいずれかによって頂点がこの値より大きく動かされている場合、その頂点は削除されます。\n"
 "意図していない頂点が削除されてしまった場合はこの値を大きくしてみてください。思った通りに頂点が削除されなかった場合はこの値を小さくしてみてください。\n"
-"の値は通常、小さいです。"
+"通常、この値は小さな数値になります。"
 
 msgid "RemoveMeshByBlendShape:button:Check All"
 msgstr "すべて有効にする"
