@@ -15,7 +15,16 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         public override void Process(OptimizerSession session, MeshInfo2 target, MeshInfo2Holder meshInfo2Holder)
         {
-            var freezeNames = Component.FreezingShapeKeys;
+            FreezeBlendShapes(Target, session, target, Component.FreezingShapeKeys);
+        }
+
+        public static void FreezeBlendShapes(
+            SkinnedMeshRenderer targetSMR,
+            OptimizerSession session,
+            MeshInfo2 target,
+            HashSet<string> freezeNames
+        )
+        {
             var freezes = new BitArray(target.BlendShapes.Count);
             for (var i = 0; i < target.BlendShapes.Count; i++)
                 freezes[i] = freezeNames.Contains(target.BlendShapes[i].name);
@@ -44,7 +53,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     if (!freezes[srcI])
                     {
                         // for keep prop: move the BlendShape index. name is not changed.
-                        session.MappingBuilder.RecordMoveProperty(Target, 
+                        session.MappingBuilder.RecordMoveProperty(targetSMR, 
                             VProp.BlendShapeIndex(srcI), 
                             VProp.BlendShapeIndex(dstI));
                         target.BlendShapes[dstI++] = target.BlendShapes[srcI];
@@ -52,8 +61,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     else
                     {
                         // for frozen prop: remove that BlendShape
-                        session.MappingBuilder.RecordRemoveProperty(Target, VProp.BlendShapeIndex(srcI));
-                        session.MappingBuilder.RecordRemoveProperty(Target, $"blendShape.{target.BlendShapes[srcI].name}");
+                        session.MappingBuilder.RecordRemoveProperty(targetSMR, VProp.BlendShapeIndex(srcI));
+                        session.MappingBuilder.RecordRemoveProperty(targetSMR, $"blendShape.{target.BlendShapes[srcI].name}");
                     }
                 }
 
