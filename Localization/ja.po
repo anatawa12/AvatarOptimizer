@@ -72,6 +72,12 @@ msgstr "すべての有効/無効を入れ替える"
 msgid "MakeChildren:description"
 msgstr "ビルド時に、指定されたGameObjectを子にする。"
 
+msgid "MakeChildren:tooltip:executeEarly"
+msgstr "早期に実行する"
+
+msgid "MakeChildren:tooltip:executeEarly"
+msgstr "MakeChildrenをModular Avatarのような多くの他ツールより先に実行する。"
+
 msgid "MakeChildren:prop:children"
 msgstr "子"
 
