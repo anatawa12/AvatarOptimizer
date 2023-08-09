@@ -1,21 +1,23 @@
 ---
-title: Automatic Configuration
+title: Trace And Optimize
 weight: 1
 ---
 
-# Automatic Configuration
+# Trace And Optimize
 
-This component will configure AvatarOptimizer automatically.
-You can enable/disable some automatic configuration features with checkboxes.
+<i>Previously known as Automatic Configuration</i>
 
-Currently the following features can be configured automatically
+This component will trace your avatar and optimize your avatar automatically.
+You can enable/disable some automatic optimization features with checkboxes.
+
+Currently the following optimizations are applied automatically.
 - [FreezeBlendShape](../freeze-blendshape)
   Automatically freezes unused BlendShapes in animation or else.
-- `Remove unused GameObjects`
-  By scanning animation, etc., Automatically removes unused GameObjects.
+- `Remove unused Objects`
+  By scanning animation, etc., Automatically removes unused Objects.
 
-Also, You can adjust automatic configuration with the following settings
+Also, You can adjust optimization with the following settings
 - `MMD World Compatibility`
-  Configure with considering compatibility with MMD Worlds. e.g. Not freezing BlendShapes used by MMD Worlds.
+  Optimize with considering compatibility with MMD Worlds. e.g. Not freezing BlendShapes used by MMD Worlds.
 
 ![component.png](component.png)

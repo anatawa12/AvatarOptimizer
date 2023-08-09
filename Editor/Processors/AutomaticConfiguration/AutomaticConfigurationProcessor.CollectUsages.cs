@@ -7,7 +7,7 @@ using VRC.SDKBase;
 
 namespace Anatawa12.AvatarOptimizer.Processors
 {
-    partial class AutomaticConfigurationProcessor
+    partial class TraceAndOptimizeProcessor
     {
         private void GatherAnimationModifications()
         {

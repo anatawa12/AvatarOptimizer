@@ -1,21 +1,21 @@
 using CustomLocalization4EditorExtension;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace Anatawa12.AvatarOptimizer
 {
-    [AddComponentMenu("Avatar Optimizer/AAO Automatic Configuration")]
+    // previously known as Automatic Configuration
+    [AddComponentMenu("Avatar Optimizer/AAO Trace And Optimize")]
     [DisallowMultipleComponent]
-    internal class AutomaticConfiguration : AvatarGlobalComponent
+    internal class TraceAndOptimize : AvatarGlobalComponent
     {
-        [CL4EELocalized("AutomaticConfiguration:prop:freezeBlendShape")]
+        [CL4EELocalized("TraceAndOptimize:prop:freezeBlendShape")]
         [ToggleLeft]
         public bool freezeBlendShape = true;
-        [CL4EELocalized("AutomaticConfiguration:prop:removeUnusedObjects")]
+        [CL4EELocalized("TraceAndOptimize:prop:removeUnusedObjects")]
         [ToggleLeft]
         public bool removeUnusedObjects = true;
-        [CL4EELocalized("AutomaticConfiguration:prop:mmdWorldCompatibility",
-            "AutomaticConfiguration:tooltip:mmdWorldCompatibility")]
+        [CL4EELocalized("TraceAndOptimize:prop:mmdWorldCompatibility",
+            "TraceAndOptimize:tooltip:mmdWorldCompatibility")]
         [ToggleLeft]
         public bool mmdWorldCompatibility = true;
     }

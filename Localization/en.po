@@ -317,21 +317,21 @@ msgstr "If checked, this tool does not remove bones with non-bone children."
 
 # endregion
 
-# region AutomaticConfiguration
+# region TraceAndOptimize
 
-msgid "AutomaticConfiguration:description"
-msgstr "When you added this component to your avatar, AvatarOptimizer will configure components based on your animation or else."
+msgid "TraceAndOptimize:description"
+msgstr "When you added this component to your avatar, AvatarOptimizer will trace your avatar and optimize automatically."
 
-msgid "AutomaticConfiguration:prop:freezeBlendShape"
-msgstr "Configure Freeze Blend Shape"
+msgid "TraceAndOptimize:prop:freezeBlendShape"
+msgstr "Automatically Freeze Blend Shape"
 
-msgid "AutomaticConfiguration:prop:mmdWorldCompatibility"
+msgid "TraceAndOptimize:prop:removeUnusedObjects"
+msgstr "Remove unused Objects Automatically"
+
+msgid "TraceAndOptimize:prop:mmdWorldCompatibility"
 msgstr "MMD World Compatibility"
 
-msgid "AutomaticConfiguration:prop:removeUnusedObjects"
-msgstr "Remove unused GameObjects"
-
-msgid "AutomaticConfiguration:tooltip:mmdWorldCompatibility"
+msgid "TraceAndOptimize:tooltip:mmdWorldCompatibility"
 msgstr "Enable MMD World Compatibility features such as keeping some BlendShapes"
 
 # endregion

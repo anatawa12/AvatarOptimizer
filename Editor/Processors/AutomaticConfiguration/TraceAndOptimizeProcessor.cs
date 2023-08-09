@@ -6,9 +6,9 @@ using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.Processors
 {
-    internal partial class AutomaticConfigurationProcessor
+    internal partial class TraceAndOptimizeProcessor
     {
-        private AutomaticConfiguration _config;
+        private TraceAndOptimize _config;
         private OptimizerSession _session;
 
         private Dictionary<Object, Dictionary<string, AnimationProperty>> _modifiedProperties =
@@ -17,7 +17,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
         public void Process(OptimizerSession session)
         {
             _session = session;
-            _config = session.GetRootComponent<AutomaticConfiguration>();
+            _config = session.GetRootComponent<TraceAndOptimize>();
             if (!_config) return;
 
             // TODO: implement

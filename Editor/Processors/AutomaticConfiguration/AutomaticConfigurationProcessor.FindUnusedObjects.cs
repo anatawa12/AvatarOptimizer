@@ -8,7 +8,7 @@ using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.Processors
 {
-    partial class AutomaticConfigurationProcessor
+    partial class TraceAndOptimizeProcessor
     {
         void FindUnusedObjects()
         {

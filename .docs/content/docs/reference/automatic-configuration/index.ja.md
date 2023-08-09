@@ -1,18 +1,20 @@
 ---
-title: Automatic Configuration
+title: Trace And Optimize
 weight: 1
 ---
 
-# Automatic Configuration
+# Trace And Optimize
 
-このコンポーネントは、AvatarOptimizerを自動的に設定します。
-チェックボックスで自動設定する機能・対象を選択することが出来ます。
+<i>昔のバージョンではAutomatic Configurationという名前でした</i>
 
-現在、以下の機能の自動設定が可能です。
+このコンポーネントは、アバターを走査して可能な限り自動的に最適化を行います。
+チェックボックスで自動的にする最適化を選択することが出来ます。
+
+現在、以下の自動的な最適化が行われます
 - [FreezeBlendShape](../freeze-blendshape)
   アニメーションなどで使われていないBlendShapeを自動的に固定・除去します。
-- `使われていないGameObjectを自動的に削除する`
-  アニメーションなどを走査して、使われていないGameObjectを自動的に削除します。
+- `使われていないObjectを自動的に削除する`
+  アニメーションなどを走査して、使われていないObjectを自動的に削除します。
 
 また、以下の設定で自動設定を調節できます。
 - `MMDワールドとの互換性`

@@ -136,7 +136,7 @@ namespace Anatawa12.AvatarOptimizer
         
         private static void DoProcessObject(OptimizerSession session)
         {
-            new Processors.AutomaticConfigurationProcessor().Process(session);
+            new Processors.TraceAndOptimizeProcessor().Process(session);
             new Processors.ClearEndpointPositionProcessor().Process(session);
             new Processors.MergePhysBoneProcessor().Process(session);
             new Processors.EditSkinnedMeshComponentProcessor().Process(session);
