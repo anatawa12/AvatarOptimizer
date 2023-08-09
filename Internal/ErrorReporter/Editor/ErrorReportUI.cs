@@ -263,7 +263,7 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
                 Add(new Label("Error report for "));
                 Add(_field);
 
-                if (oldValue != value) SelectionChanged?.Invoke(value);
+                if (oldValue != value || setValue != null) SelectionChanged?.Invoke(value);
             }
             MarkDirtyRepaint();
         }
