@@ -1,6 +1,8 @@
 ---
 title: Trace And Optimize
 weight: 1
+aliases:
+  - /ja/docs/reference/automatic-configuration/
 ---
 
 # Trace And Optimize
