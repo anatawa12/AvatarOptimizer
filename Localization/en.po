@@ -69,6 +69,12 @@ msgstr "Invert All"
 msgid "MakeChildren:description"
 msgstr "This component will make children at build time"
 
+msgid "MakeChildren:tooltip:executeEarly"
+msgstr "Execute Early"
+
+msgid "MakeChildren:tooltip:executeEarly"
+msgstr "Execute MakeChildren before many other tools such as modular-avatar"
+
 msgid "MakeChildren:prop:children"
 msgstr "Children"
 

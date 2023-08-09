@@ -67,6 +67,7 @@ namespace Anatawa12.AvatarOptimizer
         private static void DoProcessObject(OptimizerSession session)
         {
             new Processors.UnusedBonesByReferencesToolEarlyProcessor().Process(session);
+            new Processors.MakeChildrenProcessor(early: true).Process(session);
             session.MarkDirtyAll();
         }
     }
@@ -141,7 +142,7 @@ namespace Anatawa12.AvatarOptimizer
             new Processors.MergePhysBoneProcessor().Process(session);
             new Processors.EditSkinnedMeshComponentProcessor().Process(session);
             new Processors.MergeBoneProcessor().Process(session);
-            new Processors.MakeChildrenProcessor().Process(session);
+            new Processors.MakeChildrenProcessor(early: false).Process(session);
 
             new Processors.ApplyObjectMapping().Apply(session);
 
