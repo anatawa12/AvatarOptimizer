@@ -73,7 +73,7 @@ msgid "MakeChildren:tooltip:executeEarly"
 msgstr "Execute Early"
 
 msgid "MakeChildren:tooltip:executeEarly"
-msgstr "Execute MakeChildren before many other tools such as modular-avatar"
+msgstr "Execute MakeChildren before many other tools such as Modular Avatar."
 
 msgid "MakeChildren:prop:children"
 msgstr "Children"
