@@ -100,11 +100,11 @@ BlendShapeを固定する {#freeze-blendshape}
 
 AvatarOptimizer v1.2.0以降では使用されていないBlendShapeを自動的に固定する方法が追加されました！
 
-自動的な固定のための設定は、アバターのルートに`Automatic Configuration`を追加するだけで終わりです！
+自動的な固定のための設定は、アバターのルートに`Trace And Optimize`を追加するだけで終わりです！
 
-![add-automatic-configuration.png](add-automatic-configuration.png)
+![add-trace-and-optimize.png](add-trace-and-optimize.png)
 
-`Automatic Configuration`はアニメーションなどをスキャンして使われていないBlendShapeを自動的に固定します！
+`Trace And Optimize`はアニメーションなどを走査して自動的にできる限りの最適化を行います！
 
 FX Layer等で変更していない体型変更用BlendShapeや、 表情アニメーションで利用していないBlendShape(区切り線等も)などはこの方法で問題なく固定することができます。
 
