@@ -78,6 +78,9 @@ msgstr "Execute MakeChildren before many other tools such as Modular Avatar."
 msgid "MakeChildren:prop:children"
 msgstr "Children"
 
+msgid "MakeChildren:executeEarly does not support animation"
+msgstr "Execute Early doesn't support Animation Remapping. Make sure you made animation for MakeChildren-ed GameObject hierarchy."
+
 # endregion
 
 # region MergeBone
