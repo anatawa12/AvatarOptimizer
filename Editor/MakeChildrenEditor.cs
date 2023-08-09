@@ -20,6 +20,10 @@ namespace Anatawa12.AvatarOptimizer
         protected override void OnInspectorGUIInner()
         {
             EditorGUILayout.PropertyField(_executeEarly);
+            if (_executeEarly.boolValue)
+            {
+                EditorGUILayout.HelpBox(CL4EE.Tr("MakeChildren:executeEarly does not support animation"), MessageType.Warning);
+            }
             EditorGUILayout.PropertyField(_children);
             serializedObject.ApplyModifiedProperties();
         }
