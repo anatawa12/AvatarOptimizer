@@ -104,7 +104,7 @@ AvatarOptimizer v1.2.0以降では使用されていないBlendShapeを自動的
 
 ![add-trace-and-optimize.png](add-trace-and-optimize.png)
 
-`Trace And Optimize`はアニメーションなどを走査して自動的にできる限りの最適化を行います！
+`Trace And Optimize`はアニメーションなどをスキャンして自動的にできる限りの最適化を行います！
 
 FX Layer等で変更していない体型変更用BlendShapeや、 表情アニメーションで利用していないBlendShape(区切り線等も)などはこの方法で問題なく固定することができます。
 
