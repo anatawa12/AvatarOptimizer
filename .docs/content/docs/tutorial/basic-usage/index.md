@@ -51,7 +51,7 @@ Then, select meshes except for Body, which is the face mesh, and drag & drop to 
 
 **Why don't we merge face meshes?**
 
-BlendShape (Shape Keys)[^blend-shape] is a feature became heavier in proportion to the count of vertices and BlendShapes.
+BlendShape (Shape Keys) is a feature became heavier in proportion to the count of vertices and BlendShapes.
 Therefore, merging face mesh, which has many BlendShapes, and body mesh, which has many vertices, can make your avatar heavier than before
 so I recommend not to merge face mesh.
 
@@ -91,7 +91,7 @@ In addition, you can easily freeze BlendShape(Shape Keys)[^blend-shape] with Ava
 
 **Why do we freeze BlendShapes?**
 
-As I described before, BlendShape (Shape Keys)[^blend-shape] is a feature became heavier in proportion to the count of vertices and BlendShapes.
+As I described before, BlendShape (Shape Keys) is a feature became heavier in proportion to the count of vertices and BlendShapes.
 Also, BlendShape has performance impact just by existing, regardless of its weight.
 So, freezing BlendShapes make your model lighter even if it's not reflected in Performance Rank.
 It's better for the merged mesh not to have any BlendShapes if possible.
