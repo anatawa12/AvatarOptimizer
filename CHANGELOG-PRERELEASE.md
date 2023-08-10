@@ -8,28 +8,35 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Remove always disabled objects `#278`
-- The new Remove Mesh By Blend Shape component removes mesh data based on blend shapes. [`#275`](https://github.com/anatawa12/AvatarOptimizer/pull/275)
-- Option to process Make Children before modular avatar `#296`
 
 ### Changed
-- Use UnityEditor api to compress texture `#276`
-  - This also adds some supported texture formats.
-- Every component have `AAO` prefix in their name now `#290`
-  - The official shorthand for this tools is `AAO`!
-- `Automatic Configuration` component has been renamed to `Trace And Optimize` `#295`
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
-- UnusedBonesByReferenceTool error with SMR without mesh `#280`
-- MergeSkinnedMesh doesn't work well with eyelids `#284`
-- Animating Behaviour.m_Enabled not working `#287`
-- Error Report Window may not refreshed after build error `#299`
 
 ### Security
+
+## [1.3.0-rc.1] - 2023-08-10
+### Added
+- Remove always disabled objects [`#278`](https://github.com/anatawa12/AvatarOptimizer/pull/278)
+- The new Remove Mesh By Blend Shape component removes mesh data based on blend shapes. [`#275`](https://github.com/anatawa12/AvatarOptimizer/pull/275)
+- Option to process Make Children before modular avatar [`#296`](https://github.com/anatawa12/AvatarOptimizer/pull/296)
+
+### Changed
+- Use UnityEditor api to compress texture [`#276`](https://github.com/anatawa12/AvatarOptimizer/pull/276)
+  - This also adds some supported texture formats.
+- Every component have `AAO` prefix in their name now [`#290`](https://github.com/anatawa12/AvatarOptimizer/pull/290)
+  - The official shorthand for this tools is `AAO`!
+- `Automatic Configuration` component has been renamed to `Trace And Optimize` [`#295`](https://github.com/anatawa12/AvatarOptimizer/pull/295)
+
+### Fixed
+- UnusedBonesByReferenceTool error with SMR without mesh [`#280`](https://github.com/anatawa12/AvatarOptimizer/pull/280)
+- MergeSkinnedMesh doesn't work well with eyelids [`#284`](https://github.com/anatawa12/AvatarOptimizer/pull/284)
+- Animating Behaviour.m_Enabled not working [`#287`](https://github.com/anatawa12/AvatarOptimizer/pull/287)
+- Error Report Window may not refreshed after build error [`#299`](https://github.com/anatawa12/AvatarOptimizer/pull/299)
 
 ## [1.2.0] - 2023-07-26
 ### Added
@@ -540,7 +547,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.3.0-rc.1...HEAD
+[1.3.0-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.2.0...v1.3.0-rc.1
 [1.2.0]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.2.0-rc.1...v1.2.0
 [1.2.0-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.2.0-beta.1...v1.2.0-rc.1
 [1.2.0-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.1.2-beta.1...v1.2.0-beta.1
