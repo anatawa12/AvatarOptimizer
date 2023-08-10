@@ -3,8 +3,8 @@ using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer
 {
-    [CustomEditor(typeof(AutomaticConfiguration))]
-    internal class AutomaticConfigurationEditor : AvatarGlobalComponentEditorBase
+    [CustomEditor(typeof(TraceAndOptimize))]
+    internal class TraceAndOptimizeEditor : AvatarGlobalComponentEditorBase
     {
         private SerializedProperty _freezeBlendShape;
         private SerializedProperty _removeUnusedObjects;
@@ -12,9 +12,9 @@ namespace Anatawa12.AvatarOptimizer
 
         private void OnEnable()
         {
-            _freezeBlendShape = serializedObject.FindProperty(nameof(AutomaticConfiguration.freezeBlendShape));
-            _removeUnusedObjects = serializedObject.FindProperty(nameof(AutomaticConfiguration.removeUnusedObjects));
-            _mmdWorldCompatibility = serializedObject.FindProperty(nameof(AutomaticConfiguration.mmdWorldCompatibility));
+            _freezeBlendShape = serializedObject.FindProperty(nameof(TraceAndOptimize.freezeBlendShape));
+            _removeUnusedObjects = serializedObject.FindProperty(nameof(TraceAndOptimize.removeUnusedObjects));
+            _mmdWorldCompatibility = serializedObject.FindProperty(nameof(TraceAndOptimize.mmdWorldCompatibility));
         }
 
         protected override void OnInspectorGUIInner()

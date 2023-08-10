@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog].
   - This also adds some supported texture formats.
 - Every component have `AAO` prefix in their name now `#290`
   - The official shorthand for this tools is `AAO`!
+- `Automatic Configuration` component has been renamed to `Trace And Optimize` `#295`
 
 ### Deprecated
 

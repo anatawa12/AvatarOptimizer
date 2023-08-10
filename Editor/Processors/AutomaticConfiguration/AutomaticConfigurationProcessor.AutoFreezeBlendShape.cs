@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer.Processors
 {
-    partial class AutomaticConfigurationProcessor
+    partial class TraceAndOptimizeProcessor
     {
         private void AutoFreezeBlendShape()
         {
