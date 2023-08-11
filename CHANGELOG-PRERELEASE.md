@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Apply On Play may not working well `#305`
 
 ### Security
 
