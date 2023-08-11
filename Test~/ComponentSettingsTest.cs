@@ -18,6 +18,14 @@ namespace Anatawa12.AvatarOptimizer.Test
             Assert.That(addComponentMenu.componentMenu, Does.StartWith("Avatar Optimizer/AAO ").Or.Empty);
         }
 
+        [Test]
+        [TestCaseSource(nameof(ComponentTypes))]
+        public void CheckDisallowMultipleComponentIsSpecified(Type type)
+        {
+            var addComponentMenu = type.GetCustomAttribute<DisallowMultipleComponent>();
+            Assert.That(addComponentMenu, Is.Not.Null);
+        }
+
         static IEnumerable<Type> ComponentTypes()
         {
             return 
