@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Some components unexpectedly can be added multiple times `#306`
 
 ### Security
 
