@@ -13,6 +13,7 @@ namespace Anatawa12.AvatarOptimizer
     [AddComponentMenu("")]
     [ExecuteAlways]
     [DefaultExecutionOrder(-9989)]
+    [DisallowMultipleComponent]
     internal class Activator : MonoBehaviour
     {
         private void OnValidate()
@@ -34,6 +35,7 @@ namespace Anatawa12.AvatarOptimizer
     [AddComponentMenu("")]
     [ExecuteAlways]
     [DefaultExecutionOrder(-9997)]
+    [DisallowMultipleComponent]
     internal class AvatarActivator : MonoBehaviour
     {
         private void Update()

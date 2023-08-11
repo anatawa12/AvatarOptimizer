@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer.Test
 {
-    public class AddComponentMenuTest
+    public class ComponentSettingsTest
     {
         [Test]
         [TestCaseSource(nameof(ComponentTypes))]
@@ -16,6 +16,14 @@ namespace Anatawa12.AvatarOptimizer.Test
             var addComponentMenu = type.GetCustomAttribute<AddComponentMenu>();
             Assert.That(addComponentMenu, Is.Not.Null);
             Assert.That(addComponentMenu.componentMenu, Does.StartWith("Avatar Optimizer/AAO ").Or.Empty);
+        }
+
+        [Test]
+        [TestCaseSource(nameof(ComponentTypes))]
+        public void CheckDisallowMultipleComponentIsSpecified(Type type)
+        {
+            var addComponentMenu = type.GetCustomAttribute<DisallowMultipleComponent>();
+            Assert.That(addComponentMenu, Is.Not.Null);
         }
 
         static IEnumerable<Type> ComponentTypes()
