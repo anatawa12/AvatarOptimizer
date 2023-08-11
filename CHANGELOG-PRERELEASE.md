@@ -16,10 +16,13 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Apply On Play may not working well `#305`
-- Some components unexpectedly can be added multiple times `#306`
 
 ### Security
+
+## [1.3.0-rc.2] - 2023-08-11
+### Fixed
+- Apply On Play may not working well [`#305`](https://github.com/anatawa12/AvatarOptimizer/pull/305)
+- Some components unexpectedly can be added multiple times [`#306`](https://github.com/anatawa12/AvatarOptimizer/pull/306)
 
 ## [1.3.0-rc.1] - 2023-08-10
 ### Added
@@ -549,7 +552,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.3.0-rc.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.3.0-rc.2...HEAD
+[1.3.0-rc.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.3.0-rc.1...v1.3.0-rc.2
 [1.3.0-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.2.0...v1.3.0-rc.1
 [1.2.0]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.2.0-rc.1...v1.2.0
 [1.2.0-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.2.0-beta.1...v1.2.0-rc.1
