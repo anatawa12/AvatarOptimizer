@@ -1,10 +1,8 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using UnityEditor;
-using UnityEditor.Build;
-using UnityEditor.Build.Reporting;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using VRC.SDK3.Avatars.Components;
@@ -14,14 +12,13 @@ using Object = UnityEngine.Object;
 namespace Anatawa12.ApplyOnPlay
 {
     [InitializeOnLoad]
-    internal class ApplyOnPlayCaller : IProcessSceneWithReport
+    internal static class ApplyOnPlayCaller
     {
-        public int callbackOrder => 0;
-
         public const string SkipApplyingIfInactiveName = "com.anatawa12.apply-on-play.skip-if-inactive";
 
         static ApplyOnPlayCaller()
         {
+            GlobalActivator.activate = activator => OnProcessScene(activator.gameObject.scene);
             ApplyOnPlayActivator.processAvatar = activator =>
             {
                 var component = activator.gameObject.GetComponent<VRCAvatarDescriptor>();
@@ -29,6 +26,14 @@ namespace Anatawa12.ApplyOnPlay
                 if (component)
                     ProcessAvatar(component.gameObject, ApplyReason.EnteringPlayMode,
                         ApplyOnPlayCallbackRegistry.GetCallbacks());
+            };
+
+            EditorSceneManager.sceneOpened += (scene, _) => GlobalActivator.CreateIfNotPresent(scene);
+            EditorApplication.delayCall += () =>
+            {
+                foreach (var scene in Enumerable.Range(0, SceneManager.sceneCount)
+                             .Select(SceneManager.GetSceneAt))
+                    GlobalActivator.CreateIfNotPresent(scene);
             };
         }
 
@@ -38,7 +43,7 @@ namespace Anatawa12.ApplyOnPlay
             set => EditorPrefs.SetBool(SkipApplyingIfInactiveName, value);
         }
 
-        public void OnProcessScene(Scene scene, BuildReport report)
+        public static void OnProcessScene(Scene scene)
         {
             var components = scene.GetRootGameObjects()
                 .SelectMany(x => x.GetComponentsInChildren<VRCAvatarDescriptor>(true)).ToArray();
