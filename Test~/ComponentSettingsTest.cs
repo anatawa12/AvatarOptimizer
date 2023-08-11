@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer.Test
 {
-    public class AddComponentMenuTest
+    public class ComponentSettingsTest
     {
         [Test]
         [TestCaseSource(nameof(ComponentTypes))]
