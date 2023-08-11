@@ -4,6 +4,7 @@ using UnityEngine;
 namespace Anatawa12.AvatarOptimizer
 {
     [AddComponentMenu("Avatar Optimizer/AAO Make Children")]
+    [DisallowMultipleComponent]
     internal class MakeChildren : AvatarTagComponent
     {
         [CL4EELocalized("MakeChildren:prop:executeEarly", "MakeChildren:tooltip:executeEarly")]
