@@ -28,6 +28,7 @@ The format is based on [Keep a Changelog].
 - MergeSkinnedMesh doesn't work well with eyelids `#284`
 - Animating Behaviour.m_Enabled not working `#287`
 - Error Report Window may not refreshed after build error `#299`
+- Apply On Play may not working well `#305`
 
 ### Security
 
