@@ -28,12 +28,23 @@ namespace Anatawa12.ApplyOnPlay
                         ApplyOnPlayCallbackRegistry.GetCallbacks());
             };
 
-            EditorSceneManager.sceneOpened += (scene, _) => GlobalActivator.CreateIfNotPresent(scene);
+            EditorSceneManager.newSceneCreated += (scene, _1, _2) =>
+                EditorApplication.delayCall += () => SceneChangeReceiver.CreateIfNotExists(scene);
+            EditorSceneManager.sceneOpened += (scene, _) => GlobalActivator.CreateIfNotNeeded(scene);
+
+            EditorApplication.playModeStateChanged += state =>
+            {
+                if (state != PlayModeStateChange.EnteredEditMode) return;
+                foreach (var scene in Enumerable.Range(0, SceneManager.sceneCount)
+                             .Select(SceneManager.GetSceneAt))
+                    SceneChangeReceiver.CreateIfNotNeeded(scene);
+            };
+            
             EditorApplication.delayCall += () =>
             {
                 foreach (var scene in Enumerable.Range(0, SceneManager.sceneCount)
                              .Select(SceneManager.GetSceneAt))
-                    GlobalActivator.CreateIfNotPresent(scene);
+                    GlobalActivator.CreateIfNotNeeded(scene);
             };
         }
 
