@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
+- ApplyOnPlayGlobalActivator is no longer added for scens without avatars `#318`
 
 ### Deprecated
 
