@@ -8,6 +8,8 @@ namespace Anatawa12.ApplyOnPlay
 {
     [DefaultExecutionOrder(-100000)]
     [ExecuteAlways]
+    [AddComponentMenu("")]
+    [DisallowMultipleComponent]
     internal class ApplyOnPlayActivator : MonoBehaviour
     {
 #if UNITY_EDITOR
