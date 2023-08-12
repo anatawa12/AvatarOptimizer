@@ -10,7 +10,6 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
-- ApplyOnPlayGlobalActivator is no longer added for scens without avatars `#318`
 
 ### Deprecated
 
@@ -19,6 +18,10 @@ The format is based on [Keep a Changelog].
 ### Fixed
 
 ### Security
+
+## [1.3.0] - 2023-08-12
+### Changed
+- ApplyOnPlayGlobalActivator is no longer added for scens without avatars [`#318`](https://github.com/anatawa12/AvatarOptimizer/pull/318)
 
 ## [1.3.0-rc.2] - 2023-08-11
 ### Fixed
@@ -553,7 +556,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.3.0-rc.2...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.3.0-rc.2...v1.3.0
 [1.3.0-rc.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.3.0-rc.1...v1.3.0-rc.2
 [1.3.0-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.2.0...v1.3.0-rc.1
 [1.2.0]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.2.0-rc.1...v1.2.0
