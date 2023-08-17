@@ -1,11 +1,13 @@
 ---
 title: UnusedBonesByReferencesTool
-weight: 1
+weight: 11
 ---
 
 # UnusedBonesByReferencesTool
 
 Marks it as EditorOnly that bones referenced only from EditorOnly meshes.
+
+This component is [Avatar Global Component](../avatar-global-components) thus this component should be added to avatar root.
 
 This is port of [UnusedBonesByReferencesTool by Narazaka][UnusedBonesByReferencesTool] but run at build time.
 

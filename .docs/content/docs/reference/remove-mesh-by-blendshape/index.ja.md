@@ -1,11 +1,13 @@
 ---
 title: Remove Mesh By BlendShape
-weight: 1
+weight: 25
 ---
 
 # Remove Mesh By BlendShape
 
 指定されたブレンドシェイプによって動かされる頂点とそのポリゴンを削除します
+
+このコンポーネントは[Modifying Edit Skinned Mesh Component](../edit-skinned-mesh-components#modifying-component)であるため、SkinnedMeshRendererのあるGameObjectに追加してください。
 
 ## 設定 {#settings}
 

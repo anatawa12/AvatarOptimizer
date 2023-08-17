@@ -1,11 +1,13 @@
 ---
 title: Merge Skinned Mesh
-weight: 1
+weight: 21
 ---
 
 # Merge Skinned Mesh
 
 1つ以上のSkinnedMeshRendererやMeshRendererを1つのSkinnedMeshRendererに統合することが出来ます。
+
+このコンポーネントは[Modifying Edit Skinned Mesh Component](../edit-skinned-mesh-components#modifying-component)であるため、SkinnedMeshRendererのあるGameObjectに追加してください。
 
 MergeSkinnedMeshは、メッシュを指定していないSkinnedMeshRendererを持つ新しいGameObjectに追加するべきです。
 

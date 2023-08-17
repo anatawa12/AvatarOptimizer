@@ -1,11 +1,13 @@
 ---
 title: Merge ToonLit Material
-weight: 1
+weight: 25
 ---
 
 # Merge ToonLit Material
 
 Merge `VRChat/Mobile/Toon Lit` materials to one material by packing texture manually.
+
+This component is [Modifying Edit Skinned Mesh Component](../edit-skinned-mesh-components#modifying-component) thus this component should be added onto GameObject with SkinnedMeshRenderer.
 
 This component currently only supports `VRChat/Mobile/Toon Lit` because I believe there are big demands
 but I may add support for other shaders. (also for third-party shaders)
