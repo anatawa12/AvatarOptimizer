@@ -7,7 +7,7 @@ weight: 25
 
 ブレンドシェイプをメッシュに固定する、或いはメッシュから除去することが出来ます。
 
-このコンポーネントは[Modifying Edit Skinned Mesh Component](../edit-skinned-mesh-components#modifying-component)であるため、SkinnedMeshRendererのあるGameObjectに追加してください。
+このコンポーネントは[Modifying Edit Skinned Mesh Component](../../component-kind/edit-skinned-mesh-components#modifying-component)であるため、SkinnedMeshRendererのあるGameObjectに追加してください。
 
 ## 設定 {#settings}
 

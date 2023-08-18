@@ -10,5 +10,5 @@ If you add any Avatar Global Components to non-avatar root, you'll see error on 
 
 Following components are Avatar Global Component.
 
-- [Trace And Optimize](../trace-and-optimize)
-- [UnusedBonesByReferencesTool](../unused-bones-by-references-tool)
+- [Trace And Optimize](../../reference/trace-and-optimize)
+- [UnusedBonesByReferencesTool](../../reference/unused-bones-by-references-tool)

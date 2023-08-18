@@ -7,7 +7,7 @@ weight: 21
 
 Merges one or more SkinnedMeshRenderer and MeshRenderers into one SkinnedMeshRenderer.
 
-This component is [Source Edit Skinned Mesh Component](../edit-skinned-mesh-components#source-component) thus this component should be added onto new GameObject with SkinnedMeshRenderer without Mesh specified.
+This component is [Source Edit Skinned Mesh Component](../../component-kind/edit-skinned-mesh-components#source-component) thus this component should be added onto new GameObject with SkinnedMeshRenderer without Mesh specified.
 
 This component will merge mesh, bones, Materials, BlendShapes, and Bounds but other settings will not be modified.
 Please edit SkinnedMeshRenderer component attached to same GameObject as MergeSkinnedMesh to set AnchorOverride or else.

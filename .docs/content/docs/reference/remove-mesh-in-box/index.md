@@ -7,7 +7,7 @@ weight: 25
 
 Remove some polygons in any of specified boxes.
 
-This component is [Modifying Edit Skinned Mesh Component](../edit-skinned-mesh-components#modifying-component) thus this component should be added onto GameObject with SkinnedMeshRenderer.
+This component is [Modifying Edit Skinned Mesh Component](../../component-kind/edit-skinned-mesh-components#modifying-component) thus this component should be added onto GameObject with SkinnedMeshRenderer.
 
 ## Settings
 
