@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Unity Editor may freezes when there are circular dependency `#329`
 
 ### Security
 

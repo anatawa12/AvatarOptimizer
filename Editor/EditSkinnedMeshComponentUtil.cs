@@ -173,10 +173,11 @@ namespace Anatawa12.AvatarOptimizer
             {
                 if (_computers != null) return _computers;
                 var sorted = GetSorted();
-                _computers = new IMeshInfoComputer[sorted.Count + 1];
+                _computers = new IMeshInfoComputer[sorted.Count + 2];
                 var computer = _computers[0] = new SourceMeshInfoComputer(Target);
                 for (var i = 0; i < sorted.Count; i++)
                     computer = _computers[i + 1] = sorted[i].GetComputer(computer);
+                _computers[sorted.Count + 1] = new RecursiveDetector(computer);
                 return _computers;
             }
 
@@ -188,6 +189,38 @@ namespace Anatawa12.AvatarOptimizer
 
             public Material[] GetMaterials(EditSkinnedMeshComponent before = null, bool fast = true) =>
                 GetComputer(before).Materials(fast);
+
+            private class RecursiveDetector : IMeshInfoComputer
+            {
+                private readonly IMeshInfoComputer _origin;
+
+                public RecursiveDetector(IMeshInfoComputer origin)
+                {
+                    _origin = origin;
+                }
+
+                [ThreadStatic]
+                private static HashSet<RecursiveDetector> _currentThreadDetectors;
+
+                private T CheckRecursive<T>(Func<T> compute)
+                {
+                    if (_currentThreadDetectors == null)
+                        _currentThreadDetectors = new HashSet<RecursiveDetector>();
+                    if (!_currentThreadDetectors.Add(this))
+                        throw new RecursiveSkinnedMeshDependencyException();
+                    try
+                    {
+                        return compute();
+                    }
+                    finally
+                    {
+                        _currentThreadDetectors.Remove(this);
+                    }
+                }
+
+                public string[] BlendShapes() => CheckRecursive(() => _origin.BlendShapes());
+                public Material[] Materials(bool fast = true) => CheckRecursive(() => _origin.Materials(fast));
+            }
         }
 
         private static readonly Dictionary<Type, Func<EditSkinnedMeshComponent, IEditSkinnedMeshProcessor>> Creators =
@@ -202,5 +235,12 @@ namespace Anatawa12.AvatarOptimizer
 
         private static IEditSkinnedMeshProcessor CreateProcessor(EditSkinnedMeshComponent mergePhysBone) =>
             Creators[mergePhysBone.GetType()].Invoke(mergePhysBone);
+    }
+
+    internal class RecursiveSkinnedMeshDependencyException : Exception
+    {
+        public RecursiveSkinnedMeshDependencyException() : base("Recursive Dependencies Detected!")
+        {
+        }
     }
 }
