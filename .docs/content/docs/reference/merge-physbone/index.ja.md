@@ -8,6 +8,8 @@ weight: 1
 このコンポーネントは、複数のPhysBoneコンポーネントを1つに統合します。
 MultiChildTypeはIgnoreになります。
 
+このコンポーネントは新しいGameObjectに追加してください。
+
 ## 設定 {#settings}
 
 ![component.png](component.png)

@@ -1,11 +1,13 @@
 ---
 title: Remove Mesh By BlendShape
-weight: 1
+weight: 25
 ---
 
 # Remove Mesh By BlendShape
 
 Remove vertices transformed by specified BlendShape and their polygons.
+
+This component is [Modifying Edit Skinned Mesh Component](../../component-kind/edit-skinned-mesh-components#modifying-component) thus this component should be added onto GameObject with SkinnedMeshRenderer.
 
 ## Settings
 

@@ -1,11 +1,13 @@
 ---
 title: UnusedBonesByReferencesTool
-weight: 1
+weight: 11
 ---
 
 # UnusedBonesByReferencesTool
 
 EditorOnlyなメッシュからしか参照がないボーンをEditorOnlyにします。
+
+このコンポーネントは[Avatar Global Component](../../component-kind/avatar-global-components)であるため、アバタールートに追加してください。
 
 これはNarazakaさんの[UnusedBonesByReferencesTool][UnusedBonesByReferencesTool]を移植したものですが、ビルド時に実行します。
 

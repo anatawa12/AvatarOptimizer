@@ -1,11 +1,13 @@
 ---
 title: Remove Mesh in Box
-weight: 1
+weight: 25
 ---
 
 # Remove Mesh in Box
 
 箱で指定した範囲内のポリゴンを削除します。
+
+このコンポーネントは[Modifying Edit Skinned Mesh Component](../../component-kind/edit-skinned-mesh-components#modifying-component)であるため、SkinnedMeshRendererのあるGameObjectに追加してください。
 
 ## 設定 {#settings}
 
