@@ -375,9 +375,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     var weights = weightsSet.ToArray();
                     Array.Sort(weights);
 
-                    var positions = new Vector3[][weights.Length];
-                    var normals = new Vector3[][weights.Length];
-                    var tangents = new Vector3[][weights.Length];
+                    var positions = new Vector3[weights.Length][];
+                    var normals = new Vector3[weights.Length][];
+                    var tangents = new Vector3[weights.Length][];
 
                     for (var i = 0; i < weights.Length; i++)
                     {
