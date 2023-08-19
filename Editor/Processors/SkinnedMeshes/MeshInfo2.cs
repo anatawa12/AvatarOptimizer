@@ -550,6 +550,23 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             (BlendShapeFrame, BlendShapeFrame) FindFrame()
             {
+                var firstFrame = frames[0];
+                var lastFrame = frames.Last();
+
+                if (firstFrame.Weight > 0 && weight < firstFrame.Weight)
+                {
+                    // if all weights are positive and the weight is less than first weight: lerp 0..first
+                    return (default, firstFrame);
+                }
+
+                if (lastFrame.Weight < 0 && weight < lastFrame.Weight)
+                {
+                    // if all weights are negative and the weight is less than last weight: lerp last..0
+                    return (lastFrame, default);
+                }
+
+                // otherwise, lerp between two surrounding frames OR nearest two frames
+
                 for (var i = 1; i < frames.Count; i++)
                 {
                     if (weight <= frames[i].Weight)
