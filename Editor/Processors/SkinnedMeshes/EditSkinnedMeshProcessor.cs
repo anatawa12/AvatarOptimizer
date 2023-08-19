@@ -9,7 +9,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
     internal abstract class EditSkinnedMeshProcessor<TComponent> : IEditSkinnedMeshProcessor
         where TComponent : EditSkinnedMeshComponent
     {
-        public abstract int ProcessOrder { get; }
+        public abstract EditSkinnedMeshProcessorOrder ProcessOrder { get; }
         public virtual IEnumerable<SkinnedMeshRenderer> Dependencies => Array.Empty<SkinnedMeshRenderer>();
         protected TComponent Component { get; }
         public SkinnedMeshRenderer Target { get; }
@@ -38,13 +38,21 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
     internal interface IEditSkinnedMeshProcessor
     {
-        int ProcessOrder { get; }
+        EditSkinnedMeshProcessorOrder ProcessOrder { get; }
         IEnumerable<SkinnedMeshRenderer> Dependencies { get; }
         SkinnedMeshRenderer Target { get; }
         EditSkinnedMeshComponent Component { get; }
         void Process(OptimizerSession session, MeshInfo2 target, MeshInfo2Holder meshInfo2Holder);
 
         [NotNull] IMeshInfoComputer GetComputer([NotNull] IMeshInfoComputer upstream);
+    }
+
+    enum EditSkinnedMeshProcessorOrder : int
+    {
+        Generation = int.MinValue,
+        RemovingMesh = -20000,
+        AutoConfigureFreezeBlendShape = -10000 - 1,
+        AfterRemoveMesh = -10000,
     }
 
     internal interface IMeshInfoComputer
