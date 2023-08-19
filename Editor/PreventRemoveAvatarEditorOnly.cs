@@ -4,6 +4,7 @@ using UnityEditor;
 using UnityEngine;
 using VRC.SDKBase;
 using VRC.SDKBase.Editor.BuildPipeline;
+using VRC.SDKBase.Network;
 using Debug = System.Diagnostics.Debug;
 
 namespace Anatawa12.AvatarOptimizer
@@ -51,6 +52,17 @@ namespace Anatawa12.AvatarOptimizer
             foreach (var component in avatarGameObject.GetComponentsInChildren<IEditorOnly>(true))
                 if ((Object)component)
                     Object.DestroyImmediate((Component) component);
+            return true;
+        }
+    }
+
+    internal class AaoReassignNetworkId : IVRCSDKPreprocessAvatarCallback
+    {
+        public int callbackOrder => 65536;
+
+        public bool OnPreprocessAvatar(GameObject avatarGameObject)
+        {
+            NetworkIDAssignment.ConfigureNetworkIDs(avatarGameObject.GetComponent<VRC_AvatarDescriptor>());
             return true;
         }
     }
