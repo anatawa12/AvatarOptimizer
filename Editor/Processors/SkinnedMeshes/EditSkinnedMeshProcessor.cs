@@ -49,7 +49,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
     internal interface IMeshInfoComputer
     {
-        string[] BlendShapes();
+        (string name, float weight)[] BlendShapes();
         Material[] Materials(bool fast = true);
     }
 
@@ -62,7 +62,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             _upstream = upstream;
         }
 
-        public virtual string[] BlendShapes() => _upstream?.BlendShapes() ?? Array.Empty<string>();
+        public virtual (string name, float weight)[] BlendShapes() => _upstream?.BlendShapes() ?? Array.Empty<(string, float)>();
 
         public virtual Material[] Materials(bool fast = true) => _upstream?.Materials(fast) ?? Array.Empty<Material>();
     }
@@ -75,14 +75,14 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         public SourceMeshInfoComputer(SkinnedMeshRenderer target) => _target = target;
 
 
-        public static string[] BlendShapes(SkinnedMeshRenderer renderer) => Enumerable
+        public static (string, float)[] BlendShapes(SkinnedMeshRenderer renderer) => Enumerable
             .Range(0, renderer.sharedMesh.blendShapeCount)
-            .Select(i => renderer.sharedMesh.GetBlendShapeName(i))
+            .Select(i => (renderer.sharedMesh.GetBlendShapeName(i), renderer.GetBlendShapeWeight(i)))
             .ToArray();
 
         public static Material[] Materials(SkinnedMeshRenderer renderer) => renderer.sharedMaterials;
 
-        public string[] BlendShapes() => BlendShapes(_target);
+        public (string, float)[] BlendShapes() => BlendShapes(_target);
         public Material[] Materials(bool fast = true) => Materials(_target);
     }
 }

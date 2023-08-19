@@ -26,6 +26,7 @@ The format is based on [Keep a Changelog].
 - Material Slot with null material is created if there are more SubMesh than Material Slots `#337`
 - AAO silently ignored multi pass rendering `#337`
   - For now, multi pass rendering of last SubMesh is not (yet) supported so now cause error but will be supported.
+- There is no warning about BlendShape weight difference `#336`
 
 ### Security
 
