@@ -32,7 +32,7 @@ namespace Anatawa12.AvatarOptimizer
 
             var label = new GUIContent();
 
-            foreach (var shapeKeyName in shapes)
+            foreach (var (shapeKeyName, _) in shapes)
             {
                 var rect = EditorGUILayout.GetControlRect();
                 label.text = shapeKeyName;
@@ -45,13 +45,13 @@ namespace Anatawa12.AvatarOptimizer
             {
                 if (GUILayout.Button(CL4EE.Tr("RemoveMeshByBlendShape:button:Check All")))
                 {
-                    foreach (var shapeKeyName in shapes)
+                    foreach (var (shapeKeyName, _) in shapes)
                         _shapeKeysSet.GetElementOf(shapeKeyName).EnsureAdded();
                 }
                 
                 if (GUILayout.Button(CL4EE.Tr("RemoveMeshByBlendShape:button:Invert All")))
                 {
-                    foreach (var shapeKeyName in shapes)
+                    foreach (var (shapeKeyName, _) in shapes)
                     {
                         var element = _shapeKeysSet.GetElementOf(shapeKeyName);
                         if (element.Contains) element.EnsureRemoved();
