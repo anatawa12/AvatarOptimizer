@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Anatawa12.AvatarOptimizer.ErrorReporting;
 using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Assertions;
@@ -78,6 +79,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             // remove unused SubMeshes
             SubMeshes.RemoveRange(materialCount, SubMeshes.Count - materialCount);
+
+            // TODO: Remove this error once this is supported
+            if (sourceMaterials.Length > SubMeshes.Count)
+                BuildReport.LogFatal("Multi Pass Rendering of one Mesh is NOT Supported YET.");
         }
 
         [Conditional("UNITY_ASSERTIONS")]
