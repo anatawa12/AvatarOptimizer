@@ -41,6 +41,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
             foreach (var animator in _session.GetComponents<Animator>())
             {
                 GatherAnimationModificationsInController(animator.gameObject, animator.runtimeAnimatorController);
+                GatherHumanoidModifications(animator);
             }
 
             var descriptor = _session.GetRootComponent<VRCAvatarDescriptor>();
@@ -260,6 +261,30 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
                     foreach (var shape in mmdShapes)
                         set[$"blendShape.{shape}"] = AnimationProperty.Variable();
+                }
+            }
+        }
+
+        /// Mark rotations of humanoid bones as changeable variables
+        private void GatherHumanoidModifications(Animator animator)
+        {
+            // if it's not humanoid, this pass doesn't matter
+            if (!animator.isHuman) return;
+            for (var bone = HumanBodyBones.Hips; bone < HumanBodyBones.LastBone; bone++)
+            {
+                var transform = animator.GetBoneTransform(bone);
+                if (!transform) continue;
+
+                if (!_modifiedProperties.TryGetValue(transform, out var properties))
+                    _modifiedProperties.Add(transform, properties = new Dictionary<string, AnimationProperty>());
+
+                foreach (var key in new[]
+                             { "m_LocalRotation.x", "m_LocalRotation.y", "m_LocalRotation.z", "m_LocalRotation.w" })
+                {
+                    if (properties.TryGetValue(key, out var property))
+                        properties[key] = property.Merge(AnimationProperty.Variable().AlwaysApplied());
+                    else
+                        properties.Add(key, AnimationProperty.Variable().AlwaysApplied());
                 }
             }
         }
