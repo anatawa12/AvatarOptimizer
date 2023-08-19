@@ -122,11 +122,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             var deltaTangents = new Vector3[Vertices.Count];
             for (var i = 0; i < mesh.blendShapeCount; i++)
             {
-                Assert.AreEqual(1, mesh.GetBlendShapeFrameCount(i));
-                Assert.AreEqual(100.0f, mesh.GetBlendShapeFrameWeight(i, 0));
-
-                mesh.GetBlendShapeFrameVertices(i, 0, deltaVertices, deltaNormals, deltaTangents);
-
                 var shapeName = mesh.GetBlendShapeName(i);
 
                 BlendShapes.Add((shapeName, 0.0f));
