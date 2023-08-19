@@ -131,7 +131,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 for (int frame = 0; frame < mesh.GetBlendShapeFrameCount(i); frame++)
                 {
                     mesh.GetBlendShapeFrameVertices(i, frame, deltaVertices, deltaNormals, deltaTangents);
-                    var weight = mesh.GetBlendShapeFrameWeight(i, 0);
+                    var weight = mesh.GetBlendShapeFrameWeight(i, frame);
 
                     for (var vertex = 0; vertex < deltaNormals.Length; vertex++)
                         frames[vertex].Add(new Vertex.BlendShapeFrame(weight, deltaVertices[vertex], deltaNormals[vertex], deltaTangents[vertex]));                    
@@ -545,9 +545,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     return (default, firstFrame);
                 }
 
-                if (lastFrame.Weight < 0 && weight < lastFrame.Weight)
+                if (lastFrame.Weight < 0 && weight > lastFrame.Weight)
                 {
-                    // if all weights are negative and the weight is less than last weight: lerp last..0
+                    // if all weights are negative and the weight is more than last weight: lerp last..0
                     return (lastFrame, default);
                 }
 
