@@ -1,14 +1,41 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
+using UnityEditor.Animations;
 using UnityEngine;
 using VRC.SDK3.Avatars.Components;
 using VRC.SDKBase;
+using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.Processors
 {
     partial class TraceAndOptimizeProcessor
     {
+        private static CachedGuidLoader<AnimatorController>[] _defaultLayers = CreateDefaultLayers();
+
+        private static CachedGuidLoader<AnimatorController>[] CreateDefaultLayers()
+        {
+            var array = new CachedGuidLoader<AnimatorController>[(int)(VRCAvatarDescriptor.AnimLayerType.IKPose + 1)];
+            // vrc_AvatarV3LocomotionLayer
+            array[(int) VRCAvatarDescriptor.AnimLayerType.Base] = "4e4e1a372a526074884b7311d6fc686b";
+            // vrc_AvatarV3IdleLayer
+            array[(int) VRCAvatarDescriptor.AnimLayerType.Additive] = "573a1373059632b4d820876efe2d277f";
+            // vrc_AvatarV3HandsLayer
+            array[(int) VRCAvatarDescriptor.AnimLayerType.Gesture] = "404d228aeae421f4590305bc4cdaba16";
+            // vrc_AvatarV3ActionLayer
+            array[(int) VRCAvatarDescriptor.AnimLayerType.Action] = "3e479eeb9db24704a828bffb15406520";
+            // vrc_AvatarV3FaceLayer
+            array[(int) VRCAvatarDescriptor.AnimLayerType.FX] = "d40be620cf6c698439a2f0a5144919fe";
+            // vrc_AvatarV3SittingLayer
+            array[(int)VRCAvatarDescriptor.AnimLayerType.Sitting] = "1268460c14f873240981bf15aa88b21a";
+            // vrc_AvatarV3UtilityTPose
+            array[(int)VRCAvatarDescriptor.AnimLayerType.TPose] = "00121b5812372b74f9012473856d8acf";
+            // vrc_AvatarV3UtilityIKPose
+            array[(int)VRCAvatarDescriptor.AnimLayerType.IKPose] = "a9b90a833b3486e4b82834c9d1f7c4ee";
+            return array;
+        }
+
         private void GatherAnimationModifications()
         {
             foreach (var animator in _session.GetComponents<Animator>())
@@ -20,16 +47,34 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
             if (descriptor)
             {
+                RuntimeAnimatorController GetPlayableLayerController(VRCAvatarDescriptor.CustomAnimLayer layer)
+                {
+                    if (!layer.isDefault && layer.animatorController)
+                    {
+                        return layer.animatorController;
+                    }
+
+                    var typeIndex = (int)layer.type;
+                    if (typeIndex < 0) return null;
+                    if (typeIndex >= _defaultLayers.Length) return null;
+                    ref var loader = ref _defaultLayers[typeIndex];
+                    if (!loader.IsValid) return null;
+                    var controller = loader.Value;
+                    if (controller == null)
+                        throw new InvalidOperationException($"default controller for {layer.type} not found");
+                    return controller;
+                }
+
                 foreach (var layer in descriptor.specialAnimationLayers)
                 {
-                    GatherAnimationModificationsInController(descriptor.gameObject, layer.animatorController);
+                    GatherAnimationModificationsInController(descriptor.gameObject, GetPlayableLayerController(layer));
                 }
 
                 if (descriptor.customizeAnimationLayers)
                 {
                     foreach (var layer in descriptor.baseAnimationLayers)
                     {
-                        GatherAnimationModificationsInController(descriptor.gameObject, layer.animatorController);
+                        GatherAnimationModificationsInController(descriptor.gameObject, GetPlayableLayerController(layer));
                     }
                 }
 
