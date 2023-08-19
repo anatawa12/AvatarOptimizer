@@ -370,33 +370,24 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     var weights = weightsSet.ToArray();
                     Array.Sort(weights);
 
-                    var positions = new Vector3[weights.Length][];
-                    var normals = new Vector3[weights.Length][];
-                    var tangents = new Vector3[weights.Length][];
+                    var positions = new Vector3[Vertices.Count];
+                    var normals = new Vector3[Vertices.Count];
+                    var tangents = new Vector3[Vertices.Count];
 
-                    for (var i = 0; i < weights.Length; i++)
+                    foreach (var weight in weights)
                     {
-                        positions[i] = new Vector3[Vertices.Count];
-                        normals[i] = new Vector3[Vertices.Count];
-                        tangents[i] = new Vector3[Vertices.Count];
-                    }
-
-                    for (var vertexI = 0; vertexI < Vertices.Count; vertexI++)
-                    {
-                        var vertex = Vertices[vertexI];
-
-                        for (var i = 0; i < weights.Length; i++)
+                        for (var vertexI = 0; vertexI < Vertices.Count; vertexI++)
                         {
-                            vertex.TryGetBlendShape(shapeName, weights[i], out var position, out var normal, out var tangent);
-                            positions[i][vertexI] = position;
-                            normals[i][vertexI] = normal;
-                            tangents[i][vertexI] = tangent;
-                        }
-                    }
+                            var vertex = Vertices[vertexI];
 
-                    for (var i = 0; i < weights.Length; i++)
-                    {
-                        destMesh.AddBlendShapeFrame(shapeName, weights[i], positions[i], normals[i], tangents[i]);
+                            vertex.TryGetBlendShape(shapeName, weight, out var position, out var normal,
+                                out var tangent);
+                            positions[vertexI] = position;
+                            normals[vertexI] = normal;
+                            tangents[vertexI] = tangent;
+                        }
+
+                        destMesh.AddBlendShapeFrame(shapeName, weight, positions, normals, tangents);
                     }
                 }
             }
