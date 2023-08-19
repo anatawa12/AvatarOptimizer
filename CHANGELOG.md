@@ -18,6 +18,14 @@ The format is based on [Keep a Changelog].
 ### Fixed
 - Unity Editor may freezes when there are circular dependency `#329`
 - Network ID is not assigned for newly created PBs `#331`
+- Internally assigned animator controller is not skipped for default choosen playable layer in Trace and Optimize `#332`
+- VRCSDK assigned default animators are not considered in Trace and Optimize `#332`
+  - This bug doesn't create bad behavior for now but will does in the feature.
+- Humanoid Animation are not considered in Trace and Optimize `#332`
+  - This bug doesn't create bad behavior for now but will does in the feature.
+- Material Slot with null material is created if there are more SubMesh than Material Slots `#337`
+- AAO silently ignored multi pass rendering `#337`
+  - For now, multi pass rendering of last SubMesh is not (yet) supported so now cause error but will be supported.
 - There is no warning about BlendShape weight difference `#336`
 
 ### Security
