@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - Unity Editor may freezes when there are circular dependency `#329`
+- Network ID is not assigned for newly created PBs `#331`
 - There is no warning about BlendShape weight difference `#336`
 
 ### Security
