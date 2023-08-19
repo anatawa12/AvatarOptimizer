@@ -21,7 +21,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             foreach (var shapeName in Component.RemovingShapeKeys)
             {
                 if (!vertex.BlendShapes.TryGetValue(shapeName, out var value)) continue;
-                if (value.position.sqrMagnitude > sqrTolerance)
+                if (value[0].Position.sqrMagnitude > sqrTolerance)
                     byBlendShapeVertices.Add(vertex);
             }
 
