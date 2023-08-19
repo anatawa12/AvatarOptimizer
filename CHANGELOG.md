@@ -23,6 +23,9 @@ The format is based on [Keep a Changelog].
   - This bug doesn't create bad behavior for now but will does in the feature.
 - Humanoid Animation are not considered in Trace and Optimize `#332`
   - This bug doesn't create bad behavior for now but will does in the feature.
+- Material Slot with null material is created if there are more SubMesh than Material Slots `#337`
+- AAO silently ignored multi pass rendering `#337`
+  - For now, multi pass rendering of last SubMesh is not (yet) supported so now cause error but will be supported.
 
 ### Security
 
