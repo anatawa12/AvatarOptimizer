@@ -8,6 +8,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
     {
         private void AutoFreezeBlendShape()
         {
+            // first optimization: unused blend shapes
             foreach (var skinnedMeshRenderer in _session.GetComponents<SkinnedMeshRenderer>())
             {
                 var mesh = skinnedMeshRenderer.sharedMesh;
@@ -52,6 +53,14 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 foreach (var shape in notChanged)
                     editorUtil.GetElementOf(shape).EnsureAdded();
                 serialized.ApplyModifiedPropertiesWithoutUndo();
+            }
+
+            // second optimization: remove meaningless blendShapes
+            foreach (var skinnedMeshRenderer in _session.GetComponents<SkinnedMeshRenderer>())
+            {
+                if (!skinnedMeshRenderer.GetComponent<FreezeBlendShape>())
+                    skinnedMeshRenderer.gameObject.AddComponent<FreezeBlendShape>();
+                skinnedMeshRenderer.gameObject.AddComponent<InternalAutoFreezeMeaninglessBlendShape>();
             }
         }
     }
