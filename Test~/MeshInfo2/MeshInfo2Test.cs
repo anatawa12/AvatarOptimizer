@@ -60,5 +60,22 @@ namespace Anatawa12.AvatarOptimizer.Test
 
             Assert.That(position.x, Is.EqualTo(offset));
         }
+        
+        [TestCase("single-negative")]
+        [TestCase("single-positive")]
+        [TestCase("two-positive-frame")]
+        [TestCase("two-negative-frame")]
+        [TestCase("two-0-50-frame")]
+        public void ParseAndEmit(string name)
+        {
+            var mesh = TestUtils.GetAssetAt<Mesh>($"MeshInfo2/{name}.asset");
+            var go = new GameObject();
+            var smr = go.AddComponent<SkinnedMeshRenderer>();
+            smr.sharedMesh = mesh;
+            var meshInfo2 = new MeshInfo2(smr);
+
+            var newMesh = new Mesh();
+            meshInfo2.WriteToMesh(newMesh);
+        }
     }
 }
