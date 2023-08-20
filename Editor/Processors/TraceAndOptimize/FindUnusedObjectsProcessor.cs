@@ -38,10 +38,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             // entry points: modified enable/disable
             foreach (var keyValuePair in _animator.ModifiedProperties)
             {
+                // TODO: if the any of parent is inactive and kept, it should not be assumed as 
                 if (!(keyValuePair.Key is GameObject gameObject)) continue;
                 if (!keyValuePair.Value.TryGetValue("m_IsActive", out _)) continue;
 
-                AddGameObject(gameObject);
+                // TODO: if the child is not activeSelf, it should not be assumed as entry point.
+                foreach (var transform in gameObject.GetComponentsInChildren<Transform>())
+                    AddGameObject(transform.gameObject);
             }
 
             while (newReferenced.Count != 0)
