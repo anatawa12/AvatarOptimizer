@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Multi Passs Rendering not supported error doesn't have location info `#347`
 
 ### Security
 

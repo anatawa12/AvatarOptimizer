@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - Children of IsActive animated object is not considered `#342`
+- Multi Passs Rendering not supported error doesn't have location info `#347`
 
 ### Security
 
