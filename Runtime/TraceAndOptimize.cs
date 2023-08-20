@@ -14,9 +14,15 @@ namespace Anatawa12.AvatarOptimizer
         [CL4EELocalized("TraceAndOptimize:prop:removeUnusedObjects")]
         [ToggleLeft]
         public bool removeUnusedObjects = true;
+
+        // common parsing configuration
         [CL4EELocalized("TraceAndOptimize:prop:mmdWorldCompatibility",
             "TraceAndOptimize:tooltip:mmdWorldCompatibility")]
         [ToggleLeft]
         public bool mmdWorldCompatibility = true;
+        [CL4EELocalized("TraceAndOptimize:prop:advancedAnimatorParser",
+            "TraceAndOptimize:tooltip:advancedAnimatorParser")]
+        [ToggleLeft]
+        public bool advancedAnimatorParser = true;
     }
 }

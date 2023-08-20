@@ -121,9 +121,19 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         private void GatherAnimationModificationsInController(GameObject root, RuntimeAnimatorController controller)
         {
             if (controller == null) return;
-            var (animatorController, mapping) = GetControllerAndOverrides(controller);
-            _modificationsContainer.MergeAsNewLayer(ParseAnimatorController(root, animatorController, mapping),
-                alwaysAppliedLayer: true);
+            IModificationsContainer parsed;
+
+            if (_config.advancedAnimatorParser)
+            {
+                var (animatorController, mapping) = GetControllerAndOverrides(controller);
+                parsed = ParseAnimatorController(root, animatorController, mapping);
+            }
+            else
+            {
+                parsed = FallbackParseAnimatorController(root, controller);
+            }
+
+            _modificationsContainer.MergeAsNewLayer(parsed, alwaysAppliedLayer: true);
         }
 
         /// <summary>
