@@ -16,10 +16,13 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Children of IsActive animated object is not considered `#342`
-- Multi Passs Rendering not supported error doesn't have location info `#347`
 
 ### Security
+
+## [1.3.2] - 2023-08-20
+### Fixed
+- Children of IsActive animated object is not considered [`#342`](https://github.com/anatawa12/AvatarOptimizer/pull/342)
+- Multi Passs Rendering not supported error doesn't have location info [`#347`](https://github.com/anatawa12/AvatarOptimizer/pull/347)
 
 ## [1.3.1] - 2023-08-19
 ### Fixed
@@ -437,7 +440,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.3.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.3.2...HEAD
+[1.3.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.3.1...v1.3.2
 [1.3.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.1.1...v1.2.0

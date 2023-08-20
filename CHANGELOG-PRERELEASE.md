@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog].
 
 ### Security
 
+## [1.3.2] - 2023-08-20
 ## [1.3.2-beta.3] - 2023-08-20
 ### Fixed
 - No error context in Multi Pass Rendering error [`#348`](https://github.com/anatawa12/AvatarOptimizer/pull/348)
@@ -582,7 +583,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.3.2-beta.3...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.3.2...HEAD
+[1.3.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.3.2-beta.3...v1.3.2
 [1.3.2-beta.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.3.2-beta.2...v1.3.2-beta.3
 [1.3.2-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.3.2-beta.1...v1.3.2-beta.2
 [1.3.2-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.3.1...v1.3.2-beta.1
