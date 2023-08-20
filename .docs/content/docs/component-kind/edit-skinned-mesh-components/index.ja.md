@@ -14,7 +14,7 @@ Edit Skinned Mesh ComponentはSkinnedMeshRendererのあるGameObjectにつけて
 この種類のコンポーネントはMeshなどを生成するコンポーネントです。
 以下のコンポーネントがSource Edit Skinned Mesh Componentです。
 
-- [MergeSkinnedMesh](../merge-skinned-mesh)
+- [MergeSkinnedMesh](../../reference/merge-skinned-mesh)
 
   This component will produce mesh from other (Skinned)MeshRenderers.
 
@@ -23,7 +23,7 @@ Edit Skinned Mesh ComponentはSkinnedMeshRendererのあるGameObjectにつけて
 この種類のコンポーネントはすでについているメッシュなどを(複製して)編集するコンポーネントです。
 以下のコンポーネントがModifying Edit Skinned Mesh Componentです。
 
-- [Remove Mesh By BlendShape](../remove-mesh-by-blendshape)
-- [Remove Mesh in Box](../remove-mesh-by-blendshape)
-- [Freeze BlendShape](../freeze-blendshape)
-- [Merge ToonLit Material](../merge-toonlit-material)
+- [Remove Mesh By BlendShape](../../reference/remove-mesh-by-blendshape)
+- [Remove Mesh in Box](../../reference/remove-mesh-by-blendshape)
+- [Freeze BlendShape](../../reference/freeze-blendshape)
+- [Merge ToonLit Material](../../reference/merge-toonlit-material)
