@@ -137,7 +137,14 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         private void GatherAnimationModificationsInController(GameObject root, RuntimeAnimatorController controller)
         {
             if (controller == null) return;
+            FallbackGatherAnimationModificationsInController(root, controller);
+        }
 
+        /// <summary>
+        /// Fallback AnimatorController Parser but always assumed as partially applied 
+        /// </summary>
+        private void FallbackGatherAnimationModificationsInController(GameObject root, RuntimeAnimatorController controller)
+        {
             foreach (var clip in controller.animationClips)
             {
                 if (!_parsedAnimationCache.TryGetValue((root, clip), out var parsed))
