@@ -483,8 +483,8 @@ namespace Anatawa12.AvatarOptimizer
                 {
                     get
                     {
-                        var kvp = _base.Current;
-                        return new KeyValuePair<TKey, TValueCasted>(kvp.Key, kvp.Value);
+                        var (key, value) = _base.Current;
+                        return new KeyValuePair<TKey, TValueCasted>(key, value);
                     }
                 }
             }
@@ -498,6 +498,13 @@ namespace Anatawa12.AvatarOptimizer
 
         public static IReadOnlyDictionary<TKey, TValue> EmptyDictionary<TKey, TValue>() =>
             EmptyDictionaryHolder<TKey, TValue>.Empty;
+
+        public static void Deconstruct<TKey, TValue>(this KeyValuePair<TKey, TValue> keyValuePair, out TKey key,
+            out TValue value)
+        {
+            key = keyValuePair.Key;
+            value = keyValuePair.Value;
+        }
     }
 
     internal struct ArraySerializedPropertyEnumerable : IEnumerable<SerializedProperty>
