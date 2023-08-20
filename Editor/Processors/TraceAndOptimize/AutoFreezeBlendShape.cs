@@ -6,12 +6,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 {
     class AutoFreezeBlendShape
     {
-        private readonly AnimationParser _animation;
+        private readonly AnimatorParser _animator;
         private readonly OptimizerSession _session;
 
-        public AutoFreezeBlendShape(AnimationParser animation, OptimizerSession session)
+        public AutoFreezeBlendShape(AnimatorParser animator, OptimizerSession session)
         {
-            _animation = animation;
+            _animator = animator;
             _session = session;
         }
 
@@ -26,7 +26,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 // skip configured mesh
                 if (skinnedMeshRenderer.GetComponent<FreezeBlendShape>()) continue;
 
-                var modifies = _animation.GetModifiedProperties(skinnedMeshRenderer);
+                var modifies = _animator.GetModifiedProperties(skinnedMeshRenderer);
                 var blendShapeValues = Enumerable.Range(0, mesh.blendShapeCount)
                     .Select(i => skinnedMeshRenderer.GetBlendShapeWeight(i)).ToArray();
                 var notChanged = Enumerable.Range(0, mesh.blendShapeCount)

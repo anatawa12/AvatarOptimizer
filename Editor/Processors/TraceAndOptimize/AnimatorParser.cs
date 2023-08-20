@@ -11,12 +11,12 @@ using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 {
-    class AnimationParser
+    class AnimatorParser
     {
         private readonly OptimizerSession _session;
         private readonly TraceAndOptimize _config;
 
-        public AnimationParser(OptimizerSession session, TraceAndOptimize config)
+        public AnimatorParser(OptimizerSession session, TraceAndOptimize config)
         {
             _session = session;
             _config = config;

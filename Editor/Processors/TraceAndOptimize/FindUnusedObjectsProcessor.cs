@@ -9,12 +9,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 {
     class FindUnusedObjectsProcessor
     {
-        private readonly AnimationParser _animation;
+        private readonly AnimatorParser _animator;
         private readonly OptimizerSession _session;
 
-        public FindUnusedObjectsProcessor(AnimationParser animation, OptimizerSession session)
+        public FindUnusedObjectsProcessor(AnimatorParser animator, OptimizerSession session)
         {
-            _animation = animation;
+            _animator = animator;
             _session = session;
         }
 
@@ -36,7 +36,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 AddGameObject(component);
 
             // entry points: modified enable/disable
-            foreach (var keyValuePair in _animation.ModifiedProperties)
+            foreach (var keyValuePair in _animator.ModifiedProperties)
             {
                 if (!(keyValuePair.Key is GameObject gameObject)) continue;
                 if (!keyValuePair.Value.TryGetValue("m_IsActive", out _)) continue;
