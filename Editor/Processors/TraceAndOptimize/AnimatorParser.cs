@@ -116,9 +116,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             }
         }
 
-        private readonly Dictionary<(GameObject, AnimationClip), ImmutableModificationsContainer> _parsedAnimationCache =
-            new Dictionary<(GameObject, AnimationClip), ImmutableModificationsContainer>();
-
         private void GatherAnimationModificationsInController(GameObject root, RuntimeAnimatorController controller)
         {
             if (controller == null) return;
@@ -132,11 +129,18 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         {
             foreach (var clip in controller.animationClips)
             {
-                if (!_parsedAnimationCache.TryGetValue((root, clip), out var parsed))
-                    _parsedAnimationCache.Add((root, clip), parsed = ParseAnimation(root, clip));
-
-                _modificationsContainer.MergeAsNewLayer(parsed, alwaysAppliedLayer: false);
+                _modificationsContainer.MergeAsNewLayer(GetParsedAnimation(root, clip), alwaysAppliedLayer: false);
             }
+        }
+
+        private readonly Dictionary<(GameObject, AnimationClip), ImmutableModificationsContainer> _parsedAnimationCache =
+            new Dictionary<(GameObject, AnimationClip), ImmutableModificationsContainer>();
+
+        private ImmutableModificationsContainer GetParsedAnimation(GameObject root, AnimationClip clip)
+        {
+            if (!_parsedAnimationCache.TryGetValue((root, clip), out var parsed))
+                _parsedAnimationCache.Add((root, clip), parsed = ParseAnimation(root, clip));
+            return parsed;
         }
 
         public static ImmutableModificationsContainer ParseAnimation(GameObject root, AnimationClip clip)
