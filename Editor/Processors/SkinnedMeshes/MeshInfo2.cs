@@ -83,7 +83,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             // TODO: Remove this error once this is supported
             if (sourceMaterials.Length > SubMeshes.Count)
-                BuildReport.LogFatal("Multi Pass Rendering of one Mesh is NOT Supported YET.");
+                BuildReport.LogFatal("Multi Pass Rendering of one SubMesh is NOT Supported YET.");
         }
 
         [Conditional("UNITY_ASSERTIONS")]
