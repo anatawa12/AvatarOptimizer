@@ -47,7 +47,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             for (var i = 0; i < mesh.blendShapeCount; i++)
                 BlendShapes[i] = (BlendShapes[i].name, renderer.GetBlendShapeWeight(i));
 
-            SetMaterials(renderer.sharedMaterials);
+            SetMaterials(renderer);
 
             var bones = renderer.bones;
             for (var i = 0; i < bones.Length && i < Bones.Count; i++) Bones[i].Transform = bones[i];
@@ -66,13 +66,14 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             Bounds = mesh.bounds;
             RootBone = renderer.transform;
 
-            SetMaterials(renderer.sharedMaterials);
+            SetMaterials(renderer);
 
             AssertInvariantContract("MeshRenderer");
         }
 
-        private void SetMaterials(Material[] sourceMaterials)
+        private void SetMaterials(Renderer renderer)
         {
+            var sourceMaterials = renderer.sharedMaterials;
             var materialCount = Math.Min(sourceMaterials.Length, SubMeshes.Count);
             for (var i = 0; i < materialCount; i++)
                 SubMeshes[i].SharedMaterial = sourceMaterials[i];
