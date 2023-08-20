@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- No error context in Multi Pass Rendering error `#348`
 
 ### Security
 
