@@ -20,6 +20,18 @@ The format is based on [Keep a Changelog].
 
 ### Security
 
+## [1.3.2-beta.3] - 2023-08-20
+### Fixed
+- No error context in Multi Pass Rendering error [`#348`](https://github.com/anatawa12/AvatarOptimizer/pull/348)
+
+## [1.3.2-beta.2] - 2023-08-20
+### Fixed
+- Multi Passs Rendering not supported error doesn't have location info [`#347`](https://github.com/anatawa12/AvatarOptimizer/pull/347)
+
+## [1.3.2-beta.1] - 2023-08-20
+### Fixed
+- Children of IsActive animated object is not considered [`#342`](https://github.com/anatawa12/AvatarOptimizer/pull/342)
+
 ## [1.3.1] - 2023-08-19
 ### Fixed
 - Unity Editor may freezes when there are circular dependency [`#329`](https://github.com/anatawa12/AvatarOptimizer/pull/329)
@@ -571,7 +583,10 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.3.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.3.2-beta.3...HEAD
+[1.3.2-beta.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.3.2-beta.2...v1.3.2-beta.3
+[1.3.2-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.3.2-beta.1...v1.3.2-beta.2
+[1.3.2-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.3.1...v1.3.2-beta.1
 [1.3.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.3.0-rc.2...v1.3.0
 [1.3.0-rc.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.3.0-rc.1...v1.3.0-rc.2
