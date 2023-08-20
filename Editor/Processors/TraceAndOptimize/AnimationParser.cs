@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using UnityEditor;
 using UnityEditor.Animations;
@@ -8,25 +9,36 @@ using VRC.SDK3.Avatars.Components;
 using VRC.SDKBase;
 using Object = UnityEngine.Object;
 
-namespace Anatawa12.AvatarOptimizer.Processors
+namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 {
-    partial class TraceAndOptimizeProcessor
+    class AnimationParser
     {
+        private readonly OptimizerSession _session;
+        private readonly TraceAndOptimize _config;
+
+        public AnimationParser(OptimizerSession session, TraceAndOptimize config)
+        {
+            _session = session;
+            _config = config;
+            ModifiedProperties = Utils.CastDic<IReadOnlyDictionary<string, AnimationProperty>>()
+                .CastedDic(_modifiedProperties);
+        }
+
         private static CachedGuidLoader<AnimatorController>[] _defaultLayers = CreateDefaultLayers();
 
         private static CachedGuidLoader<AnimatorController>[] CreateDefaultLayers()
         {
             var array = new CachedGuidLoader<AnimatorController>[(int)(VRCAvatarDescriptor.AnimLayerType.IKPose + 1)];
             // vrc_AvatarV3LocomotionLayer
-            array[(int) VRCAvatarDescriptor.AnimLayerType.Base] = "4e4e1a372a526074884b7311d6fc686b";
+            array[(int)VRCAvatarDescriptor.AnimLayerType.Base] = "4e4e1a372a526074884b7311d6fc686b";
             // vrc_AvatarV3IdleLayer
-            array[(int) VRCAvatarDescriptor.AnimLayerType.Additive] = "573a1373059632b4d820876efe2d277f";
+            array[(int)VRCAvatarDescriptor.AnimLayerType.Additive] = "573a1373059632b4d820876efe2d277f";
             // vrc_AvatarV3HandsLayer
-            array[(int) VRCAvatarDescriptor.AnimLayerType.Gesture] = "404d228aeae421f4590305bc4cdaba16";
+            array[(int)VRCAvatarDescriptor.AnimLayerType.Gesture] = "404d228aeae421f4590305bc4cdaba16";
             // vrc_AvatarV3ActionLayer
-            array[(int) VRCAvatarDescriptor.AnimLayerType.Action] = "3e479eeb9db24704a828bffb15406520";
+            array[(int)VRCAvatarDescriptor.AnimLayerType.Action] = "3e479eeb9db24704a828bffb15406520";
             // vrc_AvatarV3FaceLayer
-            array[(int) VRCAvatarDescriptor.AnimLayerType.FX] = "d40be620cf6c698439a2f0a5144919fe";
+            array[(int)VRCAvatarDescriptor.AnimLayerType.FX] = "d40be620cf6c698439a2f0a5144919fe";
             // vrc_AvatarV3SittingLayer
             array[(int)VRCAvatarDescriptor.AnimLayerType.Sitting] = "1268460c14f873240981bf15aa88b21a";
             // vrc_AvatarV3UtilityTPose
@@ -36,7 +48,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
             return array;
         }
 
-        private void GatherAnimationModifications()
+        public void GatherAnimationModifications()
         {
             foreach (var animator in _session.GetComponents<Animator>())
             {
@@ -75,7 +87,8 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 {
                     foreach (var layer in descriptor.baseAnimationLayers)
                     {
-                        GatherAnimationModificationsInController(descriptor.gameObject, GetPlayableLayerController(layer));
+                        GatherAnimationModificationsInController(descriptor.gameObject,
+                            GetPlayableLayerController(layer));
                     }
                 }
 
@@ -86,7 +99,8 @@ namespace Anatawa12.AvatarOptimizer.Processors
                     {
                         var skinnedMeshRenderer = descriptor.VisemeSkinnedMesh;
                         if (!_modifiedProperties.TryGetValue(skinnedMeshRenderer, out var set))
-                            _modifiedProperties.Add(skinnedMeshRenderer, set = new Dictionary<string, AnimationProperty>());
+                            _modifiedProperties.Add(skinnedMeshRenderer,
+                                set = new Dictionary<string, AnimationProperty>());
                         foreach (var prop in descriptor.VisemeBlendShapes.Select(x => $"blendShape.{x}"))
                             set[prop] = AnimationProperty.Variable();
                         break;
@@ -97,7 +111,8 @@ namespace Anatawa12.AvatarOptimizer.Processors
                         var shape = descriptor.MouthOpenBlendShapeName;
 
                         if (!_modifiedProperties.TryGetValue(skinnedMeshRenderer, out var set))
-                            _modifiedProperties.Add(skinnedMeshRenderer, set = new Dictionary<string, AnimationProperty>());
+                            _modifiedProperties.Add(skinnedMeshRenderer,
+                                set = new Dictionary<string, AnimationProperty>());
                         set[$"blendShape.{shape}"] = AnimationProperty.Variable();
                         break;
                     }
@@ -295,7 +310,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
         private void GatherAnimationModificationsInController(GameObject root, RuntimeAnimatorController controller)
         {
             if (controller == null) return;
-            
+
             foreach (var clip in controller.animationClips)
             {
                 if (!_parsedAnimationCache.TryGetValue((root, clip), out var parsed))
@@ -304,7 +319,8 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 foreach (var keyValuePair in parsed.Components)
                 {
                     if (!_modifiedProperties.TryGetValue(keyValuePair.Key, out var properties))
-                        _modifiedProperties.Add(keyValuePair.Key, properties = new Dictionary<string, AnimationProperty>());
+                        _modifiedProperties.Add(keyValuePair.Key,
+                            properties = new Dictionary<string, AnimationProperty>());
                     foreach (var prop in keyValuePair.Value)
                     {
 
@@ -321,14 +337,15 @@ namespace Anatawa12.AvatarOptimizer.Processors
         {
             public readonly IReadOnlyDictionary<Object, IReadOnlyDictionary<string, AnimationProperty>> Components;
 
-            public ParsedAnimation(IReadOnlyDictionary<Object, IReadOnlyDictionary<string, AnimationProperty>> components)
+            public ParsedAnimation(
+                IReadOnlyDictionary<Object, IReadOnlyDictionary<string, AnimationProperty>> components)
             {
                 Components = components;
             }
 
             public static ParsedAnimation Parse(GameObject root, AnimationClip clip)
             {
-                var components = new Dictionary<Object, IReadOnlyDictionary<string, AnimationProperty>>();
+                var components = new Dictionary<Object, Dictionary<string, AnimationProperty>>();
 
                 foreach (var binding in AnimationUtility.GetCurveBindings(clip))
                 {
@@ -345,9 +362,8 @@ namespace Anatawa12.AvatarOptimizer.Processors
                         if (curve[0].time == 0 && curve[curve.length - 1].time == clip.length)
                             currentProperty = currentProperty.AlwaysApplied();
 
-                    if (!components.TryGetValue(obj, out var propertiesItf))
-                        components.Add(obj, propertiesItf = new Dictionary<string, AnimationProperty>());
-                    var properties = (Dictionary<string, AnimationProperty>)propertiesItf;
+                    if (!components.TryGetValue(obj, out var properties))
+                        components.Add(obj, properties = new Dictionary<string, AnimationProperty>());
 
                     if (properties.TryGetValue(binding.propertyName, out var property))
                         properties[binding.propertyName] = property.Merge(currentProperty);
@@ -355,8 +371,97 @@ namespace Anatawa12.AvatarOptimizer.Processors
                         properties.Add(binding.propertyName, currentProperty);
                 }
 
-                return new ParsedAnimation(components);
+                return new ParsedAnimation(
+                    Utils.CastDic<IReadOnlyDictionary<string, AnimationProperty>>().CastedDic(components));
             }
+        }
+
+        private readonly Dictionary<Object, Dictionary<string, AnimationProperty>> _modifiedProperties =
+            new Dictionary<Object, Dictionary<string, AnimationProperty>>();
+
+        public readonly IReadOnlyDictionary<Object, IReadOnlyDictionary<string, AnimationProperty>> ModifiedProperties;
+
+        public IReadOnlyDictionary<string, AnimationProperty> GetModifiedProperties(Component component)
+        {
+            return _modifiedProperties.TryGetValue(component, out var value) ? value : EmptyProperties;
+        }
+
+        private IReadOnlyDictionary<string, AnimationProperty> GetModifiedProperties(GameObject component)
+        {
+            return _modifiedProperties.TryGetValue(component, out var value) ? value : EmptyProperties;
+        }
+
+        private static readonly IReadOnlyDictionary<string, AnimationProperty> EmptyProperties =
+            new ReadOnlyDictionary<string, AnimationProperty>(new Dictionary<string, AnimationProperty>());
+
+    }
+
+    readonly struct AnimationProperty
+    {
+        readonly AnimationPropertyFlags _flags;
+        public bool IsConst => (_flags & AnimationPropertyFlags.Constant) != 0;
+        public bool IsAlwaysApplied => (_flags & AnimationPropertyFlags.AlwaysApplied) != 0;
+        public readonly float ConstValue;
+
+        private AnimationProperty(AnimationPropertyFlags flags, float constValue) =>
+            (this._flags, ConstValue) = (flags, constValue);
+
+        public static AnimationProperty Const(float value) =>
+            new AnimationProperty(AnimationPropertyFlags.Constant, value);
+
+        public static AnimationProperty Variable() =>
+            new AnimationProperty(AnimationPropertyFlags.Variable, float.NaN);
+
+        public AnimationProperty Merge(AnimationProperty b)
+        {
+            var isConstant = IsConst && b.IsConst && ConstValue.CompareTo(b.ConstValue) == 0;
+            var isAlwaysApplied = IsAlwaysApplied && b.IsAlwaysApplied;
+
+            return new AnimationProperty(
+                (isConstant ? AnimationPropertyFlags.Constant : AnimationPropertyFlags.Variable)
+                | (isAlwaysApplied ? AnimationPropertyFlags.AlwaysApplied : AnimationPropertyFlags.Variable),
+                ConstValue);
+        }
+
+        public static AnimationProperty? ParseProperty(AnimationCurve curve)
+        {
+            if (curve.keys.Length == 0) return null;
+            if (curve.keys.Length == 1)
+                return Const(curve.keys[0].value);
+
+            float constValue = 0;
+            foreach (var (preKey, postKey) in curve.keys.ZipWithNext())
+            {
+                var preWeighted = preKey.weightedMode == WeightedMode.Out || preKey.weightedMode == WeightedMode.Both;
+                var postWeighted = postKey.weightedMode == WeightedMode.In || postKey.weightedMode == WeightedMode.Both;
+
+                if (preKey.value.CompareTo(postKey.value) != 0) return Variable();
+                constValue = preKey.value;
+                // it's constant
+                if (float.IsInfinity(preKey.outWeight) || float.IsInfinity(postKey.inTangent))
+                    continue;
+                if (preKey.outTangent == 0 && postKey.inTangent == 0)
+                    continue;
+                if (preWeighted && postWeighted && preKey.outWeight == 0 && postKey.inWeight == 0)
+                    continue;
+                return Variable();
+            }
+
+            return Const(constValue);
+        }
+
+        public AnimationProperty AlwaysApplied() =>
+            new AnimationProperty(_flags | AnimationPropertyFlags.AlwaysApplied, ConstValue);
+
+        public AnimationProperty PartiallyApplied() =>
+            new AnimationProperty(_flags & ~AnimationPropertyFlags.AlwaysApplied, ConstValue);
+        
+        [Flags]
+        enum AnimationPropertyFlags
+        {
+            Variable = 0,
+            Constant = 1,
+            AlwaysApplied = 2,
         }
     }
 }
