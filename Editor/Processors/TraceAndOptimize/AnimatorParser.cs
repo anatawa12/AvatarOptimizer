@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using Anatawa12.AvatarOptimizer.ErrorReporting;
+using JetBrains.Annotations;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
@@ -119,31 +121,143 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         private void GatherAnimationModificationsInController(GameObject root, RuntimeAnimatorController controller)
         {
             if (controller == null) return;
-            FallbackGatherAnimationModificationsInController(root, controller);
+            var (animatorController, mapping) = GetControllerAndOverrides(controller);
+            _modificationsContainer.MergeAsNewLayer(ParseAnimatorController(root, animatorController, mapping),
+                alwaysAppliedLayer: true);
         }
 
         /// <summary>
         /// Fallback AnimatorController Parser but always assumed as partially applied 
         /// </summary>
-        private void FallbackGatherAnimationModificationsInController(GameObject root, RuntimeAnimatorController controller)
+        private IModificationsContainer FallbackParseAnimatorController(GameObject root, RuntimeAnimatorController controller)
         {
-            foreach (var clip in controller.animationClips)
+            return MergeContainersSideBySide(controller.animationClips.Select(clip => GetParsedAnimation(root, clip)));
+        }
+
+        private IModificationsContainer ParseAnimatorController(GameObject root, AnimatorController controller, IReadOnlyDictionary<AnimationClip, AnimationClip> mapping)
+        {
+            var layers = controller.layers;
+            if (layers.Length == 0) return ImmutableModificationsContainer.Empty;
+
+            var mergedController = ParseAnimatorControllerLayer(root, layers[0], mapping).ToMutable();
+
+            foreach (var layer in layers)
             {
-                _modificationsContainer.MergeAsNewLayer(GetParsedAnimation(root, clip), alwaysAppliedLayer: false);
+                // ReSharper disable once CompareOfFloatsByEqualityOperator
+                mergedController.MergeAsNewLayer(ParseAnimatorControllerLayer(root, layer, mapping),
+                    alwaysAppliedLayer: layer.defaultWeight == 1);
+            }
+
+            return mergedController;
+        }
+
+        private IModificationsContainer ParseAnimatorControllerLayer(GameObject root, AnimatorControllerLayer layer,
+            IReadOnlyDictionary<AnimationClip, AnimationClip> mapping)
+        {
+            var animationClips = new HashSet<AnimationClip>();
+
+            CollectClipsInStateMachine(layer.stateMachine);
+            void CollectClipsInStateMachine(AnimatorStateMachine stateMachine)
+            {
+                foreach (var state in stateMachine.states)
+                {
+                    var motion = layer.GetOverrideMotion(state.state);
+                    if (!motion) motion = state.state.motion;
+                    CollectClipsInMotion(motion);
+                }
+
+                foreach (var childStateMachine in stateMachine.stateMachines)
+                    CollectClipsInStateMachine(childStateMachine.stateMachine);
+            }
+
+            void CollectClipsInMotion(Motion motion)
+            {
+                switch (motion)
+                {
+                    case null:
+                        animationClips.Add(null);
+                        return;
+                    case AnimationClip clip:
+                        animationClips.Add(clip);
+                        return;
+                    case BlendTree blendTree:
+                        foreach (var child in blendTree.children)
+                            CollectClipsInMotion(child.motion);
+                        return;
+                    default:
+                        BuildReport.LogFatal("Unknown Motion Type: {0} in motion {1}",
+                            motion.GetType().Name, motion.name);
+                        return;
+                }
+            }
+
+            AnimationClip MapClip(AnimationClip clip) => mapping.TryGetValue(clip, out var newClip) ? newClip : clip;
+
+            return MergeContainersSideBySide(animationClips.Select(x => GetParsedAnimation(root, MapClip(x))));
+        }
+
+        private IModificationsContainer MergeContainersSideBySide<T>([ItemNotNull] IEnumerable<T> enumerable)
+            where T : IModificationsContainer
+        {
+            using (var enumerator = enumerable.GetEnumerator())
+            {
+                if (!enumerator.MoveNext()) return ImmutableModificationsContainer.Empty;
+                var first = enumerator.Current;
+                if (!enumerator.MoveNext()) return first;
+
+                // ReSharper disable once PossibleNullReferenceException // miss detections
+
+                // merge all properties
+                var merged = first.ToMutable();
+                do merged.MergeAsSide(enumerator.Current);
+                while (enumerator.MoveNext());
+
+                return merged;
+            }
+        }
+
+        private (AnimatorController, IReadOnlyDictionary<AnimationClip, AnimationClip>) GetControllerAndOverrides(
+            RuntimeAnimatorController runtimeController)
+        {
+            if (runtimeController is AnimatorController originalController)
+                return (originalController, Utils.EmptyDictionary<AnimationClip, AnimationClip>());
+
+            var overrides = new Dictionary<AnimationClip, AnimationClip>();
+            var overridesBuffer = new List<KeyValuePair<AnimationClip, AnimationClip>>();
+
+            for (;;)
+            {
+                if (runtimeController is AnimatorController controller)
+                    return (controller, overrides);
+
+                var overrideController = (AnimatorOverrideController)runtimeController;
+
+                runtimeController = overrideController.runtimeAnimatorController;
+                overrideController.GetOverrides(overridesBuffer);
+                var currentOverrides = overridesBuffer.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+
+                foreach (var (original, mapped) in overrides)
+                    if (currentOverrides.TryGetValue(mapped, out var newMapped))
+                        overrides[original] = newMapped;
+
+                foreach (var (original, mapped) in overridesBuffer)
+                    if (!overrides.ContainsKey(original))
+                        overrides.Add(original, mapped);
             }
         }
 
         private readonly Dictionary<(GameObject, AnimationClip), ImmutableModificationsContainer> _parsedAnimationCache =
             new Dictionary<(GameObject, AnimationClip), ImmutableModificationsContainer>();
 
-        private ImmutableModificationsContainer GetParsedAnimation(GameObject root, AnimationClip clip)
+        private ImmutableModificationsContainer GetParsedAnimation(GameObject root, [CanBeNull] AnimationClip clip)
         {
+            if (clip == null) return ImmutableModificationsContainer.Empty;
             if (!_parsedAnimationCache.TryGetValue((root, clip), out var parsed))
                 _parsedAnimationCache.Add((root, clip), parsed = ParseAnimation(root, clip));
             return parsed;
         }
 
-        public static ImmutableModificationsContainer ParseAnimation(GameObject root, AnimationClip clip)
+        public static ImmutableModificationsContainer ParseAnimation(GameObject root, [NotNull] AnimationClip clip)
         {
             var modifications = new ModificationsContainer();
 
@@ -355,6 +469,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
     interface IModificationsContainer
     {
         IReadOnlyDictionary<Object, IReadOnlyDictionary<string, AnimationProperty>> ModifiedProperties { get; }
+        ModificationsContainer ToMutable();
+        ImmutableModificationsContainer ToImmutable();
     }
 
     readonly struct ImmutableModificationsContainer : IModificationsContainer
@@ -375,6 +491,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         }
 
         public ModificationsContainer ToMutable() => new ModificationsContainer(this);
+        public ImmutableModificationsContainer ToImmutable() => this;
 
         public IReadOnlyDictionary<string, AnimationProperty> GetModifiedProperties(Component component)
         {
@@ -425,6 +542,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             return _modifiedProperties.TryGetValue(component, out var value) ? value : Utils.EmptyDictionary<string, AnimationProperty>();
         }
 
+        public ModificationsContainer ToMutable() => this;
         public ImmutableModificationsContainer ToImmutable() => new ImmutableModificationsContainer(this);
 
         #region Adding Modifications
@@ -470,6 +588,51 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 foreach (var (propertyName, propertyState) in properties)
                     updater.AddModification(propertyName, alwaysAppliedLayer ? propertyState : propertyState.PartiallyApplied());
             }
+        }
+
+        public void MergeAsSide<T>(T other) where T : IModificationsContainer
+        {
+            foreach (var (obj, (thisProperties, otherProperties)) in _modifiedProperties.ZipByKey(other.ModifiedProperties))
+            {
+                if (otherProperties == null)
+                {
+                    // the object is modified by current only: everything in thisProperties should be marked partially
+                    foreach (var (property, state) in thisProperties)
+                        thisProperties[property] = state.PartiallyApplied();
+                }
+                else if (thisProperties == null)
+                {
+                    // the object is modified by other only: copy otherProperties with everything marked partially
+                    _modifiedProperties.Add(obj, EverythingPartially(otherProperties));
+                }
+                else
+                {
+                    // the object id modified by both
+
+                    foreach (var (property, (thisState, otherState)) in thisProperties.ZipByKey(otherProperties))
+                    {
+                        if (otherState.State == AnimationProperty.PropertyState.Invalid)
+                        {
+                            // the property is modified by current only: this modification should be marked partially
+                            thisProperties[property] = thisState.PartiallyApplied();
+                        }
+                        else if (thisState.State == AnimationProperty.PropertyState.Invalid)
+                        {
+                            // the property is modified by other only: copied with marked partially
+                            thisProperties.Add(property, otherState.PartiallyApplied());
+                        }
+                        else
+                        {
+                            // the property is modified by both: merge the property modification
+                            thisProperties[property] = thisState.Merge(otherState);
+                        }
+                    }
+                }
+            }
+
+            Dictionary<string, AnimationProperty>
+                EverythingPartially(IReadOnlyDictionary<string, AnimationProperty> dictionary) =>
+                dictionary.ToDictionary(k => k.Key, v => v.Value.PartiallyApplied());
         }
     }
 
@@ -552,6 +715,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         public enum PropertyState
         {
+            Invalid = 0,
             ConstantAlways,
             ConstantPartially,
             Variable,
