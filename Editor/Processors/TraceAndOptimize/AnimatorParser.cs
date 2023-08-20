@@ -20,8 +20,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         {
             _session = session;
             _config = config;
-            ModifiedProperties = Utils.CastDic<IReadOnlyDictionary<string, AnimationProperty>>()
-                .CastedDic(_modifiedProperties);
         }
 
         public void GatherAnimationModifications()
@@ -56,11 +54,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     case VRC_AvatarDescriptor.LipSyncStyle.VisemeBlendShape when descriptor.VisemeSkinnedMesh != null:
                     {
                         var skinnedMeshRenderer = descriptor.VisemeSkinnedMesh;
-                        if (!_modifiedProperties.TryGetValue(skinnedMeshRenderer, out var set))
-                            _modifiedProperties.Add(skinnedMeshRenderer,
-                                set = new Dictionary<string, AnimationProperty>());
-                        foreach (var prop in descriptor.VisemeBlendShapes.Select(x => $"blendShape.{x}"))
-                            set[prop] = AnimationProperty.Variable();
+                        var updater = _modificationsContainer.ModifyComponent(skinnedMeshRenderer);
+                        foreach (var blendShape in descriptor.VisemeBlendShapes)
+                            updater.AddModification($"blendShape.{blendShape}", AnimationProperty.Variable());
                         break;
                     }
                     case VRC_AvatarDescriptor.LipSyncStyle.JawFlapBlendShape when descriptor.VisemeSkinnedMesh != null:
@@ -68,10 +64,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                         var skinnedMeshRenderer = descriptor.VisemeSkinnedMesh;
                         var shape = descriptor.MouthOpenBlendShapeName;
 
-                        if (!_modifiedProperties.TryGetValue(skinnedMeshRenderer, out var set))
-                            _modifiedProperties.Add(skinnedMeshRenderer,
-                                set = new Dictionary<string, AnimationProperty>());
-                        set[$"blendShape.{shape}"] = AnimationProperty.Variable();
+                        _modificationsContainer.ModifyComponent(skinnedMeshRenderer)
+                            .AddModification($"blendShape.{shape}", AnimationProperty.Variable());
                         break;
                     }
                 }
@@ -84,25 +78,22 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     var skinnedMeshRenderer = descriptor.customEyeLookSettings.eyelidsSkinnedMesh;
                     var mesh = skinnedMeshRenderer.sharedMesh;
 
-                    if (!_modifiedProperties.TryGetValue(skinnedMeshRenderer, out var set))
-                        _modifiedProperties.Add(skinnedMeshRenderer, set = new Dictionary<string, AnimationProperty>());
+                    var updater = _modificationsContainer.ModifyComponent(skinnedMeshRenderer);
 
-                    foreach (var prop in from index in descriptor.customEyeLookSettings.eyelidsBlendshapes
+                    foreach (var blendShape in from index in descriptor.customEyeLookSettings.eyelidsBlendshapes
                              where 0 <= index && index < mesh.blendShapeCount
-                             let name = mesh.GetBlendShapeName(index)
-                             select $"blendShape.{name}")
-                        set[prop] = AnimationProperty.Variable();
+                             select mesh.GetBlendShapeName(index))
+                        updater.AddModification($"blendShape.{blendShape}", AnimationProperty.Variable());
                 }
 
                 var bodySkinnedMesh = descriptor.transform.Find("Body")?.GetComponent<SkinnedMeshRenderer>();
 
                 if (_config.mmdWorldCompatibility && bodySkinnedMesh)
                 {
-                    if (!_modifiedProperties.TryGetValue(bodySkinnedMesh, out var set))
-                        _modifiedProperties.Add(bodySkinnedMesh, set = new Dictionary<string, AnimationProperty>());
+                    var updater = _modificationsContainer.ModifyComponent(bodySkinnedMesh);
 
                     foreach (var shape in MmdBlendShapeNames)
-                        set[$"blendShape.{shape}"] = AnimationProperty.Variable();
+                        updater.AddModification($"blendShape.{shape}", AnimationProperty.Variable());
                 }
             }
         }
@@ -117,22 +108,16 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 var transform = animator.GetBoneTransform(bone);
                 if (!transform) continue;
 
-                if (!_modifiedProperties.TryGetValue(transform, out var properties))
-                    _modifiedProperties.Add(transform, properties = new Dictionary<string, AnimationProperty>());
+                var updater = _modificationsContainer.ModifyComponent(transform);
 
                 foreach (var key in new[]
                              { "m_LocalRotation.x", "m_LocalRotation.y", "m_LocalRotation.z", "m_LocalRotation.w" })
-                {
-                    if (properties.TryGetValue(key, out var property))
-                        properties[key] = property.Merge(AnimationProperty.Variable().AlwaysApplied());
-                    else
-                        properties.Add(key, AnimationProperty.Variable().AlwaysApplied());
-                }
+                    updater.AddModification(key, AnimationProperty.Variable().AlwaysApplied());
             }
         }
 
-        private readonly Dictionary<(GameObject, AnimationClip), ParsedAnimation> _parsedAnimationCache =
-            new Dictionary<(GameObject, AnimationClip), ParsedAnimation>();
+        private readonly Dictionary<(GameObject, AnimationClip), ImmutableModificationsContainer> _parsedAnimationCache =
+            new Dictionary<(GameObject, AnimationClip), ImmutableModificationsContainer>();
 
         private void GatherAnimationModificationsInController(GameObject root, RuntimeAnimatorController controller)
         {
@@ -148,85 +133,48 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             foreach (var clip in controller.animationClips)
             {
                 if (!_parsedAnimationCache.TryGetValue((root, clip), out var parsed))
-                    _parsedAnimationCache.Add((root, clip), parsed = ParsedAnimation.Parse(root, clip));
+                    _parsedAnimationCache.Add((root, clip), parsed = ParseAnimation(root, clip));
 
-                foreach (var keyValuePair in parsed.Components)
-                {
-                    if (!_modifiedProperties.TryGetValue(keyValuePair.Key, out var properties))
-                        _modifiedProperties.Add(keyValuePair.Key,
-                            properties = new Dictionary<string, AnimationProperty>());
-                    foreach (var prop in keyValuePair.Value)
-                    {
-
-                        if (properties.TryGetValue(prop.Key, out var property))
-                            properties[prop.Key] = property.Merge(prop.Value.PartiallyApplied());
-                        else
-                            properties.Add(prop.Key, prop.Value.PartiallyApplied());
-                    }
-                }
+                _modificationsContainer.MergeAsNewLayer(parsed, alwaysAppliedLayer: false);
             }
         }
 
-        readonly struct ParsedAnimation
+        public static ImmutableModificationsContainer ParseAnimation(GameObject root, AnimationClip clip)
         {
-            public readonly IReadOnlyDictionary<Object, IReadOnlyDictionary<string, AnimationProperty>> Components;
+            var modifications = new ModificationsContainer();
 
-            public ParsedAnimation(
-                IReadOnlyDictionary<Object, IReadOnlyDictionary<string, AnimationProperty>> components)
+            foreach (var binding in AnimationUtility.GetCurveBindings(clip))
             {
-                Components = components;
+                var obj = AnimationUtility.GetAnimatedObject(root, binding);
+                if (obj == null) continue;
+
+                var curve = AnimationUtility.GetEditorCurve(clip, binding);
+                var currentPropertyMayNull = AnimationProperty.ParseProperty(curve);
+
+                if (!(currentPropertyMayNull is AnimationProperty currentProperty)) continue;
+
+                if (currentProperty.IsConst)
+                    // ReSharper disable once CompareOfFloatsByEqualityOperator
+                    if (curve[0].time == 0 && curve[curve.length - 1].time == clip.length)
+                        currentProperty = currentProperty.AlwaysApplied();
+
+                modifications.ModifyObjectUnsafe(obj)
+                    .AddModification(binding.propertyName, currentProperty);
             }
 
-            public static ParsedAnimation Parse(GameObject root, AnimationClip clip)
-            {
-                var components = new Dictionary<Object, Dictionary<string, AnimationProperty>>();
-
-                foreach (var binding in AnimationUtility.GetCurveBindings(clip))
-                {
-                    var obj = AnimationUtility.GetAnimatedObject(root, binding);
-                    if (obj == null) continue;
-
-                    var curve = AnimationUtility.GetEditorCurve(clip, binding);
-                    var currentPropertyMayNull = AnimationProperty.ParseProperty(curve);
-
-                    if (!(currentPropertyMayNull is AnimationProperty currentProperty)) continue;
-
-                    if (currentProperty.IsConst)
-                        // ReSharper disable once CompareOfFloatsByEqualityOperator
-                        if (curve[0].time == 0 && curve[curve.length - 1].time == clip.length)
-                            currentProperty = currentProperty.AlwaysApplied();
-
-                    if (!components.TryGetValue(obj, out var properties))
-                        components.Add(obj, properties = new Dictionary<string, AnimationProperty>());
-
-                    if (properties.TryGetValue(binding.propertyName, out var property))
-                        properties[binding.propertyName] = property.Merge(currentProperty);
-                    else
-                        properties.Add(binding.propertyName, currentProperty);
-                }
-
-                return new ParsedAnimation(
-                    Utils.CastDic<IReadOnlyDictionary<string, AnimationProperty>>().CastedDic(components));
-            }
+            return modifications.ToImmutable();
         }
 
-        private readonly Dictionary<Object, Dictionary<string, AnimationProperty>> _modifiedProperties =
-            new Dictionary<Object, Dictionary<string, AnimationProperty>>();
+        private readonly ModificationsContainer _modificationsContainer = new ModificationsContainer();
 
-        public readonly IReadOnlyDictionary<Object, IReadOnlyDictionary<string, AnimationProperty>> ModifiedProperties;
+        public IReadOnlyDictionary<Object, IReadOnlyDictionary<string, AnimationProperty>> ModifiedProperties =>
+            _modificationsContainer.ModifiedProperties;
 
-        public IReadOnlyDictionary<string, AnimationProperty> GetModifiedProperties(Component component)
-        {
-            return _modifiedProperties.TryGetValue(component, out var value) ? value : EmptyProperties;
-        }
+        public IReadOnlyDictionary<string, AnimationProperty> GetModifiedProperties(Component component) =>
+            _modificationsContainer.GetModifiedProperties(component);
 
-        private IReadOnlyDictionary<string, AnimationProperty> GetModifiedProperties(GameObject component)
-        {
-            return _modifiedProperties.TryGetValue(component, out var value) ? value : EmptyProperties;
-        }
-
-        private static readonly IReadOnlyDictionary<string, AnimationProperty> EmptyProperties =
-            new ReadOnlyDictionary<string, AnimationProperty>(new Dictionary<string, AnimationProperty>());
+        private IReadOnlyDictionary<string, AnimationProperty> GetModifiedProperties(GameObject gameObject) =>
+            _modificationsContainer.GetModifiedProperties(gameObject);
 
         private static RuntimeAnimatorController GetPlayableLayerController(VRCAvatarDescriptor.CustomAnimLayer layer)
         {
@@ -399,6 +347,123 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             "照れ",
             "涙",
         };
+    }
+
+    interface IModificationsContainer
+    {
+        IReadOnlyDictionary<Object, IReadOnlyDictionary<string, AnimationProperty>> ModifiedProperties { get; }
+    }
+
+    readonly struct ImmutableModificationsContainer : IModificationsContainer
+    {
+        public IReadOnlyDictionary<Object, IReadOnlyDictionary<string, AnimationProperty>> ModifiedProperties { get; }
+
+        public ImmutableModificationsContainer(ModificationsContainer from)
+        {
+            IReadOnlyDictionary<string, AnimationProperty> MapDictionary(IReadOnlyDictionary<string, AnimationProperty> dict) =>
+                new ReadOnlyDictionary<string, AnimationProperty>(dict.ToDictionary(p1 => p1.Key, p1 => p1.Value));
+
+            ModifiedProperties = new ReadOnlyDictionary<Object, IReadOnlyDictionary<string, AnimationProperty>>(from.ModifiedProperties
+                .ToDictionary(p => p.Key, p => MapDictionary(p.Value)));
+        }
+
+        public ModificationsContainer ToMutable() => new ModificationsContainer(this);
+
+        public IReadOnlyDictionary<string, AnimationProperty> GetModifiedProperties(Component component)
+        {
+            return ModifiedProperties.TryGetValue(component, out var value) ? value : Utils.EmptyDictionary<string, AnimationProperty>();
+        }
+
+        public IReadOnlyDictionary<string, AnimationProperty> GetModifiedProperties(GameObject component)
+        {
+            return ModifiedProperties.TryGetValue(component, out var value) ? value : Utils.EmptyDictionary<string, AnimationProperty>();
+        }
+    }
+
+    class ModificationsContainer : IModificationsContainer
+    {
+        private readonly Dictionary<Object, Dictionary<string, AnimationProperty>> _modifiedProperties;
+        
+        private static readonly IReadOnlyDictionary<string, AnimationProperty> EmptyProperties =
+            new ReadOnlyDictionary<string, AnimationProperty>(new Dictionary<string, AnimationProperty>());
+
+        public IReadOnlyDictionary<Object, IReadOnlyDictionary<string, AnimationProperty>> ModifiedProperties { get; }
+
+        public ModificationsContainer()
+        {
+            _modifiedProperties = new Dictionary<Object, Dictionary<string, AnimationProperty>>();
+            ModifiedProperties = Utils.CastDic<IReadOnlyDictionary<string, AnimationProperty>>()
+                .CastedDic(_modifiedProperties);
+        }
+
+        public ModificationsContainer(ImmutableModificationsContainer from)
+        {
+            Dictionary<string, AnimationProperty> MapDictionary(IReadOnlyDictionary<string, AnimationProperty> dict) =>
+                dict.ToDictionary(p1 => p1.Key, p1 => p1.Value);
+
+            _modifiedProperties = from.ModifiedProperties
+                .ToDictionary(p => p.Key, p => MapDictionary(p.Value));
+
+            ModifiedProperties = Utils.CastDic<IReadOnlyDictionary<string, AnimationProperty>>()
+                .CastedDic(_modifiedProperties);
+        }
+
+        public IReadOnlyDictionary<string, AnimationProperty> GetModifiedProperties(Component component)
+        {
+            return _modifiedProperties.TryGetValue(component, out var value) ? value : Utils.EmptyDictionary<string, AnimationProperty>();
+        }
+
+        public IReadOnlyDictionary<string, AnimationProperty> GetModifiedProperties(GameObject component)
+        {
+            return _modifiedProperties.TryGetValue(component, out var value) ? value : Utils.EmptyDictionary<string, AnimationProperty>();
+        }
+
+        public ImmutableModificationsContainer ToImmutable() => new ImmutableModificationsContainer(this);
+
+        #region Adding Modifications
+
+        public ComponentAnimationUpdater ModifyComponent(Component component) =>
+            ModifyObjectUnsafe(component);
+        public ComponentAnimationUpdater ModifyGameObject(GameObject gameObject) =>
+            ModifyObjectUnsafe(gameObject);
+
+        public ComponentAnimationUpdater ModifyObjectUnsafe(Object obj)
+        {
+            if (!_modifiedProperties.TryGetValue(obj, out var properties))
+                _modifiedProperties.Add(obj, properties = new Dictionary<string, AnimationProperty>());
+            return new ComponentAnimationUpdater(properties);
+        }
+
+        public readonly struct ComponentAnimationUpdater
+        {
+            private readonly Dictionary<string, AnimationProperty> _properties;
+
+            public ComponentAnimationUpdater(Dictionary<string, AnimationProperty> properties) => _properties = properties;
+
+            public void AddModification(string propertyName, AnimationProperty propertyState)
+            {
+                if (_properties.TryGetValue(propertyName, out var property))
+                    _properties[propertyName] = property.Merge(propertyState);
+                else
+                    _properties.Add(propertyName, propertyState);
+            }
+        }
+
+        #endregion
+
+        /// <summary>
+        /// Merge the specified Animator as new layer applied after this layer
+        /// </summary>
+        public void MergeAsNewLayer<T>(T parsed, bool alwaysAppliedLayer) where T : IModificationsContainer
+        {
+            foreach (var (obj, properties) in parsed.ModifiedProperties)
+            {
+                var updater = ModifyObjectUnsafe(obj);
+
+                foreach (var (propertyName, propertyState) in properties)
+                    updater.AddModification(propertyName, alwaysAppliedLayer ? propertyState : propertyState.PartiallyApplied());
+            }
+        }
     }
 
     readonly struct AnimationProperty
