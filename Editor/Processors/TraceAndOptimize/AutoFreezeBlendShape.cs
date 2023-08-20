@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
@@ -35,15 +36,18 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     {
                         if (!modifies.TryGetValue($"blendShape.{name}", out var prop)) return true;
 
-                        if (!prop.IsConst) return false;
-
-                        if (prop.IsAlwaysApplied)
+                        switch (prop.State)
                         {
-                            blendShapeValues[i] = prop.ConstValue;
-                            return true;
+                            case AnimationProperty.PropertyState.ConstantAlways:
+                                blendShapeValues[i] = prop.ConstValue;
+                                return true;
+                            case AnimationProperty.PropertyState.ConstantPartially:
+                                return prop.ConstValue.CompareTo(blendShapeValues[i]) == 0;
+                            case AnimationProperty.PropertyState.Variable:
+                                return false;
+                            default:
+                                throw new ArgumentOutOfRangeException();
                         }
-
-                        return prop.ConstValue.CompareTo(blendShapeValues[i]) == 0;
                     })
                     .ToArray();
 

@@ -112,7 +112,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
                 foreach (var key in new[]
                              { "m_LocalRotation.x", "m_LocalRotation.y", "m_LocalRotation.z", "m_LocalRotation.w" })
-                    updater.AddModification(key, AnimationProperty.Variable().AlwaysApplied());
+                    updater.AddModification(key, AnimationProperty.Variable());
             }
         }
 
@@ -157,10 +157,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
                 if (!(currentPropertyMayNull is AnimationProperty currentProperty)) continue;
 
-                if (currentProperty.IsConst)
-                    // ReSharper disable once CompareOfFloatsByEqualityOperator
-                    if (curve[0].time == 0 && curve[curve.length - 1].time == clip.length)
-                        currentProperty = currentProperty.AlwaysApplied();
+                // ReSharper disable once CompareOfFloatsByEqualityOperator
+                if (curve[0].time != 0 || curve[curve.length - 1].time != clip.length)
+                    currentProperty = currentProperty.PartiallyApplied();
 
                 modifications.ModifyObjectUnsafe(obj)
                     .AddModification(binding.propertyName, currentProperty);
@@ -472,36 +471,45 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
     readonly struct AnimationProperty
     {
-        readonly AnimationPropertyFlags _flags;
-        public bool IsConst => (_flags & AnimationPropertyFlags.Constant) != 0;
-        public bool IsAlwaysApplied => (_flags & AnimationPropertyFlags.AlwaysApplied) != 0;
+        public readonly PropertyState State;
         public readonly float ConstValue;
 
-        private AnimationProperty(AnimationPropertyFlags flags, float constValue) =>
-            (this._flags, ConstValue) = (flags, constValue);
+        private AnimationProperty(PropertyState state, float constValue) =>
+            (State, ConstValue) = (state, constValue);
 
-        public static AnimationProperty Const(float value) =>
-            new AnimationProperty(AnimationPropertyFlags.Constant, value);
+        public static AnimationProperty ConstAlways(float value) =>
+            new AnimationProperty(PropertyState.ConstantAlways, value);
+
+        public static AnimationProperty ConstPartially(float value) =>
+            new AnimationProperty(PropertyState.ConstantAlways, value);
 
         public static AnimationProperty Variable() =>
-            new AnimationProperty(AnimationPropertyFlags.Variable, float.NaN);
+            new AnimationProperty(PropertyState.Variable, float.NaN);
 
         public AnimationProperty Merge(AnimationProperty b)
         {
-            var isConstant = IsConst && b.IsConst && ConstValue.CompareTo(b.ConstValue) == 0;
-            var isAlwaysApplied = IsAlwaysApplied && b.IsAlwaysApplied;
+            if (State == PropertyState.Variable) return Variable();
+            if (b.State == PropertyState.Variable) return Variable();
 
-            return new AnimationProperty(
-                (isConstant ? AnimationPropertyFlags.Constant : AnimationPropertyFlags.Variable)
-                | (isAlwaysApplied ? AnimationPropertyFlags.AlwaysApplied : AnimationPropertyFlags.Variable),
-                ConstValue);
+            // now they are constant.
+            if (ConstValue.CompareTo(b.ConstValue) != 0) return Variable();
+
+            var value = ConstValue;
+
+            if (State == PropertyState.ConstantPartially) return ConstPartially(value);
+            if (b.State == PropertyState.ConstantPartially) return ConstPartially(value);
+
+            System.Diagnostics.Debug.Assert(State == PropertyState.ConstantAlways);
+            System.Diagnostics.Debug.Assert(b.State == PropertyState.ConstantAlways);
+
+            return this;
         }
 
         public static AnimationProperty? ParseProperty(AnimationCurve curve)
         {
             if (curve.keys.Length == 0) return null;
             if (curve.keys.Length == 1)
-                return Const(curve.keys[0].value);
+                return ConstAlways(curve.keys[0].value);
 
             float constValue = 0;
             foreach (var (preKey, postKey) in curve.keys.ZipWithNext())
@@ -521,21 +529,28 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 return Variable();
             }
 
-            return Const(constValue);
+            return ConstAlways(constValue);
         }
 
-        public AnimationProperty AlwaysApplied() =>
-            new AnimationProperty(_flags | AnimationPropertyFlags.AlwaysApplied, ConstValue);
-
-        public AnimationProperty PartiallyApplied() =>
-            new AnimationProperty(_flags & ~AnimationPropertyFlags.AlwaysApplied, ConstValue);
-        
-        [Flags]
-        enum AnimationPropertyFlags
+        public AnimationProperty PartiallyApplied()
         {
-            Variable = 0,
-            Constant = 1,
-            AlwaysApplied = 2,
+            switch (State)
+            {
+                case PropertyState.ConstantAlways:
+                    return ConstPartially(ConstValue);
+                case PropertyState.ConstantPartially:
+                case PropertyState.Variable:
+                    return this;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
+        public enum PropertyState
+        {
+            ConstantAlways,
+            ConstantPartially,
+            Variable,
         }
     }
 }
