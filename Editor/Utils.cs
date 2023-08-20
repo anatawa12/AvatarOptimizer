@@ -505,6 +505,21 @@ namespace Anatawa12.AvatarOptimizer
             key = keyValuePair.Key;
             value = keyValuePair.Value;
         }
+
+        public static IEnumerable<KeyValuePair<TKey, (TValue1, TValue2)>> ZipByKey<TKey, TValue1, TValue2>(
+            this IReadOnlyDictionary<TKey, TValue1> first, IReadOnlyDictionary<TKey, TValue2> second)
+        {
+            foreach (var (key, firstValue) in first)
+            {
+                if (!second.TryGetValue(key, out var secondValue)) secondValue = default;
+
+                yield return new KeyValuePair<TKey, (TValue1, TValue2)>(key, (firstValue, secondValue));
+            }
+
+            foreach (var (key, secondValue) in second)
+                if (!first.ContainsKey(key))
+                    yield return new KeyValuePair<TKey, (TValue1, TValue2)>(key, (default, secondValue));
+        }
     }
 
     internal struct ArraySerializedPropertyEnumerable : IEnumerable<SerializedProperty>
