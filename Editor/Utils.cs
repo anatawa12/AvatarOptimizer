@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using Anatawa12.ApplyOnPlay;
@@ -488,6 +489,15 @@ namespace Anatawa12.AvatarOptimizer
                 }
             }
         }
+
+        private class EmptyDictionaryHolder<TKey, TValue>
+        {
+            public static readonly IReadOnlyDictionary<TKey, TValue> Empty =
+                new ReadOnlyDictionary<TKey, TValue>(new Dictionary<TKey, TValue>());
+        }
+
+        public static IReadOnlyDictionary<TKey, TValue> EmptyDictionary<TKey, TValue>() =>
+            EmptyDictionaryHolder<TKey, TValue>.Empty;
     }
 
     internal struct ArraySerializedPropertyEnumerable : IEnumerable<SerializedProperty>
