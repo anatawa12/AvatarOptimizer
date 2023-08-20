@@ -359,14 +359,18 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
     readonly struct ImmutableModificationsContainer : IModificationsContainer
     {
-        public IReadOnlyDictionary<Object, IReadOnlyDictionary<string, AnimationProperty>> ModifiedProperties { get; }
+        private readonly IReadOnlyDictionary<Object, IReadOnlyDictionary<string, AnimationProperty>> _modifiedProperties;
+
+        public IReadOnlyDictionary<Object, IReadOnlyDictionary<string, AnimationProperty>> ModifiedProperties =>
+            _modifiedProperties ?? Utils.EmptyDictionary<Object, IReadOnlyDictionary<string, AnimationProperty>>();
+        public static ImmutableModificationsContainer Empty => default;
 
         public ImmutableModificationsContainer(ModificationsContainer from)
         {
             IReadOnlyDictionary<string, AnimationProperty> MapDictionary(IReadOnlyDictionary<string, AnimationProperty> dict) =>
                 new ReadOnlyDictionary<string, AnimationProperty>(dict.ToDictionary(p1 => p1.Key, p1 => p1.Value));
 
-            ModifiedProperties = new ReadOnlyDictionary<Object, IReadOnlyDictionary<string, AnimationProperty>>(from.ModifiedProperties
+            _modifiedProperties = new ReadOnlyDictionary<Object, IReadOnlyDictionary<string, AnimationProperty>>(from.ModifiedProperties
                 .ToDictionary(p => p.Key, p => MapDictionary(p.Value)));
         }
 
