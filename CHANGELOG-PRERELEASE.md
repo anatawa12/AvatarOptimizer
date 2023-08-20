@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Children of IsActive animated object is not considered `#342`
 
 ### Security
 
