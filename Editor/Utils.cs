@@ -563,6 +563,8 @@ namespace Anatawa12.AvatarOptimizer
                     AssetDatabase.LoadAssetAtPath<T>(
                         AssetDatabase.GUIDToAssetPath(_guid));
 
+        public bool IsValid => _guid != null;
+
         public static implicit operator CachedGuidLoader<T>(string guid) =>
             new CachedGuidLoader<T>(guid);
     }

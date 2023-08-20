@@ -214,9 +214,14 @@ msgstr "Components"
 
 # region MergeSkinnedMesh
 
+msgid "MergeSkinnedMesh:warning:blendShapeWeightMismatch"
+msgstr ""
+"Some weights of BlendShape '{0}' of some source SkinnedMeshRenderer are not same value.\n"
+"In this case, the weight of final SkinnedMeshRenderer is not defined so please make uniform weight or freeze BlendShape."
+
 msgid "MergeSkinnedMesh:warning:MeshIsNotNone"
 msgstr ""
-""Mesh of SkinnedMeshRenderer is not None!\n"
+"Mesh of SkinnedMeshRenderer is not None!\n"
 "You should add MergeSkinnedMesh onto new GameObject with new SkinnedMeshRenderer!"
 
 msgid "MergeSkinnedMesh:prop:renderers"

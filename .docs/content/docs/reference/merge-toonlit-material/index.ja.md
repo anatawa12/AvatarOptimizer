@@ -1,11 +1,13 @@
 ---
 title: Merge ToonLit Material
-weight: 1
+weight: 25
 ---
 
 # Merge ToonLit Material
 
 手動でテクスチャを並び替えることにより、`VRChat/Mobile/Toon Lit`のマテリアルを1つのマテリアルに統合します。
+
+このコンポーネントは[Modifying Edit Skinned Mesh Component](../../component-kind/edit-skinned-mesh-components#modifying-component)であるため、SkinnedMeshRendererのあるGameObjectに追加してください。
 
 現在、このコンポーネントは大きな需要があると見られる`VRChat/Mobile/Toon Lit`シェーダーのみをサポートしています。
 他のシェーダーのサポートも追加する可能性があります。(サードパーティシェーダーでも対応します)

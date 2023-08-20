@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Anatawa12.AvatarOptimizer.ErrorReporting;
 using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Assertions;
@@ -46,10 +47,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             for (var i = 0; i < mesh.blendShapeCount; i++)
                 BlendShapes[i] = (BlendShapes[i].name, renderer.GetBlendShapeWeight(i));
 
-            var sourceMaterials = renderer.sharedMaterials;
-            var materialCount = Math.Min(sourceMaterials.Length, SubMeshes.Count);
-            for (var i = 0; i < materialCount; i++)
-                SubMeshes[i].SharedMaterial = sourceMaterials[i];
+            SetMaterials(renderer.sharedMaterials);
 
             var bones = renderer.bones;
             for (var i = 0; i < bones.Length && i < Bones.Count; i++) Bones[i].Transform = bones[i];
@@ -68,12 +66,23 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             Bounds = mesh.bounds;
             RootBone = renderer.transform;
 
-            var sourceMaterials = renderer.sharedMaterials;
+            SetMaterials(renderer.sharedMaterials);
+
+            AssertInvariantContract("MeshRenderer");
+        }
+
+        private void SetMaterials(Material[] sourceMaterials)
+        {
             var materialCount = Math.Min(sourceMaterials.Length, SubMeshes.Count);
             for (var i = 0; i < materialCount; i++)
                 SubMeshes[i].SharedMaterial = sourceMaterials[i];
 
-            AssertInvariantContract("MeshRenderer");
+            // remove unused SubMeshes
+            SubMeshes.RemoveRange(materialCount, SubMeshes.Count - materialCount);
+
+            // TODO: Remove this error once this is supported
+            if (sourceMaterials.Length > SubMeshes.Count)
+                BuildReport.LogFatal("Multi Pass Rendering of one Mesh is NOT Supported YET.");
         }
 
         [Conditional("UNITY_ASSERTIONS")]

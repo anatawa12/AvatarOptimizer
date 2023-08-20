@@ -28,7 +28,7 @@ namespace Anatawa12.AvatarOptimizer
             var label = new GUIContent();
 
             serializedObject.Update();
-            foreach (var shapeKeyName in shapes)
+            foreach (var (shapeKeyName, _) in shapes)
             {
                 var rect = EditorGUILayout.GetControlRect();
                 label.text = shapeKeyName;
@@ -41,13 +41,13 @@ namespace Anatawa12.AvatarOptimizer
             {
                 if (GUILayout.Button(CL4EE.Tr("FreezeBlendShape:button:Check All")))
                 {
-                    foreach (var shapeKeyName in shapes)
+                    foreach (var (shapeKeyName, _) in shapes)
                         _shapeKeysSet.GetElementOf(shapeKeyName).EnsureAdded();
                 }
                 
                 if (GUILayout.Button(CL4EE.Tr("FreezeBlendShape:button:Invert All")))
                 {
-                    foreach (var shapeKeyName in shapes)
+                    foreach (var (shapeKeyName, _) in shapes)
                     {
                         var element = _shapeKeysSet.GetElementOf(shapeKeyName);
                         if (element.Contains) element.EnsureRemoved();

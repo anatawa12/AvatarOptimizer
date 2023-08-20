@@ -79,10 +79,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             public MeshInfoComputer(FreezeBlendShapeProcessor processor, IMeshInfoComputer upstream) : base(upstream)
                 => _processor = processor;
 
-            public override string[] BlendShapes()
+            public override (string, float)[] BlendShapes()
             {
                 var set = _processor.Component.FreezingShapeKeys;
-                return base.BlendShapes().Where(x => !set.Contains(x)).ToArray();
+                return base.BlendShapes().Where(x => !set.Contains(x.name)).ToArray();
             }
         }
     }

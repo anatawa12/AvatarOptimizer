@@ -1,6 +1,6 @@
 ---
 title: Trace And Optimize
-weight: 1
+weight: 11
 aliases:
   - /en/docs/reference/automatic-configuration/
 ---
@@ -11,6 +11,8 @@ aliases:
 
 This component will trace your avatar and optimize your avatar automatically.
 You can enable/disable some automatic optimization features with checkboxes.
+
+This component is [Avatar Global Component](../../component-kind/avatar-global-components) thus this component should be added to avatar root.
 
 Currently the following optimizations are applied automatically.
 - [FreezeBlendShape](../freeze-blendshape)

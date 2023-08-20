@@ -151,6 +151,11 @@ msgstr "コンポーネント"
 
 # region MergeSkinnedMesh
 
+msgid "MergeSkinnedMesh:warning:blendShapeWeightMismatch"
+msgstr ""
+"マージ元のSkinnedMeshRendererのBlendShape '{0}'のWeightが揃っていません。\n"
+"複数のWeightのうちどのWeightが適用されるかが不定であるためWeightを揃えるか固定・削除してください。"
+
 msgid "MergeSkinnedMesh:warning:MeshIsNotNone"
 msgstr ""
 "SkinnedMeshRendererのMeshがNoneではありません!\n"
