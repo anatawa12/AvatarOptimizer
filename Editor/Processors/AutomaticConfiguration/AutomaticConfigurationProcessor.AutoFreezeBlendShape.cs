@@ -15,8 +15,6 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
                 // skip SMR without mesh
                 if (!mesh) continue;
-                // skip configured mesh
-                if (skinnedMeshRenderer.GetComponent<FreezeBlendShape>()) continue;
 
                 var modifies = GetModifiedProperties(skinnedMeshRenderer);
                 var blendShapeValues = Enumerable.Range(0, mesh.blendShapeCount)
@@ -45,7 +43,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                     skinnedMeshRenderer.SetBlendShapeWeight(i, blendShapeValues[i]);
                 EditorUtility.SetDirty(skinnedMeshRenderer);
 
-                var freeze = skinnedMeshRenderer.gameObject.AddComponent<FreezeBlendShape>();
+                var freeze = skinnedMeshRenderer.gameObject.GetOrAddComponent<FreezeBlendShape>();
                 var serialized = new SerializedObject(freeze);
                 var editorUtil = PrefabSafeSet.EditorUtil<string>.Create(
                     serialized.FindProperty(nameof(FreezeBlendShape.shapeKeysSet)),
@@ -58,9 +56,8 @@ namespace Anatawa12.AvatarOptimizer.Processors
             // second optimization: remove meaningless blendShapes
             foreach (var skinnedMeshRenderer in _session.GetComponents<SkinnedMeshRenderer>())
             {
-                if (!skinnedMeshRenderer.GetComponent<FreezeBlendShape>())
-                    skinnedMeshRenderer.gameObject.AddComponent<FreezeBlendShape>();
-                skinnedMeshRenderer.gameObject.AddComponent<InternalAutoFreezeMeaninglessBlendShape>();
+                skinnedMeshRenderer.gameObject.GetOrAddComponent<FreezeBlendShape>();
+                skinnedMeshRenderer.gameObject.GetOrAddComponent<InternalAutoFreezeMeaninglessBlendShape>();
             }
         }
     }
