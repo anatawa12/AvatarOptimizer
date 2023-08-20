@@ -58,14 +58,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             target.Vertices.RemoveAll(x => !usingVertices.Contains(x));
         }
 
-        public override IMeshInfoComputer GetComputer(IMeshInfoComputer upstream) => new MeshInfoComputer(this, upstream);
-
-        class MeshInfoComputer : AbstractMeshInfoComputer
-        {
-            private readonly RemoveMeshInBoxProcessor _processor;
-
-            public MeshInfoComputer(RemoveMeshInBoxProcessor processor, IMeshInfoComputer upstream) : base(upstream)
-                => _processor = processor;
-        }
+        public override IMeshInfoComputer GetComputer(IMeshInfoComputer upstream) => upstream;
     }
 }

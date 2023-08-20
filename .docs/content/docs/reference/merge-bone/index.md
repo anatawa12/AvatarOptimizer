@@ -1,6 +1,6 @@
 ---
 title: Merge Bone
-weight: 1
+weight: 100
 ---
 
 # Merge Bone

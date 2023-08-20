@@ -30,9 +30,17 @@ namespace Anatawa12.AvatarOptimizer
         {
             ComponentValidation.RegisterValidator<MergeSkinnedMesh>(component =>
             {
+                var err = new List<ErrorLog>();
                 if (component.GetComponent<SkinnedMeshRenderer>().sharedMesh)
-                    return new[] { ErrorLog.Warning("MergeSkinnedMesh:warning:MeshIsNotNone") };
-                return null;
+                    err.Add(ErrorLog.Warning("MergeSkinnedMesh:warning:MeshIsNotNone"));
+
+                err.AddRange(component.renderersSet.GetAsSet()
+                    .SelectMany(EditSkinnedMeshComponentUtil.GetBlendShapes)
+                    .GroupBy(x => x.name, x => x.weight)
+                    .Where(grouping => grouping.Distinct().Count() != 1)
+                    .Select(grouping => ErrorLog.Warning("MergeSkinnedMesh:warning:blendShapeWeightMismatch", grouping.Key)));
+
+                return err;
             });
         }
 
@@ -56,10 +64,18 @@ namespace Anatawa12.AvatarOptimizer
 
         protected override void OnInspectorGUIInner()
         {
-            if (((MergeSkinnedMesh)target).GetComponent<SkinnedMeshRenderer>().sharedMesh)
+            var component = (MergeSkinnedMesh)target;
+            if (component.GetComponent<SkinnedMeshRenderer>().sharedMesh)
             {
                 EditorGUILayout.HelpBox(CL4EE.Tr("MergeSkinnedMesh:warning:MeshIsNotNone"), MessageType.Warning);
             }
+            
+            foreach (var grouping in component.renderersSet.GetAsSet()
+                         .SelectMany(EditSkinnedMeshComponentUtil.GetBlendShapes)
+                         .GroupBy(x => x.name, x => x.weight)
+                         .Where(grouping => grouping.Distinct().Count() != 1))
+                EditorGUILayout.HelpBox(string.Format(CL4EE.Tr("MergeSkinnedMesh:warning:blendShapeWeightMismatch"), grouping.Key),
+                    MessageType.Warning);
 
             EditorGUILayout.PropertyField(_renderersSetProp);
             EditorGUILayout.PropertyField(_staticRenderersSetProp);

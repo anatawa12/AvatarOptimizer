@@ -1,11 +1,13 @@
 ---
 title: Merge PhysBone
-weight: 1
+weight: 100
 ---
 
 # Merge PhysBone
 
 This component merges multiple PhysBone Components into one Component with MultiChildType == Ignore.
+
+This component should be added to new GameObject.
 
 ## Settings
 

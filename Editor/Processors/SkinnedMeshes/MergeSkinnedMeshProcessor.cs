@@ -181,10 +181,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             public MeshInfoComputer(MergeSkinnedMeshProcessor processor) => _processor = processor;
 
-            public string[] BlendShapes() =>
+            public (string, float)[] BlendShapes() =>
                 _processor.Component.renderersSet.GetAsList()
                     .SelectMany(EditSkinnedMeshComponentUtil.GetBlendShapes)
-                    .Distinct()
+                    .Distinct(BlendShapeNameComparator.Instance)
                     .ToArray();
 
             public Material[] Materials(bool fast = true)
@@ -196,6 +196,21 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 return _processor.CreateMergedMaterialsAndSubMeshIndexMapping(sourceMaterials)
                     .materials
                     .ToArray();
+            }
+
+            private class BlendShapeNameComparator : IEqualityComparer<(string name, float weight)>
+            {
+                public static readonly BlendShapeNameComparator Instance = new BlendShapeNameComparator();
+
+                public bool Equals((string name, float weight) x, (string name, float weight) y)
+                {
+                    return x.name == y.name;
+                }
+
+                public int GetHashCode((string name, float weight) obj)
+                {
+                    return obj.name?.GetHashCode() ?? 0;
+                }
             }
         }
     }
