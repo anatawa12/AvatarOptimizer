@@ -18,6 +18,7 @@ jobs:
         || ${{ contains(github.event.pull_request.labels.*.name, 'localization') }}
         || ${{ contains(github.event.pull_request.labels.*.name, 'bug') }}
         || ${{ contains(github.event.pull_request.labels.*.name, 'problem') }}
+        || ${{ contains(github.event.pull_request.labels.*.name, 'ci') }}
         || ''
       # minor release
       IS_FEATURE: ${{ contains(github.event.pull_request.labels.*.name, 'enhancement') }} || ''
