@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- ClearEndpointPosition is not applied for non-first PhysBones on the GameObject `#357`
 
 ### Security
 
