@@ -26,7 +26,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         public void GatherAnimationModifications()
         {
-            GatherAvatarSpecificAnimationModifications();
+            GatherAvatarRootAnimatorModifications();
 
             foreach (var child in _session.GetRootComponent<Transform>().DirectChildrenEnumerable())
                 WalkForAnimator(child, true);
@@ -41,9 +41,17 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             var animator = transform.GetComponent<Animator>();
             if (animator)
             {
-                GatherAnimationModificationsInController(animator.gameObject, animator.runtimeAnimatorController,
-                    alwaysApplied: objectAlwaysActive && AlwaysTrueProp(animator, "m_Enabled", animator.enabled));
-                GatherHumanoidModifications(animator);
+                var runtimeController = animator.runtimeAnimatorController;
+                IModificationsContainer parsed;
+
+                parsed = runtimeController == null
+                    ? ImmutableModificationsContainer.Empty
+                    : ParseAnimatorController(gameObject, runtimeController);
+
+                parsed = AddHumanoidModifications(parsed, animator);
+
+                _modificationsContainer.MergeAsNewLayer(parsed,
+                    alwaysAppliedLayer: objectAlwaysActive && AlwaysTrueProp(animator, "m_Enabled", animator.enabled));
             }
 
             foreach (var child in transform.DirectChildrenEnumerable())
@@ -72,22 +80,34 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         }
 
 
-        public void GatherAvatarSpecificAnimationModifications() {
+        private void GatherAvatarRootAnimatorModifications() {
+            var animator = _session.GetRootComponent<Animator>();
             var descriptor = _session.GetRootComponent<VRCAvatarDescriptor>();
 
             if (descriptor)
             {
+                var modificationsContainer = new ModificationsContainer();
+                
+                if (animator)
+                    modificationsContainer = AddHumanoidModifications(modificationsContainer, animator).ToMutable();
+
                 foreach (var layer in descriptor.specialAnimationLayers)
                 {
-                    GatherAnimationModificationsInController(descriptor.gameObject, GetPlayableLayerController(layer), alwaysApplied: true);
+                    // TODO: alwaysAppliedLayer is not always true
+                    modificationsContainer.MergeAsNewLayer(
+                        ParseAnimatorController(descriptor.gameObject, GetPlayableLayerController(layer)),
+                        alwaysAppliedLayer: true);
                 }
 
                 if (descriptor.customizeAnimationLayers)
                 {
+                    // TODO: parse even if customizeAnimationLayers is false
                     foreach (var layer in descriptor.baseAnimationLayers)
                     {
-                        GatherAnimationModificationsInController(descriptor.gameObject,
-                            GetPlayableLayerController(layer), alwaysApplied: true);
+                        // TODO: alwaysAppliedLayer is not always true 
+                        modificationsContainer.MergeAsNewLayer(
+                            ParseAnimatorController(descriptor.gameObject, GetPlayableLayerController(layer)),
+                            alwaysAppliedLayer: true);
                     }
                 }
 
@@ -97,7 +117,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     case VRC_AvatarDescriptor.LipSyncStyle.VisemeBlendShape when descriptor.VisemeSkinnedMesh != null:
                     {
                         var skinnedMeshRenderer = descriptor.VisemeSkinnedMesh;
-                        var updater = _modificationsContainer.ModifyComponent(skinnedMeshRenderer);
+                        var updater = modificationsContainer.ModifyComponent(skinnedMeshRenderer);
                         foreach (var blendShape in descriptor.VisemeBlendShapes)
                             updater.AddModification($"blendShape.{blendShape}", AnimationProperty.Variable());
                         break;
@@ -107,7 +127,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                         var skinnedMeshRenderer = descriptor.VisemeSkinnedMesh;
                         var shape = descriptor.MouthOpenBlendShapeName;
 
-                        _modificationsContainer.ModifyComponent(skinnedMeshRenderer)
+                        modificationsContainer.ModifyComponent(skinnedMeshRenderer)
                             .AddModification($"blendShape.{shape}", AnimationProperty.Variable());
                         break;
                     }
@@ -121,7 +141,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     var skinnedMeshRenderer = descriptor.customEyeLookSettings.eyelidsSkinnedMesh;
                     var mesh = skinnedMeshRenderer.sharedMesh;
 
-                    var updater = _modificationsContainer.ModifyComponent(skinnedMeshRenderer);
+                    var updater = modificationsContainer.ModifyComponent(skinnedMeshRenderer);
 
                     foreach (var blendShape in from index in descriptor.customEyeLookSettings.eyelidsBlendshapes
                              where 0 <= index && index < mesh.blendShapeCount
@@ -133,41 +153,36 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
                 if (_config.mmdWorldCompatibility && bodySkinnedMesh)
                 {
-                    var updater = _modificationsContainer.ModifyComponent(bodySkinnedMesh);
+                    var updater = modificationsContainer.ModifyComponent(bodySkinnedMesh);
 
                     foreach (var shape in MmdBlendShapeNames)
                         updater.AddModification($"blendShape.{shape}", AnimationProperty.Variable());
                 }
+
+                _modificationsContainer.MergeAsNewLayer(modificationsContainer, alwaysAppliedLayer: true);
             }
         }
 
         /// Mark rotations of humanoid bones as changeable variables
-        private void GatherHumanoidModifications(Animator animator)
+        private IModificationsContainer AddHumanoidModifications(IModificationsContainer container, Animator animator)
         {
             // if it's not humanoid, this pass doesn't matter
-            if (!animator.isHuman) return;
+            if (!animator.isHuman) return container;
+
+            var mutable = container.ToMutable();
             for (var bone = HumanBodyBones.Hips; bone < HumanBodyBones.LastBone; bone++)
             {
                 var transform = animator.GetBoneTransform(bone);
                 if (!transform) continue;
 
-                var updater = _modificationsContainer.ModifyComponent(transform);
+                var updater = mutable.ModifyComponent(transform);
 
                 foreach (var key in new[]
                              { "m_LocalRotation.x", "m_LocalRotation.y", "m_LocalRotation.z", "m_LocalRotation.w" })
                     updater.AddModification(key, AnimationProperty.Variable());
             }
-        }
 
-        private void GatherAnimationModificationsInController(GameObject root, RuntimeAnimatorController controller,
-            bool alwaysApplied)
-        {
-            if (controller == null) return;
-            IModificationsContainer parsed;
-
-            parsed = ParseAnimatorController(root, controller);
-
-            _modificationsContainer.MergeAsNewLayer(parsed, alwaysApplied);
+            return mutable;
         }
 
         private IModificationsContainer ParseAnimatorController(GameObject root, RuntimeAnimatorController controller)
