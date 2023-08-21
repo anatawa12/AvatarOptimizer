@@ -40,19 +40,17 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                                      AlwaysTrueProp(gameObject, "m_IsEnabled", gameObject.activeSelf);
 
             var animator = transform.GetComponent<Animator>();
-            if (animator)
+            if (animator && animator.runtimeAnimatorController)
             {
                 var runtimeController = animator.runtimeAnimatorController;
                 IModificationsContainer parsed;
 
-                parsed = runtimeController == null
-                    ? ImmutableModificationsContainer.Empty
-                    : ParseAnimatorController(gameObject, runtimeController);
-
+                parsed = ParseAnimatorController(gameObject, runtimeController);
                 parsed = AddHumanoidModifications(parsed, animator);
 
                 _modificationsContainer.MergeAsNewLayer(parsed,
-                    alwaysAppliedLayer: objectAlwaysActive && AlwaysTrueProp(animator, "m_Enabled", animator.enabled));
+                    alwaysAppliedLayer: objectAlwaysActive &&
+                                        AlwaysTrueProp(animator, "m_Enabled", animator.enabled));
             }
 
             foreach (var child in transform.DirectChildrenEnumerable())
