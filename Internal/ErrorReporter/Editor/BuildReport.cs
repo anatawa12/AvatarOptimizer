@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using JetBrains.Annotations;
 using UnityEditor;
@@ -127,11 +128,11 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
         }
 
         [CanBeNull]
-        internal static ErrorLog Log(ReportLevel level, string code, params string[] strings)
+        internal static ErrorLog Log(ReportLevel level, string code, string[] strings, Assembly assembly)
         {
             for (var i = 0; i < strings.Length; i++)
                 strings[i] = strings[i] ?? "";
-            var errorLog = new ErrorLog(level, code, strings);
+            var errorLog = new ErrorLog(level, code, strings, assembly);
 
             var avatarReport = CurrentReport.CurrentAvatar;
             if (avatarReport == null)
@@ -145,9 +146,17 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
         }
 
         [CanBeNull]
+        public static ErrorLog LogInfo(string code, params string[] strings) => Log(ReportLevel.Info, code,
+            strings: strings, assembly: Assembly.GetCallingAssembly());
+
+        [CanBeNull]
+        public static ErrorLog LogWarning(string code, params string[] strings) => Log(ReportLevel.Warning, code,
+            strings: strings, assembly: Assembly.GetCallingAssembly());
+
+        [CanBeNull]
         public static ErrorLog LogFatal(string code, params string[] strings)
         {
-            var log = Log(ReportLevel.Error, code, strings: strings);
+            var log = Log(ReportLevel.Error, code, strings: strings, assembly: Assembly.GetCallingAssembly());
             if (CurrentReport.CurrentAvatar != null)
             {
                 CurrentReport.CurrentAvatar.successful = false;
