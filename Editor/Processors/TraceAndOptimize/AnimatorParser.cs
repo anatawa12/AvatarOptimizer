@@ -165,17 +165,22 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             if (controller == null) return;
             IModificationsContainer parsed;
 
+            parsed = ParseAnimatorController(root, controller);
+
+            _modificationsContainer.MergeAsNewLayer(parsed, alwaysApplied);
+        }
+
+        private IModificationsContainer ParseAnimatorController(GameObject root, RuntimeAnimatorController controller)
+        {
             if (_config.advancedAnimatorParser)
             {
                 var (animatorController, mapping) = GetControllerAndOverrides(controller);
-                parsed = ParseAnimatorController(root, animatorController, mapping);
+                return AdvancedParseAnimatorController(root, animatorController, mapping);
             }
             else
             {
-                parsed = FallbackParseAnimatorController(root, controller);
+                return FallbackParseAnimatorController(root, controller);
             }
-
-            _modificationsContainer.MergeAsNewLayer(parsed, alwaysApplied);
         }
 
         /// <summary>
@@ -186,7 +191,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             return MergeContainersSideBySide(controller.animationClips.Select(clip => GetParsedAnimation(root, clip)));
         }
 
-        private IModificationsContainer ParseAnimatorController(GameObject root, AnimatorController controller, IReadOnlyDictionary<AnimationClip, AnimationClip> mapping)
+        private IModificationsContainer AdvancedParseAnimatorController(GameObject root, AnimatorController controller, IReadOnlyDictionary<AnimationClip, AnimationClip> mapping)
         {
             var layers = controller.layers;
             if (layers.Length == 0) return ImmutableModificationsContainer.Empty;
