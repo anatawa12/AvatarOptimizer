@@ -80,35 +80,36 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         }
 
 
-        private void GatherAvatarRootAnimatorModifications() {
+        private void GatherAvatarRootAnimatorModifications()
+        {
             var animator = _session.GetRootComponent<Animator>();
             var descriptor = _session.GetRootComponent<VRCAvatarDescriptor>();
 
             if (descriptor)
             {
                 var modificationsContainer = new ModificationsContainer();
-                
+
                 if (animator)
                     modificationsContainer = AddHumanoidModifications(modificationsContainer, animator).ToMutable();
+
+                var useDefaultLayers = !descriptor.customizeAnimationLayers;
 
                 foreach (var layer in descriptor.specialAnimationLayers)
                 {
                     // TODO: alwaysAppliedLayer is not always true
                     modificationsContainer.MergeAsNewLayer(
-                        ParseAnimatorController(descriptor.gameObject, GetPlayableLayerController(layer)),
+                        ParseAnimatorController(descriptor.gameObject,
+                            GetPlayableLayerController(layer, useDefaultLayers)),
                         alwaysAppliedLayer: true);
                 }
 
-                if (descriptor.customizeAnimationLayers)
+                foreach (var layer in descriptor.baseAnimationLayers)
                 {
-                    // TODO: parse even if customizeAnimationLayers is false
-                    foreach (var layer in descriptor.baseAnimationLayers)
-                    {
-                        // TODO: alwaysAppliedLayer is not always true 
-                        modificationsContainer.MergeAsNewLayer(
-                            ParseAnimatorController(descriptor.gameObject, GetPlayableLayerController(layer)),
-                            alwaysAppliedLayer: true);
-                    }
+                    // TODO: alwaysAppliedLayer is not always true 
+                    modificationsContainer.MergeAsNewLayer(
+                        ParseAnimatorController(descriptor.gameObject,
+                            GetPlayableLayerController(layer, useDefaultLayers)),
+                        alwaysAppliedLayer: true);
                 }
 
                 switch (descriptor.lipSync)
@@ -362,9 +363,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         public IReadOnlyDictionary<string, AnimationProperty> GetModifiedProperties(ComponentOrGameObject component) =>
             _modificationsContainer.GetModifiedProperties(component);
 
-        private static RuntimeAnimatorController GetPlayableLayerController(VRCAvatarDescriptor.CustomAnimLayer layer)
+        private static RuntimeAnimatorController GetPlayableLayerController(VRCAvatarDescriptor.CustomAnimLayer layer,
+            bool useDefault = false)
         {
-            if (!layer.isDefault && layer.animatorController)
+            if (!useDefault && !layer.isDefault && layer.animatorController)
             {
                 return layer.animatorController;
             }
