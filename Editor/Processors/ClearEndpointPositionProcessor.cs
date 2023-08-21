@@ -9,8 +9,8 @@ namespace Anatawa12.AvatarOptimizer.Processors
     {
         public void Process(OptimizerSession session)
         {
-            foreach (var component in session.GetComponents<ClearEndpointPosition>())
-                BuildReport.ReportingObject(component, () => Process(component.GetComponent<VRCPhysBoneBase>()));
+            BuildReport.ReportingObjects(session.GetComponents<ClearEndpointPosition>(),
+                component => BuildReport.ReportingObjects(component.GetComponents<VRCPhysBoneBase>(), Process));
         }
         
         public static void Process(VRCPhysBoneBase pb)

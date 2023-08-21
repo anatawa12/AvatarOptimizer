@@ -20,6 +20,15 @@ The format is based on [Keep a Changelog].
 
 ### Security
 
+## [1.3.3] - 2023-08-21
+### Changed
+- BlendShape Weight mismatch warning is now build-time warning instad of validate time warning [`#359`](https://github.com/anatawa12/AvatarOptimizer/pull/359)
+  - Thanks to FreeseBlendShape by TraceAndOptimize, most pre-build this warning is false positive. So this warning is moved to build-time only.
+
+### Fixed
+- ClearEndpointPosition is not applied for non-first PhysBones on the GameObject [`#357`](https://github.com/anatawa12/AvatarOptimizer/pull/357)
+- Incompatbile with Reload Scene disabaled [`#358`](https://github.com/anatawa12/AvatarOptimizer/pull/358)
+
 ## [1.3.2] - 2023-08-20
 ## [1.3.2-beta.3] - 2023-08-20
 ### Fixed
@@ -584,7 +593,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.3.2...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.3.3...HEAD
+[1.3.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.3.2...v1.3.3
 [1.3.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.3.2-beta.3...v1.3.2
 [1.3.2-beta.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.3.2-beta.2...v1.3.2-beta.3
 [1.3.2-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.3.2-beta.1...v1.3.2-beta.2
