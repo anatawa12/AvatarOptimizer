@@ -37,7 +37,7 @@ jobs:
         if: always() && !(env.NO_CHANGELOG || env.SNAPSHOT_ONLY)
         run: |
           if ! grep -e '^CHANGELOG.md$' < files.txt > /dev/null; then
-            echo "::error::CHANGELOG.md is not updated!"
+            echo "::error::master branch is not ready for major release"
             exit 1
           fi
       - name: Changelog check for CHANGELOG-PRERELEASE.md
