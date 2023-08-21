@@ -97,24 +97,110 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 // see https://misskey.niri.la/notes/9ioemawdit
                 // see https://creators.vrchat.com/avatars/playable-layers
 
-                var weightChanged = new BitArray(LayersCount);
-                var parsedLayers = new IModificationsContainer[LayersCount];
+                var playableWeightChanged = new AnimatorLayerMap<bool>();
+                var animatorLayerWeightChanged = new AnimatorLayerMap<BitArray>()
+                {
+                    [VRCAvatarDescriptor.AnimLayerType.Action] = new BitArray(1),
+                    [VRCAvatarDescriptor.AnimLayerType.FX] = new BitArray(1),
+                    [VRCAvatarDescriptor.AnimLayerType.Gesture] = new BitArray(1),
+                    [VRCAvatarDescriptor.AnimLayerType.Additive] = new BitArray(1),
+                };
                 var useDefaultLayers = !descriptor.customizeAnimationLayers;
 
-                // TODO: parse weight changes of each playable layer and in-layer
+                foreach (var layer in descriptor.baseAnimationLayers)
+                {
+                    CollectWeightChangesInController(GetPlayableLayerController(layer, useDefaultLayers));
+                }
+
+                void CollectWeightChangesInController(RuntimeAnimatorController runtimeController)
+                {
+                    var (controller, _) = GetControllerAndOverrides(runtimeController);
+
+                    foreach (var layer in controller.layers)
+                    {
+                        if (layer.syncedLayerIndex == -1)
+                            foreach (var state in CollectStates(layer.stateMachine))
+                                CollectWeightChangesInBehaviors(state.behaviours);
+                        else
+                            foreach (var state in CollectStates(controller.layers[layer.syncedLayerIndex].stateMachine))
+                                CollectWeightChangesInBehaviors(layer.GetOverrideBehaviours(state));
+                    }
+
+                    void CollectWeightChangesInBehaviors(StateMachineBehaviour[] stateBehaviours)
+                    {
+                        foreach (var stateMachineBehaviour in stateBehaviours)
+                        {
+                            switch (stateMachineBehaviour)
+                            {
+                                case VRC_PlayableLayerControl playableLayerControl:
+                                {
+                                    VRCAvatarDescriptor.AnimLayerType layer;
+                                    switch (playableLayerControl.layer)
+                                    {
+                                        case VRC_PlayableLayerControl.BlendableLayer.Action:
+                                            layer = VRCAvatarDescriptor.AnimLayerType.Action;
+                                            break;
+                                        case VRC_PlayableLayerControl.BlendableLayer.FX:
+                                            layer = VRCAvatarDescriptor.AnimLayerType.FX;
+                                            break;
+                                        case VRC_PlayableLayerControl.BlendableLayer.Gesture:
+                                            layer = VRCAvatarDescriptor.AnimLayerType.Gesture;
+                                            break;
+                                        case VRC_PlayableLayerControl.BlendableLayer.Additive:
+                                            layer = VRCAvatarDescriptor.AnimLayerType.Additive;
+                                            break;
+                                        default:
+                                            throw new ArgumentOutOfRangeException();
+                                    }
+
+                                    playableWeightChanged[layer] = true;
+                                }
+                                    break;
+                                case VRC_AnimatorLayerControl animatorLayerControl:
+                                {
+                                    VRCAvatarDescriptor.AnimLayerType layer;
+                                    switch (animatorLayerControl.playable)
+                                    {
+                                        case VRC_AnimatorLayerControl.BlendableLayer.Action:
+                                            layer = VRCAvatarDescriptor.AnimLayerType.Action;
+                                            break;
+                                        case VRC_AnimatorLayerControl.BlendableLayer.FX:
+                                            layer = VRCAvatarDescriptor.AnimLayerType.FX;
+                                            break;
+                                        case VRC_AnimatorLayerControl.BlendableLayer.Gesture:
+                                            layer = VRCAvatarDescriptor.AnimLayerType.Gesture;
+                                            break;
+                                        case VRC_AnimatorLayerControl.BlendableLayer.Additive:
+                                            layer = VRCAvatarDescriptor.AnimLayerType.Additive;
+                                            break;
+                                        default:
+                                            throw new ArgumentOutOfRangeException();
+                                    }
+
+                                    var array = animatorLayerWeightChanged[layer];
+                                    if (array.Length <= animatorLayerControl.layer)
+                                        array.Length = animatorLayerControl.layer + 1;
+                                    array[animatorLayerControl.layer] = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                var parsedLayers = new AnimatorLayerMap<IModificationsContainer>();
 
                 foreach (var layer in descriptor.specialAnimationLayers.Concat(descriptor.baseAnimationLayers))
                 {
-                    parsedLayers[(int)layer.type] = ParseAnimatorController(descriptor.gameObject,
-                        GetPlayableLayerController(layer, useDefaultLayers));
+                    parsedLayers[layer.type] = ParseAnimatorController(descriptor.gameObject,
+                        GetPlayableLayerController(layer, useDefaultLayers),
+                        animatorLayerWeightChanged[layer.type]);
                 }
 
                 void MergeLayer(VRCAvatarDescriptor.AnimLayerType type, bool? alwaysApplied)
                 {
-                    var asInt = (int)type;
-                    var alwaysAppliedLayer = alwaysApplied is bool b ? b : !weightChanged[asInt];
-                    modificationsContainer.MergeAsNewLayer(parsedLayers[asInt],
-                        alwaysAppliedLayer: alwaysAppliedLayer);
+                    var alwaysAppliedLayer = alwaysApplied ?? !playableWeightChanged[type];
+                    modificationsContainer.MergeAsNewLayer(parsedLayers[type], alwaysAppliedLayer: alwaysAppliedLayer);
                 }
 
                 MergeLayer(VRCAvatarDescriptor.AnimLayerType.Base, true);
@@ -202,12 +288,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             return mutable;
         }
 
-        private IModificationsContainer ParseAnimatorController(GameObject root, RuntimeAnimatorController controller)
+        private IModificationsContainer ParseAnimatorController(GameObject root, RuntimeAnimatorController controller,
+            [CanBeNull] BitArray externallyWeightChanged = null)
         {
             if (_config.advancedAnimatorParser)
             {
                 var (animatorController, mapping) = GetControllerAndOverrides(controller);
-                return AdvancedParseAnimatorController(root, animatorController, mapping);
+                return AdvancedParseAnimatorController(root, animatorController, mapping, externallyWeightChanged);
             }
             else
             {
@@ -223,59 +310,65 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             return MergeContainersSideBySide(controller.animationClips.Select(clip => GetParsedAnimation(root, clip)));
         }
 
-        private IModificationsContainer AdvancedParseAnimatorController(GameObject root, AnimatorController controller, IReadOnlyDictionary<AnimationClip, AnimationClip> mapping)
+        private IModificationsContainer AdvancedParseAnimatorController(GameObject root, AnimatorController controller,
+            IReadOnlyDictionary<AnimationClip, AnimationClip> mapping, [CanBeNull] BitArray externallyWeightChanged)
         {
             var layers = controller.layers;
             if (layers.Length == 0) return ImmutableModificationsContainer.Empty;
 
-            var mergedController = ParseAnimatorControllerLayer(root, layers[0], mapping).ToMutable();
+            var mergedController = new ModificationsContainer();
 
-            foreach (var layer in layers)
+            for (var i = 0; i < layers.Length; i++)
             {
+                var layer = layers[i];
                 // ReSharper disable once CompareOfFloatsByEqualityOperator
-                mergedController.MergeAsNewLayer(ParseAnimatorControllerLayer(root, layer, mapping),
-                    alwaysAppliedLayer: layer.defaultWeight == 1);
+                var alwaysAppliedLayer = layer.defaultWeight != 1 && i != 0 &&
+                                         (externallyWeightChanged == null || externallyWeightChanged[i]);
+                var syncedLayer = layer.syncedLayerIndex;
+
+                var animationClips = new HashSet<AnimationClip>();
+
+                if (syncedLayer == -1)
+                {
+                    foreach (var state in CollectStates(layer.stateMachine))
+                        CollectClipsInMotion(state.motion);
+
+                }
+                else
+                {
+                    foreach (var state in CollectStates(layers[syncedLayer].stateMachine))
+                        CollectClipsInMotion(layer.GetOverrideMotion(state));
+                }
+
+                void CollectClipsInMotion(Motion motion)
+                {
+                    switch (motion)
+                    {
+                        case null:
+                            animationClips.Add(null);
+                            return;
+                        case AnimationClip clip:
+                            animationClips.Add(clip);
+                            return;
+                        case BlendTree blendTree:
+                            foreach (var child in blendTree.children)
+                                CollectClipsInMotion(child.motion);
+                            return;
+                        default:
+                            BuildReport.LogFatal("Unknown Motion Type: {0} in motion {1}",
+                                motion.GetType().Name, motion.name);
+                            return;
+                    }
+                }
+
+                AnimationClip MapClip(AnimationClip clip) => mapping.TryGetValue(clip, out var newClip) ? newClip : clip;
+
+                mergedController.MergeAsNewLayer(
+                    MergeContainersSideBySide(animationClips.Select(x => GetParsedAnimation(root, MapClip(x)))),
+                    alwaysAppliedLayer);
             }
 
             return mergedController;
-        }
-
-        private IModificationsContainer ParseAnimatorControllerLayer(GameObject root, AnimatorControllerLayer layer,
-            IReadOnlyDictionary<AnimationClip, AnimationClip> mapping)
-        {
-            var animationClips = new HashSet<AnimationClip>();
-
-            foreach (var state in CollectStates(layer.stateMachine))
-            {
-                var motion = layer.GetOverrideMotion(state);
-                if (!motion) motion = state.motion;
-                CollectClipsInMotion(motion);
-            }
-
-            void CollectClipsInMotion(Motion motion)
-            {
-                switch (motion)
-                {
-                    case null:
-                        animationClips.Add(null);
-                        return;
-                    case AnimationClip clip:
-                        animationClips.Add(clip);
-                        return;
-                    case BlendTree blendTree:
-                        foreach (var child in blendTree.children)
-                            CollectClipsInMotion(child.motion);
-                        return;
-                    default:
-                        BuildReport.LogFatal("Unknown Motion Type: {0} in motion {1}",
-                            motion.GetType().Name, motion.name);
-                        return;
-                }
-            }
-
-            AnimationClip MapClip(AnimationClip clip) => mapping.TryGetValue(clip, out var newClip) ? newClip : clip;
-
-            return MergeContainersSideBySide(animationClips.Select(x => GetParsedAnimation(root, MapClip(x))));
         }
 
         private IEnumerable<AnimatorState> CollectStates(AnimatorStateMachine stateMachineIn)
@@ -396,41 +489,71 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 return layer.animatorController;
             }
 
-            var typeIndex = (int)layer.type;
-            if (typeIndex < 0) return null;
-            if (typeIndex >= DefaultLayers.Length) return null;
-            ref var loader = ref DefaultLayers[typeIndex];
-            if (!loader.IsValid) return null;
+            if (!AnimatorLayerMap<object>.IsValid(layer.type)) return null;
+            ref var loader = ref DefaultLayers[layer.type];
             var controller = loader.Value;
             if (controller == null)
                 throw new InvalidOperationException($"default controller for {layer.type} not found");
             return controller;
         }
 
-        private static readonly int LayersCount = (int)(VRCAvatarDescriptor.AnimLayerType.IKPose + 1);
-        private static readonly CachedGuidLoader<AnimatorController>[] DefaultLayers = CreateDefaultLayers();
-
-        private static CachedGuidLoader<AnimatorController>[] CreateDefaultLayers()
+        private class AnimatorLayerMap<T>
         {
-            var array = new CachedGuidLoader<AnimatorController>[LayersCount];
-            // vrc_AvatarV3LocomotionLayer
-            array[(int)VRCAvatarDescriptor.AnimLayerType.Base] = "4e4e1a372a526074884b7311d6fc686b";
-            // vrc_AvatarV3IdleLayer
-            array[(int)VRCAvatarDescriptor.AnimLayerType.Additive] = "573a1373059632b4d820876efe2d277f";
-            // vrc_AvatarV3HandsLayer
-            array[(int)VRCAvatarDescriptor.AnimLayerType.Gesture] = "404d228aeae421f4590305bc4cdaba16";
-            // vrc_AvatarV3ActionLayer
-            array[(int)VRCAvatarDescriptor.AnimLayerType.Action] = "3e479eeb9db24704a828bffb15406520";
-            // vrc_AvatarV3FaceLayer
-            array[(int)VRCAvatarDescriptor.AnimLayerType.FX] = "d40be620cf6c698439a2f0a5144919fe";
-            // vrc_AvatarV3SittingLayer
-            array[(int)VRCAvatarDescriptor.AnimLayerType.Sitting] = "1268460c14f873240981bf15aa88b21a";
-            // vrc_AvatarV3UtilityTPose
-            array[(int)VRCAvatarDescriptor.AnimLayerType.TPose] = "00121b5812372b74f9012473856d8acf";
-            // vrc_AvatarV3UtilityIKPose
-            array[(int)VRCAvatarDescriptor.AnimLayerType.IKPose] = "a9b90a833b3486e4b82834c9d1f7c4ee";
-            return array;
+            private T[] _values = new T[(int)(VRCAvatarDescriptor.AnimLayerType.IKPose + 1)];
+
+            public static bool IsValid(VRCAvatarDescriptor.AnimLayerType type)
+            {
+                switch (type)
+                {
+                    case VRCAvatarDescriptor.AnimLayerType.Base:
+                    case VRCAvatarDescriptor.AnimLayerType.Additive:
+                    case VRCAvatarDescriptor.AnimLayerType.Gesture:
+                    case VRCAvatarDescriptor.AnimLayerType.Action:
+                    case VRCAvatarDescriptor.AnimLayerType.FX:
+                    case VRCAvatarDescriptor.AnimLayerType.Sitting:
+                    case VRCAvatarDescriptor.AnimLayerType.TPose:
+                    case VRCAvatarDescriptor.AnimLayerType.IKPose:
+                        return true;
+                    case VRCAvatarDescriptor.AnimLayerType.Deprecated0:
+                    default:
+                        return false;
+                }
+            }
+
+            public ref T this[VRCAvatarDescriptor.AnimLayerType type]
+            {
+                get
+                {
+                    if (!IsValid(type))
+                        throw new ArgumentOutOfRangeException(nameof(type), type, null);
+
+                    return ref _values[(int)type];
+                }
+            }
         }
+
+        private static readonly int LayersCount = (int)(VRCAvatarDescriptor.AnimLayerType.IKPose + 1);
+
+        private static readonly AnimatorLayerMap<CachedGuidLoader<AnimatorController>> DefaultLayers =
+            new AnimatorLayerMap<CachedGuidLoader<AnimatorController>>
+            {
+                // vrc_AvatarV3LocomotionLayer
+                [VRCAvatarDescriptor.AnimLayerType.Base] = "4e4e1a372a526074884b7311d6fc686b",
+                // vrc_AvatarV3IdleLayer
+                [VRCAvatarDescriptor.AnimLayerType.Additive] = "573a1373059632b4d820876efe2d277f",
+                // vrc_AvatarV3HandsLayer
+                [VRCAvatarDescriptor.AnimLayerType.Gesture] = "404d228aeae421f4590305bc4cdaba16",
+                // vrc_AvatarV3ActionLayer
+                [VRCAvatarDescriptor.AnimLayerType.Action] = "3e479eeb9db24704a828bffb15406520",
+                // vrc_AvatarV3FaceLayer
+                [VRCAvatarDescriptor.AnimLayerType.FX] = "d40be620cf6c698439a2f0a5144919fe",
+                // vrc_AvatarV3SittingLayer
+                [VRCAvatarDescriptor.AnimLayerType.Sitting] = "1268460c14f873240981bf15aa88b21a",
+                // vrc_AvatarV3UtilityTPose
+                [VRCAvatarDescriptor.AnimLayerType.TPose] = "00121b5812372b74f9012473856d8acf",
+                // vrc_AvatarV3UtilityIKPose
+                [VRCAvatarDescriptor.AnimLayerType.IKPose] = "a9b90a833b3486e4b82834c9d1f7c4ee"
+            };
 
         private static readonly string[] MmdBlendShapeNames = {
             // https://booth.pm/ja/items/3341221
