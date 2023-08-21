@@ -34,12 +34,6 @@ namespace Anatawa12.AvatarOptimizer
                 if (component.GetComponent<SkinnedMeshRenderer>().sharedMesh)
                     err.Add(ErrorLog.Warning("MergeSkinnedMesh:warning:MeshIsNotNone"));
 
-                err.AddRange(component.renderersSet.GetAsSet()
-                    .SelectMany(EditSkinnedMeshComponentUtil.GetBlendShapes)
-                    .GroupBy(x => x.name, x => x.weight)
-                    .Where(grouping => grouping.Distinct().Count() != 1)
-                    .Select(grouping => ErrorLog.Warning("MergeSkinnedMesh:warning:blendShapeWeightMismatch", grouping.Key)));
-
                 return err;
             });
         }
@@ -69,13 +63,6 @@ namespace Anatawa12.AvatarOptimizer
             {
                 EditorGUILayout.HelpBox(CL4EE.Tr("MergeSkinnedMesh:warning:MeshIsNotNone"), MessageType.Warning);
             }
-            
-            foreach (var grouping in component.renderersSet.GetAsSet()
-                         .SelectMany(EditSkinnedMeshComponentUtil.GetBlendShapes)
-                         .GroupBy(x => x.name, x => x.weight)
-                         .Where(grouping => grouping.Distinct().Count() != 1))
-                EditorGUILayout.HelpBox(string.Format(CL4EE.Tr("MergeSkinnedMesh:warning:blendShapeWeightMismatch"), grouping.Key),
-                    MessageType.Warning);
 
             EditorGUILayout.PropertyField(_renderersSetProp);
             EditorGUILayout.PropertyField(_staticRenderersSetProp);
