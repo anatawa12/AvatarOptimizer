@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - ClearEndpointPosition is not applied for non-first PhysBones on the GameObject `#357`
+- Incompatbile with Reload Scene disabaled `#358`
 
 ### Security
 
