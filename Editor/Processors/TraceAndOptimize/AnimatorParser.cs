@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -92,25 +93,40 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 if (animator)
                     modificationsContainer = AddHumanoidModifications(modificationsContainer, animator).ToMutable();
 
+                // process playable layers
+                // see https://misskey.niri.la/notes/9ioemawdit
+                // see https://creators.vrchat.com/avatars/playable-layers
+
+                var weightChanged = new BitArray(LayersCount);
+                var parsedLayers = new IModificationsContainer[LayersCount];
                 var useDefaultLayers = !descriptor.customizeAnimationLayers;
 
-                foreach (var layer in descriptor.specialAnimationLayers)
+                // TODO: parse weight changes of each playable layer and in-layer
+
+                foreach (var layer in descriptor.specialAnimationLayers.Concat(descriptor.baseAnimationLayers))
                 {
-                    // TODO: alwaysAppliedLayer is not always true
-                    modificationsContainer.MergeAsNewLayer(
-                        ParseAnimatorController(descriptor.gameObject,
-                            GetPlayableLayerController(layer, useDefaultLayers)),
-                        alwaysAppliedLayer: true);
+                    parsedLayers[(int)layer.type] = ParseAnimatorController(descriptor.gameObject,
+                        GetPlayableLayerController(layer, useDefaultLayers));
                 }
 
-                foreach (var layer in descriptor.baseAnimationLayers)
+                void MergeLayer(VRCAvatarDescriptor.AnimLayerType type, bool? alwaysApplied)
                 {
-                    // TODO: alwaysAppliedLayer is not always true 
-                    modificationsContainer.MergeAsNewLayer(
-                        ParseAnimatorController(descriptor.gameObject,
-                            GetPlayableLayerController(layer, useDefaultLayers)),
-                        alwaysAppliedLayer: true);
+                    var asInt = (int)type;
+                    var alwaysAppliedLayer = alwaysApplied is bool b ? b : !weightChanged[asInt];
+                    modificationsContainer.MergeAsNewLayer(parsedLayers[asInt],
+                        alwaysAppliedLayer: alwaysAppliedLayer);
                 }
+
+                MergeLayer(VRCAvatarDescriptor.AnimLayerType.Base, true);
+                // Station Sitting
+                MergeLayer(VRCAvatarDescriptor.AnimLayerType.Sitting, false);
+                MergeLayer(VRCAvatarDescriptor.AnimLayerType.Additive, null); // Idle
+                MergeLayer(VRCAvatarDescriptor.AnimLayerType.Gesture, null);
+                // Station Action
+                MergeLayer(VRCAvatarDescriptor.AnimLayerType.Action, false);
+                MergeLayer(VRCAvatarDescriptor.AnimLayerType.FX, true);
+                
+                // TPose and IKPose should only affect to Humanoid so skip here~
 
                 switch (descriptor.lipSync)
                 {
@@ -382,11 +398,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             return controller;
         }
 
+        private static readonly int LayersCount = (int)(VRCAvatarDescriptor.AnimLayerType.IKPose + 1);
         private static readonly CachedGuidLoader<AnimatorController>[] DefaultLayers = CreateDefaultLayers();
 
         private static CachedGuidLoader<AnimatorController>[] CreateDefaultLayers()
         {
-            var array = new CachedGuidLoader<AnimatorController>[(int)(VRCAvatarDescriptor.AnimLayerType.IKPose + 1)];
+            var array = new CachedGuidLoader<AnimatorController>[LayersCount];
             // vrc_AvatarV3LocomotionLayer
             array[(int)VRCAvatarDescriptor.AnimLayerType.Base] = "4e4e1a372a526074884b7311d6fc686b";
             // vrc_AvatarV3IdleLayer
