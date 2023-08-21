@@ -245,18 +245,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         {
             var animationClips = new HashSet<AnimationClip>();
 
-            CollectClipsInStateMachine(layer.stateMachine);
-            void CollectClipsInStateMachine(AnimatorStateMachine stateMachine)
+            foreach (var state in CollectStates(layer.stateMachine))
             {
-                foreach (var state in stateMachine.states)
-                {
-                    var motion = layer.GetOverrideMotion(state.state);
-                    if (!motion) motion = state.state.motion;
-                    CollectClipsInMotion(motion);
-                }
-
-                foreach (var childStateMachine in stateMachine.stateMachines)
-                    CollectClipsInStateMachine(childStateMachine.stateMachine);
+                var motion = layer.GetOverrideMotion(state);
+                if (!motion) motion = state.motion;
+                CollectClipsInMotion(motion);
             }
 
             void CollectClipsInMotion(Motion motion)
@@ -283,6 +276,22 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             AnimationClip MapClip(AnimationClip clip) => mapping.TryGetValue(clip, out var newClip) ? newClip : clip;
 
             return MergeContainersSideBySide(animationClips.Select(x => GetParsedAnimation(root, MapClip(x))));
+        }
+
+        private IEnumerable<AnimatorState> CollectStates(AnimatorStateMachine stateMachineIn)
+        {
+            var queue = new Queue<AnimatorStateMachine>();
+            queue.Enqueue(stateMachineIn);
+
+            while (queue.Count != 0)
+            {
+                var stateMachine = queue.Dequeue();
+                foreach (var state in stateMachine.states)
+                    yield return state.state;
+
+                foreach (var childStateMachine in stateMachine.stateMachines)
+                    queue.Enqueue(childStateMachine.stateMachine);
+            }
         }
 
         private IModificationsContainer MergeContainersSideBySide<T>([ItemNotNull] IEnumerable<T> enumerable)
