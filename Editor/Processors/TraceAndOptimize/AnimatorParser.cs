@@ -297,11 +297,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         public IReadOnlyDictionary<Object, IReadOnlyDictionary<string, AnimationProperty>> ModifiedProperties =>
             _modificationsContainer.ModifiedProperties;
 
-        public IReadOnlyDictionary<string, AnimationProperty> GetModifiedProperties(Component component) =>
+        public IReadOnlyDictionary<string, AnimationProperty> GetModifiedProperties(ComponentOrGameObject component) =>
             _modificationsContainer.GetModifiedProperties(component);
-
-        private IReadOnlyDictionary<string, AnimationProperty> GetModifiedProperties(GameObject gameObject) =>
-            _modificationsContainer.GetModifiedProperties(gameObject);
 
         private static RuntimeAnimatorController GetPlayableLayerController(VRCAvatarDescriptor.CustomAnimLayer layer)
         {
@@ -503,15 +500,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         public ModificationsContainer ToMutable() => new ModificationsContainer(this);
         public ImmutableModificationsContainer ToImmutable() => this;
 
-        public IReadOnlyDictionary<string, AnimationProperty> GetModifiedProperties(Component component)
-        {
-            return ModifiedProperties.TryGetValue(component, out var value) ? value : Utils.EmptyDictionary<string, AnimationProperty>();
-        }
-
-        public IReadOnlyDictionary<string, AnimationProperty> GetModifiedProperties(GameObject component)
-        {
-            return ModifiedProperties.TryGetValue(component, out var value) ? value : Utils.EmptyDictionary<string, AnimationProperty>();
-        }
+        public IReadOnlyDictionary<string, AnimationProperty> GetModifiedProperties(ComponentOrGameObject component) =>
+            ModifiedProperties.TryGetValue(component, out var value)
+                ? value
+                : Utils.EmptyDictionary<string, AnimationProperty>();
     }
 
     class ModificationsContainer : IModificationsContainer
@@ -542,25 +534,18 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 .CastedDic(_modifiedProperties);
         }
 
-        public IReadOnlyDictionary<string, AnimationProperty> GetModifiedProperties(Component component)
-        {
-            return _modifiedProperties.TryGetValue(component, out var value) ? value : Utils.EmptyDictionary<string, AnimationProperty>();
-        }
-
-        public IReadOnlyDictionary<string, AnimationProperty> GetModifiedProperties(GameObject component)
-        {
-            return _modifiedProperties.TryGetValue(component, out var value) ? value : Utils.EmptyDictionary<string, AnimationProperty>();
-        }
+        public IReadOnlyDictionary<string, AnimationProperty> GetModifiedProperties(ComponentOrGameObject component) =>
+            _modifiedProperties.TryGetValue(component, out var value)
+                ? value
+                : Utils.EmptyDictionary<string, AnimationProperty>();
 
         public ModificationsContainer ToMutable() => this;
         public ImmutableModificationsContainer ToImmutable() => new ImmutableModificationsContainer(this);
 
         #region Adding Modifications
 
-        public ComponentAnimationUpdater ModifyComponent(Component component) =>
+        public ComponentAnimationUpdater ModifyComponent(ComponentOrGameObject component) =>
             ModifyObjectUnsafe(component);
-        public ComponentAnimationUpdater ModifyGameObject(GameObject gameObject) =>
-            ModifyObjectUnsafe(gameObject);
 
         public ComponentAnimationUpdater ModifyObjectUnsafe(Object obj)
         {
@@ -644,6 +629,20 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 EverythingPartially(IReadOnlyDictionary<string, AnimationProperty> dictionary) =>
                 dictionary.ToDictionary(k => k.Key, v => v.Value.PartiallyApplied());
         }
+    }
+    
+    public readonly struct ComponentOrGameObject
+    {
+        private readonly Object _object;
+
+        public ComponentOrGameObject(Object o) => _object = o;
+
+        public static implicit operator ComponentOrGameObject(GameObject gameObject) =>
+            new ComponentOrGameObject(gameObject);
+        public static implicit operator ComponentOrGameObject(Component component) =>
+            new ComponentOrGameObject(component);
+        public static implicit operator Object(ComponentOrGameObject componentOrGameObject) =>
+            componentOrGameObject._object;
     }
 
     readonly struct AnimationProperty
