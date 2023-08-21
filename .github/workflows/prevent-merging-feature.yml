@@ -1,0 +1,48 @@
+name: Block Merging Feature Changes to patch release
+
+on:
+  pull_request:
+    branches: [ master, master-* ]
+    types: [ opened, synchronize, reopened, ready_for_review, labeled, unlabeled ]
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  block-feature-for-patch-release:
+    if: ${{ ! github.event.pull_request.draft }}
+    runs-on: ubuntu-latest
+
+    env:
+      # patch release
+      IS_PATCH: |
+        ${{ contains(github.event.pull_request.labels.*.name, 'documentation') }}
+        || ${{ contains(github.event.pull_request.labels.*.name, 'localization') }}
+        || ${{ contains(github.event.pull_request.labels.*.name, 'bug') }}
+        || ${{ contains(github.event.pull_request.labels.*.name, 'problem') }}
+        || ''
+      # minor release
+      IS_FEATURE: ${{ contains(github.event.pull_request.labels.*.name, 'enhancement') }} || ''
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      - name: Check for patch or feature release tag
+        if: ${{ !(env.IS_PATCH || env.IS_FEATURE) }}
+        run: |
+          echo "::error::either patch or feature release must be specified"
+          exit 1
+
+      - uses: actions/checkout@v3
+        if: env.IS_FEATURE
+      - uses: anatawa12/something-releaser@v2
+        if: env.IS_FEATURE
+      - name: Check current release is minor release
+        if: env.IS_FEATURE
+        run: |
+          case "$(get-version)" in
+            *.0-* )
+              echo "it's feature release. OK."
+              exit 0
+              ;;
+            *)
+              echo "::error::CHANGELOG.md is not updated!"
+              exit 1
+              ;;
+          esac
