@@ -114,17 +114,21 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
                 void CollectWeightChangesInController(RuntimeAnimatorController runtimeController)
                 {
-                    var (controller, _) = GetControllerAndOverrides(runtimeController);
-
-                    foreach (var layer in controller.layers)
+                    BuildReport.ReportingObject(runtimeController, () =>
                     {
-                        if (layer.syncedLayerIndex == -1)
-                            foreach (var state in CollectStates(layer.stateMachine))
-                                CollectWeightChangesInBehaviors(state.behaviours);
-                        else
-                            foreach (var state in CollectStates(controller.layers[layer.syncedLayerIndex].stateMachine))
-                                CollectWeightChangesInBehaviors(layer.GetOverrideBehaviours(state));
-                    }
+                        var (controller, _) = GetControllerAndOverrides(runtimeController);
+
+                        foreach (var layer in controller.layers)
+                        {
+                            if (layer.syncedLayerIndex == -1)
+                                foreach (var state in CollectStates(layer.stateMachine))
+                                    CollectWeightChangesInBehaviors(state.behaviours);
+                            else
+                                foreach (var state in CollectStates(controller.layers[layer.syncedLayerIndex]
+                                             .stateMachine))
+                                    CollectWeightChangesInBehaviors(layer.GetOverrideBehaviours(state));
+                        }
+                    });
 
                     void CollectWeightChangesInBehaviors(StateMachineBehaviour[] stateBehaviours)
                     {
@@ -291,15 +295,19 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         private IModificationsContainer ParseAnimatorController(GameObject root, RuntimeAnimatorController controller,
             [CanBeNull] BitArray externallyWeightChanged = null)
         {
-            if (_config.advancedAnimatorParser)
+            return BuildReport.ReportingObject(controller, () =>
             {
-                var (animatorController, mapping) = GetControllerAndOverrides(controller);
-                return AdvancedParseAnimatorController(root, animatorController, mapping, externallyWeightChanged);
-            }
-            else
-            {
-                return FallbackParseAnimatorController(root, controller);
-            }
+                if (_config.advancedAnimatorParser)
+                {
+                    var (animatorController, mapping) = GetControllerAndOverrides(controller);
+                    return AdvancedParseAnimatorController(root, animatorController, mapping,
+                        externallyWeightChanged);
+                }
+                else
+                {
+                    return FallbackParseAnimatorController(root, controller);
+                }
+            });
         }
 
         /// <summary>
@@ -342,23 +350,26 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
                 void CollectClipsInMotion(Motion motion)
                 {
-                    switch (motion)
+                    BuildReport.ReportingObject(motion, () =>
                     {
-                        case null:
-                            animationClips.Add(null);
-                            return;
-                        case AnimationClip clip:
-                            animationClips.Add(clip);
-                            return;
-                        case BlendTree blendTree:
-                            foreach (var child in blendTree.children)
-                                CollectClipsInMotion(child.motion);
-                            return;
-                        default:
-                            BuildReport.LogFatal("Unknown Motion Type: {0} in motion {1}",
-                                motion.GetType().Name, motion.name);
-                            return;
-                    }
+                        switch (motion)
+                        {
+                            case null:
+                                animationClips.Add(null);
+                                return;
+                            case AnimationClip clip:
+                                animationClips.Add(clip);
+                                return;
+                            case BlendTree blendTree:
+                                foreach (var child in blendTree.children)
+                                    CollectClipsInMotion(child.motion);
+                                return;
+                            default:
+                                BuildReport.LogFatal("Unknown Motion Type: {0} in motion {1}",
+                                    motion.GetType().Name, motion.name);
+                                return;
+                        }
+                    });
                 }
 
                 AnimationClip MapClip(AnimationClip clip) => mapping.TryGetValue(clip, out var newClip) ? newClip : clip;
