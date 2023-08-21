@@ -153,8 +153,8 @@ msgstr "コンポーネント"
 
 msgid "MergeSkinnedMesh:warning:blendShapeWeightMismatch"
 msgstr ""
-"マージ元のSkinnedMeshRendererのBlendShape '{0}'のWeightが揃っていません。\n"
-"複数のWeightのうちどのWeightが適用されるかが不定であるためWeightを揃えるか固定・削除してください。"
+"統合対象のSkinnedMeshRenderer間でブレンドシェイプ '{0}'の値が揃っていません。\n"
+"どの値を適用するかが不定になってしまうため、統合対象の同名ブレンドシェイプの値は揃えるか固定・除去してください。"
 
 msgid "MergeSkinnedMesh:warning:MeshIsNotNone"
 msgstr ""
