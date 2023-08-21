@@ -20,6 +20,7 @@ jobs:
           || contains(github.event.pull_request.labels.*.name, 'bug')
           || contains(github.event.pull_request.labels.*.name, 'problem')
           || contains(github.event.pull_request.labels.*.name, 'ci')
+          || contains(github.event.pull_request.labels.*.name, 'refactor')
           || ''
         }}
       # minor release
