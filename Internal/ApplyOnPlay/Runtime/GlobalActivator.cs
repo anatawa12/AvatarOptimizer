@@ -23,6 +23,14 @@ namespace Anatawa12.ApplyOnPlay
         {
             if (!EditorApplication.isPlaying || this == null) return;
             activate?.Invoke(this);
+            DestroyImmediate(this);
+        }
+
+        private void Start()
+        {
+            if (!EditorApplication.isPlaying || this == null) return;
+            activate?.Invoke(this);
+            DestroyImmediate(this);
         }
 
         internal static bool HasAvatarInScene(Scene scene)
