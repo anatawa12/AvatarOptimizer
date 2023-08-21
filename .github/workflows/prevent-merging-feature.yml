@@ -13,15 +13,17 @@ jobs:
 
     env:
       # patch release
-      IS_PATCH: |
-        ${{ contains(github.event.pull_request.labels.*.name, 'documentation') }}
-        || ${{ contains(github.event.pull_request.labels.*.name, 'localization') }}
-        || ${{ contains(github.event.pull_request.labels.*.name, 'bug') }}
-        || ${{ contains(github.event.pull_request.labels.*.name, 'problem') }}
-        || ${{ contains(github.event.pull_request.labels.*.name, 'ci') }}
-        || ''
+      IS_PATCH: | 
+        ${{ 
+          contains(github.event.pull_request.labels.*.name, 'documentation')
+          || contains(github.event.pull_request.labels.*.name, 'localization')
+          || contains(github.event.pull_request.labels.*.name, 'bug')
+          || contains(github.event.pull_request.labels.*.name, 'problem')
+          || contains(github.event.pull_request.labels.*.name, 'ci')
+          || ''
+        }}
       # minor release
-      IS_FEATURE: ${{ contains(github.event.pull_request.labels.*.name, 'enhancement') }} || ''
+      IS_FEATURE: ${{ contains(github.event.pull_request.labels.*.name, 'enhancement') || '' }}
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       - name: Check for patch or feature release tag
