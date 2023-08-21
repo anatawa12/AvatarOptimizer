@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- BlendShape Weight mismatch warning is now build-time warning instad of validate time warning `#359`
+  - Thanks to FreeseBlendShape by TraceAndOptimize, most pre-build this warning is false positive. So this warning is moved to build-time only.
 
 ### Changed
 

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Anatawa12.AvatarOptimizer.ErrorReporting;
 using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
 using UnityEngine;
 
@@ -24,7 +25,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 foreach (var processor in processors.GetSorted())
                 {
                     // TODO
-                    processor.Process(session, target, holder);
+                    BuildReport.ReportingObject(processor.Component, () => processor.Process(session, target, holder));
                     target.AssertInvariantContract(
                         $"after {processor.GetType().Name} " +
                         $"for {processor.Target.gameObject.name}");
