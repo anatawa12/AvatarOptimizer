@@ -26,19 +26,60 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         public void GatherAnimationModifications()
         {
-            foreach (var animator in _session.GetComponents<Animator>())
+            GatherAvatarSpecificAnimationModifications();
+
+            foreach (var child in _session.GetRootComponent<Transform>().DirectChildrenEnumerable())
+                WalkForAnimator(child, true);
+        }
+
+        private void WalkForAnimator(Transform transform, bool parentObjectAlwaysActive)
+        {
+            var gameObject = transform.gameObject;
+            var objectAlwaysActive = parentObjectAlwaysActive &&
+                                     AlwaysTrueProp(gameObject, "m_IsEnabled", gameObject.activeSelf);
+
+            var animator = transform.GetComponent<Animator>();
+            if (animator)
             {
-                GatherAnimationModificationsInController(animator.gameObject, animator.runtimeAnimatorController);
+                GatherAnimationModificationsInController(animator.gameObject, animator.runtimeAnimatorController,
+                    alwaysApplied: objectAlwaysActive && AlwaysTrueProp(animator, "m_Enabled", animator.enabled));
                 GatherHumanoidModifications(animator);
             }
 
+            foreach (var child in transform.DirectChildrenEnumerable())
+                WalkForAnimator(child, parentObjectAlwaysActive: objectAlwaysActive);
+        }
+
+        bool AlwaysTrueProp(ComponentOrGameObject obj, string property, bool currentValue)
+        {
+            if (!_modificationsContainer.GetModifiedProperties(obj).TryGetValue(property, out var prop))
+                return currentValue;
+
+            switch (prop.State)
+            {
+                case AnimationProperty.PropertyState.ConstantAlways:
+                    // ReSharper disable once CompareOfFloatsByEqualityOperator
+                    return prop.ConstValue == 1;
+                case AnimationProperty.PropertyState.ConstantPartially:
+                    // ReSharper disable once CompareOfFloatsByEqualityOperator
+                    return prop.ConstValue == 1 && currentValue;
+                case AnimationProperty.PropertyState.Variable:
+                    return false;
+                case AnimationProperty.PropertyState.Invalid:
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
+
+        public void GatherAvatarSpecificAnimationModifications() {
             var descriptor = _session.GetRootComponent<VRCAvatarDescriptor>();
 
             if (descriptor)
             {
                 foreach (var layer in descriptor.specialAnimationLayers)
                 {
-                    GatherAnimationModificationsInController(descriptor.gameObject, GetPlayableLayerController(layer));
+                    GatherAnimationModificationsInController(descriptor.gameObject, GetPlayableLayerController(layer), alwaysApplied: true);
                 }
 
                 if (descriptor.customizeAnimationLayers)
@@ -46,7 +87,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     foreach (var layer in descriptor.baseAnimationLayers)
                     {
                         GatherAnimationModificationsInController(descriptor.gameObject,
-                            GetPlayableLayerController(layer));
+                            GetPlayableLayerController(layer), alwaysApplied: true);
                     }
                 }
 
@@ -118,7 +159,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             }
         }
 
-        private void GatherAnimationModificationsInController(GameObject root, RuntimeAnimatorController controller)
+        private void GatherAnimationModificationsInController(GameObject root, RuntimeAnimatorController controller,
+            bool alwaysApplied)
         {
             if (controller == null) return;
             IModificationsContainer parsed;
@@ -133,7 +175,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 parsed = FallbackParseAnimatorController(root, controller);
             }
 
-            _modificationsContainer.MergeAsNewLayer(parsed, alwaysAppliedLayer: true);
+            _modificationsContainer.MergeAsNewLayer(parsed, alwaysApplied);
         }
 
         /// <summary>
