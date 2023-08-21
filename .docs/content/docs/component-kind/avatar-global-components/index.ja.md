@@ -10,5 +10,5 @@ Avatar Global Componentをアバタールート以外につけるとインスペ
 
 以下のコンポーネントがAvatar Global Componentです。
 
-- [Trace And Optimize](../trace-and-optimize)
-- [UnusedBonesByReferencesTool](../unused-bones-by-references-tool)
+- [Trace And Optimize](../../reference/trace-and-optimize)
+- [UnusedBonesByReferencesTool](../../reference/unused-bones-by-references-tool)

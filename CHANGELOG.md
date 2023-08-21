@@ -19,6 +19,20 @@ The format is based on [Keep a Changelog].
 
 ### Security
 
+## [1.3.3] - 2023-08-21
+### Added
+- BlendShape Weight mismatch warning is now build-time warning instad of validate time warning [`#359`](https://github.com/anatawa12/AvatarOptimizer/pull/359)
+  - Thanks to FreeseBlendShape by TraceAndOptimize, most pre-build this warning is false positive. So this warning is moved to build-time only.
+
+### Fixed
+- ClearEndpointPosition is not applied for non-first PhysBones on the GameObject [`#357`](https://github.com/anatawa12/AvatarOptimizer/pull/357)
+- Incompatbile with Reload Scene disabaled [`#358`](https://github.com/anatawa12/AvatarOptimizer/pull/358)
+
+## [1.3.2] - 2023-08-20
+### Fixed
+- Children of IsActive animated object is not considered [`#342`](https://github.com/anatawa12/AvatarOptimizer/pull/342)
+- Multi Passs Rendering not supported error doesn't have location info [`#347`](https://github.com/anatawa12/AvatarOptimizer/pull/347)
+
 ## [1.3.1] - 2023-08-19
 ### Fixed
 - Unity Editor may freezes when there are circular dependency [`#329`](https://github.com/anatawa12/AvatarOptimizer/pull/329)
@@ -435,7 +449,9 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.3.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.3.3...HEAD
+[1.3.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.3.2...v1.3.3
+[1.3.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.3.1...v1.3.2
 [1.3.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.1.1...v1.2.0
