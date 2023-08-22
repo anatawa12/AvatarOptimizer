@@ -7,7 +7,10 @@ using JetBrains.Annotations;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
+using UnityEngine.Animations;
+using VRC.Dynamics;
 using VRC.SDK3.Avatars.Components;
+using VRC.SDK3.Dynamics.PhysBone.Components;
 using VRC.SDKBase;
 
 namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
@@ -30,6 +33,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             foreach (var child in _session.GetRootComponent<Transform>().DirectChildrenEnumerable())
                 WalkForAnimator(child, true, modificationsContainer);
+
+            OtherMutateComponents(modificationsContainer);
 
             return modificationsContainer.ToImmutable();
         }
@@ -59,6 +64,65 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             foreach (var child in transform.DirectChildrenEnumerable())
                 WalkForAnimator(child, parentObjectAlwaysActive: objectAlwaysActive, modificationsContainer);
         }
+
+        #region OtherComponents
+
+        /// <summary>
+        /// Collect modifications by non-animation changes. For example, constraints, PhysBones, and else 
+        /// </summary>
+        private void OtherMutateComponents(ModificationsContainer mod)
+        {
+            ReportingObjects(_session.GetComponents<Component>(), component =>
+            {
+                switch (component)
+                {
+                    case VRCPhysBoneBase pb:
+                        foreach (var transform in pb.GetAffectedTransforms())
+                        {
+                            var updater = mod.ModifyObject(transform);
+                            foreach (var prop in TransformPositionAnimationKeys.Concat(TransformRotationAnimationKeys))
+                                updater.AddModificationAsNewLayer(prop, AnimationProperty.Variable());
+                        }
+
+                        break;
+                    case Rigidbody _:
+                    case ParentConstraint _:
+                    {
+                        var updater = mod.ModifyObject(component.transform);
+                        foreach (var prop in TransformPositionAnimationKeys.Concat(TransformRotationAnimationKeys))
+                            updater.AddModificationAsNewLayer(prop, AnimationProperty.Variable());
+                        break;
+                    }
+                    case AimConstraint _:
+                    case LookAtConstraint _:
+                    case RotationConstraint _:
+                    {
+                        var updater = mod.ModifyObject(component.transform);
+                        foreach (var prop in TransformRotationAnimationKeys)
+                            updater.AddModificationAsNewLayer(prop, AnimationProperty.Variable());
+                        break;
+                    }
+                    case PositionConstraint _:
+                    {
+                        var updater = mod.ModifyObject(component.transform);
+                        foreach (var prop in TransformPositionAnimationKeys)
+                            updater.AddModificationAsNewLayer(prop, AnimationProperty.Variable());
+                        break;
+                    }
+                    case ScaleConstraint _:
+                    {
+                        var updater = mod.ModifyObject(component.transform);
+                        foreach (var prop in TransformScaleAnimationKeys)
+                            updater.AddModificationAsNewLayer(prop, AnimationProperty.Variable());
+                        break;
+                    }
+                    // TODO: DynamicBone
+                    // TODO: FinalIK
+                }
+            });
+        }
+
+        #endregion
 
         #region AvatarDescriptor
 
@@ -285,8 +349,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
                 var updater = mutable.ModifyObject(transform);
 
-                foreach (var key in new[]
-                             { "m_LocalRotation.x", "m_LocalRotation.y", "m_LocalRotation.z", "m_LocalRotation.w" })
+                foreach (var key in TransformRotationAnimationKeys)
                     updater.AddModificationAsNewLayer(key, AnimationProperty.Variable());
             }
 
@@ -485,6 +548,15 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         #endregion
 
         #region Constants
+
+        private static readonly string[] TransformRotationAnimationKeys =
+            { "m_LocalRotation.x", "m_LocalRotation.y", "m_LocalRotation.z", "m_LocalRotation.w" };
+
+        private static readonly string[] TransformPositionAnimationKeys =
+            { "m_LocalPosition.x", "m_LocalPosition.y", "m_LocalPosition.z" };
+
+        private static readonly string[] TransformScaleAnimationKeys =
+            { "m_LocalScale.x", "m_LocalScale.y", "m_LocalScale.z" };
 
         private static readonly AnimatorLayerMap<CachedGuidLoader<AnimatorController>> DefaultLayers =
             new AnimatorLayerMap<CachedGuidLoader<AnimatorController>>

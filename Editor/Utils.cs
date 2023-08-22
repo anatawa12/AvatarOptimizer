@@ -165,6 +165,22 @@ namespace Anatawa12.AvatarOptimizer
         public static Transform GetTarget(this VRCPhysBoneBase physBoneBase) =>
             physBoneBase.rootTransform ? physBoneBase.rootTransform : physBoneBase.transform;
 
+        public static IEnumerable<Transform> GetAffectedTransforms(this VRCPhysBoneBase physBoneBase)
+        {
+            var ignores = new HashSet<Transform>(physBoneBase.ignoreTransforms);
+            var queue = new Queue<Transform>();
+            queue.Enqueue(physBoneBase.GetTarget());
+
+            while (queue.Count != 0)
+            {
+                var transform = queue.Dequeue();
+                yield return transform;
+
+                foreach (var child in transform.DirectChildrenEnumerable())
+                    if (!ignores.Contains(child))
+                        queue.Enqueue(child);
+            }
+        }
         
         // based on https://gist.github.com/anatawa12/16fbf529c8da4a0fb993c866b1d86512
         public static void CopyDataFrom(this SerializedProperty dest, SerializedProperty source)
