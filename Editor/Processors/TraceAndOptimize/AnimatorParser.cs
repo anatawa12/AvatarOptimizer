@@ -10,7 +10,6 @@ using UnityEngine;
 using UnityEngine.Animations;
 using VRC.Dynamics;
 using VRC.SDK3.Avatars.Components;
-using VRC.SDK3.Dynamics.PhysBone.Components;
 using VRC.SDKBase;
 
 namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
@@ -60,6 +59,21 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     alwaysAppliedLayer: objectAlwaysActive
                                         && modificationsContainer.IsAlwaysTrue(animator, "m_Enabled", animator.enabled)
                                         && parsed.IsAlwaysTrue(animator, "m_Enabled", animator.enabled));
+            }
+
+            var animation = transform.GetComponent<Animation>();
+            if (animation && animation.playAutomatically && animation.clip)
+            {
+                // We can animate `Animate Physics`, `Play Automatically` and `Enabled` of Animation component.
+                // However, animating `Play Automatically` will have no effect (initial state will be used)
+                // so if `Play Automatically` is disabled, we can do nothing with Animation component.
+                // That's why we ignore Animation component if playAutomatically is false.
+
+                var parsed = GetParsedAnimation(gameObject, animation.clip);
+
+                modificationsContainer.MergeAsNewLayer(parsed, alwaysAppliedLayer: objectAlwaysActive
+                    && modificationsContainer.IsAlwaysTrue(animation, "m_Enabled", animation.enabled)
+                    && parsed.IsAlwaysTrue(animation, "m_Enabled", animation.enabled));
             }
 
             foreach (var child in transform.DirectChildrenEnumerable())
