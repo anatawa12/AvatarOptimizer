@@ -313,52 +313,67 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                                          (externallyWeightChanged == null || externallyWeightChanged[i]);
                 var syncedLayer = layer.syncedLayerIndex;
 
-                var animationClips = new HashSet<AnimationClip>();
+                IEnumerable<IModificationsContainer> parsedMotions;
 
                 if (syncedLayer == -1)
                 {
-                    foreach (var state in CollectStates(layer.stateMachine))
-                        CollectClipsInMotion(state.motion);
-
+                    parsedMotions = CollectStates(layer.stateMachine)
+                        .Select(state => ParseMotion(root, state.motion));
                 }
                 else
                 {
-                    foreach (var state in CollectStates(layers[syncedLayer].stateMachine))
-                        CollectClipsInMotion(layer.GetOverrideMotion(state));
+                    parsedMotions = CollectStates(layers[syncedLayer].stateMachine)
+                        .Select(state => ParseMotion(root, layer.GetOverrideMotion(state)));
                 }
 
-                void CollectClipsInMotion(Motion motion)
-                {
-                    BuildReport.ReportingObject(motion, () =>
-                    {
-                        switch (motion)
-                        {
-                            case null:
-                                animationClips.Add(null);
-                                return;
-                            case AnimationClip clip:
-                                animationClips.Add(clip);
-                                return;
-                            case BlendTree blendTree:
-                                foreach (var child in blendTree.children)
-                                    CollectClipsInMotion(child.motion);
-                                return;
-                            default:
-                                BuildReport.LogFatal("Unknown Motion Type: {0} in motion {1}",
-                                    motion.GetType().Name, motion.name);
-                                return;
-                        }
-                    });
-                }
-
-                AnimationClip MapClip(AnimationClip clip) => mapping.TryGetValue(clip, out var newClip) ? newClip : clip;
-
-                mergedController.MergeAsNewLayer(
-                    animationClips.Select(x => GetParsedAnimation(root, MapClip(x))).MergeContainersSideBySide(),
-                    alwaysAppliedLayer);
+                mergedController.MergeAsNewLayer(parsedMotions.MergeContainersSideBySide(), alwaysAppliedLayer);
             }
 
             return mergedController;
+        }
+
+        private IModificationsContainer ParseMotion(GameObject root, Motion motion) =>
+            BuildReport.ReportingObject(motion, () => ParseMotionInner(root, motion));
+
+        private IModificationsContainer ParseMotionInner(GameObject root, Motion motion)
+        {
+            switch (motion)
+            {
+                case null:
+                    return ImmutableModificationsContainer.Empty;
+                case AnimationClip clip:
+                    return GetParsedAnimation(root, clip);
+                case BlendTree blendTree:
+                    return ParseBlendTree(root, blendTree);
+                default:
+                    BuildReport.LogFatal("Unknown Motion Type: {0} in motion {1}",
+                        motion.GetType().Name, motion.name);
+                    return ImmutableModificationsContainer.Empty;
+            }
+        }
+
+        private IModificationsContainer ParseBlendTree(GameObject root, BlendTree blendTree)
+        {
+            switch (blendTree.blendType)
+            {
+                case BlendTreeType.Simple1D:
+                case BlendTreeType.SimpleDirectional2D:
+                case BlendTreeType.FreeformDirectional2D:
+                case BlendTreeType.FreeformCartesian2D:
+                    // in those blend blend total blend is always 1 so
+                    // if all animation sets same value, the result will also be same value.
+                    return blendTree.children.Select(x => ParseMotionInner(root, x.motion)).MergeContainersSideBySide();
+                case BlendTreeType.Direct:
+                    // in direct blend tree, total blend can be not zero so all properties are Variable.
+                    var merged = blendTree.children.Select(x => ParseMotionInner(root, x.motion))
+                        .MergeContainersSideBySide()
+                        .ToMutable();
+
+                    merged.MakeAllVariable();
+                    return merged;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
         }
 
         private IEnumerable<AnimatorState> CollectStates(AnimatorStateMachine stateMachineIn)

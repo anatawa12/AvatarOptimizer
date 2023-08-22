@@ -205,6 +205,14 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 EverythingPartially(IReadOnlyDictionary<string, AnimationProperty> dictionary) =>
                 dictionary.ToDictionary(k => k.Key, v => v.Value.PartiallyApplied());
         }
+
+        // make all property modification variable
+        public void MakeAllVariable()
+        {
+            foreach (var properties in _modifiedProperties.Values)
+                foreach (var name in properties.Keys)
+                    properties[name] = AnimationProperty.Variable();
+        }
     }
 
     public readonly struct ComponentOrGameObject : IEquatable<ComponentOrGameObject>
