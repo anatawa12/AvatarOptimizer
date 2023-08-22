@@ -88,89 +88,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             var useDefaultLayers = !descriptor.customizeAnimationLayers;
 
             foreach (var layer in descriptor.baseAnimationLayers)
-            {
-                CollectWeightChangesInController(GetPlayableLayerController(layer, useDefaultLayers));
-            }
-
-            void CollectWeightChangesInController(RuntimeAnimatorController runtimeController)
-            {
-                BuildReport.ReportingObject(runtimeController, () =>
-                {
-                    var (controller, _) = GetControllerAndOverrides(runtimeController);
-
-                    foreach (var layer in controller.layers)
-                    {
-                        if (layer.syncedLayerIndex == -1)
-                            foreach (var state in CollectStates(layer.stateMachine))
-                                CollectWeightChangesInBehaviors(state.behaviours);
-                        else
-                            foreach (var state in CollectStates(controller.layers[layer.syncedLayerIndex]
-                                         .stateMachine))
-                                CollectWeightChangesInBehaviors(layer.GetOverrideBehaviours(state));
-                    }
-                });
-
-                void CollectWeightChangesInBehaviors(StateMachineBehaviour[] stateBehaviours)
-                {
-                    foreach (var stateMachineBehaviour in stateBehaviours)
-                    {
-                        switch (stateMachineBehaviour)
-                        {
-                            case VRC_PlayableLayerControl playableLayerControl:
-                            {
-                                VRCAvatarDescriptor.AnimLayerType layer;
-                                switch (playableLayerControl.layer)
-                                {
-                                    case VRC_PlayableLayerControl.BlendableLayer.Action:
-                                        layer = VRCAvatarDescriptor.AnimLayerType.Action;
-                                        break;
-                                    case VRC_PlayableLayerControl.BlendableLayer.FX:
-                                        layer = VRCAvatarDescriptor.AnimLayerType.FX;
-                                        break;
-                                    case VRC_PlayableLayerControl.BlendableLayer.Gesture:
-                                        layer = VRCAvatarDescriptor.AnimLayerType.Gesture;
-                                        break;
-                                    case VRC_PlayableLayerControl.BlendableLayer.Additive:
-                                        layer = VRCAvatarDescriptor.AnimLayerType.Additive;
-                                        break;
-                                    default:
-                                        throw new ArgumentOutOfRangeException();
-                                }
-
-                                playableWeightChanged[layer] = true;
-                            }
-                                break;
-                            case VRC_AnimatorLayerControl animatorLayerControl:
-                            {
-                                VRCAvatarDescriptor.AnimLayerType layer;
-                                switch (animatorLayerControl.playable)
-                                {
-                                    case VRC_AnimatorLayerControl.BlendableLayer.Action:
-                                        layer = VRCAvatarDescriptor.AnimLayerType.Action;
-                                        break;
-                                    case VRC_AnimatorLayerControl.BlendableLayer.FX:
-                                        layer = VRCAvatarDescriptor.AnimLayerType.FX;
-                                        break;
-                                    case VRC_AnimatorLayerControl.BlendableLayer.Gesture:
-                                        layer = VRCAvatarDescriptor.AnimLayerType.Gesture;
-                                        break;
-                                    case VRC_AnimatorLayerControl.BlendableLayer.Additive:
-                                        layer = VRCAvatarDescriptor.AnimLayerType.Additive;
-                                        break;
-                                    default:
-                                        throw new ArgumentOutOfRangeException();
-                                }
-
-                                var array = animatorLayerWeightChanged[layer];
-                                if (array.Length <= animatorLayerControl.layer)
-                                    array.Length = animatorLayerControl.layer + 1;
-                                array[animatorLayerControl.layer] = true;
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
+                CollectWeightChangesInController(GetPlayableLayerController(layer, useDefaultLayers),
+                    playableWeightChanged, animatorLayerWeightChanged);
 
             var parsedLayers = new AnimatorLayerMap<IModificationsContainer>();
 
@@ -248,6 +167,91 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             return modificationsContainer;
         }
+
+        private void CollectWeightChangesInController(RuntimeAnimatorController runtimeController,
+            AnimatorLayerMap<bool> playableWeightChanged,
+            AnimatorLayerMap<BitArray> animatorLayerWeightChanged)
+        {
+            BuildReport.ReportingObject(runtimeController, () =>
+            {
+                var (controller, _) = GetControllerAndOverrides(runtimeController);
+
+                foreach (var layer in controller.layers)
+                {
+                    if (layer.syncedLayerIndex == -1)
+                        foreach (var state in CollectStates(layer.stateMachine))
+                            CollectWeightChangesInBehaviors(state.behaviours);
+                    else
+                        foreach (var state in CollectStates(controller.layers[layer.syncedLayerIndex]
+                                     .stateMachine))
+                            CollectWeightChangesInBehaviors(layer.GetOverrideBehaviours(state));
+                }
+            });
+
+            return;
+
+            void CollectWeightChangesInBehaviors(StateMachineBehaviour[] stateBehaviours)
+            {
+                foreach (var stateMachineBehaviour in stateBehaviours)
+                {
+                    switch (stateMachineBehaviour)
+                    {
+                        case VRC_PlayableLayerControl playableLayerControl:
+                        {
+                            VRCAvatarDescriptor.AnimLayerType layer;
+                            switch (playableLayerControl.layer)
+                            {
+                                case VRC_PlayableLayerControl.BlendableLayer.Action:
+                                    layer = VRCAvatarDescriptor.AnimLayerType.Action;
+                                    break;
+                                case VRC_PlayableLayerControl.BlendableLayer.FX:
+                                    layer = VRCAvatarDescriptor.AnimLayerType.FX;
+                                    break;
+                                case VRC_PlayableLayerControl.BlendableLayer.Gesture:
+                                    layer = VRCAvatarDescriptor.AnimLayerType.Gesture;
+                                    break;
+                                case VRC_PlayableLayerControl.BlendableLayer.Additive:
+                                    layer = VRCAvatarDescriptor.AnimLayerType.Additive;
+                                    break;
+                                default:
+                                    throw new ArgumentOutOfRangeException();
+                            }
+
+                            playableWeightChanged[layer] = true;
+                        }
+                            break;
+                        case VRC_AnimatorLayerControl animatorLayerControl:
+                        {
+                            VRCAvatarDescriptor.AnimLayerType layer;
+                            switch (animatorLayerControl.playable)
+                            {
+                                case VRC_AnimatorLayerControl.BlendableLayer.Action:
+                                    layer = VRCAvatarDescriptor.AnimLayerType.Action;
+                                    break;
+                                case VRC_AnimatorLayerControl.BlendableLayer.FX:
+                                    layer = VRCAvatarDescriptor.AnimLayerType.FX;
+                                    break;
+                                case VRC_AnimatorLayerControl.BlendableLayer.Gesture:
+                                    layer = VRCAvatarDescriptor.AnimLayerType.Gesture;
+                                    break;
+                                case VRC_AnimatorLayerControl.BlendableLayer.Additive:
+                                    layer = VRCAvatarDescriptor.AnimLayerType.Additive;
+                                    break;
+                                default:
+                                    throw new ArgumentOutOfRangeException();
+                            }
+
+                            var array = animatorLayerWeightChanged[layer];
+                            if (array.Length <= animatorLayerControl.layer)
+                                array.Length = animatorLayerControl.layer + 1;
+                            array[animatorLayerControl.layer] = true;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
 
         /// Mark rotations of humanoid bones as changeable variables
         private IModificationsContainer AddHumanoidModifications(IModificationsContainer container, Animator animator)
