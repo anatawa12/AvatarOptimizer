@@ -57,8 +57,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 parsed = AddHumanoidModifications(parsed, animator);
 
                 modificationsContainer.MergeAsNewLayer(parsed,
-                    alwaysAppliedLayer: objectAlwaysActive &&
-                                        modificationsContainer.IsAlwaysTrue(animator, "m_Enabled", animator.enabled));
+                    alwaysAppliedLayer: objectAlwaysActive
+                                        && modificationsContainer.IsAlwaysTrue(animator, "m_Enabled", animator.enabled)
+                                        && parsed.IsAlwaysTrue(animator, "m_Enabled", animator.enabled));
             }
 
             foreach (var child in transform.DirectChildrenEnumerable())
