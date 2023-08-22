@@ -168,8 +168,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 if (otherProperties == null)
                 {
                     // the object is modified by current only: everything in thisProperties should be marked partially
-                    foreach (var (property, state) in thisProperties)
-                        thisProperties[property] = state.PartiallyApplied();
+                    foreach (var property in thisProperties.Keys.ToArray())
+                        thisProperties[property] = thisProperties[property].PartiallyApplied();
                 }
                 else if (thisProperties == null)
                 {
@@ -210,7 +210,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         public void MakeAllVariable()
         {
             foreach (var properties in _modifiedProperties.Values)
-                foreach (var name in properties.Keys)
+                foreach (var name in properties.Keys.ToArray())
                     properties[name] = AnimationProperty.Variable();
         }
     }

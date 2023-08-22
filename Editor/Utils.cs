@@ -526,16 +526,16 @@ namespace Anatawa12.AvatarOptimizer
         public static IEnumerable<KeyValuePair<TKey, (TValue1, TValue2)>> ZipByKey<TKey, TValue1, TValue2>(
             this IReadOnlyDictionary<TKey, TValue1> first, IReadOnlyDictionary<TKey, TValue2> second)
         {
-            foreach (var (key, firstValue) in first)
+            foreach (var key in first.Keys.ToArray())
             {
                 if (!second.TryGetValue(key, out var secondValue)) secondValue = default;
 
-                yield return new KeyValuePair<TKey, (TValue1, TValue2)>(key, (firstValue, secondValue));
+                yield return new KeyValuePair<TKey, (TValue1, TValue2)>(key, (first[key], secondValue));
             }
 
-            foreach (var (key, secondValue) in second)
+            foreach (var key in second.Keys.ToArray())
                 if (!first.ContainsKey(key))
-                    yield return new KeyValuePair<TKey, (TValue1, TValue2)>(key, (default, secondValue));
+                    yield return new KeyValuePair<TKey, (TValue1, TValue2)>(key, (default, second[key]));
         }
     }
 

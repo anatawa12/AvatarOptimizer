@@ -496,8 +496,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 overrideController.GetOverrides(overridesBuffer);
                 var currentOverrides = overridesBuffer.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
-                foreach (var (original, mapped) in overrides)
-                    if (currentOverrides.TryGetValue(mapped, out var newMapped))
+                foreach (var original in overrides.Keys.ToArray())
+                    if (currentOverrides.TryGetValue(overrides[original], out var newMapped))
                         overrides[original] = newMapped;
 
                 foreach (var (original, mapped) in overridesBuffer)
