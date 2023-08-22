@@ -432,10 +432,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
                 if (!(currentPropertyMayNull is AnimationProperty currentProperty)) continue;
 
-                // ReSharper disable once CompareOfFloatsByEqualityOperator
-                if (curve[0].time != 0 || curve[curve.length - 1].time != clip.length)
-                    currentProperty = currentProperty.PartiallyApplied();
-
                 modifications.ModifyObjectUnsafe(obj)
                     .AddModificationAsNewLayer(binding.propertyName, currentProperty);
             }
