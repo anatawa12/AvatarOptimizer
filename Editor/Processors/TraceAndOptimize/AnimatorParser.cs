@@ -37,7 +37,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         {
             var gameObject = transform.gameObject;
             var objectAlwaysActive = parentObjectAlwaysActive &&
-                                     AlwaysTrueProp(gameObject, "m_IsEnabled", gameObject.activeSelf);
+                                     AlwaysTrueProp(gameObject, "m_IsActive", gameObject.activeSelf);
 
             var animator = transform.GetComponent<Animator>();
             if (animator && animator.runtimeAnimatorController)
