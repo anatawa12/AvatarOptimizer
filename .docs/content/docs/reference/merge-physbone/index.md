@@ -7,7 +7,7 @@ weight: 100
 
 This component merges multiple PhysBone Components into one Component with MultiChildType == Ignore.
 
-This component should be added to new GameObject.
+This component should be added to a new GameObject.
 
 ## Settings
 
