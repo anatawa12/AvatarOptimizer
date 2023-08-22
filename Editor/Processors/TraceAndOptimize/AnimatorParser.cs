@@ -294,7 +294,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         /// </summary>
         private IModificationsContainer FallbackParseAnimatorController(GameObject root, RuntimeAnimatorController controller)
         {
-            return ModificationsUtils.MergeContainersSideBySide(controller.animationClips.Select(clip => GetParsedAnimation(root, clip)));
+            return controller.animationClips.Select(clip => GetParsedAnimation(root, clip)).MergeContainersSideBySide();
         }
 
         private IModificationsContainer AdvancedParseAnimatorController(GameObject root, AnimatorController controller,
@@ -354,8 +354,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 AnimationClip MapClip(AnimationClip clip) => mapping.TryGetValue(clip, out var newClip) ? newClip : clip;
 
                 mergedController.MergeAsNewLayer(
-                    ModificationsUtils.MergeContainersSideBySide(animationClips.Select(x =>
-                        GetParsedAnimation(root, MapClip(x)))), alwaysAppliedLayer);
+                    animationClips.Select(x => GetParsedAnimation(root, MapClip(x))).MergeContainersSideBySide(),
+                    alwaysAppliedLayer);
             }
 
             return mergedController;

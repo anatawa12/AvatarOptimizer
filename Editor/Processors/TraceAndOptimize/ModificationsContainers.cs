@@ -46,7 +46,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             }
         }
         
-        public static IModificationsContainer MergeContainersSideBySide<T>([ItemNotNull] IEnumerable<T> enumerable)
+        public static IModificationsContainer MergeContainersSideBySide<T>([ItemNotNull] this IEnumerable<T> enumerable)
             where T : IModificationsContainer
         {
             using (var enumerator = enumerable.GetEnumerator())
