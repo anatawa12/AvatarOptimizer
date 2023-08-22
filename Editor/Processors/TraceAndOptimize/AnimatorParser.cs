@@ -1,16 +1,14 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
-using Anatawa12.AvatarOptimizer.ErrorReporting;
+using static Anatawa12.AvatarOptimizer.ErrorReporting.BuildReport;
 using JetBrains.Annotations;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
 using VRC.SDK3.Avatars.Components;
 using VRC.SDKBase;
-using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 {
@@ -173,7 +171,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             AnimatorLayerMap<bool> playableWeightChanged,
             AnimatorLayerMap<BitArray> animatorLayerWeightChanged)
         {
-            BuildReport.ReportingObject(runtimeController, () =>
+            ReportingObject(runtimeController, () =>
             {
                 var (controller, _) = GetControllerAndOverrides(runtimeController);
 
@@ -298,7 +296,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         private IModificationsContainer ParseAnimatorController(GameObject root, RuntimeAnimatorController controller,
             [CanBeNull] BitArray externallyWeightChanged = null)
         {
-            return BuildReport.ReportingObject(controller, () =>
+            return ReportingObject(controller, () =>
             {
                 if (_config.advancedAnimatorParser)
                 {
@@ -357,7 +355,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         }
 
         private IModificationsContainer ParseMotion(GameObject root, Motion motion) =>
-            BuildReport.ReportingObject(motion, () => ParseMotionInner(root, motion));
+            ReportingObject(motion, () => ParseMotionInner(root, motion));
 
         private IModificationsContainer ParseMotionInner(GameObject root, Motion motion)
         {
@@ -370,8 +368,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 case BlendTree blendTree:
                     return ParseBlendTree(root, blendTree);
                 default:
-                    BuildReport.LogFatal("Unknown Motion Type: {0} in motion {1}",
-                        motion.GetType().Name, motion.name);
+                    LogFatal("Unknown Motion Type: {0} in motion {1}", motion.GetType().Name, motion.name);
                     return ImmutableModificationsContainer.Empty;
             }
         }
