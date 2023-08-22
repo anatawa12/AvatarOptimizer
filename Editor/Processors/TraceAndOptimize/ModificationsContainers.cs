@@ -116,10 +116,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             public ComponentAnimationUpdater(Dictionary<string, AnimationProperty> properties) => _properties = properties;
 
-            public void AddModification(string propertyName, AnimationProperty propertyState)
+            public void AddModificationAsNewLayer(string propertyName, AnimationProperty propertyState)
             {
                 if (_properties.TryGetValue(propertyName, out var property))
-                    _properties[propertyName] = property.Merge(propertyState);
+                    _properties[propertyName] = property.Merge(propertyState, asNewLayer: true);
                 else
                     _properties.Add(propertyName, propertyState);
             }
@@ -137,7 +137,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 var updater = ModifyObjectUnsafe(obj);
 
                 foreach (var (propertyName, propertyState) in properties)
-                    updater.AddModification(propertyName, alwaysAppliedLayer ? propertyState : propertyState.PartiallyApplied());
+                    updater.AddModificationAsNewLayer(propertyName,
+                        alwaysAppliedLayer ? propertyState : propertyState.PartiallyApplied());
             }
         }
 
@@ -175,7 +176,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                         else
                         {
                             // the property is modified by both: merge the property modification
-                            thisProperties[property] = thisState.Merge(otherState);
+                            thisProperties[property] = thisState.Merge(otherState, asNewLayer: false);
                         }
                     }
                 }
@@ -218,8 +219,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         public static AnimationProperty Variable() =>
             new AnimationProperty(PropertyState.Variable, float.NaN);
 
-        public AnimationProperty Merge(AnimationProperty b)
+        public AnimationProperty Merge(AnimationProperty b, bool asNewLayer)
         {
+            // if asNewLayer and new layer is constant always, the value is used
+            if (asNewLayer && b.State == PropertyState.ConstantAlways) return b;
+
             if (State == PropertyState.Variable) return Variable();
             if (b.State == PropertyState.Variable) return Variable();
 
