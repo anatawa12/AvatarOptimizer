@@ -7,7 +7,7 @@ weight: 100
 
 This component will replace EndpointPosition to 0 with adding `_EndPhysBone` GameObject.
 
-This component should be added to GameObjects with PhysBone.
+This component should be added to a GameObject which has PhysBone Components.
 
 This component doesn't have any configuration for now but there's one button on the view.
 Clicking `Apply and Remove component` will applies this operation and removes this component.
