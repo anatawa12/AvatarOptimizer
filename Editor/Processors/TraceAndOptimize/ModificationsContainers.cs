@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using JetBrains.Annotations;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -14,7 +15,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         ImmutableModificationsContainer ToImmutable();
     }
 
-    static class ModificationsContainerExtensions
+    static class ModificationsUtils
     {
         public static IReadOnlyDictionary<string, AnimationProperty> GetModifiedProperties<T>(this T container,
             ComponentOrGameObject component)
@@ -42,6 +43,26 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 case AnimationProperty.PropertyState.Invalid:
                 default:
                     throw new ArgumentOutOfRangeException();
+            }
+        }
+        
+        public static IModificationsContainer MergeContainersSideBySide<T>([ItemNotNull] IEnumerable<T> enumerable)
+            where T : IModificationsContainer
+        {
+            using (var enumerator = enumerable.GetEnumerator())
+            {
+                if (!enumerator.MoveNext()) return ImmutableModificationsContainer.Empty;
+                var first = enumerator.Current;
+                if (!enumerator.MoveNext()) return first;
+
+                // ReSharper disable once PossibleNullReferenceException // miss detections
+
+                // merge all properties
+                var merged = first.ToMutable();
+                do merged.MergeAsSide(enumerator.Current);
+                while (enumerator.MoveNext());
+
+                return merged;
             }
         }
     }
