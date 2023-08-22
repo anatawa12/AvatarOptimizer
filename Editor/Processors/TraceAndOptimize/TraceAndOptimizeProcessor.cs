@@ -7,12 +7,11 @@ namespace Anatawa12.AvatarOptimizer.Processors
             var config = session.GetRootComponent<TraceAndOptimize>();
             if (!config) return;
 
-            var animationParser = new TraceAndOptimizes.AnimatorParser(session, config);
-            animationParser.GatherAnimationModifications();
+            var modifications = new TraceAndOptimizes.AnimatorParser(session, config).GatherAnimationModifications();
             if (config.freezeBlendShape)
-                new TraceAndOptimizes.AutoFreezeBlendShape(animationParser, session).Process();
+                new TraceAndOptimizes.AutoFreezeBlendShape(modifications, session).Process();
             if (config.removeUnusedObjects)
-                new TraceAndOptimizes.FindUnusedObjectsProcessor(animationParser, session).Process();
+                new TraceAndOptimizes.FindUnusedObjectsProcessor(modifications, session).Process();
         }
     }
 }
