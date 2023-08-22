@@ -537,6 +537,11 @@ namespace Anatawa12.AvatarOptimizer
                 if (!first.ContainsKey(key))
                     yield return new KeyValuePair<TKey, (TValue1, TValue2)>(key, (default, second[key]));
         }
+
+        [CanBeNull]
+        public static Type GetTypeFromName(string name) =>
+            AppDomain.CurrentDomain.GetAssemblies().Select(assembly => assembly.GetType(name))
+                .FirstOrDefault(type => !(type == null));
     }
 
     internal struct ArraySerializedPropertyEnumerable : IEnumerable<SerializedProperty>

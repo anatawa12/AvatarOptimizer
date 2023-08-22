@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using static Anatawa12.AvatarOptimizer.ErrorReporting.BuildReport;
 using JetBrains.Annotations;
 using UnityEditor;
@@ -131,10 +132,88 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                             updater.AddModificationAsNewLayer(prop, AnimationProperty.Variable());
                         break;
                     }
-                    // TODO: DynamicBone
+                    default:
+                    {
+                        var dynamicBone = ExternalLibraryAccessor.DynamicBone;
+                        if (dynamicBone != null && dynamicBone.IsDynamicBone(component))
+                        {
+                            // DynamicBone : similar to PhysBone
+                            foreach (var transform in dynamicBone.GetAffectedTransforms(component))
+                            {
+                                var updater = mod.ModifyObject(transform);
+                                foreach (var prop in TransformRotationAnimationKeys)
+                                    updater.AddModificationAsNewLayer(prop, AnimationProperty.Variable());
+                            }
+                        }
+                        break;
+                    }
                     // TODO: FinalIK
                 }
             });
+        }
+
+        private static class ExternalLibraryAccessor
+        {
+            [CanBeNull] public static readonly DynamicBoneClasses DynamicBone = DynamicBoneClasses.Create();
+
+            public class DynamicBoneClasses
+            {
+                [NotNull] public readonly Type DynamicBoneType;
+                [NotNull] public readonly FieldInfo Exclusions;
+                [NotNull] public readonly FieldInfo Root;
+
+                public DynamicBoneClasses([NotNull] Type dynamicBoneType, [NotNull] FieldInfo exclusions,
+                    [NotNull] FieldInfo root)
+                {
+                    DynamicBoneType = dynamicBoneType;
+                    Exclusions = exclusions;
+                    Root = root;
+                }
+
+
+                [CanBeNull]
+                public static DynamicBoneClasses Create()
+                {
+                    var dynamicBoneType = Utils.GetTypeFromName("DynamicBone");
+                    if (dynamicBoneType == null) return null;
+
+                    var exclusions =
+                        dynamicBoneType.GetField("m_Exclusions", BindingFlags.Instance | BindingFlags.Public);
+                    if (exclusions == null) return null;
+                    if (exclusions.FieldType != typeof(List<Transform>)) return null;
+
+                    var root = dynamicBoneType.GetField("m_Root", BindingFlags.Instance | BindingFlags.Public);
+                    if (root == null) return null;
+                    if (root.FieldType != typeof(Transform)) return null;
+
+                    return new DynamicBoneClasses(dynamicBoneType, exclusions, root);
+                }
+
+                public bool IsDynamicBone(object obj) => DynamicBoneType.IsInstanceOfType(obj);
+
+                public IEnumerable<Transform> GetExclusions(object obj) =>
+                    (IEnumerable<Transform>)Exclusions.GetValue(obj);
+
+                public Transform GetRoot(object obj) => (Transform)Root.GetValue(obj);
+
+                public IEnumerable<Transform> GetAffectedTransforms(Component dynamicBone)
+                {
+                    var ignores = new HashSet<Transform>(GetExclusions(dynamicBone));
+                    var queue = new Queue<Transform>();
+                    queue.Enqueue(GetRoot(dynamicBone) ?? dynamicBone.transform);
+
+                    while (queue.Count != 0)
+                    {
+                        var transform = queue.Dequeue();
+                        yield return transform;
+
+                        foreach (var child in transform.DirectChildrenEnumerable())
+                            if (!ignores.Contains(child))
+                                queue.Enqueue(child);
+                    }
+                }
+
+            }
         }
 
         #endregion
