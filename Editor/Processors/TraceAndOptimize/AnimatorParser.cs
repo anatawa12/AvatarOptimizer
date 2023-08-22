@@ -62,6 +62,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 WalkForAnimator(child, parentObjectAlwaysActive: objectAlwaysActive, modificationsContainer);
         }
 
+        #region AvatarDescriptor
 
         private IModificationsContainer CollectAvatarRootAnimatorModifications()
         {
@@ -252,6 +253,25 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             }
         }
 
+        private static RuntimeAnimatorController GetPlayableLayerController(VRCAvatarDescriptor.CustomAnimLayer layer,
+            bool useDefault = false)
+        {
+            if (!useDefault && !layer.isDefault && layer.animatorController)
+            {
+                return layer.animatorController;
+            }
+
+            if (!AnimatorLayerMap<object>.IsValid(layer.type)) return null;
+            ref var loader = ref DefaultLayers[layer.type];
+            var controller = loader.Value;
+            if (controller == null)
+                throw new InvalidOperationException($"default controller for {layer.type} not found");
+            return controller;
+        }
+        
+        #endregion
+
+        #region Animator
 
         /// Mark rotations of humanoid bones as changeable variables
         private IModificationsContainer AddHumanoidModifications(IModificationsContainer container, Animator animator)
@@ -426,6 +446,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             }
         }
 
+        #endregion
+
+        #region Animaton
+
         private readonly Dictionary<(GameObject, AnimationClip), ImmutableModificationsContainer> _parsedAnimationCache =
             new Dictionary<(GameObject, AnimationClip), ImmutableModificationsContainer>();
 
@@ -461,21 +485,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             return modifications.ToImmutable();
         }
 
-        private static RuntimeAnimatorController GetPlayableLayerController(VRCAvatarDescriptor.CustomAnimLayer layer,
-            bool useDefault = false)
-        {
-            if (!useDefault && !layer.isDefault && layer.animatorController)
-            {
-                return layer.animatorController;
-            }
+        #endregion
 
-            if (!AnimatorLayerMap<object>.IsValid(layer.type)) return null;
-            ref var loader = ref DefaultLayers[layer.type];
-            var controller = loader.Value;
-            if (controller == null)
-                throw new InvalidOperationException($"default controller for {layer.type} not found");
-            return controller;
-        }
+        #region Constants
 
         private static readonly AnimatorLayerMap<CachedGuidLoader<AnimatorController>> DefaultLayers =
             new AnimatorLayerMap<CachedGuidLoader<AnimatorController>>
@@ -627,5 +639,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             "照れ",
             "涙",
         };
+
+        #endregion
     }
 }
