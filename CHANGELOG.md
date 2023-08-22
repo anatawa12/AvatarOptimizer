@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
+- Internal implementation of Trace and Optimize `#361`
+- Documentation Improvements `#366` `#365`
 
 ### Deprecated
 
