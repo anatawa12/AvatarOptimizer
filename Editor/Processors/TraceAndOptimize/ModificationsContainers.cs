@@ -10,7 +10,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 {
     interface IModificationsContainer
     {
-        IReadOnlyDictionary<Object, IReadOnlyDictionary<string, AnimationProperty>> ModifiedProperties { get; }
+        IReadOnlyDictionary<ComponentOrGameObject, IReadOnlyDictionary<string, AnimationProperty>> ModifiedProperties { get; }
         ModificationsContainer ToMutable();
         ImmutableModificationsContainer ToImmutable();
     }
@@ -69,10 +69,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
     readonly struct ImmutableModificationsContainer : IModificationsContainer
     {
-        private readonly IReadOnlyDictionary<Object, IReadOnlyDictionary<string, AnimationProperty>> _modifiedProperties;
+        private readonly IReadOnlyDictionary<ComponentOrGameObject, IReadOnlyDictionary<string, AnimationProperty>> _modifiedProperties;
 
-        public IReadOnlyDictionary<Object, IReadOnlyDictionary<string, AnimationProperty>> ModifiedProperties =>
-            _modifiedProperties ?? Utils.EmptyDictionary<Object, IReadOnlyDictionary<string, AnimationProperty>>();
+        public IReadOnlyDictionary<ComponentOrGameObject, IReadOnlyDictionary<string, AnimationProperty>> ModifiedProperties =>
+            _modifiedProperties ?? Utils.EmptyDictionary<ComponentOrGameObject, IReadOnlyDictionary<string, AnimationProperty>>();
         public static ImmutableModificationsContainer Empty => default;
 
         public ImmutableModificationsContainer(ModificationsContainer from)
@@ -80,8 +80,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             IReadOnlyDictionary<string, AnimationProperty> MapDictionary(IReadOnlyDictionary<string, AnimationProperty> dict) =>
                 new ReadOnlyDictionary<string, AnimationProperty>(dict.ToDictionary(p1 => p1.Key, p1 => p1.Value));
 
-            _modifiedProperties = new ReadOnlyDictionary<Object, IReadOnlyDictionary<string, AnimationProperty>>(from.ModifiedProperties
-                .ToDictionary(p => p.Key, p => MapDictionary(p.Value)));
+            _modifiedProperties =
+                new ReadOnlyDictionary<ComponentOrGameObject, IReadOnlyDictionary<string, AnimationProperty>>(from
+                    .ModifiedProperties.ToDictionary(p => p.Key, p => MapDictionary(p.Value)));
         }
 
         public ModificationsContainer ToMutable() => new ModificationsContainer(this);
@@ -90,16 +91,16 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
     class ModificationsContainer : IModificationsContainer
     {
-        private readonly Dictionary<Object, Dictionary<string, AnimationProperty>> _modifiedProperties;
+        private readonly Dictionary<ComponentOrGameObject, Dictionary<string, AnimationProperty>> _modifiedProperties;
         
         private static readonly IReadOnlyDictionary<string, AnimationProperty> EmptyProperties =
             new ReadOnlyDictionary<string, AnimationProperty>(new Dictionary<string, AnimationProperty>());
 
-        public IReadOnlyDictionary<Object, IReadOnlyDictionary<string, AnimationProperty>> ModifiedProperties { get; }
+        public IReadOnlyDictionary<ComponentOrGameObject, IReadOnlyDictionary<string, AnimationProperty>> ModifiedProperties { get; }
 
         public ModificationsContainer()
         {
-            _modifiedProperties = new Dictionary<Object, Dictionary<string, AnimationProperty>>();
+            _modifiedProperties = new Dictionary<ComponentOrGameObject, Dictionary<string, AnimationProperty>>();
             ModifiedProperties = Utils.CastDic<IReadOnlyDictionary<string, AnimationProperty>>()
                 .CastedDic(_modifiedProperties);
         }
@@ -121,10 +122,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         #region Adding Modifications
 
-        public ComponentAnimationUpdater ModifyComponent(ComponentOrGameObject component) =>
-            ModifyObjectUnsafe(component);
-
-        public ComponentAnimationUpdater ModifyObjectUnsafe(Object obj)
+        public ComponentAnimationUpdater ModifyObject(ComponentOrGameObject obj)
         {
             if (!_modifiedProperties.TryGetValue(obj, out var properties))
                 _modifiedProperties.Add(obj, properties = new Dictionary<string, AnimationProperty>());
@@ -155,7 +153,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         {
             foreach (var (obj, properties) in parsed.ModifiedProperties)
             {
-                var updater = ModifyObjectUnsafe(obj);
+                var updater = ModifyObject(obj);
 
                 foreach (var (propertyName, propertyState) in properties)
                     updater.AddModificationAsNewLayer(propertyName,
@@ -208,8 +206,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 dictionary.ToDictionary(k => k.Key, v => v.Value.PartiallyApplied());
         }
     }
-    
-    public readonly struct ComponentOrGameObject
+
+    public readonly struct ComponentOrGameObject : IEquatable<ComponentOrGameObject>
     {
         private readonly Object _object;
 
@@ -217,10 +215,28 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         public static implicit operator ComponentOrGameObject(GameObject gameObject) =>
             new ComponentOrGameObject(gameObject);
+
         public static implicit operator ComponentOrGameObject(Component component) =>
             new ComponentOrGameObject(component);
+
         public static implicit operator Object(ComponentOrGameObject componentOrGameObject) =>
             componentOrGameObject._object;
+
+        public bool AsGameObject(out GameObject gameObject)
+        {
+            gameObject = _object as GameObject;
+            return gameObject;
+        }
+
+        public bool AsComponent<T>(out T gameObject) where T : Component
+        {
+            gameObject = _object as T;
+            return gameObject;
+        }
+
+        public bool Equals(ComponentOrGameObject other) => Equals(_object, other._object);
+        public override bool Equals(object obj) => obj is ComponentOrGameObject other && Equals(other);
+        public override int GetHashCode() => _object != null ? _object.GetHashCode() : 0;
     }
 
     readonly struct AnimationProperty

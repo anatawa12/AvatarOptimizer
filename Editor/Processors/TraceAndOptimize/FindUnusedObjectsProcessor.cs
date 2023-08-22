@@ -39,7 +39,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             foreach (var keyValuePair in _modifications.ModifiedProperties)
             {
                 // TODO: if the any of parent is inactive and kept, it should not be assumed as 
-                if (!(keyValuePair.Key is GameObject gameObject)) continue;
+                if (!keyValuePair.Key.AsGameObject(out var gameObject)) continue;
                 if (!keyValuePair.Value.TryGetValue("m_IsActive", out _)) continue;
 
                 // TODO: if the child is not activeSelf, it should not be assumed as entry point.

@@ -204,7 +204,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 case VRC_AvatarDescriptor.LipSyncStyle.VisemeBlendShape when descriptor.VisemeSkinnedMesh != null:
                 {
                     var skinnedMeshRenderer = descriptor.VisemeSkinnedMesh;
-                    var updater = modificationsContainer.ModifyComponent(skinnedMeshRenderer);
+                    var updater = modificationsContainer.ModifyObject(skinnedMeshRenderer);
                     foreach (var blendShape in descriptor.VisemeBlendShapes)
                         updater.AddModificationAsNewLayer($"blendShape.{blendShape}", AnimationProperty.Variable());
                     break;
@@ -214,7 +214,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     var skinnedMeshRenderer = descriptor.VisemeSkinnedMesh;
                     var shape = descriptor.MouthOpenBlendShapeName;
 
-                    modificationsContainer.ModifyComponent(skinnedMeshRenderer)
+                    modificationsContainer.ModifyObject(skinnedMeshRenderer)
                         .AddModificationAsNewLayer($"blendShape.{shape}", AnimationProperty.Variable());
                     break;
                 }
@@ -228,7 +228,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 var skinnedMeshRenderer = descriptor.customEyeLookSettings.eyelidsSkinnedMesh;
                 var mesh = skinnedMeshRenderer.sharedMesh;
 
-                var updater = modificationsContainer.ModifyComponent(skinnedMeshRenderer);
+                var updater = modificationsContainer.ModifyObject(skinnedMeshRenderer);
 
                 foreach (var blendShape in from index in descriptor.customEyeLookSettings.eyelidsBlendshapes
                          where 0 <= index && index < mesh.blendShapeCount
@@ -240,7 +240,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             if (_config.mmdWorldCompatibility && bodySkinnedMesh)
             {
-                var updater = modificationsContainer.ModifyComponent(bodySkinnedMesh);
+                var updater = modificationsContainer.ModifyObject(bodySkinnedMesh);
 
                 foreach (var shape in MmdBlendShapeNames)
                     updater.AddModificationAsNewLayer($"blendShape.{shape}", AnimationProperty.Variable());
@@ -261,7 +261,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 var transform = animator.GetBoneTransform(bone);
                 if (!transform) continue;
 
-                var updater = mutable.ModifyComponent(transform);
+                var updater = mutable.ModifyObject(transform);
 
                 foreach (var key in new[]
                              { "m_LocalRotation.x", "m_LocalRotation.y", "m_LocalRotation.z", "m_LocalRotation.w" })
@@ -426,13 +426,16 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             {
                 var obj = AnimationUtility.GetAnimatedObject(root, binding);
                 if (obj == null) continue;
+                var componentOrGameObject = obj is Component component ? (ComponentOrGameObject)component
+                    : obj is GameObject gameObject ? (ComponentOrGameObject)gameObject
+                    : throw new InvalidOperationException($"unexpected animated object: {obj} ({obj.GetType().Name}");
 
                 var curve = AnimationUtility.GetEditorCurve(clip, binding);
                 var currentPropertyMayNull = AnimationProperty.ParseProperty(curve);
 
                 if (!(currentPropertyMayNull is AnimationProperty currentProperty)) continue;
 
-                modifications.ModifyObjectUnsafe(obj)
+                modifications.ModifyObject(componentOrGameObject)
                     .AddModificationAsNewLayer(binding.propertyName, currentProperty);
             }
 
