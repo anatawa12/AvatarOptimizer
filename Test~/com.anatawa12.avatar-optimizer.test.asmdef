@@ -18,6 +18,7 @@
     "allowUnsafeCode": false,
     "overrideReferences": true,
     "precompiledReferences": [
+        "Pose.dll",
         "VRC.SDK3.Dynamics.PhysBone.dll",
         "VRC.Dynamics.dll",
         "VRCSDK3A.dll",
