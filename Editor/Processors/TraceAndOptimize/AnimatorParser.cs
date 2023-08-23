@@ -235,12 +235,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             // see https://creators.vrchat.com/avatars/playable-layers
 
             var playableWeightChanged = new AnimatorLayerMap<bool>();
-            var animatorLayerWeightChanged = new AnimatorLayerMap<BitArray>()
+            var animatorLayerWeightChanged = new AnimatorLayerMap<BitArrayIntSet>
             {
-                [VRCAvatarDescriptor.AnimLayerType.Action] = new BitArray(1),
-                [VRCAvatarDescriptor.AnimLayerType.FX] = new BitArray(1),
-                [VRCAvatarDescriptor.AnimLayerType.Gesture] = new BitArray(1),
-                [VRCAvatarDescriptor.AnimLayerType.Additive] = new BitArray(1),
+                [VRCAvatarDescriptor.AnimLayerType.Action] = new BitArrayIntSet(),
+                [VRCAvatarDescriptor.AnimLayerType.FX] = new BitArrayIntSet(),
+                [VRCAvatarDescriptor.AnimLayerType.Gesture] = new BitArrayIntSet(),
+                [VRCAvatarDescriptor.AnimLayerType.Additive] = new BitArrayIntSet(),
             };
             var useDefaultLayers = !descriptor.customizeAnimationLayers;
 
@@ -327,7 +327,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         private void CollectWeightChangesInController(RuntimeAnimatorController runtimeController,
             AnimatorLayerMap<bool> playableWeightChanged,
-            AnimatorLayerMap<BitArray> animatorLayerWeightChanged)
+            AnimatorLayerMap<BitArrayIntSet> animatorLayerWeightChanged)
         {
             ReportingObject(runtimeController, () =>
             {
@@ -398,10 +398,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                                     throw new ArgumentOutOfRangeException();
                             }
 
-                            var array = animatorLayerWeightChanged[layer];
-                            if (array.Length <= animatorLayerControl.layer)
-                                array.Length = animatorLayerControl.layer + 1;
-                            array[animatorLayerControl.layer] = true;
+                            
+                            animatorLayerWeightChanged[layer].Add(animatorLayerControl.layer);
                             break;
                         }
                     }
@@ -451,7 +449,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         }
 
         private IModificationsContainer ParseAnimatorController(GameObject root, RuntimeAnimatorController controller,
-            [CanBeNull] BitArray externallyWeightChanged = null)
+            [CanBeNull] BitArrayIntSet externallyWeightChanged = null)
         {
             return ReportingObject(controller, () =>
             {
@@ -480,7 +478,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         }
 
         private IModificationsContainer AdvancedParseAnimatorController(GameObject root, AnimatorController controller,
-            IReadOnlyDictionary<AnimationClip, AnimationClip> mapping, [CanBeNull] BitArray externallyWeightChanged)
+            IReadOnlyDictionary<AnimationClip, AnimationClip> mapping, [CanBeNull] BitArrayIntSet externallyWeightChanged)
         {
             var layers = controller.layers;
             if (layers.Length == 0) return ImmutableModificationsContainer.Empty;
@@ -491,8 +489,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             {
                 var layer = layers[i];
                 // ReSharper disable once CompareOfFloatsByEqualityOperator
-                var alwaysAppliedLayer = layer.defaultWeight != 1 && i != 0 &&
-                                         (externallyWeightChanged == null || externallyWeightChanged[i]);
+                var alwaysAppliedLayer =
+                    layer.defaultWeight != 1 && i != 0 && (externallyWeightChanged?.Contains(i) ?? true);
                 var syncedLayer = layer.syncedLayerIndex;
 
                 IEnumerable<IModificationsContainer> parsedMotions;
