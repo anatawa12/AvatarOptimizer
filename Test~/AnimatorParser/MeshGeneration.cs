@@ -22,7 +22,7 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
 
             mesh.triangles = new[]{0, 1, 2, 2, 1, 0};
 
-            for (var i = 0; i < 10; i++)
+            for (var i = 0; i < 20; i++)
             {
                 mesh.AddBlendShapeFrame($"shape{i}", 100,
                     new[] { Vector3.forward, Vector3.forward, Vector3.forward }, null, null);
