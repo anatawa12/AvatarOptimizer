@@ -11,6 +11,10 @@ The format is based on [Keep a Changelog].
 - Support for Multi Frame BlendShapes `#333`
 
 ### Changed
+- Auto FreezeBlendShape now freezes meaningless BlendShape `#334`
+  - If you removed some vertices with RemoveMeshInBox or RemoveMeshWithBlendShape, some BlendShape may transform no vertices
+  - Auto FreeseBlendShae now freezez such a BlendShapes
+- Auto FreezeBlendShape now freezes vertices even if already FreezeBlendShape is configured. `#334`
 
 ### Deprecated
 
