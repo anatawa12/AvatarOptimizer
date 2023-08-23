@@ -7,9 +7,7 @@ weight: 21
 
 1つ以上のSkinnedMeshRendererやMeshRendererを1つのSkinnedMeshRendererに統合することが出来ます。
 
-このコンポーネントは[Modifying Edit Skinned Mesh Component](../../component-kind/edit-skinned-mesh-components#modifying-component)であるため、SkinnedMeshRendererのあるGameObjectに追加してください。
-
-MergeSkinnedMeshは、メッシュを指定していないSkinnedMeshRendererを持つ新しいGameObjectに追加するべきです。
+このコンポーネントは[Source Edit Skinned Mesh Component](../../component-kind/edit-skinned-mesh-components#source-component)であるため、メッシュを指定していないSkinnedMeshRendererコンポーネントがある新規GameObjectに追加してください。
 
 このコンポーネントはメッシュ・ボーン・マテリアル・BlendShape・Boundsを統合しますが、その他の設定については変更しないため、AnchorOverride等の設定を行うには、MergeSkinnedMeshのあるGameObject上のSkinnedMeshRendererを編集してください。
 
