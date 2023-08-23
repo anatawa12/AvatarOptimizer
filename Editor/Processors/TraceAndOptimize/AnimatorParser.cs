@@ -454,7 +454,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             return mutable;
         }
 
-        private IModificationsContainer ParseAnimatorController(GameObject root, RuntimeAnimatorController controller,
+        public IModificationsContainer ParseAnimatorController(GameObject root, RuntimeAnimatorController controller,
             [CanBeNull] BitArrayIntSet externallyWeightChanged = null)
         {
             return ReportingObject(controller, () =>
@@ -528,7 +528,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             return mergedController;
         }
 
-        private IModificationsContainer ParseMotion(GameObject root, Motion motion,
+        public IModificationsContainer ParseMotion(GameObject root, Motion motion,
             IReadOnlyDictionary<AnimationClip, AnimationClip> mapping) =>
             ReportingObject(motion, () => ParseMotionInner(root, motion, mapping));
 

@@ -258,6 +258,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         public static implicit operator Object(ComponentOrGameObject componentOrGameObject) =>
             componentOrGameObject._object;
 
+        public GameObject SelfOrAttachedGameObject => _object as GameObject ?? ((Component)_object).gameObject;
+
         public bool AsGameObject(out GameObject gameObject)
         {
             gameObject = _object as GameObject;
