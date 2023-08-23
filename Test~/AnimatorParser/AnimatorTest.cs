@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes;
 using NUnit.Framework;
-using Pose;
 using UnityEditor.Animations;
 using UnityEngine;
 using Is = NUnit.Framework.Is;
@@ -92,8 +91,10 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
                 "blendShape.shape1", AnimationProperty.ConstAlways(100));
 
         [Test]
-        public void TestParseWhole() => WithMockedAnimatorParser(parser =>
+        public void TestParseWhole()
         {
+            var parser = new AnimatorParser(true, true);
+
             // execute
             var parsed = parser.AdvancedParseAnimatorController(_prefab, _controller,
                 Utils.EmptyDictionary<AnimationClip, AnimationClip>(), null);
@@ -131,11 +132,13 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
             Assert.That(properties["blendShape.shape9"], Is.EqualTo(AnimationProperty.ConstAlways(100)));
             Assert.That(properties["blendShape.shape10"], Is.EqualTo(AnimationProperty.ConstAlways(100)));
             Assert.That(properties["blendShape.shape11"], Is.EqualTo(AnimationProperty.ConstPartially(100)));
-        });
+        }
 
         private void LayerTest(int layerIndex, string layerName, bool? alwaysApplied,
-            string propertyName, AnimationProperty property) => WithMockedAnimatorParser(parser =>
+            string propertyName, AnimationProperty property)
         {
+            var parser = new AnimatorParser(true, true);
+
             // preconditions
             Assert.That(_controller.layers[layerIndex].name, Is.EqualTo(layerName));
             switch (alwaysApplied)
@@ -159,18 +162,6 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
             // check
             Assert.That(alwaysAppliedLayer, Is.EqualTo(alwaysApplied ?? true));
             AssertContainer(parsed, propertyName, property);
-        });
-
-        private void WithMockedAnimatorParser(Action<AnimatorParser> action)
-        {
-            var parser = new AnimatorParser(true, true);
-
-            var shim = Shim
-                .Replace(() => parser.GetParsedAnimation(Pose.Is.A<GameObject>(), Pose.Is.A<AnimationClip>()))
-                .With((AnimatorParser @this, GameObject gameObject, AnimationClip clip) =>
-                    _mocked.GetParsedAnimationMocked(gameObject, clip));
-
-            PoseContext.Isolate(() => action(parser), shim);
         }
 
         private void AssertContainer(IModificationsContainer parsed, string prop, AnimationProperty property)
