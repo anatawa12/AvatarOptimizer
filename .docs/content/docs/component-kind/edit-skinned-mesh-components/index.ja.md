@@ -5,13 +5,13 @@ weight: 20
 
 # Edit Skinned Mesh Components
 
-Edit Skinned Mesh ComponentはSkinnedMeshRendererのあるGameObjectにつけてそのSkinnedMeshRendererに適用するコンポーネントです。
+Edit Skinned Mesh ComponentはSkinnedMeshRendererコンポーネントのあるGameObjectに追加することで、そのSkinnedMeshRendererに作用するコンポーネントです。
 
-このコンポーネントは２つの小分類があります。
+このコンポーネントには2つの小分類があります。
 
 ## Source Component
 
-この種類のコンポーネントはMeshなどを生成するコンポーネントです。
+メッシュなどを生成するコンポーネントです。
 以下のコンポーネントがSource Edit Skinned Mesh Componentです。
 
 - [MergeSkinnedMesh](../../reference/merge-skinned-mesh)
@@ -20,7 +20,7 @@ Edit Skinned Mesh ComponentはSkinnedMeshRendererのあるGameObjectにつけて
 
 ## Modifying Component
 
-この種類のコンポーネントはすでについているメッシュなどを(複製して)編集するコンポーネントです。
+既にあるメッシュなどを(複製して)編集するコンポーネントです。
 以下のコンポーネントがModifying Edit Skinned Mesh Componentです。
 
 - [Remove Mesh By BlendShape](../../reference/remove-mesh-by-blendshape)

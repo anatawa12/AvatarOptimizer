@@ -23,7 +23,7 @@ Skinned Meshを結合するとメッシュを変形させる処理の回数が�
 
 ![start.png](./start.png)
 
-まず初めに、マージ先のGameObjectを作りましょう。
+まず初めに、統合先のGameObjectを作りましょう。
 アバターのGameObjectを右クリックから `Create Empty` をクリックして新たなGameObjectを作ります。
 そうしたら、わかりやすい名前に変えておいてください。この記事では`Anon_Merged`とします。
 
@@ -35,8 +35,8 @@ Skinned Meshを結合するとメッシュを変形させる処理の回数が�
 
 すると`Merge Skinned Mesh`と`Skinned Mesh Renderer`が追加されます。
 
-この`Merge Skinned Mesh`は、指定されたメッシュ[^mesh]を一緒についているメッシュにマージします。
-マージを機能させるために、`Merge Skinned Mesh`にマージするメッシュを指定しましょう！
+この`Merge Skinned Mesh`は、指定されたメッシュ[^mesh]を一緒についているメッシュに統合します。
+統合を機能させるために、`Merge Skinned Mesh`に統合対象のメッシュを指定しましょう！
 
 指定を楽にするために、`Anon_Merged`を選択した状態でinspectorをロックしましょう。
 こうすることで複数のメッシュをまとめてドラックアンドドロップできるようになります。[^tip-lock-inspector]
@@ -49,10 +49,10 @@ Skinned Meshを結合するとメッシュを変形させる処理の回数が�
 
 {{< hint info >}}
 
-**なせ顔のメッシュを結合しないの？**
+**なせ顔のメッシュは統合しないの？**
 
 BlendShape(シェイプキー)は頂点数とBlendShape数の積に比例して重くなる処理です。
-そのため、BlendShapeの数が多い顔のメッシュを頂点数の多い体のメッシュと結合するとかえって重くなってしまうため、顔は別のままにするのを推奨しています。
+そのため、BlendShapeの数が多い顔のメッシュを頂点数の多い体のメッシュと統合するとかえって重くなってしまうため、顔は別のままにするのを推奨しています。
 
 {{< /hint >}}
 
@@ -77,7 +77,7 @@ Anchor Overrideには素体で用いられているものを、Root BoneにはHi
 {{< /hint >}}
 
 [^tip-lock-inspector]: PhysBoneに複数のコライダーを指定したりするのにも使えます。色んなところで使えるので覚えておくと便利だと思います。
-[^merge-skinned-mesh]: Root Bone/Anchor Overrideは等しくないとマージできないため対応予定がありません。もし良いアルゴリズムがあれば教えてください。
+[^merge-skinned-mesh]: Root Bone/Anchor Overrideは等しくないと統合できないため対応予定がありません。もし良いアルゴリズムがあれば教えてください。
 [^mesh]: この記事ではメッシュはUnityのMesh assetではなくSkinnedMeshRendererの意味で使用しています。
 
 BlendShapeを固定する {#freeze-blendshape}
@@ -92,7 +92,7 @@ BlendShapeを固定する {#freeze-blendshape}
 前述のように、BlendShapeは頂点数とBlendShape数の積に比例して重くなる処理です。
 また、BlendShapeはweightに関わらず存在するだけで負荷になってしまいます。
 そのため、Performance Rankには反映されませんが固定することが軽量化に繋がります。
-可能であれば、結合したメッシュはBlendShapeが存在しないメッシュにすると良いです。
+可能であれば、統合したメッシュはBlendShapeが存在しないメッシュにすると良いです。
 
 {{< /hint >}}
 

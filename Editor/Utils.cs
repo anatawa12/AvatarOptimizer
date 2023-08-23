@@ -441,6 +441,60 @@ namespace Anatawa12.AvatarOptimizer
         {
             return new BoundsCornersEnumerable(bounds);
         }
+
+        public struct DicCaster<TValueCasted>
+        {
+            public IReadOnlyDictionary<TKey, TValueCasted> CastedDic<TKey, TValue>(IReadOnlyDictionary<TKey, TValue> self)
+                where TValue : class, TValueCasted 
+                => new CastedDictionary<TKey, TValue, TValueCasted>(self);
+        }
+
+        public static DicCaster<TValueCasted> CastDic<TValueCasted>()
+            => new DicCaster<TValueCasted>();
+
+        class CastedDictionary<TKey, TValue, TValueCasted> : IReadOnlyDictionary<TKey, TValueCasted>
+            where TValue : class, TValueCasted
+        {
+            private readonly IReadOnlyDictionary<TKey, TValue> _base;
+            public CastedDictionary(IReadOnlyDictionary<TKey, TValue> @base) => _base = @base;
+
+            public IEnumerator<KeyValuePair<TKey, TValueCasted>> GetEnumerator() =>
+                new Enumerator(_base.GetEnumerator());
+
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+            public int Count => _base.Count;
+            public bool ContainsKey(TKey key) => _base.ContainsKey(key);
+            public TValueCasted this[TKey key] => _base[key];
+            public IEnumerable<TKey> Keys => _base.Keys;
+            public IEnumerable<TValueCasted> Values => _base.Values;
+
+            public bool TryGetValue(TKey key, out TValueCasted value)
+            {
+                var result = _base.TryGetValue(key, out var original);
+                value = original;
+                return result;
+            }
+
+            private class Enumerator : IEnumerator<KeyValuePair<TKey, TValueCasted>>
+            {
+                private IEnumerator<KeyValuePair<TKey, TValue>> _base;
+
+                public Enumerator(IEnumerator<KeyValuePair<TKey, TValue>> @base) => _base = @base;
+                public bool MoveNext() => _base.MoveNext();
+                public void Reset() => _base.Reset();
+                object IEnumerator.Current => Current;
+                public void Dispose() => _base.Dispose();
+
+                public KeyValuePair<TKey, TValueCasted> Current
+                {
+                    get
+                    {
+                        var kvp = _base.Current;
+                        return new KeyValuePair<TKey, TValueCasted>(kvp.Key, kvp.Value);
+                    }
+                }
+            }
+        }
     }
 
     internal struct ArraySerializedPropertyEnumerable : IEnumerable<SerializedProperty>

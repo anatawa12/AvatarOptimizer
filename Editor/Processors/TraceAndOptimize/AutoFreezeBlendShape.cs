@@ -2,11 +2,20 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
-namespace Anatawa12.AvatarOptimizer.Processors
+namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 {
-    partial class TraceAndOptimizeProcessor
+    class AutoFreezeBlendShape
     {
-        private void AutoFreezeBlendShape()
+        private readonly AnimatorParser _animator;
+        private readonly OptimizerSession _session;
+
+        public AutoFreezeBlendShape(AnimatorParser animator, OptimizerSession session)
+        {
+            _animator = animator;
+            _session = session;
+        }
+
+        public void Process()
         {
             // first optimization: unused blend shapes
             foreach (var skinnedMeshRenderer in _session.GetComponents<SkinnedMeshRenderer>())
@@ -16,7 +25,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 // skip SMR without mesh
                 if (!mesh) continue;
 
-                var modifies = GetModifiedProperties(skinnedMeshRenderer);
+                var modifies = _animator.GetModifiedProperties(skinnedMeshRenderer);
                 var blendShapeValues = Enumerable.Range(0, mesh.blendShapeCount)
                     .Select(i => skinnedMeshRenderer.GetBlendShapeWeight(i)).ToArray();
                 var notChanged = Enumerable.Range(0, mesh.blendShapeCount)

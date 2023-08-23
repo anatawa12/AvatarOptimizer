@@ -7,7 +7,7 @@ weight: 25
 
 箱で指定した範囲内のポリゴンを削除します。
 
-このコンポーネントは[Modifying Edit Skinned Mesh Component](../../component-kind/edit-skinned-mesh-components#modifying-component)であるため、SkinnedMeshRendererのあるGameObjectに追加してください。
+このコンポーネントは[Modifying Edit Skinned Mesh Component](../../component-kind/edit-skinned-mesh-components#modifying-component)であるため、SkinnedMeshRendererコンポーネントのあるGameObjectに追加してください。
 
 ## 設定 {#settings}
 

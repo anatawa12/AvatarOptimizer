@@ -22,6 +22,7 @@ jobs:
         || contains(github.event.pull_request.labels.*.name, 'documentation')
         || contains(github.event.pull_request.labels.*.name, 'localization')
         || contains(github.event.pull_request.labels.*.name, 'ci')
+        || contains(github.event.pull_request.labels.*.name, 'refactor')
         || '' }}
       SNAPSHOT_ONLY: ${{ contains(github.event.pull_request.labels.*.name, 'SNAPSHOT-ONLY') || '' }}
     # Steps represent a sequence of tasks that will be executed as part of the job

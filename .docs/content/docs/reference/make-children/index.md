@@ -11,7 +11,7 @@ These specified objects will be the children of this GameObject at build time.
 
 This component is deprecated.
 
-This functionality is not related to avatar optimization so this component will be replaced by component in a new non-destructive Avatar Modification Utils.
+This function is not related to avatar optimization, so this component will be replaced by one in a currently planned non-destructive Avatar Modification Utils.
 
 {{</ hint >}}
 

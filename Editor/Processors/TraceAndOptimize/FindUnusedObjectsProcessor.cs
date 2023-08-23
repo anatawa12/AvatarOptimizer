@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
@@ -6,11 +5,20 @@ using UnityEngine;
 using VRC.Dynamics;
 using Object = UnityEngine.Object;
 
-namespace Anatawa12.AvatarOptimizer.Processors
+namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 {
-    partial class TraceAndOptimizeProcessor
+    class FindUnusedObjectsProcessor
     {
-        void FindUnusedObjects()
+        private readonly AnimatorParser _animator;
+        private readonly OptimizerSession _session;
+
+        public FindUnusedObjectsProcessor(AnimatorParser animator, OptimizerSession session)
+        {
+            _animator = animator;
+            _session = session;
+        }
+
+        public void Process()
         {
             // mark & sweep
             var gameObjects = new HashSet<GameObject>(_session.GetComponents<Transform>().Select(x => x.gameObject));
@@ -28,7 +36,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 AddGameObject(component);
 
             // entry points: modified enable/disable
-            foreach (var keyValuePair in _modifiedProperties)
+            foreach (var keyValuePair in _animator.ModifiedProperties)
             {
                 // TODO: if the any of parent is inactive and kept, it should not be assumed as 
                 if (!(keyValuePair.Key is GameObject gameObject)) continue;
