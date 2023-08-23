@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog].
   - If you removed some vertices with RemoveMeshInBox or RemoveMeshWithBlendShape, some BlendShape may transform no vertices
   - Auto FreeseBlendShae now freezez such a BlendShapes
 - Auto FreezeBlendShape now freezes vertices even if already FreezeBlendShape is configured. `#334`
+- VPM Package now doesn't include Test code `#372` `#373`
 
 ### Deprecated
 
