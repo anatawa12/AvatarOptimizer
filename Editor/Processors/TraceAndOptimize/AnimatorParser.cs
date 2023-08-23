@@ -17,24 +17,30 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 {
     class AnimatorParser
     {
-        private readonly OptimizerSession _session;
-        private readonly TraceAndOptimize _config;
+        private bool mmdWorldCompatibility;
+        private bool advancedAnimatorParser;
 
-        public AnimatorParser(OptimizerSession session, TraceAndOptimize config)
+        public AnimatorParser(bool mmdWorldCompatibility, bool advancedAnimatorParser)
         {
-            _session = session;
-            _config = config;
+            this.mmdWorldCompatibility = mmdWorldCompatibility;
+            this.advancedAnimatorParser = advancedAnimatorParser;
         }
 
-        public ImmutableModificationsContainer GatherAnimationModifications()
+        public AnimatorParser(TraceAndOptimize config)
+        {
+            mmdWorldCompatibility = config.mmdWorldCompatibility;
+            advancedAnimatorParser = config.advancedAnimatorParser;
+        }
+
+        public ImmutableModificationsContainer GatherAnimationModifications(OptimizerSession session)
         {
             var modificationsContainer = new ModificationsContainer();
-            modificationsContainer.MergeAsNewLayer(CollectAvatarRootAnimatorModifications(), alwaysAppliedLayer: true);
+            modificationsContainer.MergeAsNewLayer(CollectAvatarRootAnimatorModifications(session), alwaysAppliedLayer: true);
 
-            foreach (var child in _session.GetRootComponent<Transform>().DirectChildrenEnumerable())
+            foreach (var child in session.GetRootComponent<Transform>().DirectChildrenEnumerable())
                 WalkForAnimator(child, true, modificationsContainer);
 
-            OtherMutateComponents(modificationsContainer);
+            OtherMutateComponents(modificationsContainer, session);
 
             return modificationsContainer.ToImmutable();
         }
@@ -86,9 +92,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         /// <summary>
         /// Collect modifications by non-animation changes. For example, constraints, PhysBones, and else 
         /// </summary>
-        private void OtherMutateComponents(ModificationsContainer mod)
+        private void OtherMutateComponents(ModificationsContainer mod, OptimizerSession session)
         {
-            ReportingObjects(_session.GetComponents<Component>(), component =>
+            ReportingObjects(session.GetComponents<Component>(), component =>
             {
                 switch (component)
                 {
@@ -220,10 +226,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         #region AvatarDescriptor
 
-        private IModificationsContainer CollectAvatarRootAnimatorModifications()
+        private IModificationsContainer CollectAvatarRootAnimatorModifications(OptimizerSession session)
         {
-            var animator = _session.GetRootComponent<Animator>();
-            var descriptor = _session.GetRootComponent<VRCAvatarDescriptor>();
+            var animator = session.GetRootComponent<Animator>();
+            var descriptor = session.GetRootComponent<VRCAvatarDescriptor>();
 
             var modificationsContainer = new ModificationsContainer();
 
@@ -314,7 +320,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             var bodySkinnedMesh = descriptor.transform.Find("Body")?.GetComponent<SkinnedMeshRenderer>();
 
-            if (_config.mmdWorldCompatibility && bodySkinnedMesh)
+            if (mmdWorldCompatibility && bodySkinnedMesh)
             {
                 var updater = modificationsContainer.ModifyObject(bodySkinnedMesh);
 
@@ -453,7 +459,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         {
             return ReportingObject(controller, () =>
             {
-                if (_config.advancedAnimatorParser)
+                if (advancedAnimatorParser)
                 {
                     var (animatorController, mapping) = GetControllerAndOverrides(controller);
                     return AdvancedParseAnimatorController(root, animatorController, mapping,

@@ -7,7 +7,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
             var config = session.GetRootComponent<TraceAndOptimize>();
             if (!config) return;
 
-            var modifications = new TraceAndOptimizes.AnimatorParser(session, config).GatherAnimationModifications();
+            var modifications = new TraceAndOptimizes.AnimatorParser(config).GatherAnimationModifications(session);
             if (config.freezeBlendShape)
                 new TraceAndOptimizes.AutoFreezeBlendShape(modifications, session).Process();
             if (config.removeUnusedObjects)
