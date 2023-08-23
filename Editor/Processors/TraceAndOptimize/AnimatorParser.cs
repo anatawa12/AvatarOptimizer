@@ -483,7 +483,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             return controller.animationClips.Select(clip => GetParsedAnimation(root, clip)).MergeContainersSideBySide();
         }
 
-        private IModificationsContainer AdvancedParseAnimatorController(GameObject root, AnimatorController controller,
+        internal IModificationsContainer AdvancedParseAnimatorController(GameObject root, AnimatorController controller,
             IReadOnlyDictionary<AnimationClip, AnimationClip> mapping, [CanBeNull] BitArrayIntSet externallyWeightChanged)
         {
             var layers = controller.layers;
@@ -493,32 +493,16 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             for (var i = 0; i < layers.Length; i++)
             {
-                var layer = layers[i];
-                // ReSharper disable once CompareOfFloatsByEqualityOperator
-                var alwaysAppliedLayer =
-                    layer.defaultWeight != 1 && i != 0 && (externallyWeightChanged?.Contains(i) ?? true);
-                var syncedLayer = layer.syncedLayerIndex;
+                var (parsedLayer, alwaysAppliedLayer) = ParseAnimatorControllerLayer(
+                    root, controller, mapping, externallyWeightChanged, i);
 
-                IEnumerable<IModificationsContainer> parsedMotions;
-
-                if (syncedLayer == -1)
-                {
-                    parsedMotions = CollectStates(layer.stateMachine)
-                        .Select(state => ParseMotion(root, state.motion, mapping));
-                }
-                else
-                {
-                    parsedMotions = CollectStates(layers[syncedLayer].stateMachine)
-                        .Select(state => ParseMotion(root, layer.GetOverrideMotion(state), mapping));
-                }
-
-                switch (layer.blendingMode)
+                switch (layers[i].blendingMode)
                 {
                     case AnimatorLayerBlendingMode.Override:
-                        mergedController.MergeAsNewLayer(parsedMotions.MergeContainersSideBySide(), alwaysAppliedLayer);
+                        mergedController.MergeAsNewLayer(parsedLayer, alwaysAppliedLayer);
                         break;
                     case AnimatorLayerBlendingMode.Additive:
-                        mergedController.MergeAsNewAdditiveLayer(parsedMotions.MergeContainersSideBySide(), alwaysAppliedLayer);
+                        mergedController.MergeAsNewAdditiveLayer(parsedLayer, alwaysAppliedLayer);
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -528,7 +512,36 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             return mergedController;
         }
 
-        public IModificationsContainer ParseMotion(GameObject root, Motion motion,
+        internal (IModificationsContainer, bool alwaysAppliedLayer) ParseAnimatorControllerLayer(
+            GameObject root,
+            AnimatorController controller,
+            IReadOnlyDictionary<AnimationClip, AnimationClip> mapping,
+            [CanBeNull] BitArrayIntSet externallyWeightChanged,
+            int layerIndex)
+        {
+            var layer = controller.layers[layerIndex];
+            // ReSharper disable once CompareOfFloatsByEqualityOperator
+            var alwaysAppliedLayer =
+                layer.defaultWeight != 1 && layerIndex != 0 && (externallyWeightChanged?.Contains(layerIndex) ?? true);
+            var syncedLayer = layer.syncedLayerIndex;
+
+            IEnumerable<IModificationsContainer> parsedMotions;
+
+            if (syncedLayer == -1)
+            {
+                parsedMotions = CollectStates(layer.stateMachine)
+                    .Select(state => ParseMotion(root, state.motion, mapping));
+            }
+            else
+            {
+                parsedMotions = CollectStates(controller.layers[syncedLayer].stateMachine)
+                    .Select(state => ParseMotion(root, layer.GetOverrideMotion(state), mapping));
+            }
+
+            return (parsedMotions.MergeContainersSideBySide(), alwaysAppliedLayer);
+        }
+
+        internal IModificationsContainer ParseMotion(GameObject root, Motion motion,
             IReadOnlyDictionary<AnimationClip, AnimationClip> mapping) =>
             ReportingObject(motion, () => ParseMotionInner(root, motion, mapping));
 
@@ -627,7 +640,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         private readonly Dictionary<(GameObject, AnimationClip), ImmutableModificationsContainer> _parsedAnimationCache =
             new Dictionary<(GameObject, AnimationClip), ImmutableModificationsContainer>();
 
-        private ImmutableModificationsContainer GetParsedAnimation(GameObject root, [CanBeNull] AnimationClip clip)
+        internal ImmutableModificationsContainer GetParsedAnimation(GameObject root, [CanBeNull] AnimationClip clip)
         {
             if (clip == null) return ImmutableModificationsContainer.Empty;
             if (!_parsedAnimationCache.TryGetValue((root, clip), out var parsed))
