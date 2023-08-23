@@ -522,7 +522,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             var layer = controller.layers[layerIndex];
             // ReSharper disable once CompareOfFloatsByEqualityOperator
             var alwaysAppliedLayer =
-                layer.defaultWeight != 1 && layerIndex != 0 && (externallyWeightChanged?.Contains(layerIndex) ?? true);
+                layerIndex == 0 ||
+                (layer.defaultWeight == 1 && (externallyWeightChanged?.Contains(layerIndex) ?? true));
             var syncedLayer = layer.syncedLayerIndex;
 
             IEnumerable<IModificationsContainer> parsedMotions;
