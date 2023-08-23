@@ -250,10 +250,28 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
     readonly struct AnimationProperty
     {
         public readonly PropertyState State;
-        public readonly float ConstValue;
+        private readonly float _constValue;
+
+        public float ConstValue
+        {
+            get
+            {
+                switch (State)
+                {
+                    case PropertyState.ConstantAlways:
+                    case PropertyState.ConstantPartially:
+                        return _constValue;
+                    case PropertyState.Invalid:
+                    case PropertyState.Variable:
+                        throw new InvalidOperationException("Non Const State");
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+        }
 
         private AnimationProperty(PropertyState state, float constValue) =>
-            (State, ConstValue) = (state, constValue);
+            (State, _constValue) = (state, constValue);
 
         public static AnimationProperty ConstAlways(float value) =>
             new AnimationProperty(PropertyState.ConstantAlways, value);
