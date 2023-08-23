@@ -142,6 +142,19 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 else
                     _properties.Add(propertyName, propertyState);
             }
+            
+            public void AddModificationAsNewAdditiveLayer(string propertyName, AnimationProperty propertyState)
+            {
+                if (_properties.TryGetValue(propertyName, out var property))
+                {
+                    _properties[propertyName] = property.MergeAdditive(propertyState);
+                }
+                else
+                {
+                    // Add PropertyState.Additive in the feature?
+                    _properties.Add(propertyName, AnimationProperty.Variable());
+                }
+            }
         }
 
         #endregion
@@ -157,6 +170,21 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
                 foreach (var (propertyName, propertyState) in properties)
                     updater.AddModificationAsNewLayer(propertyName,
+                        alwaysAppliedLayer ? propertyState : propertyState.PartiallyApplied());
+            }
+        }
+
+        /// <summary>
+        /// Merge the specified Animator as new layer applied after this layer
+        /// </summary>
+        public void MergeAsNewAdditiveLayer<T>(T parsed, bool alwaysAppliedLayer) where T : IModificationsContainer
+        {
+            foreach (var (obj, properties) in parsed.ModifiedProperties)
+            {
+                var updater = ModifyObject(obj);
+
+                foreach (var (propertyName, propertyState) in properties)
+                    updater.AddModificationAsNewAdditiveLayer(propertyName,
                         alwaysAppliedLayer ? propertyState : propertyState.PartiallyApplied());
             }
         }
@@ -302,6 +330,30 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             System.Diagnostics.Debug.Assert(b.State == PropertyState.ConstantAlways);
 
             return this;
+        }
+
+        public AnimationProperty MergeAdditive(AnimationProperty additive)
+        {
+            if (State == PropertyState.Variable) return Variable();
+            if (additive.State == PropertyState.Variable) return Variable();
+
+            // now they are constant.
+            if (State == PropertyState.ConstantAlways && additive.State == PropertyState.ConstantAlways)
+                return ConstAlways(ConstValue + additive.ConstValue);
+
+            // now eiter is ConstantPartially and the other is ConstantAlways
+
+            if (State == PropertyState.ConstantPartially)
+            {
+                System.Diagnostics.Debug.Assert(additive.State == PropertyState.ConstantAlways);
+                return ConstPartially(ConstValue + additive.ConstValue);
+            }
+            else
+            {
+                System.Diagnostics.Debug.Assert(State == PropertyState.ConstantAlways);
+                System.Diagnostics.Debug.Assert(additive.State == PropertyState.ConstantPartially);
+                return Variable();
+            }
         }
 
         public static AnimationProperty? ParseProperty(AnimationCurve curve)

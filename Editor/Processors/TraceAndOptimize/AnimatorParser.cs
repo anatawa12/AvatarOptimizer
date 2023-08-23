@@ -506,7 +506,17 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                         .Select(state => ParseMotion(root, layer.GetOverrideMotion(state), mapping));
                 }
 
-                mergedController.MergeAsNewLayer(parsedMotions.MergeContainersSideBySide(), alwaysAppliedLayer);
+                switch (layer.blendingMode)
+                {
+                    case AnimatorLayerBlendingMode.Override:
+                        mergedController.MergeAsNewLayer(parsedMotions.MergeContainersSideBySide(), alwaysAppliedLayer);
+                        break;
+                    case AnimatorLayerBlendingMode.Additive:
+                        mergedController.MergeAsNewAdditiveLayer(parsedMotions.MergeContainersSideBySide(), alwaysAppliedLayer);
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
             }
 
             return mergedController;
