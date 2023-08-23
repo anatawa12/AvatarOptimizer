@@ -497,12 +497,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 if (syncedLayer == -1)
                 {
                     parsedMotions = CollectStates(layer.stateMachine)
-                        .Select(state => ParseMotion(root, state.motion));
+                        .Select(state => ParseMotion(root, state.motion, mapping));
                 }
                 else
                 {
                     parsedMotions = CollectStates(layers[syncedLayer].stateMachine)
-                        .Select(state => ParseMotion(root, layer.GetOverrideMotion(state)));
+                        .Select(state => ParseMotion(root, layer.GetOverrideMotion(state), mapping));
                 }
 
                 mergedController.MergeAsNewLayer(parsedMotions.MergeContainersSideBySide(), alwaysAppliedLayer);
@@ -511,26 +511,29 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             return mergedController;
         }
 
-        private IModificationsContainer ParseMotion(GameObject root, Motion motion) =>
-            ReportingObject(motion, () => ParseMotionInner(root, motion));
+        private IModificationsContainer ParseMotion(GameObject root, Motion motion,
+            IReadOnlyDictionary<AnimationClip, AnimationClip> mapping) =>
+            ReportingObject(motion, () => ParseMotionInner(root, motion, mapping));
 
-        private IModificationsContainer ParseMotionInner(GameObject root, Motion motion)
+        private IModificationsContainer ParseMotionInner(GameObject root, Motion motion,
+            IReadOnlyDictionary<AnimationClip, AnimationClip> mapping)
         {
             switch (motion)
             {
                 case null:
                     return ImmutableModificationsContainer.Empty;
                 case AnimationClip clip:
-                    return GetParsedAnimation(root, clip);
+                    return GetParsedAnimation(root, mapping.TryGetValue(clip, out var newClip) ? newClip : clip);
                 case BlendTree blendTree:
-                    return ParseBlendTree(root, blendTree);
+                    return ParseBlendTree(root, blendTree, mapping);
                 default:
                     LogFatal("Unknown Motion Type: {0} in motion {1}", motion.GetType().Name, motion.name);
                     return ImmutableModificationsContainer.Empty;
             }
         }
 
-        private IModificationsContainer ParseBlendTree(GameObject root, BlendTree blendTree)
+        private IModificationsContainer ParseBlendTree(GameObject root, BlendTree blendTree,
+            IReadOnlyDictionary<AnimationClip, AnimationClip> mapping)
         {
             switch (blendTree.blendType)
             {
@@ -540,10 +543,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 case BlendTreeType.FreeformCartesian2D:
                     // in those blend blend total blend is always 1 so
                     // if all animation sets same value, the result will also be same value.
-                    return blendTree.children.Select(x => ParseMotionInner(root, x.motion)).MergeContainersSideBySide();
+                    return blendTree.children.Select(x => ParseMotionInner(root, x.motion, mapping)).MergeContainersSideBySide();
                 case BlendTreeType.Direct:
                     // in direct blend tree, total blend can be not zero so all properties are Variable.
-                    var merged = blendTree.children.Select(x => ParseMotionInner(root, x.motion))
+                    var merged = blendTree.children.Select(x => ParseMotionInner(root, x.motion, mapping))
                         .MergeContainersSideBySide()
                         .ToMutable();
 
