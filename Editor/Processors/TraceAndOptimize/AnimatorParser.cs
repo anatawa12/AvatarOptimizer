@@ -469,7 +469,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         }
 
         /// <summary>
-        /// Fallback AnimatorController Parser but always assumed as partially applied 
+        /// Fallback AnimatorController Parser but always assumed as partially applied.
+        /// This process assumes everything is applied as non-additive state motion.
+        /// This parsing MAY not correct with direct blendtree or additive layer
+        /// but it's extremely rare case so ignoring such case.
         /// </summary>
         private IModificationsContainer FallbackParseAnimatorController(GameObject root, RuntimeAnimatorController controller)
         {
