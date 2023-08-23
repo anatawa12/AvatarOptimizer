@@ -277,7 +277,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         public override int GetHashCode() => _object != null ? _object.GetHashCode() : 0;
     }
 
-    readonly struct AnimationProperty
+    readonly struct AnimationProperty : IEquatable<AnimationProperty>
     {
         public readonly PropertyState State;
         private readonly float _constValue;
@@ -405,6 +405,39 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             ConstantAlways,
             ConstantPartially,
             Variable,
+        }
+
+        public bool Equals(AnimationProperty other)
+        {
+            switch (State)
+            {
+                case PropertyState.ConstantAlways:
+                case PropertyState.ConstantPartially:
+                    return State == other.State && _constValue.Equals(other.ConstValue);
+                case PropertyState.Invalid:
+                case PropertyState.Variable:
+                default:
+                    return State == other.State;
+            }
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is AnimationProperty other && Equals(other);
+        }
+
+        public override int GetHashCode()
+        {
+            switch (State)
+            {
+                case PropertyState.ConstantAlways:
+                case PropertyState.ConstantPartially:
+                    return unchecked(((int)State * 397) ^ _constValue.GetHashCode());
+                default:
+                case PropertyState.Invalid:
+                case PropertyState.Variable:
+                    return unchecked(((int)State * 397));
+            }
         }
     }
 }
