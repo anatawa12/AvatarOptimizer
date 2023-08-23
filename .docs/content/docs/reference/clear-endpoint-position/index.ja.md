@@ -7,7 +7,7 @@ weight: 1
 
 このコンポーネントは、Endpoint Positionの値を0に置換し、`_EndPhysBone`GameObjectを追加します。
 
-このコンポーネントはPhysBoneのついたGameObjectに追加してください。
+このコンポーネントはPhysBoneコンポーネントがあるGameObjectに追加してください。
 
 今のところ、このコンポーネントに設定項目はありませんが、ボタンが1つあります。
 `適用して今すぐcomponentを削除する`をクリックすると、 この操作が適用され、コンポーネントが削除されます。

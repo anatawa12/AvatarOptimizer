@@ -18,14 +18,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         public void Process()
         {
+            // first optimization: unused blend shapes
             foreach (var skinnedMeshRenderer in _session.GetComponents<SkinnedMeshRenderer>())
             {
                 var mesh = skinnedMeshRenderer.sharedMesh;
 
                 // skip SMR without mesh
                 if (!mesh) continue;
-                // skip configured mesh
-                if (skinnedMeshRenderer.GetComponent<FreezeBlendShape>()) continue;
 
                 var modifies = _modifications.GetModifiedProperties(skinnedMeshRenderer);
                 var blendShapeValues = Enumerable.Range(0, mesh.blendShapeCount)
@@ -57,7 +56,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     skinnedMeshRenderer.SetBlendShapeWeight(i, blendShapeValues[i]);
                 EditorUtility.SetDirty(skinnedMeshRenderer);
 
-                var freeze = skinnedMeshRenderer.gameObject.AddComponent<FreezeBlendShape>();
+                var freeze = skinnedMeshRenderer.gameObject.GetOrAddComponent<FreezeBlendShape>();
                 var serialized = new SerializedObject(freeze);
                 var editorUtil = PrefabSafeSet.EditorUtil<string>.Create(
                     serialized.FindProperty(nameof(FreezeBlendShape.shapeKeysSet)),
@@ -65,6 +64,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 foreach (var shape in notChanged)
                     editorUtil.GetElementOf(shape).EnsureAdded();
                 serialized.ApplyModifiedPropertiesWithoutUndo();
+            }
+
+            // second optimization: remove meaningless blendShapes
+            foreach (var skinnedMeshRenderer in _session.GetComponents<SkinnedMeshRenderer>())
+            {
+                skinnedMeshRenderer.gameObject.GetOrAddComponent<FreezeBlendShape>();
+                skinnedMeshRenderer.gameObject.GetOrAddComponent<InternalAutoFreezeMeaninglessBlendShape>();
             }
         }
     }

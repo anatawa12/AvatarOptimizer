@@ -163,6 +163,13 @@ namespace Anatawa12.AvatarOptimizer
                 array[i] = value;
         }
 
+        public static T GetOrAddComponent<T>(this GameObject go) where T : Component
+        {
+            var component = go.GetComponent<T>();
+            if (!component) component = go.AddComponent<T>();
+            return component;
+        }
+
         public static Transform GetTarget(this VRCPhysBoneBase physBoneBase) =>
             physBoneBase.rootTransform ? physBoneBase.rootTransform : physBoneBase.transform;
 

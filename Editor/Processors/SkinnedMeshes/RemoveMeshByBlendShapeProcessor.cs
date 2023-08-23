@@ -10,7 +10,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         }
 
         // This needs to be less than FreezeBlendshapeProcessor.ProcessOrder.
-        public override int ProcessOrder => -10001;
+        public override EditSkinnedMeshProcessorOrder ProcessOrder => EditSkinnedMeshProcessorOrder.RemovingMesh;
 
         public override void Process(OptimizerSession session, MeshInfo2 target, MeshInfo2Holder meshInfo2Holder)
         {
@@ -21,7 +21,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             foreach (var shapeName in Component.RemovingShapeKeys)
             {
                 if (!vertex.BlendShapes.TryGetValue(shapeName, out var value)) continue;
-                if (value.position.sqrMagnitude > sqrTolerance)
+                if (value.Any(f => f.Position.sqrMagnitude > sqrTolerance))
                     byBlendShapeVertices.Add(vertex);
             }
 

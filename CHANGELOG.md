@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Support for Multi Frame BlendShapes `#333`
 - Advanced Animator Parser `#343`
   - This is new AnimatorController parser to collect animated properties
   - This parser understands AnimatorLayers so with this parser, 
@@ -16,6 +17,10 @@ The format is based on [Keep a Changelog].
     with Additive Layer or BlendTree will be fixed with this parser.
 
 ### Changed
+- Auto FreezeBlendShape now freezes meaningless BlendShape `#334`
+  - If you removed some vertices with RemoveMeshInBox or RemoveMeshWithBlendShape, some BlendShape may transform no vertices
+  - Auto FreeseBlendShae now freezez such a BlendShapes
+- Auto FreezeBlendShape now freezes vertices even if already FreezeBlendShape is configured. `#334`
 
 ### Deprecated
 
@@ -24,6 +29,11 @@ The format is based on [Keep a Changelog].
 ### Fixed
 
 ### Security
+
+## [1.3.4] - 2023-08-22
+### Changed
+- Internal implementation of Trace and Optimize [`#361`](https://github.com/anatawa12/AvatarOptimizer/pull/361)
+- Documentation Improvements [`#366`](https://github.com/anatawa12/AvatarOptimizer/pull/366) [`#365`](https://github.com/anatawa12/AvatarOptimizer/pull/365)
 
 ## [1.3.3] - 2023-08-21
 ### Added
@@ -455,7 +465,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.3.3...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.3.4...HEAD
+[1.3.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.3.3...v1.3.4
 [1.3.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.3.2...v1.3.3
 [1.3.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.3.1...v1.3.2
 [1.3.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.3.0...v1.3.1

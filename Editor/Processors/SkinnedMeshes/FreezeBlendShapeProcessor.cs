@@ -11,7 +11,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         {
         }
 
-        public override int ProcessOrder => -10000;
+        public override EditSkinnedMeshProcessorOrder ProcessOrder => EditSkinnedMeshProcessorOrder.AfterRemoveMesh;
 
         public override void Process(OptimizerSession session, MeshInfo2 target, MeshInfo2Holder meshInfo2Holder)
         {
@@ -35,12 +35,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 {
                     if (!freezes[i]) continue;
                     var (name, weight) = target.BlendShapes[i];
-                    if (!vertex.BlendShapes.TryGetValue(name, out var value)) continue;
-                    weight /= 100;
+                    if (!vertex.TryGetBlendShape(name, weight, out var position, out var normal, out var tangent)) continue;
 
-                    vertex.Position += value.position * weight;
-                    vertex.Normal += value.normal * weight;
-                    var tangent = (Vector3)vertex.Tangent + value.tangent * weight;
+                    vertex.Position += position;
+                    vertex.Normal += normal;
+                    tangent += (Vector3)vertex.Tangent;
                     vertex.Tangent = new Vector4(tangent.x, tangent.y, tangent.z, vertex.Tangent.w);
                     vertex.BlendShapes.Remove(name);
                 }

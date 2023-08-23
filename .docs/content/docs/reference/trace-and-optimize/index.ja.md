@@ -12,7 +12,7 @@ aliases:
 このコンポーネントは、アバターを走査して自動的にできる限りの最適化を行います。
 チェックボックスで自動的に行う最適化を選択することが出来ます。
 
-このコンポーネントは[Avatar Global Component](../../component-kind/avatar-global-components)であるため、アバタールートに追加してください。
+このコンポーネントは[Avatar Global Component](../../component-kind/avatar-global-components)であるため、アバターのルートに追加してください。
 
 現在、以下の機能を使った自動最適化が可能です。
 - [FreezeBlendShape](../freeze-blendshape)
