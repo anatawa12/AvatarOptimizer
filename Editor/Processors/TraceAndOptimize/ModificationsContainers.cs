@@ -166,30 +166,32 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         /// <summary>
         /// Merge the specified Animator as new layer applied after this layer
         /// </summary>
-        public void MergeAsNewLayer<T>(T parsed, bool alwaysAppliedLayer) where T : IModificationsContainer
+        public void MergeAsNewLayer<T>(T parsed, AnimatorWeightState weightState) where T : IModificationsContainer
         {
+            if (weightState == AnimatorWeightState.AlwaysZero) return;
             foreach (var (obj, properties) in parsed.ModifiedProperties)
             {
                 var updater = ModifyObject(obj);
 
                 foreach (var (propertyName, propertyState) in properties)
-                    updater.AddModificationAsNewLayer(propertyName,
-                        alwaysAppliedLayer ? propertyState : propertyState.PartiallyApplied());
+                {
+                    updater.AddModificationAsNewLayer(propertyName, weightState.ApplyToProperty(propertyState));
+                }
             }
         }
 
         /// <summary>
         /// Merge the specified Animator as new layer applied after this layer
         /// </summary>
-        public void MergeAsNewAdditiveLayer<T>(T parsed, bool alwaysAppliedLayer) where T : IModificationsContainer
+        public void MergeAsNewAdditiveLayer<T>(T parsed, AnimatorWeightState weightState) where T : IModificationsContainer
         {
+            if (weightState == AnimatorWeightState.AlwaysZero) return;
             foreach (var (obj, properties) in parsed.ModifiedProperties)
             {
                 var updater = ModifyObject(obj);
 
                 foreach (var (propertyName, propertyState) in properties)
-                    updater.AddModificationAsNewAdditiveLayer(propertyName,
-                        alwaysAppliedLayer ? propertyState : propertyState.PartiallyApplied());
+                    updater.AddModificationAsNewAdditiveLayer(propertyName, weightState.ApplyToProperty(propertyState));
             }
         }
 
@@ -419,5 +421,100 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     return unchecked(((int)State * 397));
             }
         }
+    }
+    
+    enum AnimatorWeightState
+    {
+        NotChanged,
+        AlwaysZero,
+        AlwaysOne,
+        EitherZeroOrOne,
+        Variable
+    }
+
+    class AnimatorLayerWeightMap<TKey>
+    {
+        private Dictionary<TKey, AnimatorWeightState> _backed =
+            new Dictionary<TKey, AnimatorWeightState>();
+
+        public AnimatorWeightState this[TKey key]
+        {
+            get
+            {
+                _backed.TryGetValue(key, out var state);
+                return state;
+            }
+            set => _backed[key] = value;
+        }
+
+        public AnimatorWeightState Get(TKey key) => this[key];
+    }
+
+    static class AnimatorLayerWeightStates
+    {
+        public static AnimatorWeightState WeightStateFor(float duration, float weight) =>
+            duration != 0 ? AnimatorWeightState.Variable : WeightStateFor(weight);
+
+        public static AnimatorWeightState WeightStateFor(float weight)
+        {
+            switch (weight)
+            {
+                case 0:
+                    return AnimatorWeightState.AlwaysZero;
+                case 1:
+                    return AnimatorWeightState.AlwaysOne;
+                default:
+                    return AnimatorWeightState.Variable;
+            }
+        }
+        
+        public static AnimatorWeightState Merge(this AnimatorWeightState a, AnimatorWeightState b)
+        {
+            // 25 pattern
+            if (a == b) return a;
+
+            if (a == AnimatorWeightState.NotChanged) return b;
+            if (b == AnimatorWeightState.NotChanged) return a;
+
+            if (a == AnimatorWeightState.Variable) return AnimatorWeightState.Variable;
+            if (b == AnimatorWeightState.Variable) return AnimatorWeightState.Variable;
+
+            if (a == AnimatorWeightState.AlwaysOne && b == AnimatorWeightState.AlwaysZero)
+                return AnimatorWeightState.EitherZeroOrOne;
+            if (b == AnimatorWeightState.AlwaysOne && a == AnimatorWeightState.AlwaysZero)
+                return AnimatorWeightState.EitherZeroOrOne;
+
+            if (a == AnimatorWeightState.EitherZeroOrOne && b == AnimatorWeightState.AlwaysZero)
+                return AnimatorWeightState.EitherZeroOrOne;
+            if (b == AnimatorWeightState.EitherZeroOrOne && a == AnimatorWeightState.AlwaysZero)
+                return AnimatorWeightState.EitherZeroOrOne;
+
+            if (a == AnimatorWeightState.EitherZeroOrOne && b == AnimatorWeightState.AlwaysOne)
+                return AnimatorWeightState.EitherZeroOrOne;
+            if (b == AnimatorWeightState.EitherZeroOrOne && a == AnimatorWeightState.AlwaysOne)
+                return AnimatorWeightState.EitherZeroOrOne;
+
+            throw new ArgumentOutOfRangeException();
+        }
+
+        public static AnimationProperty ApplyToProperty(this AnimatorWeightState state, AnimationProperty property)
+        {
+            switch (state)
+            {
+                case AnimatorWeightState.AlwaysOne:
+                    return property;
+                case AnimatorWeightState.EitherZeroOrOne:
+                    return property.PartiallyApplied();
+                case AnimatorWeightState.Variable:
+                    return AnimationProperty.Variable();
+                case AnimatorWeightState.NotChanged:
+                case AnimatorWeightState.AlwaysZero:
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(state), state, null);
+            }
+        }
+
+        public static AnimatorWeightState ForAlwaysApplied(bool alwaysApplied) =>
+            alwaysApplied ? AnimatorWeightState.AlwaysOne : AnimatorWeightState.EitherZeroOrOne;
     }
 }

@@ -27,8 +27,7 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
         [Test]
         public void TestLayer00_BaseAnimate0ToConst100() =>
             LayerTest(0, "BaseAnimate0ToConst100",
-                "blendShape.shape0", AnimationProperty.ConstAlways(100),
-                alwaysApplied: null);
+                "blendShape.shape0", AnimationProperty.ConstAlways(100));
 
         [Test]
         public void TestLayer01_Animate1ToVariable() =>
@@ -40,12 +39,11 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
             LayerTest(2, "Animate2ToVariable",
                 "blendShape.shape2", AnimationProperty.Variable());
 
-        // TODO: this should be variable?
         [Test]
         public void TestLayer03_Animate3ToConst100Non0_1Weight() =>
             LayerTest(3, "Animate3ToConst100Non0/1Weight",
                 "blendShape.shape3", AnimationProperty.ConstPartially(100), 
-                alwaysApplied: false);
+                expectedWeightState: AnimatorWeightState.Variable);
 
         [Test]
         public void TestLayer04_Animate4ToConst100WithMultipleState() =>
@@ -168,7 +166,7 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
             Assert.That(properties["blendShape.shape0"], Is.EqualTo(AnimationProperty.ConstAlways(100)));
             Assert.That(properties["blendShape.shape1"], Is.EqualTo(AnimationProperty.ConstAlways(100)));
             Assert.That(properties["blendShape.shape2"], Is.EqualTo(AnimationProperty.Variable()));
-            Assert.That(properties["blendShape.shape3"], Is.EqualTo(AnimationProperty.ConstPartially(100)));
+            Assert.That(properties["blendShape.shape3"], Is.EqualTo(AnimationProperty.Variable()));
             Assert.That(properties["blendShape.shape4"], Is.EqualTo(AnimationProperty.ConstAlways(100)));
             Assert.That(properties["blendShape.shape5"], Is.EqualTo(AnimationProperty.Variable()));
             Assert.That(properties["blendShape.shape6"], Is.EqualTo(AnimationProperty.Variable()));
@@ -187,33 +185,21 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
         private void LayerTest(int layerIndex, string layerName,
             string propertyName, AnimationProperty property,
             AnimatorLayerBlendingMode blendingMode = AnimatorLayerBlendingMode.Override,
-            bool? alwaysApplied = true)
+            AnimatorWeightState expectedWeightState = AnimatorWeightState.AlwaysOne)
         {
             var parser = new AnimatorParser(true, true);
 
             // preconditions
             Assert.That(_controller.layers[layerIndex].name, Is.EqualTo(layerName));
             Assert.That(_controller.layers[layerIndex].blendingMode, Is.EqualTo(blendingMode));
-            switch (alwaysApplied)
-            {
-                case null:
-                    break;
-                case true:
-                    Assert.That(_controller.layers[layerIndex].defaultWeight, Is.EqualTo(1f));
-                    break;
-                case false:
-                    Assert.That(_controller.layers[layerIndex].defaultWeight, Is.Not.EqualTo(1f));
-                    Assert.That(_controller.layers[layerIndex].defaultWeight, Is.Not.EqualTo(0f));
-                    break;
-            }
 
             // execute
-            var (parsed, alwaysAppliedLayer) = parser.ParseAnimatorControllerLayer(_prefab,
+            var (parsed, weightState) = parser.ParseAnimatorControllerLayer(_prefab,
                 _controller, Utils.EmptyDictionary<AnimationClip, AnimationClip>(),
                 null, layerIndex);
 
             // check
-            Assert.That(alwaysAppliedLayer, Is.EqualTo(alwaysApplied ?? true));
+            Assert.That(weightState, Is.EqualTo(expectedWeightState));
             AssertContainer(parsed, propertyName, property);
         }
 

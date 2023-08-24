@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -35,7 +34,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         public ImmutableModificationsContainer GatherAnimationModifications(OptimizerSession session)
         {
             var modificationsContainer = new ModificationsContainer();
-            modificationsContainer.MergeAsNewLayer(CollectAvatarRootAnimatorModifications(session), alwaysAppliedLayer: true);
+            modificationsContainer.MergeAsNewLayer(CollectAvatarRootAnimatorModifications(session), 
+                weightState: AnimatorWeightState.AlwaysOne);
 
             foreach (var child in session.GetRootComponent<Transform>().DirectChildrenEnumerable())
                 WalkForAnimator(child, true, modificationsContainer);
@@ -62,10 +62,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 parsed = ParseAnimatorController(gameObject, runtimeController);
                 parsed = AddHumanoidModifications(parsed, animator);
 
+                var alwaysApplied =
+                    objectAlwaysActive
+                    && modificationsContainer.IsAlwaysTrue(animator, "m_Enabled", animator.enabled)
+                    && parsed.IsAlwaysTrue(animator, "m_Enabled", animator.enabled);
+
                 modificationsContainer.MergeAsNewLayer(parsed,
-                    alwaysAppliedLayer: objectAlwaysActive
-                                        && modificationsContainer.IsAlwaysTrue(animator, "m_Enabled", animator.enabled)
-                                        && parsed.IsAlwaysTrue(animator, "m_Enabled", animator.enabled));
+                    weightState: AnimatorLayerWeightStates.ForAlwaysApplied(alwaysApplied));
             }
 
             var animation = transform.GetComponent<Animation>();
@@ -78,9 +81,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
                 var parsed = GetParsedAnimation(gameObject, animation.clip);
 
-                modificationsContainer.MergeAsNewLayer(parsed, alwaysAppliedLayer: objectAlwaysActive
+                var alwaysApplied =
+                    objectAlwaysActive
                     && modificationsContainer.IsAlwaysTrue(animation, "m_Enabled", animation.enabled)
-                    && parsed.IsAlwaysTrue(animation, "m_Enabled", animation.enabled));
+                    && parsed.IsAlwaysTrue(animation, "m_Enabled", animation.enabled);
+
+                modificationsContainer.MergeAsNewLayer(parsed,
+                    weightState: AnimatorLayerWeightStates.ForAlwaysApplied(alwaysApplied));
             }
 
             foreach (var child in transform.DirectChildrenEnumerable())
@@ -240,13 +247,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             // see https://misskey.niri.la/notes/9ioemawdit
             // see https://creators.vrchat.com/avatars/playable-layers
 
-            var playableWeightChanged = new AnimatorLayerMap<bool>();
-            var animatorLayerWeightChanged = new AnimatorLayerMap<BitArrayIntSet>
+            var playableWeightChanged = new AnimatorLayerMap<AnimatorWeightState>();
+            var animatorLayerWeightChanged = new AnimatorLayerMap<AnimatorLayerWeightMap<int>>
             {
-                [VRCAvatarDescriptor.AnimLayerType.Action] = new BitArrayIntSet(),
-                [VRCAvatarDescriptor.AnimLayerType.FX] = new BitArrayIntSet(),
-                [VRCAvatarDescriptor.AnimLayerType.Gesture] = new BitArrayIntSet(),
-                [VRCAvatarDescriptor.AnimLayerType.Additive] = new BitArrayIntSet(),
+                [VRCAvatarDescriptor.AnimLayerType.Action] = new AnimatorLayerWeightMap<int>(),
+                [VRCAvatarDescriptor.AnimLayerType.FX] = new AnimatorLayerWeightMap<int>(),
+                [VRCAvatarDescriptor.AnimLayerType.Gesture] = new AnimatorLayerWeightMap<int>(),
+                [VRCAvatarDescriptor.AnimLayerType.Additive] = new AnimatorLayerWeightMap<int>(),
             };
             var useDefaultLayers = !descriptor.customizeAnimationLayers;
 
@@ -254,29 +261,39 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 CollectWeightChangesInController(GetPlayableLayerController(layer, useDefaultLayers),
                     playableWeightChanged, animatorLayerWeightChanged);
 
-            var parsedLayers = new AnimatorLayerMap<IModificationsContainer>();
+            var controllers = new AnimatorLayerMap<RuntimeAnimatorController>();
 
             foreach (var layer in descriptor.specialAnimationLayers.Concat(descriptor.baseAnimationLayers))
             {
-                parsedLayers[layer.type] = ParseAnimatorController(descriptor.gameObject,
-                    GetPlayableLayerController(layer, useDefaultLayers),
-                    animatorLayerWeightChanged[layer.type]);
+                controllers[layer.type] = GetPlayableLayerController(layer, useDefaultLayers);
             }
 
-            void MergeLayer(VRCAvatarDescriptor.AnimLayerType type, bool? alwaysApplied)
+            void MergeLayer(VRCAvatarDescriptor.AnimLayerType type, bool alwaysApplied, float defaultWeight)
             {
-                var alwaysAppliedLayer = alwaysApplied ?? !playableWeightChanged[type];
-                modificationsContainer.MergeAsNewLayer(parsedLayers[type], alwaysAppliedLayer: alwaysAppliedLayer);
+                AnimatorWeightState weightState;
+                if (alwaysApplied)
+                    weightState = AnimatorWeightState.AlwaysOne;
+                else
+                    weightState = AnimatorLayerWeightStates.WeightStateFor(defaultWeight)
+                        .Merge(playableWeightChanged[type]);
+
+                if (weightState == AnimatorWeightState.AlwaysZero) return;
+
+
+                var parsedLayer = ParseAnimatorController(descriptor.gameObject,
+                    controllers[type], animatorLayerWeightChanged[type]);
+
+                modificationsContainer.MergeAsNewLayer(parsedLayer, weightState);
             }
 
-            MergeLayer(VRCAvatarDescriptor.AnimLayerType.Base, true);
+            MergeLayer(VRCAvatarDescriptor.AnimLayerType.Base, true, 1);
             // Station Sitting
-            MergeLayer(VRCAvatarDescriptor.AnimLayerType.Sitting, false);
-            MergeLayer(VRCAvatarDescriptor.AnimLayerType.Additive, null); // Idle
-            MergeLayer(VRCAvatarDescriptor.AnimLayerType.Gesture, null);
+            MergeLayer(VRCAvatarDescriptor.AnimLayerType.Sitting, false, 1);
+            MergeLayer(VRCAvatarDescriptor.AnimLayerType.Additive, false, 1); // Idle
+            MergeLayer(VRCAvatarDescriptor.AnimLayerType.Gesture, false, 1);
             // Station Action
-            MergeLayer(VRCAvatarDescriptor.AnimLayerType.Action, false);
-            MergeLayer(VRCAvatarDescriptor.AnimLayerType.FX, true);
+            MergeLayer(VRCAvatarDescriptor.AnimLayerType.Action, false, 0);
+            MergeLayer(VRCAvatarDescriptor.AnimLayerType.FX, false, 1);
 
             // TPose and IKPose should only affect to Humanoid so skip here~
 
@@ -332,8 +349,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         }
 
         private void CollectWeightChangesInController(RuntimeAnimatorController runtimeController,
-            AnimatorLayerMap<bool> playableWeightChanged,
-            AnimatorLayerMap<BitArrayIntSet> animatorLayerWeightChanged)
+            AnimatorLayerMap<AnimatorWeightState> playableWeightChanged,
+            AnimatorLayerMap<AnimatorLayerWeightMap<int>> animatorLayerWeightChanged)
         {
             ReportingObject(runtimeController, () =>
             {
@@ -380,7 +397,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                                     throw new ArgumentOutOfRangeException();
                             }
 
-                            playableWeightChanged[layer] = true;
+                            var current = AnimatorLayerWeightStates.WeightStateFor(playableLayerControl.blendDuration,
+                                playableLayerControl.goalWeight);
+                            playableWeightChanged[layer] = playableWeightChanged[layer].Merge(current);
                         }
                             break;
                         case VRC_AnimatorLayerControl animatorLayerControl:
@@ -404,8 +423,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                                     throw new ArgumentOutOfRangeException();
                             }
 
-                            
-                            animatorLayerWeightChanged[layer].Add(animatorLayerControl.layer);
+                            var current = AnimatorLayerWeightStates.WeightStateFor(animatorLayerControl.blendDuration,
+                                animatorLayerControl.goalWeight);
+                            animatorLayerWeightChanged[layer][animatorLayerControl.layer] =
+                                animatorLayerWeightChanged[layer][animatorLayerControl.layer].Merge(current);
                             break;
                         }
                     }
@@ -455,7 +476,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         }
 
         public IModificationsContainer ParseAnimatorController(GameObject root, RuntimeAnimatorController controller,
-            [CanBeNull] BitArrayIntSet externallyWeightChanged = null)
+            [CanBeNull] AnimatorLayerWeightMap<int> externallyWeightChanged = null)
         {
             return ReportingObject(controller, () =>
             {
@@ -484,7 +505,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         }
 
         internal IModificationsContainer AdvancedParseAnimatorController(GameObject root, AnimatorController controller,
-            IReadOnlyDictionary<AnimationClip, AnimationClip> mapping, [CanBeNull] BitArrayIntSet externallyWeightChanged)
+            IReadOnlyDictionary<AnimationClip, AnimationClip> mapping,
+            [CanBeNull] AnimatorLayerWeightMap<int> externallyWeightChanged)
         {
             var layers = controller.layers;
             if (layers.Length == 0) return ImmutableModificationsContainer.Empty;
@@ -512,18 +534,23 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             return mergedController;
         }
 
-        internal (IModificationsContainer, bool alwaysAppliedLayer) ParseAnimatorControllerLayer(
+        internal (IModificationsContainer, AnimatorWeightState weightState) ParseAnimatorControllerLayer(
             GameObject root,
             AnimatorController controller,
             IReadOnlyDictionary<AnimationClip, AnimationClip> mapping,
-            [CanBeNull] BitArrayIntSet externallyWeightChanged,
+            [CanBeNull] AnimatorLayerWeightMap<int> externallyWeightChanged,
             int layerIndex)
         {
             var layer = controller.layers[layerIndex];
             // ReSharper disable once CompareOfFloatsByEqualityOperator
-            var alwaysAppliedLayer =
-                layerIndex == 0 ||
-                (layer.defaultWeight == 1 && (externallyWeightChanged?.Contains(layerIndex) ?? true));
+            var weightState = layerIndex == 0
+                ? AnimatorWeightState.AlwaysOne
+                : AnimatorLayerWeightStates.WeightStateFor(layer.defaultWeight)
+                    .Merge(externallyWeightChanged?.Get(layerIndex) ?? AnimatorWeightState.NotChanged);
+
+            if (weightState == AnimatorWeightState.AlwaysZero)
+                return (ImmutableModificationsContainer.Empty, AnimatorWeightState.AlwaysZero);
+
             var syncedLayer = layer.syncedLayerIndex;
 
             IEnumerable<IModificationsContainer> parsedMotions;
@@ -539,7 +566,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     .Select(state => ParseMotion(root, layer.GetOverrideMotion(state), mapping));
             }
 
-            return (parsedMotions.MergeContainersSideBySide(), alwaysAppliedLayer);
+            return (parsedMotions.MergeContainersSideBySide(), weightState);
         }
 
         internal IModificationsContainer ParseMotion(GameObject root, Motion motion,
