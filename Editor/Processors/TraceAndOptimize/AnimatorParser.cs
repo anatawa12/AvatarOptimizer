@@ -49,26 +49,26 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             ModificationsContainer modificationsContainer)
         {
             var gameObject = transform.gameObject;
-            var objectAlwaysActive =
-                parentObjectAlwaysActive &&
-                modificationsContainer.IsAlwaysTrue(gameObject, "m_IsActive", gameObject.activeSelf);
+            bool objectAlwaysActive;
+            switch (modificationsContainer.GetConstantValue(gameObject, "m_IsActive", gameObject.activeSelf))
+            {
+                case null:
+                    objectAlwaysActive = false;
+                    break;
+                case true:
+                    objectAlwaysActive = parentObjectAlwaysActive;
+                    break;
+                case false:
+                    // this object is disabled so animator(s) in this component will never activated.
+                    return;
+            }
 
             var animator = transform.GetComponent<Animator>();
             if (animator && animator.runtimeAnimatorController)
             {
-                var runtimeController = animator.runtimeAnimatorController;
-                IModificationsContainer parsed;
-
-                parsed = ParseAnimatorController(gameObject, runtimeController);
-                parsed = AddHumanoidModifications(parsed, animator);
-
-                var alwaysApplied =
-                    objectAlwaysActive
-                    && modificationsContainer.IsAlwaysTrue(animator, "m_Enabled", animator.enabled)
-                    && parsed.IsAlwaysTrue(animator, "m_Enabled", animator.enabled);
-
-                modificationsContainer.MergeAsNewLayer(parsed,
-                    weightState: AnimatorLayerWeightStates.ForAlwaysApplied(alwaysApplied));
+                ParseAnimationOrAnimator(animator, objectAlwaysActive, modificationsContainer,
+                    () => AddHumanoidModifications(
+                        ParseAnimatorController(gameObject, animator.runtimeAnimatorController), animator));
             }
 
             var animation = transform.GetComponent<Animation>();
@@ -79,19 +79,51 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 // so if `Play Automatically` is disabled, we can do nothing with Animation component.
                 // That's why we ignore Animation component if playAutomatically is false.
 
-                var parsed = _animationParser.GetParsedAnimation(gameObject, animation.clip);
-
-                var alwaysApplied =
-                    objectAlwaysActive
-                    && modificationsContainer.IsAlwaysTrue(animation, "m_Enabled", animation.enabled)
-                    && parsed.IsAlwaysTrue(animation, "m_Enabled", animation.enabled);
-
-                modificationsContainer.MergeAsNewLayer(parsed,
-                    weightState: AnimatorLayerWeightStates.ForAlwaysApplied(alwaysApplied));
+                ParseAnimationOrAnimator(animation, objectAlwaysActive, modificationsContainer,
+                    () => _animationParser.GetParsedAnimation(gameObject, animation.clip));
             }
 
             foreach (var child in transform.DirectChildrenEnumerable())
                 WalkForAnimator(child, parentObjectAlwaysActive: objectAlwaysActive, modificationsContainer);
+        }
+
+        private void ParseAnimationOrAnimator(
+            Behaviour animator,
+            bool objectAlwaysActive,
+            ModificationsContainer modificationsContainer,
+            Func<IModificationsContainer> parseComponent)
+        {
+            bool alwaysApplied;
+            switch (modificationsContainer.GetConstantValue(animator, "m_Enabled", animator.enabled))
+            {
+                case null:
+                    alwaysApplied = false;
+                    break;
+                case true:
+                    alwaysApplied = objectAlwaysActive;
+                    break;
+                case false:
+                    // this component is disabled so animator(s) in this component will never activated.
+                    return;
+            }
+
+            var parsed = parseComponent();
+
+            if (alwaysApplied)
+            {
+                switch (parsed.GetConstantValue(animator, "m_Enabled", animator.enabled))
+                {
+                    case null:
+                    case false:
+                        alwaysApplied = false;
+                        break;
+                    case true:
+                        break;
+                }
+            }
+
+            modificationsContainer.MergeAsNewLayer(parsed,
+                weightState: AnimatorLayerWeightStates.ForAlwaysApplied(alwaysApplied));
         }
 
         #region OtherComponents

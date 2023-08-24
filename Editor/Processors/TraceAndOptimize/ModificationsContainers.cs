@@ -24,7 +24,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 ? value
                 : Utils.EmptyDictionary<string, AnimationProperty>();
 
-        public static bool IsAlwaysTrue<T>(this T container, ComponentOrGameObject obj, string property, bool currentValue)
+        public static bool? GetConstantValue<T>(this T container, ComponentOrGameObject obj, string property, bool currentValue)
             where T : IModificationsContainer
         {
             if (!container.GetModifiedProperties(obj).TryGetValue(property, out var prop))
@@ -33,19 +33,32 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             switch (prop.State)
             {
                 case AnimationProperty.PropertyState.ConstantAlways:
-                    // ReSharper disable once CompareOfFloatsByEqualityOperator
-                    return prop.ConstValue == 1;
+                    return FloatToBool(prop.ConstValue);
                 case AnimationProperty.PropertyState.ConstantPartially:
-                    // ReSharper disable once CompareOfFloatsByEqualityOperator
-                    return prop.ConstValue == 1 && currentValue;
+                    var constValue = FloatToBool(prop.ConstValue);
+                    if (constValue == currentValue) return currentValue;
+                    return null;
                 case AnimationProperty.PropertyState.Variable:
                     return false;
                 case AnimationProperty.PropertyState.Invalid:
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+
+            bool? FloatToBool(float f)
+            {
+                switch (f)
+                {
+                    case 0:
+                        return false;
+                    case 1:
+                        return true;
+                    default:
+                        return null;
+                }
+            }
         }
-        
+
         public static IModificationsContainer MergeContainersSideBySide<T>([ItemNotNull] this IEnumerable<T> enumerable)
             where T : IModificationsContainer
         {
