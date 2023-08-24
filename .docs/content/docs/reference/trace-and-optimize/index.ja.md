@@ -24,6 +24,6 @@ aliases:
 - `MMDワールドとの互換性`
   MMDワールドで使われるBlendShapeを固定しないなど、MMDワールドとの互換性を考慮した軽量化を行います。
 - `Advanced Animator Parserを使用する`
-  最適化内容を決めるため、AAOはAnimatorControllerを解析します。このオプションを有効にすると、AnimatorControllerのレイヤー構造とBlendTree構造を解析するAdvanced Animator Parserを用いて解析します。このオプションを無効にすると、AnimationClipのみを解析するFallback Animator Parserが使用されます。Fallback Animator Parserはよりシンプルですが、Direct BlendTreeを正しく解析しません。
+  最適化内容を決めるために、AAOはAnimatorControllerを解析します。このオプションを有効にすると、AnimatorControllerのレイヤー構造とBlendTree構造を解析するAdvanced Animator Parserを解析に用います。このオプションを無効にすると、AnimationClipのみを解析するFallback Animator Parserを解析に用います。Fallback Animator Parserは旧式の処理であり、Direct BlendTreeを正しく解析しません。通常、このオプションを無効化する必要はありません。
 
 ![component.png](component.png)
