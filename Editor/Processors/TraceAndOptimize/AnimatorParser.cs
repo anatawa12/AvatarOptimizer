@@ -261,6 +261,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 CollectWeightChangesInController(GetPlayableLayerController(layer, useDefaultLayers),
                     playableWeightChanged, animatorLayerWeightChanged);
 
+            if (mmdWorldCompatibility)
+            {
+                var fxLayer = animatorLayerWeightChanged[VRCAvatarDescriptor.AnimLayerType.FX];
+                fxLayer[1] = fxLayer[1].Merge(AnimatorWeightState.EitherZeroOrOne);
+                fxLayer[2] = fxLayer[2].Merge(AnimatorWeightState.EitherZeroOrOne);
+            }
+
             var controllers = new AnimatorLayerMap<RuntimeAnimatorController>();
 
             foreach (var layer in descriptor.specialAnimationLayers.Concat(descriptor.baseAnimationLayers))
