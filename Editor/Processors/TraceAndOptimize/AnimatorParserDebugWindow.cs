@@ -164,7 +164,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                         if (GUILayout.Button("Parse") && motion && rootGameObject)
                         {
                             parsedRootObject = rootGameObject;
-                            Container = new AnimatorParser(true, true)
+                            Container = new AnimationParser()
                                 .ParseMotion(rootGameObject, motion, Utils.EmptyDictionary<AnimationClip, AnimationClip>())
                                 .ToImmutable();
                         }

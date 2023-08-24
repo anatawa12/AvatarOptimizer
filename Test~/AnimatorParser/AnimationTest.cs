@@ -64,7 +64,7 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
             var clip = TestUtils.GetAssetAt<AnimationClip>($"AnimatorParser/{name}.anim");
             var prefab = TestUtils.GetAssetAt<GameObject>($"AnimatorParser/AnimatorParserAnimated.prefab");
             var skinnedRenderer = prefab.GetComponent<SkinnedMeshRenderer>() ?? throw new InvalidOperationException();
-            var parser = new AnimatorParser(true, true);
+            var parser = new AnimationParser();
 
             var parsed = parser.ParseMotion(prefab, clip, Utils.EmptyDictionary<AnimationClip, AnimationClip>())
                 .ToImmutable();
@@ -86,7 +86,7 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
             var clip = TestUtils.GetAssetAt<AnimationClip>($"AnimatorParser/{name}.anim");
             var prefab = TestUtils.GetAssetAt<GameObject>($"AnimatorParser/AnimatorParserAnimated.prefab");
             var skinnedRenderer = prefab.GetComponent<SkinnedMeshRenderer>() ?? throw new InvalidOperationException();
-            var parser = new AnimatorParser(true, true);
+            var parser = new AnimationParser();
 
             var parsed = parser.ParseMotion(prefab, clip, Utils.EmptyDictionary<AnimationClip, AnimationClip>())
                 .ToImmutable();
