@@ -23,5 +23,11 @@ Currently the following optimizations are applied automatically.
 Also, You can adjust optimization with the following settings
 - `MMD World Compatibility`
   Optimize with considering compatibility with MMD Worlds. e.g. Not freezing BlendShapes used by MMD Worlds.
+- `Use Advanced Animator Parser`
+  To determine where AAO can optimize, AAO parses AnimatorControllers.
+  With this option enabled, Advanced Animator Parser,
+  which parses layer structure of AnimatorController and BlendTree structure. 
+  If this option is disabled, Fallback Animator Parser which collects all AnimationClips and
+  parses AnimationClips. Fallback Animator Parser is simpler but will parse Direct BlendTree incorrectly.
 
 ![component.png](component.png)
