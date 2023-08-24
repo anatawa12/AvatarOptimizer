@@ -55,7 +55,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 case null:
                     objectAlwaysActive = false;
                     break;
-                case true:
+                default: // true
                     objectAlwaysActive = parentObjectAlwaysActive;
                     break;
                 case false:
@@ -99,7 +99,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 case null:
                     alwaysApplied = false;
                     break;
-                case true:
+                default: // true
                     alwaysApplied = objectAlwaysActive;
                     break;
                 case false:
