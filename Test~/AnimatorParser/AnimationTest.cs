@@ -122,6 +122,10 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
             yield return ("Animate9To100", "blendShape.shape9", 100);
             yield return ("Animate10To100", "blendShape.shape10", 100);
             yield return ("Animate11To100", "blendShape.shape11", 100);
+            yield return ("Animate12To10", "blendShape.shape12", 10);
+            yield return ("Animate13To10", "blendShape.shape13", 10);
+            yield return ("Animate14To10", "blendShape.shape14", 10);
+            yield return ("Animate15To10", "blendShape.shape15", 10);
         }
 
         public static IEnumerable<TestCaseData> VariableSourceAnimationsData() =>
@@ -131,6 +135,7 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
         {
             yield return ("Animate1ToVariable", "blendShape.shape1");
             yield return ("Animate2ToVariable", "blendShape.shape2");
+            yield return ("Animate15ToVariable", "blendShape.shape15");
         }
     }
 }

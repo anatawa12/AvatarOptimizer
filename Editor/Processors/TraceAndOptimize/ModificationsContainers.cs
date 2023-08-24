@@ -145,14 +145,18 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             
             public void AddModificationAsNewAdditiveLayer(string propertyName, AnimationProperty propertyState)
             {
-                if (_properties.TryGetValue(propertyName, out var property))
+                switch (propertyState.State)
                 {
-                    _properties[propertyName] = property.MergeAdditive(propertyState);
-                }
-                else
-                {
-                    // Add PropertyState.Additive in the feature?
-                    _properties.Add(propertyName, AnimationProperty.Variable());
+                    case AnimationProperty.PropertyState.ConstantAlways:
+                    case AnimationProperty.PropertyState.ConstantPartially:
+                        // const 
+                        break;
+                    case AnimationProperty.PropertyState.Variable:
+                        _properties[propertyName] = AnimationProperty.Variable();
+                        break;
+                    case AnimationProperty.PropertyState.Invalid:
+                    default:
+                        throw new ArgumentOutOfRangeException();
                 }
             }
         }
@@ -332,30 +336,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             System.Diagnostics.Debug.Assert(b.State == PropertyState.ConstantAlways);
 
             return this;
-        }
-
-        public AnimationProperty MergeAdditive(AnimationProperty additive)
-        {
-            if (State == PropertyState.Variable) return Variable();
-            if (additive.State == PropertyState.Variable) return Variable();
-
-            // now they are constant.
-            if (State == PropertyState.ConstantAlways && additive.State == PropertyState.ConstantAlways)
-                return ConstAlways(ConstValue + additive.ConstValue);
-
-            // now eiter is ConstantPartially and the other is ConstantAlways
-
-            if (State == PropertyState.ConstantPartially)
-            {
-                System.Diagnostics.Debug.Assert(additive.State == PropertyState.ConstantAlways);
-                return ConstPartially(ConstValue + additive.ConstValue);
-            }
-            else
-            {
-                System.Diagnostics.Debug.Assert(State == PropertyState.ConstantAlways);
-                System.Diagnostics.Debug.Assert(additive.State == PropertyState.ConstantPartially);
-                return Variable();
-            }
         }
 
         public static AnimationProperty? ParseProperty(AnimationCurve curve)
