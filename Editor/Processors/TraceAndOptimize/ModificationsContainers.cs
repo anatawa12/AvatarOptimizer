@@ -313,7 +313,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             new AnimationProperty(PropertyState.ConstantAlways, value);
 
         public static AnimationProperty ConstPartially(float value) =>
-            new AnimationProperty(PropertyState.ConstantAlways, value);
+            new AnimationProperty(PropertyState.ConstantPartially, value);
 
         public static AnimationProperty Variable() =>
             new AnimationProperty(PropertyState.Variable, float.NaN);
@@ -419,6 +419,23 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 case PropertyState.Invalid:
                 case PropertyState.Variable:
                     return unchecked(((int)State * 397));
+            }
+        }
+
+        public override string ToString()
+        {
+            switch (State)
+            {
+                case PropertyState.Invalid:
+                    return "Invalid";
+                case PropertyState.ConstantAlways:
+                    return $"ConstantAlways({ConstValue})";
+                case PropertyState.ConstantPartially:
+                    return $"ConstantPartially({ConstValue})";
+                case PropertyState.Variable:
+                    return "Variable";
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
         }
     }

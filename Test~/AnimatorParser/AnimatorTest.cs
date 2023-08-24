@@ -42,7 +42,7 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
         [Test]
         public void TestLayer03_Animate3ToConst100Non0_1Weight() =>
             LayerTest(3, "Animate3ToConst100Non0/1Weight",
-                "blendShape.shape3", AnimationProperty.ConstPartially(100));
+                "blendShape.shape3", AnimationProperty.ConstAlways(100));
 
         [Test]
         public void TestLayer04_Animate4ToConst100WithMultipleState() =>
