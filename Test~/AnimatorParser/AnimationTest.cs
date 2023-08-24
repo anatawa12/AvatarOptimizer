@@ -126,6 +126,8 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
             yield return ("Animate13To10", "blendShape.shape13", 10);
             yield return ("Animate14To10", "blendShape.shape14", 10);
             yield return ("Animate15To10", "blendShape.shape15", 10);
+            yield return ("Animate16To100", "blendShape.shape16", 100);
+            yield return ("Animate17To100", "blendShape.shape17", 100);
         }
 
         public static IEnumerable<TestCaseData> VariableSourceAnimationsData() =>

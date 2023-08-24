@@ -121,12 +121,22 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
         public void TestLayer18_Animate15ToConst10() =>
             LayerTest(18, "Animate15ToConst10",
                 "blendShape.shape15", AnimationProperty.ConstAlways(10));
-        
+
         [Test]
         public void TestLayer19_Animate15ToVariableAdditive() =>
             LayerTest(19, "Animate15ToVariableAdditive",
                 "blendShape.shape15", AnimationProperty.Variable(),
                 blendingMode: AnimatorLayerBlendingMode.Additive);
+
+        [Test]
+        public void TestLayer20_Animate16ToConst100Weight0() =>
+            LayerTest(20, "Animate16ToConst100Weight0",
+                "blendShape.shape16", AnimationProperty.ConstAlways(100));
+
+        [Test]
+        public void TestLayer21_Animate16ToConst100Weight0() =>
+            LayerTest(21, "Animate17ToConst100Weight0",
+                "blendShape.shape17", AnimationProperty.ConstAlways(100));
 
         [Test]
         public void TestParseWhole()
@@ -160,6 +170,8 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
                 "blendShape.shape13",
                 // "blendShape.shape14", // 14 is additive constant so no motion
                 "blendShape.shape15",
+                // "blendShape.shape16", // weight is 0
+                // "blendShape.shape17", // weight is 0
             }));
 
             Assert.That(properties["blendShape.shape0"], Is.EqualTo(AnimationProperty.ConstAlways(100)));
@@ -178,7 +190,63 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
             Assert.That(properties["blendShape.shape13"], Is.EqualTo(AnimationProperty.ConstAlways(10)));
             //Assert.That(properties["blendShape.shape14"], Is.EqualTo(AnimationProperty.ConstAlways()));
             Assert.That(properties["blendShape.shape15"], Is.EqualTo(AnimationProperty.Variable()));
+            //Assert.That(properties["blendShape.shape16"], Is.EqualTo(AnimationProperty.ConstAlways(100)));
+            //Assert.That(properties["blendShape.shape17"], Is.EqualTo(AnimationProperty.ConstAlways(100)));
+        }
 
+        [Test]
+        public void TestParseWholeWithExternalWeightChanges()
+        {
+            var parser = new AnimatorParser(true, true);
+
+            var externallyWeightChanged = new AnimatorLayerWeightMap<int>
+            {
+                // this should be ignored.
+                [0] = AnimatorWeightState.Variable,
+                // variable even if external change is always 1
+                [3] = AnimatorWeightState.AlwaysOne,
+                //
+                [7] = AnimatorWeightState.AlwaysZero,
+                [8] = AnimatorWeightState.EitherZeroOrOne,
+                [9] = AnimatorWeightState.Variable,
+                // if original have 1, no meaning
+                [10] = AnimatorWeightState.AlwaysOne,
+                // original is 0 and override is 1
+                [20] = AnimatorWeightState.AlwaysOne,
+                // original is 0 and override is 0
+                [21] = AnimatorWeightState.AlwaysOne,
+            };
+
+            // execute
+            var parsed = parser.AdvancedParseAnimatorController(_prefab, _controller,
+                Utils.EmptyDictionary<AnimationClip, AnimationClip>(), externallyWeightChanged);
+
+            // test
+            Assert.That(parsed.ModifiedProperties.Keys,
+                Is.EquivalentTo(new[] { (ComponentOrGameObject)_skinnedRenderer }));
+
+            var properties = parsed.ModifiedProperties[_skinnedRenderer];
+            Assert.That(properties.Keys, Has.Member("blendShape.shape16"));
+            Assert.That(properties.Keys, Has.No.EqualTo("blendShape.shape17"));
+
+            Assert.That(properties["blendShape.shape0"], Is.EqualTo(AnimationProperty.ConstAlways(100)));
+            //Assert.That(properties["blendShape.shape1"], Is.EqualTo(AnimationProperty.ConstAlways(100)));
+            //Assert.That(properties["blendShape.shape2"], Is.EqualTo(AnimationProperty.Variable()));
+            Assert.That(properties["blendShape.shape3"], Is.EqualTo(AnimationProperty.Variable()));
+            //Assert.That(properties["blendShape.shape4"], Is.EqualTo(AnimationProperty.ConstAlways(100)));
+            //Assert.That(properties["blendShape.shape5"], Is.EqualTo(AnimationProperty.Variable()));
+            //Assert.That(properties["blendShape.shape6"], Is.EqualTo(AnimationProperty.Variable()));
+            Assert.That(properties["blendShape.shape7"], Is.EqualTo(AnimationProperty.ConstPartially(100)));
+            Assert.That(properties["blendShape.shape8"], Is.EqualTo(AnimationProperty.ConstPartially(100)));
+            Assert.That(properties["blendShape.shape9"], Is.EqualTo(AnimationProperty.Variable()));
+            Assert.That(properties["blendShape.shape10"], Is.EqualTo(AnimationProperty.ConstAlways(100)));
+            //Assert.That(properties["blendShape.shape11"], Is.EqualTo(AnimationProperty.ConstPartially(100)));
+            //Assert.That(properties["blendShape.shape12"], Is.EqualTo(AnimationProperty.ConstAlways(10)));
+            //Assert.That(properties["blendShape.shape13"], Is.EqualTo(AnimationProperty.ConstAlways(10)));
+            ////Assert.That(properties["blendShape.shape14"], Is.EqualTo(AnimationProperty.ConstAlways()));
+            //Assert.That(properties["blendShape.shape15"], Is.EqualTo(AnimationProperty.Variable()));
+            Assert.That(properties["blendShape.shape16"], Is.EqualTo(AnimationProperty.ConstPartially(100)));
+            //Assert.That(properties["blendShape.shape17"], Is.EqualTo(AnimationProperty.ConstAlways(100)));
         }
 
         private void LayerTest(int layerIndex, string layerName,
