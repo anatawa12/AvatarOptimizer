@@ -515,16 +515,23 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             for (var i = 0; i < layers.Length; i++)
             {
-                var (parsedLayer, alwaysAppliedLayer) = ParseAnimatorControllerLayer(
-                    root, controller, mapping, externallyWeightChanged, i);
+                var weightState = i == 0
+                    ? AnimatorWeightState.AlwaysOne
+                    : AnimatorLayerWeightStates.WeightStateFor(layers[i].defaultWeight)
+                        .Merge(externallyWeightChanged?.Get(i) ?? AnimatorWeightState.NotChanged);
+
+                if (weightState == AnimatorWeightState.AlwaysZero) continue;
+
+                var parsedLayer = ParseAnimatorControllerLayer(root, controller, mapping, i);
+
 
                 switch (layers[i].blendingMode)
                 {
                     case AnimatorLayerBlendingMode.Override:
-                        mergedController.MergeAsNewLayer(parsedLayer, alwaysAppliedLayer);
+                        mergedController.MergeAsNewLayer(parsedLayer, weightState);
                         break;
                     case AnimatorLayerBlendingMode.Additive:
-                        mergedController.MergeAsNewAdditiveLayer(parsedLayer, alwaysAppliedLayer);
+                        mergedController.MergeAsNewAdditiveLayer(parsedLayer, weightState);
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -534,22 +541,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             return mergedController;
         }
 
-        internal (IModificationsContainer, AnimatorWeightState weightState) ParseAnimatorControllerLayer(
+        internal IModificationsContainer ParseAnimatorControllerLayer(
             GameObject root,
             AnimatorController controller,
             IReadOnlyDictionary<AnimationClip, AnimationClip> mapping,
-            [CanBeNull] AnimatorLayerWeightMap<int> externallyWeightChanged,
             int layerIndex)
         {
             var layer = controller.layers[layerIndex];
-            // ReSharper disable once CompareOfFloatsByEqualityOperator
-            var weightState = layerIndex == 0
-                ? AnimatorWeightState.AlwaysOne
-                : AnimatorLayerWeightStates.WeightStateFor(layer.defaultWeight)
-                    .Merge(externallyWeightChanged?.Get(layerIndex) ?? AnimatorWeightState.NotChanged);
-
-            if (weightState == AnimatorWeightState.AlwaysZero)
-                return (ImmutableModificationsContainer.Empty, AnimatorWeightState.AlwaysZero);
 
             var syncedLayer = layer.syncedLayerIndex;
 
@@ -566,7 +564,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     .Select(state => ParseMotion(root, layer.GetOverrideMotion(state), mapping));
             }
 
-            return (parsedMotions.MergeContainersSideBySide(), weightState);
+            return parsedMotions.MergeContainersSideBySide();
         }
 
         internal IModificationsContainer ParseMotion(GameObject root, Motion motion,

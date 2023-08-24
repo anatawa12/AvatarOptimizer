@@ -42,8 +42,7 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
         [Test]
         public void TestLayer03_Animate3ToConst100Non0_1Weight() =>
             LayerTest(3, "Animate3ToConst100Non0/1Weight",
-                "blendShape.shape3", AnimationProperty.ConstPartially(100), 
-                expectedWeightState: AnimatorWeightState.Variable);
+                "blendShape.shape3", AnimationProperty.ConstPartially(100));
 
         [Test]
         public void TestLayer04_Animate4ToConst100WithMultipleState() =>
@@ -184,8 +183,7 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
 
         private void LayerTest(int layerIndex, string layerName,
             string propertyName, AnimationProperty property,
-            AnimatorLayerBlendingMode blendingMode = AnimatorLayerBlendingMode.Override,
-            AnimatorWeightState expectedWeightState = AnimatorWeightState.AlwaysOne)
+            AnimatorLayerBlendingMode blendingMode = AnimatorLayerBlendingMode.Override)
         {
             var parser = new AnimatorParser(true, true);
 
@@ -194,12 +192,10 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
             Assert.That(_controller.layers[layerIndex].blendingMode, Is.EqualTo(blendingMode));
 
             // execute
-            var (parsed, weightState) = parser.ParseAnimatorControllerLayer(_prefab,
-                _controller, Utils.EmptyDictionary<AnimationClip, AnimationClip>(),
-                null, layerIndex);
+            var parsed = parser.ParseAnimatorControllerLayer(_prefab,
+                _controller, Utils.EmptyDictionary<AnimationClip, AnimationClip>(), layerIndex);
 
             // check
-            Assert.That(weightState, Is.EqualTo(expectedWeightState));
             AssertContainer(parsed, propertyName, property);
         }
 
