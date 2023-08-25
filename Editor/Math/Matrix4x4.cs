@@ -149,6 +149,8 @@ namespace Anatawa12.AvatarOptimizer
         public static Matrix4x4 operator *(Matrix4x4 a, Matrix4x4 b) => a.ToUnity() * b.ToUnity();
         public static Matrix4x4 operator *(Matrix4x4 a, UnityMatrix4x4 b) => a.ToUnity() * b;
         public static Matrix4x4 operator *(UnityMatrix4x4 a, Matrix4x4 b) => a * b.ToUnity();
+        public static bool operator ==(Matrix4x4 a, Matrix4x4 b) => a.Equals(b);
+        public static bool operator !=(Matrix4x4 a, Matrix4x4 b) => !a.Equals(b);
         public static Vector4 operator *(Matrix4x4 a, Vector4 b) => a.ToUnity() * b;
         public bool Equals(Matrix4x4 other) => ToUnity().Equals(other.ToUnity());
         public override bool Equals(object obj) => obj is Matrix4x4 other && Equals(other);
