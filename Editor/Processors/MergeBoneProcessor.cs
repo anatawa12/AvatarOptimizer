@@ -75,7 +75,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
             var boneMapping = new int[oldBones.Length];
 
             var newBones = oldBones.Where(x => !(x && mergeMapping.ContainsKey(x))).ToArray();
-            var newBindposes = new Matrix4x4[newBones.Length];
+            var newBindposes = new UnityEngine.Matrix4x4[newBones.Length];
 
             for (int i = 0, j = 0; i < oldBones.Length; i++)
             {
