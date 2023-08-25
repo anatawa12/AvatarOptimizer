@@ -62,7 +62,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 var targetRenderer = keyValuePair.Key;
                 if (!targetRenderer) continue;
 
-                keyValuePair.Value.WriteToSkinnedMeshRenderer(targetRenderer, session));
+                keyValuePair.Value.WriteToSkinnedMeshRenderer(targetRenderer, session);
             }
 
             foreach (var keyValuePair in _staticCache)
