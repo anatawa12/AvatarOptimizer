@@ -49,15 +49,68 @@ namespace Anatawa12.AvatarOptimizer.Processors
             Dictionary<Transform, Transform> mergeMapping)
         {
             var meshInfo2 = new MeshInfo2(renderer);
+            var primaryBones = new Dictionary<Transform, Bone>();
 
             // first, simply update bone weights by updating BindPose
             foreach (var bone in meshInfo2.Bones)
             {
-                if (bone.Transform && mergeMapping.TryGetValue(bone.Transform, out var mapped))
+                if (!bone.Transform) continue;
+                if (mergeMapping.TryGetValue(bone.Transform, out var mapped))
                 {
                     bone.Bindpose = mapped.worldToLocalMatrix * bone.Transform.localToWorldMatrix * bone.Bindpose;
                     bone.Transform = mapped;
                 }
+                else
+                {
+                    if (!primaryBones.ContainsKey(bone.Transform))
+                        primaryBones.Add(bone.Transform, bone);
+                }
+            }
+
+            // Optimization 1: if vertex is affected by only one bone, we can merge to one weight
+            foreach (var vertex in meshInfo2.Vertices)
+            {
+                var singleBoneTransform = vertex.BoneWeights.Select(x => x.bone.Transform)
+                    .DistinctSingleOrDefaultIfNoneOrMultiple();
+                if (singleBoneTransform == null) continue;
+                if (!primaryBones.TryGetValue(singleBoneTransform, out var finalBone))
+                    primaryBones.Add(singleBoneTransform, finalBone = vertex.BoneWeights[0].bone);
+
+                // about bindposes and bones
+                //    (∑ localToWorldMatrix * bindPose * weight) * point
+                //  = localToWorldMatrix * (∑ bindPose * weight) * point
+                //  = localToWorldMatrix * newBindPose *  newBindPose^-1 * (∑ bindPose * weight) * point
+                //  = localToWorldMatrix * newBindPose * (newBindPose^-1 * (∑ bindPose * weight) * point)
+                //  = localToWorldMatrix * newBindPose * (newBindPose^-1 *   mergedOldBindPose   * point)
+                //  = localToWorldMatrix * newBindPose * (              transBindPose            * point)
+                //  = localToWorldMatrix * newBindPose *  transBindPose * point
+                //  = localToWorldMatrix * newBindPose *  transBindPose * (original + (∑blendShape * weight))
+                //  = localToWorldMatrix * newBindPose * (transBindPose * original + ∑transBindPose * blendShape * weight)
+
+                var mergedOldBindPose = Matrix4x4.zero;
+                foreach (var (bone, weight) in vertex.BoneWeights)
+                    mergedOldBindPose += bone.Bindpose * weight;
+                var transBindPose = finalBone.Bindpose.inverse * mergedOldBindPose;
+
+                vertex.Position = transBindPose.MultiplyPoint3x4(vertex.Position);
+                foreach (var frames in vertex.BlendShapes.Values)
+                {
+                    for (var i = 0; i < frames.Count; i++)
+                    {
+                        var frame = frames[i];
+                        frames[i] = new Vertex.BlendShapeFrame(
+                            weight: frame.Weight,
+                            position: transBindPose.MultiplyPoint3x4(frame.Position),
+                            normal: transBindPose.MultiplyPoint3x3(frame.Normal),
+                            tangent: transBindPose.MultiplyPoint3x3(frame.Tangent)
+                        );
+                    }
+                }
+
+                var weightSum = vertex.BoneWeights.Select(x => x.weight).Sum();
+                // I want weightSum to be 1.0 but it may not.
+                vertex.BoneWeights.Clear();
+                vertex.BoneWeights.Add((finalBone, weightSum));
             }
 
             // TODO: Optimization
