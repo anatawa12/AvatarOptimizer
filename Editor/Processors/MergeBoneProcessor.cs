@@ -144,11 +144,29 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
         private readonly struct BoneUniqKey : IEquatable<BoneUniqKey>
         {
-            private readonly string _bindPoseInfo;
+            private readonly Matrix4x4 _bindPoseInfo;
             public readonly Transform Transform;
 
-            public BoneUniqKey(Bone bone) =>
-                (_bindPoseInfo, Transform) = (bone.Bindpose.ToString(), bone.Transform);
+            public BoneUniqKey(Bone bone)
+            {
+                _bindPoseInfo = bone.Bindpose * 100000;
+                _bindPoseInfo.m00 = Mathf.Round(_bindPoseInfo.m00);
+                _bindPoseInfo.m01 = Mathf.Round(_bindPoseInfo.m01);
+                _bindPoseInfo.m02 = Mathf.Round(_bindPoseInfo.m02);
+                _bindPoseInfo.m03 = Mathf.Round(_bindPoseInfo.m03);
+                _bindPoseInfo.m10 = Mathf.Round(_bindPoseInfo.m10);
+                _bindPoseInfo.m11 = Mathf.Round(_bindPoseInfo.m11);
+                _bindPoseInfo.m12 = Mathf.Round(_bindPoseInfo.m12);
+                _bindPoseInfo.m13 = Mathf.Round(_bindPoseInfo.m13);
+                _bindPoseInfo.m20 = Mathf.Round(_bindPoseInfo.m20);
+                _bindPoseInfo.m21 = Mathf.Round(_bindPoseInfo.m21);
+                _bindPoseInfo.m22 = Mathf.Round(_bindPoseInfo.m22);
+                _bindPoseInfo.m23 = Mathf.Round(_bindPoseInfo.m23);
+                _bindPoseInfo.m30 = Mathf.Round(_bindPoseInfo.m30);
+                _bindPoseInfo.m31 = Mathf.Round(_bindPoseInfo.m31);
+                _bindPoseInfo.m32 = Mathf.Round(_bindPoseInfo.m32);
+                Transform = bone.Transform;
+            }
 
             public bool Equals(BoneUniqKey other) =>
                 Equals(Transform, other.Transform) && _bindPoseInfo == other._bindPoseInfo;
@@ -156,8 +174,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
             public override bool Equals(object obj) => obj is BoneUniqKey other && Equals(other);
 
             public override int GetHashCode() =>
-                unchecked((_bindPoseInfo != null ? _bindPoseInfo.GetHashCode() : 0) * 397) ^
-                (Transform != null ? Transform.GetHashCode() : 0);
+                unchecked(_bindPoseInfo.GetHashCode() * 397) ^ (Transform != null ? Transform.GetHashCode() : 0);
         }
     }
 }
