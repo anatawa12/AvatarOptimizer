@@ -11,9 +11,9 @@ The format is based on [Keep a Changelog].
 - Support for Multi Frame BlendShapes `#333`
 - Advanced Animator Parser `#343`
   - This is new AnimatorController parser to collect animated properties
-  - This parser understands AnimatorLayers so with this parser, 
-    AAO can freeze BlendShapes which always be animated to constant value on the final later.
-  - This also understands Additive Layer and BlendTree so extremely rare problem in previous Animator Parser 
+  - This parser understands AnimatorLayers, so with this parser, 
+    AAO can freeze BlendShapes which are always finally animated to a constant value.
+  - This also understands Additive Layer and BlendTree, so extremely rare problem in previous Animator Parser 
     with Additive Layer or BlendTree will be fixed with this parser.
 
 ### Changed
