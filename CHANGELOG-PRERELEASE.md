@@ -24,6 +24,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- MergeBone not working well with non-restpose bones `#379`
 
 ### Security
 
