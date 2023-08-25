@@ -153,5 +153,6 @@ namespace Anatawa12.AvatarOptimizer
         public bool Equals(Matrix4x4 other) => ToUnity().Equals(other.ToUnity());
         public override bool Equals(object obj) => obj is Matrix4x4 other && Equals(other);
         public override int GetHashCode() => ToUnity().GetHashCode();
+        public override string ToString() => ToUnity().ToString();
     }
 }

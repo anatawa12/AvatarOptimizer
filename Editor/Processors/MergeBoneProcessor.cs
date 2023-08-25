@@ -50,6 +50,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
         {
             var meshInfo2 = new MeshInfo2(renderer);
             var primaryBones = new Dictionary<Transform, Bone>();
+            var boneReplaced = false;
 
             // first, simply update bone weights by updating BindPose
             foreach (var bone in meshInfo2.Bones)
@@ -59,13 +60,17 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 {
                     bone.Bindpose = mapped.worldToLocalMatrix * bone.Transform.localToWorldMatrix * bone.Bindpose;
                     bone.Transform = mapped;
+                    boneReplaced = true;
                 }
                 else
                 {
+                    // we assume fist bone we find is the most natural bone.
                     if (!primaryBones.ContainsKey(bone.Transform))
                         primaryBones.Add(bone.Transform, bone);
                 }
             }
+
+            if (!boneReplaced) return;
 
             // Optimization 1: if vertex is affected by only one bone, we can merge to one weight
             foreach (var vertex in meshInfo2.Vertices)
@@ -113,9 +118,49 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 vertex.BoneWeights.Add((finalBone, weightSum));
             }
 
-            // TODO: Optimization
+            // Optimization2: If there are same (BindPose, Transform) pair, merge
+            // This is optimization for RestPose bone merging
+            var boneMapping = new Dictionary<Bone, Bone>();
+            foreach (var grouping in meshInfo2.Bones.GroupBy(x => new BoneUniqKey(x)))
+            {
+                if (!grouping.Key.Transform) continue;
+                primaryBones.TryGetValue(grouping.Key.Transform, out var primaryBone);
+                var group = grouping.ToArray();
+                if (group.All(x => x != primaryBone))
+                    primaryBone = group[0];
+                foreach (var bone in group)
+                    if (bone != primaryBone)
+                        boneMapping[bone] = primaryBone;
+            }
+
+            foreach (var vertex in meshInfo2.Vertices)
+            {
+                vertex.BoneWeights = vertex.BoneWeights
+                    .Select(p => boneMapping.TryGetValue(p.bone, out var bone) ? (bone, p.weight) : p)
+                    .GroupBy(p => p.bone)
+                    .Select(g => (g.Key, g.Sum(x => x.weight)))
+                    .ToList();
+            }
 
             meshInfo2.WriteToSkinnedMeshRenderer(renderer, session);
+        }
+
+        private readonly struct BoneUniqKey : IEquatable<BoneUniqKey>
+        {
+            private readonly string _bindPoseInfo;
+            public readonly Transform Transform;
+
+            public BoneUniqKey(Bone bone) =>
+                (_bindPoseInfo, Transform) = (bone.Bindpose.ToString(), bone.Transform);
+
+            public bool Equals(BoneUniqKey other) =>
+                Equals(Transform, other.Transform) && _bindPoseInfo == other._bindPoseInfo;
+
+            public override bool Equals(object obj) => obj is BoneUniqKey other && Equals(other);
+
+            public override int GetHashCode() =>
+                unchecked((_bindPoseInfo != null ? _bindPoseInfo.GetHashCode() : 0) * 397) ^
+                (Transform != null ? Transform.GetHashCode() : 0);
         }
 
         private void DoBoneMap(OptimizerSession session, SkinnedMeshRenderer renderer, 

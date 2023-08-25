@@ -244,8 +244,19 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             HasTangent = false;
         }
 
+        public void Optimize()
+        {
+            // GC Bones
+            var usedBones = new HashSet<Bone>();
+            foreach (var meshInfo2Vertex in Vertices)
+            foreach (var (bone, _) in meshInfo2Vertex.BoneWeights)
+                usedBones.Add(bone);
+            Bones.RemoveAll(x => !usedBones.Contains(x));
+        }
+
         public void WriteToMesh(Mesh destMesh)
         {
+            Optimize();
             destMesh.Clear();
 
             // Basic Vertex Attributes: vertices, normals
