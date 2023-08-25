@@ -20,6 +20,18 @@ namespace Anatawa12.AvatarOptimizer.Test
 
         [Test]
         [TestCaseSource(nameof(ComponentTypes))]
+        public void CheckHelpURLAttribute(Type type)
+        {
+            if (type == typeof(Activator)) return;
+            if (type == typeof(AvatarActivator)) return;
+            if (type == typeof(InternalAutoFreezeMeaninglessBlendShape)) return;
+            var addComponentMenu = type.GetCustomAttribute<HelpURLAttribute>();
+            Assert.That(addComponentMenu, Is.Not.Null);
+            Assert.That(addComponentMenu.URL, Does.StartWith("https://vpm.anatawa12.com/avatar-optimizer/ja/"));
+        }
+
+        [Test]
+        [TestCaseSource(nameof(ComponentTypes))]
         public void CheckDisallowMultipleComponentIsSpecified(Type type)
         {
             var addComponentMenu = type.GetCustomAttribute<DisallowMultipleComponent>();
