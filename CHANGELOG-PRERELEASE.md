@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog].
 ## [Unreleased]
 ### Added
 - Support for Multi Frame BlendShapes `#333`
+- Add link to help page `#382`
 
 ### Changed
 - Auto FreezeBlendShape now freezes meaningless BlendShape `#334`
