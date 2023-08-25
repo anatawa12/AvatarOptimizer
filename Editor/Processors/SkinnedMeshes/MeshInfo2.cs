@@ -404,6 +404,24 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 }
             }
         }
+
+        public void WriteToSkinnedMeshRenderer(SkinnedMeshRenderer targetRenderer, OptimizerSession session)
+        {
+            var mesh = targetRenderer.sharedMesh
+                ? session.MayInstantiate(targetRenderer.sharedMesh)
+                : session.AddToAsset(new Mesh { name = $"AAOGeneratedMesh{targetRenderer.name}" });
+
+            WriteToMesh(mesh);
+            targetRenderer.sharedMesh = mesh;
+            for (var i = 0; i < BlendShapes.Count; i++)
+                targetRenderer.SetBlendShapeWeight(i, BlendShapes[i].weight);
+            targetRenderer.sharedMaterials = SubMeshes.Select(x => x.SharedMaterial).ToArray();
+            targetRenderer.bones = Bones.Select(x => x.Transform).ToArray();
+
+            targetRenderer.rootBone = RootBone;
+            if (Bounds != default)
+                targetRenderer.localBounds = Bounds;
+        }
     }
 
     internal class SubMesh
