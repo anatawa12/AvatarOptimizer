@@ -182,16 +182,23 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
             }
         }
 
-        public static T ReportingObject<T>(UnityEngine.Object obj, Func<T> action)
+        public static T ReportingObject<T>(Object obj, Func<T> action) => ReportingObject(obj, false, action);
+
+        public static T ReportingObject<T>(Object obj, bool needThrow, Func<T> action)
         {
             if (obj != null) CurrentReport._references.Push(obj);
             try
             {
                 return action();
             }
+            catch (ReportedException)
+            {
+                throw; // rethrow only
+            }
             catch (Exception e)
             {
                 ReportInternalError(e, 2);
+                if (needThrow) throw new ReportedException();
                 return default;
             }
             finally
@@ -204,14 +211,17 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
 
         private static void ReportInternalError(Exception exception, int strips)
         {
+            if (exception is ReportedException) return; // reported exception is known internal error
             var additionalStackTrace = string.Join("\n", 
                 Environment.StackTrace.Split('\n').Skip(strips)) + "\n";
             LogException(exception, additionalStackTrace);
         }
 
-        public static void ReportingObject(UnityEngine.Object obj, Action action)
+        public static void ReportingObject(Object obj, Action action) => ReportingObject(obj, false, action);
+
+        public static void ReportingObject(Object obj, bool needThrow, Action action)
         {
-            ReportingObject(obj, () =>
+            ReportingObject(obj, needThrow, () =>
             {
                 action();
                 return true;
@@ -247,6 +257,10 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
             }
 
             ErrorReportUI.ReloadErrorReport();
+        }
+
+        private class ReportedException : Exception
+        {
         }
     }
 }
