@@ -34,7 +34,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         public MeshInfo2(SkinnedMeshRenderer renderer)
         {
             SourceRenderer = renderer;
-            var mesh = renderer.sharedMesh ? renderer.sharedMesh : new Mesh();
+            var mesh = renderer.sharedMesh
+                ? renderer.sharedMesh
+                : new Mesh { name = $"AAOGeneratedMesh({renderer.name})" };
             ReadSkinnedMesh(mesh);
 
             // if there's no bones: add one fake bone

@@ -142,7 +142,7 @@ jobs:
       # region vpm release
       - name: Build VPM release
         run: |
-          zip -r "build/$PKG_NAME-$VERSION.zip" . -x 'build*' '.*'
+          zip -r "build/$PKG_NAME-$VERSION.zip" . -x 'build*' '.*' 'Test~/*'
       - name: Upload VPM release
         uses: actions/upload-artifact@v3
         with:
