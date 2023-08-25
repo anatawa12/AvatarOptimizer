@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.ErrorReporting;
+using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
 using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Assertions;
@@ -28,7 +29,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
             BuildReport.ReportingObjects(session.GetComponents<SkinnedMeshRenderer>(), renderer =>
             {
                 if (renderer.bones.Where(x => x).Any(mergeMapping.ContainsKey))
-                    DoBoneMap(session, renderer, mergeMapping);
+                    DoBoneMap2(session, renderer, mergeMapping);
             });
 
             foreach (var pair in mergeMapping)
@@ -42,6 +43,26 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
             foreach (var pair in mergeMapping.Keys)
                 Object.DestroyImmediate(pair.gameObject);
+        }
+
+        private void DoBoneMap2(OptimizerSession session, SkinnedMeshRenderer renderer,
+            Dictionary<Transform, Transform> mergeMapping)
+        {
+            var meshInfo2 = new MeshInfo2(renderer);
+
+            // first, simply update bone weights by updating BindPose
+            foreach (var bone in meshInfo2.Bones)
+            {
+                if (bone.Transform && mergeMapping.TryGetValue(bone.Transform, out var mapped))
+                {
+                    bone.Bindpose = mapped.worldToLocalMatrix * bone.Transform.localToWorldMatrix * bone.Bindpose;
+                    bone.Transform = mapped;
+                }
+            }
+
+            // TODO: Optimization
+
+            meshInfo2.WriteToSkinnedMeshRenderer(renderer, session);
         }
 
         private void DoBoneMap(OptimizerSession session, SkinnedMeshRenderer renderer, 
