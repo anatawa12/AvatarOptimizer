@@ -72,12 +72,15 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 var meshInfo = keyValuePair.Value;
                 var meshFilter = targetRenderer.GetComponent<MeshFilter>();
 
-                var mesh = meshFilter.sharedMesh
-                    ? session.MayInstantiate(meshFilter.sharedMesh)
-                    : session.AddToAsset(new Mesh());
-                meshInfo.WriteToMesh(mesh);
-                meshFilter.sharedMesh = mesh;
-                targetRenderer.sharedMaterials = meshInfo.SubMeshes.Select(x => x.SharedMaterial).ToArray();
+                BuildReport.ReportingObject(targetRenderer, () =>
+                {
+                    var mesh = meshFilter.sharedMesh
+                        ? session.MayInstantiate(meshFilter.sharedMesh)
+                        : session.AddToAsset(new Mesh());
+                    meshInfo.WriteToMesh(mesh);
+                    meshFilter.sharedMesh = mesh;
+                    targetRenderer.sharedMaterials = meshInfo.SubMeshes.Select(x => x.SharedMaterial).ToArray();
+                });
             }
         }
     }
