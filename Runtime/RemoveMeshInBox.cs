@@ -7,6 +7,7 @@ namespace Anatawa12.AvatarOptimizer
     [AddComponentMenu("Avatar Optimizer/AAO Remove Mesh in Box")]
     [RequireComponent(typeof(SkinnedMeshRenderer))]
     [DisallowMultipleComponent]
+    [HelpURL("https://vpm.anatawa12.com/avatar-optimizer/ja/docs/reference/remove-mesh-in-box/")]
     internal class RemoveMeshInBox : EditSkinnedMeshComponent
     {
         public BoundingBox[] boxes = Array.Empty<BoundingBox>();

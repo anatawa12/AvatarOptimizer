@@ -11,6 +11,7 @@ namespace Anatawa12.AvatarOptimizer
     [AddComponentMenu("Avatar Optimizer/AAO Merge PhysBone")]
     [DisallowMultipleComponent]
     [ExecuteAlways]
+    [HelpURL("https://vpm.anatawa12.com/avatar-optimizer/ja/docs/reference/merge-physbone/")]
     internal class MergePhysBone : AvatarTagComponent, IStaticValidated
     {
         [CL4EELocalized("MergePhysBone:prop:makeParent", "MergePhysBone:tooltip:makeParent")]

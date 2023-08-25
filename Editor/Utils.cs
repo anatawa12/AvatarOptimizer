@@ -566,6 +566,25 @@ namespace Anatawa12.AvatarOptimizer
             foreach (var i in enumerable)
                 action(i);
         }
+
+        public static T DistinctSingleOrDefaultIfNoneOrMultiple<T>(this IEnumerable<T> enumerable)
+        {
+            using (var enumerator = enumerable.GetEnumerator())
+            {
+                if (!enumerator.MoveNext()) return default;
+                var found = enumerator.Current;
+                var eqOperator = EqualityComparer<T>.Default;
+
+                while (enumerator.MoveNext())
+                {
+                    var nextValue = enumerator.Current;
+                    if (!eqOperator.Equals(found, nextValue))
+                        return default;
+                }
+
+                return found;
+            }
+        }
     }
 
     internal struct ArraySerializedPropertyEnumerable : IEnumerable<SerializedProperty>

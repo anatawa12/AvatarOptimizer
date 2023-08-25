@@ -7,6 +7,7 @@ namespace Anatawa12.AvatarOptimizer
     [AddComponentMenu("Avatar Optimizer/AAO Merge Skinned Mesh")]
     [RequireComponent(typeof(SkinnedMeshRenderer))]
     [DisallowMultipleComponent]
+    [HelpURL("https://vpm.anatawa12.com/avatar-optimizer/ja/docs/reference/merge-skinned-mesh/")]
     internal class MergeSkinnedMesh : EditSkinnedMeshComponent, IStaticValidated
     {
         [CL4EELocalized("MergeSkinnedMesh:prop:renderers")]
