@@ -37,40 +37,47 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             var mesh = renderer.sharedMesh
                 ? renderer.sharedMesh
                 : new Mesh { name = $"AAOGeneratedMesh({renderer.name})" };
-            ReadSkinnedMesh(mesh);
+            
+            BuildReport.ReportingObject(renderer, true, () =>
+            {
+                ReadSkinnedMesh(mesh);
 
-            // if there's no bones: add one fake bone
-            if (Bones.Count == 0)
-                SetIdentityBone(renderer.rootBone ? renderer.rootBone : renderer.transform);
+                // if there's no bones: add one fake bone
+                if (Bones.Count == 0)
+                    SetIdentityBone(renderer.rootBone ? renderer.rootBone : renderer.transform);
 
-            Bounds = renderer.localBounds;
-            RootBone = renderer.rootBone ? renderer.rootBone : renderer.transform;
+                Bounds = renderer.localBounds;
+                RootBone = renderer.rootBone ? renderer.rootBone : renderer.transform;
 
-            for (var i = 0; i < mesh.blendShapeCount; i++)
-                BlendShapes[i] = (BlendShapes[i].name, renderer.GetBlendShapeWeight(i));
+                for (var i = 0; i < mesh.blendShapeCount; i++)
+                    BlendShapes[i] = (BlendShapes[i].name, renderer.GetBlendShapeWeight(i));
 
-            SetMaterials(renderer);
+                SetMaterials(renderer);
 
-            var bones = renderer.bones;
-            for (var i = 0; i < bones.Length && i < Bones.Count; i++) Bones[i].Transform = bones[i];
+                var bones = renderer.bones;
+                for (var i = 0; i < bones.Length && i < Bones.Count; i++) Bones[i].Transform = bones[i];
 
-            AssertInvariantContract("SkinnedMeshRenderer");
+                AssertInvariantContract("SkinnedMeshRenderer");
+            });
         }
 
         public MeshInfo2(MeshRenderer renderer)
         {
             SourceRenderer = renderer;
-            var mesh = renderer.GetComponent<MeshFilter>().sharedMesh;
-            ReadStaticMesh(mesh);
+            BuildReport.ReportingObject(renderer, true, () =>
+            {
+                var mesh = renderer.GetComponent<MeshFilter>().sharedMesh;
+                ReadStaticMesh(mesh);
 
-            SetIdentityBone(renderer.transform);
+                SetIdentityBone(renderer.transform);
 
-            Bounds = mesh.bounds;
-            RootBone = renderer.transform;
+                Bounds = mesh.bounds;
+                RootBone = renderer.transform;
 
-            SetMaterials(renderer);
+                SetMaterials(renderer);
 
-            AssertInvariantContract("MeshRenderer");
+                AssertInvariantContract("MeshRenderer");
+            });
         }
 
         private void SetMaterials(Renderer renderer)
@@ -418,20 +425,23 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         public void WriteToSkinnedMeshRenderer(SkinnedMeshRenderer targetRenderer, OptimizerSession session)
         {
-            var mesh = targetRenderer.sharedMesh
-                ? session.MayInstantiate(targetRenderer.sharedMesh)
-                : session.AddToAsset(new Mesh { name = $"AAOGeneratedMesh{targetRenderer.name}" });
+            BuildReport.ReportingObject(targetRenderer, () =>
+            {
+                var mesh = targetRenderer.sharedMesh
+                    ? session.MayInstantiate(targetRenderer.sharedMesh)
+                    : session.AddToAsset(new Mesh { name = $"AAOGeneratedMesh{targetRenderer.name}" });
 
-            WriteToMesh(mesh);
-            targetRenderer.sharedMesh = mesh;
-            for (var i = 0; i < BlendShapes.Count; i++)
-                targetRenderer.SetBlendShapeWeight(i, BlendShapes[i].weight);
-            targetRenderer.sharedMaterials = SubMeshes.Select(x => x.SharedMaterial).ToArray();
-            targetRenderer.bones = Bones.Select(x => x.Transform).ToArray();
+                WriteToMesh(mesh);
+                targetRenderer.sharedMesh = mesh;
+                for (var i = 0; i < BlendShapes.Count; i++)
+                    targetRenderer.SetBlendShapeWeight(i, BlendShapes[i].weight);
+                targetRenderer.sharedMaterials = SubMeshes.Select(x => x.SharedMaterial).ToArray();
+                targetRenderer.bones = Bones.Select(x => x.Transform).ToArray();
 
-            targetRenderer.rootBone = RootBone;
-            if (Bounds != default)
-                targetRenderer.localBounds = Bounds;
+                targetRenderer.rootBone = RootBone;
+                if (Bounds != default)
+                    targetRenderer.localBounds = Bounds;
+            });
         }
     }
 
