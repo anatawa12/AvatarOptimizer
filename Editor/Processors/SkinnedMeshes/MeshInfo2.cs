@@ -348,12 +348,25 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 var trianglesIndex = 0;
                 for (var i = 0; i < SubMeshes.Count; i++)
                 {
-                    subMeshDescriptors[i] = new SubMeshDescriptor(trianglesIndex, SubMeshes[i].Triangles.Count);
-                    foreach (var triangle in SubMeshes[i].Triangles)
-                        triangles[trianglesIndex++] = vertexIndices[triangle];
+                    var subMesh = SubMeshes[i];
+                    var existingIndex = SubMeshes.FindIndex(0, i, sm => sm.Triangles.SequenceEqual(subMesh.Triangles));
+                    if (existingIndex != -1)
+                    {
+                        subMeshDescriptors[i] = subMeshDescriptors[existingIndex];
+                    }
+                    else
+                    {
+                        subMeshDescriptors[i] = new SubMeshDescriptor(trianglesIndex, SubMeshes[i].Triangles.Count);
+                        foreach (var triangle in SubMeshes[i].Triangles)
+                            triangles[trianglesIndex++] = vertexIndices[triangle];
+                    }
                 }
 
-                destMesh.indexFormat = triangles.Length <= ushort.MaxValue ? IndexFormat.UInt16 : IndexFormat.UInt32;
+                triangles = triangles.Length == trianglesIndex
+                    ? triangles
+                    : triangles.AsSpan().Slice(0, trianglesIndex).ToArray();
+
+                destMesh.indexFormat = Vertices.Count <= ushort.MaxValue ? IndexFormat.UInt16 : IndexFormat.UInt32;
                 destMesh.triangles = triangles;
                 destMesh.subMeshCount = SubMeshes.Count;
                 for (var i = 0; i < SubMeshes.Count; i++)
