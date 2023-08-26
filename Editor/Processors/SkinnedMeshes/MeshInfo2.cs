@@ -83,17 +83,14 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         private void SetMaterials(Renderer renderer)
         {
             var sourceMaterials = renderer.sharedMaterials;
-            var materialCount = Math.Min(sourceMaterials.Length, SubMeshes.Count);
-            for (var i = 0; i < materialCount; i++)
+
+            if (sourceMaterials.Length < SubMeshes.Count)
+                SubMeshes.RemoveRange(sourceMaterials.Length, SubMeshes.Count - sourceMaterials.Length);
+
+            for (var i = 0; i < SubMeshes.Count; i++)
                 SubMeshes[i].SharedMaterial = sourceMaterials[i];
-
-            // remove unused SubMeshes
-            SubMeshes.RemoveRange(materialCount, SubMeshes.Count - materialCount);
-
-            // TODO: Remove this error once this is supported
-            if (sourceMaterials.Length > SubMeshes.Count)
-                BuildReport.LogFatal("Multi Pass Rendering of one SubMesh is NOT Supported YET.")
-                    ?.WithContext(renderer);
+            for (var i = SubMeshes.Count; i < sourceMaterials.Length; i++)
+                SubMeshes.Add(new SubMesh(SubMeshes[i - 1].Triangles.ToList(), sourceMaterials[i]));
         }
 
         [Conditional("UNITY_ASSERTIONS")]
@@ -351,12 +348,25 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 var trianglesIndex = 0;
                 for (var i = 0; i < SubMeshes.Count; i++)
                 {
-                    subMeshDescriptors[i] = new SubMeshDescriptor(trianglesIndex, SubMeshes[i].Triangles.Count);
-                    foreach (var triangle in SubMeshes[i].Triangles)
-                        triangles[trianglesIndex++] = vertexIndices[triangle];
+                    var subMesh = SubMeshes[i];
+                    var existingIndex = SubMeshes.FindIndex(0, i, sm => sm.Triangles.SequenceEqual(subMesh.Triangles));
+                    if (existingIndex != -1)
+                    {
+                        subMeshDescriptors[i] = subMeshDescriptors[existingIndex];
+                    }
+                    else
+                    {
+                        subMeshDescriptors[i] = new SubMeshDescriptor(trianglesIndex, SubMeshes[i].Triangles.Count);
+                        foreach (var triangle in SubMeshes[i].Triangles)
+                            triangles[trianglesIndex++] = vertexIndices[triangle];
+                    }
                 }
 
-                destMesh.indexFormat = triangles.Length <= ushort.MaxValue ? IndexFormat.UInt16 : IndexFormat.UInt32;
+                triangles = triangles.Length == trianglesIndex
+                    ? triangles
+                    : triangles.AsSpan().Slice(0, trianglesIndex).ToArray();
+
+                destMesh.indexFormat = Vertices.Count <= ushort.MaxValue ? IndexFormat.UInt16 : IndexFormat.UInt32;
                 destMesh.triangles = triangles;
                 destMesh.subMeshCount = SubMeshes.Count;
                 for (var i = 0; i < SubMeshes.Count; i++)
