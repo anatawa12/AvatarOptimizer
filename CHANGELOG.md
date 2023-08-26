@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
     AAO can freeze BlendShapes which are always finally animated to a constant value.
   - This also understands Additive Layer and BlendTree, so extremely rare problem in previous Animator Parser 
     with Additive Layer or BlendTree will be fixed with this parser.
+- Multi Pass Rendering of Last SubMesh support `#384`
 
 ### Changed
 - Auto FreezeBlendShape now freezes meaningless BlendShape `#334`

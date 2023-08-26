@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Multi Pass Rendering of Last SubMesh support `#384`
 
 ### Changed
 
