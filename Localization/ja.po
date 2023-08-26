@@ -285,6 +285,12 @@ msgstr "MMDワールドとの互換性"
 msgid "TraceAndOptimize:tooltip:mmdWorldCompatibility"
 msgstr "MMD用BlendShapeを固定しないなどのMMDワールドとの互換性機能を有効化します"
 
+msgid "TraceAndOptimize:prop:advancedAnimatorParser"
+msgstr "Advanced Animator Parserを使用する"
+
+msgid "TraceAndOptimize:tooltip:advancedAnimatorParser"
+msgstr "Advanced Animator ParserはAnimatorControllerを「レイヤー構造も含めて」解析します。"
+
 # endregion
 
 #region ApplyObjectMapping

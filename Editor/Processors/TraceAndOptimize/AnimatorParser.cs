@@ -1,267 +1,695 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
-using UnityEditor;
+using System.Reflection;
+using static Anatawa12.AvatarOptimizer.ErrorReporting.BuildReport;
+using JetBrains.Annotations;
 using UnityEditor.Animations;
 using UnityEngine;
+using UnityEngine.Animations;
+using VRC.Dynamics;
 using VRC.SDK3.Avatars.Components;
 using VRC.SDKBase;
-using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 {
     class AnimatorParser
     {
-        private readonly OptimizerSession _session;
-        private readonly TraceAndOptimize _config;
+        private bool mmdWorldCompatibility;
+        private bool advancedAnimatorParser;
+        private AnimationParser _animationParser = new AnimationParser();
 
-        public AnimatorParser(OptimizerSession session, TraceAndOptimize config)
+        public AnimatorParser(bool mmdWorldCompatibility, bool advancedAnimatorParser)
         {
-            _session = session;
-            _config = config;
-            ModifiedProperties = Utils.CastDic<IReadOnlyDictionary<string, AnimationProperty>>()
-                .CastedDic(_modifiedProperties);
+            this.mmdWorldCompatibility = mmdWorldCompatibility;
+            this.advancedAnimatorParser = advancedAnimatorParser;
         }
 
-        public void GatherAnimationModifications()
+        public AnimatorParser(TraceAndOptimize config)
         {
-            foreach (var animator in _session.GetComponents<Animator>())
+            mmdWorldCompatibility = config.mmdWorldCompatibility;
+            advancedAnimatorParser = config.advancedAnimatorParser;
+        }
+
+        public ImmutableModificationsContainer GatherAnimationModifications(OptimizerSession session)
+        {
+            var modificationsContainer = new ModificationsContainer();
+            modificationsContainer.MergeAsNewLayer(CollectAvatarRootAnimatorModifications(session), 
+                weightState: AnimatorWeightState.AlwaysOne);
+
+            foreach (var child in session.GetRootComponent<Transform>().DirectChildrenEnumerable())
+                WalkForAnimator(child, true, modificationsContainer);
+
+            OtherMutateComponents(modificationsContainer, session);
+
+            return modificationsContainer.ToImmutable();
+        }
+
+        private void WalkForAnimator(Transform transform, bool parentObjectAlwaysActive,
+            ModificationsContainer modificationsContainer)
+        {
+            var gameObject = transform.gameObject;
+            bool objectAlwaysActive;
+            switch (modificationsContainer.GetConstantValue(gameObject, "m_IsActive", gameObject.activeSelf))
             {
-                GatherAnimationModificationsInController(animator.gameObject, animator.runtimeAnimatorController);
-                GatherHumanoidModifications(animator);
+                case null:
+                    objectAlwaysActive = false;
+                    break;
+                default: // true
+                    objectAlwaysActive = parentObjectAlwaysActive;
+                    break;
+                case false:
+                    // this object is disabled so animator(s) in this component will never activated.
+                    return;
             }
 
-            var descriptor = _session.GetRootComponent<VRCAvatarDescriptor>();
-
-            if (descriptor)
+            var animator = transform.GetComponent<Animator>();
+            if (animator && animator.runtimeAnimatorController)
             {
-                foreach (var layer in descriptor.specialAnimationLayers)
-                {
-                    GatherAnimationModificationsInController(descriptor.gameObject, GetPlayableLayerController(layer));
-                }
+                ParseAnimationOrAnimator(animator, objectAlwaysActive, modificationsContainer,
+                    () => AddHumanoidModifications(
+                        ParseAnimatorController(gameObject, animator.runtimeAnimatorController), animator));
+            }
 
-                if (descriptor.customizeAnimationLayers)
-                {
-                    foreach (var layer in descriptor.baseAnimationLayers)
-                    {
-                        GatherAnimationModificationsInController(descriptor.gameObject,
-                            GetPlayableLayerController(layer));
-                    }
-                }
+            var animation = transform.GetComponent<Animation>();
+            if (animation && animation.playAutomatically && animation.clip)
+            {
+                // We can animate `Animate Physics`, `Play Automatically` and `Enabled` of Animation component.
+                // However, animating `Play Automatically` will have no effect (initial state will be used)
+                // so if `Play Automatically` is disabled, we can do nothing with Animation component.
+                // That's why we ignore Animation component if playAutomatically is false.
 
-                switch (descriptor.lipSync)
+                ParseAnimationOrAnimator(animation, objectAlwaysActive, modificationsContainer,
+                    () => _animationParser.GetParsedAnimation(gameObject, animation.clip));
+            }
+
+            foreach (var child in transform.DirectChildrenEnumerable())
+                WalkForAnimator(child, parentObjectAlwaysActive: objectAlwaysActive, modificationsContainer);
+        }
+
+        private void ParseAnimationOrAnimator(
+            Behaviour animator,
+            bool objectAlwaysActive,
+            ModificationsContainer modificationsContainer,
+            Func<IModificationsContainer> parseComponent)
+        {
+            bool alwaysApplied;
+            switch (modificationsContainer.GetConstantValue(animator, "m_Enabled", animator.enabled))
+            {
+                case null:
+                    alwaysApplied = false;
+                    break;
+                default: // true
+                    alwaysApplied = objectAlwaysActive;
+                    break;
+                case false:
+                    // this component is disabled so animator(s) in this component will never activated.
+                    return;
+            }
+
+            var parsed = parseComponent();
+
+            if (alwaysApplied)
+            {
+                switch (parsed.GetConstantValue(animator, "m_Enabled", animator.enabled))
                 {
-                    // AvatarDescriptorから収集
-                    case VRC_AvatarDescriptor.LipSyncStyle.VisemeBlendShape when descriptor.VisemeSkinnedMesh != null:
+                    case null:
+                    case false:
+                        alwaysApplied = false;
+                        break;
+                    case true:
+                        break;
+                }
+            }
+
+            modificationsContainer.MergeAsNewLayer(parsed,
+                weightState: AnimatorLayerWeightStates.ForAlwaysApplied(alwaysApplied));
+        }
+
+        #region OtherComponents
+
+        /// <summary>
+        /// Collect modifications by non-animation changes. For example, constraints, PhysBones, and else 
+        /// </summary>
+        private void OtherMutateComponents(ModificationsContainer mod, OptimizerSession session)
+        {
+            ReportingObjects(session.GetComponents<Component>(), component =>
+            {
+                switch (component)
+                {
+                    case VRCPhysBoneBase pb:
+                        foreach (var transform in pb.GetAffectedTransforms())
+                        {
+                            var updater = mod.ModifyObject(transform);
+                            foreach (var prop in TransformPositionAnimationKeys.Concat(TransformRotationAnimationKeys))
+                                updater.AddModificationAsNewLayer(prop, AnimationProperty.Variable());
+                        }
+
+                        break;
+                    case Rigidbody _:
+                    case ParentConstraint _:
                     {
-                        var skinnedMeshRenderer = descriptor.VisemeSkinnedMesh;
-                        if (!_modifiedProperties.TryGetValue(skinnedMeshRenderer, out var set))
-                            _modifiedProperties.Add(skinnedMeshRenderer,
-                                set = new Dictionary<string, AnimationProperty>());
-                        foreach (var prop in descriptor.VisemeBlendShapes.Select(x => $"blendShape.{x}"))
-                            set[prop] = AnimationProperty.Variable();
+                        var updater = mod.ModifyObject(component.transform);
+                        foreach (var prop in TransformPositionAnimationKeys.Concat(TransformRotationAnimationKeys))
+                            updater.AddModificationAsNewLayer(prop, AnimationProperty.Variable());
                         break;
                     }
-                    case VRC_AvatarDescriptor.LipSyncStyle.JawFlapBlendShape when descriptor.VisemeSkinnedMesh != null:
+                    case AimConstraint _:
+                    case LookAtConstraint _:
+                    case RotationConstraint _:
                     {
-                        var skinnedMeshRenderer = descriptor.VisemeSkinnedMesh;
-                        var shape = descriptor.MouthOpenBlendShapeName;
-
-                        if (!_modifiedProperties.TryGetValue(skinnedMeshRenderer, out var set))
-                            _modifiedProperties.Add(skinnedMeshRenderer,
-                                set = new Dictionary<string, AnimationProperty>());
-                        set[$"blendShape.{shape}"] = AnimationProperty.Variable();
+                        var updater = mod.ModifyObject(component.transform);
+                        foreach (var prop in TransformRotationAnimationKeys)
+                            updater.AddModificationAsNewLayer(prop, AnimationProperty.Variable());
                         break;
                     }
-                }
-
-                if (
-                    descriptor.customEyeLookSettings.eyelidType == VRCAvatarDescriptor.EyelidType.Blendshapes &&
-                    descriptor.customEyeLookSettings.eyelidsSkinnedMesh != null
-                )
-                {
-                    var skinnedMeshRenderer = descriptor.customEyeLookSettings.eyelidsSkinnedMesh;
-                    var mesh = skinnedMeshRenderer.sharedMesh;
-
-                    if (!_modifiedProperties.TryGetValue(skinnedMeshRenderer, out var set))
-                        _modifiedProperties.Add(skinnedMeshRenderer, set = new Dictionary<string, AnimationProperty>());
-
-                    foreach (var prop in from index in descriptor.customEyeLookSettings.eyelidsBlendshapes
-                             where 0 <= index && index < mesh.blendShapeCount
-                             let name = mesh.GetBlendShapeName(index)
-                             select $"blendShape.{name}")
-                        set[prop] = AnimationProperty.Variable();
-                }
-
-                var bodySkinnedMesh = descriptor.transform.Find("Body")?.GetComponent<SkinnedMeshRenderer>();
-
-                if (_config.mmdWorldCompatibility && bodySkinnedMesh)
-                {
-                    if (!_modifiedProperties.TryGetValue(bodySkinnedMesh, out var set))
-                        _modifiedProperties.Add(bodySkinnedMesh, set = new Dictionary<string, AnimationProperty>());
-
-                    foreach (var shape in MmdBlendShapeNames)
-                        set[$"blendShape.{shape}"] = AnimationProperty.Variable();
-                }
-            }
-        }
-
-        /// Mark rotations of humanoid bones as changeable variables
-        private void GatherHumanoidModifications(Animator animator)
-        {
-            // if it's not humanoid, this pass doesn't matter
-            if (!animator.isHuman) return;
-            for (var bone = HumanBodyBones.Hips; bone < HumanBodyBones.LastBone; bone++)
-            {
-                var transform = animator.GetBoneTransform(bone);
-                if (!transform) continue;
-
-                if (!_modifiedProperties.TryGetValue(transform, out var properties))
-                    _modifiedProperties.Add(transform, properties = new Dictionary<string, AnimationProperty>());
-
-                foreach (var key in new[]
-                             { "m_LocalRotation.x", "m_LocalRotation.y", "m_LocalRotation.z", "m_LocalRotation.w" })
-                {
-                    if (properties.TryGetValue(key, out var property))
-                        properties[key] = property.Merge(AnimationProperty.Variable().AlwaysApplied());
-                    else
-                        properties.Add(key, AnimationProperty.Variable().AlwaysApplied());
-                }
-            }
-        }
-
-        private readonly Dictionary<(GameObject, AnimationClip), ParsedAnimation> _parsedAnimationCache =
-            new Dictionary<(GameObject, AnimationClip), ParsedAnimation>();
-
-        private void GatherAnimationModificationsInController(GameObject root, RuntimeAnimatorController controller)
-        {
-            if (controller == null) return;
-
-            foreach (var clip in controller.animationClips)
-            {
-                if (!_parsedAnimationCache.TryGetValue((root, clip), out var parsed))
-                    _parsedAnimationCache.Add((root, clip), parsed = ParsedAnimation.Parse(root, clip));
-
-                foreach (var keyValuePair in parsed.Components)
-                {
-                    if (!_modifiedProperties.TryGetValue(keyValuePair.Key, out var properties))
-                        _modifiedProperties.Add(keyValuePair.Key,
-                            properties = new Dictionary<string, AnimationProperty>());
-                    foreach (var prop in keyValuePair.Value)
+                    case PositionConstraint _:
                     {
+                        var updater = mod.ModifyObject(component.transform);
+                        foreach (var prop in TransformPositionAnimationKeys)
+                            updater.AddModificationAsNewLayer(prop, AnimationProperty.Variable());
+                        break;
+                    }
+                    case ScaleConstraint _:
+                    {
+                        var updater = mod.ModifyObject(component.transform);
+                        foreach (var prop in TransformScaleAnimationKeys)
+                            updater.AddModificationAsNewLayer(prop, AnimationProperty.Variable());
+                        break;
+                    }
+                    default:
+                    {
+                        var dynamicBone = ExternalLibraryAccessor.DynamicBone;
+                        if (dynamicBone != null && dynamicBone.IsDynamicBone(component))
+                        {
+                            // DynamicBone : similar to PhysBone
+                            foreach (var transform in dynamicBone.GetAffectedTransforms(component))
+                            {
+                                var updater = mod.ModifyObject(transform);
+                                foreach (var prop in TransformRotationAnimationKeys)
+                                    updater.AddModificationAsNewLayer(prop, AnimationProperty.Variable());
+                            }
+                        }
+                        break;
+                    }
+                    // TODO: FinalIK
+                }
+            });
+        }
 
-                        if (properties.TryGetValue(prop.Key, out var property))
-                            properties[prop.Key] = property.Merge(prop.Value.PartiallyApplied());
-                        else
-                            properties.Add(prop.Key, prop.Value.PartiallyApplied());
+        private static class ExternalLibraryAccessor
+        {
+            [CanBeNull] public static readonly DynamicBoneClasses DynamicBone = DynamicBoneClasses.Create();
+
+            public class DynamicBoneClasses
+            {
+                [NotNull] public readonly Type DynamicBoneType;
+                [NotNull] public readonly FieldInfo Exclusions;
+                [NotNull] public readonly FieldInfo Root;
+
+                public DynamicBoneClasses([NotNull] Type dynamicBoneType, [NotNull] FieldInfo exclusions,
+                    [NotNull] FieldInfo root)
+                {
+                    DynamicBoneType = dynamicBoneType;
+                    Exclusions = exclusions;
+                    Root = root;
+                }
+
+
+                [CanBeNull]
+                public static DynamicBoneClasses Create()
+                {
+                    var dynamicBoneType = Utils.GetTypeFromName("DynamicBone");
+                    if (dynamicBoneType == null) return null;
+
+                    var exclusions =
+                        dynamicBoneType.GetField("m_Exclusions", BindingFlags.Instance | BindingFlags.Public);
+                    if (exclusions == null) return null;
+                    if (exclusions.FieldType != typeof(List<Transform>)) return null;
+
+                    var root = dynamicBoneType.GetField("m_Root", BindingFlags.Instance | BindingFlags.Public);
+                    if (root == null) return null;
+                    if (root.FieldType != typeof(Transform)) return null;
+
+                    return new DynamicBoneClasses(dynamicBoneType, exclusions, root);
+                }
+
+                public bool IsDynamicBone(object obj) => DynamicBoneType.IsInstanceOfType(obj);
+
+                public IEnumerable<Transform> GetExclusions(object obj) =>
+                    (IEnumerable<Transform>)Exclusions.GetValue(obj);
+
+                public Transform GetRoot(object obj) => (Transform)Root.GetValue(obj);
+
+                public IEnumerable<Transform> GetAffectedTransforms(Component dynamicBone)
+                {
+                    var ignores = new HashSet<Transform>(GetExclusions(dynamicBone));
+                    var queue = new Queue<Transform>();
+                    queue.Enqueue(GetRoot(dynamicBone) ?? dynamicBone.transform);
+
+                    while (queue.Count != 0)
+                    {
+                        var transform = queue.Dequeue();
+                        yield return transform;
+
+                        foreach (var child in transform.DirectChildrenEnumerable())
+                            if (!ignores.Contains(child))
+                                queue.Enqueue(child);
+                    }
+                }
+
+            }
+        }
+
+        #endregion
+
+        #region AvatarDescriptor
+
+        private IModificationsContainer CollectAvatarRootAnimatorModifications(OptimizerSession session)
+        {
+            var animator = session.GetRootComponent<Animator>();
+            var descriptor = session.GetRootComponent<VRCAvatarDescriptor>();
+
+            var modificationsContainer = new ModificationsContainer();
+
+            if (animator)
+                modificationsContainer = AddHumanoidModifications(modificationsContainer, animator).ToMutable();
+
+            // process playable layers
+            // see https://misskey.niri.la/notes/9ioemawdit
+            // see https://creators.vrchat.com/avatars/playable-layers
+
+            var playableWeightChanged = new AnimatorLayerMap<AnimatorWeightState>();
+            var animatorLayerWeightChanged = new AnimatorLayerMap<AnimatorLayerWeightMap<int>>
+            {
+                [VRCAvatarDescriptor.AnimLayerType.Action] = new AnimatorLayerWeightMap<int>(),
+                [VRCAvatarDescriptor.AnimLayerType.FX] = new AnimatorLayerWeightMap<int>(),
+                [VRCAvatarDescriptor.AnimLayerType.Gesture] = new AnimatorLayerWeightMap<int>(),
+                [VRCAvatarDescriptor.AnimLayerType.Additive] = new AnimatorLayerWeightMap<int>(),
+            };
+            var useDefaultLayers = !descriptor.customizeAnimationLayers;
+
+            foreach (var layer in descriptor.baseAnimationLayers)
+                CollectWeightChangesInController(GetPlayableLayerController(layer, useDefaultLayers),
+                    playableWeightChanged, animatorLayerWeightChanged);
+
+            if (mmdWorldCompatibility)
+            {
+                var fxLayer = animatorLayerWeightChanged[VRCAvatarDescriptor.AnimLayerType.FX];
+                fxLayer[1] = fxLayer[1].Merge(AnimatorWeightState.EitherZeroOrOne);
+                fxLayer[2] = fxLayer[2].Merge(AnimatorWeightState.EitherZeroOrOne);
+            }
+
+            var controllers = new AnimatorLayerMap<RuntimeAnimatorController>();
+
+            foreach (var layer in descriptor.specialAnimationLayers.Concat(descriptor.baseAnimationLayers))
+            {
+                controllers[layer.type] = GetPlayableLayerController(layer, useDefaultLayers);
+            }
+
+            void MergeLayer(VRCAvatarDescriptor.AnimLayerType type, bool alwaysApplied, float defaultWeight)
+            {
+                AnimatorWeightState weightState;
+                if (alwaysApplied)
+                    weightState = AnimatorWeightState.AlwaysOne;
+                else
+                    weightState = AnimatorLayerWeightStates.WeightStateFor(defaultWeight)
+                        .Merge(playableWeightChanged[type]);
+
+                if (weightState == AnimatorWeightState.AlwaysZero) return;
+
+
+                var parsedLayer = ParseAnimatorController(descriptor.gameObject,
+                    controllers[type], animatorLayerWeightChanged[type]);
+
+                modificationsContainer.MergeAsNewLayer(parsedLayer, weightState);
+            }
+
+            MergeLayer(VRCAvatarDescriptor.AnimLayerType.Base, true, 1);
+            // Station Sitting
+            MergeLayer(VRCAvatarDescriptor.AnimLayerType.Sitting, false, 1);
+            MergeLayer(VRCAvatarDescriptor.AnimLayerType.Additive, false, 1); // Idle
+            MergeLayer(VRCAvatarDescriptor.AnimLayerType.Gesture, false, 1);
+            // Station Action
+            MergeLayer(VRCAvatarDescriptor.AnimLayerType.Action, false, 0);
+            MergeLayer(VRCAvatarDescriptor.AnimLayerType.FX, false, 1);
+
+            // TPose and IKPose should only affect to Humanoid so skip here~
+
+            switch (descriptor.lipSync)
+            {
+                // AvatarDescriptorから収集
+                case VRC_AvatarDescriptor.LipSyncStyle.VisemeBlendShape when descriptor.VisemeSkinnedMesh != null:
+                {
+                    var skinnedMeshRenderer = descriptor.VisemeSkinnedMesh;
+                    var updater = modificationsContainer.ModifyObject(skinnedMeshRenderer);
+                    foreach (var blendShape in descriptor.VisemeBlendShapes)
+                        updater.AddModificationAsNewLayer($"blendShape.{blendShape}", AnimationProperty.Variable());
+                    break;
+                }
+                case VRC_AvatarDescriptor.LipSyncStyle.JawFlapBlendShape when descriptor.VisemeSkinnedMesh != null:
+                {
+                    var skinnedMeshRenderer = descriptor.VisemeSkinnedMesh;
+                    var shape = descriptor.MouthOpenBlendShapeName;
+
+                    modificationsContainer.ModifyObject(skinnedMeshRenderer)
+                        .AddModificationAsNewLayer($"blendShape.{shape}", AnimationProperty.Variable());
+                    break;
+                }
+            }
+
+            if (
+                descriptor.customEyeLookSettings.eyelidType == VRCAvatarDescriptor.EyelidType.Blendshapes &&
+                descriptor.customEyeLookSettings.eyelidsSkinnedMesh != null
+            )
+            {
+                var skinnedMeshRenderer = descriptor.customEyeLookSettings.eyelidsSkinnedMesh;
+                var mesh = skinnedMeshRenderer.sharedMesh;
+
+                var updater = modificationsContainer.ModifyObject(skinnedMeshRenderer);
+
+                foreach (var blendShape in from index in descriptor.customEyeLookSettings.eyelidsBlendshapes
+                         where 0 <= index && index < mesh.blendShapeCount
+                         select mesh.GetBlendShapeName(index))
+                    updater.AddModificationAsNewLayer($"blendShape.{blendShape}", AnimationProperty.Variable());
+            }
+
+            var bodySkinnedMesh = descriptor.transform.Find("Body")?.GetComponent<SkinnedMeshRenderer>();
+
+            if (mmdWorldCompatibility && bodySkinnedMesh)
+            {
+                var updater = modificationsContainer.ModifyObject(bodySkinnedMesh);
+
+                foreach (var shape in MmdBlendShapeNames)
+                    updater.AddModificationAsNewLayer($"blendShape.{shape}", AnimationProperty.Variable());
+            }
+
+            return modificationsContainer;
+        }
+
+        private void CollectWeightChangesInController(RuntimeAnimatorController runtimeController,
+            AnimatorLayerMap<AnimatorWeightState> playableWeightChanged,
+            AnimatorLayerMap<AnimatorLayerWeightMap<int>> animatorLayerWeightChanged)
+        {
+            ReportingObject(runtimeController, () =>
+            {
+                var (controller, _) = GetControllerAndOverrides(runtimeController);
+
+                foreach (var layer in controller.layers)
+                {
+                    if (layer.syncedLayerIndex == -1)
+                        foreach (var state in CollectStates(layer.stateMachine))
+                            CollectWeightChangesInBehaviors(state.behaviours);
+                    else
+                        foreach (var state in CollectStates(controller.layers[layer.syncedLayerIndex]
+                                     .stateMachine))
+                            CollectWeightChangesInBehaviors(layer.GetOverrideBehaviours(state));
+                }
+            });
+
+            return;
+
+            void CollectWeightChangesInBehaviors(StateMachineBehaviour[] stateBehaviours)
+            {
+                foreach (var stateMachineBehaviour in stateBehaviours)
+                {
+                    switch (stateMachineBehaviour)
+                    {
+                        case VRC_PlayableLayerControl playableLayerControl:
+                        {
+                            VRCAvatarDescriptor.AnimLayerType layer;
+                            switch (playableLayerControl.layer)
+                            {
+                                case VRC_PlayableLayerControl.BlendableLayer.Action:
+                                    layer = VRCAvatarDescriptor.AnimLayerType.Action;
+                                    break;
+                                case VRC_PlayableLayerControl.BlendableLayer.FX:
+                                    layer = VRCAvatarDescriptor.AnimLayerType.FX;
+                                    break;
+                                case VRC_PlayableLayerControl.BlendableLayer.Gesture:
+                                    layer = VRCAvatarDescriptor.AnimLayerType.Gesture;
+                                    break;
+                                case VRC_PlayableLayerControl.BlendableLayer.Additive:
+                                    layer = VRCAvatarDescriptor.AnimLayerType.Additive;
+                                    break;
+                                default:
+                                    throw new ArgumentOutOfRangeException();
+                            }
+
+                            var current = AnimatorLayerWeightStates.WeightStateFor(playableLayerControl.blendDuration,
+                                playableLayerControl.goalWeight);
+                            playableWeightChanged[layer] = playableWeightChanged[layer].Merge(current);
+                        }
+                            break;
+                        case VRC_AnimatorLayerControl animatorLayerControl:
+                        {
+                            VRCAvatarDescriptor.AnimLayerType layer;
+                            switch (animatorLayerControl.playable)
+                            {
+                                case VRC_AnimatorLayerControl.BlendableLayer.Action:
+                                    layer = VRCAvatarDescriptor.AnimLayerType.Action;
+                                    break;
+                                case VRC_AnimatorLayerControl.BlendableLayer.FX:
+                                    layer = VRCAvatarDescriptor.AnimLayerType.FX;
+                                    break;
+                                case VRC_AnimatorLayerControl.BlendableLayer.Gesture:
+                                    layer = VRCAvatarDescriptor.AnimLayerType.Gesture;
+                                    break;
+                                case VRC_AnimatorLayerControl.BlendableLayer.Additive:
+                                    layer = VRCAvatarDescriptor.AnimLayerType.Additive;
+                                    break;
+                                default:
+                                    throw new ArgumentOutOfRangeException();
+                            }
+
+                            var current = AnimatorLayerWeightStates.WeightStateFor(animatorLayerControl.blendDuration,
+                                animatorLayerControl.goalWeight);
+                            animatorLayerWeightChanged[layer][animatorLayerControl.layer] =
+                                animatorLayerWeightChanged[layer][animatorLayerControl.layer].Merge(current);
+                            break;
+                        }
                     }
                 }
             }
         }
 
-        readonly struct ParsedAnimation
+        private static RuntimeAnimatorController GetPlayableLayerController(VRCAvatarDescriptor.CustomAnimLayer layer,
+            bool useDefault = false)
         {
-            public readonly IReadOnlyDictionary<Object, IReadOnlyDictionary<string, AnimationProperty>> Components;
-
-            public ParsedAnimation(
-                IReadOnlyDictionary<Object, IReadOnlyDictionary<string, AnimationProperty>> components)
-            {
-                Components = components;
-            }
-
-            public static ParsedAnimation Parse(GameObject root, AnimationClip clip)
-            {
-                var components = new Dictionary<Object, Dictionary<string, AnimationProperty>>();
-
-                foreach (var binding in AnimationUtility.GetCurveBindings(clip))
-                {
-                    var obj = AnimationUtility.GetAnimatedObject(root, binding);
-                    if (obj == null) continue;
-
-                    var curve = AnimationUtility.GetEditorCurve(clip, binding);
-                    var currentPropertyMayNull = AnimationProperty.ParseProperty(curve);
-
-                    if (!(currentPropertyMayNull is AnimationProperty currentProperty)) continue;
-
-                    if (currentProperty.IsConst)
-                        // ReSharper disable once CompareOfFloatsByEqualityOperator
-                        if (curve[0].time == 0 && curve[curve.length - 1].time == clip.length)
-                            currentProperty = currentProperty.AlwaysApplied();
-
-                    if (!components.TryGetValue(obj, out var properties))
-                        components.Add(obj, properties = new Dictionary<string, AnimationProperty>());
-
-                    if (properties.TryGetValue(binding.propertyName, out var property))
-                        properties[binding.propertyName] = property.Merge(currentProperty);
-                    else
-                        properties.Add(binding.propertyName, currentProperty);
-                }
-
-                return new ParsedAnimation(
-                    Utils.CastDic<IReadOnlyDictionary<string, AnimationProperty>>().CastedDic(components));
-            }
-        }
-
-        private readonly Dictionary<Object, Dictionary<string, AnimationProperty>> _modifiedProperties =
-            new Dictionary<Object, Dictionary<string, AnimationProperty>>();
-
-        public readonly IReadOnlyDictionary<Object, IReadOnlyDictionary<string, AnimationProperty>> ModifiedProperties;
-
-        public IReadOnlyDictionary<string, AnimationProperty> GetModifiedProperties(Component component)
-        {
-            return _modifiedProperties.TryGetValue(component, out var value) ? value : EmptyProperties;
-        }
-
-        private IReadOnlyDictionary<string, AnimationProperty> GetModifiedProperties(GameObject component)
-        {
-            return _modifiedProperties.TryGetValue(component, out var value) ? value : EmptyProperties;
-        }
-
-        private static readonly IReadOnlyDictionary<string, AnimationProperty> EmptyProperties =
-            new ReadOnlyDictionary<string, AnimationProperty>(new Dictionary<string, AnimationProperty>());
-
-        private static RuntimeAnimatorController GetPlayableLayerController(VRCAvatarDescriptor.CustomAnimLayer layer)
-        {
-            if (!layer.isDefault && layer.animatorController)
+            if (!useDefault && !layer.isDefault && layer.animatorController)
             {
                 return layer.animatorController;
             }
 
-            var typeIndex = (int)layer.type;
-            if (typeIndex < 0) return null;
-            if (typeIndex >= DefaultLayers.Length) return null;
-            ref var loader = ref DefaultLayers[typeIndex];
-            if (!loader.IsValid) return null;
+            if (!AnimatorLayerMap<object>.IsValid(layer.type)) return null;
+            ref var loader = ref DefaultLayers[layer.type];
             var controller = loader.Value;
             if (controller == null)
                 throw new InvalidOperationException($"default controller for {layer.type} not found");
             return controller;
         }
+        
+        #endregion
 
-        private static readonly CachedGuidLoader<AnimatorController>[] DefaultLayers = CreateDefaultLayers();
+        #region Animator
 
-        private static CachedGuidLoader<AnimatorController>[] CreateDefaultLayers()
+        /// Mark rotations of humanoid bones as changeable variables
+        private IModificationsContainer AddHumanoidModifications(IModificationsContainer container, Animator animator)
         {
-            var array = new CachedGuidLoader<AnimatorController>[(int)(VRCAvatarDescriptor.AnimLayerType.IKPose + 1)];
-            // vrc_AvatarV3LocomotionLayer
-            array[(int)VRCAvatarDescriptor.AnimLayerType.Base] = "4e4e1a372a526074884b7311d6fc686b";
-            // vrc_AvatarV3IdleLayer
-            array[(int)VRCAvatarDescriptor.AnimLayerType.Additive] = "573a1373059632b4d820876efe2d277f";
-            // vrc_AvatarV3HandsLayer
-            array[(int)VRCAvatarDescriptor.AnimLayerType.Gesture] = "404d228aeae421f4590305bc4cdaba16";
-            // vrc_AvatarV3ActionLayer
-            array[(int)VRCAvatarDescriptor.AnimLayerType.Action] = "3e479eeb9db24704a828bffb15406520";
-            // vrc_AvatarV3FaceLayer
-            array[(int)VRCAvatarDescriptor.AnimLayerType.FX] = "d40be620cf6c698439a2f0a5144919fe";
-            // vrc_AvatarV3SittingLayer
-            array[(int)VRCAvatarDescriptor.AnimLayerType.Sitting] = "1268460c14f873240981bf15aa88b21a";
-            // vrc_AvatarV3UtilityTPose
-            array[(int)VRCAvatarDescriptor.AnimLayerType.TPose] = "00121b5812372b74f9012473856d8acf";
-            // vrc_AvatarV3UtilityIKPose
-            array[(int)VRCAvatarDescriptor.AnimLayerType.IKPose] = "a9b90a833b3486e4b82834c9d1f7c4ee";
-            return array;
+            // if it's not humanoid, this pass doesn't matter
+            if (!animator.isHuman) return container;
+
+            var mutable = container.ToMutable();
+            for (var bone = HumanBodyBones.Hips; bone < HumanBodyBones.LastBone; bone++)
+            {
+                var transform = animator.GetBoneTransform(bone);
+                if (!transform) continue;
+
+                var updater = mutable.ModifyObject(transform);
+
+                foreach (var key in TransformRotationAnimationKeys)
+                    updater.AddModificationAsNewLayer(key, AnimationProperty.Variable());
+            }
+
+            return mutable;
         }
+
+        public IModificationsContainer ParseAnimatorController(GameObject root, RuntimeAnimatorController controller,
+            [CanBeNull] AnimatorLayerWeightMap<int> externallyWeightChanged = null)
+        {
+            return ReportingObject(controller, () =>
+            {
+                if (advancedAnimatorParser)
+                {
+                    var (animatorController, mapping) = GetControllerAndOverrides(controller);
+                    return AdvancedParseAnimatorController(root, animatorController, mapping,
+                        externallyWeightChanged);
+                }
+                else
+                {
+                    return FallbackParseAnimatorController(root, controller);
+                }
+            });
+        }
+
+        /// <summary>
+        /// Fallback AnimatorController Parser but always assumed as partially applied.
+        /// This process assumes everything is applied as non-additive state motion.
+        /// This parsing MAY not correct with direct blendtree or additive layer
+        /// but it's extremely rare case so ignoring such case.
+        /// </summary>
+        private IModificationsContainer FallbackParseAnimatorController(GameObject root, RuntimeAnimatorController controller)
+        {
+            return controller.animationClips.Select(clip => _animationParser.GetParsedAnimation(root, clip)).MergeContainersSideBySide();
+        }
+
+        internal IModificationsContainer AdvancedParseAnimatorController(GameObject root, AnimatorController controller,
+            IReadOnlyDictionary<AnimationClip, AnimationClip> mapping,
+            [CanBeNull] AnimatorLayerWeightMap<int> externallyWeightChanged)
+        {
+            var layers = controller.layers;
+            if (layers.Length == 0) return ImmutableModificationsContainer.Empty;
+
+            var mergedController = new ModificationsContainer();
+
+            for (var i = 0; i < layers.Length; i++)
+            {
+                var weightState = i == 0
+                    ? AnimatorWeightState.AlwaysOne
+                    : AnimatorLayerWeightStates.WeightStateFor(layers[i].defaultWeight)
+                        .Merge(externallyWeightChanged?.Get(i) ?? AnimatorWeightState.NotChanged);
+
+                if (weightState == AnimatorWeightState.AlwaysZero) continue;
+
+                var parsedLayer = ParseAnimatorControllerLayer(root, controller, mapping, i);
+
+
+                switch (layers[i].blendingMode)
+                {
+                    case AnimatorLayerBlendingMode.Override:
+                        mergedController.MergeAsNewLayer(parsedLayer, weightState);
+                        break;
+                    case AnimatorLayerBlendingMode.Additive:
+                        mergedController.MergeAsNewAdditiveLayer(parsedLayer, weightState);
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+
+            return mergedController;
+        }
+
+        internal IModificationsContainer ParseAnimatorControllerLayer(
+            GameObject root,
+            AnimatorController controller,
+            IReadOnlyDictionary<AnimationClip, AnimationClip> mapping,
+            int layerIndex)
+        {
+            var layer = controller.layers[layerIndex];
+
+            var syncedLayer = layer.syncedLayerIndex;
+
+            IEnumerable<IModificationsContainer> parsedMotions;
+
+            if (syncedLayer == -1)
+            {
+                parsedMotions = CollectStates(layer.stateMachine)
+                    .Select(state => _animationParser.ParseMotion(root, state.motion, mapping));
+            }
+            else
+            {
+                parsedMotions = CollectStates(controller.layers[syncedLayer].stateMachine)
+                    .Select(state => _animationParser.ParseMotion(root, layer.GetOverrideMotion(state), mapping));
+            }
+
+            return parsedMotions.MergeContainersSideBySide();
+        }
+
+        private IEnumerable<AnimatorState> CollectStates(AnimatorStateMachine stateMachineIn)
+        {
+            var queue = new Queue<AnimatorStateMachine>();
+            queue.Enqueue(stateMachineIn);
+
+            while (queue.Count != 0)
+            {
+                var stateMachine = queue.Dequeue();
+                foreach (var state in stateMachine.states)
+                    yield return state.state;
+
+                foreach (var childStateMachine in stateMachine.stateMachines)
+                    queue.Enqueue(childStateMachine.stateMachine);
+            }
+        }
+
+        public (AnimatorController, IReadOnlyDictionary<AnimationClip, AnimationClip>) GetControllerAndOverrides(
+            RuntimeAnimatorController runtimeController)
+        {
+            if (runtimeController is AnimatorController originalController)
+                return (originalController, Utils.EmptyDictionary<AnimationClip, AnimationClip>());
+
+            var overrides = new Dictionary<AnimationClip, AnimationClip>();
+            var overridesBuffer = new List<KeyValuePair<AnimationClip, AnimationClip>>();
+
+            for (;;)
+            {
+                if (runtimeController is AnimatorController controller)
+                    return (controller, overrides);
+
+                var overrideController = (AnimatorOverrideController)runtimeController;
+
+                runtimeController = overrideController.runtimeAnimatorController;
+                overrideController.GetOverrides(overridesBuffer);
+                overridesBuffer.RemoveAll(x => !x.Value);
+
+                var currentOverrides = overridesBuffer
+                    .GroupBy(kvp => kvp.Value, kvp => kvp.Key)
+                    .ToDictionary(g => g.Key, g => g.ToList());
+
+                foreach (var upperMappedFrom in overrides.Keys.ToArray())
+                    if (currentOverrides.TryGetValue(upperMappedFrom, out var currentMappedFrom))
+                        foreach (var mappedFrom in currentMappedFrom)
+                            overrides[mappedFrom] = overrides[upperMappedFrom];
+
+                foreach (var (original, mapped) in overridesBuffer)
+                    if (!overrides.ContainsKey(original))
+                        overrides.Add(original, mapped);
+            }
+        }
+
+        #endregion
+
+        #region Constants
+
+        private static readonly string[] TransformRotationAnimationKeys =
+            { "m_LocalRotation.x", "m_LocalRotation.y", "m_LocalRotation.z", "m_LocalRotation.w" };
+
+        private static readonly string[] TransformPositionAnimationKeys =
+            { "m_LocalPosition.x", "m_LocalPosition.y", "m_LocalPosition.z" };
+
+        private static readonly string[] TransformScaleAnimationKeys =
+            { "m_LocalScale.x", "m_LocalScale.y", "m_LocalScale.z" };
+
+        private static readonly AnimatorLayerMap<CachedGuidLoader<AnimatorController>> DefaultLayers =
+            new AnimatorLayerMap<CachedGuidLoader<AnimatorController>>
+            {
+                // vrc_AvatarV3LocomotionLayer
+                [VRCAvatarDescriptor.AnimLayerType.Base] = "4e4e1a372a526074884b7311d6fc686b",
+                // vrc_AvatarV3IdleLayer
+                [VRCAvatarDescriptor.AnimLayerType.Additive] = "573a1373059632b4d820876efe2d277f",
+                // vrc_AvatarV3HandsLayer
+                [VRCAvatarDescriptor.AnimLayerType.Gesture] = "404d228aeae421f4590305bc4cdaba16",
+                // vrc_AvatarV3ActionLayer
+                [VRCAvatarDescriptor.AnimLayerType.Action] = "3e479eeb9db24704a828bffb15406520",
+                // vrc_AvatarV3FaceLayer
+                [VRCAvatarDescriptor.AnimLayerType.FX] = "d40be620cf6c698439a2f0a5144919fe",
+                // vrc_AvatarV3SittingLayer
+                [VRCAvatarDescriptor.AnimLayerType.Sitting] = "1268460c14f873240981bf15aa88b21a",
+                // vrc_AvatarV3UtilityTPose
+                [VRCAvatarDescriptor.AnimLayerType.TPose] = "00121b5812372b74f9012473856d8acf",
+                // vrc_AvatarV3UtilityIKPose
+                [VRCAvatarDescriptor.AnimLayerType.IKPose] = "a9b90a833b3486e4b82834c9d1f7c4ee"
+            };
 
         private static readonly string[] MmdBlendShapeNames = {
             // https://booth.pm/ja/items/3341221
@@ -392,74 +820,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             "照れ",
             "涙",
         };
-    }
 
-    readonly struct AnimationProperty
-    {
-        readonly AnimationPropertyFlags _flags;
-        public bool IsConst => (_flags & AnimationPropertyFlags.Constant) != 0;
-        public bool IsAlwaysApplied => (_flags & AnimationPropertyFlags.AlwaysApplied) != 0;
-        public readonly float ConstValue;
-
-        private AnimationProperty(AnimationPropertyFlags flags, float constValue) =>
-            (this._flags, ConstValue) = (flags, constValue);
-
-        public static AnimationProperty Const(float value) =>
-            new AnimationProperty(AnimationPropertyFlags.Constant, value);
-
-        public static AnimationProperty Variable() =>
-            new AnimationProperty(AnimationPropertyFlags.Variable, float.NaN);
-
-        public AnimationProperty Merge(AnimationProperty b)
-        {
-            var isConstant = IsConst && b.IsConst && ConstValue.CompareTo(b.ConstValue) == 0;
-            var isAlwaysApplied = IsAlwaysApplied && b.IsAlwaysApplied;
-
-            return new AnimationProperty(
-                (isConstant ? AnimationPropertyFlags.Constant : AnimationPropertyFlags.Variable)
-                | (isAlwaysApplied ? AnimationPropertyFlags.AlwaysApplied : AnimationPropertyFlags.Variable),
-                ConstValue);
-        }
-
-        public static AnimationProperty? ParseProperty(AnimationCurve curve)
-        {
-            if (curve.keys.Length == 0) return null;
-            if (curve.keys.Length == 1)
-                return Const(curve.keys[0].value);
-
-            float constValue = 0;
-            foreach (var (preKey, postKey) in curve.keys.ZipWithNext())
-            {
-                var preWeighted = preKey.weightedMode == WeightedMode.Out || preKey.weightedMode == WeightedMode.Both;
-                var postWeighted = postKey.weightedMode == WeightedMode.In || postKey.weightedMode == WeightedMode.Both;
-
-                if (preKey.value.CompareTo(postKey.value) != 0) return Variable();
-                constValue = preKey.value;
-                // it's constant
-                if (float.IsInfinity(preKey.outWeight) || float.IsInfinity(postKey.inTangent))
-                    continue;
-                if (preKey.outTangent == 0 && postKey.inTangent == 0)
-                    continue;
-                if (preWeighted && postWeighted && preKey.outWeight == 0 && postKey.inWeight == 0)
-                    continue;
-                return Variable();
-            }
-
-            return Const(constValue);
-        }
-
-        public AnimationProperty AlwaysApplied() =>
-            new AnimationProperty(_flags | AnimationPropertyFlags.AlwaysApplied, ConstValue);
-
-        public AnimationProperty PartiallyApplied() =>
-            new AnimationProperty(_flags & ~AnimationPropertyFlags.AlwaysApplied, ConstValue);
-        
-        [Flags]
-        enum AnimationPropertyFlags
-        {
-            Variable = 0,
-            Constant = 1,
-            AlwaysApplied = 2,
-        }
+        #endregion
     }
 }

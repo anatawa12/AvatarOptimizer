@@ -348,6 +348,12 @@ msgstr "MMD World Compatibility"
 msgid "TraceAndOptimize:tooltip:mmdWorldCompatibility"
 msgstr "Enable MMD World Compatibility features such as keeping some BlendShapes"
 
+msgid "TraceAndOptimize:prop:advancedAnimatorParser"
+msgstr "Use Advanced Animator Parser"
+
+msgid "TraceAndOptimize:tooltip:advancedAnimatorParser"
+msgstr "Advanced Animator Parser will parse your AnimatorController, including layer structure."
+
 # endregion
 
 #region ApplyObjectMapping

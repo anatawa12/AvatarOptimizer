@@ -9,12 +9,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 {
     class FindUnusedObjectsProcessor
     {
-        private readonly AnimatorParser _animator;
+        private readonly ImmutableModificationsContainer _modifications;
         private readonly OptimizerSession _session;
 
-        public FindUnusedObjectsProcessor(AnimatorParser animator, OptimizerSession session)
+        public FindUnusedObjectsProcessor(ImmutableModificationsContainer modifications, OptimizerSession session)
         {
-            _animator = animator;
+            _modifications = modifications;
             _session = session;
         }
 
@@ -36,10 +36,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 AddGameObject(component);
 
             // entry points: modified enable/disable
-            foreach (var keyValuePair in _animator.ModifiedProperties)
+            foreach (var keyValuePair in _modifications.ModifiedProperties)
             {
                 // TODO: if the any of parent is inactive and kept, it should not be assumed as 
-                if (!(keyValuePair.Key is GameObject gameObject)) continue;
+                if (!keyValuePair.Key.AsGameObject(out var gameObject)) continue;
                 if (!keyValuePair.Value.TryGetValue("m_IsActive", out _)) continue;
 
                 // TODO: if the child is not activeSelf, it should not be assumed as entry point.

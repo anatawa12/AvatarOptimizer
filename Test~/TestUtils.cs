@@ -17,11 +17,14 @@ namespace Anatawa12.AvatarOptimizer.Test
             return root;
         }
 
-        public static T GetAssetAt<T>(string testRelativePath) where T : Object
+        public static string GetAssetPath(string testRelativePath)
         {
             var path = AssetDatabase.GUIDToAssetPath("fc50cab76afb46348d98df4ce8d84e8b");
             var baseDir = path.Substring(0, path.LastIndexOf('/'));
-            return AssetDatabase.LoadAssetAtPath<T>($"{baseDir}/{testRelativePath}");
+            return $"{baseDir}/{testRelativePath}";
         }
+
+        public static T GetAssetAt<T>(string testRelativePath) where T : Object =>
+            AssetDatabase.LoadAssetAtPath<T>(GetAssetPath(testRelativePath));
     }
 }

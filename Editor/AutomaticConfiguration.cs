@@ -9,12 +9,14 @@ namespace Anatawa12.AvatarOptimizer
         private SerializedProperty _freezeBlendShape;
         private SerializedProperty _removeUnusedObjects;
         private SerializedProperty _mmdWorldCompatibility;
+        private SerializedProperty _advancedAnimatorParser;
 
         private void OnEnable()
         {
             _freezeBlendShape = serializedObject.FindProperty(nameof(TraceAndOptimize.freezeBlendShape));
             _removeUnusedObjects = serializedObject.FindProperty(nameof(TraceAndOptimize.removeUnusedObjects));
             _mmdWorldCompatibility = serializedObject.FindProperty(nameof(TraceAndOptimize.mmdWorldCompatibility));
+            _advancedAnimatorParser = serializedObject.FindProperty(nameof(TraceAndOptimize.advancedAnimatorParser));
         }
 
         protected override void OnInspectorGUIInner()
@@ -24,6 +26,7 @@ namespace Anatawa12.AvatarOptimizer
 
             GUILayout.Label("General Settings", EditorStyles.boldLabel);
             EditorGUILayout.PropertyField(_mmdWorldCompatibility);
+            EditorGUILayout.PropertyField(_advancedAnimatorParser);
             GUILayout.Label("Features", EditorStyles.boldLabel);
             EditorGUILayout.PropertyField(_freezeBlendShape);
             EditorGUILayout.PropertyField(_removeUnusedObjects);
