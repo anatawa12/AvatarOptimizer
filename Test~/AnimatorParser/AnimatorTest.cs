@@ -249,6 +249,22 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
             //Assert.That(properties["blendShape.shape17"], Is.EqualTo(AnimationProperty.ConstAlways(100)));
         }
 
+        [Test]
+        public void TestOneLayerOverrides()
+        {
+            var parser = new AnimatorParser(true, true);
+            var controller = TestUtils.GetAssetAt<RuntimeAnimatorController>("AnimatorParser/OneLayerOverrideController.overrideController");
+            var animate0To100 = TestUtils.GetAssetAt<AnimationClip>("AnimatorParser/Animate0To100.anim");
+            var animate1To100 = TestUtils.GetAssetAt<AnimationClip>("AnimatorParser/Animate1To100.anim");
+            var (original, mapping) = parser.GetControllerAndOverrides(controller);
+
+            Assert.That(original, Is.EqualTo(_controller));
+            Assert.That(mapping, Is.EquivalentTo(new []
+            {
+                new KeyValuePair<AnimationClip, AnimationClip>(animate0To100, animate1To100),
+            }));
+        }
+
         private void LayerTest(int layerIndex, string layerName,
             string propertyName, AnimationProperty property,
             AnimatorLayerBlendingMode blendingMode = AnimatorLayerBlendingMode.Override)

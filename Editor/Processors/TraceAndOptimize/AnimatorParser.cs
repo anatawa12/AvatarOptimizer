@@ -622,7 +622,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             }
         }
 
-        private (AnimatorController, IReadOnlyDictionary<AnimationClip, AnimationClip>) GetControllerAndOverrides(
+        public (AnimatorController, IReadOnlyDictionary<AnimationClip, AnimationClip>) GetControllerAndOverrides(
             RuntimeAnimatorController runtimeController)
         {
             if (runtimeController is AnimatorController originalController)
@@ -640,6 +640,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
                 runtimeController = overrideController.runtimeAnimatorController;
                 overrideController.GetOverrides(overridesBuffer);
+                overridesBuffer.RemoveAll(x => !x.Value);
                 var currentOverrides = overridesBuffer.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
                 foreach (var original in overrides.Keys.ToArray())
