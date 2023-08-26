@@ -265,6 +265,26 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
             }));
         }
 
+        [Test]
+        public void TestTwoLayerOverrides()
+        {
+            var parser = new AnimatorParser(true, true);
+            var controller = TestUtils.GetAssetAt<RuntimeAnimatorController>("AnimatorParser/TwoLayerOverrideController.overrideController");
+            var animate0To100 = TestUtils.GetAssetAt<AnimationClip>("AnimatorParser/Animate0To100.anim");
+            var animate1To100 = TestUtils.GetAssetAt<AnimationClip>("AnimatorParser/Animate1To100.anim");
+            var animate1ToVariable = TestUtils.GetAssetAt<AnimationClip>("AnimatorParser/Animate1ToVariable.anim");
+            var animate2ToVariable = TestUtils.GetAssetAt<AnimationClip>("AnimatorParser/Animate2ToVariable.anim");
+            var (original, mapping) = parser.GetControllerAndOverrides(controller);
+
+            Assert.That(original, Is.EqualTo(_controller));
+            Assert.That(mapping, Is.EquivalentTo(new []
+            {
+                new KeyValuePair<AnimationClip, AnimationClip>(animate0To100, animate2ToVariable),
+                new KeyValuePair<AnimationClip, AnimationClip>(animate1ToVariable, animate2ToVariable),
+                new KeyValuePair<AnimationClip, AnimationClip>(animate1To100, animate2ToVariable),
+            }));
+        }
+
         private void LayerTest(int layerIndex, string layerName,
             string propertyName, AnimationProperty property,
             AnimatorLayerBlendingMode blendingMode = AnimatorLayerBlendingMode.Override)

@@ -641,11 +641,15 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 runtimeController = overrideController.runtimeAnimatorController;
                 overrideController.GetOverrides(overridesBuffer);
                 overridesBuffer.RemoveAll(x => !x.Value);
-                var currentOverrides = overridesBuffer.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
-                foreach (var original in overrides.Keys.ToArray())
-                    if (currentOverrides.TryGetValue(overrides[original], out var newMapped))
-                        overrides[original] = newMapped;
+                var currentOverrides = overridesBuffer
+                    .GroupBy(kvp => kvp.Value, kvp => kvp.Key)
+                    .ToDictionary(g => g.Key, g => g.ToList());
+
+                foreach (var upperMappedFrom in overrides.Keys.ToArray())
+                    if (currentOverrides.TryGetValue(upperMappedFrom, out var currentMappedFrom))
+                        foreach (var mappedFrom in currentMappedFrom)
+                            overrides[mappedFrom] = overrides[upperMappedFrom];
 
                 foreach (var (original, mapped) in overridesBuffer)
                     if (!overrides.ContainsKey(original))
