@@ -7,7 +7,6 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using Anatawa12.ApplyOnPlay;
 using JetBrains.Annotations;
-using Unity.Collections;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Assertions;
@@ -393,15 +392,19 @@ namespace Anatawa12.AvatarOptimizer
             }
         }
 
-        public static ZipWithNextEnumerable<T> ZipWithNext<T>(this IEnumerable<T> enumerable) =>
-            new ZipWithNextEnumerable<T>(enumerable);
-
-        public static NativeArray<T> SliceNativeArray<T>(NativeArray<T> source, int length, Allocator allocator)
-            where T : unmanaged
+        public static IEnumerable<(T, T)> ZipWithNext<T>(this IEnumerable<T> enumerable)
         {
-            var res = new NativeArray<T>(length, allocator);
-            source.AsReadOnlySpan().Slice(0, length).CopyTo(res.AsSpan());
-            return res;
+            using (var enumerator = enumerable.GetEnumerator())
+            {
+                if (!enumerator.MoveNext()) yield break;
+                var prev = enumerator.Current;
+                while (enumerator.MoveNext())
+                {
+                    var current = enumerator.Current;
+                    yield return (prev, current);
+                    prev = current;
+                }
+            }
         }
 
         public static AssetEditingScope StartEditingScope(bool saveAssets) => AssetEditingScope.Start(saveAssets);
@@ -429,15 +432,6 @@ namespace Anatawa12.AvatarOptimizer
                 if ((_flags & 1) != 0) AssetDatabase.StopAssetEditing();
                 if ((_flags & 2) != 0) AssetDatabase.SaveAssets();
             }
-        }
-
-        [NotNull]
-        public static GameObject GetGameObjectRelative([NotNull] GameObject rootObject, [NotNull] string path)
-        {
-            if (path == "") return rootObject;
-            var cursor = rootObject.transform.Find(path);
-            if (!cursor) throw new InvalidOperationException($"{path} not found");
-            return cursor.gameObject;
         }
 
         // Properties detailed first and nothing last
@@ -551,22 +545,6 @@ namespace Anatawa12.AvatarOptimizer
             AppDomain.CurrentDomain.GetAssemblies().Select(assembly => assembly.GetType(name))
                 .FirstOrDefault(type => !(type == null));
 
-        // foreach for one liner
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void ForEach(this IEnumerable<int> enumerable, Action<int> action)
-        {
-            foreach (var i in enumerable)
-                action(i);
-        }
-
-        // foreach for one liner
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void ForEach<T>(this IEnumerable<int> enumerable, Func<int, T> action)
-        {
-            foreach (var i in enumerable)
-                action(i);
-        }
-
         public static T DistinctSingleOrDefaultIfNoneOrMultiple<T>(this IEnumerable<T> enumerable)
         {
             using (var enumerator = enumerable.GetEnumerator())
@@ -587,7 +565,7 @@ namespace Anatawa12.AvatarOptimizer
         }
     }
 
-    internal struct ArraySerializedPropertyEnumerable : IEnumerable<SerializedProperty>
+    internal readonly struct ArraySerializedPropertyEnumerable : IEnumerable<SerializedProperty>
     {
         private readonly SerializedProperty _property;
 
@@ -712,57 +690,6 @@ namespace Anatawa12.AvatarOptimizer
         public static implicit operator CachedGuidLoader<T>(string guid) =>
             new CachedGuidLoader<T>(guid);
     }
-    
-    internal struct ZipWithNextEnumerable<T> : IEnumerable<(T, T)>
-    {
-        private readonly IEnumerable<T> _enumerable;
-
-        public ZipWithNextEnumerable(IEnumerable<T> enumerable)
-        {
-            _enumerable = enumerable;
-        }
-
-        Enumerator GetEnumerator() => new Enumerator(_enumerable.GetEnumerator());
-        IEnumerator<(T, T)> IEnumerable<(T, T)>.GetEnumerator() => GetEnumerator();
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-
-        public struct Enumerator : IEnumerator<(T, T)>
-        {
-            private readonly IEnumerator<T> _enumerator;
-            private (T, T) _current;
-            private bool _first;
-
-            public Enumerator(IEnumerator<T> enumerator)
-            {
-                _enumerator = enumerator;
-                _current = default;
-                _first = true;
-            }
-
-            public bool MoveNext()
-            {
-                if (_first)
-                {
-                    if (!_enumerator.MoveNext()) return false;
-                    _current = (default, _enumerator.Current);
-                    _first = false;
-                }
-                if (!_enumerator.MoveNext()) return false;
-                _current = (_current.Item2, _enumerator.Current);
-                return true;
-            }
-
-            public void Reset()
-            {
-                _enumerator.Reset();
-                _first = false;
-            }
-
-            public (T, T) Current => _current;
-            object IEnumerator.Current => Current;
-            public void Dispose() => _enumerator.Dispose();
-        }
-    }
 
     internal readonly struct BoundsCornersEnumerable : IEnumerable<Vector3>
     {
@@ -770,58 +697,58 @@ namespace Anatawa12.AvatarOptimizer
 
         public BoundsCornersEnumerable(Bounds bounds) => _bounds = bounds;
 
-        public BoundsCornersEnumerator GetEnumerator() => new BoundsCornersEnumerator(_bounds);
+        public Enumerator GetEnumerator() => new Enumerator(_bounds);
 
         IEnumerator<Vector3> IEnumerable<Vector3>.GetEnumerator() => GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-    }
 
-    internal struct BoundsCornersEnumerator : IEnumerator<Vector3>
-    {
-        private readonly Bounds _bounds;
-        // 0: before first
-        // 1..=8: corner
-        // 9: end
-        private int _index;
-
-        public BoundsCornersEnumerator(Bounds bounds) => (_bounds, _index) = (bounds, 0);
-
-        public bool MoveNext() => ++_index <= 8;
-
-        public void Reset() => _index = 0;
-
-        public Vector3 Current
+        internal struct Enumerator : IEnumerator<Vector3>
         {
-            get
+            private readonly Bounds _bounds;
+            // 0: before first
+            // 1..=8: corner
+            // 9: end
+            private int _index;
+
+            public Enumerator(Bounds bounds) => (_bounds, _index) = (bounds, 0);
+
+            public bool MoveNext() => ++_index <= 8;
+
+            public void Reset() => _index = 0;
+
+            public Vector3 Current
             {
-                switch (_index)
+                get
                 {
-                    case 1:
-                        return new Vector3(_bounds.min.x, _bounds.min.y, _bounds.min.z);
-                    case 2:
-                        return new Vector3(_bounds.min.x, _bounds.min.y, _bounds.max.z);
-                    case 3:
-                        return new Vector3(_bounds.min.x, _bounds.max.y, _bounds.min.z);
-                    case 4:
-                        return new Vector3(_bounds.min.x, _bounds.max.y, _bounds.max.z);
-                    case 5:
-                        return new Vector3(_bounds.max.x, _bounds.min.y, _bounds.min.z);
-                    case 6:
-                        return new Vector3(_bounds.max.x, _bounds.min.y, _bounds.max.z);
-                    case 7:
-                        return new Vector3(_bounds.max.x, _bounds.max.y, _bounds.min.z);
-                    case 8:
-                        return new Vector3(_bounds.max.x, _bounds.max.y, _bounds.max.z);
-                    default:
-                        throw new InvalidOperationException();
+                    switch (_index)
+                    {
+                        case 1:
+                            return new Vector3(_bounds.min.x, _bounds.min.y, _bounds.min.z);
+                        case 2:
+                            return new Vector3(_bounds.min.x, _bounds.min.y, _bounds.max.z);
+                        case 3:
+                            return new Vector3(_bounds.min.x, _bounds.max.y, _bounds.min.z);
+                        case 4:
+                            return new Vector3(_bounds.min.x, _bounds.max.y, _bounds.max.z);
+                        case 5:
+                            return new Vector3(_bounds.max.x, _bounds.min.y, _bounds.min.z);
+                        case 6:
+                            return new Vector3(_bounds.max.x, _bounds.min.y, _bounds.max.z);
+                        case 7:
+                            return new Vector3(_bounds.max.x, _bounds.max.y, _bounds.min.z);
+                        case 8:
+                            return new Vector3(_bounds.max.x, _bounds.max.y, _bounds.max.z);
+                        default:
+                            throw new InvalidOperationException();
+                    }
                 }
             }
-        }
 
-        object IEnumerator.Current => Current;
+            object IEnumerator.Current => Current;
 
-        public void Dispose()
-        {
+            public void Dispose()
+            {
+            }
         }
     }
     
@@ -856,168 +783,6 @@ namespace Anatawa12.AvatarOptimizer
                     throw new ArgumentOutOfRangeException(nameof(type), type, null);
 
                 return ref _values[(int)type];
-            }
-        }
-    }
-
-    /// <summary>
-    /// Set of int with BitArray Backend
-    /// </summary>
-    internal class BitArrayIntSet : ISet<int>, IReadOnlyCollection<int>
-    {
-        private readonly BitArray _backed = new BitArray(0);
-        private int _count;
-
-        public BitArrayIntSet()
-        {
-        }
-
-        public BitArrayIntSet(IEnumerable<int> other) => other.ForEach(Add);
-
-        public BitArrayIntSet(int initialMaxValue) => _backed.Length = initialMaxValue;
-
-        int Count => _count;
-
-        #region Basic Operation
-
-        public bool Add(int item)
-        {
-            if (Contains(item)) return false;
-            if (_backed.Length <= item) _backed.Length = item + 1;
-            _backed[item] = true;
-            _count++;
-            return true;
-        }
-
-        public void Clear()
-        {
-            _backed.SetAll(false);
-            _count = 0;
-        }
-
-        public bool Remove(int item)
-        {
-            if (!Contains(item)) return false;
-            _backed[item] = false;
-            _count--;
-            return true;
-        }
-
-        public bool Contains(int item) => item >= 0 && item < _backed.Length && _backed[item];
-
-        #endregion
-
-        #region Set Operations
-
-        public void ExceptWith(IEnumerable<int> other) => other.ForEach(Remove);
-        public bool IsSubsetOf(IEnumerable<int> other) => CountFoundAndNotFoundElements(other).FoundCount == Count;
-        public bool IsSupersetOf(IEnumerable<int> other) => other.All(Contains);
-        public bool Overlaps(IEnumerable<int> other) => other.Any(Contains);
-        public void UnionWith(IEnumerable<int> other) => other.ForEach(Add);
-
-        public void IntersectWith(IEnumerable<int> other)
-        {
-            var otherSet = other as ISet<int> ?? new HashSet<int>(other);
-            ExceptWith(this.Where(item => !otherSet.Contains(item)));
-        }
-
-        public bool IsProperSubsetOf(IEnumerable<int> other)
-        {
-            var (foundCount, notFoundCount) = CountFoundAndNotFoundElements(other);
-            return foundCount == Count && notFoundCount > 0;
-        }
-
-        public bool IsProperSupersetOf(IEnumerable<int> other)
-        {
-            var (foundCount, notFoundCount) = CountFoundAndNotFoundElements(other);
-            return foundCount < Count && notFoundCount == 0;
-        }
-
-        public bool SetEquals(IEnumerable<int> other)
-        {
-            var (found, notFound) = CountFoundAndNotFoundElements(other);
-            return found == Count && notFound == 0;
-        }
-
-        public void SymmetricExceptWith(IEnumerable<int> other)
-        {
-            var otherSet = other as ISet<int> ?? new BitArrayIntSet(other);
-            foreach (var item in otherSet)
-                if (Contains(item))
-                    Remove(item);
-                else
-                    Add(item);
-        }
-
-        private (int FoundCount, int NotFoundCount) CountFoundAndNotFoundElements(IEnumerable<int> other)
-        {
-            var seen = new BitArrayIntSet(_backed.Length);
-
-            var notFoundCount = 0;
-
-            foreach (var item in other)
-            {
-                if (Contains(item))
-                    seen.Add(item);
-                else
-                    notFoundCount++;
-            }
-
-            return (seen.Count, notFoundCount);
-        }
-
-        #endregion
-
-        public void CopyTo(int[] array, int arrayIndex)
-        {
-            if (array.Length < arrayIndex + Count) throw new ArgumentOutOfRangeException();
-
-            foreach (var item in this)
-                array[arrayIndex++] = item;
-        }
-
-        public Enumerator GetEnumerator() => new Enumerator(this);
-        IEnumerator<int> IEnumerable<int>.GetEnumerator() => GetEnumerator();
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-        void ICollection<int>.Add(int item) => Add(item);
-        int ICollection<int>.Count => Count;
-        int IReadOnlyCollection<int>.Count => Count;
-        public bool IsReadOnly => false;
-
-        public struct Enumerator : IEnumerator<int>
-        {
-            private readonly BitArrayIntSet _set;
-            private int _index;
-
-            public Enumerator(BitArrayIntSet set)
-            {
-                _set = set;
-                _index = -1;
-            }
-
-            public bool MoveNext()
-            {
-                if (_index < -1) throw new InvalidOperationException();
-
-                for (;;)
-                {
-                    _index++;
-                    if (_index >= _set._backed.Length)
-                    {
-                        _index = int.MinValue;
-                        return false;
-                    }
-
-                    if (_set.Contains(_index)) return true;
-                }
-            }
-
-            public void Reset() => _index = -1;
-            public int Current => 0 <= _index ? _index : throw new InvalidOperationException();
-            object IEnumerator.Current => Current;
-
-            public void Dispose()
-            {
             }
         }
     }
