@@ -34,6 +34,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - MergeBone not working well with non-restpose bones `#379`
+- Unclear Error with Mesh with Read/Write off `#386`
 
 ### Security
 
