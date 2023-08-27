@@ -8,7 +8,6 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Multi Pass Rendering of Last SubMesh support `#384`
 
 ### Changed
 
@@ -17,9 +16,15 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Unclear Error with Mesh with Read/Write off `#386`
 
 ### Security
+
+## [1.4.0-rc.1] - 2023-08-27
+### Added
+- Multi Pass Rendering of Last SubMesh support [`#384`](https://github.com/anatawa12/AvatarOptimizer/pull/384)
+
+### Fixed
+- Unclear Error with Mesh with Read/Write off [`#386`](https://github.com/anatawa12/AvatarOptimizer/pull/386)
 
 ## [1.4.0-beta.1] - 2023-08-26
 ### Added
@@ -623,7 +628,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.4.0-beta.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.4.0-rc.1...HEAD
+[1.4.0-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.4.0-beta.1...v1.4.0-rc.1
 [1.4.0-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.3.4...v1.4.0-beta.1
 [1.3.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.3.3...v1.3.4
 [1.3.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.3.2...v1.3.3
