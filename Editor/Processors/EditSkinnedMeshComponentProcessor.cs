@@ -75,7 +75,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 BuildReport.ReportingObject(targetRenderer, () =>
                 {
                     var mesh = meshFilter.sharedMesh
-                        ? session.MayInstantiate(meshFilter.sharedMesh)
+                        ? session.MayCreate(meshFilter.sharedMesh)
                         : session.AddToAsset(new Mesh());
                     meshInfo.WriteToMesh(mesh);
                     meshFilter.sharedMesh = mesh;

@@ -55,6 +55,9 @@ namespace Anatawa12.AvatarOptimizer
         public T MayInstantiate<T>(T obj) where T : Object =>
             _added.Contains(obj) ? obj : AddToAsset(Object.Instantiate(obj));
 
+        public T MayCreate<T>(T obj) where T : Object, new() =>
+            _added.Contains(obj) ? obj : AddToAsset(new T { name = obj.name + "(Clone)" });
+
         public void MarkDirtyAll()
         {
             foreach (var o in _added)

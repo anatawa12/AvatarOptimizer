@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Unclear Error with Mesh with Read/Write off `#386`
 
 ### Security
 

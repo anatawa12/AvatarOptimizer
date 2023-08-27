@@ -34,10 +34,14 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         public MeshInfo2(SkinnedMeshRenderer renderer)
         {
             SourceRenderer = renderer;
-            var mesh = renderer.sharedMesh
-                ? renderer.sharedMesh
-                : new Mesh { name = $"AAOGeneratedMesh({renderer.name})" };
-            
+            var mesh = renderer.sharedMesh;
+            if (!mesh) return; // no mesh; make empty mesh
+            if (!mesh.isReadable)
+            {
+                BuildReport.LogFatal("The Mesh is not readable. Please Check Read/Write")?.WithContext(mesh);
+                return;
+            }
+
             BuildReport.ReportingObject(renderer, true, () =>
             {
                 ReadSkinnedMesh(mesh);
@@ -67,6 +71,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             BuildReport.ReportingObject(renderer, true, () =>
             {
                 var mesh = renderer.GetComponent<MeshFilter>().sharedMesh;
+                if (!mesh) return; // no mesh; make empty mesh
+                if (!mesh.isReadable)
+                {
+                    BuildReport.LogFatal("The Mesh is not readable. Please Check Read/Write")?.WithContext(mesh);
+                    return;
+                }
                 ReadStaticMesh(mesh);
 
                 SetIdentityBone(renderer.transform);
@@ -438,7 +448,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             BuildReport.ReportingObject(targetRenderer, () =>
             {
                 var mesh = targetRenderer.sharedMesh
-                    ? session.MayInstantiate(targetRenderer.sharedMesh)
+                    ? session.MayCreate(targetRenderer.sharedMesh)
                     : session.AddToAsset(new Mesh { name = $"AAOGeneratedMesh{targetRenderer.name}" });
 
                 WriteToMesh(mesh);
