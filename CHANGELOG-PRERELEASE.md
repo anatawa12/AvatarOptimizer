@@ -16,6 +16,8 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Clear Endpoint Position may not work well with ignore transforms `#390`
+- Clear Endpoint Position doesn't support Undo `#390`
 
 ### Security
 
