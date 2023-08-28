@@ -21,19 +21,21 @@ namespace Anatawa12.AvatarOptimizer.Processors
             EditorUtility.SetDirty(pb);
         }
 
-        internal static void WalkChildrenAndSetEndpoint(Transform target, VRCPhysBoneBase physBone)
+        internal static bool WalkChildrenAndSetEndpoint(Transform target, VRCPhysBoneBase physBone)
         {
             if (physBone.ignoreTransforms.Contains(target))
-                return;
-            if (target.childCount == 0)
+                return false;
+            var childCount = 0;
+            for (var i = 0; i < target.childCount; i++)
+                if (WalkChildrenAndSetEndpoint(target.GetChild(i), physBone))
+                    childCount++;
+            if (childCount == 0)
             {
                 var go = new GameObject($"{target.name}_EndPhysBone");
                 go.transform.parent = target;
                 go.transform.localPosition = physBone.endpointPosition;
-                return;
             }
-            for (var i = 0; i < target.childCount; i++)
-                WalkChildrenAndSetEndpoint(target.GetChild(i), physBone);
+            return true;
         }
     }
 }
