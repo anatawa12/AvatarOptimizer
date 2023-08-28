@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog].
   - This also understands Additive Layer and BlendTree, so extremely rare problem in previous Animator Parser 
     with Additive Layer or BlendTree will be fixed with this parser.
 - Multi Pass Rendering of Last SubMesh support `#384`
+- Remove Mesh By BlendShape Editor now can set blendshape weights to 0/100
 
 ### Changed
 - Auto FreezeBlendShape now freezes meaningless BlendShape `#334`
