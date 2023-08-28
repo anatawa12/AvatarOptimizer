@@ -9,9 +9,12 @@ namespace Anatawa12.AvatarOptimizer
     {
         private PrefabSafeSet.EditorUtil<string> _shapeKeysSet;
         private SerializedProperty _toleranceProp;
+        private SkinnedMeshRenderer _renderer;
+        public bool automaticallySetWeightWhenToggle;
 
         private void OnEnable()
         {
+            _renderer = targets.Length == 1 ? ((Component)target).GetComponent<SkinnedMeshRenderer>() : null;
             var nestCount = PrefabSafeSet.PrefabSafeSetUtil.PrefabNestCount(serializedObject.targetObject);
             _shapeKeysSet = PrefabSafeSet.EditorUtil<string>.Create(
                 serializedObject.FindProperty("shapeKeysSet"),
@@ -25,8 +28,45 @@ namespace Anatawa12.AvatarOptimizer
         {
             var component = (RemoveMeshByBlendShape)target;
 
+            if (!_renderer)
+            {
+                EditorGUI.BeginDisabledGroup(true);
+                EditorGUILayout.ToggleLeft(
+                    new GUIContent(
+                        CL4EE.Tr("RemoveMeshByBlendShape:editor:automaticallySetWeightWhenToggle"),
+                        CL4EE.Tr("RemoveMeshByBlendShape:tooltip:automaticallySetWeightWhenToggle:noRenderer")
+                    ),
+                    false);
+                automaticallySetWeightWhenToggle = false;
+                EditorGUI.EndDisabledGroup();
+            } else if (!_renderer.sharedMesh)
+            {
+                EditorGUI.BeginDisabledGroup(!_renderer || !_renderer.sharedMesh);
+                EditorGUILayout.ToggleLeft(
+                        new GUIContent(
+                            CL4EE.Tr("RemoveMeshByBlendShape:editor:automaticallySetWeightWhenToggle"),
+                            CL4EE.Tr("RemoveMeshByBlendShape:tooltip:automaticallySetWeightWhenToggle:noMesh")
+                            ),
+                        false);
+                automaticallySetWeightWhenToggle = false;
+                EditorGUI.EndDisabledGroup();
+            }
+            else
+            {
+                automaticallySetWeightWhenToggle =
+                    EditorGUILayout.ToggleLeft(
+                        new GUIContent(
+                            CL4EE.Tr("RemoveMeshByBlendShape:editor:automaticallySetWeightWhenToggle"),
+                            CL4EE.Tr("RemoveMeshByBlendShape:tooltip:automaticallySetWeightWhenToggle")
+                        ),
+                        automaticallySetWeightWhenToggle);
+            }
+
             serializedObject.Update();
             EditorGUILayout.PropertyField(_toleranceProp);
+
+            EditorGUILayout.Space();
+            EditorGUILayout.LabelField("BlendShapes", EditorStyles.boldLabel);
 
             var shapes = EditSkinnedMeshComponentUtil.GetBlendShapes(component.GetComponent<SkinnedMeshRenderer>(), component);
 
@@ -38,7 +78,30 @@ namespace Anatawa12.AvatarOptimizer
                 label.text = shapeKeyName;
                 var element = _shapeKeysSet.GetElementOf(shapeKeyName);
                 using (new PrefabSafeSet.PropertyScope<string>(element, rect, label))
-                    element.SetExistence(EditorGUI.ToggleLeft(rect, label, element.Contains));
+                {
+                    var existence = EditorGUI.ToggleLeft(rect, label, element.Contains);
+                    if (existence != element.Contains)
+                    {
+                        element.SetExistence(existence);
+                        if (automaticallySetWeightWhenToggle)
+                        {
+                            var shapeIndex = _renderer.sharedMesh.GetBlendShapeIndex(shapeKeyName);
+                            if (shapeIndex != -1)
+                            {
+                                using (var serializedRenderer = new SerializedObject(_renderer))
+                                {
+                                    var size = serializedRenderer.FindProperty("m_BlendShapeWeights.Array.size");
+                                    if (size.intValue <= shapeIndex)
+                                        size.intValue = shapeIndex + 1;
+                                    var weight = serializedRenderer.FindProperty($"m_BlendShapeWeights.Array.data[{shapeIndex}]");
+                                    weight.floatValue = existence ? 100 : 0;
+                                    serializedRenderer.ApplyModifiedProperties();
+                                }
+                            }
+                        }
+                    }
+                    
+                }
             }
 
             using (new GUILayout.HorizontalScope())

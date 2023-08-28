@@ -220,6 +220,18 @@ msgstr "回転"
 msgid "RemoveMeshByBlendShape:description"
 msgstr "指定されたブレンドシェイプによって動かされる頂点とそのポリゴンを削除します"
 
+msgid "RemoveMeshByBlendShape:editor:automaticallySetWeightWhenToggle"
+msgstr "BlendShapeのウェイトをトグル時に自動的に設定する"
+
+msgid "RemoveMeshByBlendShape:tooltip:automaticallySetWeightWhenToggle"
+msgstr "ウェイトを100か0にトグルしたときに自動的に設定します。"
+
+msgid "RemoveMeshByBlendShape:tooltip:automaticallySetWeightWhenToggle:noRenderer"
+msgstr "SkinnedMeshRendererがないのでこの機能は使用できません。"
+
+msgid "RemoveMeshByBlendShape:tooltip:automaticallySetWeightWhenToggle:noMesh"
+msgstr "Meshがないのでこの機能は使用できません。"
+
 msgid "RemoveMeshByBlendShape:prop:Tolerance"
 msgstr "許容差"
 

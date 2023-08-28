@@ -283,6 +283,18 @@ msgstr "Rotation"
 msgid "RemoveMeshByBlendShape:description"
 msgstr "Remove vertices transformed by specified BlendShape and their polygons."
 
+msgid "RemoveMeshByBlendShape:editor:automaticallySetWeightWhenToggle"
+msgstr "Automatically set BlendShape weight when toggle"
+
+msgid "RemoveMeshByBlendShape:tooltip:automaticallySetWeightWhenToggle"
+msgstr "Automatically set weight to 100 or 0 when you toggle this settings."
+
+msgid "RemoveMeshByBlendShape:tooltip:automaticallySetWeightWhenToggle:noRenderer"
+msgstr "This option cannot be used because SkinnedMeshRenderer is not found"
+
+msgid "RemoveMeshByBlendShape:tooltip:automaticallySetWeightWhenToggle:noMesh"
+msgstr "This option cannot be used because Mesh is not found"
+
 msgid "RemoveMeshByBlendShape:prop:Tolerance"
 msgstr "Tolerance"
 
