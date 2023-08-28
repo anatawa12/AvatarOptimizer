@@ -1,3 +1,4 @@
+using System;
 using Anatawa12.AvatarOptimizer.ErrorReporting;
 using UnityEditor;
 using UnityEngine;
@@ -12,28 +13,37 @@ namespace Anatawa12.AvatarOptimizer.Processors
             BuildReport.ReportingObjects(session.GetComponents<ClearEndpointPosition>(),
                 component => BuildReport.ReportingObjects(component.GetComponents<VRCPhysBoneBase>(), Process));
         }
-        
+
         public static void Process(VRCPhysBoneBase pb)
         {
-            if (pb.endpointPosition == Vector3.zero) return;
-            WalkChildrenAndSetEndpoint(pb.GetTarget(), pb);
+            CreateEndBones(pb, (name, parent, localPosition) =>
+            {
+                new GameObject(name) { transform = { localPosition = localPosition } }
+                    .transform.SetParent(parent, worldPositionStays: false);
+            });
             pb.endpointPosition = Vector3.zero;
             EditorUtility.SetDirty(pb);
         }
 
-        internal static void WalkChildrenAndSetEndpoint(Transform target, VRCPhysBoneBase physBone)
+        public static void CreateEndBones(VRCPhysBoneBase pb, Action<string, Transform, Vector3> createEndBone)
+        {
+            if (pb.endpointPosition == Vector3.zero) return;
+            WalkChildrenAndSetEndpoint(pb.GetTarget(), pb, createEndBone);
+        }
+
+        internal static bool WalkChildrenAndSetEndpoint(Transform target, VRCPhysBoneBase physBone,
+            Action<string, Transform, Vector3> createEndBone)
         {
             if (physBone.ignoreTransforms.Contains(target))
-                return;
-            if (target.childCount == 0)
-            {
-                var go = new GameObject($"{target.name}_EndPhysBone");
-                go.transform.parent = target;
-                go.transform.localPosition = physBone.endpointPosition;
-                return;
-            }
+                return false;
+            var childCount = 0;
             for (var i = 0; i < target.childCount; i++)
-                WalkChildrenAndSetEndpoint(target.GetChild(i), physBone);
+                if (WalkChildrenAndSetEndpoint(target.GetChild(i), physBone, createEndBone))
+                    childCount++;
+            if (childCount == 0)
+                createEndBone($"{target.name}_EndPhysBone", target, physBone.endpointPosition);
+
+            return true;
         }
     }
 }

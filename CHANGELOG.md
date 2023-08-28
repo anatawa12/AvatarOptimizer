@@ -35,6 +35,8 @@ The format is based on [Keep a Changelog].
 ### Fixed
 - MergeBone not working well with non-restpose bones `#379`
 - Unclear Error with Mesh with Read/Write off `#386`
+- Clear Endpoint Position may not work well with ignore transforms `#390`
+- Clear Endpoint Position doesn't support Undo `#390`
 
 ### Security
 

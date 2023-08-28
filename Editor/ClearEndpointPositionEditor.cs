@@ -13,8 +13,21 @@ namespace Anatawa12.AvatarOptimizer
         {
             if (GUILayout.Button(CL4EE.Tr("ClearEndpointPosition:button:Apply and Remove Component")))
             {
-                ClearEndpointPositionProcessor.Process(((Component)target).GetComponent<VRCPhysBoneBase>());
-                DestroyImmediate(target);
+                var pb = ((Component)target).GetComponent<VRCPhysBoneBase>();
+                Undo.SetCurrentGroupName("Clear Endpoint Position");
+                ClearEndpointPositionProcessor.CreateEndBones(pb, (name, parent, localPosition) =>
+                {
+                    var gameObject = new GameObject(name);
+                    Undo.RegisterCreatedObjectUndo(gameObject, $"Create EndBone: {name}");
+                    Undo.SetTransformParent(gameObject.transform, parent, $"Set EndBone Parent: {name}");
+                    Undo.RecordObject(gameObject.transform, $"Set Position of EndBone: {name}");
+                    gameObject.transform.localPosition = localPosition;
+                    PrefabUtility.RecordPrefabInstancePropertyModifications(gameObject.transform);
+                });
+                Undo.RecordObject(pb, "Set Endpoint Position to Zero");
+                pb.endpointPosition = Vector3.zero;
+                PrefabUtility.RecordPrefabInstancePropertyModifications(pb);
+                Undo.DestroyObjectImmediate(target);
             }
         }
     }
