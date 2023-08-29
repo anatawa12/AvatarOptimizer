@@ -8,7 +8,6 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Remove Mesh By BlendShape Editor now can set blendshape weights to 0/100 `#389`
 
 ### Changed
 
@@ -17,10 +16,16 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Clear Endpoint Position may not work well with ignore transforms `#390`
-- Clear Endpoint Position doesn't support Undo `#390`
 
 ### Security
+
+## [1.4.0-rc.2] - 2023-08-29
+### Added
+- Remove Mesh By BlendShape Editor now can set blendshape weights to 0/100 [`#389`](https://github.com/anatawa12/AvatarOptimizer/pull/389)
+
+### Fixed
+- Clear Endpoint Position may not work well with ignore transforms [`#390`](https://github.com/anatawa12/AvatarOptimizer/pull/390)
+- Clear Endpoint Position doesn't support Undo [`#390`](https://github.com/anatawa12/AvatarOptimizer/pull/390)
 
 ## [1.4.0-rc.1] - 2023-08-27
 ### Added
@@ -631,7 +636,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.4.0-rc.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.4.0-rc.2...HEAD
+[1.4.0-rc.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.4.0-rc.1...v1.4.0-rc.2
 [1.4.0-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.4.0-beta.1...v1.4.0-rc.1
 [1.4.0-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.3.4...v1.4.0-beta.1
 [1.3.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.3.3...v1.3.4
