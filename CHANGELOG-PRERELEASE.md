@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Remove Mesh By BlendShape Editor now can set blendshape weights to 0/100 `#389`
 
 ### Changed
 
