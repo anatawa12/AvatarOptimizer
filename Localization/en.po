@@ -287,7 +287,7 @@ msgid "RemoveMeshByBlendShape:editor:automaticallySetWeightWhenToggle"
 msgstr "Automatically set BlendShape weight for preview when toggled"
 
 msgid "RemoveMeshByBlendShape:tooltip:automaticallySetWeightWhenToggle"
-msgstr "Automatically set weight to 100 or 0 when you toggle this settings."
+msgstr "Automatically set weight to 100 or 0 for blendshapes which are toggled while this option is enabled."
 
 msgid "RemoveMeshByBlendShape:tooltip:automaticallySetWeightWhenToggle:noRenderer"
 msgstr "This option cannot be used because SkinnedMeshRenderer is not found"

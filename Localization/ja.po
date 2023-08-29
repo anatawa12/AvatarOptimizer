@@ -221,10 +221,10 @@ msgid "RemoveMeshByBlendShape:description"
 msgstr "指定されたブレンドシェイプによって動かされる頂点とそのポリゴンを削除します"
 
 msgid "RemoveMeshByBlendShape:editor:automaticallySetWeightWhenToggle"
-msgstr "プレビューのために、切り替えたBlendShapeの値を自動的に変更する"
+msgstr "プレビューのために、切り替えたブレンドシェイプの値を自動的に変更する"
 
 msgid "RemoveMeshByBlendShape:tooltip:automaticallySetWeightWhenToggle"
-msgstr "BlendShapeの値を自動的に100か0に設定します。"
+msgstr "このオプションが有効な間にブレンドシェイプの指定を切り替えた場合、その値を自動的に100か0に設定します。"
 
 msgid "RemoveMeshByBlendShape:tooltip:automaticallySetWeightWhenToggle:noRenderer"
 msgstr "SkinnedMeshRendererがないため、この機能を使用することができません。"
