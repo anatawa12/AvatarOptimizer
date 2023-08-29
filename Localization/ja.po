@@ -274,7 +274,7 @@ msgid "TraceAndOptimize:description"
 msgstr "このコンポーネントをアバターにつけると、アバターを走査して自動的にできる限りの最適化を行います。"
 
 msgid "TraceAndOptimize:prop:freezeBlendShape"
-msgstr "Blend Shapeを自動的に固定・削除する"
+msgstr "BlendShapeを自動的に固定・削除する"
 
 msgid "TraceAndOptimize:prop:removeUnusedObjects"
 msgstr "使われていないObjectを自動的に削除する"
