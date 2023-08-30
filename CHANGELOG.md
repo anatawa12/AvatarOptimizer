@@ -28,6 +28,7 @@ The format is based on [Keep a Changelog].
   - This will improve compatibility with UniVRM.
 - VPM Package now doesn't include Test code `#372` `#373`
 - Better error infomation for MeshInfo2 error `#381`
+- Declare compatible with VRCSDK 3.3.x `#395`
 
 ### Deprecated
 

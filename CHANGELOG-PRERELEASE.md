@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
+- Declare compatible with VRCSDK 3.3.x `#395`
 
 ### Deprecated
 
