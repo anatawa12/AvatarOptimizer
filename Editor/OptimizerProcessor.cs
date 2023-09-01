@@ -20,6 +20,7 @@ namespace Anatawa12.AvatarOptimizer
 
         public bool ApplyOnPlay(GameObject avatarGameObject, ApplyReason reason)
         {
+            if (CheckForMissingComponents(avatarGameObject)) return false;
             ProcessObject(new OptimizerSession(avatarGameObject, Utils.CreateOutputAssetFile(avatarGameObject, reason),
                 reason == ApplyReason.EnteringPlayMode));
             return true;
