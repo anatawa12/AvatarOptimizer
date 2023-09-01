@@ -1,5 +1,6 @@
 
 using System;
+using System.Linq;
 using Anatawa12.ApplyOnPlay;
 using Anatawa12.AvatarOptimizer.ErrorReporting;
 using UnityEngine;
@@ -19,6 +20,7 @@ namespace Anatawa12.AvatarOptimizer
 
         public bool ApplyOnPlay(GameObject avatarGameObject, ApplyReason reason)
         {
+            if (CheckForMissingComponents(avatarGameObject)) return false;
             ProcessObject(new OptimizerSession(avatarGameObject, Utils.CreateOutputAssetFile(avatarGameObject, reason),
                 reason == ApplyReason.EnteringPlayMode));
             return true;
@@ -26,6 +28,7 @@ namespace Anatawa12.AvatarOptimizer
 
         public bool OnPreprocessAvatar(GameObject avatarGameObject)
         {
+            if (CheckForMissingComponents(avatarGameObject)) return false;
             try
             {
                 ProcessObject(new OptimizerSession(avatarGameObject, true, false));
@@ -36,6 +39,24 @@ namespace Anatawa12.AvatarOptimizer
                 Debug.LogError(e);
                 return false;
             }
+        }
+
+        private bool CheckForMissingComponents(GameObject gameObject)
+        {
+            var error = false;
+            using (BuildReport.ReportingOnAvatar(gameObject.GetComponent<VRCAvatarDescriptor>()))
+            {
+                foreach (var children in gameObject.GetComponentsInChildren<Transform>(true))
+                {
+                    if (children.gameObject.GetComponents<Component>().Any(x => x is null))
+                    {
+                        BuildReport.LogFatal("Missing Script Component Detected!")?.WithContext(children.gameObject);
+                        error = true;
+                    }
+                }
+            }
+
+            return error;
         }
 
         private static bool _processing;
