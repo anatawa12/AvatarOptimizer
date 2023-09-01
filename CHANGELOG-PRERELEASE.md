@@ -11,6 +11,8 @@ The format is based on [Keep a Changelog].
 
 ### Changed
 - Declare compatible with VRCSDK 3.3.x `#395`
+- Understandable Error if there are Missing Script Component `#398`
+  - Why VRCSDK doesn't have such a error system?
 
 ### Deprecated
 

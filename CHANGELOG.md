@@ -29,6 +29,8 @@ The format is based on [Keep a Changelog].
 - VPM Package now doesn't include Test code `#372` `#373`
 - Better error infomation for MeshInfo2 error `#381`
 - Declare compatible with VRCSDK 3.3.x `#395`
+- Understandable Error if there are Missing Script Component `#398`
+  - Why VRCSDK doesn't have such a error system?
 
 ### Deprecated
 
