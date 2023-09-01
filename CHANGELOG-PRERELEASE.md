@@ -10,9 +10,6 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
-- Declare compatible with VRCSDK 3.3.x `#395`
-- Understandable Error if there are Missing Script Component `#398`
-  - Why VRCSDK doesn't have such a error system?
 
 ### Deprecated
 
@@ -21,6 +18,12 @@ The format is based on [Keep a Changelog].
 ### Fixed
 
 ### Security
+
+## [1.4.0-rc.3] - 2023-09-01
+### Changed
+- Declare compatible with VRCSDK 3.3.x [`#395`](https://github.com/anatawa12/AvatarOptimizer/pull/395)
+- Understandable Error if there are Missing Script Component [`#398`](https://github.com/anatawa12/AvatarOptimizer/pull/398)
+  - Why VRCSDK doesn't have such a error system?
 
 ## [1.4.0-rc.2] - 2023-08-29
 ### Added
@@ -639,7 +642,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.4.0-rc.2...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.4.0-rc.3...HEAD
+[1.4.0-rc.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.4.0-rc.2...v1.4.0-rc.3
 [1.4.0-rc.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.4.0-rc.1...v1.4.0-rc.2
 [1.4.0-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.4.0-beta.1...v1.4.0-rc.1
 [1.4.0-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.3.4...v1.4.0-beta.1
