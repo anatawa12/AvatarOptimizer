@@ -104,8 +104,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             for (var i = 0; i < SubMeshes.Count; i++)
                 SubMeshes[i].SharedMaterial = sourceMaterials[i];
+            var verticesForLastSubMesh =
+                SubMeshes.Count == 0 ? new List<Vertex>() : SubMeshes[SubMeshes.Count - 1].Triangles;
             for (var i = SubMeshes.Count; i < sourceMaterials.Length; i++)
-                SubMeshes.Add(new SubMesh(SubMeshes[i - 1].Triangles.ToList(), sourceMaterials[i]));
+                SubMeshes.Add(new SubMesh(verticesForLastSubMesh.ToList(), sourceMaterials[i]));
         }
 
         [Conditional("UNITY_ASSERTIONS")]
