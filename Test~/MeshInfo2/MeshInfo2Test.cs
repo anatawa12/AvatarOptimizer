@@ -77,5 +77,16 @@ namespace Anatawa12.AvatarOptimizer.Test
             var newMesh = new Mesh();
             meshInfo2.WriteToMesh(newMesh);
         }
+
+        [Test]
+        public void RootBoneWithNoneMeshSkinnedMeshRenderer()
+        {
+            var go = new GameObject();
+            var secondGo = new GameObject();
+            var smr = go.AddComponent<SkinnedMeshRenderer>();
+            smr.rootBone = secondGo.transform;
+            var meshInfo2 = new MeshInfo2(smr);
+            Assert.That(meshInfo2.RootBone, Is.EqualTo(secondGo.transform));
+        }
     }
 }
