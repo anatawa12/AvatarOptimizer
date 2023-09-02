@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- RootBone become None with Merge SkinedMesh `#399`
 
 ### Security
 

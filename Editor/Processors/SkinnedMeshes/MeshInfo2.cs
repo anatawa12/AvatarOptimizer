@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.ErrorReporting;
+using JetBrains.Annotations;
 using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Assertions;
@@ -35,8 +36,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         {
             SourceRenderer = renderer;
             var mesh = renderer.sharedMesh;
-            if (!mesh) return; // no mesh; make empty mesh
-            if (!mesh.isReadable)
+            if (mesh && !mesh.isReadable)
             {
                 BuildReport.LogFatal("The Mesh is not readable. Please Check Read/Write")?.WithContext(mesh);
                 return;
@@ -44,7 +44,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             BuildReport.ReportingObject(renderer, true, () =>
             {
-                ReadSkinnedMesh(mesh);
+                if (mesh)
+                    ReadSkinnedMesh(mesh);
 
                 // if there's no bones: add one fake bone
                 if (Bones.Count == 0)
@@ -53,8 +54,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 Bounds = renderer.localBounds;
                 RootBone = renderer.rootBone ? renderer.rootBone : renderer.transform;
 
-                for (var i = 0; i < mesh.blendShapeCount; i++)
-                    BlendShapes[i] = (BlendShapes[i].name, renderer.GetBlendShapeWeight(i));
+                if (mesh)
+                {
+                    for (var i = 0; i < mesh.blendShapeCount; i++)
+                        BlendShapes[i] = (BlendShapes[i].name, renderer.GetBlendShapeWeight(i));
+                }
 
                 SetMaterials(renderer);
 
@@ -71,17 +75,18 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             BuildReport.ReportingObject(renderer, true, () =>
             {
                 var mesh = renderer.GetComponent<MeshFilter>().sharedMesh;
-                if (!mesh) return; // no mesh; make empty mesh
-                if (!mesh.isReadable)
+                if (mesh && !mesh.isReadable)
                 {
                     BuildReport.LogFatal("The Mesh is not readable. Please Check Read/Write")?.WithContext(mesh);
                     return;
                 }
-                ReadStaticMesh(mesh);
+                if (mesh)
+                    ReadStaticMesh(mesh);
 
                 SetIdentityBone(renderer.transform);
 
-                Bounds = mesh.bounds;
+                if (mesh)
+                    Bounds = mesh.bounds;
                 RootBone = renderer.transform;
 
                 SetMaterials(renderer);
@@ -99,8 +104,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             for (var i = 0; i < SubMeshes.Count; i++)
                 SubMeshes[i].SharedMaterial = sourceMaterials[i];
+            var verticesForLastSubMesh =
+                SubMeshes.Count == 0 ? new List<Vertex>() : SubMeshes[SubMeshes.Count - 1].Triangles;
             for (var i = SubMeshes.Count; i < sourceMaterials.Length; i++)
-                SubMeshes.Add(new SubMesh(SubMeshes[i - 1].Triangles.ToList(), sourceMaterials[i]));
+                SubMeshes.Add(new SubMesh(verticesForLastSubMesh.ToList(), sourceMaterials[i]));
         }
 
         [Conditional("UNITY_ASSERTIONS")]
@@ -122,7 +129,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 vertex.BoneWeights.Add((Bones[0], 1f));
         }
 
-        public void ReadSkinnedMesh(Mesh mesh)
+        public void ReadSkinnedMesh([NotNull] Mesh mesh)
         {
             ReadStaticMesh(mesh);
 
@@ -165,7 +172,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             }
         }
 
-        public void ReadStaticMesh(Mesh mesh)
+        public void ReadStaticMesh([NotNull] Mesh mesh)
         {
             Vertices.Capacity = Math.Max(Vertices.Capacity, mesh.vertexCount);
             Vertices.Clear();

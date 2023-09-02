@@ -103,6 +103,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
                 session.MappingBuilder.RecordMoveProperties(meshInfo.SourceRenderer, mappings.ToArray());
 
+                target.RootBone = sourceRootBone;
                 target.Bones.AddRange(meshInfo.Bones);
 
                 target.HasColor |= meshInfo.HasColor;
