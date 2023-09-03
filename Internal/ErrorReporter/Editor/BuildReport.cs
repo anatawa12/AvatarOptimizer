@@ -197,6 +197,8 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
             }
             catch (Exception e)
             {
+                // just rethrow if BuildReport is not in progress
+                if (CurrentReport.CurrentAvatar == null && needThrow) throw;
                 ReportInternalError(e, 2);
                 if (needThrow) throw new ReportedException();
                 return default;
