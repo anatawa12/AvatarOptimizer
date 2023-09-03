@@ -8,6 +8,9 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Rendering;
+using VRC.Core;
+using VRC.SDK3.Avatars.Components;
+using VRC.SDKBase;
 using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
@@ -368,6 +371,20 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 for (var i = 0; i < constraint.sourceCount; i++)
                     deps.AddActiveDependency(constraint.GetSource(i).sourceTransform);
             }
+
+            // VRChat specific
+            AddParser<VRC_AvatarDescriptor>((collector, deps, component) =>
+            {
+                // to avoid unexpected deletion
+                collector.GetDependencies(component.gameObject)
+                    .AddAlwaysDependency(component);
+                deps.AddAlwaysDependency(component.GetComponent<PipelineManager>());
+            });
+            AddParserWithExtends<VRC_AvatarDescriptor, VRCAvatarDescriptor>();
+            AddNopParser<PipelineManager>();
+#pragma warning disable CS0618
+            AddNopParser<PipelineSaver>();
+#pragma warning restore CS0618
         }
 
         #endregion
