@@ -434,6 +434,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             AddParserWithExtends<ContactReceiver, VRCContactReceiver>();
             AddParserWithExtends<ContactBase, ContactSender>();
             AddParserWithExtends<ContactSender, VRCContactSender>();
+
+            AddNopParser<VRC_SpatialAudioSource>();
+            AddParserWithExtends<VRC_SpatialAudioSource, VRCSpatialAudioSource>();
         }
 
         #endregion
