@@ -230,11 +230,14 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             AddNopParser<Animation>();
             AddParser<Renderer>((collector, deps, renderer) =>
             {
+                // GameObject => Renderer dependency ship
+                collector.GetDependencies(renderer.gameObject)
+                    .AddActiveDependency(renderer, true);
                 // anchor proves
                 if (renderer.reflectionProbeUsage != ReflectionProbeUsage.Off ||
                     renderer.lightProbeUsage != LightProbeUsage.Off)
                     deps.AddActiveDependency(renderer.probeAnchor);
-                if (renderer.lightProbeUsage != LightProbeUsage.UseProxyVolume)
+                if (renderer.lightProbeUsage == LightProbeUsage.UseProxyVolume)
                     deps.AddActiveDependency(renderer.lightProbeProxyVolumeOverride);
             });
             AddParserWithExtends<Renderer, SkinnedMeshRenderer>((collector, deps, skinnedMeshRenderer) =>
