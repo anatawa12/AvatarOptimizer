@@ -208,6 +208,95 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             });
             AddParserWithExtends<Renderer, MeshRenderer>();
             AddNopParser<MeshFilter>();
+            AddParser<ParticleSystem>((collector, deps, particleSystem) =>
+            {
+                if (particleSystem.main.simulationSpace == ParticleSystemSimulationSpace.Custom)
+                    deps.ActiveDependency.Add(particleSystem.main.customSimulationSpace);
+                if (particleSystem.shape.enabled)
+                {
+                    switch (particleSystem.shape.shapeType)
+                    {
+                        case ParticleSystemShapeType.MeshRenderer:
+                            if (particleSystem.shape.meshRenderer)
+                                deps.ActiveDependency.Add(particleSystem.shape.meshRenderer);
+                            break;
+                        case ParticleSystemShapeType.SkinnedMeshRenderer:
+                            if (particleSystem.shape.skinnedMeshRenderer)
+                                deps.ActiveDependency.Add(particleSystem.shape.skinnedMeshRenderer);
+                            break;
+                        case ParticleSystemShapeType.SpriteRenderer:
+                            if (particleSystem.shape.spriteRenderer)
+                                deps.ActiveDependency.Add(particleSystem.shape.spriteRenderer);
+                            break;
+#pragma warning disable CS0618
+                        case ParticleSystemShapeType.Sphere:
+                        case ParticleSystemShapeType.SphereShell:
+                        case ParticleSystemShapeType.Hemisphere:
+                        case ParticleSystemShapeType.HemisphereShell:
+                        case ParticleSystemShapeType.Cone:
+                        case ParticleSystemShapeType.Box:
+                        case ParticleSystemShapeType.Mesh:
+                        case ParticleSystemShapeType.ConeShell:
+                        case ParticleSystemShapeType.ConeVolume:
+                        case ParticleSystemShapeType.ConeVolumeShell:
+                        case ParticleSystemShapeType.Circle:
+                        case ParticleSystemShapeType.CircleEdge:
+                        case ParticleSystemShapeType.SingleSidedEdge:
+                        case ParticleSystemShapeType.BoxShell:
+                        case ParticleSystemShapeType.BoxEdge:
+                        case ParticleSystemShapeType.Donut:
+                        case ParticleSystemShapeType.Rectangle:
+                        case ParticleSystemShapeType.Sprite:
+                        default:
+#pragma warning restore CS0618
+                            break;
+                    }
+                }
+
+                if (particleSystem.collision.enabled)
+                {
+                    switch (particleSystem.collision.type)
+                    {
+                        case ParticleSystemCollisionType.Planes:
+                            for (var i = 0; i < particleSystem.collision.maxPlaneCount; i++)
+                            {
+                                var plane = particleSystem.collision.GetPlane(i);
+                                if (plane) deps.ActiveDependency.Add(plane);
+                            }
+
+                            break;
+                        case ParticleSystemCollisionType.World:
+                        default:
+                            break;
+                    }
+                }
+
+                if (particleSystem.trigger.enabled)
+                {
+                    for (var i = 0; i < particleSystem.trigger.maxColliderCount; i++)
+                    {
+                        var collider = particleSystem.trigger.GetCollider(i);
+                        if (collider) deps.ActiveDependency.Add(collider);
+                    }
+                }
+
+                if (particleSystem.subEmitters.enabled)
+                {
+                    for (int i = 0; i < particleSystem.subEmitters.subEmittersCount; i++)
+                    {
+                        var subEmitter = particleSystem.subEmitters.GetSubEmitterSystem(i);
+                        if (subEmitter) deps.ActiveDependency.Add(subEmitter);
+                    }
+                }
+
+                if (particleSystem.lights.enabled)
+                {
+                    var light = particleSystem.lights.light;
+                    if (light)
+                        deps.ActiveDependency.Add(light);
+                }
+            });
+            AddParserWithExtends<Renderer, ParticleSystemRenderer>();
         }
 
         #endregion
