@@ -87,6 +87,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         [NotNull]
         private ComponentDependencies GetDependencies(ComponentOrGameObject dependent) => _dependencies[dependent];
 
+        private void AddGameObjectToComponentReference(Component component, bool ifEnabled = true) =>
+            GetDependencies(component.gameObject).AddActiveDependency(component, ifEnabled);
+
         public void CollectAllUsages(OptimizerSession session)
         {
             var components = session.GetComponents<Component>().ToArray();
@@ -231,8 +234,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             AddParser<Renderer>((collector, deps, renderer) =>
             {
                 // GameObject => Renderer dependency ship
-                collector.GetDependencies(renderer.gameObject)
-                    .AddActiveDependency(renderer, true);
+                collector.AddGameObjectToComponentReference(renderer);
                 // anchor proves
                 if (renderer.reflectionProbeUsage != ReflectionProbeUsage.Off ||
                     renderer.lightProbeUsage != LightProbeUsage.Off)
@@ -360,10 +362,22 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             AddParserWithExtends<Joint, FixedJoint>();
             AddParserWithExtends<Joint, HingeJoint>();
             AddParserWithExtends<Joint, SpringJoint>();
-            AddNopParser<Rigidbody>();
-            AddNopParser<Camera>();
-            AddNopParser<FlareLayer>();
-            AddNopParser<AudioSource>();
+            AddParser<Rigidbody>((collector, deps, component) =>
+            {
+                collector.AddGameObjectToComponentReference(component);
+            });
+            AddParser<Camera>((collector, deps, component) =>
+            {
+                collector.AddGameObjectToComponentReference(component, false);
+            });
+            AddParser<FlareLayer>((collector, deps, component) =>
+            {
+                collector.GetDependencies(component.GetComponent<Camera>()).AddActiveDependency(component);
+            });
+            AddParser<AudioSource>((collector, deps, component) =>
+            {
+                collector.AddGameObjectToComponentReference(component);
+            });
             AddParser<AimConstraint>(ConstraintParser);
             AddParser<LookAtConstraint>(ConstraintParser);
             AddParser<ParentConstraint>(ConstraintParser);
@@ -371,9 +385,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             AddParser<RotationConstraint>(ConstraintParser);
             AddParser<ScaleConstraint>(ConstraintParser);
 
-            void ConstraintParser(ComponentDependencyCollector collector, ComponentDependencies deps,
-                IConstraint constraint)
+            void ConstraintParser<TConstraint>(ComponentDependencyCollector collector, ComponentDependencies deps,
+                TConstraint constraint)
+                where TConstraint : Component, IConstraint
             {
+                collector.AddGameObjectToComponentReference(constraint);
+                collector.GetDependencies(constraint.transform)
+                    .AddAlwaysDependency(constraint, true);
                 for (var i = 0; i < constraint.sourceCount; i++)
                     deps.AddActiveDependency(constraint.GetSource(i).sourceTransform);
             }
