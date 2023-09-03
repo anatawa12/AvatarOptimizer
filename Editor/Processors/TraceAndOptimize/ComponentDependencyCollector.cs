@@ -6,6 +6,7 @@ using Anatawa12.AvatarOptimizer.ErrorReporting;
 using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Animations;
 using UnityEngine.Rendering;
 using Object = UnityEngine.Object;
 
@@ -353,6 +354,20 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             AddNopParser<Rigidbody>();
             AddNopParser<Camera>();
             AddNopParser<FlareLayer>();
+            AddNopParser<AudioSource>();
+            AddParser<AimConstraint>(ConstraintParser);
+            AddParser<LookAtConstraint>(ConstraintParser);
+            AddParser<ParentConstraint>(ConstraintParser);
+            AddParser<PositionConstraint>(ConstraintParser);
+            AddParser<RotationConstraint>(ConstraintParser);
+            AddParser<ScaleConstraint>(ConstraintParser);
+
+            void ConstraintParser(ComponentDependencyCollector collector, ComponentDependencies deps,
+                IConstraint constraint)
+            {
+                for (var i = 0; i < constraint.sourceCount; i++)
+                    deps.AddActiveDependency(constraint.GetSource(i).sourceTransform);
+            }
         }
 
         #endregion
