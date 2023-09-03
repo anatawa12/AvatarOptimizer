@@ -437,6 +437,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             AddNopParser<VRC_SpatialAudioSource>();
             AddParserWithExtends<VRC_SpatialAudioSource, VRCSpatialAudioSource>();
+
+            // VRC_IKFollower is not available in SDK 3
         }
 
         #endregion
