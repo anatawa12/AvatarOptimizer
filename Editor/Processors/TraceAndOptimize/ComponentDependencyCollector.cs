@@ -385,6 +385,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 #pragma warning disable CS0618
             AddNopParser<PipelineSaver>();
 #pragma warning restore CS0618
+            AddParser<VRC.SDKBase.VRCStation>((collector, deps, component) =>
+            {
+                deps.AddActiveDependency(component.stationEnterPlayerLocation);
+                deps.AddActiveDependency(component.stationExitPlayerLocation);
+            });
+            AddParserWithExtends<VRC.SDKBase.VRCStation, VRC.SDK3.Avatars.Components.VRCStation>();
         }
 
         #endregion
