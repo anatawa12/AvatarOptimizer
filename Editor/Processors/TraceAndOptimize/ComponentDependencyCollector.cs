@@ -348,7 +348,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             AddParserWithExtends<Collider, WheelCollider>();
             AddParser<Joint>((collector, deps, component) =>
             {
-                collector.GetDependencies(component.GetComponent<Rigidbody>()).AddActiveDependency(component, true);
+                collector.GetDependencies(component.GetComponent<Rigidbody>()).AddActiveDependency(component);
                 deps.AddActiveDependency(component.connectedBody);
             });
             AddParserWithExtends<Joint, CharacterJoint>();
