@@ -311,6 +311,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 }
             });
             AddParserWithExtends<Renderer, ParticleSystemRenderer>();
+            AddParserWithExtends<Renderer, TrailRenderer>();
+            AddParserWithExtends<Renderer, LineRenderer>();
         }
 
         #endregion
