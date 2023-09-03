@@ -20,6 +20,7 @@
     "precompiledReferences": [
         "VRC.Dynamics.dll",
         "VRC.SDK3.Dynamics.PhysBone.dll",
+        "VRC.SDK3.Dynamics.Contact.dll",
         "VRCCore-Editor.dll",
         "VRCSDK3A-Editor.dll",
         "VRCSDK3A.dll",

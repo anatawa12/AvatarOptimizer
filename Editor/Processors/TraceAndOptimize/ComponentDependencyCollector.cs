@@ -11,6 +11,7 @@ using UnityEngine.Rendering;
 using VRC.Core;
 using VRC.Dynamics;
 using VRC.SDK3.Avatars.Components;
+using VRC.SDK3.Dynamics.Contact.Components;
 using VRC.SDK3.Dynamics.PhysBone.Components;
 using VRC.SDKBase;
 using Object = UnityEngine.Object;
@@ -424,6 +425,15 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             });
             AddParserWithExtends<VRCPhysBoneBase, VRCPhysBone>();
             AddParserWithExtends<VRCPhysBoneColliderBase, VRCPhysBoneCollider>();
+
+            AddParser<ContactBase>((collector, deps, component) =>
+            {
+                deps.AddActiveDependency(component.rootTransform);
+            });
+            AddParserWithExtends<ContactBase, ContactReceiver>();
+            AddParserWithExtends<ContactReceiver, VRCContactReceiver>();
+            AddParserWithExtends<ContactBase, ContactSender>();
+            AddParserWithExtends<ContactSender, VRCContactSender>();
         }
 
         #endregion
