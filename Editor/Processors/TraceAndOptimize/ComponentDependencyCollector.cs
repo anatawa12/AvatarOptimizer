@@ -328,6 +328,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 }
             });
             AddNopParser<Light>();
+            AddNopParser<Collider>();
+            AddParserWithExtends<Collider, TerrainCollider>();
+            AddParserWithExtends<Collider, BoxCollider>();
+            AddParserWithExtends<Collider, SphereCollider>();
+            AddParserWithExtends<Collider, MeshCollider>();
+            AddParserWithExtends<Collider, CapsuleCollider>();
+            AddParserWithExtends<Collider, WheelCollider>();
         }
 
         #endregion
