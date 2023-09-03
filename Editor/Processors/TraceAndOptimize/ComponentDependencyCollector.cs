@@ -6,6 +6,7 @@ using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
+using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 {
@@ -41,6 +42,16 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             /// </summary>
             [NotNull] public readonly HashSet<ComponentOrGameObject> AlwaysDependency =
                 new HashSet<ComponentOrGameObject>();
+
+            public void AddActiveDependency(ComponentOrGameObject component)
+            {
+                if ((Object)component) ActiveDependency.Add(component);
+            }
+            
+            public void AddAlwaysDependency(ComponentOrGameObject component)
+            {
+                if ((Object)component) AlwaysDependency.Add(component);
+            }
         }
 
         [CanBeNull]
@@ -61,7 +72,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             BuildReport.ReportingObjects(components, component =>
             {
                 // component requires GameObject.
-                GetDependencies(component).AlwaysDependency.Add(component.gameObject);
+                GetDependencies(component).AddAlwaysDependency(component.gameObject);
 
                 if (_byTypeParser.TryGetValue(component.GetType(), out var parser))
                 {
@@ -82,7 +93,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         private void FallbackDependenciesParser(Component component)
         {
             // fallback dependencies: All References are Always Dependencies.
-            GetDependencies(component.gameObject).AlwaysDependency.Add(component);
+            GetDependencies(component.gameObject).AddAlwaysDependency(component);
             var dependencies = GetDependencies(component);
             using (var serialized = new SerializedObject(component))
             {
@@ -93,9 +104,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     if (iterator.propertyType == SerializedPropertyType.ObjectReference)
                     {
                         if (iterator.objectReferenceValue is GameObject go)
-                            dependencies.AlwaysDependency.Add(go);
+                            dependencies.AddAlwaysDependency(go);
                         else if (iterator.objectReferenceValue is Component com)
-                            dependencies.AlwaysDependency.Add(com);
+                            dependencies.AddAlwaysDependency(com);
                     }
 
                     switch (iterator.propertyType)
@@ -185,7 +196,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             // unity generic
             AddParser<Transform>((collector, deps, transform) =>
             {
-                collector.GetDependencies(transform.gameObject).AlwaysDependency.Add(transform);
+                collector.GetDependencies(transform.gameObject).AddAlwaysDependency(transform);
             });
             // Animator does not do much for motion, just changes states of other components.
             // All State Changes are collected separately
@@ -196,37 +207,33 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 // anchor proves
                 if (renderer.reflectionProbeUsage != ReflectionProbeUsage.Off ||
                     renderer.lightProbeUsage != LightProbeUsage.Off)
-                    deps.ActiveDependency.Add(renderer.probeAnchor);
+                    deps.AddActiveDependency(renderer.probeAnchor);
                 if (renderer.lightProbeUsage != LightProbeUsage.UseProxyVolume)
-                    deps.ActiveDependency.Add(renderer.lightProbeProxyVolumeOverride);
+                    deps.AddActiveDependency(renderer.lightProbeProxyVolumeOverride);
             });
             AddParserWithExtends<Renderer, SkinnedMeshRenderer>((collector, deps, skinnedMeshRenderer) =>
             {
-                deps.ActiveDependency.UnionWith(skinnedMeshRenderer.bones.Where(x => x)
-                    .Select(x => (ComponentOrGameObject)x));
-                if (skinnedMeshRenderer.rootBone) deps.ActiveDependency.Add(skinnedMeshRenderer.rootBone);
+                foreach (var bone in skinnedMeshRenderer.bones) deps.AddActiveDependency(bone);
+                deps.AddActiveDependency(skinnedMeshRenderer.rootBone);
             });
             AddParserWithExtends<Renderer, MeshRenderer>();
             AddNopParser<MeshFilter>();
             AddParser<ParticleSystem>((collector, deps, particleSystem) =>
             {
                 if (particleSystem.main.simulationSpace == ParticleSystemSimulationSpace.Custom)
-                    deps.ActiveDependency.Add(particleSystem.main.customSimulationSpace);
+                    deps.AddActiveDependency(particleSystem.main.customSimulationSpace);
                 if (particleSystem.shape.enabled)
                 {
                     switch (particleSystem.shape.shapeType)
                     {
                         case ParticleSystemShapeType.MeshRenderer:
-                            if (particleSystem.shape.meshRenderer)
-                                deps.ActiveDependency.Add(particleSystem.shape.meshRenderer);
+                            deps.AddActiveDependency(particleSystem.shape.meshRenderer);
                             break;
                         case ParticleSystemShapeType.SkinnedMeshRenderer:
-                            if (particleSystem.shape.skinnedMeshRenderer)
-                                deps.ActiveDependency.Add(particleSystem.shape.skinnedMeshRenderer);
+                            deps.AddActiveDependency(particleSystem.shape.skinnedMeshRenderer);
                             break;
                         case ParticleSystemShapeType.SpriteRenderer:
-                            if (particleSystem.shape.spriteRenderer)
-                                deps.ActiveDependency.Add(particleSystem.shape.spriteRenderer);
+                            deps.AddActiveDependency(particleSystem.shape.spriteRenderer);
                             break;
 #pragma warning disable CS0618
                         case ParticleSystemShapeType.Sphere:
@@ -259,11 +266,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     {
                         case ParticleSystemCollisionType.Planes:
                             for (var i = 0; i < particleSystem.collision.maxPlaneCount; i++)
-                            {
-                                var plane = particleSystem.collision.GetPlane(i);
-                                if (plane) deps.ActiveDependency.Add(plane);
-                            }
-
+                                deps.AddActiveDependency(particleSystem.collision.GetPlane(i));
                             break;
                         case ParticleSystemCollisionType.World:
                         default:
@@ -274,26 +277,18 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 if (particleSystem.trigger.enabled)
                 {
                     for (var i = 0; i < particleSystem.trigger.maxColliderCount; i++)
-                    {
-                        var collider = particleSystem.trigger.GetCollider(i);
-                        if (collider) deps.ActiveDependency.Add(collider);
-                    }
+                        deps.AddActiveDependency(particleSystem.trigger.GetCollider(i));
                 }
 
                 if (particleSystem.subEmitters.enabled)
                 {
-                    for (int i = 0; i < particleSystem.subEmitters.subEmittersCount; i++)
-                    {
-                        var subEmitter = particleSystem.subEmitters.GetSubEmitterSystem(i);
-                        if (subEmitter) deps.ActiveDependency.Add(subEmitter);
-                    }
+                    for (var i = 0; i < particleSystem.subEmitters.subEmittersCount; i++)
+                        deps.AddActiveDependency(particleSystem.subEmitters.GetSubEmitterSystem(i));
                 }
 
                 if (particleSystem.lights.enabled)
                 {
-                    var light = particleSystem.lights.light;
-                    if (light)
-                        deps.ActiveDependency.Add(light);
+                    deps.AddActiveDependency(particleSystem.lights.light);
                 }
             });
             AddParserWithExtends<Renderer, ParticleSystemRenderer>();
