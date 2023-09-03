@@ -9,7 +9,9 @@ using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Rendering;
 using VRC.Core;
+using VRC.Dynamics;
 using VRC.SDK3.Avatars.Components;
+using VRC.SDK3.Dynamics.PhysBone.Components;
 using VRC.SDKBase;
 using Object = UnityEngine.Object;
 
@@ -391,6 +393,37 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 deps.AddActiveDependency(component.stationExitPlayerLocation);
             });
             AddParserWithExtends<VRC.SDKBase.VRCStation, VRC.SDK3.Avatars.Components.VRCStation>();
+            AddParser<VRCPhysBoneBase>((collector, deps, physBone) =>
+            {
+                // first, Transform <=> PhysBone
+                // Transform is used even if the bone is inactive so Transform => PB is always dependency
+                // PhysBone works only if enabled so PB => Transform is active dependency
+                var ignoreTransforms = new HashSet<Transform>(physBone.ignoreTransforms);
+                CollectTransforms(physBone.GetTarget());
+
+                void CollectTransforms(Transform bone)
+                {
+                    collector.GetDependencies(bone)
+                        .AddAlwaysDependency(physBone, true);
+                    deps.AddActiveDependency(bone);
+                    foreach (var child in bone.DirectChildrenEnumerable())
+                    {
+                        if (!ignoreTransforms.Contains(child))
+                            CollectTransforms(child);
+                    }
+                }
+
+                // then, PB => Collider
+                // in PB, PB Colliders work only if Colliders are enabled
+                foreach (var physBoneCollider in physBone.colliders)
+                    deps.AddActiveDependency(physBoneCollider, true);
+            });
+            AddParser<VRCPhysBoneColliderBase>((collector, deps, component) =>
+            {
+                deps.AddActiveDependency(component.rootTransform);
+            });
+            AddParserWithExtends<VRCPhysBoneBase, VRCPhysBone>();
+            AddParserWithExtends<VRCPhysBoneColliderBase, VRCPhysBoneCollider>();
         }
 
         #endregion
