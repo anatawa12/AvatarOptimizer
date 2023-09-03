@@ -351,6 +351,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             AddParserWithExtends<Joint, HingeJoint>();
             AddParserWithExtends<Joint, SpringJoint>();
             AddNopParser<Rigidbody>();
+            AddNopParser<Camera>();
         }
 
         #endregion
