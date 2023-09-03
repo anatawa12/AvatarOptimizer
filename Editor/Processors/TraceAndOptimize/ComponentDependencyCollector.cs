@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using Anatawa12.AvatarOptimizer.ErrorReporting;
 using JetBrains.Annotations;
 using UnityEditor;
@@ -34,23 +35,41 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             /// <summary>
             /// Dependencies if this component can be Active or Enabled
             /// </summary>
-            [NotNull] public readonly HashSet<ComponentOrGameObject> ActiveDependency =
-                new HashSet<ComponentOrGameObject>();
+            [NotNull] public readonly HashSet<Dependency> ActiveDependency = new HashSet<Dependency>();
 
             /// <summary>
             /// Dependencies regardless this component can be Active/Enabled or not.
             /// </summary>
-            [NotNull] public readonly HashSet<ComponentOrGameObject> AlwaysDependency =
-                new HashSet<ComponentOrGameObject>();
+            [NotNull] public readonly HashSet<Dependency> AlwaysDependency = new HashSet<Dependency>();
 
-            public void AddActiveDependency(ComponentOrGameObject component)
+            public void AddActiveDependency(ComponentOrGameObject component, bool onlyIfTargetCanBeEnabled = false)
             {
-                if ((Object)component) ActiveDependency.Add(component);
+                if ((Object)component) ActiveDependency.Add(new Dependency(component, onlyIfTargetCanBeEnabled));
             }
             
-            public void AddAlwaysDependency(ComponentOrGameObject component)
+            public void AddAlwaysDependency(ComponentOrGameObject component, bool onlyIfTargetCanBeEnabled = false)
             {
-                if ((Object)component) AlwaysDependency.Add(component);
+                if ((Object)component) AlwaysDependency.Add(new Dependency(component, onlyIfTargetCanBeEnabled));
+            }
+
+            public readonly struct Dependency : IEquatable<Dependency>
+            {
+                public readonly ComponentOrGameObject Component;
+                public readonly bool OnlyIfTargetCanBeEnabled;
+
+                public Dependency(ComponentOrGameObject component, bool onlyIfTargetCanBeEnabled = false)
+                {
+                    Component = component;
+                    OnlyIfTargetCanBeEnabled = onlyIfTargetCanBeEnabled;
+                }
+
+                public bool Equals(Dependency other) => Component.Equals(other.Component) &&
+                                                        OnlyIfTargetCanBeEnabled == other.OnlyIfTargetCanBeEnabled;
+
+                public override bool Equals(object obj) => obj is Dependency other && Equals(other);
+
+                public override int GetHashCode() =>
+                    unchecked(Component.GetHashCode() * 397) ^ OnlyIfTargetCanBeEnabled.GetHashCode();
             }
         }
 
