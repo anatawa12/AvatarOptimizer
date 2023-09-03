@@ -327,6 +327,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     deps.AddActiveDependency(collider.second);
                 }
             });
+            AddNopParser<Light>();
         }
 
         #endregion
