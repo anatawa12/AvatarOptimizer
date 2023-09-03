@@ -34,12 +34,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         private class ComponentDependencies
         {
             /// <summary>
-            /// If this is true, even if this component is required by some component,
-            /// this component will never be collected.
-            /// </summary>
-            public bool NoMeaningIfDisabled = false;
-
-            /// <summary>
             /// Dependencies if this component can be Active or Enabled
             /// </summary>
             [NotNull] public readonly HashSet<Dependency> ActiveDependency = new HashSet<Dependency>();
