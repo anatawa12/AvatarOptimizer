@@ -313,6 +313,20 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             AddParserWithExtends<Renderer, ParticleSystemRenderer>();
             AddParserWithExtends<Renderer, TrailRenderer>();
             AddParserWithExtends<Renderer, LineRenderer>();
+            AddParser<Cloth>((collector, deps, component) =>
+            {
+                // If Cloth is disabled, SMR work as SMR without Cloth
+                // If Cloth is enabled and SMR is disabled, SMR draw nothing.
+                var skinnedMesh = component.GetComponent<SkinnedMeshRenderer>();
+                collector.GetDependencies(skinnedMesh).AddActiveDependency(component, true);
+                foreach (var collider in component.capsuleColliders)
+                    deps.AddActiveDependency(collider);
+                foreach (var collider in component.sphereColliders)
+                {
+                    deps.AddActiveDependency(collider.first);
+                    deps.AddActiveDependency(collider.second);
+                }
+            });
         }
 
         #endregion
