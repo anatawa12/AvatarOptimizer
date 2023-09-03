@@ -5,6 +5,7 @@ using Anatawa12.AvatarOptimizer.ErrorReporting;
 using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 {
@@ -64,7 +65,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
                 if (_byTypeParser.TryGetValue(component.GetType(), out var parser))
                 {
-                    parser(this, component);
+                    var deps = GetDependencies(component);
+                    parser(this, deps, component);
                 }
                 else
                 {
@@ -136,15 +138,35 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         #region ByComponentMappingGeneration
 
-        private static readonly Dictionary<Type, Action<ComponentDependencyCollector, Component>> _byTypeParser =
-            new Dictionary<Type, Action<ComponentDependencyCollector, Component>>();
+        delegate void ComponentParser<in TComponent>(ComponentDependencyCollector collector, ComponentDependencies deps,
+            TComponent component);
 
-        private static void AddParser<T>(Action<ComponentDependencyCollector, T> parser) where T : Component
+        private static readonly Dictionary<Type, ComponentParser<Component>> _byTypeParser =
+            new Dictionary<Type, ComponentParser<Component>>();
+
+        private static void AddParser<T>(ComponentParser<T> parser) where T : Component
         {
-            _byTypeParser.Add(typeof(T), (collector, component) => parser(collector, (T)component));
+            _byTypeParser.Add(typeof(T), (collector, deps, component) => parser(collector, deps, (T)component));
         }
 
-        private static void UseParserOfParentClass<TParent, TChild>()
+        private static void AddParserWithExtends<TParent, TChild>(ComponentParser<TChild> parser) 
+            where TParent : Component
+            where TChild : TParent
+        {
+            var parentParser = _byTypeParser[typeof(TParent)];
+            _byTypeParser.Add(typeof(TChild), (collector, deps, component) =>
+            {
+                parentParser(collector, deps, component);
+                parser(collector, deps, (TChild)component);
+            });
+        }
+
+        private static void AddNopParser<T>() where T : Component
+        {
+            _byTypeParser.Add(typeof(T), (collector, deps, component) => { });
+        }
+
+        private static void AddParserWithExtends<TParent, TChild>()
             where TParent : Component
             where TChild : TParent
         {
@@ -160,10 +182,32 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         /// </summary>
         private static void InitByTypeParsers()
         {
-            AddParser<Transform>((collector, transform) =>
+            // unity generic
+            AddParser<Transform>((collector, deps, transform) =>
             {
                 collector.GetDependencies(transform.gameObject).AlwaysDependency.Add(transform);
             });
+            // Animator does not do much for motion, just changes states of other components.
+            // All State Changes are collected separately
+            AddNopParser<Animator>();
+            AddNopParser<Animation>();
+            AddParser<Renderer>((collector, deps, renderer) =>
+            {
+                // anchor proves
+                if (renderer.reflectionProbeUsage != ReflectionProbeUsage.Off ||
+                    renderer.lightProbeUsage != LightProbeUsage.Off)
+                    deps.ActiveDependency.Add(renderer.probeAnchor);
+                if (renderer.lightProbeUsage != LightProbeUsage.UseProxyVolume)
+                    deps.ActiveDependency.Add(renderer.lightProbeProxyVolumeOverride);
+            });
+            AddParserWithExtends<Renderer, SkinnedMeshRenderer>((collector, deps, skinnedMeshRenderer) =>
+            {
+                deps.ActiveDependency.UnionWith(skinnedMeshRenderer.bones.Where(x => x)
+                    .Select(x => (ComponentOrGameObject)x));
+                if (skinnedMeshRenderer.rootBone) deps.ActiveDependency.Add(skinnedMeshRenderer.rootBone);
+            });
+            AddParserWithExtends<Renderer, MeshRenderer>();
+            AddNopParser<MeshFilter>();
         }
 
         #endregion
