@@ -315,8 +315,14 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 {
                     deps.AddActiveDependency(particleSystem.lights.light);
                 }
+
+                deps.AddAlwaysDependency(particleSystem.GetComponent<ParticleSystemRenderer>());
+                collector.AddGameObjectToComponentReference(particleSystem);
             });
-            AddParserWithExtends<Renderer, ParticleSystemRenderer>();
+            AddParserWithExtends<Renderer, ParticleSystemRenderer>((collector, deps, component) =>
+            {
+                deps.AddAlwaysDependency(component.GetComponent<ParticleSystem>());
+            });
             AddParserWithExtends<Renderer, TrailRenderer>();
             AddParserWithExtends<Renderer, LineRenderer>();
             AddParser<Cloth>((collector, deps, component) =>
