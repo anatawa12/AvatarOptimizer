@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - Animator Component Disappears `#404`
+- MeshFilter Component Disappears with MeshRenderer `#405`
 
 ### Security
 
