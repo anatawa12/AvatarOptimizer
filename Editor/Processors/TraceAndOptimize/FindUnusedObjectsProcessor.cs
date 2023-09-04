@@ -51,6 +51,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 case Cloth cloth:
                     activeNess = _modifications.GetConstantValue(cloth, "m_IsEnable", cloth.enabled);
                     break;
+                case Renderer cloth:
+                    activeNess = _modifications.GetConstantValue(cloth, "m_IsEnable", cloth.enabled);
+                    break;
                 case Behaviour behaviour:
                     activeNess = _modifications.GetConstantValue(behaviour, "m_IsEnable", behaviour.enabled);
                     break;
