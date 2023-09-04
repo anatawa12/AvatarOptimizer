@@ -158,7 +158,8 @@ namespace Anatawa12.AvatarOptimizer
         
         private static void DoProcessObject(OptimizerSession session)
         {
-            new Processors.TraceAndOptimizeProcessor().Process(session);
+            var traceAndOptimize = new Processors.TraceAndOptimizeProcessor();
+            traceAndOptimize.Process(session);
             new Processors.ClearEndpointPositionProcessor().Process(session);
             new Processors.MergePhysBoneProcessor().Process(session);
             new Processors.EditSkinnedMeshComponentProcessor().Process(session);
@@ -166,6 +167,7 @@ namespace Anatawa12.AvatarOptimizer
             new Processors.MakeChildrenProcessor(early: false).Process(session);
 
             new Processors.ApplyObjectMapping().Apply(session);
+            traceAndOptimize.ProcessLater(session);
 
             session.MarkDirtyAll();
         }
