@@ -26,26 +26,21 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         }
 
         // Mark & Sweep Variables
-        private readonly HashSet<ComponentOrGameObject> _marked = new HashSet<ComponentOrGameObject>();
-        private readonly Queue<(ComponentOrGameObject, bool)> _processPending = new Queue<(ComponentOrGameObject, bool)>();
+        private readonly HashSet<Component> _marked = new HashSet<Component>();
+        private readonly Queue<(Component, bool)> _processPending = new Queue<(Component, bool)>();
 
-        private void MarkComponent(ComponentOrGameObject component, bool canBeActive)
+        private void MarkComponent(ComponentDependencyCollector.ComponentDependencies.Dependency dependency) =>
+            MarkComponent(dependency.Component, dependency.OnlyIfTargetCanBeEnabled);
+
+        private void MarkComponent(Component component, bool ifTargetCanBeEnabled)
         {
-            if (_marked.Contains(component)) return; // Already Proceed
-            _processPending.Enqueue((component, canBeActive));
-            _marked.Add(component);
-        }
-
-        private void MarkComponent(ComponentDependencyCollector.ComponentDependencies.Dependency dependency)
-        {
-            var component = dependency.Component;
-
             if (_marked.Contains(component)) return; // Already Proceed
 
             bool? activeNess;
-            switch (component.Value)
+            switch (component)
             {
-                case GameObject gameObject:
+                case Transform transform:
+                    var gameObject = transform.gameObject;
                     activeNess = _modifications.GetConstantValue(gameObject, "m_IsActive", gameObject.activeSelf);
                     break;
                 case Cloth cloth:
@@ -61,13 +56,14 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     activeNess = null;
                     break;
                 default:
-                    throw new Exception($"Unexpected type: {component.Value.GetType().Name}");
+                    throw new Exception($"Unexpected type: {component.GetType().Name}");
             }
 
-            if (dependency.OnlyIfTargetCanBeEnabled && activeNess == false)
+            if (ifTargetCanBeEnabled && activeNess == false)
                 return; // The Target is not active so not dependency
 
-            MarkComponent(component, canBeActive: activeNess != false);
+            _processPending.Enqueue((component, activeNess != false));
+            _marked.Add(component);
         }
 
         private void ProcessNew()
@@ -80,19 +76,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             // entrypoint for mark & sweep is active-able GameObjects
             foreach (var gameObject in CollectAllActiveAbleGameObjects())
-            {
-                var dependencies = collector.TryGetDependencies(gameObject);
-                Debug.Assert(dependencies != null, nameof(dependencies) + " != null");
-                var transform = gameObject.GetComponent<Transform>();
-
-                foreach (var dependency in dependencies.ActiveDependency)
-                    if (dependency.Component.Value != transform)
-                        MarkComponent(dependency);
-
-                foreach (var dependency in dependencies.AlwaysDependency)
-                    if (dependency.Component.Value != transform)
-                        MarkComponent(dependency);
-            }
+            foreach (var component in gameObject.GetComponents<Component>())
+                if (collector.GetDependencies(component).EntrypointComponent)
+                    MarkComponent(component, true);
 
             while (_processPending.Count != 0)
             {
@@ -116,7 +102,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 if (component is Transform)
                 {
                     // Treat Transform Component as GameObject because they are two sides of the same coin
-                    if (!_marked.Contains(component.gameObject))
+                    if (!_marked.Contains(component))
                         Object.DestroyImmediate(component.gameObject);
                 }
                 else

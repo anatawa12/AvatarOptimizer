@@ -28,11 +28,16 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             InitByTypeParsers();
         }
 
-        private readonly Dictionary<ComponentOrGameObject, ComponentDependencies> _dependencies =
-            new Dictionary<ComponentOrGameObject, ComponentDependencies>();
+        private readonly Dictionary<Component, ComponentDependencies> _dependencies =
+            new Dictionary<Component, ComponentDependencies>();
 
         public class ComponentDependencies
         {
+            /// <summary>
+            /// True if this component has Active Meaning on the Avatar.
+            /// </summary>
+            public bool EntrypointComponent = false;
+
             /// <summary>
             /// Dependencies if this component can be Active or Enabled
             /// </summary>
@@ -45,22 +50,22 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             [NotNull] public IReadOnlyCollection<Dependency> AlwaysDependency => _alwaysDependency;
             [NotNull] private readonly HashSet<Dependency> _alwaysDependency = new HashSet<Dependency>();
 
-            public void AddActiveDependency(ComponentOrGameObject component, bool onlyIfTargetCanBeEnabled = false)
+            public void AddActiveDependency(Component component, bool onlyIfTargetCanBeEnabled = false)
             {
                 if ((Object)component) _activeDependency.Add(new Dependency(component, onlyIfTargetCanBeEnabled));
             }
             
-            public void AddAlwaysDependency(ComponentOrGameObject component, bool onlyIfTargetCanBeEnabled = false)
+            public void AddAlwaysDependency(Component component, bool onlyIfTargetCanBeEnabled = false)
             {
                 if ((Object)component) _alwaysDependency.Add(new Dependency(component, onlyIfTargetCanBeEnabled));
             }
 
             public readonly struct Dependency : IEquatable<Dependency>
             {
-                public readonly ComponentOrGameObject Component;
+                public readonly Component Component;
                 public readonly bool OnlyIfTargetCanBeEnabled;
 
-                public Dependency(ComponentOrGameObject component, bool onlyIfTargetCanBeEnabled = false)
+                public Dependency(Component component, bool onlyIfTargetCanBeEnabled = false)
                 {
                     Component = component;
                     OnlyIfTargetCanBeEnabled = onlyIfTargetCanBeEnabled;
@@ -77,27 +82,23 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         }
 
         [CanBeNull]
-        public ComponentDependencies TryGetDependencies(ComponentOrGameObject dependent) =>
+        public ComponentDependencies TryGetDependencies(Component dependent) =>
             _dependencies.TryGetValue(dependent, out var dependencies) ? dependencies : null;
 
         [NotNull]
-        private ComponentDependencies GetDependencies(ComponentOrGameObject dependent) => _dependencies[dependent];
-
-        private void AddGameObjectToComponentReference(Component component, bool ifEnabled = true) =>
-            GetDependencies(component.gameObject).AddActiveDependency(component, ifEnabled);
+        public ComponentDependencies GetDependencies(Component dependent) => _dependencies[dependent];
 
         public void CollectAllUsages(OptimizerSession session)
         {
             var components = session.GetComponents<Component>().ToArray();
             // first iteration: create mapping
             foreach (var component in components) _dependencies.Add(component, new ComponentDependencies());
-            foreach (var transform in session.GetComponents<Transform>()) _dependencies.Add(transform.gameObject, new ComponentDependencies());
 
             // second iteration: process parsers
             BuildReport.ReportingObjects(components, component =>
             {
                 // component requires GameObject.
-                GetDependencies(component).AddAlwaysDependency(component.gameObject);
+                GetDependencies(component).AddAlwaysDependency(component.gameObject.transform);
 
                 if (_byTypeParser.TryGetValue(component.GetType(), out var parser))
                 {
@@ -118,8 +119,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         private void FallbackDependenciesParser(Component component)
         {
             // fallback dependencies: All References are Always Dependencies.
-            GetDependencies(component.gameObject).AddAlwaysDependency(component);
             var dependencies = GetDependencies(component);
+            dependencies.EntrypointComponent = true;
             using (var serialized = new SerializedObject(component))
             {
                 var iterator = serialized.GetIterator();
@@ -129,7 +130,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     if (iterator.propertyType == SerializedPropertyType.ObjectReference)
                     {
                         if (iterator.objectReferenceValue is GameObject go)
-                            dependencies.AddAlwaysDependency(go);
+                            dependencies.AddAlwaysDependency(go.transform);
                         else if (iterator.objectReferenceValue is Component com)
                             dependencies.AddAlwaysDependency(com);
                     }
@@ -221,7 +222,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             // unity generic
             AddParser<Transform>((collector, deps, transform) =>
             {
-                collector.GetDependencies(transform.gameObject).AddAlwaysDependency(transform);
                 deps.AddAlwaysDependency(transform.parent);
             });
             // Animator does not do much for motion, just changes states of other components.
@@ -231,13 +231,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             AddParser<Renderer>((collector, deps, renderer) =>
             {
                 // GameObject => Renderer dependency ship
-                collector.AddGameObjectToComponentReference(renderer);
+                deps.EntrypointComponent = true;
                 // anchor proves
                 if (renderer.reflectionProbeUsage != ReflectionProbeUsage.Off ||
                     renderer.lightProbeUsage != LightProbeUsage.Off)
                     deps.AddActiveDependency(renderer.probeAnchor);
                 if (renderer.lightProbeUsage == LightProbeUsage.UseProxyVolume)
-                    deps.AddActiveDependency(renderer.lightProbeProxyVolumeOverride);
+                    deps.AddActiveDependency(renderer.lightProbeProxyVolumeOverride.transform);
             });
             AddParserWithExtends<Renderer, SkinnedMeshRenderer>((collector, deps, skinnedMeshRenderer) =>
             {
@@ -320,7 +320,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 }
 
                 deps.AddAlwaysDependency(particleSystem.GetComponent<ParticleSystemRenderer>());
-                collector.AddGameObjectToComponentReference(particleSystem);
+                deps.EntrypointComponent = true;
             });
             AddParserWithExtends<Renderer, ParticleSystemRenderer>((collector, deps, component) =>
             {
@@ -367,11 +367,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             AddParserWithExtends<Joint, SpringJoint>();
             AddParser<Rigidbody>((collector, deps, component) =>
             {
-                collector.AddGameObjectToComponentReference(component);
+                collector.GetDependencies(component.transform)
+                    .AddAlwaysDependency(component, true);
             });
             AddParser<Camera>((collector, deps, component) =>
             {
-                collector.AddGameObjectToComponentReference(component, false);
+                // affects RenderTexture
+                deps.EntrypointComponent = true;
             });
             AddParser<FlareLayer>((collector, deps, component) =>
             {
@@ -379,7 +381,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             });
             AddParser<AudioSource>((collector, deps, component) =>
             {
-                collector.AddGameObjectToComponentReference(component);
+                // plays sound
+                deps.EntrypointComponent = true;
             });
             AddParser<AimConstraint>(ConstraintParser);
             AddParser<LookAtConstraint>(ConstraintParser);
@@ -402,8 +405,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             AddParser<VRC_AvatarDescriptor>((collector, deps, component) =>
             {
                 // to avoid unexpected deletion
-                collector.GetDependencies(component.gameObject)
-                    .AddAlwaysDependency(component);
+                deps.EntrypointComponent = true;
                 deps.AddAlwaysDependency(component.GetComponent<PipelineManager>());
             });
             AddParserWithExtends<VRC_AvatarDescriptor, VRCAvatarDescriptor>();
