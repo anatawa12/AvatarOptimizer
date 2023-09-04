@@ -226,7 +226,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             });
             // Animator does not do much for motion, just changes states of other components.
             // All State Changes are collected separately
-            AddNopParser<Animator>();
+            AddParser<Animator>((collector, deps, component) =>
+            {
+                // We can have some
+                deps.EntrypointComponent = true;
+            });
             AddNopParser<Animation>();
             AddParser<Renderer>((collector, deps, renderer) =>
             {
