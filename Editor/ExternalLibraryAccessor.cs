@@ -22,6 +22,11 @@ namespace Anatawa12.AvatarOptimizer
             ? throw new NullReferenceException()
             : (Transform)ExternalLibraryAccessor.DynamicBone.Root.GetValue(_object);
 
+        // ReSharper disable once PossibleNullReferenceException
+        public IReadOnlyList<MonoBehaviour> Colliders => _object == null
+            ? throw new NullReferenceException()
+            : (IReadOnlyList<MonoBehaviour>)ExternalLibraryAccessor.DynamicBone.Colliders.GetValue(_object);
+
         private DynamicBone(Component o)
         {
             _object = o;
@@ -68,12 +73,15 @@ namespace Anatawa12.AvatarOptimizer
         public class DynamicBoneClasses
         {
             [NotNull] public readonly Type DynamicBoneType;
+            [NotNull] public readonly Type ColliderType;
             [NotNull] public readonly FieldInfo Exclusions;
             [NotNull] public readonly FieldInfo Root;
+            [NotNull] public readonly FieldInfo Colliders;
 
             private DynamicBoneClasses()
             {
                 DynamicBoneType = Utils.GetTypeFromName("DynamicBone") ?? throw new Exception();
+                ColliderType = Utils.GetTypeFromName("DynamicBoneCollider") ?? throw new Exception();
 
                 Exclusions = DynamicBoneType.GetField("m_Exclusions", BindingFlags.Instance | BindingFlags.Public) ??
                              throw new Exception();
@@ -82,6 +90,10 @@ namespace Anatawa12.AvatarOptimizer
                 Root = DynamicBoneType.GetField("m_Root", BindingFlags.Instance | BindingFlags.Public) ??
                        throw new Exception();
                 if (Root.FieldType != typeof(Transform)) throw new Exception();
+
+                Colliders = DynamicBoneType.GetField("m_Colliders", BindingFlags.Instance | BindingFlags.Public) ??
+                            throw new Exception();
+                if (Colliders.FieldType != typeof(List<>).MakeGenericType(ColliderType)) throw new Exception();
             }
 
 

@@ -462,6 +462,33 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             AddParserWithExtends<VRC_SpatialAudioSource, VRCSpatialAudioSource>();
 
             // VRC_IKFollower is not available in SDK 3
+
+            // External library: Dynamic Bone
+            if (DynamicBone.Type is Type dynamicBoneType)
+            {
+                _byTypeParser.Add(dynamicBoneType, (collector, deps, component) =>
+                {
+                    DynamicBone.TryCast(component, out var dynamicBone);
+                    foreach (var transform in dynamicBone.GetAffectedTransforms())
+                    {
+                        collector.GetDependencies(transform)
+                            .AddAlwaysDependency(component, true);
+                        deps.AddActiveDependency(transform);
+                    }
+
+                    foreach (var collider in dynamicBone.Colliders)
+                    {
+                        // DynamicBone ignores enabled/disabled of Collider Component AFAIK
+                        deps.AddActiveDependency(collider, false);
+                    }
+                });
+                
+                // ReSharper disable once PossibleNullReferenceException
+                _byTypeParser.Add(ExternalLibraryAccessor.DynamicBone.ColliderType,
+                    (collector, deps, component) => {});
+            }
+
+            // TODOL External Library: FinalIK
         }
 
         #endregion
