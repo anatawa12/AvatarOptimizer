@@ -222,6 +222,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             AddParser<Transform>((collector, deps, transform) =>
             {
                 collector.GetDependencies(transform.gameObject).AddAlwaysDependency(transform);
+                deps.AddAlwaysDependency(transform.parent);
             });
             // Animator does not do much for motion, just changes states of other components.
             // All State Changes are collected separately
