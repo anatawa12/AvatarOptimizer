@@ -16,9 +16,12 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Components/GameObjects can falsely detected as always disabled / inactive. `#403`
 
 ### Security
+
+## [1.4.2] - 2023-09-04
+### Fixed
+- Components/GameObjects can falsely detected as always disabled / inactive. [`#403`](https://github.com/anatawa12/AvatarOptimizer/pull/403)
 
 ## [1.4.1] - 2023-09-02
 ### Fixed
@@ -491,7 +494,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.4.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.4.2...HEAD
+[1.4.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.4.1...v1.4.2
 [1.4.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.4.0...v1.4.1
 [1.4.0]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.3.4...v1.4.0
 [1.3.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.3.3...v1.3.4
