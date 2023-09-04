@@ -31,26 +31,28 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         private readonly Dictionary<ComponentOrGameObject, ComponentDependencies> _dependencies =
             new Dictionary<ComponentOrGameObject, ComponentDependencies>();
 
-        private class ComponentDependencies
+        public class ComponentDependencies
         {
             /// <summary>
             /// Dependencies if this component can be Active or Enabled
             /// </summary>
-            [NotNull] public readonly HashSet<Dependency> ActiveDependency = new HashSet<Dependency>();
+            [NotNull] public IReadOnlyCollection<Dependency> ActiveDependency => _activeDependency;
+            [NotNull] private readonly HashSet<Dependency> _activeDependency = new HashSet<Dependency>();
 
             /// <summary>
             /// Dependencies regardless this component can be Active/Enabled or not.
             /// </summary>
-            [NotNull] public readonly HashSet<Dependency> AlwaysDependency = new HashSet<Dependency>();
+            [NotNull] public IReadOnlyCollection<Dependency> AlwaysDependency => _alwaysDependency;
+            [NotNull] private readonly HashSet<Dependency> _alwaysDependency = new HashSet<Dependency>();
 
             public void AddActiveDependency(ComponentOrGameObject component, bool onlyIfTargetCanBeEnabled = false)
             {
-                if ((Object)component) ActiveDependency.Add(new Dependency(component, onlyIfTargetCanBeEnabled));
+                if ((Object)component) _activeDependency.Add(new Dependency(component, onlyIfTargetCanBeEnabled));
             }
             
             public void AddAlwaysDependency(ComponentOrGameObject component, bool onlyIfTargetCanBeEnabled = false)
             {
-                if ((Object)component) AlwaysDependency.Add(new Dependency(component, onlyIfTargetCanBeEnabled));
+                if ((Object)component) _alwaysDependency.Add(new Dependency(component, onlyIfTargetCanBeEnabled));
             }
 
             public readonly struct Dependency : IEquatable<Dependency>
@@ -75,7 +77,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         }
 
         [CanBeNull]
-        private ComponentDependencies TryGetDependencies(ComponentOrGameObject dependent) =>
+        public ComponentDependencies TryGetDependencies(ComponentOrGameObject dependent) =>
             _dependencies.TryGetValue(dependent, out var dependencies) ? dependencies : null;
 
         [NotNull]
