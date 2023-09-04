@@ -4,6 +4,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using VRC.Dynamics;
+using Debug = System.Diagnostics.Debug;
 using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
@@ -75,8 +76,20 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             // then, mark and sweep.
 
             // entrypoint for mark & sweep is active-able GameObjects
-            foreach (var collectAllActiveAbleGameObject in CollectAllActiveAbleGameObjects())
-                MarkComponent(collectAllActiveAbleGameObject, true);
+            foreach (var gameObject in CollectAllActiveAbleGameObjects())
+            {
+                var dependencies = collector.TryGetDependencies(gameObject);
+                Debug.Assert(dependencies != null, nameof(dependencies) + " != null");
+                var transform = gameObject.GetComponent<Transform>();
+
+                foreach (var dependency in dependencies.ActiveDependency)
+                    if (dependency.Component.Value != transform)
+                        MarkComponent(dependency);
+
+                foreach (var dependency in dependencies.AlwaysDependency)
+                    if (dependency.Component.Value != transform)
+                        MarkComponent(dependency);
+            }
 
             while (_processPending.Count != 0)
             {
