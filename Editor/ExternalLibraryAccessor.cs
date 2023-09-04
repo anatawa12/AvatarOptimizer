@@ -71,31 +71,31 @@ namespace Anatawa12.AvatarOptimizer
             [NotNull] public readonly FieldInfo Exclusions;
             [NotNull] public readonly FieldInfo Root;
 
-            public DynamicBoneClasses([NotNull] Type dynamicBoneType, [NotNull] FieldInfo exclusions,
-                [NotNull] FieldInfo root)
+            private DynamicBoneClasses()
             {
-                DynamicBoneType = dynamicBoneType;
-                Exclusions = exclusions;
-                Root = root;
+                DynamicBoneType = Utils.GetTypeFromName("DynamicBone") ?? throw new Exception();
+
+                Exclusions = DynamicBoneType.GetField("m_Exclusions", BindingFlags.Instance | BindingFlags.Public) ??
+                             throw new Exception();
+                if (Exclusions.FieldType != typeof(List<Transform>)) throw new Exception();
+
+                Root = DynamicBoneType.GetField("m_Root", BindingFlags.Instance | BindingFlags.Public) ??
+                       throw new Exception();
+                if (Root.FieldType != typeof(Transform)) throw new Exception();
             }
 
 
             [CanBeNull]
             public static DynamicBoneClasses Create()
             {
-                var dynamicBoneType = Utils.GetTypeFromName("DynamicBone");
-                if (dynamicBoneType == null) return null;
-
-                var exclusions =
-                    dynamicBoneType.GetField("m_Exclusions", BindingFlags.Instance | BindingFlags.Public);
-                if (exclusions == null) return null;
-                if (exclusions.FieldType != typeof(List<Transform>)) return null;
-
-                var root = dynamicBoneType.GetField("m_Root", BindingFlags.Instance | BindingFlags.Public);
-                if (root == null) return null;
-                if (root.FieldType != typeof(Transform)) return null;
-
-                return new DynamicBoneClasses(dynamicBoneType, exclusions, root);
+                try
+                {
+                    return new DynamicBoneClasses();
+                }
+                catch
+                {
+                    return null;
+                }
             }
         }
     }
