@@ -278,6 +278,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             componentOrGameObject._object;
 
         public GameObject SelfOrAttachedGameObject => _object as GameObject ?? ((Component)_object).gameObject;
+        public Object Value => _object;
 
         public bool AsGameObject(out GameObject gameObject)
         {

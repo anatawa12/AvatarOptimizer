@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
@@ -20,6 +21,122 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         public void Process()
         {
+            ProcessNew();
+        }
+
+        // Mark & Sweep Variables
+        private readonly HashSet<ComponentOrGameObject> _marked = new HashSet<ComponentOrGameObject>();
+        private readonly Queue<(ComponentOrGameObject, bool)> _processPending = new Queue<(ComponentOrGameObject, bool)>();
+
+        private void MarkComponent(ComponentOrGameObject component, bool canBeActive)
+        {
+            if (_marked.Contains(component)) return; // Already Proceed
+            _processPending.Enqueue((component, canBeActive));
+            _marked.Add(component);
+        }
+
+        private void MarkComponent(ComponentDependencyCollector.ComponentDependencies.Dependency dependency)
+        {
+            var component = dependency.Component;
+
+            if (_marked.Contains(component)) return; // Already Proceed
+
+            bool? activeNess;
+            switch (component.Value)
+            {
+                case GameObject gameObject:
+                    activeNess = _modifications.GetConstantValue(gameObject, "m_IsActive", gameObject.activeSelf);
+                    break;
+                case Cloth cloth:
+                    activeNess = _modifications.GetConstantValue(cloth, "m_IsEnable", cloth.enabled);
+                    break;
+                case Behaviour behaviour:
+                    activeNess = _modifications.GetConstantValue(behaviour, "m_IsEnable", behaviour.enabled);
+                    break;
+                case Component _:
+                    activeNess = null;
+                    break;
+                default:
+                    throw new Exception($"Unexpected type: {component.Value.GetType().Name}");
+            }
+
+            if (dependency.OnlyIfTargetCanBeEnabled && activeNess == false)
+                return; // The Target is not active so not dependency
+
+            MarkComponent(component, canBeActive: activeNess != false);
+        }
+
+        private void ProcessNew()
+        {
+            // first, collect usages
+            var collector = new ComponentDependencyCollector();
+            collector.CollectAllUsages(_session);
+
+            // then, mark and sweep.
+
+            // entrypoint for mark & sweep is active-able GameObjects
+            foreach (var collectAllActiveAbleGameObject in CollectAllActiveAbleGameObjects())
+                MarkComponent(collectAllActiveAbleGameObject, true);
+
+            while (_processPending.Count != 0)
+            {
+                var (component, canBeActive) = _processPending.Dequeue();
+                var dependencies = collector.TryGetDependencies(component);
+                if (dependencies == null) continue; // not part of this Hierarchy Tree
+
+                if (canBeActive)
+                    foreach (var dependency in dependencies.ActiveDependency)
+                        MarkComponent(dependency);
+                
+                foreach (var dependency in dependencies.AlwaysDependency)
+                    MarkComponent(dependency);
+            }
+
+            foreach (var component in _session.GetComponents<Component>())
+            {
+                // null values are ignored
+                if (!component) continue;
+
+                if (component is Transform)
+                {
+                    // Treat Transform Component as GameObject because they are two sides of the same coin
+                    if (!_marked.Contains(component.gameObject))
+                        Object.DestroyImmediate(component.gameObject);
+                }
+                else
+                {
+                    if (!_marked.Contains(component))
+                        Object.DestroyImmediate(component);
+                }
+            }
+        }
+
+        private IEnumerable<GameObject> CollectAllActiveAbleGameObjects()
+        {
+            var queue = new Queue<GameObject>();
+            queue.Enqueue(_session.GetRootComponent<Transform>().gameObject);
+
+            while (queue.Count != 0)
+            {
+                var gameObject = queue.Dequeue();
+                var activeNess = _modifications.GetConstantValue(gameObject, "m_IsActive", gameObject.activeSelf);
+                switch (activeNess)
+                {
+                    case null:
+                    case true:
+                        // This GameObject can be active
+                        yield return gameObject;
+                        foreach (var transform in gameObject.transform.DirectChildrenEnumerable())
+                            queue.Enqueue(transform.gameObject);
+                        break;
+                    case false:
+                        // This GameObject and their children will never be active
+                        break;
+                }
+            }
+        }
+
+        private void ProcessLegacy() {
             // mark & sweep
             var gameObjects = new HashSet<GameObject>(_session.GetComponents<Transform>().Select(x => x.gameObject));
             var referenced = new HashSet<GameObject>();
