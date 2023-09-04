@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Components/GameObjects can falsely detected as always disabled / inactive. `#403`
 
 ### Security
 
