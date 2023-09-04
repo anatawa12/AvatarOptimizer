@@ -10,8 +10,6 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
-- Improved 'Remove Unused Objects' `#401`
-  - Remove Unused Objects now removes unnecessary Components & Bones!
 
 ### Deprecated
 
@@ -20,6 +18,11 @@ The format is based on [Keep a Changelog].
 ### Fixed
 
 ### Security
+
+## [1.5.0-beta.1] - 2023-09-04
+### Changed
+- Improved 'Remove Unused Objects' [`#401`](https://github.com/anatawa12/AvatarOptimizer/pull/401)
+  - Remove Unused Objects now removes unnecessary Components & Bones!
 
 ## [1.4.2] - 2023-09-04
 ### Fixed
@@ -654,7 +657,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.4.2...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.1...HEAD
+[1.5.0-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.4.2...v1.5.0-beta.1
 [1.4.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.4.1...v1.4.2
 [1.4.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.4.0...v1.4.1
 [1.4.0]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.4.0-rc.4...v1.4.0
