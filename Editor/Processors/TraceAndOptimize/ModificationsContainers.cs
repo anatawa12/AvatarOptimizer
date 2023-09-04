@@ -39,7 +39,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     if (constValue == currentValue) return currentValue;
                     return null;
                 case AnimationProperty.PropertyState.Variable:
-                    return false;
+                    return null;
                 case AnimationProperty.PropertyState.Invalid:
                 default:
                     throw new ArgumentOutOfRangeException();
