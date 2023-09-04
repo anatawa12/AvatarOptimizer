@@ -392,7 +392,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 TConstraint constraint)
                 where TConstraint : Component, IConstraint
             {
-                collector.AddGameObjectToComponentReference(constraint);
                 collector.GetDependencies(constraint.transform)
                     .AddAlwaysDependency(constraint, true);
                 for (var i = 0; i < constraint.sourceCount; i++)
