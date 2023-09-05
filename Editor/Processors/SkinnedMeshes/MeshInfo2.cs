@@ -590,6 +590,27 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 return false;
             }
 
+            if (Mathf.Abs(weight) <= 0.0001f && ZeroForWeightZero())
+            {
+                position = Vector3.zero;
+                normal = Vector3.zero;
+                tangent = Vector3.zero;
+                return true;
+            }
+
+            bool ZeroForWeightZero()
+            {
+                if (frames.Count == 1) return true;
+                var first = frames.First();
+                var end = frames.Last();
+
+                // both weight are same sign, zero for 0 weight
+                if (first.Weight <= 0 && end.Weight <= 0) return true;
+                if (first.Weight >= 0 && end.Weight >= 0) return true;
+
+                return false;
+            }
+
             if (frames.Count == 1)
             {
                 // simplest and likely

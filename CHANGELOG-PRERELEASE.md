@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Mesh broken with BlendShape Frame with weight 0 `#408`
 
 ### Security
 
