@@ -16,9 +16,12 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Unable to upload avatars with VRCSDK 3.2.x `#407`
 
 ### Security
+
+## [1.5.0-beta.3] - 2023-09-05
+### Fixed
+- Unable to upload avatars with VRCSDK 3.2.x [`#407`](https://github.com/anatawa12/AvatarOptimizer/pull/407)
 
 ## [1.5.0-beta.2] - 2023-09-04
 ### Fixed
@@ -663,7 +666,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.2...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.3...HEAD
+[1.5.0-beta.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.2...v1.5.0-beta.3
 [1.5.0-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.1...v1.5.0-beta.2
 [1.5.0-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.4.2...v1.5.0-beta.1
 [1.4.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.4.1...v1.4.2
