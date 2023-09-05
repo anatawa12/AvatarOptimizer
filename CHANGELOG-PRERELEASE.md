@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
+- Merged changes in 1.4.3 `#409`
 
 ### Deprecated
 
