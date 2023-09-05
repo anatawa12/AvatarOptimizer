@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
+- Merged changes in 1.4.3 `#409`
 
 ### Deprecated
 
@@ -18,6 +19,11 @@ The format is based on [Keep a Changelog].
 ### Fixed
 
 ### Security
+
+## [1.4.3] - 2023-09-05
+## [1.4.3-beta.1] - 2023-09-05
+### Fixed
+- Mesh broken with BlendShape Frame with weight 0 [`#408`](https://github.com/anatawa12/AvatarOptimizer/pull/408)
 
 ## [1.5.0-beta.3] - 2023-09-05
 ### Fixed
@@ -667,6 +673,8 @@ This release is mistake.
 - Clear Endpoint Position
 
 [Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.3...HEAD
+[1.4.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.4.3-beta.1...v1.4.3
+[1.4.3-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.4.2...v1.4.3-beta.1
 [1.5.0-beta.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.2...v1.5.0-beta.3
 [1.5.0-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.1...v1.5.0-beta.2
 [1.5.0-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.4.2...v1.5.0-beta.1
