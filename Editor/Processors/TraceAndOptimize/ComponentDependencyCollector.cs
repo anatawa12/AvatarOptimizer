@@ -418,7 +418,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             AddParserWithExtends<VRC_AvatarDescriptor, VRCAvatarDescriptor>();
             AddNopParser<PipelineManager>();
 #pragma warning disable CS0618
-            AddNopParser<PipelineSaver>();
+            AddParser<PipelineSaver>((collector, deps, component) =>
+            {
+                // to avoid unexpected deletion
+                deps.EntrypointComponent = true;
+            });
 #pragma warning restore CS0618
             AddParser<VRC.SDKBase.VRCStation>((collector, deps, component) =>
             {
