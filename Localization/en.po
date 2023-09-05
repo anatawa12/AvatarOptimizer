@@ -368,7 +368,7 @@ msgstr "Advanced Animator Parser will parse your AnimatorController, including l
 
 msgid "TraceAndOptimize:warn:unknown-type"
 msgstr "Unknown Component Type '{0}' Found. This will reduce optimization performance and may break your Avatar."
-"If your avatar is broken, Please report this error to AvatarOptimizer!"
+"If your avatar got broken, Please report this error to AvatarOptimizer!"
 
 # endregion
 
