@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
+- Improved 'Remove Unused Objects' `#401`
+  - Remove Unused Objects now removes unnecessary Components & Bones!
 
 ### Deprecated
 

@@ -24,6 +24,20 @@ The format is based on [Keep a Changelog].
 ### Fixed
 - Mesh broken with BlendShape Frame with weight 0 [`#408`](https://github.com/anatawa12/AvatarOptimizer/pull/408)
 
+## [1.5.0-beta.3] - 2023-09-05
+### Fixed
+- Unable to upload avatars with VRCSDK 3.2.x [`#407`](https://github.com/anatawa12/AvatarOptimizer/pull/407)
+
+## [1.5.0-beta.2] - 2023-09-04
+### Fixed
+- Animator Component Disappears [`#404`](https://github.com/anatawa12/AvatarOptimizer/pull/404)
+- MeshFilter Component Disappears with MeshRenderer [`#405`](https://github.com/anatawa12/AvatarOptimizer/pull/405)
+
+## [1.5.0-beta.1] - 2023-09-04
+### Changed
+- Improved 'Remove Unused Objects' [`#401`](https://github.com/anatawa12/AvatarOptimizer/pull/401)
+  - Remove Unused Objects now removes unnecessary Components & Bones!
+
 ## [1.4.2] - 2023-09-04
 ### Fixed
 - Components/GameObjects can falsely detected as always disabled / inactive. [`#403`](https://github.com/anatawa12/AvatarOptimizer/pull/403)
@@ -657,9 +671,12 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.4.3...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.3...HEAD
 [1.4.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.4.3-beta.1...v1.4.3
 [1.4.3-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.4.2...v1.4.3-beta.1
+[1.5.0-beta.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.2...v1.5.0-beta.3
+[1.5.0-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.1...v1.5.0-beta.2
+[1.5.0-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.4.2...v1.5.0-beta.1
 [1.4.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.4.1...v1.4.2
 [1.4.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.4.0...v1.4.1
 [1.4.0]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.4.0-rc.4...v1.4.0
