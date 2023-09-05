@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Unknown Type Error is not localized `#410`
 
 ### Security
 
