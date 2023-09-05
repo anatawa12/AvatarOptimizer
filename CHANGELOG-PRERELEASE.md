@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog].
 
 ### Security
 
+## [1.4.3] - 2023-09-05
 ## [1.4.3-beta.1] - 2023-09-05
 ### Fixed
 - Mesh broken with BlendShape Frame with weight 0 [`#408`](https://github.com/anatawa12/AvatarOptimizer/pull/408)
@@ -656,7 +657,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.4.3-beta.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.4.3...HEAD
+[1.4.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.4.3-beta.1...v1.4.3
 [1.4.3-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.4.2...v1.4.3-beta.1
 [1.4.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.4.1...v1.4.2
 [1.4.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.4.0...v1.4.1
