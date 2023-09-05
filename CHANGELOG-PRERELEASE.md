@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Unable to upload avatars with VRCSDK 3.2.x `#407`
 
 ### Security
 
