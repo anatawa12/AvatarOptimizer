@@ -10,7 +10,6 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
-- Merged changes in 1.4.3 `#409`
 
 ### Deprecated
 
@@ -19,6 +18,10 @@ The format is based on [Keep a Changelog].
 ### Fixed
 
 ### Security
+
+## [1.5.0-beta.4] - 2023-09-05
+### Changed
+- Merged changes in 1.4.3 [`#409`](https://github.com/anatawa12/AvatarOptimizer/pull/409)
 
 ## [1.4.3] - 2023-09-05
 ## [1.4.3-beta.1] - 2023-09-05
@@ -672,7 +675,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.3...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.4...HEAD
+[1.5.0-beta.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.4.3...v1.5.0-beta.4
 [1.4.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.4.3-beta.1...v1.4.3
 [1.4.3-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.4.2...v1.4.3-beta.1
 [1.5.0-beta.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.2...v1.5.0-beta.3
