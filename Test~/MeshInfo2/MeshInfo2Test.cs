@@ -41,10 +41,16 @@ namespace Anatawa12.AvatarOptimizer.Test
         [TestCase("two-negative-frame", 100, 10)]
 
         [TestCase("two-0-50-frame", -25, -2)]
-        [TestCase("two-0-50-frame", 0, -1)]
+        [TestCase("two-0-50-frame", 0, 0)]
         [TestCase("two-0-50-frame", 25, 0)]
         [TestCase("two-0-50-frame", 50, 1)]
         [TestCase("two-0-50-frame", 75, 2)]
+
+        [TestCase("single-0", -100, float.PositiveInfinity)]
+        [TestCase("single-0", -1, float.PositiveInfinity)]
+        [TestCase("single-0", 0, 0)]
+        [TestCase("single-0", 1, float.NegativeInfinity)]
+        [TestCase("single-0", 100, float.NegativeInfinity)]        
 
         public void BlendShapeLerp(string name, float weight, float offset)
         {
@@ -63,6 +69,7 @@ namespace Anatawa12.AvatarOptimizer.Test
         
         [TestCase("single-negative")]
         [TestCase("single-positive")]
+        [TestCase("single-0")]
         [TestCase("two-positive-frame")]
         [TestCase("two-negative-frame")]
         [TestCase("two-0-50-frame")]
