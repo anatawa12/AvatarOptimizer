@@ -303,6 +303,10 @@ msgstr "Advanced Animator Parserを使用する"
 msgid "TraceAndOptimize:tooltip:advancedAnimatorParser"
 msgstr "Advanced Animator ParserはAnimatorControllerを「レイヤー構造も含めて」解析します。"
 
+msgid "TraceAndOptimize:warn:unknown-type"
+msgstr "未知のコンポーネント'{0}'を検出しました! これにより最適化処理の品質が低下し、処理後のアバターが壊れる可能性があります。(元のアバターには影響しません)"
+"アバターが壊れた場合、これをAvatarOptimizerに報告してください!"
+
 # endregion
 
 #region ApplyObjectMapping
