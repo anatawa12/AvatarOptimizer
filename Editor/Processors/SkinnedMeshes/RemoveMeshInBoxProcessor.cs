@@ -12,7 +12,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         public override EditSkinnedMeshProcessorOrder ProcessOrder => EditSkinnedMeshProcessorOrder.RemovingMesh;
 
-        public override void Process(OptimizerSession session, MeshInfo2 target, MeshInfo2Holder meshInfo2Holder)
+        public override void Process(OptimizerSession session, MeshInfo2 target)
         {
             var inBoxVertices = new HashSet<Vertex>();
             // Vertex.AdditionalTemporal: 0 if in box, 1 if out of box
