@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Unknown type warning is not correctly rendered `#427`
 
 ### Security
 
