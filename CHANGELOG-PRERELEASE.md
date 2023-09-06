@@ -8,10 +8,15 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Preserve end bones in Remove Unused Objects `#430`
+  - This does same thing as `Preserve end bones` in UnusedBonesByReferenceTool.
 
 ### Changed
 
 ### Deprecated
+- UnusedBonesByReferenceTool component is now obsolete `#430`
+  - Newly introduced `Remove Unused Objects` does same thing with more powerful algorithm!
+  - You can migrate to `Remove Unused Objects` only with one click!
 
 ### Removed
 

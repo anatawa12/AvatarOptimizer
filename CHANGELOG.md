@@ -19,9 +19,13 @@ The format is based on [Keep a Changelog].
 - Improved 'Remove Unused Objects' `#401`
   - Remove Unused Objects now removes unnecessary Components & Bones!
   - You may use `Use Legacy GC` to use legacy algotythm for Remove Unused Objects in `Advanced Settings` (`#419`)
+  - With new algorithm, you can preserve end bones (`#430`)
 - Performance: Share MeshInfo2 between SkinnedMesh processing and MergeBone `#421`
 
 ### Deprecated
+- UnusedBonesByReferenceTool component is now obsolete `#430`
+  - Newly introduced `Remove Unused Objects` does same thing with more powerful algorithm!
+  - You can migrate to `Remove Unused Objects` only with one click!
 
 ### Removed
 
