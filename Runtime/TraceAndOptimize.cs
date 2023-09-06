@@ -24,8 +24,8 @@ namespace Anatawa12.AvatarOptimizer
         public bool mmdWorldCompatibility = true;
 
         // for compatibility, this is not inside AdvancedSettings but this is part of Advanced Settings
-        [CL4EELocalized("TraceAndOptimize:prop:advancedAnimatorParser",
-            "TraceAndOptimize:tooltip:advancedAnimatorParser")]
+        [InspectorName("Use Advanced Animator Parser")]
+        [Tooltip("Advanced Animator Parser will parse your AnimatorController, including layer structure.")]
         [ToggleLeft]
         public bool advancedAnimatorParser = true;
 
