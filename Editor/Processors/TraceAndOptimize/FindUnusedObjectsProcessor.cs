@@ -14,18 +14,24 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         private readonly ImmutableModificationsContainer _modifications;
         private readonly OptimizerSession _session;
         private readonly HashSet<GameObject> _exclusions;
+        private readonly bool _useLegacyGC;
 
         public FindUnusedObjectsProcessor(ImmutableModificationsContainer modifications, OptimizerSession session,
+            bool useLegacyGC,
             HashSet<GameObject> exclusions)
         {
             _modifications = modifications;
             _session = session;
+            _useLegacyGC = useLegacyGC;
             _exclusions = exclusions;
         }
 
         public void Process()
         {
-            ProcessNew();
+            if (_useLegacyGC)
+                ProcessLegacy();
+            else
+                ProcessNew();
         }
 
         // Mark & Sweep Variables

@@ -36,6 +36,8 @@ namespace Anatawa12.AvatarOptimizer
         {
             [Tooltip("Exclude some GameObjects from Trace and Optimize")]
             public GameObject[] exclusions;
+            [Tooltip("Use Legacy algorithm for Remove Unused Objects")]
+            public bool useLegacyGc;
         }
     }
 }
