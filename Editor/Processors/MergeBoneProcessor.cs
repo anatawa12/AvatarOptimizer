@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.ErrorReporting;
 using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
+using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -10,6 +11,28 @@ namespace Anatawa12.AvatarOptimizer.Processors
 {
     internal class MergeBoneProcessor
     {
+        [InitializeOnLoadMethod]
+        private static void RegisterValidator()
+        {
+            ComponentValidation.RegisterValidator<MergeBone>(mergeBone =>
+            {
+                var errors = new ErrorLog[2];
+
+                if (mergeBone.GetComponents<Component>().Except(new Component[] { mergeBone, mergeBone.transform })
+                    .Any())
+                    errors[0] = ErrorLog.Warning("MergeBone:validation:thereAreComponent");
+
+                var localScale = mergeBone.transform.localScale;
+                if (!CheckScale(localScale.x / localScale.y) || !CheckScale(localScale.x / localScale.z) ||
+                    !CheckScale(localScale.y / localScale.z))
+                    errors[1] = ErrorLog.Warning("MergeBone:validation:unevenScaling");
+
+                return errors;
+            });
+
+            bool CheckScale(float scale) => 0.999 < scale && scale < 1.001;
+        }
+
         public void Process(OptimizerSession session)
         {
             // merge from -> merge into
@@ -25,8 +48,9 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
             BuildReport.ReportingObjects(session.GetComponents<SkinnedMeshRenderer>(), renderer =>
             {
-                if (renderer.bones.Where(x => x).Any(mergeMapping.ContainsKey))
-                    DoBoneMap2(session, renderer, mergeMapping);
+                var meshInfo2 = session.MeshInfo2Holder.GetMeshInfoFor(renderer);
+                if (meshInfo2.Bones.Any(x => x.Transform && mergeMapping.ContainsKey(x.Transform)))
+                    DoBoneMap2(meshInfo2, mergeMapping);
             });
 
             foreach (var pair in mergeMapping)
@@ -42,10 +66,8 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 Object.DestroyImmediate(pair.gameObject);
         }
 
-        private void DoBoneMap2(OptimizerSession session, SkinnedMeshRenderer renderer,
-            Dictionary<Transform, Transform> mergeMapping)
+        private void DoBoneMap2(MeshInfo2 meshInfo2, Dictionary<Transform, Transform> mergeMapping)
         {
-            var meshInfo2 = new MeshInfo2(renderer);
             var primaryBones = new Dictionary<Transform, Bone>();
             var boneReplaced = false;
 
@@ -138,8 +160,6 @@ namespace Anatawa12.AvatarOptimizer.Processors
                     .Select(g => (g.Key, g.Sum(x => x.weight)))
                     .ToList();
             }
-
-            meshInfo2.WriteToSkinnedMeshRenderer(renderer, session);
         }
 
         private readonly struct BoneUniqKey : IEquatable<BoneUniqKey>

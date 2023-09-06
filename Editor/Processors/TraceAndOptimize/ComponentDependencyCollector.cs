@@ -107,9 +107,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 }
                 else
                 {
-                    BuildReport.LogWarning(
-                        "Unknown Component Type Found. This will reduce optimization performance. If possible, Please Report this for AvatarOptimizer!: {0}",
-                        component.GetType().Name);
+                    BuildReport.LogWarning("TraceAndOptimize:warn:unknwon-type", component.GetType().Name);
 
                     FallbackDependenciesParser(component);
                 }
@@ -391,8 +389,16 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 // plays sound
                 deps.EntrypointComponent = true;
             });
-            AddParser<AimConstraint>(ConstraintParser);
-            AddParser<LookAtConstraint>(ConstraintParser);
+            AddParser<AimConstraint>((collector, deps, component) =>
+            {
+                ConstraintParser(collector, deps, component);
+                deps.AddActiveDependency(component.worldUpObject);
+            });
+            AddParser<LookAtConstraint>((collector, deps, component) =>
+            {
+                ConstraintParser(collector, deps, component);
+                deps.AddActiveDependency(component.worldUpObject);
+            });
             AddParser<ParentConstraint>(ConstraintParser);
             AddParser<PositionConstraint>(ConstraintParser);
             AddParser<RotationConstraint>(ConstraintParser);

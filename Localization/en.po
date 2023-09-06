@@ -88,6 +88,12 @@ msgstr "Execute Early doesn't support Animation Remapping. Make sure you made an
 msgid "MergeBone:description"
 msgstr "You will remove this GameObject and merge bone to parent"
 
+msgid "MergeBone:validation:thereAreComponent"
+msgstr "There are some components other than Transform. This is not supported."
+
+msgid "MergeBone:validation:unevenScaling"
+msgstr "Merging bones with uneven scale is not supported."
+
 # endregion
 
 # region
@@ -223,6 +229,9 @@ msgid "MergeSkinnedMesh:warning:MeshIsNotNone"
 msgstr ""
 "Mesh of SkinnedMeshRenderer is not None!\n"
 "You should add MergeSkinnedMesh onto new GameObject with new SkinnedMeshRenderer!"
+
+msgid "MergeSkinnedMesh:validation:self-recursive"
+msgstr "Skinned Renderers contains the SkinnedMeshRenderer of MergeSkinnedMesh!"
 
 msgid "MergeSkinnedMesh:prop:renderers"
 msgstr "Skinned Renderers"
@@ -367,6 +376,10 @@ msgid "TraceAndOptimize:warn:advancedSettings"
 msgstr "Advanced Settings is for workaround bugs in Avatar Optimizer.\n"
 "Changing Advanced Settings will make your avatar non well-optimized.\n"
 "In addition, Some modification of Advanced Settings may not well-tested or its behaviour is likely to be changed. Be careful!"
+
+msgid "TraceAndOptimize:warn:unknown-type"
+msgstr "Unknown Component Type '{0}' Found. This will reduce optimization performance and may break your Avatar."
+"If your avatar got broken, Please report this error to AvatarOptimizer!"
 
 # endregion
 

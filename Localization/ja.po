@@ -91,6 +91,12 @@ msgstr "'早期に実行する'はアニメーションのパス修正が動き�
 msgid "MergeBone:description"
 msgstr "このGameObjectを削除して親に統合する。"
 
+msgid "MergeBone:validation:thereAreComponent"
+msgstr "Transform以外のコンポーネントがあります。これはサポートされていません。"
+
+msgid "MergeBone:validation:unevenScaling"
+msgstr "Scaleが均一でないボーンを統合することはサポートされていません。"
+
 # endregion
 
 # region
@@ -160,6 +166,9 @@ msgid "MergeSkinnedMesh:warning:MeshIsNotNone"
 msgstr ""
 "SkinnedMeshRendererのMeshがNoneではありません!\n"
 "MergeSkinnedMeshは新規のSkinnedMeshRendererがついたGameObjectに追加するべきです!"
+
+msgid "MergeSkinnedMesh:validation:self-recursive"
+msgstr "統合対象のスキンメッシュレンダラーに、MergeSkinnedMesh自身のスキンメッシュレンダラーが含まれています!"
 
 msgid "MergeSkinnedMesh:prop:renderers"
 msgstr "スキンメッシュレンダラー"
@@ -304,6 +313,10 @@ msgid "TraceAndOptimize:warn:advancedSettings"
 msgstr "高度な設定はAvatarOptimizerのバグを回避するための設定です。\n"
 "高度な設定を変更すると、アバターが適切に最適化されなくなる可能性があります。\n"
 "また、一部の高度な設定の変更は正しく機能しなかったり、その動作が変更される可能性があります。注意してください!"
+
+msgid "TraceAndOptimize:warn:unknown-type"
+msgstr "未知のコンポーネント'{0}'を検出しました! これにより最適化処理の品質が低下し、処理後のアバターが壊れる可能性があります。(元のアバターには影響しません)"
+"アバターが壊れた場合、これをAvatarOptimizerに報告してください!"
 
 # endregion
 
