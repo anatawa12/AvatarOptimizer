@@ -389,8 +389,16 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 // plays sound
                 deps.EntrypointComponent = true;
             });
-            AddParser<AimConstraint>(ConstraintParser);
-            AddParser<LookAtConstraint>(ConstraintParser);
+            AddParser<AimConstraint>((collector, deps, component) =>
+            {
+                ConstraintParser(collector, deps, component);
+                deps.AddActiveDependency(component.worldUpObject);
+            });
+            AddParser<LookAtConstraint>((collector, deps, component) =>
+            {
+                ConstraintParser(collector, deps, component);
+                deps.AddActiveDependency(component.worldUpObject);
+            });
             AddParser<ParentConstraint>(ConstraintParser);
             AddParser<PositionConstraint>(ConstraintParser);
             AddParser<RotationConstraint>(ConstraintParser);
