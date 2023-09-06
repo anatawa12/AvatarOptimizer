@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog].
 ### Changed
 - Improved 'Remove Unused Objects' `#401`
   - Remove Unused Objects now removes unnecessary Components & Bones!
+- Performance: Share MeshInfo2 between SkinnedMesh processing and MergeBone `#421`
 
 ### Deprecated
 

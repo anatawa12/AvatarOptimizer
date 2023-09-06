@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
+- Performance: Share MeshInfo2 between SkinnedMesh processing and MergeBone `#421`
 
 ### Deprecated
 
