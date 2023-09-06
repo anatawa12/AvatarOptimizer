@@ -1,3 +1,4 @@
+using System;
 using CustomLocalization4EditorExtension;
 using UnityEngine;
 
@@ -21,9 +22,20 @@ namespace Anatawa12.AvatarOptimizer
             "TraceAndOptimize:tooltip:mmdWorldCompatibility")]
         [ToggleLeft]
         public bool mmdWorldCompatibility = true;
+
+        // for compatibility, this is not inside AdvancedSettings but this is part of Advanced Settings
         [CL4EELocalized("TraceAndOptimize:prop:advancedAnimatorParser",
             "TraceAndOptimize:tooltip:advancedAnimatorParser")]
         [ToggleLeft]
         public bool advancedAnimatorParser = true;
+
+        public AdvancedSettings advancedSettings;
+        
+        [Serializable]
+        public struct AdvancedSettings
+        {
+            [Tooltip("Exclude some GameObjects from Trace and Optimize")]
+            public GameObject[] exclusions;
+        }
     }
 }
