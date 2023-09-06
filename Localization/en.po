@@ -89,10 +89,10 @@ msgid "MergeBone:description"
 msgstr "You will remove this GameObject and merge bone to parent"
 
 msgid "MergeBone:validation:thereAreComponent"
-msgstr "The are some components other than Transform. This is not supported."
+msgstr "There are some components other than Transform. This is not supported."
 
 msgid "MergeBone:validation:unevenScaling"
-msgstr "Merging Bone with non-evenly scaled is not supported."
+msgstr "Merging bones with uneven scale is not supported."
 
 # endregion
 

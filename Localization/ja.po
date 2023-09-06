@@ -95,7 +95,7 @@ msgid "MergeBone:validation:thereAreComponent"
 msgstr "Transform以外のコンポーネントがあります。これはサポートされていません。"
 
 msgid "MergeBone:validation:unevenScaling"
-msgstr "不均等にスケールされてるボーンをマージするのはサポートされていません。"
+msgstr "Scaleが均一でないボーンを統合することはサポートされていません。"
 
 # endregion
 
