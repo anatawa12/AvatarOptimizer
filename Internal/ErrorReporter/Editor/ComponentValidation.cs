@@ -24,6 +24,7 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
         private static IEnumerable<ErrorLog> Validate(IStaticValidated component) =>
             GetValidator(component.GetType())
                 ?.Invoke(component)
+                ?.Where(x => x != null)
                 ?.OnEach(x => x.referencedObjects.Add(new ObjectRef((Object)component)))
             ?? Array.Empty<ErrorLog>();
 
