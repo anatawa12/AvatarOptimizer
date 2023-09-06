@@ -301,9 +301,9 @@ msgid "TraceAndOptimize:prop:advancedSettings"
 msgstr "高度な設定"
 
 msgid "TraceAndOptimize:warn:advancedSettings"
-msgstr "高度な設定はAvatarOptimizerのバグの回避のための機能です。\n"
-"高度な設定を変更するとアバターが最適な状態でなくなる可能性があります。\n"
-"また、一部の高度な設定の変更は正しく機能しなかったり、動作が変わることがあります。気をつけてください!"
+msgstr "高度な設定はAvatarOptimizerのバグを回避するための設定です。\n"
+"高度な設定を変更すると、アバターが適切に最適化されなくなる可能性があります。\n"
+"また、一部の高度な設定の変更は正しく機能しなかったり、その動作が変更される可能性があります。注意してください!"
 
 # endregion
 

@@ -366,7 +366,7 @@ msgstr "Advanced Settings"
 msgid "TraceAndOptimize:warn:advancedSettings"
 msgstr "Advanced Settings is for workaround bugs in Avatar Optimizer.\n"
 "Changing Advanced Settings will make your avatar non well-optimized.\n"
-"In addition, Some modification of Advanced Settings may not well-tested or behaviour is likely to be change. Be careful!"
+"In addition, Some modification of Advanced Settings may not well-tested or its behaviour is likely to be changed. Be careful!"
 
 # endregion
 
