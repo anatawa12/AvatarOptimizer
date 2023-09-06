@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Unknown type warning is not correctly rendered `#427`
 - MergeBone with uneven scale is supported if all children are merged `#426`
 
 ### Security
