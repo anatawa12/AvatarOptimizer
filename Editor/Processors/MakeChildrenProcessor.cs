@@ -1,5 +1,6 @@
 using Anatawa12.AvatarOptimizer.ErrorReporting;
 using System.Linq;
+using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer.Processors
 {
@@ -21,6 +22,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 {
                     makeChildrenChild.parent = makeChildren.transform;
                 }
+                Object.DestroyImmediate(makeChildren);
             });
         }
     }
