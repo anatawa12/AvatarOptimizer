@@ -162,7 +162,7 @@ msgstr ""
 "MergeSkinnedMeshは新規のSkinnedMeshRendererがついたGameObjectに追加するべきです!"
 
 msgid "MergeSkinnedMesh:validation:self-recursive"
-msgstr "スキンメッシュレンダラーにMerge Skinned Mesh自身のスキンメッシュレンダラーがあります!"
+msgstr "統合対象のスキンメッシュレンダラーに、MergeSkinnedMesh自身のスキンメッシュレンダラーが含まれています!"
 
 msgid "MergeSkinnedMesh:prop:renderers"
 msgstr "スキンメッシュレンダラー"
