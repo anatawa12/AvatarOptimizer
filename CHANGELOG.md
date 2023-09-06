@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Validation error for self recursive MergeSkinnedMesh `#418`
 
 ### Changed
 - Improved 'Remove Unused Objects' `#401`
