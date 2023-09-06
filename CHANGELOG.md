@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Pre-building validation for MergeBone `#417`
+  - There are some (rare) case that MergeBone is not supported. This adds warning for such case.
 
 ### Changed
 - Improved 'Remove Unused Objects' `#401`
