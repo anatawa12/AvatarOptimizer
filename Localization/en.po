@@ -88,6 +88,12 @@ msgstr "Execute Early doesn't support Animation Remapping. Make sure you made an
 msgid "MergeBone:description"
 msgstr "You will remove this GameObject and merge bone to parent"
 
+msgid "MergeBone:validation:thereAreComponent"
+msgstr "There are some components other than Transform. This is not supported."
+
+msgid "MergeBone:validation:unevenScaling"
+msgstr "Merging bones with uneven scale is not supported."
+
 # endregion
 
 # region

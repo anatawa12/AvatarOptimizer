@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Pre-building validation for MergeBone `#417`
+  - There are some (rare) cases that are not supported by MergeBone. This adds warning for such case.
 
 ### Changed
 - Performance: Share MeshInfo2 between SkinnedMesh processing and MergeBone `#421`
