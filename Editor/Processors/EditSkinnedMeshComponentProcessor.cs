@@ -11,8 +11,6 @@ namespace Anatawa12.AvatarOptimizer.Processors
             foreach (var component in session.GetComponents<EditSkinnedMeshComponent>())
                 graph.AddComponent(component);
 
-            session.MeshInfo2Holder = new MeshInfo2Holder();
-
             var renderers = session.GetComponents<SkinnedMeshRenderer>();
             var processorLists = graph.GetSortedProcessors(renderers);
             foreach (var processors in processorLists)

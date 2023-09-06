@@ -15,7 +15,7 @@ namespace Anatawa12.AvatarOptimizer
         private readonly DummyObject _assetFileObject;
         public bool IsTest { get; }
         public ObjectMappingBuilder MappingBuilder { get; }
-        public MeshInfo2Holder MeshInfo2Holder { get; set; }
+        public MeshInfo2Holder MeshInfo2Holder { get; private set; } = new MeshInfo2Holder();
 
         public OptimizerSession(GameObject rootObject, bool addToAsset, bool isTest) :
             this(rootObject, addToAsset ? Utils.CreateAssetFile() : null, isTest)
