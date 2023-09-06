@@ -22,15 +22,29 @@ namespace Anatawa12.AvatarOptimizer.Processors
                     .Any())
                     errors[0] = ErrorLog.Warning("MergeBone:validation:thereAreComponent");
 
-                var localScale = mergeBone.transform.localScale;
-                if (!CheckScale(localScale.x / localScale.y) || !CheckScale(localScale.x / localScale.z) ||
-                    !CheckScale(localScale.y / localScale.z))
-                    errors[1] = ErrorLog.Warning("MergeBone:validation:unevenScaling");
+                if (AnyNotMergedBone(mergeBone.transform))
+                {
+                    // if the bone has non-merged bones, uneven scaling is not supported.
+                    var localScale = mergeBone.transform.localScale;
+                    if (!CheckScale(localScale.x / localScale.y) || !CheckScale(localScale.x / localScale.z) ||
+                        !CheckScale(localScale.y / localScale.z))
+                        errors[1] = ErrorLog.Warning("MergeBone:validation:unevenScaling");
+                }
 
                 return errors;
             });
 
             bool CheckScale(float scale) => 0.999 < scale && scale < 1.001;
+
+            bool AnyNotMergedBone(Transform bone)
+            {
+                if (bone.CompareTag("EditorOnly")) return false;
+                if (!bone.GetComponent<MergeBone>()) return true;
+                foreach (var transform in bone.DirectChildrenEnumerable())
+                    if (AnyNotMergedBone(transform))
+                        return true;
+                return false;
+            }
         }
 
         public void Process(OptimizerSession session)
