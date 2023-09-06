@@ -17,6 +17,12 @@ namespace Anatawa12.AvatarOptimizer
         [ToggleLeft]
         public bool removeUnusedObjects = true;
 
+        // Remove Unused Objects Options
+        [CL4EELocalized("TraceAndOptimize:prop:preserveEndBone",
+            "TraceAndOptimize:tooltip:preserveEndBone")]
+        [ToggleLeft]
+        public bool preserveEndBone;
+
         // common parsing configuration
         [CL4EELocalized("TraceAndOptimize:prop:mmdWorldCompatibility",
             "TraceAndOptimize:tooltip:mmdWorldCompatibility")]

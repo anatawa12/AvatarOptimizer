@@ -381,6 +381,12 @@ msgid "TraceAndOptimize:warn:unknown-type"
 msgstr "Unknown Component Type '{0}' Found. This will reduce optimization performance and may break your Avatar."
 "If your avatar got broken, Please report this error to AvatarOptimizer!"
 
+msgid "TraceAndOptimize:prop:preserveEndBone"
+msgstr "Preserve EndBone"
+
+msgid "TraceAndOptimize:tooltip:preserveEndBone"
+msgstr "If checked, this tool does not remove end bones with active parent."
+
 # endregion
 
 #region ApplyObjectMapping
