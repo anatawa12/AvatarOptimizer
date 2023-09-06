@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- MergeBone with uneven scale is supported if all children are merged `#426`
 
 ### Security
 
