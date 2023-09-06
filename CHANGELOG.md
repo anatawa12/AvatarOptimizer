@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog].
 ### Added
 - Pre-building validation for MergeBone `#417`
   - There are some (rare) cases that are not supported by MergeBone. This adds warning for such case.
+- Validation error for self recursive MergeSkinnedMesh `#418`
 
 ### Changed
 - Improved 'Remove Unused Objects' `#401`
