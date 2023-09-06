@@ -25,8 +25,9 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
             BuildReport.ReportingObjects(session.GetComponents<SkinnedMeshRenderer>(), renderer =>
             {
-                if (renderer.bones.Where(x => x).Any(mergeMapping.ContainsKey))
-                    DoBoneMap2(session, renderer, mergeMapping);
+                var meshInfo2 = session.MeshInfo2Holder.GetMeshInfoFor(renderer);
+                if (meshInfo2.Bones.Any(x => x.Transform && mergeMapping.ContainsKey(x.Transform)))
+                    DoBoneMap2(meshInfo2, mergeMapping);
             });
 
             foreach (var pair in mergeMapping)
@@ -42,10 +43,8 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 Object.DestroyImmediate(pair.gameObject);
         }
 
-        private void DoBoneMap2(OptimizerSession session, SkinnedMeshRenderer renderer,
-            Dictionary<Transform, Transform> mergeMapping)
+        private void DoBoneMap2(MeshInfo2 meshInfo2, Dictionary<Transform, Transform> mergeMapping)
         {
-            var meshInfo2 = new MeshInfo2(renderer);
             var primaryBones = new Dictionary<Transform, Bone>();
             var boneReplaced = false;
 
@@ -138,8 +137,6 @@ namespace Anatawa12.AvatarOptimizer.Processors
                     .Select(g => (g.Key, g.Sum(x => x.weight)))
                     .ToList();
             }
-
-            meshInfo2.WriteToSkinnedMeshRenderer(renderer, session);
         }
 
         private readonly struct BoneUniqKey : IEquatable<BoneUniqKey>

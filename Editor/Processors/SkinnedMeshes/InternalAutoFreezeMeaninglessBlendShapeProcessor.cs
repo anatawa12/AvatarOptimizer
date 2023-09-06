@@ -12,7 +12,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         public override EditSkinnedMeshProcessorOrder ProcessOrder => EditSkinnedMeshProcessorOrder.AutoConfigureFreezeBlendShape;
 
-        public override void Process(OptimizerSession session, MeshInfo2 target, MeshInfo2Holder meshInfo2Holder)
+        public override void Process(OptimizerSession session, MeshInfo2 target)
         {
             var meaningfulBlendShapes = new HashSet<string>();
 
