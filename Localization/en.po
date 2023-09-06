@@ -92,7 +92,7 @@ msgid "MergeBone:validation:thereAreComponent"
 msgstr "There are some components other than Transform. This is not supported."
 
 msgid "MergeBone:validation:unevenScaling"
-msgstr "Merging bones with uneven scale is not supported."
+msgstr "Merging bones with uneven scale is not supported if there are descendant bone which is not merged."
 
 # endregion
 

@@ -114,7 +114,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 }
                 else
                 {
-                    BuildReport.LogWarning("TraceAndOptimize:warn:unknwon-type", component.GetType().Name);
+                    BuildReport.LogWarning("TraceAndOptimize:warn:unknown-type", component.GetType().Name);
 
                     FallbackDependenciesParser(component);
                 }
