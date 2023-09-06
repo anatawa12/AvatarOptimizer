@@ -161,6 +161,9 @@ msgstr ""
 "SkinnedMeshRendererのMeshがNoneではありません!\n"
 "MergeSkinnedMeshは新規のSkinnedMeshRendererがついたGameObjectに追加するべきです!"
 
+msgid "MergeSkinnedMesh:validation:self-recursive"
+msgstr "スキンメッシュレンダラーにMerge Skinned Mesh自身のスキンメッシュレンダラーがあります!"
+
 msgid "MergeSkinnedMesh:prop:renderers"
 msgstr "スキンメッシュレンダラー"
 

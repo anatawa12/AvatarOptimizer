@@ -224,6 +224,9 @@ msgstr ""
 "Mesh of SkinnedMeshRenderer is not None!\n"
 "You should add MergeSkinnedMesh onto new GameObject with new SkinnedMeshRenderer!"
 
+msgid "MergeSkinnedMesh:validation:self-recursive"
+msgstr "The Skinned  Renderers has MergeSkinnedMesh's Skinned Mesh Renderer!"
+
 msgid "MergeSkinnedMesh:prop:renderers"
 msgstr "Skinned Renderers"
 

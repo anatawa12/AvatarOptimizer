@@ -13,14 +13,20 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         {
         }
 
-        public override IEnumerable<SkinnedMeshRenderer> Dependencies => Component.renderersSet.GetAsList();
+        public override IEnumerable<SkinnedMeshRenderer> Dependencies => SkinnedMeshRenderers;
+
+        private IEnumerable<SkinnedMeshRenderer> SkinnedMeshRenderers =>
+            Component.renderersSet.GetAsList().Except(new[] { Target });
+        
+        private IEnumerable<MeshRenderer> StaticMeshRenderers =>
+            Component.staticRenderersSet.GetAsList();
 
         public override EditSkinnedMeshProcessorOrder ProcessOrder => EditSkinnedMeshProcessorOrder.Generation;
 
         public override void Process(OptimizerSession session, MeshInfo2 target, MeshInfo2Holder meshInfo2Holder)
         {
-            var meshInfos = Component.renderersSet.GetAsList().Select(meshInfo2Holder.GetMeshInfoFor)
-                .Concat(Component.staticRenderersSet.GetAsList().Select(meshInfo2Holder.GetMeshInfoFor))
+            var meshInfos = SkinnedMeshRenderers.Select(meshInfo2Holder.GetMeshInfoFor)
+                .Concat(StaticMeshRenderers.Select(meshInfo2Holder.GetMeshInfoFor))
                 .ToArray();
             var sourceMaterials = meshInfos.Select(x => x.SubMeshes.Select(y => y.SharedMaterial).ToArray()).ToArray();
 
@@ -122,7 +128,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             var boneTransforms = new HashSet<Transform>(target.Bones.Select(x => x.Transform));
 
-            foreach (var renderer in Component.renderersSet.GetAsSet())
+            foreach (var renderer in SkinnedMeshRenderers)
             {
                 // Avatars can have animation to hide source meshes.
                 // Such a animation often intended to hide/show some accessories but
@@ -147,7 +153,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 Object.DestroyImmediate(rendererGameObject);
             }
 
-            foreach (var renderer in Component.staticRenderersSet.GetAsSet())
+            foreach (var renderer in SkinnedMeshRenderers)
             {
                 Object.DestroyImmediate(renderer.GetComponent<MeshFilter>());
                 Object.DestroyImmediate(renderer);
@@ -194,15 +200,15 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             public MeshInfoComputer(MergeSkinnedMeshProcessor processor) => _processor = processor;
 
             public (string, float)[] BlendShapes() =>
-                _processor.Component.renderersSet.GetAsList()
+                _processor.SkinnedMeshRenderers
                     .SelectMany(EditSkinnedMeshComponentUtil.GetBlendShapes)
                     .Distinct(BlendShapeNameComparator.Instance)
                     .ToArray();
 
             public Material[] Materials(bool fast = true)
             {
-                var sourceMaterials = _processor.Component.renderersSet.GetAsList().Select(EditSkinnedMeshComponentUtil.GetMaterials)
-                    .Concat(_processor.Component.staticRenderersSet.GetAsList().Select(x => x.sharedMaterials))
+                var sourceMaterials = _processor.SkinnedMeshRenderers.Select(EditSkinnedMeshComponentUtil.GetMaterials)
+                    .Concat(_processor.StaticMeshRenderers.Select(x => x.sharedMaterials))
                     .ToArray();
 
                 return _processor.CreateMergedMaterialsAndSubMeshIndexMapping(sourceMaterials)
