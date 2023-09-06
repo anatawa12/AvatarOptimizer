@@ -19,6 +19,8 @@ Currently the following optimizations are applied automatically.
   Automatically freezes unused BlendShapes in animation or else.
 - `Remove unused Objects`
   By scanning animation, etc., Automatically removes unused Objects.
+  - `Preserve EndBone`
+    If checked, this tool does not remove end bones[^endbone] if parent is not removed.
 
 Also, You can adjust optimization with the following settings
 - `MMD World Compatibility`
@@ -28,3 +30,5 @@ In addition, there is `Advanced Settings` which is for workaround bugs but it's 
 See tooltips or implementation for more details.
 
 ![component.png](component.png)
+
+[^endbone]: AAO currently assumes any bones with name ends with `end` (ignoring case) are end bone.
