@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.ErrorReporting;
 using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
+using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -10,6 +11,28 @@ namespace Anatawa12.AvatarOptimizer.Processors
 {
     internal class MergeBoneProcessor
     {
+        [InitializeOnLoadMethod]
+        private static void RegisterValidator()
+        {
+            ComponentValidation.RegisterValidator<MergeBone>(mergeBone =>
+            {
+                var errors = new ErrorLog[2];
+
+                if (mergeBone.GetComponents<Component>().Except(new Component[] { mergeBone, mergeBone.transform })
+                    .Any())
+                    errors[0] = ErrorLog.Warning("MergeBone:validation:thereAreComponent");
+
+                var localScale = mergeBone.transform.localScale;
+                if (!CheckScale(localScale.x / localScale.y) || !CheckScale(localScale.x / localScale.z) ||
+                    !CheckScale(localScale.y / localScale.z))
+                    errors[1] = ErrorLog.Warning("MergeBone:validation:unevenScaling");
+
+                return errors;
+            });
+
+            bool CheckScale(float scale) => 0.999 < scale && scale < 1.001;
+        }
+
         public void Process(OptimizerSession session)
         {
             // merge from -> merge into

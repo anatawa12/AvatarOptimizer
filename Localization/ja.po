@@ -91,6 +91,12 @@ msgstr "'早期に実行する'はアニメーションのパス修正が動き�
 msgid "MergeBone:description"
 msgstr "このGameObjectを削除して親に統合する。"
 
+msgid "MergeBone:validation:thereAreComponent"
+msgstr "Transform以外のコンポーネントがあります。これはサポートされていません。"
+
+msgid "MergeBone:validation:unevenScaling"
+msgstr "不均等にスケールされてるボーンをマージするのはサポートされていません。"
+
 # endregion
 
 # region
