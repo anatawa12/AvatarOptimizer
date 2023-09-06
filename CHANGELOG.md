@@ -18,6 +18,11 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Crash with Unity 2022 `#423`
+  - [Due to bug in Unity Editor 2022.3 or later][unity-bug], Avatar Optimizer was not compatible with Unity 2022.
+
+[unity-bug]: https://issuetracker.unity3d.com/issues/crash-on-gettargetassemblybyscriptpath-when-a-po-file-in-the-packages-directory-is-not-under-an-assembly-definition
+
 
 ### Security
 
