@@ -350,6 +350,15 @@ msgstr "Detect Extra Children"
 msgid "UnusedBonesByReferencesTool:tooltip:detectExtraChild"
 msgstr "If checked, this tool does not remove bones with non-bone children."
 
+msgid "UnusedBonesByReferencesTool:suggestMigrate"
+msgstr ""
+"UnusedBonesByReferencesTool is obsoleted by more intelligent Trace and Optimize!\n"
+"Do you want to migrate to Trace and Optimize with clicking the button below?"
+
+msgid "UnusedBonesByReferencesTool:migrate"
+msgstr "Migrate to Trace and Optimize"
+
+
 # endregion
 
 # region TraceAndOptimize

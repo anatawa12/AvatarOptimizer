@@ -287,6 +287,14 @@ msgstr "他の子オブジェクトを認識する"
 msgid "UnusedBonesByReferencesTool:tooltip:detectExtraChild"
 msgstr "チェックされている場合、子にボーン以外を持つボーンを削除しません。"
 
+msgid "UnusedBonesByReferencesTool:suggestMigrate"
+msgstr ""
+"UnusedBonesByReferencesToolはさらに賢く使用していないなボーンなどを削除するTrace and Optimizeに置き換えられました！\n"
+"下のボタンを押すことでTrace and Optimizeに置き換えませんか"
+
+msgid "UnusedBonesByReferencesTool:migrate"
+msgstr "Trace and Optimizeに変換する"
+
 # endregion
 
 # region TraceAndOptimize
