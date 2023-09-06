@@ -25,8 +25,9 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
             BuildReport.ReportingObjects(session.GetComponents<SkinnedMeshRenderer>(), renderer =>
             {
-                if (renderer.bones.Where(x => x).Any(mergeMapping.ContainsKey))
-                    DoBoneMap2(session.MeshInfo2Holder.GetMeshInfoFor(renderer), mergeMapping);
+                var meshInfo2 = session.MeshInfo2Holder.GetMeshInfoFor(renderer);
+                if (meshInfo2.Bones.Any(x => x.Transform && mergeMapping.ContainsKey(x.Transform)))
+                    DoBoneMap2(meshInfo2, mergeMapping);
             });
 
             foreach (var pair in mergeMapping)
