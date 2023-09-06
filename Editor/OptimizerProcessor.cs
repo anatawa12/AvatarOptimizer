@@ -163,9 +163,9 @@ namespace Anatawa12.AvatarOptimizer
             new Processors.ClearEndpointPositionProcessor().Process(session);
             new Processors.MergePhysBoneProcessor().Process(session);
             new Processors.EditSkinnedMeshComponentProcessor().Process(session);
-            session.SaveMeshInfo2();
             new Processors.MergeBoneProcessor().Process(session);
             new Processors.MakeChildrenProcessor(early: false).Process(session);
+            session.SaveMeshInfo2();
 
             new Processors.ApplyObjectMapping().Apply(session);
             traceAndOptimize.ProcessLater(session);
