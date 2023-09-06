@@ -54,6 +54,10 @@ namespace Anatawa12.AvatarOptimizer
 
                 Undo.DestroyObjectImmediate(component);
                 Undo.SetCurrentGroupName(CONTENT_UNDO_NAME);
+
+                EditorUtility.DisplayDialog(CL4EE.Tr("UnusedBonesByReferencesTool:migrationFinished:title"),
+                    CL4EE.Tr("UnusedBonesByReferencesTool:migrationFinished:description"),
+                    "Ok");
             }
         }
     }

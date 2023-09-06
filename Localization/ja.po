@@ -295,6 +295,12 @@ msgstr ""
 msgid "UnusedBonesByReferencesTool:migrate"
 msgstr "Trace and Optimizeに変換する"
 
+msgid "UnusedBonesByReferencesTool:migrationFinished:title"
+msgstr "変換完了"
+
+msgid "UnusedBonesByReferencesTool:migrationFinished:description"
+msgstr "Trace and Optimizeへの変換が完了しました！"
+
 # endregion
 
 # region TraceAndOptimize

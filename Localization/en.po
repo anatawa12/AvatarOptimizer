@@ -358,6 +358,12 @@ msgstr ""
 msgid "UnusedBonesByReferencesTool:migrate"
 msgstr "Migrate to Trace and Optimize"
 
+msgid "UnusedBonesByReferencesTool:migrationFinished:title"
+msgstr "Migration Finished!"
+
+msgid "UnusedBonesByReferencesTool:migrationFinished:description"
+msgstr "Migrating to Trace and Optimize is finished!"
+
 
 # endregion
 
