@@ -8,6 +8,10 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Advanced Settings Section for Trace and Optimize `#419`
+  - Moved `Use Advanced Animator Parser` to there
+  - Added `Exclusions` for exclude some GameObjects from optimization
+  - Added `Use Legacy GC` to use legacy algotythm for Remove Unused Objects
 
 ### Changed
 

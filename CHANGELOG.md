@@ -8,10 +8,14 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Advanced Settings Section for Trace and Optimize `#419`
+  - Moved `Use Advanced Animator Parser` to there
+  - Added `Exclusions` for exclude some GameObjects from optimization
 
 ### Changed
 - Improved 'Remove Unused Objects' `#401`
   - Remove Unused Objects now removes unnecessary Components & Bones!
+  - You may use `Use Legacy GC` to use legacy algotythm for Remove Unused Objects in `Advanced Settings` (`#419`)
 
 ### Deprecated
 
