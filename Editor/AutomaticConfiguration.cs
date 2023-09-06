@@ -12,7 +12,6 @@ namespace Anatawa12.AvatarOptimizer
         private SerializedProperty _mmdWorldCompatibility;
         private SerializedProperty _advancedAnimatorParser;
         private SerializedProperty _advancedSettings;
-        private SerializedProperty _exclusions;
         private GUIContent _advancedSettingsLabel = new GUIContent();
 
         private void OnEnable()
@@ -22,7 +21,6 @@ namespace Anatawa12.AvatarOptimizer
             _mmdWorldCompatibility = serializedObject.FindProperty(nameof(TraceAndOptimize.mmdWorldCompatibility));
             _advancedAnimatorParser = serializedObject.FindProperty(nameof(TraceAndOptimize.advancedAnimatorParser));
             _advancedSettings = serializedObject.FindProperty(nameof(TraceAndOptimize.advancedSettings));
-            _exclusions = _advancedSettings.FindPropertyRelative(nameof(TraceAndOptimize.AdvancedSettings.exclusions));
         }
 
         protected override void OnInspectorGUIInner()
@@ -42,7 +40,13 @@ namespace Anatawa12.AvatarOptimizer
                 EditorGUI.indentLevel++;
                 EditorGUILayout.HelpBox(CL4EE.Tr("TraceAndOptimize:warn:advancedSettings"), MessageType.Warning);
                 EditorGUILayout.PropertyField(_advancedAnimatorParser);
-                EditorGUILayout.PropertyField(_exclusions);
+                var iterator = _advancedSettings.Copy();
+                var enterChildren = true;
+                while (iterator.NextVisible(enterChildren))
+                {
+                    enterChildren = false;
+                    EditorGUILayout.PropertyField(iterator);
+                }
                 EditorGUI.indentLevel--;
             }
 
