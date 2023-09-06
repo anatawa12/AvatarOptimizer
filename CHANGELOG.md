@@ -11,10 +11,14 @@ The format is based on [Keep a Changelog].
 - Pre-building validation for MergeBone `#417`
   - There are some (rare) cases that are not supported by MergeBone. This adds warning for such case.
 - Validation error for self recursive MergeSkinnedMesh `#418`
+- Advanced Settings Section for Trace and Optimize `#419`
+  - Moved `Use Advanced Animator Parser` to there
+  - Added `Exclusions` for exclude some GameObjects from optimization
 
 ### Changed
 - Improved 'Remove Unused Objects' `#401`
   - Remove Unused Objects now removes unnecessary Components & Bones!
+  - You may use `Use Legacy GC` to use legacy algotythm for Remove Unused Objects in `Advanced Settings` (`#419`)
 - Performance: Share MeshInfo2 between SkinnedMesh processing and MergeBone `#421`
 
 ### Deprecated

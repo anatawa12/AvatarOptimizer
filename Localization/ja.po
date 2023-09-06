@@ -306,11 +306,13 @@ msgstr "MMDワールドとの互換性"
 msgid "TraceAndOptimize:tooltip:mmdWorldCompatibility"
 msgstr "MMD用BlendShapeを固定しないなどのMMDワールドとの互換性機能を有効化します"
 
-msgid "TraceAndOptimize:prop:advancedAnimatorParser"
-msgstr "Advanced Animator Parserを使用する"
+msgid "TraceAndOptimize:prop:advancedSettings"
+msgstr "高度な設定"
 
-msgid "TraceAndOptimize:tooltip:advancedAnimatorParser"
-msgstr "Advanced Animator ParserはAnimatorControllerを「レイヤー構造も含めて」解析します。"
+msgid "TraceAndOptimize:warn:advancedSettings"
+msgstr "高度な設定はAvatarOptimizerのバグを回避するための設定です。\n"
+"高度な設定を変更すると、アバターが適切に最適化されなくなる可能性があります。\n"
+"また、一部の高度な設定の変更は正しく機能しなかったり、その動作が変更される可能性があります。注意してください!"
 
 msgid "TraceAndOptimize:warn:unknown-type"
 msgstr "未知のコンポーネント'{0}'を検出しました! これにより最適化処理の品質が低下し、処理後のアバターが壊れる可能性があります。(元のアバターには影響しません)"

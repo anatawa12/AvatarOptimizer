@@ -13,16 +13,25 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
     {
         private readonly ImmutableModificationsContainer _modifications;
         private readonly OptimizerSession _session;
+        private readonly HashSet<GameObject> _exclusions;
+        private readonly bool _useLegacyGC;
 
-        public FindUnusedObjectsProcessor(ImmutableModificationsContainer modifications, OptimizerSession session)
+        public FindUnusedObjectsProcessor(ImmutableModificationsContainer modifications, OptimizerSession session,
+            bool useLegacyGC,
+            HashSet<GameObject> exclusions)
         {
             _modifications = modifications;
             _session = session;
+            _useLegacyGC = useLegacyGC;
+            _exclusions = exclusions;
         }
 
         public void Process()
         {
-            ProcessNew();
+            if (_useLegacyGC)
+                ProcessLegacy();
+            else
+                ProcessNew();
         }
 
         // Mark & Sweep Variables
@@ -79,6 +88,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             foreach (var component in gameObject.GetComponents<Component>())
                 if (collector.GetDependencies(component).EntrypointComponent)
                     MarkComponent(component, true);
+
+            // excluded GameObjects must be exists
+            foreach (var gameObject in _exclusions)
+            foreach (var component in gameObject.GetComponents<Component>())
+                MarkComponent(component, true);
 
             while (_processPending.Count != 0)
             {
@@ -165,6 +179,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 foreach (var transform in gameObject.GetComponentsInChildren<Transform>())
                     AddGameObject(transform.gameObject);
             }
+
+            // entry points: active GameObjects
+            foreach (var gameObject in _exclusions)
+                AddGameObject(gameObject);
 
             while (newReferenced.Count != 0)
             {

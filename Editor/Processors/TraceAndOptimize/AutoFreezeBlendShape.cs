@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
@@ -9,11 +10,14 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
     {
         private readonly ImmutableModificationsContainer _modifications;
         private readonly OptimizerSession _session;
+        private readonly HashSet<GameObject> _exclusions;
 
-        public AutoFreezeBlendShape(ImmutableModificationsContainer modifications, OptimizerSession session)
+        public AutoFreezeBlendShape(ImmutableModificationsContainer modifications, OptimizerSession session,
+            HashSet<GameObject> exclusions)
         {
             _modifications = modifications;
             _session = session;
+            _exclusions = exclusions;
         }
 
         public void Process()
@@ -25,6 +29,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
                 // skip SMR without mesh
                 if (!mesh) continue;
+                if (_exclusions.Contains(skinnedMeshRenderer.gameObject)) continue; // manual exclusiton
 
                 var modifies = _modifications.GetModifiedProperties(skinnedMeshRenderer);
                 var blendShapeValues = Enumerable.Range(0, mesh.blendShapeCount)
@@ -69,6 +74,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             // second optimization: remove meaningless blendShapes
             foreach (var skinnedMeshRenderer in _session.GetComponents<SkinnedMeshRenderer>())
             {
+                if (_exclusions.Contains(skinnedMeshRenderer.gameObject)) continue; // manual exclusion
                 skinnedMeshRenderer.gameObject.GetOrAddComponent<FreezeBlendShape>();
                 skinnedMeshRenderer.gameObject.GetOrAddComponent<InternalAutoFreezeMeaninglessBlendShape>();
             }

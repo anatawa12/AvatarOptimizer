@@ -1,3 +1,4 @@
+using System;
 using CustomLocalization4EditorExtension;
 using UnityEngine;
 
@@ -21,9 +22,23 @@ namespace Anatawa12.AvatarOptimizer
             "TraceAndOptimize:tooltip:mmdWorldCompatibility")]
         [ToggleLeft]
         public bool mmdWorldCompatibility = true;
-        [CL4EELocalized("TraceAndOptimize:prop:advancedAnimatorParser",
-            "TraceAndOptimize:tooltip:advancedAnimatorParser")]
+
+        // for compatibility, this is not inside AdvancedSettings but this is part of Advanced Settings
+        [InspectorName("Use Advanced Animator Parser")]
+        [Tooltip("Advanced Animator Parser will parse your AnimatorController, including layer structure.")]
         [ToggleLeft]
         public bool advancedAnimatorParser = true;
+
+        public AdvancedSettings advancedSettings;
+        
+        [Serializable]
+        public struct AdvancedSettings
+        {
+            [Tooltip("Exclude some GameObjects from Trace and Optimize")]
+            public GameObject[] exclusions;
+            [Tooltip("Use Legacy algorithm for Remove Unused Objects")]
+            [ToggleLeft]
+            public bool useLegacyGc;
+        }
     }
 }

@@ -369,11 +369,13 @@ msgstr "MMD World Compatibility"
 msgid "TraceAndOptimize:tooltip:mmdWorldCompatibility"
 msgstr "Enable MMD World Compatibility features such as keeping some BlendShapes"
 
-msgid "TraceAndOptimize:prop:advancedAnimatorParser"
-msgstr "Use Advanced Animator Parser"
+msgid "TraceAndOptimize:prop:advancedSettings"
+msgstr "Advanced Settings"
 
-msgid "TraceAndOptimize:tooltip:advancedAnimatorParser"
-msgstr "Advanced Animator Parser will parse your AnimatorController, including layer structure."
+msgid "TraceAndOptimize:warn:advancedSettings"
+msgstr "Advanced Settings is for workaround bugs in Avatar Optimizer.\n"
+"Changing Advanced Settings will make your avatar non well-optimized.\n"
+"In addition, Some modification of Advanced Settings may not well-tested or its behaviour is likely to be changed. Be careful!"
 
 msgid "TraceAndOptimize:warn:unknown-type"
 msgstr "Unknown Component Type '{0}' Found. This will reduce optimization performance and may break your Avatar."
