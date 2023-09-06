@@ -24,7 +24,7 @@ The format is based on [Keep a Changelog].
 
 ### Deprecated
 - UnusedBonesByReferenceTool component is now obsolete `#430`
-  - Newly introduced `Remove Unused Objects` does same thing with more powerful algorithm!
+  - Newly introduced algorithm of`Remove Unused Objects` does same thing!
   - You can migrate to `Remove Unused Objects` only with one click!
 
 ### Removed
