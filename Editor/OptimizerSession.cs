@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Anatawa12.AvatarOptimizer.Processors;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -14,6 +15,7 @@ namespace Anatawa12.AvatarOptimizer
         private readonly DummyObject _assetFileObject;
         public bool IsTest { get; }
         public ObjectMappingBuilder MappingBuilder { get; }
+        public MeshInfo2Holder MeshInfo2Holder { get; set; }
 
         public OptimizerSession(GameObject rootObject, bool addToAsset, bool isTest) :
             this(rootObject, addToAsset ? Utils.CreateAssetFile() : null, isTest)
@@ -68,6 +70,12 @@ namespace Anatawa12.AvatarOptimizer
         {
             return Utils.RelativePath(_rootObject.transform, child) ??
                    throw new ArgumentException("child is not child of rootObject", nameof(child));
+        }
+
+        public void SaveMeshInfo2()
+        {
+            MeshInfo2Holder.SaveToMesh(this);
+            MeshInfo2Holder = null;
         }
     }
 }

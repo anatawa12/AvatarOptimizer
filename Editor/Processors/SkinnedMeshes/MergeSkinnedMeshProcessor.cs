@@ -17,10 +17,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         public override EditSkinnedMeshProcessorOrder ProcessOrder => EditSkinnedMeshProcessorOrder.Generation;
 
-        public override void Process(OptimizerSession session, MeshInfo2 target, MeshInfo2Holder meshInfo2Holder)
+        public override void Process(OptimizerSession session, MeshInfo2 target)
         {
-            var meshInfos = Component.renderersSet.GetAsList().Select(meshInfo2Holder.GetMeshInfoFor)
-                .Concat(Component.staticRenderersSet.GetAsList().Select(meshInfo2Holder.GetMeshInfoFor))
+            var meshInfos = Component.renderersSet.GetAsList().Select(session.MeshInfo2Holder.GetMeshInfoFor)
+                .Concat(Component.staticRenderersSet.GetAsList().Select(session.MeshInfo2Holder.GetMeshInfoFor))
                 .ToArray();
             var sourceMaterials = meshInfos.Select(x => x.SubMeshes.Select(y => y.SharedMaterial).ToArray()).ToArray();
 
