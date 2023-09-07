@@ -254,9 +254,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             });
             AddParserWithExtends<Renderer, SkinnedMeshRenderer>((collector, deps, skinnedMeshRenderer) =>
             {
-                foreach (var bone in skinnedMeshRenderer.bones)
-                    deps.AddActiveDependency(bone, kind: DependencyType.Bone);
-                deps.AddActiveDependency(skinnedMeshRenderer.rootBone);
+                var meshInfo2 = collector._session.MeshInfo2Holder.GetMeshInfoFor(skinnedMeshRenderer);
+                foreach (var bone in meshInfo2.Bones)
+                    deps.AddActiveDependency(bone.Transform, kind: DependencyType.Bone);
+                deps.AddActiveDependency(meshInfo2.RootBone);
             });
             AddParserWithExtends<Renderer, MeshRenderer>((collector, deps, component) =>
             {
