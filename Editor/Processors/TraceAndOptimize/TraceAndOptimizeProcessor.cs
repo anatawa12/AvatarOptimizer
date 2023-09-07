@@ -28,7 +28,9 @@ namespace Anatawa12.AvatarOptimizer.Processors
             if (_config is null) return;
 
             if (_config.removeUnusedObjects)
-                new FindUnusedObjectsProcessor(_modifications, session, _config.advancedSettings.useLegacyGc,
+                new FindUnusedObjectsProcessor(_modifications, session, 
+                    _config.advancedSettings.useLegacyGc, 
+                    _config.advancedSettings.noConfigureMergeBone,
                     _exclusions).Process();
 
         }

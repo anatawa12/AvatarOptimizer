@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Automatic MergeBone in Remove Unused Objects `#433`
 
 ### Changed
 
