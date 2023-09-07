@@ -241,6 +241,17 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             {
                 // We can have some
                 deps.EntrypointComponent = true;
+
+                // we need bone between Armature..Humanoid
+                for (var bone = HumanBodyBones.Hips; bone < HumanBodyBones.LastBone; bone++)
+                {
+                    var boneTransform = component.GetBoneTransform(bone);
+                    foreach (var transform in boneTransform.ParentEnumerable())
+                    {
+                        if (transform == component.transform) break;
+                        deps.AddActiveDependency(transform);
+                    }
+                }
             });
             AddNopParser<Animation>();
             AddParser<Renderer>((collector, deps, renderer) =>
