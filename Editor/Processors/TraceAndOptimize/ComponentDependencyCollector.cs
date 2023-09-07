@@ -521,6 +521,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             }
 
             // TODOL External Library: FinalIK
+
+            // Components Proceed after T&O later
+            AddNopParser<MergeBone>();
         }
 
         #endregion
