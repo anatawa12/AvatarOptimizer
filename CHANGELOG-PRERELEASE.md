@@ -8,25 +8,32 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Automatic MergeBone in Remove Unused Objects `#433`
-- Preserve end bones in Remove Unused Objects `#430`
-  - This does same thing as `Preserve end bones` in UnusedBonesByReferenceTool.
 
 ### Changed
 
 ### Deprecated
-- UnusedBonesByReferenceTool component is now obsolete `#430`
-  - Newly introduced algorithm of`Remove Unused Objects` does same thing!
-  - You can migrate to `Remove Unused Objects` only with one click!
 
 ### Removed
 
 ### Fixed
-- Unknown type warning is not correctly rendered `#427`
-- MergeBone with uneven scale is supported if all children are merged `#426`
-- MakeChidlren are detected as Unknown Component `#431`
 
 ### Security
+
+## [1.5.0-beta.6] - 2023-09-07
+### Added
+- Automatic MergeBone in Remove Unused Objects [`#433`](https://github.com/anatawa12/AvatarOptimizer/pull/433)
+- Preserve end bones in Remove Unused Objects [`#430`](https://github.com/anatawa12/AvatarOptimizer/pull/430)
+  - This does same thing as `Preserve end bones` in UnusedBonesByReferenceTool.
+
+### Deprecated
+- UnusedBonesByReferenceTool component is now obsolete [`#430`](https://github.com/anatawa12/AvatarOptimizer/pull/430)
+  - Newly introduced algorithm of`Remove Unused Objects` does same thing!
+  - You can migrate to `Remove Unused Objects` only with one click!
+
+### Fixed
+- Unknown type warning is not correctly rendered [`#427`](https://github.com/anatawa12/AvatarOptimizer/pull/427)
+- MergeBone with uneven scale is supported if all children are merged [`#426`](https://github.com/anatawa12/AvatarOptimizer/pull/426)
+- MakeChidlren are detected as Unknown Component [`#431`](https://github.com/anatawa12/AvatarOptimizer/pull/431)
 
 ## [1.5.0-beta.5] - 2023-09-06
 ### Added
@@ -705,7 +712,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.5...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.6...HEAD
+[1.5.0-beta.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.5...v1.5.0-beta.6
 [1.5.0-beta.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.4...v1.5.0-beta.5
 [1.5.0-beta.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.4.3...v1.5.0-beta.4
 [1.4.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.4.3-beta.1...v1.4.3
