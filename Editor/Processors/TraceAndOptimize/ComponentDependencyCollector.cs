@@ -81,6 +81,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         {
             Normal = 1 << 0,
             Parent = 1 << 1,
+            Bone = 1 << 2,
         }
 
         [CanBeNull]
@@ -245,7 +246,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             });
             AddParserWithExtends<Renderer, SkinnedMeshRenderer>((collector, deps, skinnedMeshRenderer) =>
             {
-                foreach (var bone in skinnedMeshRenderer.bones) deps.AddActiveDependency(bone);
+                foreach (var bone in skinnedMeshRenderer.bones)
+                    deps.AddActiveDependency(bone, kind: DependencyType.Bone);
                 deps.AddActiveDependency(skinnedMeshRenderer.rootBone);
             });
             AddParserWithExtends<Renderer, MeshRenderer>((collector, deps, component) =>
