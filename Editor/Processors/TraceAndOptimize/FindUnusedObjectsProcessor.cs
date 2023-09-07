@@ -83,8 +83,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         private void ProcessNew()
         {
             // first, collect usages
-            var collector = new ComponentDependencyCollector();
-            collector.CollectAllUsages(_session);
+            var collector = new ComponentDependencyCollector(_session);
+            collector.CollectAllUsages();
 
             // then, mark and sweep.
 

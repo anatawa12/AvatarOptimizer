@@ -30,6 +30,14 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         private readonly Dictionary<Component, ComponentDependencies> _dependencies =
             new Dictionary<Component, ComponentDependencies>();
 
+        private readonly OptimizerSession _session;
+
+        public ComponentDependencyCollector(OptimizerSession session)
+        {
+            _session = session;
+        }
+
+
         public class ComponentDependencies
         {
             /// <summary>
@@ -91,9 +99,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         [NotNull]
         public ComponentDependencies GetDependencies(Component dependent) => _dependencies[dependent];
 
-        public void CollectAllUsages(OptimizerSession session)
+        public void CollectAllUsages()
         {
-            var components = session.GetComponents<Component>().ToArray();
+            var components = _session.GetComponents<Component>().ToArray();
             // first iteration: create mapping
             foreach (var component in components) _dependencies.Add(component, new ComponentDependencies());
 
