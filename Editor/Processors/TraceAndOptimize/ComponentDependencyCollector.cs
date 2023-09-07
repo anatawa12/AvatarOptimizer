@@ -27,16 +27,17 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             InitByTypeParsers();
         }
 
-        private readonly Dictionary<Component, ComponentDependencies> _dependencies =
-            new Dictionary<Component, ComponentDependencies>();
-
+        private readonly bool _preserveEndBone;
         private readonly OptimizerSession _session;
 
-        public ComponentDependencyCollector(OptimizerSession session)
+        public ComponentDependencyCollector(OptimizerSession session, bool preserveEndBone)
         {
+            _preserveEndBone = preserveEndBone;
             _session = session;
         }
 
+        private readonly Dictionary<Component, ComponentDependencies> _dependencies =
+            new Dictionary<Component, ComponentDependencies>();
 
         public class ComponentDependencies
         {
@@ -234,6 +235,15 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             AddParser<Transform>((collector, deps, transform) =>
             {
                 deps.AddAlwaysDependency(transform.parent, kind: DependencyType.Parent);
+
+                // For compatibility with UnusedBonesByReferenceTool
+                // https://github.com/anatawa12/AvatarOptimizer/issues/429
+                if (collector._preserveEndBone &&
+                    transform.name.EndsWith("end", StringComparison.OrdinalIgnoreCase))
+                {
+                    collector.GetDependencies(transform.parent)
+                        .AddAlwaysDependency(transform);
+                }
             });
             // Animator does not do much for motion, just changes states of other components.
             // All State Changes are collected separately

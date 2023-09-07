@@ -287,6 +287,20 @@ msgstr "他の子オブジェクトを認識する"
 msgid "UnusedBonesByReferencesTool:tooltip:detectExtraChild"
 msgstr "チェックされている場合、子にボーン以外を持つボーンを削除しません。"
 
+msgid "UnusedBonesByReferencesTool:suggestMigrate"
+msgstr ""
+"UnusedBonesByReferencesToolは、使用されていないボーンなどに対してより賢い処理を行うTrace and Optimizeに置き換えられました!\n"
+"下のボタンを押し、Trace and Optimizeに移行しませんか? (設定は引き継がれます)"
+
+msgid "UnusedBonesByReferencesTool:migrate"
+msgstr "Trace and Optimizeに移行する"
+
+msgid "UnusedBonesByReferencesTool:migrationFinished:title"
+msgstr "移行完了"
+
+msgid "UnusedBonesByReferencesTool:migrationFinished:description"
+msgstr "Trace and Optimizeへの移行が完了しました!"
+
 # endregion
 
 # region TraceAndOptimize
@@ -317,6 +331,12 @@ msgstr "高度な設定はAvatarOptimizerのバグを回避するための設定
 msgid "TraceAndOptimize:warn:unknown-type"
 msgstr "未知のコンポーネント'{0}'を検出しました! これにより最適化処理の品質が低下し、処理後のアバターが壊れる可能性があります。(元のアバターには影響しません)"
 "アバターが壊れた場合、これをAvatarOptimizerに報告してください!"
+
+msgid "TraceAndOptimize:prop:preserveEndBone"
+msgstr "endボーンを残す"
+
+msgid "TraceAndOptimize:tooltip:preserveEndBone"
+msgstr "親が削除されていないendボーンを削除しないようにします。"
 
 # endregion
 

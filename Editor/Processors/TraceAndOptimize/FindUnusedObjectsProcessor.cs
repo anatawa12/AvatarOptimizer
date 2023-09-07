@@ -14,16 +14,19 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         private readonly ImmutableModificationsContainer _modifications;
         private readonly OptimizerSession _session;
         private readonly HashSet<GameObject> _exclusions;
+        private readonly bool _preserveEndBone;
         private readonly bool _useLegacyGC;
         private readonly bool _noConfigureMergeBone;
 
         public FindUnusedObjectsProcessor(ImmutableModificationsContainer modifications, OptimizerSession session,
+            bool preserveEndBone,
             bool useLegacyGC,
             bool noConfigureMergeBone,
             HashSet<GameObject> exclusions)
         {
             _modifications = modifications;
             _session = session;
+            _preserveEndBone = preserveEndBone;
             _useLegacyGC = useLegacyGC;
             _noConfigureMergeBone = noConfigureMergeBone;
             _exclusions = exclusions;
@@ -92,7 +95,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         private void MarkAndSweep()
         {
             // first, collect usages
-            var collector = new ComponentDependencyCollector(_session);
+            var collector = new ComponentDependencyCollector(_session, _preserveEndBone);
             collector.CollectAllUsages();
 
             // then, mark and sweep.

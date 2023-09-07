@@ -29,9 +29,10 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
             if (_config.removeUnusedObjects)
                 new FindUnusedObjectsProcessor(_modifications, session, 
-                    _config.advancedSettings.useLegacyGc, 
-                    _config.advancedSettings.noConfigureMergeBone,
-                    _exclusions).Process();
+                    preserveEndBone: _config.preserveEndBone,
+                    useLegacyGC: _config.advancedSettings.useLegacyGc,
+                    noConfigureMergeBone: _config.advancedSettings.noConfigureMergeBone,
+                    exclusions: _exclusions).Process();
 
         }
     }

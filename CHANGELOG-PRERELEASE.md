@@ -9,10 +9,15 @@ The format is based on [Keep a Changelog].
 ## [Unreleased]
 ### Added
 - Automatic MergeBone in Remove Unused Objects `#433`
+- Preserve end bones in Remove Unused Objects `#430`
+  - This does same thing as `Preserve end bones` in UnusedBonesByReferenceTool.
 
 ### Changed
 
 ### Deprecated
+- UnusedBonesByReferenceTool component is now obsolete `#430`
+  - Newly introduced algorithm of`Remove Unused Objects` does same thing!
+  - You can migrate to `Remove Unused Objects` only with one click!
 
 ### Removed
 

@@ -350,6 +350,21 @@ msgstr "Detect Extra Children"
 msgid "UnusedBonesByReferencesTool:tooltip:detectExtraChild"
 msgstr "If checked, this tool does not remove bones with non-bone children."
 
+msgid "UnusedBonesByReferencesTool:suggestMigrate"
+msgstr ""
+"UnusedBonesByReferencesTool is obsoleted by more intelligent Trace and Optimize!\n"
+"Would you like to migrate to Trace and Optimize by clicking the button below?"
+
+msgid "UnusedBonesByReferencesTool:migrate"
+msgstr "Migrate to Trace and Optimize"
+
+msgid "UnusedBonesByReferencesTool:migrationFinished:title"
+msgstr "Migration Finished!"
+
+msgid "UnusedBonesByReferencesTool:migrationFinished:description"
+msgstr "Migrating to Trace and Optimize is finished!"
+
+
 # endregion
 
 # region TraceAndOptimize
@@ -380,6 +395,12 @@ msgstr "Advanced Settings is for workaround bugs in Avatar Optimizer.\n"
 msgid "TraceAndOptimize:warn:unknown-type"
 msgstr "Unknown Component Type '{0}' Found. This will reduce optimization performance and may break your Avatar."
 "If your avatar got broken, Please report this error to AvatarOptimizer!"
+
+msgid "TraceAndOptimize:prop:preserveEndBone"
+msgstr "Preserve EndBone"
+
+msgid "TraceAndOptimize:tooltip:preserveEndBone"
+msgstr "Prevents removing end bones whose parent is not removed."
 
 # endregion
 
