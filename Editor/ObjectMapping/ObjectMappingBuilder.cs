@@ -93,6 +93,7 @@ namespace Anatawa12.AvatarOptimizer
 
             public void MergedTo([NotNull] BuildingComponentInfo mergeTo)
             {
+                if (_type == typeof(Transform)) throw new Exception("Merging Transform is not supported!");
                 if (mergeTo == null) throw new ArgumentNullException(nameof(mergeTo));
                 if (_mergedInto != null) throw new InvalidOperationException("Already merged");
                 mergeTo.MergeSources.Add(this);
@@ -101,6 +102,7 @@ namespace Anatawa12.AvatarOptimizer
 
             public void MoveProperties(params (string old, string @new)[] props)
             {
+                if (_type == typeof(Transform)) throw new Exception("Move properties of Transform is not supported!");
                 foreach (var mergeSource in MergeSources) mergeSource.MoveProperties(props);
 
                 var propertyIds = new int[props.Length];
@@ -141,6 +143,7 @@ namespace Anatawa12.AvatarOptimizer
 
             public void RemoveProperty(string oldProp)
             {
+                if (_type == typeof(Transform)) throw new Exception("Removing properties of Transform is not supported!");
                 foreach (var mergeSource in MergeSources) mergeSource.RemoveProperty(oldProp);
                 // if (_afterPropertyIds.ContainsKey(oldProp))
                 //     _afterPropertyIds.Remove(oldProp);

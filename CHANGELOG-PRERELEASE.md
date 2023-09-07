@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Automatic MergeBone in Remove Unused Objects `#433`
 - Preserve end bones in Remove Unused Objects `#430`
   - This does same thing as `Preserve end bones` in UnusedBonesByReferenceTool.
 
@@ -23,6 +24,7 @@ The format is based on [Keep a Changelog].
 ### Fixed
 - Unknown type warning is not correctly rendered `#427`
 - MergeBone with uneven scale is supported if all children are merged `#426`
+- MakeChidlren are detected as Unknown Component `#431`
 
 ### Security
 

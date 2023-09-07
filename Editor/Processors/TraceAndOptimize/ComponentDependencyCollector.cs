@@ -14,7 +14,6 @@ using VRC.SDK3.Avatars.Components;
 using VRC.SDK3.Dynamics.Contact.Components;
 using VRC.SDK3.Dynamics.PhysBone.Components;
 using VRC.SDKBase;
-using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 {
@@ -29,10 +28,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         }
 
         private readonly bool _preserveEndBone;
+        private readonly OptimizerSession _session;
 
-        public ComponentDependencyCollector(bool preserveEndBone)
+        public ComponentDependencyCollector(OptimizerSession session, bool preserveEndBone)
         {
             _preserveEndBone = preserveEndBone;
+            _session = session;
         }
 
         private readonly Dictionary<Component, ComponentDependencies> _dependencies =
@@ -46,46 +47,51 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             public bool EntrypointComponent = false;
 
             /// <summary>
-            /// Dependencies if this component can be Active or Enabled
+            /// Dependencies of this component
             /// </summary>
-            [NotNull] public IReadOnlyCollection<Dependency> ActiveDependency => _activeDependency;
-            [NotNull] private readonly HashSet<Dependency> _activeDependency = new HashSet<Dependency>();
+            [NotNull]
+            public IReadOnlyDictionary<Component, (DependencyFlags flags, DependencyType type)> Dependencies => _dependencies;
 
-            /// <summary>
-            /// Dependencies regardless this component can be Active/Enabled or not.
-            /// </summary>
-            [NotNull] public IReadOnlyCollection<Dependency> AlwaysDependency => _alwaysDependency;
-            [NotNull] private readonly HashSet<Dependency> _alwaysDependency = new HashSet<Dependency>();
+            [NotNull] private readonly Dictionary<Component, (DependencyFlags, DependencyType)> _dependencies =
+                new Dictionary<Component, (DependencyFlags, DependencyType)>();
 
-            public void AddActiveDependency(Component component, bool onlyIfTargetCanBeEnabled = false)
+            public void AddActiveDependency(Component component, bool onlyIfTargetCanBeEnabled = false,
+                DependencyType kind = DependencyType.Normal)
             {
-                if ((Object)component) _activeDependency.Add(new Dependency(component, onlyIfTargetCanBeEnabled));
-            }
-            
-            public void AddAlwaysDependency(Component component, bool onlyIfTargetCanBeEnabled = false)
-            {
-                if ((Object)component) _alwaysDependency.Add(new Dependency(component, onlyIfTargetCanBeEnabled));
+                if (!component) return;
+                _dependencies.TryGetValue(component, out var pair);
+                var (flags, kindFlags) = pair;
+                if (!onlyIfTargetCanBeEnabled) flags |= DependencyFlags.EvenIfTargetIsDisabled;
+                _dependencies[component] = (flags, kindFlags | kind);
             }
 
-            public readonly struct Dependency : IEquatable<Dependency>
+            public void AddAlwaysDependency(Component component, bool onlyIfTargetCanBeEnabled = false,
+                DependencyType kind = DependencyType.Normal)
             {
-                public readonly Component Component;
-                public readonly bool OnlyIfTargetCanBeEnabled;
-
-                public Dependency(Component component, bool onlyIfTargetCanBeEnabled = false)
-                {
-                    Component = component;
-                    OnlyIfTargetCanBeEnabled = onlyIfTargetCanBeEnabled;
-                }
-
-                public bool Equals(Dependency other) => Component.Equals(other.Component) &&
-                                                        OnlyIfTargetCanBeEnabled == other.OnlyIfTargetCanBeEnabled;
-
-                public override bool Equals(object obj) => obj is Dependency other && Equals(other);
-
-                public override int GetHashCode() =>
-                    unchecked(Component.GetHashCode() * 397) ^ OnlyIfTargetCanBeEnabled.GetHashCode();
+                if (!component) return;
+                _dependencies.TryGetValue(component, out var pair);
+                var (flags, kindFlags) = pair;
+                flags |= DependencyFlags.EvenIfThisIsDisabled;
+                if (!onlyIfTargetCanBeEnabled) flags |= DependencyFlags.EvenIfTargetIsDisabled;
+                _dependencies[component] = (flags, kindFlags | kind);
             }
+        }
+
+        [Flags]
+        public enum DependencyFlags : byte
+        {
+            // dependency flags
+            EvenIfTargetIsDisabled = 1 << 0,
+            EvenIfThisIsDisabled = 1 << 1,
+        }
+
+        [Flags]
+        public enum DependencyType : byte
+        {
+            Normal = 1 << 0,
+            Parent = 1 << 1,
+            ComponentToTransform = 1 << 2,
+            Bone = 1 << 3,
         }
 
         [CanBeNull]
@@ -95,9 +101,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         [NotNull]
         public ComponentDependencies GetDependencies(Component dependent) => _dependencies[dependent];
 
-        public void CollectAllUsages(OptimizerSession session)
+        public void CollectAllUsages()
         {
-            var components = session.GetComponents<Component>().ToArray();
+            var components = _session.GetComponents<Component>().ToArray();
             // first iteration: create mapping
             foreach (var component in components) _dependencies.Add(component, new ComponentDependencies());
 
@@ -105,7 +111,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             BuildReport.ReportingObjects(components, component =>
             {
                 // component requires GameObject.
-                GetDependencies(component).AddAlwaysDependency(component.gameObject.transform);
+                GetDependencies(component).AddAlwaysDependency(component.gameObject.transform,
+                    kind: DependencyType.ComponentToTransform);
 
                 if (_byTypeParser.TryGetValue(component.GetType(), out var parser))
                 {
@@ -227,7 +234,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             // unity generic
             AddParser<Transform>((collector, deps, transform) =>
             {
-                deps.AddAlwaysDependency(transform.parent);
+                deps.AddAlwaysDependency(transform.parent, kind: DependencyType.Parent);
 
                 // For compatibility with UnusedBonesByReferenceTool
                 // https://github.com/anatawa12/AvatarOptimizer/issues/429
@@ -244,6 +251,17 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             {
                 // We can have some
                 deps.EntrypointComponent = true;
+
+                // we need bone between Armature..Humanoid
+                for (var bone = HumanBodyBones.Hips; bone < HumanBodyBones.LastBone; bone++)
+                {
+                    var boneTransform = component.GetBoneTransform(bone);
+                    foreach (var transform in boneTransform.ParentEnumerable())
+                    {
+                        if (transform == component.transform) break;
+                        deps.AddActiveDependency(transform);
+                    }
+                }
             });
             AddNopParser<Animation>();
             AddParser<Renderer>((collector, deps, renderer) =>
@@ -259,8 +277,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             });
             AddParserWithExtends<Renderer, SkinnedMeshRenderer>((collector, deps, skinnedMeshRenderer) =>
             {
-                foreach (var bone in skinnedMeshRenderer.bones) deps.AddActiveDependency(bone);
-                deps.AddActiveDependency(skinnedMeshRenderer.rootBone);
+                var meshInfo2 = collector._session.MeshInfo2Holder.GetMeshInfoFor(skinnedMeshRenderer);
+                foreach (var bone in meshInfo2.Bones)
+                    deps.AddActiveDependency(bone.Transform, kind: DependencyType.Bone);
+                deps.AddActiveDependency(meshInfo2.RootBone);
             });
             AddParserWithExtends<Renderer, MeshRenderer>((collector, deps, component) =>
             {
@@ -524,6 +544,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             }
 
             // TODOL External Library: FinalIK
+
+            // Components Proceed after T&O later
+            AddNopParser<MergeBone>();
         }
 
         #endregion

@@ -45,6 +45,9 @@ namespace Anatawa12.AvatarOptimizer
             [Tooltip("Use Legacy algorithm for Remove Unused Objects")]
             [ToggleLeft]
             public bool useLegacyGc;
+            [Tooltip("Do Not Configure MergeBone in New GC algorithm")]
+            [ToggleLeft]
+            public bool noConfigureMergeBone;
         }
     }
 }
