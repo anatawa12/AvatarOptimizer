@@ -8,30 +8,39 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Pre-building validation for MergeBone `#417`
-  - There are some (rare) cases that are not supported by MergeBone. This adds warning for such case.
-- Validation error for self recursive MergeSkinnedMesh `#418`
-- Advanced Settings Section for Trace and Optimize `#419`
-  - Moved `Use Advanced Animator Parser` to there
-  - Added `Exclusions` for exclude some GameObjects from optimization
-  - Added `Use Legacy GC` to use legacy algotythm for Remove Unused Objects
 
 ### Changed
-- Performance: Share MeshInfo2 between SkinnedMesh processing and MergeBone `#421`
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
-- Unknown Type Error is not localized `#410`
-- Crash with Unity 2022 `#423`
-  - [Due to bug in Unity Editor 2022.3 or later][unity-bug], Avatar Optimizer was not compatible with Unity 2022.
-- worldUpObject is not proceed in GC Objects `#424`
-
-[unity-bug]: https://issuetracker.unity3d.com/issues/crash-on-gettargetassemblybyscriptpath-when-a-po-file-in-the-packages-directory-is-not-under-an-assembly-definition
+- Unknown type warning is not correctly rendered `#427`
+- MergeBone with uneven scale is supported if all children are merged `#426`
 
 ### Security
+
+## [1.5.0-beta.5] - 2023-09-06
+### Added
+- Pre-building validation for MergeBone [`#417`](https://github.com/anatawa12/AvatarOptimizer/pull/417)
+  - There are some (rare) cases that are not supported by MergeBone. This adds warning for such case.
+- Validation error for self recursive MergeSkinnedMesh [`#418`](https://github.com/anatawa12/AvatarOptimizer/pull/418)
+- Advanced Settings Section for Trace and Optimize [`#419`](https://github.com/anatawa12/AvatarOptimizer/pull/419)
+  - Moved `Use Advanced Animator Parser` to there
+  - Added `Exclusions` for exclude some GameObjects from optimization
+  - Added `Use Legacy GC` to use legacy algotythm for Remove Unused Objects
+
+### Changed
+- Performance: Share MeshInfo2 between SkinnedMesh processing and MergeBone [`#421`](https://github.com/anatawa12/AvatarOptimizer/pull/421)
+
+### Fixed
+- Unknown Type Error is not localized [`#410`](https://github.com/anatawa12/AvatarOptimizer/pull/410)
+- Crash with Unity 2022 [`#423`](https://github.com/anatawa12/AvatarOptimizer/pull/423)
+  - [Due to bug in Unity Editor 2022.3 or later][unity-bug], Avatar Optimizer was not compatible with Unity 2022.
+- worldUpObject is not proceed in GC Objects [`#424`](https://github.com/anatawa12/AvatarOptimizer/pull/424)
+
+[unity-bug]: https://issuetracker.unity3d.com/issues/crash-on-gettargetassemblybyscriptpath-when-a-po-file-in-the-packages-directory-is-not-under-an-assembly-definition
 
 ## [1.5.0-beta.4] - 2023-09-05
 ### Changed
@@ -689,7 +698,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.4...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.5...HEAD
+[1.5.0-beta.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.4...v1.5.0-beta.5
 [1.5.0-beta.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.4.3...v1.5.0-beta.4
 [1.4.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.4.3-beta.1...v1.4.3
 [1.4.3-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.4.2...v1.4.3-beta.1
