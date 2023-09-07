@@ -74,7 +74,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
             {
                 var mapping = pair.Key;
                 var mapped = pair.Value;
-                foreach (var child in mapping.DirectChildrenEnumerable())
+                foreach (var child in mapping.DirectChildrenEnumerable().ToArray())
                     child.parent = mapped;
                 mapping.parent = null;
             }
