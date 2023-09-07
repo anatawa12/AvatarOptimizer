@@ -506,6 +506,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             AddParser<ContactBase>((collector, deps, component) =>
             {
+                deps.EntrypointComponent = true;
                 deps.AddActiveDependency(component.rootTransform);
             });
             AddParserWithExtends<ContactBase, ContactReceiver>();
