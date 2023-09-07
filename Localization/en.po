@@ -353,7 +353,7 @@ msgstr "If checked, this tool does not remove bones with non-bone children."
 msgid "UnusedBonesByReferencesTool:suggestMigrate"
 msgstr ""
 "UnusedBonesByReferencesTool is obsoleted by more intelligent Trace and Optimize!\n"
-"Do you want to migrate to Trace and Optimize with clicking the button below?"
+"Would you like to migrate to Trace and Optimize by clicking the button below?"
 
 msgid "UnusedBonesByReferencesTool:migrate"
 msgstr "Migrate to Trace and Optimize"
@@ -400,7 +400,7 @@ msgid "TraceAndOptimize:prop:preserveEndBone"
 msgstr "Preserve EndBone"
 
 msgid "TraceAndOptimize:tooltip:preserveEndBone"
-msgstr "If checked, this tool does not remove end bones with active parent."
+msgstr "Prevents removing end bones whose parent is not removed."
 
 # endregion
 

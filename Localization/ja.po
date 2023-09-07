@@ -289,17 +289,17 @@ msgstr "チェックされている場合、子にボーン以外を持つボー
 
 msgid "UnusedBonesByReferencesTool:suggestMigrate"
 msgstr ""
-"UnusedBonesByReferencesToolはさらに賢く使用していないなボーンなどを削除するTrace and Optimizeに置き換えられました！\n"
-"下のボタンを押すことでTrace and Optimizeに置き換えませんか"
+"UnusedBonesByReferencesToolは、使用されていないボーンなどに対してより賢い処理を行うTrace and Optimizeに置き換えられました!\n"
+"下のボタンを押し、Trace and Optimizeに移行しませんか? (設定は引き継がれます)"
 
 msgid "UnusedBonesByReferencesTool:migrate"
-msgstr "Trace and Optimizeに変換する"
+msgstr "Trace and Optimizeに移行する"
 
 msgid "UnusedBonesByReferencesTool:migrationFinished:title"
-msgstr "変換完了"
+msgstr "移行完了"
 
 msgid "UnusedBonesByReferencesTool:migrationFinished:description"
-msgstr "Trace and Optimizeへの変換が完了しました！"
+msgstr "Trace and Optimizeへの移行が完了しました!"
 
 # endregion
 
@@ -336,7 +336,7 @@ msgid "TraceAndOptimize:prop:preserveEndBone"
 msgstr "endボーンを残す"
 
 msgid "TraceAndOptimize:tooltip:preserveEndBone"
-msgstr "チェックされている場合、親がactiveなendボーンを削除しません。"
+msgstr "親が削除されていないendボーンを削除しないようにします。"
 
 # endregion
 
