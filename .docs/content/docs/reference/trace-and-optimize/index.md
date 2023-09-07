@@ -20,7 +20,7 @@ Currently the following optimizations are applied automatically.
 - `Remove unused Objects`
   By scanning animation, etc., Automatically removes unused Objects.
   - `Preserve EndBone`
-    If checked, this tool does not remove end bones[^endbone] if parent is not removed.
+    Prevents removing end bones[^endbone] whose parent is not removed.
 
 Also, You can adjust optimization with the following settings
 - `MMD World Compatibility`
@@ -31,4 +31,4 @@ See tooltips or implementation for more details.
 
 ![component.png](component.png)
 
-[^endbone]: AAO currently assumes any bones with name ends with `end` (ignoring case) are end bone.
+[^endbone]: AAO currently assumes any bones whose name ends with `end` (ignoring case) are end bones.

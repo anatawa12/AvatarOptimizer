@@ -9,10 +9,10 @@ EditorOnlyなメッシュからしか参照がないボーンをEditorOnlyにし
 
 このコンポーネントは[Avatar Global Component](../../component-kind/avatar-global-components)であるため、アバターのルートに追加してください。
 
-{{< hint info >}}
+{{< hint warning >}}
 
-このコンポーネントは時代遅れです。[Trace and Optimize](../trace-and-optimize)の`使われていないObjectを自動的に削除する`を使用してください。
-このコンポーネントが改善されることはありません。
+このコンポーネントは非推奨です。代わりに[Trace and Optimize](../trace-and-optimize)の`使われていないObjectを自動的に削除する`を使用してください。
+このコンポーネントの動作が改善されることはありません。
 
 {{< /hint >}}
 
