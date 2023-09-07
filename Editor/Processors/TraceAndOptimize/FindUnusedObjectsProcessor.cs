@@ -15,14 +15,17 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         private readonly OptimizerSession _session;
         private readonly HashSet<GameObject> _exclusions;
         private readonly bool _useLegacyGC;
+        private readonly bool _noConfigureMergeBone;
 
         public FindUnusedObjectsProcessor(ImmutableModificationsContainer modifications, OptimizerSession session,
             bool useLegacyGC,
+            bool noConfigureMergeBone,
             HashSet<GameObject> exclusions)
         {
             _modifications = modifications;
             _session = session;
             _useLegacyGC = useLegacyGC;
+            _noConfigureMergeBone = noConfigureMergeBone;
             _exclusions = exclusions;
         }
 
@@ -82,6 +85,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         private void ProcessNew()
         {
+            MarkAndSweep();
+            if (!_noConfigureMergeBone) ConfigureMergeBone();
+        }
+
+        private void MarkAndSweep()
+        {
             // first, collect usages
             var collector = new ComponentDependencyCollector(_session);
             collector.CollectAllUsages();
@@ -134,6 +143,76 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 }
             }
         }
+
+        private void ConfigureMergeBone()
+        {
+            ConfigureRecursive(_session.GetRootComponent<Transform>(), _modifications);
+
+            // returns true if merged
+            bool ConfigureRecursive(Transform transform, ImmutableModificationsContainer modifications)
+            {
+                var mergedChildren = true;
+                foreach (var child in transform.DirectChildrenEnumerable())
+                    mergedChildren &= ConfigureRecursive(child, modifications);
+
+                const ComponentDependencyCollector.DependencyType AllowedUsages =
+                    ComponentDependencyCollector.DependencyType.Bone
+                    | ComponentDependencyCollector.DependencyType.Parent
+                    | ComponentDependencyCollector.DependencyType.ComponentToTransform;
+
+                // Components must be Transform Only
+                if (transform.GetComponents<Component>().Length != 1) return false;
+                // The bone cannot be used generally
+                if ((_marked[transform] & ~AllowedUsages) != 0) return false;
+                // must not be animated
+                if (Animated(transform, modifications)) return false;
+
+                if (!mergedChildren)
+                {
+                    var localScale = transform.localScale;
+                    if (localScale == Vector3.one)
+                    {
+                        // if this scale is one, Good.
+                    }
+                    else if (MergeBoneProcessor.ScaledEvenly(localScale) &&
+                               transform.DirectChildrenEnumerable().All(x => !Animated(x, modifications)))
+                    {
+                        // if scale is even and direct children are not animated
+
+                        // if direct children are animated, we have to adjust animation which is hard
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+
+                transform.gameObject.GetOrAddComponent<MergeBone>();
+
+                return true;
+            }
+
+            bool Animated(Transform transform, ImmutableModificationsContainer modifications)
+            {
+                var properties = modifications.GetModifiedProperties(transform);
+                if (properties.Count == 0) return false;
+
+                // TODO: constant animation detection
+                
+                foreach (var transformProperty in TransformProperties)
+                    if (properties.ContainsKey(transformProperty))
+                        return true;
+                return false;
+            }
+        }
+
+        private static readonly string[] TransformProperties =
+        {
+            "m_LocalRotation.x", "m_LocalRotation.y", "m_LocalRotation.z", "m_LocalRotation.w",
+            "m_LocalPosition.x", "m_LocalPosition.y", "m_LocalPosition.z", 
+            "m_LocalScale.x", "m_LocalScale.y", "m_LocalScale.z", 
+            "localEulerAnglesRaw.x", "localEulerAnglesRaw.y", "localEulerAnglesRaw.z"
+        };
 
         private IEnumerable<GameObject> CollectAllActiveAbleGameObjects()
         {

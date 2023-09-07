@@ -25,16 +25,12 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 if (AnyNotMergedBone(mergeBone.transform))
                 {
                     // if the bone has non-merged bones, uneven scaling is not supported.
-                    var localScale = mergeBone.transform.localScale;
-                    if (!CheckScale(localScale.x / localScale.y) || !CheckScale(localScale.x / localScale.z) ||
-                        !CheckScale(localScale.y / localScale.z))
+                    if (!ScaledEvenly(mergeBone.transform.localScale))
                         errors[1] = ErrorLog.Warning("MergeBone:validation:unevenScaling");
                 }
 
                 return errors;
             });
-
-            bool CheckScale(float scale) => 0.999 < scale && scale < 1.001;
 
             bool AnyNotMergedBone(Transform bone)
             {
@@ -45,6 +41,13 @@ namespace Anatawa12.AvatarOptimizer.Processors
                         return true;
                 return false;
             }
+        }
+
+        public static bool ScaledEvenly(Vector3 localScale)
+        {
+            bool CheckScale(float scale) => 0.999 < scale && scale < 1.001;
+            return CheckScale(localScale.x / localScale.y) && CheckScale(localScale.x / localScale.z) &&
+                   CheckScale(localScale.y / localScale.z);
         }
 
         public void Process(OptimizerSession session)

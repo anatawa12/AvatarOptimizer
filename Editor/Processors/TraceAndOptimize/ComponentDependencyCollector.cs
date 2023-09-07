@@ -89,7 +89,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         {
             Normal = 1 << 0,
             Parent = 1 << 1,
-            Bone = 1 << 2,
+            ComponentToTransform = 1 << 2,
+            Bone = 1 << 3,
         }
 
         [CanBeNull]
@@ -109,7 +110,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             BuildReport.ReportingObjects(components, component =>
             {
                 // component requires GameObject.
-                GetDependencies(component).AddAlwaysDependency(component.gameObject.transform);
+                GetDependencies(component).AddAlwaysDependency(component.gameObject.transform,
+                    kind: DependencyType.ComponentToTransform);
 
                 if (_byTypeParser.TryGetValue(component.GetType(), out var parser))
                 {
