@@ -14,7 +14,6 @@ using VRC.SDK3.Avatars.Components;
 using VRC.SDK3.Dynamics.Contact.Components;
 using VRC.SDK3.Dynamics.PhysBone.Components;
 using VRC.SDKBase;
-using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 {
@@ -39,46 +38,49 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             public bool EntrypointComponent = false;
 
             /// <summary>
-            /// Dependencies if this component can be Active or Enabled
+            /// Dependencies of this component
             /// </summary>
-            [NotNull] public IReadOnlyCollection<Dependency> ActiveDependency => _activeDependency;
-            [NotNull] private readonly HashSet<Dependency> _activeDependency = new HashSet<Dependency>();
+            [NotNull]
+            public IReadOnlyDictionary<Component, (DependencyFlags flags, DependencyType type)> Dependencies => _dependencies;
 
-            /// <summary>
-            /// Dependencies regardless this component can be Active/Enabled or not.
-            /// </summary>
-            [NotNull] public IReadOnlyCollection<Dependency> AlwaysDependency => _alwaysDependency;
-            [NotNull] private readonly HashSet<Dependency> _alwaysDependency = new HashSet<Dependency>();
+            [NotNull] private readonly Dictionary<Component, (DependencyFlags, DependencyType)> _dependencies =
+                new Dictionary<Component, (DependencyFlags, DependencyType)>();
 
-            public void AddActiveDependency(Component component, bool onlyIfTargetCanBeEnabled = false)
+            public void AddActiveDependency(Component component, bool onlyIfTargetCanBeEnabled = false,
+                DependencyType kind = DependencyType.Normal)
             {
-                if ((Object)component) _activeDependency.Add(new Dependency(component, onlyIfTargetCanBeEnabled));
-            }
-            
-            public void AddAlwaysDependency(Component component, bool onlyIfTargetCanBeEnabled = false)
-            {
-                if ((Object)component) _alwaysDependency.Add(new Dependency(component, onlyIfTargetCanBeEnabled));
+                if (!component) return;
+                _dependencies.TryGetValue(component, out var pair);
+                var (flags, kindFlags) = pair;
+                if (!onlyIfTargetCanBeEnabled) flags |= DependencyFlags.EvenIfTargetIsDisabled;
+                _dependencies[component] = (flags, kindFlags | kind);
             }
 
-            public readonly struct Dependency : IEquatable<Dependency>
+            public void AddAlwaysDependency(Component component, bool onlyIfTargetCanBeEnabled = false,
+                DependencyType kind = DependencyType.Normal)
             {
-                public readonly Component Component;
-                public readonly bool OnlyIfTargetCanBeEnabled;
-
-                public Dependency(Component component, bool onlyIfTargetCanBeEnabled = false)
-                {
-                    Component = component;
-                    OnlyIfTargetCanBeEnabled = onlyIfTargetCanBeEnabled;
-                }
-
-                public bool Equals(Dependency other) => Component.Equals(other.Component) &&
-                                                        OnlyIfTargetCanBeEnabled == other.OnlyIfTargetCanBeEnabled;
-
-                public override bool Equals(object obj) => obj is Dependency other && Equals(other);
-
-                public override int GetHashCode() =>
-                    unchecked(Component.GetHashCode() * 397) ^ OnlyIfTargetCanBeEnabled.GetHashCode();
+                if (!component) return;
+                _dependencies.TryGetValue(component, out var pair);
+                var (flags, kindFlags) = pair;
+                flags |= DependencyFlags.EvenIfThisIsDisabled;
+                if (!onlyIfTargetCanBeEnabled) flags |= DependencyFlags.EvenIfTargetIsDisabled;
+                _dependencies[component] = (flags, kindFlags | kind);
             }
+        }
+
+        [Flags]
+        public enum DependencyFlags : byte
+        {
+            // dependency flags
+            EvenIfTargetIsDisabled = 1 << 0,
+            EvenIfThisIsDisabled = 1 << 1,
+        }
+
+        [Flags]
+        public enum DependencyType : byte
+        {
+            Normal = 1 << 0,
+            Parent = 1 << 1,
         }
 
         [CanBeNull]
@@ -220,7 +222,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             // unity generic
             AddParser<Transform>((collector, deps, transform) =>
             {
-                deps.AddAlwaysDependency(transform.parent);
+                deps.AddAlwaysDependency(transform.parent, kind: DependencyType.Parent);
             });
             // Animator does not do much for motion, just changes states of other components.
             // All State Changes are collected separately

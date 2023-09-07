@@ -35,16 +35,14 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         }
 
         // Mark & Sweep Variables
-        private readonly HashSet<Component> _marked = new HashSet<Component>();
+        private readonly Dictionary<Component, ComponentDependencyCollector.DependencyType> _marked =
+            new Dictionary<Component, ComponentDependencyCollector.DependencyType>();
         private readonly Queue<(Component, bool)> _processPending = new Queue<(Component, bool)>();
 
-        private void MarkComponent(ComponentDependencyCollector.ComponentDependencies.Dependency dependency) =>
-            MarkComponent(dependency.Component, dependency.OnlyIfTargetCanBeEnabled);
-
-        private void MarkComponent(Component component, bool ifTargetCanBeEnabled)
+        private void MarkComponent(Component component,
+            bool ifTargetCanBeEnabled,
+            ComponentDependencyCollector.DependencyType type)
         {
-            if (_marked.Contains(component)) return; // Already Proceed
-
             bool? activeNess;
             switch (component)
             {
@@ -71,8 +69,15 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             if (ifTargetCanBeEnabled && activeNess == false)
                 return; // The Target is not active so not dependency
 
-            _processPending.Enqueue((component, activeNess != false));
-            _marked.Add(component);
+            if (_marked.TryGetValue(component, out var existingFlags))
+            {
+                _marked[component] = existingFlags | type;
+            }
+            else
+            {
+                _processPending.Enqueue((component, activeNess != false));
+                _marked.Add(component, type);
+            }
         }
 
         private void ProcessNew()
@@ -87,12 +92,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             foreach (var gameObject in CollectAllActiveAbleGameObjects())
             foreach (var component in gameObject.GetComponents<Component>())
                 if (collector.GetDependencies(component).EntrypointComponent)
-                    MarkComponent(component, true);
+                    MarkComponent(component, true, ComponentDependencyCollector.DependencyType.Normal);
 
             // excluded GameObjects must be exists
             foreach (var gameObject in _exclusions)
             foreach (var component in gameObject.GetComponents<Component>())
-                MarkComponent(component, true);
+                MarkComponent(component, true, ComponentDependencyCollector.DependencyType.Normal);
 
             while (_processPending.Count != 0)
             {
@@ -100,12 +105,15 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 var dependencies = collector.TryGetDependencies(component);
                 if (dependencies == null) continue; // not part of this Hierarchy Tree
 
-                if (canBeActive)
-                    foreach (var dependency in dependencies.ActiveDependency)
-                        MarkComponent(dependency);
-                
-                foreach (var dependency in dependencies.AlwaysDependency)
-                    MarkComponent(dependency);
+                foreach (var (dependency, flags) in dependencies.Dependencies)
+                {
+                    var ifActive =
+                        (flags.flags & ComponentDependencyCollector.DependencyFlags.EvenIfThisIsDisabled) == 0;
+                    if (ifActive && !canBeActive) continue;
+                    var ifTargetCanBeEnabled =
+                        (flags.flags & ComponentDependencyCollector.DependencyFlags.EvenIfTargetIsDisabled) == 0;
+                    MarkComponent(dependency, ifTargetCanBeEnabled, flags.type);
+                }
             }
 
             foreach (var component in _session.GetComponents<Component>())
@@ -116,12 +124,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 if (component is Transform)
                 {
                     // Treat Transform Component as GameObject because they are two sides of the same coin
-                    if (!_marked.Contains(component))
+                    if (!_marked.ContainsKey(component))
                         Object.DestroyImmediate(component.gameObject);
                 }
                 else
                 {
-                    if (!_marked.Contains(component))
+                    if (!_marked.ContainsKey(component))
                         Object.DestroyImmediate(component);
                 }
             }
