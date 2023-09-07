@@ -289,7 +289,7 @@ msgstr "チェックされている場合、子にボーン以外を持つボー
 
 msgid "UnusedBonesByReferencesTool:suggestMigrate"
 msgstr ""
-"UnusedBonesByReferencesToolは、使用されていないボーンなどに対してより賢い処理を行うTrace and Optimizeに置き換えられました!\n"
+"UnusedBonesByReferencesToolは非推奨です! Trace and Optimizeには同じ機能が含まれており、より賢い処理を行います。\n"
 "下のボタンを押し、Trace and Optimizeに移行しませんか? (設定は引き継がれます)"
 
 msgid "UnusedBonesByReferencesTool:migrate"
