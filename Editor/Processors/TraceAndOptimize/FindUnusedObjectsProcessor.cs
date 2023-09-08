@@ -45,34 +45,41 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             new Dictionary<Component, ComponentDependencyCollector.DependencyType>();
         private readonly Queue<(Component, bool)> _processPending = new Queue<(Component, bool)>();
 
-        private void MarkComponent(Component component,
-            bool ifTargetCanBeEnabled,
-            ComponentDependencyCollector.DependencyType type)
+        private bool? GetActiveness(Component component)
         {
-            bool? activeNess;
+            bool? activeness;
             switch (component)
             {
                 case Transform transform:
                     var gameObject = transform.gameObject;
-                    activeNess = _modifications.GetConstantValue(gameObject, "m_IsActive", gameObject.activeSelf);
+                    activeness = _modifications.GetConstantValue(gameObject, "m_IsActive", gameObject.activeSelf);
                     break;
                 case Cloth cloth:
-                    activeNess = _modifications.GetConstantValue(cloth, "m_IsEnable", cloth.enabled);
+                    activeness = _modifications.GetConstantValue(cloth, "m_IsEnable", cloth.enabled);
                     break;
                 case Renderer cloth:
-                    activeNess = _modifications.GetConstantValue(cloth, "m_IsEnable", cloth.enabled);
+                    activeness = _modifications.GetConstantValue(cloth, "m_IsEnable", cloth.enabled);
                     break;
                 case Behaviour behaviour:
-                    activeNess = _modifications.GetConstantValue(behaviour, "m_IsEnable", behaviour.enabled);
+                    activeness = _modifications.GetConstantValue(behaviour, "m_IsEnable", behaviour.enabled);
                     break;
                 case Component _:
-                    activeNess = null;
+                    activeness = null;
                     break;
                 default:
                     throw new Exception($"Unexpected type: {component.GetType().Name}");
             }
 
-            if (ifTargetCanBeEnabled && activeNess == false)
+            return activeness;
+        }
+
+        private void MarkComponent(Component component,
+            bool ifTargetCanBeEnabled,
+            ComponentDependencyCollector.DependencyType type)
+        {
+            bool? activeness = GetActiveness(component);
+
+            if (ifTargetCanBeEnabled && activeness == false)
                 return; // The Target is not active so not dependency
 
             if (_marked.TryGetValue(component, out var existingFlags))
@@ -81,7 +88,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             }
             else
             {
-                _processPending.Enqueue((component, activeNess != false));
+                _processPending.Enqueue((component, activeness != false));
                 _marked.Add(component, type);
             }
         }
