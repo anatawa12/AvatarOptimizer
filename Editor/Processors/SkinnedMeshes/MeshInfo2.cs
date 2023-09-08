@@ -415,14 +415,20 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             // BlendShapes
             if (BlendShapes.Count != 0)
             {
-                foreach (var (shapeName, _) in BlendShapes)
+                for (var i = 0; i < BlendShapes.Count; i++)
                 {
+                    Debug.Assert(destMesh.blendShapeCount == i, "Unexpected state: blend shape count");
+                    var (shapeName, _) = BlendShapes[i];
                     var weightsSet = new HashSet<float>();
 
                     foreach (var vertex in Vertices)
                         if (vertex.BlendShapes.TryGetValue(shapeName, out var frames))
                             foreach (var frame in frames)
                                 weightsSet.Add(frame.Weight);
+
+                    // blendShape with no weights is not allowed.
+                    if (weightsSet.Count == 0)
+                        weightsSet.Add(100);
 
                     var weights = weightsSet.ToArray();
                     Array.Sort(weights);
