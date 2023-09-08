@@ -16,11 +16,14 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- GC Objects will remove VRC Contact Components `#438`
-- Error if all vertices of some BlendShape is removed by RemoveMeshByBlendShape or RemoveMeshInBox `#440`
-- Inactivating parent GameObject or GameObject of component is not accounted in GC Objects `#441`
 
 ### Security
+
+## [1.5.0-beta.7] - 2023-09-08
+### Fixed
+- GC Objects will remove VRC Contact Components [`#438`](https://github.com/anatawa12/AvatarOptimizer/pull/438)
+- Error if all vertices of some BlendShape is removed by RemoveMeshByBlendShape or RemoveMeshInBox [`#440`](https://github.com/anatawa12/AvatarOptimizer/pull/440)
+- Inactivating parent GameObject or GameObject of component is not accounted in GC Objects [`#441`](https://github.com/anatawa12/AvatarOptimizer/pull/441)
 
 ## [1.5.0-beta.6] - 2023-09-07
 ### Added
@@ -715,7 +718,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.6...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.7...HEAD
+[1.5.0-beta.7]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.6...v1.5.0-beta.7
 [1.5.0-beta.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.5...v1.5.0-beta.6
 [1.5.0-beta.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.4...v1.5.0-beta.5
 [1.5.0-beta.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.4.3...v1.5.0-beta.4
