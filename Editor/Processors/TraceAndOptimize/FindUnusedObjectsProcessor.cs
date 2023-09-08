@@ -57,7 +57,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         private bool? ComputeActiveness(Component component)
         {
-            var parentActiveness = component is Transform t ? GetActiveness(t.parent) : GetActiveness(component.transform);
+            if (_session.GetRootComponent<Transform>() == component) return true;
+            bool? parentActiveness;
+            if (component is Transform t)
+                parentActiveness = t.parent == null ? true : GetActiveness(t.parent);
+            else
+                parentActiveness = GetActiveness(component.transform);
             if (parentActiveness == false) return false;
 
             bool? activeness;
@@ -106,7 +111,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             }
 
             if (activeness == false) return false;
-            if (parentActiveness == true && activeness == true) return false;
+            if (parentActiveness == true && activeness == true) return true;
 
             return null;
         }
