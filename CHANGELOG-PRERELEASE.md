@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- GC Objects will remove VRC Contact Components `#438`
 
 ### Security
 
