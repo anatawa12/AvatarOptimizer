@@ -18,6 +18,7 @@ The format is based on [Keep a Changelog].
 ### Fixed
 - GC Objects will remove VRC Contact Components `#438`
 - Error if all vertices of some BlendShape is removed by RemoveMeshByBlendShape or RemoveMeshInBox `#440`
+- Inactivating parent GameObject or GameObject of component is not accounted in GC Objects `#441`
 
 ### Security
 

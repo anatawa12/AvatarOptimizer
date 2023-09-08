@@ -44,35 +44,80 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         private readonly Dictionary<Component, ComponentDependencyCollector.DependencyType> _marked =
             new Dictionary<Component, ComponentDependencyCollector.DependencyType>();
         private readonly Queue<(Component, bool)> _processPending = new Queue<(Component, bool)>();
+        private readonly Dictionary<Component, bool?> _activeNessCache = new Dictionary<Component, bool?>();
+
+        private bool? GetActiveness(Component component)
+        {
+            if (_activeNessCache.TryGetValue(component, out var activeness))
+                return activeness;
+            activeness = ComputeActiveness(component);
+            _activeNessCache.Add(component, activeness);
+            return activeness;
+        }
+
+        private bool? ComputeActiveness(Component component)
+        {
+            var parentActiveness = component is Transform t ? GetActiveness(t.parent) : GetActiveness(component.transform);
+            if (parentActiveness == false) return false;
+
+            bool? activeness;
+            switch (component)
+            {
+                case Transform transform:
+                    var gameObject = transform.gameObject;
+                    activeness = _modifications.GetConstantValue(gameObject, "m_IsActive", gameObject.activeSelf);
+                    break;
+                case Behaviour behaviour:
+                    activeness = _modifications.GetConstantValue(behaviour, "m_IsEnable", behaviour.enabled);
+                    break;
+                case Cloth cloth:
+                    activeness = _modifications.GetConstantValue(cloth, "m_IsEnable", cloth.enabled);
+                    break;
+                case Collider collider:
+                    activeness = _modifications.GetConstantValue(collider, "m_IsEnable", collider.enabled);
+                    break;
+                case LODGroup lodGroup:
+                    activeness = _modifications.GetConstantValue(lodGroup, "m_IsEnable", lodGroup.enabled);
+                    break;
+                case Renderer renderer:
+                    activeness = _modifications.GetConstantValue(renderer, "m_IsEnable", renderer.enabled);
+                    break;
+                // components without isEnable
+                case CanvasRenderer _:
+                case Joint _:
+                case MeshFilter _:
+                case OcclusionArea _:
+                case OcclusionPortal _:
+                case ParticleSystem _:
+                case ParticleSystemForceField _:
+                case Rigidbody _:
+                case Rigidbody2D _:
+                case TextMesh _:
+                case Tree _:
+                case WindZone _:
+                case UnityEngine.XR.WSA.WorldAnchor _:
+                    activeness = true;
+                    break;
+                case Component _:
+                case null:
+                    // fallback: all components type should be proceed with above switch
+                    activeness = null;
+                    break;
+            }
+
+            if (activeness == false) return false;
+            if (parentActiveness == true && activeness == true) return false;
+
+            return null;
+        }
 
         private void MarkComponent(Component component,
             bool ifTargetCanBeEnabled,
             ComponentDependencyCollector.DependencyType type)
         {
-            bool? activeNess;
-            switch (component)
-            {
-                case Transform transform:
-                    var gameObject = transform.gameObject;
-                    activeNess = _modifications.GetConstantValue(gameObject, "m_IsActive", gameObject.activeSelf);
-                    break;
-                case Cloth cloth:
-                    activeNess = _modifications.GetConstantValue(cloth, "m_IsEnable", cloth.enabled);
-                    break;
-                case Renderer cloth:
-                    activeNess = _modifications.GetConstantValue(cloth, "m_IsEnable", cloth.enabled);
-                    break;
-                case Behaviour behaviour:
-                    activeNess = _modifications.GetConstantValue(behaviour, "m_IsEnable", behaviour.enabled);
-                    break;
-                case Component _:
-                    activeNess = null;
-                    break;
-                default:
-                    throw new Exception($"Unexpected type: {component.GetType().Name}");
-            }
+            bool? activeness = GetActiveness(component);
 
-            if (ifTargetCanBeEnabled && activeNess == false)
+            if (ifTargetCanBeEnabled && activeness == false)
                 return; // The Target is not active so not dependency
 
             if (_marked.TryGetValue(component, out var existingFlags))
@@ -81,7 +126,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             }
             else
             {
-                _processPending.Enqueue((component, activeNess != false));
+                _processPending.Enqueue((component, activeness != false));
                 _marked.Add(component, type);
             }
         }
