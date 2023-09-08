@@ -48,8 +48,17 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         private bool? GetActiveness(Component component)
         {
-            if (_activeNessCache.TryGetValue(component, out var activenessCached))
-                return activenessCached;
+            if (_activeNessCache.TryGetValue(component, out var activeness))
+                return activeness;
+            activeness = ComputeActiveness(component);
+            _activeNessCache.Add(component, activeness);
+            return activeness;
+        }
+
+        private bool? ComputeActiveness(Component component)
+        {
+            var parentActiveness = component is Transform t ? GetActiveness(t.parent) : GetActiveness(component.transform);
+            if (parentActiveness == false) return false;
 
             bool? activeness;
             switch (component)
@@ -74,9 +83,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     throw new Exception($"Unexpected type: {component.GetType().Name}");
             }
 
-            _activeNessCache.Add(component, activeness);
+            if (activeness == false) return false;
+            if (parentActiveness == true && activeness == true) return false;
 
-            return activeness;
+            return null;
         }
 
         private void MarkComponent(Component component,
