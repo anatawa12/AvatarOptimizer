@@ -67,20 +67,42 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     var gameObject = transform.gameObject;
                     activeness = _modifications.GetConstantValue(gameObject, "m_IsActive", gameObject.activeSelf);
                     break;
-                case Cloth cloth:
-                    activeness = _modifications.GetConstantValue(cloth, "m_IsEnable", cloth.enabled);
-                    break;
-                case Renderer cloth:
-                    activeness = _modifications.GetConstantValue(cloth, "m_IsEnable", cloth.enabled);
-                    break;
                 case Behaviour behaviour:
                     activeness = _modifications.GetConstantValue(behaviour, "m_IsEnable", behaviour.enabled);
                     break;
+                case Cloth cloth:
+                    activeness = _modifications.GetConstantValue(cloth, "m_IsEnable", cloth.enabled);
+                    break;
+                case Collider collider:
+                    activeness = _modifications.GetConstantValue(collider, "m_IsEnable", collider.enabled);
+                    break;
+                case LODGroup lodGroup:
+                    activeness = _modifications.GetConstantValue(lodGroup, "m_IsEnable", lodGroup.enabled);
+                    break;
+                case Renderer renderer:
+                    activeness = _modifications.GetConstantValue(renderer, "m_IsEnable", renderer.enabled);
+                    break;
+                // components without isEnable
+                case CanvasRenderer _:
+                case Joint _:
+                case MeshFilter _:
+                case OcclusionArea _:
+                case OcclusionPortal _:
+                case ParticleSystem _:
+                case ParticleSystemForceField _:
+                case Rigidbody _:
+                case Rigidbody2D _:
+                case TextMesh _:
+                case Tree _:
+                case WindZone _:
+                case UnityEngine.XR.WSA.WorldAnchor _:
+                    activeness = true;
+                    break;
                 case Component _:
+                case null:
+                    // fallback: all components type should be proceed with above switch
                     activeness = null;
                     break;
-                default:
-                    throw new Exception($"Unexpected type: {component.GetType().Name}");
             }
 
             if (activeness == false) return false;
