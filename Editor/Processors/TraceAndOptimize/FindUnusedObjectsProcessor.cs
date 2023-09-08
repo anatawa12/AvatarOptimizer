@@ -44,9 +44,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         private readonly Dictionary<Component, ComponentDependencyCollector.DependencyType> _marked =
             new Dictionary<Component, ComponentDependencyCollector.DependencyType>();
         private readonly Queue<(Component, bool)> _processPending = new Queue<(Component, bool)>();
+        private readonly Dictionary<Component, bool?> _activeNessCache = new Dictionary<Component, bool?>();
 
         private bool? GetActiveness(Component component)
         {
+            if (_activeNessCache.TryGetValue(component, out var activenessCached))
+                return activenessCached;
+
             bool? activeness;
             switch (component)
             {
@@ -69,6 +73,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 default:
                     throw new Exception($"Unexpected type: {component.GetType().Name}");
             }
+
+            _activeNessCache.Add(component, activeness);
 
             return activeness;
         }
