@@ -176,6 +176,35 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                             updater.AddModificationAsNewLayer(prop, AnimationProperty.Variable());
                         break;
                     }
+                    case RemoveMeshByBlendShape removeMesh:
+                    {
+                        var blendShapes = removeMesh.RemovingShapeKeys;
+                        {
+                            var updater = mod.ModifyObject(removeMesh.GetComponent<SkinnedMeshRenderer>());
+                            foreach (var blendShape in blendShapes)
+                                updater.AddModificationAsNewLayer($"blendShape.{blendShape}",
+                                    AnimationProperty.Variable());
+                        }
+
+                        DeriveMergeSkinnedMeshProperties(removeMesh.GetComponent<MergeSkinnedMesh>());
+
+                        void DeriveMergeSkinnedMeshProperties(MergeSkinnedMesh mergeSkinnedMesh)
+                        {
+                            if (mergeSkinnedMesh == null) return;
+
+                            foreach (var renderer in mergeSkinnedMesh.renderersSet.GetAsSet())
+                            {
+                                var updater = mod.ModifyObject(renderer);
+                                foreach (var blendShape in blendShapes)
+                                    updater.AddModificationAsNewLayer($"blendShape.{blendShape}",
+                                        AnimationProperty.Variable());
+
+                                DeriveMergeSkinnedMeshProperties(renderer.GetComponent<MergeSkinnedMesh>());
+                            }
+                        }
+
+                        break;
+                    }
                     default:
                     {
                         if (DynamicBone.TryCast(component, out var dynamicBone))
