@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - MergeBone will break Normal and Tangent `#448`
+- RemoveMeshByBlendShape on the SkinnedMeshRenderer with MergeSkinnedMesh not working `#451`
 
 ### Security
 
