@@ -16,11 +16,14 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- MergeBone will break Normal and Tangent `#448`
-- PhysBone for Animator Parameter disappears `#452`
-- RemoveMeshByBlendShape on the SkinnedMeshRenderer with MergeSkinnedMesh not working `#451`
 
 ### Security
+
+## [1.5.0-beta.8] - 2023-09-11
+### Fixed
+- MergeBone will break Normal and Tangent [`#448`](https://github.com/anatawa12/AvatarOptimizer/pull/448)
+- PhysBone for Animator Parameter disappears [`#452`](https://github.com/anatawa12/AvatarOptimizer/pull/452)
+- RemoveMeshByBlendShape on the SkinnedMeshRenderer with MergeSkinnedMesh not working [`#451`](https://github.com/anatawa12/AvatarOptimizer/pull/451)
 
 ## [1.5.0-beta.7] - 2023-09-08
 ### Fixed
@@ -721,7 +724,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.7...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.8...HEAD
+[1.5.0-beta.8]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.7...v1.5.0-beta.8
 [1.5.0-beta.7]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.6...v1.5.0-beta.7
 [1.5.0-beta.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.5...v1.5.0-beta.6
 [1.5.0-beta.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.4...v1.5.0-beta.5
