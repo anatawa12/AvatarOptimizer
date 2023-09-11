@@ -496,6 +496,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 // in PB, PB Colliders work only if Colliders are enabled
                 foreach (var physBoneCollider in physBone.colliders)
                     deps.AddActiveDependency(physBoneCollider, true);
+
+                // If parameter is not empty, the PB can be required for Animator Parameter so it's Entrypoint Component
+                // https://github.com/anatawa12/AvatarOptimizer/issues/450
+                if (!string.IsNullOrEmpty(physBone.parameter))
+                    deps.EntrypointComponent = true;
             });
             AddParser<VRCPhysBoneColliderBase>((collector, deps, component) =>
             {
