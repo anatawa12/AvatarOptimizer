@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- MergeBone will break Normal and Tangent `#448`
 
 ### Security
 

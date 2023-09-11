@@ -134,6 +134,9 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 var transBindPose = finalBone.Bindpose.inverse * mergedOldBindPose;
 
                 vertex.Position = transBindPose.MultiplyPoint3x4(vertex.Position);
+                vertex.Normal = transBindPose.MultiplyPoint3x3(vertex.Normal);
+                var tangentVec3 = transBindPose.MultiplyPoint3x3(vertex.Tangent);
+                vertex.Tangent = new Vector4(tangentVec3.x, tangentVec3.y, tangentVec3.z);
                 foreach (var frames in vertex.BlendShapes.Values)
                 {
                     for (var i = 0; i < frames.Count; i++)
