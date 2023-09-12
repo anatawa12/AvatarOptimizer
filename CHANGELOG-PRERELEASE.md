@@ -16,10 +16,13 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Automatic MergeBone doesn't think about animating `m_IsActive` of GameObject `#454`
-- MergeBone may make some bone inactive to active if bone being merged is inactive `#454`
 
 ### Security
+
+## [1.5.0-beta.9] - 2023-09-12
+### Fixed
+- Automatic MergeBone doesn't think about animating `m_IsActive` of GameObject [`#454`](https://github.com/anatawa12/AvatarOptimizer/pull/454)
+- MergeBone may make some bone inactive to active if bone being merged is inactive [`#454`](https://github.com/anatawa12/AvatarOptimizer/pull/454)
 
 ## [1.5.0-beta.8] - 2023-09-11
 ### Fixed
@@ -726,7 +729,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.8...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.9...HEAD
+[1.5.0-beta.9]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.8...v1.5.0-beta.9
 [1.5.0-beta.8]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.7...v1.5.0-beta.8
 [1.5.0-beta.7]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.6...v1.5.0-beta.7
 [1.5.0-beta.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.5...v1.5.0-beta.6
