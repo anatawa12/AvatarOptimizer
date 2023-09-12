@@ -16,6 +16,8 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Automatic MergeBone doesn't think about animating `m_IsActive` of GameObject `#454`
+- MergeBone may make some bone inactive to active if bone being merged is inactive `#454`
 
 ### Security
 
