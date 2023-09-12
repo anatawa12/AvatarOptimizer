@@ -74,13 +74,27 @@ namespace Anatawa12.AvatarOptimizer.Processors
             {
                 var mapping = pair.Key;
                 var mapped = pair.Value;
+                // if intermediate objects are inactive, moved bone should be initially inactive
+                // animations are not performed correctly but if bones activity is animated, automatic 
+                // merge bone doesn't merge such bone so ignore that for manual merge bone.
+                var activeSelf = ActiveSelfForNow(mapping, mapped);
                 foreach (var child in mapping.DirectChildrenEnumerable().ToArray())
+                {
+                    if (mergeMapping.ContainsKey(child)) continue;
                     child.parent = mapped;
-                mapping.parent = null;
+                    if (!activeSelf) child.gameObject.SetActive(false);
+                }
             }
 
             foreach (var pair in mergeMapping.Keys)
                 Object.DestroyImmediate(pair.gameObject);
+
+            bool ActiveSelfForNow(Transform transform, Transform parent)
+            {
+                for (; transform != parent; transform = transform.parent)
+                    if (!transform.gameObject.activeSelf) return false;
+                return true;
+            }
         }
 
         private void DoBoneMap2(MeshInfo2 meshInfo2, Dictionary<Transform, Transform> mergeMapping)

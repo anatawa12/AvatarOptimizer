@@ -247,14 +247,20 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             bool Animated(Transform transform, ImmutableModificationsContainer modifications)
             {
-                var properties = modifications.GetModifiedProperties(transform);
-                if (properties.Count == 0) return false;
+                var transformProperties = modifications.GetModifiedProperties(transform);
+                if (transformProperties.Count != 0)
+                {
+                    // TODO: constant animation detection
+                    foreach (var transformProperty in TransformProperties)
+                        if (transformProperties.ContainsKey(transformProperty))
+                            return true;
+                }
 
-                // TODO: constant animation detection
-                
-                foreach (var transformProperty in TransformProperties)
-                    if (properties.ContainsKey(transformProperty))
-                        return true;
+                var objectProperties = modifications.GetModifiedProperties(transform.gameObject);
+
+                if (objectProperties.ContainsKey("m_IsActive"))
+                    return true;
+
                 return false;
             }
         }
