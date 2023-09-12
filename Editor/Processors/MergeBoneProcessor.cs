@@ -87,7 +87,8 @@ namespace Anatawa12.AvatarOptimizer.Processors
             }
 
             foreach (var pair in mergeMapping.Keys)
-                Object.DestroyImmediate(pair.gameObject);
+                if (pair)
+                    Object.DestroyImmediate(pair.gameObject);
 
             bool ActiveSelfForNow(Transform transform, Transform parent)
             {
