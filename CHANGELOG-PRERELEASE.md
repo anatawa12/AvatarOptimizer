@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Error if we merge bone recursively `#456`
 
 ### Security
 
