@@ -386,6 +386,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             AddNopParser<Light>();
             AddParser<Collider>((collector, deps, component) =>
             {
+                deps.EntrypointComponent = true;
                 var rigidbody = component.GetComponentInParent<Rigidbody>();
                 if (rigidbody) collector.GetDependencies(rigidbody)
                     .AddActiveDependency(component, true);
