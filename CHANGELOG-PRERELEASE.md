@@ -8,7 +8,6 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Feature for debugging GC Objects `#464`
 
 ### Changed
 
@@ -17,10 +16,16 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Collider disappears `#463`
-- Behaviour can disappears if initially disabled `#465`
 
 ### Security
+
+## [1.5.0-beta.13] - 2023-09-13
+### Added
+- Feature for debugging GC Objects [`#464`](https://github.com/anatawa12/AvatarOptimizer/pull/464)
+
+### Fixed
+- Collider disappears [`#463`](https://github.com/anatawa12/AvatarOptimizer/pull/463)
+- Behaviour can disappears if initially disabled [`#465`](https://github.com/anatawa12/AvatarOptimizer/pull/465)
 
 ## [1.5.0-beta.12] - 2023-09-13
 ### Fixed
@@ -745,7 +750,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.12...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.13...HEAD
+[1.5.0-beta.13]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.12...v1.5.0-beta.13
 [1.5.0-beta.12]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.11...v1.5.0-beta.12
 [1.5.0-beta.11]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.10...v1.5.0-beta.11
 [1.5.0-beta.10]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.9...v1.5.0-beta.10
