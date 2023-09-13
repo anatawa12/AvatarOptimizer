@@ -16,9 +16,12 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Transform animation broken `#461`
 
 ### Security
+
+## [1.5.0-beta.12] - 2023-09-13
+### Fixed
+- Transform animation broken [`#461`](https://github.com/anatawa12/AvatarOptimizer/pull/461)
 
 ## [1.5.0-beta.11] - 2023-09-13
 ### Fixed
@@ -739,7 +742,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.11...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.12...HEAD
+[1.5.0-beta.12]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.11...v1.5.0-beta.12
 [1.5.0-beta.11]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.10...v1.5.0-beta.11
 [1.5.0-beta.10]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.9...v1.5.0-beta.10
 [1.5.0-beta.9]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.8...v1.5.0-beta.9
