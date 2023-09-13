@@ -263,7 +263,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             public class ComponentData
             {
                 public Component component;
-                [FormerlySerializedAs("activeNess")] public ActiveNess activeness;
+                public ActiveNess activeness;
                 public bool entrypoint;
                 public List<DependencyInfo> dependencies = new List<DependencyInfo>();
                 public List<DependencyInfo> dependants = new List<DependencyInfo>();
