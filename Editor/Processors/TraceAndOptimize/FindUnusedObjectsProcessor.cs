@@ -73,19 +73,19 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     activeness = _modifications.GetConstantValue(gameObject, "m_IsActive", gameObject.activeSelf);
                     break;
                 case Behaviour behaviour:
-                    activeness = _modifications.GetConstantValue(behaviour, "m_IsEnable", behaviour.enabled);
+                    activeness = _modifications.GetConstantValue(behaviour, "m_Enabled", behaviour.enabled);
                     break;
                 case Cloth cloth:
-                    activeness = _modifications.GetConstantValue(cloth, "m_IsEnable", cloth.enabled);
+                    activeness = _modifications.GetConstantValue(cloth, "m_Enabled", cloth.enabled);
                     break;
                 case Collider collider:
-                    activeness = _modifications.GetConstantValue(collider, "m_IsEnable", collider.enabled);
+                    activeness = _modifications.GetConstantValue(collider, "m_Enabled", collider.enabled);
                     break;
                 case LODGroup lodGroup:
-                    activeness = _modifications.GetConstantValue(lodGroup, "m_IsEnable", lodGroup.enabled);
+                    activeness = _modifications.GetConstantValue(lodGroup, "m_Enabled", lodGroup.enabled);
                     break;
                 case Renderer renderer:
-                    activeness = _modifications.GetConstantValue(renderer, "m_IsEnable", renderer.enabled);
+                    activeness = _modifications.GetConstantValue(renderer, "m_Enabled", renderer.enabled);
                     break;
                 // components without isEnable
                 case CanvasRenderer _:
