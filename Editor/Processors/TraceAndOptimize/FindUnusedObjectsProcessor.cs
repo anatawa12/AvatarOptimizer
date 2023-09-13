@@ -223,20 +223,20 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 if (!mergedChildren)
                 {
                     var localScale = transform.localScale;
-                    if (localScale == Vector3.one)
-                    {
-                        // if this scale is one, Good.
-                    }
-                    else if (MergeBoneProcessor.ScaledEvenly(localScale) &&
-                               transform.DirectChildrenEnumerable().All(x => !Animated(x, modifications)))
-                    {
-                        // if scale is even and direct children are not animated
+                    var identityTransform = localScale == Vector3.one && transform.localPosition == Vector3.zero &&
+                                            transform.localRotation == Quaternion.identity;
 
-                        // if direct children are animated, we have to adjust animation which is hard
-                    }
-                    else
+                    if (!identityTransform)
                     {
-                        return false;
+                        var childrenTransformAnimated =
+                            transform.DirectChildrenEnumerable().Any(x => TransformAnimated(x, modifications));
+                        if (childrenTransformAnimated)
+                            // if this is not identity transform, animating children is not good
+                            return false;
+
+                        if (!MergeBoneProcessor.ScaledEvenly(localScale))
+                            // non even scaling is not possible to reproduce in children
+                            return false;
                     }
                 }
 
@@ -245,7 +245,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 return true;
             }
 
-            bool Animated(Transform transform, ImmutableModificationsContainer modifications)
+            bool TransformAnimated(Transform transform, ImmutableModificationsContainer modifications)
             {
                 var transformProperties = modifications.GetModifiedProperties(transform);
                 if (transformProperties.Count != 0)
@@ -256,6 +256,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                             return true;
                 }
 
+                return false;
+            }
+
+            bool GameObjectAnimated(Transform transform, ImmutableModificationsContainer modifications)
+            {
                 var objectProperties = modifications.GetModifiedProperties(transform.gameObject);
 
                 if (objectProperties.ContainsKey("m_IsActive"))
@@ -263,6 +268,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
                 return false;
             }
+
+            bool Animated(Transform transform, ImmutableModificationsContainer modifications) =>
+                TransformAnimated(transform, modifications) || GameObjectAnimated(transform, modifications);
         }
 
         private static readonly string[] TransformProperties =
