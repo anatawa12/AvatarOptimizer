@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - Tangent is broken with MergeBone `#457`
+- VRCStation disappears `#460`
 - Transform animation broken `#461`
 
 ### Security
