@@ -32,6 +32,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                     preserveEndBone: _config.preserveEndBone,
                     useLegacyGC: _config.advancedSettings.useLegacyGc,
                     noConfigureMergeBone: _config.advancedSettings.noConfigureMergeBone,
+                    gcDebug: _config.advancedSettings.gcDebug,
                     exclusions: _exclusions).Process();
 
         }
