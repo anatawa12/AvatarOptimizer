@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - Collider disappears `#463`
+- Behaviour can disappears if initially disabled `#465`
 
 ### Security
 
