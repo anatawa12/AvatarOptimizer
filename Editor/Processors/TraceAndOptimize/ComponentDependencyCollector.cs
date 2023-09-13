@@ -470,6 +470,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             {
                 deps.AddActiveDependency(component.stationEnterPlayerLocation);
                 deps.AddActiveDependency(component.stationExitPlayerLocation);
+                deps.EntrypointComponent = true;
+                deps.AddActiveDependency(component.GetComponentInChildren<Collider>());
             });
             AddParserWithExtends<VRC.SDKBase.VRCStation, VRC.SDK3.Avatars.Components.VRCStation>();
             AddParser<VRCPhysBoneBase>((collector, deps, physBone) =>
