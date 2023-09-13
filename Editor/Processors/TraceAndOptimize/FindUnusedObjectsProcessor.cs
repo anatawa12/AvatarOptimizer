@@ -17,11 +17,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         private readonly bool _preserveEndBone;
         private readonly bool _useLegacyGC;
         private readonly bool _noConfigureMergeBone;
+        private readonly bool _gcDebug;
 
         public FindUnusedObjectsProcessor(ImmutableModificationsContainer modifications, OptimizerSession session,
             bool preserveEndBone,
             bool useLegacyGC,
             bool noConfigureMergeBone,
+            bool gcDebug,
             HashSet<GameObject> exclusions)
         {
             _modifications = modifications;
@@ -29,6 +31,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             _preserveEndBone = preserveEndBone;
             _useLegacyGC = useLegacyGC;
             _noConfigureMergeBone = noConfigureMergeBone;
+            _gcDebug = gcDebug;
             _exclusions = exclusions;
         }
 
@@ -36,6 +39,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         {
             if (_useLegacyGC)
                 ProcessLegacy();
+            else if (_gcDebug)
+                CollectDataForGc();
             else
                 ProcessNew();
         }
@@ -194,6 +199,97 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     if (!_marked.ContainsKey(component))
                         Object.DestroyImmediate(component);
                 }
+            }
+        }
+
+        private void CollectDataForGc()
+        {
+            // first, collect usages
+            var collector = new ComponentDependencyCollector(_session, _preserveEndBone);
+            collector.CollectAllUsages();
+
+            var componentDataMap = new Dictionary<Component, GCData.ComponentData>();
+
+            foreach (var component in _session.GetComponents<Component>())
+            {
+                var componentData = new GCData.ComponentData { component = component };
+                componentDataMap.Add(component, componentData);
+
+                switch (ComputeActiveness(component))
+                {
+                    case false:
+                        componentData.activeness = GCData.ActiveNess.False;
+                        break;
+                    case true:
+                        componentData.activeness = GCData.ActiveNess.True;
+                        break;
+                    case null:
+                        componentData.activeness = GCData.ActiveNess.Variable;
+                        break;
+                }
+
+                var dependencies = collector.GetDependencies(component);
+                foreach (var (key, (flags, type)) in dependencies.Dependencies)
+                    componentData.dependencies.Add(new GCData.DependencyInfo(key, flags, type));
+            }
+
+            foreach (var gameObject in CollectAllActiveAbleGameObjects())
+            foreach (var component in gameObject.GetComponents<Component>())
+                if (collector.GetDependencies(component).EntrypointComponent)
+                    componentDataMap[component].entrypoint = true;
+
+            foreach (var gameObject in _exclusions)
+            foreach (var component in gameObject.GetComponents<Component>())
+                componentDataMap[component].entrypoint = true;
+
+            foreach (var component in _session.GetComponents<Component>())
+            {
+                var dependencies = collector.GetDependencies(component);
+                foreach (var (key, (flags, type)) in dependencies.Dependencies)
+                    if (componentDataMap.TryGetValue(key, out var info))
+                        info.dependants.Add(new GCData.DependencyInfo(component, flags, type));
+            }
+
+            
+            foreach (var component in _session.GetComponents<Component>())
+                component.gameObject.GetOrAddComponent<GCData>().data.Add(componentDataMap[component]);
+        }
+
+        class GCData : MonoBehaviour
+        {
+            public List<ComponentData> data = new List<ComponentData>();
+
+            [Serializable]
+            public class ComponentData
+            {
+                public Component component;
+                public ActiveNess activeness;
+                public bool entrypoint;
+                public List<DependencyInfo> dependencies = new List<DependencyInfo>();
+                public List<DependencyInfo> dependants = new List<DependencyInfo>();
+            }
+
+            [Serializable]
+            public class DependencyInfo
+            {
+                public Component component;
+                public ComponentDependencyCollector.DependencyFlags flags;
+                public ComponentDependencyCollector.DependencyType type;
+
+                public DependencyInfo(Component component, ComponentDependencyCollector.DependencyFlags flags,
+                    ComponentDependencyCollector.DependencyType type)
+                {
+                    this.component = component;
+                    this.flags = flags;
+                    this.type = type;
+                }
+            }
+
+            public enum ActiveNess
+            {
+                False,
+                True,
+                Variable
             }
         }
 
