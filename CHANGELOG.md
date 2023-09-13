@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog].
 - Advanced Settings Section for Trace and Optimize `#419`
   - Moved `Use Advanced Animator Parser` to there
   - Added `Exclusions` for exclude some GameObjects from optimization
+  - In this section, there are for debugging GC Objects `#464`
 
 ### Changed
 - Improved 'Remove Unused Objects' `#401`
