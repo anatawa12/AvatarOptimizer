@@ -16,10 +16,13 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Tangent is broken with MergeBone `#457`
-- VRCStation disappears `#460`
 
 ### Security
+
+## [1.5.0-beta.11] - 2023-09-13
+### Fixed
+- Tangent is broken with MergeBone [`#457`](https://github.com/anatawa12/AvatarOptimizer/pull/457)
+- VRCStation disappears [`#460`](https://github.com/anatawa12/AvatarOptimizer/pull/460)
 
 ## [1.5.0-beta.10] - 2023-09-12
 ### Fixed
@@ -735,7 +738,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.10...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.11...HEAD
+[1.5.0-beta.11]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.10...v1.5.0-beta.11
 [1.5.0-beta.10]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.9...v1.5.0-beta.10
 [1.5.0-beta.9]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.8...v1.5.0-beta.9
 [1.5.0-beta.8]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.7...v1.5.0-beta.8
