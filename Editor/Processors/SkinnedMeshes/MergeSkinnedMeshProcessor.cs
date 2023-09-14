@@ -153,7 +153,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 Object.DestroyImmediate(rendererGameObject);
             }
 
-            foreach (var renderer in SkinnedMeshRenderers)
+            foreach (var renderer in StaticMeshRenderers)
             {
                 Object.DestroyImmediate(renderer.GetComponent<MeshFilter>());
                 Object.DestroyImmediate(renderer);
