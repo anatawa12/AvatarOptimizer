@@ -7,15 +7,15 @@ Both feature requests and bug reports are welcome!
 ### Archive & Compression Formats
 
 Because anatawa12 loves command line on macOS, some windows-specific archive formats are very hard to extract.
-Please choose one archive/compression format from the Recommended / Accepted list below.
+Please choose one archive / compression format from the Recommended / Accepted list below.
 
 #### Recommended
 
 Those formats are easy to use, good for compatibility, and good for file size.
 
 - `.zip` with utf8
-- `.gz` (for single file like log files)
-- `.tar.gz` = `.tgz` (for multiple files. better compression than `.zip` in most case)
+- `.gz` (for single file like log file)
+- `.tar.gz` = `.tgz` (for multiple files. Better compression ratio than `.zip` in most case)
 - `.tar.xz` (if you want more compression ratio than `.tar.gz`)
 - `.tar.zstd` (if you want more compression ratio than `.tar.gz`)
 
@@ -38,10 +38,10 @@ Those formats are not common for commandline use nor posix environment.
 Pull Requests are welcome!
 
 Before contribution, please read [LICENSE](./LICENSE) and
-please agree to your contribution will be published under the license.
+agree to your contribution will be published under the license.
 
 For small changes like fixing typo or documentation changes,
-You can create Pull Requests without making issues.
+you can create Pull Requests without making issues.
 
 Please follow [Conventional Commits] commit format.
 There's check for this so it's (almost) required to follow this format.
