@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Avoid Name Conflict in MergeBone `#467`
 
 ### Changed
 
@@ -17,6 +18,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - Light disappears `#466`
+- Automatic MergeBone may break Animation by conflictng GameObject name `#467`
 
 ### Security
 
