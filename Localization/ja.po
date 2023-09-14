@@ -91,6 +91,12 @@ msgstr "'早期に実行する'はアニメーションのパス修正が動き�
 msgid "MergeBone:description"
 msgstr "このGameObjectを削除して親に統合する。"
 
+msgid "MergeBone:prop:avoidNameConflict"
+msgstr "名前の競合を避ける"
+
+msgid "MergeBone:tooltip:avoidNameConflict"
+msgstr "統合時に子GameObjectの名前を変更し、名前の重複を回避します"
+
 msgid "MergeBone:validation:thereAreComponent"
 msgstr "Transform以外のコンポーネントがあります。これはサポートされていません。"
 

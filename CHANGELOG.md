@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog].
   - Moved `Use Advanced Animator Parser` to there
   - Added `Exclusions` for exclude some GameObjects from optimization
   - In this section, there are for debugging GC Objects `#464`
+- Avoid Name Conflict in MergeBone `#467`
 
 ### Changed
 - Improved 'Remove Unused Objects' `#401`

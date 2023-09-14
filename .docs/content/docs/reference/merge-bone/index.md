@@ -13,4 +13,8 @@ All children of GameObject this component is applied to will belongs to parent o
 
 This Component doesn't have any configuration for now.
 
+## Settings
+
 ![component.png](component.png)
+
+- `Avoid Name Conflict` Avoids animation problems with name conflict by renaming child GameObjects
