@@ -70,19 +70,24 @@ namespace Anatawa12.AvatarOptimizer.Processors
                     DoBoneMap2(meshInfo2, mergeMapping);
             });
 
+            var counter = 0;
+
             foreach (var pair in mergeMapping)
             {
                 var mapping = pair.Key;
                 var mapped = pair.Value;
+                var avoidNameConflict = mapping.GetComponent<MergeBone>().avoidNameConflict;
                 // if intermediate objects are inactive, moved bone should be initially inactive
                 // animations are not performed correctly but if bones activity is animated, automatic 
                 // merge bone doesn't merge such bone so ignore that for manual merge bone.
-                var activeSelf = ActiveSelfForNow(mapping, mapped);
+                var (activeSelf, namePrefix) = ActiveSelfAndNamePrefix(mapping, mapped);
                 foreach (var child in mapping.DirectChildrenEnumerable().ToArray())
                 {
                     if (mergeMapping.ContainsKey(child)) continue;
                     child.parent = mapped;
                     if (!activeSelf) child.gameObject.SetActive(false);
+                    if (avoidNameConflict)
+                        child.name = namePrefix + "$" + child.name + "$" + (counter++);
                 }
             }
 
@@ -90,11 +95,19 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 if (pair)
                     Object.DestroyImmediate(pair.gameObject);
 
-            bool ActiveSelfForNow(Transform transform, Transform parent)
+            (bool activeSelf, string namePrefix) ActiveSelfAndNamePrefix(Transform transform, Transform parent)
             {
+                var segments = new List<string>();
+                var activeSelf = true;
                 for (; transform != parent; transform = transform.parent)
-                    if (!transform.gameObject.activeSelf) return false;
-                return true;
+                {
+                    segments.Add(transform.name);
+                    activeSelf &= transform.gameObject.activeSelf;
+                }
+
+                segments.Reverse();
+
+                return (activeSelf, string.Join("$", segments));
             }
         }
 
