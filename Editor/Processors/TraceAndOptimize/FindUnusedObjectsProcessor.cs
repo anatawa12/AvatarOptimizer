@@ -336,7 +336,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     }
                 }
 
-                transform.gameObject.GetOrAddComponent<MergeBone>();
+                if (!transform.gameObject.GetComponent<MergeBone>())
+                    transform.gameObject.AddComponent<MergeBone>().avoidNameConflict = true;
 
                 return true;
             }
