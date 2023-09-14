@@ -383,7 +383,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     deps.AddActiveDependency(collider.second);
                 }
             });
-            AddNopParser<Light>();
+            AddParser<Light>((collector, deps, component) =>
+            {
+                deps.EntrypointComponent = true;
+            });
             AddParser<Collider>((collector, deps, component) =>
             {
                 deps.EntrypointComponent = true;
