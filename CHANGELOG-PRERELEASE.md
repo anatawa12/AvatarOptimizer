@@ -16,9 +16,12 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- StaticRenderer is not removed with MergeSkinnedMesh `#473`
 
 ### Security
+
+## [1.5.0-rc.1] - 2023-09-14
+### Fixed
+- StaticRenderer is not removed with MergeSkinnedMesh [`#473`](https://github.com/anatawa12/AvatarOptimizer/pull/473)
 
 ## [1.5.0-beta.14] - 2023-09-14
 ### Added
@@ -759,7 +762,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.14...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-rc.1...HEAD
+[1.5.0-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.14...v1.5.0-rc.1
 [1.5.0-beta.14]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.13...v1.5.0-beta.14
 [1.5.0-beta.13]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.12...v1.5.0-beta.13
 [1.5.0-beta.12]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.11...v1.5.0-beta.12
