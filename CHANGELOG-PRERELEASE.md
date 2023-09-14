@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- StaticRenderer is not removed with MergeSkinnedMesh `#473`
 
 ### Security
 
