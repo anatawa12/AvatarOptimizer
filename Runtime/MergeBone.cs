@@ -12,5 +12,10 @@ namespace Anatawa12.AvatarOptimizer
         [CL4EELocalized("MergeBone:prop:avoidNameConflict", "MergeBone:tooltip:avoidNameConflict")]
         [ToggleLeft]
         public bool avoidNameConflict;
+
+        private void Reset()
+        {
+            avoidNameConflict = true;
+        }
     }
 }
