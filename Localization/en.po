@@ -92,7 +92,7 @@ msgid "MergeBone:prop:avoidNameConflict"
 msgstr "Avoid Name Conflict"
 
 msgid "MergeBone:tooltip:avoidNameConflict"
-msgstr "Renaming children GameObjects to avoid name conflict"
+msgstr "Renames child GameObjects to avoid name conflict"
 
 msgid "MergeBone:validation:thereAreComponent"
 msgstr "There are some components other than Transform. This is not supported."
