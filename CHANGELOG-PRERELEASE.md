@@ -8,7 +8,6 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Avoid Name Conflict in MergeBone `#467`
 
 ### Changed
 
@@ -17,10 +16,16 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Light disappears `#466`
-- Automatic MergeBone may break Animation by conflictng GameObject name `#467`
 
 ### Security
+
+## [1.5.0-beta.14] - 2023-09-14
+### Added
+- Avoid Name Conflict in MergeBone [`#467`](https://github.com/anatawa12/AvatarOptimizer/pull/467)
+
+### Fixed
+- Light disappears [`#466`](https://github.com/anatawa12/AvatarOptimizer/pull/466)
+- Automatic MergeBone may break Animation by conflictng GameObject name [`#467`](https://github.com/anatawa12/AvatarOptimizer/pull/467)
 
 ## [1.5.0-beta.13] - 2023-09-13
 ### Added
@@ -753,7 +758,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.13...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.14...HEAD
+[1.5.0-beta.14]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.13...v1.5.0-beta.14
 [1.5.0-beta.13]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.12...v1.5.0-beta.13
 [1.5.0-beta.12]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.11...v1.5.0-beta.12
 [1.5.0-beta.11]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.10...v1.5.0-beta.11
