@@ -8,7 +8,6 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Automatically merge unnecessary activeness animated GameObject `#476`
 
 ### Changed
 
@@ -19,6 +18,10 @@ The format is based on [Keep a Changelog].
 ### Fixed
 
 ### Security
+
+## [1.5.0-rc.2] - 2023-09-15
+### Added
+- Automatically merge unnecessary activeness animated GameObject [`#476`](https://github.com/anatawa12/AvatarOptimizer/pull/476)
 
 ## [1.5.0-rc.1] - 2023-09-14
 ### Fixed
@@ -763,7 +766,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-rc.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-rc.2...HEAD
+[1.5.0-rc.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-rc.1...v1.5.0-rc.2
 [1.5.0-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.14...v1.5.0-rc.1
 [1.5.0-beta.14]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.13...v1.5.0-beta.14
 [1.5.0-beta.13]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.12...v1.5.0-beta.13
