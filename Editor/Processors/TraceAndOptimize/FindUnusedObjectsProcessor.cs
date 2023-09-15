@@ -314,10 +314,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 // The bone cannot be used generally
                 if ((_marked[transform] & ~AllowedUsages) != 0) return false;
                 // must not be animated
-                if (Animated(transform, modifications)) return false;
+                if (TransformAnimated(transform, modifications)) return false;
 
                 if (!mergedChildren)
                 {
+                    if (GameObjectAnimated(transform, modifications)) return false;
+
                     var localScale = transform.localScale;
                     var identityTransform = localScale == Vector3.one && transform.localPosition == Vector3.zero &&
                                             transform.localRotation == Quaternion.identity;
@@ -365,9 +367,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
                 return false;
             }
-
-            bool Animated(Transform transform, ImmutableModificationsContainer modifications) =>
-                TransformAnimated(transform, modifications) || GameObjectAnimated(transform, modifications);
         }
 
         private static readonly string[] TransformProperties =
