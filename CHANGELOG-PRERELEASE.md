@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Automatically merge unnecessary activeness animated GameObject `#476`
 
 ### Changed
 
