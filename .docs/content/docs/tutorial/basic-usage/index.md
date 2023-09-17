@@ -113,4 +113,4 @@ Let's add `Remove Mesh By BlendShape` to Body Mesh!
 Enable `Automatically set BlendShape weight for preview when toggled` to make sure that unexpected parts of the body are not removed,
 Select the BlendShapes which shrinks parts of body which you want to remove from the list of BlendShapes below!
 
-TODO: 写真
+[remove mesh by BlendShape](./remove-mesh-by-blendshape.png)
