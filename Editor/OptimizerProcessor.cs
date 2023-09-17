@@ -1,4 +1,4 @@
-
+#if !NADEMOFU
 using System;
 using System.Linq;
 using Anatawa12.ApplyOnPlay;
@@ -175,3 +175,4 @@ namespace Anatawa12.AvatarOptimizer
         }
     }
 }
+#endif

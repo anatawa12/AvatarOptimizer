@@ -21,8 +21,13 @@
     "versionDefines": [
         {
             "name": "nadena.dev.modular-avatar",
-            "expression": "[1.0.0,2.0.0)",
+            "expression": "[1.0.0,1.7.99999)",
             "define": "MODULAR_AVATAR"
+        },
+        {
+            "name": "nadena.dev.ndmf",
+            "expression": "[0.3.0,99999.0.0)",
+            "define": "NADEMOFU"
         }
     ],
     "noEngineReferences": false
