@@ -5,7 +5,9 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+#if !NADEMOFU
 using Anatawa12.ApplyOnPlay;
+#endif
 using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
@@ -329,10 +331,10 @@ namespace Anatawa12.AvatarOptimizer
             rootObject.transform.localScale = Vector3.one;
             return rootObject;
         }
-
+        
         private const string TemporalDirPath = "Assets/9999-OptimizerGeneratedTemporalAssets";
         private const string OutputDirPath = "Assets/AvatarOptimizerOutput";
-
+        
         public static void DeleteTemporalDirectory()
         {
             AssetDatabase.SaveAssets();
@@ -340,6 +342,7 @@ namespace Anatawa12.AvatarOptimizer
             FileUtil.DeleteFileOrDirectory(TemporalDirPath);
         }
 
+#if !NADEMOFU
         [CanBeNull]
         public static DummyObject CreateOutputAssetFile(GameObject avatarGameObject, ApplyReason reason)
         {
@@ -352,6 +355,7 @@ namespace Anatawa12.AvatarOptimizer
                     return CreateOutputAssetFile(avatarGameObject);
             }
         }
+#endif
 
         public static DummyObject CreateAssetFile()
         {
@@ -391,7 +395,7 @@ namespace Anatawa12.AvatarOptimizer
                 if (PathIfNotExists($"{name} ({number}).{extension}") is string otherTry) return otherTry;
             }
         }
-
+        
         public static IEnumerable<(T, T)> ZipWithNext<T>(this IEnumerable<T> enumerable)
         {
             using (var enumerator = enumerable.GetEnumerator())

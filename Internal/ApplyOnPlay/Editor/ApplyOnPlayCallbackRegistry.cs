@@ -1,3 +1,4 @@
+#if !NADEMOFU
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -102,3 +103,4 @@ namespace Anatawa12.ApplyOnPlay
         }
     }
 }
+#endif

@@ -1,3 +1,4 @@
+#if !NADEMOFU
 using System.Linq;
 using CustomLocalization4EditorExtension;
 using UnityEditor;
@@ -65,3 +66,4 @@ namespace Anatawa12.ApplyOnPlay
         }
     }
 }
+#endif

@@ -1,3 +1,4 @@
+#if !NADEMOFU
 using UnityEditor.Build;
 using UnityEngine;
 
@@ -33,3 +34,4 @@ namespace Anatawa12.ApplyOnPlay
         ManualBake,
     }
 }
+#endif
