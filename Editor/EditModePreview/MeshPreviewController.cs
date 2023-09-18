@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using JetBrains.Annotations;
 using Unity.Burst;
 using Unity.Collections;
@@ -15,8 +14,6 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
 {
     class MeshPreviewController : ScriptableSingleton<MeshPreviewController>
     {
-        private static readonly Type[] EditorTypes = { };
-
         public GameObject targetGameObject;
         public Mesh originalMesh;
         public Mesh previewMesh;
@@ -74,8 +71,6 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                 if (!AnimationMode.InAnimationMode()) return true;
                 // Showing Inspector changed
                 if (ActiveEditorTracker.sharedTracker.activeEditors[0].target != targetGameObject) return true;
-                // Preview Component Not Found
-                if (EditorTypes.All(t => targetGameObject.GetComponent(t) == null)) return true;
 
                 return false;
             }
@@ -138,6 +133,10 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                 case Changed.Nothing:
                     break;
             }
+
+            // modifier component not found
+            if (!(removeMeshInBox || removeMeshByBlendShape))
+                StopPreview();
 
             if (modified)
                 UpdatePreviewMesh();

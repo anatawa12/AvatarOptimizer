@@ -1,4 +1,5 @@
 using CustomLocalization4EditorExtension;
+using Unity.Collections;
 using UnityEditor;
 using UnityEngine;
 
@@ -14,6 +15,7 @@ namespace Anatawa12.AvatarOptimizer
 
         private void OnEnable()
         {
+            NativeLeakDetection.Mode = NativeLeakDetectionMode.EnabledWithStackTrace;
             _renderer = targets.Length == 1 ? ((Component)target).GetComponent<SkinnedMeshRenderer>() : null;
             var nestCount = PrefabSafeSet.PrefabSafeSetUtil.PrefabNestCount(serializedObject.targetObject);
             _shapeKeysSet = PrefabSafeSet.EditorUtil<string>.Create(
