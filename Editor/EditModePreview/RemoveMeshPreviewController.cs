@@ -347,6 +347,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
             _triangles.Dispose();
             _removeMeshWithBoxPreviewContext?.Dispose();
             _removeMeshByBlendShapePreviewContext?.Dispose();
+            _blendShapePreviewContext?.Dispose();
         }
 
         public struct ComponentHolder<T> where T : Component
