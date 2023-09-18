@@ -243,9 +243,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                     }.Schedule(_triangles.Length, 1).Complete();
                 }
 
-                var subMeshes = new SubMeshDescriptor[_subMeshTriangleEndIndices.Length];
                 var subMeshIdx = 0;
-                var subMeshIndexStart = 0;
 
                 _indexBuffer.Clear();
 
@@ -261,17 +259,11 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                     while (subMeshIdx < _subMeshTriangleEndIndices.Length &&
                            _subMeshTriangleEndIndices[subMeshIdx] >= triIdx)
                     {
-                        subMeshes[subMeshIdx] =
-                            new SubMeshDescriptor(subMeshIndexStart, _indexBuffer.Count - subMeshIndexStart);
-                        subMeshIndexStart = _indexBuffer.Count;
+                        previewMesh.SetTriangles(_indexBuffer, subMeshIdx);
+                        _indexBuffer.Clear();
                         subMeshIdx++;
                     }
                 }
-
-                previewMesh.SetTriangles(_indexBuffer, subMeshes.Length);
-
-                for (var i = 0; i < subMeshes.Length; i++)
-                    previewMesh.SetSubMesh(i, subMeshes[i]);
             }
         }
 
