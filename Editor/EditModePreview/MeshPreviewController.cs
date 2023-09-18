@@ -10,6 +10,25 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
         public bool previewing;
         public static bool Previewing => instance.previewing;
 
+        public Mesh previewMesh;
+        public Mesh originalMesh;
+        public GameObject gameObject;
+
+        protected MeshPreviewController()
+        {
+            EditorApplication.delayCall += Initialize;
+        }
+
+        private void Initialize()
+        {
+            if (previewing)
+            {
+                PreviewController = new RemoveMeshPreviewController(gameObject, originalMesh, previewMesh);
+                EditorApplication.update -= UpdatePreviewing;
+                EditorApplication.update += UpdatePreviewing;
+            }
+        }
+
         private void UpdatePreviewing()
         {
             if (!previewing)
@@ -37,6 +56,10 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                 Debug.LogException(e);
                 return false;
             }
+
+            gameObject = PreviewController.TargetGameObject;
+            previewMesh = PreviewController.PreviewMesh;
+            originalMesh = PreviewController.OriginalMesh;
 
             previewing = true;
             EditorApplication.update -= UpdatePreviewing;

@@ -13,23 +13,24 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
 {
     class RemoveMeshPreviewController : IDisposable
     {
-        public RemoveMeshPreviewController(GameObject expectedGameObject = null)
+        public RemoveMeshPreviewController(GameObject expectedGameObject = null, Mesh originalMesh = null, Mesh previewMesh = null)
         {
             // Already in AnimationMode of other object
             if (AnimationMode.InAnimationMode())
                 throw new Exception("Already In Animation Mode");
-                // Previewing object
 
-            _targetGameObject = ActiveEditorTracker.sharedTracker.activeEditors[0].target as GameObject;
-            if (_targetGameObject == null)
+            // Previewing object
+            TargetGameObject = ActiveEditorTracker.sharedTracker.activeEditors[0].target as GameObject;
+            if (TargetGameObject == null)
                 throw new Exception("Already In Animation Mode");
-            if (expectedGameObject != null && expectedGameObject != _targetGameObject)
+            if (expectedGameObject != null && expectedGameObject != TargetGameObject)
                 throw new Exception("Unexpected GameObject");
-            _targetRenderer = new ComponentHolder<SkinnedMeshRenderer>(_targetGameObject.GetComponent<SkinnedMeshRenderer>());
+            _targetRenderer =
+                new ComponentHolder<SkinnedMeshRenderer>(TargetGameObject.GetComponent<SkinnedMeshRenderer>());
             if (_targetRenderer.Value == null)
                 throw new Exception("Renderer Not Found");
 
-            OriginalMesh = _targetRenderer.Value.sharedMesh;
+            OriginalMesh = originalMesh ? originalMesh : _targetRenderer.Value.sharedMesh;
             _blendShapePreviewContext = new BlendShapePreviewContext(OriginalMesh);
 
             _removeMeshInBox = default;
@@ -51,6 +52,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
 
             var originalTriangles = OriginalMesh.triangles;
 
+
             _triangles = new NativeArray<Triangle>(totalTriangles, Allocator.Persistent);
             _indexBuffer = new List<int>();
 
@@ -68,9 +70,16 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                 }
             }
 
-            PreviewMesh = Object.Instantiate(OriginalMesh);
-            PreviewMesh.name = OriginalMesh.name + " (AAO Preview)";
-            PreviewMesh.indexFormat = IndexFormat.UInt32;
+            if (previewMesh)
+            {
+                PreviewMesh = previewMesh;
+            }
+            else
+            {
+                PreviewMesh = Object.Instantiate(OriginalMesh);
+                PreviewMesh.name = OriginalMesh.name + " (AAO Preview)";
+                PreviewMesh.indexFormat = IndexFormat.UInt32;
+            }
         }
 
         public void BeginPreview()
@@ -79,7 +88,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
             SetPreviewMesh();
         }
 
-        private readonly GameObject _targetGameObject;
+        public readonly GameObject TargetGameObject;
         public readonly Mesh OriginalMesh;
         public readonly Mesh PreviewMesh;
 
@@ -123,11 +132,11 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
             bool ShouldStopPreview()
             {
                 // target GameObject disappears
-                if (_targetGameObject == null || _targetRenderer.Value == null) return true;
+                if (TargetGameObject == null || _targetRenderer.Value == null) return true;
                 // animation mode externally exited
                 if (!AnimationMode.InAnimationMode()) return true;
                 // Showing Inspector changed
-                if (ActiveEditorTracker.sharedTracker.activeEditors[0].target != _targetGameObject) return true;
+                if (ActiveEditorTracker.sharedTracker.activeEditors[0].target != TargetGameObject) return true;
 
                 return false;
             }
@@ -142,7 +151,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                 modified = true;
             }
 
-            switch (_removeMeshInBox.Update(_targetGameObject))
+            switch (_removeMeshInBox.Update(TargetGameObject))
             {
                 default:
                 case Changed.Updated:
@@ -166,7 +175,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                     break;
             }
 
-            switch (_removeMeshByBlendShape.Update(_targetGameObject))
+            switch (_removeMeshByBlendShape.Update(TargetGameObject))
             {
                 default:
                 case Changed.Updated:
