@@ -1,5 +1,6 @@
 using System;
 using CustomLocalization4EditorExtension;
+using Unity.Burst;
 using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer
@@ -14,19 +15,27 @@ namespace Anatawa12.AvatarOptimizer
 
         private void Reset()
         {
-            boxes = new[] { new BoundingBox() };
+            boxes = new[] { BoundingBox.Default };
         }
 
         [Serializable]
-        public class BoundingBox
+        public struct BoundingBox
         {
             [CL4EELocalized("RemoveMeshInBox:BoundingBox:prop:center")]
             public Vector3 center;
             [CL4EELocalized("RemoveMeshInBox:BoundingBox:prop:size")]
-            public Vector3 size = new Vector3(1, 1, 1);
+            public Vector3 size;
             [CL4EELocalized("RemoveMeshInBox:BoundingBox:prop:rotation")]
-            public Quaternion rotation = Quaternion.identity;
+            public Quaternion rotation;
 
+            public static BoundingBox Default = new BoundingBox
+            {
+                center = Vector3.zero,
+                size = new Vector3(1, 1, 1),
+                rotation = Quaternion.identity,
+            };
+
+            [BurstCompile]
             public bool ContainsVertex(Vector3 point)
             {
                 var positionInBox = Quaternion.Inverse(rotation) * (point - center);
