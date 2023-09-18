@@ -233,12 +233,15 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
             using (var flags = new NativeArray<bool>(_triangles.Length, Allocator.TempJob))
             {
                 using (var boxes = new NativeArray<RemoveMeshInBox.BoundingBox>(
-                           _removeMeshInBox.Value.boxes ?? Array.Empty<RemoveMeshInBox.BoundingBox>(), Allocator.TempJob))
+                           _removeMeshInBox.Value != null
+                               ? _removeMeshInBox.Value.boxes
+                               : Array.Empty<RemoveMeshInBox.BoundingBox>(), Allocator.TempJob))
                 using (var blendShapeIndices =
                        new NativeArray<int>(removeBlendShapeIndicesList.ToArray(), Allocator.TempJob))
+                using (var empty = new NativeArray<Vector3>(0, Allocator.TempJob))
                 {
-                    var blendShapeAppliedVertices = _removeMeshWithBoxPreviewContext?.Vertices ?? default;
-                    var blendShapeMovements = _removeMeshByBlendShapePreviewContext?.BlendShapeMovements ?? default;
+                    var blendShapeAppliedVertices = _removeMeshWithBoxPreviewContext?.Vertices ?? empty;
+                    var blendShapeMovements = _removeMeshByBlendShapePreviewContext?.BlendShapeMovements ?? empty;
                     var tolerance =
                         (float)(_removeMeshByBlendShape.Value ? _removeMeshByBlendShape.Value.tolerance : 0);
 
