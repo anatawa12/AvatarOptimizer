@@ -321,20 +321,60 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 }
             }
 
-            if (
-                descriptor.customEyeLookSettings.eyelidType == VRCAvatarDescriptor.EyelidType.Blendshapes &&
-                descriptor.customEyeLookSettings.eyelidsSkinnedMesh != null
-            )
+            if (descriptor.enableEyeLook)
             {
-                var skinnedMeshRenderer = descriptor.customEyeLookSettings.eyelidsSkinnedMesh;
-                var mesh = skinnedMeshRenderer.sharedMesh;
+                var leftEye = descriptor.customEyeLookSettings.leftEye;
+                var rightEye = descriptor.customEyeLookSettings.rightEye;
+                if (leftEye)
+                {
+                    var updater = modificationsContainer.ModifyObject(rightEye);
+                    foreach (var prop in TransformRotationAnimationKeys)
+                        updater.AddModificationAsNewLayer(prop, AnimationProperty.Variable());
+                }
 
-                var updater = modificationsContainer.ModifyObject(skinnedMeshRenderer);
 
-                foreach (var blendShape in from index in descriptor.customEyeLookSettings.eyelidsBlendshapes
-                         where 0 <= index && index < mesh.blendShapeCount
-                         select mesh.GetBlendShapeName(index))
-                    updater.AddModificationAsNewLayer($"blendShape.{blendShape}", AnimationProperty.Variable());
+                if (rightEye)
+                {
+                    var updater = modificationsContainer.ModifyObject(rightEye);
+                    foreach (var prop in TransformRotationAnimationKeys)
+                        updater.AddModificationAsNewLayer(prop, AnimationProperty.Variable());
+                }
+
+                switch (descriptor.customEyeLookSettings.eyelidType)
+                {
+                    case VRCAvatarDescriptor.EyelidType.None:
+                        break;
+                    case VRCAvatarDescriptor.EyelidType.Bones:
+                    {
+                        foreach (var eyelids in new[]
+                                 {
+                                     descriptor.customEyeLookSettings.lowerLeftEyelid,
+                                     descriptor.customEyeLookSettings.upperLeftEyelid,
+                                     descriptor.customEyeLookSettings.lowerRightEyelid,
+                                     descriptor.customEyeLookSettings.upperRightEyelid,
+                                 })
+                        {
+                            var updater = modificationsContainer.ModifyObject(eyelids);
+                            foreach (var prop in TransformRotationAnimationKeys)
+                                updater.AddModificationAsNewLayer(prop, AnimationProperty.Variable());
+                        }
+                    }
+                        break;
+                    case VRCAvatarDescriptor.EyelidType.Blendshapes
+                        when descriptor.customEyeLookSettings.eyelidsSkinnedMesh != null:
+                    {
+                        var skinnedMeshRenderer = descriptor.customEyeLookSettings.eyelidsSkinnedMesh;
+                        var mesh = skinnedMeshRenderer.sharedMesh;
+
+                        var updater = modificationsContainer.ModifyObject(skinnedMeshRenderer);
+
+                        foreach (var blendShape in from index in descriptor.customEyeLookSettings.eyelidsBlendshapes
+                                 where 0 <= index && index < mesh.blendShapeCount
+                                 select mesh.GetBlendShapeName(index))
+                            updater.AddModificationAsNewLayer($"blendShape.{blendShape}", AnimationProperty.Variable());
+                    }
+                        break;
+                }
             }
 
             var bodySkinnedMesh = descriptor.transform.Find("Body")?.GetComponent<SkinnedMeshRenderer>();
