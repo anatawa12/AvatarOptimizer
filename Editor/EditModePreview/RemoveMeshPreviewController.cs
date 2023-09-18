@@ -274,7 +274,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                     }
 
                     while (subMeshIdx < _subMeshTriangleEndIndices.Length &&
-                           _subMeshTriangleEndIndices[subMeshIdx] >= triIdx)
+                           triIdx + 1 == _subMeshTriangleEndIndices[subMeshIdx])
                     {
                         PreviewMesh.SetTriangles(_indexBuffer, subMeshIdx);
                         _indexBuffer.Clear();
