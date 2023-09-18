@@ -49,8 +49,8 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
 
         public void ComputeBlendShape(
             float[] blendShapeWeights,
-            NativeArray<Vector3> originalVertices,
-            NativeArray<Vector3> outputVertices)
+            NativeSlice<Vector3> originalVertices,
+            NativeSlice<Vector3> outputVertices)
         {
             System.Diagnostics.Debug.Assert(originalVertices.Length == _vertexCount);
             System.Diagnostics.Debug.Assert(outputVertices.Length == _vertexCount);
@@ -85,14 +85,14 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
         struct ApplyBlendShapeJob: IJobParallelFor
         {
             [ReadOnly]
-            public NativeArray<Vector3> OriginalVertices;
+            public NativeSlice<Vector3> OriginalVertices;
             [ReadOnly]
             public NativeArray<Vector3> BlendShapeVertices;
             [ReadOnly]
             public NativeArray<int> BlendShapeFrameIndices;
             [ReadOnly]
             public NativeArray<float> BlendShapeFrameWeights;
-            public NativeArray<Vector3> ResultVertices;
+            public NativeSlice<Vector3> ResultVertices;
 
             public void Execute (int vertexIndex)
             {
