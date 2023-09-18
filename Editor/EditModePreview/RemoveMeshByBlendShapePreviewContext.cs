@@ -36,6 +36,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                             zeros,
                             _blendShapeMovements.Slice(i * vertexCount, vertexCount)
                         );
+                        weights[i] = 0;
                     }
                 }
             }
