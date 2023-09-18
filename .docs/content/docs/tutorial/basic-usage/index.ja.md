@@ -28,7 +28,7 @@ AvatarOptimizerでは、アバターのルートに`Trace And Optimize`コンポ
 --
 
 Avatar Optimizerを使用すると簡単にSkinned Meshを結合することができます！
-Skinned Meshを結合すると個別にオン・オフできなくなりますが、結合することで軽量化になります！
+Skinned Meshを統合すると個別にオン・オフできなくなりますが、統合することで軽量化に繋がります！
 
 {{< hint info >}}
 
@@ -109,6 +109,6 @@ Anchor Overrideには素体で用いられているものを、Root BoneにはHi
 素体のメッシュに`Remove Mesh By BlendShape`コンポーネントを追加しましょう！
 
 想定外の部位が削除されてしまわないかを確認するために`プレビューのために切り替えたブレンドシェイプの値を自動的に変更する`にチェックし、
-下のBlendShapeの一覧から削除したい部位の貫通防止用BlendShapeを選択しましょう！
+削除したい部位の貫通防止用BlendShapeを下の一覧から選択しましょう！
 
 [remove mesh by BlendShape](./remove-mesh-by-blendshape.png)
