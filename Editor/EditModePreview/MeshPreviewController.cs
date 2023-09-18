@@ -258,9 +258,11 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                         _indexBuffer.Add(_triangles[triIdx].Third);
                     }
 
-                    while (_subMeshTriangleEndIndices[subMeshIdx] >= triIdx)
+                    while (subMeshIdx < _subMeshTriangleEndIndices.Length &&
+                           _subMeshTriangleEndIndices[subMeshIdx] >= triIdx)
                     {
-                        subMeshes[subMeshIdx] = new SubMeshDescriptor(subMeshIndexStart, _indexBuffer.Count - subMeshIndexStart);
+                        subMeshes[subMeshIdx] =
+                            new SubMeshDescriptor(subMeshIndexStart, _indexBuffer.Count - subMeshIndexStart);
                         subMeshIndexStart = _indexBuffer.Count;
                         subMeshIdx++;
                     }
