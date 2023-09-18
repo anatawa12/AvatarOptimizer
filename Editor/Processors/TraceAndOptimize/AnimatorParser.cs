@@ -340,20 +340,40 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                         updater.AddModificationAsNewLayer(prop, AnimationProperty.Variable());
                 }
 
-                if (
-                    descriptor.customEyeLookSettings.eyelidType == VRCAvatarDescriptor.EyelidType.Blendshapes &&
-                    descriptor.customEyeLookSettings.eyelidsSkinnedMesh != null
-                )
+                switch (descriptor.customEyeLookSettings.eyelidType)
                 {
-                    var skinnedMeshRenderer = descriptor.customEyeLookSettings.eyelidsSkinnedMesh;
-                    var mesh = skinnedMeshRenderer.sharedMesh;
+                    case VRCAvatarDescriptor.EyelidType.None:
+                        break;
+                    case VRCAvatarDescriptor.EyelidType.Bones:
+                    {
+                        foreach (var eyelids in new[]
+                                 {
+                                     descriptor.customEyeLookSettings.lowerLeftEyelid,
+                                     descriptor.customEyeLookSettings.upperLeftEyelid,
+                                     descriptor.customEyeLookSettings.lowerRightEyelid,
+                                     descriptor.customEyeLookSettings.upperRightEyelid,
+                                 })
+                        {
+                            var updater = modificationsContainer.ModifyObject(eyelids);
+                            foreach (var prop in TransformRotationAnimationKeys)
+                                updater.AddModificationAsNewLayer(prop, AnimationProperty.Variable());
+                        }
+                    }
+                        break;
+                    case VRCAvatarDescriptor.EyelidType.Blendshapes
+                        when descriptor.customEyeLookSettings.eyelidsSkinnedMesh != null:
+                    {
+                        var skinnedMeshRenderer = descriptor.customEyeLookSettings.eyelidsSkinnedMesh;
+                        var mesh = skinnedMeshRenderer.sharedMesh;
 
-                    var updater = modificationsContainer.ModifyObject(skinnedMeshRenderer);
+                        var updater = modificationsContainer.ModifyObject(skinnedMeshRenderer);
 
-                    foreach (var blendShape in from index in descriptor.customEyeLookSettings.eyelidsBlendshapes
-                             where 0 <= index && index < mesh.blendShapeCount
-                             select mesh.GetBlendShapeName(index))
-                        updater.AddModificationAsNewLayer($"blendShape.{blendShape}", AnimationProperty.Variable());
+                        foreach (var blendShape in from index in descriptor.customEyeLookSettings.eyelidsBlendshapes
+                                 where 0 <= index && index < mesh.blendShapeCount
+                                 select mesh.GetBlendShapeName(index))
+                            updater.AddModificationAsNewLayer($"blendShape.{blendShape}", AnimationProperty.Variable());
+                    }
+                        break;
                 }
             }
 
