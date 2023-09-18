@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.ErrorReporting;
+using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes.Blendshape;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -48,7 +49,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             var mappings = new List<(string, string)>();
             var weightMismatchBlendShapes = new HashSet<string>();
-
+            
             for (var i = 0; i < meshInfos.Length; i++)
             {
                 var meshInfo = meshInfos[i];
@@ -68,7 +69,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     mappings.Add(($"m_Materials.Array.data[{j}]",
                         $"m_Materials.Array.data[{targetSubMeshIndex}]"));
                 }
-
 
                 // add blend shape if not defined by name
                 for (var sourceI = 0; sourceI < meshInfo.BlendShapes.Count; sourceI++)
@@ -104,7 +104,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                         newBoundMax.y = Mathf.Max(vector3.y, newBoundMax.y);
                         newBoundMax.z = Mathf.Max(vector3.z, newBoundMax.z);
                     }
-
                 }
 
                 session.MappingBuilder.RecordMoveProperties(meshInfo.SourceRenderer, mappings.ToArray());
@@ -117,6 +116,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
                 target.AssertInvariantContract($"processing meshInfo {Target.gameObject.name}");
             }
+            
+            target.BlendShapeData = BlendshapeInfo.MergeVertices(target.Vertices);
 
             foreach (var weightMismatchBlendShape in weightMismatchBlendShapes)
                 BuildReport.LogWarning("MergeSkinnedMesh:warning:blendShapeWeightMismatch", weightMismatchBlendShape);

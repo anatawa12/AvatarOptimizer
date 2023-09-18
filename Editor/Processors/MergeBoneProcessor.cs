@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.ErrorReporting;
 using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
+using Unity.Collections;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -136,7 +137,10 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
             if (!boneReplaced) return;
 
+            NativeArray<Matrix4x4> blendshapeTransforms = new NativeArray<Matrix4x4>(meshInfo2.InitialVertexCount, Allocator.TempJob);
+            
             // Optimization 1: if vertex is affected by only one bone, we can merge to one weight
+            int vIndex = 0;
             foreach (var vertex in meshInfo2.Vertices)
             {
                 var singleBoneTransform = vertex.BoneWeights.Select(x => x.bone.Transform)
@@ -160,30 +164,21 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 foreach (var (bone, weight) in vertex.BoneWeights)
                     mergedOldBindPose += bone.Bindpose * weight;
                 var transBindPose = finalBone.Bindpose.inverse * mergedOldBindPose;
+                blendshapeTransforms[vertex.Index] = transBindPose;
 
                 vertex.Position = transBindPose.MultiplyPoint3x4(vertex.Position);
                 vertex.Normal = transBindPose.MultiplyPoint3x3(vertex.Normal);
                 var tangentVec3 = transBindPose.MultiplyPoint3x3(vertex.Tangent);
                 vertex.Tangent = new Vector4(tangentVec3.x, tangentVec3.y, tangentVec3.z, vertex.Tangent.w);
-                foreach (var frames in vertex.BlendShapes.Values)
-                {
-                    for (var i = 0; i < frames.Count; i++)
-                    {
-                        var frame = frames[i];
-                        frames[i] = new Vertex.BlendShapeFrame(
-                            weight: frame.Weight,
-                            position: transBindPose.MultiplyPoint3x4(frame.Position),
-                            normal: transBindPose.MultiplyPoint3x3(frame.Normal),
-                            tangent: transBindPose.MultiplyPoint3x3(frame.Tangent)
-                        );
-                    }
-                }
 
                 var weightSum = vertex.BoneWeights.Select(x => x.weight).Sum();
                 // I want weightSum to be 1.0 but it may not.
                 vertex.BoneWeights.Clear();
                 vertex.BoneWeights.Add((finalBone, weightSum));
             }
+            
+            // This call takes ownership of and frees the native blendshapeTransforms array
+            meshInfo2.BlendShapeData.TransformVertexSpaces(blendshapeTransforms);
 
             // Optimization2: If there are same (BindPose, Transform) pair, merge
             // This is optimization for RestPose bone merging

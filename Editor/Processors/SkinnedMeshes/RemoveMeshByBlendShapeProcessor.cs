@@ -17,12 +17,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             var byBlendShapeVertices = new HashSet<Vertex>();
             var sqrTolerance = Component.tolerance * Component.tolerance;
 
-            foreach (var vertex in target.Vertices)
             foreach (var shapeName in Component.RemovingShapeKeys)
             {
-                if (!vertex.BlendShapes.TryGetValue(shapeName, out var value)) continue;
-                if (value.Any(f => f.Position.sqrMagnitude > sqrTolerance))
-                    byBlendShapeVertices.Add(vertex);
+                foreach (var vertIndex in target.BlendShapeData.VerticesAffectedByShape(shapeName, sqrTolerance))
+                {
+                    byBlendShapeVertices.Add(target.Vertices[vertIndex]);
+                }
             }
 
             foreach (var subMesh in target.SubMeshes)
