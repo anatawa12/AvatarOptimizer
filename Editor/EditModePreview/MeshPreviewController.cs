@@ -251,7 +251,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
 
                 for (var triIdx = 0; triIdx < _triangles.Length; triIdx++)
                 {
-                    if (flags[triIdx])
+                    if (!flags[triIdx])
                     {
                         _indexBuffer.Add(_triangles[triIdx].First);
                         _indexBuffer.Add(_triangles[triIdx].Second);
