@@ -68,6 +68,11 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
             return true;
         }
 
+        private void OnDisable()
+        {
+            StopPreview();
+        }
+
         public void StopPreview()
         {
             previewing = false;
