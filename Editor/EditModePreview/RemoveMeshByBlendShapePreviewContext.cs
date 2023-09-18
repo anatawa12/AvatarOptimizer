@@ -26,7 +26,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
 
             try
             {
-                using (var zeros = new NativeArray<Vector3>(vertexCount, Allocator.Temp))
+                using (var zeros = new NativeArray<Vector3>(vertexCount, Allocator.TempJob))
                 {
                     var weights = new float[blendShapeCount];
                     for (var i = 0; i < blendShapeCount; i++)
