@@ -321,30 +321,29 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 }
             }
 
-            switch (descriptor.customEyeLookSettings.eyelidType)
+            if (descriptor.enableEyeLook)
             {
-                case VRCAvatarDescriptor.EyelidType.None:
-                    break;
-                case VRCAvatarDescriptor.EyelidType.Bones:
+                var leftEye = descriptor.customEyeLookSettings.leftEye;
+                var rightEye = descriptor.customEyeLookSettings.rightEye;
+                if (leftEye)
                 {
-                    var leftEye = descriptor.customEyeLookSettings.leftEye;
-                    var rightEye = descriptor.customEyeLookSettings.rightEye;
-                    if (leftEye)
-                    {
-                        var updater = modificationsContainer.ModifyObject(rightEye);
-                        foreach (var prop in TransformPositionAnimationKeys.Concat(TransformRotationAnimationKeys))
-                            updater.AddModificationAsNewLayer(prop, AnimationProperty.Variable());
-                    }
-                    
-                    if (rightEye)
-                    {
-                        var updater = modificationsContainer.ModifyObject(rightEye);
-                        foreach (var prop in TransformPositionAnimationKeys.Concat(TransformRotationAnimationKeys))
-                            updater.AddModificationAsNewLayer(prop, AnimationProperty.Variable());
-                    }
+                    var updater = modificationsContainer.ModifyObject(rightEye);
+                    foreach (var prop in TransformRotationAnimationKeys)
+                        updater.AddModificationAsNewLayer(prop, AnimationProperty.Variable());
                 }
-                    break;
-                case VRCAvatarDescriptor.EyelidType.Blendshapes:
+
+
+                if (rightEye)
+                {
+                    var updater = modificationsContainer.ModifyObject(rightEye);
+                    foreach (var prop in TransformRotationAnimationKeys)
+                        updater.AddModificationAsNewLayer(prop, AnimationProperty.Variable());
+                }
+
+                if (
+                    descriptor.customEyeLookSettings.eyelidType == VRCAvatarDescriptor.EyelidType.Blendshapes &&
+                    descriptor.customEyeLookSettings.eyelidsSkinnedMesh != null
+                )
                 {
                     var skinnedMeshRenderer = descriptor.customEyeLookSettings.eyelidsSkinnedMesh;
                     var mesh = skinnedMeshRenderer.sharedMesh;
@@ -356,9 +355,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                              select mesh.GetBlendShapeName(index))
                         updater.AddModificationAsNewLayer($"blendShape.{blendShape}", AnimationProperty.Variable());
                 }
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
             }
 
             var bodySkinnedMesh = descriptor.transform.Find("Body")?.GetComponent<SkinnedMeshRenderer>();
