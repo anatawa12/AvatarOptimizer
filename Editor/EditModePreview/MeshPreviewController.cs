@@ -3,7 +3,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
-namespace Anatawa12.AvatarOptimizer
+namespace Anatawa12.AvatarOptimizer.EditModePreview
 {
     class MeshPreviewController : ScriptableSingleton<MeshPreviewController>
     {
