@@ -24,18 +24,18 @@ AvatarOptimizerでは、アバターのルートに`Trace And Optimize`コンポ
 
 [^blend-shape]: BlendShapeはUnity上のシェイプキーの名前です。UnityやMayaではBlendShape、BlenderではShape Key、MetasequoiaやMMDではモーフと呼ばれます。
 
-メッシュを結合してMesh Renderersを減らす {#merge-skinned-mesh}
+メッシュを統合してMesh Renderersを減らす {#merge-skinned-mesh}
 --
 
-Avatar Optimizerを使用すると簡単にSkinned Meshを結合することができます！
+Avatar Optimizerを使用すると簡単にSkinned Meshを統合することができます！
 Skinned Meshを統合すると個別にオン・オフできなくなりますが、統合することで軽量化に繋がります！
 
 {{< hint info >}}
 
-**なせSkinned Meshを結合するの？**
+**なぜSkinned Meshを統合するの？**
 
-Skinned Meshを結合するとメッシュを変形させる処理の回数が減るため軽くなります。
-また、MergeSkinnedMeshで結合すると同じマテリアルのマテリアルスロットを結合できるので、描画処理の回数も減らす事ができます。
+Skinned Meshを統合することでメッシュを変形させる処理の回数が減り、負荷が軽くなります。
+また、MergeSkinnedMeshでは、同じマテリアルを使用しているマテリアルスロットも統合することができるので、描画負荷も減らす事ができます。
 
 {{< /hint >}}
 
