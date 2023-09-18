@@ -90,13 +90,13 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
         private ComponentHolder<RemoveMeshByBlendShape> _removeMeshByBlendShape;
 
         // non serialized properties
-        private BlendShapePreviewContext _blendShapePreviewContext;
-        private int[] _subMeshTriangleEndIndices;
+        private readonly BlendShapePreviewContext _blendShapePreviewContext;
+        private readonly int[] _subMeshTriangleEndIndices;
         private NativeArray<Triangle> _triangles;
         [CanBeNull] private RemoveMeshWithBoxPreviewContext _removeMeshWithBoxPreviewContext;
         [CanBeNull] private RemoveMeshByBlendShapePreviewContext _removeMeshByBlendShapePreviewContext;
-        private string[] _blendShapeNames;
-        private List<int> _indexBuffer;
+        private readonly string[] _blendShapeNames;
+        private readonly List<int> _indexBuffer;
 
         struct Triangle
         {
