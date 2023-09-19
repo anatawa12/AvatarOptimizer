@@ -13,22 +13,16 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
 {
     class RemoveMeshPreviewController : IDisposable
     {
-        public RemoveMeshPreviewController(GameObject expectedGameObject = null, Mesh originalMesh = null, Mesh previewMesh = null)
+        public RemoveMeshPreviewController([NotNull] GameObject targetGameObject, Mesh originalMesh = null, Mesh previewMesh = null)
         {
-            // Already in AnimationMode of other object
-            if (AnimationMode.InAnimationMode())
-                throw new Exception("Already In Animation Mode");
+            if (targetGameObject == null) throw new ArgumentNullException(nameof(targetGameObject));
 
             // Previewing object
-            TargetGameObject = ActiveEditorTracker.sharedTracker.activeEditors[0].target as GameObject;
-            if (TargetGameObject == null)
-                throw new Exception("Already In Animation Mode");
-            if (expectedGameObject != null && expectedGameObject != TargetGameObject)
-                throw new Exception("Unexpected GameObject");
+            TargetGameObject = targetGameObject;
             _targetRenderer =
                 new ComponentHolder<SkinnedMeshRenderer>(TargetGameObject.GetComponent<SkinnedMeshRenderer>());
             if (_targetRenderer.Value == null)
-                throw new Exception("Renderer Not Found");
+                throw new ArgumentException("Renderer Not Found", nameof(targetGameObject));
 
             OriginalMesh = originalMesh ? originalMesh : _targetRenderer.Value.sharedMesh;
             _blendShapePreviewContext = new BlendShapePreviewContext(OriginalMesh);
@@ -82,23 +76,15 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
             }
         }
 
-        public void BeginPreview()
-        {
-            AnimationMode.StartAnimationMode();
-            SetPreviewMesh();
-        }
-
         public readonly GameObject TargetGameObject;
         public readonly Mesh OriginalMesh;
         public readonly Mesh PreviewMesh;
+        public SkinnedMeshRenderer TargetRenderer => _targetRenderer.Value;
 
         private ComponentHolder<SkinnedMeshRenderer> _targetRenderer;
-
         private ComponentHolder<RemoveMeshInBox> _removeMeshInBox;
-
         private ComponentHolder<RemoveMeshByBlendShape> _removeMeshByBlendShape;
 
-        // non serialized properties
         private readonly BlendShapePreviewContext _blendShapePreviewContext;
         private readonly int[] _subMeshTriangleEndIndices;
         private NativeArray<Triangle> _triangles;
@@ -201,30 +187,6 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
             if (!(_removeMeshInBox.Value || _removeMeshByBlendShape.Value)) return false;
 
             return false;
-        }
-
-        private void SetPreviewMesh()
-        {
-            try
-            {
-                AnimationMode.BeginSampling();
-
-                AnimationMode.AddPropertyModification(
-                    EditorCurveBinding.PPtrCurve("", typeof(SkinnedMeshRenderer), "m_Mesh"),
-                    new PropertyModification
-                    {
-                        target = _targetRenderer.Value,
-                        propertyPath = "m_Mesh",
-                        objectReference = OriginalMesh,
-                    }, 
-                    true);
-
-                _targetRenderer.Value.sharedMesh = PreviewMesh;
-            }
-            finally
-            {
-                AnimationMode.EndSampling();   
-            }
         }
 
         private void UpdatePreviewMesh()
@@ -355,7 +317,6 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
 
         public void Dispose()
         {
-            if (AnimationMode.InAnimationMode()) AnimationMode.StopAnimationMode();
             _triangles.Dispose();
             _removeMeshWithBoxPreviewContext?.Dispose();
             _removeMeshByBlendShapePreviewContext?.Dispose();

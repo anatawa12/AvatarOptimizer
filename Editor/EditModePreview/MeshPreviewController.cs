@@ -36,6 +36,13 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                 EditorApplication.update -= UpdatePreviewing;
             }
 
+            // Showing Inspector changed
+            if (ActiveEditorTracker.sharedTracker.activeEditors[0].target != gameObject)
+            {
+                StopPreview();
+                return;
+            }
+
             if (PreviewController.UpdatePreviewing())
                 StopPreview();
         }
@@ -49,7 +56,13 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
 
             try
             {
-                PreviewController = new RemoveMeshPreviewController(expectedGameObject);
+                var targetGameObject = ActiveEditorTracker.sharedTracker.activeEditors[0].target as GameObject;
+                if (targetGameObject == null)
+                    throw new Exception("Already In Animation Mode");
+                if (expectedGameObject != null && expectedGameObject != targetGameObject)
+                    throw new Exception("Unexpected GameObject");
+
+                PreviewController = new RemoveMeshPreviewController(targetGameObject);
             }
             catch (Exception e)
             {
@@ -64,7 +77,27 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
             previewing = true;
             EditorApplication.update -= UpdatePreviewing;
             EditorApplication.update += UpdatePreviewing;
-            PreviewController.BeginPreview();
+            AnimationMode.StartAnimationMode();
+            try
+            {
+                AnimationMode.BeginSampling();
+
+                AnimationMode.AddPropertyModification(
+                    EditorCurveBinding.PPtrCurve("", typeof(SkinnedMeshRenderer), "m_Mesh"),
+                    new PropertyModification
+                    {
+                        target = PreviewController.TargetRenderer,
+                        propertyPath = "m_Mesh",
+                        objectReference = PreviewController.OriginalMesh,
+                    }, 
+                    true);
+
+                PreviewController.TargetRenderer.sharedMesh = PreviewController.PreviewMesh;
+            }
+            finally
+            {
+                AnimationMode.EndSampling();   
+            }
             return true;
         }
 
@@ -76,6 +109,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
         public void StopPreview()
         {
             previewing = false;
+            AnimationMode.StopAnimationMode();
             PreviewController.Dispose();
             PreviewController = null;
             EditorApplication.update -= UpdatePreviewing;
