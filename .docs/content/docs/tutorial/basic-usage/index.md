@@ -102,7 +102,7 @@ Please check [basic usages of anatawa12's Gist Pack][gists-basic-usage] and [doc
 [^merge-skinned-mesh]: Root Bone and Anchor Override are impossible to merge automatically I think. If you know any good algorithm, please tel me that.
 [^mesh]: In this document mesh means SkinnedMeshRenderer, not the Mesh asset in Unity.
 
-Reduce polygons with BlendShapes which shrink parts of the body
+Reduce polygons with BlendShapes which shrink parts of the body {#remove-mesh-by-blendshape}
 ---
 
 By removing polygons which are hidden by clothes or something, you can reduce rendering load, BlendShape processing load, etc. without affecting the appearance so much.
