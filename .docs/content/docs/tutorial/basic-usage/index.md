@@ -11,12 +11,12 @@ Use Automatic Optimization {#trace-and-optimize}
 There are several optimizations which can be performed automatically for Avatars.
 
 - Removing Unused BlendShapes(Shape Keys)[^blend-shape]
-  - For BlendShapes with non-zero weight, freezing BlendShapes will reduce processing load.
+  - For BlendShapes with non-zero weight, freezing BlendShapes will reduce processing cost.
   - Even if the weight is zero, removing BlendShapes will reduce the size of avatars.
 - Removing unused Behaviours such as PhysBones
-  - If there are enabled PhysBones which do not need to be swayed (e.g., the swaying target mesh is always disabled), extra computational load is caused.
+  - If there are enabled PhysBones which do not need to be swayed (e.g., the swaying target mesh is always disabled), extra computational cost is caused.
 - Merging bones which is not animated or swayed with PhysBones
-  - If the clothes bones are nested into the body bones, there will be many bones which are never moved locally. Such bones cause extra load.
+  - If the clothes bones are nested into the body bones, there will be many bones which are never moved locally. Such bones cause extra cost.
 
 With AvatarOptimizer, these optimizations can be performed automatically by simply adding a `Trace And Optimize` to the Avatar Root!
 
@@ -28,7 +28,7 @@ Merge Meshes to reduce # of Skinned Renderers {#merge-skinned-mesh}
 --
 
 You can easily merge Skinned Mesh with Avatar Optimizer!
-Merging Skinned Mesh will not allow you to turn them on and off individually, but merging them will reduce rendering load!
+Merging Skinned Mesh will not allow you to turn them on and off individually, but merging them will reduce rendering cost!
 
 {{< hint info >}}
 
@@ -105,7 +105,7 @@ Please check [basic usages of anatawa12's Gist Pack][gists-basic-usage] and [doc
 Reduce polygons with BlendShapes which shrink parts of the body {#remove-mesh-by-blendshape}
 ---
 
-By removing polygons which are hidden by clothes or something, you can reduce rendering load, BlendShape processing load, etc. without affecting the appearance so much.
+By removing polygons which are hidden by clothes or something, you can reduce rendering cost, BlendShape processing cost, etc. without affecting the appearance so much.
 To make this easier, AvatarOptimizer allows you to remove polygons with BlendShapes for shrinking parts of the body, which many avatars have!
 
 Let's add `Remove Mesh By BlendShape` to Body Mesh!
