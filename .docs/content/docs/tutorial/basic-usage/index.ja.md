@@ -100,7 +100,7 @@ Anchor Overrideには素体で用いられているものを、Root BoneにはHi
 [^merge-skinned-mesh]: Root Bone/Anchor Overrideは等しくないと統合できないため対応予定がありません。もし良いアルゴリズムがあれば教えてください。
 [^mesh]: この記事ではメッシュはUnityのMesh assetではなくSkinnedMeshRendererの意味で使用しています。
 
-貫通防止用BlendShapeを利用してメッシュを減らす {#remove-mesh-by-blendshape}
+貫通防止用BlendShapeを利用してポリゴンを減らす {#remove-mesh-by-blendshape}
 ---
 
 服で隠れていたりして見えないような部分のメッシュを削除すると、見た目に影響させずに描画負荷やBlendShapeの処理負荷などを減らして軽量化することができます。
