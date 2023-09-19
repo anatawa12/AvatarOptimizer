@@ -8,27 +8,27 @@ Basic Usage
 Use Automatic Optimization {#trace-and-optimize}
 ---
 
-There are several optimization which can perform automatically. for Avatars
+There are several optimizations which can be performed automatically for Avatars.
 
 - Removing Unused BlendShapes(Shape Keys)[^blend-shape]
-  - For BlendShapes with non-zero weight, there are processing load so freezing BlendShape will reduce processing load.
-  - Even if the weight is zero, removing the BlendShapes will reduce size of avatars.
+  - For BlendShapes with non-zero weight, freezing BlendShapes will reduce processing load.
+  - Even if the weight is zero, removing BlendShapes will reduce the size of avatars.
 - Removing unused Behaviours such as PhysBones
-  - If a PhysBone that does not need to be swayed is enabled, for example a PhysBone where the mesh that exists as the target of the shaking is always disabled, an extra computational load is incurred.
-- Merging bones being animated nor swayed with PhysBones
-  - When clothing bones are nested inside the bones of the body, there will be many bones that do not move on their own. Such bones create extra load.
+  - If there are enabled PhysBones which do not need to be swayed (e.g., the swaying target mesh is always disabled), extra computational load is caused.
+- Merging bones which is not animated or swayed with PhysBones
+  - If the clothes bones are nested into the body bones, there will be many bones which are never moved locally. Such bones cause extra load.
 
-With Avatar Optimizer, You can those optimization with adding `Trace And Optimize` to the Avatar Root!
+With AvatarOptimizer, these optimizations can be performed automatically by simply adding a `Trace And Optimize` to the Avatar Root!
 
 ![add-trace-and-optimize.png](add-trace-and-optimize.png)
 
-[^blend-shape]: BlendShapeはUnity上のシェイプキーの名前です。UnityやMayaではBlendShape、BlenderではShape Key、MetasequoiaやMMDではモーフと呼ばれます。
+[^blend-shape]: BlendShape is the name of Shape Keys in Unity. Unity and Maya call them as Blend Shape, Blender calls them as Shape Key, Metasequoia and MMD call them as Morph.
 
 Merge Meshes to reduce # of Skinned Renderers {#merge-skinned-mesh}
 --
 
 You can easily merge Skinned Mesh with Avatar Optimizer!
-Merging Skinned Mesh will not allow you to turn them on and off individually, but combining them will save some rendering weight!
+Merging Skinned Mesh will not allow you to turn them on and off individually, but merging them will reduce rendering load!
 
 {{< hint info >}}
 
@@ -102,15 +102,15 @@ Please check [basic usages of anatawa12's Gist Pack][gists-basic-usage] and [doc
 [^merge-skinned-mesh]: Root Bone and Anchor Override are impossible to merge automatically I think. If you know any good algorithm, please tel me that.
 [^mesh]: In this document mesh means SkinnedMeshRenderer, not the Mesh asset in Unity.
 
-Reduce polygons with shrinking which shrinks parts of body
+Reduce polygons with BlendShapes which shrink parts of the body
 ---
 
-By deleting polygons that are hidden by clothing or otherwise, you can reduce rendering load, BlendShape processing load, etc., without affecting the appearance much.
-To easily achieve this, AvatarOptimizer can remove meshes using the BlendShapes which shrinks parts of body included in many avatars!
+By removing polygons which are hidden by clothes or something, you can reduce rendering load, BlendShape processing load, etc. without affecting the appearance so much.
+To make this easier, AvatarOptimizer allows you to remove polygons with BlendShapes for shrinking parts of the body, which many avatars have!
 
 Let's add `Remove Mesh By BlendShape` to Body Mesh!
 
-Enable `Automatically set BlendShape weight for preview when toggled` to make sure that unexpected parts of the body are not removed,
-Select the BlendShapes which shrinks parts of body which you want to remove from the list of BlendShapes below!
+Enable `Automatically set BlendShape weight for preview when toggled` to make sure that unintended parts of the body are not removed, and
+select BlendShapes from the BlendShapes list below that shrink the parts of the body you want to remove!
 
 [remove mesh by BlendShape](./remove-mesh-by-blendshape.png)
