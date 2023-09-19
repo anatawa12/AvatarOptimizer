@@ -13,16 +13,13 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
 {
     class RemoveMeshPreviewController : IDisposable
     {
-        public RemoveMeshPreviewController([NotNull] GameObject targetGameObject, Mesh originalMesh = null, Mesh previewMesh = null)
+        public RemoveMeshPreviewController([NotNull] SkinnedMeshRenderer targetRenderer, Mesh originalMesh = null, Mesh previewMesh = null)
         {
-            if (targetGameObject == null) throw new ArgumentNullException(nameof(targetGameObject));
+            if (targetRenderer == null) throw new ArgumentNullException(nameof(targetRenderer));
 
             // Previewing object
-            TargetGameObject = targetGameObject;
-            _targetRenderer =
-                new ComponentHolder<SkinnedMeshRenderer>(TargetGameObject.GetComponent<SkinnedMeshRenderer>());
-            if (_targetRenderer.Value == null)
-                throw new ArgumentException("Renderer Not Found", nameof(targetGameObject));
+            TargetGameObject = targetRenderer.gameObject;
+            _targetRenderer = new ComponentHolder<SkinnedMeshRenderer>(targetRenderer);
 
             OriginalMesh = originalMesh ? originalMesh : _targetRenderer.Value.sharedMesh;
             _blendShapePreviewContext = new BlendShapePreviewContext(OriginalMesh);

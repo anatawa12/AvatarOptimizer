@@ -1,5 +1,6 @@
 using System;
 using System.Reflection;
+using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -11,35 +12,27 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
 {
     class MeshPreviewController : ScriptableSingleton<MeshPreviewController>
     {
-        public RemoveMeshPreviewController PreviewController;
-        public bool previewing;
+        [CanBeNull] private RemoveMeshPreviewController _previewController;
         public static bool Previewing => instance.previewing;
 
+        [SerializeField] private bool previewing;
         [SerializeField] private Mesh previewMesh;
         [SerializeField] private Mesh originalMesh;
-        [SerializeField] private GameObject gameObject;
+        [SerializeField] private SkinnedMeshRenderer targetRenderer;
         [SerializeField] private AnimationModeDriver driverCached;
 
         private AnimationModeDriver DriverCached => driverCached ? driverCached : driverCached = CreateDriver();
 
         private void OnEnable()
         {
-            EditorApplication.delayCall += Initialize;
-        }
-
-        private void Initialize()
-        {
-            if (previewing)
-            {
-                PreviewController = new RemoveMeshPreviewController(gameObject, originalMesh, previewMesh);
-                EditorApplication.update -= UpdatePreviewing;
-                EditorApplication.update += UpdatePreviewing;
-            }
+            EditorApplication.update -= Update;
+            EditorApplication.update += Update;
         }
 
         private void OnDisable()
         {
-            PreviewController?.Dispose();
+            _previewController?.Dispose();
+            EditorApplication.update -= Update;
         }
 
         private Object ActiveEditor()
@@ -48,54 +41,43 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
             return editors.Length == 0 ? null : editors[0].target;
         } 
 
-        private void UpdatePreviewing()
+        private void Update()
         {
-            if (!previewing)
+            if (previewing)
             {
-                EditorApplication.update -= UpdatePreviewing;
-            }
+                if (_previewController == null)
+                    _previewController = new RemoveMeshPreviewController(targetRenderer, originalMesh, previewMesh);
 
-            // Showing Inspector changed
-            if (ActiveEditor() != gameObject)
-            {
-                StopPreview();
-                return;
-            }
+                if (targetRenderer == null || ActiveEditor() != targetRenderer.gameObject)
+                {
+                    StopPreview();
+                    return;
+                }
 
-            if (PreviewController.UpdatePreviewing())
-                StopPreview();
+                if (_previewController.UpdatePreviewing())
+                    StopPreview();
+            }
         }
 
-        public bool StartPreview(GameObject expectedGameObject = null)
+        public void StartPreview(GameObject expectedGameObject = null)
         {
             // Already in AnimationMode of other object
-            if (AnimationMode.InAnimationMode()) return false;
-            // Previewing object
-            if (previewing) return false;
+            if (AnimationMode.InAnimationMode())
+                throw new Exception("Already in Animation Mode");
 
-            try
-            {
-                var targetGameObject = ActiveEditor() as GameObject;
-                if (targetGameObject == null)
-                    throw new Exception("Already In Animation Mode");
-                if (expectedGameObject != null && expectedGameObject != targetGameObject)
-                    throw new Exception("Unexpected GameObject");
+            var targetGameObject = ActiveEditor() as GameObject;
+            if (targetGameObject == null)
+                throw new Exception("Active Editor is not GameObject");
+            if (expectedGameObject != null && expectedGameObject != targetGameObject)
+                throw new Exception("Unexpected GameObject");
 
-                PreviewController = new RemoveMeshPreviewController(targetGameObject);
-            }
-            catch (Exception e)
-            {
-                Debug.LogException(e);
-                return false;
-            }
-
-            gameObject = PreviewController.TargetGameObject;
-            previewMesh = PreviewController.PreviewMesh;
-            originalMesh = PreviewController.OriginalMesh;
+            targetRenderer = targetGameObject.GetComponent<SkinnedMeshRenderer>();
+            _previewController = new RemoveMeshPreviewController(targetRenderer);
+            targetRenderer = _previewController.TargetRenderer;
+            previewMesh = _previewController.PreviewMesh;
+            originalMesh = _previewController.OriginalMesh;
 
             previewing = true;
-            EditorApplication.update -= UpdatePreviewing;
-            EditorApplication.update += UpdatePreviewing;
             AnimationMode.StartAnimationMode(DriverCached);
             try
             {
@@ -105,28 +87,26 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                     EditorCurveBinding.PPtrCurve("", typeof(SkinnedMeshRenderer), "m_Mesh"),
                     new PropertyModification
                     {
-                        target = PreviewController.TargetRenderer,
+                        target = _previewController.TargetRenderer,
                         propertyPath = "m_Mesh",
-                        objectReference = PreviewController.OriginalMesh,
+                        objectReference = _previewController.OriginalMesh,
                     }, 
                     true);
 
-                PreviewController.TargetRenderer.sharedMesh = PreviewController.PreviewMesh;
+                _previewController.TargetRenderer.sharedMesh = _previewController.PreviewMesh;
             }
             finally
             {
                 AnimationMode.EndSampling();   
             }
-            return true;
         }
 
         public void StopPreview()
         {
             previewing = false;
             AnimationMode.StopAnimationMode(DriverCached);
-            PreviewController.Dispose();
-            PreviewController = null;
-            EditorApplication.update -= UpdatePreviewing;
+            _previewController?.Dispose();
+            _previewController = null;
         }
 
 #if !UNITY_2020_1_OR_NEWER
