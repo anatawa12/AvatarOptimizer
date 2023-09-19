@@ -2,7 +2,9 @@ using System;
 using System.Reflection;
 using UnityEditor;
 using UnityEngine;
-using Object = UnityEngine.Object;
+#if !UNITY_2020_1_OR_NEWER
+using AnimationModeDriver = UnityEngine.Object;
+#endif
 
 namespace Anatawa12.AvatarOptimizer.EditModePreview
 {
@@ -15,9 +17,9 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
         [SerializeField] private Mesh previewMesh;
         [SerializeField] private Mesh originalMesh;
         [SerializeField] private GameObject gameObject;
-        [SerializeField] private Object driverCached;
+        [SerializeField] private AnimationModeDriver driverCached;
 
-        private Object DriverCached => driverCached ? driverCached : driverCached = AnimationMode.CreateDriver();
+        private AnimationModeDriver DriverCached => driverCached ? driverCached : driverCached = CreateDriver();
 
         private void OnEnable()
         {
@@ -120,33 +122,38 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
             EditorApplication.update -= UpdatePreviewing;
         }
 
-        // TODO: in Unity 2022, this class must be removed and replaced with UnityEditor.AnimationMode
+#if !UNITY_2020_1_OR_NEWER
+        private static AnimationModeDriver CreateDriver() =>
+            ScriptableObject.CreateInstance(
+                typeof(UnityEditor.AnimationMode).Assembly.GetType("UnityEditor.AnimationModeDriver"));
+#else
+        private static AnimationModeDriver CreateDriver() => ScriptableObject.CreateInstance<AnimationModeDriver>();
+#endif
+
+#if !UNITY_2020_1_OR_NEWER
         public static class AnimationMode
         {
             public static void BeginSampling() => UnityEditor.AnimationMode.BeginSampling();
             public static void EndSampling() => UnityEditor.AnimationMode.EndSampling();
             public static bool InAnimationMode() => UnityEditor.AnimationMode.InAnimationMode();
-            public static void StartAnimationMode(Object o) => StartAnimationMode("StartAnimationMode", o);
-            public static void StopAnimationMode(Object o) => StartAnimationMode("StopAnimationMode", o);
+            public static void StartAnimationMode(AnimationModeDriver o) => StartAnimationMode("StartAnimationMode", o);
+            public static void StopAnimationMode(AnimationModeDriver o) => StartAnimationMode("StopAnimationMode", o);
 
             public static void AddPropertyModification(EditorCurveBinding binding, PropertyModification modification,
                 bool keepPrefabOverride) =>
                 UnityEditor.AnimationMode.AddPropertyModification(binding, modification, keepPrefabOverride);
 
-            public static Object CreateDriver() =>
-                ScriptableObject.CreateInstance(
-                    typeof(UnityEditor.AnimationMode).Assembly.GetType("UnityEditor.AnimationModeDriver"));
-
-            private static void StartAnimationMode(string name, Object o)
+            private static void StartAnimationMode(string name, AnimationModeDriver o)
             {
                 var method = typeof(UnityEditor.AnimationMode).GetMethod(name,
                     BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic,
                     null,
-                    new[] { typeof(Object) },
+                    new[] { typeof(AnimationModeDriver) },
                     null);
                 System.Diagnostics.Debug.Assert(method != null, nameof(method) + " != null");
                 method.Invoke(null, new object[] { o });
             }
         }
+#endif
     }
 }
