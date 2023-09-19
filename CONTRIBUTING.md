@@ -28,7 +28,7 @@ Those formats are not good enough to recommend.
 
 #### Rejected
 
-Those formats are not common for commandline use nor posix environment.
+Those formats are not common for commandline use or posix environment.
 
 - `.7z`
 - `.cab`
