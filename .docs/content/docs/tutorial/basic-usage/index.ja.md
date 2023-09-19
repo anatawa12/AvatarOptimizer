@@ -5,10 +5,30 @@ title: 基本的な使い方
 基本的な使い方
 ===
 
+自動最適化を使用する {#trace-and-optimize}
+---
+
+アバターには自動的に行える最適化がいくつかあります。
+
+- 使用していないBlendShape(シェイプキー)[^blend-shape]の削除
+  - BlendShapeの値が0以外のときは処理負荷が発生するため、値をアニメーション等で変更しないBlendShapeは固定すると負荷が軽くなります。
+  - 値が常に0である場合でも、固定することでアバターの容量を削減することができます。
+- 使われていないPhysBone等の削除
+  - 揺らす対象として存在するメッシュが常に無効になっているPhysBoneなどのように、揺らす必要のないPhysBoneが有効になっている場合は計算負荷が余分に発生してしまいます。
+- アニメーションしたりPhysBoneで揺らしたりすることのないボーンの統合
+  - 服のボーンを素体のボーンに入れ子状にして着せるような場合には、それ自身を動かすことがないボーンが多く発生します。そのようなボーンは余分な負荷を発生させてしまいます。
+
+AvatarOptimizerでは、アバターのルートに`Trace And Optimize`コンポーネントを追加するだけで、これらの最適化を自動で行うことができます！
+
+![add-trace-and-optimize.png](add-trace-and-optimize.png)
+
+[^blend-shape]: BlendShapeはUnity上のシェイプキーの名前です。UnityやMayaではBlendShape、BlenderではShape Key、MetasequoiaやMMDではモーフと呼ばれます。
+
 メッシュを統合してMesh Renderersを減らす {#merge-skinned-mesh}
 --
 
 Avatar Optimizerを使用すると簡単にSkinned Meshを統合することができます！
+Skinned Meshを統合すると個別にオン・オフできなくなりますが、統合することで軽量化に繋がります！
 
 {{< hint info >}}
 
@@ -80,46 +100,15 @@ Anchor Overrideには素体で用いられているものを、Root BoneにはHi
 [^merge-skinned-mesh]: Root Bone/Anchor Overrideは等しくないと統合できないため対応予定がありません。もし良いアルゴリズムがあれば教えてください。
 [^mesh]: この記事ではメッシュはUnityのMesh assetではなくSkinnedMeshRendererの意味で使用しています。
 
-BlendShapeを固定する {#freeze-blendshape}
+貫通防止用BlendShapeを利用してポリゴンを減らす {#remove-mesh-by-blendshape}
 ---
 
-また、Avatar Optimizerを使用すると簡単にBlendShape(シェイプキー)[^blend-shape]を固定することができます！
+服で隠れていたりして見えないような部分のメッシュを削除すると、見た目に影響させずに描画負荷やBlendShapeの処理負荷などを減らして軽量化することができます。
+これを簡単に実現するために、AvatarOptimizerでは多くの素体に含まれている貫通防止用のBlendShapeを利用してメッシュを削除することができます！
 
-{{< hint info >}}
+素体のメッシュに`Remove Mesh By BlendShape`コンポーネントを追加しましょう！
 
-**なせBlendShapeを固定するの？**
+想定外の部位が削除されてしまわないかを確認するために`プレビューのために切り替えたブレンドシェイプの値を自動的に変更する`にチェックし、
+削除したい部位の貫通防止用BlendShapeを下の一覧から選択しましょう！
 
-前述のように、BlendShapeは頂点数とBlendShape数の積に比例して重くなる処理です。
-また、BlendShapeはweightに関わらず存在するだけで負荷になってしまいます。
-そのため、Performance Rankには反映されませんが固定することが軽量化に繋がります。
-可能であれば、統合したメッシュはBlendShapeが存在しないメッシュにすると良いです。
-
-{{< /hint >}}
-
-それでは、使われていない素体や服の体型変更用のBlendShapeを固定してみましょう！
-
-AvatarOptimizer v1.2.0以降では使用されていないBlendShapeを自動的に固定する方法が追加されました！
-
-自動的な固定のための設定は、アバターのルートに`Trace And Optimize`を追加するだけで終わりです！
-
-![add-trace-and-optimize.png](add-trace-and-optimize.png)
-
-`Trace And Optimize`はアニメーションなどをスキャンして自動的にできる限りの最適化を行います！
-
-FX Layer等で変更していない体型変更用BlendShapeや、 表情アニメーションで利用していないBlendShape(区切り線等も)などはこの方法で問題なく固定することができます。
-
-もしFX Layer等で体型を変形などしているBlendShapeを強制的に固定したい場合には以下の手動の手順を使用できます。
-顔のメッシュは自動設定し体のメッシュだけは手動設定するというように、一部のメッシュだけ手動で設定することも可能です。
-
-まず、頂点数が増えたメッシュである先程の`Anon_Merged`に`Freeze BlendShapes`を追加してください。
-
-![add-freeze-blendshape.png](add-freeze-blendshape.png)
-
-`Freeze BlendShape`は一緒についているメッシュのBlendShapeを固定します。
-
-コンポーネントを機能させるために固定するBlendShapeを指定してください。
-チェックボックスにチェックするとそのBlendShapeは固定されます。
-
-![freeze-blendshape.png](freeze-blendshape.png)
-
-[^blend-shape]: BlendShapeはUnity上のシェイプキーの名前です。UnityやMayaではBlendShape、BlenderではShape Key、MetasequoiaやMMDではモーフと呼ばれます。
+[remove mesh by BlendShape](./remove-mesh-by-blendshape.png)

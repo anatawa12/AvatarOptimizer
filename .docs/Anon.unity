@@ -461,6 +461,46 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 31900000, guid: b2b8bad9583e56a46a3e21795e96ad92,
         type: 2}
+    - target: {fileID: 8880097120976071604, guid: 3b37219c818344b47a491cca0686c190,
+        type: 3}
+      propertyPath: m_BlendShapeWeights.Array.data[7]
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 8880097120976071604, guid: 3b37219c818344b47a491cca0686c190,
+        type: 3}
+      propertyPath: m_BlendShapeWeights.Array.data[8]
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 8880097120976071604, guid: 3b37219c818344b47a491cca0686c190,
+        type: 3}
+      propertyPath: m_BlendShapeWeights.Array.data[9]
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 8880097120976071604, guid: 3b37219c818344b47a491cca0686c190,
+        type: 3}
+      propertyPath: m_BlendShapeWeights.Array.data[11]
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 8880097120976071604, guid: 3b37219c818344b47a491cca0686c190,
+        type: 3}
+      propertyPath: m_BlendShapeWeights.Array.data[12]
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 8880097120976071604, guid: 3b37219c818344b47a491cca0686c190,
+        type: 3}
+      propertyPath: m_BlendShapeWeights.Array.data[13]
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 8880097120976071604, guid: 3b37219c818344b47a491cca0686c190,
+        type: 3}
+      propertyPath: m_BlendShapeWeights.Array.data[14]
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 8880097120976071604, guid: 3b37219c818344b47a491cca0686c190,
+        type: 3}
+      propertyPath: m_BlendShapeWeights.Array.data[15]
+      value: 100
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 3b37219c818344b47a491cca0686c190, type: 3}
 --- !u!4 &1411353993 stripped
@@ -529,6 +569,37 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 1411353992}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1411354004 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8880097120976071606, guid: 3b37219c818344b47a491cca0686c190,
+    type: 3}
+  m_PrefabInstance: {fileID: 1411353992}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1411354005
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1411354004}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 61169fc9b8aa6df4291a9fe95d961ec2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  shapeKeysSet:
+    mainSet:
+    - Shrink_Shoulder
+    - Shrink_UpperArm
+    - Shrink_Elbow
+    - Shrink_Chest_1
+    - Shrink_Chest_2
+    - Shrink_Spine_1
+    - Shrink_Spine_2
+    - Shrink_Hip
+    prefabLayers: []
+    fakeSlot: 
+  tolerance: 0.001
 --- !u!1 &1911908305
 GameObject:
   m_ObjectHideFlags: 0

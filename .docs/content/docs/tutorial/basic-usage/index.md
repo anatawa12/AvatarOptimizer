@@ -5,10 +5,30 @@ title: Basic Usage
 Basic Usage
 ===
 
+Use Automatic Optimization {#trace-and-optimize}
+---
+
+There are several optimizations which can be performed automatically for Avatars.
+
+- Removing Unused BlendShapes(Shape Keys)[^blend-shape]
+  - For BlendShapes with non-zero weight, freezing BlendShapes will reduce processing cost.
+  - Even if the weight is zero, removing BlendShapes will reduce the size of avatars.
+- Removing unused Behaviours such as PhysBones
+  - If there are enabled PhysBones which do not need to be swayed (e.g., the swaying target mesh is always disabled), extra computational cost is caused.
+- Merging bones which is not animated or swayed with PhysBones
+  - If the clothes bones are nested into the body bones, there will be many bones which are never moved locally. Such bones cause extra cost.
+
+With AvatarOptimizer, these optimizations can be performed automatically by simply adding a `Trace And Optimize` to the Avatar Root!
+
+![add-trace-and-optimize.png](add-trace-and-optimize.png)
+
+[^blend-shape]: BlendShape is the name of Shape Keys in Unity. Unity and Maya call them as Blend Shape, Blender calls them as Shape Key, Metasequoia and MMD call them as Morph.
+
 Merge Meshes to reduce # of Skinned Renderers {#merge-skinned-mesh}
 --
 
 You can easily merge Skinned Mesh with Avatar Optimizer!
+Merging Skinned Mesh will not allow you to turn them on and off individually, but merging them will reduce rendering cost!
 
 {{< hint info >}}
 
@@ -82,51 +102,15 @@ Please check [basic usages of anatawa12's Gist Pack][gists-basic-usage] and [doc
 [^merge-skinned-mesh]: Root Bone and Anchor Override are impossible to merge automatically I think. If you know any good algorithm, please tel me that.
 [^mesh]: In this document mesh means SkinnedMeshRenderer, not the Mesh asset in Unity.
 
-Freezing BlendShape {#freeze-blendshape}
+Reduce polygons with BlendShapes which shrink parts of the body {#remove-mesh-by-blendshape}
 ---
 
-In addition, you can easily freeze BlendShape(Shape Keys)[^blend-shape] with Avatar Optimizer!
+By removing polygons which are hidden by clothes or something, you can reduce rendering cost, BlendShape processing cost, etc. without affecting the appearance so much.
+To make this easier, AvatarOptimizer allows you to remove polygons with BlendShapes for shrinking parts of the body, which many avatars have!
 
-{{< hint info >}}
+Let's add `Remove Mesh By BlendShape` to Body Mesh!
 
-**Why do we freeze BlendShapes?**
+Enable `Automatically set BlendShape weight for preview when toggled` to make sure that unintended parts of the body are not removed, and
+select BlendShapes from the BlendShapes list below that shrink the parts of the body you want to remove!
 
-As I described before, BlendShape (Shape Keys) is a feature became heavier in proportion to the count of vertices and BlendShapes.
-Also, BlendShape has performance impact just by existing, regardless of its weight.
-So, freezing BlendShapes make your model lighter even if it's not reflected in Performance Rank.
-It's better for the merged mesh not to have any BlendShapes if possible.
-
-{{< /hint >}}
-
-Now let's freeze the BlendShapes for the unused body and clothing body shape changes!
-
-Since AvatarOptimizer v1.2.0, it has easy way to freeze unused BlendShapes.
-
-The only step to enable settings for automatic freezing BlendShapes is adding `Trace And Optimize` to avatar root!
-
-![add-trace-and-optimize.png](add-trace-and-optimize.png)
-
-`Trace And Optimize` traces your avatar and optimize your avatar automatically.
-
-If you don't change body BlendShape in FX Layer or else, you can easily freeze the BlendShape with this way.
-Also, you can freeze unused BlendShapes in your Face Mesh.
-
-If you want to force freeze BlendShapes used in your FX Layer or else, you can use the following manual steps.
-You can partially configure freezing manually.
-For example, automatically freeze BlendShape in your face mesh and manually in the body.
-
-First, add `Freeze BlendShapes` to `Anon_Merged`, which is the mesh increased vertex count.
-
-![add-freeze-blendshape.png](add-freeze-blendshape.png)
-
-`Freeze BlendShape` freezes the BlendShape of the attached mesh.
-
-To make it working freezing, 
-
-To make the freezing work, specify the BlendShape to be frozen.
-
-If the checkbox is checked, the BlendShape will be frozen.
-
-![freeze-blendshape.png](freeze-blendshape.png)
-
-[^blend-shape]: BlendShape is the name of Shape Keys in Unity. Unity and Maya call them as Blend Shape, Blender calls them as Shape Key, Metasequoia and MMD call them as Morph.
+[remove mesh by BlendShape](./remove-mesh-by-blendshape.png)

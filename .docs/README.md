@@ -11,3 +11,8 @@ Documentation site for AvatarOptimizer is created using [hugo](https://gohugo.io
 ## Other informations
 
 - Screenshots of the components are taken using EditorScreenshotTakeTool with width `320`
+- Screenshots in tutorial are taken with Anon.unity. The Anon.unity is made with originally with [Anon] 1.05, and 
+  upgraded to 1.06 with replacing GUID of prefab with that of 1.05 (`3b37219c818344b47a491cca0686c190`) and 
+  fbx with that of 1.05 (`438f5f8550649644293c5db4401190cd`)
+
+[Anon]: https://booth.pm/ja/items/3564947
