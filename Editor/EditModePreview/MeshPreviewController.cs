@@ -2,6 +2,7 @@ using System;
 using System.Reflection;
 using UnityEditor;
 using UnityEngine;
+using Object = UnityEngine.Object;
 #if !UNITY_2020_1_OR_NEWER
 using AnimationModeDriver = UnityEngine.Object;
 #endif
@@ -41,6 +42,12 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
             PreviewController?.Dispose();
         }
 
+        private Object ActiveEditor()
+        {
+            var editors = ActiveEditorTracker.sharedTracker.activeEditors;
+            return editors.Length == 0 ? null : editors[0].target;
+        } 
+
         private void UpdatePreviewing()
         {
             if (!previewing)
@@ -49,7 +56,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
             }
 
             // Showing Inspector changed
-            if (ActiveEditorTracker.sharedTracker.activeEditors[0].target != gameObject)
+            if (ActiveEditor() != gameObject)
             {
                 StopPreview();
                 return;
@@ -68,7 +75,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
 
             try
             {
-                var targetGameObject = ActiveEditorTracker.sharedTracker.activeEditors[0].target as GameObject;
+                var targetGameObject = ActiveEditor() as GameObject;
                 if (targetGameObject == null)
                     throw new Exception("Already In Animation Mode");
                 if (expectedGameObject != null && expectedGameObject != targetGameObject)
