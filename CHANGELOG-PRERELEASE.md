@@ -16,9 +16,12 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Eyelid bones disappears with Automatic MergeBone `#487`
 
 ### Security
+
+## [1.5.0-rc.3] - 2023-09-19
+### Fixed
+- Eyelid bones disappears with Automatic MergeBone [`#487`](https://github.com/anatawa12/AvatarOptimizer/pull/487)
 
 ## [1.5.0-rc.2] - 2023-09-15
 ### Added
@@ -767,7 +770,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-rc.2...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-rc.3...HEAD
+[1.5.0-rc.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-rc.2...v1.5.0-rc.3
 [1.5.0-rc.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-rc.1...v1.5.0-rc.2
 [1.5.0-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.14...v1.5.0-rc.1
 [1.5.0-beta.14]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.13...v1.5.0-beta.14
