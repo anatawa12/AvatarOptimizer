@@ -13,6 +13,12 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
 {
     class RemoveMeshPreviewController : IDisposable
     {
+        public static Type[] EditorTypes =
+        {
+            typeof(RemoveMeshByBlendShape),
+            typeof(RemoveMeshInBox),
+        };
+
         public RemoveMeshPreviewController([NotNull] SkinnedMeshRenderer targetRenderer, Mesh originalMesh = null, Mesh previewMesh = null)
         {
             if (targetRenderer == null) throw new ArgumentNullException(nameof(targetRenderer));

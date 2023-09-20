@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Reflection;
 using JetBrains.Annotations;
 using UnityEditor;
@@ -22,6 +23,12 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
         [SerializeField] private AnimationModeDriver driverCached;
 
         private AnimationModeDriver DriverCached => driverCached ? driverCached : driverCached = CreateDriver();
+
+        public bool Enabled
+        {
+            get => EditorPrefs.GetBool("com.anatawa12.avatar-optimizer.mesh-preview.enabled", true);
+            set => EditorPrefs.SetBool("com.anatawa12.avatar-optimizer.mesh-preview.enabled", value);
+        }
 
         private void OnEnable()
         {
@@ -56,6 +63,80 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
 
                 if (_previewController.UpdatePreviewing())
                     StopPreview();
+            }
+            else
+            {
+                if (Enabled && StateForImpl(null) == PreviewState.PreviewAble)
+                {
+                    var editorObj = ActiveEditor();
+                    if (editorObj is GameObject go &&
+                        RemoveMeshPreviewController.EditorTypes.Any(t => go.GetComponent(t)))
+                    {
+                        StartPreview(go);
+                    }
+                }
+            }
+        }
+
+        public enum PreviewState
+        {
+            PreviewAble,
+            PreviewingThat,
+
+            PreviewingOther,
+            ActiveEditorMismatch,
+        }
+
+        public static PreviewState StateFor([CanBeNull] Component component) => instance.StateForImpl(component);
+
+        private PreviewState StateForImpl([CanBeNull] Component component)
+        {
+            var gameObject = component ? component.gameObject : null;
+
+            if (previewing && targetRenderer && targetRenderer.gameObject == gameObject)
+                return PreviewState.PreviewingThat;
+
+            if (AnimationMode.InAnimationMode())
+                return PreviewState.PreviewingOther;
+
+            if (gameObject && ActiveEditor() as GameObject != gameObject)
+                return PreviewState.ActiveEditorMismatch;
+
+            return PreviewState.PreviewAble;
+        }
+
+        public static void ShowPreviewControl(Component component) => instance.ShowPreviewControlImpl(component);
+
+        private void ShowPreviewControlImpl(Component component)
+        {
+            switch (StateForImpl(component))
+            {
+                case PreviewState.PreviewAble:
+                    if (GUILayout.Button("Preview"))
+                    {
+                        Enabled = true;
+                        StartPreview();
+                    }
+                    break;
+                case PreviewState.PreviewingThat:
+                    if (GUILayout.Button("Stop Preview"))
+                    {
+                        StopPreview();
+                        Enabled = false;
+                    }
+                    break;
+                case PreviewState.PreviewingOther:
+                    EditorGUI.BeginDisabledGroup(true);
+                    GUILayout.Button("Preview (other Previewing)");
+                    EditorGUI.EndDisabledGroup();
+                    break;
+                case PreviewState.ActiveEditorMismatch:
+                    EditorGUI.BeginDisabledGroup(true);
+                    GUILayout.Button("Preview (not the active object)");
+                    EditorGUI.EndDisabledGroup();
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
         }
 

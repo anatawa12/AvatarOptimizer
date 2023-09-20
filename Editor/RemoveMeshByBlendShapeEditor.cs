@@ -30,21 +30,7 @@ namespace Anatawa12.AvatarOptimizer
         {
             var component = (RemoveMeshByBlendShape)target;
 
-            // TODO: replace with better GUI
-            if (EditModePreview.MeshPreviewController.Previewing)
-            {
-                if (GUILayout.Button("End Preview"))
-                {
-                    EditModePreview.MeshPreviewController.instance.StopPreview();
-                }
-            }
-            else
-            {
-                if (GUILayout.Button("Start Preview"))
-                {
-                    EditModePreview.MeshPreviewController.instance.StartPreview(component.gameObject);
-                }
-            }
+            EditModePreview.MeshPreviewController.ShowPreviewControl(component);
 
             if (!_renderer)
             {
