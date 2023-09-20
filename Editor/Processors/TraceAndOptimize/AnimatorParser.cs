@@ -327,7 +327,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 var rightEye = descriptor.customEyeLookSettings.rightEye;
                 if (leftEye)
                 {
-                    var updater = modificationsContainer.ModifyObject(rightEye);
+                    var updater = modificationsContainer.ModifyObject(leftEye);
                     foreach (var prop in TransformRotationAnimationKeys)
                         updater.AddModificationAsNewLayer(prop, AnimationProperty.Variable());
                 }
