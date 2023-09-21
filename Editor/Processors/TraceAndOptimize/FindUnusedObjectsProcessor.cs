@@ -309,6 +309,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     | ComponentDependencyCollector.DependencyType.Parent
                     | ComponentDependencyCollector.DependencyType.ComponentToTransform;
 
+                // Already Merged
+                if (transform.GetComponent<MergeBone>()) return true;
                 // Components must be Transform Only
                 if (transform.GetComponents<Component>().Length != 1) return false;
                 // The bone cannot be used generally
