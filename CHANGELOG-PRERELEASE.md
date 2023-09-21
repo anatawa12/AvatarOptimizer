@@ -16,11 +16,14 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Left eye disappears `#493`
-- MergeBone will loose transform information with extreamly small parent scale `#495`
-- Manually configured MergeBone is removed / disabled by GC Objects `#496`
 
 ### Security
+
+## [1.5.0-rc.4] - 2023-09-21
+### Fixed
+- Left eye disappears [`#493`](https://github.com/anatawa12/AvatarOptimizer/pull/493)
+- MergeBone will loose transform information with extreamly small parent scale [`#495`](https://github.com/anatawa12/AvatarOptimizer/pull/495)
+- Manually configured MergeBone is removed / disabled by GC Objects [`#496`](https://github.com/anatawa12/AvatarOptimizer/pull/496)
 
 ## [1.5.0-rc.3] - 2023-09-19
 ### Fixed
@@ -773,7 +776,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-rc.3...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-rc.4...HEAD
+[1.5.0-rc.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-rc.3...v1.5.0-rc.4
 [1.5.0-rc.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-rc.2...v1.5.0-rc.3
 [1.5.0-rc.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-rc.1...v1.5.0-rc.2
 [1.5.0-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-beta.14...v1.5.0-rc.1
