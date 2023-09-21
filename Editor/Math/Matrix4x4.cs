@@ -18,22 +18,26 @@ namespace Anatawa12.AvatarOptimizer
 
         // @formatter:off
         public float m00;
-        public float m01;
-        public float m02;
-        public float m03;
         public float m10;
-        public float m11;
-        public float m12;
-        public float m13;
         public float m20;
-        public float m21;
-        public float m22;
-        public float m23;
         public float m30;
+        public float m01;
+        public float m11;
+        public float m21;
         public float m31;
+        public float m02;
+        public float m12;
+        public float m22;
         public float m32;
+        public float m03;
+        public float m13;
+        public float m23;
         public float m33;
         // @formatter:on
+
+        public Vector3 offset => new Vector3(m03, m13, m23);
+        public Quaternion rotation => ToUnity().rotation;
+        public Vector3 lossyScale => ToUnity().lossyScale;
 
         public Vector3 MultiplyPoint3x4(Vector3 point)
         {
@@ -156,5 +160,8 @@ namespace Anatawa12.AvatarOptimizer
         public override bool Equals(object obj) => obj is Matrix4x4 other && Equals(other);
         public override int GetHashCode() => ToUnity().GetHashCode();
         public override string ToString() => ToUnity().ToString();
+
+        public static Matrix4x4 TRS(Vector3 pos, Quaternion rot, Vector3 scale) => UnityMatrix4x4.TRS(pos, rot, scale);
+        public static Matrix4x4 TRS(Transform t) => UnityMatrix4x4.TRS(t.localPosition, t.localRotation, t.localScale);
     }
 }
