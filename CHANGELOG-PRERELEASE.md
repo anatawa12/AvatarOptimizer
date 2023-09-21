@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - Left eye disappears `#493`
+- MergeBone will loose transform information with extreamly small parent scale `#495`
 
 ### Security
 
