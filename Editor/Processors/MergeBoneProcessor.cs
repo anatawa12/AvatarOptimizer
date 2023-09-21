@@ -80,11 +80,15 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 // if intermediate objects are inactive, moved bone should be initially inactive
                 // animations are not performed correctly but if bones activity is animated, automatic 
                 // merge bone doesn't merge such bone so ignore that for manual merge bone.
-                var (activeSelf, namePrefix) = ActiveSelfAndNamePrefix(mapping, mapped);
+                var (activeSelf, namePrefix, matrix) = ComputeParentInformation(mapping, mapped);
                 foreach (var child in mapping.DirectChildrenEnumerable().ToArray())
                 {
                     if (mergeMapping.ContainsKey(child)) continue;
+                    var mat = matrix * Matrix4x4.TRS(child);
                     child.parent = mapped;
+                    child.localPosition = mat.offset;
+                    child.localRotation = mat.rotation;
+                    child.localScale = mat.lossyScale;
                     if (!activeSelf) child.gameObject.SetActive(false);
                     if (avoidNameConflict)
                         child.name = namePrefix + "$" + child.name + "$" + (counter++);
@@ -95,19 +99,21 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 if (pair)
                     Object.DestroyImmediate(pair.gameObject);
 
-            (bool activeSelf, string namePrefix) ActiveSelfAndNamePrefix(Transform transform, Transform parent)
+            (bool activeSelf, string namePrefix, Matrix4x4 matrix) ComputeParentInformation(Transform transform, Transform parent)
             {
                 var segments = new List<string>();
                 var activeSelf = true;
+                var matrix = Matrix4x4.identity;
                 for (; transform != parent; transform = transform.parent)
                 {
                     segments.Add(transform.name);
                     activeSelf &= transform.gameObject.activeSelf;
+                    matrix = Matrix4x4.TRS(transform) * matrix;
                 }
 
                 segments.Reverse();
 
-                return (activeSelf, string.Join("$", segments));
+                return (activeSelf, string.Join("$", segments), matrix);
             }
         }
 
