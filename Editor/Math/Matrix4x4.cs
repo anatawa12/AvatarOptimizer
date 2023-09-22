@@ -36,7 +36,7 @@ namespace Anatawa12.AvatarOptimizer
         // @formatter:on
 
         public Vector3 offset => new Vector3(m03, m13, m23);
-        public Quaternion rotation => ToUnity().rotation;
+        public Quaternion rotation => new Matrix3x3(this).rotation;
         public Vector3 lossyScale => ToUnity().lossyScale;
 
         public Vector3 MultiplyPoint3x4(Vector3 point)
