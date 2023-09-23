@@ -16,10 +16,13 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Remove unused bone references [`#498`](https://github.com/anatawa12/AvatarOptimizer/pull/498)
-- MergeBone will loose some other transform information with extreamly small parent scale `#499`
 
 ### Security
+
+## [1.5.0-rc.5] - 2023-09-23
+### Fixed
+- Remove unused bone references [`#498`](https://github.com/anatawa12/AvatarOptimizer/pull/498)
+- MergeBone will loose some other transform information with extreamly small parent scale [`#499`](https://github.com/anatawa12/AvatarOptimizer/pull/499)
 
 ## [1.5.0-rc.4] - 2023-09-21
 ### Fixed
@@ -778,7 +781,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-rc.4...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-rc.5...HEAD
+[1.5.0-rc.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-rc.4...v1.5.0-rc.5
 [1.5.0-rc.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-rc.3...v1.5.0-rc.4
 [1.5.0-rc.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-rc.2...v1.5.0-rc.3
 [1.5.0-rc.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-rc.1...v1.5.0-rc.2
