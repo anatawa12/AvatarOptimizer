@@ -65,7 +65,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 var bones = renderer.bones;
                 for (var i = 0; i < bones.Length && i < Bones.Count; i++) Bones[i].Transform = bones[i];
 
-                Optimize();
+                RemoveUnusedBones();
 
                 AssertInvariantContract("SkinnedMeshRenderer");
             });
@@ -268,6 +268,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         }
 
         public void Optimize()
+        {
+            RemoveUnusedBones();
+        }
+
+        private void RemoveUnusedBones()
         {
             // GC Bones
             var usedBones = new HashSet<Bone>();
