@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- MergeBone will loose some other transform information with extreamly small parent scale `#499`
 
 ### Security
 
