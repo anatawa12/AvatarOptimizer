@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - Remove unused bone references [`#498`](https://github.com/anatawa12/AvatarOptimizer/pull/498)
+- MergeBone will loose some other transform information with extreamly small parent scale `#499`
 
 ### Security
 
