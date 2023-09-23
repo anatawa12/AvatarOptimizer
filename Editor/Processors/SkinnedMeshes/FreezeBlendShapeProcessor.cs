@@ -41,8 +41,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     vertex.Normal += normal;
                     tangent += (Vector3)vertex.Tangent;
                     vertex.Tangent = new Vector4(tangent.x, tangent.y, tangent.z, vertex.Tangent.w);
-                    vertex.BlendShapes.Remove(name);
                 }
+            }
+
+            foreach (var name in freezeNames)
+            {
+                target.BlendShapeData.DeleteBlendshape(name);
             }
 
             {

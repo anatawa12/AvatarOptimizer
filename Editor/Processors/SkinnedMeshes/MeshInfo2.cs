@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.ErrorReporting;
+using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes.Blendshape;
 using JetBrains.Annotations;
 using Unity.Collections;
 using UnityEngine;
@@ -15,10 +16,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 {
     internal class MeshInfo2
     {
+        public int InitialVertexCount { get; private set; }
         public readonly Renderer SourceRenderer;
         public Transform RootBone;
         public Bounds Bounds;
         public readonly List<Vertex> Vertices = new List<Vertex>(0);
+        public BlendshapeInfo BlendShapeData;
 
         // TexCoordStatus which is 3 bits x 8 = 24 bits
         private ushort _texCoordStatus;
@@ -41,7 +44,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 BuildReport.LogFatal("The Mesh is not readable. Please Check Read/Write")?.WithContext(mesh);
                 return;
             }
-
+            
             BuildReport.ReportingObject(renderer, true, () =>
             {
                 if (mesh)
@@ -152,33 +155,22 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             }
 
             BlendShapes.Clear();
-            var deltaVertices = new Vector3[Vertices.Count];
-            var deltaNormals = new Vector3[Vertices.Count];
-            var deltaTangents = new Vector3[Vertices.Count];
             for (var i = 0; i < mesh.blendShapeCount; i++)
             {
                 var shapeName = mesh.GetBlendShapeName(i);
 
                 BlendShapes.Add((shapeName, 0.0f));
-
-                var frames = Vertices.Select(v => v.BlendShapes[shapeName] = new List<Vertex.BlendShapeFrame>()).ToArray();
-
-                for (int frame = 0; frame < mesh.GetBlendShapeFrameCount(i); frame++)
-                {
-                    mesh.GetBlendShapeFrameVertices(i, frame, deltaVertices, deltaNormals, deltaTangents);
-                    var weight = mesh.GetBlendShapeFrameWeight(i, frame);
-
-                    for (var vertex = 0; vertex < deltaNormals.Length; vertex++)
-                        frames[vertex].Add(new Vertex.BlendShapeFrame(weight, deltaVertices[vertex], deltaNormals[vertex], deltaTangents[vertex]));                    
-                }
             }
         }
 
         public void ReadStaticMesh([NotNull] Mesh mesh)
         {
+            InitialVertexCount = mesh.vertexCount;
+            BlendShapeData = new BlendshapeInfo(mesh);
+            
             Vertices.Capacity = Math.Max(Vertices.Capacity, mesh.vertexCount);
             Vertices.Clear();
-            for (var i = 0; i < mesh.vertexCount; i++) Vertices.Add(new Vertex());
+            for (var i = 0; i < mesh.vertexCount; i++) Vertices.Add(new Vertex(BlendShapeData, i));
 
             CopyVertexAttr(mesh.vertices, (x, v) => x.Position = v);
             CopyVertexAttr(mesh.normals, (x, v) => x.Normal = v);
@@ -265,6 +257,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             Bones.Clear();
             HasColor = false;
             HasTangent = false;
+            BlendShapeData = null;
         }
 
         public void Optimize()
@@ -420,46 +413,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             }
 
             // BlendShapes
-            if (BlendShapes.Count != 0)
+            if (BlendShapes.Count != 0 && BlendShapeData != null)
             {
-                for (var i = 0; i < BlendShapes.Count; i++)
-                {
-                    Debug.Assert(destMesh.blendShapeCount == i, "Unexpected state: blend shape count");
-                    var (shapeName, _) = BlendShapes[i];
-                    var weightsSet = new HashSet<float>();
-
-                    foreach (var vertex in Vertices)
-                        if (vertex.BlendShapes.TryGetValue(shapeName, out var frames))
-                            foreach (var frame in frames)
-                                weightsSet.Add(frame.Weight);
-
-                    // blendShape with no weights is not allowed.
-                    if (weightsSet.Count == 0)
-                        weightsSet.Add(100);
-
-                    var weights = weightsSet.ToArray();
-                    Array.Sort(weights);
-
-                    var positions = new Vector3[Vertices.Count];
-                    var normals = new Vector3[Vertices.Count];
-                    var tangents = new Vector3[Vertices.Count];
-
-                    foreach (var weight in weights)
-                    {
-                        for (var vertexI = 0; vertexI < Vertices.Count; vertexI++)
-                        {
-                            var vertex = Vertices[vertexI];
-
-                            vertex.TryGetBlendShape(shapeName, weight, out var position, out var normal,
-                                out var tangent);
-                            positions[vertexI] = position;
-                            normals[vertexI] = normal;
-                            tangents[vertexI] = tangent;
-                        }
-
-                        destMesh.AddBlendShapeFrame(shapeName, weight, positions, normals, tangents);
-                    }
-                }
+                BlendShapeData.SaveToMesh(destMesh, Vertices);
             }
         }
 
@@ -474,7 +430,21 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 WriteToMesh(mesh);
                 targetRenderer.sharedMesh = mesh;
                 for (var i = 0; i < BlendShapes.Count; i++)
-                    targetRenderer.SetBlendShapeWeight(i, BlendShapes[i].weight);
+                {
+                    try
+                    {
+                        if (i > targetRenderer.sharedMesh.blendShapeCount)
+                        {
+                            UnityEngine.Debug.Log($"Blendshape {BlendShapes[i].name} is out of range on {targetRenderer.gameObject.name}");
+                        }
+                        targetRenderer.SetBlendShapeWeight(i, BlendShapes[i].weight);
+                    }
+                    catch (Exception e)
+                    {
+                        UnityEngine.Debug.LogException(e);
+                    }
+                }
+                    
                 targetRenderer.sharedMaterials = SubMeshes.Select(x => x.SharedMaterial).ToArray();
                 targetRenderer.bones = Bones.Select(x => x.Transform).ToArray();
 
@@ -512,6 +482,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
     internal class Vertex
     {
+        public int Index { get; set; }
         public Vector3 Position { get; set; }
         public Vector3 Normal { get; set; }
         public Vector4 Tangent { get; set; } = new Vector4(1, 0, 0, 1);
@@ -529,9 +500,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         // SkinnedMesh related
         public List<(Bone bone, float weight)> BoneWeights = new List<(Bone, float)>();
 
-        // Each frame must sorted increasingly
-        public readonly Dictionary<string, List<BlendShapeFrame>> BlendShapes = 
-            new Dictionary<string, List<BlendShapeFrame>>();
+        public BlendshapeInfo BlendshapeInfo;
 
         public readonly struct BlendShapeFrame
         {
@@ -595,94 +564,18 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         public bool TryGetBlendShape(string name, float weight, out Vector3 position, out Vector3 normal, out Vector3 tangent)
         {
-            if (!BlendShapes.TryGetValue(name, out var frames))
-            {
-                position = default;
-                normal = default;
-                tangent = default;
-                return false;
-            }
-
-            if (Mathf.Abs(weight) <= 0.0001f && ZeroForWeightZero())
-            {
-                position = Vector3.zero;
-                normal = Vector3.zero;
-                tangent = Vector3.zero;
-                return true;
-            }
-
-            bool ZeroForWeightZero()
-            {
-                if (frames.Count == 1) return true;
-                var first = frames.First();
-                var end = frames.Last();
-
-                // both weight are same sign, zero for 0 weight
-                if (first.Weight <= 0 && end.Weight <= 0) return true;
-                if (first.Weight >= 0 && end.Weight >= 0) return true;
-
-                return false;
-            }
-
-            if (frames.Count == 1)
-            {
-                // simplest and likely
-                var frame = frames[0];
-                var ratio = weight / frame.Weight;
-                position = frame.Position * ratio;
-                normal = frame.Normal * ratio;
-                tangent = frame.Tangent * ratio;
-                return true;
-            }
-            else
-            {
-                // multi frame
-                var (lessFrame, greaterFrame) = FindFrame();
-                var ratio = InverseLerpUnclamped(lessFrame.Weight, greaterFrame.Weight, weight);
-
-                position = Vector3.LerpUnclamped(lessFrame.Position, greaterFrame.Position, ratio);
-                normal = Vector3.LerpUnclamped(lessFrame.Normal, greaterFrame.Normal, ratio);
-                tangent = Vector3.LerpUnclamped(lessFrame.Tangent, greaterFrame.Tangent, ratio);
-                return true;
-            }
-
-            (BlendShapeFrame, BlendShapeFrame) FindFrame()
-            {
-                var firstFrame = frames[0];
-                var lastFrame = frames.Last();
-
-                if (firstFrame.Weight > 0 && weight < firstFrame.Weight)
-                {
-                    // if all weights are positive and the weight is less than first weight: lerp 0..first
-                    return (default, firstFrame);
-                }
-
-                if (lastFrame.Weight < 0 && weight > lastFrame.Weight)
-                {
-                    // if all weights are negative and the weight is more than last weight: lerp last..0
-                    return (lastFrame, default);
-                }
-
-                // otherwise, lerp between two surrounding frames OR nearest two frames
-
-                for (var i = 1; i < frames.Count; i++)
-                {
-                    if (weight <= frames[i].Weight)
-                        return (frames[i - 1], frames[i]);
-                }
-
-                return (frames[frames.Count - 2], frames[frames.Count - 1]);
-            }
-
-            float InverseLerpUnclamped(float a, float b, float value) => (value - a) / (b - a);
+            return BlendshapeInfo.TryGetBlendshape(name, weight, Index, out position, out normal, out tangent);
         }
 
-        public Vertex()
+        public Vertex(BlendshapeInfo blendshapeInfo, int index)
         {
+            this.BlendshapeInfo = blendshapeInfo;
+            Index = index;
         }
 
-        private Vertex(Vertex vertex)
+        internal Vertex(Vertex vertex)
         {
+            Index = vertex.Index;
             Position = vertex.Position;
             Normal = vertex.Normal;
             Tangent = vertex.Tangent;
@@ -696,7 +589,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             TexCoord7 = vertex.TexCoord7;
             Color = vertex.Color;
             BoneWeights = vertex.BoneWeights.ToList();
-            BlendShapes = new Dictionary<string, List<BlendShapeFrame>>(vertex.BlendShapes);
+            BlendshapeInfo = vertex.BlendshapeInfo;
         }
 
         public Vertex Clone() => new Vertex(this);
