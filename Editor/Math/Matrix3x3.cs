@@ -50,52 +50,35 @@ namespace Anatawa12.AvatarOptimizer
             }
         }
 
-        public Matrix3x3 transpose => new Matrix3x3(
-            m00, m01, m02,
-            m10, m11, m12,
-            m20, m21, m22);
-
-        public float determinant => m00 * m11 * m22 + m01 * m12 * m20 + m02 * m10 * m21
-                                    - m02 * m11 * m20 - m00 * m12 * m21 - m01 * m10 * m22;
-
-        public Quaternion rotation => (this / determinant).ComputeRotationNormalized();
-
-        private Quaternion ComputeRotationNormalized()
+        public static Matrix3x3 Rotate(Quaternion q)
         {
-            // https://github.com/davheld/tf/blob/824bb0bf2c26308e41c1add4ded31d0bf2775730/include/tf/LinearMath/Matrix3x3.h#L243-L275
-            var trace = m00 + m11 + m22;
-            Quaternion result = default;
+            float x2 = q.x * 2f;
+            float y2 = q.y * 2f;
+            float z2 = q.z * 2f;
+            float xx2 = q.x * x2;
+            float yy2 = q.y * y2;
+            float zz2 = q.z * z2;
+            float xy2 = q.x * y2;
+            float xz2 = q.x * z2;
+            float yz2 = q.y * z2;
+            float xw2 = q.w * x2;
+            float yw2 = q.w * y2;
+            float zw2 = q.w * z2;
+            Matrix3x3 result;
+            result.m00 = 1f - (yy2 + zz2);
+            result.m10 = xy2 + zw2;
+            result.m20 = xz2 - yw2;
 
-            if (trace > 0) 
-            {
-                // non-zero scale
-                var s = Mathf.Sqrt(trace + 1.0f);
-                result.w = s * 0.5f;
-                s = 0.5f / s;
+            result.m01 = xy2 - zw2;
+            result.m11 = 1f - (xx2 + zz2);
+            result.m21 = yz2 + xw2;
 
-                result.x = (m21 - m12) * s;
-                result.y = (m02 - m20) * s;
-                result.z = (m10 - m01) * s;
-            } 
-            else 
-            {
-                int i = m00 < m11 ? 
-                    (m11 < m22 ? 2 : 1) :
-                    (m00 < m22 ? 2 : 0); 
-                int j = (i + 1) % 3;  
-                int k = (i + 2) % 3;
-
-                var s = Mathf.Sqrt(this[i, i] - this[j, j] - this[k, k] + 1.0f);
-                result[i] = s * 0.5f;
-                s = 0.5f / s;
-
-                result[3] = (this[k, j] - this[j, k]) * s;
-                result[j] = (this[j, i] + this[i, j]) * s;
-                result[k] = (this[k, i] + this[i, k]) * s;
-            }
-
+            result.m02 = xz2 + yw2;
+            result.m12 = yz2 - xw2;
+            result.m22 = 1f - (xx2 + yy2);
             return result;
         }
+
 
         public Vector3 MultiplyPoint3x3(Vector3 point)
         {
@@ -121,6 +104,23 @@ namespace Anatawa12.AvatarOptimizer
         }
 
         public static Matrix3x3 operator *(float w, Matrix3x3 m) => m * w;
+
+        public static Matrix3x3 operator *(Matrix3x3 lhs, Matrix3x3 rhs)
+        {
+            Matrix3x3 result;
+            result.m00 = lhs.m00 * rhs.m00 + lhs.m01 * rhs.m10 + lhs.m02 * rhs.m20;
+            result.m01 = lhs.m00 * rhs.m01 + lhs.m01 * rhs.m11 + lhs.m02 * rhs.m21;
+            result.m02 = lhs.m00 * rhs.m02 + lhs.m01 * rhs.m12 + lhs.m02 * rhs.m22;
+
+            result.m10 = lhs.m10 * rhs.m00 + lhs.m11 * rhs.m10 + lhs.m12 * rhs.m20;
+            result.m11 = lhs.m10 * rhs.m01 + lhs.m11 * rhs.m11 + lhs.m12 * rhs.m21;
+            result.m12 = lhs.m10 * rhs.m02 + lhs.m11 * rhs.m12 + lhs.m12 * rhs.m22;
+
+            result.m20 = lhs.m20 * rhs.m00 + lhs.m21 * rhs.m10 + lhs.m22 * rhs.m20;
+            result.m21 = lhs.m20 * rhs.m01 + lhs.m21 * rhs.m11 + lhs.m22 * rhs.m21;
+            result.m22 = lhs.m20 * rhs.m02 + lhs.m21 * rhs.m12 + lhs.m22 * rhs.m22;
+            return result;
+        }
 
         public static Matrix3x3 operator /(Matrix3x3 m, float w)
         {

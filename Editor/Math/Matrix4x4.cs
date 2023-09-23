@@ -36,8 +36,6 @@ namespace Anatawa12.AvatarOptimizer
         // @formatter:on
 
         public Vector3 offset => new Vector3(m03, m13, m23);
-        public Quaternion rotation => new Matrix3x3(this).rotation;
-        public Vector3 lossyScale => ToUnity().lossyScale;
 
         public Vector3 MultiplyPoint3x4(Vector3 point)
         {
@@ -144,6 +142,9 @@ namespace Anatawa12.AvatarOptimizer
             result.m33 = m33;
             return result;
         }
+
+        // ReSharper disable once InconsistentNaming
+        public Matrix3x3 To3x3() => new Matrix3x3(this);
 
         public Matrix4x4(Vector4 column0, Vector4 column1, Vector4 column2, Vector4 column3) =>
             this = new UnityMatrix4x4(column0, column1, column2, column3);

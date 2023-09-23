@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.ErrorReporting;
 using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
+using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -80,41 +81,26 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 // if intermediate objects are inactive, moved bone should be initially inactive
                 // animations are not performed correctly but if bones activity is animated, automatic 
                 // merge bone doesn't merge such bone so ignore that for manual merge bone.
-                var (activeSelf, namePrefix, matrix) = ComputeParentInformation(mapping, mapped);
+                var parentInfo = MergeBoneTransParentInfo.Compute(mapping, mapped);
                 foreach (var child in mapping.DirectChildrenEnumerable().ToArray())
                 {
                     if (mergeMapping.ContainsKey(child)) continue;
-                    var mat = matrix * Matrix4x4.TRS(child);
+
+                    var (position, rotation, scale) = parentInfo.ComputeInfoFor(child);
+
                     child.parent = mapped;
-                    child.localPosition = mat.offset;
-                    child.localRotation = mat.rotation;
-                    child.localScale = mat.lossyScale;
-                    if (!activeSelf) child.gameObject.SetActive(false);
+                    child.localPosition = position;
+                    child.localRotation = rotation;
+                    child.localScale = scale;
+                    if (!parentInfo.ActiveSelf) child.gameObject.SetActive(false);
                     if (avoidNameConflict)
-                        child.name = namePrefix + "$" + child.name + "$" + (counter++);
+                        child.name = parentInfo.NamePrefix + "$" + child.name + "$" + counter++;
                 }
             }
 
             foreach (var pair in mergeMapping.Keys)
                 if (pair)
                     Object.DestroyImmediate(pair.gameObject);
-
-            (bool activeSelf, string namePrefix, Matrix4x4 matrix) ComputeParentInformation(Transform transform, Transform parent)
-            {
-                var segments = new List<string>();
-                var activeSelf = true;
-                var matrix = Matrix4x4.identity;
-                for (; transform != parent; transform = transform.parent)
-                {
-                    segments.Add(transform.name);
-                    activeSelf &= transform.gameObject.activeSelf;
-                    matrix = Matrix4x4.TRS(transform) * matrix;
-                }
-
-                segments.Reverse();
-
-                return (activeSelf, string.Join("$", segments), matrix);
-            }
         }
 
         private void DoBoneMap2(MeshInfo2 meshInfo2, Dictionary<Transform, Transform> mergeMapping)
@@ -249,6 +235,70 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
             public override int GetHashCode() =>
                 unchecked(_bindPoseInfo.GetHashCode() * 397) ^ (Transform != null ? Transform.GetHashCode() : 0);
+        }
+        
+
+        struct MergeBoneTransParentInfo
+        {
+            public Quaternion ParentRotation;
+            public Matrix4x4 ParentMatrix;
+            public bool ActiveSelf;
+            public string NamePrefix;
+
+            public (Vector3 position, Quaternion rotation, Vector3 scale) ComputeInfoFor([NotNull] Transform child)
+            {
+                if (child == null) throw new ArgumentNullException(nameof(child));
+
+                var selfLocalRotation = child.localRotation;
+
+                var matrix = ParentMatrix * Matrix4x4.TRS(child);
+
+                var rotation = ParentRotation * FixRotWithParentScale(selfLocalRotation, child.parent.localScale);
+
+                var reversedMatrix = Matrix3x3.Rotate(Quaternion.Inverse(rotation)) * matrix.To3x3();
+                var scale = new Vector3(reversedMatrix.m00, reversedMatrix.m11, reversedMatrix.m22);
+
+
+                return (matrix.offset, rotation, scale);
+            }
+
+            public static MergeBoneTransParentInfo Compute([NotNull] Transform parent, [CanBeNull] Transform root)
+            {
+                var parentRotation = Quaternion.identity;
+                var parentMatrix = Matrix4x4.identity;
+                var segments = new List<string>();
+                var activeSelf = true;
+
+                for (var current = parent; current != root; current = current.parent)
+                {
+                    parentRotation = current.localRotation * FixRotWithParentScale(parentRotation, current.localScale);
+                    parentMatrix = Matrix4x4.TRS(current) * parentMatrix;
+                    segments.Add(current.name);
+                    activeSelf &= current.gameObject.activeSelf;
+                }
+
+                segments.Reverse();
+
+                return new MergeBoneTransParentInfo
+                {
+                    ParentRotation = parentRotation,
+                    ParentMatrix = parentMatrix,
+                    ActiveSelf = activeSelf,
+                    NamePrefix = string.Join("$", segments),
+                };
+            }
+
+            private static Quaternion FixRotWithParentScale(Quaternion rotation, Vector3 parentScale)
+            {
+                // adjust rotation based on scale sign of parent
+                return new Quaternion
+                {
+                    x = Mathf.Sign(parentScale.z * parentScale.y) * rotation.x,
+                    y = Mathf.Sign(parentScale.z * parentScale.x) * rotation.y,
+                    z = Mathf.Sign(parentScale.y * parentScale.x) * rotation.z,
+                    w = rotation.w,
+                };
+            }
         }
     }
 }
