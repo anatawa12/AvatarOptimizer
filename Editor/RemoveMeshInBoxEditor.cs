@@ -22,6 +22,8 @@ namespace Anatawa12.AvatarOptimizer
 
         protected override void OnInspectorGUIInner()
         {
+            EditModePreview.MeshPreviewController.ShowPreviewControl((Component)target);
+
             // size prop
             _boxes.isExpanded = true;
             using (new BoundingBoxEditor.EditorScope(this))
