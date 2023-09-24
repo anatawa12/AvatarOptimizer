@@ -1,5 +1,4 @@
-﻿#if NADEMOFU
-using System;
+﻿using System;
 using Anatawa12.AvatarOptimizer.ErrorReporting;
 using Anatawa12.AvatarOptimizer.ndmf;
 using Anatawa12.AvatarOptimizer.Processors;
@@ -86,4 +85,3 @@ namespace Anatawa12.AvatarOptimizer.ndmf
         }
     }
 }
-#endif

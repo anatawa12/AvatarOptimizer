@@ -32,12 +32,6 @@
     ],
     "autoReferenced": false,
     "defineConstraints": [],
-    "versionDefines": [
-        {
-            "name": "nadena.dev.ndmf",
-            "expression": "0.4.0",
-            "define": "NADEMOFU"
-        }
-    ],
+    "versionDefines": [],
     "noEngineReferences": false
 }
