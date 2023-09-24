@@ -8,18 +8,23 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Support for [NDMF](https://ndmf.nadena.dev) integration [`#375`](https://github.com/anatawa12/AvatarOptimizer/pull/375)
 
 ### Changed
 
 ### Deprecated
 
 ### Removed
-- internal ApplyOnPlay framework `#504`
 
 ### Fixed
 
 ### Security
+
+## [1.5.0-rc.7] - 2023-09-24
+### Added
+- Support for [NDMF](https://ndmf.nadena.dev) integration [`#375`](https://github.com/anatawa12/AvatarOptimizer/pull/375)
+
+### Removed
+- internal ApplyOnPlay framework [`#504`](https://github.com/anatawa12/AvatarOptimizer/pull/504)
 
 ## [1.5.0-rc.6] - 2023-09-24
 ### Fixed
@@ -790,7 +795,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-rc.6...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-rc.7...HEAD
+[1.5.0-rc.7]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-rc.6...v1.5.0-rc.7
 [1.5.0-rc.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-rc.5...v1.5.0-rc.6
 [1.5.0-rc.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-rc.4...v1.5.0-rc.5
 [1.5.0-rc.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-rc.3...v1.5.0-rc.4
