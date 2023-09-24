@@ -7,8 +7,7 @@ namespace Anatawa12.AvatarOptimizer
 {
     /// <summary>
     /// This component was to apply Avatar Optimizer.
-    /// But this is completely replaced with Apply on Play Framework in `Internal/ApplyOnPlay`.
-    /// That framework will be published as distinct framework in the near feature. 
+    /// But this is completely replaced with NDMF. 
     /// </summary>
     [AddComponentMenu("")]
     [ExecuteAlways]
