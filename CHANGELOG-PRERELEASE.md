@@ -20,6 +20,9 @@ The format is based on [Keep a Changelog].
 ### Security
 
 ## [1.5.0-rc.5] - 2023-09-23
+### Added
+- Full EditMode Preview of RemoveMesh Components [`#500`](https://github.com/anatawa12/AvatarOptimizer/pull/500)
+
 ### Fixed
 - Remove unused bone references [`#498`](https://github.com/anatawa12/AvatarOptimizer/pull/498)
 - MergeBone will loose some other transform information with extreamly small parent scale [`#499`](https://github.com/anatawa12/AvatarOptimizer/pull/499)
