@@ -84,6 +84,40 @@ namespace Anatawa12.AvatarOptimizer
             }
         }
 
+        [CanBeNull]
+        public string MapPath(string srcPath, Type type)
+        {
+            var gameObjectInfo = GetGameObjectInfo(srcPath);
+            if (gameObjectInfo == null) return srcPath;
+            var (instanceId, componentInfo) = gameObjectInfo.GetComponentByType(type);
+
+            if (componentInfo != null)
+            {
+                var component = EditorUtility.InstanceIDToObject(componentInfo.MergedInto) as Component;
+                // there's mapping about component.
+                // this means the component is merged or some prop has mapping
+                if (!component) return null; // this means removed.
+
+                var newPath = Utils.RelativePath(_rootGameObject.transform, component.transform);
+                if (newPath == null) return null; // this means moved to out of the animator scope
+
+                return newPath;
+            }
+            else
+            {
+                // The component is not merged & no prop mapping so process GameObject mapping
+
+                if (type != typeof(GameObject))
+                {
+                    var component = EditorUtility.InstanceIDToObject(instanceId) as Component;
+                    if (!component) return null; // this means removed
+                }
+
+                if (gameObjectInfo.NewPath == null) return null;
+                return gameObjectInfo.NewPath;
+            }
+        }
+
         public EditorCurveBinding MapBinding(EditorCurveBinding binding)
         {
             var gameObjectInfo = GetGameObjectInfo(binding.path);

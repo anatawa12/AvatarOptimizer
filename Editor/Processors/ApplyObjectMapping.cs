@@ -167,7 +167,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
             new AnimatorControllerLayer
             {
                 name = layer.name,
-                avatarMask = layer.avatarMask,
+                avatarMask = DeepClone(layer.avatarMask, CustomClone),
                 blendingMode = layer.blendingMode,
                 defaultWeight = layer.defaultWeight,
                 syncedLayerIndex = layer.syncedLayerIndex,
@@ -215,6 +215,27 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
                 return newClip;
             }
+            else if (o is AvatarMask mask)
+            {
+                var newMask = _session.AddToAsset(new AvatarMask());
+                newMask.name = "rebased " + mask.name;
+                newMask.transformCount = mask.transformCount;
+                var dstI = 0;
+                for (var srcI = 0; srcI < mask.transformCount; srcI++)
+                {
+                    var path = mask.GetTransformPath(srcI);
+                    var newPath = _mapping.MapPath(path, typeof(Transform));
+                    if (newPath != null)
+                    {
+                        newMask.SetTransformPath(dstI, newPath);
+                        newMask.SetTransformActive(dstI, mask.GetTransformActive(srcI));
+                        dstI++;
+                    }
+                }
+                newMask.transformCount = dstI;
+
+                return newMask;
+            }
             else
             {
                 return null;
@@ -239,6 +260,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 case AnimatorStateMachine _:
                 case AnimatorTransitionBase _:
                 case StateMachineBehaviour _:
+                case AvatarMask _:
                     break; // We want to clone these types
 
                 // Leave textures, materials, and script definitions alone
