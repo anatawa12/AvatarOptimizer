@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.ErrorReporting;
+using UnityEditor;
+using UnityEditor.Animations;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -31,6 +33,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             var sourceMaterials = meshInfos.Select(x => x.SubMeshes.Select(y => y.SharedMaterial).ToArray()).ToArray();
 
             var (subMeshIndexMap, materials) = CreateMergedMaterialsAndSubMeshIndexMapping(sourceMaterials);
+
+#if !UNITY_2021_2_OR_NEWER
+            FixSubMeshIndexMap(session, meshInfos, subMeshIndexMap, materials);
+#endif
 
             var sourceRootBone = target.RootBone;
             var updateBounds = sourceRootBone && target.Bounds == default;
@@ -190,6 +196,54 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             return (resultIndices, resultMaterials);
         }
+
+#if !UNITY_2021_2_OR_NEWER
+        // material slot #4 should not be animated to avoid Unity bug
+        // https://issuetracker.unity3d.com/issues/material-is-applied-to-two-slots-when-applying-material-to-a-single-slot-while-recording-animation
+        private void FixSubMeshIndexMap(OptimizerSession session, MeshInfo2[] meshInfos, int[][] subMeshIndexMap, List<Material> materials)
+        {
+            const int SubMeshIndexToShiftIfAnimated = 4;
+            var subMeshIndexToShift = subMeshIndexMap
+                .SelectMany((x, i) => x.Select((y, j) => (renderer: meshInfos[i].SourceRenderer, src: j, dst: y)))
+                .Where(x => x.dst == SubMeshIndexToShiftIfAnimated)
+                .ToArray();
+
+            foreach (var component in session.GetComponents<Component>())
+            {
+                if (component is Transform) continue;
+
+                var serialized = new SerializedObject(component);
+                var prop = serialized.GetIterator();
+                var enterChildren = true;
+                while (prop.Next(enterChildren))
+                {
+                    enterChildren = prop.propertyType == SerializedPropertyType.Generic;
+
+                    if (prop.propertyType == SerializedPropertyType.ObjectReference &&
+                        prop.objectReferenceValue is AnimatorController controller &&
+                        controller.animationClips
+                            .SelectMany(x => AnimationUtility.GetObjectReferenceCurveBindings(x))
+                            .Select(x => (target: AnimationUtility.GetAnimatedObject(component.gameObject, x), x.propertyName))
+                            .Any(x => subMeshIndexToShift.Any(y => x.target == y.renderer && x.propertyName == $"m_Materials.Array.data[{y.src}]")))
+                    {
+                        // add fake slot at #4
+                        materials.Insert(SubMeshIndexToShiftIfAnimated, null);
+                        for (var i = 0; i < subMeshIndexMap.Length; i++)
+                        {
+                            for (var j = 0; j < subMeshIndexMap[i].Length; j++)
+                            {
+                                if (subMeshIndexMap[i][j] >= SubMeshIndexToShiftIfAnimated)
+                                {
+                                    subMeshIndexMap[i][j]++;
+                                }
+                            }
+                        }
+                        return;
+                    }
+                }
+            }
+        }
+#endif
 
         public override IMeshInfoComputer GetComputer(IMeshInfoComputer upstream) => new MeshInfoComputer(this);
 
