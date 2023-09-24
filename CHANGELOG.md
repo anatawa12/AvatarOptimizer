@@ -40,6 +40,7 @@ The format is based on [Keep a Changelog].
 - Error if all vertices of some BlendShape is removed by RemoveMeshByBlendShape or RemoveMeshInBox `#440`
 - RemoveMeshByBlendShape on the SkinnedMeshRenderer with MergeSkinnedMesh not working `#451`
 - MergeBone may make some bone inactive to active if bone being merged is inactive `#454`
+- Avoid problematic material slot in MergeSkinnedMesh [`#508`](https://github.com/anatawa12/AvatarOptimizer/pull/508)
 
 [unity-bug]: https://issuetracker.unity3d.com/issues/crash-on-gettargetassemblybyscriptpath-when-a-po-file-in-the-packages-directory-is-not-under-an-assembly-definition
 
