@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- AvatarMask broken with many cases `#502`
 
 ### Security
 
