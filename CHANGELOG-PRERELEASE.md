@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog].
 ### Deprecated
 
 ### Removed
+- internal ApplyOnPlay framework `#504`
 
 ### Fixed
 

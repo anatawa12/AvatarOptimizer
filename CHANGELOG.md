@@ -32,6 +32,7 @@ The format is based on [Keep a Changelog].
   - You can migrate to `Remove Unused Objects` only with one click!
 
 ### Removed
+- internal ApplyOnPlay framework `#504`
 
 ### Fixed
 - Crash with Unity 2022 `#423`
