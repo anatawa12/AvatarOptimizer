@@ -16,9 +16,12 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- AvatarMask broken with many cases `#502`
 
 ### Security
+
+## [1.5.0-rc.6] - 2023-09-24
+### Fixed
+- AvatarMask broken with many cases [`#502`](https://github.com/anatawa12/AvatarOptimizer/pull/502)
 
 ## [1.5.0-rc.5] - 2023-09-23
 ### Added
@@ -785,7 +788,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-rc.5...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-rc.6...HEAD
+[1.5.0-rc.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-rc.5...v1.5.0-rc.6
 [1.5.0-rc.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-rc.4...v1.5.0-rc.5
 [1.5.0-rc.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-rc.3...v1.5.0-rc.4
 [1.5.0-rc.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-rc.2...v1.5.0-rc.3
