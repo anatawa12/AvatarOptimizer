@@ -34,10 +34,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             var (subMeshIndexMap, materials) = CreateMergedMaterialsAndSubMeshIndexMapping(sourceMaterials);
 
-#if !UNITY_2021_2_OR_NEWER
-            FixSubMeshIndexMap(session, meshInfos, subMeshIndexMap, materials);
-#endif
-
             var sourceRootBone = target.RootBone;
             var updateBounds = sourceRootBone && target.Bounds == default;
 
@@ -124,6 +120,36 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 target.AssertInvariantContract($"processing meshInfo {Target.gameObject.name}");
             }
 
+#if !UNITY_2021_2_OR_NEWER
+            // material slot #4 should not be animated to avoid Unity bug
+            // https://issuetracker.unity3d.com/issues/material-is-applied-to-two-slots-when-applying-material-to-a-single-slot-while-recording-animation
+            const int SubMeshIndexToShiftIfAnimated = 4;
+            if (CheckAnimateSubMeshIndex(session, meshInfos, subMeshIndexMap, SubMeshIndexToShiftIfAnimated))
+            {
+                target.SubMeshes.Insert(SubMeshIndexToShiftIfAnimated, new SubMesh());
+
+                for (var i = 0; i < meshInfos.Length; i++)
+                {
+                    var meshInfo = meshInfos[i];
+                    mappings.Clear();
+
+                    for (var j = 0; j < meshInfo.SubMeshes.Count; j++)
+                    {
+                        var targetSubMeshIndex = subMeshIndexMap[i][j];
+                        if (targetSubMeshIndex >= SubMeshIndexToShiftIfAnimated)
+                        {
+                            mappings.Add(($"m_Materials.Array.data[{targetSubMeshIndex}]",
+                               $"m_Materials.Array.data[{targetSubMeshIndex + 1}]"));
+                        }
+                    }
+
+                    session.MappingBuilder.RecordMoveProperties(meshInfo.SourceRenderer, mappings.ToArray());
+                }
+
+                target.AssertInvariantContract($"shifting meshInfo.SubMeshes {Target.gameObject.name}");
+            }
+#endif
+
             foreach (var weightMismatchBlendShape in weightMismatchBlendShapes)
                 BuildReport.LogWarning("MergeSkinnedMesh:warning:blendShapeWeightMismatch", weightMismatchBlendShape);
 
@@ -198,16 +224,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         }
 
 #if !UNITY_2021_2_OR_NEWER
-        // material slot #4 should not be animated to avoid Unity bug
-        // https://issuetracker.unity3d.com/issues/material-is-applied-to-two-slots-when-applying-material-to-a-single-slot-while-recording-animation
-        private void FixSubMeshIndexMap(OptimizerSession session, MeshInfo2[] meshInfos, int[][] subMeshIndexMap, List<Material> materials)
+        private bool CheckAnimateSubMeshIndex(OptimizerSession session, MeshInfo2[] meshInfos, int[][] subMeshIndexMap, int targetSubMeshIndex)
         {
-            const int SubMeshIndexToShiftIfAnimated = 4;
-            var subMeshIndexToShift = subMeshIndexMap
+            var targetSubMeshIndices = subMeshIndexMap
                 .SelectMany((x, i) => x.Select((y, j) => (renderer: meshInfos[i].SourceRenderer, src: j, dst: y)))
-                .Where(x => x.dst == SubMeshIndexToShiftIfAnimated)
+                .Where(x => x.dst == targetSubMeshIndex)
                 .ToArray();
-
             foreach (var component in session.GetComponents<Component>())
             {
                 if (component is Transform) continue;
@@ -224,24 +246,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                         controller.animationClips
                             .SelectMany(x => AnimationUtility.GetObjectReferenceCurveBindings(x))
                             .Select(x => (target: AnimationUtility.GetAnimatedObject(component.gameObject, x), x.propertyName))
-                            .Any(x => subMeshIndexToShift.Any(y => x.target == y.renderer && x.propertyName == $"m_Materials.Array.data[{y.src}]")))
-                    {
-                        // add fake slot at #4
-                        materials.Insert(SubMeshIndexToShiftIfAnimated, null);
-                        for (var i = 0; i < subMeshIndexMap.Length; i++)
-                        {
-                            for (var j = 0; j < subMeshIndexMap[i].Length; j++)
-                            {
-                                if (subMeshIndexMap[i][j] >= SubMeshIndexToShiftIfAnimated)
-                                {
-                                    subMeshIndexMap[i][j]++;
-                                }
-                            }
-                        }
-                        return;
-                    }
+                            .Any(x => targetSubMeshIndices.Any(y => x.target == y.renderer && x.propertyName == $"m_Materials.Array.data[{y.src}]")))
+                        return true;
                 }
             }
+            return false;
         }
 #endif
 
