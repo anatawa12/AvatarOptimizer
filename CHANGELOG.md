@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Support for [NDMF](https://ndmf.nadena.dev) integration [`#375`](https://github.com/anatawa12/AvatarOptimizer/pull/375)
 - Pre-building validation for MergeBone `#417`
   - There are some (rare) cases that are not supported by MergeBone. This adds warning for such case.
 - Validation error for self recursive MergeSkinnedMesh `#418`

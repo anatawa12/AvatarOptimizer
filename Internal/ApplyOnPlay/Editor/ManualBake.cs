@@ -1,3 +1,4 @@
+#if !NADEMOFU
 using UnityEditor;
 using UnityEngine;
 using VRC.SDK3.Avatars.Components;
@@ -45,3 +46,4 @@ namespace Anatawa12.ApplyOnPlay
         }
     }
 }
+#endif

@@ -1,3 +1,4 @@
+#if !NADEMOFU
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -18,3 +19,4 @@ namespace Anatawa12.ApplyOnPlay
         }
     }
 }
+#endif

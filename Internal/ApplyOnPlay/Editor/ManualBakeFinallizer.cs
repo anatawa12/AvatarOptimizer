@@ -1,3 +1,4 @@
+#if !NADEMOFU
 using UnityEditor.Build;
 using UnityEngine;
 
@@ -27,3 +28,4 @@ namespace Anatawa12.ApplyOnPlay
         void FinalizeManualBake(GameObject original, GameObject cloned);
     }
 }
+#endif
