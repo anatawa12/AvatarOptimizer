@@ -12,6 +12,7 @@
   "repo": "https://vpm.anatawa12.com/vpm.json",
   "vpmDependencies": {
     "com.anatawa12.custom-localization-for-editor-extension": "^1.0.0",
+    "nadena.dev.ndmf": "^1.0.0",
     "com.vrchat.avatars": ">=3.2.0-beta.1 <3.4.0"
   }
 }
