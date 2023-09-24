@@ -2,10 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.Processors;
-#if NADEMOFU
 using Anatawa12.AvatarOptimizer.ndmf;
 using nadena.dev.ndmf;
-#endif
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -21,12 +19,10 @@ namespace Anatawa12.AvatarOptimizer
         public ObjectMappingBuilder MappingBuilder { get; }
         public MeshInfo2Holder MeshInfo2Holder { get; private set; } = new MeshInfo2Holder();
 
-        #if NADEMOFU
         public static implicit operator OptimizerSession(BuildContext context)
         {
             return context.Extension<OptimizerContext>().session;
         }
-        #endif
         
         public OptimizerSession(GameObject rootObject, bool addToAsset, bool isTest) :
             this(rootObject, addToAsset ? Utils.CreateAssetFile() : null, isTest)

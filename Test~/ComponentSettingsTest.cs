@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Anatawa12.ApplyOnPlay;
 using NUnit.Framework;
 using UnityEngine;
 
@@ -25,6 +26,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             if (type == typeof(Activator)) return;
             if (type == typeof(AvatarActivator)) return;
             if (type == typeof(InternalAutoFreezeMeaninglessBlendShape)) return;
+            if (type == typeof(GlobalActivator)) return;
             var addComponentMenu = type.GetCustomAttribute<HelpURLAttribute>();
             Assert.That(addComponentMenu, Is.Not.Null);
             Assert.That(addComponentMenu.URL, Does.StartWith("https://vpm.anatawa12.com/avatar-optimizer/ja/"));

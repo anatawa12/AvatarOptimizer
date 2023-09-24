@@ -4,10 +4,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
-#if !NADEMOFU
-using Anatawa12.ApplyOnPlay;
-#endif
 using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
@@ -341,21 +337,6 @@ namespace Anatawa12.AvatarOptimizer
             AssetDatabase.DeleteAsset(TemporalDirPath);
             FileUtil.DeleteFileOrDirectory(TemporalDirPath);
         }
-
-#if !NADEMOFU
-        [CanBeNull]
-        public static DummyObject CreateOutputAssetFile(GameObject avatarGameObject, ApplyReason reason)
-        {
-            switch (reason)
-            {
-                case ApplyReason.EnteringPlayMode:
-                    return ApplyOnPlayConfig.Generate ? CreateAssetFile() : null;
-                case ApplyReason.ManualBake:
-                default:
-                    return CreateOutputAssetFile(avatarGameObject);
-            }
-        }
-#endif
 
         public static DummyObject CreateAssetFile()
         {

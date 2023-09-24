@@ -1,4 +1,5 @@
 using Anatawa12.AvatarOptimizer.PrefabSafeSet;
+using Anatawa12.AvatarOptimizer.Processors;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
@@ -36,7 +37,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             var merged = Utils.NewGameObject("merged", root.transform);
             CreateMergePhysBone(merged, child1Component, child2Component);
 
-            OptimizerProcessor.ProcessObject(new OptimizerSession(root, false, false));
+            new MergePhysBoneProcessor().Process(new OptimizerSession(root, false, false));
 
             var mergedPhysBone = merged.GetComponent<VRCPhysBoneBase>();
             Assert.That(mergedPhysBone.pull, Is.EqualTo(0.4f));            
@@ -87,7 +88,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             mergePhysBone.allowCollisionConfig.filter.allowOthers = false;
             mergePhysBone.allowCollisionConfig.filter.allowSelf = true;
 
-            OptimizerProcessor.ProcessObject(new OptimizerSession(root, false, false));
+            new MergePhysBoneProcessor().Process(new OptimizerSession(root, false, false));
 
             var mergedPhysBone = merged.GetComponent<VRCPhysBoneBase>();
             Assert.That(mergedPhysBone.pull, Is.EqualTo(0.4f));            

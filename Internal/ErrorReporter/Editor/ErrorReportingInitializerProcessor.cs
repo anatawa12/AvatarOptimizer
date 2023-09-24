@@ -2,9 +2,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using VRC.SDK3.Avatars.Components;
 using VRC.SDKBase.Editor.BuildPipeline;
-#if !NADEMOFU
-using Anatawa12.ApplyOnPlay;
-#endif
 
 namespace Anatawa12.AvatarOptimizer.ErrorReporting
 {
@@ -12,18 +9,11 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
     /// Initializes Error Reporting System
     /// </summary>
     internal class ErrorReportingInitializerProcessor : IVRCSDKPreprocessAvatarCallback
-#if !NADEMOFU
-        , IApplyOnPlayCallback, IManualBakeFinalizer
-#endif
     {
         public int callbackOrder => int.MinValue;
 
         public string CallbackName => "Error Reporting Initialization";
         public string CallbackId => "com.anatawa12.error-reporting";
-
-#if !NADEMOFU
-        public bool ApplyOnPlay(GameObject avatarGameObject, ApplyReason reason) => OnPreprocessAvatar(avatarGameObject);
-#endif
 
         public bool OnPreprocessAvatar(GameObject avatarGameObject)
         {
