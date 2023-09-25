@@ -7,9 +7,9 @@ msgstr "日本語"
 
 msgid "LegacyModularAvatarWarning:message"
 msgstr ""
-"ModularAvatar 1.7.x以前を検知しました！"
-"このバージョンのAvatarOptimizerは1.7.x以前のModularAvatarとの互換性がありません。\n"
-"ModularAvatar 1.8.0以降に更新してください！"
+"1.7.x以前のModularAvatarがインストールされているようです。\n"
+"現在お使いのAvatarOptimizerでは、1.7.x以前のModularAvatarと互換性がありません。\n"
+"ModularAvatarを1.8.0以降に更新してください！"
 
 msgid "LegacyModularAvatarWarning:readWithNextLocale"
 msgstr "Read in English"
