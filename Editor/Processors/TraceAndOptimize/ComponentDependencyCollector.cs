@@ -549,7 +549,15 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             // TODOL External Library: FinalIK
 
+            // NDMF
             AddEntryPointParser<nadena.dev.ndmf.runtime.AvatarActivator>();
+            var contextHolder = typeof(nadena.dev.ndmf.runtime.AvatarActivator).Assembly
+                .GetType("nadena.dev.ndmf.VRChat.ContextHolder");
+            if (contextHolder != null)
+            {
+                // nadena.dev.ndmf.VRChat.ContextHolder is internal so I use reflection
+                _byTypeParser.Add(contextHolder, (collector, deps, component) => deps.EntrypointComponent = true);
+            }
 
             // Components Proceed after T&O later
             AddEntryPointParser<MergeBone>();
