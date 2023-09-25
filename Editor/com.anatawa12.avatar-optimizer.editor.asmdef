@@ -32,6 +32,12 @@
     ],
     "autoReferenced": false,
     "defineConstraints": [],
-    "versionDefines": [],
+    "versionDefines": [
+        {
+            "name": "nadena.dev.modular-avatar",
+            "expression": "(,1.8-a)",
+            "define": "LEGACY_MODULAR_AVATAR"
+        }
+    ],
     "noEngineReferences": false
 }
