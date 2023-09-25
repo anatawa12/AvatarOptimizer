@@ -11,19 +11,16 @@ namespace Anatawa12.AvatarOptimizer.ndmf
 {
     internal class OptimizerContext : IExtensionContext
     {
-        private IDisposable buildReportScope;
         internal OptimizerSession session;
         
         public void OnActivate(BuildContext context)
         {
-            buildReportScope = BuildReport.ReportingOnAvatar(context.AvatarDescriptor);
             session = new OptimizerSession(context.AvatarRootObject, false, false);
         }
 
         public void OnDeactivate(BuildContext context)
         {
             session.MarkDirtyAll();
-            buildReportScope.Dispose();
         }
     }
     
@@ -37,7 +34,7 @@ namespace Anatawa12.AvatarOptimizer.ndmf
         {
             // Run early steps before EditorOnly objects are purged
             InPhase(BuildPhase.Resolving)
-                .WithRequiredExtension(typeof(OptimizerContext), seq =>
+                .WithRequiredExtensions(new [] {typeof(OptimizerContext), typeof(BuildReportContext)}, seq =>
                 {
                     seq.Run("Early: UnusedBonesByReference",
                             ctx => new Processors.UnusedBonesByReferencesToolEarlyProcessor().Process(ctx)
@@ -50,7 +47,7 @@ namespace Anatawa12.AvatarOptimizer.ndmf
 
             // Run everything else in the optimize phase
             InPhase(BuildPhase.Optimizing)
-                .WithRequiredExtension(typeof(OptimizerContext), seq =>
+                .WithRequiredExtensions(new [] {typeof(OptimizerContext), typeof(BuildReportContext)}, seq =>
                 {
                     seq.Run("TraceAndOptimize",
                             ctx =>
