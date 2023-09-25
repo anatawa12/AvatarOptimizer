@@ -215,6 +215,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             _byTypeParser.Add(typeof(T), (collector, deps, component) => { });
         }
 
+        private static void AddEntryPointParser<T>() where T : Component
+        {
+            _byTypeParser.Add(typeof(T), (collector, deps, component) => deps.EntrypointComponent = true);
+        }
+
         private static void AddParserWithExtends<TParent, TChild>()
             where TParent : Component
             where TChild : TParent
@@ -263,7 +268,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     }
                 }
             });
-            AddNopParser<Animation>();
+            AddEntryPointParser<Animation>();
             AddParser<Renderer>((collector, deps, renderer) =>
             {
                 // GameObject => Renderer dependency ship
@@ -383,10 +388,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     deps.AddActiveDependency(collider.second);
                 }
             });
-            AddParser<Light>((collector, deps, component) =>
-            {
-                deps.EntrypointComponent = true;
-            });
+            AddEntryPointParser<Light>();
             AddParser<Collider>((collector, deps, component) =>
             {
                 deps.EntrypointComponent = true;
@@ -415,20 +417,14 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 collector.GetDependencies(component.transform)
                     .AddAlwaysDependency(component, true);
             });
-            AddParser<Camera>((collector, deps, component) =>
-            {
-                // affects RenderTexture
-                deps.EntrypointComponent = true;
-            });
+            // affects RenderTexture
+            AddEntryPointParser<Camera>();
             AddParser<FlareLayer>((collector, deps, component) =>
             {
                 collector.GetDependencies(component.GetComponent<Camera>()).AddActiveDependency(component);
             });
-            AddParser<AudioSource>((collector, deps, component) =>
-            {
-                // plays sound
-                deps.EntrypointComponent = true;
-            });
+            // plays sound
+            AddEntryPointParser<AudioSource>();
             AddParser<AimConstraint>((collector, deps, component) =>
             {
                 ConstraintParser(collector, deps, component);
@@ -462,13 +458,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 deps.AddAlwaysDependency(component.GetComponent<PipelineManager>());
             });
             AddParserWithExtends<VRC_AvatarDescriptor, VRCAvatarDescriptor>();
-            AddNopParser<PipelineManager>();
+            AddEntryPointParser<PipelineManager>();
 #pragma warning disable CS0618
-            AddParser<PipelineSaver>((collector, deps, component) =>
-            {
-                // to avoid unexpected deletion
-                deps.EntrypointComponent = true;
-            });
+            AddEntryPointParser<PipelineSaver>();
 #pragma warning restore CS0618
             AddParser<VRC.SDKBase.VRCStation>((collector, deps, component) =>
             {
@@ -525,7 +517,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             AddParserWithExtends<ContactBase, ContactSender>();
             AddParserWithExtends<ContactSender, VRCContactSender>();
 
-            AddNopParser<VRC_SpatialAudioSource>();
+            AddEntryPointParser<VRC_SpatialAudioSource>();
             AddParserWithExtends<VRC_SpatialAudioSource, VRCSpatialAudioSource>();
 
             // VRC_IKFollower is not available in SDK 3
@@ -557,11 +549,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             // TODOL External Library: FinalIK
 
+            AddEntryPointParser<nadena.dev.ndmf.runtime.AvatarActivator>();
+
             // Components Proceed after T&O later
-            AddParser<MergeBone>((collector, deps, component) =>
-            {
-                deps.EntrypointComponent = true;
-            });
+            AddEntryPointParser<MergeBone>();
         }
 
         #endregion
