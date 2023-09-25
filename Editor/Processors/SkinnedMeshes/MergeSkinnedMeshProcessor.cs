@@ -124,30 +124,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             // material slot #4 should not be animated to avoid Unity bug
             // https://issuetracker.unity3d.com/issues/material-is-applied-to-two-slots-when-applying-material-to-a-single-slot-while-recording-animation
             const int SubMeshIndexToShiftIfAnimated = 4;
-            if (CheckAnimateSubMeshIndex(session, meshInfos, subMeshIndexMap, SubMeshIndexToShiftIfAnimated))
-            {
-                target.SubMeshes.Insert(SubMeshIndexToShiftIfAnimated, new SubMesh());
-
-                for (var i = 0; i < meshInfos.Length; i++)
-                {
-                    var meshInfo = meshInfos[i];
-                    mappings.Clear();
-
-                    for (var j = 0; j < meshInfo.SubMeshes.Count; j++)
-                    {
-                        var targetSubMeshIndex = subMeshIndexMap[i][j];
-                        if (targetSubMeshIndex >= SubMeshIndexToShiftIfAnimated)
-                        {
-                            mappings.Add(($"m_Materials.Array.data[{targetSubMeshIndex}]",
-                               $"m_Materials.Array.data[{targetSubMeshIndex + 1}]"));
-                        }
-                    }
-
-                    session.MappingBuilder.RecordMoveProperties(meshInfo.SourceRenderer, mappings.ToArray());
-                }
-
-                target.AssertInvariantContract($"shifting meshInfo.SubMeshes {Target.gameObject.name}");
-            }
+            bool shouldShiftSubMeshIndex = CheckAnimateSubMeshIndex(session, meshInfos, subMeshIndexMap, SubMeshIndexToShiftIfAnimated);
 #endif
 
             foreach (var weightMismatchBlendShape in weightMismatchBlendShapes)
@@ -190,6 +167,23 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 Object.DestroyImmediate(renderer.GetComponent<MeshFilter>());
                 Object.DestroyImmediate(renderer);
             }
+
+#if !UNITY_2021_2_OR_NEWER
+            if (shouldShiftSubMeshIndex)
+            {
+                mappings.Clear();
+                for (var i = SubMeshIndexToShiftIfAnimated; i < target.SubMeshes.Count; i++)
+                {
+                    mappings.Add(($"m_Materials.Array.data[{i}]", $"m_Materials.Array.data[{i + 1}]"));
+                }
+
+                session.MappingBuilder.RecordMoveProperties(target.SourceRenderer, mappings.ToArray());
+
+                target.SubMeshes.Insert(SubMeshIndexToShiftIfAnimated, new SubMesh());
+
+                target.AssertInvariantContract($"shifting meshInfo.SubMeshes {Target.gameObject.name}");
+            }
+#endif
         }
 
         private (int[][] mapping, List<Material> materials) CreateMergedMaterialsAndSubMeshIndexMapping(
