@@ -551,7 +551,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             // NDMF
             AddEntryPointParser<nadena.dev.ndmf.runtime.AvatarActivator>();
-            var contextHolder = typeof(nadena.dev.ndmf.runtime.AvatarActivator).Assembly
+            var contextHolder = typeof(nadena.dev.ndmf.BuildContext).Assembly
                 .GetType("nadena.dev.ndmf.VRChat.ContextHolder");
             if (contextHolder != null)
             {
@@ -566,3 +566,4 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         #endregion
     }
 }
+
