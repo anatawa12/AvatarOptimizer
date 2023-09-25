@@ -220,10 +220,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 #if !UNITY_2021_2_OR_NEWER
         private bool CheckAnimateSubMeshIndex(OptimizerSession session, MeshInfo2[] meshInfos, int[][] subMeshIndexMap, int targetSubMeshIndex)
         {
-            var targetSubMeshIndices = subMeshIndexMap
-                .SelectMany((x, i) => x.Select((y, j) => (renderer: meshInfos[i].SourceRenderer, src: j, dst: y)))
-                .Where(x => x.dst == targetSubMeshIndex)
-                .ToArray();
+            var targetProperties = new HashSet<(Object, string)>(subMeshIndexMap
+                .SelectMany((x, i) => x.Select((y, j) => (renderer: meshInfos[i].SourceRenderer, srcSubMeshIndex: j, dstSubMeshIndex: y)))
+                .Where(x => x.dstSubMeshIndex == targetSubMeshIndex)
+                .Select(x => (x.renderer as Object, $"m_Materials.Array.data[{x.srcSubMeshIndex}]")));
             foreach (var component in session.GetComponents<Component>())
             {
                 if (component is Transform) continue;
@@ -239,8 +239,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                         prop.objectReferenceValue is AnimatorController controller &&
                         controller.animationClips
                             .SelectMany(x => AnimationUtility.GetObjectReferenceCurveBindings(x))
-                            .Select(x => (target: AnimationUtility.GetAnimatedObject(component.gameObject, x), x.propertyName))
-                            .Any(x => targetSubMeshIndices.Any(y => x.target == y.renderer && x.propertyName == $"m_Materials.Array.data[{y.src}]")))
+                            .Select(x => (AnimationUtility.GetAnimatedObject(component.gameObject, x), x.propertyName))
+                            .Any(targetProperties.Contains))
                         return true;
                 }
             }
