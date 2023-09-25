@@ -8,26 +8,33 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Warning Dialog for Legacy Modular Avatar `#509`
 
 ### Changed
-- Internal: ErrorReporting is now on NDMF `#511`
-- Declare compatible with VRCSDK 3.4.x `#513`
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
-- (legacy) Animation Component Disappears `#512`
-- VRC_SpatialAudioSource Disappears `#512`
-- Unknown component warning for AvatarActivator of NDMF `#512`
+
+### Security
+
+## [1.5.0-rc.8] - 2023-09-25
+### Added
+- Warning Dialog for Legacy Modular Avatar [`#509`](https://github.com/anatawa12/AvatarOptimizer/pull/509)
+
+### Changed
+- Internal: ErrorReporting is now on NDMF [`#511`](https://github.com/anatawa12/AvatarOptimizer/pull/511)
+- Declare compatible with VRCSDK 3.4.x [`#513`](https://github.com/anatawa12/AvatarOptimizer/pull/513)
+
+### Fixed
+- (legacy) Animation Component Disappears [`#512`](https://github.com/anatawa12/AvatarOptimizer/pull/512)
+- VRC_SpatialAudioSource Disappears [`#512`](https://github.com/anatawa12/AvatarOptimizer/pull/512)
+- Unknown component warning for AvatarActivator of NDMF [`#512`](https://github.com/anatawa12/AvatarOptimizer/pull/512)
 - Avoid problematic material slot in MergeSkinnedMesh [`#508`](https://github.com/anatawa12/AvatarOptimizer/pull/508)
   - This avoids [Unity's bug in 2019][unity-bug-material]. In Unity 2022, this is no longer needed.
 
 [unity-bug-material]: https://issuetracker.unity3d.com/issues/material-is-applied-to-two-slots-when-applying-material-to-a-single-slot-while-recording-animation
-
-### Security
 
 ## [1.5.0-rc.7] - 2023-09-24
 ### Added
@@ -805,7 +812,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-rc.7...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-rc.8...HEAD
+[1.5.0-rc.8]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-rc.7...v1.5.0-rc.8
 [1.5.0-rc.7]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-rc.6...v1.5.0-rc.7
 [1.5.0-rc.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-rc.5...v1.5.0-rc.6
 [1.5.0-rc.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-rc.4...v1.5.0-rc.5
