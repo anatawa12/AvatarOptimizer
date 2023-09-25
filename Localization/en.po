@@ -2,6 +2,18 @@ msgid ""
 msgstr ""
 "Language: en\n"
 
+msgid "LegacyModularAvatarWarning:message"
+msgstr ""
+"We found Modular Avatar 1.7.x or older is installed!\n"
+"This version of AvatarOptimizer is not compatible with Modular Avatar 1.7.x or older!\n"
+"Please upgrade Modular Avatar to 1.8.0 or later!"
+
+msgid "LegacyModularAvatarWarning:readWithNextLocale"
+msgstr "日本語で読む"
+
+msgid "LegacyModularAvatarWarning:nextLocale"
+msgstr "ja"
+
 # region PrefabSafeSet
 
 msgid "PrefabSafeSet:label:Multi editing not supported"

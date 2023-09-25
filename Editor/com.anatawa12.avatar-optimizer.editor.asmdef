@@ -11,7 +11,8 @@
         "GUID:b9880ca0b6584453a2627bd3c038759f",
         "GUID:8542dbf824204440a818dbc2377cb4d6",
         "GUID:2665a8d13d1b3f18800f46e256720795",
-        "GUID:62ced99b048af7f4d8dfe4bed8373d76"
+        "GUID:62ced99b048af7f4d8dfe4bed8373d76",
+        "GUID:fe747755f7b44e048820525b07f9b956"
     ],
     "includePlatforms": [
         "Editor"
@@ -32,6 +33,12 @@
     ],
     "autoReferenced": false,
     "defineConstraints": [],
-    "versionDefines": [],
+    "versionDefines": [
+        {
+            "name": "nadena.dev.modular-avatar",
+            "expression": "(,1.8-a)",
+            "define": "LEGACY_MODULAR_AVATAR"
+        }
+    ],
     "noEngineReferences": false
 }

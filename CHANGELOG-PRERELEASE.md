@@ -8,14 +8,19 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Warning Dialog for Legacy Modular Avatar `#509`
 
 ### Changed
+- Internal: ErrorReporting is now on NDMF `#511`
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
+- (legacy) Animation Component Disappears `#512`
+- VRC_SpatialAudioSource Disappears `#512`
+- Unknown component warning for AvatarActivator of NDMF `#512`
 - Avoid problematic material slot in MergeSkinnedMesh [`#508`](https://github.com/anatawa12/AvatarOptimizer/pull/508)
 
 ### Security

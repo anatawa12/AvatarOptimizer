@@ -5,6 +5,18 @@ msgstr ""
 msgid "locale:ja"
 msgstr "日本語"
 
+msgid "LegacyModularAvatarWarning:message"
+msgstr ""
+"1.7.x以前のModularAvatarがインストールされているようです。\n"
+"現在お使いのAvatarOptimizerでは、1.7.x以前のModularAvatarと互換性がありません。\n"
+"ModularAvatarを1.8.0以降に更新してください！"
+
+msgid "LegacyModularAvatarWarning:readWithNextLocale"
+msgstr "Read in English"
+
+msgid "LegacyModularAvatarWarning:nextLocale"
+msgstr "en"
+
 # region PrefabSafeSet
 
 msgid "PrefabSafeSet:label:Multi editing not supported"

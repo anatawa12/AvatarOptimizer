@@ -33,7 +33,7 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
 
         internal ConditionalWeakTable<VRCAvatarDescriptor, AvatarReport> AvatarsByObject =
             new ConditionalWeakTable<VRCAvatarDescriptor, AvatarReport>();
-        private AvatarReport CurrentAvatar { get; set; }
+        internal AvatarReport CurrentAvatar { get; set; }
 
         internal static BuildReport CurrentReport
         {
@@ -81,40 +81,9 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
             ErrorReportUI.ReloadErrorReport();
         }
 
-        private class AvatarReportScope : IDisposable
+        internal AvatarReport Initialize([NotNull] VRCAvatarDescriptor descriptor)
         {
-            public void Dispose()
-            {
-                var avatar = CurrentReport.CurrentAvatar;
-                CurrentReport.CurrentAvatar = null;
-                var successful = avatar.successful;
-                BuildReport.SaveReport();
-                if (avatar.logs.Any())
-                    ErrorReportUI.OpenErrorReportUIFor(avatar);
-                else
-                    ErrorReportUI.MaybeOpenErrorReportUI();
-                if (!successful) throw new Exception("Avatar processing failed");
-            }
-        }
-
-        public static IDisposable ReportingOnAvatar(VRCAvatarDescriptor descriptor)
-        {
-            if (descriptor != null)
-            {
-                if (!CurrentReport.AvatarsByObject.TryGetValue(descriptor, out var report))
-                {
-                    Debug.LogWarning("Reporting on Avatar is called before ErrorReporting Initializer Processor");
-                    report = CurrentReport.Initialize(descriptor);
-                }
-                CurrentReport.CurrentAvatar = report;
-            }
-
-            return new AvatarReportScope();
-        }
-
-        internal AvatarReport Initialize(VRCAvatarDescriptor descriptor)
-        {
-            if (descriptor == null) return null;
+            if (descriptor == null) throw new ArgumentNullException(nameof(descriptor));
 
             AvatarReport report = new AvatarReport();
             report.objectRef = new ObjectRef(descriptor.gameObject);
