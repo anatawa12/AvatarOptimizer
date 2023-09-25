@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.ErrorReporting;
+using UnityEditor;
+using UnityEditor.Animations;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -118,6 +120,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 target.AssertInvariantContract($"processing meshInfo {Target.gameObject.name}");
             }
 
+#if !UNITY_2021_2_OR_NEWER
+            // material slot #4 should not be animated to avoid Unity bug
+            // https://issuetracker.unity3d.com/issues/material-is-applied-to-two-slots-when-applying-material-to-a-single-slot-while-recording-animation
+            const int SubMeshIndexToShiftIfAnimated = 4;
+            bool shouldShiftSubMeshIndex = CheckAnimateSubMeshIndex(session, meshInfos, subMeshIndexMap, SubMeshIndexToShiftIfAnimated);
+#endif
+
             foreach (var weightMismatchBlendShape in weightMismatchBlendShapes)
                 BuildReport.LogWarning("MergeSkinnedMesh:warning:blendShapeWeightMismatch", weightMismatchBlendShape);
 
@@ -158,6 +167,23 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 Object.DestroyImmediate(renderer.GetComponent<MeshFilter>());
                 Object.DestroyImmediate(renderer);
             }
+
+#if !UNITY_2021_2_OR_NEWER
+            if (shouldShiftSubMeshIndex)
+            {
+                mappings.Clear();
+                for (var i = SubMeshIndexToShiftIfAnimated; i < target.SubMeshes.Count; i++)
+                {
+                    mappings.Add(($"m_Materials.Array.data[{i}]", $"m_Materials.Array.data[{i + 1}]"));
+                }
+
+                session.MappingBuilder.RecordMoveProperties(target.SourceRenderer, mappings.ToArray());
+
+                target.SubMeshes.Insert(SubMeshIndexToShiftIfAnimated, new SubMesh());
+
+                target.AssertInvariantContract($"shifting meshInfo.SubMeshes {Target.gameObject.name}");
+            }
+#endif
         }
 
         private (int[][] mapping, List<Material> materials) CreateMergedMaterialsAndSubMeshIndexMapping(
@@ -190,6 +216,37 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             return (resultIndices, resultMaterials);
         }
+
+#if !UNITY_2021_2_OR_NEWER
+        private bool CheckAnimateSubMeshIndex(OptimizerSession session, MeshInfo2[] meshInfos, int[][] subMeshIndexMap, int targetSubMeshIndex)
+        {
+            var targetProperties = new HashSet<(Object, string)>(subMeshIndexMap
+                .SelectMany((x, i) => x.Select((y, j) => (renderer: meshInfos[i].SourceRenderer, srcSubMeshIndex: j, dstSubMeshIndex: y)))
+                .Where(x => x.dstSubMeshIndex == targetSubMeshIndex)
+                .Select(x => (x.renderer as Object, $"m_Materials.Array.data[{x.srcSubMeshIndex}]")));
+            foreach (var component in session.GetComponents<Component>())
+            {
+                if (component is Transform) continue;
+
+                var serialized = new SerializedObject(component);
+                var prop = serialized.GetIterator();
+                var enterChildren = true;
+                while (prop.Next(enterChildren))
+                {
+                    enterChildren = prop.propertyType == SerializedPropertyType.Generic;
+
+                    if (prop.propertyType == SerializedPropertyType.ObjectReference &&
+                        prop.objectReferenceValue is AnimatorController controller &&
+                        controller.animationClips
+                            .SelectMany(x => AnimationUtility.GetObjectReferenceCurveBindings(x))
+                            .Select(x => (AnimationUtility.GetAnimatedObject(component.gameObject, x), x.propertyName))
+                            .Any(targetProperties.Contains))
+                        return true;
+                }
+            }
+            return false;
+        }
+#endif
 
         public override IMeshInfoComputer GetComputer(IMeshInfoComputer upstream) => new MeshInfoComputer(this);
 

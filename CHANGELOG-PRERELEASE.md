@@ -21,6 +21,10 @@ The format is based on [Keep a Changelog].
 - (legacy) Animation Component Disappears `#512`
 - VRC_SpatialAudioSource Disappears `#512`
 - Unknown component warning for AvatarActivator of NDMF `#512`
+- Avoid problematic material slot in MergeSkinnedMesh [`#508`](https://github.com/anatawa12/AvatarOptimizer/pull/508)
+  - This avoids [Unity's bug in 2019][unity-bug-material]. In Unity 2022, this is no longer needed.
+
+[unity-bug-material]: https://issuetracker.unity3d.com/issues/material-is-applied-to-two-slots-when-applying-material-to-a-single-slot-while-recording-animation
 
 ### Security
 
