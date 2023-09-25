@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog].
 
 ### Changed
 - Internal: ErrorReporting is now on NDMF `#511`
+- Declare compatible with VRCSDK 3.4.x `#513`
 
 ### Deprecated
 
