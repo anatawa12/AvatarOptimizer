@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
+- Internal: ErrorReporting is now on NDMF `#511`
 
 ### Deprecated
 
