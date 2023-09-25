@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Warning Dialog for Legacy Modular Avatar `#509`
 
 ### Changed
 - Internal: ErrorReporting is now on NDMF `#511`
