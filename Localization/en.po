@@ -4,7 +4,7 @@ msgstr ""
 
 msgid "LegacyModularAvatarWarning:message"
 msgstr ""
-"We found Modular Avatar 1.7.x or older!"
+"We found Modular Avatar 1.7.x or older is installed!\n"
 "This version of AvatarOptimizer is not compatible with Modular Avatar 1.7.x or older!\n"
 "Please upgrade Modular Avatar to 1.8.0 or later!"
 
