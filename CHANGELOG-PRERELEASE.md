@@ -17,6 +17,9 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- (legacy) Animation Component Disappears `#512`
+- VRC_SpatialAudioSource Disappears `#512`
+- Unknown component warning for AvatarActivator of NDMF `#512`
 
 ### Security
 
