@@ -1,37 +1,47 @@
 using System;
+using System.Linq;
+using JetBrains.Annotations;
 using nadena.dev.ndmf;
 using UnityEditor;
+using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer.ErrorReporting
 {
     internal class BuildReportSharedState
     {
-        public bool Initialized;
+        [CanBeNull] public AvatarReport Report;
     }
 
     public class BuildReportContext : IExtensionContext
     {
-        private IDisposable _scope;
-
         public void OnActivate(BuildContext context)
         {
             var state = context.GetState<BuildReportSharedState>();
-            if (!state.Initialized)
+            var descriptor = context.AvatarDescriptor;
+            if (descriptor == null) throw new Exception();
+            var report = state.Report;
+            if (state.Report == null)
             {
-                state.Initialized = true;
                 // If it's in unity editor, I assume building avatar.
                 if (!EditorApplication.isPlayingOrWillChangePlaymode)
                     BuildReport.Clear();
-
-                BuildReport.CurrentReport.Initialize(context.AvatarDescriptor);
+                state.Report = report = BuildReport.CurrentReport.Initialize(descriptor);
             }
-            _scope = BuildReport.ReportingOnAvatar(context.AvatarDescriptor);
+
+            BuildReport.CurrentReport.CurrentAvatar = report;
         }
 
         public void OnDeactivate(BuildContext context)
         {
-            _scope.Dispose();
-            _scope = null;
+            var avatar = BuildReport.CurrentReport.CurrentAvatar;
+            BuildReport.CurrentReport.CurrentAvatar = null;
+            var successful = avatar.successful;
+            BuildReport.SaveReport();
+            if (avatar.logs.Any())
+                ErrorReportUI.OpenErrorReportUIFor(avatar);
+            else
+                ErrorReportUI.MaybeOpenErrorReportUI();
+            if (!successful) throw new Exception("Avatar processing failed");
         }
     }
 }
