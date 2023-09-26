@@ -20,6 +20,7 @@ namespace Anatawa12.AvatarOptimizer.ndmf
 
         public void OnDeactivate(BuildContext context)
         {
+            session.SaveMeshInfo2();
         }
     }
     
@@ -70,8 +71,7 @@ namespace Anatawa12.AvatarOptimizer.ndmf
                         .Then.Run("MergeBoneProcessor", ctx => new Processors.MergeBoneProcessor().Process(ctx))
                         .Then.Run("ApplyObjectMapping",
                             ctx => new Processors.ApplyObjectMapping().Apply(ctx)
-                        )
-                        .Then.Run("SaveMeshInfo2", ctx => ((OptimizerSession) ctx).SaveMeshInfo2());
+                        );
                 });
         }
 

@@ -13,6 +13,15 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
         private readonly Dictionary<MeshRenderer, MeshInfo2> _staticCache = new Dictionary<MeshRenderer, MeshInfo2>();
 
+        public MeshInfo2Holder(GameObject rootObject)
+        {
+            foreach (var renderer in rootObject.GetComponentsInChildren<SkinnedMeshRenderer>(true))
+                GetMeshInfoFor(renderer);
+            
+            foreach (var renderer in rootObject.GetComponentsInChildren<MeshRenderer>(true))
+                GetMeshInfoFor(renderer);
+        }
+
         public MeshInfo2 GetMeshInfoFor(SkinnedMeshRenderer renderer) =>
             _skinnedCache.TryGetValue(renderer, out var cached)
                 ? cached
