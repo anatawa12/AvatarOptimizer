@@ -91,12 +91,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             var subMeshes = copied.Concat(merged).ToList();
             target.SubMeshes.Clear();
             target.SubMeshes.AddRange(subMeshes);
-            
-            foreach (var subMesh in target.SubMeshes)
-            {
-                session.AddToAsset(subMesh.SharedMaterial);
-                session.AddToAsset(subMesh.SharedMaterial.GetTexture(MainTexProp));
-            }
         }
 
         private Vector2 MapUV(Vector2 vector2, Rect destSourceRect) =>

@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.IO;
 using System.Linq;
 using JetBrains.Annotations;
 using UnityEditor;
@@ -327,56 +326,7 @@ namespace Anatawa12.AvatarOptimizer
             rootObject.transform.localScale = Vector3.one;
             return rootObject;
         }
-        
-        private const string TemporalDirPath = "Assets/9999-OptimizerGeneratedTemporalAssets";
-        private const string OutputDirPath = "Assets/AvatarOptimizerOutput";
-        
-        public static void DeleteTemporalDirectory()
-        {
-            AssetDatabase.SaveAssets();
-            AssetDatabase.DeleteAsset(TemporalDirPath);
-            FileUtil.DeleteFileOrDirectory(TemporalDirPath);
-        }
 
-        public static DummyObject CreateAssetFile()
-        {
-            var obj = ScriptableObject.CreateInstance<DummyObject>();
-            Directory.CreateDirectory(TemporalDirPath);
-            AssetDatabase.CreateAsset(obj, $"{TemporalDirPath}/{GUID.Generate()}.asset");
-            return obj;
-        }
-
-        public static DummyObject CreateOutputAssetFile(GameObject avatar)
-        {
-            var name = avatar.name;
-            if (name.EndsWith("(Clone)", StringComparison.Ordinal))
-                name = name.Substring(0, name.Length - "(Clone)".Length);
-            return CreateOutputAssetFile(name);
-        }
-
-        public static DummyObject CreateOutputAssetFile(string name)
-        {
-            Directory.CreateDirectory(OutputDirPath);
-            name = string.Join("_", name.Split(Path.GetInvalidFileNameChars()));
-            var path = GetUniqueFileName($"{OutputDirPath}/{name}", "asset");
-            var obj = ScriptableObject.CreateInstance<DummyObject>();
-            AssetDatabase.CreateAsset(obj, path);
-            return obj;
-        }
-
-        private static string GetUniqueFileName(string name, string extension)
-        {
-            // TOCTOU is allowed for now
-            string PathIfNotExists(string path) => File.Exists(path) || Directory.Exists(path) ? null : path;
-
-            if (PathIfNotExists($"{name}.{extension}") is string firstTry) return firstTry;
-
-            for (var number = 0; ; number++)
-            {
-                if (PathIfNotExists($"{name} ({number}).{extension}") is string otherTry) return otherTry;
-            }
-        }
-        
         public static IEnumerable<(T, T)> ZipWithNext<T>(this IEnumerable<T> enumerable)
         {
             using (var enumerator = enumerable.GetEnumerator())
@@ -389,33 +339,6 @@ namespace Anatawa12.AvatarOptimizer
                     yield return (prev, current);
                     prev = current;
                 }
-            }
-        }
-
-        public static AssetEditingScope StartEditingScope(bool saveAssets) => AssetEditingScope.Start(saveAssets);
-
-        internal readonly struct AssetEditingScope : IDisposable
-        {
-            // 0: default: skip stop
-            // 1: stop asset editing
-            // 2: stop editing & save assets
-            private readonly int _flags;
-
-            private AssetEditingScope(int flags)
-            {
-                _flags = flags;
-            }
-
-            public static AssetEditingScope Start(bool saveAssets)
-            {
-                AssetDatabase.StartAssetEditing();
-                return new AssetEditingScope(1 | (saveAssets ? 2 : 0));
-            }
-
-            public void Dispose()
-            {
-                if ((_flags & 1) != 0) AssetDatabase.StopAssetEditing();
-                if ((_flags & 2) != 0) AssetDatabase.SaveAssets();
             }
         }
 

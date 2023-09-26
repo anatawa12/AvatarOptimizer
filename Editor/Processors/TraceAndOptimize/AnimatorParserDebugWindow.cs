@@ -134,7 +134,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                         {
                             parsedRootObject = avatar.gameObject;
                             Container = new AnimatorParser(true, true).GatherAnimationModifications(
-                                new OptimizerSession(avatar.gameObject, false, true));
+                                new OptimizerSession(avatar.gameObject, true));
                         }
                     }
 
