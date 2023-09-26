@@ -15,7 +15,7 @@ namespace Anatawa12.AvatarOptimizer
         private readonly GameObject _rootObject;
         public bool IsTest { get; }
         public ObjectMappingBuilder MappingBuilder { get; }
-        public MeshInfo2Holder MeshInfo2Holder { get; private set; } = new MeshInfo2Holder();
+        public MeshInfo2Holder MeshInfo2Holder { get; private set; }
 
         public static implicit operator OptimizerSession(BuildContext context)
         {
@@ -27,6 +27,7 @@ namespace Anatawa12.AvatarOptimizer
             IsTest = isTest;
             _rootObject = rootObject;
             MappingBuilder = new ObjectMappingBuilder(rootObject);
+            MeshInfo2Holder = new MeshInfo2Holder(rootObject);
         }
 
         public T GetRootComponent<T>() where T : Component
