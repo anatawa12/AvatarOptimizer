@@ -160,7 +160,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
             };
             if (!_mapped) newController = null;
             _cache[controller] = newController;
-            return _session.AddToAsset(newController);
+            return newController;
         }
 
         private AnimatorControllerLayer MapAnimatorControllerLayer(AnimatorControllerLayer layer) =>
@@ -186,7 +186,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
         {
             if (o is AnimationClip clip)
             {
-                var newClip = _session.AddToAsset(new AnimationClip());
+                var newClip = new AnimationClip();
                 newClip.name = "rebased " + clip.name;
 
                 foreach (var binding in AnimationUtility.GetCurveBindings(clip))
@@ -217,7 +217,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
             }
             else if (o is AvatarMask mask)
             {
-                var newMask = _session.AddToAsset(new AvatarMask());
+                var newMask = new AvatarMask();
                 newMask.name = "rebased " + mask.name;
                 newMask.transformCount = mask.transformCount;
                 var dstI = 0;
@@ -298,7 +298,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 EditorUtility.CopySerialized(original, obj);
             }
 
-            _cache[original] = _session.AddToAsset(obj);
+            _cache[original] = obj;
 
             SerializedObject so = new SerializedObject(obj);
             SerializedProperty prop = so.GetIterator();

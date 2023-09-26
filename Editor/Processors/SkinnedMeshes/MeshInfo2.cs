@@ -467,9 +467,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         {
             BuildReport.ReportingObject(targetRenderer, () =>
             {
-                var mesh = targetRenderer.sharedMesh
-                    ? session.MayCreate(targetRenderer.sharedMesh)
-                    : session.AddToAsset(new Mesh { name = $"AAOGeneratedMesh{targetRenderer.name}" });
+                var mesh = new Mesh { name = $"AAOGeneratedMesh{targetRenderer.name}" };
 
                 WriteToMesh(mesh);
                 targetRenderer.sharedMesh = mesh;

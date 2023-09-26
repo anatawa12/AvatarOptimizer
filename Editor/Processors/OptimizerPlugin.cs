@@ -15,12 +15,11 @@ namespace Anatawa12.AvatarOptimizer.ndmf
         
         public void OnActivate(BuildContext context)
         {
-            session = new OptimizerSession(context.AvatarRootObject, false, false);
+            session = new OptimizerSession(context.AvatarRootObject, false);
         }
 
         public void OnDeactivate(BuildContext context)
         {
-            session.MarkDirtyAll();
         }
     }
     
