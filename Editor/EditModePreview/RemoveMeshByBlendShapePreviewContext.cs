@@ -13,7 +13,6 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
 
         private NativeArray<Vector3> _blendShapeMovements;
 
-        private float _previousTolerance = float.NaN;
         private HashSet<string> _previousRemovingShapeKeys;
 
         public RemoveMeshByBlendShapePreviewContext(BlendShapePreviewContext blendShapePreviewContext,
