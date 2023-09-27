@@ -5,7 +5,6 @@ using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
 using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 namespace Anatawa12.AvatarOptimizer
 {
@@ -14,34 +13,20 @@ namespace Anatawa12.AvatarOptimizer
     {
         static EditSkinnedMeshComponentUtil()
         {
-            RuntimeUtil.OnAwakeEditSkinnedMesh += OnAwake;
-            RuntimeUtil.OnDestroyEditSkinnedMesh += OnDestroy;
-
-            AssemblyReloadEvents.afterAssemblyReload += AfterAssemblyReload;
+            EditorApplication.hierarchyChanged += ResetSharedSorter;
         }
 
-        private static void AfterAssemblyReload()
+        private static SkinnedMeshEditorSorter CreateSharedSorterWithScene()
         {
-            foreach (var component in Enumerable.Range(0, SceneManager.sceneCount)
-                         .Select(SceneManager.GetSceneAt)
-                         .SelectMany(x => x.GetRootGameObjects())
-                         .SelectMany(x => x.GetComponentsInChildren<EditSkinnedMeshComponent>(true)))
-                OnAwake(component);
+            var sorter = new SkinnedMeshEditorSorter();
+            foreach (var component in Resources.FindObjectsOfTypeAll<EditSkinnedMeshComponent>()
+                         .Where(x => !EditorUtility.IsPersistent(x))
+                         .Where(x => x.gameObject.scene.IsValid()))
+                sorter.AddComponent(component);
+            return sorter;
         }
 
-        // might be called by Processor to make sure the component is registered
-        internal static void OnAwake(EditSkinnedMeshComponent component)
-        {
-            EditorShared.AddComponent(component);
-        }
-
-        private static void OnDestroy(EditSkinnedMeshComponent component)
-        {
-            EditorShared.RemoveComponent(component);
-        }
-
-        public static bool IsModifiedByEditComponent(SkinnedMeshRenderer renderer) =>
-            EditorShared.IsModifiedByEditComponent(renderer);
+        private static void ResetSharedSorter() => _editorShared = null;
 
         public static (string name, float weight)[] GetBlendShapes(SkinnedMeshRenderer renderer) => EditorShared.GetBlendShapes(renderer);
 
@@ -55,7 +40,11 @@ namespace Anatawa12.AvatarOptimizer
         public static Material[] GetMaterials(SkinnedMeshRenderer renderer, EditSkinnedMeshComponent before = null,
             bool fast = true) => EditorShared.GetMaterials(renderer, before, fast);
 
-        private static readonly SkinnedMeshEditorSorter EditorShared = new SkinnedMeshEditorSorter();
+        [CanBeNull] private static SkinnedMeshEditorSorter _editorShared;
+
+        [NotNull]
+        private static SkinnedMeshEditorSorter EditorShared =>
+            _editorShared ?? (_editorShared = CreateSharedSorterWithScene());
     }
 
     internal class SkinnedMeshEditorSorter
@@ -67,12 +56,6 @@ namespace Anatawa12.AvatarOptimizer
             if (!ProcessorsByRenderer.TryGetValue(processor.Target, out var processors))
                 processors = ProcessorsByRenderer[processor.Target] = new SkinnedMeshProcessors(processor.Target);
             processors.AddProcessor(processor);
-        }
-
-        public void RemoveComponent(EditSkinnedMeshComponent component)
-        {
-            var target = component.GetComponent<SkinnedMeshRenderer>();
-            GetProcessors(target)?.RemoveProcessorOf(component);
         }
 
         public bool IsModifiedByEditComponent(SkinnedMeshRenderer renderer) =>
@@ -149,13 +132,6 @@ namespace Anatawa12.AvatarOptimizer
             {
                 if (_processors.Add(processor))
                     PurgeCache();
-            }
-
-            public void RemoveProcessorOf(EditSkinnedMeshComponent component)
-            {
-                var removed = _processors.RemoveWhere(x => x.Component == component);
-                if (removed == 0) return;
-                PurgeCache(removing: true);
             }
 
             internal List<IEditSkinnedMeshProcessor> GetSorted()
