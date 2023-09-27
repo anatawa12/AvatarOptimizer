@@ -43,6 +43,7 @@ The format is based on [Keep a Changelog].
 - MergeBone may make some bone inactive to active if bone being merged is inactive `#454`
 - Avoid problematic material slot in MergeSkinnedMesh [`#508`](https://github.com/anatawa12/AvatarOptimizer/pull/508)
   - This avoids [Unity's bug in 2019][unity-bug-material]. In Unity 2022, this is no longer needed.
+- Editor of EditSkinnedMesh components may not work well if the object is inactive `#518`
 
 [unity-bug]: https://issuetracker.unity3d.com/issues/crash-on-gettargetassemblybyscriptpath-when-a-po-file-in-the-packages-directory-is-not-under-an-assembly-definition
 [unity-bug-material]: https://issuetracker.unity3d.com/issues/material-is-applied-to-two-slots-when-applying-material-to-a-single-slot-while-recording-animation

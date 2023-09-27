@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Editor of EditSkinnedMesh components may not work well if the object is inactive `#518`
 
 ### Security
 
