@@ -7,6 +7,7 @@ using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer.Processors
 {
+#pragma warning disable CS0618
     class UnusedBonesByReferencesToolEarlyProcessor
     {
         public void Process(OptimizerSession session)
@@ -230,4 +231,5 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
         #endregion
     }
+#pragma warning restore CS0618
 }

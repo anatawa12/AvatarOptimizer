@@ -1,3 +1,4 @@
+using System;
 using Anatawa12.AvatarOptimizer.Processors;
 using CustomLocalization4EditorExtension;
 using UnityEditor;
@@ -5,6 +6,7 @@ using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer
 {
+    [Obsolete("Obsoleted by Trace and Optimize")]
     [CustomEditor(typeof(UnusedBonesByReferencesTool))]
     class UnusedBonesByReferencesToolEditor : AvatarGlobalComponentEditorBase
     {
