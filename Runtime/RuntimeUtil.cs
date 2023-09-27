@@ -33,8 +33,5 @@ namespace Anatawa12.AvatarOptimizer
 #else
         public static bool isPlaying => true;
 #endif
-
-        public static Action<EditSkinnedMeshComponent> OnAwakeEditSkinnedMesh;
-        public static Action<EditSkinnedMeshComponent> OnDestroyEditSkinnedMesh;
     }
 }
