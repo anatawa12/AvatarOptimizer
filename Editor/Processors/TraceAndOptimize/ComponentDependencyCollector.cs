@@ -136,52 +136,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             dependencies.EntrypointComponent = true;
             using (var serialized = new SerializedObject(component))
             {
-                var iterator = serialized.GetIterator();
-                var enterChildren = true;
-                while (iterator.Next(enterChildren))
+                foreach (var property in serialized.ObjectReferenceProperties())
                 {
-                    if (iterator.propertyType == SerializedPropertyType.ObjectReference)
-                    {
-                        if (iterator.objectReferenceValue is GameObject go)
-                            dependencies.AddAlwaysDependency(go.transform);
-                        else if (iterator.objectReferenceValue is Component com)
-                            dependencies.AddAlwaysDependency(com);
-                    }
-
-                    switch (iterator.propertyType)
-                    {
-                        case SerializedPropertyType.String:
-                        case SerializedPropertyType.Integer:
-                        case SerializedPropertyType.Boolean:
-                        case SerializedPropertyType.Float:
-                        case SerializedPropertyType.Color:
-                        case SerializedPropertyType.ObjectReference:
-                        case SerializedPropertyType.LayerMask:
-                        case SerializedPropertyType.Enum:
-                        case SerializedPropertyType.Vector2:
-                        case SerializedPropertyType.Vector3:
-                        case SerializedPropertyType.Vector4:
-                        case SerializedPropertyType.Rect:
-                        case SerializedPropertyType.ArraySize:
-                        case SerializedPropertyType.Character:
-                        case SerializedPropertyType.AnimationCurve:
-                        case SerializedPropertyType.Bounds:
-                        case SerializedPropertyType.Gradient:
-                        case SerializedPropertyType.Quaternion:
-                        case SerializedPropertyType.FixedBufferSize:
-                        case SerializedPropertyType.Vector2Int:
-                        case SerializedPropertyType.Vector3Int:
-                        case SerializedPropertyType.RectInt:
-                        case SerializedPropertyType.BoundsInt:
-                            enterChildren = false;
-                            break;
-                        case SerializedPropertyType.Generic:
-                        case SerializedPropertyType.ExposedReference:
-                        case SerializedPropertyType.ManagedReference:
-                        default:
-                            enterChildren = true;
-                            break;
-                    }
+                    if (property.objectReferenceValue is GameObject go)
+                        dependencies.AddAlwaysDependency(go.transform);
+                    else if (property.objectReferenceValue is Component com)
+                        dependencies.AddAlwaysDependency(com);
                 }
             }
         }

@@ -24,65 +24,26 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 var serialized = new SerializedObject(component);
                 AnimatorControllerMapper mapper = null;
                 SpecialMappingApplier.Apply(component.GetType(), serialized, mapping, ref mapper);
-                var p = serialized.GetIterator();
-                var enterChildren = true;
-                while (p.Next(enterChildren))
+
+                foreach (var p in serialized.ObjectReferenceProperties())
                 {
-                    if (p.propertyType == SerializedPropertyType.ObjectReference)
+                    if (mapping.MapComponentInstance(p.objectReferenceInstanceIDValue, out var mappedComponent))
+                        p.objectReferenceValue = mappedComponent;
+
+                    if (p.objectReferenceValue is AnimatorController controller)
                     {
-                        if (mapping.MapComponentInstance(p.objectReferenceInstanceIDValue, out var mappedComponent))
-                            p.objectReferenceValue = mappedComponent;
+                        if (mapper == null)
+                            mapper = new AnimatorControllerMapper(mapping.CreateAnimationMapper(component.gameObject));
 
-                        if (p.objectReferenceValue is AnimatorController controller)
-                        {
-                            if (mapper == null)
-                                mapper = new AnimatorControllerMapper(mapping.CreateAnimationMapper(component.gameObject));
-
-                            // ReSharper disable once AccessToModifiedClosure
-                            var mapped = BuildReport.ReportingObject(controller,
-                                () => mapper.MapAnimatorController(controller));
-                            if (mapped != null)
-                                p.objectReferenceValue = mapped;
-                        }
-                    }
-
-                    switch (p.propertyType)
-                    {
-                        case SerializedPropertyType.String:
-                        case SerializedPropertyType.Integer:
-                        case SerializedPropertyType.Boolean:
-                        case SerializedPropertyType.Float:
-                        case SerializedPropertyType.Color:
-                        case SerializedPropertyType.ObjectReference:
-                        case SerializedPropertyType.LayerMask:
-                        case SerializedPropertyType.Enum:
-                        case SerializedPropertyType.Vector2:
-                        case SerializedPropertyType.Vector3:
-                        case SerializedPropertyType.Vector4:
-                        case SerializedPropertyType.Rect:
-                        case SerializedPropertyType.ArraySize:
-                        case SerializedPropertyType.Character:
-                        case SerializedPropertyType.AnimationCurve:
-                        case SerializedPropertyType.Bounds:
-                        case SerializedPropertyType.Gradient:
-                        case SerializedPropertyType.Quaternion:
-                        case SerializedPropertyType.FixedBufferSize:
-                        case SerializedPropertyType.Vector2Int:
-                        case SerializedPropertyType.Vector3Int:
-                        case SerializedPropertyType.RectInt:
-                        case SerializedPropertyType.BoundsInt:
-                            enterChildren = false;
-                            break;
-                        case SerializedPropertyType.Generic:
-                        case SerializedPropertyType.ExposedReference:
-                        case SerializedPropertyType.ManagedReference:
-                        default:
-                            enterChildren = true;
-                            break;
+                        // ReSharper disable once AccessToModifiedClosure
+                        var mapped = BuildReport.ReportingObject(controller,
+                            () => mapper.MapAnimatorController(controller));
+                        if (mapped != null)
+                            p.objectReferenceValue = mapped;
                     }
                 }
 
-                serialized.ApplyModifiedProperties();
+                serialized.ApplyModifiedPropertiesWithoutUndo();
             });
         }
     }
@@ -295,26 +256,13 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
             _cache[original] = obj;
 
-            SerializedObject so = new SerializedObject(obj);
-            SerializedProperty prop = so.GetIterator();
-
-            bool enterChildren = true;
-            while (prop.Next(enterChildren))
+            using (var so = new SerializedObject(obj))
             {
-                enterChildren = true;
-                switch (prop.propertyType)
-                {
-                    case SerializedPropertyType.ObjectReference:
-                        prop.objectReferenceValue = DeepClone(prop.objectReferenceValue, visitor);
-                        break;
-                    // Iterating strings can get super slow...
-                    case SerializedPropertyType.String:
-                        enterChildren = false;
-                        break;
-                }
-            }
+                foreach (var prop in so.ObjectReferenceProperties())
+                    prop.objectReferenceValue = DeepClone(prop.objectReferenceValue, visitor);
 
-            so.ApplyModifiedPropertiesWithoutUndo();
+                so.ApplyModifiedPropertiesWithoutUndo();
+            }
 
             return (T)obj;
         }

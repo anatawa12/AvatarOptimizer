@@ -228,20 +228,17 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             {
                 if (component is Transform) continue;
 
-                var serialized = new SerializedObject(component);
-                var prop = serialized.GetIterator();
-                var enterChildren = true;
-                while (prop.Next(enterChildren))
+                using (var serialized = new SerializedObject(component))
                 {
-                    enterChildren = prop.propertyType == SerializedPropertyType.Generic;
-
-                    if (prop.propertyType == SerializedPropertyType.ObjectReference &&
-                        prop.objectReferenceValue is AnimatorController controller &&
-                        controller.animationClips
+                    foreach (var prop in serialized.ObjectReferenceProperties())
+                    {
+                        if (!(prop.objectReferenceValue is AnimatorController controller)) continue;
+                        if (controller.animationClips
                             .SelectMany(x => AnimationUtility.GetObjectReferenceCurveBindings(x))
                             .Select(x => (AnimationUtility.GetAnimatedObject(component.gameObject, x), x.propertyName))
                             .Any(targetProperties.Contains))
-                        return true;
+                            return true;
+                    }
                 }
             }
             return false;
