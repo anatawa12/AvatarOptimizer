@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEngine;
 
@@ -9,21 +10,21 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
     class AutoFreezeBlendShape
     {
         private readonly ImmutableModificationsContainer _modifications;
-        private readonly OptimizerSession _session;
+        private readonly BuildContext _context;
         private readonly HashSet<GameObject> _exclusions;
 
-        public AutoFreezeBlendShape(ImmutableModificationsContainer modifications, OptimizerSession session,
+        public AutoFreezeBlendShape(ImmutableModificationsContainer modifications, BuildContext context,
             HashSet<GameObject> exclusions)
         {
             _modifications = modifications;
-            _session = session;
+            _context = context;
             _exclusions = exclusions;
         }
 
         public void Process()
         {
             // first optimization: unused blend shapes
-            foreach (var skinnedMeshRenderer in _session.GetComponents<SkinnedMeshRenderer>())
+            foreach (var skinnedMeshRenderer in _context.GetComponents<SkinnedMeshRenderer>())
             {
                 var mesh = skinnedMeshRenderer.sharedMesh;
 
@@ -72,7 +73,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             }
 
             // second optimization: remove meaningless blendShapes
-            foreach (var skinnedMeshRenderer in _session.GetComponents<SkinnedMeshRenderer>())
+            foreach (var skinnedMeshRenderer in _context.GetComponents<SkinnedMeshRenderer>())
             {
                 if (_exclusions.Contains(skinnedMeshRenderer.gameObject)) continue; // manual exclusion
                 skinnedMeshRenderer.gameObject.GetOrAddComponent<FreezeBlendShape>();

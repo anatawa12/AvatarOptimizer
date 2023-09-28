@@ -1,26 +1,29 @@
 using Anatawa12.AvatarOptimizer.ErrorReporting;
+using Anatawa12.AvatarOptimizer.ndmf;
+using nadena.dev.ndmf;
 using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer.Processors
 {
-    internal class EditSkinnedMeshComponentProcessor
+    internal class EditSkinnedMeshComponentProcessor : Pass<EditSkinnedMeshComponentProcessor>
     {
-        public void Process(OptimizerSession session)
+        public override string DisplayName => "EditSkinnedMeshComponent";
+
+        protected override void Execute(BuildContext context)
         {
             var graph = new SkinnedMeshEditorSorter();
-            foreach (var component in session.GetComponents<EditSkinnedMeshComponent>())
+            foreach (var component in context.GetComponents<EditSkinnedMeshComponent>())
                 graph.AddComponent(component);
 
-            var renderers = session.GetComponents<SkinnedMeshRenderer>();
+            var renderers = context.GetComponents<SkinnedMeshRenderer>();
             var processorLists = graph.GetSortedProcessors(renderers);
             foreach (var processors in processorLists)
             {
-                var target = session.MeshInfo2Holder.GetMeshInfoFor(processors.Target);
+                var target = ((OptimizerSession)context).MeshInfo2Holder.GetMeshInfoFor(processors.Target);
 
                 foreach (var processor in processors.GetSorted())
                 {
-                    // TODO
-                    BuildReport.ReportingObject(processor.Component, () => processor.Process(session, target));
+                    BuildReport.ReportingObject(processor.Component, () => processor.Process(context, target));
                     target.AssertInvariantContract(
                         $"after {processor.GetType().Name} " +
                         $"for {processor.Target.gameObject.name}");

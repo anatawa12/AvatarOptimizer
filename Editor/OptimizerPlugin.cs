@@ -1,7 +1,6 @@
 ﻿using System;
 using Anatawa12.AvatarOptimizer.ErrorReporting;
 using Anatawa12.AvatarOptimizer.ndmf;
-using Anatawa12.AvatarOptimizer.Processors;
 using nadena.dev.ndmf;
 using nadena.dev.ndmf.builtin;
 
@@ -34,11 +33,9 @@ namespace Anatawa12.AvatarOptimizer.ndmf
         {
             // Run early steps before EditorOnly objects are purged
             InPhase(BuildPhase.Resolving)
-                .WithRequiredExtensions(new [] {typeof(OptimizerContext), typeof(BuildReportContext)}, seq =>
+                .WithRequiredExtensions(new [] {typeof(BuildReportContext)}, seq =>
                 {
-                    seq.Run("Early: UnusedBonesByReference",
-                            ctx => new Processors.UnusedBonesByReferencesToolEarlyProcessor().Process(ctx)
-                        )
+                    seq.Run(Processors.UnusedBonesByReferencesToolEarlyProcessor.Instance)
                         .Then.Run("Early: MakeChildren",
                             ctx => new Processors.MakeChildrenProcessor(early: true).Process(ctx)
                         )
@@ -52,26 +49,18 @@ namespace Anatawa12.AvatarOptimizer.ndmf
                     seq.Run("TraceAndOptimize",
                             ctx =>
                             {
-                                ctx.GetState<TraceAndOptimizeProcessor>().Process(ctx);
+                                ctx.GetState<Processors.TraceAndOptimizeProcessor>().Process(ctx);
                             })
-                        .Then.Run("ClearEndpointPosition",
-                            ctx => new Processors.ClearEndpointPositionProcessor().Process(ctx)
-                        )
-                        .Then.Run("MergePhysBone",
-                            ctx => new Processors.MergePhysBoneProcessor().Process(ctx)
-                        )
-                        .Then.Run("EditSkinnedMeshComponent",
-                            ctx => new Processors.EditSkinnedMeshComponentProcessor().Process(ctx)
-                        )
+                        .Then.Run(Processors.ClearEndpointPositionProcessor.Instance)
+                        .Then.Run(Processors.MergePhysBoneProcessor.Instance)
+                        .Then.Run(Processors.EditSkinnedMeshComponentProcessor.Instance)
                         .Then.Run("MakeChildrenProcessor",
                             ctx => new Processors.MakeChildrenProcessor(early: false).Process(ctx)
                         )
                         .Then.Run("TraceAndOptimize:ProcessLater",
-                            ctx => ctx.GetState<TraceAndOptimizeProcessor>().ProcessLater(ctx))
-                        .Then.Run("MergeBoneProcessor", ctx => new Processors.MergeBoneProcessor().Process(ctx))
-                        .Then.Run("ApplyObjectMapping",
-                            ctx => new Processors.ApplyObjectMapping().Apply(ctx)
-                        );
+                            ctx => ctx.GetState<Processors.TraceAndOptimizeProcessor>().ProcessLater(ctx))
+                        .Then.Run(Processors.MergeBoneProcessor.Instance)
+                        .Then.Run(Processors.ApplyObjectMapping.Instance);
                 });
         }
 

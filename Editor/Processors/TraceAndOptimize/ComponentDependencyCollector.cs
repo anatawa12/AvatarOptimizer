@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using Anatawa12.AvatarOptimizer.ErrorReporting;
 using JetBrains.Annotations;
+using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Animations;
@@ -28,9 +29,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         }
 
         private readonly bool _preserveEndBone;
-        private readonly OptimizerSession _session;
+        private readonly BuildContext _session;
 
-        public ComponentDependencyCollector(OptimizerSession session, bool preserveEndBone)
+        public ComponentDependencyCollector(BuildContext session, bool preserveEndBone)
         {
             _preserveEndBone = preserveEndBone;
             _session = session;
@@ -282,7 +283,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             });
             AddParserWithExtends<Renderer, SkinnedMeshRenderer>((collector, deps, skinnedMeshRenderer) =>
             {
-                var meshInfo2 = collector._session.MeshInfo2Holder.GetMeshInfoFor(skinnedMeshRenderer);
+                var meshInfo2 = ((OptimizerSession)collector._session).MeshInfo2Holder.GetMeshInfoFor(skinnedMeshRenderer);
                 foreach (var bone in meshInfo2.Bones)
                     deps.AddActiveDependency(bone.Transform, kind: DependencyType.Bone);
                 deps.AddActiveDependency(meshInfo2.RootBone);

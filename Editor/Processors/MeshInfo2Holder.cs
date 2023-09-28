@@ -33,14 +33,14 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 ? cached
                 : _staticCache[renderer] = new MeshInfo2(renderer);
 
-        public void SaveToMesh(OptimizerSession session)
+        public void SaveToMesh()
         {
             foreach (var keyValuePair in _skinnedCache)
             {
                 var targetRenderer = keyValuePair.Key;
                 if (!targetRenderer) continue;
 
-                keyValuePair.Value.WriteToSkinnedMeshRenderer(targetRenderer, session);
+                keyValuePair.Value.WriteToSkinnedMeshRenderer(targetRenderer);
             }
 
             foreach (var keyValuePair in _staticCache)

@@ -463,7 +463,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             }
         }
 
-        public void WriteToSkinnedMeshRenderer(SkinnedMeshRenderer targetRenderer, OptimizerSession session)
+        public void WriteToSkinnedMeshRenderer(SkinnedMeshRenderer targetRenderer)
         {
             BuildReport.ReportingObject(targetRenderer, () =>
             {

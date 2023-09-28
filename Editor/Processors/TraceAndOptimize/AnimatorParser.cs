@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using static Anatawa12.AvatarOptimizer.ErrorReporting.BuildReport;
 using JetBrains.Annotations;
+using nadena.dev.ndmf;
 using UnityEditor.Animations;
 using UnityEngine;
 using UnityEngine.Animations;
@@ -30,16 +31,16 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             advancedAnimatorParser = config.advancedAnimatorParser;
         }
 
-        public ImmutableModificationsContainer GatherAnimationModifications(OptimizerSession session)
+        public ImmutableModificationsContainer GatherAnimationModifications(BuildContext context)
         {
             var modificationsContainer = new ModificationsContainer();
-            modificationsContainer.MergeAsNewLayer(CollectAvatarRootAnimatorModifications(session), 
+            modificationsContainer.MergeAsNewLayer(CollectAvatarRootAnimatorModifications(context), 
                 weightState: AnimatorWeightState.AlwaysOne);
 
-            foreach (var child in session.GetRootComponent<Transform>().DirectChildrenEnumerable())
+            foreach (var child in context.AvatarRootTransform.DirectChildrenEnumerable())
                 WalkForAnimator(child, true, modificationsContainer);
 
-            OtherMutateComponents(modificationsContainer, session);
+            OtherMutateComponents(modificationsContainer, context);
 
             return modificationsContainer.ToImmutable();
         }
@@ -130,9 +131,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         /// <summary>
         /// Collect modifications by non-animation changes. For example, constraints, PhysBones, and else 
         /// </summary>
-        private void OtherMutateComponents(ModificationsContainer mod, OptimizerSession session)
+        private void OtherMutateComponents(ModificationsContainer mod, BuildContext context)
         {
-            ReportingObjects(session.GetComponents<Component>(), component =>
+            ReportingObjects(context.GetComponents<Component>(), component =>
             {
                 switch (component)
                 {
@@ -228,10 +229,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         #region AvatarDescriptor
 
-        private IModificationsContainer CollectAvatarRootAnimatorModifications(OptimizerSession session)
+        private IModificationsContainer CollectAvatarRootAnimatorModifications(BuildContext session)
         {
-            var animator = session.GetRootComponent<Animator>();
-            var descriptor = session.GetRootComponent<VRCAvatarDescriptor>();
+            var animator = session.AvatarRootObject.GetComponent<Animator>();
+            var descriptor = session.AvatarRootObject.GetComponent<VRCAvatarDescriptor>();
 
             var modificationsContainer = new ModificationsContainer();
 

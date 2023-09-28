@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes;
 using JetBrains.Annotations;
+using nadena.dev.ndmf;
 using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer.Processors
@@ -11,24 +12,24 @@ namespace Anatawa12.AvatarOptimizer.Processors
         [CanBeNull] private TraceAndOptimize _config;
         private HashSet<GameObject> _exclusions;
 
-        public void Process(OptimizerSession session)
+        public void Process(BuildContext context)
         {
-            _config = session.GetRootComponent<TraceAndOptimize>();
+            _config = context.AvatarRootObject.GetComponent<TraceAndOptimize>();
             if (_config is null) return;
             Object.DestroyImmediate(_config);
             _exclusions = new HashSet<GameObject>(_config.advancedSettings.exclusions);
 
-            _modifications = new AnimatorParser(_config).GatherAnimationModifications(session);
+            _modifications = new AnimatorParser(_config).GatherAnimationModifications(context);
             if (_config.freezeBlendShape)
-                new AutoFreezeBlendShape(_modifications, session, _exclusions).Process();
+                new AutoFreezeBlendShape(_modifications, context, _exclusions).Process();
         }
 
-        public void ProcessLater(OptimizerSession session)
+        public void ProcessLater(BuildContext context)
         {
             if (_config is null) return;
 
             if (_config.removeUnusedObjects)
-                new FindUnusedObjectsProcessor(_modifications, session, 
+                new FindUnusedObjectsProcessor(_modifications, context, 
                     preserveEndBone: _config.preserveEndBone,
                     useLegacyGC: _config.advancedSettings.useLegacyGc,
                     noConfigureMergeBone: _config.advancedSettings.noConfigureMergeBone,

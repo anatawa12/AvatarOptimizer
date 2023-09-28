@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.ErrorReporting;
+using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
@@ -10,14 +11,14 @@ using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.Processors
 {
-    internal class ApplyObjectMapping
+    internal class ApplyObjectMapping : Pass<ApplyObjectMapping>
     {
-        public void Apply(OptimizerSession session)
+        protected override void Execute(BuildContext context)
         {
-            var mapping = session.MappingBuilder.BuildObjectMapping();
+            var mapping = ((OptimizerSession)context).MappingBuilder.BuildObjectMapping();
 
             // replace all objects
-            BuildReport.ReportingObjects(session.GetComponents<Component>(), component =>
+            BuildReport.ReportingObjects(context.GetComponents<Component>(), component =>
             {
                 if (component is Transform) return;
                 var serialized = new SerializedObject(component);
@@ -35,9 +36,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                         if (p.objectReferenceValue is AnimatorController controller)
                         {
                             if (mapper == null)
-                                mapper = new AnimatorControllerMapper(
-                                    mapping.CreateAnimationMapper(component.gameObject),
-                                    session.RelativePath(component.transform), session);
+                                mapper = new AnimatorControllerMapper(mapping.CreateAnimationMapper(component.gameObject));
 
                             // ReSharper disable once AccessToModifiedClosure
                             var mapped = BuildReport.ReportingObject(controller,
@@ -137,15 +136,11 @@ namespace Anatawa12.AvatarOptimizer.Processors
     {
         private readonly AnimationObjectMapper _mapping;
         private readonly Dictionary<Object, Object> _cache = new Dictionary<Object, Object>();
-        private readonly OptimizerSession _session;
-        private readonly string _rootPath;
         private bool _mapped = false;
 
-        public AnimatorControllerMapper(AnimationObjectMapper mapping, string rootPath, OptimizerSession session)
+        public AnimatorControllerMapper(AnimationObjectMapper mapping)
         {
-            _session = session;
             _mapping = mapping;
-            _rootPath = rootPath;
         }
 
         public AnimatorController MapAnimatorController(AnimatorController controller)
