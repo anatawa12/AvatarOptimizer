@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer.APIBackend
 {
-    public static class ComponentInfoRegistry
+    internal static class ComponentInfoRegistry
     {
         private static readonly Dictionary<Type, IComponentInformation> InformationByType =
             new Dictionary<Type, IComponentInformation>();
@@ -38,6 +38,28 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
             }
         }
 
+        [InitializeOnLoadMethod]
+        static void LoadDynamicBone()
+        {
+            if (DynamicBone.Type is Type dynamicBoneType)
+                InformationByType.Add(dynamicBoneType, new DynamicBoneInformation());
+            // ReSharper disable once PossibleNullReferenceException
+            if (ExternalLibraryAccessor.DynamicBone.ColliderType is Type colliderType)
+                InformationByType.Add(colliderType, new DynamicBoneColliderInformation());
+        }
+
+        [InitializeOnLoadMethod]
+        static void NDMFComponents()
+        {
+            var contextHolder = typeof(nadena.dev.ndmf.BuildContext).Assembly
+                .GetType("nadena.dev.ndmf.VRChat.ContextHolder");
+            // nadena.dev.ndmf.VRChat.ContextHolder is internal so I use reflection
+            if (contextHolder != null)
+            {
+                InformationByType.Add(contextHolder, new EntrypointComponentInformation());
+            }
+        }
+
         private static void LoadType(Type type, ComponentInformationAttribute attribute)
         {
             var targetType = attribute.TargetType;
@@ -58,6 +80,9 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
             var instance = (IComponentInformation)System.Activator.CreateInstance(type);
             InformationByType.Add(targetType, instance);
         }
+
+        internal static bool TryGetInformation(Type type, out IComponentInformation information) =>
+            InformationByType.TryGetValue(type, out information);
     }
 }
 
