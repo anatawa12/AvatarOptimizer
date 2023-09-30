@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using JetBrains.Annotations;
 using UnityEngine;
 
@@ -36,9 +37,15 @@ namespace Anatawa12.AvatarOptimizer.API
         IComponentDependencyInfo AsBone();
     }
 
+    public interface IComponentMutationsCollector
+    {
+        void ModifyProperties([NotNull] Component component, [NotNull] IEnumerable<string> properties);
+    }
+
     internal interface IComponentInformation
     {
         void CollectDependency(Component component, IComponentDependencyCollector collector);
+        void CollectMutations(Component component, IComponentMutationsCollector collector);
     }
 
     internal interface IComponentInformation<in T> : IComponentInformation
@@ -51,7 +58,14 @@ namespace Anatawa12.AvatarOptimizer.API
     {
         void IComponentInformation.CollectDependency(Component component, IComponentDependencyCollector collector) =>
             CollectDependency((T)component, collector);
+        
+        void IComponentInformation.CollectMutations(Component component, IComponentMutationsCollector collector) =>
+            CollectMutations((T)component, collector);
 
         protected abstract void CollectDependency(T component, IComponentDependencyCollector collector);
+
+        protected virtual void CollectMutations(T component, IComponentMutationsCollector collector)
+        {
+        }
     }
 }

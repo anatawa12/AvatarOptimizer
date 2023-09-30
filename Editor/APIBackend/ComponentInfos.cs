@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+using System.Linq;
 using Anatawa12.AvatarOptimizer.API;
+using Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes;
 using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Rendering;
@@ -72,7 +74,8 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
     [ComponentInformation(typeof(SkinnedMeshRenderer))]
     internal class SkinnedMeshRendererInformation : RendererInformation<SkinnedMeshRenderer>
     {
-        protected override void CollectDependency(SkinnedMeshRenderer component, IComponentDependencyCollector collector)
+        protected override void CollectDependency(SkinnedMeshRenderer component,
+            IComponentDependencyCollector collector)
         {
             base.CollectDependency(component, collector);
 
@@ -90,7 +93,7 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
     {
         protected override void CollectDependency(MeshRenderer component, IComponentDependencyCollector collector)
         {
-            base.CollectDependency(component, collector); 
+            base.CollectDependency(component, collector);
             collector.AddDependency(component.GetComponent<MeshFilter>());
         }
     }
@@ -188,9 +191,10 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
     [ComponentInformation(typeof(ParticleSystemRenderer))]
     internal class ParticleSystemRendererInformation : RendererInformation<ParticleSystemRenderer>
     {
-        protected override void CollectDependency(ParticleSystemRenderer component, IComponentDependencyCollector collector)
+        protected override void CollectDependency(ParticleSystemRenderer component,
+            IComponentDependencyCollector collector)
         {
-            base.CollectDependency(component, collector); 
+            base.CollectDependency(component, collector);
             collector.AddDependency(component.GetComponent<ParticleSystem>()).EvenIfDependantDisabled();
         }
     }
@@ -263,6 +267,11 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
         {
             collector.AddDependency(component.transform, component).EvenIfDependantDisabled().OnlyIfTargetCanBeEnable();
         }
+
+        protected override void CollectMutations(Rigidbody component, IComponentMutationsCollector collector)
+        {
+            collector.TransformPositionAndRotation(component.transform);
+        }
     }
 
     [ComponentInformation(typeof(FlareLayer))]
@@ -292,6 +301,11 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
             base.CollectDependency(component, collector);
             collector.AddDependency(component.worldUpObject);
         }
+
+        protected override void CollectMutations(AimConstraint component, IComponentMutationsCollector collector)
+        {
+            collector.TransformPositionAndRotation(component.transform);
+        }
     }
 
     [ComponentInformation(typeof(LookAtConstraint))]
@@ -302,33 +316,55 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
             base.CollectDependency(component, collector);
             collector.AddDependency(component.worldUpObject);
         }
+
+        protected override void CollectMutations(LookAtConstraint component, IComponentMutationsCollector collector)
+        {
+            collector.TransformPositionAndRotation(component.transform);
+        }
     }
 
     [ComponentInformation(typeof(ParentConstraint))]
     internal class ParentConstraintInformation : ConstraintInformation<ParentConstraint>
     {
-    }
-
-    [ComponentInformation(typeof(PositionConstraint))]
-    internal class PositionConstraintInformation : ConstraintInformation<PositionConstraint>
-    {
+        protected override void CollectMutations(ParentConstraint component, IComponentMutationsCollector collector)
+        {
+            collector.TransformPositionAndRotation(component.transform);
+        }
     }
 
     [ComponentInformation(typeof(RotationConstraint))]
     internal class RotationConstraintInformation : ConstraintInformation<RotationConstraint>
     {
+        protected override void CollectMutations(RotationConstraint component, IComponentMutationsCollector collector)
+        {
+            collector.TransformRotation(component.transform);
+        }
+    }
+
+    [ComponentInformation(typeof(PositionConstraint))]
+    internal class PositionConstraintInformation : ConstraintInformation<PositionConstraint>
+    {
+        protected override void CollectMutations(PositionConstraint component, IComponentMutationsCollector collector)
+        {
+            collector.TransformPosition(component.transform);
+        }
     }
 
     [ComponentInformation(typeof(ScaleConstraint))]
     internal class ScaleConstraintInformation : ConstraintInformation<ScaleConstraint>
     {
+        protected override void CollectMutations(ScaleConstraint component, IComponentMutationsCollector collector)
+        {
+            collector.TransformScale(component.transform);
+        }
     }
 
     [ComponentInformation(typeof(VRC_AvatarDescriptor))]
     [ComponentInformation(typeof(VRCAvatarDescriptor))]
     internal class VRCAvatarDescriptorInformation : ComponentInformation<VRC_AvatarDescriptor>
     {
-        protected override void CollectDependency(VRC_AvatarDescriptor component, IComponentDependencyCollector collector)
+        protected override void CollectDependency(VRC_AvatarDescriptor component,
+            IComponentDependencyCollector collector)
         {
             collector.MarkEntrypoint();
             collector.AddDependency(component.GetComponent<PipelineManager>()).EvenIfDependantDisabled();
@@ -368,13 +404,20 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
             if (!string.IsNullOrEmpty(component.parameter))
                 collector.MarkEntrypoint();
         }
+
+        protected override void CollectMutations(VRCPhysBoneBase component, IComponentMutationsCollector collector)
+        {
+            foreach (var transform in component.GetAffectedTransforms())
+                collector.TransformPositionAndRotation(transform);
+        }
     }
 
     [ComponentInformation(typeof(VRCPhysBoneColliderBase))]
     [ComponentInformation(typeof(VRCPhysBoneCollider))]
     internal class VRCPhysBoneColliderInformation : ComponentInformation<VRCPhysBoneColliderBase>
     {
-        protected override void CollectDependency(VRCPhysBoneColliderBase component, IComponentDependencyCollector collector)
+        protected override void CollectDependency(VRCPhysBoneColliderBase component,
+            IComponentDependencyCollector collector)
         {
             collector.AddDependency(component.rootTransform);
         }
@@ -391,6 +434,37 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
         {
             collector.MarkEntrypoint();
             collector.AddDependency(component.rootTransform);
+        }
+    }
+
+    [ComponentInformation(typeof(RemoveMeshByBlendShape))]
+    internal class RemoveMeshByBlendShapeInformation : ComponentInformation<RemoveMeshByBlendShape>
+    {
+        protected override void CollectDependency(RemoveMeshByBlendShape component, IComponentDependencyCollector collector)
+        {
+        }
+
+        protected override void CollectMutations(RemoveMeshByBlendShape component, IComponentMutationsCollector collector)
+        {
+            var blendShapes = component.RemovingShapeKeys;
+            {
+                collector.ModifyProperties(component.GetComponent<SkinnedMeshRenderer>(),
+                    blendShapes.Select(blendShape => $"blendShape.{blendShape}"));
+            }
+
+            DeriveMergeSkinnedMeshProperties(component.GetComponent<MergeSkinnedMesh>());
+
+            void DeriveMergeSkinnedMeshProperties(MergeSkinnedMesh mergeSkinnedMesh)
+            {
+                if (mergeSkinnedMesh == null) return;
+
+                foreach (var renderer in mergeSkinnedMesh.renderersSet.GetAsSet())
+                {
+                    collector.ModifyProperties(renderer, blendShapes.Select(blendShape => $"blendShape.{blendShape}"));
+
+                    DeriveMergeSkinnedMeshProperties(renderer.GetComponent<MergeSkinnedMesh>());
+                }
+            }
         }
     }
 
@@ -413,6 +487,14 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
                 collector.AddDependency(collider);
             }
         }
+
+        protected override void CollectMutations(Component component, IComponentMutationsCollector collector)
+        {
+            // DynamicBone : similar to PhysBone
+            DynamicBone.TryCast(component, out var dynamicBone);
+            foreach (var transform in dynamicBone.GetAffectedTransforms())
+                collector.TransformRotation(transform);
+        }
     }
 
     internal class DynamicBoneColliderInformation : ComponentInformation<Component>
@@ -420,5 +502,31 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
         protected override void CollectDependency(Component component, IComponentDependencyCollector collector)
         {
         }
+    }
+
+    internal static class ComponentInformationExtensions
+    {
+        public static void TransformPositionAndRotation(this IComponentMutationsCollector collector,
+            Transform transform) =>
+            collector.ModifyProperties(transform,
+                TransformPositionAnimationKeys.Concat(TransformRotationAnimationKeys));
+
+        public static void TransformRotation(this IComponentMutationsCollector collector, Transform transform) =>
+            collector.ModifyProperties(transform, TransformRotationAnimationKeys);
+
+        public static void TransformPosition(this IComponentMutationsCollector collector, Transform transform) =>
+            collector.ModifyProperties(transform, TransformPositionAnimationKeys);
+
+        public static void TransformScale(this IComponentMutationsCollector collector, Transform transform) =>
+            collector.ModifyProperties(transform, TransformScaleAnimationKeys);
+
+        private static readonly string[] TransformRotationAnimationKeys =
+            { "m_LocalRotation.x", "m_LocalRotation.y", "m_LocalRotation.z", "m_LocalRotation.w" };
+
+        private static readonly string[] TransformPositionAnimationKeys =
+            { "m_LocalPosition.x", "m_LocalPosition.y", "m_LocalPosition.z" };
+
+        private static readonly string[] TransformScaleAnimationKeys =
+            { "m_LocalScale.x", "m_LocalScale.y", "m_LocalScale.z" };
     }
 }
