@@ -1,7 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.API;
-using Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes;
 using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Rendering;
@@ -33,6 +33,23 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
         protected override void CollectDependency(Component component, IComponentDependencyCollector collector)
         {
             collector.MarkEntrypoint();
+        }
+    }
+
+    [ComponentInformation(typeof(Transform))]
+    internal class TransformInformation : ComponentInformation<Transform>
+    {
+        protected override void CollectDependency(Transform component, IComponentDependencyCollector collector)
+        {
+            var casted = (Processors.TraceAndOptimizes.ComponentDependencyCollector.Collector)collector;
+            casted.AddParentDependency(component);
+            // For compatibility with UnusedBonesByReferenceTool
+            // https://github.com/anatawa12/AvatarOptimizer/issues/429
+            if (casted.PreserveEndBone &&
+                component.name.EndsWith("end", StringComparison.OrdinalIgnoreCase))
+            {
+                collector.AddDependency(component.parent, component).EvenIfDependantDisabled();
+            }
         }
     }
 

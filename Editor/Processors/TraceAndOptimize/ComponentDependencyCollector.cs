@@ -66,6 +66,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 return new ComponentDependencyInfo(_dependencies, component);
             }
 
+            public void AddParentDependency(Transform component)
+            {
+                var parent = component.parent;
+                if (parent) new ComponentDependencyInfo(_dependencies, parent).AsParent();
+            }
+
             class EmptyComponentDependencyInfo : IComponentDependencyInfo
             {
                 public static EmptyComponentDependencyInfo Instance = new EmptyComponentDependencyInfo();
@@ -126,6 +132,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     _type = DependencyType.Bone;
                     SetFlags();
                     return this;
+                }
+
+                public void AsParent()
+                {
+                    _type = DependencyType.Parent;
+                    SetFlags();
                 }
             }
         }
@@ -206,11 +218,17 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             }
 
             public MeshInfo2Holder MeshInfo2Holder => ((OptimizerSession)_collector._session).MeshInfo2Holder;
+            public bool PreserveEndBone => _collector._preserveEndBone;
 
             public void MarkEntrypoint() => _deps.EntrypointComponent = true;
             public IComponentDependencyInfo AddDependency(Component dependant, Component dependency) =>
                 _collector.GetDependencies(dependant).AddDependency(dependency);
             public IComponentDependencyInfo AddDependency(Component dependency) => _deps.AddDependency(dependency);
+
+            public void AddParentDependency(Transform component)
+            {
+                _deps.AddParentDependency(component);
+            }
         }
     }
 }
