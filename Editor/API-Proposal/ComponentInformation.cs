@@ -41,8 +41,12 @@ namespace Anatawa12.AvatarOptimizer.API
         void CollectDependency(Component component, IComponentDependencyCollector collector);
     }
 
+    internal interface IComponentInformation<in T> : IComponentInformation
+    {
+    }
+
     [MeansImplicitUse]
-    public abstract class ComponentInformation<T> : IComponentInformation
+    public abstract class ComponentInformation<T> : IComponentInformation<T>
         where T : Component
     {
         void IComponentInformation.CollectDependency(Component component, IComponentDependencyCollector collector) =>
