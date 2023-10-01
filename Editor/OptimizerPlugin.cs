@@ -49,7 +49,8 @@ namespace Anatawa12.AvatarOptimizer.ndmf
                     seq.WithRequiredExtensions(new[]
                     {
                         typeof(OptimizerContext),
-                        typeof(Processors.MeshInfo2Context)
+                        typeof(Processors.MeshInfo2Context),
+                        typeof(ObjectMappingContext),
                     }, _ =>
                     {
                         seq.Run("TraceAndOptimize",
@@ -65,8 +66,7 @@ namespace Anatawa12.AvatarOptimizer.ndmf
                             )
                             .Then.Run("TraceAndOptimize:ProcessLater",
                                 ctx => ctx.GetState<Processors.TraceAndOptimizeProcessor>().ProcessLater(ctx))
-                            .Then.Run(Processors.MergeBoneProcessor.Instance)
-                            .Then.Run(Processors.ApplyObjectMapping.Instance);
+                            .Then.Run(Processors.MergeBoneProcessor.Instance);
                     });
                     seq.Run("EmptyPass for Context Ordering", _ => {});
                 });

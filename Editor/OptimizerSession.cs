@@ -1,11 +1,9 @@
 using System.Collections.Generic;
-using System.Linq;
 using Anatawa12.AvatarOptimizer.Processors;
 using Anatawa12.AvatarOptimizer.ndmf;
 using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
 using nadena.dev.ndmf;
 using UnityEngine;
-using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer
 {
@@ -13,7 +11,7 @@ namespace Anatawa12.AvatarOptimizer
     {
         private readonly BuildContext _buildContext;
         public bool IsTest { get; }
-        public ObjectMappingBuilder MappingBuilder { get; }
+        public ObjectMappingBuilder MappingBuilder => _buildContext.Extension<ObjectMappingContext>().MappingBuilder;
         private MeshInfo2Holder MeshInfo2Holder => _buildContext.Extension<MeshInfo2Context>().Holder;
 
         public MeshInfo2 GetMeshInfoFor(SkinnedMeshRenderer renderer) => MeshInfo2Holder.GetMeshInfoFor(renderer);
@@ -28,7 +26,6 @@ namespace Anatawa12.AvatarOptimizer
         {
             IsTest = false;
             _buildContext = context;
-            MappingBuilder = new ObjectMappingBuilder(context.AvatarRootObject);
         }
 
         public IEnumerable<T> GetComponents<T>() where T : Component => _buildContext.GetComponents<T>();

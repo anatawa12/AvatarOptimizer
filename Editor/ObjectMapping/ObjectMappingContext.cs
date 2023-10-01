@@ -9,13 +9,20 @@ using UnityEngine;
 using VRC.SDK3.Avatars.Components;
 using Object = UnityEngine.Object;
 
-namespace Anatawa12.AvatarOptimizer.Processors
+namespace Anatawa12.AvatarOptimizer
 {
-    internal class ApplyObjectMapping : Pass<ApplyObjectMapping>
+    internal class ObjectMappingContext : IExtensionContext
     {
-        protected override void Execute(BuildContext context)
+        public ObjectMappingBuilder MappingBuilder { get; private set; }
+
+        public void OnActivate(BuildContext context)
         {
-            var mapping = ((OptimizerSession)context).MappingBuilder.BuildObjectMapping();
+            MappingBuilder = new ObjectMappingBuilder(context.AvatarRootObject);
+        }
+
+        public void OnDeactivate(BuildContext context)
+        {
+            var mapping = MappingBuilder.BuildObjectMapping();
 
             // replace all objects
             BuildReport.ReportingObjects(context.GetComponents<Component>(), component =>
