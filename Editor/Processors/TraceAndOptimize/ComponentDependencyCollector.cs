@@ -69,7 +69,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             public void AddParentDependency(Transform component)
             {
                 var parent = component.parent;
-                if (parent) new ComponentDependencyInfo(_dependencies, parent, DependencyType.Parent).SetFlags();
+                if (parent) new ComponentDependencyInfo(_dependencies, parent, DependencyType.Parent)
+                    .EvenIfDependantDisabled();
             }
 
             public void AddBoneDependency(Transform bone)
