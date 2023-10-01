@@ -8,8 +8,8 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
 {
     internal static class ComponentInfoRegistry
     {
-        private static readonly Dictionary<Type, IComponentInformation> InformationByType =
-            new Dictionary<Type, IComponentInformation>();
+        private static readonly Dictionary<Type, ComponentInformation> InformationByType =
+            new Dictionary<Type, ComponentInformation>();
 
         [InitializeOnLoadMethod]
         static void FindAllInfoImplements()
@@ -77,11 +77,11 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
             if (InformationByType.ContainsKey(targetType))
                 throw new Exception($"Target Type duplicated: {targetType}");
 
-            var instance = (IComponentInformation)System.Activator.CreateInstance(type);
+            var instance = (ComponentInformation)System.Activator.CreateInstance(type);
             InformationByType.Add(targetType, instance);
         }
 
-        internal static bool TryGetInformation(Type type, out IComponentInformation information) =>
+        internal static bool TryGetInformation(Type type, out ComponentInformation information) =>
             InformationByType.TryGetValue(type, out information);
     }
 }

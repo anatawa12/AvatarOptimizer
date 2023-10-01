@@ -153,7 +153,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             ReportingObjects(context.GetComponents<Component>(), component =>
             {
                 if (ComponentInfoRegistry.TryGetInformation(component.GetType(), out var info))
-                    info.CollectMutations(component, collector);
+                    info.CollectMutationsInternal(component, collector);
             });
         }
 

@@ -40,29 +40,28 @@ namespace Anatawa12.AvatarOptimizer.API
         void ModifyProperties([NotNull] Component component, [NotNull] IEnumerable<string> properties);
     }
 
-    internal interface IComponentInformation
+    public abstract class ComponentInformation
     {
-        void CollectDependency(Component component, IComponentDependencyCollector collector);
-        void CollectMutations(Component component, IComponentMutationsCollector collector);
-    }
-
-    internal interface IComponentInformation<in T> : IComponentInformation
-    {
-    }
-
-    [MeansImplicitUse]
-    public abstract class ComponentInformation<T> : IComponentInformation<T>
-        where T : Component
-    {
-        void IComponentInformation.CollectDependency(Component component, IComponentDependencyCollector collector) =>
-            CollectDependency((T)component, collector);
+        internal ComponentInformation()
+        {
+        }
         
-        void IComponentInformation.CollectMutations(Component component, IComponentMutationsCollector collector) =>
-            CollectMutations((T)component, collector);
+        internal abstract void CollectDependencyInternal(Component component, IComponentDependencyCollector collector);
+        internal abstract void CollectMutationsInternal(Component component, IComponentMutationsCollector collector);
+    }
 
-        protected abstract void CollectDependency(T component, IComponentDependencyCollector collector);
+    public abstract class ComponentInformation<TComponent> : ComponentInformation, APIBackend.IComponentInformation<TComponent>
+        where TComponent : Component
+    {
+        internal sealed override void CollectDependencyInternal(Component component, IComponentDependencyCollector collector) =>
+            CollectDependency((TComponent)component, collector);
 
-        protected virtual void CollectMutations(T component, IComponentMutationsCollector collector)
+        internal sealed override void CollectMutationsInternal(Component component, IComponentMutationsCollector collector) =>
+            CollectMutations((TComponent)component, collector);
+
+        protected abstract void CollectDependency(TComponent component, IComponentDependencyCollector collector);
+
+        protected virtual void CollectMutations(TComponent component, IComponentMutationsCollector collector)
         {
         }
     }

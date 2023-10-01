@@ -171,7 +171,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 // component requires GameObject.
                 if (ComponentInfoRegistry.TryGetInformation(component.GetType(), out var information))
                 {
-                    information.CollectDependency(component, new Collector(this, component));
+                    information.CollectDependencyInternal(component, new Collector(this, component));
                 }
                 else
                 {
