@@ -4,6 +4,7 @@ using System.Linq;
 using Anatawa12.AvatarOptimizer.API;
 using Anatawa12.AvatarOptimizer.APIBackend;
 using Anatawa12.AvatarOptimizer.ErrorReporting;
+using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
 using JetBrains.Annotations;
 using nadena.dev.ndmf;
 using UnityEditor;
@@ -210,8 +211,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 _deps = collector.GetDependencies(component);
             }
 
-            public MeshInfo2Holder MeshInfo2Holder => ((OptimizerSession)_collector._session).MeshInfo2Holder;
             public bool PreserveEndBone => _collector._preserveEndBone;
+
+            public MeshInfo2 GetMeshInfoFor(SkinnedMeshRenderer renderer) => ((OptimizerSession)_collector._session).GetMeshInfoFor(renderer);
 
             public void MarkEntrypoint() => _deps.EntrypointComponent = true;
             public IComponentDependencyInfo AddDependency(Component dependant, Component dependency) =>

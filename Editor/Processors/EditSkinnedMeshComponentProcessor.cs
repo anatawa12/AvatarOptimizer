@@ -19,7 +19,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
             var processorLists = graph.GetSortedProcessors(renderers);
             foreach (var processors in processorLists)
             {
-                var target = ((OptimizerSession)context).MeshInfo2Holder.GetMeshInfoFor(processors.Target);
+                var target = ((OptimizerSession)context).GetMeshInfoFor(processors.Target);
 
                 foreach (var processor in processors.GetSorted())
                 {

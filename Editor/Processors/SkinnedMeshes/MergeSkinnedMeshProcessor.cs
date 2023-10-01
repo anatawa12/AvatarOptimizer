@@ -27,8 +27,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         public override void Process(OptimizerSession session, MeshInfo2 target)
         {
-            var meshInfos = SkinnedMeshRenderers.Select(session.MeshInfo2Holder.GetMeshInfoFor)
-                .Concat(StaticMeshRenderers.Select(session.MeshInfo2Holder.GetMeshInfoFor))
+            var meshInfos = SkinnedMeshRenderers.Select(session.GetMeshInfoFor)
+                .Concat(StaticMeshRenderers.Select(session.GetMeshInfoFor))
                 .ToArray();
             var sourceMaterials = meshInfos.Select(x => x.SubMeshes.Select(y => y.SharedMaterial).ToArray()).ToArray();
 
