@@ -65,10 +65,9 @@ namespace Anatawa12.AvatarOptimizer.Processors
             // normalize map
             mergeMapping.FlattenMapping();
 
-            var session = (OptimizerSession)context;
             BuildReport.ReportingObjects(context.GetComponents<SkinnedMeshRenderer>(), renderer =>
             {
-                var meshInfo2 = session.GetMeshInfoFor(renderer);
+                var meshInfo2 = context.GetMeshInfoFor(renderer);
                 if (meshInfo2.Bones.Any(x => x.Transform && mergeMapping.ContainsKey(x.Transform)))
                     DoBoneMap2(meshInfo2, mergeMapping);
             });

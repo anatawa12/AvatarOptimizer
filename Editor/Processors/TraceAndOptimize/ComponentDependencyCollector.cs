@@ -213,7 +213,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             public bool PreserveEndBone => _collector._preserveEndBone;
 
-            public MeshInfo2 GetMeshInfoFor(SkinnedMeshRenderer renderer) => ((OptimizerSession)_collector._session).GetMeshInfoFor(renderer);
+            public MeshInfo2 GetMeshInfoFor(SkinnedMeshRenderer renderer) =>
+                _collector._session.GetMeshInfoFor(renderer);
 
             public void MarkEntrypoint() => _deps.EntrypointComponent = true;
             public IComponentDependencyInfo AddDependency(Component dependant, Component dependency) =>
