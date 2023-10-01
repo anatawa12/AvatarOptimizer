@@ -43,25 +43,32 @@ namespace Anatawa12.AvatarOptimizer.ndmf
 
             // Run everything else in the optimize phase
             InPhase(BuildPhase.Optimizing)
-                .WithRequiredExtensions(new [] {typeof(OptimizerContext), 
-                    typeof(Processors.MeshInfo2Context),
-                    typeof(BuildReportContext)}, seq =>
+                .WithRequiredExtension(typeof(BuildReportContext), seq =>
                 {
-                    seq.Run("TraceAndOptimize",
-                            ctx =>
-                            {
-                                ctx.GetState<Processors.TraceAndOptimizeProcessor>().Process(ctx);
-                            })
-                        .Then.Run(Processors.ClearEndpointPositionProcessor.Instance)
-                        .Then.Run(Processors.MergePhysBoneProcessor.Instance)
-                        .Then.Run(Processors.EditSkinnedMeshComponentProcessor.Instance)
-                        .Then.Run("MakeChildrenProcessor",
-                            ctx => new Processors.MakeChildrenProcessor(early: false).Process(ctx)
-                        )
-                        .Then.Run("TraceAndOptimize:ProcessLater",
-                            ctx => ctx.GetState<Processors.TraceAndOptimizeProcessor>().ProcessLater(ctx))
-                        .Then.Run(Processors.MergeBoneProcessor.Instance)
-                        .Then.Run(Processors.ApplyObjectMapping.Instance);
+                    seq.Run("EmptyPass for Context Ordering", _ => {});
+                    seq.WithRequiredExtensions(new[]
+                    {
+                        typeof(OptimizerContext),
+                        typeof(Processors.MeshInfo2Context)
+                    }, _ =>
+                    {
+                        seq.Run("TraceAndOptimize",
+                                ctx =>
+                                {
+                                    ctx.GetState<Processors.TraceAndOptimizeProcessor>().Process(ctx);
+                                })
+                            .Then.Run(Processors.ClearEndpointPositionProcessor.Instance)
+                            .Then.Run(Processors.MergePhysBoneProcessor.Instance)
+                            .Then.Run(Processors.EditSkinnedMeshComponentProcessor.Instance)
+                            .Then.Run("MakeChildrenProcessor",
+                                ctx => new Processors.MakeChildrenProcessor(early: false).Process(ctx)
+                            )
+                            .Then.Run("TraceAndOptimize:ProcessLater",
+                                ctx => ctx.GetState<Processors.TraceAndOptimizeProcessor>().ProcessLater(ctx))
+                            .Then.Run(Processors.MergeBoneProcessor.Instance)
+                            .Then.Run(Processors.ApplyObjectMapping.Instance);
+                    });
+                    seq.Run("EmptyPass for Context Ordering", _ => {});
                 });
         }
 
