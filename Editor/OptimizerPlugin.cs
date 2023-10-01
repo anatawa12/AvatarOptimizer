@@ -14,7 +14,7 @@ namespace Anatawa12.AvatarOptimizer.ndmf
         
         public void OnActivate(BuildContext context)
         {
-            session = new OptimizerSession(context.AvatarRootObject, false);
+            session = new OptimizerSession(context);
         }
 
         public void OnDeactivate(BuildContext context)

@@ -10,7 +10,7 @@ namespace Anatawa12.AvatarOptimizer
 {
     internal class OptimizerSession
     {
-        private readonly GameObject _rootObject;
+        private readonly BuildContext _buildContext;
         public bool IsTest { get; }
         public ObjectMappingBuilder MappingBuilder { get; }
         public MeshInfo2Holder MeshInfo2Holder { get; private set; }
@@ -20,19 +20,15 @@ namespace Anatawa12.AvatarOptimizer
             return context.Extension<OptimizerContext>().session;
         }
 
-        public OptimizerSession(GameObject rootObject, bool isTest)
+        public OptimizerSession(BuildContext context)
         {
-            IsTest = isTest;
-            _rootObject = rootObject;
-            MappingBuilder = new ObjectMappingBuilder(rootObject);
-            MeshInfo2Holder = new MeshInfo2Holder(rootObject);
+            IsTest = false;
+            _buildContext = context;
+            MappingBuilder = new ObjectMappingBuilder(context.AvatarRootObject);
+            MeshInfo2Holder = new MeshInfo2Holder(context.AvatarRootObject);
         }
 
-        public IEnumerable<T> GetComponents<T>() where T : Component
-        {
-            return (_rootObject != null ? _rootObject.GetComponentsInChildren<T>(true) : Object.FindObjectsOfType<T>())
-                .Where(x => x);
-        }
+        public IEnumerable<T> GetComponents<T>() where T : Component => _buildContext.GetComponents<T>();
 
         public void SaveMeshInfo2()
         {
