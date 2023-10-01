@@ -25,8 +25,6 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
     [ComponentInformation(typeof(PipelineManager))]
     [ComponentInformation(typeof(VRCSpatialAudioSource))]
     [ComponentInformation(typeof(VRC_SpatialAudioSource))]
-    [ComponentInformation(typeof(VRC.SDKBase.VRCStation))]
-    [ComponentInformation(typeof(VRC.SDK3.Avatars.Components.VRCStation))]
     [ComponentInformation(typeof(nadena.dev.ndmf.runtime.AvatarActivator))]
     // nadena.dev.ndmf.VRChat.ContextHolder with reflection
     internal class EntrypointComponentInformation : ComponentInformation<Component>
@@ -388,6 +386,26 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
         {
             collector.MarkEntrypoint();
             collector.AddDependency(component.GetComponent<PipelineManager>()).EvenIfDependantDisabled();
+        }
+    }
+
+    [ComponentInformation(typeof(VRC.SDKBase.VRCStation))]
+    [ComponentInformation(typeof(VRC.SDK3.Avatars.Components.VRCStation))]
+    internal class VRCStationInformation : ComponentInformation<VRC.SDKBase.VRCStation>
+    {
+        protected override void CollectDependency(VRC.SDKBase.VRCStation component, IComponentDependencyCollector collector)
+        {
+            // first, Transform <=> PhysBone
+            // Transform is used even if the bone is inactive so Transform => PB is always dependency
+            // PhysBone works only if enabled so PB => Transform is active dependency
+            collector.MarkEntrypoint();
+            collector.AddDependency(component.stationEnterPlayerLocation);
+            collector.AddDependency(component.stationExitPlayerLocation);
+            collector.AddDependency(component.GetComponentInChildren<Collider>());
+        }
+
+        protected override void CollectMutations(VRC.SDKBase.VRCStation component, IComponentMutationsCollector collector)
+        {
         }
     }
 
