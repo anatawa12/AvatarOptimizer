@@ -26,5 +26,26 @@ namespace Anatawa12.AvatarOptimizer
 
         public static MeshInfo2 GetMeshInfoFor([NotNull] this BuildContext context, MeshRenderer renderer) =>
             context.GetHolder().GetMeshInfoFor(renderer);
+
+        private static ObjectMappingBuilder GetMappingBuilder([NotNull] this BuildContext context)
+        {
+            if (context == null) throw new ArgumentNullException(nameof(context));
+            return context.Extension<ObjectMappingContext>().MappingBuilder;
+        }
+
+        public static void RecordMergeComponent<T>([NotNull] this BuildContext context, T from, T mergeTo)
+            where T : Component =>
+            GetMappingBuilder(context).RecordMergeComponent(from, mergeTo);
+
+        public static void RecordMoveProperties([NotNull] this BuildContext context, Component from,
+            params (string old, string @new)[] props) =>
+            GetMappingBuilder(context).RecordMoveProperties(from, props);
+
+        public static void RecordMoveProperty([NotNull] this BuildContext context, Component from, string oldProp,
+            string newProp) =>
+            GetMappingBuilder(context).RecordMoveProperty(from, oldProp, newProp);
+
+        public static void RecordRemoveProperty([NotNull] this BuildContext context, Component from, string oldProp) =>
+            GetMappingBuilder(context).RecordRemoveProperty(from, oldProp);
     }
 }

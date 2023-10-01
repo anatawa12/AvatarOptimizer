@@ -11,8 +11,20 @@ namespace Anatawa12.AvatarOptimizer
     {
         private readonly BuildContext _buildContext;
         public bool IsTest { get; }
-        public ObjectMappingBuilder MappingBuilder => _buildContext.Extension<ObjectMappingContext>().MappingBuilder;
+        private ObjectMappingBuilder MappingBuilder => _buildContext.Extension<ObjectMappingContext>().MappingBuilder;
         private MeshInfo2Holder MeshInfo2Holder => _buildContext.Extension<MeshInfo2Context>().Holder;
+
+        public void RecordMergeComponent<T>(T from, T mergeTo) where T : Component =>
+            MappingBuilder.RecordMergeComponent(from, mergeTo);
+
+        public void RecordMoveProperties(Component from, params (string old, string @new)[] props) =>
+            MappingBuilder.RecordMoveProperties(from, props);
+
+        public void RecordMoveProperty(Component from, string oldProp, string newProp) =>
+            MappingBuilder.RecordMoveProperty(from, oldProp, newProp);
+
+        public void RecordRemoveProperty(Component from, string oldProp) =>
+            MappingBuilder.RecordRemoveProperty(from, oldProp);
 
         public MeshInfo2 GetMeshInfoFor(SkinnedMeshRenderer renderer) => MeshInfo2Holder.GetMeshInfoFor(renderer);
         public MeshInfo2 GetMeshInfoFor(MeshRenderer renderer) => MeshInfo2Holder.GetMeshInfoFor(renderer);

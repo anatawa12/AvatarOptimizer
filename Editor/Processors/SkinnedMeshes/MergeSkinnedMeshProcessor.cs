@@ -109,7 +109,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
                 }
 
-                session.MappingBuilder.RecordMoveProperties(meshInfo.SourceRenderer, mappings.ToArray());
+                session.RecordMoveProperties(meshInfo.SourceRenderer, mappings.ToArray());
 
                 target.RootBone = sourceRootBone;
                 target.Bones.AddRange(meshInfo.Bones);
@@ -145,8 +145,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 // This often be a unexpected behavior so we invalidate changing m_Enabled
                 // property for original mesh in animation.
                 // This invalidation doesn't affect to m_Enabled property of merged mesh.
-                session.MappingBuilder.RecordRemoveProperty(renderer, "m_Enabled");
-                session.MappingBuilder.RecordMergeComponent(renderer, Target);
+                session.RecordRemoveProperty(renderer, "m_Enabled");
+                session.RecordMergeComponent(renderer, Target);
                 var rendererGameObject = renderer.gameObject;
                 Object.DestroyImmediate(renderer);
 
@@ -177,7 +177,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     mappings.Add(($"m_Materials.Array.data[{i}]", $"m_Materials.Array.data[{i + 1}]"));
                 }
 
-                session.MappingBuilder.RecordMoveProperties(target.SourceRenderer, mappings.ToArray());
+                session.RecordMoveProperties(target.SourceRenderer, mappings.ToArray());
 
                 target.SubMeshes.Insert(SubMeshIndexToShiftIfAnimated, new SubMesh());
 
