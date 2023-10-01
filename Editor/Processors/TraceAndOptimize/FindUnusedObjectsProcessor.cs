@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEngine;
@@ -254,6 +255,49 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             
             foreach (var component in _context.GetComponents<Component>())
                 component.gameObject.GetOrAddComponent<GCData>().data.Add(componentDataMap[component]);
+            _context.AvatarRootObject.AddComponent<GCDataRoot>();
+        }
+
+        class GCDataRoot : MonoBehaviour
+        {
+        }
+
+        [CustomEditor(typeof(GCDataRoot))]
+        class GCDataRootEditor : Editor
+        {
+            public override void OnInspectorGUI()
+            {
+                if (GUILayout.Button("Copy All Data"))
+                {
+                    var root = ((Component)target).gameObject;
+                    var collect = new StringBuilder();
+                    foreach (var gcData in root.GetComponentsInChildren<GCData>())
+                    {
+                        collect.Append(RuntimeUtil.RelativePath(root, gcData.gameObject)).Append(":\n");
+
+                        foreach (var componentData in gcData.data.Where(componentData => componentData.component))
+                        {
+                            collect.Append("  ").Append(componentData.component.GetType().Name).Append(":\n");
+                            collect.Append("    ActiveNess: ").Append(componentData.activeness).Append('\n');
+                            collect.Append("    Dependencies:\n");
+                            var list = new List<string>();
+                            foreach (var dependencyInfo in componentData.dependencies.Where(x => x.component))
+                            {
+                                var path = RuntimeUtil.RelativePath(root, dependencyInfo.component.gameObject);
+                                var types = dependencyInfo.component.GetType().Name;
+                                list.Add($"{path}({types})({dependencyInfo.type},{dependencyInfo.flags})");
+                            }
+                            list.Sort();
+                            foreach (var line in list)
+                                collect.Append("      ").Append(line).Append("\n");
+                        }
+
+                        collect.Append("\n");
+                    }
+
+                    GUIUtility.systemCopyBuffer = collect.ToString();
+                }
+            }
         }
 
         class GCData : MonoBehaviour
