@@ -28,6 +28,7 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
     [ComponentInformation(typeof(VRC.SDKBase.VRCStation))]
     [ComponentInformation(typeof(VRC.SDK3.Avatars.Components.VRCStation))]
     [ComponentInformation(typeof(nadena.dev.ndmf.runtime.AvatarActivator))]
+    // nadena.dev.ndmf.VRChat.ContextHolder with reflection
     internal class EntrypointComponentInformation : ComponentInformation<Component>
     {
         protected override void CollectDependency(Component component, IComponentDependencyCollector collector)
