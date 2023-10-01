@@ -321,7 +321,7 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
 
         protected override void CollectMutations(AimConstraint component, IComponentMutationsCollector collector)
         {
-            collector.TransformPositionAndRotation(component.transform);
+            collector.TransformRotation(component.transform);
         }
     }
 
@@ -336,7 +336,7 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
 
         protected override void CollectMutations(LookAtConstraint component, IComponentMutationsCollector collector)
         {
-            collector.TransformPositionAndRotation(component.transform);
+            collector.TransformRotation(component.transform);
         }
     }
 
