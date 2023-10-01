@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.ErrorReporting;
+using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
@@ -25,10 +26,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         public override EditSkinnedMeshProcessorOrder ProcessOrder => EditSkinnedMeshProcessorOrder.Generation;
 
-        public override void Process(OptimizerSession session, MeshInfo2 target)
+        public override void Process(BuildContext context, MeshInfo2 target)
         {
-            var meshInfos = SkinnedMeshRenderers.Select(session.GetMeshInfoFor)
-                .Concat(StaticMeshRenderers.Select(session.GetMeshInfoFor))
+            var meshInfos = SkinnedMeshRenderers.Select(context.GetMeshInfoFor)
+                .Concat(StaticMeshRenderers.Select(context.GetMeshInfoFor))
                 .ToArray();
             var sourceMaterials = meshInfos.Select(x => x.SubMeshes.Select(y => y.SharedMaterial).ToArray()).ToArray();
 
@@ -109,7 +110,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
                 }
 
-                session.RecordMoveProperties(meshInfo.SourceRenderer, mappings.ToArray());
+                context.RecordMoveProperties(meshInfo.SourceRenderer, mappings.ToArray());
 
                 target.RootBone = sourceRootBone;
                 target.Bones.AddRange(meshInfo.Bones);
@@ -124,7 +125,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             // material slot #4 should not be animated to avoid Unity bug
             // https://issuetracker.unity3d.com/issues/material-is-applied-to-two-slots-when-applying-material-to-a-single-slot-while-recording-animation
             const int SubMeshIndexToShiftIfAnimated = 4;
-            bool shouldShiftSubMeshIndex = CheckAnimateSubMeshIndex(session, meshInfos, subMeshIndexMap, SubMeshIndexToShiftIfAnimated);
+            bool shouldShiftSubMeshIndex = CheckAnimateSubMeshIndex(context, meshInfos, subMeshIndexMap, SubMeshIndexToShiftIfAnimated);
 #endif
 
             foreach (var weightMismatchBlendShape in weightMismatchBlendShapes)
@@ -145,8 +146,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 // This often be a unexpected behavior so we invalidate changing m_Enabled
                 // property for original mesh in animation.
                 // This invalidation doesn't affect to m_Enabled property of merged mesh.
-                session.RecordRemoveProperty(renderer, "m_Enabled");
-                session.RecordMergeComponent(renderer, Target);
+                context.RecordRemoveProperty(renderer, "m_Enabled");
+                context.RecordMergeComponent(renderer, Target);
                 var rendererGameObject = renderer.gameObject;
                 Object.DestroyImmediate(renderer);
 
@@ -177,7 +178,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     mappings.Add(($"m_Materials.Array.data[{i}]", $"m_Materials.Array.data[{i + 1}]"));
                 }
 
-                session.RecordMoveProperties(target.SourceRenderer, mappings.ToArray());
+                context.RecordMoveProperties(target.SourceRenderer, mappings.ToArray());
 
                 target.SubMeshes.Insert(SubMeshIndexToShiftIfAnimated, new SubMesh());
 
@@ -218,13 +219,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         }
 
 #if !UNITY_2021_2_OR_NEWER
-        private bool CheckAnimateSubMeshIndex(OptimizerSession session, MeshInfo2[] meshInfos, int[][] subMeshIndexMap, int targetSubMeshIndex)
+        private bool CheckAnimateSubMeshIndex(BuildContext context, MeshInfo2[] meshInfos, int[][] subMeshIndexMap, int targetSubMeshIndex)
         {
             var targetProperties = new HashSet<(Object, string)>(subMeshIndexMap
                 .SelectMany((x, i) => x.Select((y, j) => (renderer: meshInfos[i].SourceRenderer, srcSubMeshIndex: j, dstSubMeshIndex: y)))
                 .Where(x => x.dstSubMeshIndex == targetSubMeshIndex)
                 .Select(x => (x.renderer as Object, $"m_Materials.Array.data[{x.srcSubMeshIndex}]")));
-            foreach (var component in session.GetComponents<Component>())
+            foreach (var component in context.GetComponents<Component>())
             {
                 if (component is Transform) continue;
 

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using nadena.dev.ndmf;
 
 namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 {
@@ -12,7 +13,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         // This needs to be less than FreezeBlendshapeProcessor.ProcessOrder.
         public override EditSkinnedMeshProcessorOrder ProcessOrder => EditSkinnedMeshProcessorOrder.RemovingMesh;
 
-        public override void Process(OptimizerSession session, MeshInfo2 target)
+        public override void Process(BuildContext context, MeshInfo2 target)
         {
             var byBlendShapeVertices = new HashSet<Vertex>();
             var sqrTolerance = Component.tolerance * Component.tolerance;
@@ -51,7 +52,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             target.Vertices.RemoveAll(x => byBlendShapeVertices.Contains(x));
 
             // remove the blend shapes
-            FreezeBlendShapeProcessor.FreezeBlendShapes(Target, session, target, Component.RemovingShapeKeys);
+            FreezeBlendShapeProcessor.FreezeBlendShapes(Target, context, target, Component.RemovingShapeKeys);
         }
 
         public override IMeshInfoComputer GetComputer(IMeshInfoComputer upstream) => new MeshInfoComputer(this, upstream);
