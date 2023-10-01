@@ -2,10 +2,29 @@ using System.Collections.Generic;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.ErrorReporting;
 using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
+using JetBrains.Annotations;
+using nadena.dev.ndmf;
 using UnityEngine;
+using Debug = System.Diagnostics.Debug;
 
 namespace Anatawa12.AvatarOptimizer.Processors
 {
+    internal class MeshInfo2Context : IExtensionContext
+    {
+        [CanBeNull] public MeshInfo2Holder Holder { get; private set; }
+        public void OnActivate(BuildContext context)
+        {
+            Holder = new MeshInfo2Holder(context.AvatarRootObject);
+        }
+
+        public void OnDeactivate(BuildContext context)
+        {
+            Debug.Assert(Holder != null, nameof(Holder) + " != null");
+            Holder.SaveToMesh();
+            Holder = null;
+        }
+    }
+
     internal class MeshInfo2Holder
     {
         private readonly Dictionary<SkinnedMeshRenderer, MeshInfo2> _skinnedCache =

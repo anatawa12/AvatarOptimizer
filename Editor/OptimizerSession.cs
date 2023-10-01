@@ -13,7 +13,7 @@ namespace Anatawa12.AvatarOptimizer
         private readonly BuildContext _buildContext;
         public bool IsTest { get; }
         public ObjectMappingBuilder MappingBuilder { get; }
-        public MeshInfo2Holder MeshInfo2Holder { get; private set; }
+        public MeshInfo2Holder MeshInfo2Holder => _buildContext.Extension<MeshInfo2Context>().Holder;
 
         public static implicit operator OptimizerSession(BuildContext context)
         {
@@ -25,15 +25,8 @@ namespace Anatawa12.AvatarOptimizer
             IsTest = false;
             _buildContext = context;
             MappingBuilder = new ObjectMappingBuilder(context.AvatarRootObject);
-            MeshInfo2Holder = new MeshInfo2Holder(context.AvatarRootObject);
         }
 
         public IEnumerable<T> GetComponents<T>() where T : Component => _buildContext.GetComponents<T>();
-
-        public void SaveMeshInfo2()
-        {
-            MeshInfo2Holder.SaveToMesh();
-            MeshInfo2Holder = null;
-        }
     }
 }

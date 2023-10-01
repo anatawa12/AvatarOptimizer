@@ -19,7 +19,6 @@ namespace Anatawa12.AvatarOptimizer.ndmf
 
         public void OnDeactivate(BuildContext context)
         {
-            session.SaveMeshInfo2();
         }
     }
     
@@ -44,7 +43,9 @@ namespace Anatawa12.AvatarOptimizer.ndmf
 
             // Run everything else in the optimize phase
             InPhase(BuildPhase.Optimizing)
-                .WithRequiredExtensions(new [] {typeof(OptimizerContext), typeof(BuildReportContext)}, seq =>
+                .WithRequiredExtensions(new [] {typeof(OptimizerContext), 
+                    typeof(Processors.MeshInfo2Context),
+                    typeof(BuildReportContext)}, seq =>
                 {
                     seq.Run("TraceAndOptimize",
                             ctx =>
