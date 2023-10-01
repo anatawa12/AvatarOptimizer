@@ -304,7 +304,9 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
     {
         protected override void CollectDependency(T component, IComponentDependencyCollector collector)
         {
-            collector.AddDependency(component.transform, component).EvenIfDependantDisabled();
+            collector.AddDependency(component.transform, component)
+                .OnlyIfTargetCanBeEnable()
+                .EvenIfDependantDisabled();
             for (var i = 0; i < component.sourceCount; i++)
                 collector.AddDependency(component.GetSource(i).sourceTransform);
         }
