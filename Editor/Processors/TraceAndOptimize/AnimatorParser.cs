@@ -139,7 +139,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             public void ModifyProperties(Component component, IEnumerable<string> properties)
             {
                 var updater = _modifications.ModifyObject(component);
-                foreach (var prop in TransformPositionAnimationKeys.Concat(TransformRotationAnimationKeys))
+                foreach (var prop in properties)
                     updater.AddModificationAsNewLayer(prop, AnimationProperty.Variable());
             }
         }
