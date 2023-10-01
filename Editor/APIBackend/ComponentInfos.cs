@@ -100,7 +100,7 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
 
             var meshInfo2 = casted.MeshInfo2Holder.GetMeshInfoFor(component);
             foreach (var bone in meshInfo2.Bones)
-                collector.AddDependency(bone.Transform).AsBone();
+                casted.AddBoneDependency(bone.Transform);
             collector.AddDependency(meshInfo2.RootBone);
         }
     }

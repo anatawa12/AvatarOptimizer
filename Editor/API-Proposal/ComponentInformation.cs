@@ -33,8 +33,6 @@ namespace Anatawa12.AvatarOptimizer.API
     {
         IComponentDependencyInfo EvenIfDependantDisabled();
         IComponentDependencyInfo OnlyIfTargetCanBeEnable();
-
-        IComponentDependencyInfo AsBone();
     }
 
     public interface IComponentMutationsCollector

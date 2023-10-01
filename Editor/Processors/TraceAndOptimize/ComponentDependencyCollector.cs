@@ -63,13 +63,18 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             {
                 if (!component)
                     return EmptyComponentDependencyInfo.Instance;
-                return new ComponentDependencyInfo(_dependencies, component);
+                return new ComponentDependencyInfo(_dependencies, component).SetFlags();
             }
 
             public void AddParentDependency(Transform component)
             {
                 var parent = component.parent;
-                if (parent) new ComponentDependencyInfo(_dependencies, parent).AsParent();
+                if (parent) new ComponentDependencyInfo(_dependencies, parent, DependencyType.Parent).SetFlags();
+            }
+
+            public void AddBoneDependency(Transform bone)
+            {
+                if (bone) new ComponentDependencyInfo(_dependencies, bone, DependencyType.Bone).SetFlags();
             }
 
             class EmptyComponentDependencyInfo : IComponentDependencyInfo
@@ -82,36 +87,36 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
                 public IComponentDependencyInfo EvenIfDependantDisabled() => this;
                 public IComponentDependencyInfo OnlyIfTargetCanBeEnable() => this;
-                public IComponentDependencyInfo AsBone() => this;
             }
 
-            class ComponentDependencyInfo : IComponentDependencyInfo
+            private struct ComponentDependencyInfo : IComponentDependencyInfo
             {
                 [NotNull] private readonly Dictionary<Component, (DependencyFlags, DependencyType)> _dependencies;
                 private readonly Component _component;
 
                 private readonly DependencyFlags _prevFlags;
-                private readonly DependencyType _prevTypes;
                 private DependencyFlags _flags;
-                private DependencyType _type;
+                private readonly DependencyType _types;
 
                 public ComponentDependencyInfo(
                     [NotNull] Dictionary<Component, (DependencyFlags, DependencyType)> dependencies, 
-                    [NotNull] Component component)
+                    [NotNull] Component component,
+                    DependencyType type = DependencyType.Normal)
                 {
                     _dependencies = dependencies;
                     _component = component;
                     _dependencies.TryGetValue(component, out var pair);
                     _prevFlags = pair.Item1;
-                    _prevTypes = pair.Item2;
 
                     _flags = DependencyFlags.EvenIfTargetIsDisabled;
-                    _type = DependencyType.Normal;
-
-                    SetFlags();
+                    _types = pair.Item2 | type;
                 }
 
-                private void SetFlags() => _dependencies[_component] = (_prevFlags | _flags, _prevTypes | _type);
+                internal ComponentDependencyInfo SetFlags()
+                {
+                    _dependencies[_component] = (_prevFlags | _flags, _types);
+                    return this;
+                }
 
                 public IComponentDependencyInfo EvenIfDependantDisabled()
                 {
@@ -125,19 +130,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     _flags &= ~DependencyFlags.EvenIfTargetIsDisabled;
                     SetFlags();
                     return this;
-                }
-
-                public IComponentDependencyInfo AsBone()
-                {
-                    _type = DependencyType.Bone;
-                    SetFlags();
-                    return this;
-                }
-
-                public void AsParent()
-                {
-                    _type = DependencyType.Parent;
-                    SetFlags();
                 }
             }
         }
@@ -225,10 +217,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 _collector.GetDependencies(dependant).AddDependency(dependency);
             public IComponentDependencyInfo AddDependency(Component dependency) => _deps.AddDependency(dependency);
 
-            public void AddParentDependency(Transform component)
-            {
-                _deps.AddParentDependency(component);
-            }
+            public void AddParentDependency(Transform component) => _deps.AddParentDependency(component);
+            public void AddBoneDependency(Transform bone) => _deps.AddBoneDependency(bone);
         }
     }
 }
