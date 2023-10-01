@@ -8,20 +8,6 @@ using nadena.dev.ndmf.builtin;
 
 namespace Anatawa12.AvatarOptimizer.ndmf
 {
-    internal class OptimizerContext : IExtensionContext
-    {
-        internal OptimizerSession session;
-        
-        public void OnActivate(BuildContext context)
-        {
-            session = new OptimizerSession(context);
-        }
-
-        public void OnDeactivate(BuildContext context)
-        {
-        }
-    }
-    
     internal class OptimizerPlugin : Plugin<OptimizerPlugin>
     {
         public override string DisplayName => "Anatawa12's Avatar Optimizer";
@@ -48,7 +34,6 @@ namespace Anatawa12.AvatarOptimizer.ndmf
                     seq.Run("EmptyPass for Context Ordering", _ => {});
                     seq.WithRequiredExtensions(new[]
                     {
-                        typeof(OptimizerContext),
                         typeof(Processors.MeshInfo2Context),
                         typeof(ObjectMappingContext),
                     }, _ =>
