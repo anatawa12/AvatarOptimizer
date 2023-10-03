@@ -38,19 +38,16 @@ namespace Anatawa12.AvatarOptimizer.ndmf
                         typeof(ObjectMappingContext),
                     }, _ =>
                     {
-                        seq.Run("TraceAndOptimize",
-                                ctx =>
-                                {
-                                    ctx.GetState<Processors.TraceAndOptimizeProcessor>().Process(ctx);
-                                })
+                        seq.Run(Processors.TraceAndOptimizes.LoadTraceAndOptimizeConfiguration.Instance)
+                            .Then.Run(Processors.TraceAndOptimizes.ParseAnimator.Instance)
+                            .Then.Run(Processors.TraceAndOptimizes.AutoFreezeBlendShape.Instance)
                             .Then.Run(Processors.ClearEndpointPositionProcessor.Instance)
                             .Then.Run(Processors.MergePhysBoneProcessor.Instance)
                             .Then.Run(Processors.EditSkinnedMeshComponentProcessor.Instance)
                             .Then.Run("MakeChildrenProcessor",
                                 ctx => new Processors.MakeChildrenProcessor(early: false).Process(ctx)
                             )
-                            .Then.Run("TraceAndOptimize:ProcessLater",
-                                ctx => ctx.GetState<Processors.TraceAndOptimizeProcessor>().ProcessLater(ctx))
+                            .Then.Run(Processors.TraceAndOptimizes.FindUnusedObjects.Instance)
                             .Then.Run(Processors.MergeBoneProcessor.Instance);
                     });
                     seq.Run("EmptyPass for Context Ordering", _ => {});

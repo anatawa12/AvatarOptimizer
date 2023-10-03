@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using nadena.dev.ndmf;
 using UnityEditor;
@@ -7,32 +6,25 @@ using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 {
-    class AutoFreezeBlendShape
+    internal class AutoFreezeBlendShape : Pass<AutoFreezeBlendShape>
     {
-        private readonly ImmutableModificationsContainer _modifications;
-        private readonly BuildContext _context;
-        private readonly HashSet<GameObject> _exclusions;
+        public override string DisplayName => "T&O: AutoFreezeBlendShape";
 
-        public AutoFreezeBlendShape(ImmutableModificationsContainer modifications, BuildContext context,
-            HashSet<GameObject> exclusions)
+        protected override void Execute(BuildContext context)
         {
-            _modifications = modifications;
-            _context = context;
-            _exclusions = exclusions;
-        }
+            var state = context.GetState<TraceAndOptimizeState>();
+            if (!state.FreezeBlendShape) return;
 
-        public void Process()
-        {
             // first optimization: unused blend shapes
-            foreach (var skinnedMeshRenderer in _context.GetComponents<SkinnedMeshRenderer>())
+            foreach (var skinnedMeshRenderer in context.GetComponents<SkinnedMeshRenderer>())
             {
                 var mesh = skinnedMeshRenderer.sharedMesh;
 
                 // skip SMR without mesh
                 if (!mesh) continue;
-                if (_exclusions.Contains(skinnedMeshRenderer.gameObject)) continue; // manual exclusiton
+                if (state.Exclusions.Contains(skinnedMeshRenderer.gameObject)) continue; // manual exclusiton
 
-                var modifies = _modifications.GetModifiedProperties(skinnedMeshRenderer);
+                var modifies = state.Modifications.GetModifiedProperties(skinnedMeshRenderer);
                 var blendShapeValues = Enumerable.Range(0, mesh.blendShapeCount)
                     .Select(i => skinnedMeshRenderer.GetBlendShapeWeight(i)).ToArray();
                 var notChanged = Enumerable.Range(0, mesh.blendShapeCount)
@@ -73,9 +65,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             }
 
             // second optimization: remove meaningless blendShapes
-            foreach (var skinnedMeshRenderer in _context.GetComponents<SkinnedMeshRenderer>())
+            foreach (var skinnedMeshRenderer in context.GetComponents<SkinnedMeshRenderer>())
             {
-                if (_exclusions.Contains(skinnedMeshRenderer.gameObject)) continue; // manual exclusion
+                if (state.Exclusions.Contains(skinnedMeshRenderer.gameObject)) continue; // manual exclusion
                 skinnedMeshRenderer.gameObject.GetOrAddComponent<FreezeBlendShape>();
                 skinnedMeshRenderer.gameObject.GetOrAddComponent<InternalAutoFreezeMeaninglessBlendShape>();
             }

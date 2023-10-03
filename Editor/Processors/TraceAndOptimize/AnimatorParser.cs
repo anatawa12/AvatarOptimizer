@@ -33,6 +33,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             advancedAnimatorParser = config.advancedAnimatorParser;
         }
 
+        public AnimatorParser(TraceAndOptimizeState config)
+        {
+            mmdWorldCompatibility = config.MmdWorldCompatibility;
+            advancedAnimatorParser = !config.UseLegacyAnimatorParser;
+        }
+
         public ImmutableModificationsContainer GatherAnimationModifications(BuildContext context)
         {
             var modificationsContainer = new ModificationsContainer();

@@ -6,12 +6,24 @@ using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEngine;
 using VRC.Dynamics;
-using Debug = System.Diagnostics.Debug;
 using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 {
-    class FindUnusedObjectsProcessor
+    internal class FindUnusedObjects : Pass<FindUnusedObjects>
+    {
+        public override string DisplayName => "T&O: FindUnusedObjects";
+
+        protected override void Execute(BuildContext context)
+        {
+            var state = context.GetState<TraceAndOptimizeState>();
+            if (!state.RemoveUnusedObjects) return;
+
+            new FindUnusedObjectsProcessor(context, state).Process();
+        }
+    }
+
+    internal readonly struct FindUnusedObjectsProcessor
     {
         private readonly ImmutableModificationsContainer _modifications;
         private readonly BuildContext _context;
@@ -21,20 +33,20 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         private readonly bool _noConfigureMergeBone;
         private readonly bool _gcDebug;
 
-        public FindUnusedObjectsProcessor(ImmutableModificationsContainer modifications, BuildContext context,
-            bool preserveEndBone,
-            bool useLegacyGC,
-            bool noConfigureMergeBone,
-            bool gcDebug,
-            HashSet<GameObject> exclusions)
+        public FindUnusedObjectsProcessor(BuildContext context, TraceAndOptimizeState state)
         {
-            _modifications = modifications;
             _context = context;
-            _preserveEndBone = preserveEndBone;
-            _useLegacyGC = useLegacyGC;
-            _noConfigureMergeBone = noConfigureMergeBone;
-            _gcDebug = gcDebug;
-            _exclusions = exclusions;
+
+            _modifications = state.Modifications;
+            _preserveEndBone = state.PreserveEndBone;
+            _useLegacyGC = state.UseLegacyGC;
+            _noConfigureMergeBone = state.NoConfigureMergeBone;
+            _gcDebug = state.GCDebug;
+            _exclusions = state.Exclusions;
+
+            _marked = new Dictionary<Component, ComponentDependencyCollector.DependencyType>();
+            _processPending = new Queue<(Component, bool)>();
+            _activeNessCache = new Dictionary<Component, bool?>();
         }
 
         public void Process()
@@ -48,10 +60,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         }
 
         // Mark & Sweep Variables
-        private readonly Dictionary<Component, ComponentDependencyCollector.DependencyType> _marked =
-            new Dictionary<Component, ComponentDependencyCollector.DependencyType>();
-        private readonly Queue<(Component, bool)> _processPending = new Queue<(Component, bool)>();
-        private readonly Dictionary<Component, bool?> _activeNessCache = new Dictionary<Component, bool?>();
+        private readonly Dictionary<Component, ComponentDependencyCollector.DependencyType> _marked;
+        private readonly Queue<(Component, bool)> _processPending;
+        private readonly Dictionary<Component, bool?> _activeNessCache;
 
         private bool? GetActiveness(Component component)
         {
@@ -340,14 +351,15 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         private void ConfigureMergeBone()
         {
-            ConfigureRecursive(_context.AvatarRootTransform, _modifications);
+            ConfigureRecursive(this, _context.AvatarRootTransform, _modifications);
 
             // returns true if merged
-            bool ConfigureRecursive(Transform transform, ImmutableModificationsContainer modifications)
+            bool ConfigureRecursive(in FindUnusedObjectsProcessor processor, Transform transform,
+                ImmutableModificationsContainer modifications)
             {
                 var mergedChildren = true;
                 foreach (var child in transform.DirectChildrenEnumerable())
-                    mergedChildren &= ConfigureRecursive(child, modifications);
+                    mergedChildren &= ConfigureRecursive(processor, child, modifications);
 
                 const ComponentDependencyCollector.DependencyType AllowedUsages =
                     ComponentDependencyCollector.DependencyType.Bone
@@ -359,7 +371,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 // Components must be Transform Only
                 if (transform.GetComponents<Component>().Length != 1) return false;
                 // The bone cannot be used generally
-                if ((_marked[transform] & ~AllowedUsages) != 0) return false;
+                if ((processor._marked[transform] & ~AllowedUsages) != 0) return false;
                 // must not be animated
                 if (TransformAnimated(transform, modifications)) return false;
 
