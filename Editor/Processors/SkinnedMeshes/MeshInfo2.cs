@@ -161,7 +161,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
                 BlendShapes.Add((shapeName, 0.0f));
 
-                var frames = Vertices.Select(v => v.BlendShapes[shapeName] = new List<Vertex.BlendShapeFrame>()).ToArray();
+                var shapes = new List<Vertex.BlendShapeFrame>[Vertices.Count];
 
                 for (int frame = 0; frame < mesh.GetBlendShapeFrameCount(i); frame++)
                 {
@@ -169,8 +169,19 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     var weight = mesh.GetBlendShapeFrameWeight(i, frame);
 
                     for (var vertex = 0; vertex < deltaNormals.Length; vertex++)
-                        frames[vertex].Add(new Vertex.BlendShapeFrame(weight, deltaVertices[vertex], deltaNormals[vertex], deltaTangents[vertex]));                    
+                    {
+                        if (deltaVertices[vertex] == Vector3.zero && deltaNormals[vertex] == Vector3.zero && deltaTangents[vertex] == Vector3.zero)
+                            continue;
+                        if (shapes[vertex] == null)
+                            shapes[vertex] = new List<Vertex.BlendShapeFrame>();
+                        shapes[vertex].Add(new Vertex.BlendShapeFrame(weight, deltaVertices[vertex],
+                            deltaNormals[vertex], deltaTangents[vertex]));
+                    }                    
                 }
+
+                for (var vertex = 0; vertex < shapes.Length; vertex++)
+                    if (shapes[vertex] is List<Vertex.BlendShapeFrame> shapeFrames)
+                        Vertices[vertex].BlendShapes[shapeName] = shapeFrames;
             }
         }
 
@@ -594,6 +605,14 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         public bool TryGetBlendShape(string name, float weight, out Vector3 position, out Vector3 normal, out Vector3 tangent)
         {
             if (!BlendShapes.TryGetValue(name, out var frames))
+            {
+                position = default;
+                normal = default;
+                tangent = default;
+                return false;
+            }
+
+            if (frames.Count == 0)
             {
                 position = default;
                 normal = default;
