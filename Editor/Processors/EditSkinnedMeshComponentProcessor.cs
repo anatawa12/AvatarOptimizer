@@ -2,6 +2,7 @@ using Anatawa12.AvatarOptimizer.ErrorReporting;
 using Anatawa12.AvatarOptimizer.ndmf;
 using nadena.dev.ndmf;
 using UnityEngine;
+using UnityEngine.Profiling;
 
 namespace Anatawa12.AvatarOptimizer.Processors
 {
@@ -11,24 +12,30 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
         protected override void Execute(BuildContext context)
         {
+            Profiler.BeginSample("Initialize SkinnedMeshEditorSorter");
             var graph = new SkinnedMeshEditorSorter();
             foreach (var component in context.GetComponents<EditSkinnedMeshComponent>())
                 graph.AddComponent(component);
+            Profiler.EndSample();
 
             var renderers = context.GetComponents<SkinnedMeshRenderer>();
             var processorLists = graph.GetSortedProcessors(renderers);
             foreach (var processors in processorLists)
             {
+                Profiler.BeginSample($"EditSkinnedMeshComponents: {processors.Target.name}");
                 var target = context.GetMeshInfoFor(processors.Target);
 
                 foreach (var processor in processors.GetSorted())
                 {
+                    Profiler.BeginSample($"{processor.GetType().Name}: {processors.Target.name}");
                     BuildReport.ReportingObject(processor.Component, () => processor.Process(context, target));
                     target.AssertInvariantContract(
                         $"after {processor.GetType().Name} " +
                         $"for {processor.Target.gameObject.name}");
                     Object.DestroyImmediate(processor.Component);
+                    Profiler.EndSample();
                 }
+                Profiler.EndSample();
             }
         }
     }

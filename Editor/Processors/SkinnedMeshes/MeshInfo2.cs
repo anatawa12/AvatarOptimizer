@@ -8,6 +8,7 @@ using JetBrains.Annotations;
 using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Assertions;
+using UnityEngine.Profiling;
 using UnityEngine.Rendering;
 using Debug = System.Diagnostics.Debug;
 
@@ -135,6 +136,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         {
             ReadStaticMesh(mesh);
 
+            Profiler.BeginSample("Read Skinned Mesh Part");
+            Profiler.BeginSample("Read Bones");
             Bones.Clear();
             Bones.Capacity = Math.Max(Bones.Capacity, mesh.bindposes.Length);
             Bones.AddRange(mesh.bindposes.Select(x => new Bone(x)));
@@ -150,7 +153,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     Vertices[i].BoneWeights.Add((Bones[boneWeight1.boneIndex], boneWeight1.weight));
                 bonesBase += count;
             }
+            Profiler.EndSample();
 
+            Profiler.BeginSample("Read BlendShapes");
             BlendShapes.Clear();
             var deltaVertices = new Vector3[Vertices.Count];
             var deltaNormals = new Vector3[Vertices.Count];
@@ -172,10 +177,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                         frames[vertex].Add(new Vertex.BlendShapeFrame(weight, deltaVertices[vertex], deltaNormals[vertex], deltaTangents[vertex]));                    
                 }
             }
+            Profiler.EndSample();
+            Profiler.EndSample();
         }
 
         public void ReadStaticMesh([NotNull] Mesh mesh)
         {
+            Profiler.BeginSample($"Read Static Mesh Part");
             Vertices.Capacity = Math.Max(Vertices.Capacity, mesh.vertexCount);
             Vertices.Clear();
             for (var i = 0; i < mesh.vertexCount; i++) Vertices.Add(new Vertex());
@@ -226,6 +234,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             SubMeshes.Capacity = Math.Max(SubMeshes.Capacity, mesh.subMeshCount);
             for (var i = 0; i < mesh.subMeshCount; i++)
                 SubMeshes.Add(new SubMesh(Vertices, triangles, mesh.GetSubMesh(i)));
+            Profiler.EndSample();
         }
 
         void CopyVertexAttr<T>(T[] attributes, Action<Vertex, T> assign)
@@ -287,6 +296,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             Optimize();
             destMesh.Clear();
 
+            Profiler.BeginSample("Write to Mesh");
+
+            Profiler.BeginSample("Vertices and Normals");
             // Basic Vertex Attributes: vertices, normals
             {
                 var vertices = new Vector3[Vertices.Count];
@@ -300,10 +312,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 destMesh.vertices = vertices;
                 destMesh.normals = normals;
             }
+            Profiler.EndSample();
 
             // tangents
             if (HasTangent)
             {
+                Profiler.BeginSample("Tangents");
                 var tangents = new Vector4[Vertices.Count];
                 for (var i = 0; i < Vertices.Count; i++)
                 {
@@ -313,6 +327,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     tangents[i] = new Vector4(tangent3.x, tangent3.y, tangent3.z, tangentW);
                 }
                 destMesh.tangents = tangents;
+                Profiler.EndSample();
             }
 
             // UVs
@@ -322,6 +337,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 var uv4 = new Vector4[Vertices.Count];
                 for (var uvIndex = 0; uvIndex < 8; uvIndex++)
                 {
+                    Profiler.BeginSample($"UV#{uvIndex}");
                     switch (GetTexCoordStatus(uvIndex))
                     {
                         case TexCoordStatus.NotDefined:
@@ -345,22 +361,26 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                         default:
                             throw new ArgumentOutOfRangeException();
                     }
+                    Profiler.EndSample();
                 }
             }
 
             // color
             if (HasColor)
             {
+                Profiler.BeginSample($"Vertex Color");
                 var colors = new Color32[Vertices.Count];
                 for (var i = 0; i < Vertices.Count; i++)
                     colors[i] = Vertices[i].Color;
                 destMesh.colors32 = colors;
+                Profiler.EndSample();
             }
 
             // bones
             destMesh.bindposes = Bones.Select(x => x.Bindpose.ToUnity()).ToArray();
 
             // triangles and SubMeshes
+            Profiler.BeginSample("Triangles");
             {
                 var vertexIndices = new Dictionary<Vertex, int>();
                 // first, set vertex indices
@@ -396,9 +416,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 for (var i = 0; i < SubMeshes.Count; i++)
                     destMesh.SetSubMesh(i, subMeshDescriptors[i]);
             }
+            Profiler.EndSample();
 
             // BoneWeights
             if (Vertices.Any(x => x.BoneWeights.Count != 0)){
+                Profiler.BeginSample("BoneWeights");
                 var boneIndices = new Dictionary<Bone, int>();
                 for (var i = 0; i < Bones.Count; i++)
                     boneIndices.Add(Bones[i], i);
@@ -417,11 +439,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 }
 
                 destMesh.SetBoneWeights(bonesPerVertex, allBoneWeights);
+                Profiler.EndSample();
             }
 
             // BlendShapes
             if (BlendShapes.Count != 0)
             {
+                Profiler.BeginSample("BlendShapes");
                 for (var i = 0; i < BlendShapes.Count; i++)
                 {
                     Debug.Assert(destMesh.blendShapeCount == i, "Unexpected state: blend shape count");
@@ -460,7 +484,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                         destMesh.AddBlendShapeFrame(shapeName, weight, positions, normals, tangents);
                     }
                 }
+                Profiler.EndSample();
             }
+            Profiler.EndSample();
         }
 
         public void WriteToSkinnedMeshRenderer(SkinnedMeshRenderer targetRenderer)

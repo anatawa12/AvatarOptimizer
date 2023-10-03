@@ -6,6 +6,7 @@ using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
+using UnityEngine.Profiling;
 using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
@@ -28,12 +29,16 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         public override void Process(BuildContext context, MeshInfo2 target)
         {
+            Profiler.BeginSample("Collect MeshInfos");
             var meshInfos = SkinnedMeshRenderers.Select(context.GetMeshInfoFor)
                 .Concat(StaticMeshRenderers.Select(context.GetMeshInfoFor))
                 .ToArray();
             var sourceMaterials = meshInfos.Select(x => x.SubMeshes.Select(y => y.SharedMaterial).ToArray()).ToArray();
+            Profiler.EndSample();
 
+            Profiler.BeginSample("Merge Material Indices");
             var (subMeshIndexMap, materials) = CreateMergedMaterialsAndSubMeshIndexMapping(sourceMaterials);
+            Profiler.EndSample();
 
             var sourceRootBone = target.RootBone;
             var updateBounds = sourceRootBone && target.Bounds == default;
@@ -54,6 +59,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             for (var i = 0; i < meshInfos.Length; i++)
             {
+                Profiler.BeginSample($"Process MeshInfo#{i}");
                 var meshInfo = meshInfos[i];
                 mappings.Clear();
 
@@ -119,13 +125,16 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 target.HasTangent |= meshInfo.HasTangent;
 
                 target.AssertInvariantContract($"processing meshInfo {Target.gameObject.name}");
+                Profiler.EndSample();
             }
 
 #if !UNITY_2021_2_OR_NEWER
+            Profiler.BeginSample("ShiftIndex Check");
             // material slot #4 should not be animated to avoid Unity bug
             // https://issuetracker.unity3d.com/issues/material-is-applied-to-two-slots-when-applying-material-to-a-single-slot-while-recording-animation
             const int SubMeshIndexToShiftIfAnimated = 4;
             bool shouldShiftSubMeshIndex = CheckAnimateSubMeshIndex(context, meshInfos, subMeshIndexMap, SubMeshIndexToShiftIfAnimated);
+            Profiler.EndSample();
 #endif
 
             foreach (var weightMismatchBlendShape in weightMismatchBlendShapes)
@@ -138,6 +147,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             var boneTransforms = new HashSet<Transform>(target.Bones.Select(x => x.Transform));
 
+            Profiler.BeginSample("Postprocess Source Renderers");
             foreach (var renderer in SkinnedMeshRenderers)
             {
                 // Avatars can have animation to hide source meshes.
@@ -168,10 +178,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 Object.DestroyImmediate(renderer.GetComponent<MeshFilter>());
                 Object.DestroyImmediate(renderer);
             }
+            Profiler.EndSample();
 
 #if !UNITY_2021_2_OR_NEWER
             if (shouldShiftSubMeshIndex)
             {
+                Profiler.BeginSample("ShiftIndex");
                 mappings.Clear();
                 for (var i = SubMeshIndexToShiftIfAnimated; i < target.SubMeshes.Count; i++)
                 {
@@ -183,6 +195,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 target.SubMeshes.Insert(SubMeshIndexToShiftIfAnimated, new SubMesh());
 
                 target.AssertInvariantContract($"shifting meshInfo.SubMeshes {Target.gameObject.name}");
+                Profiler.EndSample();
             }
 #endif
         }

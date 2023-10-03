@@ -26,3 +26,4 @@ namespace Anatawa12.AvatarOptimizer.Test
         }
     }
 }
+

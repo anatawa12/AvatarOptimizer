@@ -5,6 +5,7 @@ using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
 using JetBrains.Annotations;
 using nadena.dev.ndmf;
 using UnityEngine;
+using UnityEngine.Profiling;
 using Debug = System.Diagnostics.Debug;
 
 namespace Anatawa12.AvatarOptimizer.Processors
@@ -35,10 +36,18 @@ namespace Anatawa12.AvatarOptimizer.Processors
         public MeshInfo2Holder(GameObject rootObject)
         {
             foreach (var renderer in rootObject.GetComponentsInChildren<SkinnedMeshRenderer>(true))
+            {
+                Profiler.BeginSample($"Read Skinned Mesh {renderer.name}");
                 GetMeshInfoFor(renderer);
+                Profiler.EndSample();
+            }
             
             foreach (var renderer in rootObject.GetComponentsInChildren<MeshRenderer>(true))
+            {
+                Profiler.BeginSample($"Read Static Mesh {renderer.name}");
                 GetMeshInfoFor(renderer);
+                Profiler.EndSample();
+            }
         }
 
         public MeshInfo2 GetMeshInfoFor(SkinnedMeshRenderer renderer) =>
@@ -59,7 +68,9 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 var targetRenderer = keyValuePair.Key;
                 if (!targetRenderer) continue;
 
+                Profiler.BeginSample($"Save Skinned Mesh {targetRenderer.name}");
                 keyValuePair.Value.WriteToSkinnedMeshRenderer(targetRenderer);
+                Profiler.EndSample();
             }
 
             foreach (var keyValuePair in _staticCache)
@@ -69,6 +80,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 var meshInfo = keyValuePair.Value;
                 var meshFilter = targetRenderer.GetComponent<MeshFilter>();
 
+                Profiler.BeginSample($"Save Static Mesh {targetRenderer.name}");
                 BuildReport.ReportingObject(targetRenderer, () =>
                 {
                     var mesh = new Mesh { name = $"AAOGeneratedMesh{targetRenderer.name}" };
@@ -76,6 +88,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                     meshFilter.sharedMesh = mesh;
                     targetRenderer.sharedMaterials = meshInfo.SubMeshes.Select(x => x.SharedMaterial).ToArray();
                 });
+                Profiler.EndSample();
             }
         }
     }
