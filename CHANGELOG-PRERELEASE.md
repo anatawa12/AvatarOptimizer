@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Significant Performance Improvements with small code changes `#523`
 
 ### Changed
 
