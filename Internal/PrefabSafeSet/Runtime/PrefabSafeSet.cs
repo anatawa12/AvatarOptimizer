@@ -81,6 +81,17 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 #endif
         }
 
+        public void SetValueNonPrefab(IEnumerable<T> values)
+        {
+#if UNITY_EDITOR
+            if (OuterObject && UnityEditor.PrefabUtility.IsPartOfPrefabInstance(OuterObject)
+                            && UnityEditor.PrefabUtility.IsPartOfAnyPrefab(OuterObject))
+                throw new InvalidOperationException("You cannot set value to Prefab Instance or Prefab");
+            Debug.Assert(prefabLayers.Length == 0);
+#endif
+            mainSet = values.ToArray();
+        }
+
         public HashSet<T> GetAsSet()
         {
             var result = new HashSet<T>(mainSet.Where(x => x.IsNotNull()));
