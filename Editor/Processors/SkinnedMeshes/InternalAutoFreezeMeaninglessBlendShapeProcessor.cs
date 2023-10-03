@@ -18,8 +18,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             var meaningfulBlendShapes = new HashSet<string>();
 
             foreach (var vertex in target.Vertices)
-            foreach (var kvp in vertex.BlendShapes.Where(kvp => kvp.Value != default))
-                meaningfulBlendShapes.Add(kvp.Key);
+                meaningfulBlendShapes.UnionWith(vertex.BlendShapes.Keys);
 
             var freezeBlendShape = Target.GetComponent<FreezeBlendShape>();
             var serialized = new SerializedObject(freezeBlendShape);
