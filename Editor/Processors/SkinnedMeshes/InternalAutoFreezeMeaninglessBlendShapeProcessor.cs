@@ -20,13 +20,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 meaningfulBlendShapes.UnionWith(vertex.BlendShapes.Keys);
 
             var freezeBlendShape = Target.GetComponent<FreezeBlendShape>();
-            var serialized = new SerializedObject(freezeBlendShape);
-            var editorUtil = PrefabSafeSet.EditorUtil<string>.Create(
-                serialized.FindProperty(nameof(FreezeBlendShape.shapeKeysSet)),
-                0, p => p.stringValue, (p, v) => p.stringValue = v);
-            foreach (var (meaningLess, _) in target.BlendShapes.Where(x => !meaningfulBlendShapes.Contains(x.name)))
-                editorUtil.GetElementOf(meaningLess).EnsureAdded();
-            serialized.ApplyModifiedPropertiesWithoutUndo();
+            var set = freezeBlendShape.shapeKeysSet.GetAsSet();
+            set.UnionWith(target.BlendShapes.Where(x => !meaningfulBlendShapes.Contains(x.name)).Select(x => x.name));
+            freezeBlendShape.shapeKeysSet.SetValueNonPrefab(set);
         }
 
         // nothing to do
