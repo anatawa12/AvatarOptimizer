@@ -18,6 +18,7 @@ The format is based on [Keep a Changelog].
   - In this section, there are for debugging GC Objects `#464`
 - Avoid Name Conflict in MergeBone `#467`
 - Full EditMode Preview of RemoveMesh Components `#500`
+- Significant Performance Improvements with small code changes `#523`
 
 ### Changed
 - Improved 'Remove Unused Objects' `#401`
