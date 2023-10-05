@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using JetBrains.Annotations;
 using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer
@@ -7,5 +9,6 @@ namespace Anatawa12.AvatarOptimizer
     [DisallowMultipleComponent]
     internal class InternalAutoFreezeMeaninglessBlendShape : EditSkinnedMeshComponent
     {
+        [CanBeNull] internal HashSet<string> Preserve;
     }
 }
