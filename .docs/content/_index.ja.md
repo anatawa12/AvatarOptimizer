@@ -36,11 +36,11 @@ unitypackageをインポートするだけでもこのツールをインスト�
 - [0.2.x][installer unitypackage 0.2.x]
 - [0.3.x][installer unitypackage 0.3.x]
 - [0.4.x][installer unitypackage 0.4.x]
-- [0.x.x including beta releases][installer unitypackage x.x beta]
-
-このunitypackageによるVCCインストール機能は[VPAI]により実現されています。
+- [x.x.x including beta releases][installer unitypackage x.x beta]
 
 </details>
+
+このインストール方法は[VPAI]により実現されています。
 
 ### vrc-getを使用する {#installation-vrc-get}
 

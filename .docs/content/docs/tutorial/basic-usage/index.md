@@ -55,15 +55,14 @@ Then, Add `Merge Skinned Mesh` to `Anon_Merged`.
 
 This adds `Merge Skinned Mesh` and `Skinned Mesh Renderer`.
 
-The `Merge Skinned Mesh` will merge specified meshes[^mesh] into the attached mesh. 
-To make merge working, let's specify meshes to be merged onto `Merge Skinned Mesh`!
+The `Merge Skinned Mesh` will merge specified meshes[^mesh] into the mesh attached together.
 
-To make it easy to specifying meshes, lock the inspector with `Anon_Merged` selected. 
+To make it easy to specifying meshes, lock the inspector with `Anon_Merged` selected.
 This allow us to drag & drop multiple meshes at once.[^tip-lock-inspector]
 
 ![lock-inspector.png](./lock-inspector.png)
 
-Then, select meshes except for Body, which is the face mesh, and drag & drop to Skinned Renderers!
+Then, select meshes except for Body, which is the face mesh, and drag & drop to Skinned Renderers of `Merge Skinned Mesh`!
 
 ![drag-and-drop.png](./drag-and-drop.png)
 
@@ -80,7 +79,7 @@ so I recommend not to merge face mesh.
 Next, configure `Anon_Merged`!
 
 Because of many reasons[^merge-skinned-mesh], `Merge Skinned Mesh` doesn't configure anything except of bones, meshes, materials, BlendShapes and bounds.
-So, please configure Root Bone, Anchor Override and else yourself.
+So, please configure Root Bone, Anchor Override and so on yourself on the merge target mesh (added at the same time as the `Merge Skinned Mesh`).
 I think specifying Anchor Override of your body and setting Hips as the Root Bone will work well.
 
 {{< hint info >}}

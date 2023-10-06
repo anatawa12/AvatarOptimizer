@@ -5,7 +5,7 @@ weight: 25
 
 # Freeze BlendShape
 
-ブレンドシェイプをメッシュに固定する、或いはメッシュから除去することが出来ます。
+ブレンドシェイプをメッシュに固定し、除去することが出来ます。
 
 このコンポーネントは[Modifying Edit Skinned Mesh Component](../../component-kind/edit-skinned-mesh-components#modifying-component)であるため、SkinnedMeshRendererコンポーネントのあるGameObjectに追加してください。
 
