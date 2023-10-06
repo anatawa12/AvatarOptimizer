@@ -49,21 +49,20 @@ Skinned Meshを統合することでメッシュを変形させる処理の回�
 
 ![create-empty.png](./create-empty.png)
 
-次に、`Anon_Merged`に`Merge Skinned Mesh`を追加しましょう。
+次に、`Anon_Merged`に`Merge Skinned Mesh`コンポーネントを追加しましょう。
 
 ![add-merge-skinned-mesh.png](./add-merge-skinned-mesh.png)
 
-すると`Merge Skinned Mesh`と`Skinned Mesh Renderer`が追加されます。
+すると`Merge Skinned Mesh`コンポーネントと`Skinned Mesh Renderer`コンポーネントが追加されます。
 
-この`Merge Skinned Mesh`は、指定されたメッシュ[^mesh]を一緒についているメッシュに統合します。
-統合を機能させるために、`Merge Skinned Mesh`に統合対象のメッシュを指定しましょう！
+`Merge Skinned Mesh`コンポーネントは、指定されたメッシュ[^mesh]を自身と一緒に付いているメッシュに統合します。
 
 指定を楽にするために、`Anon_Merged`を選択した状態でinspectorをロックしましょう。
 こうすることで複数のメッシュをまとめてドラックアンドドロップできるようになります。[^tip-lock-inspector]
 
 ![lock-inspector.png](./lock-inspector.png)
 
-それではHierarchyで顔のメッシュであるBody以外のメッシュを選択してドラックアンドドロップでSkinned Renderersに指定しましょう！
+それでは、顔のメッシュであるBody以外のメッシュをHierarchyで選択し、`Merge Skinned Mesh`コンポーネント内のSkinned Renderersにドラックアンドドロップで指定しましょう！
 
 ![drag-and-drop.png](./drag-and-drop.png)
 
@@ -79,7 +78,7 @@ BlendShape(シェイプキー)は頂点数とBlendShape数の積に比例して�
 続いて、`Anon_Merged`の設定をしましょう！
 
 `Merge Skinned Mesh`は諸事情[^merge-skinned-mesh]によりボーン、メッシュ、マテリアル、BlendShape、Bounds以外の設定を自動的には行いません。
-そのため、Root Bone, Anchor Override等を手動で設定してください。
+そのため、Root Bone, Anchor Override等は統合先となるメッシュ(`Merge Skinned Mesh`コンポーネントと同時に追加されたもの)に手動で設定してください。
 Anchor Overrideには素体で用いられているものを、Root BoneにはHipsを指定すると上手くいくことが多いと思います。
 
 {{< hint info >}}
