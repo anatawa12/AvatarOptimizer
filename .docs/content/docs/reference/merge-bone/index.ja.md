@@ -5,7 +5,8 @@ weight: 100
 
 # Merge Bone
 
-このコンポーネントがGameObjectに付いている場合、このGameObjectは親GameObjectに統合されて取り除かれます。
+このコンポーネントがGameObjectに付いている場合、そのGameObjectは親GameObjectに統合されて取り除かれます。
+また、統合対象にその他のコンポーネントが付属している場合はそれらも削除されます。
 
 もし親のGameObjectにもMerge Boneコンポーネントが付いていた場合、2つのGameObjectはその更に親のGameObjectに統合されます。
 
