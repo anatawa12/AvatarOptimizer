@@ -6,7 +6,7 @@ weight: 100
 # Merge Bone
 
 If you add this component to some GameObject, the GameObject will be removed and merged to parent GameObject.
-Also, if other components are attached to the target GameObject, they will be removed too.
+Also, if some other components are attached to the target GameObject, they will be removed too.
 
 If the parent GameObject also have Merge Bone component, two GameObjects are merged to their further parent GameObject.
 
