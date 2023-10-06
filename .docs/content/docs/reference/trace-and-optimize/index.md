@@ -18,7 +18,7 @@ Currently the following optimizations are applied automatically.
 - [FreezeBlendShape](../freeze-blendshape)
   Automatically freezes unused BlendShapes in animation or else.
 - `Remove unused Objects`
-  By scanning animation, etc., Automatically removes unused Objects.
+  By scanning animation etc., automatically removes unused Objects (e.g. GameObjects, Components).
   - `Preserve EndBone`
     Prevents removing end bones[^endbone] whose parent is not removed.
 

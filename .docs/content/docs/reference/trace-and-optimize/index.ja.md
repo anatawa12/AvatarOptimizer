@@ -18,7 +18,7 @@ aliases:
 - [FreezeBlendShape](../freeze-blendshape)
   アニメーションなどで使われていないBlendShapeを自動的に固定・除去します。
 - `使われていないObjectを自動的に削除する`
-  アニメーションなどを走査して、使われていないObjectを自動的に削除します。
+  アニメーションなどを走査して、使われていないObject(GameObjectやコンポーネントなど)を自動的に削除します。
   - `endボーンを残す`
     親が削除されていないendボーン[^endbone]を削除しないようにします。
 
