@@ -1,6 +1,6 @@
 ---
 title: Clear Endpoint Position
-weight: 1
+weight: 100
 ---
 
 # Clear Endpoint Position

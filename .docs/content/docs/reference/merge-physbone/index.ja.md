@@ -1,6 +1,6 @@
 ---
 title: Merge PhysBone
-weight: 1
+weight: 100
 ---
 
 # Merge PhysBone
