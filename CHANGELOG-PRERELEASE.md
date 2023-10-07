@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog].
 
 ### Security
 
+## [1.5.0-rc.12] - 2023-10-07
 ## [1.5.0-rc.11] - 2023-10-05
 ### Fixed
 - Viseme may be broken [`#527`](https://github.com/anatawa12/AvatarOptimizer/pull/527)
@@ -824,7 +825,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-rc.11...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-rc.12...HEAD
+[1.5.0-rc.12]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-rc.11...v1.5.0-rc.12
 [1.5.0-rc.11]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-rc.10...v1.5.0-rc.11
 [1.5.0-rc.10]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-rc.9...v1.5.0-rc.10
 [1.5.0-rc.9]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-rc.8...v1.5.0-rc.9
