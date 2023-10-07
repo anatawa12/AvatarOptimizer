@@ -35,13 +35,13 @@ Also, you can use `Automatically Freeze Blend Shape` of [Trace and Optimize](../
 
 ![component.png](component.png)
 
-## Skinned Renderers
+### Skinned Renderers
 
 The list of SkinnedMeshRenderers to be merged.
 
 Drop to None element at the bottom to add renderer and reset to None to remove from the list.
 
-## Static Renderers
+### Static Renderers
 
 The list of MeshRenderers (without mesh transform).
 
@@ -49,12 +49,12 @@ Those meshes are transformed to polygons weighted to one bone, the GameObject th
 
 Drop to None element at the bottom to add renderer and reset to None to remove from the list.
 
-## Remove Empty Renderer GameObject
+### Remove Empty Renderer GameObject
 
 If this checkbox is checked and the GameObject SkinnedMeshRenderer belongs to does not have
 any other components than SkinnedMeshRenderer, the GameObject will be removed from Hierarchy.
 
-## Merge Materials
+### Merge Materials
 
 If MergeSkinnedMesh component found some Materials used in multiple renderers, the Materials will be listed here.
 

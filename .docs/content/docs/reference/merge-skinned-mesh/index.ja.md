@@ -32,13 +32,13 @@ BlendShapeは、頂点とBlendShapeの数に比例して負荷が大きくなる
 
 ![component.png](component.png)
 
-## スキンメッシュレンダラー {#skinned-renderers}
+### スキンメッシュレンダラー {#skinned-renderers}
 
 統合対象のSkinnedMeshRendererの一覧です。
 
 一番下の"None"と書いてある要素にドラッグ&ドロップすることにより対象を追加し、Noneに戻すことにより対象を一覧から取り除きます。
 
-## 静的レンダラー {#static-renderers}
+### 静的レンダラー {#static-renderers}
 
 統合対象のMeshRendererの一覧です。
 
@@ -46,11 +46,11 @@ BlendShapeは、頂点とBlendShapeの数に比例して負荷が大きくなる
 
 一番下の"None"と書いてある要素にドラッグ&ドロップすることにより対象を追加し、Noneに戻すことにより対象を一覧から取り除きます。
 
-## 空のレンダラーオブジェクトを削除する {#remove-empty-renderer-gameobject}
+### 空のレンダラーオブジェクトを削除する {#remove-empty-renderer-gameobject}
 
 統合対象のSkinnedMeshRendererが属しているGameObjectにSkinnedMeshRenderer以外のコンポーネントが無い場合、そのGameObjectをヒエラルキーから取り除くオプションです。
 
-## マテリアルの統合 {#merge-materials}
+### マテリアルの統合 {#merge-materials}
 
 複数の(Skinned)MeshRendererで使用されているマテリアルがある場合、ここに一覧で表示されます。
 
