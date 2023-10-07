@@ -9,6 +9,9 @@ Remove vertices transformed by specified BlendShape and their polygons.
 
 This component is [Modifying Edit Skinned Mesh Component](../../component-kind/edit-skinned-mesh-components#modifying-component), so this should be added to a GameObject which has a SkinnedMeshRenderer component.
 
+By removing polygons which are hidden by clothes or something, you can reduce rendering cost, BlendShape processing cost, etc. without affecting the appearance so much.
+You can use this component to easily remove polygons with BlendShapes for shrinking parts of the body, which many avatars have.
+
 ## Settings
 
 ![component.png](component.png)

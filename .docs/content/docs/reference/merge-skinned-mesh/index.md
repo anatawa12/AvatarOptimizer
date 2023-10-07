@@ -9,7 +9,10 @@ Merges one or more SkinnedMeshRenderer and MeshRenderers into one SkinnedMeshRen
 
 This component is [Source Edit Skinned Mesh Component](../../component-kind/edit-skinned-mesh-components#source-component), so this should be added to a new GameObject which has a SkinnedMeshRenderer component without Mesh specified.
 
-This component will merge mesh, bones, Materials, BlendShapes, and Bounds but other settings will not be modified.
+Merging SkinnedMeshRenderer will reduce number of deforming mesh (skinning) and rendering cost.
+This makes it impossible to turn meshes on and off individually on animations, but material-related animations will work without modification.
+
+This component will merge mesh, material slots using the same Material, BlendShapes, and Bounds but other settings will not be modified.
 Please edit SkinnedMeshRenderer component attached to same GameObject as MergeSkinnedMesh to set AnchorOverride or else.
 
 This component is good for merging your cloth meshes and body meshes but not good for face meshes because BlendShape can cause performance impact.

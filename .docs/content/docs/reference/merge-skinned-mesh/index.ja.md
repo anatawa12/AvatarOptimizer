@@ -9,7 +9,10 @@ weight: 21
 
 このコンポーネントは[Source Edit Skinned Mesh Component](../../component-kind/edit-skinned-mesh-components#source-component)であるため、メッシュを指定していないSkinnedMeshRendererコンポーネントがある新規GameObjectに追加してください。
 
-このコンポーネントはメッシュ・ボーン・マテリアル・BlendShape・Boundsを統合しますが、その他の設定については変更しないため、AnchorOverride等の設定を行うには、MergeSkinnedMeshのあるGameObject上のSkinnedMeshRendererを編集してください。
+SkinnedMeshRendererを統合することでメッシュを変形させる処理の回数が減り、負荷が軽くなります。
+アニメーションでメッシュのオン・オフを個別に切り替えたりすることはできなくなりますが、マテリアルに関するアニメーションは統合前のものがそのまま機能します。
+
+このコンポーネントはメッシュ・同じマテリアルを使用しているマテリアルスロット・BlendShape・Boundsを統合しますが、その他の設定については変更しないため、AnchorOverride等の設定を行うには、MergeSkinnedMeshのあるGameObject上のSkinnedMeshRendererを編集してください。
 
 このコンポーネントは、服のメッシュや体のメッシュを統合するのには適していますが、顔のメッシュを統合するのには適していません。
 ブレンドシェイプは、頂点とブレンドシェイプの数に比例して負荷が大きくなる機能です。
