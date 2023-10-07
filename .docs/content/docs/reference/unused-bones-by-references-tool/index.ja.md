@@ -7,7 +7,7 @@ weight: 11
 
 EditorOnlyなメッシュからしか参照がないボーンをEditorOnlyにします。
 
-このコンポーネントは[Avatar Global Component](../../component-kind/avatar-global-components)であるため、アバターのルートに追加してください。
+このコンポーネントはアバターのルートに追加してください。(分類: [Avatar Global Component](../../component-kind/avatar-global-components))
 
 {{< hint warning >}}
 

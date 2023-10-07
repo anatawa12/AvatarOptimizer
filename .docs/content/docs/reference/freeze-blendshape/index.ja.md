@@ -7,7 +7,7 @@ weight: 25
 
 BlendShapeをメッシュに固定し、除去することが出来ます。
 
-このコンポーネントは[Modifying Edit Skinned Mesh Component](../../component-kind/edit-skinned-mesh-components#modifying-component)であるため、SkinnedMeshRendererコンポーネントのあるGameObjectに追加してください。
+このコンポーネントは、SkinnedMeshRendererコンポーネントのあるGameObjectに追加してください。(分類: [Modifying Edit Skinned Mesh Component](../../component-kind/edit-skinned-mesh-components#modifying-component))
 
 BlendShapeの固定・除去には以下の効果があります。
 

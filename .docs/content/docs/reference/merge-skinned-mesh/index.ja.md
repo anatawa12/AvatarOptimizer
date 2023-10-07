@@ -7,7 +7,7 @@ weight: 21
 
 1つ以上のSkinnedMeshRendererやMeshRendererを1つのSkinnedMeshRendererに統合することが出来ます。
 
-このコンポーネントは[Source Edit Skinned Mesh Component](../../component-kind/edit-skinned-mesh-components#source-component)であるため、メッシュを指定していないSkinnedMeshRendererコンポーネントがある新規GameObjectに追加してください。
+このコンポーネントは、メッシュを指定していないSkinnedMeshRendererコンポーネントがある新規GameObjectに追加してください。(分類: [Source Edit Skinned Mesh Component](../../component-kind/edit-skinned-mesh-components#source-component))
 
 SkinnedMeshRendererを統合することでメッシュを変形させる処理の回数が減り、負荷が軽くなります。
 アニメーションでメッシュのオン・オフを個別に切り替えたりすることはできなくなりますが、マテリアルに関するアニメーションは統合前のものがそのまま機能します。

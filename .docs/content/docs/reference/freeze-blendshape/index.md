@@ -7,7 +7,7 @@ weight: 25
 
 Freeze & remove BlendShape from the mesh.
 
-This component is [Modifying Edit Skinned Mesh Component](../../component-kind/edit-skinned-mesh-components#modifying-component), so this should be added to a GameObject which has a SkinnedMeshRenderer component.
+This component should be added to a GameObject which has a SkinnedMeshRenderer component. (Kind: [Modifying Edit Skinned Mesh Component](../../component-kind/edit-skinned-mesh-components#modifying-component))
 
 Freezing & removing BlendShapes has the following benefits.
 

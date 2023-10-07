@@ -7,7 +7,7 @@ weight: 11
 
 Marks it as EditorOnly that bones referenced only from EditorOnly meshes.
 
-This component is [Avatar Global Component](../../component-kind/avatar-global-components), so this should be added to an avatar root.
+This component should be added to an avatar root. (Kind: [Avatar Global Component](../../component-kind/avatar-global-components))
 
 {{< hint warning >}}
 

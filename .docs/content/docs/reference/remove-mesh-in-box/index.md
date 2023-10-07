@@ -7,7 +7,7 @@ weight: 25
 
 Remove some polygons in any of specified boxes.
 
-This component is [Modifying Edit Skinned Mesh Component](../../component-kind/edit-skinned-mesh-components#modifying-component), so this should be added to a GameObject which has a SkinnedMeshRenderer component.
+This component should be added to a GameObject which has a SkinnedMeshRenderer component. (Kind: [Modifying Edit Skinned Mesh Component](../../component-kind/edit-skinned-mesh-components#modifying-component))
 
 By removing polygons which are hidden by clothes or something, you can reduce rendering cost, BlendShape processing cost, etc. without affecting the appearance so much.
 
