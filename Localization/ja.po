@@ -177,8 +177,8 @@ msgstr "コンポーネント"
 
 msgid "MergeSkinnedMesh:warning:blendShapeWeightMismatch"
 msgstr ""
-"統合対象のSkinnedMeshRenderer間でブレンドシェイプ '{0}'の値が揃っていません。\n"
-"どの値を適用するかが不定になってしまうため、統合対象の同名ブレンドシェイプの値は揃えるか固定・除去してください。"
+"統合対象のSkinnedMeshRenderer間でBlendShape '{0}'の値が揃っていません。\n"
+"どの値を適用するかが不定になってしまうため、統合対象の同名BlendShapeの値は揃えるか固定・除去してください。"
 
 msgid "MergeSkinnedMesh:warning:MeshIsNotNone"
 msgstr ""
@@ -245,13 +245,13 @@ msgstr "回転"
 # region RemoveMeshByBlendShape
 
 msgid "RemoveMeshByBlendShape:description"
-msgstr "指定されたブレンドシェイプによって動かされる頂点とそのポリゴンを削除します"
+msgstr "指定されたBlendShapeによって動かされる頂点とそのポリゴンを削除します"
 
 msgid "RemoveMeshByBlendShape:editor:automaticallySetWeightWhenToggle"
-msgstr "プレビューのために、切り替えたブレンドシェイプの値を自動的に変更する"
+msgstr "プレビューのために、切り替えたBlendShapeの値を自動的に変更する"
 
 msgid "RemoveMeshByBlendShape:tooltip:automaticallySetWeightWhenToggle"
-msgstr "このオプションが有効な間にブレンドシェイプの指定を切り替えた場合、その値を自動的に100か0に設定します。"
+msgstr "このオプションが有効な間にBlendShapeの指定を切り替えた場合、その値を自動的に100か0に設定します。"
 
 msgid "RemoveMeshByBlendShape:tooltip:automaticallySetWeightWhenToggle:noRenderer"
 msgstr "SkinnedMeshRendererがないため、この機能を使用することができません。"
@@ -264,7 +264,7 @@ msgstr "許容差"
 
 msgid "RemoveMeshByBlendShape:tooltip:Tolerance"
 msgstr ""
-"選択されたブレンドシェイプのいずれかによって頂点がこの値より大きく動かされている場合、その頂点は削除されます。\n"
+"選択されたBlendShapeのいずれかによって頂点がこの値より大きく動かされている場合、その頂点は削除されます。\n"
 "意図していない頂点が削除されてしまった場合はこの値を大きくしてみてください。思った通りに頂点が削除されなかった場合はこの値を小さくしてみてください。\n"
 "通常、この値は小さな数値になります。"
 

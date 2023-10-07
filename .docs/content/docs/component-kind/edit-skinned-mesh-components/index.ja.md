@@ -11,16 +11,15 @@ Edit Skinned Mesh ComponentはSkinnedMeshRendererコンポーネントのあるG
 
 ## Source Component
 
-メッシュなどを生成するコンポーネントです。
+メッシュなどを生成するコンポーネントです。  
 以下のコンポーネントがSource Edit Skinned Mesh Componentです。
 
-- [MergeSkinnedMesh](../../reference/merge-skinned-mesh)
-
-  This component will produce mesh from other (Skinned)MeshRenderers.
+- [MergeSkinnedMesh](../../reference/merge-skinned-mesh)  
+  このコンポーネントは他の(Skinned)MeshRendererを基にメッシュを生成します。
 
 ## Modifying Component
 
-既にあるメッシュなどを(複製して)編集するコンポーネントです。
+既にあるメッシュなどを(複製して)編集するコンポーネントです。  
 以下のコンポーネントがModifying Edit Skinned Mesh Componentです。
 
 - [Remove Mesh By BlendShape](../../reference/remove-mesh-by-blendshape)

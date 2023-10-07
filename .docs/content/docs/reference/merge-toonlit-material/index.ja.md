@@ -7,7 +7,7 @@ weight: 25
 
 手動でテクスチャを並び替えることにより、`VRChat/Mobile/Toon Lit`のマテリアルを1つのマテリアルに統合します。
 
-このコンポーネントは[Modifying Edit Skinned Mesh Component](../../component-kind/edit-skinned-mesh-components#modifying-component)であるため、SkinnedMeshRendererコンポーネントのあるGameObjectに追加してください。
+このコンポーネントは、SkinnedMeshRendererコンポーネントのあるGameObjectに追加してください。(分類: [Modifying Edit Skinned Mesh Component](../../component-kind/edit-skinned-mesh-components#modifying-component))
 
 現在、このコンポーネントは大きな需要があると見られる`VRChat/Mobile/Toon Lit`シェーダーのみをサポートしています。
 他のシェーダーのサポートも追加する可能性があります。(サードパーティシェーダーでも対応します)

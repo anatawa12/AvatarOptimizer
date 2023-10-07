@@ -22,9 +22,9 @@ Avatar Optimizerは[VPM][vpm]レポジトリを使用して公開されている
 1. [このリンク][VCC-add-repo-link]をクリックしてanatawa12のレポジトリを追加する。
 2. VCCでAvatar Optimizerを追加する。
 
-### VPAIによるインストーラUnityPackageを使用する {#installation-vpai}
+### UnityPackageを使用する {#installation-vpai}
 
-[VPAI]により、unitypackageをインポートするだけでこのツールをインストールできます。
+unitypackageをインポートするだけでもこのツールをインストールできます。（VCCから追加する方法と全く同じようになります）
 
 1. [ここ][installer unitypackage 1.x.x]からインストーラunitypackageをダウンロードする。
 2. unitypackageをプロジェクトにインポートする。
@@ -36,9 +36,11 @@ Avatar Optimizerは[VPM][vpm]レポジトリを使用して公開されている
 - [0.2.x][installer unitypackage 0.2.x]
 - [0.3.x][installer unitypackage 0.3.x]
 - [0.4.x][installer unitypackage 0.4.x]
-- [0.x.x including beta releases][installer unitypackage x.x beta]
+- [x.x.x including beta releases][installer unitypackage x.x beta]
 
 </details>
+
+このインストール方法は[VPAI]により実現されています。
 
 ### vrc-getを使用する {#installation-vrc-get}
 

@@ -22,9 +22,9 @@ Avatar Optimizer is published with [VPM][vpm] repository so you can install this
 1. Click [this link][VCC-add-repo-link] to add anatawa12's repository.
 2. Add Avatar Optimizer from VCC.
 
-### Using Installer UnityPackage with VPAI {#installation-vpai}
+### Using UnityPackage {#installation-vpai}
 
-With [VPAI] You can install this tool with just importing one unitypackage.
+You can install this tool with just importing one unitypackage.
 
 1. download installer unitypackage [here][installer unitypackage 1.x.x].
 2. Import the unitypackage into your project.
@@ -39,6 +39,8 @@ With [VPAI] You can install this tool with just importing one unitypackage.
 - [x.x.x including beta releases][installer unitypackage x.x beta]
 
 </details>
+
+This installation method is provided in thanks to [VPAI].
 
 ### Using vrc-get {#installation-vrc-get}
 

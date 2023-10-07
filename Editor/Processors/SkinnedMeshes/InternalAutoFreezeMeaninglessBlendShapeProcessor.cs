@@ -16,13 +16,16 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         public override void Process(BuildContext context, MeshInfo2 target)
         {
             var meaningfulBlendShapes = new HashSet<string>();
+            var preserve = Component.Preserve;
+            if (preserve != null) meaningfulBlendShapes.UnionWith(preserve);
 
             foreach (var vertex in target.Vertices)
                 meaningfulBlendShapes.UnionWith(vertex.BlendShapes.Keys);
 
             var freezeBlendShape = Target.GetComponent<FreezeBlendShape>();
             var set = freezeBlendShape.shapeKeysSet.GetAsSet();
-            set.UnionWith(target.BlendShapes.Where(x => !meaningfulBlendShapes.Contains(x.name)).Select(x => x.name));
+            set.UnionWith(target.BlendShapes.Where(x => !meaningfulBlendShapes.Contains(x.name))
+                .Select(x => x.name));
             freezeBlendShape.shapeKeysSet.SetValueNonPrefab(set);
         }
 
