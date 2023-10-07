@@ -15,15 +15,15 @@ You can enable/disable some automatic optimization features with checkboxes.
 This component should be added to an avatar root. (Kind: [Avatar Global Component](../../component-kind/avatar-global-components))
 
 Currently the following optimizations are applied automatically.
-- [FreezeBlendShape](../freeze-blendshape)
+- `Automatically Freeze Blend Shape`  
   Automatically freezes unused BlendShapes in animation or else.
-- `Remove unused Objects`
+- `Remove unused Objects`  
   By scanning animation etc., automatically removes unused Objects (e.g. GameObjects, Components).
-  - `Preserve EndBone`
+  - `Preserve EndBone`  
     Prevents removing end bones[^endbone] whose parent is not removed.
 
 Also, You can adjust optimization with the following settings
-- `MMD World Compatibility`
+- `MMD World Compatibility`  
   Optimize with considering compatibility with MMD Worlds. e.g. Not freezing BlendShapes used by MMD Worlds.
 
 In addition, there is `Advanced Settings` which is for workaround bugs but it's unstable & not well-tested.
