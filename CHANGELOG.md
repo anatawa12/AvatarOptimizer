@@ -27,6 +27,7 @@ The format is based on [Keep a Changelog].
   - You may use `Use Legacy GC` to use legacy algotythm for Remove Unused Objects in `Advanced Settings` (`#419`)
 - Performance: Share MeshInfo2 between SkinnedMesh processing and MergeBone `#421`
 - Declare compatible with VRCSDK 3.4.x `#513`
+- Change Japanese Translation of "BlendShape" `#535`
 
 ### Deprecated
 - UnusedBonesByReferenceTool component is now obsolete `#430`

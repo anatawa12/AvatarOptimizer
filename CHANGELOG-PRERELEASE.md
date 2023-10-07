@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
+- Change Japanese Translation of "BlendShape" `#535`
 
 ### Deprecated
 

@@ -107,7 +107,7 @@ Anchor Overrideには素体で用いられているものを、Root BoneにはHi
 
 素体のメッシュに`Remove Mesh By BlendShape`コンポーネントを追加しましょう！
 
-想定外の部位が削除されてしまわないかを確認するために`プレビューのために切り替えたブレンドシェイプの値を自動的に変更する`にチェックし、
+想定外の部位が削除されてしまわないかを確認するために`プレビューのために切り替えたBlendShapeの値を自動的に変更する`にチェックし、
 削除したい部位の貫通防止用BlendShapeを下の一覧から選択しましょう！
 
 ![remove mesh by BlendShape](./remove-mesh-by-blendshape.png)
