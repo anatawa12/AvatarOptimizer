@@ -9,12 +9,12 @@ Merges one or more SkinnedMeshRenderer and MeshRenderers into one SkinnedMeshRen
 
 This component should be added to a new GameObject which has a SkinnedMeshRenderer component without Mesh specified. (Kind: [Source Edit Skinned Mesh Component](../../component-kind/edit-skinned-mesh-components#source-component))
 
-## Benefits {#benefits}
+## Benefits
 
 Merging SkinnedMeshRenderer will reduce number of deforming mesh (skinning).
 Also, it can reduce material slots using the same material, so we can reduce rendering cost.
 
-## Notes {#notes}
+## Notes
 
 This component makes it impossible to turn meshes on and off individually on animations, but material-related animations will work without modification.
 
@@ -35,7 +35,7 @@ Also, you can use `Automatically Freeze Blend Shape` of [Trace and Optimize](../
 
 ![component.png](component.png)
 
-### Skinned Renderers
+## Skinned Renderers
 
 The list of SkinnedMeshRenderers to be merged.
 

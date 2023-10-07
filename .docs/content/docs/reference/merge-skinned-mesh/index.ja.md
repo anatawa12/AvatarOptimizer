@@ -32,7 +32,7 @@ BlendShapeは、頂点とBlendShapeの数に比例して負荷が大きくなる
 
 ![component.png](component.png)
 
-### スキンメッシュレンダラー {#skinned-renderers}
+## スキンメッシュレンダラー {#skinned-renderers}
 
 統合対象のSkinnedMeshRendererの一覧です。
 

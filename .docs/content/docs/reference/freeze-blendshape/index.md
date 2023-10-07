@@ -9,14 +9,14 @@ Freeze & remove BlendShape from the mesh.
 
 This component should be added to a GameObject which has a SkinnedMeshRenderer component. (Kind: [Modifying Edit Skinned Mesh Component](../../component-kind/edit-skinned-mesh-components#modifying-component))
 
-## Benefits {#benefits}
+## Benefits
 
 Freezing & removing BlendShapes has the following benefits.
 
 - For BlendShapes with non-zero weight, freezing BlendShapes will reduce processing cost.
 - Even if the weight is zero, removing BlendShapes will reduce the size of avatars.
 
-## Notes {#notes}
+## Notes
 
 By freezing BlendShape, the weights cannot be changed on Animation.
 
