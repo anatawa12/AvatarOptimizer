@@ -9,8 +9,14 @@ Merges one or more SkinnedMeshRenderer and MeshRenderers into one SkinnedMeshRen
 
 This component should be added to a new GameObject which has a SkinnedMeshRenderer component without Mesh specified. (Kind: [Source Edit Skinned Mesh Component](../../component-kind/edit-skinned-mesh-components#source-component))
 
-Merging SkinnedMeshRenderer will reduce number of deforming mesh (skinning) and rendering cost.
-This makes it impossible to turn meshes on and off individually on animations, but material-related animations will work without modification.
+## Benefits {#benefits}
+
+Merging SkinnedMeshRenderer will reduce number of deforming mesh (skinning).
+Also, it can reduce material slots using the same material, so we can reduce rendering cost.
+
+## Notes {#notes}
+
+This component makes it impossible to turn meshes on and off individually on animations, but material-related animations will work without modification.
 
 This component will merge mesh, material slots using the same Material, BlendShapes, and Bounds but other settings will not be modified.
 Please edit SkinnedMeshRenderer component attached to same GameObject as MergeSkinnedMesh to set AnchorOverride or else.
@@ -23,6 +29,7 @@ That's why it's not good to merge face meshes.
 In addition, because of same reasons, you should freeze & remove unchanging BlendShapes for body / cloth meshes.
 You can freeze & remove BlendShape using [Freeze BlendShape](../freeze-blendshape) component.
 Add this component to both/either merge source SkinnedMeshRenderer and/or merged SkinnedMeshRenderer to freeze & remove BlendShapes.
+Also, you can use `Automatically Freeze Blend Shape` of [Trace and Optimize](../trace-and-optimize) component to get the same benefits.
 
 ## Settings
 
