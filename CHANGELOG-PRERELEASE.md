@@ -16,10 +16,13 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- MergePhysBone component may be shown as unknown components `#541`
-- MergeBone may break Fur `#542`
 
 ### Security
+
+## [1.5.1-beta.1] - 2023-10-08
+### Fixed
+- MergePhysBone component may be shown as unknown components [`#541`](https://github.com/anatawa12/AvatarOptimizer/pull/541)
+- MergeBone may break Fur [`#542`](https://github.com/anatawa12/AvatarOptimizer/pull/542)
 
 ## [1.5.0] - 2023-10-07
 ## [1.5.0-rc.13] - 2023-10-07
@@ -832,7 +835,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.1-beta.1...HEAD
+[1.5.1-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0...v1.5.1-beta.1
 [1.5.0]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-rc.13...v1.5.0
 [1.5.0-rc.13]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-rc.12...v1.5.0-rc.13
 [1.5.0-rc.12]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-rc.11...v1.5.0-rc.12
