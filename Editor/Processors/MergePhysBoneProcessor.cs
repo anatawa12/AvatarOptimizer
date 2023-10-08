@@ -14,8 +14,11 @@ namespace Anatawa12.AvatarOptimizer.Processors
     {
         public void Process(OptimizerSession session)
         {
-            BuildReport.ReportingObjects(session.GetComponents<MergePhysBone>(),
-                mergePhysBone => DoMerge(mergePhysBone, session));
+            BuildReport.ReportingObjects(session.GetComponents<MergePhysBone>(), mergePhysBone =>
+            {
+                DoMerge(mergePhysBone, session);
+                Object.DestroyImmediate(mergePhysBone);
+            });
         }
 
         private static bool SetEq<T>(IEnumerable<T> a, IEnumerable<T> b) => 
@@ -118,7 +121,6 @@ namespace Anatawa12.AvatarOptimizer.Processors
             merged.hideFlags &= ~(HideFlags.HideInHierarchy | HideFlags.HideInInspector);
 
             foreach (var physBone in sourceComponents) Object.DestroyImmediate(physBone);
-            Object.DestroyImmediate(merge);
         }
 
         sealed class MergePhysBoneMerger : MergePhysBoneEditorModificationUtils
