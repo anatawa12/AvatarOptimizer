@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- MergeBone may break Fur (hotfix) `#540`
 
 ### Security
 
