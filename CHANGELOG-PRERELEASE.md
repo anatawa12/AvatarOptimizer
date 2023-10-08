@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- MergePhysBone component may be shown as unknown components `#541`
 
 ### Security
 
