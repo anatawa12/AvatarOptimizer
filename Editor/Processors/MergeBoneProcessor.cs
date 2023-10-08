@@ -128,10 +128,6 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
             if (!boneReplaced) return;
 
-            // disable BindPose optimization by default
-            if (!EditorPrefs.GetBool("com.anatawa12.avatar-optimizer.merge-bone-bindpose-optimization", false))
-                return;
-
             // Optimization 1: if vertex is affected by only one bone, we can merge to one weight
             foreach (var vertex in meshInfo2.Vertices)
             {
