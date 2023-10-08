@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - MergePhysBone component may be shown as unknown components `#541`
+- MergeBone may break Fur `#542`
 
 ### Security
 
