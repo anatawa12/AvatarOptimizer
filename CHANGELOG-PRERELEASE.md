@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- GC Debug doesn't include inactive objects `#546`
 
 ### Security
 
