@@ -268,6 +268,20 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             {
                 if (GUILayout.Button("Copy All Data"))
                 {
+                    GUIUtility.systemCopyBuffer = CreateData();
+                }
+
+                if (GUILayout.Button("Save All Data"))
+                {
+                    var path = EditorUtility.SaveFilePanel("DebugGCData", "", "data.txt", "txt");
+                    if (!string.IsNullOrEmpty(path))
+                    {
+                        System.IO.File.WriteAllText(path, CreateData());
+                    }
+                }
+
+                string CreateData()
+                {
                     var root = ((Component)target).gameObject;
                     var collect = new StringBuilder();
                     foreach (var gcData in root.GetComponentsInChildren<GCData>())
@@ -286,6 +300,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                                 var types = dependencyInfo.component.GetType().Name;
                                 list.Add($"{path}({types})({dependencyInfo.type},{dependencyInfo.flags})");
                             }
+
                             list.Sort();
                             foreach (var line in list)
                                 collect.Append("      ").Append(line).Append("\n");
@@ -294,7 +309,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                         collect.Append("\n");
                     }
 
-                    GUIUtility.systemCopyBuffer = collect.ToString();
+                    return collect.ToString();
                 }
             }
         }
