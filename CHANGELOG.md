@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Feature for debugging GC Objects `#543`
 
 ### Changed
 
