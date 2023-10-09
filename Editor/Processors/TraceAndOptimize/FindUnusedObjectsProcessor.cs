@@ -284,7 +284,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 {
                     var root = ((Component)target).gameObject;
                     var collect = new StringBuilder();
-                    foreach (var gcData in root.GetComponentsInChildren<GCData>())
+                    foreach (var gcData in root.GetComponentsInChildren<GCData>(true))
                     {
                         collect.Append(RuntimeUtil.RelativePath(root, gcData.gameObject)).Append(":\n");
 
