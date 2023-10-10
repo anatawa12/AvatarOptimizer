@@ -30,9 +30,25 @@ namespace Anatawa12.AvatarOptimizer
             private set => SessionState.SetString("com.anatawa12.avatar-optimizer.latest", value);
         }
 
+        public static string CurrentVersionName
+        {
+            get
+            {
+                var currentVersion = SessionState.GetString("com.anatawa12.avatar-optimizer.current", "");
+
+                if (!string.IsNullOrEmpty(currentVersion)) return currentVersion;
+
+                currentVersion = GetCurrentVersion();
+                if (!string.IsNullOrEmpty(currentVersion))
+                    SessionState.SetString("com.anatawa12.avatar-optimizer.current", currentVersion);
+
+                return currentVersion;
+            }
+        }
+
         static async void DoCheckForUpdate()
         {
-            var currentVersion = GetCurrentVersion();
+            var currentVersion = CurrentVersionName;
             if (currentVersion == null)
             {
                 Debug.LogError("AAO CheckForUpdate: Failed to get current version");

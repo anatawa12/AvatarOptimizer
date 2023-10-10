@@ -39,7 +39,8 @@ namespace Anatawa12.AvatarOptimizer.ndmf
                     seq.Run("Info if AAO is Out of Date", _ =>
                         {
                             if (CheckForUpdate.OutOfDate)
-                                BuildReport.LogInfo("CheckForUpdate:out-of-date", CheckForUpdate.LatestVersionName);
+                                BuildReport.LogInfo("CheckForUpdate:out-of-date", 
+                                    CheckForUpdate.LatestVersionName, CheckForUpdate.CurrentVersionName);
                         })
                         .Then.Run("Early: UnusedBonesByReference",
                             ctx => new Processors.UnusedBonesByReferencesToolEarlyProcessor().Process(ctx)
