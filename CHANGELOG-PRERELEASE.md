@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- New version notice remains after updating AAO without restarting UnityEditor `#559`
 
 ### Security
 
