@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using nadena.dev.ndmf;
 using UnityEditor;
@@ -66,7 +67,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 serialized.ApplyModifiedPropertiesWithoutUndo();
             }
 
-            var preserveBlendShapes = ComputePreserveBlendShapes();
+            var preserveBlendShapes = ComputePreserveBlendShapes(context);
 
             // second optimization: remove meaningless blendShapes
             foreach (var skinnedMeshRenderer in context.GetComponents<SkinnedMeshRenderer>())
@@ -78,11 +79,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             }
         }
 
-        private Dictionary<SkinnedMeshRenderer, HashSet<string>> ComputePreserveBlendShapes()
+        private Dictionary<SkinnedMeshRenderer, HashSet<string>> ComputePreserveBlendShapes(BuildContext context)
         {
             // some BlendShapes manipulated by VRC Avatar Descriptor must exists
             var preserveBlendShapes = new Dictionary<SkinnedMeshRenderer, HashSet<string>>();
-            var descriptor = _session.GetRootComponent<VRCAvatarDescriptor>();
+            var descriptor = context.AvatarDescriptor;
             switch (descriptor.lipSync)
             {
                 case VRC_AvatarDescriptor.LipSyncStyle.VisemeBlendShape when descriptor.VisemeSkinnedMesh != null:
