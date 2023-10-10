@@ -11,6 +11,5 @@ namespace Anatawa12.AvatarOptimizer
     [NotKeyable]
     internal class InternalAutoFreezeMeaninglessBlendShape : EditSkinnedMeshComponent
     {
-        [CanBeNull] internal HashSet<string> Preserve;
     }
 }

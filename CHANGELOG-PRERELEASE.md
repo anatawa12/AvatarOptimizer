@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - New version notice remains after updating AAO without restarting UnityEditor `#559`
+- Freeze BlendShape may break Visame with MergeSkinnedMesh `#561`
 
 ### Security
 

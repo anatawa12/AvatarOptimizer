@@ -73,22 +73,20 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 serialized.ApplyModifiedPropertiesWithoutUndo();
             }
 
-            var preserveBlendShapes = ComputePreserveBlendShapes();
+            ComputePreserveBlendShapes(_session.PreserveBlendShapes);
 
             // second optimization: remove meaningless blendShapes
             foreach (var skinnedMeshRenderer in _session.GetComponents<SkinnedMeshRenderer>())
             {
                 if (_exclusions.Contains(skinnedMeshRenderer.gameObject)) continue; // manual exclusion
                 skinnedMeshRenderer.gameObject.GetOrAddComponent<FreezeBlendShape>();
-                var internalMeaningless = skinnedMeshRenderer.gameObject.GetOrAddComponent<InternalAutoFreezeMeaninglessBlendShape>();
-                preserveBlendShapes.TryGetValue(skinnedMeshRenderer, out internalMeaningless.Preserve);
+                skinnedMeshRenderer.gameObject.GetOrAddComponent<InternalAutoFreezeMeaninglessBlendShape>();
             }
         }
 
-        private Dictionary<SkinnedMeshRenderer, HashSet<string>> ComputePreserveBlendShapes()
+        private void ComputePreserveBlendShapes(Dictionary<SkinnedMeshRenderer, HashSet<string>> preserveBlendShapes)
         {
             // some BlendShapes manipulated by VRC Avatar Descriptor must exists
-            var preserveBlendShapes = new Dictionary<SkinnedMeshRenderer, HashSet<string>>();
             var descriptor = _session.GetRootComponent<VRCAvatarDescriptor>();
             switch (descriptor.lipSync)
             {
@@ -135,8 +133,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                         break;
                 }
             }
-
-            return preserveBlendShapes;
         }
     }
 }
