@@ -4,6 +4,7 @@ using Anatawa12.AvatarOptimizer.ErrorReporting;
 using CustomLocalization4EditorExtension;
 using JetBrains.Annotations;
 using UnityEngine;
+using UnityEngine.Animations;
 using VRC.Dynamics;
 
 namespace Anatawa12.AvatarOptimizer
@@ -14,57 +15,58 @@ namespace Anatawa12.AvatarOptimizer
     [HelpURL("https://vpm.anatawa12.com/avatar-optimizer/ja/docs/reference/merge-physbone/")]
     internal class MergePhysBone : AvatarTagComponent, IStaticValidated
     {
+        [NotKeyable]
         [CL4EELocalized("MergePhysBone:prop:makeParent", "MergePhysBone:tooltip:makeParent")]
         public bool makeParent;
 
         #region OverrideAndValue
 
-        public VersionConfig versionConfig;
+        [NotKeyable] public VersionConfig versionConfig;
 
         #region == Transform ==
         // rootTransform
         // ignoreTransforms
-        public EndPointPositionConfig endpointPositionConfig;
+        [NotKeyable] public EndPointPositionConfig endpointPositionConfig;
         // multiChildType
         #endregion
 
         #region == Forces ==
-        public IntegrationTypeConfig integrationTypeConfig;
-        public Curve0To1Config pullConfig;
+        [NotKeyable] public IntegrationTypeConfig integrationTypeConfig;
+        [NotKeyable] public Curve0To1Config pullConfig;
         // spring a.k.a. Momentum
-        public Curve0To1Config springConfig;
-        public Curve0To1Config stiffnessConfig;
-        public CurveM1To1Config gravityConfig;
-        public Curve0To1Config gravityFalloffConfig;
-        public ImmobileTypeConfig immobileTypeConfig;
-        public Curve0To1Config immobileConfig;
+        [NotKeyable] public Curve0To1Config springConfig;
+        [NotKeyable] public Curve0To1Config stiffnessConfig;
+        [NotKeyable] public CurveM1To1Config gravityConfig;
+        [NotKeyable] public Curve0To1Config gravityFalloffConfig;
+        [NotKeyable] public ImmobileTypeConfig immobileTypeConfig;
+        [NotKeyable] public Curve0To1Config immobileConfig;
         #endregion
         #region == Limits ==
-        public LimitTypeConfig limitTypeConfig;
-        public Curve0To180Config maxAngleXConfig = new Curve0To180Config(45f);
-        public Curve0To90Config maxAngleZConfig = new Curve0To90Config(45f);
-        public CurveVector3Config limitRotationConfig;
+        [NotKeyable] public LimitTypeConfig limitTypeConfig;
+        [NotKeyable] public Curve0To180Config maxAngleXConfig = new Curve0To180Config(45f);
+        [NotKeyable] public Curve0To90Config maxAngleZConfig = new Curve0To90Config(45f);
+        [NotKeyable] public CurveVector3Config limitRotationConfig;
         #endregion
         #region == Collision ==
-        public CurveNoLimitConfig radiusConfig;
-        public PermissionConfig allowCollisionConfig;
-        public CollidersConfig collidersConfig;
+        [NotKeyable] public CurveNoLimitConfig radiusConfig;
+        [NotKeyable] public PermissionConfig allowCollisionConfig;
+        [NotKeyable] public CollidersConfig collidersConfig;
         #endregion
         #region == Stretch & Squish ==
-        public Curve0To1Config stretchMotionConfig;
-        public CurveNoLimitConfig maxStretchConfig;
-        public Curve0To1Config maxSquishConfig;
+        [NotKeyable] public Curve0To1Config stretchMotionConfig;
+        [NotKeyable] public CurveNoLimitConfig maxStretchConfig;
+        [NotKeyable] public Curve0To1Config maxSquishConfig;
         #endregion
         #region == Grab & Pose ==
-        public PermissionConfig allowGrabbingConfig;
-        public PermissionConfig allowPosingConfig;
-        public Float0To1Config grabMovementConfig;
-        public BoolConfig snapToHandConfig;
+        [NotKeyable] public PermissionConfig allowGrabbingConfig;
+        [NotKeyable] public PermissionConfig allowPosingConfig;
+        [NotKeyable] public Float0To1Config grabMovementConfig;
+        [NotKeyable] public BoolConfig snapToHandConfig;
         #endregion
         #region == Options ==
-        public ParameterConfig parameterConfig;
-        public IsAnimatedConfig isAnimatedConfig;
-        public BoolConfig resetWhenDisabledConfig;
+        [NotKeyable] public ParameterConfig parameterConfig;
+        [NotKeyable] public IsAnimatedConfig isAnimatedConfig;
+        [NotKeyable] public BoolConfig resetWhenDisabledConfig;
         #endregion
 
         [Serializable]
