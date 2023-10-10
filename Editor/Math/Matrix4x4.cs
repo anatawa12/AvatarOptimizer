@@ -11,8 +11,8 @@ namespace Anatawa12.AvatarOptimizer
     struct Matrix4x4 : IEquatable<Matrix4x4>
     {
         // ReSharper disable InconsistentNaming
-        public static Matrix4x4 zero = new Matrix4x4(UnityMatrix4x4.zero);
-        public static Matrix4x4 identity = new Matrix4x4(UnityMatrix4x4.identity);
+        public static readonly Matrix4x4 zero = new Matrix4x4(UnityMatrix4x4.zero);
+        public static readonly Matrix4x4 identity = new Matrix4x4(UnityMatrix4x4.identity);
 
         public Matrix4x4 inverse => ToUnity().inverse;
 

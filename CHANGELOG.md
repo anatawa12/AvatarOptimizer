@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- EditMode Preview of RemoveMeshInBox is not correct `#550`
 
 ### Security
 
