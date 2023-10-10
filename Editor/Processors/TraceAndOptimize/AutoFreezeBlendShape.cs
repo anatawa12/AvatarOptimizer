@@ -22,7 +22,15 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             _exclusions = exclusions;
         }
 
-        public void Process()
+        public void Process(bool skipFreezingNonAnimatedBlendShape, bool skipFreezingMeaningless)
+        {
+            if (!skipFreezingNonAnimatedBlendShape)
+                FreezeNonAnimatedBlendShapes();
+            if (!skipFreezingMeaningless)
+                FreezeMeaninglessBlendShapes();
+        }
+
+        void FreezeNonAnimatedBlendShapes()
         {
             // first optimization: unused blend shapes
             foreach (var skinnedMeshRenderer in _session.GetComponents<SkinnedMeshRenderer>())
@@ -72,7 +80,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     editorUtil.GetElementOf(shape).EnsureAdded();
                 serialized.ApplyModifiedPropertiesWithoutUndo();
             }
+        }
 
+        void FreezeMeaninglessBlendShapes() {
             ComputePreserveBlendShapes(_session.PreserveBlendShapes);
 
             // second optimization: remove meaningless blendShapes

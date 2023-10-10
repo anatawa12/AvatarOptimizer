@@ -58,6 +58,10 @@ namespace Anatawa12.AvatarOptimizer
             [Tooltip("Do Not Configure MergeBone in New GC algorithm")]
             [ToggleLeft]
             public bool noConfigureMergeBone;
+            [ToggleLeft]
+            public bool skipFreezingNonAnimatedBlendShape;
+            [ToggleLeft]
+            public bool skipFreezingMeaninglessBlendShape;
         }
     }
 }
