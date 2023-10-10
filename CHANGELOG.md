@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog].
 - Feature for debugging GC Objects `#543`
 - More MMD BlendShapes are registered `#552`
   - New English Translation BlendShapes are compatible with AAO!
+- Check for update `#554`
 
 ### Changed
 - You now cannot key any of AvatarOptimizer Components `#551`
