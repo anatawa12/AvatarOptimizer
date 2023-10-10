@@ -2,6 +2,9 @@ msgid ""
 msgstr ""
 "Language: en\n"
 
+msgid "CheckForUpdate:out-of-date"
+msgstr "There is newer release of Avatar Optimizer, {0}!"
+
 msgid "LegacyModularAvatarWarning:message"
 msgstr ""
 "We found Modular Avatar 1.7.x or older is installed!\n"

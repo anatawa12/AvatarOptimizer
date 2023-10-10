@@ -20,8 +20,14 @@ namespace Anatawa12.AvatarOptimizer
 
         public static bool OutOfDate
         {
-            get => SessionState.GetBool("com.anatawa12.out-of-date", false);
-            private set => SessionState.SetBool("com.anatawa12.out-of-date", value);
+            get => SessionState.GetBool("com.anatawa12.avatar-optimizer.out-of-date", false);
+            private set => SessionState.SetBool("com.anatawa12.avatar-optimizer.out-of-date", value);
+        }
+
+        public static string LatestVersionName
+        {
+            get => SessionState.GetString("com.anatawa12.avatar-optimizer.latest", "");
+            private set => SessionState.SetString("com.anatawa12.avatar-optimizer.latest", value);
         }
 
         static async void DoCheckForUpdate()
@@ -35,10 +41,11 @@ namespace Anatawa12.AvatarOptimizer
 
             var isBeta = currentVersion.Contains("-");
             var latestVersion = await GetLatestVersion(isBeta, currentVersion);
+            LatestVersionName = latestVersion;
 
             if (latestVersion != currentVersion)
             {
-                Debug.Log($"AAO CheckForUpdate: Out of date detected! " +
+                Debug.Log("AAO CheckForUpdate: Out of date detected! " +
                           $"current version: {currentVersion}, latest version: {latestVersion}");
                 OutOfDate = true;
             }
