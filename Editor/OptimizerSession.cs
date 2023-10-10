@@ -17,6 +17,9 @@ namespace Anatawa12.AvatarOptimizer
         public ObjectMappingBuilder MappingBuilder { get; }
         public MeshInfo2Holder MeshInfo2Holder { get; private set; }
 
+        public readonly Dictionary<SkinnedMeshRenderer, HashSet<string>> PreserveBlendShapes =
+            new Dictionary<SkinnedMeshRenderer, HashSet<string>>();
+
         public static implicit operator OptimizerSession(BuildContext context)
         {
             return context.Extension<OptimizerContext>().session;
