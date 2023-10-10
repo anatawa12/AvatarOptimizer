@@ -20,7 +20,9 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
             _modifications = new AnimatorParser(_config).GatherAnimationModifications(session);
             if (_config.freezeBlendShape)
-                new AutoFreezeBlendShape(_modifications, session, _exclusions).Process();
+                new AutoFreezeBlendShape(_modifications, session, _exclusions).Process(
+                    _config.advancedSettings.skipFreezingNonAnimatedBlendShape,
+                    _config.advancedSettings.skipFreezingMeaninglessBlendShape);
         }
 
         public void ProcessLater(OptimizerSession session)
