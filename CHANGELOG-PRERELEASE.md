@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog].
 
 ### Security
 
+## [1.5.2] - 2023-10-10
 ## [1.5.2-beta.3] - 2023-10-10
 ### Fixed
 - New version notice remains after updating AAO without restarting UnityEditor [`#559`](https://github.com/anatawa12/AvatarOptimizer/pull/559)
@@ -860,7 +861,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.2-beta.3...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.2...HEAD
+[1.5.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.2-beta.3...v1.5.2
 [1.5.2-beta.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.2-beta.2...v1.5.2-beta.3
 [1.5.2-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.2-beta.1...v1.5.2-beta.2
 [1.5.2-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.1...v1.5.2-beta.1
