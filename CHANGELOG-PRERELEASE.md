@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
+- You now cannot key any of AvatarOptimizer Components `#551`
+  - Previously you can key AvatarOptimizer Coponent but it was meaningless.
 
 ### Deprecated
 

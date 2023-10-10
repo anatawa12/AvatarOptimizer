@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Animations;
 
 namespace Anatawa12.ApplyOnPlay
 {
@@ -6,6 +7,7 @@ namespace Anatawa12.ApplyOnPlay
     [ExecuteAlways]
     [AddComponentMenu("")]
     [DisallowMultipleComponent]
+    [NotKeyable]
     internal class GlobalActivator : MonoBehaviour
     {
 #if UNITY_EDITOR

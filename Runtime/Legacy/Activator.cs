@@ -2,6 +2,7 @@
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.Animations;
 
 namespace Anatawa12.AvatarOptimizer
 {
@@ -13,6 +14,7 @@ namespace Anatawa12.AvatarOptimizer
     [ExecuteAlways]
     [DefaultExecutionOrder(-9989)]
     [DisallowMultipleComponent]
+    [NotKeyable]
     internal class Activator : MonoBehaviour
     {
         private void OnValidate()

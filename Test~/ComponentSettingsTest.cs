@@ -4,7 +4,9 @@ using System.Linq;
 using System.Reflection;
 using Anatawa12.ApplyOnPlay;
 using NUnit.Framework;
+using UnityEditor;
 using UnityEngine;
+using UnityEngine.Animations;
 
 namespace Anatawa12.AvatarOptimizer.Test
 {
@@ -38,6 +40,19 @@ namespace Anatawa12.AvatarOptimizer.Test
         {
             var addComponentMenu = type.GetCustomAttribute<DisallowMultipleComponent>();
             Assert.That(addComponentMenu, Is.Not.Null);
+        }
+
+        [Test]
+        [TestCaseSource(nameof(ComponentTypes))]
+        public void CheckNotKeyable(Type type)
+        {
+            var gameObject = new GameObject();
+            gameObject.AddComponent(type);
+            var bindings = AnimationUtility.GetAnimatableBindings(gameObject, gameObject)
+                .Where(x => x.type == type)
+                .Where(x => x.propertyName != "m_Enabled")
+                .ToArray();
+            Assert.That(bindings, Is.Empty);
         }
 
         static IEnumerable<Type> ComponentTypes()
