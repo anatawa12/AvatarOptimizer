@@ -8,24 +8,31 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- More MMD BlendShapes are registered `#552`
-  - New English Translation BlendShapes are compatible with AAO!
-- Check for update `#554`
 
 ### Changed
-- You now cannot key any of AvatarOptimizer Components `#551`
-  - Previously you can key AvatarOptimizer Coponent but it was meaningless.
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
-- GC Debug doesn't include inactive objects `#546`
-- EditMode Preview of RemoveMeshInBox is not correct `#550`
-- Avatar Standard Colliders can be removed `#553`
 
 ### Security
+
+## [1.5.2-beta.2] - 2023-10-10
+### Added
+- More MMD BlendShapes are registered [`#552`](https://github.com/anatawa12/AvatarOptimizer/pull/552)
+  - New English Translation BlendShapes are compatible with AAO!
+- Check for update [`#554`](https://github.com/anatawa12/AvatarOptimizer/pull/554)
+
+### Changed
+- You now cannot key any of AvatarOptimizer Components [`#551`](https://github.com/anatawa12/AvatarOptimizer/pull/551)
+  - Previously you can key AvatarOptimizer Coponent but it was meaningless.
+
+### Fixed
+- GC Debug doesn't include inactive objects [`#546`](https://github.com/anatawa12/AvatarOptimizer/pull/546)
+- EditMode Preview of RemoveMeshInBox is not correct [`#550`](https://github.com/anatawa12/AvatarOptimizer/pull/550)
+- Avatar Standard Colliders can be removed [`#553`](https://github.com/anatawa12/AvatarOptimizer/pull/553)
 
 ## [1.5.2-beta.1] - 2023-10-09
 ### Added
@@ -848,7 +855,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.2-beta.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.2-beta.2...HEAD
+[1.5.2-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.2-beta.1...v1.5.2-beta.2
 [1.5.2-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.1...v1.5.2-beta.1
 [1.5.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.1-beta.1...v1.5.1
 [1.5.1-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0...v1.5.1-beta.1
