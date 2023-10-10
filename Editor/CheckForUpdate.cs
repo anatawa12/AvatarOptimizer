@@ -18,6 +18,16 @@ namespace Anatawa12.AvatarOptimizer
             EditorApplication.delayCall += DoCheckForUpdate;
         }
 
+        [MenuItem("Tools/Avatar Optimizer/debug clear check for update")]
+        private static void Clear()
+        {
+            EditorPrefs.DeleteKey("com.anatawa12.avatar-optimizer.beta.latest.updated");
+            EditorPrefs.DeleteKey("com.anatawa12.avatar-optimizer.latest.updated");
+            EditorPrefs.DeleteKey("com.anatawa12.avatar-optimizer.beta.latest.value");
+            EditorPrefs.DeleteKey("com.anatawa12.avatar-optimizer.latest.value");
+            EditorApplication.delayCall += DoCheckForUpdate;
+        }
+
         public static bool OutOfDate
         {
             get => SessionState.GetBool("com.anatawa12.avatar-optimizer.out-of-date", false);
@@ -32,38 +42,30 @@ namespace Anatawa12.AvatarOptimizer
 
         public static string CurrentVersionName
         {
-            get
-            {
-                var currentVersion = SessionState.GetString("com.anatawa12.avatar-optimizer.current", "");
-
-                if (!string.IsNullOrEmpty(currentVersion)) return currentVersion;
-
-                currentVersion = GetCurrentVersion();
-                if (!string.IsNullOrEmpty(currentVersion))
-                    SessionState.SetString("com.anatawa12.avatar-optimizer.current", currentVersion);
-
-                return currentVersion;
-            }
+            get => SessionState.GetString("com.anatawa12.avatar-optimizer.current", "");
+            private set => SessionState.SetString("com.anatawa12.avatar-optimizer.current", value);
         }
 
         static async void DoCheckForUpdate()
         {
-            var currentVersion = CurrentVersionName;
+            var currentVersion = GetCurrentVersion();
             if (currentVersion == null)
             {
                 Debug.LogError("AAO CheckForUpdate: Failed to get current version");
                 return;
             }
 
+            CurrentVersionName = currentVersion;
+
             var isBeta = currentVersion.Contains("-");
             var latestVersion = await GetLatestVersion(isBeta, currentVersion);
             LatestVersionName = latestVersion;
 
-            if (latestVersion != currentVersion)
+            var outOf = OutOfDate = latestVersion != currentVersion;
+            if (outOf)
             {
                 Debug.Log("AAO CheckForUpdate: Out of date detected! " +
                           $"current version: {currentVersion}, latest version: {latestVersion}");
-                OutOfDate = true;
             }
         }
 
