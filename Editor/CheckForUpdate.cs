@@ -18,16 +18,6 @@ namespace Anatawa12.AvatarOptimizer
             EditorApplication.delayCall += DoCheckForUpdate;
         }
 
-        [MenuItem("Tools/Avatar Optimizer/debug clear check for update")]
-        private static void Clear()
-        {
-            EditorPrefs.DeleteKey("com.anatawa12.avatar-optimizer.beta.latest.updated");
-            EditorPrefs.DeleteKey("com.anatawa12.avatar-optimizer.latest.updated");
-            EditorPrefs.DeleteKey("com.anatawa12.avatar-optimizer.beta.latest.value");
-            EditorPrefs.DeleteKey("com.anatawa12.avatar-optimizer.latest.value");
-            EditorApplication.delayCall += DoCheckForUpdate;
-        }
-
         public static bool OutOfDate
         {
             get => SessionState.GetBool("com.anatawa12.avatar-optimizer.out-of-date", false);
