@@ -3,7 +3,7 @@ msgstr ""
 "Language: en\n"
 
 msgid "CheckForUpdate:out-of-date"
-msgstr "There is newer release of Avatar Optimizer, {0}!"
+msgstr "Newer release of Avatar Optimizer, {0} is available! (Current: {1})"
 
 msgid "LegacyModularAvatarWarning:message"
 msgstr ""
