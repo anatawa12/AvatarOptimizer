@@ -22,6 +22,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - EditMode Preview of RemoveMeshInBox is not correct `#550`
+- Avatar Standard Colliders can be removed `#553`
 
 ### Security
 

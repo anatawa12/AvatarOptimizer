@@ -457,7 +457,38 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 deps.EntrypointComponent = true;
                 deps.AddAlwaysDependency(component.GetComponent<PipelineManager>());
             });
-            AddParserWithExtends<VRC_AvatarDescriptor, VRCAvatarDescriptor>();
+            AddParserWithExtends<VRC_AvatarDescriptor, VRCAvatarDescriptor>((collector, deps, component) =>
+            {
+                AddCollider(component.collider_head);
+                AddCollider(component.collider_torso);
+                AddCollider(component.collider_footR);
+                AddCollider(component.collider_footL);
+                AddCollider(component.collider_handR);
+                AddCollider(component.collider_handL);
+                AddCollider(component.collider_fingerIndexL);
+                AddCollider(component.collider_fingerMiddleL);
+                AddCollider(component.collider_fingerRingL);
+                AddCollider(component.collider_fingerLittleL);
+                AddCollider(component.collider_fingerIndexR);
+                AddCollider(component.collider_fingerMiddleR);
+                AddCollider(component.collider_fingerRingR);
+                AddCollider(component.collider_fingerLittleR);
+
+                void AddCollider(VRCAvatarDescriptor.ColliderConfig collider)
+                {
+                    switch (collider.state)
+                    {
+                        case VRCAvatarDescriptor.ColliderConfig.State.Automatic:
+                        case VRCAvatarDescriptor.ColliderConfig.State.Custom:
+                            deps.AddAlwaysDependency(collider.transform);
+                            break;
+                        case VRCAvatarDescriptor.ColliderConfig.State.Disabled:
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
+                }
+            });
             AddEntryPointParser<PipelineManager>();
 #pragma warning disable CS0618
             AddEntryPointParser<PipelineSaver>();
