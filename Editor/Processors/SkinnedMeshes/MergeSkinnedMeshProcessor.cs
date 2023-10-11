@@ -29,6 +29,20 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         public override void Process(BuildContext context, MeshInfo2 target)
         {
+            Profiler.BeginSample("Merge PreserveBlendShapes");
+            {
+                var state = context.GetState<TraceAndOptimizes.TraceAndOptimizeState>();
+                HashSet<string> thisPreserve = null;
+                foreach (var skinnedRenderer in SkinnedMeshRenderers)
+                {
+                    if (!state.PreserveBlendShapes.TryGetValue(skinnedRenderer, out var preserve)) continue;
+
+                    if (thisPreserve == null && !state.PreserveBlendShapes.TryGetValue(Target, out thisPreserve))
+                        state.PreserveBlendShapes.Add(Target, thisPreserve = new HashSet<string>());
+                    thisPreserve.UnionWith(preserve);
+                }
+            }
+            Profiler.EndSample();
             Profiler.BeginSample("Collect MeshInfos");
             var meshInfos = SkinnedMeshRenderers.Select(context.GetMeshInfoFor)
                 .Concat(StaticMeshRenderers.Select(context.GetMeshInfoFor))

@@ -20,7 +20,13 @@ namespace Anatawa12.AvatarOptimizer.ndmf
             InPhase(BuildPhase.Resolving)
                 .WithRequiredExtensions(new [] {typeof(BuildReportContext)}, seq =>
                 {
-                    seq.Run(Processors.UnusedBonesByReferencesToolEarlyProcessor.Instance)
+                    seq.Run("Info if AAO is Out of Date", _ =>
+                        {
+                            if (CheckForUpdate.OutOfDate)
+                                BuildReport.LogInfo("CheckForUpdate:out-of-date", 
+                                    CheckForUpdate.LatestVersionName, CheckForUpdate.CurrentVersionName);
+                        })
+                        .Then.Run(Processors.UnusedBonesByReferencesToolEarlyProcessor.Instance)
                         .Then.Run("Early: MakeChildren",
                             ctx => new Processors.MakeChildrenProcessor(early: true).Process(ctx)
                         )

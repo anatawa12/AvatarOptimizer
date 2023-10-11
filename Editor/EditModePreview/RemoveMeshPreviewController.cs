@@ -26,9 +26,14 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
             // Previewing object
             TargetGameObject = targetRenderer.gameObject;
             _targetRenderer = new ComponentHolder<SkinnedMeshRenderer>(targetRenderer);
+            _rendererTransform = new ComponentHolder<Transform>(targetRenderer.transform);
 
             OriginalMesh = originalMesh ? originalMesh : _targetRenderer.Value.sharedMesh;
             _blendShapePreviewContext = new BlendShapePreviewContext(OriginalMesh);
+
+            _boneTransforms = new ComponentHolder<Transform>[OriginalMesh.bindposes.Length];
+            for (var i = 0; i < _boneTransforms.Length && i < targetRenderer.bones.Length; i++)
+                _boneTransforms[i] = new ComponentHolder<Transform>(targetRenderer.bones[i]);
 
             _removeMeshInBox = default;
             _removeMeshByBlendShape = default;
@@ -85,6 +90,8 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
         public SkinnedMeshRenderer TargetRenderer => _targetRenderer.Value;
 
         private ComponentHolder<SkinnedMeshRenderer> _targetRenderer;
+        private ComponentHolder<Transform> _rendererTransform;
+        private ComponentHolder<Transform>[] _boneTransforms;
         private ComponentHolder<RemoveMeshInBox> _removeMeshInBox;
         private ComponentHolder<RemoveMeshByBlendShape> _removeMeshByBlendShape;
 
@@ -140,6 +147,16 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                 modified = true;
             }
 
+            var transformUpdated = _rendererTransform.Update(null) != Changed.Nothing;
+            for (var i = 0; i < _boneTransforms.Length; i++)
+                if (_boneTransforms[i].Update(null) != Changed.Nothing)
+                    transformUpdated = true;
+            if (transformUpdated)
+            {
+                _removeMeshWithBoxPreviewContext?.OnUpdateBones(_targetRenderer.Value);
+                modified = true;
+            }
+
             switch (_removeMeshInBox.Update(TargetGameObject))
             {
                 default:
@@ -158,6 +175,8 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                         nameof(_removeMeshWithBoxPreviewContext) + " == null");
                     _removeMeshWithBoxPreviewContext =
                         new RemoveMeshWithBoxPreviewContext(_blendShapePreviewContext, OriginalMesh);
+                    _removeMeshWithBoxPreviewContext?.OnUpdateSkinnedMeshRenderer(_targetRenderer.Value);
+                    _removeMeshWithBoxPreviewContext?.OnUpdateBones(_targetRenderer.Value);
                     modified = true;
                     break;
                 case Changed.Nothing:
@@ -303,8 +322,8 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                     foreach (var boundingBox in Boxes)
                     {
                         if (boundingBox.ContainsVertex(BlendShapeAppliedVertices[triangle.First])
-                            && boundingBox.ContainsVertex(BlendShapeAppliedVertices[triangle.First])
-                            && boundingBox.ContainsVertex(BlendShapeAppliedVertices[triangle.First]))
+                            && boundingBox.ContainsVertex(BlendShapeAppliedVertices[triangle.Second])
+                            && boundingBox.ContainsVertex(BlendShapeAppliedVertices[triangle.Third]))
                         {
                             return true;
                         }

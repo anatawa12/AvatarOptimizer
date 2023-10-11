@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Animations;
 
 namespace Anatawa12.AvatarOptimizer
 {

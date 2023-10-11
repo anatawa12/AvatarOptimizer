@@ -16,8 +16,31 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- AnimatorController with Synced can be broken `#564`
+- AnimatorOverrideController may not be proceed correctly `#567`
 
 ### Security
+
+## [1.5.2] - 2023-10-10
+### Added
+- Feature for debugging GC Objects [`#543`](https://github.com/anatawa12/AvatarOptimizer/pull/543)
+- More MMD BlendShapes are registered [`#552`](https://github.com/anatawa12/AvatarOptimizer/pull/552)
+  - New English Translation BlendShapes are compatible with AAO!
+- Check for update [`#554`](https://github.com/anatawa12/AvatarOptimizer/pull/554)
+
+### Changed
+- You now cannot key any of AvatarOptimizer Components [`#551`](https://github.com/anatawa12/AvatarOptimizer/pull/551)
+  - Previously you can key AvatarOptimizer Coponent but it was meaningless.
+
+### Fixed
+- EditMode Preview of RemoveMeshInBox is not correct [`#550`](https://github.com/anatawa12/AvatarOptimizer/pull/550)
+- Avatar Standard Colliders can be removed [`#553`](https://github.com/anatawa12/AvatarOptimizer/pull/553)
+- Freeze BlendShape may break Visame with MergeSkinnedMesh [`#561`](https://github.com/anatawa12/AvatarOptimizer/pull/561)
+
+## [1.5.1] - 2023-10-08
+### Fixed
+- MergePhysBone component may be shown as unknown components [`#541`](https://github.com/anatawa12/AvatarOptimizer/pull/541)
+- MergeBone may break Fur [`#542`](https://github.com/anatawa12/AvatarOptimizer/pull/542)
 
 ## [1.5.0] - 2023-10-07
 ### Added
@@ -543,7 +566,9 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.2...HEAD
+[1.5.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.1...v1.5.2
+[1.5.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0...v1.5.1
 [1.5.0]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.4.3...v1.5.0
 [1.4.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.4.2...v1.4.3
 [1.4.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.4.1...v1.4.2

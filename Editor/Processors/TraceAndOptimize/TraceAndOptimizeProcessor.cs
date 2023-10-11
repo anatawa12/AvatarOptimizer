@@ -17,6 +17,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         public bool UseLegacyGC;
         public bool GCDebug;
         public bool NoConfigureMergeBone;
+        public bool SkipFreezingNonAnimatedBlendShape;
+        public bool SkipFreezingMeaninglessBlendShape;
+
+        public Dictionary<SkinnedMeshRenderer, HashSet<string>> PreserveBlendShapes =
+            new Dictionary<SkinnedMeshRenderer, HashSet<string>>();
 
         public ImmutableModificationsContainer Modifications;
 
@@ -37,6 +42,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             UseLegacyGC = config.advancedSettings.useLegacyGc;
             GCDebug = config.advancedSettings.gcDebug;
             NoConfigureMergeBone = config.advancedSettings.noConfigureMergeBone;
+            SkipFreezingNonAnimatedBlendShape = config.advancedSettings.skipFreezingNonAnimatedBlendShape;
+            SkipFreezingMeaninglessBlendShape = config.advancedSettings.skipFreezingMeaninglessBlendShape;
 
             Enabled = true;
         }

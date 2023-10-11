@@ -18,6 +18,14 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             var state = context.GetState<TraceAndOptimizeState>();
             if (!state.FreezeBlendShape) return;
 
+            if (!state.SkipFreezingNonAnimatedBlendShape)
+                FreezeNonAnimatedBlendShapes(context, state);
+            if (!state.SkipFreezingMeaninglessBlendShape)
+                FreezeMeaninglessBlendShapes(context, state);
+        }
+
+        void FreezeNonAnimatedBlendShapes(BuildContext context, TraceAndOptimizeState state)
+        {
             // first optimization: unused blend shapes
             foreach (var skinnedMeshRenderer in context.GetComponents<SkinnedMeshRenderer>())
             {
@@ -66,23 +74,23 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     editorUtil.GetElementOf(shape).EnsureAdded();
                 serialized.ApplyModifiedPropertiesWithoutUndo();
             }
+        }
 
-            var preserveBlendShapes = ComputePreserveBlendShapes(context);
+        void FreezeMeaninglessBlendShapes(BuildContext context, TraceAndOptimizeState state) {
+            ComputePreserveBlendShapes(context, state.PreserveBlendShapes);
 
             // second optimization: remove meaningless blendShapes
             foreach (var skinnedMeshRenderer in context.GetComponents<SkinnedMeshRenderer>())
             {
                 if (state.Exclusions.Contains(skinnedMeshRenderer.gameObject)) continue; // manual exclusion
                 skinnedMeshRenderer.gameObject.GetOrAddComponent<FreezeBlendShape>();
-                var internalMeaningless = skinnedMeshRenderer.gameObject.GetOrAddComponent<InternalAutoFreezeMeaninglessBlendShape>();
-                preserveBlendShapes.TryGetValue(skinnedMeshRenderer, out internalMeaningless.Preserve);
+                skinnedMeshRenderer.gameObject.GetOrAddComponent<InternalAutoFreezeMeaninglessBlendShape>();
             }
         }
 
-        private Dictionary<SkinnedMeshRenderer, HashSet<string>> ComputePreserveBlendShapes(BuildContext context)
+        private void ComputePreserveBlendShapes(BuildContext context, Dictionary<SkinnedMeshRenderer, HashSet<string>> preserveBlendShapes)
         {
             // some BlendShapes manipulated by VRC Avatar Descriptor must exists
-            var preserveBlendShapes = new Dictionary<SkinnedMeshRenderer, HashSet<string>>();
             var descriptor = context.AvatarDescriptor;
             switch (descriptor.lipSync)
             {
@@ -129,8 +137,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                         break;
                 }
             }
-
-            return preserveBlendShapes;
         }
     }
 }

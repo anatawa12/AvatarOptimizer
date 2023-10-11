@@ -378,14 +378,52 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
     }
 
     [ComponentInformation(typeof(VRC_AvatarDescriptor))]
-    [ComponentInformation(typeof(VRCAvatarDescriptor))]
-    internal class VRCAvatarDescriptorInformation : ComponentInformation<VRC_AvatarDescriptor>
+    internal class VRCAvatarDescriptorInformation<T> : ComponentInformation<T> where T : VRC_AvatarDescriptor
     {
-        protected override void CollectDependency(VRC_AvatarDescriptor component,
+        protected override void CollectDependency(T component,
             IComponentDependencyCollector collector)
         {
             collector.MarkEntrypoint();
             collector.AddDependency(component.GetComponent<PipelineManager>()).EvenIfDependantDisabled();
+        }
+    }
+
+    [ComponentInformation(typeof(VRCAvatarDescriptor))]
+    internal class VRCAvatarDescriptorInformation : VRCAvatarDescriptorInformation<VRCAvatarDescriptor>
+    {
+        protected override void CollectDependency(VRCAvatarDescriptor component,
+            IComponentDependencyCollector collector)
+        {
+            base.CollectDependency(component, collector);
+
+            AddCollider(component.collider_head);
+            AddCollider(component.collider_torso);
+            AddCollider(component.collider_footR);
+            AddCollider(component.collider_footL);
+            AddCollider(component.collider_handR);
+            AddCollider(component.collider_handL);
+            AddCollider(component.collider_fingerIndexL);
+            AddCollider(component.collider_fingerMiddleL);
+            AddCollider(component.collider_fingerRingL);
+            AddCollider(component.collider_fingerLittleL);
+            AddCollider(component.collider_fingerIndexR);
+            AddCollider(component.collider_fingerMiddleR);
+            AddCollider(component.collider_fingerRingR);
+            AddCollider(component.collider_fingerLittleR);
+            void AddCollider(VRCAvatarDescriptor.ColliderConfig collider)
+            {
+                switch (collider.state)
+                {
+                    case VRCAvatarDescriptor.ColliderConfig.State.Automatic:
+                    case VRCAvatarDescriptor.ColliderConfig.State.Custom:
+                        collector.AddDependency(collider.transform).EvenIfDependantDisabled();
+                        break;
+                    case VRCAvatarDescriptor.ColliderConfig.State.Disabled:
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
         }
     }
 

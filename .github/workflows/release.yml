@@ -156,7 +156,7 @@ jobs:
 
       - name: Build docs as a beta docs
         working-directory: .docs
-        run: hugo --minify --baseURL 'https://vpm.anatawa12.com/avatar-optimizer/beta'
+        run: ./build.sh 'https://vpm.anatawa12.com/avatar-optimizer/beta'
 
       - name: Copy to beta dir if it's release
         if: ${{ !fromJSON(env.PRERELEASE) }}
@@ -165,7 +165,7 @@ jobs:
       - name: Build docs as a release docs if it's release
         if: ${{ !fromJSON(env.PRERELEASE) }}
         working-directory: .docs
-        run: hugo --minify --baseURL 'https://vpm.anatawa12.com/avatar-optimizer'
+        run: ./build.sh 'https://vpm.anatawa12.com/avatar-optimizer'
 
       - name: zip docs
         run: cd .docs/public && zip ../../build/website.zip -r .

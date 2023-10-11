@@ -16,8 +16,44 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- AnimatorOverrideController may not be proceed correctly `#567`
 
 ### Security
+
+## [1.5.3-beta.1] - 2023-10-10
+### Fixed
+- AnimatorController with Synced can be broken [`#564`](https://github.com/anatawa12/AvatarOptimizer/pull/564)
+
+## [1.5.2] - 2023-10-10
+## [1.5.2-beta.3] - 2023-10-10
+### Fixed
+- New version notice remains after updating AAO without restarting UnityEditor [`#559`](https://github.com/anatawa12/AvatarOptimizer/pull/559)
+- Freeze BlendShape may break Visame with MergeSkinnedMesh [`#561`](https://github.com/anatawa12/AvatarOptimizer/pull/561)
+
+## [1.5.2-beta.2] - 2023-10-10
+### Added
+- More MMD BlendShapes are registered [`#552`](https://github.com/anatawa12/AvatarOptimizer/pull/552)
+  - New English Translation BlendShapes are compatible with AAO!
+- Check for update [`#554`](https://github.com/anatawa12/AvatarOptimizer/pull/554)
+
+### Changed
+- You now cannot key any of AvatarOptimizer Components [`#551`](https://github.com/anatawa12/AvatarOptimizer/pull/551)
+  - Previously you can key AvatarOptimizer Coponent but it was meaningless.
+
+### Fixed
+- GC Debug doesn't include inactive objects [`#546`](https://github.com/anatawa12/AvatarOptimizer/pull/546)
+- EditMode Preview of RemoveMeshInBox is not correct [`#550`](https://github.com/anatawa12/AvatarOptimizer/pull/550)
+- Avatar Standard Colliders can be removed [`#553`](https://github.com/anatawa12/AvatarOptimizer/pull/553)
+
+## [1.5.2-beta.1] - 2023-10-09
+### Added
+- Feature for debugging GC Objects [`#543`](https://github.com/anatawa12/AvatarOptimizer/pull/543)
+
+## [1.5.1] - 2023-10-08
+## [1.5.1-beta.1] - 2023-10-08
+### Fixed
+- MergePhysBone component may be shown as unknown components [`#541`](https://github.com/anatawa12/AvatarOptimizer/pull/541)
+- MergeBone may break Fur [`#542`](https://github.com/anatawa12/AvatarOptimizer/pull/542)
 
 ## [1.5.0] - 2023-10-07
 ## [1.5.0-rc.13] - 2023-10-07
@@ -830,7 +866,14 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.3-beta.1...HEAD
+[1.5.3-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.2...v1.5.3-beta.1
+[1.5.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.2-beta.3...v1.5.2
+[1.5.2-beta.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.2-beta.2...v1.5.2-beta.3
+[1.5.2-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.2-beta.1...v1.5.2-beta.2
+[1.5.2-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.1...v1.5.2-beta.1
+[1.5.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.1-beta.1...v1.5.1
+[1.5.1-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0...v1.5.1-beta.1
 [1.5.0]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-rc.13...v1.5.0
 [1.5.0-rc.13]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-rc.12...v1.5.0-rc.13
 [1.5.0-rc.12]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-rc.11...v1.5.0-rc.12

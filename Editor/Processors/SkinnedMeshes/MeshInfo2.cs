@@ -317,7 +317,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 for (var i = 0; i < Vertices.Count; i++)
                 {
                     vertices[i] = Vertices[i].Position;
-                    normals[i] = Vertices[i].Normal.normalized;
+                    normals[i] = Vertices[i].Normal;
                 }
 
                 destMesh.vertices = vertices;
@@ -331,12 +331,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 Profiler.BeginSample("Tangents");
                 var tangents = new Vector4[Vertices.Count];
                 for (var i = 0; i < Vertices.Count; i++)
-                {
-                    var tangent3 = (Vector3)Vertices[i].Tangent;
-                    var tangentW = Vertices[i].Tangent.w;
-                    tangent3.Normalize();
-                    tangents[i] = new Vector4(tangent3.x, tangent3.y, tangent3.z, tangentW);
-                }
+                    tangents[i] = Vertices[i].Tangent;
                 destMesh.tangents = tangents;
                 Profiler.EndSample();
             }

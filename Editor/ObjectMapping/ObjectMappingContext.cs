@@ -37,7 +37,7 @@ namespace Anatawa12.AvatarOptimizer
                     if (mapping.MapComponentInstance(p.objectReferenceInstanceIDValue, out var mappedComponent))
                         p.objectReferenceValue = mappedComponent;
 
-                    if (p.objectReferenceValue is AnimatorController controller)
+                    if (p.objectReferenceValue is RuntimeAnimatorController controller)
                     {
                         if (mapper == null)
                             mapper = new AnimatorControllerMapper(mapping.CreateAnimationMapper(component.gameObject));
@@ -45,7 +45,7 @@ namespace Anatawa12.AvatarOptimizer
                         // ReSharper disable once AccessToModifiedClosure
                         var mapped = BuildReport.ReportingObject(controller,
                             () => mapper.MapAnimatorController(controller));
-                        if (mapped != null)
+                        if (mapped != controller)
                             p.objectReferenceValue = mapped;
                     }
                 }
@@ -111,36 +111,8 @@ namespace Anatawa12.AvatarOptimizer
             _mapping = mapping;
         }
 
-        public AnimatorController MapAnimatorController(AnimatorController controller)
-        {
-            if (_cache.TryGetValue(controller, out var cached)) return (AnimatorController)cached;
-            _mapped = false;
-            var newController = new AnimatorController
-            {
-                name = controller.name + " (rebased)",
-                parameters = controller.parameters,
-                layers = controller.layers.Select(MapAnimatorControllerLayer).ToArray()
-            };
-            if (!_mapped) newController = null;
-            _cache[controller] = newController;
-            return newController;
-        }
-
-        private AnimatorControllerLayer MapAnimatorControllerLayer(AnimatorControllerLayer layer) =>
-            new AnimatorControllerLayer
-            {
-                name = layer.name,
-                avatarMask = DeepClone(layer.avatarMask, CustomClone),
-                blendingMode = layer.blendingMode,
-                defaultWeight = layer.defaultWeight,
-                syncedLayerIndex = layer.syncedLayerIndex,
-                syncedLayerAffectsTiming = layer.syncedLayerAffectsTiming,
-                iKPass = layer.iKPass,
-                stateMachine = MapStateMachine(layer.stateMachine),
-            };
-
-        private AnimatorStateMachine MapStateMachine(AnimatorStateMachine stateMachine) =>
-            DeepClone(stateMachine, CustomClone);
+        public T MapAnimatorController<T>(T controller) where T : RuntimeAnimatorController =>
+            DeepClone(controller, CustomClone);
 
         // https://github.com/bdunderscore/modular-avatar/blob/db49e2e210bc070671af963ff89df853ae4514a5/Packages/nadena.dev.modular-avatar/Editor/AnimatorMerger.cs#L199-L241
         // Originally under MIT License
@@ -199,9 +171,38 @@ namespace Anatawa12.AvatarOptimizer
 
                 return newMask;
             }
+            else if (o is RuntimeAnimatorController controller)
+            {
+                using (new MappedScope(this))
+                {
+                    var newController = DefaultDeepClone(controller, CustomClone);
+                    newController.name = controller.name + " (rebased)";
+                    if (!_mapped) newController = controller;
+                    _cache[controller] = newController;
+                    return newController;
+                }
+            }
             else
             {
                 return null;
+            }
+        }
+
+        private readonly struct MappedScope : IDisposable
+        {
+            private readonly AnimatorControllerMapper _mapper;
+            private readonly bool _previous;
+
+            public MappedScope(AnimatorControllerMapper mapper)
+            {
+                _mapper = mapper;
+                _previous = mapper._mapped;
+                mapper._mapped = false;
+            }
+
+            public void Dispose()
+            {
+                _mapper._mapped |= _previous;
             }
         }
 
@@ -219,6 +220,7 @@ namespace Anatawa12.AvatarOptimizer
                 // Any object referenced by an animator that we intend to mutate needs to be listed here.
                 case Motion _:
                 case AnimatorController _:
+                case AnimatorOverrideController _:
                 case AnimatorState _:
                 case AnimatorStateMachine _:
                 case AnimatorTransitionBase _:
@@ -241,15 +243,23 @@ namespace Anatawa12.AvatarOptimizer
                 default:
                     throw new Exception($"Unknown type referenced from animator: {original.GetType()}");
             }
+
             if (_cache.TryGetValue(original, out var cached)) return (T)cached;
 
             var obj = visitor(original);
             if (obj != null)
             {
                 _cache[original] = obj;
+                _cache[obj] = obj;
                 return (T)obj;
             }
 
+            return DefaultDeepClone(original, visitor);
+        }
+
+        private T DefaultDeepClone<T>(T original, Func<Object, Object> visitor) where T : Object
+        {
+            Object obj;
             var ctor = original.GetType().GetConstructor(Type.EmptyTypes);
             if (ctor == null || original is ScriptableObject)
             {
@@ -262,6 +272,7 @@ namespace Anatawa12.AvatarOptimizer
             }
 
             _cache[original] = obj;
+            _cache[obj] = obj;
 
             using (var so = new SerializedObject(obj))
             {

@@ -1,5 +1,5 @@
 ---
 weight: 1
 bookFlatSection: true
-title: "Component Kinds"
+title: "コンポーネントの種類"
 ---
