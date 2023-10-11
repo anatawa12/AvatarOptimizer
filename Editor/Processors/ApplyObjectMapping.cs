@@ -42,7 +42,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                             // ReSharper disable once AccessToModifiedClosure
                             var mapped = BuildReport.ReportingObject(controller,
                                 () => mapper.MapAnimatorController(controller));
-                            if (mapped != null)
+                            if (mapped != controller)
                                 p.objectReferenceValue = mapped;
                         }
                     }
@@ -154,7 +154,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
             _mapped = false;
             var newController = DeepClone(controller, CustomClone);
             newController.name = controller.name + " (rebased)";
-            if (!_mapped) newController = null;
+            if (!_mapped) newController = controller;
             _cache[controller] = newController;
             return newController;
         }
