@@ -1,10 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using System.Runtime.InteropServices;
 using Anatawa12.AvatarOptimizer.ErrorReporting;
-using JetBrains.Annotations;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
@@ -35,7 +32,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                         if (mapping.MapComponentInstance(p.objectReferenceInstanceIDValue, out var mappedComponent))
                             p.objectReferenceValue = mappedComponent;
 
-                        if (p.objectReferenceValue is AnimatorController controller)
+                        if (p.objectReferenceValue is RuntimeAnimatorController controller)
                         {
                             if (mapper == null)
                                 mapper = new AnimatorControllerMapper(
@@ -45,7 +42,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                             // ReSharper disable once AccessToModifiedClosure
                             var mapped = BuildReport.ReportingObject(controller,
                                 () => mapper.MapAnimatorController(controller));
-                            if (mapped != null)
+                            if (mapped != controller)
                                 p.objectReferenceValue = mapped;
                         }
                     }
@@ -151,143 +148,8 @@ namespace Anatawa12.AvatarOptimizer.Processors
             _rootPath = rootPath;
         }
 
-        public AnimatorController MapAnimatorController(AnimatorController controller)
-        {
-            if (_cache.TryGetValue(controller, out var cached)) return (AnimatorController)cached;
-            _mapped = false;
-            var newController = new AnimatorController
-            {
-                name = controller.name + " (rebased)",
-                parameters = controller.parameters,
-                layers = controller.layers.Select(MapAnimatorControllerLayer).ToArray()
-            };
-            if (!_mapped) newController = null;
-            _cache[controller] = newController;
-            return newController;
-        }
-
-        private AnimatorControllerLayer MapAnimatorControllerLayer(AnimatorControllerLayer layer)
-        {
-            var newLayer = new AnimatorControllerLayer
-            {
-                name = layer.name,
-                avatarMask = DeepClone(layer.avatarMask, CustomClone),
-                blendingMode = layer.blendingMode,
-                defaultWeight = layer.defaultWeight,
-                syncedLayerIndex = layer.syncedLayerIndex,
-                syncedLayerAffectsTiming = layer.syncedLayerAffectsTiming,
-                iKPass = layer.iKPass,
-                stateMachine = MapStateMachine(layer.stateMachine),
-            };
-
-            var motions = ReflectionUtil.GetOverrideMotions(layer);
-            for (var i = 0; i < motions.Length; i++)
-            {
-                motions[i].Motion = DeepClone(motions[i].Motion, CustomClone);
-                motions[i].State = DeepClone(motions[i].State, CustomClone);
-            }
-            ReflectionUtil.SetOverrideMotions(newLayer, motions);
-
-            var behaviors = ReflectionUtil.GetOverrideBehaviours(layer);
-            for (var i = 0; i < behaviors.Length; i++)
-            {
-                behaviors[i].Behaviours = behaviors[i].Behaviours.Select(x => DeepClone(x, CustomClone)).ToArray();
-                behaviors[i].State = DeepClone(behaviors[i].State, CustomClone);
-            }
-            ReflectionUtil.SetOverrideBehaviours(newLayer, behaviors);
-
-            return newLayer;
-        }
-
-        /// <summary>
-        ///  this code uses transmute technique to access motions / behaviours with cheap cost
-        /// </summary>
-        private static class ReflectionUtil
-        {
-            private static readonly FieldInfo Motions =
-                typeof(AnimatorControllerLayer).GetField("m_Motions", BindingFlags.NonPublic | BindingFlags.Instance);
-            private static readonly FieldInfo Behaviours =
-                typeof(AnimatorControllerLayer).GetField("m_Behaviours", BindingFlags.NonPublic | BindingFlags.Instance);
-
-            public static StateMotionPair[] GetOverrideMotions(AnimatorControllerLayer layer)
-            {
-                StateMotionPairReflection reflection = default;
-                reflection.Object = (Array)Motions.GetValue(layer);
-                if (reflection.Array == null) return Array.Empty<StateMotionPair>();
-                var result = new StateMotionPair[reflection.Array.Length];
-                for (var i = 0; i < reflection.Array.Length; i++)
-                    result[i] = reflection.Array[i];
-                return result;
-            }
-
-            public static void SetOverrideMotions(AnimatorControllerLayer layer, StateMotionPair[] value)
-            {
-                var elementType = Motions.FieldType.GetElementType();
-                StateMotionPairReflection reflection = default;
-                reflection.Object = Array.CreateInstance(elementType, value.Length);
-                
-                for (var i = 0; i < value.Length; i++)
-                    reflection.Array[i] = value[i];
-
-                Motions.SetValue(layer, reflection.Object);
-            }
-
-            public static StateBehavioursPair[] GetOverrideBehaviours(AnimatorControllerLayer layer)
-            {
-                StateBehavioursPairReflection reflection = default;
-                reflection.Object = (Array)Behaviours.GetValue(layer);
-                if (reflection.Array == null) return Array.Empty<StateBehavioursPair>();
-                var result = new StateBehavioursPair[reflection.Array.Length];
-                for (var i = 0; i < reflection.Array.Length; i++)
-                    result[i] = reflection.Array[i];
-                return result;
-            }
-
-            public static void SetOverrideBehaviours(AnimatorControllerLayer layer, StateBehavioursPair[] value)
-            {
-                var elementType = Behaviours.FieldType.GetElementType();
-                StateBehavioursPairReflection reflection = default;
-                reflection.Object = Array.CreateInstance(elementType, value.Length);
-                
-                for (var i = 0; i < value.Length; i++)
-                    reflection.Array[i] = value[i];
-
-                Behaviours.SetValue(layer, reflection.Object);
-            }
-
-            [StructLayout(LayoutKind.Explicit)]
-            private struct StateMotionPairReflection
-            {
-                [FieldOffset(0)] public object Object;
-                [FieldOffset(0)] [CanBeNull] public StateMotionPair[] Array;
-            }
-
-            [StructLayout(LayoutKind.Explicit)]
-            private struct StateBehavioursPairReflection
-            {
-                [FieldOffset(0)] public object Object;
-                [FieldOffset(0)] [CanBeNull] public StateBehavioursPair[] Array;
-            }
-
-            // Requires same structure as UnityEditor.Animations.StateMotionPair
-            [StructLayout(LayoutKind.Sequential)]
-            public struct StateMotionPair
-            {
-                public AnimatorState State;
-                public Motion Motion;
-            }
-            
-            // Requires same structure as UnityEditor.Animations.StateBehavioursPair
-            [StructLayout(LayoutKind.Sequential)]
-            internal struct StateBehavioursPair
-            {
-                public AnimatorState State;
-                public ScriptableObject[] Behaviours;
-            }
-        }
-
-        private AnimatorStateMachine MapStateMachine(AnimatorStateMachine stateMachine) =>
-            DeepClone(stateMachine, CustomClone);
+        public T MapAnimatorController<T>(T controller) where T : RuntimeAnimatorController =>
+            DeepClone(controller, CustomClone);
 
         // https://github.com/bdunderscore/modular-avatar/blob/db49e2e210bc070671af963ff89df853ae4514a5/Packages/nadena.dev.modular-avatar/Editor/AnimatorMerger.cs#L199-L241
         // Originally under MIT License
@@ -346,9 +208,38 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
                 return newMask;
             }
+            else if (o is RuntimeAnimatorController controller)
+            {
+                using (new MappedScope(this))
+                {
+                    var newController = DefaultDeepClone(controller, CustomClone);
+                    newController.name = controller.name + " (rebased)";
+                    if (!_mapped) newController = controller;
+                    _cache[controller] = newController;
+                    return newController;
+                }
+            }
             else
             {
                 return null;
+            }
+        }
+
+        private readonly struct MappedScope : IDisposable
+        {
+            private readonly AnimatorControllerMapper _mapper;
+            private readonly bool _previous;
+
+            public MappedScope(AnimatorControllerMapper mapper)
+            {
+                _mapper = mapper;
+                _previous = mapper._mapped;
+                mapper._mapped = false;
+            }
+
+            public void Dispose()
+            {
+                _mapper._mapped |= _previous;
             }
         }
 
@@ -366,6 +257,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 // Any object referenced by an animator that we intend to mutate needs to be listed here.
                 case Motion _:
                 case AnimatorController _:
+                case AnimatorOverrideController _:
                 case AnimatorState _:
                 case AnimatorStateMachine _:
                 case AnimatorTransitionBase _:
@@ -388,15 +280,23 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 default:
                     throw new Exception($"Unknown type referenced from animator: {original.GetType()}");
             }
+
             if (_cache.TryGetValue(original, out var cached)) return (T)cached;
 
             var obj = visitor(original);
             if (obj != null)
             {
                 _cache[original] = obj;
+                _cache[obj] = obj;
                 return (T)obj;
             }
 
+            return DefaultDeepClone(original, visitor);
+        }
+
+        private T DefaultDeepClone<T>(T original, Func<Object, Object> visitor) where T : Object
+        {
+            Object obj;
             var ctor = original.GetType().GetConstructor(Type.EmptyTypes);
             if (ctor == null || original is ScriptableObject)
             {
@@ -409,6 +309,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
             }
 
             _cache[original] = obj;
+            _cache[obj] = obj;
 
             SerializedObject so = new SerializedObject(obj);
             SerializedProperty prop = so.GetIterator();
