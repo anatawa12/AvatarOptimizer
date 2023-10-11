@@ -152,32 +152,12 @@ namespace Anatawa12.AvatarOptimizer.Processors
         {
             if (_cache.TryGetValue(controller, out var cached)) return (AnimatorController)cached;
             _mapped = false;
-            var newController = new AnimatorController
-            {
-                name = controller.name + " (rebased)",
-                parameters = controller.parameters,
-                layers = controller.layers.Select(MapAnimatorControllerLayer).ToArray()
-            };
+            var newController = DeepClone(controller, CustomClone);
+            newController.name = controller.name + " (rebased)";
             if (!_mapped) newController = null;
             _cache[controller] = newController;
             return newController;
         }
-
-        private AnimatorControllerLayer MapAnimatorControllerLayer(AnimatorControllerLayer layer) =>
-            new AnimatorControllerLayer
-            {
-                name = layer.name,
-                avatarMask = DeepClone(layer.avatarMask, CustomClone),
-                blendingMode = layer.blendingMode,
-                defaultWeight = layer.defaultWeight,
-                syncedLayerIndex = layer.syncedLayerIndex,
-                syncedLayerAffectsTiming = layer.syncedLayerAffectsTiming,
-                iKPass = layer.iKPass,
-                stateMachine = MapStateMachine(layer.stateMachine),
-            };
-
-        private AnimatorStateMachine MapStateMachine(AnimatorStateMachine stateMachine) =>
-            DeepClone(stateMachine, CustomClone);
 
         // https://github.com/bdunderscore/modular-avatar/blob/db49e2e210bc070671af963ff89df853ae4514a5/Packages/nadena.dev.modular-avatar/Editor/AnimatorMerger.cs#L199-L241
         // Originally under MIT License
