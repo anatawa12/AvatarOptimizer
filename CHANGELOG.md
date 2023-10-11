@@ -10,18 +10,23 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
-- Ignore the warning instead of migration from 0.3.x or older `#570`
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
-- AnimatorController with Synced can be broken `#564`
-- AnimatorOverrideController may not be proceed correctly `#567`
-- Unclear behaviour if we merged meshes with and without normals `#569`
 
 ### Security
+
+## [1.5.3] - 2023-10-11
+### Changed
+- Ignore the warning instead of migration from 0.3.x or older [`#570`](https://github.com/anatawa12/AvatarOptimizer/pull/570)
+
+### Fixed
+- AnimatorController with Synced can be broken [`#564`](https://github.com/anatawa12/AvatarOptimizer/pull/564)
+- AnimatorOverrideController may not be proceed correctly [`#567`](https://github.com/anatawa12/AvatarOptimizer/pull/567)
+- Unclear behaviour if we merged meshes with and without normals [`#569`](https://github.com/anatawa12/AvatarOptimizer/pull/569)
 
 ## [1.5.2] - 2023-10-10
 ### Added
@@ -568,7 +573,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.2...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.3...HEAD
+[1.5.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.2...v1.5.3
 [1.5.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.1...v1.5.2
 [1.5.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0...v1.5.1
 [1.5.0]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.4.3...v1.5.0
