@@ -44,6 +44,16 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 .ToArray();
             var sourceMaterials = meshInfos.Select(x => x.SubMeshes.Select(y => y.SharedMaterial).ToArray()).ToArray();
 
+            // check normal information.
+            int hasNormal = 0;
+            foreach (var meshInfo2 in meshInfos)
+                hasNormal |= meshInfo2.HasNormals ? 1 : 2;
+
+            if (hasNormal == 3)
+            {
+                BuildReport.LogFatal("MergeSkinnedMesh:error:mix-normal-existence")?.WithContext(Component);
+            }
+
             var (subMeshIndexMap, materials) = CreateMergedMaterialsAndSubMeshIndexMapping(sourceMaterials);
 
             var sourceRootBone = target.RootBone;

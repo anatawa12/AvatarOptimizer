@@ -272,6 +272,11 @@ msgstr "Merge"
 msgid "MergeSkinnedMesh:label:Renderers"
 msgstr "Renderers:"
 
+msgid "MergeSkinnedMesh:error:mix-normal-existence"
+msgstr ""
+"Merging mesh with normal and without normal is not supported! "
+"Please change import setting of Normals to include normals!"
+
 # endregion
 
 # region MergeToonLitMaterial
