@@ -1,10 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using System.Runtime.InteropServices;
 using Anatawa12.AvatarOptimizer.ErrorReporting;
-using JetBrains.Annotations;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
@@ -166,9 +163,8 @@ namespace Anatawa12.AvatarOptimizer.Processors
             return newController;
         }
 
-        private AnimatorControllerLayer MapAnimatorControllerLayer(AnimatorControllerLayer layer)
-        {
-            var newLayer = new AnimatorControllerLayer
+        private AnimatorControllerLayer MapAnimatorControllerLayer(AnimatorControllerLayer layer) =>
+            new AnimatorControllerLayer
             {
                 name = layer.name,
                 avatarMask = DeepClone(layer.avatarMask, CustomClone),
@@ -179,112 +175,6 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 iKPass = layer.iKPass,
                 stateMachine = MapStateMachine(layer.stateMachine),
             };
-
-            var motions = ReflectionUtil.GetOverrideMotions(layer);
-            for (var i = 0; i < motions.Length; i++)
-            {
-                motions[i].Motion = DeepClone(motions[i].Motion, CustomClone);
-                motions[i].State = DeepClone(motions[i].State, CustomClone);
-            }
-            ReflectionUtil.SetOverrideMotions(newLayer, motions);
-
-            var behaviors = ReflectionUtil.GetOverrideBehaviours(layer);
-            for (var i = 0; i < behaviors.Length; i++)
-            {
-                behaviors[i].Behaviours = behaviors[i].Behaviours.Select(x => DeepClone(x, CustomClone)).ToArray();
-                behaviors[i].State = DeepClone(behaviors[i].State, CustomClone);
-            }
-            ReflectionUtil.SetOverrideBehaviours(newLayer, behaviors);
-
-            return newLayer;
-        }
-
-        /// <summary>
-        ///  this code uses transmute technique to access motions / behaviours with cheap cost
-        /// </summary>
-        private static class ReflectionUtil
-        {
-            private static readonly FieldInfo Motions =
-                typeof(AnimatorControllerLayer).GetField("m_Motions", BindingFlags.NonPublic | BindingFlags.Instance);
-            private static readonly FieldInfo Behaviours =
-                typeof(AnimatorControllerLayer).GetField("m_Behaviours", BindingFlags.NonPublic | BindingFlags.Instance);
-
-            public static StateMotionPair[] GetOverrideMotions(AnimatorControllerLayer layer)
-            {
-                StateMotionPairReflection reflection = default;
-                reflection.Object = (Array)Motions.GetValue(layer);
-                if (reflection.Array == null) return Array.Empty<StateMotionPair>();
-                var result = new StateMotionPair[reflection.Array.Length];
-                for (var i = 0; i < reflection.Array.Length; i++)
-                    result[i] = reflection.Array[i];
-                return result;
-            }
-
-            public static void SetOverrideMotions(AnimatorControllerLayer layer, StateMotionPair[] value)
-            {
-                var elementType = Motions.FieldType.GetElementType();
-                StateMotionPairReflection reflection = default;
-                reflection.Object = Array.CreateInstance(elementType, value.Length);
-                
-                for (var i = 0; i < value.Length; i++)
-                    reflection.Array[i] = value[i];
-
-                Motions.SetValue(layer, reflection.Object);
-            }
-
-            public static StateBehavioursPair[] GetOverrideBehaviours(AnimatorControllerLayer layer)
-            {
-                StateBehavioursPairReflection reflection = default;
-                reflection.Object = (Array)Behaviours.GetValue(layer);
-                if (reflection.Array == null) return Array.Empty<StateBehavioursPair>();
-                var result = new StateBehavioursPair[reflection.Array.Length];
-                for (var i = 0; i < reflection.Array.Length; i++)
-                    result[i] = reflection.Array[i];
-                return result;
-            }
-
-            public static void SetOverrideBehaviours(AnimatorControllerLayer layer, StateBehavioursPair[] value)
-            {
-                var elementType = Behaviours.FieldType.GetElementType();
-                StateBehavioursPairReflection reflection = default;
-                reflection.Object = Array.CreateInstance(elementType, value.Length);
-                
-                for (var i = 0; i < value.Length; i++)
-                    reflection.Array[i] = value[i];
-
-                Behaviours.SetValue(layer, reflection.Object);
-            }
-
-            [StructLayout(LayoutKind.Explicit)]
-            private struct StateMotionPairReflection
-            {
-                [FieldOffset(0)] public object Object;
-                [FieldOffset(0)] [CanBeNull] public StateMotionPair[] Array;
-            }
-
-            [StructLayout(LayoutKind.Explicit)]
-            private struct StateBehavioursPairReflection
-            {
-                [FieldOffset(0)] public object Object;
-                [FieldOffset(0)] [CanBeNull] public StateBehavioursPair[] Array;
-            }
-
-            // Requires same structure as UnityEditor.Animations.StateMotionPair
-            [StructLayout(LayoutKind.Sequential)]
-            public struct StateMotionPair
-            {
-                public AnimatorState State;
-                public Motion Motion;
-            }
-            
-            // Requires same structure as UnityEditor.Animations.StateBehavioursPair
-            [StructLayout(LayoutKind.Sequential)]
-            internal struct StateBehavioursPair
-            {
-                public AnimatorState State;
-                public ScriptableObject[] Behaviours;
-            }
-        }
 
         private AnimatorStateMachine MapStateMachine(AnimatorStateMachine stateMachine) =>
             DeepClone(stateMachine, CustomClone);
