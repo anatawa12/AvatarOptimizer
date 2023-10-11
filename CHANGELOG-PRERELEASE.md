@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - AnimatorOverrideController may not be proceed correctly `#567`
+- Unclear behaviour if we merged meshes with and without normals `#569`
 
 ### Security
 

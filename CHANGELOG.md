@@ -18,6 +18,7 @@ The format is based on [Keep a Changelog].
 ### Fixed
 - AnimatorController with Synced can be broken `#564`
 - AnimatorOverrideController may not be proceed correctly `#567`
+- Unclear behaviour if we merged meshes with and without normals `#569`
 
 ### Security
 
