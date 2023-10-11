@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
+- Ignore the warning instead of migration from 0.3.x or older `#570`
 
 ### Deprecated
 
