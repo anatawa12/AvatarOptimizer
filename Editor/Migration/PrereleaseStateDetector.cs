@@ -59,8 +59,9 @@ namespace Anatawa12.AvatarOptimizer.Migration
                               "4. AvatarOptimizerを再度アップグレードする";
                     ok = "保存せずにUnityを閉じる";
                     ignore = "無視する";
-                    checkAgain = "AvatarOptimizerの設定が失われますが本当に無視しますか？";
-                    back = "警告に戻る";
+                    checkAgain = "AvatarOptimizerの設定が失われる可能性があります。\n" +
+                                           "本当によろしいですか?";
+                    back = "警告を読み直す";
                     alt = "Read in English";
                 }
                 else
@@ -78,7 +79,7 @@ namespace Anatawa12.AvatarOptimizer.Migration
                               "4. Upgrade AvatarOptimizer again.";
                     ok = "Exit Unity without saving anything";
                     ignore = "Ignore";
-                    checkAgain = "Do you REALLY want to ignore this warning?" +
+                    checkAgain = "Do you REALLY want to ignore this warning?\n" +
                                  "You'll lost the configurations of AvatarOptimizer";
                     back = "Back to Warning";
                     alt = "日本語で読む";
