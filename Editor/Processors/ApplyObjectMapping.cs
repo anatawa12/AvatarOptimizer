@@ -149,7 +149,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
         }
 
         public T MapAnimatorController<T>(T controller) where T : RuntimeAnimatorController =>
-            DefaultDeepClone(controller, CustomClone);
+            DeepClone(controller, CustomClone);
 
         // https://github.com/bdunderscore/modular-avatar/blob/db49e2e210bc070671af963ff89df853ae4514a5/Packages/nadena.dev.modular-avatar/Editor/AnimatorMerger.cs#L199-L241
         // Originally under MIT License
@@ -287,6 +287,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
             if (obj != null)
             {
                 _cache[original] = obj;
+                _cache[obj] = obj;
                 return (T)obj;
             }
 
@@ -308,6 +309,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
             }
 
             _cache[original] = obj;
+            _cache[obj] = obj;
 
             SerializedObject so = new SerializedObject(obj);
             SerializedProperty prop = so.GetIterator();
