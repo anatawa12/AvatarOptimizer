@@ -66,13 +66,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 EditorUtility.SetDirty(skinnedMeshRenderer);
 
                 var freeze = skinnedMeshRenderer.gameObject.GetOrAddComponent<FreezeBlendShape>();
-                var serialized = new SerializedObject(freeze);
-                var editorUtil = PrefabSafeSet.EditorUtil<string>.Create(
-                    serialized.FindProperty(nameof(FreezeBlendShape.shapeKeysSet)),
-                    0, p => p.stringValue, (p, v) => p.stringValue = v);
-                foreach (var shape in notChanged)
-                    editorUtil.GetElementOf(shape).EnsureAdded();
-                serialized.ApplyModifiedPropertiesWithoutUndo();
+                var shapeKeys = freeze.shapeKeysSet.GetAsSet();
+                shapeKeys.UnionWith(notChanged);
+                freeze.shapeKeysSet.SetValueNonPrefab(shapeKeys);
             }
         }
 
