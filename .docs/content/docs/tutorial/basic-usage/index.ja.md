@@ -78,7 +78,7 @@ BlendShape(シェイプキー)は頂点数とBlendShape数の積に比例して�
 続いて、`Anon_Merged`の設定をしましょう！
 
 `Merge Skinned Mesh`は諸事情[^merge-skinned-mesh]により、ボーン、メッシュ、マテリアル、BlendShape、Bounds以外の設定を自動的には行いません。
-そのため、統合先のメッシュとなる`Skinned Mesh Renrerer`内の `Root Bone`, `Anchor Override`等は別途手動で設定が必要です。
+そのため、`Merge Skinned Mesh`コンポーネントと同時に追加された、`Skinned Mesh Renderer`コンポーネント内にある `Root Bone`, `Anchor Override`等は別途手動で設定が必要です。
 `Anchor Override`には素体(BaseBody等)で用いられているものを、`Root Bone`には`Hips`を指定すると上手くいくことが多いと思います。
 
 {{< hint info >}}
