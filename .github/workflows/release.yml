@@ -35,7 +35,7 @@ jobs:
     outputs:
       version: ${{ steps.update-version.outputs.version }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           token: ${{ secrets.MASTER_GITHUB_PAT }}
           submodules: recursive
