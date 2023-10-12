@@ -50,6 +50,18 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             var sourceMaterials = meshInfos.Select(x => x.SubMeshes.Select(y => y.SharedMaterial).ToArray()).ToArray();
             Profiler.EndSample();
 
+            Profiler.BeginSample("Material Normal Configuration Check");
+            // check normal information.
+            int hasNormal = 0;
+            foreach (var meshInfo2 in meshInfos)
+                hasNormal |= meshInfo2.HasNormals ? 1 : 2;
+
+            if (hasNormal == 3)
+            {
+                BuildReport.LogFatal("MergeSkinnedMesh:error:mix-normal-existence")?.WithContext(Component);
+            }
+            Profiler.EndSample();
+
             Profiler.BeginSample("Merge Material Indices");
             var (subMeshIndexMap, materials) = CreateMergedMaterialsAndSubMeshIndexMapping(sourceMaterials);
             Profiler.EndSample();
@@ -136,6 +148,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 target.Bones.AddRange(meshInfo.Bones);
 
                 target.HasColor |= meshInfo.HasColor;
+                target.HasNormals |= meshInfo.HasNormals;
                 target.HasTangent |= meshInfo.HasTangent;
 
                 target.AssertInvariantContract($"processing meshInfo {Target.gameObject.name}");

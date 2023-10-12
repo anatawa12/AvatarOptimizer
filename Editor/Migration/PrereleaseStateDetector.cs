@@ -42,7 +42,8 @@ namespace Anatawa12.AvatarOptimizer.Migration
 
             while (true)
             {
-                string title, message, ok, cancel, alt;
+                string title, message, ok, ignore, alt;
+                string checkAgain, back;
                 if (isJapanese)
                 {
                     title = "MIGRATION REQUIRED";
@@ -57,7 +58,10 @@ namespace Anatawa12.AvatarOptimizer.Migration
                               "3. Unityを起動し、v0.4.xへのマイグレーションを実行する\n" +
                               "4. AvatarOptimizerを再度アップグレードする";
                     ok = "保存せずにUnityを閉じる";
-                    cancel = "閉じる";
+                    ignore = "無視する";
+                    checkAgain = "AvatarOptimizerの設定が失われる可能性があります。\n" +
+                                           "本当によろしいですか?";
+                    back = "警告を読み直す";
                     alt = "Read in English";
                 }
                 else
@@ -74,17 +78,25 @@ namespace Anatawa12.AvatarOptimizer.Migration
                               "3. Open Unity and run migration\n" +
                               "4. Upgrade AvatarOptimizer again.";
                     ok = "Exit Unity without saving anything";
-                    cancel = "Close";
+                    ignore = "Ignore";
+                    checkAgain = "Do you REALLY want to ignore this warning?\n" +
+                                 "You'll lost the configurations of AvatarOptimizer";
+                    back = "Back to Warning";
                     alt = "日本語で読む";
                 }
             
-                switch (EditorUtility.DisplayDialogComplex(title, message, ok, cancel, alt))
+                switch (EditorUtility.DisplayDialogComplex(title, message, ok, ignore, alt))
                 {
                     case 0: // OK: Exit
                         EditorApplication.Exit(0);
                         return;
-                    case 1: // Cancel: Close
-                        return;
+                    case 1: // Cancel: Ignore
+                        if (EditorUtility.DisplayDialog(title, checkAgain, ignore, back))
+                        {
+                            File.Delete(DataPath);
+                            return;
+                        }
+                        break;
                     case 2: // Show in another language
                         isJapanese = !isJapanese;
                         break;

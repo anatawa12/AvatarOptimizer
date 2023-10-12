@@ -31,6 +31,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         public readonly List<Bone> Bones = new List<Bone>();
 
         public bool HasColor { get; set; }
+        public bool HasNormals { get; set; }
         public bool HasTangent { get; set; }
 
         public MeshInfo2(SkinnedMeshRenderer renderer)
@@ -200,7 +201,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             for (var i = 0; i < mesh.vertexCount; i++) Vertices.Add(new Vertex());
 
             CopyVertexAttr(mesh.vertices, (x, v) => x.Position = v);
-            CopyVertexAttr(mesh.normals, (x, v) => x.Normal = v);
+            if (mesh.GetVertexAttributeDimension(VertexAttribute.Normal) != 0)
+            {
+                HasNormals = true;
+                CopyVertexAttr(mesh.normals, (x, v) => x.Normal = v);
+            }
             if (mesh.GetVertexAttributeDimension(VertexAttribute.Tangent) != 0)
             {
                 HasTangent = true;
@@ -284,6 +289,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             BlendShapes.Clear();
             Bones.Clear();
             HasColor = false;
+            HasNormals = false;
             HasTangent = false;
         }
 
@@ -313,14 +319,17 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             // Basic Vertex Attributes: vertices, normals
             {
                 var vertices = new Vector3[Vertices.Count];
+                for (var i = 0; i < Vertices.Count; i++)
+                    vertices[i] = Vertices[i].Position;
+                destMesh.vertices = vertices;
+            }
+
+            // tangents
+            if (HasNormals)
+            {
                 var normals = new Vector3[Vertices.Count];
                 for (var i = 0; i < Vertices.Count; i++)
-                {
-                    vertices[i] = Vertices[i].Position;
                     normals[i] = Vertices[i].Normal;
-                }
-
-                destMesh.vertices = vertices;
                 destMesh.normals = normals;
             }
             Profiler.EndSample();
