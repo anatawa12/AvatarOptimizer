@@ -56,7 +56,7 @@ Skinned Meshを統合することでメッシュを変形させる処理の回�
 すると`Merge Skinned Mesh`コンポーネントと`Skinned Mesh Renderer`コンポーネントが追加されます。
 後者が統合先のメッシュ[^mesh]になります。
 
-指定を楽にするために、`Anon_Merged`を選択した状態でinspectorをロックしましょう。
+統合したいメッシュを`Merge Skinned Mesh`コンポーネントに楽に指定するために、`Anon_Merged`を選択した状態でinspectorをロックしましょう。
 こうすることで複数のメッシュをまとめてドラックアンドドロップできるようになります。[^tip-lock-inspector]
 
 ![lock-inspector.png](./lock-inspector.png)
