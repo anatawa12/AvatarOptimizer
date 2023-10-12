@@ -53,9 +53,8 @@ Skinned Meshを統合することでメッシュを変形させる処理の回�
 
 ![add-merge-skinned-mesh.png](./add-merge-skinned-mesh.png)
 
-すると`Merge Skinned Mesh`コンポーネントと`Skinned Mesh Renderer`コンポーネントが追加されます。これが統合先のメッシュになります。
-
-`Merge Skinned Mesh`コンポーネントは、指定されたメッシュ[^mesh]を自身と一緒に付いているメッシュに統合します。
+すると`Merge Skinned Mesh`コンポーネントと`Skinned Mesh Renderer`コンポーネントが追加されます。
+後者が統合先のメッシュ[^mesh]になります。
 
 指定を楽にするために、`Anon_Merged`を選択した状態でinspectorをロックしましょう。
 こうすることで複数のメッシュをまとめてドラックアンドドロップできるようになります。[^tip-lock-inspector]
@@ -78,8 +77,8 @@ BlendShape(シェイプキー)は頂点数とBlendShape数の積に比例して�
 続いて、`Anon_Merged`の設定をしましょう！
 
 `Merge Skinned Mesh`は諸事情[^merge-skinned-mesh]により、ボーン、メッシュ、マテリアル、BlendShape、Bounds以外の設定を自動的には行いません。
-そのため、`Merge Skinned Mesh`コンポーネントと同時に追加された、`Skinned Mesh Renderer`コンポーネント内にある `Root Bone`, `Anchor Override`等は別途手動で設定が必要です。
-`Anchor Override`には素体(BaseBody等)で用いられているものを、`Root Bone`には`Hips`を指定すると上手くいくことが多いと思います。
+そのため、統合先のメッシュ(`Merge Skinned Mesh`コンポーネントと同時に追加された`Skinned Mesh Renderer`コンポーネント)にある`Anchor Override`, `Root Bone`等の項目には別途手動で設定が必要です。
+`Anchor Override`には素体(Body等)で設定されているものを、`Root Bone`には`Hips`を指定すると上手くいくことが多いと思います。
 
 {{< hint info >}}
 
