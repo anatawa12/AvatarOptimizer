@@ -34,7 +34,7 @@ jobs:
           echo "::error::either patch or feature release must be specified"
           exit 1
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         if: env.IS_FEATURE
       - uses: anatawa12/something-releaser@v2
         if: env.IS_FEATURE
