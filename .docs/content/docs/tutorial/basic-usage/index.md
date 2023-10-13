@@ -78,7 +78,7 @@ Next, configure `Anon_Merged`!
 
 Because of many reasons[^merge-skinned-mesh], `Merge Skinned Mesh` doesn't configure anything except of bones, meshes, materials, BlendShapes and bounds.
 So, please configure Anchor Override, Root Bone and so on yourself on the merged mesh (`Skinned Mesh Renderer` which is added at the same time as the `Merge Skinned Mesh`).
-I think specifying what is configured in your avatar's body as Anchor Override, and setting "Hips" as the Root Bone will work well.
+I think specifying what is configured in your avatar's body as Anchor Override, and setting `Hips` as the Root Bone will work well.
 
 {{< hint info >}}
 
