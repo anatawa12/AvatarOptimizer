@@ -11,6 +11,8 @@ The format is based on [Keep a Changelog].
 - Add compatibility for Satania's KiseteneEx `#584`
 
 ### Changed
+- Normal check is skipped for empty mesh `#588`
+- Meshes without Normal are shown on the normal existance mismatch warning `#588`
 
 ### Deprecated
 
