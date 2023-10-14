@@ -47,7 +47,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             // check normal information.
             int hasNormal = 0;
             foreach (var meshInfo2 in meshInfos)
-                hasNormal |= meshInfo2.HasNormals ? 1 : 2;
+            {
+                if (meshInfo2.Vertices.Count != 0)
+                    hasNormal |= meshInfo2.HasNormals ? 1 : 2;
+            }
 
             if (hasNormal == 3)
             {
