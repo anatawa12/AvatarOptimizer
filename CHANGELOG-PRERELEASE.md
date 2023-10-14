@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Add compatibility for Satania's KiseteneEx `#584`
 
 ### Changed
 
