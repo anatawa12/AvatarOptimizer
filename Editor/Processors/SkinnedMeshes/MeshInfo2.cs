@@ -78,7 +78,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             SourceRenderer = renderer;
             BuildReport.ReportingObject(renderer, true, () =>
             {
-                var mesh = renderer.GetComponent<MeshFilter>().sharedMesh;
+                var meshFilter = renderer.GetComponent<MeshFilter>();
+                var mesh = meshFilter ? meshFilter.sharedMesh : null;
                 if (mesh && !mesh.isReadable)
                 {
                     BuildReport.LogFatal("The Mesh is not readable. Please Check Read/Write")?.WithContext(mesh);

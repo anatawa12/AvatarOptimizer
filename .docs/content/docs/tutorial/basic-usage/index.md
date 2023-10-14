@@ -43,7 +43,7 @@ This time, I'll optimize Anon-chan as a simplest case.
 
 ![start.png](./start.png)
 
-First, create GameObject for merged mesh.
+First, create GameObject for merged mesh[^mesh].
 Right-click avatar GameObject and click `Create Empty` to create new GameObject.
 Then, rename to understandable name. In this document, I call it as `Anon_Merged`.
 
@@ -53,11 +53,9 @@ Then, Add `Merge Skinned Mesh` to `Anon_Merged`.
 
 ![add-merge-skinned-mesh.png](./add-merge-skinned-mesh.png)
 
-This adds `Merge Skinned Mesh` and `Skinned Mesh Renderer`.
+This adds `Merge Skinned Mesh` and `Skinned Mesh Renderer` (which will be the merged mesh).
 
-The `Merge Skinned Mesh` will merge specified meshes[^mesh] into the mesh attached together.
-
-To make it easy to specifying meshes, lock the inspector with `Anon_Merged` selected.
+To make it easy to specifying merge target meshes to `Merge Skinned Mesh`, lock the inspector with `Anon_Merged` selected.
 This allow us to drag & drop multiple meshes at once.[^tip-lock-inspector]
 
 ![lock-inspector.png](./lock-inspector.png)
@@ -79,8 +77,8 @@ so I recommend not to merge face mesh.
 Next, configure `Anon_Merged`!
 
 Because of many reasons[^merge-skinned-mesh], `Merge Skinned Mesh` doesn't configure anything except of bones, meshes, materials, BlendShapes and bounds.
-So, please configure Root Bone, Anchor Override and so on yourself on the merge target mesh (added at the same time as the `Merge Skinned Mesh`).
-I think specifying Anchor Override of your body and setting Hips as the Root Bone will work well.
+So, please configure Anchor Override, Root Bone and so on yourself on the merged mesh (`Skinned Mesh Renderer` which is added at the same time as the `Merge Skinned Mesh`).
+I think specifying what is configured in your avatar's body as Anchor Override, and setting `Hips` as the Root Bone will work well.
 
 {{< hint info >}}
 
