@@ -190,6 +190,8 @@ namespace Anatawa12.AvatarOptimizer.Processors
             else if (o is AvatarMask mask)
             {
                 var newMask = new AvatarMask();
+                for (var part = AvatarMaskBodyPart.Root; part < AvatarMaskBodyPart.LastBodyPart; ++part)
+                    newMask.SetHumanoidBodyPartActive(part, mask.GetHumanoidBodyPartActive(part));
                 newMask.name = "rebased " + mask.name;
                 newMask.transformCount = mask.transformCount;
                 var dstI = 0;
