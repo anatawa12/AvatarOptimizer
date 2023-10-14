@@ -591,8 +591,36 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 _byTypeParser.Add(contextHolder, (collector, deps, component) => deps.EntrypointComponent = true);
             }
 
+            #region Satania's Kisetene Components
+
+            // KiseteneComponent holds information about which cloth the bone came from, which is not important on build
+            var kiseteneComponent = GetTypeByGuidFileId("e78466b6bcd24e5409dca557eb81d45b", 11500000);
+            if (kiseteneComponent != null)
+                _byTypeParser.Add(kiseteneComponent, (collector, deps, component) => deps.EntrypointComponent = true);
+
+            // FlyAvatarSetupTool is on-inspector tool which is not important on build
+            var flyAvatarSetupTool = GetTypeByGuidFileId("7f9c3fe1cfb9d1843a9dc7da26352ce2", 11500000);
+            if (flyAvatarSetupTool != null)
+                _byTypeParser.Add(flyAvatarSetupTool, (collector, deps, component) => deps.EntrypointComponent = true);
+            
+            // BlendShapeOverrider is on-inspector tool which is not important on build
+            var blendShapeOverrider = GetTypeByGuidFileId("95f6e1368d803614f8a351322ab09bac", 11500000);
+            if (blendShapeOverrider != null)
+                _byTypeParser.Add(blendShapeOverrider, (collector, deps, component) => deps.EntrypointComponent = true);
+
+            #endregion
+            
+
             // Components Proceed after T&O later
             AddEntryPointParser<MergeBone>();
+        }
+
+        private static Type GetTypeByGuidFileId(string guid, long fileId)
+        {
+            if (!GlobalObjectId.TryParse($"GlobalObjectId_V1-1-{guid}-{fileId}-0", out var id)) return null;
+            var script = GlobalObjectId.GlobalObjectIdentifierToObjectSlow(id) as MonoScript;
+            if (!script) return null;
+            return script.GetClass();
         }
 
         #endregion
