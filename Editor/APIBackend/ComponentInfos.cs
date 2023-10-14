@@ -597,6 +597,18 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
         }
     }
 
+    #region Satania's KiseteneEx Components
+    [ComponentInformationWithGUID("e78466b6bcd24e5409dca557eb81d45b", 11500000)] // KiseteneComponent
+    [ComponentInformationWithGUID("7f9c3fe1cfb9d1843a9dc7da26352ce2", 11500000)] // FlyAvatarSetupTool
+    [ComponentInformationWithGUID("95f6e1368d803614f8a351322ab09bac", 11500000)] // BlendShapeOverrider
+    internal class SataniaKiseteneExComponents : ComponentInformation<Component>
+    {
+        protected override void CollectDependency(Component component, IComponentDependencyCollector collector)
+        {
+        }
+    }
+    #endregion
+
     internal static class ComponentInformationExtensions
     {
         public static void TransformPositionAndRotation(this IComponentMutationsCollector collector,
