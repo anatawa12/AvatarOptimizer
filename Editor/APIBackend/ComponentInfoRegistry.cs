@@ -16,8 +16,8 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
         {
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
             foreach (var type in assembly.GetTypes())
-            foreach (ComponentInformationAttribute attribute in type.GetCustomAttributes(
-                         typeof(ComponentInformationAttribute), false))
+            foreach (ComponentInformationAttributeBase attribute in type.GetCustomAttributes(
+                         typeof(ComponentInformationAttributeBase), false))
             {
                 try
                 {
@@ -60,9 +60,10 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
             }
         }
 
-        private static void LoadType(Type type, ComponentInformationAttribute attribute)
+        private static void LoadType(Type type, ComponentInformationAttributeBase attribute)
         {
-            var targetType = attribute.TargetType;
+            var targetType = attribute.GetTargetType();
+            if (targetType == null) return;
             var informationType = typeof(IComponentInformation<>).MakeGenericType(targetType);
             if (type.ContainsGenericParameters)
             {

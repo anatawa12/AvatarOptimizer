@@ -8,7 +8,7 @@ namespace Anatawa12.AvatarOptimizer.API
     [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
     [MeansImplicitUse]
     [BaseTypeRequired(typeof(ComponentInformation<>))]
-    public sealed class ComponentInformationAttribute : Attribute
+    public sealed class ComponentInformationAttribute : APIBackend.ComponentInformationAttributeBase
     {
         public Type TargetType { get; }
 
@@ -16,6 +16,8 @@ namespace Anatawa12.AvatarOptimizer.API
         {
             TargetType = targetType;
         }
+
+        internal override Type GetTargetType() => TargetType;
     }
 
     public interface IComponentDependencyCollector
