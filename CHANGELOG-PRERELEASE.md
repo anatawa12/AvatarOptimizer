@@ -8,23 +8,30 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Add compatibility for Satania's KiseteneEx `#584`
 
 ### Changed
-- Normal check is skipped for empty mesh `#588`
-- Meshes without Normal are shown on the normal existance mismatch warning `#588`
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
-- Error with MeshRenderer without MeshFilter `#581`
-- Preview not working with VRMConverter `#582`
-- AvatarMask about HumanoidBone broken `#586`
-- Unused Homanoid Bones can be removed `#587`
 
 ### Security
+
+## [1.5.4] - 2023-10-14
+### Added
+- Add compatibility for Satania's KiseteneEx [`#584`](https://github.com/anatawa12/AvatarOptimizer/pull/584)
+
+### Changed
+- Normal check is skipped for empty mesh [`#588`](https://github.com/anatawa12/AvatarOptimizer/pull/588)
+- Meshes without Normal are shown on the normal existance mismatch warning [`#588`](https://github.com/anatawa12/AvatarOptimizer/pull/588)
+
+### Fixed
+- Error with MeshRenderer without MeshFilter [`#581`](https://github.com/anatawa12/AvatarOptimizer/pull/581)
+- Preview not working with VRMConverter [`#582`](https://github.com/anatawa12/AvatarOptimizer/pull/582)
+- AvatarMask about HumanoidBone broken [`#586`](https://github.com/anatawa12/AvatarOptimizer/pull/586)
+- Unused Homanoid Bones can be removed [`#587`](https://github.com/anatawa12/AvatarOptimizer/pull/587)
 
 ## [1.5.3] - 2023-10-11
 ### Changed
@@ -880,7 +887,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.3...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.4...HEAD
+[1.5.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.3...v1.5.4
 [1.5.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.3-beta.1...v1.5.3
 [1.5.3-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.2...v1.5.3-beta.1
 [1.5.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.2-beta.3...v1.5.2
