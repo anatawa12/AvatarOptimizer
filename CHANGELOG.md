@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Error with MeshRenderer without MeshFilter `#581`
 
 ### Security
 
