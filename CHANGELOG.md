@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Add compatibility for Satania's KiseteneEx `#584`
 
 ### Changed
 
@@ -16,6 +17,10 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Error with MeshRenderer without MeshFilter `#581`
+- Preview not working with VRMConverter `#582`
+- AvatarMask about HumanoidBone broken `#586`
+- Unused Homanoid Bones can be removed `#587`
 
 ### Security
 
