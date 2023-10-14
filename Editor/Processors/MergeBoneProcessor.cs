@@ -4,13 +4,14 @@ using System.Linq;
 using Anatawa12.AvatarOptimizer.ErrorReporting;
 using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
 using JetBrains.Annotations;
+using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.Processors
 {
-    internal class MergeBoneProcessor
+    internal class MergeBoneProcessor : Pass<MergeBoneProcessor>
     {
         [InitializeOnLoadMethod]
         private static void RegisterValidator()
@@ -51,11 +52,11 @@ namespace Anatawa12.AvatarOptimizer.Processors
                    CheckScale(localScale.y / localScale.z);
         }
 
-        public void Process(OptimizerSession session)
+        protected override void Execute(BuildContext context)
         {
             // merge from -> merge into
             var mergeMapping = new Dictionary<Transform, Transform>();
-            foreach (var component in session.GetComponents<MergeBone>())
+            foreach (var component in context.GetComponents<MergeBone>())
             {
                 var transform = component.transform;
                 mergeMapping[transform] = transform.parent;
@@ -64,9 +65,9 @@ namespace Anatawa12.AvatarOptimizer.Processors
             // normalize map
             mergeMapping.FlattenMapping();
 
-            BuildReport.ReportingObjects(session.GetComponents<SkinnedMeshRenderer>(), renderer =>
+            BuildReport.ReportingObjects(context.GetComponents<SkinnedMeshRenderer>(), renderer =>
             {
-                var meshInfo2 = session.MeshInfo2Holder.GetMeshInfoFor(renderer);
+                var meshInfo2 = context.GetMeshInfoFor(renderer);
                 if (meshInfo2.Bones.Any(x => x.Transform && mergeMapping.ContainsKey(x.Transform)))
                     DoBoneMap2(meshInfo2, mergeMapping);
             });

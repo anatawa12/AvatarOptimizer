@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEngine;
 using VRC.SDK3.Avatars.Components;
@@ -8,40 +9,33 @@ using VRC.SDKBase;
 
 namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 {
-    class AutoFreezeBlendShape
+    internal class AutoFreezeBlendShape : Pass<AutoFreezeBlendShape>
     {
-        private readonly ImmutableModificationsContainer _modifications;
-        private readonly OptimizerSession _session;
-        private readonly HashSet<GameObject> _exclusions;
+        public override string DisplayName => "T&O: AutoFreezeBlendShape";
 
-        public AutoFreezeBlendShape(ImmutableModificationsContainer modifications, OptimizerSession session,
-            HashSet<GameObject> exclusions)
+        protected override void Execute(BuildContext context)
         {
-            _modifications = modifications;
-            _session = session;
-            _exclusions = exclusions;
+            var state = context.GetState<TraceAndOptimizeState>();
+            if (!state.FreezeBlendShape) return;
+
+            if (!state.SkipFreezingNonAnimatedBlendShape)
+                FreezeNonAnimatedBlendShapes(context, state);
+            if (!state.SkipFreezingMeaninglessBlendShape)
+                FreezeMeaninglessBlendShapes(context, state);
         }
 
-        public void Process(bool skipFreezingNonAnimatedBlendShape, bool skipFreezingMeaningless)
-        {
-            if (!skipFreezingNonAnimatedBlendShape)
-                FreezeNonAnimatedBlendShapes();
-            if (!skipFreezingMeaningless)
-                FreezeMeaninglessBlendShapes();
-        }
-
-        void FreezeNonAnimatedBlendShapes()
+        void FreezeNonAnimatedBlendShapes(BuildContext context, TraceAndOptimizeState state)
         {
             // first optimization: unused blend shapes
-            foreach (var skinnedMeshRenderer in _session.GetComponents<SkinnedMeshRenderer>())
+            foreach (var skinnedMeshRenderer in context.GetComponents<SkinnedMeshRenderer>())
             {
                 var mesh = skinnedMeshRenderer.sharedMesh;
 
                 // skip SMR without mesh
                 if (!mesh) continue;
-                if (_exclusions.Contains(skinnedMeshRenderer.gameObject)) continue; // manual exclusiton
+                if (state.Exclusions.Contains(skinnedMeshRenderer.gameObject)) continue; // manual exclusiton
 
-                var modifies = _modifications.GetModifiedProperties(skinnedMeshRenderer);
+                var modifies = state.Modifications.GetModifiedProperties(skinnedMeshRenderer);
                 var blendShapeValues = Enumerable.Range(0, mesh.blendShapeCount)
                     .Select(i => skinnedMeshRenderer.GetBlendShapeWeight(i)).ToArray();
                 var notChanged = Enumerable.Range(0, mesh.blendShapeCount)
@@ -72,32 +66,28 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 EditorUtility.SetDirty(skinnedMeshRenderer);
 
                 var freeze = skinnedMeshRenderer.gameObject.GetOrAddComponent<FreezeBlendShape>();
-                var serialized = new SerializedObject(freeze);
-                var editorUtil = PrefabSafeSet.EditorUtil<string>.Create(
-                    serialized.FindProperty(nameof(FreezeBlendShape.shapeKeysSet)),
-                    0, p => p.stringValue, (p, v) => p.stringValue = v);
-                foreach (var shape in notChanged)
-                    editorUtil.GetElementOf(shape).EnsureAdded();
-                serialized.ApplyModifiedPropertiesWithoutUndo();
+                var shapeKeys = freeze.shapeKeysSet.GetAsSet();
+                shapeKeys.UnionWith(notChanged);
+                freeze.shapeKeysSet.SetValueNonPrefab(shapeKeys);
             }
         }
 
-        void FreezeMeaninglessBlendShapes() {
-            ComputePreserveBlendShapes(_session.PreserveBlendShapes);
+        void FreezeMeaninglessBlendShapes(BuildContext context, TraceAndOptimizeState state) {
+            ComputePreserveBlendShapes(context, state.PreserveBlendShapes);
 
             // second optimization: remove meaningless blendShapes
-            foreach (var skinnedMeshRenderer in _session.GetComponents<SkinnedMeshRenderer>())
+            foreach (var skinnedMeshRenderer in context.GetComponents<SkinnedMeshRenderer>())
             {
-                if (_exclusions.Contains(skinnedMeshRenderer.gameObject)) continue; // manual exclusion
+                if (state.Exclusions.Contains(skinnedMeshRenderer.gameObject)) continue; // manual exclusion
                 skinnedMeshRenderer.gameObject.GetOrAddComponent<FreezeBlendShape>();
                 skinnedMeshRenderer.gameObject.GetOrAddComponent<InternalAutoFreezeMeaninglessBlendShape>();
             }
         }
 
-        private void ComputePreserveBlendShapes(Dictionary<SkinnedMeshRenderer, HashSet<string>> preserveBlendShapes)
+        private void ComputePreserveBlendShapes(BuildContext context, Dictionary<SkinnedMeshRenderer, HashSet<string>> preserveBlendShapes)
         {
             // some BlendShapes manipulated by VRC Avatar Descriptor must exists
-            var descriptor = _session.GetRootComponent<VRCAvatarDescriptor>();
+            var descriptor = context.AvatarDescriptor;
             switch (descriptor.lipSync)
             {
                 case VRC_AvatarDescriptor.LipSyncStyle.VisemeBlendShape when descriptor.VisemeSkinnedMesh != null:

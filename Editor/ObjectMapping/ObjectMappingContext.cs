@@ -2,88 +2,55 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.ErrorReporting;
+using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
 using VRC.SDK3.Avatars.Components;
 using Object = UnityEngine.Object;
 
-namespace Anatawa12.AvatarOptimizer.Processors
+namespace Anatawa12.AvatarOptimizer
 {
-    internal class ApplyObjectMapping
+    internal class ObjectMappingContext : IExtensionContext
     {
-        public void Apply(OptimizerSession session)
+        public ObjectMappingBuilder MappingBuilder { get; private set; }
+
+        public void OnActivate(BuildContext context)
         {
-            var mapping = session.MappingBuilder.BuildObjectMapping();
+            MappingBuilder = new ObjectMappingBuilder(context.AvatarRootObject);
+        }
+
+        public void OnDeactivate(BuildContext context)
+        {
+            var mapping = MappingBuilder.BuildObjectMapping();
 
             // replace all objects
-            BuildReport.ReportingObjects(session.GetComponents<Component>(), component =>
+            BuildReport.ReportingObjects(context.GetComponents<Component>(), component =>
             {
                 if (component is Transform) return;
                 var serialized = new SerializedObject(component);
                 AnimatorControllerMapper mapper = null;
                 SpecialMappingApplier.Apply(component.GetType(), serialized, mapping, ref mapper);
-                var p = serialized.GetIterator();
-                var enterChildren = true;
-                while (p.Next(enterChildren))
+
+                foreach (var p in serialized.ObjectReferenceProperties())
                 {
-                    if (p.propertyType == SerializedPropertyType.ObjectReference)
+                    if (mapping.MapComponentInstance(p.objectReferenceInstanceIDValue, out var mappedComponent))
+                        p.objectReferenceValue = mappedComponent;
+
+                    if (p.objectReferenceValue is RuntimeAnimatorController controller)
                     {
-                        if (mapping.MapComponentInstance(p.objectReferenceInstanceIDValue, out var mappedComponent))
-                            p.objectReferenceValue = mappedComponent;
+                        if (mapper == null)
+                            mapper = new AnimatorControllerMapper(mapping.CreateAnimationMapper(component.gameObject));
 
-                        if (p.objectReferenceValue is RuntimeAnimatorController controller)
-                        {
-                            if (mapper == null)
-                                mapper = new AnimatorControllerMapper(
-                                    mapping.CreateAnimationMapper(component.gameObject),
-                                    session.RelativePath(component.transform), session);
-
-                            // ReSharper disable once AccessToModifiedClosure
-                            var mapped = BuildReport.ReportingObject(controller,
-                                () => mapper.MapAnimatorController(controller));
-                            if (mapped != controller)
-                                p.objectReferenceValue = mapped;
-                        }
-                    }
-
-                    switch (p.propertyType)
-                    {
-                        case SerializedPropertyType.String:
-                        case SerializedPropertyType.Integer:
-                        case SerializedPropertyType.Boolean:
-                        case SerializedPropertyType.Float:
-                        case SerializedPropertyType.Color:
-                        case SerializedPropertyType.ObjectReference:
-                        case SerializedPropertyType.LayerMask:
-                        case SerializedPropertyType.Enum:
-                        case SerializedPropertyType.Vector2:
-                        case SerializedPropertyType.Vector3:
-                        case SerializedPropertyType.Vector4:
-                        case SerializedPropertyType.Rect:
-                        case SerializedPropertyType.ArraySize:
-                        case SerializedPropertyType.Character:
-                        case SerializedPropertyType.AnimationCurve:
-                        case SerializedPropertyType.Bounds:
-                        case SerializedPropertyType.Gradient:
-                        case SerializedPropertyType.Quaternion:
-                        case SerializedPropertyType.FixedBufferSize:
-                        case SerializedPropertyType.Vector2Int:
-                        case SerializedPropertyType.Vector3Int:
-                        case SerializedPropertyType.RectInt:
-                        case SerializedPropertyType.BoundsInt:
-                            enterChildren = false;
-                            break;
-                        case SerializedPropertyType.Generic:
-                        case SerializedPropertyType.ExposedReference:
-                        case SerializedPropertyType.ManagedReference:
-                        default:
-                            enterChildren = true;
-                            break;
+                        // ReSharper disable once AccessToModifiedClosure
+                        var mapped = BuildReport.ReportingObject(controller,
+                            () => mapper.MapAnimatorController(controller));
+                        if (mapped != controller)
+                            p.objectReferenceValue = mapped;
                     }
                 }
 
-                serialized.ApplyModifiedProperties();
+                serialized.ApplyModifiedPropertiesWithoutUndo();
             });
         }
     }
@@ -137,15 +104,11 @@ namespace Anatawa12.AvatarOptimizer.Processors
     {
         private readonly AnimationObjectMapper _mapping;
         private readonly Dictionary<Object, Object> _cache = new Dictionary<Object, Object>();
-        private readonly OptimizerSession _session;
-        private readonly string _rootPath;
         private bool _mapped = false;
 
-        public AnimatorControllerMapper(AnimationObjectMapper mapping, string rootPath, OptimizerSession session)
+        public AnimatorControllerMapper(AnimationObjectMapper mapping)
         {
-            _session = session;
             _mapping = mapping;
-            _rootPath = rootPath;
         }
 
         public T MapAnimatorController<T>(T controller) where T : RuntimeAnimatorController =>
@@ -313,26 +276,13 @@ namespace Anatawa12.AvatarOptimizer.Processors
             _cache[original] = obj;
             _cache[obj] = obj;
 
-            SerializedObject so = new SerializedObject(obj);
-            SerializedProperty prop = so.GetIterator();
-
-            bool enterChildren = true;
-            while (prop.Next(enterChildren))
+            using (var so = new SerializedObject(obj))
             {
-                enterChildren = true;
-                switch (prop.propertyType)
-                {
-                    case SerializedPropertyType.ObjectReference:
-                        prop.objectReferenceValue = DeepClone(prop.objectReferenceValue, visitor);
-                        break;
-                    // Iterating strings can get super slow...
-                    case SerializedPropertyType.String:
-                        enterChildren = false;
-                        break;
-                }
-            }
+                foreach (var prop in so.ObjectReferenceProperties())
+                    prop.objectReferenceValue = DeepClone(prop.objectReferenceValue, visitor);
 
-            so.ApplyModifiedPropertiesWithoutUndo();
+                so.ApplyModifiedPropertiesWithoutUndo();
+            }
 
             return (T)obj;
         }

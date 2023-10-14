@@ -1,8 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Anatawa12.AvatarOptimizer.API;
+using Anatawa12.AvatarOptimizer.APIBackend;
 using static Anatawa12.AvatarOptimizer.ErrorReporting.BuildReport;
 using JetBrains.Annotations;
+using nadena.dev.ndmf;
 using UnityEditor.Animations;
 using UnityEngine;
 using UnityEngine.Animations;
@@ -30,16 +33,22 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             advancedAnimatorParser = config.advancedAnimatorParser;
         }
 
-        public ImmutableModificationsContainer GatherAnimationModifications(OptimizerSession session)
+        public AnimatorParser(TraceAndOptimizeState config)
+        {
+            mmdWorldCompatibility = config.MmdWorldCompatibility;
+            advancedAnimatorParser = !config.UseLegacyAnimatorParser;
+        }
+
+        public ImmutableModificationsContainer GatherAnimationModifications(BuildContext context)
         {
             var modificationsContainer = new ModificationsContainer();
-            modificationsContainer.MergeAsNewLayer(CollectAvatarRootAnimatorModifications(session), 
+            modificationsContainer.MergeAsNewLayer(CollectAvatarRootAnimatorModifications(context), 
                 weightState: AnimatorWeightState.AlwaysOne);
 
-            foreach (var child in session.GetRootComponent<Transform>().DirectChildrenEnumerable())
+            foreach (var child in context.AvatarRootTransform.DirectChildrenEnumerable())
                 WalkForAnimator(child, true, modificationsContainer);
 
-            OtherMutateComponents(modificationsContainer, session);
+            OtherMutateComponents(modificationsContainer, context);
 
             return modificationsContainer.ToImmutable();
         }
@@ -127,100 +136,30 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         #region OtherComponents
 
+        private class Collector : IComponentMutationsCollector
+        {
+            private readonly ModificationsContainer _modifications;
+
+            public Collector(ModificationsContainer modifications) => _modifications = modifications;
+
+            public void ModifyProperties(Component component, IEnumerable<string> properties)
+            {
+                var updater = _modifications.ModifyObject(component);
+                foreach (var prop in properties)
+                    updater.AddModificationAsNewLayer(prop, AnimationProperty.Variable());
+            }
+        }
+
         /// <summary>
         /// Collect modifications by non-animation changes. For example, constraints, PhysBones, and else 
         /// </summary>
-        private void OtherMutateComponents(ModificationsContainer mod, OptimizerSession session)
+        private static void OtherMutateComponents(ModificationsContainer mod, BuildContext context)
         {
-            ReportingObjects(session.GetComponents<Component>(), component =>
+            var collector = new Collector(mod);
+            ReportingObjects(context.GetComponents<Component>(), component =>
             {
-                switch (component)
-                {
-                    case VRCPhysBoneBase pb:
-                        foreach (var transform in pb.GetAffectedTransforms())
-                        {
-                            var updater = mod.ModifyObject(transform);
-                            foreach (var prop in TransformPositionAnimationKeys.Concat(TransformRotationAnimationKeys))
-                                updater.AddModificationAsNewLayer(prop, AnimationProperty.Variable());
-                        }
-
-                        break;
-                    case Rigidbody _:
-                    case ParentConstraint _:
-                    {
-                        var updater = mod.ModifyObject(component.transform);
-                        foreach (var prop in TransformPositionAnimationKeys.Concat(TransformRotationAnimationKeys))
-                            updater.AddModificationAsNewLayer(prop, AnimationProperty.Variable());
-                        break;
-                    }
-                    case AimConstraint _:
-                    case LookAtConstraint _:
-                    case RotationConstraint _:
-                    {
-                        var updater = mod.ModifyObject(component.transform);
-                        foreach (var prop in TransformRotationAnimationKeys)
-                            updater.AddModificationAsNewLayer(prop, AnimationProperty.Variable());
-                        break;
-                    }
-                    case PositionConstraint _:
-                    {
-                        var updater = mod.ModifyObject(component.transform);
-                        foreach (var prop in TransformPositionAnimationKeys)
-                            updater.AddModificationAsNewLayer(prop, AnimationProperty.Variable());
-                        break;
-                    }
-                    case ScaleConstraint _:
-                    {
-                        var updater = mod.ModifyObject(component.transform);
-                        foreach (var prop in TransformScaleAnimationKeys)
-                            updater.AddModificationAsNewLayer(prop, AnimationProperty.Variable());
-                        break;
-                    }
-                    case RemoveMeshByBlendShape removeMesh:
-                    {
-                        var blendShapes = removeMesh.RemovingShapeKeys;
-                        {
-                            var updater = mod.ModifyObject(removeMesh.GetComponent<SkinnedMeshRenderer>());
-                            foreach (var blendShape in blendShapes)
-                                updater.AddModificationAsNewLayer($"blendShape.{blendShape}",
-                                    AnimationProperty.Variable());
-                        }
-
-                        DeriveMergeSkinnedMeshProperties(removeMesh.GetComponent<MergeSkinnedMesh>());
-
-                        void DeriveMergeSkinnedMeshProperties(MergeSkinnedMesh mergeSkinnedMesh)
-                        {
-                            if (mergeSkinnedMesh == null) return;
-
-                            foreach (var renderer in mergeSkinnedMesh.renderersSet.GetAsSet())
-                            {
-                                var updater = mod.ModifyObject(renderer);
-                                foreach (var blendShape in blendShapes)
-                                    updater.AddModificationAsNewLayer($"blendShape.{blendShape}",
-                                        AnimationProperty.Variable());
-
-                                DeriveMergeSkinnedMeshProperties(renderer.GetComponent<MergeSkinnedMesh>());
-                            }
-                        }
-
-                        break;
-                    }
-                    default:
-                    {
-                        if (DynamicBone.TryCast(component, out var dynamicBone))
-                        {
-                            // DynamicBone : similar to PhysBone
-                            foreach (var transform in dynamicBone.GetAffectedTransforms())
-                            {
-                                var updater = mod.ModifyObject(transform);
-                                foreach (var prop in TransformRotationAnimationKeys)
-                                    updater.AddModificationAsNewLayer(prop, AnimationProperty.Variable());
-                            }
-                        }
-                        break;
-                    }
-                    // TODO: FinalIK
-                }
+                if (ComponentInfoRegistry.TryGetInformation(component.GetType(), out var info))
+                    info.CollectMutationsInternal(component, collector);
             });
         }
 
@@ -228,10 +167,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         #region AvatarDescriptor
 
-        private IModificationsContainer CollectAvatarRootAnimatorModifications(OptimizerSession session)
+        private IModificationsContainer CollectAvatarRootAnimatorModifications(BuildContext session)
         {
-            var animator = session.GetRootComponent<Animator>();
-            var descriptor = session.GetRootComponent<VRCAvatarDescriptor>();
+            var animator = session.AvatarRootObject.GetComponent<Animator>();
+            var descriptor = session.AvatarRootObject.GetComponent<VRCAvatarDescriptor>();
 
             var modificationsContainer = new ModificationsContainer();
 

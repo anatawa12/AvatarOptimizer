@@ -1,6 +1,7 @@
 using System;
 using System.Text;
 using JetBrains.Annotations;
+using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEngine;
 using VRC.SDK3.Avatars.Components;
@@ -134,7 +135,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                         {
                             parsedRootObject = avatar.gameObject;
                             Container = new AnimatorParser(true, true).GatherAnimationModifications(
-                                new OptimizerSession(avatar.gameObject, true));
+                                new BuildContext(parsedRootObject, null));
                         }
                     }
 

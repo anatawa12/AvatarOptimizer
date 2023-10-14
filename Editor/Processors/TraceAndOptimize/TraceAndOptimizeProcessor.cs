@@ -1,42 +1,76 @@
 using System.Collections.Generic;
-using Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes;
-using JetBrains.Annotations;
+using nadena.dev.ndmf;
 using UnityEngine;
 
-namespace Anatawa12.AvatarOptimizer.Processors
+namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 {
-    internal class TraceAndOptimizeProcessor
+    class TraceAndOptimizeState
     {
-        private ImmutableModificationsContainer _modifications;
-        [CanBeNull] private TraceAndOptimize _config;
-        private HashSet<GameObject> _exclusions;
+        public bool Enabled;
+        public bool FreezeBlendShape;
+        public bool RemoveUnusedObjects;
+        public bool MmdWorldCompatibility;
 
-        public void Process(OptimizerSession session)
+        public bool PreserveEndBone;
+        public bool UseLegacyAnimatorParser;
+        public HashSet<GameObject> Exclusions = new HashSet<GameObject>();
+        public bool UseLegacyGC;
+        public bool GCDebug;
+        public bool NoConfigureMergeBone;
+        public bool SkipFreezingNonAnimatedBlendShape;
+        public bool SkipFreezingMeaninglessBlendShape;
+
+        public Dictionary<SkinnedMeshRenderer, HashSet<string>> PreserveBlendShapes =
+            new Dictionary<SkinnedMeshRenderer, HashSet<string>>();
+
+        public ImmutableModificationsContainer Modifications;
+
+        public TraceAndOptimizeState()
         {
-            _config = session.GetRootComponent<TraceAndOptimize>();
-            if (_config is null) return;
-            Object.DestroyImmediate(_config);
-            _exclusions = new HashSet<GameObject>(_config.advancedSettings.exclusions);
-
-            _modifications = new AnimatorParser(_config).GatherAnimationModifications(session);
-            if (_config.freezeBlendShape)
-                new AutoFreezeBlendShape(_modifications, session, _exclusions).Process(
-                    _config.advancedSettings.skipFreezingNonAnimatedBlendShape,
-                    _config.advancedSettings.skipFreezingMeaninglessBlendShape);
         }
 
-        public void ProcessLater(OptimizerSession session)
+        public void Initialize(TraceAndOptimize config)
         {
-            if (_config is null) return;
+            FreezeBlendShape = config.freezeBlendShape;
+            RemoveUnusedObjects = config.removeUnusedObjects;
+            MmdWorldCompatibility = config.mmdWorldCompatibility;
 
-            if (_config.removeUnusedObjects)
-                new FindUnusedObjectsProcessor(_modifications, session, 
-                    preserveEndBone: _config.preserveEndBone,
-                    useLegacyGC: _config.advancedSettings.useLegacyGc,
-                    noConfigureMergeBone: _config.advancedSettings.noConfigureMergeBone,
-                    gcDebug: _config.advancedSettings.gcDebug,
-                    exclusions: _exclusions).Process();
+            PreserveEndBone = config.preserveEndBone;
 
+            UseLegacyAnimatorParser = !config.advancedAnimatorParser;
+            Exclusions = new HashSet<GameObject>(config.advancedSettings.exclusions);
+            UseLegacyGC = config.advancedSettings.useLegacyGc;
+            GCDebug = config.advancedSettings.gcDebug;
+            NoConfigureMergeBone = config.advancedSettings.noConfigureMergeBone;
+            SkipFreezingNonAnimatedBlendShape = config.advancedSettings.skipFreezingNonAnimatedBlendShape;
+            SkipFreezingMeaninglessBlendShape = config.advancedSettings.skipFreezingMeaninglessBlendShape;
+
+            Enabled = true;
+        }
+    }
+
+    internal class LoadTraceAndOptimizeConfiguration : Pass<LoadTraceAndOptimizeConfiguration>
+    {
+        public override string DisplayName => "T&O: Load Configuration";
+
+        protected override void Execute(BuildContext context)
+        {
+            var config = context.AvatarRootObject.GetComponent<TraceAndOptimize>();
+            if (config)
+                context.GetState<TraceAndOptimizeState>().Initialize(config);
+            Object.DestroyImmediate(config);
+        }
+    }
+
+    internal class ParseAnimator : Pass<ParseAnimator>
+    {
+        public override string DisplayName => "T&O: Parse Animator";
+
+        protected override void Execute(BuildContext context)
+        {
+            var state = context.GetState<TraceAndOptimizeState>();
+            if (state.Enabled)
+                state.Modifications = new AnimatorParser(state).GatherAnimationModifications(context);
         }
     }
 }

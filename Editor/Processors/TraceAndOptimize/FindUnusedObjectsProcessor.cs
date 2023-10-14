@@ -2,38 +2,51 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEngine;
 using VRC.Dynamics;
-using Debug = System.Diagnostics.Debug;
 using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 {
-    class FindUnusedObjectsProcessor
+    internal class FindUnusedObjects : Pass<FindUnusedObjects>
+    {
+        public override string DisplayName => "T&O: FindUnusedObjects";
+
+        protected override void Execute(BuildContext context)
+        {
+            var state = context.GetState<TraceAndOptimizeState>();
+            if (!state.RemoveUnusedObjects) return;
+
+            new FindUnusedObjectsProcessor(context, state).Process();
+        }
+    }
+
+    internal readonly struct FindUnusedObjectsProcessor
     {
         private readonly ImmutableModificationsContainer _modifications;
-        private readonly OptimizerSession _session;
+        private readonly BuildContext _context;
         private readonly HashSet<GameObject> _exclusions;
         private readonly bool _preserveEndBone;
         private readonly bool _useLegacyGC;
         private readonly bool _noConfigureMergeBone;
         private readonly bool _gcDebug;
 
-        public FindUnusedObjectsProcessor(ImmutableModificationsContainer modifications, OptimizerSession session,
-            bool preserveEndBone,
-            bool useLegacyGC,
-            bool noConfigureMergeBone,
-            bool gcDebug,
-            HashSet<GameObject> exclusions)
+        public FindUnusedObjectsProcessor(BuildContext context, TraceAndOptimizeState state)
         {
-            _modifications = modifications;
-            _session = session;
-            _preserveEndBone = preserveEndBone;
-            _useLegacyGC = useLegacyGC;
-            _noConfigureMergeBone = noConfigureMergeBone;
-            _gcDebug = gcDebug;
-            _exclusions = exclusions;
+            _context = context;
+
+            _modifications = state.Modifications;
+            _preserveEndBone = state.PreserveEndBone;
+            _useLegacyGC = state.UseLegacyGC;
+            _noConfigureMergeBone = state.NoConfigureMergeBone;
+            _gcDebug = state.GCDebug;
+            _exclusions = state.Exclusions;
+
+            _marked = new Dictionary<Component, ComponentDependencyCollector.DependencyType>();
+            _processPending = new Queue<(Component, bool)>();
+            _activeNessCache = new Dictionary<Component, bool?>();
         }
 
         public void Process()
@@ -47,10 +60,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         }
 
         // Mark & Sweep Variables
-        private readonly Dictionary<Component, ComponentDependencyCollector.DependencyType> _marked =
-            new Dictionary<Component, ComponentDependencyCollector.DependencyType>();
-        private readonly Queue<(Component, bool)> _processPending = new Queue<(Component, bool)>();
-        private readonly Dictionary<Component, bool?> _activeNessCache = new Dictionary<Component, bool?>();
+        private readonly Dictionary<Component, ComponentDependencyCollector.DependencyType> _marked;
+        private readonly Queue<(Component, bool)> _processPending;
+        private readonly Dictionary<Component, bool?> _activeNessCache;
 
         private bool? GetActiveness(Component component)
         {
@@ -63,7 +75,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         private bool? ComputeActiveness(Component component)
         {
-            if (_session.GetRootComponent<Transform>() == component) return true;
+            if (_context.AvatarRootTransform == component) return true;
             bool? parentActiveness;
             if (component is Transform t)
                 parentActiveness = t.parent == null ? true : GetActiveness(t.parent);
@@ -151,7 +163,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         private void MarkAndSweep()
         {
             // first, collect usages
-            var collector = new ComponentDependencyCollector(_session, _preserveEndBone);
+            var collector = new ComponentDependencyCollector(_context, _preserveEndBone);
             collector.CollectAllUsages();
 
             // then, mark and sweep.
@@ -184,7 +196,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 }
             }
 
-            foreach (var component in _session.GetComponents<Component>())
+            foreach (var component in _context.GetComponents<Component>())
             {
                 // null values are ignored
                 if (!component) continue;
@@ -206,12 +218,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         private void CollectDataForGc()
         {
             // first, collect usages
-            var collector = new ComponentDependencyCollector(_session, _preserveEndBone);
+            var collector = new ComponentDependencyCollector(_context, _preserveEndBone);
             collector.CollectAllUsages();
 
             var componentDataMap = new Dictionary<Component, GCData.ComponentData>();
 
-            foreach (var component in _session.GetComponents<Component>())
+            foreach (var component in _context.GetComponents<Component>())
             {
                 var componentData = new GCData.ComponentData { component = component };
                 componentDataMap.Add(component, componentData);
@@ -243,7 +255,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             foreach (var component in gameObject.GetComponents<Component>())
                 componentDataMap[component].entrypoint = true;
 
-            foreach (var component in _session.GetComponents<Component>())
+            foreach (var component in _context.GetComponents<Component>())
             {
                 var dependencies = collector.GetDependencies(component);
                 foreach (var (key, (flags, type)) in dependencies.Dependencies)
@@ -252,9 +264,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             }
 
             
-            foreach (var component in _session.GetComponents<Component>())
+            foreach (var component in _context.GetComponents<Component>())
                 component.gameObject.GetOrAddComponent<GCData>().data.Add(componentDataMap[component]);
-            _session.GetRootComponent<Transform>().gameObject.AddComponent<GCDataRoot>();
+            _context.AvatarRootObject.AddComponent<GCDataRoot>();
         }
 
         class GCDataRoot : MonoBehaviour
@@ -354,14 +366,15 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         private void ConfigureMergeBone()
         {
-            ConfigureRecursive(_session.GetRootComponent<Transform>(), _modifications);
+            ConfigureRecursive(this, _context.AvatarRootTransform, _modifications);
 
             // returns true if merged
-            bool ConfigureRecursive(Transform transform, ImmutableModificationsContainer modifications)
+            bool ConfigureRecursive(in FindUnusedObjectsProcessor processor, Transform transform,
+                ImmutableModificationsContainer modifications)
             {
                 var mergedChildren = true;
                 foreach (var child in transform.DirectChildrenEnumerable())
-                    mergedChildren &= ConfigureRecursive(child, modifications);
+                    mergedChildren &= ConfigureRecursive(processor, child, modifications);
 
                 const ComponentDependencyCollector.DependencyType AllowedUsages =
                     ComponentDependencyCollector.DependencyType.Bone
@@ -373,7 +386,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 // Components must be Transform Only
                 if (transform.GetComponents<Component>().Length != 1) return false;
                 // The bone cannot be used generally
-                if ((_marked[transform] & ~AllowedUsages) != 0) return false;
+                if ((processor._marked[transform] & ~AllowedUsages) != 0) return false;
                 // must not be animated
                 if (TransformAnimated(transform, modifications)) return false;
 
@@ -441,7 +454,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         private IEnumerable<GameObject> CollectAllActiveAbleGameObjects()
         {
             var queue = new Queue<GameObject>();
-            queue.Enqueue(_session.GetRootComponent<Transform>().gameObject);
+            queue.Enqueue(_context.AvatarRootTransform.gameObject);
 
             while (queue.Count != 0)
             {
@@ -465,7 +478,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         private void ProcessLegacy() {
             // mark & sweep
-            var gameObjects = new HashSet<GameObject>(_session.GetComponents<Transform>().Select(x => x.gameObject));
+            var gameObjects = new HashSet<GameObject>(_context.GetComponents<Transform>().Select(x => x.gameObject));
             var referenced = new HashSet<GameObject>();
             var newReferenced = new Queue<GameObject>();
 
@@ -516,51 +529,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
                     using (var serialized = new SerializedObject(component))
                     {
-                        var iter = serialized.GetIterator();
-                        var enterChildren = true;
-                        while (iter.Next(enterChildren))
+                        foreach (var iter in serialized.ObjectReferenceProperties())
                         {
-                            if (iter.propertyType == SerializedPropertyType.ObjectReference)
-                            {
-                                var value = iter.objectReferenceValue;
-                                if (value is Component c && !EditorUtility.IsPersistent(value))
-                                    AddGameObject(c.gameObject);
-                            }
-
-                            switch (iter.propertyType)
-                            {
-                                case SerializedPropertyType.Integer:
-                                case SerializedPropertyType.Boolean:
-                                case SerializedPropertyType.Float:
-                                case SerializedPropertyType.String:
-                                case SerializedPropertyType.Color:
-                                case SerializedPropertyType.ObjectReference:
-                                case SerializedPropertyType.Enum:
-                                case SerializedPropertyType.Vector2:
-                                case SerializedPropertyType.Vector3:
-                                case SerializedPropertyType.Vector4:
-                                case SerializedPropertyType.Rect:
-                                case SerializedPropertyType.ArraySize:
-                                case SerializedPropertyType.Character:
-                                case SerializedPropertyType.Bounds:
-                                case SerializedPropertyType.Quaternion:
-                                case SerializedPropertyType.FixedBufferSize:
-                                case SerializedPropertyType.Vector2Int:
-                                case SerializedPropertyType.Vector3Int:
-                                case SerializedPropertyType.RectInt:
-                                case SerializedPropertyType.BoundsInt:
-                                    enterChildren = false;
-                                    break;
-                                case SerializedPropertyType.Generic:
-                                case SerializedPropertyType.LayerMask:
-                                case SerializedPropertyType.AnimationCurve:
-                                case SerializedPropertyType.Gradient:
-                                case SerializedPropertyType.ExposedReference:
-                                case SerializedPropertyType.ManagedReference:
-                                default:
-                                    enterChildren = true;
-                                    break;
-                            }
+                            var value = iter.objectReferenceValue;
+                            if (value is Component c && !EditorUtility.IsPersistent(value))
+                                AddGameObject(c.gameObject);
                         }
                     }
                 }

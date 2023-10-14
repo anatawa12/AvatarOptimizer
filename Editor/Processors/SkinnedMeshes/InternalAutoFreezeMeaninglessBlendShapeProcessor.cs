@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using nadena.dev.ndmf;
 using UnityEditor;
 
 namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
@@ -12,19 +13,19 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         public override EditSkinnedMeshProcessorOrder ProcessOrder => EditSkinnedMeshProcessorOrder.AutoConfigureFreezeBlendShape;
 
-        public override void Process(OptimizerSession session, MeshInfo2 target)
+        public override void Process(BuildContext context, MeshInfo2 target)
         {
-            var meaningfulBlendShapes = new HashSet<string>();
-            if (session.PreserveBlendShapes.TryGetValue(Target, out var preserve))
-                meaningfulBlendShapes.UnionWith(preserve);
+            var meaninglessBlendShapes = new HashSet<string>(target.BlendShapes.Select(x => x.name));
+            var state = context.GetState<TraceAndOptimizes.TraceAndOptimizeState>();
+            if (state.PreserveBlendShapes.TryGetValue(Target, out var preserve))
+                meaninglessBlendShapes.ExceptWith(preserve);
 
             foreach (var vertex in target.Vertices)
-                meaningfulBlendShapes.UnionWith(vertex.BlendShapes.Keys);
+                meaninglessBlendShapes.ExceptWith(vertex.BlendShapes.Keys);
 
             var freezeBlendShape = Target.GetComponent<FreezeBlendShape>();
             var set = freezeBlendShape.shapeKeysSet.GetAsSet();
-            set.UnionWith(target.BlendShapes.Where(x => !meaningfulBlendShapes.Contains(x.name))
-                .Select(x => x.name));
+            set.UnionWith(meaninglessBlendShapes);
             freezeBlendShape.shapeKeysSet.SetValueNonPrefab(set);
         }
 
