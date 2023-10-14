@@ -261,6 +261,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 for (var bone = HumanBodyBones.Hips; bone < HumanBodyBones.LastBone; bone++)
                 {
                     var boneTransform = component.GetBoneTransform(bone);
+                    deps.AddActiveDependency(boneTransform);
                     foreach (var transform in boneTransform.ParentEnumerable())
                     {
                         if (transform == component.transform) break;
