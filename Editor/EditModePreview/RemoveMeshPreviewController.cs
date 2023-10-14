@@ -266,6 +266,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                         _indexBuffer.Add(_triangles[triIdx].Third);
                     }
 
+                    PreviewMesh.subMeshCount = _subMeshTriangleEndIndices.Length;
                     while (subMeshIdx < _subMeshTriangleEndIndices.Length &&
                            triIdx + 1 == _subMeshTriangleEndIndices[subMeshIdx])
                     {
