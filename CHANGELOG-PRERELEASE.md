@@ -31,7 +31,7 @@ The format is based on [Keep a Changelog].
 - Error with MeshRenderer without MeshFilter [`#581`](https://github.com/anatawa12/AvatarOptimizer/pull/581)
 - Preview not working with VRMConverter [`#582`](https://github.com/anatawa12/AvatarOptimizer/pull/582)
 - AvatarMask about HumanoidBone broken [`#586`](https://github.com/anatawa12/AvatarOptimizer/pull/586)
-- Unused Homanoid Bones can be removed [`#587`](https://github.com/anatawa12/AvatarOptimizer/pull/587)
+- Unused Humanoid Bones can be removed [`#587`](https://github.com/anatawa12/AvatarOptimizer/pull/587)
 
 ## [1.5.3] - 2023-10-11
 ### Changed
