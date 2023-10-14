@@ -544,12 +544,12 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
         }
     }
 
+    [ComponentInformationWithGUID("f9ac8d30c6a0d9642a11e5be4c440740", 11500000)]
     internal class DynamicBoneInformation : ComponentInformation<Component>
     {
         protected override void CollectDependency(Component component, IComponentDependencyCollector collector)
         {
-            DynamicBone.TryCast(component, out var dynamicBone);
-            foreach (var transform in dynamicBone.GetAffectedTransforms())
+            foreach (var transform in GetAffectedTransforms(component))
             {
                 collector.AddDependency(transform, component)
                     .EvenIfDependantDisabled()
@@ -557,7 +557,7 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
                 collector.AddDependency(transform);
             }
 
-            foreach (var collider in dynamicBone.Colliders)
+            foreach (var collider in (IReadOnlyList<MonoBehaviour>)((dynamic)component).m_Colliders)
             {
                 // DynamicBone ignores enabled/disabled of Collider Component AFAIK
                 collector.AddDependency(collider);
@@ -566,13 +566,30 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
 
         protected override void CollectMutations(Component component, IComponentMutationsCollector collector)
         {
-            // DynamicBone : similar to PhysBone
-            DynamicBone.TryCast(component, out var dynamicBone);
-            foreach (var transform in dynamicBone.GetAffectedTransforms())
+            foreach (var transform in GetAffectedTransforms(component))
                 collector.TransformRotation(transform);
+        }
+
+        private static IEnumerable<Transform> GetAffectedTransforms(dynamic dynamicBone)
+        {
+            var ignores = new HashSet<Transform>(dynamicBone.m_Exclusions);
+            var queue = new Queue<Transform>();
+            Transform root = dynamicBone.m_Root;
+            queue.Enqueue(root ? root : (Transform)dynamicBone.transform);
+
+            while (queue.Count != 0)
+            {
+                var transform = queue.Dequeue();
+                yield return transform;
+
+                foreach (var child in transform.DirectChildrenEnumerable())
+                    if (!ignores.Contains(child))
+                        queue.Enqueue(child);
+            }
         }
     }
 
+    [ComponentInformationWithGUID("baedd976e12657241bf7ff2d1c685342", 11500000)]
     internal class DynamicBoneColliderInformation : ComponentInformation<Component>
     {
         protected override void CollectDependency(Component component, IComponentDependencyCollector collector)

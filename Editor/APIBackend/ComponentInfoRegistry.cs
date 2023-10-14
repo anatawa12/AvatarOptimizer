@@ -39,16 +39,6 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
         }
 
         [InitializeOnLoadMethod]
-        static void LoadDynamicBone()
-        {
-            if (DynamicBone.Type is Type dynamicBoneType)
-                InformationByType.Add(dynamicBoneType, new DynamicBoneInformation());
-            // ReSharper disable once PossibleNullReferenceException
-            if (ExternalLibraryAccessor.DynamicBone.ColliderType is Type colliderType)
-                InformationByType.Add(colliderType, new DynamicBoneColliderInformation());
-        }
-
-        [InitializeOnLoadMethod]
         static void NDMFComponents()
         {
             var contextHolder = typeof(nadena.dev.ndmf.BuildContext).Assembly
