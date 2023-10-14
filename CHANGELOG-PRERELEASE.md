@@ -18,6 +18,7 @@ The format is based on [Keep a Changelog].
 ### Fixed
 - Error with MeshRenderer without MeshFilter `#581`
 - Preview not working with VRMConverter `#582`
+- AvatarMask about HumanoidBone broken `#586`
 
 ### Security
 
