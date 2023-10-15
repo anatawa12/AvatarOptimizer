@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - Constraints and Animations can be broken with Automatic MergeBone `#594`
+- NRE with SMR with None with preview system `#596`
 
 ### Security
 
