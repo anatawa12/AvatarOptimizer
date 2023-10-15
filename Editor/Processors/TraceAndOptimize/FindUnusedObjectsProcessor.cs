@@ -356,30 +356,48 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         {
             ConfigureRecursive(_session.GetRootComponent<Transform>(), _modifications);
 
-            // returns true if merged
-            bool ConfigureRecursive(Transform transform, ImmutableModificationsContainer modifications)
+            // returns (original mergedChildren, list of merged children if merged, and null if not merged)
+            //[CanBeNull]
+            (bool, List<Transform>) ConfigureRecursive(Transform transform, ImmutableModificationsContainer modifications)
             {
                 var mergedChildren = true;
+                var afterChildren = new List<Transform>();
                 foreach (var child in transform.DirectChildrenEnumerable())
-                    mergedChildren &= ConfigureRecursive(child, modifications);
+                {
+                    var (newMergedChildren, newChildren) = ConfigureRecursive(child, modifications);
+                    if (newChildren == null)
+                    {
+                        mergedChildren = false;
+                        afterChildren.Add(child);
+                    }
+                    else
+                    {
+                        mergedChildren &= newMergedChildren;
+                        afterChildren.AddRange(newChildren);
+                    }
+                }
 
                 const ComponentDependencyCollector.DependencyType AllowedUsages =
                     ComponentDependencyCollector.DependencyType.Bone
                     | ComponentDependencyCollector.DependencyType.Parent
                     | ComponentDependencyCollector.DependencyType.ComponentToTransform;
 
+                // functions for make it easier to know meaning of result
+                (bool, List<Transform>) YesMerge() => (mergedChildren, afterChildren);
+                (bool, List<Transform>) NotMerged() => (mergedChildren, null);
+
                 // Already Merged
-                if (transform.GetComponent<MergeBone>()) return true;
+                if (transform.GetComponent<MergeBone>()) return YesMerge();
                 // Components must be Transform Only
-                if (transform.GetComponents<Component>().Length != 1) return false;
+                if (transform.GetComponents<Component>().Length != 1) return NotMerged();
                 // The bone cannot be used generally
-                if ((_marked[transform] & ~AllowedUsages) != 0) return false;
+                if ((_marked[transform] & ~AllowedUsages) != 0) return NotMerged();
                 // must not be animated
-                if (TransformAnimated(transform, modifications)) return false;
+                if (TransformAnimated(transform, modifications)) return NotMerged();
 
                 if (!mergedChildren)
                 {
-                    if (GameObjectAnimated(transform, modifications)) return false;
+                    if (GameObjectAnimated(transform, modifications)) return NotMerged();
 
                     var localScale = transform.localScale;
                     var identityTransform = localScale == Vector3.one && transform.localPosition == Vector3.zero &&
@@ -387,22 +405,21 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
                     if (!identityTransform)
                     {
-                        var childrenTransformAnimated =
-                            transform.DirectChildrenEnumerable().Any(x => TransformAnimated(x, modifications));
+                        var childrenTransformAnimated = afterChildren.Any(x => TransformAnimated(x, modifications));
                         if (childrenTransformAnimated)
                             // if this is not identity transform, animating children is not good
-                            return false;
+                            return NotMerged();
 
                         if (!MergeBoneProcessor.ScaledEvenly(localScale))
                             // non even scaling is not possible to reproduce in children
-                            return false;
+                            return NotMerged();
                     }
                 }
 
                 if (!transform.gameObject.GetComponent<MergeBone>())
                     transform.gameObject.AddComponent<MergeBone>().avoidNameConflict = true;
 
-                return true;
+                return YesMerge();
             }
 
             bool TransformAnimated(Transform transform, ImmutableModificationsContainer modifications)

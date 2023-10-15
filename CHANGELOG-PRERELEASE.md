@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Constraints and Animations can be broken with Automatic MergeBone `#594`
 
 ### Security
 
