@@ -16,9 +16,12 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- BlendShape can be broken with MergeBone Optimization `#599`
 
 ### Security
+
+## [1.5.5-rc.1] - 2023-10-15
+### Fixed
+- BlendShape can be broken with MergeBone Optimization [`#599`](https://github.com/anatawa12/AvatarOptimizer/pull/599)
 
 ## [1.5.5-beta.1] - 2023-10-15
 ### Fixed
@@ -894,7 +897,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.5-beta.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.5-rc.1...HEAD
+[1.5.5-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.5-beta.1...v1.5.5-rc.1
 [1.5.5-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.4...v1.5.5-beta.1
 [1.5.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.3...v1.5.4
 [1.5.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.3-beta.1...v1.5.3
