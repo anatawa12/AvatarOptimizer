@@ -164,7 +164,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                         var frame = frames[i];
                         frames[i] = new Vertex.BlendShapeFrame(
                             weight: frame.Weight,
-                            position: transBindPose.MultiplyPoint3x4(frame.Position),
+                            position: transBindPose.MultiplyPoint3x3(frame.Position),
                             normal: transBindPose.MultiplyPoint3x3(frame.Normal),
                             tangent: transBindPose.MultiplyPoint3x3(frame.Tangent)
                         );
