@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog].
 - Constraints and Animations can be broken with Automatic MergeBone `#594`
 - NRE with SMR with None with preview system `#596`
 - Some Multi-Frame BlendShape broken `#597`
+- BlendShape can be broken with MergeBone Optimization `#599`
 
 ### Security
 

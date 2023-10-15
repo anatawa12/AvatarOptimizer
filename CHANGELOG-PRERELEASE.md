@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- BlendShape can be broken with MergeBone Optimization `#599`
 
 ### Security
 
