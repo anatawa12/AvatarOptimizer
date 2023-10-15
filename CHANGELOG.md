@@ -16,12 +16,15 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Constraints and Animations can be broken with Automatic MergeBone `#594`
-- NRE with SMR with None with preview system `#596`
-- Some Multi-Frame BlendShape broken `#597`
-- BlendShape can be broken with MergeBone Optimization `#599`
 
 ### Security
+
+## [1.5.5] - 2023-10-15
+### Fixed
+- Constraints and Animations can be broken with Automatic MergeBone [`#594`](https://github.com/anatawa12/AvatarOptimizer/pull/594)
+- NRE with SMR with None with preview system [`#596`](https://github.com/anatawa12/AvatarOptimizer/pull/596)
+- Some Multi-Frame BlendShape broken [`#597`](https://github.com/anatawa12/AvatarOptimizer/pull/597)
+- BlendShape can be broken with MergeBone Optimization [`#599`](https://github.com/anatawa12/AvatarOptimizer/pull/599)
 
 ## [1.5.4] - 2023-10-14
 ### Added
@@ -591,7 +594,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.4...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.5...HEAD
+[1.5.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.4...v1.5.5
 [1.5.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.3...v1.5.4
 [1.5.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.2...v1.5.3
 [1.5.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.1...v1.5.2
