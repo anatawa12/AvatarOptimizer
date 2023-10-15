@@ -165,20 +165,40 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
                 var shapes = new List<Vertex.BlendShapeFrame>[Vertices.Count];
 
-                for (int frame = 0; frame < mesh.GetBlendShapeFrameCount(i); frame++)
+                var frameCount = mesh.GetBlendShapeFrameCount(i);
+                for (var frame = 0; frame < frameCount; frame++)
                 {
                     mesh.GetBlendShapeFrameVertices(i, frame, deltaVertices, deltaNormals, deltaTangents);
                     var weight = mesh.GetBlendShapeFrameWeight(i, frame);
 
                     for (var vertex = 0; vertex < deltaNormals.Length; vertex++)
                     {
-                        if (deltaVertices[vertex] == Vector3.zero && deltaNormals[vertex] == Vector3.zero && deltaTangents[vertex] == Vector3.zero)
-                            continue;
-                        if (shapes[vertex] == null)
-                            shapes[vertex] = new List<Vertex.BlendShapeFrame>();
-                        shapes[vertex].Add(new Vertex.BlendShapeFrame(weight, deltaVertices[vertex],
-                            deltaNormals[vertex], deltaTangents[vertex]));
-                    }                    
+                        var deltaVertex = deltaVertices[vertex];
+                        var deltaNormal = deltaNormals[vertex];
+                        var deltaTangent = deltaTangents[vertex];
+                        if (shapes[vertex] != null)
+                        {
+                            // this blendshape has meaning so add frame even if delta is 0
+                            shapes[vertex].Add(new Vertex.BlendShapeFrame(weight,
+                                deltaVertex, deltaNormal, deltaTangent));
+                        }
+                        else if (deltaVertex == Vector3.zero && deltaNormal == Vector3.zero &&
+                                 deltaTangent == Vector3.zero)
+                        {
+                            // If delta is zero, do not register frame
+                        }
+                        else
+                        {
+                            shapes[vertex] = new List<Vertex.BlendShapeFrame>(frameCount);
+
+                            for (var prevFrame = 0; prevFrame < frame; prevFrame++)
+                                shapes[vertex].Add(new Vertex.BlendShapeFrame(weight,
+                                    Vector3.zero, Vector3.zero, Vector3.zero));
+
+                            shapes[vertex].Add(new Vertex.BlendShapeFrame(weight, deltaVertices[vertex],
+                                deltaNormals[vertex], deltaTangents[vertex]));
+                        }
+                    }
                 }
 
                 for (var vertex = 0; vertex < shapes.Length; vertex++)
