@@ -70,6 +70,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                 {
                     var editorObj = ActiveEditor();
                     if (editorObj is GameObject go &&
+                        go.GetComponent<SkinnedMeshRenderer>().sharedMesh && 
                         RemoveMeshPreviewController.EditorTypes.Any(t => go.GetComponent(t)))
                     {
                         StartPreview(go);
