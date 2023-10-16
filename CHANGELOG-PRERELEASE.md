@@ -18,6 +18,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - Update notice may show incorrect version `#602`
+- `Preview` button is not disabled even if mesh is none `#605`
 
 ### Security
 
