@@ -19,7 +19,18 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             var state = context.GetState<TraceAndOptimizeState>();
             if (!state.RemoveUnusedObjects) return;
 
-            new FindUnusedObjectsProcessor(context, state).Process();
+            if (state.UseLegacyGC)
+            {
+                new LegacyGC().Process();
+            }
+            else
+            {
+                var processor = new FindUnusedObjectsProcessor(context, state);
+                if (state.GCDebug)
+                    processor.CollectDataForGc();
+                else
+                    processor.ProcessNew();
+            }
         }
     }
 
@@ -29,9 +40,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         private readonly BuildContext _context;
         private readonly HashSet<GameObject> _exclusions;
         private readonly bool _preserveEndBone;
-        private readonly bool _useLegacyGC;
         private readonly bool _noConfigureMergeBone;
-        private readonly bool _gcDebug;
 
         public FindUnusedObjectsProcessor(BuildContext context, TraceAndOptimizeState state)
         {
@@ -39,24 +48,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             _modifications = state.Modifications;
             _preserveEndBone = state.PreserveEndBone;
-            _useLegacyGC = state.UseLegacyGC;
             _noConfigureMergeBone = state.NoConfigureMergeBone;
-            _gcDebug = state.GCDebug;
             _exclusions = state.Exclusions;
 
             _marked = new Dictionary<Component, ComponentDependencyCollector.DependencyType>();
             _processPending = new Queue<(Component, bool)>();
             _activeNessCache = new Dictionary<Component, bool?>();
-        }
-
-        public void Process()
-        {
-            if (_useLegacyGC)
-                ProcessLegacy();
-            else if (_gcDebug)
-                CollectDataForGc();
-            else
-                ProcessNew();
         }
 
         // Mark & Sweep Variables
@@ -154,7 +151,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             }
         }
 
-        private void ProcessNew()
+        public void ProcessNew()
         {
             MarkAndSweep();
             if (!_noConfigureMergeBone) ConfigureMergeBone();
@@ -215,7 +212,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             }
         }
 
-        private void CollectDataForGc()
+        public void CollectDataForGc()
         {
             // first, collect usages
             var collector = new ComponentDependencyCollector(_context, _preserveEndBone);
@@ -490,77 +487,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                         // This GameObject and their children will never be active
                         break;
                 }
-            }
-        }
-
-        private void ProcessLegacy() {
-            // mark & sweep
-            var gameObjects = new HashSet<GameObject>(_context.GetComponents<Transform>().Select(x => x.gameObject));
-            var referenced = new HashSet<GameObject>();
-            var newReferenced = new Queue<GameObject>();
-
-            void AddGameObject(GameObject gameObject)
-            {
-                if (gameObject && gameObjects.Contains(gameObject) && referenced.Add(gameObject))
-                    newReferenced.Enqueue(gameObject);
-            }
-
-            // entry points: active GameObjects
-            foreach (var component in gameObjects.Where(x => x.activeInHierarchy))
-                AddGameObject(component);
-
-            // entry points: modified enable/disable
-            foreach (var keyValuePair in _modifications.ModifiedProperties)
-            {
-                // TODO: if the any of parent is inactive and kept, it should not be assumed as 
-                if (!keyValuePair.Key.AsGameObject(out var gameObject)) continue;
-                if (!keyValuePair.Value.TryGetValue("m_IsActive", out _)) continue;
-
-                // TODO: if the child is not activeSelf, it should not be assumed as entry point.
-                foreach (var transform in gameObject.GetComponentsInChildren<Transform>())
-                    AddGameObject(transform.gameObject);
-            }
-
-            // entry points: active GameObjects
-            foreach (var gameObject in _exclusions)
-                AddGameObject(gameObject);
-
-            while (newReferenced.Count != 0)
-            {
-                var gameObject = newReferenced.Dequeue();
-
-                foreach (var component in gameObject.GetComponents<Component>())
-                {
-                    if (component is Transform transform)
-                    {
-                        if (transform.parent)
-                            AddGameObject(transform.parent.gameObject);
-                        continue;
-                    }
-
-                    if (component is VRCPhysBoneBase)
-                    {
-                        foreach (var child in component.GetComponentsInChildren<Transform>(true))
-                            AddGameObject(child.gameObject);
-                    }
-
-                    using (var serialized = new SerializedObject(component))
-                    {
-                        foreach (var iter in serialized.ObjectReferenceProperties())
-                        {
-                            var value = iter.objectReferenceValue;
-                            if (value is Component c && !EditorUtility.IsPersistent(value))
-                                AddGameObject(c.gameObject);
-                        }
-                    }
-                }
-            }
-
-            // sweep
-            foreach (var gameObject in gameObjects.Where(x => !referenced.Contains(x)))
-            {
-                if (gameObject)
-                    Object.DestroyImmediate(gameObject);
             }
         }
     }
