@@ -85,15 +85,14 @@ namespace Anatawa12.AvatarOptimizer
                 beta
                     ? "https://vpm.anatawa12.com/avatar-optimizer/beta/latest.txt"
                     : "https://vpm.anatawa12.com/avatar-optimizer/latest.txt";
-            
-            var updatedAtKey =
+
+            var keyPrefix =
                 beta
-                    ? "com.anatawa12.avatar-optimizer.beta.latest.updated"
-                    : "com.anatawa12.avatar-optimizer.latest.updated";
-            var latestVersionKey =
-                beta
-                    ? "com.anatawa12.avatar-optimizer.beta.latest.value"
-                    : "com.anatawa12.avatar-optimizer.latest.value";
+                    ? "com.anatawa12.avatar-optimizer.beta.latest"
+                    : "com.anatawa12.avatar-optimizer.latest";
+            var updatedAtKey = $"{keyPrefix}.updated";
+            var checkedWithKey = $"{keyPrefix}.checked-with";
+            var latestVersionKey = $"{keyPrefix}.value";
 
             // fetch cached version
             var cachedVersion = EditorPrefs.GetString(latestVersionKey);
@@ -101,6 +100,7 @@ namespace Anatawa12.AvatarOptimizer
                 cachedVersion = null;
             
             if (cachedVersion != null 
+                && EditorPrefs.GetString(checkedWithKey, "") == CurrentVersionName
                 && DateTime.TryParse(EditorPrefs.GetString(updatedAtKey, ""), out var updatedAt)
                 && updatedAt >= DateTime.UtcNow - TimeSpan.FromHours(1))
             {
@@ -135,6 +135,7 @@ namespace Anatawa12.AvatarOptimizer
             {
                 // we successfully fetched latest version!
                 EditorPrefs.SetString(latestVersionKey, fetchedLatestVersion);
+                EditorPrefs.SetString(checkedWithKey, CurrentVersionName);
                 EditorPrefs.SetString(updatedAtKey, DateTime.UtcNow.ToString("O"));
                 return fetchedLatestVersion;
             }
