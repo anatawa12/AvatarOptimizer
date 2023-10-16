@@ -26,9 +26,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             else
             {
                 var processor = new FindUnusedObjectsProcessor(context, state);
-                if (state.GCDebug)
-                    processor.CollectDataForGc();
-                else
+                //if (state.GCDebug)
+                //    processor.CollectDataForGc();
+                //else
                     processor.ProcessNew();
             }
         }
@@ -209,155 +209,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     if (!_marked.ContainsKey(component))
                         Object.DestroyImmediate(component);
                 }
-            }
-        }
-
-        public void CollectDataForGc()
-        {
-            // first, collect usages
-            var collector = new ComponentDependencyCollector(_context, _preserveEndBone);
-            collector.CollectAllUsages();
-
-            var componentDataMap = new Dictionary<Component, GCData.ComponentData>();
-
-            foreach (var component in _context.GetComponents<Component>())
-            {
-                var componentData = new GCData.ComponentData { component = component };
-                componentDataMap.Add(component, componentData);
-
-                switch (ComputeActiveness(component))
-                {
-                    case false:
-                        componentData.activeness = GCData.ActiveNess.False;
-                        break;
-                    case true:
-                        componentData.activeness = GCData.ActiveNess.True;
-                        break;
-                    case null:
-                        componentData.activeness = GCData.ActiveNess.Variable;
-                        break;
-                }
-
-                var dependencies = collector.GetDependencies(component);
-                foreach (var (key, (flags, type)) in dependencies.Dependencies)
-                    componentData.dependencies.Add(new GCData.DependencyInfo(key, flags, type));
-            }
-
-            foreach (var gameObject in CollectAllActiveAbleGameObjects())
-            foreach (var component in gameObject.GetComponents<Component>())
-                if (collector.GetDependencies(component).EntrypointComponent)
-                    componentDataMap[component].entrypoint = true;
-
-            foreach (var gameObject in _exclusions)
-            foreach (var component in gameObject.GetComponents<Component>())
-                componentDataMap[component].entrypoint = true;
-
-            foreach (var component in _context.GetComponents<Component>())
-            {
-                var dependencies = collector.GetDependencies(component);
-                foreach (var (key, (flags, type)) in dependencies.Dependencies)
-                    if (componentDataMap.TryGetValue(key, out var info))
-                        info.dependants.Add(new GCData.DependencyInfo(component, flags, type));
-            }
-
-            
-            foreach (var component in _context.GetComponents<Component>())
-                component.gameObject.GetOrAddComponent<GCData>().data.Add(componentDataMap[component]);
-            _context.AvatarRootObject.AddComponent<GCDataRoot>();
-        }
-
-        class GCDataRoot : MonoBehaviour
-        {
-        }
-
-        [CustomEditor(typeof(GCDataRoot))]
-        class GCDataRootEditor : Editor
-        {
-            public override void OnInspectorGUI()
-            {
-                if (GUILayout.Button("Copy All Data"))
-                {
-                    GUIUtility.systemCopyBuffer = CreateData();
-                }
-
-                if (GUILayout.Button("Save All Data"))
-                {
-                    var path = EditorUtility.SaveFilePanel("DebugGCData", "", "data.txt", "txt");
-                    if (!string.IsNullOrEmpty(path))
-                    {
-                        System.IO.File.WriteAllText(path, CreateData());
-                    }
-                }
-
-                string CreateData()
-                {
-                    var root = ((Component)target).gameObject;
-                    var collect = new StringBuilder();
-                    foreach (var gcData in root.GetComponentsInChildren<GCData>(true))
-                    {
-                        collect.Append(RuntimeUtil.RelativePath(root, gcData.gameObject)).Append(":\n");
-
-                        foreach (var componentData in gcData.data.Where(componentData => componentData.component))
-                        {
-                            collect.Append("  ").Append(componentData.component.GetType().Name).Append(":\n");
-                            collect.Append("    ActiveNess: ").Append(componentData.activeness).Append('\n');
-                            collect.Append("    Dependencies:\n");
-                            var list = new List<string>();
-                            foreach (var dependencyInfo in componentData.dependencies.Where(x => x.component))
-                            {
-                                var path = RuntimeUtil.RelativePath(root, dependencyInfo.component.gameObject);
-                                var types = dependencyInfo.component.GetType().Name;
-                                list.Add($"{path}({types})({dependencyInfo.type},{dependencyInfo.flags})");
-                            }
-
-                            list.Sort();
-                            foreach (var line in list)
-                                collect.Append("      ").Append(line).Append("\n");
-                        }
-
-                        collect.Append("\n");
-                    }
-
-                    return collect.ToString();
-                }
-            }
-        }
-
-        class GCData : MonoBehaviour
-        {
-            public List<ComponentData> data = new List<ComponentData>();
-
-            [Serializable]
-            public class ComponentData
-            {
-                public Component component;
-                public ActiveNess activeness;
-                public bool entrypoint;
-                public List<DependencyInfo> dependencies = new List<DependencyInfo>();
-                public List<DependencyInfo> dependants = new List<DependencyInfo>();
-            }
-
-            [Serializable]
-            public class DependencyInfo
-            {
-                public Component component;
-                public ComponentDependencyCollector.DependencyFlags flags;
-                public ComponentDependencyCollector.DependencyType type;
-
-                public DependencyInfo(Component component, ComponentDependencyCollector.DependencyFlags flags,
-                    ComponentDependencyCollector.DependencyType type)
-                {
-                    this.component = component;
-                    this.flags = flags;
-                    this.type = type;
-                }
-            }
-
-            public enum ActiveNess
-            {
-                False,
-                True,
-                Variable
             }
         }
 
