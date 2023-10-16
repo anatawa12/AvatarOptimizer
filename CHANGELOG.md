@@ -18,6 +18,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - Multi-frame BlendShape can be broken `#601`
+- Update notice may show incorrect version `#602`
 
 ### Security
 

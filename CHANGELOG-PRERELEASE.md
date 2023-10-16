@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Update notice may show incorrect version `#602`
 
 ### Security
 
