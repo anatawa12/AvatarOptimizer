@@ -35,6 +35,8 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
         public MeshInfo2Holder(GameObject rootObject)
         {
+            var avatarTagComponent = rootObject.GetComponentInChildren<AvatarTagComponent>(true);
+            if (avatarTagComponent == null) return;
             foreach (var renderer in rootObject.GetComponentsInChildren<SkinnedMeshRenderer>(true))
             {
                 Profiler.BeginSample($"Read Skinned Mesh {renderer.name}");

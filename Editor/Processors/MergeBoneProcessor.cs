@@ -65,6 +65,8 @@ namespace Anatawa12.AvatarOptimizer.Processors
             // normalize map
             mergeMapping.FlattenMapping();
 
+            if (mergeMapping.Count == 0) return;
+
             BuildReport.ReportingObjects(context.GetComponents<SkinnedMeshRenderer>(), renderer =>
             {
                 var meshInfo2 = context.GetMeshInfoFor(renderer);
@@ -160,12 +162,12 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 vertex.Tangent = new Vector4(tangentVec3.x, tangentVec3.y, tangentVec3.z, vertex.Tangent.w);
                 foreach (var frames in vertex.BlendShapes.Values)
                 {
-                    for (var i = 0; i < frames.Count; i++)
+                for (var i = 0; i < frames.Length; i++)
                     {
                         var frame = frames[i];
                         frames[i] = new Vertex.BlendShapeFrame(
                             weight: frame.Weight,
-                            position: transBindPose.MultiplyPoint3x4(frame.Position),
+                            position: transBindPose.MultiplyPoint3x3(frame.Position),
                             normal: transBindPose.MultiplyPoint3x3(frame.Normal),
                             tangent: transBindPose.MultiplyPoint3x3(frame.Tangent)
                         );
