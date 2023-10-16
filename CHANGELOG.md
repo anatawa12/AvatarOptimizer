@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
+- Make no-op as possible if no AAO component attached for your avatar `#603`
 
 ### Deprecated
 
