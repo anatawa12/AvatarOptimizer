@@ -34,32 +34,26 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         }
     }
 
-    internal readonly struct FindUnusedObjectsProcessor
-    {
+    internal readonly struct MarkObjectContext {
         private readonly ImmutableModificationsContainer _modifications;
         private readonly BuildContext _context;
-        private readonly HashSet<GameObject> _exclusions;
-        private readonly bool _preserveEndBone;
-        private readonly bool _noConfigureMergeBone;
+        private readonly ComponentDependencyCollector _dependencies;
 
-        public FindUnusedObjectsProcessor(BuildContext context, TraceAndOptimizeState state)
+        public readonly Dictionary<Component, ComponentDependencyCollector.DependencyType> _marked;
+        private readonly Queue<(Component, bool)> _processPending;
+        private readonly Dictionary<Component, bool?> _activeNessCache;
+
+        public MarkObjectContext(BuildContext context, ImmutableModificationsContainer modifications,
+            ComponentDependencyCollector dependencies)
         {
             _context = context;
-
-            _modifications = state.Modifications;
-            _preserveEndBone = state.PreserveEndBone;
-            _noConfigureMergeBone = state.NoConfigureMergeBone;
-            _exclusions = state.Exclusions;
+            _dependencies = dependencies;
+            _modifications = modifications;
 
             _marked = new Dictionary<Component, ComponentDependencyCollector.DependencyType>();
             _processPending = new Queue<(Component, bool)>();
             _activeNessCache = new Dictionary<Component, bool?>();
         }
-
-        // Mark & Sweep Variables
-        private readonly Dictionary<Component, ComponentDependencyCollector.DependencyType> _marked;
-        private readonly Queue<(Component, bool)> _processPending;
-        private readonly Dictionary<Component, bool?> _activeNessCache;
 
         private bool? GetActiveness(Component component)
         {
@@ -131,7 +125,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             return null;
         }
 
-        private void MarkComponent(Component component,
+        public void MarkComponent(Component component,
             bool ifTargetCanBeEnabled,
             ComponentDependencyCollector.DependencyType type)
         {
@@ -151,35 +145,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             }
         }
 
-        public void ProcessNew()
+        public void MarkRecursively()
         {
-            MarkAndSweep();
-            if (!_noConfigureMergeBone) ConfigureMergeBone();
-        }
-
-        private void MarkAndSweep()
-        {
-            // first, collect usages
-            var collector = new ComponentDependencyCollector(_context, _preserveEndBone);
-            collector.CollectAllUsages();
-
-            // then, mark and sweep.
-
-            // entrypoint for mark & sweep is active-able GameObjects
-            foreach (var gameObject in CollectAllActiveAbleGameObjects())
-            foreach (var component in gameObject.GetComponents<Component>())
-                if (collector.GetDependencies(component).EntrypointComponent)
-                    MarkComponent(component, true, ComponentDependencyCollector.DependencyType.Normal);
-
-            // excluded GameObjects must be exists
-            foreach (var gameObject in _exclusions)
-            foreach (var component in gameObject.GetComponents<Component>())
-                MarkComponent(component, true, ComponentDependencyCollector.DependencyType.Normal);
-
             while (_processPending.Count != 0)
             {
                 var (component, canBeActive) = _processPending.Dequeue();
-                var dependencies = collector.TryGetDependencies(component);
+                var dependencies = _dependencies.TryGetDependencies(component);
                 if (dependencies == null) continue; // not part of this Hierarchy Tree
 
                 foreach (var (dependency, flags) in dependencies.Dependencies)
@@ -192,6 +163,48 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     MarkComponent(dependency, ifTargetCanBeEnabled, flags.type);
                 }
             }
+        }
+    }
+
+    internal readonly struct FindUnusedObjectsProcessor
+    {
+        private readonly ImmutableModificationsContainer _modifications;
+        private readonly BuildContext _context;
+        private readonly HashSet<GameObject> _exclusions;
+        private readonly bool _preserveEndBone;
+        private readonly bool _noConfigureMergeBone;
+
+        public FindUnusedObjectsProcessor(BuildContext context, TraceAndOptimizeState state)
+        {
+            _context = context;
+
+            _modifications = state.Modifications;
+            _preserveEndBone = state.PreserveEndBone;
+            _noConfigureMergeBone = state.NoConfigureMergeBone;
+            _exclusions = state.Exclusions;
+        }
+
+        public void ProcessNew()
+        {
+            // first, collect usages
+            var collector = new ComponentDependencyCollector(_context, _preserveEndBone);
+            collector.CollectAllUsages();
+
+            var markContext = new MarkObjectContext(_context, _modifications, collector);
+            // then, mark and sweep.
+
+            // entrypoint for mark & sweep is active-able GameObjects
+            foreach (var gameObject in CollectAllActiveAbleGameObjects())
+            foreach (var component in gameObject.GetComponents<Component>())
+                if (collector.GetDependencies(component).EntrypointComponent)
+                    markContext.MarkComponent(component, true, ComponentDependencyCollector.DependencyType.Normal);
+
+            // excluded GameObjects must be exists
+            foreach (var gameObject in _exclusions)
+            foreach (var component in gameObject.GetComponents<Component>())
+                markContext.MarkComponent(component, true, ComponentDependencyCollector.DependencyType.Normal);
+
+            markContext.MarkRecursively();
 
             foreach (var component in _context.GetComponents<Component>())
             {
@@ -201,31 +214,29 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 if (component is Transform)
                 {
                     // Treat Transform Component as GameObject because they are two sides of the same coin
-                    if (!_marked.ContainsKey(component))
+                    if (!markContext._marked.ContainsKey(component))
                         Object.DestroyImmediate(component.gameObject);
                 }
                 else
                 {
-                    if (!_marked.ContainsKey(component))
+                    if (!markContext._marked.ContainsKey(component))
                         Object.DestroyImmediate(component);
                 }
             }
-        }
 
-        private void ConfigureMergeBone()
-        {
-            ConfigureRecursive(this, _context.AvatarRootTransform, _modifications);
+            if (_noConfigureMergeBone) return;
+
+            ConfigureRecursive(_context.AvatarRootTransform, _modifications);
 
             // returns (original mergedChildren, list of merged children if merged, and null if not merged)
             //[CanBeNull]
-            (bool, List<Transform>) ConfigureRecursive(in FindUnusedObjectsProcessor processor, Transform transform,
-                ImmutableModificationsContainer modifications)
+            (bool, List<Transform>) ConfigureRecursive(Transform transform, ImmutableModificationsContainer modifications)
             {
                 var mergedChildren = true;
                 var afterChildren = new List<Transform>();
                 foreach (var child in transform.DirectChildrenEnumerable())
                 {
-                    var (newMergedChildren, newChildren) = ConfigureRecursive(processor, child, modifications);
+                    var (newMergedChildren, newChildren) = ConfigureRecursive(child, modifications);
                     if (newChildren == null)
                     {
                         mergedChildren = false;
@@ -252,7 +263,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 // Components must be Transform Only
                 if (transform.GetComponents<Component>().Length != 1) return NotMerged();
                 // The bone cannot be used generally
-                if ((processor._marked[transform] & ~AllowedUsages) != 0) return NotMerged();
+                if ((markContext._marked[transform] & ~AllowedUsages) != 0) return NotMerged();
                 // must not be animated
                 if (TransformAnimated(transform, modifications)) return NotMerged();
 
