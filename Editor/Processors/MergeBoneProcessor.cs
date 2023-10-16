@@ -159,7 +159,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 vertex.Tangent = new Vector4(tangentVec3.x, tangentVec3.y, tangentVec3.z, vertex.Tangent.w);
                 foreach (var frames in vertex.BlendShapes.Values)
                 {
-                    for (var i = 0; i < frames.Count; i++)
+                    for (var i = 0; i < frames.Length; i++)
                     {
                         var frame = frames[i];
                         frames[i] = new Vertex.BlendShapeFrame(
