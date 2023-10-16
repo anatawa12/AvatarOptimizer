@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog].
 
 ### Changed
 - Make no-op as possible if no AAO component attached for your avatar `#603`
+- Error Report window is refreshed after exiting play mode `#606`
 
 ### Deprecated
 
