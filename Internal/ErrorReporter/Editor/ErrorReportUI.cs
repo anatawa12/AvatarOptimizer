@@ -47,6 +47,7 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
             ReloadErrorReportEvent += RenderContent;
 
             Selection.selectionChanged += ScheduleRender;
+            EditorApplication.playModeStateChanged += PlayModeStateChanged;
             EditorApplication.hierarchyChanged += ScheduleRender;
             ErrorReporterRuntime.OnChangeAction += ScheduleRender;
             //Localization.OnLangChange += RenderContent;
@@ -65,6 +66,21 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
         [CanBeNull] private Stopwatch _delayTimer;
         [CanBeNull] private HeaderBox _header;
         [CanBeNull] private GameObject _defaultAvatarObject;
+
+        private void PlayModeStateChanged(PlayModeStateChange obj)
+        {
+            switch (obj)
+            {
+                case PlayModeStateChange.EnteredEditMode:
+                    _header?.RedrawList();
+                    break;
+                case PlayModeStateChange.ExitingEditMode:
+                case PlayModeStateChange.EnteredPlayMode:
+                case PlayModeStateChange.ExitingPlayMode:
+                default:
+                    break;
+            }
+        }
 
         private void ScheduleRender()
         {
@@ -214,6 +230,14 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
         }
 
         public event Action<AvatarReport> SelectionChanged;
+
+        public void RedrawList()
+        {
+            if (_field != null)
+            {
+                SelectionChanged?.Invoke(_field.value);
+            }
+        }
 
         public HeaderBox(AvatarReport defaultValue)
         {
