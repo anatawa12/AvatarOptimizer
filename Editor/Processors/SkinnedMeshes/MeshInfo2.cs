@@ -483,8 +483,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                         {
                             var vertex = Vertices[vertexI];
 
-                            vertex.TryGetBlendShape(shapeName, weight, out var position, out var normal,
-                                out var tangent);
+                            vertex.TryGetBlendShape(shapeName, weight, 
+                                out var position, out var normal, out var tangent,
+                                getDefined: true);
                             positions[vertexI] = position;
                             normals[vertexI] = normal;
                             tangents[vertexI] = tangent;
@@ -624,7 +625,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             }
         }
 
-        public bool TryGetBlendShape(string name, float weight, out Vector3 position, out Vector3 normal, out Vector3 tangent)
+        public bool TryGetBlendShape(string name, float weight, out Vector3 position, out Vector3 normal,
+            out Vector3 tangent, bool getDefined = false)
         {
             if (!BlendShapes.TryGetValue(name, out var frames))
             {
@@ -642,7 +644,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 return false;
             }
 
-            if (Mathf.Abs(weight) <= 0.0001f && ZeroForWeightZero())
+            if (!getDefined && Mathf.Abs(weight) <= 0.0001f && ZeroForWeightZero())
             {
                 position = Vector3.zero;
                 normal = Vector3.zero;
