@@ -36,9 +36,11 @@ namespace Anatawa12.AvatarOptimizer.ndmf
             InPhase(BuildPhase.Resolving)
                 .WithRequiredExtensions(new [] {typeof(OptimizerContext), typeof(BuildReportContext)}, seq =>
                 {
-                    seq.Run("Info if AAO is Out of Date", _ =>
+                    seq.Run("Info if AAO is Out of Date", ctx =>
                         {
-                            if (CheckForUpdate.OutOfDate)
+                            // we skip check for update 
+                            var components = ctx.AvatarRootObject.GetComponentInChildren<AvatarTagComponent>(true);
+                            if (components && CheckForUpdate.OutOfDate)
                                 BuildReport.LogInfo("CheckForUpdate:out-of-date", 
                                     CheckForUpdate.LatestVersionName, CheckForUpdate.CurrentVersionName);
                         })
