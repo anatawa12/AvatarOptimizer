@@ -10,18 +10,23 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
-- Make no-op as possible if no AAO component attached for your avatar `#603`
-- Error Report window is refreshed after exiting play mode `#606`
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
-- Update notice may show incorrect version `#602`
-- `Preview` button is not disabled even if mesh is none `#605`
 
 ### Security
+
+## [1.5.6-beta.2] - 2023-10-16
+### Changed
+- Make no-op as possible if no AAO component attached for your avatar [`#603`](https://github.com/anatawa12/AvatarOptimizer/pull/603)
+- Error Report window is refreshed after exiting play mode [`#606`](https://github.com/anatawa12/AvatarOptimizer/pull/606)
+
+### Fixed
+- Update notice may show incorrect version [`#602`](https://github.com/anatawa12/AvatarOptimizer/pull/602)
+- `Preview` button is not disabled even if mesh is none [`#605`](https://github.com/anatawa12/AvatarOptimizer/pull/605)
 
 ## [1.5.6-beta.1] - 2023-10-16
 ### Fixed
@@ -906,7 +911,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.6-beta.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.6-beta.2...HEAD
+[1.5.6-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.6-beta.1...v1.5.6-beta.2
 [1.5.6-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.5...v1.5.6-beta.1
 [1.5.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.5-rc.1...v1.5.5
 [1.5.5-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.5-beta.1...v1.5.5-rc.1
