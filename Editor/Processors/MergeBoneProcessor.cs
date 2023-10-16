@@ -64,6 +64,8 @@ namespace Anatawa12.AvatarOptimizer.Processors
             // normalize map
             mergeMapping.FlattenMapping();
 
+            if (mergeMapping.Count == 0) return;
+
             BuildReport.ReportingObjects(session.GetComponents<SkinnedMeshRenderer>(), renderer =>
             {
                 var meshInfo2 = session.MeshInfo2Holder.GetMeshInfoFor(renderer);
