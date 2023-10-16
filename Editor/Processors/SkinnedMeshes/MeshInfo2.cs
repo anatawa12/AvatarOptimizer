@@ -163,9 +163,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
                 BlendShapes.Add((shapeName, 0.0f));
 
-                var shapes = new List<Vertex.BlendShapeFrame>[Vertices.Count];
-
                 var frameCount = mesh.GetBlendShapeFrameCount(i);
+
+                var shapes = new Vertex.BlendShapeFrame[Vertices.Count][];
+                for (var vertex = 0; vertex < shapes.Length; vertex++)
+                    shapes[vertex] = new Vertex.BlendShapeFrame[frameCount];
+
                 for (var frame = 0; frame < frameCount; frame++)
                 {
                     mesh.GetBlendShapeFrameVertices(i, frame, deltaVertices, deltaNormals, deltaTangents);
@@ -176,34 +179,28 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                         var deltaVertex = deltaVertices[vertex];
                         var deltaNormal = deltaNormals[vertex];
                         var deltaTangent = deltaTangents[vertex];
-                        if (shapes[vertex] != null)
-                        {
-                            // this blendshape has meaning so add frame even if delta is 0
-                            shapes[vertex].Add(new Vertex.BlendShapeFrame(weight,
-                                deltaVertex, deltaNormal, deltaTangent));
-                        }
-                        else if (deltaVertex == Vector3.zero && deltaNormal == Vector3.zero &&
-                                 deltaTangent == Vector3.zero)
-                        {
-                            // If delta is zero, do not register frame
-                        }
-                        else
-                        {
-                            shapes[vertex] = new List<Vertex.BlendShapeFrame>(frameCount);
-
-                            for (var prevFrame = 0; prevFrame < frame; prevFrame++)
-                                shapes[vertex].Add(new Vertex.BlendShapeFrame(weight,
-                                    Vector3.zero, Vector3.zero, Vector3.zero));
-
-                            shapes[vertex].Add(new Vertex.BlendShapeFrame(weight, deltaVertices[vertex],
-                                deltaNormals[vertex], deltaTangents[vertex]));
-                        }
+                        shapes[vertex][frame] =
+                            new Vertex.BlendShapeFrame(weight, deltaVertex, deltaNormal, deltaTangent);
                     }
                 }
 
                 for (var vertex = 0; vertex < shapes.Length; vertex++)
-                    if (shapes[vertex] is List<Vertex.BlendShapeFrame> shapeFrames)
-                        Vertices[vertex].BlendShapes[shapeName] = shapeFrames;
+                {
+                    if (IsMeaningful(shapes[vertex]))
+                        Vertices[vertex].BlendShapes[shapeName] = shapes[vertex];
+                }
+            }
+            
+            bool IsMeaningful(Vertex.BlendShapeFrame[] frames)
+            {
+                foreach (var (_, position, normal, tangent) in frames)
+                {
+                    if (position != Vector3.zero) return true;
+                    if (normal != Vector3.zero) return true;
+                    if (tangent != Vector3.zero) return true;
+                }
+
+                return false;
             }
         }
 
@@ -486,8 +483,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                         {
                             var vertex = Vertices[vertexI];
 
-                            vertex.TryGetBlendShape(shapeName, weight, out var position, out var normal,
-                                out var tangent);
+                            vertex.TryGetBlendShape(shapeName, weight, 
+                                out var position, out var normal, out var tangent,
+                                getDefined: true);
                             positions[vertexI] = position;
                             normals[vertexI] = normal;
                             tangents[vertexI] = tangent;
@@ -564,8 +562,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         public List<(Bone bone, float weight)> BoneWeights = new List<(Bone, float)>();
 
         // Each frame must sorted increasingly
-        public readonly Dictionary<string, List<BlendShapeFrame>> BlendShapes = 
-            new Dictionary<string, List<BlendShapeFrame>>();
+        public readonly Dictionary<string, BlendShapeFrame[]> BlendShapes = 
+            new Dictionary<string, BlendShapeFrame[]>();
 
         public readonly struct BlendShapeFrame
         {
@@ -627,7 +625,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             }
         }
 
-        public bool TryGetBlendShape(string name, float weight, out Vector3 position, out Vector3 normal, out Vector3 tangent)
+        public bool TryGetBlendShape(string name, float weight, out Vector3 position, out Vector3 normal,
+            out Vector3 tangent, bool getDefined = false)
         {
             if (!BlendShapes.TryGetValue(name, out var frames))
             {
@@ -637,7 +636,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 return false;
             }
 
-            if (frames.Count == 0)
+            if (frames.Length == 0)
             {
                 position = default;
                 normal = default;
@@ -645,7 +644,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 return false;
             }
 
-            if (Mathf.Abs(weight) <= 0.0001f && ZeroForWeightZero())
+            if (!getDefined && Mathf.Abs(weight) <= 0.0001f && ZeroForWeightZero())
             {
                 position = Vector3.zero;
                 normal = Vector3.zero;
@@ -655,7 +654,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             bool ZeroForWeightZero()
             {
-                if (frames.Count == 1) return true;
+                if (frames.Length == 1) return true;
                 var first = frames.First();
                 var end = frames.Last();
 
@@ -666,7 +665,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 return false;
             }
 
-            if (frames.Count == 1)
+            if (frames.Length == 1)
             {
                 // simplest and likely
                 var frame = frames[0];
@@ -707,13 +706,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
                 // otherwise, lerp between two surrounding frames OR nearest two frames
 
-                for (var i = 1; i < frames.Count; i++)
+                for (var i = 1; i < frames.Length; i++)
                 {
                     if (weight <= frames[i].Weight)
                         return (frames[i - 1], frames[i]);
                 }
 
-                return (frames[frames.Count - 2], frames[frames.Count - 1]);
+                return (frames[frames.Length - 2], frames[frames.Length - 1]);
             }
 
             float InverseLerpUnclamped(float a, float b, float value) => (value - a) / (b - a);
@@ -738,7 +737,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             TexCoord7 = vertex.TexCoord7;
             Color = vertex.Color;
             BoneWeights = vertex.BoneWeights.ToList();
-            BlendShapes = new Dictionary<string, List<BlendShapeFrame>>(vertex.BlendShapes);
+            BlendShapes = new Dictionary<string, BlendShapeFrame[]>(vertex.BlendShapes);
         }
 
         public Vertex Clone() => new Vertex(this);

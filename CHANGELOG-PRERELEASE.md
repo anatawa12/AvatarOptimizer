@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Multi-frame BlendShape can be broken `#601`
 
 ### Security
 
