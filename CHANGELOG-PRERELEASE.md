@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - BindPose Optimization may break mesh with scale 0 bone `#612`
+- Error from Preview System when opening inspector of GameObject without SkinnedMeshRenderer `#613`
 
 ### Security
 
