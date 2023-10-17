@@ -37,11 +37,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         {
             SourceRenderer = renderer;
             var mesh = renderer.sharedMesh;
-            if (mesh && !mesh.isReadable)
-            {
-                BuildReport.LogFatal("The Mesh is not readable. Please Check Read/Write")?.WithContext(mesh);
-                return;
-            }
 
             BuildReport.ReportingObject(renderer, true, () =>
             {
@@ -79,11 +74,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             {
                 var meshFilter = renderer.GetComponent<MeshFilter>();
                 var mesh = meshFilter ? meshFilter.sharedMesh : null;
-                if (mesh && !mesh.isReadable)
-                {
-                    BuildReport.LogFatal("The Mesh is not readable. Please Check Read/Write")?.WithContext(mesh);
-                    return;
-                }
                 if (mesh)
                     ReadStaticMesh(mesh);
 
