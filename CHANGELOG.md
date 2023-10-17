@@ -16,11 +16,14 @@ The format is based on [Keep a Changelog].
 ### Deprecated
 
 ### Removed
+- Error for Read/Write Mesh off Mesh `#615`
+  - Since AAO creates Mesh every time, no more error is required!
 
 ### Fixed
 - Multi-frame BlendShape can be broken `#601`
 - Update notice may show incorrect version `#602`
 - `Preview` button is not disabled even if mesh is none `#605`
+- BindPose Optimization may break mesh with scale 0 bone `#612`
 
 ### Security
 

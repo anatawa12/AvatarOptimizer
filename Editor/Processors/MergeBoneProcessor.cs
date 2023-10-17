@@ -124,7 +124,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 else
                 {
                     // we assume fist bone we find is the most natural bone.
-                    if (!primaryBones.ContainsKey(bone.Transform))
+                    if (!primaryBones.ContainsKey(bone.Transform) && ValidBindPose(bone.Bindpose))
                         primaryBones.Add(bone.Transform, bone);
                 }
             }
@@ -162,7 +162,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 vertex.Tangent = new Vector4(tangentVec3.x, tangentVec3.y, tangentVec3.z, vertex.Tangent.w);
                 foreach (var frames in vertex.BlendShapes.Values)
                 {
-                for (var i = 0; i < frames.Length; i++)
+                    for (var i = 0; i < frames.Length; i++)
                     {
                         var frame = frames[i];
                         frames[i] = new Vertex.BlendShapeFrame(
@@ -203,6 +203,29 @@ namespace Anatawa12.AvatarOptimizer.Processors
                     .Select(g => (g.Key, g.Sum(x => x.weight)))
                     .ToList();
             }
+        }
+
+        private bool ValidBindPose(Matrix4x4 matrix)
+        {
+            const float SMALL = 0.001f;
+            const float BIG = 10000;
+
+            // if scaling part of bindpose is too small or too big, it can lead to invalid bind pose optimization
+            var scaling = Mathf.Abs(new Matrix3x3(matrix).determinant);
+
+            if (float.IsInfinity(scaling)) return false;
+            if (float.IsNaN(scaling)) return false;
+            if (scaling < SMALL) return false;
+            if (scaling > BIG) return false;
+
+            // if offset part of bindpose is too big, it may lead to invalid bind pose optimization
+
+            var offset = matrix.offset;
+            if (Mathf.Abs(offset.x) > BIG) return false;
+            if (Mathf.Abs(offset.y) > BIG) return false;
+            if (Mathf.Abs(offset.z) > BIG) return false;
+
+            return true;
         }
 
         private readonly struct BoneUniqKey : IEquatable<BoneUniqKey>
