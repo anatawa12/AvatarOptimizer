@@ -14,6 +14,8 @@ The format is based on [Keep a Changelog].
 ### Deprecated
 
 ### Removed
+- Error for Read/Write Mesh off Mesh `#615`
+  - Since AAO creates Mesh every time, no more error is required!
 
 ### Fixed
 - BindPose Optimization may break mesh with scale 0 bone `#612`
