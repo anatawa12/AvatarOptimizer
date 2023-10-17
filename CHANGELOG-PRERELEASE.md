@@ -19,6 +19,15 @@ The format is based on [Keep a Changelog].
 
 ### Security
 
+## [1.5.6-rc.1] - 2023-10-17
+### Removed
+- Error for Read/Write Mesh off Mesh [`#615`](https://github.com/anatawa12/AvatarOptimizer/pull/615)
+  - Since AAO creates Mesh every time, no more error is required!
+
+### Fixed
+- BindPose Optimization may break mesh with scale 0 bone [`#612`](https://github.com/anatawa12/AvatarOptimizer/pull/612)
+- Error from Preview System when opening inspector of GameObject without SkinnedMeshRenderer [`#613`](https://github.com/anatawa12/AvatarOptimizer/pull/613)
+
 ## [1.5.6-beta.2] - 2023-10-16
 ### Changed
 - Make no-op as possible if no AAO component attached for your avatar [`#603`](https://github.com/anatawa12/AvatarOptimizer/pull/603)
@@ -911,7 +920,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.6-beta.2...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.6-rc.1...HEAD
+[1.5.6-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.6-beta.2...v1.5.6-rc.1
 [1.5.6-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.6-beta.1...v1.5.6-beta.2
 [1.5.6-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.5...v1.5.6-beta.1
 [1.5.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.5-rc.1...v1.5.5
