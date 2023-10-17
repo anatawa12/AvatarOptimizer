@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Improve support of newer Unity versions `#608`
 
 ### Security
 
