@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Error from Preview System when opening inspector of GameObject without SkinnedMeshRenderer `#613`
 
 ### Security
 
