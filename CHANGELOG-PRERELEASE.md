@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Improve support of projects without VRCSDK `#609`
 
 ### Security
 
