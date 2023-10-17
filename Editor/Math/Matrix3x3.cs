@@ -13,6 +13,10 @@ namespace Anatawa12.AvatarOptimizer
         public static Matrix3x3 zero = new Matrix3x3(0, 0, 0, 0, 0, 0, 0, 0, 0);
         public static Matrix3x3 identity = new Matrix3x3(1, 0, 0, 0, 1, 0, 0, 0, 1);
 
+        public float determinant =>
+            (m00 * m11 * m22) + (m01 * m12 * m20) + (m02 * m10 * m21)
+            - (m00 * m12 * m21) - (m01 * m10 * m22) - (m02 * m11 * m20);
+
         // @formatter:off
         public float m00;
         public float m10;
