@@ -25,6 +25,7 @@ The format is based on [Keep a Changelog].
 - `Preview` button is not disabled even if mesh is none `#605`
 - BindPose Optimization may break mesh with scale 0 bone `#612`
 - Improve support of newer Unity versions `#608`
+- Improve support of projects without VRCSDK `#609`
 
 ### Security
 
