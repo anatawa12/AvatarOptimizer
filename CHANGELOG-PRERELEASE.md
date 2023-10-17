@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- BindPose Optimization may break mesh with scale 0 bone `#612`
 
 ### Security
 
