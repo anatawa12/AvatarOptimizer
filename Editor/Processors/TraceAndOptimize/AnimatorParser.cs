@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.API;
-using Anatawa12.AvatarOptimizer.APIBackend;
+using Anatawa12.AvatarOptimizer.APIInternal;
 using static Anatawa12.AvatarOptimizer.ErrorReporting.BuildReport;
 using JetBrains.Annotations;
 using nadena.dev.ndmf;

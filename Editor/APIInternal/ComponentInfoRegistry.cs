@@ -4,7 +4,7 @@ using Anatawa12.AvatarOptimizer.API;
 using UnityEditor;
 using UnityEngine;
 
-namespace Anatawa12.AvatarOptimizer.APIBackend
+namespace Anatawa12.AvatarOptimizer.APIInternal
 {
     internal static class ComponentInfoRegistry
     {

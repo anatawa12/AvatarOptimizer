@@ -3,7 +3,7 @@ using Anatawa12.AvatarOptimizer.API;
 using JetBrains.Annotations;
 using UnityEditor;
 
-namespace Anatawa12.AvatarOptimizer.APIBackend
+namespace Anatawa12.AvatarOptimizer.APIInternal
 {
     [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
     [MeansImplicitUse]

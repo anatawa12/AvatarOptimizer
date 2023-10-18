@@ -8,7 +8,7 @@ namespace Anatawa12.AvatarOptimizer.API
     [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
     [MeansImplicitUse]
     [BaseTypeRequired(typeof(ComponentInformation<>))]
-    public sealed class ComponentInformationAttribute : APIBackend.ComponentInformationAttributeBase
+    public sealed class ComponentInformationAttribute : APIInternal.ComponentInformationAttributeBase
     {
         public Type TargetType { get; }
 
@@ -52,7 +52,7 @@ namespace Anatawa12.AvatarOptimizer.API
         internal abstract void CollectMutationsInternal(Component component, IComponentMutationsCollector collector);
     }
 
-    public abstract class ComponentInformation<TComponent> : ComponentInformation, APIBackend.IComponentInformation<TComponent>
+    public abstract class ComponentInformation<TComponent> : ComponentInformation, APIInternal.IComponentInformation<TComponent>
         where TComponent : Component
     {
         internal sealed override void CollectDependencyInternal(Component component, IComponentDependencyCollector collector) =>

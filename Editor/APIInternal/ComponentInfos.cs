@@ -12,7 +12,7 @@ using VRC.SDK3.Dynamics.Contact.Components;
 using VRC.SDK3.Dynamics.PhysBone.Components;
 using VRC.SDKBase;
 
-namespace Anatawa12.AvatarOptimizer.APIBackend
+namespace Anatawa12.AvatarOptimizer.APIInternal
 {
     [ComponentInformation(typeof(Light))]
     [ComponentInformation(typeof(Camera))]

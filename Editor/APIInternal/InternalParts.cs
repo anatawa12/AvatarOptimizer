@@ -1,7 +1,7 @@
 using System;
 using JetBrains.Annotations;
 
-namespace Anatawa12.AvatarOptimizer.APIBackend
+namespace Anatawa12.AvatarOptimizer.APIInternal
 {
     public abstract class ComponentInformationAttributeBase : Attribute
     {
