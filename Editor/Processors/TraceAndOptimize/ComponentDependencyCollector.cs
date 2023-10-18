@@ -609,7 +609,14 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 _byTypeParser.Add(blendShapeOverrider, (collector, deps, component) => deps.EntrypointComponent = true);
 
             #endregion
-            
+
+            #region VRCQuestTools
+
+            var vertexColorRemover = GetTypeByGuidFileId("f055e14e1beba894ea68aedffde8ada6", 11500000);
+            if (vertexColorRemover != null)
+                _byTypeParser.Add(vertexColorRemover, (collector, deps, component) => deps.EntrypointComponent = true);
+
+            #endregion
 
             // Components Proceed after T&O later
             AddEntryPointParser<MergeBone>();
