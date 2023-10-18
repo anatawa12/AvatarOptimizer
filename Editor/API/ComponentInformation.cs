@@ -20,6 +20,26 @@ namespace Anatawa12.AvatarOptimizer.API
         internal override Type GetTargetType() => TargetType;
     }
 
+    public abstract class ComponentInformation<TComponent> :
+        APIInternal.ComponentInformation,
+        APIInternal.IComponentInformation<TComponent>
+        where TComponent : Component
+    {
+        internal sealed override void CollectDependencyInternal(Component component,
+            IComponentDependencyCollector collector) =>
+            CollectDependency((TComponent)component, collector);
+
+        internal sealed override void CollectMutationsInternal(Component component,
+            IComponentMutationsCollector collector) =>
+            CollectMutations((TComponent)component, collector);
+
+        protected abstract void CollectDependency(TComponent component, IComponentDependencyCollector collector);
+
+        protected virtual void CollectMutations(TComponent component, IComponentMutationsCollector collector)
+        {
+        }
+    }
+
     public interface IComponentDependencyCollector
     {
         void MarkEntrypoint();
@@ -40,25 +60,5 @@ namespace Anatawa12.AvatarOptimizer.API
     public interface IComponentMutationsCollector
     {
         void ModifyProperties([NotNull] Component component, [NotNull] IEnumerable<string> properties);
-    }
-
-    public abstract class ComponentInformation<TComponent> :
-        APIInternal.ComponentInformation,
-        APIInternal.IComponentInformation<TComponent>
-        where TComponent : Component
-    {
-        internal sealed override void CollectDependencyInternal(Component component,
-            IComponentDependencyCollector collector) =>
-            CollectDependency((TComponent)component, collector);
-
-        internal sealed override void CollectMutationsInternal(Component component,
-            IComponentMutationsCollector collector) =>
-            CollectMutations((TComponent)component, collector);
-
-        protected abstract void CollectDependency(TComponent component, IComponentDependencyCollector collector);
-
-        protected virtual void CollectMutations(TComponent component, IComponentMutationsCollector collector)
-        {
-        }
     }
 }
