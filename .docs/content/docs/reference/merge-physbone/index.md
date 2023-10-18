@@ -9,9 +9,18 @@ This component merges multiple PhysBone Components into one Component with Multi
 
 This component should be added to a new GameObject.
 
+## Notes
+
+Merge target PhysBones must be children of the same GameObject.
+Alternatively, you can use `Make Children of Me` option.
+
 ## Settings
 
 ![component.png](component.png)
+
+### Make Children of Me
+
+Make the bones swayed by merge target PhysBones into children of this GameObject.
 
 ### Components
 
