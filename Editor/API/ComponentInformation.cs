@@ -42,23 +42,17 @@ namespace Anatawa12.AvatarOptimizer.API
         void ModifyProperties([NotNull] Component component, [NotNull] IEnumerable<string> properties);
     }
 
-    public abstract class ComponentInformation
-    {
-        internal ComponentInformation()
-        {
-        }
-        
-        internal abstract void CollectDependencyInternal(Component component, IComponentDependencyCollector collector);
-        internal abstract void CollectMutationsInternal(Component component, IComponentMutationsCollector collector);
-    }
-
-    public abstract class ComponentInformation<TComponent> : ComponentInformation, APIInternal.IComponentInformation<TComponent>
+    public abstract class ComponentInformation<TComponent> :
+        APIInternal.ComponentInformation,
+        APIInternal.IComponentInformation<TComponent>
         where TComponent : Component
     {
-        internal sealed override void CollectDependencyInternal(Component component, IComponentDependencyCollector collector) =>
+        internal sealed override void CollectDependencyInternal(Component component,
+            IComponentDependencyCollector collector) =>
             CollectDependency((TComponent)component, collector);
 
-        internal sealed override void CollectMutationsInternal(Component component, IComponentMutationsCollector collector) =>
+        internal sealed override void CollectMutationsInternal(Component component,
+            IComponentMutationsCollector collector) =>
             CollectMutations((TComponent)component, collector);
 
         protected abstract void CollectDependency(TComponent component, IComponentDependencyCollector collector);
