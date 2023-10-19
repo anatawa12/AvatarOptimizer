@@ -1,7 +1,10 @@
 using System.IO;
 using UnityEditor;
 using UnityEngine;
+
+#if AAO_VRCSDK3_AVATARS
 using VRC.SDK3.Avatars.Components;
+#endif
 
 namespace Anatawa12.AvatarOptimizer.Test
 {
@@ -13,7 +16,9 @@ namespace Anatawa12.AvatarOptimizer.Test
             root.name = name ?? "Test Avatar";
             var animator = root.AddComponent<Animator>();
             animator.avatar = AvatarBuilder.BuildGenericAvatar(root, "");
+#if AAO_VRCSDK3_AVATARS
             var descriptor = root.AddComponent<VRCAvatarDescriptor>();
+#endif
             return root;
         }
 
