@@ -38,36 +38,40 @@ namespace Anatawa12.AvatarOptimizer.API
         where TComponent : Component
     {
         internal sealed override void CollectDependencyInternal(Component component,
-            IComponentDependencyCollector collector) =>
+            ComponentDependencyCollector collector) =>
             CollectDependency((TComponent)component, collector);
 
         internal sealed override void CollectMutationsInternal(Component component,
-            IComponentMutationsCollector collector) =>
+            ComponentMutationsCollector collector) =>
             CollectMutations((TComponent)component, collector);
 
         /// <summary>
         /// Collects runtime mutations by <see cref="component"/>.
-        /// You have to call <see cref="collector"/>.<see cref="IComponentMutationsCollector.ModifyProperties"/>
+        /// You have to call <see cref="collector"/>.<see cref="ComponentMutationsCollector.ModifyProperties"/>
         /// for all property mutations by the component.
         /// </summary>
         /// <param name="component">The component.</param>
         /// <param name="collector">The callback.</param>
-        protected abstract void CollectDependency(TComponent component, IComponentDependencyCollector collector);
+        protected abstract void CollectDependency(TComponent component, ComponentDependencyCollector collector);
 
         /// <summary>
         /// Collects runtime mutations by <see cref="component"/>.
-        /// You have to call <see cref="collector"/>.<see cref="IComponentMutationsCollector.ModifyProperties"/>
+        /// You have to call <see cref="collector"/>.<see cref="ComponentMutationsCollector.ModifyProperties"/>
         /// for all property mutations by the component.
         /// </summary>
         /// <param name="component">The component.</param>
         /// <param name="collector">The callback.</param>
-        protected virtual void CollectMutations(TComponent component, IComponentMutationsCollector collector)
+        protected virtual void CollectMutations(TComponent component, ComponentMutationsCollector collector)
         {
         }
     }
 
-    public interface IComponentDependencyCollector
+    public abstract class ComponentDependencyCollector
     {
+        internal ComponentDependencyCollector()
+        {
+        }
+
         /// <summary>
         /// Marks this component as EntryPoint component, which means has some effects to non-avatar components.
         /// For example, Renderer components have side-effects because it renders something.
@@ -85,20 +89,20 @@ namespace Anatawa12.AvatarOptimizer.API
         /// With same reasons, Constraints are not treated as EntryPoint, they have bidirectional
         /// dependency relationship between Constraintas and transform instead.
         /// </summary>
-        void MarkEntrypoint();
+        public abstract void MarkEntrypoint();
 
         /// <summary>
         /// Adds <see cref="dependency"/> as dependencies of <see cref="dependant"/>.
         /// The dependency will be assumed as the dependant will have dependency if dependant is enabled and
-        /// even if dependency is disabled. You can change the settings by <see cref="IComponentDependencyInfo"/>.
+        /// even if dependency is disabled. You can change the settings by <see cref="ComponentDependencyInfo"/>.
         ///
-        /// WARNING: the <see cref="IComponentDependencyInfo"/> instance can be shared between multiple AddDependency
+        /// WARNING: the <see cref="ComponentDependencyInfo"/> instance can be shared between multiple AddDependency
         /// invocation so you MUST NOT call methods on IComponentDependencyInfo after calling AddDependency other time.
         /// </summary>
         /// <param name="dependant">The dependant</param>
         /// <param name="dependency">The dependency</param>
         /// <returns>The object to configure the dependency</returns>
-        IComponentDependencyInfo AddDependency(Component dependant, Component dependency);
+        public abstract ComponentDependencyInfo AddDependency(Component dependant, Component dependency);
 
         /// <summary>
         /// Adds <see cref="dependency"/> as dependencies of current component.
@@ -108,24 +112,25 @@ namespace Anatawa12.AvatarOptimizer.API
         /// <seealso cref="AddDependency(UnityEngine.Component,UnityEngine.Component)"/>
         /// <param name="dependency">The dependency</param>
         /// <returns>The object to configure the dependency</returns>
-        IComponentDependencyInfo AddDependency(Component dependency);
+        public abstract ComponentDependencyInfo AddDependency(Component dependency);
     }
 
-    /// <summary>
-    /// This interface will never be stable for implement. This interface is stable for calling methods.
-    /// </summary>
-    public interface IComponentDependencyInfo
+    public abstract class ComponentDependencyInfo
     {
+        internal ComponentDependencyInfo()
+        {
+        }
+
         /// <summary>
         /// Indicates the dependency is required even if dependant component is disabled.
         /// </summary>
         /// <returns>this object for method chain</returns>
-        IComponentDependencyInfo EvenIfDependantDisabled();
+        public abstract ComponentDependencyInfo EvenIfDependantDisabled();
         /// <summary>
         /// Indicates the dependency is not required if dependency component is disabled.
         /// </summary>
         /// <returns>this object for method chain</returns>
-        IComponentDependencyInfo OnlyIfTargetCanBeEnable();
+        public abstract ComponentDependencyInfo OnlyIfTargetCanBeEnable();
     }
 
     /// <summary>
@@ -139,8 +144,12 @@ namespace Anatawa12.AvatarOptimizer.API
     /// }
     /// </code>
     /// </example>
-    public interface IComponentMutationsCollector
+    public abstract class ComponentMutationsCollector
     {
-        void ModifyProperties([NotNull] Component component, [NotNull] IEnumerable<string> properties);
+        internal ComponentMutationsCollector()
+        {
+        }
+
+        public abstract void ModifyProperties([NotNull] Component component, [NotNull] IEnumerable<string> properties);
     }
 }

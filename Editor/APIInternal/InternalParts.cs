@@ -25,7 +25,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
         {
         }
         
-        internal abstract void CollectDependencyInternal(Component component, IComponentDependencyCollector collector);
-        internal abstract void CollectMutationsInternal(Component component, IComponentMutationsCollector collector);
+        internal abstract void CollectDependencyInternal(Component component, ComponentDependencyCollector collector);
+        internal abstract void CollectMutationsInternal(Component component, ComponentMutationsCollector collector);
     }
 }

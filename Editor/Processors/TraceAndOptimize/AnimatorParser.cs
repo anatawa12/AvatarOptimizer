@@ -136,13 +136,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         #region OtherComponents
 
-        private class Collector : IComponentMutationsCollector
+        private class Collector : ComponentMutationsCollector
         {
             private readonly ModificationsContainer _modifications;
 
             public Collector(ModificationsContainer modifications) => _modifications = modifications;
 
-            public void ModifyProperties(Component component, IEnumerable<string> properties)
+            public override void ModifyProperties(Component component, IEnumerable<string> properties)
             {
                 var updater = _modifications.ModifyObject(component);
                 foreach (var prop in properties)
