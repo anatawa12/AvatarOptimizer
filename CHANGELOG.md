@@ -9,6 +9,8 @@ The format is based on [Keep a Changelog].
 ## [Unreleased]
 ### Added
 - Add compatibility for VRCQuestTools `#619`
+- Public API for registering component information `#623`
+- Documentation for developers about compatibility with Avatar Optimizer `#623`
 
 ### Changed
 
