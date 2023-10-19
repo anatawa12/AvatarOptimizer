@@ -9,14 +9,6 @@ using JetBrains.Annotations;
 using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.Animations;
-using UnityEngine.Rendering;
-using VRC.Core;
-using VRC.Dynamics;
-using VRC.SDK3.Avatars.Components;
-using VRC.SDK3.Dynamics.Contact.Components;
-using VRC.SDK3.Dynamics.PhysBone.Components;
-using VRC.SDKBase;
 
 namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 {
