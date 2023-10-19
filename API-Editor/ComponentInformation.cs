@@ -68,6 +68,13 @@ namespace Anatawa12.AvatarOptimizer.API
         protected virtual void CollectMutations(TComponent component, ComponentMutationsCollector collector)
         {
         }
+        
+        // Important note for future AAO developer
+        // 1. You MUST NOT add abstract method onto this class
+        // 2. When you added some virtual methods onto this class, implementer MAY NOT implement that method
+        //    so we have to add some way to detect if implemented AND must fallback to default implementation.
+        //    One way I can implement is add some internal method to the collector, call it in default implementation,
+        //    and do fallback process in that method.
     }
 
     public abstract class ComponentDependencyCollector
