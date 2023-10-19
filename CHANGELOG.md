@@ -8,7 +8,6 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Add compatibility for VRCQuestTools `#619`
 
 ### Changed
 
@@ -17,9 +16,15 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- AutoFreezeBlendShape will freeze BlendShapes with editor value instead of animated constant `#622`
 
 ### Security
+
+## [1.5.7] - 2023-10-19
+### Added
+- Add compatibility for VRCQuestTools [`#619`](https://github.com/anatawa12/AvatarOptimizer/pull/619)
+
+### Fixed
+- AutoFreezeBlendShape will freeze BlendShapes with editor value instead of animated constant [`#622`](https://github.com/anatawa12/AvatarOptimizer/pull/622)
 
 ## [1.5.6] - 2023-10-17
 ### Changed
@@ -611,7 +616,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.6...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.7...HEAD
+[1.5.7]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.6...v1.5.7
 [1.5.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.5...v1.5.6
 [1.5.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.4...v1.5.5
 [1.5.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.3...v1.5.4
