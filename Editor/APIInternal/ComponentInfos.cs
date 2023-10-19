@@ -623,7 +623,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
     [ComponentInformationWithGUID("f055e14e1beba894ea68aedffde8ada6", 11500000)] // VertexColorRemover
     internal class VRCQuestToolsComponents : ComponentInformation<Component>
     {
-        protected override void CollectDependency(Component component, IComponentDependencyCollector collector)
+        protected override void CollectDependency(Component component, ComponentDependencyCollector collector)
         {
         }
     }
