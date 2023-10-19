@@ -9,7 +9,7 @@ title: ツールをAvatar Optimizerとの互換性をもたせる
 - どのようなときにツールがAvatar Optimizerと非互換になるか
 - どのように互換性を改善するか
 
-もし質問があれば[fediverse][fediverseで`@anatawa12@misskey.niri.la`]に気軽に聞いてください。
+もし質問があれば[fediverseで`@anatawa12@misskey.niri.la`][fediverse]に気軽に聞いてください。
 
 ## どのようなときにツールがAvatar Optimizerと非互換になるか {#when-incompatible}
 

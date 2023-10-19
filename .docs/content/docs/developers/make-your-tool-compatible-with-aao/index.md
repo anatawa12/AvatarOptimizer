@@ -37,8 +37,7 @@ Avatar Optimizer might be proceed before applying your plugin.
 
 ### For NDMF based non-destructive tools {#improve-compatibility-ndmf-based}
 
-If your tool is a non-destructive tools based on NDMF[^NDMF], please remove your components before 
-
+If your tool is a non-destructive tools based on NDMF[^NDMF], please remove your components before
 Avatar Optimizer process. Avatar Optimizer does most thing in Optimization pass
 so if your plugin do nothing in Optimization pass, nothing is problem.
 If your tool needs your components in Optimization pass, 
