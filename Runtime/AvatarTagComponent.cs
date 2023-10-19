@@ -1,8 +1,10 @@
 using System;
 using Anatawa12.AvatarOptimizer.ErrorReporting;
 using UnityEngine;
-using UnityEngine.Animations;
+
+#if AAO_VRCSDK3_AVATARS
 using VRC.SDKBase;
+#endif
 
 namespace Anatawa12.AvatarOptimizer
 {
@@ -27,4 +29,16 @@ namespace Anatawa12.AvatarOptimizer
             ErrorReporterRuntime.TriggerChange();
         }
     }
+    
+#if !AAO_VRCSDK3_AVATARS
+
+    /**
+     * Placeholder of VRC.SDKBase.IEditorOnly for environments without VRCSDK
+     */
+    interface IEditorOnly
+    {
+    }
+
+#endif
+
 }
