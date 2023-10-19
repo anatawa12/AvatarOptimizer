@@ -617,6 +617,19 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
     }
     #endregion
 
+    
+    #region VRCQuestTools
+
+    [ComponentInformationWithGUID("f055e14e1beba894ea68aedffde8ada6", 11500000)] // VertexColorRemover
+    internal class VRCQuestToolsComponents : ComponentInformation<Component>
+    {
+        protected override void CollectDependency(Component component, IComponentDependencyCollector collector)
+        {
+        }
+    }
+
+    #endregion
+
     internal static class ComponentInformationExtensions
     {
         public static void TransformPositionAndRotation(this IComponentMutationsCollector collector,

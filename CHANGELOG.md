@@ -8,26 +8,35 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Add compatibility for VRCQuestTools `#619`
 
 ### Changed
-- Make no-op as possible if no AAO component attached for your avatar `#603`
-- Error Report window is refreshed after exiting play mode `#606`
 
 ### Deprecated
 
 ### Removed
-- Error for Read/Write Mesh off Mesh `#615`
+
+### Fixed
+- Improve support of newer Unity versions `#608`
+- Improve support of projects without VRCSDK `#609`
+- AutoFreezeBlendShape will freeze BlendShapes with editor value instead of animated constant `#622`
+
+### Security
+
+## [1.5.6] - 2023-10-17
+### Changed
+- Make no-op as possible if no AAO component attached for your avatar [`#603`](https://github.com/anatawa12/AvatarOptimizer/pull/603)
+- Error Report window is refreshed after exiting play mode [`#606`](https://github.com/anatawa12/AvatarOptimizer/pull/606)
+
+### Removed
+- Error for Read/Write Mesh off Mesh [`#615`](https://github.com/anatawa12/AvatarOptimizer/pull/615)
   - Since AAO creates Mesh every time, no more error is required!
 
 ### Fixed
-- Multi-frame BlendShape can be broken `#601`
-- Update notice may show incorrect version `#602`
-- `Preview` button is not disabled even if mesh is none `#605`
-- BindPose Optimization may break mesh with scale 0 bone `#612`
-- Improve support of newer Unity versions `#608`
-- Improve support of projects without VRCSDK `#609`
-
-### Security
+- Multi-frame BlendShape can be broken [`#601`](https://github.com/anatawa12/AvatarOptimizer/pull/601)
+- Update notice may show incorrect version [`#602`](https://github.com/anatawa12/AvatarOptimizer/pull/602)
+- `Preview` button is not disabled even if mesh is none [`#605`](https://github.com/anatawa12/AvatarOptimizer/pull/605)
+- BindPose Optimization may break mesh with scale 0 bone [`#612`](https://github.com/anatawa12/AvatarOptimizer/pull/612)
 
 ## [1.5.5] - 2023-10-15
 ### Fixed
@@ -604,7 +613,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.5...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.6...HEAD
+[1.5.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.5...v1.5.6
 [1.5.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.4...v1.5.5
 [1.5.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.3...v1.5.4
 [1.5.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.2...v1.5.3
