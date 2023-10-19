@@ -1,3 +1,5 @@
+#if AAO_VRCSDK3_AVATARS
+
 using System;
 using System.Collections.Generic;
 using Anatawa12.AvatarOptimizer.ErrorReporting;
@@ -244,3 +246,5 @@ namespace Anatawa12.AvatarOptimizer
         Override,
     }
 }
+
+#endif
