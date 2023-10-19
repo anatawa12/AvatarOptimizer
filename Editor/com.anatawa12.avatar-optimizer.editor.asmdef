@@ -12,7 +12,10 @@
         "Unity.Burst",
         "nadena.dev.ndmf",
         "nadena.dev.ndmf.runtime",
-        "com.anatawa12.avatar-optimizer.api.editor"
+        "com.anatawa12.avatar-optimizer.api.editor",
+        "UniHumanoid",
+        "VRM",
+        "VRM10"
     ],
     "includePlatforms": [
         "Editor"
