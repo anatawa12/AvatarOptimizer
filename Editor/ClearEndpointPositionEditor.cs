@@ -1,3 +1,5 @@
+#if AAO_VRCSDK3_AVATARS
+
 using Anatawa12.AvatarOptimizer.Processors;
 using CustomLocalization4EditorExtension;
 using UnityEditor;
@@ -32,3 +34,5 @@ namespace Anatawa12.AvatarOptimizer
         }
     }
 }
+
+#endif
