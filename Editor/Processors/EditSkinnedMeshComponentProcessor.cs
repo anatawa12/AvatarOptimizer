@@ -1,31 +1,41 @@
 using Anatawa12.AvatarOptimizer.ErrorReporting;
+using Anatawa12.AvatarOptimizer.ndmf;
+using nadena.dev.ndmf;
 using UnityEngine;
+using UnityEngine.Profiling;
 
 namespace Anatawa12.AvatarOptimizer.Processors
 {
-    internal class EditSkinnedMeshComponentProcessor
+    internal class EditSkinnedMeshComponentProcessor : Pass<EditSkinnedMeshComponentProcessor>
     {
-        public void Process(OptimizerSession session)
-        {
-            var graph = new SkinnedMeshEditorSorter();
-            foreach (var component in session.GetComponents<EditSkinnedMeshComponent>())
-                graph.AddComponent(component);
+        public override string DisplayName => "EditSkinnedMeshComponent";
 
-            var renderers = session.GetComponents<SkinnedMeshRenderer>();
+        protected override void Execute(BuildContext context)
+        {
+            Profiler.BeginSample("Initialize SkinnedMeshEditorSorter");
+            var graph = new SkinnedMeshEditorSorter();
+            foreach (var component in context.GetComponents<EditSkinnedMeshComponent>())
+                graph.AddComponent(component);
+            Profiler.EndSample();
+
+            var renderers = context.GetComponents<SkinnedMeshRenderer>();
             var processorLists = graph.GetSortedProcessors(renderers);
             foreach (var processors in processorLists)
             {
-                var target = session.MeshInfo2Holder.GetMeshInfoFor(processors.Target);
+                Profiler.BeginSample($"EditSkinnedMeshComponents: {processors.Target.name}");
+                var target = context.GetMeshInfoFor(processors.Target);
 
                 foreach (var processor in processors.GetSorted())
                 {
-                    // TODO
-                    BuildReport.ReportingObject(processor.Component, () => processor.Process(session, target));
+                    Profiler.BeginSample($"{processor.GetType().Name}: {processors.Target.name}");
+                    BuildReport.ReportingObject(processor.Component, () => processor.Process(context, target));
                     target.AssertInvariantContract(
                         $"after {processor.GetType().Name} " +
                         $"for {processor.Target.gameObject.name}");
                     Object.DestroyImmediate(processor.Component);
+                    Profiler.EndSample();
                 }
+                Profiler.EndSample();
             }
         }
     }

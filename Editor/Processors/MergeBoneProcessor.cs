@@ -4,13 +4,14 @@ using System.Linq;
 using Anatawa12.AvatarOptimizer.ErrorReporting;
 using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
 using JetBrains.Annotations;
+using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.Processors
 {
-    internal class MergeBoneProcessor
+    internal class MergeBoneProcessor : Pass<MergeBoneProcessor>
     {
         [InitializeOnLoadMethod]
         private static void RegisterValidator()
@@ -51,11 +52,11 @@ namespace Anatawa12.AvatarOptimizer.Processors
                    CheckScale(localScale.y / localScale.z);
         }
 
-        public void Process(OptimizerSession session)
+        protected override void Execute(BuildContext context)
         {
             // merge from -> merge into
             var mergeMapping = new Dictionary<Transform, Transform>();
-            foreach (var component in session.GetComponents<MergeBone>())
+            foreach (var component in context.GetComponents<MergeBone>())
             {
                 var transform = component.transform;
                 mergeMapping[transform] = transform.parent;
@@ -64,9 +65,11 @@ namespace Anatawa12.AvatarOptimizer.Processors
             // normalize map
             mergeMapping.FlattenMapping();
 
-            BuildReport.ReportingObjects(session.GetComponents<SkinnedMeshRenderer>(), renderer =>
+            if (mergeMapping.Count == 0) return;
+
+            BuildReport.ReportingObjects(context.GetComponents<SkinnedMeshRenderer>(), renderer =>
             {
-                var meshInfo2 = session.MeshInfo2Holder.GetMeshInfoFor(renderer);
+                var meshInfo2 = context.GetMeshInfoFor(renderer);
                 if (meshInfo2.Bones.Any(x => x.Transform && mergeMapping.ContainsKey(x.Transform)))
                     DoBoneMap2(meshInfo2, mergeMapping);
             });
@@ -121,7 +124,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 else
                 {
                     // we assume fist bone we find is the most natural bone.
-                    if (!primaryBones.ContainsKey(bone.Transform))
+                    if (!primaryBones.ContainsKey(bone.Transform) && ValidBindPose(bone.Bindpose))
                         primaryBones.Add(bone.Transform, bone);
                 }
             }
@@ -159,12 +162,12 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 vertex.Tangent = new Vector4(tangentVec3.x, tangentVec3.y, tangentVec3.z, vertex.Tangent.w);
                 foreach (var frames in vertex.BlendShapes.Values)
                 {
-                    for (var i = 0; i < frames.Count; i++)
+                    for (var i = 0; i < frames.Length; i++)
                     {
                         var frame = frames[i];
                         frames[i] = new Vertex.BlendShapeFrame(
                             weight: frame.Weight,
-                            position: transBindPose.MultiplyPoint3x4(frame.Position),
+                            position: transBindPose.MultiplyPoint3x3(frame.Position),
                             normal: transBindPose.MultiplyPoint3x3(frame.Normal),
                             tangent: transBindPose.MultiplyPoint3x3(frame.Tangent)
                         );
@@ -200,6 +203,29 @@ namespace Anatawa12.AvatarOptimizer.Processors
                     .Select(g => (g.Key, g.Sum(x => x.weight)))
                     .ToList();
             }
+        }
+
+        private bool ValidBindPose(Matrix4x4 matrix)
+        {
+            const float SMALL = 0.001f;
+            const float BIG = 10000;
+
+            // if scaling part of bindpose is too small or too big, it can lead to invalid bind pose optimization
+            var scaling = Mathf.Abs(new Matrix3x3(matrix).determinant);
+
+            if (float.IsInfinity(scaling)) return false;
+            if (float.IsNaN(scaling)) return false;
+            if (scaling < SMALL) return false;
+            if (scaling > BIG) return false;
+
+            // if offset part of bindpose is too big, it may lead to invalid bind pose optimization
+
+            var offset = matrix.offset;
+            if (Mathf.Abs(offset.x) > BIG) return false;
+            if (Mathf.Abs(offset.y) > BIG) return false;
+            if (Mathf.Abs(offset.z) > BIG) return false;
+
+            return true;
         }
 
         private readonly struct BoneUniqKey : IEquatable<BoneUniqKey>

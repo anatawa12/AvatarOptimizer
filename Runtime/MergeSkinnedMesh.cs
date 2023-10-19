@@ -1,6 +1,7 @@
 using Anatawa12.AvatarOptimizer.ErrorReporting;
 using CustomLocalization4EditorExtension;
 using UnityEngine;
+using UnityEngine.Animations;
 
 namespace Anatawa12.AvatarOptimizer
 {
@@ -17,7 +18,7 @@ namespace Anatawa12.AvatarOptimizer
         public PrefabSafeSet.MaterialSet doNotMergeMaterials;
 
         // common between v0 and v1
-        [CL4EELocalized("MergeSkinnedMesh:prop:removeEmptyRendererObject")]
+        [NotKeyable, CL4EELocalized("MergeSkinnedMesh:prop:removeEmptyRendererObject")]
         [ToggleLeft]
         public bool removeEmptyRendererObject = true;
 

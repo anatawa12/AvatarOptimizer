@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using JetBrains.Annotations;
 using UnityEngine;
+using UnityEngine.Animations;
 using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
@@ -58,7 +59,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
     /// </summary>
     /// <typeparam name="T">Element Type</typeparam>
     /// <typeparam name="TLayer">Layer Type</typeparam>
-    [Serializable]
+    [NotKeyable, Serializable]
     public class PrefabSafeSet<T, TLayer> : ISerializationCallbackReceiver where TLayer : PrefabLayer<T>, new()
     {
         [SerializeField] internal T[] mainSet = Array.Empty<T>();

@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using nadena.dev.ndmf;
 using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
@@ -13,14 +14,14 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         public override EditSkinnedMeshProcessorOrder ProcessOrder => EditSkinnedMeshProcessorOrder.AfterRemoveMesh;
 
-        public override void Process(OptimizerSession session, MeshInfo2 target)
+        public override void Process(BuildContext context, MeshInfo2 target)
         {
-            FreezeBlendShapes(Target, session, target, Component.FreezingShapeKeys);
+            FreezeBlendShapes(Target, context, target, Component.FreezingShapeKeys);
         }
 
         public static void FreezeBlendShapes(
             SkinnedMeshRenderer targetSMR,
-            OptimizerSession session,
+            BuildContext context,
             MeshInfo2 target,
             HashSet<string> freezeNames
         )
@@ -52,16 +53,14 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     if (!freezes[srcI])
                     {
                         // for keep prop: move the BlendShape index. name is not changed.
-                        session.MappingBuilder.RecordMoveProperty(targetSMR, 
-                            VProp.BlendShapeIndex(srcI), 
-                            VProp.BlendShapeIndex(dstI));
+                        context.RecordMoveProperty(targetSMR, VProp.BlendShapeIndex(srcI), VProp.BlendShapeIndex(dstI));
                         target.BlendShapes[dstI++] = target.BlendShapes[srcI];
                     }
                     else
                     {
                         // for frozen prop: remove that BlendShape
-                        session.MappingBuilder.RecordRemoveProperty(targetSMR, VProp.BlendShapeIndex(srcI));
-                        session.MappingBuilder.RecordRemoveProperty(targetSMR, $"blendShape.{target.BlendShapes[srcI].name}");
+                        context.RecordRemoveProperty(targetSMR, VProp.BlendShapeIndex(srcI));
+                        context.RecordRemoveProperty(targetSMR, $"blendShape.{target.BlendShapes[srcI].name}");
                     }
                 }
 

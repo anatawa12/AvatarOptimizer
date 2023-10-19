@@ -2,6 +2,9 @@ msgid ""
 msgstr ""
 "Language: ja\n"
 
+msgid "CheckForUpdate:out-of-date"
+msgstr "Avatar Optimizerの新しいバージョン、{0}が公開されています！(現在 {1})"
+
 msgid "locale:ja"
 msgstr "日本語"
 
@@ -205,6 +208,11 @@ msgstr "統合する"
 
 msgid "MergeSkinnedMesh:label:Renderers"
 msgstr "レンダラー:"
+
+msgid "MergeSkinnedMesh:error:mix-normal-existence"
+msgstr ""
+"法線があるメッシュとないメッシュの両方を1つに統合する操作には対応していません。"
+"法線が含まれるようにモデルのインポート設定を変更してください!"
 
 # endregion
 

@@ -1,38 +1,52 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEngine;
 using VRC.Dynamics;
-using Debug = System.Diagnostics.Debug;
 using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 {
-    class FindUnusedObjectsProcessor
+    internal class FindUnusedObjects : Pass<FindUnusedObjects>
+    {
+        public override string DisplayName => "T&O: FindUnusedObjects";
+
+        protected override void Execute(BuildContext context)
+        {
+            var state = context.GetState<TraceAndOptimizeState>();
+            if (!state.RemoveUnusedObjects) return;
+
+            new FindUnusedObjectsProcessor(context, state).Process();
+        }
+    }
+
+    internal readonly struct FindUnusedObjectsProcessor
     {
         private readonly ImmutableModificationsContainer _modifications;
-        private readonly OptimizerSession _session;
+        private readonly BuildContext _context;
         private readonly HashSet<GameObject> _exclusions;
         private readonly bool _preserveEndBone;
         private readonly bool _useLegacyGC;
         private readonly bool _noConfigureMergeBone;
         private readonly bool _gcDebug;
 
-        public FindUnusedObjectsProcessor(ImmutableModificationsContainer modifications, OptimizerSession session,
-            bool preserveEndBone,
-            bool useLegacyGC,
-            bool noConfigureMergeBone,
-            bool gcDebug,
-            HashSet<GameObject> exclusions)
+        public FindUnusedObjectsProcessor(BuildContext context, TraceAndOptimizeState state)
         {
-            _modifications = modifications;
-            _session = session;
-            _preserveEndBone = preserveEndBone;
-            _useLegacyGC = useLegacyGC;
-            _noConfigureMergeBone = noConfigureMergeBone;
-            _gcDebug = gcDebug;
-            _exclusions = exclusions;
+            _context = context;
+
+            _modifications = state.Modifications;
+            _preserveEndBone = state.PreserveEndBone;
+            _useLegacyGC = state.UseLegacyGC;
+            _noConfigureMergeBone = state.NoConfigureMergeBone;
+            _gcDebug = state.GCDebug;
+            _exclusions = state.Exclusions;
+
+            _marked = new Dictionary<Component, ComponentDependencyCollector.DependencyType>();
+            _processPending = new Queue<(Component, bool)>();
+            _activeNessCache = new Dictionary<Component, bool?>();
         }
 
         public void Process()
@@ -46,10 +60,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         }
 
         // Mark & Sweep Variables
-        private readonly Dictionary<Component, ComponentDependencyCollector.DependencyType> _marked =
-            new Dictionary<Component, ComponentDependencyCollector.DependencyType>();
-        private readonly Queue<(Component, bool)> _processPending = new Queue<(Component, bool)>();
-        private readonly Dictionary<Component, bool?> _activeNessCache = new Dictionary<Component, bool?>();
+        private readonly Dictionary<Component, ComponentDependencyCollector.DependencyType> _marked;
+        private readonly Queue<(Component, bool)> _processPending;
+        private readonly Dictionary<Component, bool?> _activeNessCache;
 
         private bool? GetActiveness(Component component)
         {
@@ -62,7 +75,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         private bool? ComputeActiveness(Component component)
         {
-            if (_session.GetRootComponent<Transform>() == component) return true;
+            if (_context.AvatarRootTransform == component) return true;
             bool? parentActiveness;
             if (component is Transform t)
                 parentActiveness = t.parent == null ? true : GetActiveness(t.parent);
@@ -99,13 +112,17 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 case OcclusionArea _:
                 case OcclusionPortal _:
                 case ParticleSystem _:
+#if !UNITY_2021_3_OR_NEWER
                 case ParticleSystemForceField _:
+#endif
                 case Rigidbody _:
                 case Rigidbody2D _:
                 case TextMesh _:
                 case Tree _:
                 case WindZone _:
+#if !UNITY_2020_2_OR_NEWER
                 case UnityEngine.XR.WSA.WorldAnchor _:
+#endif
                     activeness = true;
                     break;
                 case Component _:
@@ -150,7 +167,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         private void MarkAndSweep()
         {
             // first, collect usages
-            var collector = new ComponentDependencyCollector(_session, _preserveEndBone);
+            var collector = new ComponentDependencyCollector(_context, _preserveEndBone);
             collector.CollectAllUsages();
 
             // then, mark and sweep.
@@ -183,7 +200,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 }
             }
 
-            foreach (var component in _session.GetComponents<Component>())
+            foreach (var component in _context.GetComponents<Component>())
             {
                 // null values are ignored
                 if (!component) continue;
@@ -205,12 +222,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         private void CollectDataForGc()
         {
             // first, collect usages
-            var collector = new ComponentDependencyCollector(_session, _preserveEndBone);
+            var collector = new ComponentDependencyCollector(_context, _preserveEndBone);
             collector.CollectAllUsages();
 
             var componentDataMap = new Dictionary<Component, GCData.ComponentData>();
 
-            foreach (var component in _session.GetComponents<Component>())
+            foreach (var component in _context.GetComponents<Component>())
             {
                 var componentData = new GCData.ComponentData { component = component };
                 componentDataMap.Add(component, componentData);
@@ -242,7 +259,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             foreach (var component in gameObject.GetComponents<Component>())
                 componentDataMap[component].entrypoint = true;
 
-            foreach (var component in _session.GetComponents<Component>())
+            foreach (var component in _context.GetComponents<Component>())
             {
                 var dependencies = collector.GetDependencies(component);
                 foreach (var (key, (flags, type)) in dependencies.Dependencies)
@@ -251,8 +268,66 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             }
 
             
-            foreach (var component in _session.GetComponents<Component>())
+            foreach (var component in _context.GetComponents<Component>())
                 component.gameObject.GetOrAddComponent<GCData>().data.Add(componentDataMap[component]);
+            _context.AvatarRootObject.AddComponent<GCDataRoot>();
+        }
+
+        class GCDataRoot : MonoBehaviour
+        {
+        }
+
+        [CustomEditor(typeof(GCDataRoot))]
+        class GCDataRootEditor : Editor
+        {
+            public override void OnInspectorGUI()
+            {
+                if (GUILayout.Button("Copy All Data"))
+                {
+                    GUIUtility.systemCopyBuffer = CreateData();
+                }
+
+                if (GUILayout.Button("Save All Data"))
+                {
+                    var path = EditorUtility.SaveFilePanel("DebugGCData", "", "data.txt", "txt");
+                    if (!string.IsNullOrEmpty(path))
+                    {
+                        System.IO.File.WriteAllText(path, CreateData());
+                    }
+                }
+
+                string CreateData()
+                {
+                    var root = ((Component)target).gameObject;
+                    var collect = new StringBuilder();
+                    foreach (var gcData in root.GetComponentsInChildren<GCData>(true))
+                    {
+                        collect.Append(RuntimeUtil.RelativePath(root, gcData.gameObject)).Append(":\n");
+
+                        foreach (var componentData in gcData.data.Where(componentData => componentData.component))
+                        {
+                            collect.Append("  ").Append(componentData.component.GetType().Name).Append(":\n");
+                            collect.Append("    ActiveNess: ").Append(componentData.activeness).Append('\n');
+                            collect.Append("    Dependencies:\n");
+                            var list = new List<string>();
+                            foreach (var dependencyInfo in componentData.dependencies.Where(x => x.component))
+                            {
+                                var path = RuntimeUtil.RelativePath(root, dependencyInfo.component.gameObject);
+                                var types = dependencyInfo.component.GetType().Name;
+                                list.Add($"{path}({types})({dependencyInfo.type},{dependencyInfo.flags})");
+                            }
+
+                            list.Sort();
+                            foreach (var line in list)
+                                collect.Append("      ").Append(line).Append("\n");
+                        }
+
+                        collect.Append("\n");
+                    }
+
+                    return collect.ToString();
+                }
+            }
         }
 
         class GCData : MonoBehaviour
@@ -295,32 +370,51 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         private void ConfigureMergeBone()
         {
-            ConfigureRecursive(_session.GetRootComponent<Transform>(), _modifications);
+            ConfigureRecursive(this, _context.AvatarRootTransform, _modifications);
 
-            // returns true if merged
-            bool ConfigureRecursive(Transform transform, ImmutableModificationsContainer modifications)
+            // returns (original mergedChildren, list of merged children if merged, and null if not merged)
+            //[CanBeNull]
+            (bool, List<Transform>) ConfigureRecursive(in FindUnusedObjectsProcessor processor, Transform transform,
+                ImmutableModificationsContainer modifications)
             {
                 var mergedChildren = true;
+                var afterChildren = new List<Transform>();
                 foreach (var child in transform.DirectChildrenEnumerable())
-                    mergedChildren &= ConfigureRecursive(child, modifications);
+                {
+                    var (newMergedChildren, newChildren) = ConfigureRecursive(processor, child, modifications);
+                    if (newChildren == null)
+                    {
+                        mergedChildren = false;
+                        afterChildren.Add(child);
+                    }
+                    else
+                    {
+                        mergedChildren &= newMergedChildren;
+                        afterChildren.AddRange(newChildren);
+                    }
+                }
 
                 const ComponentDependencyCollector.DependencyType AllowedUsages =
                     ComponentDependencyCollector.DependencyType.Bone
                     | ComponentDependencyCollector.DependencyType.Parent
                     | ComponentDependencyCollector.DependencyType.ComponentToTransform;
 
+                // functions for make it easier to know meaning of result
+                (bool, List<Transform>) YesMerge() => (mergedChildren, afterChildren);
+                (bool, List<Transform>) NotMerged() => (mergedChildren, null);
+
                 // Already Merged
-                if (transform.GetComponent<MergeBone>()) return true;
+                if (transform.GetComponent<MergeBone>()) return YesMerge();
                 // Components must be Transform Only
-                if (transform.GetComponents<Component>().Length != 1) return false;
+                if (transform.GetComponents<Component>().Length != 1) return NotMerged();
                 // The bone cannot be used generally
-                if ((_marked[transform] & ~AllowedUsages) != 0) return false;
+                if ((processor._marked[transform] & ~AllowedUsages) != 0) return NotMerged();
                 // must not be animated
-                if (TransformAnimated(transform, modifications)) return false;
+                if (TransformAnimated(transform, modifications)) return NotMerged();
 
                 if (!mergedChildren)
                 {
-                    if (GameObjectAnimated(transform, modifications)) return false;
+                    if (GameObjectAnimated(transform, modifications)) return NotMerged();
 
                     var localScale = transform.localScale;
                     var identityTransform = localScale == Vector3.one && transform.localPosition == Vector3.zero &&
@@ -328,22 +422,21 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
                     if (!identityTransform)
                     {
-                        var childrenTransformAnimated =
-                            transform.DirectChildrenEnumerable().Any(x => TransformAnimated(x, modifications));
+                        var childrenTransformAnimated = afterChildren.Any(x => TransformAnimated(x, modifications));
                         if (childrenTransformAnimated)
                             // if this is not identity transform, animating children is not good
-                            return false;
+                            return NotMerged();
 
                         if (!MergeBoneProcessor.ScaledEvenly(localScale))
                             // non even scaling is not possible to reproduce in children
-                            return false;
+                            return NotMerged();
                     }
                 }
 
                 if (!transform.gameObject.GetComponent<MergeBone>())
                     transform.gameObject.AddComponent<MergeBone>().avoidNameConflict = true;
 
-                return true;
+                return YesMerge();
             }
 
             bool TransformAnimated(Transform transform, ImmutableModificationsContainer modifications)
@@ -382,7 +475,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         private IEnumerable<GameObject> CollectAllActiveAbleGameObjects()
         {
             var queue = new Queue<GameObject>();
-            queue.Enqueue(_session.GetRootComponent<Transform>().gameObject);
+            queue.Enqueue(_context.AvatarRootTransform.gameObject);
 
             while (queue.Count != 0)
             {
@@ -406,7 +499,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         private void ProcessLegacy() {
             // mark & sweep
-            var gameObjects = new HashSet<GameObject>(_session.GetComponents<Transform>().Select(x => x.gameObject));
+            var gameObjects = new HashSet<GameObject>(_context.GetComponents<Transform>().Select(x => x.gameObject));
             var referenced = new HashSet<GameObject>();
             var newReferenced = new Queue<GameObject>();
 
@@ -457,51 +550,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
                     using (var serialized = new SerializedObject(component))
                     {
-                        var iter = serialized.GetIterator();
-                        var enterChildren = true;
-                        while (iter.Next(enterChildren))
+                        foreach (var iter in serialized.ObjectReferenceProperties())
                         {
-                            if (iter.propertyType == SerializedPropertyType.ObjectReference)
-                            {
-                                var value = iter.objectReferenceValue;
-                                if (value is Component c && !EditorUtility.IsPersistent(value))
-                                    AddGameObject(c.gameObject);
-                            }
-
-                            switch (iter.propertyType)
-                            {
-                                case SerializedPropertyType.Integer:
-                                case SerializedPropertyType.Boolean:
-                                case SerializedPropertyType.Float:
-                                case SerializedPropertyType.String:
-                                case SerializedPropertyType.Color:
-                                case SerializedPropertyType.ObjectReference:
-                                case SerializedPropertyType.Enum:
-                                case SerializedPropertyType.Vector2:
-                                case SerializedPropertyType.Vector3:
-                                case SerializedPropertyType.Vector4:
-                                case SerializedPropertyType.Rect:
-                                case SerializedPropertyType.ArraySize:
-                                case SerializedPropertyType.Character:
-                                case SerializedPropertyType.Bounds:
-                                case SerializedPropertyType.Quaternion:
-                                case SerializedPropertyType.FixedBufferSize:
-                                case SerializedPropertyType.Vector2Int:
-                                case SerializedPropertyType.Vector3Int:
-                                case SerializedPropertyType.RectInt:
-                                case SerializedPropertyType.BoundsInt:
-                                    enterChildren = false;
-                                    break;
-                                case SerializedPropertyType.Generic:
-                                case SerializedPropertyType.LayerMask:
-                                case SerializedPropertyType.AnimationCurve:
-                                case SerializedPropertyType.Gradient:
-                                case SerializedPropertyType.ExposedReference:
-                                case SerializedPropertyType.ManagedReference:
-                                default:
-                                    enterChildren = true;
-                                    break;
-                            }
+                            var value = iter.objectReferenceValue;
+                            if (value is Component c && !EditorUtility.IsPersistent(value))
+                                AddGameObject(c.gameObject);
                         }
                     }
                 }

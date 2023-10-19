@@ -2,9 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.ErrorReporting;
+using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
+using UnityEngine.Profiling;
 using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
@@ -25,14 +27,66 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         public override EditSkinnedMeshProcessorOrder ProcessOrder => EditSkinnedMeshProcessorOrder.Generation;
 
-        public override void Process(OptimizerSession session, MeshInfo2 target)
+        public override void Process(BuildContext context, MeshInfo2 target)
         {
-            var meshInfos = SkinnedMeshRenderers.Select(session.MeshInfo2Holder.GetMeshInfoFor)
-                .Concat(StaticMeshRenderers.Select(session.MeshInfo2Holder.GetMeshInfoFor))
+            var skinnedMeshRenderers = SkinnedMeshRenderers.ToList();
+            var staticMeshRenderers = StaticMeshRenderers.ToList();
+            Profiler.BeginSample("Merge PreserveBlendShapes");
+            {
+                var state = context.GetState<TraceAndOptimizes.TraceAndOptimizeState>();
+                HashSet<string> thisPreserve = null;
+                foreach (var skinnedRenderer in skinnedMeshRenderers)
+                {
+                    if (!state.PreserveBlendShapes.TryGetValue(skinnedRenderer, out var preserve)) continue;
+
+                    if (thisPreserve == null && !state.PreserveBlendShapes.TryGetValue(Target, out thisPreserve))
+                        state.PreserveBlendShapes.Add(Target, thisPreserve = new HashSet<string>());
+                    thisPreserve.UnionWith(preserve);
+                }
+            }
+            Profiler.EndSample();
+            Profiler.BeginSample("Collect MeshInfos");
+            var meshInfos = skinnedMeshRenderers.Select(context.GetMeshInfoFor)
+                .Concat(staticMeshRenderers.Select(context.GetMeshInfoFor))
                 .ToArray();
             var sourceMaterials = meshInfos.Select(x => x.SubMeshes.Select(y => y.SharedMaterial).ToArray()).ToArray();
+            Profiler.EndSample();
 
+            Profiler.BeginSample("Material Normal Configuration Check");
+            // check normal information.
+            int hasNormal = 0;
+            foreach (var meshInfo2 in meshInfos)
+            {
+                if (meshInfo2.Vertices.Count != 0)
+                    hasNormal |= meshInfo2.HasNormals ? 1 : 2;
+            }
+
+            if (hasNormal == 3)
+            {
+                // collect (skinned) mesh renderers who doesn't have normal
+                // to show the list on the error reporting
+                var meshes = new Renderer[meshInfos.Length];
+                for (var i = 0; i < skinnedMeshRenderers.Count; i++)
+                    meshes[i] = skinnedMeshRenderers[i];
+                for (var i = 0; i < staticMeshRenderers.Count; i++)
+                    meshes[i + skinnedMeshRenderers.Count] = staticMeshRenderers[i];
+
+                var meshesWithoutNormals = new List<Renderer>();
+                for (var i = 0; i < meshInfos.Length; i++)
+                {
+                    var meshInfo2 = meshInfos[i];
+                    if (meshInfo2.Vertices.Count != 0 && !meshInfo2.HasNormals)
+                        meshesWithoutNormals.Add(meshes[i]);
+                }
+                // ReSharper disable once CoVariantArrayConversion
+                BuildReport.LogFatal("MergeSkinnedMesh:error:mix-normal-existence")
+                    ?.WithContext((object[])meshesWithoutNormals.ToArray());
+            }
+            Profiler.EndSample();
+
+            Profiler.BeginSample("Merge Material Indices");
             var (subMeshIndexMap, materials) = CreateMergedMaterialsAndSubMeshIndexMapping(sourceMaterials);
+            Profiler.EndSample();
 
             var sourceRootBone = target.RootBone;
             var updateBounds = sourceRootBone && target.Bounds == default;
@@ -53,6 +107,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             for (var i = 0; i < meshInfos.Length; i++)
             {
+                Profiler.BeginSample($"Process MeshInfo#{i}");
                 var meshInfo = meshInfos[i];
                 mappings.Clear();
 
@@ -109,22 +164,26 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
                 }
 
-                session.MappingBuilder.RecordMoveProperties(meshInfo.SourceRenderer, mappings.ToArray());
+                context.RecordMoveProperties(meshInfo.SourceRenderer, mappings.ToArray());
 
                 target.RootBone = sourceRootBone;
                 target.Bones.AddRange(meshInfo.Bones);
 
                 target.HasColor |= meshInfo.HasColor;
+                target.HasNormals |= meshInfo.HasNormals;
                 target.HasTangent |= meshInfo.HasTangent;
 
                 target.AssertInvariantContract($"processing meshInfo {Target.gameObject.name}");
+                Profiler.EndSample();
             }
 
 #if !UNITY_2021_2_OR_NEWER
+            Profiler.BeginSample("ShiftIndex Check");
             // material slot #4 should not be animated to avoid Unity bug
             // https://issuetracker.unity3d.com/issues/material-is-applied-to-two-slots-when-applying-material-to-a-single-slot-while-recording-animation
             const int SubMeshIndexToShiftIfAnimated = 4;
-            bool shouldShiftSubMeshIndex = CheckAnimateSubMeshIndex(session, meshInfos, subMeshIndexMap, SubMeshIndexToShiftIfAnimated);
+            bool shouldShiftSubMeshIndex = CheckAnimateSubMeshIndex(context, meshInfos, subMeshIndexMap, SubMeshIndexToShiftIfAnimated);
+            Profiler.EndSample();
 #endif
 
             foreach (var weightMismatchBlendShape in weightMismatchBlendShapes)
@@ -137,6 +196,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             var boneTransforms = new HashSet<Transform>(target.Bones.Select(x => x.Transform));
 
+            Profiler.BeginSample("Postprocess Source Renderers");
             foreach (var renderer in SkinnedMeshRenderers)
             {
                 // Avatars can have animation to hide source meshes.
@@ -145,8 +205,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 // This often be a unexpected behavior so we invalidate changing m_Enabled
                 // property for original mesh in animation.
                 // This invalidation doesn't affect to m_Enabled property of merged mesh.
-                session.MappingBuilder.RecordRemoveProperty(renderer, "m_Enabled");
-                session.MappingBuilder.RecordMergeComponent(renderer, Target);
+                context.RecordRemoveProperty(renderer, "m_Enabled");
+                context.RecordMergeComponent(renderer, Target);
                 var rendererGameObject = renderer.gameObject;
                 Object.DestroyImmediate(renderer);
 
@@ -167,21 +227,24 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 Object.DestroyImmediate(renderer.GetComponent<MeshFilter>());
                 Object.DestroyImmediate(renderer);
             }
+            Profiler.EndSample();
 
 #if !UNITY_2021_2_OR_NEWER
             if (shouldShiftSubMeshIndex)
             {
+                Profiler.BeginSample("ShiftIndex");
                 mappings.Clear();
                 for (var i = SubMeshIndexToShiftIfAnimated; i < target.SubMeshes.Count; i++)
                 {
                     mappings.Add(($"m_Materials.Array.data[{i}]", $"m_Materials.Array.data[{i + 1}]"));
                 }
 
-                session.MappingBuilder.RecordMoveProperties(target.SourceRenderer, mappings.ToArray());
+                context.RecordMoveProperties(target.SourceRenderer, mappings.ToArray());
 
                 target.SubMeshes.Insert(SubMeshIndexToShiftIfAnimated, new SubMesh());
 
                 target.AssertInvariantContract($"shifting meshInfo.SubMeshes {Target.gameObject.name}");
+                Profiler.EndSample();
             }
 #endif
         }
@@ -218,30 +281,27 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         }
 
 #if !UNITY_2021_2_OR_NEWER
-        private bool CheckAnimateSubMeshIndex(OptimizerSession session, MeshInfo2[] meshInfos, int[][] subMeshIndexMap, int targetSubMeshIndex)
+        private bool CheckAnimateSubMeshIndex(BuildContext context, MeshInfo2[] meshInfos, int[][] subMeshIndexMap, int targetSubMeshIndex)
         {
             var targetProperties = new HashSet<(Object, string)>(subMeshIndexMap
                 .SelectMany((x, i) => x.Select((y, j) => (renderer: meshInfos[i].SourceRenderer, srcSubMeshIndex: j, dstSubMeshIndex: y)))
                 .Where(x => x.dstSubMeshIndex == targetSubMeshIndex)
                 .Select(x => (x.renderer as Object, $"m_Materials.Array.data[{x.srcSubMeshIndex}]")));
-            foreach (var component in session.GetComponents<Component>())
+            foreach (var component in context.GetComponents<Component>())
             {
                 if (component is Transform) continue;
 
-                var serialized = new SerializedObject(component);
-                var prop = serialized.GetIterator();
-                var enterChildren = true;
-                while (prop.Next(enterChildren))
+                using (var serialized = new SerializedObject(component))
                 {
-                    enterChildren = prop.propertyType == SerializedPropertyType.Generic;
-
-                    if (prop.propertyType == SerializedPropertyType.ObjectReference &&
-                        prop.objectReferenceValue is AnimatorController controller &&
-                        controller.animationClips
+                    foreach (var prop in serialized.ObjectReferenceProperties())
+                    {
+                        if (!(prop.objectReferenceValue is AnimatorController controller)) continue;
+                        if (controller.animationClips
                             .SelectMany(x => AnimationUtility.GetObjectReferenceCurveBindings(x))
                             .Select(x => (AnimationUtility.GetAnimatedObject(component.gameObject, x), x.propertyName))
                             .Any(targetProperties.Contains))
-                        return true;
+                            return true;
+                    }
                 }
             }
             return false;

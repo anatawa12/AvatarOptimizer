@@ -70,6 +70,8 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                 {
                     var editorObj = ActiveEditor();
                     if (editorObj is GameObject go &&
+                        go.GetComponent<SkinnedMeshRenderer>() &&
+                        go.GetComponent<SkinnedMeshRenderer>().sharedMesh && 
                         RemoveMeshPreviewController.EditorTypes.Any(t => go.GetComponent(t)))
                     {
                         StartPreview(go);
@@ -83,6 +85,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
             PreviewAble,
             PreviewingThat,
 
+            NoMesh,
             PreviewingOther,
             ActiveEditorMismatch,
         }
@@ -99,8 +102,15 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
             if (AnimationMode.InAnimationMode())
                 return PreviewState.PreviewingOther;
 
-            if (gameObject && ActiveEditor() as GameObject != gameObject)
-                return PreviewState.ActiveEditorMismatch;
+            if (gameObject)
+            {
+                if (ActiveEditor() as GameObject != gameObject)
+                    return PreviewState.ActiveEditorMismatch;
+
+                var renderer = gameObject.GetComponent<SkinnedMeshRenderer>();
+                if (!renderer || !renderer.sharedMesh)
+                    return PreviewState.NoMesh;
+            }
 
             return PreviewState.PreviewAble;
         }
@@ -124,6 +134,11 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                         StopPreview();
                         Enabled = false;
                     }
+                    break;
+                case PreviewState.NoMesh:
+                    EditorGUI.BeginDisabledGroup(true);
+                    GUILayout.Button("Preview (no Mesh)");
+                    EditorGUI.EndDisabledGroup();
                     break;
                 case PreviewState.PreviewingOther:
                     EditorGUI.BeginDisabledGroup(true);

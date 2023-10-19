@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
+using Anatawa12.AvatarOptimizer.API;
+using Anatawa12.AvatarOptimizer.APIBackend;
 using Anatawa12.AvatarOptimizer.ErrorReporting;
+using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
 using JetBrains.Annotations;
+using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Animations;
@@ -22,15 +25,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
     /// </summary>
     class ComponentDependencyCollector
     {
-        static ComponentDependencyCollector()
-        {
-            InitByTypeParsers();
-        }
-
         private readonly bool _preserveEndBone;
-        private readonly OptimizerSession _session;
+        private readonly BuildContext _session;
 
-        public ComponentDependencyCollector(OptimizerSession session, bool preserveEndBone)
+        public ComponentDependencyCollector(BuildContext session, bool preserveEndBone)
         {
             _preserveEndBone = preserveEndBone;
             _session = session;
@@ -55,25 +53,86 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             [NotNull] private readonly Dictionary<Component, (DependencyFlags, DependencyType)> _dependencies =
                 new Dictionary<Component, (DependencyFlags, DependencyType)>();
 
-            public void AddActiveDependency(Component component, bool onlyIfTargetCanBeEnabled = false,
-                DependencyType kind = DependencyType.Normal)
+            public ComponentDependencies(Component component)
             {
-                if (!component) return;
-                _dependencies.TryGetValue(component, out var pair);
-                var (flags, kindFlags) = pair;
-                if (!onlyIfTargetCanBeEnabled) flags |= DependencyFlags.EvenIfTargetIsDisabled;
-                _dependencies[component] = (flags, kindFlags | kind);
+                const DependencyFlags ComponentToTransformFlags =
+                    DependencyFlags.EvenIfThisIsDisabled | DependencyFlags.EvenIfTargetIsDisabled;
+                _dependencies[component.gameObject.transform] = (ComponentToTransformFlags, DependencyType.ComponentToTransform);
             }
 
-            public void AddAlwaysDependency(Component component, bool onlyIfTargetCanBeEnabled = false,
-                DependencyType kind = DependencyType.Normal)
+            public IComponentDependencyInfo AddDependency(Component component)
             {
-                if (!component) return;
-                _dependencies.TryGetValue(component, out var pair);
-                var (flags, kindFlags) = pair;
-                flags |= DependencyFlags.EvenIfThisIsDisabled;
-                if (!onlyIfTargetCanBeEnabled) flags |= DependencyFlags.EvenIfTargetIsDisabled;
-                _dependencies[component] = (flags, kindFlags | kind);
+                if (!component)
+                    return EmptyComponentDependencyInfo.Instance;
+                return new ComponentDependencyInfo(_dependencies, component).SetFlags();
+            }
+
+            public void AddParentDependency(Transform component)
+            {
+                var parent = component.parent;
+                if (parent) new ComponentDependencyInfo(_dependencies, parent, DependencyType.Parent)
+                    .EvenIfDependantDisabled();
+            }
+
+            public void AddBoneDependency(Transform bone)
+            {
+                if (bone) new ComponentDependencyInfo(_dependencies, bone, DependencyType.Bone).SetFlags();
+            }
+
+            class EmptyComponentDependencyInfo : IComponentDependencyInfo
+            {
+                public static EmptyComponentDependencyInfo Instance = new EmptyComponentDependencyInfo();
+
+                private EmptyComponentDependencyInfo()
+                {
+                }
+
+                public IComponentDependencyInfo EvenIfDependantDisabled() => this;
+                public IComponentDependencyInfo OnlyIfTargetCanBeEnable() => this;
+            }
+
+            private struct ComponentDependencyInfo : IComponentDependencyInfo
+            {
+                [NotNull] private readonly Dictionary<Component, (DependencyFlags, DependencyType)> _dependencies;
+                private readonly Component _component;
+
+                private readonly DependencyFlags _prevFlags;
+                private DependencyFlags _flags;
+                private readonly DependencyType _types;
+
+                public ComponentDependencyInfo(
+                    [NotNull] Dictionary<Component, (DependencyFlags, DependencyType)> dependencies, 
+                    [NotNull] Component component,
+                    DependencyType type = DependencyType.Normal)
+                {
+                    _dependencies = dependencies;
+                    _component = component;
+                    _dependencies.TryGetValue(component, out var pair);
+                    _prevFlags = pair.Item1;
+
+                    _flags = DependencyFlags.EvenIfTargetIsDisabled;
+                    _types = pair.Item2 | type;
+                }
+
+                internal ComponentDependencyInfo SetFlags()
+                {
+                    _dependencies[_component] = (_prevFlags | _flags, _types);
+                    return this;
+                }
+
+                public IComponentDependencyInfo EvenIfDependantDisabled()
+                {
+                    _flags |= DependencyFlags.EvenIfThisIsDisabled;
+                    SetFlags();
+                    return this;
+                }
+
+                public IComponentDependencyInfo OnlyIfTargetCanBeEnable()
+                {
+                    _flags &= ~DependencyFlags.EvenIfTargetIsDisabled;
+                    SetFlags();
+                    return this;
+                }
             }
         }
 
@@ -105,19 +164,15 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         {
             var components = _session.GetComponents<Component>().ToArray();
             // first iteration: create mapping
-            foreach (var component in components) _dependencies.Add(component, new ComponentDependencies());
+            foreach (var component in components) _dependencies.Add(component, new ComponentDependencies(component));
 
             // second iteration: process parsers
             BuildReport.ReportingObjects(components, component =>
             {
                 // component requires GameObject.
-                GetDependencies(component).AddAlwaysDependency(component.gameObject.transform,
-                    kind: DependencyType.ComponentToTransform);
-
-                if (_byTypeParser.TryGetValue(component.GetType(), out var parser))
+                if (ComponentInfoRegistry.TryGetInformation(component.GetType(), out var information))
                 {
-                    var deps = GetDependencies(component);
-                    parser(this, deps, component);
+                    information.CollectDependencyInternal(component, new Collector(this, component));
                 }
                 else
                 {
@@ -135,435 +190,40 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             dependencies.EntrypointComponent = true;
             using (var serialized = new SerializedObject(component))
             {
-                var iterator = serialized.GetIterator();
-                var enterChildren = true;
-                while (iterator.Next(enterChildren))
+                foreach (var property in serialized.ObjectReferenceProperties())
                 {
-                    if (iterator.propertyType == SerializedPropertyType.ObjectReference)
-                    {
-                        if (iterator.objectReferenceValue is GameObject go)
-                            dependencies.AddAlwaysDependency(go.transform);
-                        else if (iterator.objectReferenceValue is Component com)
-                            dependencies.AddAlwaysDependency(com);
-                    }
-
-                    switch (iterator.propertyType)
-                    {
-                        case SerializedPropertyType.String:
-                        case SerializedPropertyType.Integer:
-                        case SerializedPropertyType.Boolean:
-                        case SerializedPropertyType.Float:
-                        case SerializedPropertyType.Color:
-                        case SerializedPropertyType.ObjectReference:
-                        case SerializedPropertyType.LayerMask:
-                        case SerializedPropertyType.Enum:
-                        case SerializedPropertyType.Vector2:
-                        case SerializedPropertyType.Vector3:
-                        case SerializedPropertyType.Vector4:
-                        case SerializedPropertyType.Rect:
-                        case SerializedPropertyType.ArraySize:
-                        case SerializedPropertyType.Character:
-                        case SerializedPropertyType.AnimationCurve:
-                        case SerializedPropertyType.Bounds:
-                        case SerializedPropertyType.Gradient:
-                        case SerializedPropertyType.Quaternion:
-                        case SerializedPropertyType.FixedBufferSize:
-                        case SerializedPropertyType.Vector2Int:
-                        case SerializedPropertyType.Vector3Int:
-                        case SerializedPropertyType.RectInt:
-                        case SerializedPropertyType.BoundsInt:
-                            enterChildren = false;
-                            break;
-                        case SerializedPropertyType.Generic:
-                        case SerializedPropertyType.ExposedReference:
-                        case SerializedPropertyType.ManagedReference:
-                        default:
-                            enterChildren = true;
-                            break;
-                    }
+                    if (property.objectReferenceValue is GameObject go)
+                        dependencies.AddDependency(go.transform).EvenIfDependantDisabled();
+                    else if (property.objectReferenceValue is Component com)
+                        dependencies.AddDependency(com).EvenIfDependantDisabled();
                 }
             }
         }
 
-        #region ByComponentMappingGeneration
-
-        delegate void ComponentParser<in TComponent>(ComponentDependencyCollector collector, ComponentDependencies deps,
-            TComponent component);
-
-        private static readonly Dictionary<Type, ComponentParser<Component>> _byTypeParser =
-            new Dictionary<Type, ComponentParser<Component>>();
-
-        private static void AddParser<T>(ComponentParser<T> parser) where T : Component
+        internal class Collector : IComponentDependencyCollector
         {
-            _byTypeParser.Add(typeof(T), (collector, deps, component) => parser(collector, deps, (T)component));
-        }
+            private readonly ComponentDependencyCollector _collector;
+            private readonly ComponentDependencies _deps;
 
-        private static void AddParserWithExtends<TParent, TChild>(ComponentParser<TChild> parser) 
-            where TParent : Component
-            where TChild : TParent
-        {
-            var parentParser = _byTypeParser[typeof(TParent)];
-            _byTypeParser.Add(typeof(TChild), (collector, deps, component) =>
+            public Collector(ComponentDependencyCollector collector, Component component)
             {
-                parentParser(collector, deps, component);
-                parser(collector, deps, (TChild)component);
-            });
-        }
-
-        private static void AddNopParser<T>() where T : Component
-        {
-            _byTypeParser.Add(typeof(T), (collector, deps, component) => { });
-        }
-
-        private static void AddEntryPointParser<T>() where T : Component
-        {
-            _byTypeParser.Add(typeof(T), (collector, deps, component) => deps.EntrypointComponent = true);
-        }
-
-        private static void AddParserWithExtends<TParent, TChild>()
-            where TParent : Component
-            where TChild : TParent
-        {
-            _byTypeParser.Add(typeof(TChild), _byTypeParser[typeof(TParent)]);
-        }
-
-        #endregion
-
-        #region ByType Parser
-
-        /// <summary>
-        /// Initializes _byTypeParser. This includes huge amount of definition for components.
-        /// </summary>
-        private static void InitByTypeParsers()
-        {
-            // unity generic
-            AddParser<Transform>((collector, deps, transform) =>
-            {
-                deps.AddAlwaysDependency(transform.parent, kind: DependencyType.Parent);
-
-                // For compatibility with UnusedBonesByReferenceTool
-                // https://github.com/anatawa12/AvatarOptimizer/issues/429
-                if (collector._preserveEndBone &&
-                    transform.name.EndsWith("end", StringComparison.OrdinalIgnoreCase))
-                {
-                    collector.GetDependencies(transform.parent)
-                        .AddAlwaysDependency(transform);
-                }
-            });
-            // Animator does not do much for motion, just changes states of other components.
-            // All State Changes are collected separately
-            AddParser<Animator>((collector, deps, component) =>
-            {
-                // We can have some
-                deps.EntrypointComponent = true;
-
-                // we need bone between Armature..Humanoid
-                for (var bone = HumanBodyBones.Hips; bone < HumanBodyBones.LastBone; bone++)
-                {
-                    var boneTransform = component.GetBoneTransform(bone);
-                    foreach (var transform in boneTransform.ParentEnumerable())
-                    {
-                        if (transform == component.transform) break;
-                        deps.AddActiveDependency(transform);
-                    }
-                }
-            });
-            AddEntryPointParser<Animation>();
-            AddParser<Renderer>((collector, deps, renderer) =>
-            {
-                // GameObject => Renderer dependency ship
-                deps.EntrypointComponent = true;
-                // anchor proves
-                if (renderer.reflectionProbeUsage != ReflectionProbeUsage.Off ||
-                    renderer.lightProbeUsage != LightProbeUsage.Off)
-                    deps.AddActiveDependency(renderer.probeAnchor);
-                if (renderer.lightProbeUsage == LightProbeUsage.UseProxyVolume)
-                    deps.AddActiveDependency(renderer.lightProbeProxyVolumeOverride.transform);
-            });
-            AddParserWithExtends<Renderer, SkinnedMeshRenderer>((collector, deps, skinnedMeshRenderer) =>
-            {
-                var meshInfo2 = collector._session.MeshInfo2Holder.GetMeshInfoFor(skinnedMeshRenderer);
-                foreach (var bone in meshInfo2.Bones)
-                    deps.AddActiveDependency(bone.Transform, kind: DependencyType.Bone);
-                deps.AddActiveDependency(meshInfo2.RootBone);
-            });
-            AddParserWithExtends<Renderer, MeshRenderer>((collector, deps, component) =>
-            {
-                deps.AddActiveDependency(component.GetComponent<MeshFilter>());
-            });
-            AddNopParser<MeshFilter>();
-            AddParser<ParticleSystem>((collector, deps, particleSystem) =>
-            {
-                if (particleSystem.main.simulationSpace == ParticleSystemSimulationSpace.Custom)
-                    deps.AddActiveDependency(particleSystem.main.customSimulationSpace);
-                if (particleSystem.shape.enabled)
-                {
-                    switch (particleSystem.shape.shapeType)
-                    {
-                        case ParticleSystemShapeType.MeshRenderer:
-                            deps.AddActiveDependency(particleSystem.shape.meshRenderer);
-                            break;
-                        case ParticleSystemShapeType.SkinnedMeshRenderer:
-                            deps.AddActiveDependency(particleSystem.shape.skinnedMeshRenderer);
-                            break;
-                        case ParticleSystemShapeType.SpriteRenderer:
-                            deps.AddActiveDependency(particleSystem.shape.spriteRenderer);
-                            break;
-#pragma warning disable CS0618
-                        case ParticleSystemShapeType.Sphere:
-                        case ParticleSystemShapeType.SphereShell:
-                        case ParticleSystemShapeType.Hemisphere:
-                        case ParticleSystemShapeType.HemisphereShell:
-                        case ParticleSystemShapeType.Cone:
-                        case ParticleSystemShapeType.Box:
-                        case ParticleSystemShapeType.Mesh:
-                        case ParticleSystemShapeType.ConeShell:
-                        case ParticleSystemShapeType.ConeVolume:
-                        case ParticleSystemShapeType.ConeVolumeShell:
-                        case ParticleSystemShapeType.Circle:
-                        case ParticleSystemShapeType.CircleEdge:
-                        case ParticleSystemShapeType.SingleSidedEdge:
-                        case ParticleSystemShapeType.BoxShell:
-                        case ParticleSystemShapeType.BoxEdge:
-                        case ParticleSystemShapeType.Donut:
-                        case ParticleSystemShapeType.Rectangle:
-                        case ParticleSystemShapeType.Sprite:
-                        default:
-#pragma warning restore CS0618
-                            break;
-                    }
-                }
-
-                if (particleSystem.collision.enabled)
-                {
-                    switch (particleSystem.collision.type)
-                    {
-                        case ParticleSystemCollisionType.Planes:
-                            for (var i = 0; i < particleSystem.collision.maxPlaneCount; i++)
-                                deps.AddActiveDependency(particleSystem.collision.GetPlane(i));
-                            break;
-                        case ParticleSystemCollisionType.World:
-                        default:
-                            break;
-                    }
-                }
-
-                if (particleSystem.trigger.enabled)
-                {
-                    for (var i = 0; i < particleSystem.trigger.maxColliderCount; i++)
-                        deps.AddActiveDependency(particleSystem.trigger.GetCollider(i));
-                }
-
-                if (particleSystem.subEmitters.enabled)
-                {
-                    for (var i = 0; i < particleSystem.subEmitters.subEmittersCount; i++)
-                        deps.AddActiveDependency(particleSystem.subEmitters.GetSubEmitterSystem(i));
-                }
-
-                if (particleSystem.lights.enabled)
-                {
-                    deps.AddActiveDependency(particleSystem.lights.light);
-                }
-
-                deps.AddAlwaysDependency(particleSystem.GetComponent<ParticleSystemRenderer>());
-                deps.EntrypointComponent = true;
-            });
-            AddParserWithExtends<Renderer, ParticleSystemRenderer>((collector, deps, component) =>
-            {
-                deps.AddAlwaysDependency(component.GetComponent<ParticleSystem>());
-            });
-            AddParserWithExtends<Renderer, TrailRenderer>();
-            AddParserWithExtends<Renderer, LineRenderer>();
-            AddParser<Cloth>((collector, deps, component) =>
-            {
-                // If Cloth is disabled, SMR work as SMR without Cloth
-                // If Cloth is enabled and SMR is disabled, SMR draw nothing.
-                var skinnedMesh = component.GetComponent<SkinnedMeshRenderer>();
-                collector.GetDependencies(skinnedMesh).AddActiveDependency(component, true);
-                foreach (var collider in component.capsuleColliders)
-                    deps.AddActiveDependency(collider);
-                foreach (var collider in component.sphereColliders)
-                {
-                    deps.AddActiveDependency(collider.first);
-                    deps.AddActiveDependency(collider.second);
-                }
-            });
-            AddEntryPointParser<Light>();
-            AddParser<Collider>((collector, deps, component) =>
-            {
-                deps.EntrypointComponent = true;
-                var rigidbody = component.GetComponentInParent<Rigidbody>();
-                if (rigidbody) collector.GetDependencies(rigidbody)
-                    .AddActiveDependency(component, true);
-            });
-            AddParserWithExtends<Collider, TerrainCollider>();
-            AddParserWithExtends<Collider, BoxCollider>();
-            AddParserWithExtends<Collider, SphereCollider>();
-            AddParserWithExtends<Collider, MeshCollider>();
-            AddParserWithExtends<Collider, CapsuleCollider>();
-            AddParserWithExtends<Collider, WheelCollider>();
-            AddParser<Joint>((collector, deps, component) =>
-            {
-                collector.GetDependencies(component.GetComponent<Rigidbody>()).AddActiveDependency(component);
-                deps.AddActiveDependency(component.connectedBody);
-            });
-            AddParserWithExtends<Joint, CharacterJoint>();
-            AddParserWithExtends<Joint, ConfigurableJoint>();
-            AddParserWithExtends<Joint, FixedJoint>();
-            AddParserWithExtends<Joint, HingeJoint>();
-            AddParserWithExtends<Joint, SpringJoint>();
-            AddParser<Rigidbody>((collector, deps, component) =>
-            {
-                collector.GetDependencies(component.transform)
-                    .AddAlwaysDependency(component, true);
-            });
-            // affects RenderTexture
-            AddEntryPointParser<Camera>();
-            AddParser<FlareLayer>((collector, deps, component) =>
-            {
-                collector.GetDependencies(component.GetComponent<Camera>()).AddActiveDependency(component);
-            });
-            // plays sound
-            AddEntryPointParser<AudioSource>();
-            AddParser<AimConstraint>((collector, deps, component) =>
-            {
-                ConstraintParser(collector, deps, component);
-                deps.AddActiveDependency(component.worldUpObject);
-            });
-            AddParser<LookAtConstraint>((collector, deps, component) =>
-            {
-                ConstraintParser(collector, deps, component);
-                deps.AddActiveDependency(component.worldUpObject);
-            });
-            AddParser<ParentConstraint>(ConstraintParser);
-            AddParser<PositionConstraint>(ConstraintParser);
-            AddParser<RotationConstraint>(ConstraintParser);
-            AddParser<ScaleConstraint>(ConstraintParser);
-
-            void ConstraintParser<TConstraint>(ComponentDependencyCollector collector, ComponentDependencies deps,
-                TConstraint constraint)
-                where TConstraint : Component, IConstraint
-            {
-                collector.GetDependencies(constraint.transform)
-                    .AddAlwaysDependency(constraint, true);
-                for (var i = 0; i < constraint.sourceCount; i++)
-                    deps.AddActiveDependency(constraint.GetSource(i).sourceTransform);
+                _collector = collector;
+                _deps = collector.GetDependencies(component);
             }
 
-            // VRChat specific
-            AddParser<VRC_AvatarDescriptor>((collector, deps, component) =>
-            {
-                // to avoid unexpected deletion
-                deps.EntrypointComponent = true;
-                deps.AddAlwaysDependency(component.GetComponent<PipelineManager>());
-            });
-            AddParserWithExtends<VRC_AvatarDescriptor, VRCAvatarDescriptor>();
-            AddEntryPointParser<PipelineManager>();
-#pragma warning disable CS0618
-            AddEntryPointParser<PipelineSaver>();
-#pragma warning restore CS0618
-            AddParser<VRC.SDKBase.VRCStation>((collector, deps, component) =>
-            {
-                deps.AddActiveDependency(component.stationEnterPlayerLocation);
-                deps.AddActiveDependency(component.stationExitPlayerLocation);
-                deps.EntrypointComponent = true;
-                deps.AddActiveDependency(component.GetComponentInChildren<Collider>());
-            });
-            AddParserWithExtends<VRC.SDKBase.VRCStation, VRC.SDK3.Avatars.Components.VRCStation>();
-            AddParser<VRCPhysBoneBase>((collector, deps, physBone) =>
-            {
-                // first, Transform <=> PhysBone
-                // Transform is used even if the bone is inactive so Transform => PB is always dependency
-                // PhysBone works only if enabled so PB => Transform is active dependency
-                var ignoreTransforms = new HashSet<Transform>(physBone.ignoreTransforms);
-                CollectTransforms(physBone.GetTarget());
+            public bool PreserveEndBone => _collector._preserveEndBone;
 
-                void CollectTransforms(Transform bone)
-                {
-                    collector.GetDependencies(bone)
-                        .AddAlwaysDependency(physBone, true);
-                    deps.AddActiveDependency(bone);
-                    foreach (var child in bone.DirectChildrenEnumerable())
-                    {
-                        if (!ignoreTransforms.Contains(child))
-                            CollectTransforms(child);
-                    }
-                }
+            public MeshInfo2 GetMeshInfoFor(SkinnedMeshRenderer renderer) =>
+                _collector._session.GetMeshInfoFor(renderer);
 
-                // then, PB => Collider
-                // in PB, PB Colliders work only if Colliders are enabled
-                foreach (var physBoneCollider in physBone.colliders)
-                    deps.AddActiveDependency(physBoneCollider, true);
+            public void MarkEntrypoint() => _deps.EntrypointComponent = true;
+            public IComponentDependencyInfo AddDependency(Component dependant, Component dependency) =>
+                _collector.GetDependencies(dependant).AddDependency(dependency);
+            public IComponentDependencyInfo AddDependency(Component dependency) => _deps.AddDependency(dependency);
 
-                // If parameter is not empty, the PB can be required for Animator Parameter so it's Entrypoint Component
-                // https://github.com/anatawa12/AvatarOptimizer/issues/450
-                if (!string.IsNullOrEmpty(physBone.parameter))
-                    deps.EntrypointComponent = true;
-            });
-            AddParser<VRCPhysBoneColliderBase>((collector, deps, component) =>
-            {
-                deps.AddActiveDependency(component.rootTransform);
-            });
-            AddParserWithExtends<VRCPhysBoneBase, VRCPhysBone>();
-            AddParserWithExtends<VRCPhysBoneColliderBase, VRCPhysBoneCollider>();
-
-            AddParser<ContactBase>((collector, deps, component) =>
-            {
-                deps.EntrypointComponent = true;
-                deps.AddActiveDependency(component.rootTransform);
-            });
-            AddParserWithExtends<ContactBase, ContactReceiver>();
-            AddParserWithExtends<ContactReceiver, VRCContactReceiver>();
-            AddParserWithExtends<ContactBase, ContactSender>();
-            AddParserWithExtends<ContactSender, VRCContactSender>();
-
-            AddEntryPointParser<VRC_SpatialAudioSource>();
-            AddParserWithExtends<VRC_SpatialAudioSource, VRCSpatialAudioSource>();
-
-            // VRC_IKFollower is not available in SDK 3
-
-            // External library: Dynamic Bone
-            if (DynamicBone.Type is Type dynamicBoneType)
-            {
-                _byTypeParser.Add(dynamicBoneType, (collector, deps, component) =>
-                {
-                    DynamicBone.TryCast(component, out var dynamicBone);
-                    foreach (var transform in dynamicBone.GetAffectedTransforms())
-                    {
-                        collector.GetDependencies(transform)
-                            .AddAlwaysDependency(component, true);
-                        deps.AddActiveDependency(transform);
-                    }
-
-                    foreach (var collider in dynamicBone.Colliders)
-                    {
-                        // DynamicBone ignores enabled/disabled of Collider Component AFAIK
-                        deps.AddActiveDependency(collider, false);
-                    }
-                });
-                
-                // ReSharper disable once PossibleNullReferenceException
-                _byTypeParser.Add(ExternalLibraryAccessor.DynamicBone.ColliderType,
-                    (collector, deps, component) => {});
-            }
-
-            // TODOL External Library: FinalIK
-
-            // NDMF
-            AddEntryPointParser<nadena.dev.ndmf.runtime.AvatarActivator>();
-            var contextHolder = typeof(nadena.dev.ndmf.BuildContext).Assembly
-                .GetType("nadena.dev.ndmf.VRChat.ContextHolder");
-            if (contextHolder != null)
-            {
-                // nadena.dev.ndmf.VRChat.ContextHolder is internal so I use reflection
-                _byTypeParser.Add(contextHolder, (collector, deps, component) => deps.EntrypointComponent = true);
-            }
-
-            // Components Proceed after T&O later
-            AddEntryPointParser<MergeBone>();
+            public void AddParentDependency(Transform component) => _deps.AddParentDependency(component);
+            public void AddBoneDependency(Transform bone) => _deps.AddBoneDependency(bone);
         }
-
-        #endregion
     }
 }
 

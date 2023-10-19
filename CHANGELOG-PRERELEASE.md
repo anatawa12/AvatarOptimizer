@@ -10,16 +10,113 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
-- Change Japanese Translation of "BlendShape" `#535`
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
+- Improve support of newer Unity versions `#608`
+- Improve support of projects without VRCSDK `#609`
 
 ### Security
 
+## [1.5.6-rc.1] - 2023-10-17
+### Removed
+- Error for Read/Write Mesh off Mesh [`#615`](https://github.com/anatawa12/AvatarOptimizer/pull/615)
+  - Since AAO creates Mesh every time, no more error is required!
+
+### Fixed
+- BindPose Optimization may break mesh with scale 0 bone [`#612`](https://github.com/anatawa12/AvatarOptimizer/pull/612)
+- Error from Preview System when opening inspector of GameObject without SkinnedMeshRenderer [`#613`](https://github.com/anatawa12/AvatarOptimizer/pull/613)
+
+## [1.5.6-beta.2] - 2023-10-16
+### Changed
+- Make no-op as possible if no AAO component attached for your avatar [`#603`](https://github.com/anatawa12/AvatarOptimizer/pull/603)
+- Error Report window is refreshed after exiting play mode [`#606`](https://github.com/anatawa12/AvatarOptimizer/pull/606)
+
+### Fixed
+- Update notice may show incorrect version [`#602`](https://github.com/anatawa12/AvatarOptimizer/pull/602)
+- `Preview` button is not disabled even if mesh is none [`#605`](https://github.com/anatawa12/AvatarOptimizer/pull/605)
+
+## [1.5.6-beta.1] - 2023-10-16
+### Fixed
+- Multi-frame BlendShape can be broken [`#601`](https://github.com/anatawa12/AvatarOptimizer/pull/601)
+
+## [1.5.5] - 2023-10-15
+## [1.5.5-rc.1] - 2023-10-15
+### Fixed
+- BlendShape can be broken with MergeBone Optimization [`#599`](https://github.com/anatawa12/AvatarOptimizer/pull/599)
+
+## [1.5.5-beta.1] - 2023-10-15
+### Fixed
+- Constraints and Animations can be broken with Automatic MergeBone [`#594`](https://github.com/anatawa12/AvatarOptimizer/pull/594)
+- NRE with SMR with None with preview system [`#596`](https://github.com/anatawa12/AvatarOptimizer/pull/596)
+- Some Multi-Frame BlendShape broken [`#597`](https://github.com/anatawa12/AvatarOptimizer/pull/597)
+
+## [1.5.4] - 2023-10-14
+### Added
+- Add compatibility for Satania's KiseteneEx [`#584`](https://github.com/anatawa12/AvatarOptimizer/pull/584)
+
+### Changed
+- Normal check is skipped for empty mesh [`#588`](https://github.com/anatawa12/AvatarOptimizer/pull/588)
+- Meshes without Normal are shown on the normal existance mismatch warning [`#588`](https://github.com/anatawa12/AvatarOptimizer/pull/588)
+
+### Fixed
+- Error with MeshRenderer without MeshFilter [`#581`](https://github.com/anatawa12/AvatarOptimizer/pull/581)
+- Preview not working with VRMConverter [`#582`](https://github.com/anatawa12/AvatarOptimizer/pull/582)
+- AvatarMask about HumanoidBone broken [`#586`](https://github.com/anatawa12/AvatarOptimizer/pull/586)
+- Unused Humanoid Bones can be removed [`#587`](https://github.com/anatawa12/AvatarOptimizer/pull/587)
+
+## [1.5.3] - 2023-10-11
+### Changed
+- Ignore the warning instead of migration from 0.3.x or older [`#570`](https://github.com/anatawa12/AvatarOptimizer/pull/570)
+
+### Fixed
+- AnimatorOverrideController may not be proceed correctly [`#567`](https://github.com/anatawa12/AvatarOptimizer/pull/567)
+- Unclear behaviour if we merged meshes with and without normals [`#569`](https://github.com/anatawa12/AvatarOptimizer/pull/569)
+
+## [1.5.3-beta.1] - 2023-10-10
+### Fixed
+- AnimatorController with Synced can be broken [`#564`](https://github.com/anatawa12/AvatarOptimizer/pull/564)
+
+## [1.5.2] - 2023-10-10
+## [1.5.2-beta.3] - 2023-10-10
+### Fixed
+- New version notice remains after updating AAO without restarting UnityEditor [`#559`](https://github.com/anatawa12/AvatarOptimizer/pull/559)
+- Freeze BlendShape may break Visame with MergeSkinnedMesh [`#561`](https://github.com/anatawa12/AvatarOptimizer/pull/561)
+
+## [1.5.2-beta.2] - 2023-10-10
+### Added
+- More MMD BlendShapes are registered [`#552`](https://github.com/anatawa12/AvatarOptimizer/pull/552)
+  - New English Translation BlendShapes are compatible with AAO!
+- Check for update [`#554`](https://github.com/anatawa12/AvatarOptimizer/pull/554)
+
+### Changed
+- You now cannot key any of AvatarOptimizer Components [`#551`](https://github.com/anatawa12/AvatarOptimizer/pull/551)
+  - Previously you can key AvatarOptimizer Coponent but it was meaningless.
+
+### Fixed
+- GC Debug doesn't include inactive objects [`#546`](https://github.com/anatawa12/AvatarOptimizer/pull/546)
+- EditMode Preview of RemoveMeshInBox is not correct [`#550`](https://github.com/anatawa12/AvatarOptimizer/pull/550)
+- Avatar Standard Colliders can be removed [`#553`](https://github.com/anatawa12/AvatarOptimizer/pull/553)
+
+## [1.5.2-beta.1] - 2023-10-09
+### Added
+- Feature for debugging GC Objects [`#543`](https://github.com/anatawa12/AvatarOptimizer/pull/543)
+
+## [1.5.1] - 2023-10-08
+## [1.5.1-beta.1] - 2023-10-08
+### Fixed
+- MergePhysBone component may be shown as unknown components [`#541`](https://github.com/anatawa12/AvatarOptimizer/pull/541)
+- MergeBone may break Fur [`#542`](https://github.com/anatawa12/AvatarOptimizer/pull/542)
+
+## [1.5.0] - 2023-10-07
+## [1.5.0-rc.13] - 2023-10-07
+### Changed
+- Change Japanese Translation of "BlendShape" [`#535`](https://github.com/anatawa12/AvatarOptimizer/pull/535)
+
+## [1.5.0-rc.12] - 2023-10-07
 ## [1.5.0-rc.11] - 2023-10-05
 ### Fixed
 - Viseme may be broken [`#527`](https://github.com/anatawa12/AvatarOptimizer/pull/527)
@@ -825,7 +922,25 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-rc.11...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.6-rc.1...HEAD
+[1.5.6-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.6-beta.2...v1.5.6-rc.1
+[1.5.6-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.6-beta.1...v1.5.6-beta.2
+[1.5.6-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.5...v1.5.6-beta.1
+[1.5.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.5-rc.1...v1.5.5
+[1.5.5-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.5-beta.1...v1.5.5-rc.1
+[1.5.5-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.4...v1.5.5-beta.1
+[1.5.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.3...v1.5.4
+[1.5.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.3-beta.1...v1.5.3
+[1.5.3-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.2...v1.5.3-beta.1
+[1.5.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.2-beta.3...v1.5.2
+[1.5.2-beta.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.2-beta.2...v1.5.2-beta.3
+[1.5.2-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.2-beta.1...v1.5.2-beta.2
+[1.5.2-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.1...v1.5.2-beta.1
+[1.5.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.1-beta.1...v1.5.1
+[1.5.1-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0...v1.5.1-beta.1
+[1.5.0]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-rc.13...v1.5.0
+[1.5.0-rc.13]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-rc.12...v1.5.0-rc.13
+[1.5.0-rc.12]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-rc.11...v1.5.0-rc.12
 [1.5.0-rc.11]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-rc.10...v1.5.0-rc.11
 [1.5.0-rc.10]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-rc.9...v1.5.0-rc.10
 [1.5.0-rc.9]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0-rc.8...v1.5.0-rc.9

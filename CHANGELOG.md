@@ -8,50 +8,122 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Support for [NDMF](https://ndmf.nadena.dev) integration [`#375`](https://github.com/anatawa12/AvatarOptimizer/pull/375)
-- Pre-building validation for MergeBone `#417`
-  - There are some (rare) cases that are not supported by MergeBone. This adds warning for such case.
-- Validation error for self recursive MergeSkinnedMesh `#418`
-- Advanced Settings Section for Trace and Optimize `#419`
-  - Moved `Use Advanced Animator Parser` to there
-  - Added `Exclusions` for exclude some GameObjects from optimization
-  - In this section, there are for debugging GC Objects `#464`
-- Avoid Name Conflict in MergeBone `#467`
-- Full EditMode Preview of RemoveMesh Components `#500`
-- Significant Performance Improvements with small code changes `#523`
 
 ### Changed
-- Improved 'Remove Unused Objects' `#401`
+- Make no-op as possible if no AAO component attached for your avatar `#603`
+- Error Report window is refreshed after exiting play mode `#606`
+
+### Deprecated
+
+### Removed
+- Error for Read/Write Mesh off Mesh `#615`
+  - Since AAO creates Mesh every time, no more error is required!
+
+### Fixed
+- Multi-frame BlendShape can be broken `#601`
+- Update notice may show incorrect version `#602`
+- `Preview` button is not disabled even if mesh is none `#605`
+- BindPose Optimization may break mesh with scale 0 bone `#612`
+- Improve support of newer Unity versions `#608`
+- Improve support of projects without VRCSDK `#609`
+
+### Security
+
+## [1.5.5] - 2023-10-15
+### Fixed
+- Constraints and Animations can be broken with Automatic MergeBone [`#594`](https://github.com/anatawa12/AvatarOptimizer/pull/594)
+- NRE with SMR with None with preview system [`#596`](https://github.com/anatawa12/AvatarOptimizer/pull/596)
+- Some Multi-Frame BlendShape broken [`#597`](https://github.com/anatawa12/AvatarOptimizer/pull/597)
+- BlendShape can be broken with MergeBone Optimization [`#599`](https://github.com/anatawa12/AvatarOptimizer/pull/599)
+
+## [1.5.4] - 2023-10-14
+### Added
+- Add compatibility for Satania's KiseteneEx [`#584`](https://github.com/anatawa12/AvatarOptimizer/pull/584)
+
+### Changed
+- Normal check is skipped for empty mesh [`#588`](https://github.com/anatawa12/AvatarOptimizer/pull/588)
+- Meshes without Normal are shown on the normal existance mismatch warning [`#588`](https://github.com/anatawa12/AvatarOptimizer/pull/588)
+
+### Fixed
+- Error with MeshRenderer without MeshFilter [`#581`](https://github.com/anatawa12/AvatarOptimizer/pull/581)
+- Preview not working with VRMConverter [`#582`](https://github.com/anatawa12/AvatarOptimizer/pull/582)
+- AvatarMask about HumanoidBone broken [`#586`](https://github.com/anatawa12/AvatarOptimizer/pull/586)
+- Unused Humanoid Bones can be removed [`#587`](https://github.com/anatawa12/AvatarOptimizer/pull/587)
+
+## [1.5.3] - 2023-10-11
+### Changed
+- Ignore the warning instead of migration from 0.3.x or older [`#570`](https://github.com/anatawa12/AvatarOptimizer/pull/570)
+
+### Fixed
+- AnimatorController with Synced can be broken [`#564`](https://github.com/anatawa12/AvatarOptimizer/pull/564)
+- AnimatorOverrideController may not be proceed correctly [`#567`](https://github.com/anatawa12/AvatarOptimizer/pull/567)
+- Unclear behaviour if we merged meshes with and without normals [`#569`](https://github.com/anatawa12/AvatarOptimizer/pull/569)
+
+## [1.5.2] - 2023-10-10
+### Added
+- Feature for debugging GC Objects [`#543`](https://github.com/anatawa12/AvatarOptimizer/pull/543)
+- More MMD BlendShapes are registered [`#552`](https://github.com/anatawa12/AvatarOptimizer/pull/552)
+  - New English Translation BlendShapes are compatible with AAO!
+- Check for update [`#554`](https://github.com/anatawa12/AvatarOptimizer/pull/554)
+
+### Changed
+- You now cannot key any of AvatarOptimizer Components [`#551`](https://github.com/anatawa12/AvatarOptimizer/pull/551)
+  - Previously you can key AvatarOptimizer Coponent but it was meaningless.
+
+### Fixed
+- EditMode Preview of RemoveMeshInBox is not correct [`#550`](https://github.com/anatawa12/AvatarOptimizer/pull/550)
+- Avatar Standard Colliders can be removed [`#553`](https://github.com/anatawa12/AvatarOptimizer/pull/553)
+- Freeze BlendShape may break Visame with MergeSkinnedMesh [`#561`](https://github.com/anatawa12/AvatarOptimizer/pull/561)
+
+## [1.5.1] - 2023-10-08
+### Fixed
+- MergePhysBone component may be shown as unknown components [`#541`](https://github.com/anatawa12/AvatarOptimizer/pull/541)
+- MergeBone may break Fur [`#542`](https://github.com/anatawa12/AvatarOptimizer/pull/542)
+
+## [1.5.0] - 2023-10-07
+### Added
+- Support for [NDMF](https://ndmf.nadena.dev) integration [`#375`](https://github.com/anatawa12/AvatarOptimizer/pull/375)
+- Pre-building validation for MergeBone [`#417`](https://github.com/anatawa12/AvatarOptimizer/pull/417)
+  - There are some (rare) cases that are not supported by MergeBone. This adds warning for such case.
+- Validation error for self recursive MergeSkinnedMesh [`#418`](https://github.com/anatawa12/AvatarOptimizer/pull/418)
+- Advanced Settings Section for Trace and Optimize [`#419`](https://github.com/anatawa12/AvatarOptimizer/pull/419)
+  - Moved `Use Advanced Animator Parser` to there
+  - Added `Exclusions` for exclude some GameObjects from optimization
+  - In this section, there are for debugging GC Objects [`#464`](https://github.com/anatawa12/AvatarOptimizer/pull/464)
+- Avoid Name Conflict in MergeBone [`#467`](https://github.com/anatawa12/AvatarOptimizer/pull/467)
+- Full EditMode Preview of RemoveMesh Components [`#500`](https://github.com/anatawa12/AvatarOptimizer/pull/500)
+- Significant Performance Improvements with small code changes [`#523`](https://github.com/anatawa12/AvatarOptimizer/pull/523)
+
+### Changed
+- Improved 'Remove Unused Objects' [`#401`](https://github.com/anatawa12/AvatarOptimizer/pull/401)
   - Remove Unused Objects now removes unnecessary Components & Bones!
   - With new algorithm, you can preserve end bones (`#430`)
   - You may use `Use Legacy GC` to use legacy algotythm for Remove Unused Objects in `Advanced Settings` (`#419`)
-- Performance: Share MeshInfo2 between SkinnedMesh processing and MergeBone `#421`
-- Declare compatible with VRCSDK 3.4.x `#513`
-- Change Japanese Translation of "BlendShape" `#535`
+- Performance: Share MeshInfo2 between SkinnedMesh processing and MergeBone [`#421`](https://github.com/anatawa12/AvatarOptimizer/pull/421)
+- Declare compatible with VRCSDK 3.4.x [`#513`](https://github.com/anatawa12/AvatarOptimizer/pull/513)
+- Change Japanese Translation of "BlendShape" [`#535`](https://github.com/anatawa12/AvatarOptimizer/pull/535)
 
 ### Deprecated
-- UnusedBonesByReferenceTool component is now obsolete `#430`
+- UnusedBonesByReferenceTool component is now obsolete [`#430`](https://github.com/anatawa12/AvatarOptimizer/pull/430)
   - Newly introduced algorithm of`Remove Unused Objects` does same thing!
   - You can migrate to `Remove Unused Objects` only with one click!
 
 ### Removed
-- internal ApplyOnPlay framework `#504`
+- internal ApplyOnPlay framework [`#504`](https://github.com/anatawa12/AvatarOptimizer/pull/504)
 
 ### Fixed
-- Crash with Unity 2022 `#423`
+- Crash with Unity 2022 [`#423`](https://github.com/anatawa12/AvatarOptimizer/pull/423)
   - [Due to bug in Unity Editor 2022.3 or later][unity-bug], Avatar Optimizer was not compatible with Unity 2022.
-- Error if all vertices of some BlendShape is removed by RemoveMeshByBlendShape or RemoveMeshInBox `#440`
-- RemoveMeshByBlendShape on the SkinnedMeshRenderer with MergeSkinnedMesh not working `#451`
-- MergeBone may make some bone inactive to active if bone being merged is inactive `#454`
+- Error if all vertices of some BlendShape is removed by RemoveMeshByBlendShape or RemoveMeshInBox [`#440`](https://github.com/anatawa12/AvatarOptimizer/pull/440)
+- RemoveMeshByBlendShape on the SkinnedMeshRenderer with MergeSkinnedMesh not working [`#451`](https://github.com/anatawa12/AvatarOptimizer/pull/451)
+- MergeBone may make some bone inactive to active if bone being merged is inactive [`#454`](https://github.com/anatawa12/AvatarOptimizer/pull/454)
 - Avoid problematic material slot in MergeSkinnedMesh [`#508`](https://github.com/anatawa12/AvatarOptimizer/pull/508)
   - This avoids [Unity's bug in 2019][unity-bug-material]. In Unity 2022, this is no longer needed.
-- Editor of EditSkinnedMesh components may not work well if the object is inactive `#518`
+- Editor of EditSkinnedMesh components may not work well if the object is inactive [`#518`](https://github.com/anatawa12/AvatarOptimizer/pull/518)
 
 [unity-bug]: https://issuetracker.unity3d.com/issues/crash-on-gettargetassemblybyscriptpath-when-a-po-file-in-the-packages-directory-is-not-under-an-assembly-definition
 [unity-bug-material]: https://issuetracker.unity3d.com/issues/material-is-applied-to-two-slots-when-applying-material-to-a-single-slot-while-recording-animation
 
-
-### Security
 
 ## [1.4.3] - 2023-09-05
 ### Fixed
@@ -532,7 +604,13 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.4.3...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.5...HEAD
+[1.5.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.4...v1.5.5
+[1.5.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.3...v1.5.4
+[1.5.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.2...v1.5.3
+[1.5.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.1...v1.5.2
+[1.5.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.0...v1.5.1
+[1.5.0]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.4.3...v1.5.0
 [1.4.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.4.2...v1.4.3
 [1.4.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.4.1...v1.4.2
 [1.4.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.4.0...v1.4.1

@@ -1,8 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Anatawa12.AvatarOptimizer.API;
+using Anatawa12.AvatarOptimizer.APIBackend;
 using static Anatawa12.AvatarOptimizer.ErrorReporting.BuildReport;
 using JetBrains.Annotations;
+using nadena.dev.ndmf;
 using UnityEditor.Animations;
 using UnityEngine;
 using UnityEngine.Animations;
@@ -30,16 +33,22 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             advancedAnimatorParser = config.advancedAnimatorParser;
         }
 
-        public ImmutableModificationsContainer GatherAnimationModifications(OptimizerSession session)
+        public AnimatorParser(TraceAndOptimizeState config)
+        {
+            mmdWorldCompatibility = config.MmdWorldCompatibility;
+            advancedAnimatorParser = !config.UseLegacyAnimatorParser;
+        }
+
+        public ImmutableModificationsContainer GatherAnimationModifications(BuildContext context)
         {
             var modificationsContainer = new ModificationsContainer();
-            modificationsContainer.MergeAsNewLayer(CollectAvatarRootAnimatorModifications(session), 
+            modificationsContainer.MergeAsNewLayer(CollectAvatarRootAnimatorModifications(context), 
                 weightState: AnimatorWeightState.AlwaysOne);
 
-            foreach (var child in session.GetRootComponent<Transform>().DirectChildrenEnumerable())
+            foreach (var child in context.AvatarRootTransform.DirectChildrenEnumerable())
                 WalkForAnimator(child, true, modificationsContainer);
 
-            OtherMutateComponents(modificationsContainer, session);
+            OtherMutateComponents(modificationsContainer, context);
 
             return modificationsContainer.ToImmutable();
         }
@@ -127,100 +136,30 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         #region OtherComponents
 
+        private class Collector : IComponentMutationsCollector
+        {
+            private readonly ModificationsContainer _modifications;
+
+            public Collector(ModificationsContainer modifications) => _modifications = modifications;
+
+            public void ModifyProperties(Component component, IEnumerable<string> properties)
+            {
+                var updater = _modifications.ModifyObject(component);
+                foreach (var prop in properties)
+                    updater.AddModificationAsNewLayer(prop, AnimationProperty.Variable());
+            }
+        }
+
         /// <summary>
         /// Collect modifications by non-animation changes. For example, constraints, PhysBones, and else 
         /// </summary>
-        private void OtherMutateComponents(ModificationsContainer mod, OptimizerSession session)
+        private static void OtherMutateComponents(ModificationsContainer mod, BuildContext context)
         {
-            ReportingObjects(session.GetComponents<Component>(), component =>
+            var collector = new Collector(mod);
+            ReportingObjects(context.GetComponents<Component>(), component =>
             {
-                switch (component)
-                {
-                    case VRCPhysBoneBase pb:
-                        foreach (var transform in pb.GetAffectedTransforms())
-                        {
-                            var updater = mod.ModifyObject(transform);
-                            foreach (var prop in TransformPositionAnimationKeys.Concat(TransformRotationAnimationKeys))
-                                updater.AddModificationAsNewLayer(prop, AnimationProperty.Variable());
-                        }
-
-                        break;
-                    case Rigidbody _:
-                    case ParentConstraint _:
-                    {
-                        var updater = mod.ModifyObject(component.transform);
-                        foreach (var prop in TransformPositionAnimationKeys.Concat(TransformRotationAnimationKeys))
-                            updater.AddModificationAsNewLayer(prop, AnimationProperty.Variable());
-                        break;
-                    }
-                    case AimConstraint _:
-                    case LookAtConstraint _:
-                    case RotationConstraint _:
-                    {
-                        var updater = mod.ModifyObject(component.transform);
-                        foreach (var prop in TransformRotationAnimationKeys)
-                            updater.AddModificationAsNewLayer(prop, AnimationProperty.Variable());
-                        break;
-                    }
-                    case PositionConstraint _:
-                    {
-                        var updater = mod.ModifyObject(component.transform);
-                        foreach (var prop in TransformPositionAnimationKeys)
-                            updater.AddModificationAsNewLayer(prop, AnimationProperty.Variable());
-                        break;
-                    }
-                    case ScaleConstraint _:
-                    {
-                        var updater = mod.ModifyObject(component.transform);
-                        foreach (var prop in TransformScaleAnimationKeys)
-                            updater.AddModificationAsNewLayer(prop, AnimationProperty.Variable());
-                        break;
-                    }
-                    case RemoveMeshByBlendShape removeMesh:
-                    {
-                        var blendShapes = removeMesh.RemovingShapeKeys;
-                        {
-                            var updater = mod.ModifyObject(removeMesh.GetComponent<SkinnedMeshRenderer>());
-                            foreach (var blendShape in blendShapes)
-                                updater.AddModificationAsNewLayer($"blendShape.{blendShape}",
-                                    AnimationProperty.Variable());
-                        }
-
-                        DeriveMergeSkinnedMeshProperties(removeMesh.GetComponent<MergeSkinnedMesh>());
-
-                        void DeriveMergeSkinnedMeshProperties(MergeSkinnedMesh mergeSkinnedMesh)
-                        {
-                            if (mergeSkinnedMesh == null) return;
-
-                            foreach (var renderer in mergeSkinnedMesh.renderersSet.GetAsSet())
-                            {
-                                var updater = mod.ModifyObject(renderer);
-                                foreach (var blendShape in blendShapes)
-                                    updater.AddModificationAsNewLayer($"blendShape.{blendShape}",
-                                        AnimationProperty.Variable());
-
-                                DeriveMergeSkinnedMeshProperties(renderer.GetComponent<MergeSkinnedMesh>());
-                            }
-                        }
-
-                        break;
-                    }
-                    default:
-                    {
-                        if (DynamicBone.TryCast(component, out var dynamicBone))
-                        {
-                            // DynamicBone : similar to PhysBone
-                            foreach (var transform in dynamicBone.GetAffectedTransforms())
-                            {
-                                var updater = mod.ModifyObject(transform);
-                                foreach (var prop in TransformRotationAnimationKeys)
-                                    updater.AddModificationAsNewLayer(prop, AnimationProperty.Variable());
-                            }
-                        }
-                        break;
-                    }
-                    // TODO: FinalIK
-                }
+                if (ComponentInfoRegistry.TryGetInformation(component.GetType(), out var info))
+                    info.CollectMutationsInternal(component, collector);
             });
         }
 
@@ -228,10 +167,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         #region AvatarDescriptor
 
-        private IModificationsContainer CollectAvatarRootAnimatorModifications(OptimizerSession session)
+        private IModificationsContainer CollectAvatarRootAnimatorModifications(BuildContext session)
         {
-            var animator = session.GetRootComponent<Animator>();
-            var descriptor = session.GetRootComponent<VRCAvatarDescriptor>();
+            var animator = session.AvatarRootObject.GetComponent<Animator>();
+            var descriptor = session.AvatarRootObject.GetComponent<VRCAvatarDescriptor>();
 
             var modificationsContainer = new ModificationsContainer();
 
@@ -694,135 +633,101 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 [VRCAvatarDescriptor.AnimLayerType.IKPose] = "a9b90a833b3486e4b82834c9d1f7c4ee"
             };
 
-        private static readonly string[] MmdBlendShapeNames = {
-            // https://booth.pm/ja/items/3341221
-            // https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/i/0b7b5e4b-c62e-41f7-8ced-1f3e58c4f5bf/d5nbmvp-5779f5ac-d476-426c-8ee6-2111eff8e76c.png
-            "まばたき",
-            "笑い",
-            "ウィンク",
-            "ウィンク右",
-            "ウィンク２",
-            "ｳｨﾝｸ２右",
-            "なごみ",
-            "はぅ",
-            "びっくり",
-            "じと目",
-            "ｷﾘｯ",
-            "はちゅ目",
+        private static readonly string[] MmdBlendShapeNames = new [] {
+            // New EN by Yi MMD World
+            //  https://docs.google.com/spreadsheets/d/1mfE8s48pUfjP_rBIPN90_nNkAIBUNcqwIxAdVzPBJ-Q/edit?usp=sharing
+            // Old EN by Xoriu
+            //  https://booth.pm/ja/items/3341221
+            //  https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/i/0b7b5e4b-c62e-41f7-8ced-1f3e58c4f5bf/d5nbmvp-5779f5ac-d476-426c-8ee6-2111eff8e76c.png
+            // Old EN, New EN, JA,
 
-            "星目",
-            "はぁと",
-            "瞳小",
-            "瞳縦潰れ",
-            "光下",
-            "恐ろしい子！",
-            "ハイライト消",
-            "映り込み消",
-            "喜び",
-            "わぉ!?",
-            "なごみω",
-            "悲しむ",
-            "敵意",
+            // ===== Mouth =====
+            "a",            "Ah",               "あ",
+            "i",            "Ch",               "い",
+            "u",            "U",                "う",
+            "e",            "E",                "え",
+            "o",            "Oh",               "お",
+            "Niyari",       "Grin",             "にやり",
+            "Mouse_2",      "∧",                "∧",
+            "Wa",           "Wa",               "ワ",
+            "Omega",        "ω",                "ω",
+            "Mouse_1",      "▲",                "▲",
+            "MouseUP",      "Mouth Horn Raise", "口角上げ",
+            "MouseDW",      "Mouth Horn Lower", "口角下げ",
+            "MouseWD",      "Mouth Side Widen", "口横広げ", 
+            "n",            null,               "ん",
+            "Niyari2",      null,               "にやり２",
+            // by Xoriu only
+            "a 2",          null,               "あ２",
+            "□",            null,               "□",
+            "ω□",           null,               "ω□",
+            "Smile",        null,               "にっこり",
+            "Pero",         null,               "ぺろっ",
+            "Bero-tehe",    null,               "てへぺろ",
+            "Bero-tehe2",   null,               "てへぺろ２",
 
-            "あ",
-            "い",
-            "う",
-            "え",
-            "お",
-            "あ２",
-            "ん",
-            "▲",
-            "∧",
-            "□",
-            "ワ",
-            "ω",
+            // ===== Eyes =====
+            "Blink",        "Blink",            "まばたき",
+            "Smile",        "Blink Happy",      "笑い",
+            "> <",          "Close><",          "はぅ",
+            "EyeSmall",     "Pupil",            "瞳小",
+            "Wink-c",       "Wink 2 Right",     "ｳｨﾝｸ２右",
+            "Wink-b",       "Wink 2",           "ウィンク２",
+            "Wink",         "Wink",             "ウィンク",
+            "Wink-a",       "Wink Right",       "ウィンク右",
+            "Howawa",       "Calm",             "なごみ",
+            "Jito-eye",     "Stare",            "じと目",
+            "Ha!!!",        "Surprised",        "びっくり",
+            "Kiri-eye",     "Slant",            "ｷﾘｯ",
+            "EyeHeart",     "Heart",            "はぁと",
+            "EyeStar",      "Star Eye",         "星目",
+            "EyeFunky",     null,               "恐ろしい子！",
+            // by Xoriu only
+            "O O",          null,               "はちゅ目",
+            "EyeSmall-v",   null,               "瞳縦潰れ",
+            "EyeUnderli",   null,               "光下",
+            "EyHi-Off",     null,               "ハイライト消",
+            "EyeRef-off",   null,               "映り込み消",
 
-            "ω□",
-            "にやり",
-            "にやり２",
-            "にっこり",
-            "ぺろっ",
-            "てへぺろ",
-            "てへぺろ２",
-            "口角上げ",
-            "口角下げ",
-            "口横広げ",
-            "歯無し上",
-            "歯無し下",
+            // ===== Eyebrow =====
+            "Smily",        "Cheerful",         "にこり",
+            "Up",           "Upper",            "上",
+            "Down",         "Lower",            "下",
+            "Serious",      "Serious",          "真面目",
+            "Trouble",      "Sadness",          "困る",
+            "Get angry",    "Anger",            "怒り",
+            null,           "Front",            "前",
+            
+            // ===== Eyes + Eyebrow Feeling =====
+            // by Xoriu only
+            "Joy",          null,               "喜び",
+            "Wao!?",        null,               "わぉ!?",
+            "Howawa ω",     null,               "なごみω",
+            "Wail",         null,               "悲しむ",
+            "Hostility",    null,               "敵意",
 
-            "真面目",
-            "困る",
-            "にこり",
-            "怒り",
-            "下",
-            "上",
+            // ===== Other ======
+            null,           "Blush",            "照れ",
+            "ToothAnon",    null,               "歯無し下",
+            "ToothBnon",    null,               "歯無し上",
+            null,           null,               "涙",
 
-            // english
-            "Blink",
-            "Smile",
-            "Wink",
-            "Wink-a",
-            "Wink-b",
-            "Wink-c",
-            "Howawa",
-            "> <",
-            "Ha!!!",
-            "Jito-eye",
-            "Kiri-eye",
-            "O O",
-
-            "EyeStar",
-            "EyeHeart",
-            "EyeSmall",
-            "EyeSmall-v",
-            "EyeUnderli",
-            "EyeFunky",
-            "EyHi-Off",
-            "EyeRef-off",
-            "Joy",
-            "Wao!?",
-            "Howawa ω",
-            "Wail",
-            "Hostility",
-
-            "a",
-            "i",
-            "u",
-            "e",
-            "o",
-            "a 2",
-            "n",
-            "Mouse_1",
-            "Mouse_2",
-            //"□",
-            "Wa",
-            "Omega",
-
-            // "ω□",
-            "Niyari",
-            "Niyari2",
-            "Smile",
-            "Pero",
-            "Bero-tehe",
-            "Bero-tehe2",
-            "MouseUP",
-            "MouseDW",
-            "MouseWD",
-            "ToothAnon",
-            "ToothBnon",
-
-            "Serious",
-            "Trouble",
-            "Smily",
-            "Get angry",
-            "Up",
-            "Down",
+            // others
 
             // https://gist.github.com/lilxyzw/80608d9b16bf3458c61dec6b090805c5
             "しいたけ",
-            "照れ",
-            "涙",
-        };
+
+            // https://site.nicovideo.jp/ch/userblomaga_thanks/archive/ar1471249
+            "なぬ！",
+            "はんっ！",
+            "えー",
+            "睨み",
+            "睨む",
+            "白目",
+            "瞳大",
+            "頬染め",
+            "青ざめ",
+        }.Where(x => x != null).Distinct().ToArray();
 
         #endregion
     }

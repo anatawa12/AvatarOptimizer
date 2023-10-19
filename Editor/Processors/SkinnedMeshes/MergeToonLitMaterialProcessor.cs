@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
@@ -26,7 +27,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         public override EditSkinnedMeshProcessorOrder ProcessOrder => EditSkinnedMeshProcessorOrder.AfterRemoveMesh;
 
-        public override void Process(OptimizerSession session, MeshInfo2 target)
+        public override void Process(BuildContext context, MeshInfo2 target)
         {
             // compute usages. AdditionalTemporal is usage count for now.
             // if #usages is not zero for merging triangles
@@ -87,7 +88,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             var materials = target.SubMeshes.Select(x => x.SharedMaterial).ToArray();
             var merged = Component.merges.Select(x => new SubMesh(
                 x.source.SelectMany(src => target.SubMeshes[src.materialIndex].Triangles).ToList(),
-                CreateMaterial(GenerateTexture(x, materials, !session.IsTest))));
+                CreateMaterial(GenerateTexture(x, materials, true))));
             var subMeshes = copied.Concat(merged).ToList();
             target.SubMeshes.Clear();
             target.SubMeshes.AddRange(subMeshes);

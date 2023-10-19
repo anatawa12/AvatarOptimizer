@@ -2,88 +2,55 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.ErrorReporting;
+using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
 using VRC.SDK3.Avatars.Components;
 using Object = UnityEngine.Object;
 
-namespace Anatawa12.AvatarOptimizer.Processors
+namespace Anatawa12.AvatarOptimizer
 {
-    internal class ApplyObjectMapping
+    internal class ObjectMappingContext : IExtensionContext
     {
-        public void Apply(OptimizerSession session)
+        public ObjectMappingBuilder MappingBuilder { get; private set; }
+
+        public void OnActivate(BuildContext context)
         {
-            var mapping = session.MappingBuilder.BuildObjectMapping();
+            MappingBuilder = new ObjectMappingBuilder(context.AvatarRootObject);
+        }
+
+        public void OnDeactivate(BuildContext context)
+        {
+            var mapping = MappingBuilder.BuildObjectMapping();
 
             // replace all objects
-            BuildReport.ReportingObjects(session.GetComponents<Component>(), component =>
+            BuildReport.ReportingObjects(context.GetComponents<Component>(), component =>
             {
                 if (component is Transform) return;
                 var serialized = new SerializedObject(component);
                 AnimatorControllerMapper mapper = null;
                 SpecialMappingApplier.Apply(component.GetType(), serialized, mapping, ref mapper);
-                var p = serialized.GetIterator();
-                var enterChildren = true;
-                while (p.Next(enterChildren))
+
+                foreach (var p in serialized.ObjectReferenceProperties())
                 {
-                    if (p.propertyType == SerializedPropertyType.ObjectReference)
+                    if (mapping.MapComponentInstance(p.objectReferenceInstanceIDValue, out var mappedComponent))
+                        p.objectReferenceValue = mappedComponent;
+
+                    if (p.objectReferenceValue is RuntimeAnimatorController controller)
                     {
-                        if (mapping.MapComponentInstance(p.objectReferenceInstanceIDValue, out var mappedComponent))
-                            p.objectReferenceValue = mappedComponent;
+                        if (mapper == null)
+                            mapper = new AnimatorControllerMapper(mapping.CreateAnimationMapper(component.gameObject));
 
-                        if (p.objectReferenceValue is AnimatorController controller)
-                        {
-                            if (mapper == null)
-                                mapper = new AnimatorControllerMapper(
-                                    mapping.CreateAnimationMapper(component.gameObject),
-                                    session.RelativePath(component.transform), session);
-
-                            // ReSharper disable once AccessToModifiedClosure
-                            var mapped = BuildReport.ReportingObject(controller,
-                                () => mapper.MapAnimatorController(controller));
-                            if (mapped != null)
-                                p.objectReferenceValue = mapped;
-                        }
-                    }
-
-                    switch (p.propertyType)
-                    {
-                        case SerializedPropertyType.String:
-                        case SerializedPropertyType.Integer:
-                        case SerializedPropertyType.Boolean:
-                        case SerializedPropertyType.Float:
-                        case SerializedPropertyType.Color:
-                        case SerializedPropertyType.ObjectReference:
-                        case SerializedPropertyType.LayerMask:
-                        case SerializedPropertyType.Enum:
-                        case SerializedPropertyType.Vector2:
-                        case SerializedPropertyType.Vector3:
-                        case SerializedPropertyType.Vector4:
-                        case SerializedPropertyType.Rect:
-                        case SerializedPropertyType.ArraySize:
-                        case SerializedPropertyType.Character:
-                        case SerializedPropertyType.AnimationCurve:
-                        case SerializedPropertyType.Bounds:
-                        case SerializedPropertyType.Gradient:
-                        case SerializedPropertyType.Quaternion:
-                        case SerializedPropertyType.FixedBufferSize:
-                        case SerializedPropertyType.Vector2Int:
-                        case SerializedPropertyType.Vector3Int:
-                        case SerializedPropertyType.RectInt:
-                        case SerializedPropertyType.BoundsInt:
-                            enterChildren = false;
-                            break;
-                        case SerializedPropertyType.Generic:
-                        case SerializedPropertyType.ExposedReference:
-                        case SerializedPropertyType.ManagedReference:
-                        default:
-                            enterChildren = true;
-                            break;
+                        // ReSharper disable once AccessToModifiedClosure
+                        var mapped = BuildReport.ReportingObject(controller,
+                            () => mapper.MapAnimatorController(controller));
+                        if (mapped != controller)
+                            p.objectReferenceValue = mapped;
                     }
                 }
 
-                serialized.ApplyModifiedProperties();
+                serialized.ApplyModifiedPropertiesWithoutUndo();
             });
         }
     }
@@ -137,47 +104,15 @@ namespace Anatawa12.AvatarOptimizer.Processors
     {
         private readonly AnimationObjectMapper _mapping;
         private readonly Dictionary<Object, Object> _cache = new Dictionary<Object, Object>();
-        private readonly OptimizerSession _session;
-        private readonly string _rootPath;
         private bool _mapped = false;
 
-        public AnimatorControllerMapper(AnimationObjectMapper mapping, string rootPath, OptimizerSession session)
+        public AnimatorControllerMapper(AnimationObjectMapper mapping)
         {
-            _session = session;
             _mapping = mapping;
-            _rootPath = rootPath;
         }
 
-        public AnimatorController MapAnimatorController(AnimatorController controller)
-        {
-            if (_cache.TryGetValue(controller, out var cached)) return (AnimatorController)cached;
-            _mapped = false;
-            var newController = new AnimatorController
-            {
-                name = controller.name + " (rebased)",
-                parameters = controller.parameters,
-                layers = controller.layers.Select(MapAnimatorControllerLayer).ToArray()
-            };
-            if (!_mapped) newController = null;
-            _cache[controller] = newController;
-            return newController;
-        }
-
-        private AnimatorControllerLayer MapAnimatorControllerLayer(AnimatorControllerLayer layer) =>
-            new AnimatorControllerLayer
-            {
-                name = layer.name,
-                avatarMask = DeepClone(layer.avatarMask, CustomClone),
-                blendingMode = layer.blendingMode,
-                defaultWeight = layer.defaultWeight,
-                syncedLayerIndex = layer.syncedLayerIndex,
-                syncedLayerAffectsTiming = layer.syncedLayerAffectsTiming,
-                iKPass = layer.iKPass,
-                stateMachine = MapStateMachine(layer.stateMachine),
-            };
-
-        private AnimatorStateMachine MapStateMachine(AnimatorStateMachine stateMachine) =>
-            DeepClone(stateMachine, CustomClone);
+        public T MapAnimatorController<T>(T controller) where T : RuntimeAnimatorController =>
+            DeepClone(controller, CustomClone);
 
         // https://github.com/bdunderscore/modular-avatar/blob/db49e2e210bc070671af963ff89df853ae4514a5/Packages/nadena.dev.modular-avatar/Editor/AnimatorMerger.cs#L199-L241
         // Originally under MIT License
@@ -218,6 +153,8 @@ namespace Anatawa12.AvatarOptimizer.Processors
             else if (o is AvatarMask mask)
             {
                 var newMask = new AvatarMask();
+                for (var part = AvatarMaskBodyPart.Root; part < AvatarMaskBodyPart.LastBodyPart; ++part)
+                    newMask.SetHumanoidBodyPartActive(part, mask.GetHumanoidBodyPartActive(part));
                 newMask.name = "rebased " + mask.name;
                 newMask.transformCount = mask.transformCount;
                 var dstI = 0;
@@ -236,9 +173,38 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
                 return newMask;
             }
+            else if (o is RuntimeAnimatorController controller)
+            {
+                using (new MappedScope(this))
+                {
+                    var newController = DefaultDeepClone(controller, CustomClone);
+                    newController.name = controller.name + " (rebased)";
+                    if (!_mapped) newController = controller;
+                    _cache[controller] = newController;
+                    return newController;
+                }
+            }
             else
             {
                 return null;
+            }
+        }
+
+        private readonly struct MappedScope : IDisposable
+        {
+            private readonly AnimatorControllerMapper _mapper;
+            private readonly bool _previous;
+
+            public MappedScope(AnimatorControllerMapper mapper)
+            {
+                _mapper = mapper;
+                _previous = mapper._mapped;
+                mapper._mapped = false;
+            }
+
+            public void Dispose()
+            {
+                _mapper._mapped |= _previous;
             }
         }
 
@@ -256,6 +222,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 // Any object referenced by an animator that we intend to mutate needs to be listed here.
                 case Motion _:
                 case AnimatorController _:
+                case AnimatorOverrideController _:
                 case AnimatorState _:
                 case AnimatorStateMachine _:
                 case AnimatorTransitionBase _:
@@ -278,15 +245,23 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 default:
                     throw new Exception($"Unknown type referenced from animator: {original.GetType()}");
             }
+
             if (_cache.TryGetValue(original, out var cached)) return (T)cached;
 
             var obj = visitor(original);
             if (obj != null)
             {
                 _cache[original] = obj;
+                _cache[obj] = obj;
                 return (T)obj;
             }
 
+            return DefaultDeepClone(original, visitor);
+        }
+
+        private T DefaultDeepClone<T>(T original, Func<Object, Object> visitor) where T : Object
+        {
+            Object obj;
             var ctor = original.GetType().GetConstructor(Type.EmptyTypes);
             if (ctor == null || original is ScriptableObject)
             {
@@ -299,27 +274,15 @@ namespace Anatawa12.AvatarOptimizer.Processors
             }
 
             _cache[original] = obj;
+            _cache[obj] = obj;
 
-            SerializedObject so = new SerializedObject(obj);
-            SerializedProperty prop = so.GetIterator();
-
-            bool enterChildren = true;
-            while (prop.Next(enterChildren))
+            using (var so = new SerializedObject(obj))
             {
-                enterChildren = true;
-                switch (prop.propertyType)
-                {
-                    case SerializedPropertyType.ObjectReference:
-                        prop.objectReferenceValue = DeepClone(prop.objectReferenceValue, visitor);
-                        break;
-                    // Iterating strings can get super slow...
-                    case SerializedPropertyType.String:
-                        enterChildren = false;
-                        break;
-                }
-            }
+                foreach (var prop in so.ObjectReferenceProperties())
+                    prop.objectReferenceValue = DeepClone(prop.objectReferenceValue, visitor);
 
-            so.ApplyModifiedPropertiesWithoutUndo();
+                so.ApplyModifiedPropertiesWithoutUndo();
+            }
 
             return (T)obj;
         }

@@ -2,6 +2,9 @@ msgid ""
 msgstr ""
 "Language: en\n"
 
+msgid "CheckForUpdate:out-of-date"
+msgstr "Newer release of Avatar Optimizer, {0} is available! (Current: {1})"
+
 msgid "LegacyModularAvatarWarning:message"
 msgstr ""
 "We found Modular Avatar 1.7.x or older is installed!\n"
@@ -268,6 +271,11 @@ msgstr "Merge"
 
 msgid "MergeSkinnedMesh:label:Renderers"
 msgstr "Renderers:"
+
+msgid "MergeSkinnedMesh:error:mix-normal-existence"
+msgstr ""
+"Merging both meshes with and without normal is not supported."
+"Please change import setting of models to include normals!"
 
 # endregion
 
