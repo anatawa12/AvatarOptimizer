@@ -4,7 +4,6 @@ using JetBrains.Annotations;
 using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEngine;
-using VRC.SDK3.Avatars.Components;
 using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
@@ -15,8 +14,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         private static void Open() => GetWindow<AnimatorParserDebugWindow>("AnimatorParser Debug Window");
 
         public ParserSource parserSource;
-        public VRCAvatarDescriptor avatar;
         public RuntimeAnimatorController animatorController;
+        public GameObject avatar;
         public GameObject rootGameObject;
         public Motion motion;
 
@@ -133,9 +132,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     {
                         if (GUILayout.Button("Parse") && avatar)
                         {
-                            parsedRootObject = avatar.gameObject;
+                            parsedRootObject = avatar;
                             Container = new AnimatorParser(true, true).GatherAnimationModifications(
-                                new BuildContext(parsedRootObject, null));
+                                new BuildContext(avatar, null));
                         }
                     }
 
