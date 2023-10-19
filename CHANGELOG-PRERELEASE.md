@@ -17,7 +17,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - Improve support of newer Unity versions `#608`
-- Improve support of projects without VRCSDK `#609` `#625`
+- Improve support of projects without VRCSDK `#609` `#625` `#627`
 
 ### Security
 
