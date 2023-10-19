@@ -4,8 +4,11 @@ using System.Linq;
 using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEngine;
+
+#if AAO_VRCSDK3_AVATARS
 using VRC.SDK3.Avatars.Components;
 using VRC.SDKBase;
+#endif
 
 namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 {
@@ -76,7 +79,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         }
 
         void FreezeMeaninglessBlendShapes(BuildContext context, TraceAndOptimizeState state) {
+#if AAO_VRCSDK3_AVATARS
             ComputePreserveBlendShapes(context, state.PreserveBlendShapes);
+#endif
 
             // second optimization: remove meaningless blendShapes
             foreach (var skinnedMeshRenderer in context.GetComponents<SkinnedMeshRenderer>())
@@ -87,6 +92,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             }
         }
 
+#if AAO_VRCSDK3_AVATARS
         private void ComputePreserveBlendShapes(BuildContext context, Dictionary<SkinnedMeshRenderer, HashSet<string>> preserveBlendShapes)
         {
             // some BlendShapes manipulated by VRC Avatar Descriptor must exists
@@ -137,5 +143,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 }
             }
         }
+#endif
     }
 }

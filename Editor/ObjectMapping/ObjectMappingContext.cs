@@ -6,7 +6,11 @@ using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
+
+#if AAO_VRCSDK3_AVATARS
 using VRC.SDK3.Avatars.Components;
+#endif
+
 using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer
@@ -30,8 +34,9 @@ namespace Anatawa12.AvatarOptimizer
                 if (component is Transform) return;
                 var serialized = new SerializedObject(component);
                 AnimatorControllerMapper mapper = null;
+#if AAO_VRCSDK3_AVATARS
                 SpecialMappingApplier.Apply(component.GetType(), serialized, mapping, ref mapper);
-
+#endif
                 foreach (var p in serialized.ObjectReferenceProperties())
                 {
                     if (mapping.MapComponentInstance(p.objectReferenceInstanceIDValue, out var mappedComponent))
@@ -55,6 +60,7 @@ namespace Anatawa12.AvatarOptimizer
         }
     }
 
+#if AAO_VRCSDK3_AVATARS
     internal static class SpecialMappingApplier
     {
         public static void Apply(Type type, SerializedObject serialized, 
@@ -99,6 +105,7 @@ namespace Anatawa12.AvatarOptimizer
             }
         }
     }
+#endif
 
     internal class AnimatorControllerMapper
     {

@@ -5,7 +5,11 @@ using System.Text;
 using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEngine;
+
+#if AAO_VRCSDK3_AVATARS
 using VRC.Dynamics;
+#endif
+
 using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
@@ -542,11 +546,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                         continue;
                     }
 
+#if AAO_VRCSDK3_AVATARS
                     if (component is VRCPhysBoneBase)
                     {
                         foreach (var child in component.GetComponentsInChildren<Transform>(true))
                             AddGameObject(child.gameObject);
                     }
+#endif
 
                     using (var serialized = new SerializedObject(component))
                     {

@@ -9,9 +9,12 @@ using nadena.dev.ndmf;
 using UnityEditor.Animations;
 using UnityEngine;
 using UnityEngine.Animations;
+
+#if AAO_VRCSDK3_AVATARS
 using VRC.Dynamics;
 using VRC.SDK3.Avatars.Components;
 using VRC.SDKBase;
+#endif
 
 namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 {
@@ -42,8 +45,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         public ImmutableModificationsContainer GatherAnimationModifications(BuildContext context)
         {
             var modificationsContainer = new ModificationsContainer();
+
+#if AAO_VRCSDK3_AVATARS
             modificationsContainer.MergeAsNewLayer(CollectAvatarRootAnimatorModifications(context), 
                 weightState: AnimatorWeightState.AlwaysOne);
+#endif
 
             foreach (var child in context.AvatarRootTransform.DirectChildrenEnumerable())
                 WalkForAnimator(child, true, modificationsContainer);
@@ -165,6 +171,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         #endregion
 
+#if AAO_VRCSDK3_AVATARS
         #region AvatarDescriptor
 
         private IModificationsContainer CollectAvatarRootAnimatorModifications(BuildContext session)
@@ -432,6 +439,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         }
         
         #endregion
+#endif
 
         #region Animator
 
@@ -612,6 +620,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         private static readonly string[] TransformScaleAnimationKeys =
             { "m_LocalScale.x", "m_LocalScale.y", "m_LocalScale.z" };
 
+#if AAO_VRCSDK3_AVATARS
         private static readonly AnimatorLayerMap<CachedGuidLoader<AnimatorController>> DefaultLayers =
             new AnimatorLayerMap<CachedGuidLoader<AnimatorController>>
             {
@@ -632,6 +641,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 // vrc_AvatarV3UtilityIKPose
                 [VRCAvatarDescriptor.AnimLayerType.IKPose] = "a9b90a833b3486e4b82834c9d1f7c4ee"
             };
+#endif
 
         private static readonly string[] MmdBlendShapeNames = new [] {
             // New EN by Yi MMD World
