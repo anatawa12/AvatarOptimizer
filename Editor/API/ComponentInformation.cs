@@ -133,9 +133,6 @@ namespace Anatawa12.AvatarOptimizer.API
         public abstract ComponentDependencyInfo OnlyIfTargetCanBeEnable();
     }
 
-    /// <summary>
-    /// This interface will never be stable for implement. This interface is stable for calling methods.
-    /// </summary>
     /// <example>
     /// <code>
     /// protected override void CollectMutations(AimConstraint component, IComponentMutationsCollector collector)
