@@ -24,6 +24,7 @@ namespace Anatawa12.AvatarOptimizer.API
     {
         public Type TargetType { get; }
 
+        [PublicAPI]
         public ComponentInformationAttribute(Type targetType)
         {
             TargetType = targetType;
@@ -32,6 +33,7 @@ namespace Anatawa12.AvatarOptimizer.API
         internal override Type GetTargetType() => TargetType;
     }
 
+    [PublicAPI]
     public abstract class ComponentInformation<TComponent> :
         APIInternal.ComponentInformation,
         APIInternal.IComponentInformation<TComponent>
@@ -52,6 +54,7 @@ namespace Anatawa12.AvatarOptimizer.API
         /// </summary>
         /// <param name="component">The component.</param>
         /// <param name="collector">The callback.</param>
+        [PublicAPI]
         protected abstract void CollectDependency(TComponent component, ComponentDependencyCollector collector);
 
         /// <summary>
@@ -61,6 +64,7 @@ namespace Anatawa12.AvatarOptimizer.API
         /// </summary>
         /// <param name="component">The component.</param>
         /// <param name="collector">The callback.</param>
+        [PublicAPI]
         protected virtual void CollectMutations(TComponent component, ComponentMutationsCollector collector)
         {
         }
@@ -89,6 +93,7 @@ namespace Anatawa12.AvatarOptimizer.API
         /// With same reasons, Constraints are not treated as EntryPoint, they have bidirectional
         /// dependency relationship between Constraintas and transform instead.
         /// </summary>
+        [PublicAPI]
         public abstract void MarkEntrypoint();
 
         /// <summary>
@@ -102,6 +107,7 @@ namespace Anatawa12.AvatarOptimizer.API
         /// <param name="dependant">The dependant</param>
         /// <param name="dependency">The dependency</param>
         /// <returns>The object to configure the dependency</returns>
+        [PublicAPI]
         public abstract ComponentDependencyInfo AddDependency(Component dependant, Component dependency);
 
         /// <summary>
@@ -112,6 +118,7 @@ namespace Anatawa12.AvatarOptimizer.API
         /// <seealso cref="AddDependency(UnityEngine.Component,UnityEngine.Component)"/>
         /// <param name="dependency">The dependency</param>
         /// <returns>The object to configure the dependency</returns>
+        [PublicAPI]
         public abstract ComponentDependencyInfo AddDependency(Component dependency);
     }
 
@@ -125,11 +132,14 @@ namespace Anatawa12.AvatarOptimizer.API
         /// Indicates the dependency is required even if dependant component is disabled.
         /// </summary>
         /// <returns>this object for method chain</returns>
+        [PublicAPI]
         public abstract ComponentDependencyInfo EvenIfDependantDisabled();
+
         /// <summary>
         /// Indicates the dependency is not required if dependency component is disabled.
         /// </summary>
         /// <returns>this object for method chain</returns>
+        [PublicAPI]
         public abstract ComponentDependencyInfo OnlyIfTargetCanBeEnable();
     }
 
@@ -147,6 +157,7 @@ namespace Anatawa12.AvatarOptimizer.API
         {
         }
 
+        [PublicAPI]
         public abstract void ModifyProperties([NotNull] Component component, [NotNull] IEnumerable<string> properties);
     }
 }
