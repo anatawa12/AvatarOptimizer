@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- AutoFreezeBlendShape will freeze BlendShapes with editor value instead of animated constant `#622`
 
 ### Security
 
