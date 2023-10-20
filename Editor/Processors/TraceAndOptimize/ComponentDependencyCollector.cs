@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.API;
-using Anatawa12.AvatarOptimizer.APIBackend;
+using Anatawa12.AvatarOptimizer.APIInternal;
 using Anatawa12.AvatarOptimizer.ErrorReporting;
 using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
 using JetBrains.Annotations;
@@ -60,7 +60,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 _dependencies[component.gameObject.transform] = (ComponentToTransformFlags, DependencyType.ComponentToTransform);
             }
 
-            public IComponentDependencyInfo AddDependency(Component component)
+            public API.ComponentDependencyInfo AddDependency(Component component)
             {
                 if (!component)
                     return EmptyComponentDependencyInfo.Instance;
@@ -79,7 +79,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 if (bone) new ComponentDependencyInfo(_dependencies, bone, DependencyType.Bone).SetFlags();
             }
 
-            class EmptyComponentDependencyInfo : IComponentDependencyInfo
+            class EmptyComponentDependencyInfo : API.ComponentDependencyInfo
             {
                 public static EmptyComponentDependencyInfo Instance = new EmptyComponentDependencyInfo();
 
@@ -87,11 +87,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 {
                 }
 
-                public IComponentDependencyInfo EvenIfDependantDisabled() => this;
-                public IComponentDependencyInfo OnlyIfTargetCanBeEnable() => this;
+                public override API.ComponentDependencyInfo EvenIfDependantDisabled() => this;
+                public override API.ComponentDependencyInfo OnlyIfTargetCanBeEnable() => this;
             }
 
-            private struct ComponentDependencyInfo : IComponentDependencyInfo
+            private class ComponentDependencyInfo : API.ComponentDependencyInfo
             {
                 [NotNull] private readonly Dictionary<Component, (DependencyFlags, DependencyType)> _dependencies;
                 private readonly Component _component;
@@ -120,14 +120,14 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     return this;
                 }
 
-                public IComponentDependencyInfo EvenIfDependantDisabled()
+                public override API.ComponentDependencyInfo EvenIfDependantDisabled()
                 {
                     _flags |= DependencyFlags.EvenIfThisIsDisabled;
                     SetFlags();
                     return this;
                 }
 
-                public IComponentDependencyInfo OnlyIfTargetCanBeEnable()
+                public override API.ComponentDependencyInfo OnlyIfTargetCanBeEnable()
                 {
                     _flags &= ~DependencyFlags.EvenIfTargetIsDisabled;
                     SetFlags();
@@ -200,7 +200,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             }
         }
 
-        internal class Collector : IComponentDependencyCollector
+        internal class Collector : API.ComponentDependencyCollector
         {
             private readonly ComponentDependencyCollector _collector;
             private readonly ComponentDependencies _deps;
@@ -216,10 +216,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             public MeshInfo2 GetMeshInfoFor(SkinnedMeshRenderer renderer) =>
                 _collector._session.GetMeshInfoFor(renderer);
 
-            public void MarkEntrypoint() => _deps.EntrypointComponent = true;
-            public IComponentDependencyInfo AddDependency(Component dependant, Component dependency) =>
+            public override void MarkEntrypoint() => _deps.EntrypointComponent = true;
+            public override ComponentDependencyInfo AddDependency(Component dependant, Component dependency) =>
                 _collector.GetDependencies(dependant).AddDependency(dependency);
-            public IComponentDependencyInfo AddDependency(Component dependency) => _deps.AddDependency(dependency);
+            public override ComponentDependencyInfo AddDependency(Component dependency) => _deps.AddDependency(dependency);
 
             public void AddParentDependency(Transform component) => _deps.AddParentDependency(component);
             public void AddBoneDependency(Transform bone) => _deps.AddBoneDependency(bone);

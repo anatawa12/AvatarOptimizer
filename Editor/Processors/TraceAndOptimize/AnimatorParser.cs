@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.API;
-using Anatawa12.AvatarOptimizer.APIBackend;
+using Anatawa12.AvatarOptimizer.APIInternal;
 using static Anatawa12.AvatarOptimizer.ErrorReporting.BuildReport;
 using JetBrains.Annotations;
 using nadena.dev.ndmf;
@@ -136,13 +136,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         #region OtherComponents
 
-        private class Collector : IComponentMutationsCollector
+        private class Collector : ComponentMutationsCollector
         {
             private readonly ModificationsContainer _modifications;
 
             public Collector(ModificationsContainer modifications) => _modifications = modifications;
 
-            public void ModifyProperties(Component component, IEnumerable<string> properties)
+            public override void ModifyProperties(Component component, IEnumerable<string> properties)
             {
                 var updater = _modifications.ModifyObject(component);
                 foreach (var prop in properties)
