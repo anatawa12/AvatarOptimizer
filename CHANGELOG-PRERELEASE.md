@@ -16,9 +16,12 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- warning about VRCTestMarker when Build & Test `#628`
 
 ### Security
+
+## [1.5.8-rc.1] - 2023-10-20
+### Fixed
+- warning about VRCTestMarker when Build & Test [`#628`](https://github.com/anatawa12/AvatarOptimizer/pull/628)
 
 ## [1.5.7] - 2023-10-19
 ## [1.5.7-beta.1] - 2023-10-19
@@ -930,7 +933,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.7...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.8-rc.1...HEAD
+[1.5.8-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.7...v1.5.8-rc.1
 [1.5.7]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.7-beta.1...v1.5.7
 [1.5.7-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.6...v1.5.7-beta.1
 [1.5.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.6-rc.1...v1.5.6
