@@ -34,28 +34,20 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         }
     }
 
-    internal readonly struct MarkObjectContext {
+    internal class ActivenessCache
+    {
         private readonly ImmutableModificationsContainer _modifications;
-        private readonly BuildContext _context;
-        private readonly ComponentDependencyCollector _dependencies;
-
-        public readonly Dictionary<Component, ComponentDependencyCollector.DependencyType> _marked;
-        private readonly Queue<(Component, bool)> _processPending;
         private readonly Dictionary<Component, bool?> _activeNessCache;
+        private Transform _avatarRoot;
 
-        public MarkObjectContext(BuildContext context, ImmutableModificationsContainer modifications,
-            ComponentDependencyCollector dependencies)
+        public ActivenessCache(ImmutableModificationsContainer modifications, Transform avatarRoot)
         {
-            _context = context;
-            _dependencies = dependencies;
             _modifications = modifications;
-
-            _marked = new Dictionary<Component, ComponentDependencyCollector.DependencyType>();
-            _processPending = new Queue<(Component, bool)>();
+            _avatarRoot = avatarRoot;
             _activeNessCache = new Dictionary<Component, bool?>();
         }
 
-        private bool? GetActiveness(Component component)
+        public bool? GetActiveness(Component component)
         {
             if (_activeNessCache.TryGetValue(component, out var activeness))
                 return activeness;
@@ -66,7 +58,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         private bool? ComputeActiveness(Component component)
         {
-            if (_context.AvatarRootTransform == component) return true;
+            if (_avatarRoot == component) return true;
             bool? parentActiveness;
             if (component is Transform t)
                 parentActiveness = t.parent == null ? true : GetActiveness(t.parent);
@@ -128,12 +120,29 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             return null;
         }
+    }
+
+    internal readonly struct MarkObjectContext {
+        private readonly ComponentDependencyCollector _dependencies;
+        private readonly ActivenessCache _activenessCache;
+
+        public readonly Dictionary<Component, ComponentDependencyCollector.DependencyType> _marked;
+        private readonly Queue<(Component, bool)> _processPending;
+
+        public MarkObjectContext(ComponentDependencyCollector dependencies, ActivenessCache activenessCache)
+        {
+            _dependencies = dependencies;
+            _activenessCache = activenessCache;
+
+            _marked = new Dictionary<Component, ComponentDependencyCollector.DependencyType>();
+            _processPending = new Queue<(Component, bool)>();
+        }
 
         public void MarkComponent(Component component,
             bool ifTargetCanBeEnabled,
             ComponentDependencyCollector.DependencyType type)
         {
-            bool? activeness = GetActiveness(component);
+            bool? activeness = _activenessCache.GetActiveness(component);
 
             if (ifTargetCanBeEnabled && activeness == false)
                 return; // The Target is not active so not dependency
@@ -194,7 +203,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             var collector = new ComponentDependencyCollector(_context, _preserveEndBone);
             collector.CollectAllUsages();
 
-            var markContext = new MarkObjectContext(_context, _modifications, collector);
+            var activenessCache = new ActivenessCache(_modifications, _context.AvatarRootTransform);
+
+            var markContext = new MarkObjectContext(collector, activenessCache);
             // then, mark and sweep.
 
             // entrypoint for mark & sweep is active-able GameObjects
