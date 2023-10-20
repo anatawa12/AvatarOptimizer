@@ -10,6 +10,7 @@ using UnityEngine.Animations;
 using UnityEngine.Rendering;
 using VRC.Core;
 using VRC.Dynamics;
+using VRC.SDK3;
 using VRC.SDK3.Avatars.Components;
 using VRC.SDK3.Dynamics.Contact.Components;
 using VRC.SDK3.Dynamics.PhysBone.Components;
@@ -456,6 +457,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             {
                 // to avoid unexpected deletion
                 deps.EntrypointComponent = true;
+                deps.AddAlwaysDependency(component.GetComponent<VRCTestMarker>());
                 deps.AddAlwaysDependency(component.GetComponent<PipelineManager>());
             });
             AddParserWithExtends<VRC_AvatarDescriptor, VRCAvatarDescriptor>((collector, deps, component) =>
@@ -490,6 +492,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     }
                 }
             });
+            AddEntryPointParser<VRCTestMarker>();
             AddEntryPointParser<PipelineManager>();
 #pragma warning disable CS0618
             AddEntryPointParser<PipelineSaver>();

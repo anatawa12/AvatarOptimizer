@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- warning about VRCTestMarker when Build & Test `#628`
 
 ### Security
 
