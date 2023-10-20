@@ -16,9 +16,19 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Improve support of newer Unity versions `#608`
+- Improve support of projects without VRCSDK `#609`
 
 ### Security
 
+## [1.5.7-beta.1] - 2023-10-19
+### Added
+- Add compatibility for VRCQuestTools [`#619`](https://github.com/anatawa12/AvatarOptimizer/pull/619)
+
+### Fixed
+- AutoFreezeBlendShape will freeze BlendShapes with editor value instead of animated constant [`#622`](https://github.com/anatawa12/AvatarOptimizer/pull/622)
+
+## [1.5.6] - 2023-10-17
 ## [1.5.6-rc.1] - 2023-10-17
 ### Removed
 - Error for Read/Write Mesh off Mesh [`#615`](https://github.com/anatawa12/AvatarOptimizer/pull/615)
@@ -920,7 +930,9 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.6-rc.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.7-beta.1...HEAD
+[1.5.7-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.6...v1.5.7-beta.1
+[1.5.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.6-rc.1...v1.5.6
 [1.5.6-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.6-beta.2...v1.5.6-rc.1
 [1.5.6-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.6-beta.1...v1.5.6-beta.2
 [1.5.6-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.5...v1.5.6-beta.1

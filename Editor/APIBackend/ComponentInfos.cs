@@ -174,7 +174,11 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
                 switch (component.collision.type)
                 {
                     case ParticleSystemCollisionType.Planes:
+#if UNITY_2020_2_OR_NEWER
+                        for (var i = 0; i < component.collision.planeCount; i++)
+#else
                         for (var i = 0; i < component.collision.maxPlaneCount; i++)
+#endif
                             collector.AddDependency(component.collision.GetPlane(i));
                         break;
                     case ParticleSystemCollisionType.World:
@@ -185,7 +189,11 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
 
             if (component.trigger.enabled)
             {
+#if UNITY_2020_2_OR_NEWER
+                for (var i = 0; i < component.trigger.colliderCount; i++)
+#else
                 for (var i = 0; i < component.trigger.maxColliderCount; i++)
+#endif
                     collector.AddDependency(component.trigger.GetCollider(i));
             }
 
@@ -607,6 +615,19 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
         {
         }
     }
+    #endregion
+
+    
+    #region VRCQuestTools
+
+    [ComponentInformationWithGUID("f055e14e1beba894ea68aedffde8ada6", 11500000)] // VertexColorRemover
+    internal class VRCQuestToolsComponents : ComponentInformation<Component>
+    {
+        protected override void CollectDependency(Component component, IComponentDependencyCollector collector)
+        {
+        }
+    }
+
     #endregion
 
     internal static class ComponentInformationExtensions

@@ -29,45 +29,48 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             // first optimization: unused blend shapes
             foreach (var skinnedMeshRenderer in context.GetComponents<SkinnedMeshRenderer>())
             {
-                var mesh = skinnedMeshRenderer.sharedMesh;
-
-                // skip SMR without mesh
-                if (!mesh) continue;
                 if (state.Exclusions.Contains(skinnedMeshRenderer.gameObject)) continue; // manual exclusiton
 
+                var meshInfo = context.GetMeshInfoFor(skinnedMeshRenderer);
+
                 var modifies = state.Modifications.GetModifiedProperties(skinnedMeshRenderer);
-                var blendShapeValues = Enumerable.Range(0, mesh.blendShapeCount)
-                    .Select(i => skinnedMeshRenderer.GetBlendShapeWeight(i)).ToArray();
-                var notChanged = Enumerable.Range(0, mesh.blendShapeCount)
-                    .Select(i => mesh.GetBlendShapeName(i))
-                    .Where((name, i) =>
+
+                var unchanged = new HashSet<string>();
+
+                for (var i = 0; i < meshInfo.BlendShapes.Count; i++)
+                {
+                    var (name, weight) = meshInfo.BlendShapes[i];
+                    if (IsUnchangedBlendShape(name, weight, out var newWeight))
                     {
-                        if (!modifies.TryGetValue($"blendShape.{name}", out var prop)) return true;
+                        unchanged.Add(name);
+                        meshInfo.BlendShapes[i] = (name, newWeight);
+                    }
+                }
+                
+                bool IsUnchangedBlendShape(string name, float weight, out float newWeight)
+                {
+                    newWeight = weight;
+                    if (!modifies.TryGetValue($"blendShape.{name}", out var prop)) return true;
+                    
+                    switch (prop.State)
+                    {
+                        case AnimationProperty.PropertyState.ConstantAlways:
+                            newWeight = prop.ConstValue;
+                            return true;
+                        case AnimationProperty.PropertyState.ConstantPartially:
+                            return prop.ConstValue.CompareTo(weight) == 0;
+                        case AnimationProperty.PropertyState.Variable:
+                            return false;
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
+                }
 
-                        switch (prop.State)
-                        {
-                            case AnimationProperty.PropertyState.ConstantAlways:
-                                blendShapeValues[i] = prop.ConstValue;
-                                return true;
-                            case AnimationProperty.PropertyState.ConstantPartially:
-                                return prop.ConstValue.CompareTo(blendShapeValues[i]) == 0;
-                            case AnimationProperty.PropertyState.Variable:
-                                return false;
-                            default:
-                                throw new ArgumentOutOfRangeException();
-                        }
-                    })
-                    .ToArray();
-
-                if (notChanged.Length == 0) continue;
-
-                for (var i = 0; i < blendShapeValues.Length; i++)
-                    skinnedMeshRenderer.SetBlendShapeWeight(i, blendShapeValues[i]);
-                EditorUtility.SetDirty(skinnedMeshRenderer);
+                if (unchanged.Count == 0) continue;
 
                 var freeze = skinnedMeshRenderer.gameObject.GetOrAddComponent<FreezeBlendShape>();
                 var shapeKeys = freeze.shapeKeysSet.GetAsSet();
-                shapeKeys.UnionWith(notChanged);
+                shapeKeys.UnionWith(unchanged);
                 freeze.shapeKeysSet.SetValueNonPrefab(shapeKeys);
             }
         }
