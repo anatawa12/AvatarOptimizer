@@ -100,21 +100,31 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             var collector = new ComponentDependencyCollector(_context, _preserveEndBone, componentInfos);
             collector.CollectAllUsages();
 
-            var markContext = new MarkObjectContext(componentInfos, _context.AvatarRootTransform);
             // then, mark and sweep.
 
             // entrypoint for mark & sweep is active-able GameObjects
             foreach (var gameObject in CollectAllActiveAbleGameObjects())
             foreach (var component in gameObject.GetComponents<Component>())
+            {
                 if (componentInfos.GetInfo(component).EntrypointComponent)
+                {
+                    var markContext = new MarkObjectContext(componentInfos, component);
+                    markContext.MarkComponent(component, GCComponentInfo.DependencyType.Normal);
+                    markContext.MarkRecursively();
+                }
+            }
+
+            if (_exclusions.Count != 0) {
+                // excluded GameObjects must be exists
+                var markContext = new MarkObjectContext(componentInfos, _context.AvatarRootTransform);
+
+                foreach (var gameObject in _exclusions)
+                foreach (var component in gameObject.GetComponents<Component>())
                     markContext.MarkComponent(component, GCComponentInfo.DependencyType.Normal);
 
-            // excluded GameObjects must be exists
-            foreach (var gameObject in _exclusions)
-            foreach (var component in gameObject.GetComponents<Component>())
-                markContext.MarkComponent(component, GCComponentInfo.DependencyType.Normal);
+                markContext.MarkRecursively();
+            }
 
-            markContext.MarkRecursively();
 
             foreach (var component in _context.GetComponents<Component>())
             {
