@@ -38,10 +38,10 @@ Avatar Optimizer might be proceed before applying your plugin.
 ### For NDMF based non-destructive tools {#improve-compatibility-ndmf-based}
 
 If your tool is a non-destructive tool based on NDMF[^NDMF], please remove your components before
-Avatar Optimizer process. Avatar Optimizer does most things in Optimization phase
+Avatar Optimizer processes. Avatar Optimizer does most things in Optimization phase
 so if your plugin do nothing in Optimization phase, nothing is problem.\
 If your tool needs your components in Optimization phase, 
-please execute before Avatar Optimizer process with [`BeforePlugin`][ndmf-BeforePlugin]. 
+please execute before Avatar Optimizer processes with [`BeforePlugin`][ndmf-BeforePlugin]. 
 QualifiedName of Avatar Optimizer in NDMF is `com.anatawa12.avatar-optimizer`.
 
 If your tool actually wants to do something with your components in Optimization phase,
@@ -56,23 +56,23 @@ If your tool is applied on play, to ensure compatibility with Avatar Optimizer, 
 guarantee applying ordering between Avatar Optimizer and your tool.
 If your tool does something only on building avatar, making your tool based on NDMF is not required.
 
-If you don't want to make your tool based on NDMF, please remove your components before Avatar Optimizer process.
+If you don't want to make your tool based on NDMF, please remove your components before Avatar Optimizer processes.
 To achieve this, your tool needs to execute before NDMF's Optimization phase.\
 Currently NDMF executes Optimization phase in order `-1025`, which is JUST before VRCSDK's `RemoveAvatarEditorOnly`
 callback, so your tool should register `IVRCSDKPreprocessAvatarCallback` with smaller `callbackOrder`.
 
-If your tool actually wants to do something with your components after Avatar Optimizer process 
+If your tool actually wants to do something with your components after Avatar Optimizer processes 
 (Optimization phase of NDMF), please [register your components][register-component] to Avatar Optimizer.
 
 ### For other tools that just hold data with components. {#improve-compatibility-destructive-tools}
 
 If your tool holds some information with components and have no meaning on the build time, 
-please remove your components before Avatar Optimizer process with `IVRCSDKPreprocessAvatarCallback` (see [this section](#improve-compatibility-non-ndmf-based)) 
+please remove your components before Avatar Optimizer processes with `IVRCSDKPreprocessAvatarCallback` (see [this section](#improve-compatibility-non-ndmf-based)) 
 or register your components to Avatar Optimizer (see [this section][register-component]).
 
 ### Registering your components {#register-component}
 
-If your tool wants to keep your component after Avatar Optimizer process, or want to removed by Avatar Optimizer,
+If your tool wants to keep your component after Avatar Optimizer processes, or want to removed by Avatar Optimizer,
 you can register your components to Avatar Optimizer to tell about your components.
 
 First, to call APIs of Avatar Optimizer, please make an assembly definition file[^asmdef] if your tool doesn't have.
