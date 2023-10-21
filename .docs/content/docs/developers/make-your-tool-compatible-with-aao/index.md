@@ -64,7 +64,7 @@ your tool should register `IVRCSDKPreprocessAvatarCallback` with smaller `callba
 If your tool actually want to do something with your components after Avatar Optimizer (Optimization phase in NDMF),
 please [register your component][register-component] to Avatar Optimizer.
 
-### For other tools that just holds data with components. {#non-destructive-tools}
+### For other tools that just holds data with components. {#improve-compatibility-destructive-tools}
 
 If your tool holds some information with components and doesn't have meaning at the build time, 
 please remove your component before Avatar Optimizer with `IVRCSDKPreprocessAvatarCallback` (see [this section](#improve-compatibility-non-ndmf-based)) or 

@@ -57,7 +57,7 @@ Avatar OptimizerのNDMFのQualifiedNameは`com.anatawa12.avatar-optimizer`です
 
 もしあなたのツールがAvatarOptimizerの実行後(NDMFのOptimization phaseのあと)に処理したい場合、Avatar Optimizerに[コンポーネントを登録][register-component]してください.
 
-### データを保持するだけのコンポーネントを持つツールの場合 {#non-destructive-tools}
+### データを保持するだけのコンポーネントを持つツールの場合 {#improve-compatibility-destructive-tools}
 
 もしあなたのツールのコンポーネントがビルド時に意味を持たず、情報保持のための場合、
 AvatarOptimizerの処理の前に`IVRCSDKPreprocessAvatarCallback`でコンポーネントを削除するか、Avatar Optimizerにコンポーネントを登録してください。
