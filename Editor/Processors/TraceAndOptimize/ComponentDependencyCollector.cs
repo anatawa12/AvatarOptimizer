@@ -8,6 +8,7 @@ using JetBrains.Annotations;
 using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEngine;
+using Debug = System.Diagnostics.Debug;
 
 namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 {
@@ -18,11 +19,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
     {
         private readonly bool _preserveEndBone;
         private readonly BuildContext _session;
+        private readonly ActivenessCache  _activenessCache;
 
-        public ComponentDependencyCollector(BuildContext session, bool preserveEndBone)
+        public ComponentDependencyCollector(BuildContext session, bool preserveEndBone, ActivenessCache activenessCache)
         {
             _preserveEndBone = preserveEndBone;
             _session = session;
+            _activenessCache = activenessCache;
         }
 
         private readonly Dictionary<Component, ComponentDependencies> _dependencies =
@@ -42,10 +45,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             internal readonly Dictionary<Component, (DependencyFlags flags, DependencyType type)> Dependencies =
                 new Dictionary<Component, (DependencyFlags, DependencyType)>();
 
+            internal readonly Component Component;
+
             public ComponentDependencies(Component component)
             {
                 const DependencyFlags ComponentToTransformFlags =
                     DependencyFlags.EvenIfThisIsDisabled | DependencyFlags.EvenIfTargetIsDisabled;
+                Component = component;
                 Dependencies[component.gameObject.transform] = (ComponentToTransformFlags, DependencyType.ComponentToTransform);
             }
         }
@@ -80,7 +86,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             // first iteration: create mapping
             foreach (var component in components) _dependencies.Add(component, new ComponentDependencies(component));
 
-            var collector = new Collector(this);
+            var collector = new Collector(this, _activenessCache);
             // second iteration: process parsers
             BuildReport.ReportingObjects(components, component =>
             {
@@ -120,17 +126,19 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         {
             private readonly ComponentDependencyCollector _collector;
             private ComponentDependencies _deps;
+            private Component _component;
             [NotNull] private readonly ComponentDependencyInfo _dependencyInfoSharedInstance;
 
-            public Collector(ComponentDependencyCollector collector)
+            public Collector(ComponentDependencyCollector collector, ActivenessCache activenessCache)
             {
                 _collector = collector;
-                _dependencyInfoSharedInstance = new ComponentDependencyInfo();
+                _dependencyInfoSharedInstance = new ComponentDependencyInfo(activenessCache);
             }
             
             public void Init(Component component)
             {
-                System.Diagnostics.Debug.Assert(_deps == null, "Init on not finished");
+                Debug.Assert(_deps == null, "Init on not finished");
+                _component = component;
                 _deps = _collector.GetDependencies(component);
             }
 
@@ -142,12 +150,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             public override void MarkEntrypoint() => _deps.EntrypointComponent = true;
 
             private API.ComponentDependencyInfo AddDependencyInternal(
-                [NotNull] ComponentDependencies dependencies, 
+                [NotNull] ComponentDependencies dependencies,
                 [CanBeNull] Component dependency,
                 DependencyType type = DependencyType.Normal)
             {
                 _dependencyInfoSharedInstance.Finish();
-                _dependencyInfoSharedInstance.Init(dependencies.Dependencies, dependency, type);
+                _dependencyInfoSharedInstance.Init(dependencies.Component, dependencies.Dependencies, dependency, type);
                 return _dependencyInfoSharedInstance;
             }
 
@@ -172,22 +180,31 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             private class ComponentDependencyInfo : API.ComponentDependencyInfo
             {
-                // ReSharper disable once NotNullOrRequiredMemberIsNotInitialized
+                private readonly ActivenessCache _activenessCache;
+
                 [NotNull] private Dictionary<Component, (DependencyFlags, DependencyType)> _dependencies;
-                [CanBeNull] private Component _component;
+                [CanBeNull] private Component _dependency;
+                private Component _dependant;
                 private DependencyType _type;
 
                 private bool _evenIfTargetIsDisabled;
                 private bool _evenIfThisIsDisabled;
 
-                internal void Init(
+                // ReSharper disable once NotNullOrRequiredMemberIsNotInitialized
+                public ComponentDependencyInfo(ActivenessCache activenessCache)
+                {
+                    _activenessCache = activenessCache;
+                }
+
+                internal void Init(Component dependant,
                     [NotNull] Dictionary<Component, (DependencyFlags, DependencyType)> dependencies,
                     [CanBeNull] Component component,
                     DependencyType type = DependencyType.Normal)
                 {
-                    System.Diagnostics.Debug.Assert(_component == null, "Init on not finished");
+                    Debug.Assert(_dependency == null, "Init on not finished");
                     _dependencies = dependencies;
-                    _component = component;
+                    _dependency = component;
+                    _dependant = dependant;
                     _evenIfTargetIsDisabled = true;
                     _evenIfThisIsDisabled = false;
                     _type = type;
@@ -195,15 +212,32 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
                 internal void Finish()
                 {
-                    if (_component == null) return;
+                    if (_dependency == null) return;
+                    SetToDictionary();
+                    _dependency = null;
+                }
 
-                    _dependencies.TryGetValue(_component, out var pair);
+                private void SetToDictionary()
+                {
+                    Debug.Assert(_dependency != null, nameof(_dependency) + " != null");
+
+                    if (!_evenIfThisIsDisabled)
+                    {
+                        // dependant must can be able to be enable
+                        if (_activenessCache.GetActiveness(_dependant) == false) return;
+                    }
+                    
+                    if (!_evenIfTargetIsDisabled)
+                    {
+                        // dependency must can be able to be enable
+                        if (_activenessCache.GetActiveness(_dependency) == false) return;
+                    }
+
+                    _dependencies.TryGetValue(_dependency, out var pair);
                     var flags = pair.Item1;
                     if (_evenIfTargetIsDisabled) flags |= DependencyFlags.EvenIfTargetIsDisabled;
                     if (_evenIfThisIsDisabled) flags |= DependencyFlags.EvenIfThisIsDisabled;
-                    _dependencies[_component] = (flags, pair.Item2 | _type);
-
-                    _component = null;
+                    _dependencies[_dependency] = (flags, pair.Item2 | _type);
                 }
 
                 public override API.ComponentDependencyInfo EvenIfDependantDisabled()

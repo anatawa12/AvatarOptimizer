@@ -124,36 +124,27 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
     internal readonly struct MarkObjectContext {
         private readonly ComponentDependencyCollector _dependencies;
-        private readonly ActivenessCache _activenessCache;
 
         public readonly Dictionary<Component, ComponentDependencyCollector.DependencyType> _marked;
-        private readonly Queue<(Component, bool)> _processPending;
+        private readonly Queue<Component> _processPending;
 
-        public MarkObjectContext(ComponentDependencyCollector dependencies, ActivenessCache activenessCache)
+        public MarkObjectContext(ComponentDependencyCollector dependencies)
         {
             _dependencies = dependencies;
-            _activenessCache = activenessCache;
-
             _marked = new Dictionary<Component, ComponentDependencyCollector.DependencyType>();
-            _processPending = new Queue<(Component, bool)>();
+            _processPending = new Queue<Component>();
         }
 
         public void MarkComponent(Component component,
-            bool ifTargetCanBeEnabled,
             ComponentDependencyCollector.DependencyType type)
         {
-            bool? activeness = _activenessCache.GetActiveness(component);
-
-            if (ifTargetCanBeEnabled && activeness == false)
-                return; // The Target is not active so not dependency
-
             if (_marked.TryGetValue(component, out var existingFlags))
             {
                 _marked[component] = existingFlags | type;
             }
             else
             {
-                _processPending.Enqueue((component, activeness != false));
+                _processPending.Enqueue(component);
                 _marked.Add(component, type);
             }
         }
@@ -162,19 +153,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         {
             while (_processPending.Count != 0)
             {
-                var (component, canBeActive) = _processPending.Dequeue();
+                var component = _processPending.Dequeue();
                 var dependencies = _dependencies.TryGetDependencies(component);
                 if (dependencies == null) continue; // not part of this Hierarchy Tree
 
                 foreach (var (dependency, flags) in dependencies.Dependencies)
-                {
-                    var ifActive =
-                        (flags.flags & ComponentDependencyCollector.DependencyFlags.EvenIfThisIsDisabled) == 0;
-                    if (ifActive && !canBeActive) continue;
-                    var ifTargetCanBeEnabled =
-                        (flags.flags & ComponentDependencyCollector.DependencyFlags.EvenIfTargetIsDisabled) == 0;
-                    MarkComponent(dependency, ifTargetCanBeEnabled, flags.type);
-                }
+                    MarkComponent(dependency, flags.type);
             }
         }
     }
@@ -199,25 +183,25 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         public void ProcessNew()
         {
-            // first, collect usages
-            var collector = new ComponentDependencyCollector(_context, _preserveEndBone);
-            collector.CollectAllUsages();
-
             var activenessCache = new ActivenessCache(_modifications, _context.AvatarRootTransform);
 
-            var markContext = new MarkObjectContext(collector, activenessCache);
+            // first, collect usages
+            var collector = new ComponentDependencyCollector(_context, _preserveEndBone, activenessCache);
+            collector.CollectAllUsages();
+
+            var markContext = new MarkObjectContext(collector);
             // then, mark and sweep.
 
             // entrypoint for mark & sweep is active-able GameObjects
             foreach (var gameObject in CollectAllActiveAbleGameObjects())
             foreach (var component in gameObject.GetComponents<Component>())
                 if (collector.GetDependencies(component).EntrypointComponent)
-                    markContext.MarkComponent(component, true, ComponentDependencyCollector.DependencyType.Normal);
+                    markContext.MarkComponent(component, ComponentDependencyCollector.DependencyType.Normal);
 
             // excluded GameObjects must be exists
             foreach (var gameObject in _exclusions)
             foreach (var component in gameObject.GetComponents<Component>())
-                markContext.MarkComponent(component, true, ComponentDependencyCollector.DependencyType.Normal);
+                markContext.MarkComponent(component, ComponentDependencyCollector.DependencyType.Normal);
 
             markContext.MarkRecursively();
 
