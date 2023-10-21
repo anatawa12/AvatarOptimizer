@@ -33,27 +33,30 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
     internal readonly struct MarkObjectContext {
         private readonly ComponentDependencyCollector _dependencies;
 
-        public readonly Dictionary<Component, GCComponentInfo.DependencyType> _marked;
         private readonly Queue<Component> _processPending;
+        private readonly Component _entrypoint;
 
         public MarkObjectContext(ComponentDependencyCollector dependencies, Component entrypoint)
         {
             _dependencies = dependencies;
-            _marked = new Dictionary<Component, GCComponentInfo.DependencyType>();
             _processPending = new Queue<Component>();
+            _entrypoint = entrypoint;
         }
 
         public void MarkComponent(Component component,
             GCComponentInfo.DependencyType type)
         {
-            if (_marked.TryGetValue(component, out var existingFlags))
+            var dependencies = _dependencies.TryGetDependencies(component);
+            if (dependencies == null) return;
+
+            if (dependencies.DependantEntrypoint.TryGetValue(_entrypoint, out var existingFlags))
             {
-                _marked[component] = existingFlags | type;
+                dependencies.DependantEntrypoint[_entrypoint] = existingFlags | type;
             }
             else
             {
                 _processPending.Enqueue(component);
-                _marked.Add(component, type);
+                dependencies.DependantEntrypoint.Add(_entrypoint, type);
             }
         }
 
@@ -118,16 +121,17 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 // null values are ignored
                 if (!component) continue;
 
-                if (component is Transform)
+                if (collector.GetDependencies(component).DependantEntrypoint.Count == 0)
                 {
-                    // Treat Transform Component as GameObject because they are two sides of the same coin
-                    if (!markContext._marked.ContainsKey(component))
+                    if (component is Transform)
+                    {
+                        // Treat Transform Component as GameObject because they are two sides of the same coin
                         Object.DestroyImmediate(component.gameObject);
-                }
-                else
-                {
-                    if (!markContext._marked.ContainsKey(component))
+                    }
+                    else
+                    {
                         Object.DestroyImmediate(component);
+                    }
                 }
             }
 
@@ -170,7 +174,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 // Components must be Transform Only
                 if (transform.GetComponents<Component>().Length != 1) return NotMerged();
                 // The bone cannot be used generally
-                if ((markContext._marked[transform] & ~AllowedUsages) != 0) return NotMerged();
+                if ((collector.GetDependencies(transform).AllUsages & ~AllowedUsages) != 0) return NotMerged();
                 // must not be animated
                 if (TransformAnimated(transform, modifications)) return NotMerged();
 

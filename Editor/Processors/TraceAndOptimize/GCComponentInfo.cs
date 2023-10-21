@@ -18,7 +18,24 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         [NotNull] internal readonly Dictionary<Component, DependencyType> Dependencies =
             new Dictionary<Component, DependencyType>();
 
+        /// <summary>
+        /// Dependants entrypoint components 
+        /// </summary>
+        [NotNull] internal readonly Dictionary<Component, DependencyType> DependantEntrypoint =
+            new Dictionary<Component, DependencyType>();        
+
         internal readonly Component Component;
+
+        public DependencyType AllUsages
+        {
+            get
+            {
+                DependencyType type = default;
+                foreach (var usage in DependantEntrypoint.Values)
+                    type |= usage;
+                return type;
+            }
+        }
 
         public GCComponentInfo(Component component)
         {
