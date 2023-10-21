@@ -31,37 +31,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         private readonly Dictionary<Component, ComponentDependencies> _dependencies =
             new Dictionary<Component, ComponentDependencies>();
 
-        public class ComponentDependencies
-        {
-            /// <summary>
-            /// True if this component has Active Meaning on the Avatar.
-            /// </summary>
-            public bool EntrypointComponent = false;
-
-            /// <summary>
-            /// Dependencies of this component
-            /// </summary>
-            [NotNull] internal readonly Dictionary<Component, DependencyType> Dependencies =
-                new Dictionary<Component, DependencyType>();
-
-            internal readonly Component Component;
-
-            public ComponentDependencies(Component component)
-            {
-                Component = component;
-                Dependencies[component.gameObject.transform] = DependencyType.ComponentToTransform;
-            }
-        }
-
-        [Flags]
-        public enum DependencyType : byte
-        {
-            Normal = 1 << 0,
-            Parent = 1 << 1,
-            ComponentToTransform = 1 << 2,
-            Bone = 1 << 3,
-        }
-
         [CanBeNull]
         public ComponentDependencies TryGetDependencies(Component dependent) =>
             _dependencies.TryGetValue(dependent, out var dependencies) ? dependencies : null;
@@ -141,7 +110,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             private API.ComponentDependencyInfo AddDependencyInternal(
                 [NotNull] ComponentDependencies dependencies,
                 [CanBeNull] Component dependency,
-                DependencyType type = DependencyType.Normal)
+                ComponentDependencies.DependencyType type = ComponentDependencies.DependencyType.Normal)
             {
                 _dependencyInfoSharedInstance.Finish();
                 _dependencyInfoSharedInstance.Init(dependencies.Component, dependencies.Dependencies, dependency, type);
@@ -155,11 +124,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 AddDependencyInternal(_deps, dependency);
 
             public void AddParentDependency(Transform component) =>
-                AddDependencyInternal(_deps, component.parent, DependencyType.Parent)
+                AddDependencyInternal(_deps, component.parent, ComponentDependencies.DependencyType.Parent)
                     .EvenIfDependantDisabled();
 
             public void AddBoneDependency(Transform bone) =>
-                AddDependencyInternal(_deps, bone, DependencyType.Bone);
+                AddDependencyInternal(_deps, bone, ComponentDependencies.DependencyType.Bone);
 
             public void FinalizeForComponent()
             {
@@ -171,10 +140,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             {
                 private readonly ActivenessCache _activenessCache;
 
-                [NotNull] private Dictionary<Component, DependencyType> _dependencies;
+                [NotNull] private Dictionary<Component, ComponentDependencies.DependencyType> _dependencies;
                 [CanBeNull] private Component _dependency;
                 private Component _dependant;
-                private DependencyType _type;
+                private ComponentDependencies.DependencyType _type;
 
                 private bool _evenIfTargetIsDisabled;
                 private bool _evenIfThisIsDisabled;
@@ -186,9 +155,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 }
 
                 internal void Init(Component dependant,
-                    [NotNull] Dictionary<Component, DependencyType> dependencies,
+                    [NotNull] Dictionary<Component, ComponentDependencies.DependencyType> dependencies,
                     [CanBeNull] Component component,
-                    DependencyType type = DependencyType.Normal)
+                    ComponentDependencies.DependencyType type = ComponentDependencies.DependencyType.Normal)
                 {
                     Debug.Assert(_dependency == null, "Init on not finished");
                     _dependencies = dependencies;

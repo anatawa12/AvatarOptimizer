@@ -1,11 +1,7 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using nadena.dev.ndmf;
-using UnityEditor;
 using UnityEngine;
-using VRC.Dynamics;
 using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
@@ -34,109 +30,21 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         }
     }
 
-    internal class ActivenessCache
-    {
-        private readonly ImmutableModificationsContainer _modifications;
-        private readonly Dictionary<Component, bool?> _activeNessCache;
-        private Transform _avatarRoot;
-
-        public ActivenessCache(ImmutableModificationsContainer modifications, Transform avatarRoot)
-        {
-            _modifications = modifications;
-            _avatarRoot = avatarRoot;
-            _activeNessCache = new Dictionary<Component, bool?>();
-        }
-
-        public bool? GetActiveness(Component component)
-        {
-            if (_activeNessCache.TryGetValue(component, out var activeness))
-                return activeness;
-            activeness = ComputeActiveness(component);
-            _activeNessCache.Add(component, activeness);
-            return activeness;
-        }
-
-        private bool? ComputeActiveness(Component component)
-        {
-            if (_avatarRoot == component) return true;
-            bool? parentActiveness;
-            if (component is Transform t)
-                parentActiveness = t.parent == null ? true : GetActiveness(t.parent);
-            else
-                parentActiveness = GetActiveness(component.transform);
-            if (parentActiveness == false) return false;
-
-            bool? activeness;
-            switch (component)
-            {
-                case Transform transform:
-                    var gameObject = transform.gameObject;
-                    activeness = _modifications.GetConstantValue(gameObject, "m_IsActive", gameObject.activeSelf);
-                    break;
-                case Behaviour behaviour:
-                    activeness = _modifications.GetConstantValue(behaviour, "m_Enabled", behaviour.enabled);
-                    break;
-                case Cloth cloth:
-                    activeness = _modifications.GetConstantValue(cloth, "m_Enabled", cloth.enabled);
-                    break;
-                case Collider collider:
-                    activeness = _modifications.GetConstantValue(collider, "m_Enabled", collider.enabled);
-                    break;
-                case LODGroup lodGroup:
-                    activeness = _modifications.GetConstantValue(lodGroup, "m_Enabled", lodGroup.enabled);
-                    break;
-                case Renderer renderer:
-                    activeness = _modifications.GetConstantValue(renderer, "m_Enabled", renderer.enabled);
-                    break;
-                // components without isEnable
-                case CanvasRenderer _:
-                case Joint _:
-                case MeshFilter _:
-                case OcclusionArea _:
-                case OcclusionPortal _:
-                case ParticleSystem _:
-#if !UNITY_2021_3_OR_NEWER
-                case ParticleSystemForceField _:
-#endif
-                case Rigidbody _:
-                case Rigidbody2D _:
-                case TextMesh _:
-                case Tree _:
-                case WindZone _:
-#if !UNITY_2020_2_OR_NEWER
-                case UnityEngine.XR.WSA.WorldAnchor _:
-#endif
-                    activeness = true;
-                    break;
-                case Component _:
-                case null:
-                    // fallback: all components type should be proceed with above switch
-                    activeness = null;
-                    break;
-            }
-
-            if (activeness == false) return false;
-            if (parentActiveness == true && activeness == true) return true;
-
-            return null;
-        }
-    }
-
     internal readonly struct MarkObjectContext {
         private readonly ComponentDependencyCollector _dependencies;
 
-        public readonly Dictionary<Component, ComponentDependencyCollector.DependencyType> _marked;
+        public readonly Dictionary<Component, ComponentDependencies.DependencyType> _marked;
         private readonly Queue<Component> _processPending;
 
         public MarkObjectContext(ComponentDependencyCollector dependencies)
         {
             _dependencies = dependencies;
-            _marked = new Dictionary<Component, ComponentDependencyCollector.DependencyType>();
+            _marked = new Dictionary<Component, ComponentDependencies.DependencyType>();
             _processPending = new Queue<Component>();
         }
 
         public void MarkComponent(Component component,
-            ComponentDependencyCollector.DependencyType type)
+            ComponentDependencies.DependencyType type)
         {
             if (_marked.TryGetValue(component, out var existingFlags))
             {
@@ -196,12 +104,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             foreach (var gameObject in CollectAllActiveAbleGameObjects())
             foreach (var component in gameObject.GetComponents<Component>())
                 if (collector.GetDependencies(component).EntrypointComponent)
-                    markContext.MarkComponent(component, ComponentDependencyCollector.DependencyType.Normal);
+                    markContext.MarkComponent(component, ComponentDependencies.DependencyType.Normal);
 
             // excluded GameObjects must be exists
             foreach (var gameObject in _exclusions)
             foreach (var component in gameObject.GetComponents<Component>())
-                markContext.MarkComponent(component, ComponentDependencyCollector.DependencyType.Normal);
+                markContext.MarkComponent(component, ComponentDependencies.DependencyType.Normal);
 
             markContext.MarkRecursively();
 
@@ -248,10 +156,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     }
                 }
 
-                const ComponentDependencyCollector.DependencyType AllowedUsages =
-                    ComponentDependencyCollector.DependencyType.Bone
-                    | ComponentDependencyCollector.DependencyType.Parent
-                    | ComponentDependencyCollector.DependencyType.ComponentToTransform;
+                const ComponentDependencies.DependencyType AllowedUsages =
+                    ComponentDependencies.DependencyType.Bone
+                    | ComponentDependencies.DependencyType.Parent
+                    | ComponentDependencies.DependencyType.ComponentToTransform;
 
                 // functions for make it easier to know meaning of result
                 (bool, List<Transform>) YesMerge() => (mergedChildren, afterChildren);
