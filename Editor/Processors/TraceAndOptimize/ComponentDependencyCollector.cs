@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Anatawa12.AvatarOptimizer.API;
 using Anatawa12.AvatarOptimizer.APIInternal;
 using Anatawa12.AvatarOptimizer.ErrorReporting;
 using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
@@ -9,14 +8,6 @@ using JetBrains.Annotations;
 using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.Animations;
-using UnityEngine.Rendering;
-using VRC.Core;
-using VRC.Dynamics;
-using VRC.SDK3.Avatars.Components;
-using VRC.SDK3.Dynamics.Contact.Components;
-using VRC.SDK3.Dynamics.PhysBone.Components;
-using VRC.SDKBase;
 
 namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 {
@@ -48,91 +39,14 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             /// Dependencies of this component
             /// </summary>
             [NotNull]
-            public IReadOnlyDictionary<Component, (DependencyFlags flags, DependencyType type)> Dependencies => _dependencies;
-
-            [NotNull] private readonly Dictionary<Component, (DependencyFlags, DependencyType)> _dependencies =
+            internal readonly Dictionary<Component, (DependencyFlags flags, DependencyType type)> Dependencies =
                 new Dictionary<Component, (DependencyFlags, DependencyType)>();
 
             public ComponentDependencies(Component component)
             {
                 const DependencyFlags ComponentToTransformFlags =
                     DependencyFlags.EvenIfThisIsDisabled | DependencyFlags.EvenIfTargetIsDisabled;
-                _dependencies[component.gameObject.transform] = (ComponentToTransformFlags, DependencyType.ComponentToTransform);
-            }
-
-            public API.ComponentDependencyInfo AddDependency(Component component)
-            {
-                if (!component)
-                    return EmptyComponentDependencyInfo.Instance;
-                return new ComponentDependencyInfo(_dependencies, component).SetFlags();
-            }
-
-            public void AddParentDependency(Transform component)
-            {
-                var parent = component.parent;
-                if (parent) new ComponentDependencyInfo(_dependencies, parent, DependencyType.Parent)
-                    .EvenIfDependantDisabled();
-            }
-
-            public void AddBoneDependency(Transform bone)
-            {
-                if (bone) new ComponentDependencyInfo(_dependencies, bone, DependencyType.Bone).SetFlags();
-            }
-
-            class EmptyComponentDependencyInfo : API.ComponentDependencyInfo
-            {
-                public static EmptyComponentDependencyInfo Instance = new EmptyComponentDependencyInfo();
-
-                private EmptyComponentDependencyInfo()
-                {
-                }
-
-                public override API.ComponentDependencyInfo EvenIfDependantDisabled() => this;
-                public override API.ComponentDependencyInfo OnlyIfTargetCanBeEnable() => this;
-            }
-
-            private class ComponentDependencyInfo : API.ComponentDependencyInfo
-            {
-                [NotNull] private readonly Dictionary<Component, (DependencyFlags, DependencyType)> _dependencies;
-                private readonly Component _component;
-
-                private readonly DependencyFlags _prevFlags;
-                private DependencyFlags _flags;
-                private readonly DependencyType _types;
-
-                public ComponentDependencyInfo(
-                    [NotNull] Dictionary<Component, (DependencyFlags, DependencyType)> dependencies, 
-                    [NotNull] Component component,
-                    DependencyType type = DependencyType.Normal)
-                {
-                    _dependencies = dependencies;
-                    _component = component;
-                    _dependencies.TryGetValue(component, out var pair);
-                    _prevFlags = pair.Item1;
-
-                    _flags = DependencyFlags.EvenIfTargetIsDisabled;
-                    _types = pair.Item2 | type;
-                }
-
-                internal ComponentDependencyInfo SetFlags()
-                {
-                    _dependencies[_component] = (_prevFlags | _flags, _types);
-                    return this;
-                }
-
-                public override API.ComponentDependencyInfo EvenIfDependantDisabled()
-                {
-                    _flags |= DependencyFlags.EvenIfThisIsDisabled;
-                    SetFlags();
-                    return this;
-                }
-
-                public override API.ComponentDependencyInfo OnlyIfTargetCanBeEnable()
-                {
-                    _flags &= ~DependencyFlags.EvenIfTargetIsDisabled;
-                    SetFlags();
-                    return this;
-                }
+                Dependencies[component.gameObject.transform] = (ComponentToTransformFlags, DependencyType.ComponentToTransform);
             }
         }
 
@@ -170,32 +84,33 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             BuildReport.ReportingObjects(components, component =>
             {
                 // component requires GameObject.
+                var collector = new Collector(this, component);
                 if (ComponentInfoRegistry.TryGetInformation(component.GetType(), out var information))
                 {
-                    information.CollectDependencyInternal(component, new Collector(this, component));
+                    information.CollectDependencyInternal(component, collector);
                 }
                 else
                 {
                     BuildReport.LogWarning("TraceAndOptimize:warn:unknown-type", component.GetType().Name);
 
-                    FallbackDependenciesParser(component);
+                    FallbackDependenciesParser(component, collector);
                 }
+                collector.FinalizeForComponent();
             });
         }
 
-        private void FallbackDependenciesParser(Component component)
+        private void FallbackDependenciesParser(Component component, Collector collector)
         {
             // fallback dependencies: All References are Always Dependencies.
-            var dependencies = GetDependencies(component);
-            dependencies.EntrypointComponent = true;
+            collector.MarkEntrypoint();
             using (var serialized = new SerializedObject(component))
             {
                 foreach (var property in serialized.ObjectReferenceProperties())
                 {
                     if (property.objectReferenceValue is GameObject go)
-                        dependencies.AddDependency(go.transform).EvenIfDependantDisabled();
+                        collector.AddDependency(go.transform).EvenIfDependantDisabled();
                     else if (property.objectReferenceValue is Component com)
-                        dependencies.AddDependency(com).EvenIfDependantDisabled();
+                        collector.AddDependency(com).EvenIfDependantDisabled();
                 }
             }
         }
@@ -204,6 +119,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         {
             private readonly ComponentDependencyCollector _collector;
             private readonly ComponentDependencies _deps;
+            private ComponentDependencyInfo _lastDependencyInfo;
 
             public Collector(ComponentDependencyCollector collector, Component component)
             {
@@ -217,12 +133,87 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 _collector._session.GetMeshInfoFor(renderer);
 
             public override void MarkEntrypoint() => _deps.EntrypointComponent = true;
-            public override ComponentDependencyInfo AddDependency(Component dependant, Component dependency) =>
-                _collector.GetDependencies(dependant).AddDependency(dependency);
-            public override ComponentDependencyInfo AddDependency(Component dependency) => _deps.AddDependency(dependency);
 
-            public void AddParentDependency(Transform component) => _deps.AddParentDependency(component);
-            public void AddBoneDependency(Transform bone) => _deps.AddBoneDependency(bone);
+            private API.ComponentDependencyInfo AddDependencyInternal(
+                [NotNull] ComponentDependencies dependencies, 
+                [CanBeNull] Component dependency,
+                DependencyType type = DependencyType.Normal)
+            {
+                FinishLastInfo();
+                return _lastDependencyInfo = new ComponentDependencyInfo(dependencies.Dependencies, dependency, type);
+            }
+
+            private void FinishLastInfo()
+            {
+                if (_lastDependencyInfo != null)
+                {
+                    _lastDependencyInfo.SetToDictionary();
+                    _lastDependencyInfo = null;
+                }
+            }
+
+            public override API.ComponentDependencyInfo AddDependency(Component dependant, Component dependency) =>
+                AddDependencyInternal(_collector.GetDependencies(dependant), dependency);
+
+            public override API.ComponentDependencyInfo AddDependency(Component dependency) =>
+                AddDependencyInternal(_deps, dependency);
+
+            public void AddParentDependency(Transform component) =>
+                AddDependencyInternal(_deps, component.parent, DependencyType.Parent)
+                    .EvenIfDependantDisabled();
+
+            public void AddBoneDependency(Transform bone) =>
+                AddDependencyInternal(_deps, bone, DependencyType.Bone);
+
+            public void FinalizeForComponent()
+            {
+                FinishLastInfo();
+            }
+
+            private class ComponentDependencyInfo : API.ComponentDependencyInfo
+            {
+                [NotNull] private readonly Dictionary<Component, (DependencyFlags, DependencyType)> _dependencies;
+                [CanBeNull] private readonly Component _component;
+                private readonly DependencyType _type;
+
+                private bool _evenIfTargetIsDisabled;
+                private bool _evenIfThisIsDisabled;
+
+                public ComponentDependencyInfo(
+                    [NotNull] Dictionary<Component, (DependencyFlags, DependencyType)> dependencies, 
+                    [CanBeNull] Component component,
+                    DependencyType type = DependencyType.Normal)
+                {
+                    _dependencies = dependencies;
+                    _component = component;
+                    _evenIfTargetIsDisabled = true;
+                    _evenIfThisIsDisabled = false;
+                    _type = type;
+                }
+
+                internal void SetToDictionary()
+                {
+                    if (_component == null) return;
+
+                    _dependencies.TryGetValue(_component, out var pair);
+                    var flags = pair.Item1;
+                    if (_evenIfTargetIsDisabled) flags |= DependencyFlags.EvenIfTargetIsDisabled;
+                    if (_evenIfThisIsDisabled) flags |= DependencyFlags.EvenIfThisIsDisabled;
+                    _dependencies[_component] = (flags, pair.Item2 | _type);
+                }
+
+                public override API.ComponentDependencyInfo EvenIfDependantDisabled()
+                {
+                    _evenIfThisIsDisabled = true;
+                    return this;
+                }
+
+                public override API.ComponentDependencyInfo OnlyIfTargetCanBeEnable()
+                {
+                    _evenIfTargetIsDisabled = false;
+                    return this;
+                }
+            }
         }
     }
 }
