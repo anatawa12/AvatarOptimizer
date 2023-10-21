@@ -67,12 +67,8 @@ please [register your component][register-component] to Avatar Optimizer.
 ### For other tools that just holds data with components. {#non-destructive-tools}
 
 If your tool holds some information with components and doesn't have meaning at the build time, 
-please remove your component before Avatar Optimizer with `IVRCSDKPreprocessAvatarCallback` or 
-register your component to Avatar Optimizer.
-
-When you want to remove your component with `IVRCSDKPreprocessAvatarCallback`, please refer [this section](#improve-compatibility-non-ndmf-based).
-
-When you want to register your component to Avatar Optimizer, please refer [this section][register-component].
+please remove your component before Avatar Optimizer with `IVRCSDKPreprocessAvatarCallback` (see [this section](#improve-compatibility-non-ndmf-based)) or 
+register your component to Avatar Optimizer (see [this section][register-component]).
 
 ### Registering your components {#register-component}
 
