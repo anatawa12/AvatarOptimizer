@@ -41,27 +41,16 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             /// <summary>
             /// Dependencies of this component
             /// </summary>
-            [NotNull]
-            internal readonly Dictionary<Component, (DependencyFlags flags, DependencyType type)> Dependencies =
-                new Dictionary<Component, (DependencyFlags, DependencyType)>();
+            [NotNull] internal readonly Dictionary<Component, DependencyType> Dependencies =
+                new Dictionary<Component, DependencyType>();
 
             internal readonly Component Component;
 
             public ComponentDependencies(Component component)
             {
-                const DependencyFlags ComponentToTransformFlags =
-                    DependencyFlags.EvenIfThisIsDisabled | DependencyFlags.EvenIfTargetIsDisabled;
                 Component = component;
-                Dependencies[component.gameObject.transform] = (ComponentToTransformFlags, DependencyType.ComponentToTransform);
+                Dependencies[component.gameObject.transform] = DependencyType.ComponentToTransform;
             }
-        }
-
-        [Flags]
-        public enum DependencyFlags : byte
-        {
-            // dependency flags
-            EvenIfTargetIsDisabled = 1 << 0,
-            EvenIfThisIsDisabled = 1 << 1,
         }
 
         [Flags]
@@ -182,7 +171,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             {
                 private readonly ActivenessCache _activenessCache;
 
-                [NotNull] private Dictionary<Component, (DependencyFlags, DependencyType)> _dependencies;
+                [NotNull] private Dictionary<Component, DependencyType> _dependencies;
                 [CanBeNull] private Component _dependency;
                 private Component _dependant;
                 private DependencyType _type;
@@ -197,7 +186,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 }
 
                 internal void Init(Component dependant,
-                    [NotNull] Dictionary<Component, (DependencyFlags, DependencyType)> dependencies,
+                    [NotNull] Dictionary<Component, DependencyType> dependencies,
                     [CanBeNull] Component component,
                     DependencyType type = DependencyType.Normal)
                 {
@@ -233,11 +222,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                         if (_activenessCache.GetActiveness(_dependency) == false) return;
                     }
 
-                    _dependencies.TryGetValue(_dependency, out var pair);
-                    var flags = pair.Item1;
-                    if (_evenIfTargetIsDisabled) flags |= DependencyFlags.EvenIfTargetIsDisabled;
-                    if (_evenIfThisIsDisabled) flags |= DependencyFlags.EvenIfThisIsDisabled;
-                    _dependencies[_dependency] = (flags, pair.Item2 | _type);
+                    _dependencies.TryGetValue(_dependency, out var type);
+                    _dependencies[_dependency] = type | _type;
                 }
 
                 public override API.ComponentDependencyInfo EvenIfDependantDisabled()

@@ -157,8 +157,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 var dependencies = _dependencies.TryGetDependencies(component);
                 if (dependencies == null) continue; // not part of this Hierarchy Tree
 
-                foreach (var (dependency, flags) in dependencies.Dependencies)
-                    MarkComponent(dependency, flags.type);
+                foreach (var (dependency, type) in dependencies.Dependencies)
+                    MarkComponent(dependency, type);
             }
         }
     }
