@@ -38,13 +38,13 @@ Avatar Optimizer might be proceed before applying your plugin.
 ### For NDMF based non-destructive tools {#improve-compatibility-ndmf-based}
 
 If your tool is a non-destructive tools based on NDMF[^NDMF], please remove your components before
-Avatar Optimizer process. Avatar Optimizer does most thing in Optimization pass
-so if your plugin do nothing in Optimization pass, nothing is problem.
-If your tool needs your components in Optimization pass, 
+Avatar Optimizer process. Avatar Optimizer does most thing in Optimization phase
+so if your plugin do nothing in Optimization phase, nothing is problem.
+If your tool needs your components in Optimization phase, 
 please execute before Avatar Optimizer with [`BeforePlugin`][ndmf-BeforePlugin]. 
 QualifiedName of Avatar Optimizer in NDMF is `com.anatawa12.avatar-optimizer`.
 
-If your tool actually want to do something with your components in Optimization pass,
+If your tool actually want to do something with your components in Optimization phase,
 please [register your component][register-component] to Avatar Optimizer.
 
 ### For non-NDMF based non-destructive tools {#improve-compatibility-non-ndmf-based}
@@ -57,11 +57,11 @@ guarantee applying ordering between Avatar Optimizer and your tool.
 If your tool does something only on building avatar, making your tool based on NDMF is not required.
 
 If you don't want to make your took based on NDMF, please remove your component before processing Avatar Optimizer.
-To achieve this, please execute your tool before NDMF's Optimization pass.
-Currently NDMF executes Optimization passes in order `-1025`, JUST before VRCSDK's `RemoveAvatarEditorOnly` callback so
+To achieve this, please execute your tool before NDMF's Optimization phase.
+Currently NDMF executes Optimization phase in order `-1025`, JUST before VRCSDK's `RemoveAvatarEditorOnly` callback so
 your tool should register `IVRCSDKPreprocessAvatarCallback` with smaller `callbackOrder`.
 
-If your tool actually want to do something with your components after Avatar Optimizer (Optimization pass in NDMF),
+If your tool actually want to do something with your components after Avatar Optimizer (Optimization phase in NDMF),
 please [register your component][register-component] to Avatar Optimizer.
 
 ### For other tools that just holds data with components. {#non-destructive-tools}

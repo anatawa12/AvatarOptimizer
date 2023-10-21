@@ -37,8 +37,8 @@ Optimizerがそのツールより前に適用される可能性があるため�
 
 もしあなたのツールがNDMF[^NDMF]を使用した非破壊ツールの場合、Avatar Optimizerが実行される前にそのツールのコンポーネントを削除してください。
 
-Avatar OptimizerはOptimization passに処理を実行するため、もしあなたのツールがOptimization passに何もしないのであれば、特に問題がありません。
-もしあなたのツールがOptimization passになにか実行する場合、[`BeforePlugin`][ndmf-BeforePlugin]を用いてAvatar Optimizerの前に実行するようにしてください。
+Avatar OptimizerはOptimization phaseに処理を実行するため、もしあなたのツールがOptimization phaseに何もしないのであれば、特に問題がありません。
+もしあなたのツールがOptimization phaseになにか実行する場合、[`BeforePlugin`][ndmf-BeforePlugin]を用いてAvatar Optimizerの前に実行するようにしてください。
 Avatar OptimizerのNDMFのQualifiedNameは`com.anatawa12.avatar-optimizer`です。
 
 もしあなたのツールがAvatar Optimizerよりあとにあなたのコンポーネントを用いて実行する必要がある場合、 Avatar Optimizerに[コンポーネントを登録][register-component]してください.
@@ -51,11 +51,11 @@ Avatar OptimizerのNDMFのQualifiedNameは`com.anatawa12.avatar-optimizer`です
 もしあなたのツールがPlayモードに入るときに適用されない場合、NDMFを使用しなくても問題ないことは多いです。
 
 もしあなたのツールでNDMFを使用したくない場合、Avatar Optimizerが実行される前にそのツールのコンポーネントを削除してください。
-これを達成するためにはNDMFのOptimization passの実行より前にあなたのツールを実行するようにしてください。
-現在、NDMFはOptimization passをVRCSDKの`RemoveAvatarEditorOnly`の直前のorder `-1025`で実行するので、
+これを達成するためにはNDMFのOptimization phaseの実行より前にあなたのツールを実行するようにしてください。
+現在、NDMFはOptimization phaseをVRCSDKの`RemoveAvatarEditorOnly`の直前のorder `-1025`で実行するので、
 あなたのツールの`IVRCSDKPreprocessAvatarCallback`をそれより小さい`callbackOrder`で登録してください。
 
-もしあなたのツールがAvatarOptimizerの実行後(NDMFのOptimization passのあと)に処理したい場合、Avatar Optimizerに[コンポーネントを登録][register-component]してください.
+もしあなたのツールがAvatarOptimizerの実行後(NDMFのOptimization phaseのあと)に処理したい場合、Avatar Optimizerに[コンポーネントを登録][register-component]してください.
 
 ### データを保持するだけのコンポーネントを持つツールの場合 {#non-destructive-tools}
 
