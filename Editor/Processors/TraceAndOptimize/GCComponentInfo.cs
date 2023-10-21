@@ -5,6 +5,28 @@ using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 {
+    internal readonly struct GCComponentInfoHolder
+    {
+        private readonly Dictionary<Component, GCComponentInfo> _dependencies;
+
+        public GCComponentInfoHolder(GameObject rootGameObject)
+        {
+            // initialize _dependencies
+            _dependencies = new Dictionary<Component, GCComponentInfo>();
+            foreach (var component in rootGameObject.GetComponentsInChildren<Component>(true))
+                _dependencies.Add(component, new GCComponentInfo(component));
+        }
+
+        public IEnumerable<KeyValuePair<Component, GCComponentInfo>> AllInformation => _dependencies;
+
+        [CanBeNull]
+        public GCComponentInfo TryGetInfo(Component dependent) =>
+            _dependencies.TryGetValue(dependent, out var dependencies) ? dependencies : null;
+
+        [NotNull]
+        public GCComponentInfo GetInfo(Component dependent) => _dependencies[dependent];
+    }
+
     internal class GCComponentInfo
     {
         /// <summary>

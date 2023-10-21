@@ -20,48 +20,42 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         private readonly bool _preserveEndBone;
         private readonly BuildContext _session;
         private readonly ActivenessCache  _activenessCache;
+        private readonly GCComponentInfoHolder _componentInfos;
 
-        public ComponentDependencyCollector(BuildContext session, bool preserveEndBone, ActivenessCache activenessCache)
+        public ComponentDependencyCollector(BuildContext session, bool preserveEndBone, ActivenessCache activenessCache,
+            GCComponentInfoHolder componentInfos)
         {
             _preserveEndBone = preserveEndBone;
             _session = session;
             _activenessCache = activenessCache;
+            _componentInfos = componentInfos;
         }
 
-        private readonly Dictionary<Component, GCComponentInfo> _dependencies =
-            new Dictionary<Component, GCComponentInfo>();
-
-        [CanBeNull]
-        public GCComponentInfo TryGetDependencies(Component dependent) =>
-            _dependencies.TryGetValue(dependent, out var dependencies) ? dependencies : null;
-
-        [NotNull]
-        public GCComponentInfo GetDependencies(Component dependent) => _dependencies[dependent];
 
         public void CollectAllUsages()
         {
-            var components = _session.GetComponents<Component>().ToArray();
-            // first iteration: create mapping
-            foreach (var component in components) _dependencies.Add(component, new GCComponentInfo(component));
-
             var collector = new Collector(this, _activenessCache);
             // second iteration: process parsers
-            BuildReport.ReportingObjects(components, component =>
+            foreach (var (component, componentInfo) in _componentInfos.AllInformation)
             {
-                // component requires GameObject.
-                collector.Init(component);
-                if (ComponentInfoRegistry.TryGetInformation(component.GetType(), out var information))
+                BuildReport.ReportingObject(component, () =>
                 {
-                    information.CollectDependencyInternal(component, collector);
-                }
-                else
-                {
-                    BuildReport.LogWarning("TraceAndOptimize:warn:unknown-type", component.GetType().Name);
+                    // component requires GameObject.
+                    collector.Init(componentInfo);
+                    if (ComponentInfoRegistry.TryGetInformation(component.GetType(), out var information))
+                    {
+                        information.CollectDependencyInternal(component, collector);
+                    }
+                    else
+                    {
+                        BuildReport.LogWarning("TraceAndOptimize:warn:unknown-type", component.GetType().Name);
 
-                    FallbackDependenciesParser(component, collector);
-                }
-                collector.FinalizeForComponent();
-            });
+                        FallbackDependenciesParser(component, collector);
+                    }
+
+                    collector.FinalizeForComponent();
+                });
+            }
         }
 
         private void FallbackDependenciesParser(Component component, API.ComponentDependencyCollector collector)
@@ -83,8 +77,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         internal class Collector : API.ComponentDependencyCollector
         {
             private readonly ComponentDependencyCollector _collector;
-            private GCComponentInfo _deps;
-            private Component _component;
+            private GCComponentInfo _info;
             [NotNull] private readonly ComponentDependencyInfo _dependencyInfoSharedInstance;
 
             public Collector(ComponentDependencyCollector collector, ActivenessCache activenessCache)
@@ -93,11 +86,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 _dependencyInfoSharedInstance = new ComponentDependencyInfo(activenessCache);
             }
             
-            public void Init(Component component)
+            public void Init(GCComponentInfo info)
             {
-                Debug.Assert(_deps == null, "Init on not finished");
-                _component = component;
-                _deps = _collector.GetDependencies(component);
+                Debug.Assert(_info == null, "Init on not finished");
+                _info = info;
             }
 
             public bool PreserveEndBone => _collector._preserveEndBone;
@@ -105,7 +97,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             public MeshInfo2 GetMeshInfoFor(SkinnedMeshRenderer renderer) =>
                 _collector._session.GetMeshInfoFor(renderer);
 
-            public override void MarkEntrypoint() => _deps.EntrypointComponent = true;
+            public override void MarkEntrypoint() => _info.EntrypointComponent = true;
 
             private API.ComponentDependencyInfo AddDependencyInternal(
                 [NotNull] GCComponentInfo info,
@@ -118,22 +110,22 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             }
 
             public override API.ComponentDependencyInfo AddDependency(Component dependant, Component dependency) =>
-                AddDependencyInternal(_collector.GetDependencies(dependant), dependency);
+                AddDependencyInternal(_collector._componentInfos.GetInfo(dependant), dependency);
 
             public override API.ComponentDependencyInfo AddDependency(Component dependency) =>
-                AddDependencyInternal(_deps, dependency);
+                AddDependencyInternal(_info, dependency);
 
             public void AddParentDependency(Transform component) =>
-                AddDependencyInternal(_deps, component.parent, GCComponentInfo.DependencyType.Parent)
+                AddDependencyInternal(_info, component.parent, GCComponentInfo.DependencyType.Parent)
                     .EvenIfDependantDisabled();
 
             public void AddBoneDependency(Transform bone) =>
-                AddDependencyInternal(_deps, bone, GCComponentInfo.DependencyType.Bone);
+                AddDependencyInternal(_info, bone, GCComponentInfo.DependencyType.Bone);
 
             public void FinalizeForComponent()
             {
                 _dependencyInfoSharedInstance.Finish();
-                _deps = null;
+                _info = null;
             }
 
             private class ComponentDependencyInfo : API.ComponentDependencyInfo

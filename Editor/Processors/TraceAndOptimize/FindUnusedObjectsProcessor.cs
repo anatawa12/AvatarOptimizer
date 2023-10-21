@@ -31,14 +31,14 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
     }
 
     internal readonly struct MarkObjectContext {
-        private readonly ComponentDependencyCollector _dependencies;
+        private readonly GCComponentInfoHolder _componentInfos;
 
         private readonly Queue<Component> _processPending;
         private readonly Component _entrypoint;
 
-        public MarkObjectContext(ComponentDependencyCollector dependencies, Component entrypoint)
+        public MarkObjectContext(GCComponentInfoHolder componentInfos, Component entrypoint)
         {
-            _dependencies = dependencies;
+            _componentInfos = componentInfos;
             _processPending = new Queue<Component>();
             _entrypoint = entrypoint;
         }
@@ -46,7 +46,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         public void MarkComponent(Component component,
             GCComponentInfo.DependencyType type)
         {
-            var dependencies = _dependencies.TryGetDependencies(component);
+            var dependencies = _componentInfos.TryGetInfo(component);
             if (dependencies == null) return;
 
             if (dependencies.DependantEntrypoint.TryGetValue(_entrypoint, out var existingFlags))
@@ -65,7 +65,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             while (_processPending.Count != 0)
             {
                 var component = _processPending.Dequeue();
-                var dependencies = _dependencies.TryGetDependencies(component);
+                var dependencies = _componentInfos.TryGetInfo(component);
                 if (dependencies == null) continue; // not part of this Hierarchy Tree
 
                 foreach (var (dependency, type) in dependencies.Dependencies)
@@ -94,19 +94,20 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         public void ProcessNew()
         {
+            var componentInfos = new GCComponentInfoHolder(_context.AvatarRootObject);
             var activenessCache = new ActivenessCache(_modifications, _context.AvatarRootTransform);
 
             // first, collect usages
-            var collector = new ComponentDependencyCollector(_context, _preserveEndBone, activenessCache);
+            var collector = new ComponentDependencyCollector(_context, _preserveEndBone, activenessCache, componentInfos);
             collector.CollectAllUsages();
 
-            var markContext = new MarkObjectContext(collector, _context.AvatarRootTransform);
+            var markContext = new MarkObjectContext(componentInfos, _context.AvatarRootTransform);
             // then, mark and sweep.
 
             // entrypoint for mark & sweep is active-able GameObjects
             foreach (var gameObject in CollectAllActiveAbleGameObjects())
             foreach (var component in gameObject.GetComponents<Component>())
-                if (collector.GetDependencies(component).EntrypointComponent)
+                if (componentInfos.GetInfo(component).EntrypointComponent)
                     markContext.MarkComponent(component, GCComponentInfo.DependencyType.Normal);
 
             // excluded GameObjects must be exists
@@ -121,7 +122,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 // null values are ignored
                 if (!component) continue;
 
-                if (collector.GetDependencies(component).DependantEntrypoint.Count == 0)
+                if (componentInfos.GetInfo(component).DependantEntrypoint.Count == 0)
                 {
                     if (component is Transform)
                     {
@@ -174,7 +175,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 // Components must be Transform Only
                 if (transform.GetComponents<Component>().Length != 1) return NotMerged();
                 // The bone cannot be used generally
-                if ((collector.GetDependencies(transform).AllUsages & ~AllowedUsages) != 0) return NotMerged();
+                if ((componentInfos.GetInfo(transform).AllUsages & ~AllowedUsages) != 0) return NotMerged();
                 // must not be animated
                 if (TransformAnimated(transform, modifications)) return NotMerged();
 
