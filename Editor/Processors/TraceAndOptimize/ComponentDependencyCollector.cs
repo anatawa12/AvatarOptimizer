@@ -119,12 +119,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         {
             private readonly ComponentDependencyCollector _collector;
             private readonly ComponentDependencies _deps;
-            private ComponentDependencyInfo _lastDependencyInfo;
+            [NotNull] private readonly ComponentDependencyInfo _dependencyInfoSharedInstance;
 
             public Collector(ComponentDependencyCollector collector, Component component)
             {
                 _collector = collector;
                 _deps = collector.GetDependencies(component);
+                _dependencyInfoSharedInstance = new ComponentDependencyInfo();
             }
 
             public bool PreserveEndBone => _collector._preserveEndBone;
@@ -139,17 +140,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 [CanBeNull] Component dependency,
                 DependencyType type = DependencyType.Normal)
             {
-                FinishLastInfo();
-                return _lastDependencyInfo = new ComponentDependencyInfo(dependencies.Dependencies, dependency, type);
-            }
-
-            private void FinishLastInfo()
-            {
-                if (_lastDependencyInfo != null)
-                {
-                    _lastDependencyInfo.SetToDictionary();
-                    _lastDependencyInfo = null;
-                }
+                _dependencyInfoSharedInstance.Finish();
+                _dependencyInfoSharedInstance.Init(dependencies.Dependencies, dependency, type);
+                return _dependencyInfoSharedInstance;
             }
 
             public override API.ComponentDependencyInfo AddDependency(Component dependant, Component dependency) =>
@@ -167,23 +160,25 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             public void FinalizeForComponent()
             {
-                FinishLastInfo();
+                _dependencyInfoSharedInstance.Finish();
             }
 
             private class ComponentDependencyInfo : API.ComponentDependencyInfo
             {
-                [NotNull] private readonly Dictionary<Component, (DependencyFlags, DependencyType)> _dependencies;
-                [CanBeNull] private readonly Component _component;
-                private readonly DependencyType _type;
+                // ReSharper disable once NotNullOrRequiredMemberIsNotInitialized
+                [NotNull] private Dictionary<Component, (DependencyFlags, DependencyType)> _dependencies;
+                [CanBeNull] private Component _component;
+                private DependencyType _type;
 
                 private bool _evenIfTargetIsDisabled;
                 private bool _evenIfThisIsDisabled;
 
-                public ComponentDependencyInfo(
-                    [NotNull] Dictionary<Component, (DependencyFlags, DependencyType)> dependencies, 
+                internal void Init(
+                    [NotNull] Dictionary<Component, (DependencyFlags, DependencyType)> dependencies,
                     [CanBeNull] Component component,
                     DependencyType type = DependencyType.Normal)
                 {
+                    System.Diagnostics.Debug.Assert(_component == null, "Init on not finished");
                     _dependencies = dependencies;
                     _component = component;
                     _evenIfTargetIsDisabled = true;
@@ -191,7 +186,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     _type = type;
                 }
 
-                internal void SetToDictionary()
+                internal void Finish()
                 {
                     if (_component == null) return;
 
@@ -200,6 +195,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     if (_evenIfTargetIsDisabled) flags |= DependencyFlags.EvenIfTargetIsDisabled;
                     if (_evenIfThisIsDisabled) flags |= DependencyFlags.EvenIfThisIsDisabled;
                     _dependencies[_component] = (flags, pair.Item2 | _type);
+
+                    _component = null;
                 }
 
                 public override API.ComponentDependencyInfo EvenIfDependantDisabled()
