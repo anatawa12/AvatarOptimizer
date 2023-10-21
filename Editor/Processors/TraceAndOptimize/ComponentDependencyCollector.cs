@@ -28,21 +28,21 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             _activenessCache = activenessCache;
         }
 
-        private readonly Dictionary<Component, ComponentDependencies> _dependencies =
-            new Dictionary<Component, ComponentDependencies>();
+        private readonly Dictionary<Component, GCComponentInfo> _dependencies =
+            new Dictionary<Component, GCComponentInfo>();
 
         [CanBeNull]
-        public ComponentDependencies TryGetDependencies(Component dependent) =>
+        public GCComponentInfo TryGetDependencies(Component dependent) =>
             _dependencies.TryGetValue(dependent, out var dependencies) ? dependencies : null;
 
         [NotNull]
-        public ComponentDependencies GetDependencies(Component dependent) => _dependencies[dependent];
+        public GCComponentInfo GetDependencies(Component dependent) => _dependencies[dependent];
 
         public void CollectAllUsages()
         {
             var components = _session.GetComponents<Component>().ToArray();
             // first iteration: create mapping
-            foreach (var component in components) _dependencies.Add(component, new ComponentDependencies(component));
+            foreach (var component in components) _dependencies.Add(component, new GCComponentInfo(component));
 
             var collector = new Collector(this, _activenessCache);
             // second iteration: process parsers
@@ -83,7 +83,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         internal class Collector : API.ComponentDependencyCollector
         {
             private readonly ComponentDependencyCollector _collector;
-            private ComponentDependencies _deps;
+            private GCComponentInfo _deps;
             private Component _component;
             [NotNull] private readonly ComponentDependencyInfo _dependencyInfoSharedInstance;
 
@@ -108,12 +108,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             public override void MarkEntrypoint() => _deps.EntrypointComponent = true;
 
             private API.ComponentDependencyInfo AddDependencyInternal(
-                [NotNull] ComponentDependencies dependencies,
+                [NotNull] GCComponentInfo info,
                 [CanBeNull] Component dependency,
-                ComponentDependencies.DependencyType type = ComponentDependencies.DependencyType.Normal)
+                GCComponentInfo.DependencyType type = GCComponentInfo.DependencyType.Normal)
             {
                 _dependencyInfoSharedInstance.Finish();
-                _dependencyInfoSharedInstance.Init(dependencies.Component, dependencies.Dependencies, dependency, type);
+                _dependencyInfoSharedInstance.Init(info.Component, info.Dependencies, dependency, type);
                 return _dependencyInfoSharedInstance;
             }
 
@@ -124,11 +124,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 AddDependencyInternal(_deps, dependency);
 
             public void AddParentDependency(Transform component) =>
-                AddDependencyInternal(_deps, component.parent, ComponentDependencies.DependencyType.Parent)
+                AddDependencyInternal(_deps, component.parent, GCComponentInfo.DependencyType.Parent)
                     .EvenIfDependantDisabled();
 
             public void AddBoneDependency(Transform bone) =>
-                AddDependencyInternal(_deps, bone, ComponentDependencies.DependencyType.Bone);
+                AddDependencyInternal(_deps, bone, GCComponentInfo.DependencyType.Bone);
 
             public void FinalizeForComponent()
             {
@@ -140,10 +140,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             {
                 private readonly ActivenessCache _activenessCache;
 
-                [NotNull] private Dictionary<Component, ComponentDependencies.DependencyType> _dependencies;
+                [NotNull] private Dictionary<Component, GCComponentInfo.DependencyType> _dependencies;
                 [CanBeNull] private Component _dependency;
                 private Component _dependant;
-                private ComponentDependencies.DependencyType _type;
+                private GCComponentInfo.DependencyType _type;
 
                 private bool _evenIfTargetIsDisabled;
                 private bool _evenIfThisIsDisabled;
@@ -155,9 +155,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 }
 
                 internal void Init(Component dependant,
-                    [NotNull] Dictionary<Component, ComponentDependencies.DependencyType> dependencies,
+                    [NotNull] Dictionary<Component, GCComponentInfo.DependencyType> dependencies,
                     [CanBeNull] Component component,
-                    ComponentDependencies.DependencyType type = ComponentDependencies.DependencyType.Normal)
+                    GCComponentInfo.DependencyType type = GCComponentInfo.DependencyType.Normal)
                 {
                     Debug.Assert(_dependency == null, "Init on not finished");
                     _dependencies = dependencies;

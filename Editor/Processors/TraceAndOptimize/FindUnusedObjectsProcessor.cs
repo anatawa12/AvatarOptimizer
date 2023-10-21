@@ -33,18 +33,18 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
     internal readonly struct MarkObjectContext {
         private readonly ComponentDependencyCollector _dependencies;
 
-        public readonly Dictionary<Component, ComponentDependencies.DependencyType> _marked;
+        public readonly Dictionary<Component, GCComponentInfo.DependencyType> _marked;
         private readonly Queue<Component> _processPending;
 
-        public MarkObjectContext(ComponentDependencyCollector dependencies)
+        public MarkObjectContext(ComponentDependencyCollector dependencies, Component entrypoint)
         {
             _dependencies = dependencies;
-            _marked = new Dictionary<Component, ComponentDependencies.DependencyType>();
+            _marked = new Dictionary<Component, GCComponentInfo.DependencyType>();
             _processPending = new Queue<Component>();
         }
 
         public void MarkComponent(Component component,
-            ComponentDependencies.DependencyType type)
+            GCComponentInfo.DependencyType type)
         {
             if (_marked.TryGetValue(component, out var existingFlags))
             {
@@ -97,19 +97,19 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             var collector = new ComponentDependencyCollector(_context, _preserveEndBone, activenessCache);
             collector.CollectAllUsages();
 
-            var markContext = new MarkObjectContext(collector);
+            var markContext = new MarkObjectContext(collector, _context.AvatarRootTransform);
             // then, mark and sweep.
 
             // entrypoint for mark & sweep is active-able GameObjects
             foreach (var gameObject in CollectAllActiveAbleGameObjects())
             foreach (var component in gameObject.GetComponents<Component>())
                 if (collector.GetDependencies(component).EntrypointComponent)
-                    markContext.MarkComponent(component, ComponentDependencies.DependencyType.Normal);
+                    markContext.MarkComponent(component, GCComponentInfo.DependencyType.Normal);
 
             // excluded GameObjects must be exists
             foreach (var gameObject in _exclusions)
             foreach (var component in gameObject.GetComponents<Component>())
-                markContext.MarkComponent(component, ComponentDependencies.DependencyType.Normal);
+                markContext.MarkComponent(component, GCComponentInfo.DependencyType.Normal);
 
             markContext.MarkRecursively();
 
@@ -156,10 +156,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     }
                 }
 
-                const ComponentDependencies.DependencyType AllowedUsages =
-                    ComponentDependencies.DependencyType.Bone
-                    | ComponentDependencies.DependencyType.Parent
-                    | ComponentDependencies.DependencyType.ComponentToTransform;
+                const GCComponentInfo.DependencyType AllowedUsages =
+                    GCComponentInfo.DependencyType.Bone
+                    | GCComponentInfo.DependencyType.Parent
+                    | GCComponentInfo.DependencyType.ComponentToTransform;
 
                 // functions for make it easier to know meaning of result
                 (bool, List<Transform>) YesMerge() => (mergedChildren, afterChildren);

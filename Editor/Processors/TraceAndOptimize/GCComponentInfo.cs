@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 {
-    internal class ComponentDependencies
+    internal class GCComponentInfo
     {
         /// <summary>
         /// True if this component has Active Meaning on the Avatar.
@@ -20,7 +20,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         internal readonly Component Component;
 
-        public ComponentDependencies(Component component)
+        public GCComponentInfo(Component component)
         {
             Component = component;
             Dependencies[component.gameObject.transform] = DependencyType.ComponentToTransform;
