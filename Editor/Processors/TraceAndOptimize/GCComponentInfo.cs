@@ -9,16 +9,34 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
     {
         private readonly ImmutableModificationsContainer _modifications;
         private readonly Dictionary<Component, GCComponentInfo> _dependencies;
-        private readonly GameObject _rootGameObject;
 
         public GCComponentInfoHolder(ImmutableModificationsContainer modifications, GameObject rootGameObject)
         {
             _modifications = modifications;
-            _rootGameObject = rootGameObject;
             // initialize _dependencies
             _dependencies = new Dictionary<Component, GCComponentInfo>();
-            foreach (var component in rootGameObject.GetComponentsInChildren<Component>(true))
-                _dependencies.Add(component, new GCComponentInfo(component, this));
+            InitializeDependencies(rootGameObject.transform, true);
+        }
+
+        private void InitializeDependencies(Transform transform, bool? parentActiveness)
+        {
+            // add & process the GameObject itself
+            var transformActiveness = ComputeActiveness(transform, parentActiveness);
+            _dependencies.Add(transform, new GCComponentInfo(transform, transformActiveness));
+
+            // process components on the GameObject
+            foreach (var component in transform.GetComponents<Component>())
+            {
+                if (component is Transform) continue;
+                var activeness = ComputeActiveness(component, transformActiveness);
+                _dependencies.Add(transform, new GCComponentInfo(component, activeness));
+            }
+
+            // process children
+            foreach (var child in transform.DirectChildrenEnumerable())
+            {
+                InitializeDependencies(child, transformActiveness);
+            }
         }
 
         public IEnumerable<KeyValuePair<Component, GCComponentInfo>> AllInformation => _dependencies;
@@ -51,7 +69,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             new Dictionary<Component, DependencyType>();
 
         internal readonly Component Component;
-        private readonly GCComponentInfoHolder _holder;
 
         public DependencyType AllUsages
         {
@@ -64,14 +81,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             }
         }
 
-        private int _cached;
-        public bool? Activeness => _holder.Activeness(ref _cached, Component);
+        public readonly bool? Activeness;
 
-        public GCComponentInfo(Component component, GCComponentInfoHolder holder)
+        public GCComponentInfo(Component component, bool? activeness)
         {
-            _holder = holder;
             Component = component;
             Dependencies[component.gameObject.transform] = DependencyType.ComponentToTransform;
+            Activeness = activeness;
         }
 
         [Flags]
@@ -86,37 +102,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
     internal readonly partial struct GCComponentInfoHolder
     {
-        public bool? Activeness(ref int cached, Component component)
+        private bool? ComputeActiveness(Component component, bool? parentActiveness)
         {
-            switch (cached)
-            {
-                case 0:
-                    var activeness = ComputeActiveness(component);
-
-                    if (activeness is null) cached = 3;
-                    else if (activeness == true) cached = 1;
-                    else cached = 2;
-
-                    return activeness;
-                case 1:
-                    return false;
-                case 2:
-                    return true;
-                case 3:
-                    return null;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-        }
-
-        private bool? ComputeActiveness(Component component)
-        {
-            if (_rootGameObject.transform == component) return true;
-            bool? parentActiveness;
-            if (component is Transform t)
-                parentActiveness = t.parent == null ? true : GetInfo(t.parent).Activeness;
-            else
-                parentActiveness = GetInfo(component.transform).Activeness;
             if (parentActiveness == false) return false;
 
             bool? activeness;
