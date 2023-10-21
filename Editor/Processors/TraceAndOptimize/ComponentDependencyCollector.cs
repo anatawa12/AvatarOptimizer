@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.APIInternal;
 using Anatawa12.AvatarOptimizer.ErrorReporting;
@@ -19,22 +18,20 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
     {
         private readonly bool _preserveEndBone;
         private readonly BuildContext _session;
-        private readonly ActivenessCache  _activenessCache;
         private readonly GCComponentInfoHolder _componentInfos;
 
-        public ComponentDependencyCollector(BuildContext session, bool preserveEndBone, ActivenessCache activenessCache,
+        public ComponentDependencyCollector(BuildContext session, bool preserveEndBone,
             GCComponentInfoHolder componentInfos)
         {
             _preserveEndBone = preserveEndBone;
             _session = session;
-            _activenessCache = activenessCache;
             _componentInfos = componentInfos;
         }
 
 
         public void CollectAllUsages()
         {
-            var collector = new Collector(this, _activenessCache);
+            var collector = new Collector(this, _componentInfos);
             // second iteration: process parsers
             foreach (var (component, componentInfo) in _componentInfos.AllInformation)
             {
@@ -80,10 +77,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             private GCComponentInfo _info;
             [NotNull] private readonly ComponentDependencyInfo _dependencyInfoSharedInstance;
 
-            public Collector(ComponentDependencyCollector collector, ActivenessCache activenessCache)
+            public Collector(ComponentDependencyCollector collector, GCComponentInfoHolder componentInfos)
             {
                 _collector = collector;
-                _dependencyInfoSharedInstance = new ComponentDependencyInfo(activenessCache);
+                _dependencyInfoSharedInstance = new ComponentDependencyInfo(componentInfos);
             }
             
             public void Init(GCComponentInfo info)
@@ -105,7 +102,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 GCComponentInfo.DependencyType type = GCComponentInfo.DependencyType.Normal)
             {
                 _dependencyInfoSharedInstance.Finish();
-                _dependencyInfoSharedInstance.Init(info.Component, info.Dependencies, dependency, type);
+                _dependencyInfoSharedInstance.Init(info, dependency, type);
                 return _dependencyInfoSharedInstance;
             }
 
@@ -130,31 +127,28 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             private class ComponentDependencyInfo : API.ComponentDependencyInfo
             {
-                private readonly ActivenessCache _activenessCache;
+                private readonly GCComponentInfoHolder _componentInfos;
 
-                [NotNull] private Dictionary<Component, GCComponentInfo.DependencyType> _dependencies;
                 [CanBeNull] private Component _dependency;
-                private Component _dependant;
+                private GCComponentInfo _dependantInformation;
                 private GCComponentInfo.DependencyType _type;
 
                 private bool _evenIfTargetIsDisabled;
                 private bool _evenIfThisIsDisabled;
 
                 // ReSharper disable once NotNullOrRequiredMemberIsNotInitialized
-                public ComponentDependencyInfo(ActivenessCache activenessCache)
+                public ComponentDependencyInfo(GCComponentInfoHolder componentInfos)
                 {
-                    _activenessCache = activenessCache;
+                    _componentInfos = componentInfos;
                 }
 
-                internal void Init(Component dependant,
-                    [NotNull] Dictionary<Component, GCComponentInfo.DependencyType> dependencies,
+                internal void Init(GCComponentInfo dependantInformation,
                     [CanBeNull] Component component,
                     GCComponentInfo.DependencyType type = GCComponentInfo.DependencyType.Normal)
                 {
                     Debug.Assert(_dependency == null, "Init on not finished");
-                    _dependencies = dependencies;
                     _dependency = component;
-                    _dependant = dependant;
+                    _dependantInformation = dependantInformation;
                     _evenIfTargetIsDisabled = true;
                     _evenIfThisIsDisabled = false;
                     _type = type;
@@ -174,17 +168,17 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     if (!_evenIfThisIsDisabled)
                     {
                         // dependant must can be able to be enable
-                        if (_activenessCache.GetActiveness(_dependant) == false) return;
+                        if (_dependantInformation.Activeness == false) return;
                     }
                     
                     if (!_evenIfTargetIsDisabled)
                     {
                         // dependency must can be able to be enable
-                        if (_activenessCache.GetActiveness(_dependency) == false) return;
+                        if (_componentInfos.GetInfo(_dependency).Activeness == false) return;
                     }
 
-                    _dependencies.TryGetValue(_dependency, out var type);
-                    _dependencies[_dependency] = type | _type;
+                    _dependantInformation.Dependencies.TryGetValue(_dependency, out var type);
+                    _dependantInformation.Dependencies[_dependency] = type | _type;
                 }
 
                 public override API.ComponentDependencyInfo EvenIfDependantDisabled()

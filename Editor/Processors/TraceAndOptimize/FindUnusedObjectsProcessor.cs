@@ -94,11 +94,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         public void ProcessNew()
         {
-            var componentInfos = new GCComponentInfoHolder(_context.AvatarRootObject);
-            var activenessCache = new ActivenessCache(_modifications, _context.AvatarRootTransform);
+            var componentInfos = new GCComponentInfoHolder(_modifications, _context.AvatarRootObject);
 
             // first, collect usages
-            var collector = new ComponentDependencyCollector(_context, _preserveEndBone, activenessCache, componentInfos);
+            var collector = new ComponentDependencyCollector(_context, _preserveEndBone, componentInfos);
             collector.CollectAllUsages();
 
             var markContext = new MarkObjectContext(componentInfos, _context.AvatarRootTransform);

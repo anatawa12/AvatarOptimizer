@@ -5,16 +5,20 @@ using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 {
-    internal readonly struct GCComponentInfoHolder
+    internal readonly partial struct GCComponentInfoHolder
     {
+        private readonly ImmutableModificationsContainer _modifications;
         private readonly Dictionary<Component, GCComponentInfo> _dependencies;
+        private readonly GameObject _rootGameObject;
 
-        public GCComponentInfoHolder(GameObject rootGameObject)
+        public GCComponentInfoHolder(ImmutableModificationsContainer modifications, GameObject rootGameObject)
         {
+            _modifications = modifications;
+            _rootGameObject = rootGameObject;
             // initialize _dependencies
             _dependencies = new Dictionary<Component, GCComponentInfo>();
             foreach (var component in rootGameObject.GetComponentsInChildren<Component>(true))
-                _dependencies.Add(component, new GCComponentInfo(component));
+                _dependencies.Add(component, new GCComponentInfo(component, this));
         }
 
         public IEnumerable<KeyValuePair<Component, GCComponentInfo>> AllInformation => _dependencies;
@@ -44,9 +48,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         /// Dependants entrypoint components 
         /// </summary>
         [NotNull] internal readonly Dictionary<Component, DependencyType> DependantEntrypoint =
-            new Dictionary<Component, DependencyType>();        
+            new Dictionary<Component, DependencyType>();
 
         internal readonly Component Component;
+        private readonly GCComponentInfoHolder _holder;
 
         public DependencyType AllUsages
         {
@@ -59,12 +64,16 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             }
         }
 
-        public GCComponentInfo(Component component)
+        private int _cached;
+        public bool? Activeness => _holder.Activeness(ref _cached, Component);
+
+        public GCComponentInfo(Component component, GCComponentInfoHolder holder)
         {
+            _holder = holder;
             Component = component;
             Dependencies[component.gameObject.transform] = DependencyType.ComponentToTransform;
         }
-        
+
         [Flags]
         public enum DependencyType : byte
         {
@@ -72,6 +81,97 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             Parent = 1 << 1,
             ComponentToTransform = 1 << 2,
             Bone = 1 << 3,
+        }
+    }
+
+    internal readonly partial struct GCComponentInfoHolder
+    {
+        public bool? Activeness(ref int cached, Component component)
+        {
+            switch (cached)
+            {
+                case 0:
+                    var activeness = ComputeActiveness(component);
+
+                    if (activeness is null) cached = 3;
+                    else if (activeness == true) cached = 1;
+                    else cached = 2;
+
+                    return activeness;
+                case 1:
+                    return false;
+                case 2:
+                    return true;
+                case 3:
+                    return null;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
+        private bool? ComputeActiveness(Component component)
+        {
+            if (_rootGameObject.transform == component) return true;
+            bool? parentActiveness;
+            if (component is Transform t)
+                parentActiveness = t.parent == null ? true : GetInfo(t.parent).Activeness;
+            else
+                parentActiveness = GetInfo(component.transform).Activeness;
+            if (parentActiveness == false) return false;
+
+            bool? activeness;
+            switch (component)
+            {
+                case Transform transform:
+                    var gameObject = transform.gameObject;
+                    activeness = _modifications.GetConstantValue(gameObject, "m_IsActive", gameObject.activeSelf);
+                    break;
+                case Behaviour behaviour:
+                    activeness = _modifications.GetConstantValue(behaviour, "m_Enabled", behaviour.enabled);
+                    break;
+                case Cloth cloth:
+                    activeness = _modifications.GetConstantValue(cloth, "m_Enabled", cloth.enabled);
+                    break;
+                case Collider collider:
+                    activeness = _modifications.GetConstantValue(collider, "m_Enabled", collider.enabled);
+                    break;
+                case LODGroup lodGroup:
+                    activeness = _modifications.GetConstantValue(lodGroup, "m_Enabled", lodGroup.enabled);
+                    break;
+                case Renderer renderer:
+                    activeness = _modifications.GetConstantValue(renderer, "m_Enabled", renderer.enabled);
+                    break;
+                // components without isEnable
+                case CanvasRenderer _:
+                case Joint _:
+                case MeshFilter _:
+                case OcclusionArea _:
+                case OcclusionPortal _:
+                case ParticleSystem _:
+#if !UNITY_2021_3_OR_NEWER
+                case ParticleSystemForceField _:
+#endif
+                case Rigidbody _:
+                case Rigidbody2D _:
+                case TextMesh _:
+                case Tree _:
+                case WindZone _:
+#if !UNITY_2020_2_OR_NEWER
+                case UnityEngine.XR.WSA.WorldAnchor _:
+#endif
+                    activeness = true;
+                    break;
+                case Component _:
+                case null:
+                    // fallback: all components type should be proceed with above switch
+                    activeness = null;
+                    break;
+            }
+
+            if (activeness == false) return false;
+            if (parentActiveness == true && activeness == true) return true;
+
+            return null;
         }
     }
 }
