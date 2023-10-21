@@ -18,7 +18,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - Improve support of newer Unity versions `#608`
-- Improve support of projects without VRCSDK `#609`
+- Improve support of projects without VRCSDK `#609` `#625`
 - AutoFreezeBlendShape will freeze BlendShapes with editor value instead of animated constant `#622`
 
 ### Security
