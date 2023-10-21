@@ -80,11 +80,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             // first iteration: create mapping
             foreach (var component in components) _dependencies.Add(component, new ComponentDependencies(component));
 
+            var collector = new Collector(this);
             // second iteration: process parsers
             BuildReport.ReportingObjects(components, component =>
             {
                 // component requires GameObject.
-                var collector = new Collector(this, component);
+                collector.Init(component);
                 if (ComponentInfoRegistry.TryGetInformation(component.GetType(), out var information))
                 {
                     information.CollectDependencyInternal(component, collector);
@@ -99,7 +100,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             });
         }
 
-        private void FallbackDependenciesParser(Component component, Collector collector)
+        private void FallbackDependenciesParser(Component component, API.ComponentDependencyCollector collector)
         {
             // fallback dependencies: All References are Always Dependencies.
             collector.MarkEntrypoint();
@@ -118,14 +119,19 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         internal class Collector : API.ComponentDependencyCollector
         {
             private readonly ComponentDependencyCollector _collector;
-            private readonly ComponentDependencies _deps;
+            private ComponentDependencies _deps;
             [NotNull] private readonly ComponentDependencyInfo _dependencyInfoSharedInstance;
 
-            public Collector(ComponentDependencyCollector collector, Component component)
+            public Collector(ComponentDependencyCollector collector)
             {
                 _collector = collector;
-                _deps = collector.GetDependencies(component);
                 _dependencyInfoSharedInstance = new ComponentDependencyInfo();
+            }
+            
+            public void Init(Component component)
+            {
+                System.Diagnostics.Debug.Assert(_deps == null, "Init on not finished");
+                _deps = _collector.GetDependencies(component);
             }
 
             public bool PreserveEndBone => _collector._preserveEndBone;
@@ -161,6 +167,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             public void FinalizeForComponent()
             {
                 _dependencyInfoSharedInstance.Finish();
+                _deps = null;
             }
 
             private class ComponentDependencyInfo : API.ComponentDependencyInfo
