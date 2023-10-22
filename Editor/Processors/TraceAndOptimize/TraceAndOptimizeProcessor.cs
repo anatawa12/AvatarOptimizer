@@ -14,7 +14,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         public bool PreserveEndBone;
         public bool UseLegacyAnimatorParser;
         public HashSet<GameObject> Exclusions = new HashSet<GameObject>();
-        public bool UseLegacyGC;
         public bool GCDebug;
         public bool NoConfigureMergeBone;
         public bool SkipFreezingNonAnimatedBlendShape;
@@ -39,7 +38,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             UseLegacyAnimatorParser = !config.advancedAnimatorParser;
             Exclusions = new HashSet<GameObject>(config.advancedSettings.exclusions);
-            UseLegacyGC = config.advancedSettings.useLegacyGc;
             GCDebug = config.advancedSettings.gcDebug;
             NoConfigureMergeBone = config.advancedSettings.noConfigureMergeBone;
             SkipFreezingNonAnimatedBlendShape = config.advancedSettings.skipFreezingNonAnimatedBlendShape;

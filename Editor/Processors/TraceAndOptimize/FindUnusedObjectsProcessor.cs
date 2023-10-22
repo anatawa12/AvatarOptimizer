@@ -18,15 +18,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             var state = context.GetState<TraceAndOptimizeState>();
             if (!state.RemoveUnusedObjects) return;
 
-            if (state.UseLegacyGC)
-            {
-                new LegacyGC().Process();
-            }
-            else
-            {
-                var processor = new FindUnusedObjectsProcessor(context, state);
-                processor.ProcessNew();
-            }
+            var processor = new FindUnusedObjectsProcessor(context, state);
+            processor.ProcessNew();
         }
     }
 
