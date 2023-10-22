@@ -95,7 +95,14 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         public void ProcessNew()
         {
             var componentInfos = new GCComponentInfoHolder(_modifications, _context.AvatarRootObject);
+            Mark(componentInfos);
+            Sweep(componentInfos);
+            if (!_noConfigureMergeBone)
+                MergeBone(componentInfos);
+        }
 
+        private void Mark(GCComponentInfoHolder componentInfos)
+        {
             // first, collect usages
             var collector = new ComponentDependencyCollector(_context, _preserveEndBone, componentInfos);
             collector.CollectAllUsages();
@@ -125,7 +132,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 markContext.MarkRecursively();
             }
 
+        }
 
+        private void Sweep(GCComponentInfoHolder componentInfos)
+        {
             foreach (var component in _context.GetComponents<Component>())
             {
                 // null values are ignored
@@ -144,9 +154,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     }
                 }
             }
+        }
 
-            if (_noConfigureMergeBone) return;
-
+        private void MergeBone(GCComponentInfoHolder componentInfos)
+        {
             ConfigureRecursive(_context.AvatarRootTransform, _modifications);
 
             // returns (original mergedChildren, list of merged children if merged, and null if not merged)
