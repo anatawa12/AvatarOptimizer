@@ -39,7 +39,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             }
         }
 
-        public IEnumerable<KeyValuePair<Component, GCComponentInfo>> AllInformation => _dependencies;
+        public IEnumerable<GCComponentInfo> AllInformation => _dependencies.Values;
 
         [CanBeNull]
         public GCComponentInfo TryGetInfo(Component dependent) =>

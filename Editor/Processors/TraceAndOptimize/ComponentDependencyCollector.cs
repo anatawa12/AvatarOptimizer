@@ -33,8 +33,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         {
             var collector = new Collector(this, _componentInfos);
             // second iteration: process parsers
-            foreach (var (component, componentInfo) in _componentInfos.AllInformation)
+            foreach (var componentInfo in _componentInfos.AllInformation)
             {
+                var component = componentInfo.Component;
                 BuildReport.ReportingObject(component, () =>
                 {
                     // component requires GameObject.
