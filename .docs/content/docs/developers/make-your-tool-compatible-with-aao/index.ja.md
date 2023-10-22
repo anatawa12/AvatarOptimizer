@@ -13,7 +13,7 @@ title: ツールをAvatar Optimizerとの互換性をもたせる
 
 ## どのようなときにツールがAvatar Optimizerと非互換になるか {#when-incompatible}
 
-もしあなたのツールがコンポーネントを追加せず、ビルド時に何もしないのであれば、すでにAvatarOptimizerと互換性があります！
+もしあなたのツールがコンポーネントを追加せず、ビルド時に何もしないのであれば、すでに#improve-compatibility-destructive-toolsと互換性があります！
 
 もしあなたのツールがコンポーネントをアバターに追加する場合、そのツールはAvatar Optimizerと非互換である可能性があります
 
@@ -55,32 +55,29 @@ Avatar OptimizerのNDMFのQualifiedNameは`com.anatawa12.avatar-optimizer`です
 現在、NDMFはOptimization phaseをVRCSDKの`RemoveAvatarEditorOnly`の直前のorder `-1025`で実行するので、
 あなたのツールの`IVRCSDKPreprocessAvatarCallback`をそれより小さい`callbackOrder`で登録してください。
 
-もしあなたのツールがAvatarOptimizerの実行後(NDMFのOptimization phaseのあと)に処理したい場合、Avatar Optimizerに[コンポーネントを登録][register-component]してください.
+もしあなたのツールがAvatar Optimizerの実行後(NDMFのOptimization phaseのあと)に処理したい場合、Avatar Optimizerに[コンポーネントを登録][register-component]してください.
 
 ### データを保持するだけのコンポーネントを持つツールの場合 {#improve-compatibility-destructive-tools}
 
 もしあなたのツールのコンポーネントがビルド時に意味を持たず、情報保持のための場合、
-AvatarOptimizerの処理の前に`IVRCSDKPreprocessAvatarCallback`でコンポーネントを削除するか、Avatar Optimizerにコンポーネントを登録してください。
-
-もし`IVRCSDKPreprocessAvatarCallback`でコンポーネントを削除する場合、[この部分](#improve-compatibility-non-ndmf-based)を参照してください。
-
-もしAvatar Optimizerにコンポーネントを登録する場合、[この部分][register-component]を参照してください。
+Avatar Optimizerの処理の前に`IVRCSDKPreprocessAvatarCallback`でコンポーネントを削除するか([この部分](#improve-compatibility-non-ndmf-based)を参照してください)、
+Avatar Optimizerにコンポーネントを登録してください([この部分][register-component]を参照してください)。
 
 ## コンポーネントを登録する {#register-component}
 
 もしあなたのツールのコンポーネントをAvatar Optimizerの処理後まで保持したり、またはAvatar Optimizerによって削除されたい場合、
 Avatar Optimizerにコンポーネントの情報を登録できます。
 
-Avatar OptimizerのAPIを呼び出すため、まず初めにassembly definition file[^asmdef]を存在しない場合作成してください。
+まず初めにAvatar OptimizerのAPIを呼び出すためassembly definition file[^asmdef]を存在しない場合作成してください。
 
-次に、asmdefファイルのアセンブリ参照に`com.anatawa12.avatar-optimizer.api.editor`を追加してください。
+次に、asmdefファイルのアセンブリ参照に`com.anatawa12.avatar-optimizer.api.editor`を追加してください。\
 もしあなたのツールがAvatar Optimizerに依存したくない場合、[Version Defines]を使用してください。
 Avatar Optimizer 1.6.0より前では公開APIがなく、またAvatar Optimizer v2.0.0でAPIを破壊する可能性があるため、
 バージョンの範囲を`[1.6,2.0)`(やもっと厳しい `[1.7,2.0)`など)のように指定するのを推奨します。
 
 ![version-defines.png](version-defines.png)
 
-次に、あなたのコンポーネントに関する`CompoinentInformation`を定義してください。
+次に、あなたのコンポーネントに関する`ComponentInformation`を定義してください。
 
 ```csharp
 #if AVATAR_OPTIMIZER && UNITY_EDITOR
@@ -102,8 +99,8 @@ internal class YourComponentInformation : ComponentInformation<YourComponent>
 #endif
 ```
 
-`CollectDependency`ではビルド時、または実行時のあなたのコンポーネントの依存関係を登録してください。
-`CollectMutations`ではあなたのコンポーネントが実行時に変更する可能性があるプロパティを登録してください。
+`CollectDependency`ではビルド時、または実行時のあなたのコンポーネントの依存関係を登録してください。\
+`CollectMutations`ではあなたのコンポーネントが実行時に変更する可能性があるプロパティを登録してください。\
 詳しくはxmldocやメソッド名を参照してください。
 
 もしあなたのコンポーネントがエディタ上のツールのためのデータを保持するだけの場合、どちらも空にします。
