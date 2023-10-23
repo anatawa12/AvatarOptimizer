@@ -79,9 +79,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         }
 
         void FreezeMeaninglessBlendShapes(BuildContext context, TraceAndOptimizeState state) {
-#if AAO_VRCSDK3_AVATARS
             ComputePreserveBlendShapes(context, state.PreserveBlendShapes);
-#endif
 
             // second optimization: remove meaningless blendShapes
             foreach (var skinnedMeshRenderer in context.GetComponents<SkinnedMeshRenderer>())
@@ -92,9 +90,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             }
         }
 
-#if AAO_VRCSDK3_AVATARS
         private void ComputePreserveBlendShapes(BuildContext context, Dictionary<SkinnedMeshRenderer, HashSet<string>> preserveBlendShapes)
         {
+#if AAO_VRCSDK3_AVATARS
             // some BlendShapes manipulated by VRC Avatar Descriptor must exists
             var descriptor = context.AvatarDescriptor;
             switch (descriptor.lipSync)
@@ -142,7 +140,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                         break;
                 }
             }
-        }
 #endif
+        }
     }
 }

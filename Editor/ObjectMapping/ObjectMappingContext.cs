@@ -34,9 +34,7 @@ namespace Anatawa12.AvatarOptimizer
                 if (component is Transform) return;
                 var serialized = new SerializedObject(component);
                 AnimatorControllerMapper mapper = null;
-#if AAO_VRCSDK3_AVATARS
                 SpecialMappingApplier.Apply(component.GetType(), serialized, mapping, ref mapper);
-#endif
                 foreach (var p in serialized.ObjectReferenceProperties())
                 {
                     if (mapping.MapComponentInstance(p.objectReferenceInstanceIDValue, out var mappedComponent))
@@ -60,16 +58,18 @@ namespace Anatawa12.AvatarOptimizer
         }
     }
 
-#if AAO_VRCSDK3_AVATARS
     internal static class SpecialMappingApplier
     {
         public static void Apply(Type type, SerializedObject serialized, 
             ObjectMapping mapping, ref AnimatorControllerMapper mapper)
         {
+#if AAO_VRCSDK3_AVATARS
             if (type.IsAssignableFrom(typeof(VRCAvatarDescriptor)))
                 VRCAvatarDescriptor(serialized, mapping, ref mapper);
+#endif
         }
         
+#if AAO_VRCSDK3_AVATARS
         // customEyeLookSettings.eyelidsBlendshapes is index
         private static void VRCAvatarDescriptor(SerializedObject serialized,
             ObjectMapping mapping, ref AnimatorControllerMapper mapper)
@@ -104,8 +104,8 @@ namespace Anatawa12.AvatarOptimizer
                 }
             }
         }
-    }
 #endif
+    }
 
     internal class AnimatorControllerMapper
     {
