@@ -10,27 +10,31 @@ using VRC.SDK3.Avatars.Components;
 
 namespace Anatawa12.AvatarOptimizer
 {
-#if AAO_VRCSDK3_AVATARS
-    [InitializeOnLoad]
-#endif
     abstract class AvatarGlobalComponentEditorBase : AvatarTagComponentEditorBase
     {
-#if AAO_VRCSDK3_AVATARS
         static AvatarGlobalComponentEditorBase()
         {
             ComponentValidation.RegisterValidator<AvatarGlobalComponent>(component =>
             {
+#if AAO_VRCSDK3_AVATARS
                 if (!component.GetComponent<VRCAvatarDescriptor>())
                     return new[] { ErrorLog.Validation("AvatarGlobalComponent:NotOnAvatarDescriptor") };
+#else
+                if (!nadena.dev.ndmf.runtime.RuntimeUtil.IsAvatarRoot(component.transform))
+                    return new[] { ErrorLog.Validation("AvatarGlobalComponent:NotOnAvatarRoot") };
+#endif
                 return null;
             });
         }
-#endif
         protected override void OnInspectorGUIInner()
         {
 #if AAO_VRCSDK3_AVATARS
             if (!((Component)serializedObject.targetObject).GetComponent<VRCAvatarDescriptor>())
                 EditorGUILayout.HelpBox(CL4EE.Tr("AvatarGlobalComponent:NotOnAvatarDescriptor"),
+                    MessageType.Error);
+#else
+            if (!nadena.dev.ndmf.runtime.RuntimeUtil.IsAvatarRoot(((Component)serializedObject.targetObject).transform))
+                EditorGUILayout.HelpBox(CL4EE.Tr("AvatarGlobalComponent:NotOnAvatarRoot"),
                     MessageType.Error);
 #endif
         }
