@@ -270,7 +270,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 gcDebugInfo.dependencies = componentInfo.Dependencies.Select(GCDebugInfo.ComponentTypePair.From).ToArray();
             }
 
-            throw new System.NotImplementedException();
+            _context.AvatarRootObject.AddComponent<GCDebugRoot>();
         }
 
         class GCDebugRoot : MonoBehaviour { }
