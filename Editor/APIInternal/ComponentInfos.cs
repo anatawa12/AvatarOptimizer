@@ -13,7 +13,7 @@ using VRC.SDK3.Dynamics.Contact.Components;
 using VRC.SDK3.Dynamics.PhysBone.Components;
 using VRC.SDKBase;
 
-namespace Anatawa12.AvatarOptimizer.APIBackend
+namespace Anatawa12.AvatarOptimizer.APIInternal
 {
     [ComponentInformation(typeof(Light))]
     [ComponentInformation(typeof(Camera))]
@@ -31,7 +31,7 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
     // nadena.dev.ndmf.VRChat.ContextHolder with reflection
     internal class EntrypointComponentInformation : ComponentInformation<Component>
     {
-        protected override void CollectDependency(Component component, IComponentDependencyCollector collector)
+        protected override void CollectDependency(Component component, ComponentDependencyCollector collector)
         {
             collector.MarkEntrypoint();
         }
@@ -40,7 +40,7 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
     [ComponentInformation(typeof(Transform))]
     internal class TransformInformation : ComponentInformation<Transform>
     {
-        protected override void CollectDependency(Transform component, IComponentDependencyCollector collector)
+        protected override void CollectDependency(Transform component, ComponentDependencyCollector collector)
         {
             var casted = (Processors.TraceAndOptimizes.ComponentDependencyCollector.Collector)collector;
             casted.AddParentDependency(component);
@@ -59,7 +59,7 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
     {
         // Animator does not do much for motion, just changes states of other components.
         // All State / Motion Changes are collected separately
-        protected override void CollectDependency(Animator component, IComponentDependencyCollector collector)
+        protected override void CollectDependency(Animator component, ComponentDependencyCollector collector)
         {
             collector.MarkEntrypoint();
 
@@ -77,7 +77,7 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
 
     internal class RendererInformation<T> : ComponentInformation<T> where T : Renderer
     {
-        protected override void CollectDependency(T component, IComponentDependencyCollector collector)
+        protected override void CollectDependency(T component, ComponentDependencyCollector collector)
         {
             collector.MarkEntrypoint();
             // anchor proves
@@ -93,7 +93,7 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
     internal class SkinnedMeshRendererInformation : RendererInformation<SkinnedMeshRenderer>
     {
         protected override void CollectDependency(SkinnedMeshRenderer component,
-            IComponentDependencyCollector collector)
+            ComponentDependencyCollector collector)
         {
             base.CollectDependency(component, collector);
 
@@ -109,7 +109,7 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
     [ComponentInformation(typeof(MeshRenderer))]
     internal class MeshRendererInformation : RendererInformation<MeshRenderer>
     {
-        protected override void CollectDependency(MeshRenderer component, IComponentDependencyCollector collector)
+        protected override void CollectDependency(MeshRenderer component, ComponentDependencyCollector collector)
         {
             base.CollectDependency(component, collector);
             collector.AddDependency(component.GetComponent<MeshFilter>());
@@ -119,7 +119,7 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
     [ComponentInformation(typeof(MeshFilter))]
     internal class MeshFilterInformation : ComponentInformation<MeshFilter>
     {
-        protected override void CollectDependency(MeshFilter component, IComponentDependencyCollector collector)
+        protected override void CollectDependency(MeshFilter component, ComponentDependencyCollector collector)
         {
         }
     }
@@ -127,7 +127,7 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
     [ComponentInformation(typeof(ParticleSystem))]
     internal class ParticleSystemInformation : ComponentInformation<ParticleSystem>
     {
-        protected override void CollectDependency(ParticleSystem component, IComponentDependencyCollector collector)
+        protected override void CollectDependency(ParticleSystem component, ComponentDependencyCollector collector)
         {
             collector.MarkEntrypoint();
 
@@ -218,7 +218,7 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
     internal class ParticleSystemRendererInformation : RendererInformation<ParticleSystemRenderer>
     {
         protected override void CollectDependency(ParticleSystemRenderer component,
-            IComponentDependencyCollector collector)
+            ComponentDependencyCollector collector)
         {
             base.CollectDependency(component, collector);
             collector.AddDependency(component.GetComponent<ParticleSystem>()).EvenIfDependantDisabled();
@@ -238,7 +238,7 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
     [ComponentInformation(typeof(Cloth))]
     internal class ClothInformation : ComponentInformation<Cloth>
     {
-        protected override void CollectDependency(Cloth component, IComponentDependencyCollector collector)
+        protected override void CollectDependency(Cloth component, ComponentDependencyCollector collector)
         {
             // If Cloth is disabled, SMR work as SMR without Cloth
             // If Cloth is enabled and SMR is disabled, SMR draw nothing.
@@ -263,7 +263,7 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
     [ComponentInformation(typeof(WheelCollider))]
     internal class ColliderInformation : ComponentInformation<Collider>
     {
-        protected override void CollectDependency(Collider component, IComponentDependencyCollector collector)
+        protected override void CollectDependency(Collider component, ComponentDependencyCollector collector)
         {
             collector.MarkEntrypoint();
             var rigidbody = component.GetComponentInParent<Rigidbody>();
@@ -279,7 +279,7 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
     [ComponentInformation(typeof(SpringJoint))]
     internal class JointInformation : ComponentInformation<Joint>
     {
-        protected override void CollectDependency(Joint component, IComponentDependencyCollector collector)
+        protected override void CollectDependency(Joint component, ComponentDependencyCollector collector)
         {
             collector.AddDependency(component.GetComponent<Rigidbody>(), component);
             collector.AddDependency(component.connectedBody);
@@ -289,12 +289,12 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
     [ComponentInformation(typeof(Rigidbody))]
     internal class RigidbodyInformation : ComponentInformation<Rigidbody>
     {
-        protected override void CollectDependency(Rigidbody component, IComponentDependencyCollector collector)
+        protected override void CollectDependency(Rigidbody component, ComponentDependencyCollector collector)
         {
             collector.AddDependency(component.transform, component).EvenIfDependantDisabled().OnlyIfTargetCanBeEnable();
         }
 
-        protected override void CollectMutations(Rigidbody component, IComponentMutationsCollector collector)
+        protected override void CollectMutations(Rigidbody component, ComponentMutationsCollector collector)
         {
             collector.TransformPositionAndRotation(component.transform);
         }
@@ -303,7 +303,7 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
     [ComponentInformation(typeof(FlareLayer))]
     internal class FlareLayerInformation : ComponentInformation<FlareLayer>
     {
-        protected override void CollectDependency(FlareLayer component, IComponentDependencyCollector collector)
+        protected override void CollectDependency(FlareLayer component, ComponentDependencyCollector collector)
         {
             collector.AddDependency(component.GetComponent<Camera>(), component);
         }
@@ -311,7 +311,7 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
 
     internal class ConstraintInformation<T> : ComponentInformation<T> where T : Component, IConstraint
     {
-        protected override void CollectDependency(T component, IComponentDependencyCollector collector)
+        protected override void CollectDependency(T component, ComponentDependencyCollector collector)
         {
             collector.AddDependency(component.transform, component)
                 .OnlyIfTargetCanBeEnable()
@@ -324,13 +324,13 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
     [ComponentInformation(typeof(AimConstraint))]
     internal class AimConstraintInformation : ConstraintInformation<AimConstraint>
     {
-        protected override void CollectDependency(AimConstraint component, IComponentDependencyCollector collector)
+        protected override void CollectDependency(AimConstraint component, ComponentDependencyCollector collector)
         {
             base.CollectDependency(component, collector);
             collector.AddDependency(component.worldUpObject);
         }
 
-        protected override void CollectMutations(AimConstraint component, IComponentMutationsCollector collector)
+        protected override void CollectMutations(AimConstraint component, ComponentMutationsCollector collector)
         {
             collector.TransformRotation(component.transform);
         }
@@ -339,13 +339,13 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
     [ComponentInformation(typeof(LookAtConstraint))]
     internal class LookAtConstraintInformation : ConstraintInformation<LookAtConstraint>
     {
-        protected override void CollectDependency(LookAtConstraint component, IComponentDependencyCollector collector)
+        protected override void CollectDependency(LookAtConstraint component, ComponentDependencyCollector collector)
         {
             base.CollectDependency(component, collector);
             collector.AddDependency(component.worldUpObject);
         }
 
-        protected override void CollectMutations(LookAtConstraint component, IComponentMutationsCollector collector)
+        protected override void CollectMutations(LookAtConstraint component, ComponentMutationsCollector collector)
         {
             collector.TransformRotation(component.transform);
         }
@@ -354,7 +354,7 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
     [ComponentInformation(typeof(ParentConstraint))]
     internal class ParentConstraintInformation : ConstraintInformation<ParentConstraint>
     {
-        protected override void CollectMutations(ParentConstraint component, IComponentMutationsCollector collector)
+        protected override void CollectMutations(ParentConstraint component, ComponentMutationsCollector collector)
         {
             collector.TransformPositionAndRotation(component.transform);
         }
@@ -363,7 +363,7 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
     [ComponentInformation(typeof(RotationConstraint))]
     internal class RotationConstraintInformation : ConstraintInformation<RotationConstraint>
     {
-        protected override void CollectMutations(RotationConstraint component, IComponentMutationsCollector collector)
+        protected override void CollectMutations(RotationConstraint component, ComponentMutationsCollector collector)
         {
             collector.TransformRotation(component.transform);
         }
@@ -372,7 +372,7 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
     [ComponentInformation(typeof(PositionConstraint))]
     internal class PositionConstraintInformation : ConstraintInformation<PositionConstraint>
     {
-        protected override void CollectMutations(PositionConstraint component, IComponentMutationsCollector collector)
+        protected override void CollectMutations(PositionConstraint component, ComponentMutationsCollector collector)
         {
             collector.TransformPosition(component.transform);
         }
@@ -381,7 +381,7 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
     [ComponentInformation(typeof(ScaleConstraint))]
     internal class ScaleConstraintInformation : ConstraintInformation<ScaleConstraint>
     {
-        protected override void CollectMutations(ScaleConstraint component, IComponentMutationsCollector collector)
+        protected override void CollectMutations(ScaleConstraint component, ComponentMutationsCollector collector)
         {
             collector.TransformScale(component.transform);
         }
@@ -391,7 +391,7 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
     internal class VRCAvatarDescriptorInformation<T> : ComponentInformation<T> where T : VRC_AvatarDescriptor
     {
         protected override void CollectDependency(T component,
-            IComponentDependencyCollector collector)
+            ComponentDependencyCollector collector)
         {
             collector.MarkEntrypoint();
             collector.AddDependency(component.GetComponent<PipelineManager>()).EvenIfDependantDisabled();
@@ -402,7 +402,7 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
     internal class VRCAvatarDescriptorInformation : VRCAvatarDescriptorInformation<VRCAvatarDescriptor>
     {
         protected override void CollectDependency(VRCAvatarDescriptor component,
-            IComponentDependencyCollector collector)
+            ComponentDependencyCollector collector)
         {
             base.CollectDependency(component, collector);
 
@@ -441,7 +441,7 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
     [ComponentInformation(typeof(VRC.SDK3.Avatars.Components.VRCStation))]
     internal class VRCStationInformation : ComponentInformation<VRC.SDKBase.VRCStation>
     {
-        protected override void CollectDependency(VRC.SDKBase.VRCStation component, IComponentDependencyCollector collector)
+        protected override void CollectDependency(VRC.SDKBase.VRCStation component, ComponentDependencyCollector collector)
         {
             // first, Transform <=> PhysBone
             // Transform is used even if the bone is inactive so Transform => PB is always dependency
@@ -452,7 +452,7 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
             collector.AddDependency(component.GetComponentInChildren<Collider>());
         }
 
-        protected override void CollectMutations(VRC.SDKBase.VRCStation component, IComponentMutationsCollector collector)
+        protected override void CollectMutations(VRC.SDKBase.VRCStation component, ComponentMutationsCollector collector)
         {
         }
     }
@@ -461,7 +461,7 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
     [ComponentInformation(typeof(VRCPhysBone))]
     internal class VRCPhysBoneInformation : ComponentInformation<VRCPhysBoneBase>
     {
-        protected override void CollectDependency(VRCPhysBoneBase component, IComponentDependencyCollector collector)
+        protected override void CollectDependency(VRCPhysBoneBase component, ComponentDependencyCollector collector)
         {
             // first, Transform <=> PhysBone
             // Transform is used even if the bone is inactive so Transform => PB is always dependency
@@ -491,7 +491,7 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
                 collector.MarkEntrypoint();
         }
 
-        protected override void CollectMutations(VRCPhysBoneBase component, IComponentMutationsCollector collector)
+        protected override void CollectMutations(VRCPhysBoneBase component, ComponentMutationsCollector collector)
         {
             foreach (var transform in component.GetAffectedTransforms())
                 collector.TransformPositionAndRotation(transform);
@@ -503,7 +503,7 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
     internal class VRCPhysBoneColliderInformation : ComponentInformation<VRCPhysBoneColliderBase>
     {
         protected override void CollectDependency(VRCPhysBoneColliderBase component,
-            IComponentDependencyCollector collector)
+            ComponentDependencyCollector collector)
         {
             collector.AddDependency(component.rootTransform);
         }
@@ -516,7 +516,7 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
     [ComponentInformation(typeof(VRCContactSender))]
     internal class ContactBaseInformation : ComponentInformation<ContactBase>
     {
-        protected override void CollectDependency(ContactBase component, IComponentDependencyCollector collector)
+        protected override void CollectDependency(ContactBase component, ComponentDependencyCollector collector)
         {
             collector.MarkEntrypoint();
             collector.AddDependency(component.rootTransform);
@@ -526,11 +526,11 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
     [ComponentInformation(typeof(RemoveMeshByBlendShape))]
     internal class RemoveMeshByBlendShapeInformation : ComponentInformation<RemoveMeshByBlendShape>
     {
-        protected override void CollectDependency(RemoveMeshByBlendShape component, IComponentDependencyCollector collector)
+        protected override void CollectDependency(RemoveMeshByBlendShape component, ComponentDependencyCollector collector)
         {
         }
 
-        protected override void CollectMutations(RemoveMeshByBlendShape component, IComponentMutationsCollector collector)
+        protected override void CollectMutations(RemoveMeshByBlendShape component, ComponentMutationsCollector collector)
         {
             var blendShapes = component.RemovingShapeKeys;
             {
@@ -557,7 +557,7 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
     [ComponentInformationWithGUID("f9ac8d30c6a0d9642a11e5be4c440740", 11500000)]
     internal class DynamicBoneInformation : ComponentInformation<Component>
     {
-        protected override void CollectDependency(Component component, IComponentDependencyCollector collector)
+        protected override void CollectDependency(Component component, ComponentDependencyCollector collector)
         {
             foreach (var transform in GetAffectedTransforms(component))
             {
@@ -574,7 +574,7 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
             }
         }
 
-        protected override void CollectMutations(Component component, IComponentMutationsCollector collector)
+        protected override void CollectMutations(Component component, ComponentMutationsCollector collector)
         {
             foreach (var transform in GetAffectedTransforms(component))
                 collector.TransformRotation(transform);
@@ -602,7 +602,7 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
     [ComponentInformationWithGUID("baedd976e12657241bf7ff2d1c685342", 11500000)]
     internal class DynamicBoneColliderInformation : ComponentInformation<Component>
     {
-        protected override void CollectDependency(Component component, IComponentDependencyCollector collector)
+        protected override void CollectDependency(Component component, ComponentDependencyCollector collector)
         {
         }
     }
@@ -613,7 +613,7 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
     [ComponentInformationWithGUID("95f6e1368d803614f8a351322ab09bac", 11500000)] // BlendShapeOverrider
     internal class SataniaKiseteneExComponents : ComponentInformation<Component>
     {
-        protected override void CollectDependency(Component component, IComponentDependencyCollector collector)
+        protected override void CollectDependency(Component component, ComponentDependencyCollector collector)
         {
         }
     }
@@ -625,7 +625,7 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
     [ComponentInformationWithGUID("f055e14e1beba894ea68aedffde8ada6", 11500000)] // VertexColorRemover
     internal class VRCQuestToolsComponents : ComponentInformation<Component>
     {
-        protected override void CollectDependency(Component component, IComponentDependencyCollector collector)
+        protected override void CollectDependency(Component component, ComponentDependencyCollector collector)
         {
         }
     }
@@ -634,18 +634,18 @@ namespace Anatawa12.AvatarOptimizer.APIBackend
 
     internal static class ComponentInformationExtensions
     {
-        public static void TransformPositionAndRotation(this IComponentMutationsCollector collector,
+        public static void TransformPositionAndRotation(this ComponentMutationsCollector collector,
             Transform transform) =>
             collector.ModifyProperties(transform,
                 TransformPositionAnimationKeys.Concat(TransformRotationAnimationKeys));
 
-        public static void TransformRotation(this IComponentMutationsCollector collector, Transform transform) =>
+        public static void TransformRotation(this ComponentMutationsCollector collector, Transform transform) =>
             collector.ModifyProperties(transform, TransformRotationAnimationKeys);
 
-        public static void TransformPosition(this IComponentMutationsCollector collector, Transform transform) =>
+        public static void TransformPosition(this ComponentMutationsCollector collector, Transform transform) =>
             collector.ModifyProperties(transform, TransformPositionAnimationKeys);
 
-        public static void TransformScale(this IComponentMutationsCollector collector, Transform transform) =>
+        public static void TransformScale(this ComponentMutationsCollector collector, Transform transform) =>
             collector.ModifyProperties(transform, TransformScaleAnimationKeys);
 
         private static readonly string[] TransformRotationAnimationKeys =
