@@ -135,21 +135,21 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         private void Sweep(GCComponentInfoHolder componentInfos)
         {
-            foreach (var component in _context.GetComponents<Component>())
+            foreach (var componentInfo in componentInfos.AllInformation)
             {
                 // null values are ignored
-                if (!component) continue;
+                if (!componentInfo.Component) continue;
 
-                if (componentInfos.GetInfo(component).DependantEntrypoint.Count == 0)
+                if (componentInfo.DependantEntrypoint.Count == 0)
                 {
-                    if (component is Transform)
+                    if (componentInfo.Component is Transform)
                     {
                         // Treat Transform Component as GameObject because they are two sides of the same coin
-                        Object.DestroyImmediate(component.gameObject);
+                        Object.DestroyImmediate(componentInfo.Component.gameObject);
                     }
                     else
                     {
-                        Object.DestroyImmediate(component);
+                        Object.DestroyImmediate(componentInfo.Component);
                     }
                 }
             }
