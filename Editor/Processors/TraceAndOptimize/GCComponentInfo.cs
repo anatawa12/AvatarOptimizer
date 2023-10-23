@@ -81,6 +81,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             }
         }
 
+        public bool IsEntrypoint => EntrypointComponent && Activeness != false;
+
         public readonly bool? Activeness;
 
         public GCComponentInfo(Component component, bool? activeness)

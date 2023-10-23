@@ -109,11 +109,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             // then, mark and sweep.
 
             // entrypoint for mark & sweep is active-able GameObjects
-            foreach (var gameObject in CollectAllActiveAbleGameObjects())
-            foreach (var component in gameObject.GetComponents<Component>())
+            foreach (var componentInfo in componentInfos.AllInformation)
             {
-                if (componentInfos.GetInfo(component).EntrypointComponent)
+                if (componentInfo.IsEntrypoint)
                 {
+                    var component = componentInfo.Component;
                     var markContext = new MarkObjectContext(componentInfos, component);
                     markContext.MarkComponent(component, GCComponentInfo.DependencyType.Normal);
                     markContext.MarkRecursively();
@@ -258,31 +258,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             "localEulerAnglesRaw.x", "localEulerAnglesRaw.y", "localEulerAnglesRaw.z"
         };
 
-        private IEnumerable<GameObject> CollectAllActiveAbleGameObjects()
-        {
-            var queue = new Queue<GameObject>();
-            queue.Enqueue(_context.AvatarRootTransform.gameObject);
-
-            while (queue.Count != 0)
-            {
-                var gameObject = queue.Dequeue();
-                var activeNess = _modifications.GetConstantValue(gameObject, "m_IsActive", gameObject.activeSelf);
-                switch (activeNess)
-                {
-                    case null:
-                    case true:
-                        // This GameObject can be active
-                        yield return gameObject;
-                        foreach (var transform in gameObject.transform.DirectChildrenEnumerable())
-                            queue.Enqueue(transform.gameObject);
-                        break;
-                    case false:
-                        // This GameObject and their children will never be active
-                        break;
-                }
-            }
-        }
-        
         private void GCDebug(GCComponentInfoHolder componentInfos)
         {
             foreach (var componentInfo in componentInfos.AllInformation)
