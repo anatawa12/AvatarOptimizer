@@ -39,4 +39,5 @@ anatawa12によるアバター軽量化用のちょっとした非破壊ユー�
 
 This project doesn't have any public stable APIs for now.
 The Semantic Versioning will be applied to save format of the components, but not for scripting usage for now.
+The features only for debugging the components (e.g. Advanced Options on the Trace and Optimize) are not stable, might be changed in minor / patch versions.
 Even if any parts of this project is exposed as public in C# code, it can be changed / removed in future release.
