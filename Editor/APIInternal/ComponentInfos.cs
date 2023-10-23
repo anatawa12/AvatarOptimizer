@@ -5,6 +5,7 @@ using Anatawa12.AvatarOptimizer.API;
 using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Rendering;
+using VRC.SDK3;
 using VRC.Core;
 using VRC.Dynamics;
 using VRC.SDK3.Avatars.Components;
@@ -19,6 +20,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
     [ComponentInformation(typeof(Animation))]
     [ComponentInformation(typeof(MergeBone))]
     [ComponentInformation(typeof(AudioSource))]
+    [ComponentInformation(typeof(VRCTestMarker))]
 #pragma warning disable CS0618
     [ComponentInformation(typeof(PipelineSaver))]
 #pragma warning restore CS0618
