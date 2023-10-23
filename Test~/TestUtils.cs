@@ -2,10 +2,6 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 
-#if AAO_VRCSDK3_AVATARS
-using VRC.SDK3.Avatars.Components;
-#endif
-
 namespace Anatawa12.AvatarOptimizer.Test
 {
     internal static class TestUtils
@@ -17,7 +13,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             var animator = root.AddComponent<Animator>();
             animator.avatar = AvatarBuilder.BuildGenericAvatar(root, "");
 #if AAO_VRCSDK3_AVATARS
-            var descriptor = root.AddComponent<VRCAvatarDescriptor>();
+            var descriptor = root.AddComponent<VRC.SDK3.Avatars.Components.VRCAvatarDescriptor>();
 #endif
             return root;
         }

@@ -6,10 +6,6 @@ using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
 
-#if AAO_VRCSDK3_AVATARS
-using VRC.Dynamics;
-#endif
-
 namespace Anatawa12.AvatarOptimizer
 {
     internal static partial class Utils
@@ -80,10 +76,10 @@ namespace Anatawa12.AvatarOptimizer
         }
 
 #if AAO_VRCSDK3_AVATARS
-        public static Transform GetTarget(this VRCPhysBoneBase physBoneBase) =>
+        public static Transform GetTarget(this VRC.Dynamics.VRCPhysBoneBase physBoneBase) =>
             physBoneBase.rootTransform ? physBoneBase.rootTransform : physBoneBase.transform;
 
-        public static IEnumerable<Transform> GetAffectedTransforms(this VRCPhysBoneBase physBoneBase)
+        public static IEnumerable<Transform> GetAffectedTransforms(this VRC.Dynamics.VRCPhysBoneBase physBoneBase)
         {
             var ignores = new HashSet<Transform>(physBoneBase.ignoreTransforms);
             var queue = new Queue<Transform>();
