@@ -18,7 +18,6 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
     [ComponentInformation(typeof(Light))]
     [ComponentInformation(typeof(Camera))]
     [ComponentInformation(typeof(Animation))]
-    [ComponentInformation(typeof(MergeBone))]
     [ComponentInformation(typeof(AudioSource))]
     [ComponentInformation(typeof(VRCTestMarker))]
 #pragma warning disable CS0618
@@ -551,6 +550,20 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
                     DeriveMergeSkinnedMeshProperties(renderer.GetComponent<MergeSkinnedMesh>());
                 }
             }
+        }
+    }
+    
+    [ComponentInformation(typeof(MergeBone))]
+    internal class MergeBoneInformation : ComponentInformation<MergeBone>
+    {
+        protected override void CollectDependency(MergeBone component, ComponentDependencyCollector collector)
+        {
+            collector.AddDependency(component.transform, component)
+                .EvenIfDependantDisabled();
+        }
+
+        protected override void CollectMutations(MergeBone component, ComponentMutationsCollector collector)
+        {
         }
     }
 

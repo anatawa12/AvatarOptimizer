@@ -38,7 +38,6 @@ namespace Anatawa12.AvatarOptimizer
                 Undo.RecordObject(traceAndOptimize, CONTENT_UNDO_NAME);
 
                 traceAndOptimize.removeUnusedObjects = true;
-                traceAndOptimize.advancedSettings.useLegacyGc = false;
                 traceAndOptimize.preserveEndBone = component.preserveEndBone;
                 PrefabUtility.RecordPrefabInstancePropertyModifications(traceAndOptimize);
 
