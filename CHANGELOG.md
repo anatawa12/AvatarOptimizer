@@ -8,9 +8,7 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Add compatibility for VRCQuestTools `#619`
-- Public API for registering component information `#623`
-- Documentation for developers about compatibility with Avatar Optimizer `#623`
+- Public API for registering component information `#632`
 
 ### Changed
 
@@ -20,10 +18,20 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - Improve support of newer Unity versions `#608`
-- Improve support of projects without VRCSDK `#609`
-- AutoFreezeBlendShape will freeze BlendShapes with editor value instead of animated constant `#622`
+- Improve support of projects without VRCSDK `#609` `#625`
 
 ### Security
+
+## [1.5.8] - 2023-10-20
+### Fixed
+- warning about VRCTestMarker when Build & Test [`#628`](https://github.com/anatawa12/AvatarOptimizer/pull/628)
+
+## [1.5.7] - 2023-10-19
+### Added
+- Add compatibility for VRCQuestTools [`#619`](https://github.com/anatawa12/AvatarOptimizer/pull/619)
+
+### Fixed
+- AutoFreezeBlendShape will freeze BlendShapes with editor value instead of animated constant [`#622`](https://github.com/anatawa12/AvatarOptimizer/pull/622)
 
 ## [1.5.6] - 2023-10-17
 ### Changed
@@ -615,7 +623,9 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.6...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.8...HEAD
+[1.5.8]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.7...v1.5.8
+[1.5.7]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.6...v1.5.7
 [1.5.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.5...v1.5.6
 [1.5.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.4...v1.5.5
 [1.5.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.3...v1.5.4
