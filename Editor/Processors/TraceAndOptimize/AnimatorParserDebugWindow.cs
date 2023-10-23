@@ -133,7 +133,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                         if (GUILayout.Button("Parse") && avatar)
                         {
                             parsedRootObject = avatar;
-                            Container = new AnimatorParser(true, true).GatherAnimationModifications(
+                            Container = new AnimatorParser(true).GatherAnimationModifications(
                                 new BuildContext(avatar, null));
                         }
                     }
@@ -148,7 +148,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                         if (GUILayout.Button("Parse") && animatorController && rootGameObject)
                         {
                             parsedRootObject = rootGameObject;
-                            Container = new AnimatorParser(true, true)
+                            Container = new AnimatorParser(true)
                                 .ParseAnimatorController(rootGameObject, animatorController)
                                 .ToImmutable();
                         }
