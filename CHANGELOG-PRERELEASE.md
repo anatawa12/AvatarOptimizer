@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Deprecated
 
 ### Removed
+- Legacy GC `#633`
 
 ### Fixed
 - Improve support of newer Unity versions `#608`
