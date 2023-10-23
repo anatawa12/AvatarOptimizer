@@ -1,5 +1,3 @@
-using System;
-using System.Linq;
 using Anatawa12.AvatarOptimizer.APIInternal;
 using Anatawa12.AvatarOptimizer.ErrorReporting;
 using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
@@ -14,7 +12,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
     /// <summary>
     /// This class collects ALL dependencies of each component
     /// </summary>
-    class ComponentDependencyCollector
+    readonly struct ComponentDependencyCollector
     {
         private readonly bool _preserveEndBone;
         private readonly BuildContext _session;
@@ -56,7 +54,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             }
         }
 
-        private void FallbackDependenciesParser(Component component, API.ComponentDependencyCollector collector)
+        private static void FallbackDependenciesParser(Component component, API.ComponentDependencyCollector collector)
         {
             // fallback dependencies: All References are Always Dependencies.
             collector.MarkEntrypoint();
