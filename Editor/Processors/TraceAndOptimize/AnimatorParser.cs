@@ -46,10 +46,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         {
             var modificationsContainer = new ModificationsContainer();
 
-#if AAO_VRCSDK3_AVATARS
             modificationsContainer.MergeAsNewLayer(CollectAvatarRootAnimatorModifications(context), 
                 weightState: AnimatorWeightState.AlwaysOne);
-#endif
 
             foreach (var child in context.AvatarRootTransform.DirectChildrenEnumerable())
                 WalkForAnimator(child, true, modificationsContainer);
@@ -171,19 +169,28 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         #endregion
 
-#if AAO_VRCSDK3_AVATARS
-        #region AvatarDescriptor
+        #region Avatar Root Animator
 
         private IModificationsContainer CollectAvatarRootAnimatorModifications(BuildContext session)
         {
-            var animator = session.AvatarRootObject.GetComponent<Animator>();
-            var descriptor = session.AvatarRootObject.GetComponent<VRCAvatarDescriptor>();
-
             var modificationsContainer = new ModificationsContainer();
 
+            var animator = session.AvatarRootObject.GetComponent<Animator>();
             if (animator)
                 modificationsContainer = AddHumanoidModifications(modificationsContainer, animator).ToMutable();
+            
+#if AAO_VRCSDK3_AVATARS
+            var descriptor = session.AvatarRootObject.GetComponent<VRCAvatarDescriptor>();
+            if (descriptor)
+                CollectAvatarDescriptorModifications(modificationsContainer, descriptor);
+#endif
 
+            return modificationsContainer;
+        }
+        
+#if AAO_VRCSDK3_AVATARS
+        private void CollectAvatarDescriptorModifications(ModificationsContainer modificationsContainer, VRCAvatarDescriptor descriptor)
+        {
             // process playable layers
             // see https://misskey.niri.la/notes/9ioemawdit
             // see https://creators.vrchat.com/avatars/playable-layers
@@ -332,8 +339,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 foreach (var shape in MmdBlendShapeNames)
                     updater.AddModificationAsNewLayer($"blendShape.{shape}", AnimationProperty.Variable());
             }
-
-            return modificationsContainer;
         }
 
         private void CollectWeightChangesInController(RuntimeAnimatorController runtimeController,
@@ -437,9 +442,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 throw new InvalidOperationException($"default controller for {layer.type} not found");
             return controller;
         }
+#endif
         
         #endregion
-#endif
 
         #region Animator
 
