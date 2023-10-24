@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes;
 using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
@@ -118,29 +119,40 @@ namespace Anatawa12.AvatarOptimizer
             }
         }
 
-        public EditorCurveBinding MapBinding(EditorCurveBinding binding)
+        [CanBeNull]
+        public EditorCurveBinding[] MapBinding(EditorCurveBinding binding)
         {
             var gameObjectInfo = GetGameObjectInfo(binding.path);
-            if (gameObjectInfo == null) return binding;
+            if (gameObjectInfo == null)
+                return null;
             var (instanceId, componentInfo) = gameObjectInfo.GetComponentByType(binding.type);
 
             if (componentInfo != null)
             {
-                var component = EditorUtility.InstanceIDToObject(componentInfo.MergedInto) as Component;
-                // there's mapping about component.
-                // this means the component is merged or some prop has mapping
-                if (!component) return default; // this means removed.
+                if (!componentInfo.PropertyMapping.TryGetValue(binding.propertyName, out var newProp))
+                    return null;
 
-                var newPath = Utils.RelativePath(_rootGameObject.transform, component.transform);
-                if (newPath == null) return default; // this means moved to out of the animator scope
-
-                binding.path = newPath;
-
-                if (componentInfo.PropertyMapping.TryGetValue(binding.propertyName, out var newProp))
+                var curveBindings = new EditorCurveBinding[newProp.AllCopiedTo.Length];
+                for (var i = 0; i < newProp.AllCopiedTo.Length; i++)
                 {
-                    if (newProp == null) return default;
-                    binding.propertyName = newProp;
+                    var descriptor = newProp.AllCopiedTo[i];
+                    var component = EditorUtility.InstanceIDToObject(descriptor.InstanceId) as Component;
+                    // this means removed.
+                    if (component == null) continue;
+
+                    var newPath = Utils.RelativePath(_rootGameObject.transform, component.transform);
+
+                    // this means moved to out of the animator scope
+                    // TODO: add warning
+                    if (newPath == null) return default;
+
+                    binding.path = newPath;
+                    binding.type = descriptor.Type;
+                    binding.propertyName = descriptor.Name;
+                    curveBindings[i] = binding; // copy
                 }
+
+                return curveBindings;
             }
             else
             {
@@ -152,11 +164,11 @@ namespace Anatawa12.AvatarOptimizer
                     if (!component) return default; // this means removed
                 }
 
-                if (gameObjectInfo.NewPath == null) return default;
+                if (gameObjectInfo.NewPath == null) return Array.Empty<EditorCurveBinding>();
+                if (binding.path == gameObjectInfo.NewPath) return null;
                 binding.path = gameObjectInfo.NewPath;
+                return new[] { binding };
             }
-
-            return binding;
         }
     }
 }

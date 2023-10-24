@@ -103,14 +103,73 @@ namespace Anatawa12.AvatarOptimizer
         public readonly int InstanceId;
         public readonly int MergedInto;
         public readonly Type Type;
-        public readonly IReadOnlyDictionary<string, string> PropertyMapping;
+        public readonly IReadOnlyDictionary<string, MappedPropertyInfo> PropertyMapping;
 
-        public ComponentInfo(int instanceId, int mergedInto, Type type, IReadOnlyDictionary<string, string> propertyMapping)
+        public ComponentInfo(int instanceId, int mergedInto, Type type,
+            IReadOnlyDictionary<string, MappedPropertyInfo> propertyMapping)
         {
             InstanceId = instanceId;
             MergedInto = mergedInto;
             Type = type;
             PropertyMapping = propertyMapping;
+        }
+    }
+
+    readonly struct PropertyDescriptor : IEquatable<PropertyDescriptor>
+    {
+        public static readonly PropertyDescriptor Removed = default;
+        public readonly int InstanceId;
+        [NotNull] public readonly Type Type;
+        [NotNull] public readonly string Name;
+
+        public PropertyDescriptor(int instanceId, Type type, string name)
+        {
+            InstanceId = instanceId;
+            Type = type;
+            Name = name;
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = InstanceId;
+                hashCode = (hashCode * 397) ^ Type.GetHashCode();
+                hashCode = (hashCode * 397) ^ Name.GetHashCode();
+                return hashCode;
+            }
+        }
+
+        public bool Equals(PropertyDescriptor other) =>
+            InstanceId == other.InstanceId && Type == other.Type && Name == other.Name;
+        public override bool Equals(object obj) => obj is PropertyDescriptor other && Equals(other);
+        public static bool operator ==(PropertyDescriptor left, PropertyDescriptor right) => left.Equals(right);
+        public static bool operator !=(PropertyDescriptor left, PropertyDescriptor right) => !left.Equals(right);
+    }
+
+    readonly struct MappedPropertyInfo
+    {
+        public static readonly MappedPropertyInfo Removed = default;
+        public readonly PropertyDescriptor MappedProperty;
+        private readonly PropertyDescriptor[] _copiedTo;
+
+        public PropertyDescriptor[] AllCopiedTo => _copiedTo ?? Array.Empty<PropertyDescriptor>();
+
+        public MappedPropertyInfo(PropertyDescriptor property, PropertyDescriptor[] copiedTo)
+        {
+            MappedProperty = property;
+            _copiedTo = copiedTo;
+        }
+
+        public MappedPropertyInfo(int mappedInstanceId, Type mappedType, string mappedName) : this(
+            new PropertyDescriptor(mappedInstanceId, mappedType, mappedName))
+        {
+        }
+
+        public MappedPropertyInfo(PropertyDescriptor property)
+        {
+            MappedProperty = property;
+            _copiedTo = new[] { property };
         }
     }
 

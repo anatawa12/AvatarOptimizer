@@ -76,7 +76,8 @@ namespace Anatawa12.AvatarOptimizer
             [CanBeNull] public readonly BuildingComponentInfo Component;
             [CanBeNull] public readonly string Name;
             [CanBeNull] public AnimationProperty MergedTo;
-            // TODO: add AnimationProperty[] CopiedTo and process later
+            private MappedPropertyInfo? _mappedPropertyInfo;
+            public AnimationProperty[] CopiedTo = Array.Empty<AnimationProperty>();
 
             public AnimationProperty([NotNull] BuildingComponentInfo component, [NotNull] string name)
             {
@@ -89,12 +90,56 @@ namespace Anatawa12.AvatarOptimizer
             }
 
             public static readonly AnimationProperty RemovedMarker = new AnimationProperty();
+
+            public MappedPropertyInfo GetMappedInfo()
+            {
+                if (_mappedPropertyInfo is MappedPropertyInfo property) return property;
+                property = ComputeMappedInfo();
+                _mappedPropertyInfo = property;
+                return property;
+            }
+
+            private MappedPropertyInfo ComputeMappedInfo()
+            {
+                if (this == RemovedMarker) return MappedPropertyInfo.Removed;
+                
+                System.Diagnostics.Debug.Assert(Component != null, nameof(Component) + " != null");
+
+                if (MergedTo != null)
+                {
+                    var merged = MergedTo.GetMappedInfo();
+
+                    if (CopiedTo.Length == 0)
+                        return merged;
+
+                    var copied = new List<PropertyDescriptor>();
+                    copied.AddRange(merged.AllCopiedTo);
+                    foreach (var copiedTo in CopiedTo)
+                        copied.AddRange(copiedTo.GetMappedInfo().AllCopiedTo);
+                    
+                    return new MappedPropertyInfo(merged.MappedProperty, copied.ToArray());
+                }
+                else
+                {
+                    // this is edge
+                    if (CopiedTo.Length == 0)
+                        return new MappedPropertyInfo(Component.InstanceId, Component.Type, Name);
+
+                    var descriptor = new PropertyDescriptor(Component.InstanceId, Component.Type, Name);
+
+                    var copied = new List<PropertyDescriptor> { descriptor };
+                    foreach (var copiedTo in CopiedTo)
+                        copied.AddRange(copiedTo.GetMappedInfo().AllCopiedTo);
+
+                    return new MappedPropertyInfo(descriptor, copied.ToArray());
+                }
+            }
         }
 
         class BuildingComponentInfo
         {
-            private readonly int _instanceId;
-            private readonly Type _type;
+            internal readonly int InstanceId;
+            internal readonly Type Type;
 
             // id in this -> id in merged
             private BuildingComponentInfo _mergedInto;
@@ -107,9 +152,11 @@ namespace Anatawa12.AvatarOptimizer
 
             public BuildingComponentInfo(Component component)
             {
-                _instanceId = component.GetInstanceID();
-                _type = component.GetType();
+                InstanceId = component.GetInstanceID();
+                Type = component.GetType();
             }
+
+            internal bool IsMerged => _mergedInto != null;
 
             [NotNull]
             private AnimationProperty GetProperty(string name, bool remove = false)
@@ -131,7 +178,7 @@ namespace Anatawa12.AvatarOptimizer
 
             public void MergedTo([NotNull] BuildingComponentInfo mergeTo)
             {
-                if (_type == typeof(Transform)) throw new Exception("Merging Transform is not supported!");
+                if (Type == typeof(Transform)) throw new Exception("Merging Transform is not supported!");
                 if (_mergedInto != null) throw new InvalidOperationException("Already merged");
                 _mergedInto = mergeTo ?? throw new ArgumentNullException(nameof(mergeTo));
                 foreach (var property in _afterPropertyIds.Values)
@@ -141,7 +188,7 @@ namespace Anatawa12.AvatarOptimizer
 
             public void MoveProperties(params (string old, string @new)[] props)
             {
-                if (_type == typeof(Transform)) throw new Exception("Move properties of Transform is not supported!");
+                if (Type == typeof(Transform)) throw new Exception("Move properties of Transform is not supported!");
                 if (_mergedInto != null) throw new Exception("Already Merged");
 
                 var propertyIds = new AnimationProperty[props.Length];
@@ -154,7 +201,7 @@ namespace Anatawa12.AvatarOptimizer
 
             public void RemoveProperty(string property)
             {
-                if (_type == typeof(Transform)) throw new Exception("Removing properties of Transform is not supported!");
+                if (Type == typeof(Transform)) throw new Exception("Removing properties of Transform is not supported!");
                 if (_mergedInto != null) throw new Exception("Already Merged");
 
                 GetProperty(property, remove: true).MergedTo = AnimationProperty.RemovedMarker;
@@ -166,18 +213,10 @@ namespace Anatawa12.AvatarOptimizer
                 while (mergedInfo._mergedInto != null)
                     mergedInfo = mergedInfo._mergedInto;
 
-                var propertyMapping = _beforePropertyIds.ToDictionary(p => p.Key, p => GetName(p.Value));
+                var propertyMapping = _beforePropertyIds.ToDictionary(p => p.Key, 
+                    p => p.Value.GetMappedInfo());
 
-                return new ComponentInfo(_instanceId, mergedInfo._instanceId, _type, propertyMapping);
-
-                string GetName(AnimationProperty property)
-                {
-                    while (property.MergedTo != null)
-                        property = property.MergedTo;
-                    if (property.Name == null) return null;
-                    Debug.Assert(property.Component == mergedInfo);
-                    return property.Name;
-                }
+                return new ComponentInfo(InstanceId, mergedInfo.InstanceId, Type, propertyMapping);
             }
         }
     }
