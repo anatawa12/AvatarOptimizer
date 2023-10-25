@@ -132,12 +132,17 @@ namespace Anatawa12.AvatarOptimizer
                 {
                     // there are mapping for property
                     var curveBindings = new EditorCurveBinding[newProp.AllCopiedTo.Length];
+                    var copiedToIndex = 0;
                     for (var i = 0; i < newProp.AllCopiedTo.Length; i++)
                     {
-                        var descriptor = newProp.AllCopiedTo[i];
-                        var component = EditorUtility.InstanceIDToObject(descriptor.InstanceId) as Component;
+                        var descriptor = newProp.AllCopiedTo[copiedToIndex++];
+                        var component = new ComponentOrGameObject(EditorUtility.InstanceIDToObject(descriptor.InstanceId));
                         // this means removed.
-                        if (component == null) continue;
+                        if (!component)
+                        {
+                            copiedToIndex -= 1;
+                            continue;
+                        }
 
                         var newPath = Utils.RelativePath(_rootGameObject.transform, component.transform);
 
@@ -151,6 +156,8 @@ namespace Anatawa12.AvatarOptimizer
                         curveBindings[i] = binding; // copy
                     }
 
+                    if (copiedToIndex != curveBindings.Length)
+                        return curveBindings.AsSpan().Slice(0, copiedToIndex).ToArray();
                     return curveBindings;
                 }
                 else
