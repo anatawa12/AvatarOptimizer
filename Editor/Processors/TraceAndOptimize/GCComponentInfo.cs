@@ -29,7 +29,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             {
                 if (component is Transform) continue;
                 var activeness = ComputeActiveness(component, transformActiveness);
-                _dependencies.Add(transform, new GCComponentInfo(component, activeness));
+                _dependencies.Add(component, new GCComponentInfo(component, activeness));
             }
 
             // process children

@@ -49,6 +49,8 @@ namespace Anatawa12.AvatarOptimizer
             [ToggleLeft]
             public bool noConfigureMergeBone;
             [ToggleLeft]
+            public bool noActivenessAnimation;
+            [ToggleLeft]
             public bool skipFreezingNonAnimatedBlendShape;
             [ToggleLeft]
             public bool skipFreezingMeaninglessBlendShape;
