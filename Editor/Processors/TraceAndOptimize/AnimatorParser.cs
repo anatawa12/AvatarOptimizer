@@ -9,9 +9,12 @@ using nadena.dev.ndmf;
 using UnityEditor.Animations;
 using UnityEngine;
 using UnityEngine.Animations;
+
+#if AAO_VRCSDK3_AVATARS
 using VRC.Dynamics;
 using VRC.SDK3.Avatars.Components;
 using VRC.SDKBase;
+#endif
 
 namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 {
@@ -33,6 +36,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         public ImmutableModificationsContainer GatherAnimationModifications(BuildContext context)
         {
             var modificationsContainer = new ModificationsContainer();
+
             modificationsContainer.MergeAsNewLayer(CollectAvatarRootAnimatorModifications(context), 
                 weightState: AnimatorWeightState.AlwaysOne);
 
@@ -156,18 +160,28 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         #endregion
 
-        #region AvatarDescriptor
+        #region Avatar Root Animator
 
         private IModificationsContainer CollectAvatarRootAnimatorModifications(BuildContext session)
         {
-            var animator = session.AvatarRootObject.GetComponent<Animator>();
-            var descriptor = session.AvatarRootObject.GetComponent<VRCAvatarDescriptor>();
-
             var modificationsContainer = new ModificationsContainer();
 
+            var animator = session.AvatarRootObject.GetComponent<Animator>();
             if (animator)
                 modificationsContainer = AddHumanoidModifications(modificationsContainer, animator).ToMutable();
+            
+#if AAO_VRCSDK3_AVATARS
+            var descriptor = session.AvatarRootObject.GetComponent<VRCAvatarDescriptor>();
+            if (descriptor)
+                CollectAvatarDescriptorModifications(modificationsContainer, descriptor);
+#endif
 
+            return modificationsContainer;
+        }
+        
+#if AAO_VRCSDK3_AVATARS
+        private void CollectAvatarDescriptorModifications(ModificationsContainer modificationsContainer, VRCAvatarDescriptor descriptor)
+        {
             // process playable layers
             // see https://misskey.niri.la/notes/9ioemawdit
             // see https://creators.vrchat.com/avatars/playable-layers
@@ -316,8 +330,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 foreach (var shape in MmdBlendShapeNames)
                     updater.AddModificationAsNewLayer($"blendShape.{shape}", AnimationProperty.Variable());
             }
-
-            return modificationsContainer;
         }
 
         private void CollectWeightChangesInController(RuntimeAnimatorController runtimeController,
@@ -421,6 +433,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 throw new InvalidOperationException($"default controller for {layer.type} not found");
             return controller;
         }
+#endif
         
         #endregion
 
@@ -585,6 +598,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         private static readonly string[] TransformScaleAnimationKeys =
             { "m_LocalScale.x", "m_LocalScale.y", "m_LocalScale.z" };
 
+#if AAO_VRCSDK3_AVATARS
         private static readonly AnimatorLayerMap<CachedGuidLoader<AnimatorController>> DefaultLayers =
             new AnimatorLayerMap<CachedGuidLoader<AnimatorController>>
             {
@@ -605,6 +619,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 // vrc_AvatarV3UtilityIKPose
                 [VRCAvatarDescriptor.AnimLayerType.IKPose] = "a9b90a833b3486e4b82834c9d1f7c4ee"
             };
+#endif
 
         private static readonly string[] MmdBlendShapeNames = new [] {
             // New EN by Yi MMD World

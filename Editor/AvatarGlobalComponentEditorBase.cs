@@ -2,29 +2,41 @@ using Anatawa12.AvatarOptimizer.ErrorReporting;
 using CustomLocalization4EditorExtension;
 using UnityEditor;
 using UnityEngine;
+
+#if AAO_VRCSDK3_AVATARS
 using VRC.Core;
 using VRC.SDK3.Avatars.Components;
+#endif
 
 namespace Anatawa12.AvatarOptimizer
 {
-    [InitializeOnLoad]
     abstract class AvatarGlobalComponentEditorBase : AvatarTagComponentEditorBase
     {
         static AvatarGlobalComponentEditorBase()
         {
             ComponentValidation.RegisterValidator<AvatarGlobalComponent>(component =>
             {
+#if AAO_VRCSDK3_AVATARS
                 if (!component.GetComponent<VRCAvatarDescriptor>())
                     return new[] { ErrorLog.Validation("AvatarGlobalComponent:NotOnAvatarDescriptor") };
+#else
+                if (!nadena.dev.ndmf.runtime.RuntimeUtil.IsAvatarRoot(component.transform))
+                    return new[] { ErrorLog.Validation("AvatarGlobalComponent:NotOnAvatarRoot") };
+#endif
                 return null;
             });
         }
-
         protected override void OnInspectorGUIInner()
         {
+#if AAO_VRCSDK3_AVATARS
             if (!((Component)serializedObject.targetObject).GetComponent<VRCAvatarDescriptor>())
                 EditorGUILayout.HelpBox(CL4EE.Tr("AvatarGlobalComponent:NotOnAvatarDescriptor"),
                     MessageType.Error);
+#else
+            if (!nadena.dev.ndmf.runtime.RuntimeUtil.IsAvatarRoot(((Component)serializedObject.targetObject).transform))
+                EditorGUILayout.HelpBox(CL4EE.Tr("AvatarGlobalComponent:NotOnAvatarRoot"),
+                    MessageType.Error);
+#endif
         }
     }
 

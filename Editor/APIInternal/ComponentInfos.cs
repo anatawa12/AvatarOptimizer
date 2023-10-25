@@ -5,6 +5,8 @@ using Anatawa12.AvatarOptimizer.API;
 using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Rendering;
+
+#if AAO_VRCSDK3_AVATARS
 using VRC.SDK3;
 using VRC.Core;
 using VRC.Dynamics;
@@ -12,6 +14,7 @@ using VRC.SDK3.Avatars.Components;
 using VRC.SDK3.Dynamics.Contact.Components;
 using VRC.SDK3.Dynamics.PhysBone.Components;
 using VRC.SDKBase;
+#endif
 
 namespace Anatawa12.AvatarOptimizer.APIInternal
 {
@@ -19,6 +22,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
     [ComponentInformation(typeof(Camera))]
     [ComponentInformation(typeof(Animation))]
     [ComponentInformation(typeof(AudioSource))]
+#if AAO_VRCSDK3_AVATARS
     [ComponentInformation(typeof(VRCTestMarker))]
 #pragma warning disable CS0618
     [ComponentInformation(typeof(PipelineSaver))]
@@ -26,6 +30,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
     [ComponentInformation(typeof(PipelineManager))]
     [ComponentInformation(typeof(VRCSpatialAudioSource))]
     [ComponentInformation(typeof(VRC_SpatialAudioSource))]
+#endif
     [ComponentInformation(typeof(nadena.dev.ndmf.runtime.AvatarActivator))]
     // nadena.dev.ndmf.VRChat.ContextHolder with reflection
     internal class EntrypointComponentInformation : ComponentInformation<Component>
@@ -387,6 +392,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
         }
     }
 
+#if AAO_VRCSDK3_AVATARS
     [ComponentInformation(typeof(VRC_AvatarDescriptor))]
     internal class VRCAvatarDescriptorInformation<T> : ComponentInformation<T> where T : VRC_AvatarDescriptor
     {
@@ -524,6 +530,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
             collector.AddDependency(component.rootTransform);
         }
     }
+#endif
 
     [ComponentInformation(typeof(RemoveMeshByBlendShape))]
     internal class RemoveMeshByBlendShapeInformation : ComponentInformation<RemoveMeshByBlendShape>
