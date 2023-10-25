@@ -34,13 +34,6 @@ namespace Anatawa12.AvatarOptimizer
         [ToggleLeft]
         public bool mmdWorldCompatibility = true;
 
-        // for compatibility, this is not inside AdvancedSettings but this is part of Advanced Settings
-        [NotKeyable]
-        [InspectorName("Use Advanced Animator Parser")]
-        [Tooltip("Advanced Animator Parser will parse your AnimatorController, including layer structure.")]
-        [ToggleLeft]
-        public bool advancedAnimatorParser = true;
-
         [NotKeyable]
         public AdvancedSettings advancedSettings;
         

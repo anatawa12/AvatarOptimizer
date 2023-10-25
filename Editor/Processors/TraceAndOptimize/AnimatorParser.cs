@@ -21,25 +21,16 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
     class AnimatorParser
     {
         private bool mmdWorldCompatibility;
-        private bool advancedAnimatorParser;
         private AnimationParser _animationParser = new AnimationParser();
 
-        public AnimatorParser(bool mmdWorldCompatibility, bool advancedAnimatorParser)
+        public AnimatorParser(bool mmdWorldCompatibility)
         {
             this.mmdWorldCompatibility = mmdWorldCompatibility;
-            this.advancedAnimatorParser = advancedAnimatorParser;
-        }
-
-        public AnimatorParser(TraceAndOptimize config)
-        {
-            mmdWorldCompatibility = config.mmdWorldCompatibility;
-            advancedAnimatorParser = config.advancedAnimatorParser;
         }
 
         public AnimatorParser(TraceAndOptimizeState config)
         {
             mmdWorldCompatibility = config.MmdWorldCompatibility;
-            advancedAnimatorParser = !config.UseLegacyAnimatorParser;
         }
 
         public ImmutableModificationsContainer GatherAnimationModifications(BuildContext context)
@@ -474,28 +465,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         {
             return ReportingObject(controller, () =>
             {
-                if (advancedAnimatorParser)
-                {
-                    var (animatorController, mapping) = GetControllerAndOverrides(controller);
-                    return AdvancedParseAnimatorController(root, animatorController, mapping,
-                        externallyWeightChanged);
-                }
-                else
-                {
-                    return FallbackParseAnimatorController(root, controller);
-                }
+                var (animatorController, mapping) = GetControllerAndOverrides(controller);
+                return AdvancedParseAnimatorController(root, animatorController, mapping,
+                    externallyWeightChanged);
             });
-        }
-
-        /// <summary>
-        /// Fallback AnimatorController Parser but always assumed as partially applied.
-        /// This process assumes everything is applied as non-additive state motion.
-        /// This parsing MAY not correct with direct blendtree or additive layer
-        /// but it's extremely rare case so ignoring such case.
-        /// </summary>
-        private IModificationsContainer FallbackParseAnimatorController(GameObject root, RuntimeAnimatorController controller)
-        {
-            return controller.animationClips.Select(clip => _animationParser.GetParsedAnimation(root, clip)).MergeContainersSideBySide();
         }
 
         internal IModificationsContainer AdvancedParseAnimatorController(GameObject root, AnimatorController controller,

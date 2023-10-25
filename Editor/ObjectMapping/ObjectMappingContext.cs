@@ -92,14 +92,14 @@ namespace Anatawa12.AvatarOptimizer
                     var indexProp = eyelidsBlendshapes.GetArrayElementAtIndex(i);
                     if (info.PropertyMapping.TryGetValue(
                             VProp.BlendShapeIndex(indexProp.intValue),
-                            out var mappedPropName))
+                            out var mappedProp))
                     {
-                        if (mappedPropName == null)
+                        if (mappedProp.MappedProperty.Name == null)
                         {
                             BuildReport.LogFatal("ApplyObjectMapping:VRCAvatarDescriptor:eyelids BlendShape Removed");
                             return;
                         }
-                        indexProp.intValue = VProp.ParseBlendShapeIndex(mappedPropName);
+                        indexProp.intValue = VProp.ParseBlendShapeIndex(mappedProp.MappedProperty.Name);
                     }
                 }
             }
@@ -133,20 +133,40 @@ namespace Anatawa12.AvatarOptimizer
 
                 foreach (var binding in AnimationUtility.GetCurveBindings(clip))
                 {
-                    var newBinding = _mapping.MapBinding(binding);
-                    _mapped |= newBinding != binding;
-                    if (newBinding.type == null) continue;
-                    newClip.SetCurve(newBinding.path, newBinding.type, newBinding.propertyName,
-                        AnimationUtility.GetEditorCurve(clip, binding));
+                    var newBindings = _mapping.MapBinding(binding);
+                    if (newBindings == null)
+                    {
+                        newClip.SetCurve(binding.path, binding.type, binding.propertyName,
+                            AnimationUtility.GetEditorCurve(clip, binding));
+                    }
+                    else
+                    {
+                        _mapped = true;
+                        foreach (var newBinding in newBindings)
+                        {
+                            newClip.SetCurve(newBinding.path, newBinding.type, newBinding.propertyName,
+                                AnimationUtility.GetEditorCurve(clip, binding));
+                        }
+                    }
                 }
 
                 foreach (var binding in AnimationUtility.GetObjectReferenceCurveBindings(clip))
                 {
-                    var newBinding = _mapping.MapBinding(binding);
-                    _mapped |= newBinding != binding;
-                    if (newBinding.type == null) continue;
-                    AnimationUtility.SetObjectReferenceCurve(newClip, newBinding,
-                        AnimationUtility.GetObjectReferenceCurve(clip, binding));
+                    var newBindings = _mapping.MapBinding(binding);
+                    if (newBindings == null)
+                    {
+                        AnimationUtility.SetObjectReferenceCurve(newClip, binding,
+                            AnimationUtility.GetObjectReferenceCurve(clip, binding));
+                    }
+                    else
+                    {
+                        _mapped = true;
+                        foreach (var newBinding in newBindings)
+                        {
+                            AnimationUtility.SetObjectReferenceCurve(newClip, newBinding,
+                                AnimationUtility.GetObjectReferenceCurve(clip, binding));
+                        }
+                    }
                 }
 
                 newClip.wrapMode = clip.wrapMode;

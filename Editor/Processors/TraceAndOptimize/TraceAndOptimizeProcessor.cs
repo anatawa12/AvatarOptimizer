@@ -12,7 +12,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         public bool MmdWorldCompatibility;
 
         public bool PreserveEndBone;
-        public bool UseLegacyAnimatorParser;
         public HashSet<GameObject> Exclusions = new HashSet<GameObject>();
         public bool GCDebug;
         public bool NoConfigureMergeBone;
@@ -36,7 +35,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             PreserveEndBone = config.preserveEndBone;
 
-            UseLegacyAnimatorParser = !config.advancedAnimatorParser;
             Exclusions = new HashSet<GameObject>(config.advancedSettings.exclusions);
             GCDebug = config.advancedSettings.gcDebug;
             NoConfigureMergeBone = config.advancedSettings.noConfigureMergeBone;
