@@ -94,7 +94,7 @@ namespace Anatawa12.AvatarOptimizer
 
             if (componentInfo != null)
             {
-                var component = EditorUtility.InstanceIDToObject(componentInfo.MergedInto) as Component;
+                var component = new ComponentOrGameObject(EditorUtility.InstanceIDToObject(componentInfo.MergedInto));
                 // there's mapping about component.
                 // this means the component is merged or some prop has mapping
                 if (!component) return null; // this means removed.
@@ -107,12 +107,8 @@ namespace Anatawa12.AvatarOptimizer
             else
             {
                 // The component is not merged & no prop mapping so process GameObject mapping
-
-                if (type != typeof(GameObject))
-                {
-                    var component = EditorUtility.InstanceIDToObject(instanceId) as Component;
-                    if (!component) return null; // this means removed
-                }
+                var component = EditorUtility.InstanceIDToObject(instanceId);
+                if (!component) return null; // this means removed
 
                 if (gameObjectInfo.NewPath == null) return null;
                 return gameObjectInfo.NewPath;
@@ -129,9 +125,12 @@ namespace Anatawa12.AvatarOptimizer
 
             if (componentInfo != null)
             {
+                // there's mapping about component.
+                // this means the component is merged or some prop has mapping
+
                 if (componentInfo.PropertyMapping.TryGetValue(binding.propertyName, out var newProp))
                 {
-                    // there are mapping for component
+                    // there are mapping for property
                     var curveBindings = new EditorCurveBinding[newProp.AllCopiedTo.Length];
                     for (var i = 0; i < newProp.AllCopiedTo.Length; i++)
                     {
@@ -156,9 +155,7 @@ namespace Anatawa12.AvatarOptimizer
                 }
                 else
                 {
-                    var component = EditorUtility.InstanceIDToObject(componentInfo.MergedInto) as Component;
-                    // there's mapping about component.
-                    // this means the component is merged or some prop has mapping
+                    var component = new ComponentOrGameObject(EditorUtility.InstanceIDToObject(componentInfo.MergedInto));
                     if (!component) return Array.Empty<EditorCurveBinding>(); // this means removed.
 
                     var newPath = Utils.RelativePath(_rootGameObject.transform, component.transform);
@@ -172,11 +169,8 @@ namespace Anatawa12.AvatarOptimizer
             {
                 // The component is not merged & no prop mapping so process GameObject mapping
 
-                if (binding.type != typeof(GameObject))
-                {
-                    var component = EditorUtility.InstanceIDToObject(instanceId) as Component;
-                    if (!component) return Array.Empty<EditorCurveBinding>(); // this means removed
-                }
+                var component = EditorUtility.InstanceIDToObject(instanceId);
+                if (!component) return Array.Empty<EditorCurveBinding>(); // this means removed
 
                 if (gameObjectInfo.NewPath == null) return Array.Empty<EditorCurveBinding>();
                 if (binding.path == gameObjectInfo.NewPath) return null;

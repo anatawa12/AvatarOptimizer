@@ -94,6 +94,8 @@ namespace Anatawa12.AvatarOptimizer
                 }
             }
 
+            componentByType[typeof(GameObject)] = InstanceId;
+
             ComponentInstanceIdByType = componentByType;
         }
     }

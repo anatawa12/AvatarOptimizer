@@ -26,11 +26,14 @@ namespace Anatawa12.AvatarOptimizer
         public static implicit operator Object(ComponentOrGameObject componentOrGameObject) =>
             componentOrGameObject._object;
 
+        public static implicit operator bool(ComponentOrGameObject componentOrGameObject) =>
+            (Object)componentOrGameObject;
+
         // ReSharper disable InconsistentNaming
         // GameObject-like properties
         public GameObject gameObject => _object as GameObject ?? ((Component)_object).gameObject;
         public Transform transform => gameObject.transform;
-
+        public int GetInstanceID() => ((Object)this).GetInstanceID();
         // ReSharper restore InconsistentNaming
         public Object Value => _object;
 

@@ -64,22 +64,22 @@ namespace Anatawa12.AvatarOptimizer
             }
         }
 
-        public void RecordMoveProperties(Component from, params (string old, string @new)[] props) =>
+        public void RecordMoveProperties(ComponentOrGameObject from, params (string old, string @new)[] props) =>
             GetComponentInfo(from).MoveProperties(props);
 
-        public void RecordMoveProperty(Component from, string oldProp, string newProp) =>
+        public void RecordMoveProperty(ComponentOrGameObject from, string oldProp, string newProp) =>
             GetComponentInfo(from).MoveProperties((oldProp, newProp));
 
-        public void RecordMoveProperty(Component fromComponent, string oldProp, Component toComponent, string newProp) =>
+        public void RecordMoveProperty(ComponentOrGameObject fromComponent, string oldProp, ComponentOrGameObject toComponent, string newProp) =>
             GetComponentInfo(fromComponent).MoveProperty(GetComponentInfo(toComponent), oldProp, newProp);
 
-        public void RecordCopyProperty(Component fromComponent, string oldProp, Component toComponent, string newProp) =>
+        public void RecordCopyProperty(ComponentOrGameObject fromComponent, string oldProp, ComponentOrGameObject toComponent, string newProp) =>
             GetComponentInfo(fromComponent).CopyProperty(GetComponentInfo(toComponent), oldProp, newProp);
 
-        public void RecordRemoveProperty(Component from, string oldProp) =>
+        public void RecordRemoveProperty(ComponentOrGameObject from, string oldProp) =>
             GetComponentInfo(from).RemoveProperty(oldProp);
 
-        private BuildingComponentInfo GetComponentInfo(Component component)
+        private BuildingComponentInfo GetComponentInfo(ComponentOrGameObject component)
         {
             if (!_componentInfos.TryGetValue(component.GetInstanceID(), out var info))
             {
@@ -176,10 +176,10 @@ namespace Anatawa12.AvatarOptimizer
             private readonly Dictionary<string, AnimationProperty> _afterPropertyIds =
                 new Dictionary<string, AnimationProperty>();
 
-            public BuildingComponentInfo(Component component)
+            public BuildingComponentInfo(ComponentOrGameObject component)
             {
                 InstanceId = component.GetInstanceID();
-                Type = component.GetType();
+                Type = component.Value.GetType();
             }
 
             internal bool IsMerged => _mergedInto != null;
