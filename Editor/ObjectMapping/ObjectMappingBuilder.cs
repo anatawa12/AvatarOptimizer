@@ -233,7 +233,7 @@ namespace Anatawa12.AvatarOptimizer
 
             public void CopyProperty(BuildingComponentInfo toComponent, string oldProp, string newProp)
             {
-                var prop = GetProperty(oldProp, remove: true);
+                var prop = GetProperty(oldProp);
                 if (prop.CopiedTo == null)
                     prop.CopiedTo = new List<AnimationProperty>();
                 prop.CopiedTo.Add(toComponent.GetProperty(newProp));
