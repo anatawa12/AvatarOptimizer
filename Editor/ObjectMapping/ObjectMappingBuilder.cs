@@ -19,6 +19,7 @@ namespace Anatawa12.AvatarOptimizer
         private readonly IReadOnlyDictionary<int, BeforeGameObjectTree> _beforeGameObjectInfos;
 
         // key: instanceId
+        private readonly Dictionary<int, BuildingComponentInfo> _originalComponentInfos = new Dictionary<int, BuildingComponentInfo>();
         private readonly Dictionary<int, BuildingComponentInfo> _componentInfos = new Dictionary<int, BuildingComponentInfo>();
 
         public ObjectMappingBuilder([NotNull] GameObject rootObject)
@@ -45,8 +46,23 @@ namespace Anatawa12.AvatarOptimizer
 #endif
         }
 
-        public void RecordMergeComponent<T>(T from, T mergeTo) where T: Component =>
-            GetComponentInfo(from).MergedTo(GetComponentInfo(mergeTo));
+        public void RecordMergeComponent<T>(T from, T mergeTo) where T: Component
+        {
+            if (!_componentInfos.TryGetValue(mergeTo.GetInstanceID(), out var mergeToInfo))
+            {
+                var newMergeToInfo = new BuildingComponentInfo(mergeTo);
+                _originalComponentInfos.Add(mergeTo.GetInstanceID(), newMergeToInfo);
+                _componentInfos.Add(mergeTo.GetInstanceID(), newMergeToInfo);
+                GetComponentInfo(from).MergedTo(newMergeToInfo);
+            }
+            else
+            {
+                var newMergeToInfo = new BuildingComponentInfo(mergeTo);
+                _componentInfos[mergeTo.GetInstanceID()]= newMergeToInfo;
+                mergeToInfo.MergedTo(newMergeToInfo);
+                GetComponentInfo(from).MergedTo(newMergeToInfo);
+            }
+        }
 
         public void RecordMoveProperties(Component from, params (string old, string @new)[] props) =>
             GetComponentInfo(from).MoveProperties(props);
@@ -66,7 +82,11 @@ namespace Anatawa12.AvatarOptimizer
         private BuildingComponentInfo GetComponentInfo(Component component)
         {
             if (!_componentInfos.TryGetValue(component.GetInstanceID(), out var info))
-                _componentInfos.Add(component.GetInstanceID(), info = new BuildingComponentInfo(component));
+            {
+                info = new BuildingComponentInfo(component);
+                _originalComponentInfos.Add(component.GetInstanceID(), info);
+                _componentInfos.Add(component.GetInstanceID(), info);
+            }
             return info;
         }
 
@@ -74,7 +94,7 @@ namespace Anatawa12.AvatarOptimizer
         {
             return new ObjectMapping(
                 _beforeGameObjectInfos, 
-                _componentInfos.ToDictionary(p => p.Key, p => p.Value.Build()));
+                _originalComponentInfos.ToDictionary(p => p.Key, p => p.Value.Build()));
         }
 
         class AnimationProperty
@@ -229,12 +249,16 @@ namespace Anatawa12.AvatarOptimizer
 
             public ComponentInfo Build()
             {
+                var propertyMapping = _beforePropertyIds.ToDictionary(p => p.Key,
+                    p => p.Value.GetMappedInfo());
                 var mergedInfo = this;
                 while (mergedInfo._mergedInto != null)
+                {
                     mergedInfo = mergedInfo._mergedInto;
-
-                var propertyMapping = _beforePropertyIds.ToDictionary(p => p.Key, 
-                    p => p.Value.GetMappedInfo());
+                    foreach (var (key, value) in mergedInfo._beforePropertyIds)
+                        if (!propertyMapping.ContainsKey(key))
+                            propertyMapping.Add(key, value.GetMappedInfo());
+                }
 
                 return new ComponentInfo(InstanceId, mergedInfo.InstanceId, Type, propertyMapping);
             }

@@ -129,30 +129,44 @@ namespace Anatawa12.AvatarOptimizer
 
             if (componentInfo != null)
             {
-                if (!componentInfo.PropertyMapping.TryGetValue(binding.propertyName, out var newProp))
-                    return null;
-
-                var curveBindings = new EditorCurveBinding[newProp.AllCopiedTo.Length];
-                for (var i = 0; i < newProp.AllCopiedTo.Length; i++)
+                if (componentInfo.PropertyMapping.TryGetValue(binding.propertyName, out var newProp))
                 {
-                    var descriptor = newProp.AllCopiedTo[i];
-                    var component = EditorUtility.InstanceIDToObject(descriptor.InstanceId) as Component;
-                    // this means removed.
-                    if (component == null) continue;
+                    // there are mapping for component
+                    var curveBindings = new EditorCurveBinding[newProp.AllCopiedTo.Length];
+                    for (var i = 0; i < newProp.AllCopiedTo.Length; i++)
+                    {
+                        var descriptor = newProp.AllCopiedTo[i];
+                        var component = EditorUtility.InstanceIDToObject(descriptor.InstanceId) as Component;
+                        // this means removed.
+                        if (component == null) continue;
+
+                        var newPath = Utils.RelativePath(_rootGameObject.transform, component.transform);
+
+                        // this means moved to out of the animator scope
+                        // TODO: add warning
+                        if (newPath == null) return Array.Empty<EditorCurveBinding>();
+
+                        binding.path = newPath;
+                        binding.type = descriptor.Type;
+                        binding.propertyName = descriptor.Name;
+                        curveBindings[i] = binding; // copy
+                    }
+
+                    return curveBindings;
+                }
+                else
+                {
+                    var component = EditorUtility.InstanceIDToObject(componentInfo.MergedInto) as Component;
+                    // there's mapping about component.
+                    // this means the component is merged or some prop has mapping
+                    if (!component) return Array.Empty<EditorCurveBinding>(); // this means removed.
 
                     var newPath = Utils.RelativePath(_rootGameObject.transform, component.transform);
-
-                    // this means moved to out of the animator scope
-                    // TODO: add warning
-                    if (newPath == null) return default;
-
+                    if (newPath == null) return Array.Empty<EditorCurveBinding>(); // this means moved to out of the animator scope
+                    if (binding.path == newPath) return null;
                     binding.path = newPath;
-                    binding.type = descriptor.Type;
-                    binding.propertyName = descriptor.Name;
-                    curveBindings[i] = binding; // copy
+                    return new []{ binding };
                 }
-
-                return curveBindings;
             }
             else
             {
@@ -161,7 +175,7 @@ namespace Anatawa12.AvatarOptimizer
                 if (binding.type != typeof(GameObject))
                 {
                     var component = EditorUtility.InstanceIDToObject(instanceId) as Component;
-                    if (!component) return default; // this means removed
+                    if (!component) return Array.Empty<EditorCurveBinding>(); // this means removed
                 }
 
                 if (gameObjectInfo.NewPath == null) return Array.Empty<EditorCurveBinding>();
