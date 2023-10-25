@@ -262,41 +262,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         }
     }
 
-    public readonly struct ComponentOrGameObject : IEquatable<ComponentOrGameObject>
-    {
-        private readonly Object _object;
-
-        public ComponentOrGameObject(Object o) => _object = o;
-
-        public static implicit operator ComponentOrGameObject(GameObject gameObject) =>
-            new ComponentOrGameObject(gameObject);
-
-        public static implicit operator ComponentOrGameObject(Component component) =>
-            new ComponentOrGameObject(component);
-
-        public static implicit operator Object(ComponentOrGameObject componentOrGameObject) =>
-            componentOrGameObject._object;
-
-        public GameObject SelfOrAttachedGameObject => _object as GameObject ?? ((Component)_object).gameObject;
-        public Object Value => _object;
-
-        public bool AsGameObject(out GameObject gameObject)
-        {
-            gameObject = _object as GameObject;
-            return gameObject;
-        }
-
-        public bool AsComponent<T>(out T gameObject) where T : Component
-        {
-            gameObject = _object as T;
-            return gameObject;
-        }
-
-        public bool Equals(ComponentOrGameObject other) => Equals(_object, other._object);
-        public override bool Equals(object obj) => obj is ComponentOrGameObject other && Equals(other);
-        public override int GetHashCode() => _object != null ? _object.GetHashCode() : 0;
-    }
-
     readonly struct AnimationProperty : IEquatable<AnimationProperty>
     {
         public readonly PropertyState State;

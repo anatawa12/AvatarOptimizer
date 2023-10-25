@@ -75,7 +75,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             
             foreach (var (obj, properties) in Container.ModifiedProperties)
             {
-                var gameObject = obj.SelfOrAttachedGameObject.transform;
+                var gameObject = obj.gameObject.transform;
                 resultText.Append(Utils.RelativePath(root, gameObject)).Append(": ")
                     .Append(((Object)obj).GetType().FullName).Append('\n');
 
