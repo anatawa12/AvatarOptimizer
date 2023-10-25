@@ -8,8 +8,6 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Public API for registering component information `#623`
-- Documentation for developers about compatibility with Avatar Optimizer `#623` 
 
 ### Changed
 
@@ -18,11 +16,29 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Improve support of newer Unity versions `#608`
-- Improve support of projects without VRCSDK `#609`
 
 ### Security
 
+## [1.6.0-beta.1] - 2023-10-25
+### Added
+- Public API for registering component information [`#623`](https://github.com/anatawa12/AvatarOptimizer/pull/623)
+- Documentation for developers about compatibility with Avatar Optimizer [`#623`](https://github.com/anatawa12/AvatarOptimizer/pull/623) 
+- Disabling PhysBone animation based on mesh renderer enabled animation [`#640`](https://github.com/anatawa12/AvatarOptimizer/pull/640)
+  - If you toggles your clothes with simple toggle, PhysBones on the your avatar will also be toggled automatically!
+
+### Removed
+- Legacy GC [`#633`](https://github.com/anatawa12/AvatarOptimizer/pull/633)
+
+### Fixed
+- Improve support of newer Unity versions [`#608`](https://github.com/anatawa12/AvatarOptimizer/pull/608)
+- Improve support of projects without VRCSDK [`#609`](https://github.com/anatawa12/AvatarOptimizer/pull/609) [`#625`](https://github.com/anatawa12/AvatarOptimizer/pull/625) [`#627`](https://github.com/anatawa12/AvatarOptimizer/pull/627)
+
+## [1.5.8] - 2023-10-20
+## [1.5.8-rc.1] - 2023-10-20
+### Fixed
+- warning about VRCTestMarker when Build & Test [`#628`](https://github.com/anatawa12/AvatarOptimizer/pull/628)
+
+## [1.5.7] - 2023-10-19
 ## [1.5.7-beta.1] - 2023-10-19
 ### Added
 - Add compatibility for VRCQuestTools [`#619`](https://github.com/anatawa12/AvatarOptimizer/pull/619)
@@ -932,7 +948,11 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.7-beta.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.1...HEAD
+[1.6.0-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.8...v1.6.0-beta.1
+[1.5.8]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.8-rc.1...v1.5.8
+[1.5.8-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.7...v1.5.8-rc.1
+[1.5.7]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.7-beta.1...v1.5.7
 [1.5.7-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.6...v1.5.7-beta.1
 [1.5.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.6-rc.1...v1.5.6
 [1.5.6-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.6-beta.2...v1.5.6-rc.1

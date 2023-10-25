@@ -5,26 +5,32 @@ using Anatawa12.AvatarOptimizer.API;
 using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Rendering;
+
+#if AAO_VRCSDK3_AVATARS
+using VRC.SDK3;
 using VRC.Core;
 using VRC.Dynamics;
 using VRC.SDK3.Avatars.Components;
 using VRC.SDK3.Dynamics.Contact.Components;
 using VRC.SDK3.Dynamics.PhysBone.Components;
 using VRC.SDKBase;
+#endif
 
 namespace Anatawa12.AvatarOptimizer.APIInternal
 {
     [ComponentInformation(typeof(Light))]
     [ComponentInformation(typeof(Camera))]
     [ComponentInformation(typeof(Animation))]
-    [ComponentInformation(typeof(MergeBone))]
     [ComponentInformation(typeof(AudioSource))]
+#if AAO_VRCSDK3_AVATARS
+    [ComponentInformation(typeof(VRCTestMarker))]
 #pragma warning disable CS0618
     [ComponentInformation(typeof(PipelineSaver))]
 #pragma warning restore CS0618
     [ComponentInformation(typeof(PipelineManager))]
     [ComponentInformation(typeof(VRCSpatialAudioSource))]
     [ComponentInformation(typeof(VRC_SpatialAudioSource))]
+#endif
     [ComponentInformation(typeof(nadena.dev.ndmf.runtime.AvatarActivator))]
     // nadena.dev.ndmf.VRChat.ContextHolder with reflection
     internal class EntrypointComponentInformation : ComponentInformation<Component>
@@ -316,6 +322,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
                 .EvenIfDependantDisabled();
             for (var i = 0; i < component.sourceCount; i++)
                 collector.AddDependency(component.GetSource(i).sourceTransform);
+            collector.MarkBehaviour();
         }
     }
 
@@ -385,6 +392,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
         }
     }
 
+#if AAO_VRCSDK3_AVATARS
     [ComponentInformation(typeof(VRC_AvatarDescriptor))]
     internal class VRCAvatarDescriptorInformation<T> : ComponentInformation<T> where T : VRC_AvatarDescriptor
     {
@@ -483,6 +491,8 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
             foreach (var physBoneCollider in component.colliders)
                 collector.AddDependency(physBoneCollider).OnlyIfTargetCanBeEnable();
 
+            collector.MarkBehaviour();
+
             // If parameter is not empty, the PB can be required for Animator Parameter so it's Entrypoint Component
             // https://github.com/anatawa12/AvatarOptimizer/issues/450
             if (!string.IsNullOrEmpty(component.parameter))
@@ -520,6 +530,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
             collector.AddDependency(component.rootTransform);
         }
     }
+#endif
 
     [ComponentInformation(typeof(RemoveMeshByBlendShape))]
     internal class RemoveMeshByBlendShapeInformation : ComponentInformation<RemoveMeshByBlendShape>
@@ -551,12 +562,28 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
             }
         }
     }
+    
+    [ComponentInformation(typeof(MergeBone))]
+    internal class MergeBoneInformation : ComponentInformation<MergeBone>
+    {
+        protected override void CollectDependency(MergeBone component, ComponentDependencyCollector collector)
+        {
+            collector.AddDependency(component.transform, component)
+                .EvenIfDependantDisabled();
+        }
+
+        protected override void CollectMutations(MergeBone component, ComponentMutationsCollector collector)
+        {
+        }
+    }
 
     [ComponentInformationWithGUID("f9ac8d30c6a0d9642a11e5be4c440740", 11500000)]
     internal class DynamicBoneInformation : ComponentInformation<Component>
     {
         protected override void CollectDependency(Component component, ComponentDependencyCollector collector)
         {
+            collector.MarkBehaviour();
+
             foreach (var transform in GetAffectedTransforms(component))
             {
                 collector.AddDependency(transform, component)

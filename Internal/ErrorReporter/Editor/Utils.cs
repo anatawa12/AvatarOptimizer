@@ -1,24 +1,17 @@
 using System;
 using System.Collections.Generic;
 using JetBrains.Annotations;
+using nadena.dev.ndmf.runtime;
 using UnityEngine;
-using VRC.SDK3.Avatars.Components;
 
 namespace Anatawa12.AvatarOptimizer.ErrorReporting
 {
     internal static class Utils
     {
         [CanBeNull]
-        public static VRCAvatarDescriptor FindAvatarInParents([CanBeNull] Transform transform)
+        public static Transform FindAvatarTransformInParents([CanBeNull] Transform transform)
         {
-            while (transform != null)
-            {
-                if (transform.GetComponent<VRCAvatarDescriptor>() is VRCAvatarDescriptor descriptor)
-                    return descriptor;
-                transform = transform.parent;
-            }
-
-            return null;
+            return RuntimeUtil.FindAvatarInParents(transform);
         }
         
         /// <summary>

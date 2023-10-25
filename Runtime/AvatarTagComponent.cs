@@ -1,8 +1,6 @@
 using System;
 using Anatawa12.AvatarOptimizer.ErrorReporting;
 using UnityEngine;
-using UnityEngine.Animations;
-using VRC.SDKBase;
 
 namespace Anatawa12.AvatarOptimizer
 {
@@ -14,7 +12,10 @@ namespace Anatawa12.AvatarOptimizer
      */
     [DefaultExecutionOrder(-9990)] // run before av3emu
     [ExecuteAlways]
-    internal abstract class AvatarTagComponent : MonoBehaviour, IEditorOnly
+    internal abstract class AvatarTagComponent : MonoBehaviour
+#if AAO_VRCSDK3_AVATARS
+        , VRC.SDKBase.IEditorOnly
+#endif
     {
         private void OnValidate()
         {

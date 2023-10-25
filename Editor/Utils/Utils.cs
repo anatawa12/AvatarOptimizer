@@ -5,7 +5,6 @@ using System.Linq;
 using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
-using VRC.Dynamics;
 
 namespace Anatawa12.AvatarOptimizer
 {
@@ -76,10 +75,11 @@ namespace Anatawa12.AvatarOptimizer
             return component;
         }
 
-        public static Transform GetTarget(this VRCPhysBoneBase physBoneBase) =>
+#if AAO_VRCSDK3_AVATARS
+        public static Transform GetTarget(this VRC.Dynamics.VRCPhysBoneBase physBoneBase) =>
             physBoneBase.rootTransform ? physBoneBase.rootTransform : physBoneBase.transform;
 
-        public static IEnumerable<Transform> GetAffectedTransforms(this VRCPhysBoneBase physBoneBase)
+        public static IEnumerable<Transform> GetAffectedTransforms(this VRC.Dynamics.VRCPhysBoneBase physBoneBase)
         {
             var ignores = new HashSet<Transform>(physBoneBase.ignoreTransforms);
             var queue = new Queue<Transform>();
@@ -95,6 +95,7 @@ namespace Anatawa12.AvatarOptimizer
                         queue.Enqueue(child);
             }
         }
+#endif
 
         public static GameObject NewGameObject(string name, Transform parent)
         {

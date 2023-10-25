@@ -6,7 +6,11 @@ using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
+
+#if AAO_VRCSDK3_AVATARS
 using VRC.SDK3.Avatars.Components;
+#endif
+
 using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer
@@ -31,7 +35,6 @@ namespace Anatawa12.AvatarOptimizer
                 var serialized = new SerializedObject(component);
                 AnimatorControllerMapper mapper = null;
                 SpecialMappingApplier.Apply(component.GetType(), serialized, mapping, ref mapper);
-
                 foreach (var p in serialized.ObjectReferenceProperties())
                 {
                     if (mapping.MapComponentInstance(p.objectReferenceInstanceIDValue, out var mappedComponent))
@@ -60,10 +63,13 @@ namespace Anatawa12.AvatarOptimizer
         public static void Apply(Type type, SerializedObject serialized, 
             ObjectMapping mapping, ref AnimatorControllerMapper mapper)
         {
+#if AAO_VRCSDK3_AVATARS
             if (type.IsAssignableFrom(typeof(VRCAvatarDescriptor)))
                 VRCAvatarDescriptor(serialized, mapping, ref mapper);
+#endif
         }
         
+#if AAO_VRCSDK3_AVATARS
         // customEyeLookSettings.eyelidsBlendshapes is index
         private static void VRCAvatarDescriptor(SerializedObject serialized,
             ObjectMapping mapping, ref AnimatorControllerMapper mapper)
@@ -86,18 +92,19 @@ namespace Anatawa12.AvatarOptimizer
                     var indexProp = eyelidsBlendshapes.GetArrayElementAtIndex(i);
                     if (info.PropertyMapping.TryGetValue(
                             VProp.BlendShapeIndex(indexProp.intValue),
-                            out var mappedPropName))
+                            out var mappedProp))
                     {
-                        if (mappedPropName == null)
+                        if (mappedProp.MappedProperty.Name == null)
                         {
                             BuildReport.LogFatal("ApplyObjectMapping:VRCAvatarDescriptor:eyelids BlendShape Removed");
                             return;
                         }
-                        indexProp.intValue = VProp.ParseBlendShapeIndex(mappedPropName);
+                        indexProp.intValue = VProp.ParseBlendShapeIndex(mappedProp.MappedProperty.Name);
                     }
                 }
             }
         }
+#endif
     }
 
     internal class AnimatorControllerMapper
@@ -126,20 +133,40 @@ namespace Anatawa12.AvatarOptimizer
 
                 foreach (var binding in AnimationUtility.GetCurveBindings(clip))
                 {
-                    var newBinding = _mapping.MapBinding(binding);
-                    _mapped |= newBinding != binding;
-                    if (newBinding.type == null) continue;
-                    newClip.SetCurve(newBinding.path, newBinding.type, newBinding.propertyName,
-                        AnimationUtility.GetEditorCurve(clip, binding));
+                    var newBindings = _mapping.MapBinding(binding);
+                    if (newBindings == null)
+                    {
+                        newClip.SetCurve(binding.path, binding.type, binding.propertyName,
+                            AnimationUtility.GetEditorCurve(clip, binding));
+                    }
+                    else
+                    {
+                        _mapped = true;
+                        foreach (var newBinding in newBindings)
+                        {
+                            newClip.SetCurve(newBinding.path, newBinding.type, newBinding.propertyName,
+                                AnimationUtility.GetEditorCurve(clip, binding));
+                        }
+                    }
                 }
 
                 foreach (var binding in AnimationUtility.GetObjectReferenceCurveBindings(clip))
                 {
-                    var newBinding = _mapping.MapBinding(binding);
-                    _mapped |= newBinding != binding;
-                    if (newBinding.type == null) continue;
-                    AnimationUtility.SetObjectReferenceCurve(newClip, newBinding,
-                        AnimationUtility.GetObjectReferenceCurve(clip, binding));
+                    var newBindings = _mapping.MapBinding(binding);
+                    if (newBindings == null)
+                    {
+                        AnimationUtility.SetObjectReferenceCurve(newClip, binding,
+                            AnimationUtility.GetObjectReferenceCurve(clip, binding));
+                    }
+                    else
+                    {
+                        _mapped = true;
+                        foreach (var newBinding in newBindings)
+                        {
+                            AnimationUtility.SetObjectReferenceCurve(newClip, newBinding,
+                                AnimationUtility.GetObjectReferenceCurve(clip, binding));
+                        }
+                    }
                 }
 
                 newClip.wrapMode = clip.wrapMode;

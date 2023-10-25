@@ -141,7 +141,7 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
         [Test]
         public void TestParseWhole()
         {
-            var parser = new AnimatorParser(true, true);
+            var parser = new AnimatorParser(true);
 
             // execute
             var parsed = parser.AdvancedParseAnimatorController(_prefab, _controller,
@@ -197,7 +197,7 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
         [Test]
         public void TestParseWholeWithExternalWeightChanges()
         {
-            var parser = new AnimatorParser(true, true);
+            var parser = new AnimatorParser(true);
 
             var externallyWeightChanged = new AnimatorLayerWeightMap<int>
             {
@@ -252,7 +252,7 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
         [Test]
         public void TestOneLayerOverrides()
         {
-            var parser = new AnimatorParser(true, true);
+            var parser = new AnimatorParser(true);
             var controller = TestUtils.GetAssetAt<RuntimeAnimatorController>("AnimatorParser/OneLayerOverrideController.overrideController");
             var animate0To100 = TestUtils.GetAssetAt<AnimationClip>("AnimatorParser/Animate0To100.anim");
             var animate1To100 = TestUtils.GetAssetAt<AnimationClip>("AnimatorParser/Animate1To100.anim");
@@ -268,7 +268,7 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
         [Test]
         public void TestTwoLayerOverrides()
         {
-            var parser = new AnimatorParser(true, true);
+            var parser = new AnimatorParser(true);
             var controller = TestUtils.GetAssetAt<RuntimeAnimatorController>("AnimatorParser/TwoLayerOverrideController.overrideController");
             var animate0To100 = TestUtils.GetAssetAt<AnimationClip>("AnimatorParser/Animate0To100.anim");
             var animate1To100 = TestUtils.GetAssetAt<AnimationClip>("AnimatorParser/Animate1To100.anim");
@@ -289,7 +289,7 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
             string propertyName, AnimationProperty property,
             AnimatorLayerBlendingMode blendingMode = AnimatorLayerBlendingMode.Override)
         {
-            var parser = new AnimatorParser(true, true);
+            var parser = new AnimatorParser(true);
 
             // preconditions
             Assert.That(_controller.layers[layerIndex].name, Is.EqualTo(layerName));

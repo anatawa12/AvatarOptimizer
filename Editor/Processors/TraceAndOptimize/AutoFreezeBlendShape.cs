@@ -4,8 +4,11 @@ using System.Linq;
 using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEngine;
+
+#if AAO_VRCSDK3_AVATARS
 using VRC.SDK3.Avatars.Components;
 using VRC.SDKBase;
+#endif
 
 namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 {
@@ -89,6 +92,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         private void ComputePreserveBlendShapes(BuildContext context, Dictionary<SkinnedMeshRenderer, HashSet<string>> preserveBlendShapes)
         {
+#if AAO_VRCSDK3_AVATARS
             // some BlendShapes manipulated by VRC Avatar Descriptor must exists
             var descriptor = context.AvatarDescriptor;
             switch (descriptor.lipSync)
@@ -136,6 +140,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                         break;
                 }
             }
+#endif
         }
     }
 }

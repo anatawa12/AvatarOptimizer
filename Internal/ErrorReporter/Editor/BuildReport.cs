@@ -7,7 +7,6 @@ using System.Runtime.CompilerServices;
 using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
-using VRC.SDK3.Avatars.Components;
 using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.ErrorReporting
@@ -31,8 +30,8 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
 
         [SerializeField] internal List<AvatarReport> avatars = new List<AvatarReport>();
 
-        internal ConditionalWeakTable<VRCAvatarDescriptor, AvatarReport> AvatarsByObject =
-            new ConditionalWeakTable<VRCAvatarDescriptor, AvatarReport>();
+        internal ConditionalWeakTable<GameObject, AvatarReport> AvatarsByObject =
+            new ConditionalWeakTable<GameObject, AvatarReport>();
         internal AvatarReport CurrentAvatar { get; set; }
 
         internal static BuildReport CurrentReport
@@ -81,18 +80,18 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
             ErrorReportUI.ReloadErrorReport();
         }
 
-        internal AvatarReport Initialize([NotNull] VRCAvatarDescriptor descriptor)
+        internal AvatarReport Initialize([NotNull] GameObject avatarGameObject)
         {
-            if (descriptor == null) throw new ArgumentNullException(nameof(descriptor));
+            if (avatarGameObject == null) throw new ArgumentNullException(nameof(avatarGameObject));
 
             AvatarReport report = new AvatarReport();
-            report.objectRef = new ObjectRef(descriptor.gameObject);
+            report.objectRef = new ObjectRef(avatarGameObject);
             avatars.Add(report);
             report.successful = true;
 
-            report.logs.AddRange(ComponentValidation.ValidateAll(descriptor.gameObject));
+            report.logs.AddRange(ComponentValidation.ValidateAll(avatarGameObject));
 
-            AvatarsByObject.Add(descriptor, report);
+            AvatarsByObject.Add(avatarGameObject, report);
             return report;
         }
 
