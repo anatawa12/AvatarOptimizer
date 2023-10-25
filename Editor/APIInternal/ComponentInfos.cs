@@ -317,6 +317,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
                 .EvenIfDependantDisabled();
             for (var i = 0; i < component.sourceCount; i++)
                 collector.AddDependency(component.GetSource(i).sourceTransform);
+            collector.MarkBehaviour();
         }
     }
 
@@ -484,6 +485,8 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
             foreach (var physBoneCollider in component.colliders)
                 collector.AddDependency(physBoneCollider).OnlyIfTargetCanBeEnable();
 
+            collector.MarkBehaviour();
+
             // If parameter is not empty, the PB can be required for Animator Parameter so it's Entrypoint Component
             // https://github.com/anatawa12/AvatarOptimizer/issues/450
             if (!string.IsNullOrEmpty(component.parameter))
@@ -572,6 +575,8 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
     {
         protected override void CollectDependency(Component component, ComponentDependencyCollector collector)
         {
+            collector.MarkBehaviour();
+
             foreach (var transform in GetAffectedTransforms(component))
             {
                 collector.AddDependency(transform, component)

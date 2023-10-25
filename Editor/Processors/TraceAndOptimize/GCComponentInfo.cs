@@ -52,9 +52,14 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
     internal class GCComponentInfo
     {
         /// <summary>
-        /// True if this component has Active Meaning on the Avatar.
+        /// True if this component has Active side-effect Meaning on the Avatar.
         /// </summary>
         public bool EntrypointComponent = false;
+        
+        /// <summary>
+        /// True if activeness of this component has meaning and inactive is lighter
+        /// </summary>
+        public bool BehaviourComponent = false;
 
         /// <summary>
         /// Dependencies of this component
