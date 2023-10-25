@@ -54,6 +54,12 @@ namespace Anatawa12.AvatarOptimizer
         public void RecordMoveProperty(Component from, string oldProp, string newProp) =>
             GetComponentInfo(from).MoveProperties((oldProp, newProp));
 
+        public void RecordMoveProperty(Component fromComponent, string oldProp, Component toComponent, string newProp) =>
+            GetComponentInfo(fromComponent).MoveProperty(GetComponentInfo(toComponent), oldProp, newProp);
+
+        public void RecordCopyProperty(Component fromComponent, string oldProp, Component toComponent, string newProp) =>
+            GetComponentInfo(fromComponent).CopyProperty(GetComponentInfo(toComponent), oldProp, newProp);
+
         public void RecordRemoveProperty(Component from, string oldProp) =>
             GetComponentInfo(from).RemoveProperty(oldProp);
 
@@ -77,7 +83,7 @@ namespace Anatawa12.AvatarOptimizer
             [CanBeNull] public readonly string Name;
             [CanBeNull] public AnimationProperty MergedTo;
             private MappedPropertyInfo? _mappedPropertyInfo;
-            public AnimationProperty[] CopiedTo = Array.Empty<AnimationProperty>();
+            [CanBeNull] public List<AnimationProperty> CopiedTo;
 
             public AnimationProperty([NotNull] BuildingComponentInfo component, [NotNull] string name)
             {
@@ -109,7 +115,7 @@ namespace Anatawa12.AvatarOptimizer
                 {
                     var merged = MergedTo.GetMappedInfo();
 
-                    if (CopiedTo.Length == 0)
+                    if (CopiedTo == null || CopiedTo.Count == 0)
                         return merged;
 
                     var copied = new List<PropertyDescriptor>();
@@ -122,7 +128,7 @@ namespace Anatawa12.AvatarOptimizer
                 else
                 {
                     // this is edge
-                    if (CopiedTo.Length == 0)
+                    if (CopiedTo == null || CopiedTo.Count == 0)
                         return new MappedPropertyInfo(Component.InstanceId, Component.Type, Name);
 
                     var descriptor = new PropertyDescriptor(Component.InstanceId, Component.Type, Name);
@@ -197,6 +203,20 @@ namespace Anatawa12.AvatarOptimizer
 
                 for (var i = 0; i < propertyIds.Length; i++)
                     propertyIds[i].MergedTo = GetProperty(props[i].@new);
+            }
+
+            public void MoveProperty(BuildingComponentInfo toComponent, string oldProp, string newProp)
+            {
+                if (Type == typeof(Transform)) throw new Exception("Move properties of Transform is not supported!");
+                GetProperty(oldProp, remove: true).MergedTo = toComponent.GetProperty(newProp);
+            }
+
+            public void CopyProperty(BuildingComponentInfo toComponent, string oldProp, string newProp)
+            {
+                var prop = GetProperty(oldProp, remove: true);
+                if (prop.CopiedTo == null)
+                    prop.CopiedTo = new List<AnimationProperty>();
+                prop.CopiedTo.Add(toComponent.GetProperty(newProp));
             }
 
             public void RemoveProperty(string property)
