@@ -289,6 +289,9 @@ msgstr "すべての有効/無効を入れ替える"
 msgid "DeleteEditorOnlyGameObjects:NotOnAvatarDescriptor"
 msgstr "このコンポーネントはアバターの最上位に付ける必要があります。(AvatarDescriptorのあるGameObject)"
 
+msgid "DeleteEditorOnlyGameObjects:NotOnAvatarRoot"
+msgstr "このコンポーネントはアバターの最上位に付ける必要があります。(VRChatのアバターでは、AvatarDescriptorのあるGameObject)"
+
 # endregion
 
 # region UnusedBonesByReferencesTool
