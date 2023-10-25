@@ -95,6 +95,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             public override void MarkEntrypoint() => _info.EntrypointComponent = true;
 
+            public override void MarkBehaviour() => _info.BehaviourComponent = true;
+
             private API.ComponentDependencyInfo AddDependencyInternal(
                 [NotNull] GCComponentInfo info,
                 [CanBeNull] Component dependency,

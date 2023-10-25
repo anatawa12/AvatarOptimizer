@@ -104,6 +104,20 @@ namespace Anatawa12.AvatarOptimizer.API
         public abstract void MarkEntrypoint();
 
         /// <summary>
+        /// Marks this component as Behaviour component, which means has some effects to components in the avatars.
+        /// When you mark some components Behaviour component, Avatar Optimizer will generate animation that disables
+        /// the component when entrypoint is not active / enabled.
+        ///
+        /// If your component is not marked as Behaviour, enable-ness / activeness will not changed by Avatar Optimizer.
+        /// If your component have some runtime load and can be skipped if your component is not needed by all
+        /// EntryPoint components, you should mark your component as Behaviour for runtime-load optimization.
+        ///
+        /// For example, VRCPhysBone and Constraints are marked as Behaviour.
+        /// </summary>
+        [PublicAPI]
+        public abstract void MarkBehaviour();
+
+        /// <summary>
         /// Adds <see cref="dependency"/> as dependencies of <see cref="dependant"/>.
         /// The dependency will be assumed as the dependant will have dependency if dependant is enabled and
         /// even if dependency is disabled. You can change the settings by <see cref="ComponentDependencyInfo"/>.

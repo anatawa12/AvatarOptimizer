@@ -70,6 +70,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         private readonly HashSet<GameObject> _exclusions;
         private readonly bool _preserveEndBone;
         private readonly bool _noConfigureMergeBone;
+        private readonly bool _noActivenessAnimation;
         private readonly bool _gcDebug;
 
         public FindUnusedObjectsProcessor(BuildContext context, TraceAndOptimizeState state)
@@ -79,6 +80,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             _modifications = state.Modifications;
             _preserveEndBone = state.PreserveEndBone;
             _noConfigureMergeBone = state.NoConfigureMergeBone;
+            _noActivenessAnimation = state.NoActivenessAnimation;
             _gcDebug = state.GCDebug;
             _exclusions = state.Exclusions;
         }
@@ -95,6 +97,125 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             Sweep(componentInfos);
             if (!_noConfigureMergeBone)
                 MergeBone(componentInfos);
+            if (!_noActivenessAnimation)
+                ActivenessAnimation(componentInfos);
+        }
+
+        private void ActivenessAnimation(GCComponentInfoHolder componentInfos)
+        {
+            // entrypoint -> affected activeness animated components / GameObjects
+            Dictionary<Component, HashSet<Component>> entryPointActiveness =
+                new Dictionary<Component, HashSet<Component>>();
+
+            foreach (var componentInfo in componentInfos.AllInformation)
+            { 
+                if (!componentInfo.Component) continue; // swept
+                if (componentInfo.IsEntrypoint) continue;
+                if (!componentInfo.BehaviourComponent) continue;
+                if (_modifications.GetModifiedProperties(componentInfo.Component).ContainsKey("m_Enabled"))
+                    continue; // enabled is animated so we will not generate activeness animation
+
+                HashSet<Component> resultSet;
+                using (var enumerator = componentInfo.DependantEntrypoint.Keys.GetEnumerator())
+                {
+                    System.Diagnostics.Debug.Assert(enumerator.MoveNext());
+                    resultSet = GetEntrypointActiveness(enumerator.Current, _modifications, _context.AvatarRootTransform);
+
+                    // resultSet.Count == 0 => no longer meaning
+                    if (enumerator.MoveNext() && resultSet.Count != 0)
+                    {
+                        resultSet = new HashSet<Component>(resultSet);
+
+                        do
+                        {
+                            var current = GetEntrypointActiveness(enumerator.Current, _modifications,
+                                _context.AvatarRootTransform);
+                            resultSet.IntersectWith(current);
+                        } while (enumerator.MoveNext() && resultSet.Count != 0);
+                    }
+                }
+
+                if (resultSet.Count == 0)
+                    continue; // there are no common activeness animation
+
+                resultSet.Remove(componentInfo.Component.transform);
+                resultSet.ExceptWith(componentInfo.Component.transform.ParentEnumerable());
+
+                Component commonActiveness;
+                // TODO: we may use all activeness with nested identity transform
+                // if activeness animation is not changed
+                if (resultSet.Count == 0)
+                {
+                    // the only activeness is parent of this component so adding animation is not required
+                    continue;
+                }
+                if (resultSet.Count == 1)
+                {
+                    commonActiveness = resultSet.First();
+                }
+                else
+                {
+                    // TODO: currently this is using most-child component but I don't know is this the best.
+                    var nonTransform = resultSet.FirstOrDefault(x => !(x is Transform));
+                    if (nonTransform != null)
+                    {
+                        // unlikely: deepest common activeness is the entrypoint component.
+                        commonActiveness = nonTransform;
+                    }
+                    else
+                    {
+                        // likely: deepest common activeness is parent
+                        commonActiveness = null;
+                        foreach (var component in resultSet)
+                        {
+                            var transform = (Transform)component;
+                            if (commonActiveness == null) commonActiveness = transform;
+                            else
+                            {
+                                // if commonActiveness is parent of transform, transform is children of commonActiveness
+                                if (transform.ParentEnumerable().Contains(commonActiveness))
+                                    commonActiveness = transform;
+                            }
+                        }
+
+                        System.Diagnostics.Debug.Assert(commonActiveness != null);
+                    }
+                }
+
+                if (commonActiveness is Transform)
+                {
+                    _context.Extension<ObjectMappingContext>().MappingBuilder
+                        .RecordCopyProperty(commonActiveness.gameObject, "m_IsActive",
+                            componentInfo.Component, "m_Enabled");
+                }
+                else
+                {
+                    _context.Extension<ObjectMappingContext>().MappingBuilder
+                        .RecordCopyProperty(commonActiveness, "m_Enabled",
+                            componentInfo.Component, "m_Enabled");
+                }
+            }
+
+            return;
+            
+            HashSet<Component> GetEntrypointActiveness(Component entryPoint,
+                ImmutableModificationsContainer modifications,
+                Transform avatarRoot)
+            {
+                if (entryPointActiveness.TryGetValue(entryPoint, out var found))
+                    return found;
+                var set = new HashSet<Component>();
+
+                if (modifications.GetModifiedProperties(entryPoint).ContainsKey("m_Enabled"))
+                    set.Add(entryPoint);
+
+                for (var transform = entryPoint.transform; transform != avatarRoot; transform = transform.parent)
+                    if (modifications.GetModifiedProperties(transform.gameObject).ContainsKey("m_IsActive"))
+                        set.Add(transform);
+
+                entryPointActiveness.Add(entryPoint, set);
+                return set;
+            }
         }
 
         private void Mark(GCComponentInfoHolder componentInfos)
