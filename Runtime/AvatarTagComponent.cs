@@ -2,10 +2,6 @@ using System;
 using Anatawa12.AvatarOptimizer.ErrorReporting;
 using UnityEngine;
 
-#if AAO_VRCSDK3_AVATARS
-using VRC.SDKBase;
-#endif
-
 namespace Anatawa12.AvatarOptimizer
 {
     // https://github.com/bdunderscore/modular-avatar/blob/db49e2e210bc070671af963ff89df853ae4514a5/Packages/nadena.dev.modular-avatar/Runtime/AvatarTagComponent.cs
@@ -16,7 +12,10 @@ namespace Anatawa12.AvatarOptimizer
      */
     [DefaultExecutionOrder(-9990)] // run before av3emu
     [ExecuteAlways]
-    internal abstract class AvatarTagComponent : MonoBehaviour, IEditorOnly
+    internal abstract class AvatarTagComponent : MonoBehaviour
+#if AAO_VRCSDK3_AVATARS
+        , VRC.SDKBase.IEditorOnly
+#endif
     {
         private void OnValidate()
         {
@@ -29,16 +28,4 @@ namespace Anatawa12.AvatarOptimizer
             ErrorReporterRuntime.TriggerChange();
         }
     }
-    
-#if !AAO_VRCSDK3_AVATARS
-
-    /**
-     * Placeholder of VRC.SDKBase.IEditorOnly for environments without VRCSDK
-     */
-    interface IEditorOnly
-    {
-    }
-
-#endif
-
 }
