@@ -9,6 +9,8 @@ The format is based on [Keep a Changelog].
 ## [Unreleased]
 ### Added
 - Public API for registering component information `#632`
+- Disabling PhysBone animation based on mesh renderer enabled animation `#640`
+  - If you toggles your clothes with simple toggle, PhysBones on the your avatar will also be toggled automatically!
 
 ### Changed
 
