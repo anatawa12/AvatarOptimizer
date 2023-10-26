@@ -5,7 +5,9 @@ using System.Diagnostics;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.ErrorReporting;
 using JetBrains.Annotations;
+using Unity.Burst;
 using Unity.Collections;
+using Unity.Jobs;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.Profiling;
@@ -130,6 +132,15 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             Profiler.BeginSample("Read Skinned Mesh Part");
             Profiler.BeginSample("Read Bones");
+            ReadBones(mesh);
+            Profiler.EndSample();
+            Profiler.BeginSample("Read BlendShapes");
+            ReadBlendShapes(mesh);
+            Profiler.EndSample();
+        }
+
+        private void ReadBones([NotNull] Mesh mesh)
+        {
             Bones.Clear();
             Bones.Capacity = Math.Max(Bones.Capacity, mesh.bindposes.Length);
             Bones.AddRange(mesh.bindposes.Select(x => new Bone(x)));
@@ -145,48 +156,109 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     Vertices[i].BoneWeights.Add((Bones[boneWeight1.boneIndex], boneWeight1.weight));
                 bonesBase += count;
             }
-            Profiler.EndSample();
+        }
 
-            Profiler.BeginSample("Read BlendShapes");
+        private void ReadBlendShapes([NotNull] Mesh mesh)
+        {
             BlendShapes.Clear();
+            Profiler.BeginSample("Prepare shared buffers");
+            var maxFrames = 0;
+            var frameCounts = new NativeArray<int>(mesh.blendShapeCount, Allocator.TempJob);
+            var shapeNames = new string[mesh.blendShapeCount];
+            for (var i = 0; i < mesh.blendShapeCount; i++)
+            {
+                var frames = mesh.GetBlendShapeFrameCount(i);
+                shapeNames[i] = mesh.GetBlendShapeName(i);
+                maxFrames = Math.Max(frames, maxFrames);
+                frameCounts[i] = frames;
+            }
+
             var deltaVertices = new Vector3[Vertices.Count];
             var deltaNormals = new Vector3[Vertices.Count];
             var deltaTangents = new Vector3[Vertices.Count];
-            for (var i = 0; i < mesh.blendShapeCount; i++)
+            var allFramesBuffer = new NativeArray3<Vertex.BlendShapeFrame>(mesh.blendShapeCount, Vertices.Count,
+                maxFrames, Allocator.TempJob);
+            var meaningfuls = new NativeArray2<bool>(mesh.blendShapeCount, Vertices.Count, Allocator.TempJob);
+            Profiler.EndSample();
+
+            for (var blendShape = 0; blendShape < mesh.blendShapeCount; blendShape++)
             {
-                var shapeName = mesh.GetBlendShapeName(i);
+                BlendShapes.Add((shapeNames[blendShape], 0.0f));
 
-                BlendShapes.Add((shapeName, 0.0f));
-
-                var frameCount = mesh.GetBlendShapeFrameCount(i);
-
-                var shapes = new Vertex.BlendShapeFrame[Vertices.Count][];
-                for (var vertex = 0; vertex < shapes.Length; vertex++)
-                    shapes[vertex] = new Vertex.BlendShapeFrame[frameCount];
-
-                for (var frame = 0; frame < frameCount; frame++)
+                for (var frame = 0; frame < frameCounts[blendShape]; frame++)
                 {
-                    mesh.GetBlendShapeFrameVertices(i, frame, deltaVertices, deltaNormals, deltaTangents);
-                    var weight = mesh.GetBlendShapeFrameWeight(i, frame);
+                    Profiler.BeginSample("GetFrameInfo");
+                    mesh.GetBlendShapeFrameVertices(blendShape, frame, deltaVertices, deltaNormals, deltaTangents);
+                    var weight = mesh.GetBlendShapeFrameWeight(blendShape, frame);
+                    Profiler.EndSample();
 
+                    Profiler.BeginSample("Copy to buffer");
                     for (var vertex = 0; vertex < deltaNormals.Length; vertex++)
                     {
                         var deltaVertex = deltaVertices[vertex];
                         var deltaNormal = deltaNormals[vertex];
                         var deltaTangent = deltaTangents[vertex];
-                        shapes[vertex][frame] =
-                            new Vertex.BlendShapeFrame(weight, deltaVertex, deltaNormal, deltaTangent);
+                        allFramesBuffer[blendShape, vertex, frame] = new Vertex.BlendShapeFrame(weight, deltaVertex, deltaNormal, deltaTangent);
                     }
-                }
-
-                for (var vertex = 0; vertex < shapes.Length; vertex++)
-                {
-                    if (IsMeaningful(shapes[vertex]))
-                        Vertices[vertex].BlendShapes[shapeName] = shapes[vertex];
+                    Profiler.EndSample();
                 }
             }
+
+            Profiler.BeginSample("Compute Meaningful with Job");
+            new ComputeMeaningfulJob
+            {
+                vertexCount = Vertices.Count,
+                allFramesBuffer = allFramesBuffer,
+                frameCounts = frameCounts,
+                meaningfuls = meaningfuls,
+            }.Schedule(Vertices.Count * mesh.blendShapeCount, 1).Complete();
+            Profiler.EndSample();
+
+            for (var blendShape = 0; blendShape < mesh.blendShapeCount; blendShape++)
+            {
+                Profiler.BeginSample("Save to Vertices");
+                for (var vertex = 0; vertex < Vertices.Count; vertex++)
+                {
+                    if (meaningfuls[blendShape, vertex])
+                    {
+                        Profiler.BeginSample("Clone BlendShapes");
+                        var slice = allFramesBuffer[blendShape, vertex].Slice(0, frameCounts[blendShape]);
+                        Vertices[vertex].BlendShapes[shapeNames[blendShape]] = slice.ToArray();
+                        Profiler.EndSample();
+                    }
+                }
+                Profiler.EndSample();
+            }
+
+            meaningfuls.Dispose();
+            frameCounts.Dispose();
+            allFramesBuffer.Dispose();
+            Profiler.EndSample();
+        }
+
+        [BurstCompile]
+        struct ComputeMeaningfulJob : IJobParallelFor
+        {
+            public int vertexCount;
+
+            // allFramesBuffer[blendShape][vertex][frame]
+            [ReadOnly]
+            public NativeArray3<Vertex.BlendShapeFrame> allFramesBuffer;
+            [ReadOnly]
+            public NativeArray<int> frameCounts;
+            // allFramesBuffer[blendShape][vertex]
+            [WriteOnly]
+            public NativeArray2<bool> meaningfuls;
+
+            public void Execute(int index)
+            {
+                var blendShape = index / vertexCount;
+                var vertex = index % vertexCount;
+                var slice = allFramesBuffer[blendShape, vertex].Slice(0, frameCounts[blendShape]);
+                meaningfuls[blendShape, vertex] = IsMeaningful(slice);
+            }
             
-            bool IsMeaningful(Vertex.BlendShapeFrame[] frames)
+            bool IsMeaningful(NativeSlice<Vertex.BlendShapeFrame> frames)
             {
                 foreach (var (_, position, normal, tangent) in frames)
                 {
@@ -197,8 +269,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
                 return false;
             }
-            Profiler.EndSample();
-            Profiler.EndSample();
         }
 
         public void ReadStaticMesh([NotNull] Mesh mesh)
