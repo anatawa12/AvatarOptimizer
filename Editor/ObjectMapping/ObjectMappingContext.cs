@@ -195,6 +195,7 @@ namespace Anatawa12.AvatarOptimizer
                         newMask.SetTransformActive(dstI, mask.GetTransformActive(srcI));
                         dstI++;
                     }
+                    if (path != newPath) _mapped = true;
                 }
                 newMask.transformCount = dstI;
 
