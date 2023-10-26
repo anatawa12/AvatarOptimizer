@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog].
 - Small performance improve `#641`
 
 ### Changed
+- All logs passed to ErrorReport is now shown on the console log `#643`
 
 ### Deprecated
 
