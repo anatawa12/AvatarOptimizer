@@ -39,8 +39,6 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
             BuildReport.SaveReport();
             if (avatar.logs.Any())
                 ErrorReportUI.OpenErrorReportUIFor(avatar);
-            else
-                ErrorReportUI.MaybeOpenErrorReportUI();
             if (!successful) throw new Exception("Avatar processing failed");
         }
     }
