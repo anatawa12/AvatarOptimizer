@@ -264,7 +264,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
         }
         
 
-        struct MergeBoneTransParentInfo
+        public struct MergeBoneTransParentInfo
         {
             public Quaternion ParentRotation;
             public Matrix4x4 ParentMatrix;
