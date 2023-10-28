@@ -116,6 +116,33 @@ namespace Anatawa12.AvatarOptimizer
         }
 
         [CanBeNull]
+        public string MapPropertyName(string srcPath, string propertyName, Type type)
+        {
+            var gameObjectInfo = GetGameObjectInfo(srcPath);
+            if (gameObjectInfo == null) return srcPath;
+            var (instanceId, componentInfo) = gameObjectInfo.GetComponentByType(type);
+
+            if (componentInfo != null)
+            {
+                // there's mapping about component.
+                // this means the component is merged or some prop has mapping
+
+                if (componentInfo.PropertyMapping.TryGetValue(propertyName, out var newProp))
+                {
+                    return newProp.MappedProperty.Name;
+                }
+                else
+                {
+                    return propertyName;
+                }
+            }
+            else
+            {
+                return propertyName;
+            }
+        }
+
+        [CanBeNull]
         public EditorCurveBinding[] MapBinding(EditorCurveBinding binding)
         {
             var gameObjectInfo = GetGameObjectInfo(binding.path);
