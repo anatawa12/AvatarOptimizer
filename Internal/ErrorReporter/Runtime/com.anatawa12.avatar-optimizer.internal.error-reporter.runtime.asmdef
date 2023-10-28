@@ -1,7 +1,7 @@
 {
     "name": "com.anatawa12.avatar-optimizer.internal.error-reporter.runtime",
     "references": [
-        "GUID:8264e72376854221affe9980c91c2fff"
+        "com.anatawa12.custom-localization-for-editor-extension.runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
