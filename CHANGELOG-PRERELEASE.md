@@ -16,9 +16,12 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Animation clip length can be changed `#647`
 
 ### Security
+
+## [1.5.9-rc.1] - 2023-10-28
+### Fixed
+- Animation clip length can be changed [`#647`](https://github.com/anatawa12/AvatarOptimizer/pull/647)
 
 ## [1.5.8] - 2023-10-20
 ## [1.5.8-rc.1] - 2023-10-20
@@ -935,7 +938,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.8...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.9-rc.1...HEAD
+[1.5.9-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.8...v1.5.9-rc.1
 [1.5.8]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.8-rc.1...v1.5.8
 [1.5.8-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.7...v1.5.8-rc.1
 [1.5.7]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.7-beta.1...v1.5.7
