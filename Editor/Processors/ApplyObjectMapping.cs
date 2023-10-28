@@ -161,6 +161,15 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 var newClip = new AnimationClip();
                 newClip.name = "rebased " + clip.name;
 
+                // copy m_UseHighQualityCurve with SerializedObject since m_UseHighQualityCurve doesn't have public API
+                using (var serializedClip = new SerializedObject(clip))
+                using (var serializedNewClip = new SerializedObject(newClip))
+                {
+                    serializedNewClip.FindProperty("m_UseHighQualityCurve")
+                        .boolValue = serializedClip.FindProperty("m_UseHighQualityCurve").boolValue;
+                    serializedNewClip.ApplyModifiedPropertiesWithoutUndo();
+                }
+
                 foreach (var binding in AnimationUtility.GetCurveBindings(clip))
                 {
                     var newBinding = _mapping.MapBinding(binding);
