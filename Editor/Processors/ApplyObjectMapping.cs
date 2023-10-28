@@ -188,6 +188,16 @@ namespace Anatawa12.AvatarOptimizer.Processors
                         AnimationUtility.GetObjectReferenceCurve(clip, binding));
                 }
 
+                // ReSharper disable once CompareOfFloatsByEqualityOperator
+                if (newClip.length != clip.length)
+                {
+                    // if newClip has less properties than original clip (especially for no properties), 
+                    // length of newClip can be changed which is bad.
+                    newClip.SetCurve(
+                        "$AvatarOptimizerClipLengthDummy$", typeof(GameObject), "m_IsActive",
+                        AnimationCurve.Constant(clip.length, clip.length, 1f));
+                }
+
                 newClip.wrapMode = clip.wrapMode;
                 newClip.legacy = clip.legacy;
                 newClip.frameRate = clip.frameRate;
