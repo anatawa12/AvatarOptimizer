@@ -96,52 +96,88 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 #if AAO_VRCSDK3_AVATARS
             // some BlendShapes manipulated by VRC Avatar Descriptor must exists
             var descriptor = context.AvatarDescriptor;
-            switch (descriptor.lipSync)
+            if (descriptor)
             {
-                case VRC_AvatarDescriptor.LipSyncStyle.VisemeBlendShape when descriptor.VisemeSkinnedMesh != null:
+                switch (descriptor.lipSync)
                 {
-                    var skinnedMeshRenderer = descriptor.VisemeSkinnedMesh;
-                    if (!preserveBlendShapes.TryGetValue(skinnedMeshRenderer, out var set))
-                        preserveBlendShapes.Add(skinnedMeshRenderer, set = new HashSet<string>());
-                    set.UnionWith(descriptor.VisemeBlendShapes);
-                    break;
-                }
-                case VRC_AvatarDescriptor.LipSyncStyle.JawFlapBlendShape when descriptor.VisemeSkinnedMesh != null:
-                {
-                    var skinnedMeshRenderer = descriptor.VisemeSkinnedMesh;
-                    if (!preserveBlendShapes.TryGetValue(skinnedMeshRenderer, out var set))
-                        preserveBlendShapes.Add(skinnedMeshRenderer, set = new HashSet<string>());
-                    set.Add(descriptor.MouthOpenBlendShapeName);
-                    break;
-                }
-            }
-
-            if (descriptor.enableEyeLook)
-            {
-                switch (descriptor.customEyeLookSettings.eyelidType)
-                {
-                    case VRCAvatarDescriptor.EyelidType.None:
-                        break;
-                    case VRCAvatarDescriptor.EyelidType.Bones:
-                        break;
-                    case VRCAvatarDescriptor.EyelidType.Blendshapes
-                        when descriptor.customEyeLookSettings.eyelidsSkinnedMesh != null:
+                    case VRC_AvatarDescriptor.LipSyncStyle.VisemeBlendShape when descriptor.VisemeSkinnedMesh != null:
                     {
-                        var skinnedMeshRenderer = descriptor.customEyeLookSettings.eyelidsSkinnedMesh;
+                        var skinnedMeshRenderer = descriptor.VisemeSkinnedMesh;
                         if (!preserveBlendShapes.TryGetValue(skinnedMeshRenderer, out var set))
                             preserveBlendShapes.Add(skinnedMeshRenderer, set = new HashSet<string>());
-
-                        var mesh = skinnedMeshRenderer.sharedMesh;
-                        set.UnionWith(
-                            from index in descriptor.customEyeLookSettings.eyelidsBlendshapes
-                            where 0 <= index && index < mesh.blendShapeCount
-                            select mesh.GetBlendShapeName(index)
-                        );
-                    }
+                        set.UnionWith(descriptor.VisemeBlendShapes);
                         break;
+                    }
+                    case VRC_AvatarDescriptor.LipSyncStyle.JawFlapBlendShape when descriptor.VisemeSkinnedMesh != null:
+                    {
+                        var skinnedMeshRenderer = descriptor.VisemeSkinnedMesh;
+                        if (!preserveBlendShapes.TryGetValue(skinnedMeshRenderer, out var set))
+                            preserveBlendShapes.Add(skinnedMeshRenderer, set = new HashSet<string>());
+                        set.Add(descriptor.MouthOpenBlendShapeName);
+                        break;
+                    }
+                }
+
+                if (descriptor.enableEyeLook)
+                {
+                    switch (descriptor.customEyeLookSettings.eyelidType)
+                    {
+                        case VRCAvatarDescriptor.EyelidType.None:
+                            break;
+                        case VRCAvatarDescriptor.EyelidType.Bones:
+                            break;
+                        case VRCAvatarDescriptor.EyelidType.Blendshapes
+                            when descriptor.customEyeLookSettings.eyelidsSkinnedMesh != null:
+                        {
+                            var skinnedMeshRenderer = descriptor.customEyeLookSettings.eyelidsSkinnedMesh;
+                            if (!preserveBlendShapes.TryGetValue(skinnedMeshRenderer, out var set))
+                                preserveBlendShapes.Add(skinnedMeshRenderer, set = new HashSet<string>());
+
+                            var mesh = skinnedMeshRenderer.sharedMesh;
+                            set.UnionWith(
+                                from index in descriptor.customEyeLookSettings.eyelidsBlendshapes
+                                where 0 <= index && index < mesh.blendShapeCount
+                                select mesh.GetBlendShapeName(index)
+                            );
+                        }
+                            break;
+                    }
+                }
+            }
+#endif
+
+#if AAO_VRM0
+            var vrmBlendShapeProxy = context.AvatarRootTransform.GetComponent<VRM.VRMBlendShapeProxy>();
+            if (vrmBlendShapeProxy)
+            {
+                var bindings = vrmBlendShapeProxy.BlendShapeAvatar.Clips.SelectMany(clip => clip.Values);
+                foreach (var binding in bindings)
+                {
+                    var skinnedMeshRenderer = context.AvatarRootTransform.Find(binding.RelativePath).GetComponent<SkinnedMeshRenderer>();
+                    if (!preserveBlendShapes.TryGetValue(skinnedMeshRenderer, out var set))
+                        preserveBlendShapes.Add(skinnedMeshRenderer, set = new HashSet<string>());
+                    var blendShapePropName = $"blendShape.{skinnedMeshRenderer.sharedMesh.GetBlendShapeName(binding.Index)}";
+                    set.Add(blendShapePropName);
+                }
+            }
+#endif
+
+#if AAO_VRM1
+            var vrm10Instance = context.AvatarRootTransform.GetComponent<UniVRM10.Vrm10Instance>(); 
+            if (vrm10Instance)
+            {
+                var bindings = vrm10Instance.Vrm.Expression.Clips.SelectMany(clip => clip.Clip.MorphTargetBindings);
+                foreach (var binding in bindings)
+                {
+                    var skinnedMeshRenderer = context.AvatarRootTransform.Find(binding.RelativePath).GetComponent<SkinnedMeshRenderer>();
+                    if (!preserveBlendShapes.TryGetValue(skinnedMeshRenderer, out var set))
+                        preserveBlendShapes.Add(skinnedMeshRenderer, set = new HashSet<string>());
+                    var blendShapePropName = $"blendShape.{skinnedMeshRenderer.sharedMesh.GetBlendShapeName(binding.Index)}";
+                    set.Add(blendShapePropName);
                 }
             }
 #endif
         }
+
     }
 }
