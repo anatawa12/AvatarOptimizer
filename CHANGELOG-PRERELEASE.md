@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - Prefab blinks when we see editor of PrefabSafeSet of prefab asset `#645`
+- Fixes in 1.5.9 `#654`
 
 ### Security
 
