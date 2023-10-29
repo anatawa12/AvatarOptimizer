@@ -8,14 +8,17 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Small performance improve `#641`
 
 ### Changed
+- All logs passed to ErrorReport is now shown on the console log `#643`
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
+- Prefab blinks when we see editor of PrefabSafeSet of prefab asset `#645`
 
 ### Security
 
@@ -23,6 +26,20 @@ The format is based on [Keep a Changelog].
 ## [1.5.9-rc.1] - 2023-10-28
 ### Fixed
 - Animation clip length can be changed [`#647`](https://github.com/anatawa12/AvatarOptimizer/pull/647)
+
+## [1.6.0-beta.1] - 2023-10-25
+### Added
+- Public API for registering component information [`#623`](https://github.com/anatawa12/AvatarOptimizer/pull/623)
+- Documentation for developers about compatibility with Avatar Optimizer [`#623`](https://github.com/anatawa12/AvatarOptimizer/pull/623) 
+- Disabling PhysBone animation based on mesh renderer enabled animation [`#640`](https://github.com/anatawa12/AvatarOptimizer/pull/640)
+  - If you toggles your clothes with simple toggle, PhysBones on the your avatar will also be toggled automatically!
+
+### Removed
+- Legacy GC [`#633`](https://github.com/anatawa12/AvatarOptimizer/pull/633)
+
+### Fixed
+- Improve support of newer Unity versions [`#608`](https://github.com/anatawa12/AvatarOptimizer/pull/608)
+- Improve support of projects without VRCSDK [`#609`](https://github.com/anatawa12/AvatarOptimizer/pull/609) [`#625`](https://github.com/anatawa12/AvatarOptimizer/pull/625) [`#627`](https://github.com/anatawa12/AvatarOptimizer/pull/627)
 
 ## [1.5.8] - 2023-10-20
 ## [1.5.8-rc.1] - 2023-10-20
@@ -83,7 +100,7 @@ The format is based on [Keep a Changelog].
 - Error with MeshRenderer without MeshFilter [`#581`](https://github.com/anatawa12/AvatarOptimizer/pull/581)
 - Preview not working with VRMConverter [`#582`](https://github.com/anatawa12/AvatarOptimizer/pull/582)
 - AvatarMask about HumanoidBone broken [`#586`](https://github.com/anatawa12/AvatarOptimizer/pull/586)
-- Unused Homanoid Bones can be removed [`#587`](https://github.com/anatawa12/AvatarOptimizer/pull/587)
+- Unused Humanoid Bones can be removed [`#587`](https://github.com/anatawa12/AvatarOptimizer/pull/587)
 
 ## [1.5.3] - 2023-10-11
 ### Changed
@@ -939,7 +956,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.9...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.1...HEAD
+[1.6.0-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.9...v1.6.0-beta.1
 [1.5.9]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.9-rc.1...v1.5.9
 [1.5.9-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.8...v1.5.9-rc.1
 [1.5.8]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.8-rc.1...v1.5.8

@@ -34,13 +34,6 @@ namespace Anatawa12.AvatarOptimizer
         [ToggleLeft]
         public bool mmdWorldCompatibility = true;
 
-        // for compatibility, this is not inside AdvancedSettings but this is part of Advanced Settings
-        [NotKeyable]
-        [InspectorName("Use Advanced Animator Parser")]
-        [Tooltip("Advanced Animator Parser will parse your AnimatorController, including layer structure.")]
-        [ToggleLeft]
-        public bool advancedAnimatorParser = true;
-
         [NotKeyable]
         public AdvancedSettings advancedSettings;
         
@@ -49,15 +42,14 @@ namespace Anatawa12.AvatarOptimizer
         {
             [Tooltip("Exclude some GameObjects from Trace and Optimize")]
             public GameObject[] exclusions;
-            [Tooltip("Use Legacy algorithm for Remove Unused Objects")]
-            [ToggleLeft]
-            public bool useLegacyGc;
             [Tooltip("Add GC Debug Components instead of setting GC components")]
             [ToggleLeft]
             public bool gcDebug;
             [Tooltip("Do Not Configure MergeBone in New GC algorithm")]
             [ToggleLeft]
             public bool noConfigureMergeBone;
+            [ToggleLeft]
+            public bool noActivenessAnimation;
             [ToggleLeft]
             public bool skipFreezingNonAnimatedBlendShape;
             [ToggleLeft]

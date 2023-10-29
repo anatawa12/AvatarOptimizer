@@ -1,45 +1,49 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Anatawa12.AvatarOptimizer.API;
+using Anatawa12.AvatarOptimizer.APIInternal;
 using static Anatawa12.AvatarOptimizer.ErrorReporting.BuildReport;
 using JetBrains.Annotations;
+using nadena.dev.ndmf;
 using UnityEditor.Animations;
 using UnityEngine;
 using UnityEngine.Animations;
+
+#if AAO_VRCSDK3_AVATARS
 using VRC.Dynamics;
 using VRC.SDK3.Avatars.Components;
 using VRC.SDKBase;
+#endif
 
 namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 {
     class AnimatorParser
     {
         private bool mmdWorldCompatibility;
-        private bool advancedAnimatorParser;
         private AnimationParser _animationParser = new AnimationParser();
 
-        public AnimatorParser(bool mmdWorldCompatibility, bool advancedAnimatorParser)
+        public AnimatorParser(bool mmdWorldCompatibility)
         {
             this.mmdWorldCompatibility = mmdWorldCompatibility;
-            this.advancedAnimatorParser = advancedAnimatorParser;
         }
 
-        public AnimatorParser(TraceAndOptimize config)
+        public AnimatorParser(TraceAndOptimizeState config)
         {
-            mmdWorldCompatibility = config.mmdWorldCompatibility;
-            advancedAnimatorParser = config.advancedAnimatorParser;
+            mmdWorldCompatibility = config.MmdWorldCompatibility;
         }
 
-        public ImmutableModificationsContainer GatherAnimationModifications(OptimizerSession session)
+        public ImmutableModificationsContainer GatherAnimationModifications(BuildContext context)
         {
             var modificationsContainer = new ModificationsContainer();
-            modificationsContainer.MergeAsNewLayer(CollectAvatarRootAnimatorModifications(session), 
+
+            modificationsContainer.MergeAsNewLayer(CollectAvatarRootAnimatorModifications(context), 
                 weightState: AnimatorWeightState.AlwaysOne);
 
-            foreach (var child in session.GetRootComponent<Transform>().DirectChildrenEnumerable())
+            foreach (var child in context.AvatarRootTransform.DirectChildrenEnumerable())
                 WalkForAnimator(child, true, modificationsContainer);
 
-            OtherMutateComponents(modificationsContainer, session);
+            OtherMutateComponents(modificationsContainer, context);
 
             return modificationsContainer.ToImmutable();
         }
@@ -127,117 +131,57 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         #region OtherComponents
 
+        private class Collector : ComponentMutationsCollector
+        {
+            private readonly ModificationsContainer _modifications;
+
+            public Collector(ModificationsContainer modifications) => _modifications = modifications;
+
+            public override void ModifyProperties(Component component, IEnumerable<string> properties)
+            {
+                var updater = _modifications.ModifyObject(component);
+                foreach (var prop in properties)
+                    updater.AddModificationAsNewLayer(prop, AnimationProperty.Variable());
+            }
+        }
+
         /// <summary>
         /// Collect modifications by non-animation changes. For example, constraints, PhysBones, and else 
         /// </summary>
-        private void OtherMutateComponents(ModificationsContainer mod, OptimizerSession session)
+        private static void OtherMutateComponents(ModificationsContainer mod, BuildContext context)
         {
-            ReportingObjects(session.GetComponents<Component>(), component =>
+            var collector = new Collector(mod);
+            ReportingObjects(context.GetComponents<Component>(), component =>
             {
-                switch (component)
-                {
-                    case VRCPhysBoneBase pb:
-                        foreach (var transform in pb.GetAffectedTransforms())
-                        {
-                            var updater = mod.ModifyObject(transform);
-                            foreach (var prop in TransformPositionAnimationKeys.Concat(TransformRotationAnimationKeys))
-                                updater.AddModificationAsNewLayer(prop, AnimationProperty.Variable());
-                        }
-
-                        break;
-                    case Rigidbody _:
-                    case ParentConstraint _:
-                    {
-                        var updater = mod.ModifyObject(component.transform);
-                        foreach (var prop in TransformPositionAnimationKeys.Concat(TransformRotationAnimationKeys))
-                            updater.AddModificationAsNewLayer(prop, AnimationProperty.Variable());
-                        break;
-                    }
-                    case AimConstraint _:
-                    case LookAtConstraint _:
-                    case RotationConstraint _:
-                    {
-                        var updater = mod.ModifyObject(component.transform);
-                        foreach (var prop in TransformRotationAnimationKeys)
-                            updater.AddModificationAsNewLayer(prop, AnimationProperty.Variable());
-                        break;
-                    }
-                    case PositionConstraint _:
-                    {
-                        var updater = mod.ModifyObject(component.transform);
-                        foreach (var prop in TransformPositionAnimationKeys)
-                            updater.AddModificationAsNewLayer(prop, AnimationProperty.Variable());
-                        break;
-                    }
-                    case ScaleConstraint _:
-                    {
-                        var updater = mod.ModifyObject(component.transform);
-                        foreach (var prop in TransformScaleAnimationKeys)
-                            updater.AddModificationAsNewLayer(prop, AnimationProperty.Variable());
-                        break;
-                    }
-                    case RemoveMeshByBlendShape removeMesh:
-                    {
-                        var blendShapes = removeMesh.RemovingShapeKeys;
-                        {
-                            var updater = mod.ModifyObject(removeMesh.GetComponent<SkinnedMeshRenderer>());
-                            foreach (var blendShape in blendShapes)
-                                updater.AddModificationAsNewLayer($"blendShape.{blendShape}",
-                                    AnimationProperty.Variable());
-                        }
-
-                        DeriveMergeSkinnedMeshProperties(removeMesh.GetComponent<MergeSkinnedMesh>());
-
-                        void DeriveMergeSkinnedMeshProperties(MergeSkinnedMesh mergeSkinnedMesh)
-                        {
-                            if (mergeSkinnedMesh == null) return;
-
-                            foreach (var renderer in mergeSkinnedMesh.renderersSet.GetAsSet())
-                            {
-                                var updater = mod.ModifyObject(renderer);
-                                foreach (var blendShape in blendShapes)
-                                    updater.AddModificationAsNewLayer($"blendShape.{blendShape}",
-                                        AnimationProperty.Variable());
-
-                                DeriveMergeSkinnedMeshProperties(renderer.GetComponent<MergeSkinnedMesh>());
-                            }
-                        }
-
-                        break;
-                    }
-                    default:
-                    {
-                        if (DynamicBone.TryCast(component, out var dynamicBone))
-                        {
-                            // DynamicBone : similar to PhysBone
-                            foreach (var transform in dynamicBone.GetAffectedTransforms())
-                            {
-                                var updater = mod.ModifyObject(transform);
-                                foreach (var prop in TransformRotationAnimationKeys)
-                                    updater.AddModificationAsNewLayer(prop, AnimationProperty.Variable());
-                            }
-                        }
-                        break;
-                    }
-                    // TODO: FinalIK
-                }
+                if (ComponentInfoRegistry.TryGetInformation(component.GetType(), out var info))
+                    info.CollectMutationsInternal(component, collector);
             });
         }
 
         #endregion
 
-        #region AvatarDescriptor
+        #region Avatar Root Animator
 
-        private IModificationsContainer CollectAvatarRootAnimatorModifications(OptimizerSession session)
+        private IModificationsContainer CollectAvatarRootAnimatorModifications(BuildContext session)
         {
-            var animator = session.GetRootComponent<Animator>();
-            var descriptor = session.GetRootComponent<VRCAvatarDescriptor>();
-
             var modificationsContainer = new ModificationsContainer();
 
+            var animator = session.AvatarRootObject.GetComponent<Animator>();
             if (animator)
                 modificationsContainer = AddHumanoidModifications(modificationsContainer, animator).ToMutable();
+            
+#if AAO_VRCSDK3_AVATARS
+            var descriptor = session.AvatarRootObject.GetComponent<VRCAvatarDescriptor>();
+            if (descriptor)
+                CollectAvatarDescriptorModifications(modificationsContainer, descriptor);
+#endif
 
+            return modificationsContainer;
+        }
+        
+#if AAO_VRCSDK3_AVATARS
+        private void CollectAvatarDescriptorModifications(ModificationsContainer modificationsContainer, VRCAvatarDescriptor descriptor)
+        {
             // process playable layers
             // see https://misskey.niri.la/notes/9ioemawdit
             // see https://creators.vrchat.com/avatars/playable-layers
@@ -386,8 +330,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 foreach (var shape in MmdBlendShapeNames)
                     updater.AddModificationAsNewLayer($"blendShape.{shape}", AnimationProperty.Variable());
             }
-
-            return modificationsContainer;
         }
 
         private void CollectWeightChangesInController(RuntimeAnimatorController runtimeController,
@@ -491,6 +433,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 throw new InvalidOperationException($"default controller for {layer.type} not found");
             return controller;
         }
+#endif
         
         #endregion
 
@@ -522,28 +465,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         {
             return ReportingObject(controller, () =>
             {
-                if (advancedAnimatorParser)
-                {
-                    var (animatorController, mapping) = GetControllerAndOverrides(controller);
-                    return AdvancedParseAnimatorController(root, animatorController, mapping,
-                        externallyWeightChanged);
-                }
-                else
-                {
-                    return FallbackParseAnimatorController(root, controller);
-                }
+                var (animatorController, mapping) = GetControllerAndOverrides(controller);
+                return AdvancedParseAnimatorController(root, animatorController, mapping,
+                    externallyWeightChanged);
             });
-        }
-
-        /// <summary>
-        /// Fallback AnimatorController Parser but always assumed as partially applied.
-        /// This process assumes everything is applied as non-additive state motion.
-        /// This parsing MAY not correct with direct blendtree or additive layer
-        /// but it's extremely rare case so ignoring such case.
-        /// </summary>
-        private IModificationsContainer FallbackParseAnimatorController(GameObject root, RuntimeAnimatorController controller)
-        {
-            return controller.animationClips.Select(clip => _animationParser.GetParsedAnimation(root, clip)).MergeContainersSideBySide();
         }
 
         internal IModificationsContainer AdvancedParseAnimatorController(GameObject root, AnimatorController controller,
@@ -673,6 +598,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         private static readonly string[] TransformScaleAnimationKeys =
             { "m_LocalScale.x", "m_LocalScale.y", "m_LocalScale.z" };
 
+#if AAO_VRCSDK3_AVATARS
         private static readonly AnimatorLayerMap<CachedGuidLoader<AnimatorController>> DefaultLayers =
             new AnimatorLayerMap<CachedGuidLoader<AnimatorController>>
             {
@@ -693,6 +619,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 // vrc_AvatarV3UtilityIKPose
                 [VRCAvatarDescriptor.AnimLayerType.IKPose] = "a9b90a833b3486e4b82834c9d1f7c4ee"
             };
+#endif
 
         private static readonly string[] MmdBlendShapeNames = new [] {
             // New EN by Yi MMD World

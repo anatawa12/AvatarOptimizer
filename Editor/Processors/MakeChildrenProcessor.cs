@@ -1,5 +1,6 @@
 using Anatawa12.AvatarOptimizer.ErrorReporting;
 using System.Linq;
+using nadena.dev.ndmf;
 using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer.Processors
@@ -13,9 +14,9 @@ namespace Anatawa12.AvatarOptimizer.Processors
             _early = early;
         }
 
-        public void Process(OptimizerSession session)
+        public void Process(BuildContext context)
         {
-            BuildReport.ReportingObjects(session.GetComponents<MakeChildren>(), makeChildren =>
+            BuildReport.ReportingObjects(context.GetComponents<MakeChildren>(), makeChildren =>
             {
                 if (makeChildren.executeEarly != _early) return;
                 foreach (var makeChildrenChild in makeChildren.children.GetAsSet().Where(x => x))

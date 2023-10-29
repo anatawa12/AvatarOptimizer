@@ -8,14 +8,23 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Public API for registering component information `#632`
+- Disabling PhysBone animation based on mesh renderer enabled animation `#640`
+  - If you toggles your clothes with simple toggle, PhysBones on the your avatar will also be toggled automatically!
+- Small performance improve `#641`
 
 ### Changed
+- All logs passed to ErrorReport is now shown on the console log `#643`
 
 ### Deprecated
 
 ### Removed
+- Legacy GC `#633`
 
 ### Fixed
+- Improve support of newer Unity versions `#608`
+- Improve support of projects without VRCSDK `#609` `#625` `#627`
+- Prefab blinks when we see editor of PrefabSafeSet of prefab asset `#645`
 
 ### Security
 
@@ -68,7 +77,7 @@ The format is based on [Keep a Changelog].
 - Error with MeshRenderer without MeshFilter [`#581`](https://github.com/anatawa12/AvatarOptimizer/pull/581)
 - Preview not working with VRMConverter [`#582`](https://github.com/anatawa12/AvatarOptimizer/pull/582)
 - AvatarMask about HumanoidBone broken [`#586`](https://github.com/anatawa12/AvatarOptimizer/pull/586)
-- Unused Homanoid Bones can be removed [`#587`](https://github.com/anatawa12/AvatarOptimizer/pull/587)
+- Unused Humanoid Bones can be removed [`#587`](https://github.com/anatawa12/AvatarOptimizer/pull/587)
 
 ## [1.5.3] - 2023-10-11
 ### Changed

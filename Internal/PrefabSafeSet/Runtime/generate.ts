@@ -1,4 +1,11 @@
 
+const AAO_VRCSDK3_AVATARS = "AAO_VRCSDK3_AVATARS"; 
+function conditional(flag: string, inner: () => void) {
+    console.log(`#if ${flag}`)
+    inner();
+    console.log(`#endif`)
+}
+
 function generate(type: string) {
     console.log(`    [Serializable]`)
     console.log(`    public class ${type}Set : PrefabSafeSet<${type}, ${type}Set.Layer>`)
@@ -18,7 +25,9 @@ console.log(`using System.Collections.Generic;`)
 console.log(`using System.Reflection;`)
 console.log(`using JetBrains.Annotations;`)
 console.log(`using UnityEngine;`)
-console.log(`using VRC.Dynamics;`)
+conditional(AAO_VRCSDK3_AVATARS, () => {
+    console.log(`using VRC.Dynamics;`)
+});
 console.log(`using Object = UnityEngine.Object;`)
 console.log(``)
 console.log(`namespace Anatawa12.AvatarOptimizer.PrefabSafeSet`)
@@ -27,6 +36,8 @@ generate("SkinnedMeshRenderer")
 generate("MeshRenderer")
 generate("Material")
 generate("String")
-generate("VRCPhysBoneBase")
+conditional(AAO_VRCSDK3_AVATARS, () => {
+    generate("VRCPhysBoneBase")
+});
 generate("Transform")
 console.log(`}`)

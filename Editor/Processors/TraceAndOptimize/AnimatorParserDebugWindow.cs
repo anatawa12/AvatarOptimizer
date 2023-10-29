@@ -1,9 +1,9 @@
 using System;
 using System.Text;
 using JetBrains.Annotations;
+using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEngine;
-using VRC.SDK3.Avatars.Components;
 using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
@@ -14,8 +14,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         private static void Open() => GetWindow<AnimatorParserDebugWindow>("AnimatorParser Debug Window");
 
         public ParserSource parserSource;
-        public VRCAvatarDescriptor avatar;
         public RuntimeAnimatorController animatorController;
+        public GameObject avatar;
         public GameObject rootGameObject;
         public Motion motion;
 
@@ -75,7 +75,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             
             foreach (var (obj, properties) in Container.ModifiedProperties)
             {
-                var gameObject = obj.SelfOrAttachedGameObject.transform;
+                var gameObject = obj.gameObject.transform;
                 resultText.Append(Utils.RelativePath(root, gameObject)).Append(": ")
                     .Append(((Object)obj).GetType().FullName).Append('\n');
 
@@ -132,9 +132,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     {
                         if (GUILayout.Button("Parse") && avatar)
                         {
-                            parsedRootObject = avatar.gameObject;
-                            Container = new AnimatorParser(true, true).GatherAnimationModifications(
-                                new OptimizerSession(avatar.gameObject, true));
+                            parsedRootObject = avatar;
+                            Container = new AnimatorParser(true).GatherAnimationModifications(
+                                new BuildContext(avatar, null));
                         }
                     }
 
@@ -148,7 +148,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                         if (GUILayout.Button("Parse") && animatorController && rootGameObject)
                         {
                             parsedRootObject = rootGameObject;
-                            Container = new AnimatorParser(true, true)
+                            Container = new AnimatorParser(true)
                                 .ParseAnimatorController(rootGameObject, animatorController)
                                 .ToImmutable();
                         }

@@ -1,360 +1,280 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using UnityEditor;
+using nadena.dev.ndmf;
 using UnityEngine;
-using VRC.Dynamics;
-using Debug = System.Diagnostics.Debug;
-using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 {
-    class FindUnusedObjectsProcessor
+    internal class FindUnusedObjects : Pass<FindUnusedObjects>
+    {
+        public override string DisplayName => "T&O: FindUnusedObjects";
+
+        protected override void Execute(BuildContext context)
+        {
+            var state = context.GetState<TraceAndOptimizeState>();
+            if (!state.RemoveUnusedObjects) return;
+
+            var processor = new FindUnusedObjectsProcessor(context, state);
+            processor.ProcessNew();
+        }
+    }
+
+    internal readonly struct MarkObjectContext {
+        private readonly GCComponentInfoHolder _componentInfos;
+
+        private readonly Queue<Component> _processPending;
+        private readonly Component _entrypoint;
+
+        public MarkObjectContext(GCComponentInfoHolder componentInfos, Component entrypoint)
+        {
+            _componentInfos = componentInfos;
+            _processPending = new Queue<Component>();
+            _entrypoint = entrypoint;
+        }
+
+        public void MarkComponent(Component component,
+            GCComponentInfo.DependencyType type)
+        {
+            var dependencies = _componentInfos.TryGetInfo(component);
+            if (dependencies == null) return;
+
+            if (dependencies.DependantEntrypoint.TryGetValue(_entrypoint, out var existingFlags))
+            {
+                dependencies.DependantEntrypoint[_entrypoint] = existingFlags | type;
+            }
+            else
+            {
+                _processPending.Enqueue(component);
+                dependencies.DependantEntrypoint.Add(_entrypoint, type);
+            }
+        }
+
+        public void MarkRecursively()
+        {
+            while (_processPending.Count != 0)
+            {
+                var component = _processPending.Dequeue();
+                var dependencies = _componentInfos.TryGetInfo(component);
+                if (dependencies == null) continue; // not part of this Hierarchy Tree
+
+                foreach (var (dependency, type) in dependencies.Dependencies)
+                    MarkComponent(dependency, type);
+            }
+        }
+    }
+
+    internal readonly struct FindUnusedObjectsProcessor
     {
         private readonly ImmutableModificationsContainer _modifications;
-        private readonly OptimizerSession _session;
+        private readonly BuildContext _context;
         private readonly HashSet<GameObject> _exclusions;
         private readonly bool _preserveEndBone;
-        private readonly bool _useLegacyGC;
         private readonly bool _noConfigureMergeBone;
+        private readonly bool _noActivenessAnimation;
         private readonly bool _gcDebug;
 
-        public FindUnusedObjectsProcessor(ImmutableModificationsContainer modifications, OptimizerSession session,
-            bool preserveEndBone,
-            bool useLegacyGC,
-            bool noConfigureMergeBone,
-            bool gcDebug,
-            HashSet<GameObject> exclusions)
+        public FindUnusedObjectsProcessor(BuildContext context, TraceAndOptimizeState state)
         {
-            _modifications = modifications;
-            _session = session;
-            _preserveEndBone = preserveEndBone;
-            _useLegacyGC = useLegacyGC;
-            _noConfigureMergeBone = noConfigureMergeBone;
-            _gcDebug = gcDebug;
-            _exclusions = exclusions;
+            _context = context;
+
+            _modifications = state.Modifications;
+            _preserveEndBone = state.PreserveEndBone;
+            _noConfigureMergeBone = state.NoConfigureMergeBone;
+            _noActivenessAnimation = state.NoActivenessAnimation;
+            _gcDebug = state.GCDebug;
+            _exclusions = state.Exclusions;
         }
 
-        public void Process()
+        public void ProcessNew()
         {
-            if (_useLegacyGC)
-                ProcessLegacy();
-            else if (_gcDebug)
-                CollectDataForGc();
-            else
-                ProcessNew();
-        }
-
-        // Mark & Sweep Variables
-        private readonly Dictionary<Component, ComponentDependencyCollector.DependencyType> _marked =
-            new Dictionary<Component, ComponentDependencyCollector.DependencyType>();
-        private readonly Queue<(Component, bool)> _processPending = new Queue<(Component, bool)>();
-        private readonly Dictionary<Component, bool?> _activeNessCache = new Dictionary<Component, bool?>();
-
-        private bool? GetActiveness(Component component)
-        {
-            if (_activeNessCache.TryGetValue(component, out var activeness))
-                return activeness;
-            activeness = ComputeActiveness(component);
-            _activeNessCache.Add(component, activeness);
-            return activeness;
-        }
-
-        private bool? ComputeActiveness(Component component)
-        {
-            if (_session.GetRootComponent<Transform>() == component) return true;
-            bool? parentActiveness;
-            if (component is Transform t)
-                parentActiveness = t.parent == null ? true : GetActiveness(t.parent);
-            else
-                parentActiveness = GetActiveness(component.transform);
-            if (parentActiveness == false) return false;
-
-            bool? activeness;
-            switch (component)
+            var componentInfos = new GCComponentInfoHolder(_modifications, _context.AvatarRootObject);
+            Mark(componentInfos);
+            if (_gcDebug)
             {
-                case Transform transform:
-                    var gameObject = transform.gameObject;
-                    activeness = _modifications.GetConstantValue(gameObject, "m_IsActive", gameObject.activeSelf);
-                    break;
-                case Behaviour behaviour:
-                    activeness = _modifications.GetConstantValue(behaviour, "m_Enabled", behaviour.enabled);
-                    break;
-                case Cloth cloth:
-                    activeness = _modifications.GetConstantValue(cloth, "m_Enabled", cloth.enabled);
-                    break;
-                case Collider collider:
-                    activeness = _modifications.GetConstantValue(collider, "m_Enabled", collider.enabled);
-                    break;
-                case LODGroup lodGroup:
-                    activeness = _modifications.GetConstantValue(lodGroup, "m_Enabled", lodGroup.enabled);
-                    break;
-                case Renderer renderer:
-                    activeness = _modifications.GetConstantValue(renderer, "m_Enabled", renderer.enabled);
-                    break;
-                // components without isEnable
-                case CanvasRenderer _:
-                case Joint _:
-                case MeshFilter _:
-                case OcclusionArea _:
-                case OcclusionPortal _:
-                case ParticleSystem _:
-                case ParticleSystemForceField _:
-                case Rigidbody _:
-                case Rigidbody2D _:
-                case TextMesh _:
-                case Tree _:
-                case WindZone _:
-                case UnityEngine.XR.WSA.WorldAnchor _:
-                    activeness = true;
-                    break;
-                case Component _:
-                case null:
-                    // fallback: all components type should be proceed with above switch
-                    activeness = null;
-                    break;
+                GCDebug.AddGCDebugInfo(componentInfos, _context.AvatarRootObject);
+                return;
+            }
+            Sweep(componentInfos);
+            if (!_noConfigureMergeBone)
+                MergeBone(componentInfos);
+            if (!_noActivenessAnimation)
+                ActivenessAnimation(componentInfos);
+        }
+
+        private void ActivenessAnimation(GCComponentInfoHolder componentInfos)
+        {
+            // entrypoint -> affected activeness animated components / GameObjects
+            Dictionary<Component, HashSet<Component>> entryPointActiveness =
+                new Dictionary<Component, HashSet<Component>>();
+
+            foreach (var componentInfo in componentInfos.AllInformation)
+            { 
+                if (!componentInfo.Component) continue; // swept
+                if (componentInfo.IsEntrypoint) continue;
+                if (!componentInfo.BehaviourComponent) continue;
+                if (_modifications.GetModifiedProperties(componentInfo.Component).ContainsKey("m_Enabled"))
+                    continue; // enabled is animated so we will not generate activeness animation
+
+                HashSet<Component> resultSet;
+                using (var enumerator = componentInfo.DependantEntrypoint.Keys.GetEnumerator())
+                {
+                    System.Diagnostics.Debug.Assert(enumerator.MoveNext());
+                    resultSet = GetEntrypointActiveness(enumerator.Current, _modifications, _context.AvatarRootTransform);
+
+                    // resultSet.Count == 0 => no longer meaning
+                    if (enumerator.MoveNext() && resultSet.Count != 0)
+                    {
+                        resultSet = new HashSet<Component>(resultSet);
+
+                        do
+                        {
+                            var current = GetEntrypointActiveness(enumerator.Current, _modifications,
+                                _context.AvatarRootTransform);
+                            resultSet.IntersectWith(current);
+                        } while (enumerator.MoveNext() && resultSet.Count != 0);
+                    }
+                }
+
+                if (resultSet.Count == 0)
+                    continue; // there are no common activeness animation
+
+                resultSet.Remove(componentInfo.Component.transform);
+                resultSet.ExceptWith(componentInfo.Component.transform.ParentEnumerable());
+
+                Component commonActiveness;
+                // TODO: we may use all activeness with nested identity transform
+                // if activeness animation is not changed
+                if (resultSet.Count == 0)
+                {
+                    // the only activeness is parent of this component so adding animation is not required
+                    continue;
+                }
+                if (resultSet.Count == 1)
+                {
+                    commonActiveness = resultSet.First();
+                }
+                else
+                {
+                    // TODO: currently this is using most-child component but I don't know is this the best.
+                    var nonTransform = resultSet.FirstOrDefault(x => !(x is Transform));
+                    if (nonTransform != null)
+                    {
+                        // unlikely: deepest common activeness is the entrypoint component.
+                        commonActiveness = nonTransform;
+                    }
+                    else
+                    {
+                        // likely: deepest common activeness is parent
+                        commonActiveness = null;
+                        foreach (var component in resultSet)
+                        {
+                            var transform = (Transform)component;
+                            if (commonActiveness == null) commonActiveness = transform;
+                            else
+                            {
+                                // if commonActiveness is parent of transform, transform is children of commonActiveness
+                                if (transform.ParentEnumerable().Contains(commonActiveness))
+                                    commonActiveness = transform;
+                            }
+                        }
+
+                        System.Diagnostics.Debug.Assert(commonActiveness != null);
+                    }
+                }
+
+                if (commonActiveness is Transform)
+                {
+                    _context.Extension<ObjectMappingContext>().MappingBuilder
+                        .RecordCopyProperty(commonActiveness.gameObject, "m_IsActive",
+                            componentInfo.Component, "m_Enabled");
+                }
+                else
+                {
+                    _context.Extension<ObjectMappingContext>().MappingBuilder
+                        .RecordCopyProperty(commonActiveness, "m_Enabled",
+                            componentInfo.Component, "m_Enabled");
+                }
             }
 
-            if (activeness == false) return false;
-            if (parentActiveness == true && activeness == true) return true;
-
-            return null;
-        }
-
-        private void MarkComponent(Component component,
-            bool ifTargetCanBeEnabled,
-            ComponentDependencyCollector.DependencyType type)
-        {
-            bool? activeness = GetActiveness(component);
-
-            if (ifTargetCanBeEnabled && activeness == false)
-                return; // The Target is not active so not dependency
-
-            if (_marked.TryGetValue(component, out var existingFlags))
+            return;
+            
+            HashSet<Component> GetEntrypointActiveness(Component entryPoint,
+                ImmutableModificationsContainer modifications,
+                Transform avatarRoot)
             {
-                _marked[component] = existingFlags | type;
-            }
-            else
-            {
-                _processPending.Enqueue((component, activeness != false));
-                _marked.Add(component, type);
+                if (entryPointActiveness.TryGetValue(entryPoint, out var found))
+                    return found;
+                var set = new HashSet<Component>();
+
+                if (modifications.GetModifiedProperties(entryPoint).ContainsKey("m_Enabled"))
+                    set.Add(entryPoint);
+
+                for (var transform = entryPoint.transform; transform != avatarRoot; transform = transform.parent)
+                    if (modifications.GetModifiedProperties(transform.gameObject).ContainsKey("m_IsActive"))
+                        set.Add(transform);
+
+                entryPointActiveness.Add(entryPoint, set);
+                return set;
             }
         }
 
-        private void ProcessNew()
-        {
-            MarkAndSweep();
-            if (!_noConfigureMergeBone) ConfigureMergeBone();
-        }
-
-        private void MarkAndSweep()
+        private void Mark(GCComponentInfoHolder componentInfos)
         {
             // first, collect usages
-            var collector = new ComponentDependencyCollector(_session, _preserveEndBone);
-            collector.CollectAllUsages();
+            new ComponentDependencyCollector(_context, _preserveEndBone, componentInfos).CollectAllUsages();
 
             // then, mark and sweep.
 
             // entrypoint for mark & sweep is active-able GameObjects
-            foreach (var gameObject in CollectAllActiveAbleGameObjects())
-            foreach (var component in gameObject.GetComponents<Component>())
-                if (collector.GetDependencies(component).EntrypointComponent)
-                    MarkComponent(component, true, ComponentDependencyCollector.DependencyType.Normal);
-
-            // excluded GameObjects must be exists
-            foreach (var gameObject in _exclusions)
-            foreach (var component in gameObject.GetComponents<Component>())
-                MarkComponent(component, true, ComponentDependencyCollector.DependencyType.Normal);
-
-            while (_processPending.Count != 0)
+            foreach (var componentInfo in componentInfos.AllInformation)
             {
-                var (component, canBeActive) = _processPending.Dequeue();
-                var dependencies = collector.TryGetDependencies(component);
-                if (dependencies == null) continue; // not part of this Hierarchy Tree
-
-                foreach (var (dependency, flags) in dependencies.Dependencies)
+                if (componentInfo.IsEntrypoint)
                 {
-                    var ifActive =
-                        (flags.flags & ComponentDependencyCollector.DependencyFlags.EvenIfThisIsDisabled) == 0;
-                    if (ifActive && !canBeActive) continue;
-                    var ifTargetCanBeEnabled =
-                        (flags.flags & ComponentDependencyCollector.DependencyFlags.EvenIfTargetIsDisabled) == 0;
-                    MarkComponent(dependency, ifTargetCanBeEnabled, flags.type);
+                    var component = componentInfo.Component;
+                    var markContext = new MarkObjectContext(componentInfos, component);
+                    markContext.MarkComponent(component, GCComponentInfo.DependencyType.Normal);
+                    markContext.MarkRecursively();
                 }
             }
 
-            foreach (var component in _session.GetComponents<Component>())
+            if (_exclusions.Count != 0) {
+                // excluded GameObjects must be exists
+                var markContext = new MarkObjectContext(componentInfos, _context.AvatarRootTransform);
+
+                foreach (var gameObject in _exclusions)
+                foreach (var component in gameObject.GetComponents<Component>())
+                    markContext.MarkComponent(component, GCComponentInfo.DependencyType.Normal);
+
+                markContext.MarkRecursively();
+            }
+
+        }
+
+        private void Sweep(GCComponentInfoHolder componentInfos)
+        {
+            foreach (var componentInfo in componentInfos.AllInformation)
             {
                 // null values are ignored
-                if (!component) continue;
+                if (!componentInfo.Component) continue;
 
-                if (component is Transform)
+                if (componentInfo.DependantEntrypoint.Count == 0)
                 {
-                    // Treat Transform Component as GameObject because they are two sides of the same coin
-                    if (!_marked.ContainsKey(component))
-                        Object.DestroyImmediate(component.gameObject);
-                }
-                else
-                {
-                    if (!_marked.ContainsKey(component))
-                        Object.DestroyImmediate(component);
-                }
-            }
-        }
-
-        private void CollectDataForGc()
-        {
-            // first, collect usages
-            var collector = new ComponentDependencyCollector(_session, _preserveEndBone);
-            collector.CollectAllUsages();
-
-            var componentDataMap = new Dictionary<Component, GCData.ComponentData>();
-
-            foreach (var component in _session.GetComponents<Component>())
-            {
-                var componentData = new GCData.ComponentData { component = component };
-                componentDataMap.Add(component, componentData);
-
-                switch (ComputeActiveness(component))
-                {
-                    case false:
-                        componentData.activeness = GCData.ActiveNess.False;
-                        break;
-                    case true:
-                        componentData.activeness = GCData.ActiveNess.True;
-                        break;
-                    case null:
-                        componentData.activeness = GCData.ActiveNess.Variable;
-                        break;
-                }
-
-                var dependencies = collector.GetDependencies(component);
-                foreach (var (key, (flags, type)) in dependencies.Dependencies)
-                    componentData.dependencies.Add(new GCData.DependencyInfo(key, flags, type));
-            }
-
-            foreach (var gameObject in CollectAllActiveAbleGameObjects())
-            foreach (var component in gameObject.GetComponents<Component>())
-                if (collector.GetDependencies(component).EntrypointComponent)
-                    componentDataMap[component].entrypoint = true;
-
-            foreach (var gameObject in _exclusions)
-            foreach (var component in gameObject.GetComponents<Component>())
-                componentDataMap[component].entrypoint = true;
-
-            foreach (var component in _session.GetComponents<Component>())
-            {
-                var dependencies = collector.GetDependencies(component);
-                foreach (var (key, (flags, type)) in dependencies.Dependencies)
-                    if (componentDataMap.TryGetValue(key, out var info))
-                        info.dependants.Add(new GCData.DependencyInfo(component, flags, type));
-            }
-
-            
-            foreach (var component in _session.GetComponents<Component>())
-                component.gameObject.GetOrAddComponent<GCData>().data.Add(componentDataMap[component]);
-            _session.GetRootComponent<Transform>().gameObject.AddComponent<GCDataRoot>();
-        }
-
-        class GCDataRoot : MonoBehaviour
-        {
-        }
-
-        [CustomEditor(typeof(GCDataRoot))]
-        class GCDataRootEditor : Editor
-        {
-            public override void OnInspectorGUI()
-            {
-                if (GUILayout.Button("Copy All Data"))
-                {
-                    GUIUtility.systemCopyBuffer = CreateData();
-                }
-
-                if (GUILayout.Button("Save All Data"))
-                {
-                    var path = EditorUtility.SaveFilePanel("DebugGCData", "", "data.txt", "txt");
-                    if (!string.IsNullOrEmpty(path))
+                    if (componentInfo.Component is Transform)
                     {
-                        System.IO.File.WriteAllText(path, CreateData());
+                        // Treat Transform Component as GameObject because they are two sides of the same coin
+                        Object.DestroyImmediate(componentInfo.Component.gameObject);
+                    }
+                    else
+                    {
+                        Object.DestroyImmediate(componentInfo.Component);
                     }
                 }
-
-                string CreateData()
-                {
-                    var root = ((Component)target).gameObject;
-                    var collect = new StringBuilder();
-                    foreach (var gcData in root.GetComponentsInChildren<GCData>(true))
-                    {
-                        collect.Append(RuntimeUtil.RelativePath(root, gcData.gameObject)).Append(":\n");
-
-                        foreach (var componentData in gcData.data.Where(componentData => componentData.component))
-                        {
-                            collect.Append("  ").Append(componentData.component.GetType().Name).Append(":\n");
-                            collect.Append("    ActiveNess: ").Append(componentData.activeness).Append('\n');
-                            collect.Append("    Dependencies:\n");
-                            var list = new List<string>();
-                            foreach (var dependencyInfo in componentData.dependencies.Where(x => x.component))
-                            {
-                                var path = RuntimeUtil.RelativePath(root, dependencyInfo.component.gameObject);
-                                var types = dependencyInfo.component.GetType().Name;
-                                list.Add($"{path}({types})({dependencyInfo.type},{dependencyInfo.flags})");
-                            }
-
-                            list.Sort();
-                            foreach (var line in list)
-                                collect.Append("      ").Append(line).Append("\n");
-                        }
-
-                        collect.Append("\n");
-                    }
-
-                    return collect.ToString();
-                }
             }
         }
 
-        class GCData : MonoBehaviour
+        private void MergeBone(GCComponentInfoHolder componentInfos)
         {
-            public List<ComponentData> data = new List<ComponentData>();
-
-            [Serializable]
-            public class ComponentData
-            {
-                public Component component;
-                public ActiveNess activeness;
-                public bool entrypoint;
-                public List<DependencyInfo> dependencies = new List<DependencyInfo>();
-                public List<DependencyInfo> dependants = new List<DependencyInfo>();
-            }
-
-            [Serializable]
-            public class DependencyInfo
-            {
-                public Component component;
-                public ComponentDependencyCollector.DependencyFlags flags;
-                public ComponentDependencyCollector.DependencyType type;
-
-                public DependencyInfo(Component component, ComponentDependencyCollector.DependencyFlags flags,
-                    ComponentDependencyCollector.DependencyType type)
-                {
-                    this.component = component;
-                    this.flags = flags;
-                    this.type = type;
-                }
-            }
-
-            public enum ActiveNess
-            {
-                False,
-                True,
-                Variable
-            }
-        }
-
-        private void ConfigureMergeBone()
-        {
-            ConfigureRecursive(_session.GetRootComponent<Transform>(), _modifications);
+            ConfigureRecursive(_context.AvatarRootTransform, _modifications);
 
             // returns (original mergedChildren, list of merged children if merged, and null if not merged)
             //[CanBeNull]
@@ -377,10 +297,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     }
                 }
 
-                const ComponentDependencyCollector.DependencyType AllowedUsages =
-                    ComponentDependencyCollector.DependencyType.Bone
-                    | ComponentDependencyCollector.DependencyType.Parent
-                    | ComponentDependencyCollector.DependencyType.ComponentToTransform;
+                const GCComponentInfo.DependencyType AllowedUsages =
+                    GCComponentInfo.DependencyType.Bone
+                    | GCComponentInfo.DependencyType.Parent
+                    | GCComponentInfo.DependencyType.ComponentToTransform;
 
                 // functions for make it easier to know meaning of result
                 (bool, List<Transform>) YesMerge() => (mergedChildren, afterChildren);
@@ -391,7 +311,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 // Components must be Transform Only
                 if (transform.GetComponents<Component>().Length != 1) return NotMerged();
                 // The bone cannot be used generally
-                if ((_marked[transform] & ~AllowedUsages) != 0) return NotMerged();
+                if ((componentInfos.GetInfo(transform).AllUsages & ~AllowedUsages) != 0) return NotMerged();
                 // must not be animated
                 if (TransformAnimated(transform, modifications)) return NotMerged();
 
@@ -454,141 +374,5 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             "m_LocalScale.x", "m_LocalScale.y", "m_LocalScale.z", 
             "localEulerAnglesRaw.x", "localEulerAnglesRaw.y", "localEulerAnglesRaw.z"
         };
-
-        private IEnumerable<GameObject> CollectAllActiveAbleGameObjects()
-        {
-            var queue = new Queue<GameObject>();
-            queue.Enqueue(_session.GetRootComponent<Transform>().gameObject);
-
-            while (queue.Count != 0)
-            {
-                var gameObject = queue.Dequeue();
-                var activeNess = _modifications.GetConstantValue(gameObject, "m_IsActive", gameObject.activeSelf);
-                switch (activeNess)
-                {
-                    case null:
-                    case true:
-                        // This GameObject can be active
-                        yield return gameObject;
-                        foreach (var transform in gameObject.transform.DirectChildrenEnumerable())
-                            queue.Enqueue(transform.gameObject);
-                        break;
-                    case false:
-                        // This GameObject and their children will never be active
-                        break;
-                }
-            }
-        }
-
-        private void ProcessLegacy() {
-            // mark & sweep
-            var gameObjects = new HashSet<GameObject>(_session.GetComponents<Transform>().Select(x => x.gameObject));
-            var referenced = new HashSet<GameObject>();
-            var newReferenced = new Queue<GameObject>();
-
-            void AddGameObject(GameObject gameObject)
-            {
-                if (gameObject && gameObjects.Contains(gameObject) && referenced.Add(gameObject))
-                    newReferenced.Enqueue(gameObject);
-            }
-
-            // entry points: active GameObjects
-            foreach (var component in gameObjects.Where(x => x.activeInHierarchy))
-                AddGameObject(component);
-
-            // entry points: modified enable/disable
-            foreach (var keyValuePair in _modifications.ModifiedProperties)
-            {
-                // TODO: if the any of parent is inactive and kept, it should not be assumed as 
-                if (!keyValuePair.Key.AsGameObject(out var gameObject)) continue;
-                if (!keyValuePair.Value.TryGetValue("m_IsActive", out _)) continue;
-
-                // TODO: if the child is not activeSelf, it should not be assumed as entry point.
-                foreach (var transform in gameObject.GetComponentsInChildren<Transform>())
-                    AddGameObject(transform.gameObject);
-            }
-
-            // entry points: active GameObjects
-            foreach (var gameObject in _exclusions)
-                AddGameObject(gameObject);
-
-            while (newReferenced.Count != 0)
-            {
-                var gameObject = newReferenced.Dequeue();
-
-                foreach (var component in gameObject.GetComponents<Component>())
-                {
-                    if (component is Transform transform)
-                    {
-                        if (transform.parent)
-                            AddGameObject(transform.parent.gameObject);
-                        continue;
-                    }
-
-                    if (component is VRCPhysBoneBase)
-                    {
-                        foreach (var child in component.GetComponentsInChildren<Transform>(true))
-                            AddGameObject(child.gameObject);
-                    }
-
-                    using (var serialized = new SerializedObject(component))
-                    {
-                        var iter = serialized.GetIterator();
-                        var enterChildren = true;
-                        while (iter.Next(enterChildren))
-                        {
-                            if (iter.propertyType == SerializedPropertyType.ObjectReference)
-                            {
-                                var value = iter.objectReferenceValue;
-                                if (value is Component c && !EditorUtility.IsPersistent(value))
-                                    AddGameObject(c.gameObject);
-                            }
-
-                            switch (iter.propertyType)
-                            {
-                                case SerializedPropertyType.Integer:
-                                case SerializedPropertyType.Boolean:
-                                case SerializedPropertyType.Float:
-                                case SerializedPropertyType.String:
-                                case SerializedPropertyType.Color:
-                                case SerializedPropertyType.ObjectReference:
-                                case SerializedPropertyType.Enum:
-                                case SerializedPropertyType.Vector2:
-                                case SerializedPropertyType.Vector3:
-                                case SerializedPropertyType.Vector4:
-                                case SerializedPropertyType.Rect:
-                                case SerializedPropertyType.ArraySize:
-                                case SerializedPropertyType.Character:
-                                case SerializedPropertyType.Bounds:
-                                case SerializedPropertyType.Quaternion:
-                                case SerializedPropertyType.FixedBufferSize:
-                                case SerializedPropertyType.Vector2Int:
-                                case SerializedPropertyType.Vector3Int:
-                                case SerializedPropertyType.RectInt:
-                                case SerializedPropertyType.BoundsInt:
-                                    enterChildren = false;
-                                    break;
-                                case SerializedPropertyType.Generic:
-                                case SerializedPropertyType.LayerMask:
-                                case SerializedPropertyType.AnimationCurve:
-                                case SerializedPropertyType.Gradient:
-                                case SerializedPropertyType.ExposedReference:
-                                case SerializedPropertyType.ManagedReference:
-                                default:
-                                    enterChildren = true;
-                                    break;
-                            }
-                        }
-                    }
-                }
-            }
-
-            // sweep
-            foreach (var gameObject in gameObjects.Where(x => !referenced.Contains(x)))
-            {
-                if (gameObject)
-                    Object.DestroyImmediate(gameObject);
-            }
-        }
     }
 }
