@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Anatawa12.AvatarOptimizer.APIInternal.Externals;
 using UnityEditor;
 using UnityEngine;
 
@@ -64,11 +65,29 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
 
             if (!informationType.IsAssignableFrom(type))
                 throw new Exception("Unsupported type : Not Extends from ComponentInformation<Target>");
-            if (InformationByType.ContainsKey(targetType))
-                throw new Exception($"Target Type duplicated: {targetType}");
-
-            var instance = (ComponentInformation)System.Activator.CreateInstance(type);
-            InformationByType.Add(targetType, instance);
+            if (InformationByType.TryGetValue(targetType, out var existing))
+            {
+                if (existing is IExternalMarker)
+                {
+                    // if existing is fallback, use new one
+                    var instance = (ComponentInformation)System.Activator.CreateInstance(type);
+                    InformationByType[targetType] = instance;
+                }
+                else if (typeof(IExternalMarker).IsAssignableFrom(targetType))
+                {
+                    // if adding is fallback, use existing one
+                }
+                else
+                {
+                    // otherwise, in other words, If both are not fallback, throw exception
+                    throw new Exception($"Target Type duplicated: {targetType}");
+                }
+            }
+            else
+            {
+                var instance = (ComponentInformation)System.Activator.CreateInstance(type);
+                InformationByType.Add(targetType, instance);
+            }
         }
 
         internal static bool TryGetInformation(Type type, out ComponentInformation information) =>

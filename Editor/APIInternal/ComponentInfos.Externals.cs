@@ -4,10 +4,20 @@ using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer.APIInternal.Externals
 {
+    /// <summary>
+    /// Marker interface for fallback ComponentInformation(s) for external library.
+    ///
+    /// Thanks to this interface, upstream author can register those component types without causing duplication error
+    /// and override information by Avatar Optimizer.
+    /// </summary>
+    internal interface IExternalMarker
+    {
+    }
+
     #region Dynamic Bones
 
     [ComponentInformationWithGUID("f9ac8d30c6a0d9642a11e5be4c440740", 11500000)]
-    internal class DynamicBoneInformation : ComponentInformation<Component>
+    internal class DynamicBoneInformation : ComponentInformation<Component>, IExternalMarker
     {
         protected override void CollectDependency(Component component, ComponentDependencyCollector collector)
         {
@@ -54,7 +64,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.Externals
     }
 
     [ComponentInformationWithGUID("baedd976e12657241bf7ff2d1c685342", 11500000)]
-    internal class DynamicBoneColliderInformation : ComponentInformation<Component>
+    internal class DynamicBoneColliderInformation : ComponentInformation<Component>, IExternalMarker
     {
         protected override void CollectDependency(Component component, ComponentDependencyCollector collector)
         {
@@ -68,7 +78,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.Externals
     [ComponentInformationWithGUID("e78466b6bcd24e5409dca557eb81d45b", 11500000)] // KiseteneComponent
     [ComponentInformationWithGUID("7f9c3fe1cfb9d1843a9dc7da26352ce2", 11500000)] // FlyAvatarSetupTool
     [ComponentInformationWithGUID("95f6e1368d803614f8a351322ab09bac", 11500000)] // BlendShapeOverrider
-    internal class SataniaKiseteneExComponents : ComponentInformation<Component>
+    internal class SataniaKiseteneExComponents : ComponentInformation<Component>, IExternalMarker
     {
         protected override void CollectDependency(Component component, ComponentDependencyCollector collector)
         {
@@ -81,7 +91,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.Externals
     #region VRCQuestTools
 
     [ComponentInformationWithGUID("f055e14e1beba894ea68aedffde8ada6", 11500000)] // VertexColorRemover
-    internal class VRCQuestToolsComponents : ComponentInformation<Component>
+    internal class VRCQuestToolsComponents : ComponentInformation<Component>, IExternalMarker
     {
         protected override void CollectDependency(Component component, ComponentDependencyCollector collector)
         {
