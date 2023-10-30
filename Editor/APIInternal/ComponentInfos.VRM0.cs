@@ -23,7 +23,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
     {
         protected override void CollectDependency(VRMSpringBone component, ComponentDependencyCollector collector)
         {
-            collector.MarkBehaviour();
+            collector.MarkHeavyBehaviour();
             foreach (var transform in component.GetComponentsInChildren<Transform>()) collector.AddDependency(transform);
             foreach (var collider in component.ColliderGroups) collector.AddDependency(collider);
         }
@@ -44,10 +44,10 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
     {
         protected override void CollectDependency(VRMBlendShapeProxy component, ComponentDependencyCollector collector)
         {
-            // XXX we need BuildContext.AvatarRootTransform, assume this is VRM0 avatar...
+            // FIXME: we need BuildContext.AvatarRootTransform, assume this is VRM0 avatar...
             var avatarRootTransform = component.GetComponentInParent<VRMMeta>().transform;
 
-            collector.MarkBehaviour();
+            collector.MarkHeavyBehaviour();
             foreach (var clip in component.BlendShapeAvatar.Clips)
             {
                 foreach (var binding in clip.Values)
@@ -58,7 +58,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
                 }
                 foreach (var materialBinding in clip.MaterialValues)
                 {
-                    // XXX I don't know what to do with BlendShape materials, so I pretend material names does not change (ex. MergeToonLitMaterial)
+                    // TODO: I don't know what to do with BlendShape materials, so I pretend material names does not change (ex. MergeToonLitMaterial)
                 }
             }
         }
@@ -69,7 +69,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
     {
         protected override void CollectDependency(VRMLookAtHead component, ComponentDependencyCollector collector)
         {
-            collector.MarkBehaviour();
+            collector.MarkHeavyBehaviour();
             collector.AddDependency(component.Head, component);
             collector.AddDependency(component.Head);
         }
@@ -80,7 +80,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
     {
         protected override void CollectDependency(VRMLookAtBlendShapeApplyer component, ComponentDependencyCollector collector)
         {
-            collector.MarkBehaviour();
+            collector.MarkHeavyBehaviour();
         }
     }
 
@@ -90,7 +90,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
     {
         protected override void CollectDependency(VRMFirstPerson component, ComponentDependencyCollector collector)
         {
-            collector.MarkBehaviour();
+            collector.MarkHeavyBehaviour();
             collector.AddDependency(component.FirstPersonBone, component);
             collector.AddDependency(component.FirstPersonBone);
         }

@@ -17,7 +17,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
     {
         protected override void CollectDependency(Vrm10Instance component, ComponentDependencyCollector collector)
         {
-            // XXX we need BuildContext.AvatarRootTransform, assume this is VRM1 avatar...
+            // FIXME: we need BuildContext.AvatarRootTransform, assume this is VRM1 avatar...
             var avatarRootTransform = component.GetComponentInParent<Vrm10Instance>().transform;
 
             collector.MarkEntrypoint();
@@ -42,11 +42,11 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
                 }
                 foreach (var materialUVBinding in clip.MaterialUVBindings)
                 {
-                    // XXX I don't know what to do with BlendShape materials, so I pretend material names does not change (ex. MergeToonLitMaterial)
+                    // TODO: I don't know what to do with BlendShape materials, so I pretend material names does not change (ex. MergeToonLitMaterial)
                 }
                 foreach (var materialColorBinding in clip.MaterialColorBindings)
                 {
-                    // XXX I don't know what to do with BlendShape materials, so I pretend material names does not change (ex. MergeToonLitMaterial)
+                    // TODO: I don't know what to do with BlendShape materials, so I pretend material names does not change (ex. MergeToonLitMaterial)
                 }
             }
 
@@ -80,7 +80,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
         protected override void CollectDependency(Vrm10AimConstraint component,
             ComponentDependencyCollector collector)
         {
-            collector.MarkBehaviour();
+            collector.MarkHeavyBehaviour();
             collector.AddDependency(component.transform, component.Source);
         }
     }
@@ -91,7 +91,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
         protected override void CollectDependency(Vrm10RollConstraint component,
             ComponentDependencyCollector collector)
         {
-            collector.MarkBehaviour();
+            collector.MarkHeavyBehaviour();
             collector.AddDependency(component.transform, component.Source);
         }
     }
@@ -102,7 +102,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
         protected override void CollectDependency(Vrm10RotationConstraint component,
             ComponentDependencyCollector collector)
         {
-            collector.MarkBehaviour();
+            collector.MarkHeavyBehaviour();
             collector.AddDependency(component.transform, component.Source);
         }
     }
@@ -112,7 +112,9 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
     {
         protected override void CollectDependency(Humanoid component, ComponentDependencyCollector collector)
         {
-            collector.MarkBehaviour();
+            // VRM1 Humanoid has side effect because it overwrites Animator's Avatar on VRM1 export
+            collector.MarkEntrypoint();
+
             // Use reflection to support UniVRM 0.99.4
             var boneMapProperty = typeof(Humanoid).GetProperty("BoneMap");
             var boneMap = (IEnumerable<(Transform, HumanBodyBones)>)boneMapProperty.GetValue(component);
