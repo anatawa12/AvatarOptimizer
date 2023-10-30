@@ -111,7 +111,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             { 
                 if (!componentInfo.Component) continue; // swept
                 if (componentInfo.IsEntrypoint) continue;
-                if (!componentInfo.BehaviourComponent) continue;
+                if (!componentInfo.HeavyBehaviourComponent) continue;
                 if (_modifications.GetModifiedProperties(componentInfo.Component).ContainsKey("m_Enabled"))
                     continue; // enabled is animated so we will not generate activeness animation
 

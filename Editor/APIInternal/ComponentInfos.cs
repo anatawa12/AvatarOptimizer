@@ -303,7 +303,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
                 .EvenIfDependantDisabled();
             for (var i = 0; i < component.sourceCount; i++)
                 collector.AddDependency(component.GetSource(i).sourceTransform);
-            collector.MarkBehaviour();
+            collector.MarkHeavyBehaviour();
         }
     }
 

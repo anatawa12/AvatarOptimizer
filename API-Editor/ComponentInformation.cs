@@ -104,15 +104,29 @@ namespace Anatawa12.AvatarOptimizer.API
         public abstract void MarkEntrypoint();
 
         /// <summary>
-        /// Marks this component as Behaviour component, which means has some effects to components in the avatars.
+        /// Marks this component as HeavyBehaviour component, which means the component uses some resources while
+        /// enabled but doesn't eat if not enabled and AAO can (almost) freely change enablement of the component.
         /// When you mark some components Behaviour component, Avatar Optimizer will generate animation that disables
         /// the component when entrypoint is not active / enabled.
         ///
-        /// If your component is not marked as Behaviour, enable-ness / activeness will not changed by Avatar Optimizer.
         /// If your component have some runtime load and can be skipped if your component is not needed by all
-        /// EntryPoint components, you should mark your component as Behaviour for runtime-load optimization.
+        /// enabled EntryPoint components, you should mark your component as Behaviour for runtime-load optimization.
         ///
-        /// For example, VRCPhysBone and Constraints are marked as Behaviour.
+        /// For example, VRCPhysBone and Constraints are marked as HeavyBehaviour.
+        /// </summary>
+        [PublicAPI]
+        public abstract void MarkHeavyBehaviour();
+
+        /// <summary>
+        /// Marks this component as Behaviour component, which means the activeness of the component has meaning.
+        /// When you mark your some components Behaviour component, Avatar Optimizer will never change activeness of
+        /// the component.
+        ///
+        /// If your component is not a Behaviour component, AAO may change enablement of the component.
+        ///
+        /// NOTE: In AAO 1.6.0, AAO will not change enablement of non-Behaviour components but in the feature releases,
+        /// AAO may change enablement of non-Behaviour components to change enablement of HeavyBehaviour components
+        /// effectively.
         /// </summary>
         [PublicAPI]
         public abstract void MarkBehaviour();
