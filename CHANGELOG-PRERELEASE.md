@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog].
 ## [Unreleased]
 ### Added
 - Small performance improve `#641`
+- Remove Zero Sized Polygons `#659`
 
 ### Changed
 - All logs passed to ErrorReport is now shown on the console log `#643`

@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog].
 - Disabling PhysBone animation based on mesh renderer enabled animation `#640`
   - If you toggles your clothes with simple toggle, PhysBones on the your avatar will also be toggled automatically!
 - Small performance improve `#641`
+- Remove Zero Sized Polygons `#659`
 
 ### Changed
 - All logs passed to ErrorReport is now shown on the console log `#643`
