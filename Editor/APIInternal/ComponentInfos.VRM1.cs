@@ -1,5 +1,6 @@
 #if AAO_VRM1
 
+using System.Collections.Generic;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.API;
 using UniHumanoid;
@@ -112,7 +113,10 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
         protected override void CollectDependency(Humanoid component, ComponentDependencyCollector collector)
         {
             collector.MarkBehaviour();
-            foreach ((Transform transform, HumanBodyBones) bone in component.BoneMap)
+            // Use reflection to support UniVRM 0.99.4
+            var boneMapProperty = typeof(Humanoid).GetProperty("BoneMap");
+            var boneMap = (IEnumerable<(Transform, HumanBodyBones)>)boneMapProperty.GetValue(component);
+            foreach ((Transform transform, HumanBodyBones) bone in boneMap)
             {
                 collector.AddDependency(bone.transform);
             }
