@@ -601,6 +601,18 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     targetRenderer.localBounds = Bounds;
             });
         }
+
+        public void WriteToMeshRenderer(MeshRenderer targetRenderer)
+        {
+            BuildReport.ReportingObject(targetRenderer, () =>
+            {
+                var mesh = new Mesh { name = $"AAOGeneratedMesh{targetRenderer.name}" };
+                var meshFilter = targetRenderer.GetComponent<MeshFilter>();
+                WriteToMesh(mesh);
+                meshFilter.sharedMesh = mesh;
+                targetRenderer.sharedMaterials = SubMeshes.Select(x => x.SharedMaterial).ToArray();
+            });
+        }
     }
 
     internal class SubMesh
