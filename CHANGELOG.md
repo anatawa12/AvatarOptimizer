@@ -15,6 +15,9 @@ The format is based on [Keep a Changelog].
 
 ### Changed
 - All logs passed to ErrorReport is now shown on the console log `#643`
+- Improved Behaviour with multi-material multi pass rendering `#662`
+  - Previously, multi-material multi pass rendering are flattened.
+  - Since 1.6, flattened if component doesn't support that.
 
 ### Deprecated
 
