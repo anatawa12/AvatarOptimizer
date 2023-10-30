@@ -127,7 +127,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
             foreach (var physBoneCollider in component.colliders)
                 collector.AddDependency(physBoneCollider).OnlyIfTargetCanBeEnable();
 
-            collector.MarkBehaviour();
+            collector.MarkHeavyBehaviour();
 
             // If parameter is not empty, the PB can be required for Animator Parameter so it's Entrypoint Component
             // https://github.com/anatawa12/AvatarOptimizer/issues/450

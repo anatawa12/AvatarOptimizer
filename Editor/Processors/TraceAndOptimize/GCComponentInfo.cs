@@ -59,7 +59,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         /// <summary>
         /// True if activeness of this component has meaning and inactive is lighter
         /// </summary>
-        public bool BehaviourComponent = false;
+        public bool HeavyBehaviourComponent = false;
 
         /// <summary>
         /// Dependencies of this component
