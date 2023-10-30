@@ -284,6 +284,13 @@ msgstr "すべての有効/無効を入れ替える"
 
 # endregion
 
+# region RemoveZeroSizedPolygon
+
+msgid "RemoveZeroSizedPolygon:description"
+msgstr "面積が零なポリゴンを削除します"
+
+# endregion
+
 # region AvatarGlobalComponent
 
 msgid "DeleteEditorOnlyGameObjects:NotOnAvatarDescriptor"

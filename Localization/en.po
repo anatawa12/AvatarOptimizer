@@ -347,6 +347,13 @@ msgstr "Invert All"
 
 # endregion
 
+# region RemoveZeroSizedPolygon
+
+msgid "RemoveZeroSizedPolygon:description"
+msgstr "Removes polygons whose area is zero"
+
+# endregion
+
 # region AvatarGlobalComponent
 
 msgid "DeleteEditorOnlyGameObjects:NotOnAvatarDescriptor"

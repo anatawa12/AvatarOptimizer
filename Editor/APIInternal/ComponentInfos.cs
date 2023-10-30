@@ -404,6 +404,19 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
         }
     }
     
+    [ComponentInformation(typeof(RemoveZeroSizedPolygon))]
+    internal class RemoveZeroSizedPolygonInformation : ComponentInformation<RemoveZeroSizedPolygon>
+    {
+        protected override void CollectDependency(RemoveZeroSizedPolygon component, ComponentDependencyCollector collector)
+        {
+            collector.AddDependency(component.GetComponent<SkinnedMeshRenderer>(), component);
+        }
+
+        protected override void CollectMutations(RemoveZeroSizedPolygon component, ComponentMutationsCollector collector)
+        {
+        }
+    }
+
     [ComponentInformation(typeof(MergeBone))]
     internal class MergeBoneInformation : ComponentInformation<MergeBone>
     {
