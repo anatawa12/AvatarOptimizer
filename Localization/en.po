@@ -440,6 +440,16 @@ msgstr "BlendShape(s) for eyelids are Removed / frozen."
 
 #endregion
 
+#region MeshInfo2
+
+msgid "MeshInfo2:warning:multiPassRendering"
+msgstr ""
+"Multi pass rendering with multiple materials is used in mesh with {0}.\n"
+"There's no big difference in actual performance, but the number of polygons in the performance rank will increase.\n"
+"Using multi pass rendering often not be intended. Please check if you intended to use multi pass rendering."
+
+#endregion
+
 # region ErrorReporter
 
 msgid "ErrorReporter:error.internal_error"

@@ -399,6 +399,22 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             Bones.RemoveAll(x => !usedBones.Contains(x));
         }
 
+        /// <returns>true if we flattened multi pass rendering</returns>
+        public void FlattenMultiPassRendering(string reasonComponent)
+        {
+            if (SubMeshes.All(x => x.SharedMaterials.Length == 1)) return;
+            
+            BuildReport.LogWarning("MeshInfo2:warning:multiPassRendering", reasonComponent)
+                ?.WithContext(SourceRenderer);
+
+            // flatten SubMeshes
+            var subMeshes = SubMeshes.ToArray();
+            SubMeshes.Clear();
+            foreach (var subMesh in subMeshes)
+            foreach (var material in subMesh.SharedMaterials)
+                SubMeshes.Add(new SubMesh(subMesh.Triangles, material));
+        }
+
         public void WriteToMesh(Mesh destMesh)
         {
             Optimize();
