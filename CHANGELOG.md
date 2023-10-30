@@ -31,6 +31,7 @@ The format is based on [Keep a Changelog].
 - Improve support of newer Unity versions `#608`
 - Improve support of projects without VRCSDK `#609` `#625` `#627`
 - Prefab blinks when we see editor of PrefabSafeSet of prefab asset `#645` `#664`
+- Improve support of UniVRM components `#652`
 
 ### Security
 

@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - proxy animation can be modified `#678`
+- Improve support of UniVRM components `#652`
 
 ### Security
 
