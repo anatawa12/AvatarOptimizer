@@ -21,6 +21,8 @@ Currently the following optimizations are applied automatically.
   By scanning animation etc., automatically removes unused Objects (e.g. GameObjects, Components).
   - `Preserve EndBone`  
     Prevents removing end bones[^endbone] whose parent is not removed.
+- `Remove Polygons with Area of Zero`
+  Removes polygons with area of zero with attaching [Remove Zero Sized Polygon](../remove-zero-sized-polygon) component.
 
 Also, You can adjust optimization with the following settings
 - `MMD World Compatibility`  

@@ -21,6 +21,8 @@ aliases:
   アニメーションなどを走査して、使われていないObject(GameObjectやコンポーネントなど)を自動的に削除します。
   - `endボーンを残す`  
     親が削除されていないendボーン[^endbone]を削除しないようにします。
+- `大きさのないポリゴンを削除する`
+  [Remove Zero Sized Polygon](../remove-zero-sized-polygon)を使用して、面積が0のポリゴンを削除します。
 
 また、以下の設定で自動設定を調節できます。
 - `MMDワールドとの互換性`  
