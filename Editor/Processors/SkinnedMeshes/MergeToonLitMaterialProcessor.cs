@@ -84,6 +84,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             }
 
             // merge submeshes
+            target.FlattenMultiPassRendering("Merge Toon Lit");
             var copied = target.SubMeshes.Where((_, i) => !mergingIndices[i]);
             var materials = target.SubMeshes.Select(x => x.SharedMaterial).ToArray();
             var merged = Component.merges.Select(x => new SubMesh(

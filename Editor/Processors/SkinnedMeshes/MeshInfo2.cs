@@ -94,17 +94,30 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         private void SetMaterials(Renderer renderer)
         {
+            if (SubMeshes.Count == 0) return;
+
             var sourceMaterials = renderer.sharedMaterials;
 
             if (sourceMaterials.Length < SubMeshes.Count)
                 SubMeshes.RemoveRange(sourceMaterials.Length, SubMeshes.Count - sourceMaterials.Length);
 
-            for (var i = 0; i < SubMeshes.Count; i++)
-                SubMeshes[i].SharedMaterial = sourceMaterials[i];
-            var verticesForLastSubMesh =
-                SubMeshes.Count == 0 ? new List<Vertex>() : SubMeshes[SubMeshes.Count - 1].Triangles;
-            for (var i = SubMeshes.Count; i < sourceMaterials.Length; i++)
-                SubMeshes.Add(new SubMesh(verticesForLastSubMesh.ToList(), sourceMaterials[i]));
+            if (SubMeshes.Count == sourceMaterials.Length)
+            {
+                for (var i = 0; i < SubMeshes.Count; i++)
+                    SubMeshes[i].SharedMaterial = sourceMaterials[i];
+            }
+            else
+            {
+                // there are multi pass rendering
+                for (var i = 0; i < SubMeshes.Count - 1; i++)
+                    SubMeshes[i].SharedMaterial = sourceMaterials[i];
+
+                var lastMeshMaterials = new Material[sourceMaterials.Length - SubMeshes.Count + 1];
+                
+                for (int i = SubMeshes.Count - 1, j = 0; i < sourceMaterials.Length; i++, j++)
+                    lastMeshMaterials[j] = sourceMaterials[i];
+                SubMeshes[SubMeshes.Count - 1].SharedMaterials = lastMeshMaterials;
+            }
         }
 
         [Conditional("UNITY_ASSERTIONS")]
@@ -386,10 +399,29 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             Bones.RemoveAll(x => !usedBones.Contains(x));
         }
 
+        /// <returns>true if we flattened multi pass rendering</returns>
+        public void FlattenMultiPassRendering(string reasonComponent)
+        {
+            if (SubMeshes.All(x => x.SharedMaterials.Length == 1)) return;
+            
+            BuildReport.LogWarning("MeshInfo2:warning:multiPassRendering", reasonComponent)
+                ?.WithContext(SourceRenderer);
+
+            // flatten SubMeshes
+            var subMeshes = SubMeshes.ToArray();
+            SubMeshes.Clear();
+            foreach (var subMesh in subMeshes)
+            foreach (var material in subMesh.SharedMaterials)
+                SubMeshes.Add(new SubMesh(subMesh.Triangles, material));
+        }
+
         public void WriteToMesh(Mesh destMesh)
         {
             Optimize();
             destMesh.Clear();
+
+            // if mesh is empty, clearing mesh is enough!
+            if (SubMeshes.Count == 0) return; 
 
             Profiler.BeginSample("Write to Mesh");
 
@@ -480,33 +512,58 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 for (var i = 0; i < Vertices.Count; i++)
                     vertexIndices.Add(Vertices[i], i);
 
-                var triangles = new int[SubMeshes.Sum(x => x.Triangles.Count)];
-                var subMeshDescriptors = new SubMeshDescriptor[SubMeshes.Count];
-                var trianglesIndex = 0;
-                for (var i = 0; i < SubMeshes.Count; i++)
+                var totalTriangles = 0;
+                var totalSubMeshes = 0;
+                for (var i = 0; i < SubMeshes.Count - 1; i++)
                 {
-                    var subMesh = SubMeshes[i];
-                    var existingIndex = SubMeshes.FindIndex(0, i, sm => sm.Triangles.SequenceEqual(subMesh.Triangles));
-                    if (existingIndex != -1)
+                    // for non-last submesh, we have to duplicate submesh for multi pass rendering
+                    for (var j = 0; j < SubMeshes[i].SharedMaterials.Length; j++)
                     {
-                        subMeshDescriptors[i] = subMeshDescriptors[existingIndex];
-                    }
-                    else
-                    {
-                        subMeshDescriptors[i] = new SubMeshDescriptor(trianglesIndex, SubMeshes[i].Triangles.Count);
-                        foreach (var triangle in SubMeshes[i].Triangles)
-                            triangles[trianglesIndex++] = vertexIndices[triangle];
+                        totalTriangles += SubMeshes[i].Triangles.Count;
+                        totalSubMeshes++;
                     }
                 }
+                {
+                    // for last submesh, we can use single submesh for multi pass reendering
+                    totalTriangles += SubMeshes[SubMeshes.Count - 1].Triangles.Count;
+                    totalSubMeshes++;
+                }
 
-                triangles = triangles.Length == trianglesIndex
-                    ? triangles
-                    : triangles.AsSpan().Slice(0, trianglesIndex).ToArray();
+                var triangles = new int[totalTriangles];
+                var subMeshDescriptors = new SubMeshDescriptor[totalSubMeshes];
+                var trianglesIndex = 0;
+                var submeshIndex = 0;
+
+                for (var i = 0; i < SubMeshes.Count - 1; i++)
+                {
+                    var subMesh = SubMeshes[i];
+                    var descriptor = new SubMeshDescriptor(trianglesIndex, subMesh.Triangles.Count);
+                    foreach (var triangle in subMesh.Triangles)
+                        triangles[trianglesIndex++] = vertexIndices[triangle];
+
+                    // general case: for non-last submesh, we have to duplicate submesh for multi pass rendering
+                    for (var j = 0; j < subMesh.SharedMaterials.Length; j++)
+                        subMeshDescriptors[submeshIndex++] = descriptor;
+                }
+
+                {
+                    var subMesh = SubMeshes[SubMeshes.Count - 1];
+
+                    var descriptor = new SubMeshDescriptor(trianglesIndex, subMesh.Triangles.Count);
+                    foreach (var triangle in subMesh.Triangles)
+                        triangles[trianglesIndex++] = vertexIndices[triangle];
+
+                    // for last submesh, we can use single submesh for multi pass reendering
+                    subMeshDescriptors[submeshIndex++] = descriptor;
+                }
+
+                Debug.Assert(subMeshDescriptors.Length == submeshIndex);
+                Debug.Assert(triangles.Length == trianglesIndex);
 
                 destMesh.indexFormat = Vertices.Count <= ushort.MaxValue ? IndexFormat.UInt16 : IndexFormat.UInt32;
                 destMesh.triangles = triangles;
-                destMesh.subMeshCount = SubMeshes.Count;
-                for (var i = 0; i < SubMeshes.Count; i++)
+                destMesh.subMeshCount = submeshIndex;
+                for (var i = 0; i < subMeshDescriptors.Length; i++)
                     destMesh.SetSubMesh(i, subMeshDescriptors[i]);
             }
             Profiler.EndSample();
@@ -593,12 +650,24 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 targetRenderer.sharedMesh = mesh;
                 for (var i = 0; i < BlendShapes.Count; i++)
                     targetRenderer.SetBlendShapeWeight(i, BlendShapes[i].weight);
-                targetRenderer.sharedMaterials = SubMeshes.Select(x => x.SharedMaterial).ToArray();
+                targetRenderer.sharedMaterials = SubMeshes.SelectMany(x => x.SharedMaterials).ToArray();
                 targetRenderer.bones = Bones.Select(x => x.Transform).ToArray();
 
                 targetRenderer.rootBone = RootBone;
                 if (Bounds != default)
                     targetRenderer.localBounds = Bounds;
+            });
+        }
+
+        public void WriteToMeshRenderer(MeshRenderer targetRenderer)
+        {
+            BuildReport.ReportingObject(targetRenderer, () =>
+            {
+                var mesh = new Mesh { name = $"AAOGeneratedMesh{targetRenderer.name}" };
+                var meshFilter = targetRenderer.GetComponent<MeshFilter>();
+                WriteToMesh(mesh);
+                meshFilter.sharedMesh = mesh;
+                targetRenderer.sharedMaterials = SubMeshes.SelectMany(x => x.SharedMaterials).ToArray();
             });
         }
     }
@@ -607,7 +676,14 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
     {
         // size of this must be 3 * n
         public readonly List<Vertex> Triangles = new List<Vertex>();
-        public Material SharedMaterial;
+
+        public Material SharedMaterial
+        {
+            get => SharedMaterials[0];
+            set => SharedMaterials[0] = value;
+        }
+
+        public Material[] SharedMaterials = { null };
 
         public SubMesh()
         {
