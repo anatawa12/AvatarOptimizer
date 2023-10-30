@@ -73,7 +73,7 @@ Avatar Optimizerにコンポーネントの情報を登録できます。
 次に、asmdefファイルのアセンブリ参照に`com.anatawa12.avatar-optimizer.api.editor`を追加してください。\
 もしあなたのツールがAvatar Optimizerに依存したくない場合、[Version Defines]を使用してください。
 Avatar Optimizer 1.6.0より前では公開APIがなく、またAvatar Optimizer v2.0.0でAPIを破壊する可能性があるため、
-バージョンの範囲を`[1.6,2.0)`(やもっと厳しい `[1.7,2.0)`など)のように指定するのを推奨します。
+バージョンの範囲を`[1.6,2.0)`(や、将来追加されたAPIを使用する場合にはもっと厳しい `[1.7,2.0)`など)のように指定するのを推奨します。
 
 ![version-defines.png](version-defines.png)
 
