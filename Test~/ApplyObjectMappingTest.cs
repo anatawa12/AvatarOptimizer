@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
 
@@ -40,6 +41,42 @@ namespace Anatawa12.AvatarOptimizer.Test
                 Is.EqualTo("child1/child12"));
             Assert.That(avatarMask.GetHumanoidBodyPartActive(AvatarMaskBodyPart.Head), Is.True);
             Assert.That(avatarMask.GetHumanoidBodyPartActive(AvatarMaskBodyPart.LeftLeg), Is.False);
+        }
+
+        [Test]
+        public void PreserveAnimationLength()
+        {
+            var root = new GameObject();
+            var child1 = Utils.NewGameObject("child1", root.transform);
+            var child11 = Utils.NewGameObject("child11", child1.transform);
+            var builder = new ObjectMappingBuilder(root);
+
+            Object.DestroyImmediate(child11);
+
+            var built = builder.BuildObjectMapping();
+
+            var rootMapper = new AnimatorControllerMapper(built.CreateAnimationMapper(root));
+
+            var animatorController = new AnimatorController();
+            var layer = new AnimatorControllerLayer()
+            {
+                name = "layer",
+                stateMachine = new AnimatorStateMachine() { name = "layer" },
+            };
+            var state = layer.stateMachine.AddState("theState");
+            var clip = new AnimationClip();
+            clip.SetCurve("child1/child11", typeof(GameObject), "m_IsActive", AnimationCurve.Constant(0, 0.3f, 1));
+            state.motion = clip;
+            animatorController.AddLayer(layer);
+
+            var mappedController = rootMapper.MapAnimatorController(animatorController);
+            Assert.That(mappedController, Is.Not.EqualTo(animatorController));
+            var mappedClip = mappedController.layers[0].stateMachine.states[0].state.motion as AnimationClip;
+            Assert.That(mappedClip, Is.Not.Null);
+            
+            Assert.That(mappedClip.length, Is.EqualTo(0.3f));
+            Assert.That(AnimationUtility.GetCurveBindings(mappedClip)[0].path,
+                Contains.Substring("AvatarOptimizerClipLengthDummy"));
         }
     }
 }
