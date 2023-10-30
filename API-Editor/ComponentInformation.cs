@@ -118,6 +118,20 @@ namespace Anatawa12.AvatarOptimizer.API
         public abstract void MarkHeavyBehaviour();
 
         /// <summary>
+        /// Marks this component as Behaviour component, which means the activeness of the component has meaning.
+        /// When you mark your some components Behaviour component, Avatar Optimizer will never change activeness of
+        /// the component.
+        ///
+        /// If your component is not a Behaviour component, AAO may change enablement of the component.
+        ///
+        /// NOTE: In AAO 1.6.0, AAO will not change enablement of non-Behaviour components but in the feature releases,
+        /// AAO may change enablement of non-Behaviour components to change enablement of HeavyBehaviour components
+        /// effectively.
+        /// </summary>
+        [PublicAPI]
+        public abstract void MarkBehaviour();
+
+        /// <summary>
         /// Adds <see cref="dependency"/> as dependencies of <see cref="dependant"/>.
         /// The dependency will be assumed as the dependant will have dependency if dependant is enabled and
         /// even if dependency is disabled. You can change the settings by <see cref="ComponentDependencyInfo"/>.
