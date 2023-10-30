@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Add support of UniVRM components `#653`
 
 ### Changed
 
