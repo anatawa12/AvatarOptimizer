@@ -11,19 +11,28 @@ The format is based on [Keep a Changelog].
 - Public API for registering component information `#632`
 - Disabling PhysBone animation based on mesh renderer enabled animation `#640`
   - If you toggles your clothes with simple toggle, PhysBones on the your avatar will also be toggled automatically!
+- Small performance improve `#641`
 
 ### Changed
+- All logs passed to ErrorReport is now shown on the console log `#643`
 
 ### Deprecated
 
 ### Removed
 - Legacy GC `#633`
+- Preventing removing `IEditorOnly` in callback order -1024 `#658`
+  - This is no longer needed sincd 1.5.0 but I forgot to remove so I removed in 1.6
 
 ### Fixed
 - Improve support of newer Unity versions `#608`
 - Improve support of projects without VRCSDK `#609` `#625` `#627`
+- Prefab blinks when we see editor of PrefabSafeSet of prefab asset `#645`
 
 ### Security
+
+## [1.5.9] - 2023-10-29
+### Fixed
+- Animation clip length can be changed [`#647`](https://github.com/anatawa12/AvatarOptimizer/pull/647)
 
 ## [1.5.8] - 2023-10-20
 ### Fixed
@@ -626,7 +635,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.8...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.9...HEAD
+[1.5.9]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.8...v1.5.9
 [1.5.8]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.7...v1.5.8
 [1.5.7]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.6...v1.5.7
 [1.5.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.5...v1.5.6
