@@ -20,7 +20,7 @@ The format is based on [Keep a Changelog].
   - This is no longer needed sincd 1.5.0 but I forgot to remove so I removed in 1.6
 
 ### Fixed
-- Prefab blinks when we see editor of PrefabSafeSet of prefab asset `#645`
+- Prefab blinks when we see editor of PrefabSafeSet of prefab asset `#645` `#664`
 - Fixes in 1.5.9 `#654`
 
 ### Security
