@@ -18,7 +18,7 @@ your tool is already compatible with Avatar Optimizer!
 
 If your tool adds some components to portions of the avatar, your tool can be incompatible with Avatar Optimizer.
 
-Since Avatar Optimizer has Garbage Collection system for Components and others, Avatar Optimizer have to 
+Since Avatar Optimizer has Garbage Collection system for Components and others, Avatar Optimizer has to 
 know about all existing components in the Avatar at the optimization.
 
 To avoid problem with unknown components, Avatar Optimizer currently assumes unknown components
@@ -58,7 +58,7 @@ If your tool does something only on building avatar, making your tool based on N
 
 If you don't want to make your tool based on NDMF, please remove your components before Avatar Optimizer processes.
 To achieve this, your tool needs to execute before NDMF's Optimization phase.\
-Currently NDMF executes Optimization phase in order `-1025`, which is JUST before VRCSDK's `RemoveAvatarEditorOnly`
+Current NDMF executes Optimization phase in order `-1025`, which is JUST before VRCSDK's `RemoveAvatarEditorOnly`
 callback, so your tool should register `IVRCSDKPreprocessAvatarCallback` with smaller `callbackOrder`.
 
 If your tool actually wants to do something with your components after Avatar Optimizer processes 
@@ -66,7 +66,7 @@ If your tool actually wants to do something with your components after Avatar Op
 
 ### For other tools that just hold data with components. {#improve-compatibility-destructive-tools}
 
-If your tool holds some information with components and have no meaning on the build time, 
+If your tool holds some information with components and has no meaning on the build time, 
 please remove your components before Avatar Optimizer processes with `IVRCSDKPreprocessAvatarCallback` (see [this section](#improve-compatibility-non-ndmf-based)) 
 or register your components to Avatar Optimizer (see [this section][register-component]).
 
@@ -80,7 +80,8 @@ First, to call APIs of Avatar Optimizer, please make an assembly definition file
 Next, add `com.anatawa12.avatar-optimizer.api.editor` to assembly references in asmdef file.\
 If your tool doesn't want to depends on Avatar Optimizer, please use [Version Defines].
 Because Avatar Optimizer didn't have public API prior to 1.6.0 and will break in 2.0.0, 
-it's recommended to add version range like `[1.6,2.0)` (or more stricter like `[1.7,2.0)`).
+it's recommended to add version range like `[1.6,2.0)`
+(or stricter like `[1.7,2.0)` when you requires new APIs can be available in the future).
 
 ![version-defines.png](version-defines.png)
 
