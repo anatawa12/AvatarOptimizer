@@ -8,16 +8,27 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Small performance improve `#641`
 
 ### Changed
+- All logs passed to ErrorReport is now shown on the console log `#643`
 
 ### Deprecated
 
 ### Removed
+- Preventing removing `IEditorOnly` in callback order -1024 `#658`
+  - This is no longer needed sincd 1.5.0 but I forgot to remove so I removed in 1.6
 
 ### Fixed
+- Prefab blinks when we see editor of PrefabSafeSet of prefab asset `#645`
+- Fixes in 1.5.9 `#654`
 
 ### Security
+
+## [1.5.9] - 2023-10-29
+## [1.5.9-rc.1] - 2023-10-28
+### Fixed
+- Animation clip length can be changed [`#647`](https://github.com/anatawa12/AvatarOptimizer/pull/647)
 
 ## [1.6.0-beta.1] - 2023-10-25
 ### Added
@@ -949,7 +960,9 @@ This release is mistake.
 - Clear Endpoint Position
 
 [Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.1...HEAD
-[1.6.0-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.8...v1.6.0-beta.1
+[1.6.0-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.9...v1.6.0-beta.1
+[1.5.9]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.9-rc.1...v1.5.9
+[1.5.9-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.8...v1.5.9-rc.1
 [1.5.8]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.8-rc.1...v1.5.8
 [1.5.8-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.7...v1.5.8-rc.1
 [1.5.7]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.7-beta.1...v1.5.7

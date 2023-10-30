@@ -75,28 +75,6 @@ namespace Anatawa12.AvatarOptimizer
             return component;
         }
 
-#if AAO_VRCSDK3_AVATARS
-        public static Transform GetTarget(this VRC.Dynamics.VRCPhysBoneBase physBoneBase) =>
-            physBoneBase.rootTransform ? physBoneBase.rootTransform : physBoneBase.transform;
-
-        public static IEnumerable<Transform> GetAffectedTransforms(this VRC.Dynamics.VRCPhysBoneBase physBoneBase)
-        {
-            var ignores = new HashSet<Transform>(physBoneBase.ignoreTransforms);
-            var queue = new Queue<Transform>();
-            queue.Enqueue(physBoneBase.GetTarget());
-
-            while (queue.Count != 0)
-            {
-                var transform = queue.Dequeue();
-                yield return transform;
-
-                foreach (var child in transform.DirectChildrenEnumerable())
-                    if (!ignores.Contains(child))
-                        queue.Enqueue(child);
-            }
-        }
-#endif
-
         public static GameObject NewGameObject(string name, Transform parent)
         {
             var rootObject = new GameObject(name);

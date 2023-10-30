@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Text;
 using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
@@ -101,6 +102,27 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
             for (var i = 0; i < strings.Length; i++)
                 strings[i] = strings[i] ?? "";
             var errorLog = new ErrorLog(level, code, strings, assembly);
+
+            var builder = new StringBuilder("BuildReport: ");
+            builder.Append(code);
+            foreach (var s in strings)
+                builder.Append(", '").Append(s).Append("'");
+            switch (level)
+            {
+                case ReportLevel.Validation:
+                case ReportLevel.Error:
+                case ReportLevel.InternalError:
+                    Debug.LogError(builder.ToString());
+                    break;
+                case ReportLevel.Info:
+                    Debug.Log(builder.ToString());
+                    break;
+                case ReportLevel.Warning:
+                    Debug.LogWarning(builder.ToString());
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(level), level, null);
+            }
 
             var avatarReport = CurrentReport.CurrentAvatar;
             if (avatarReport == null)
