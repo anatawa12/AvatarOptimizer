@@ -1,3 +1,5 @@
+#if AAO_VRCSDK3_AVATARS
+
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -31,3 +33,5 @@ namespace Anatawa12.AvatarOptimizer
         public static bool IsProxy(this AnimationClip clip) => clip.name.StartsWith("proxy_", StringComparison.Ordinal);
     }
 }
+
+#endif
