@@ -277,6 +277,9 @@ msgstr ""
 "Merging both meshes with and without normal is not supported."
 "Please change import setting of models to include normals!"
 
+msgid "MergeSkinnedMesh:warning:removeZeroSizedPolygonOnSources"
+msgstr "Since Remove Zero Sized Polygons are proceed later, it on the source Skinned Mesh Renderers have no effects."
+
 # endregion
 
 # region MergeToonLitMaterial

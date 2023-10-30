@@ -214,6 +214,9 @@ msgstr ""
 "法線があるメッシュとないメッシュの両方を1つに統合する操作には対応していません。"
 "法線が含まれるようにモデルのインポート設定を変更してください!"
 
+msgid "MergeSkinnedMesh:warning:removeZeroSizedPolygonOnSources"
+msgstr "Remove Zero Sized Polygonsはのちに処理されるため、ソースレンダラにつけても効果がありません"
+
 # endregion
 
 # region MergeToonLitMaterial
