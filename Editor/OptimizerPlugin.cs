@@ -58,6 +58,7 @@ namespace Anatawa12.AvatarOptimizer.ndmf
                                 ctx => new Processors.MakeChildrenProcessor(early: false).Process(ctx)
                             )
                             .Then.Run(Processors.TraceAndOptimizes.FindUnusedObjects.Instance)
+                            .Then.Run(Processors.TraceAndOptimizes.ConfigureRemoveZeroSizedPolygon.Instance)
                             .Then.Run(Processors.MergeBoneProcessor.Instance)
                             .Then.Run(Processors.RemoveZeroSizedPolygonProcessor.Instance)
                             ;
