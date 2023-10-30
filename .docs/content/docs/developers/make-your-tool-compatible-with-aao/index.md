@@ -81,7 +81,7 @@ Next, add `com.anatawa12.avatar-optimizer.api.editor` to assembly references in 
 If your tool doesn't want to depends on Avatar Optimizer, please use [Version Defines].
 Because Avatar Optimizer didn't have public API prior to 1.6.0 and will break in 2.0.0, 
 it's recommended to add version range like `[1.6,2.0)`
-(or stricter like `[1.7,2.0)` when you requires new APIs can be available in the future).
+(or stricter like `[1.7,2.0)` when you need new APIs that can be available in the future).
 
 ![version-defines.png](version-defines.png)
 
