@@ -21,7 +21,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.Externals
     {
         protected override void CollectDependency(Component component, ComponentDependencyCollector collector)
         {
-            collector.MarkBehaviour();
+            collector.MarkHeavyBehaviour();
 
             foreach (var transform in GetAffectedTransforms(component))
             {

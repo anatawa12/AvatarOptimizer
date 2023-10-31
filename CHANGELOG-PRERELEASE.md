@@ -9,9 +9,14 @@ The format is based on [Keep a Changelog].
 ## [Unreleased]
 ### Added
 - Small performance improve `#641`
+- Ability to prevent changing enablement of component `#668`
 
 ### Changed
 - All logs passed to ErrorReport is now shown on the console log `#643`
+- Improved Behaviour with multi-material multi pass rendering `#662`
+  - Previously, multi-material multi pass rendering are flattened.
+  - Since 1.6, flattened if component doesn't support that.
+- BREAKING API CHANGES: Behaviour components are renamed to HeavyBehaviour `#668`
 
 ### Deprecated
 
@@ -20,7 +25,7 @@ The format is based on [Keep a Changelog].
   - This is no longer needed sincd 1.5.0 but I forgot to remove so I removed in 1.6
 
 ### Fixed
-- Prefab blinks when we see editor of PrefabSafeSet of prefab asset `#645`
+- Prefab blinks when we see editor of PrefabSafeSet of prefab asset `#645` `#664`
 - Fixes in 1.5.9 `#654`
 
 ### Security
