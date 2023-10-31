@@ -87,7 +87,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
                 case VRC_AvatarDescriptor.LipSyncStyle.JawFlapBlendShape when component.VisemeSkinnedMesh != null:
                 {
                     var info = mappingSource.GetMappedComponent(component.VisemeSkinnedMesh);
-                    if (info.TryMapFloatProperty($"blendShape.{component.MouthOpenBlendShapeName}", out var mapped))
+                    if (info.TryMapProperty($"blendShape.{component.MouthOpenBlendShapeName}", out var mapped))
                     {
                         component.VisemeSkinnedMesh = mapped.Item1 as SkinnedMeshRenderer;
                         component.MouthOpenBlendShapeName = ParseBlendShapeProperty(mapped.Item2);
@@ -105,7 +105,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
                     var removed = false;
                     foreach (ref var shapeName in component.VisemeBlendShapes.AsSpan())
                     {
-                        if (info.TryMapFloatProperty($"blendShape.{shapeName}", out var mapped)
+                        if (info.TryMapProperty($"blendShape.{shapeName}", out var mapped)
                             && mapped.component == info.MappedComponent)
                             shapeName = ParseBlendShapeProperty(mapped.property);
                         else
@@ -234,7 +234,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
                         var removed = false;
                         foreach (ref var eyelidsBlendshape in component.customEyeLookSettings.eyelidsBlendshapes.AsSpan())
                         {
-                            if (info.TryMapFloatProperty(VProp.BlendShapeIndex(eyelidsBlendshape), out var mapped)
+                            if (info.TryMapProperty(VProp.BlendShapeIndex(eyelidsBlendshape), out var mapped)
                                 && mapped.component == info.MappedComponent)
                                 eyelidsBlendshape = VProp.ParseBlendShapeIndex(mapped.property);
                             else

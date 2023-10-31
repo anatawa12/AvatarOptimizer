@@ -226,14 +226,36 @@ namespace Anatawa12.AvatarOptimizer.API
 
     internal abstract class MappedComponentInfo<T> where T : Object
     {
+        /// <summary>
+        /// The mapped component (or GameObject).
+        /// The component may be removed without mapped component.
+        /// If there are not mapped component, this will be null.
+        ///
+        /// Even if the component is removed without mapped component,
+        /// each animation property can be mapped to another component.
+        /// </summary>
         public abstract T MappedComponent { get; }
 
         /// <summary>
-        /// Returns false if the property is removed.
+        /// Maps animation property name to component and MappedPropertyInfo.
+        /// If the property is not removed, returns true and <paramref name="found"/> is set.
+        /// If the property is removed, returns false and <paramref name="found"/> will be default.
         /// </summary>
-        /// <param name="property"></param>
-        /// <param name="found"></param>
-        /// <returns></returns>
-        public abstract bool TryMapFloatProperty(string property, out (Object component, string property) found);
+        /// <param name="property">The name of property will be mapped</param>
+        /// <param name="found">The result parameter</param>
+        /// <returns>Whether if the property is successfully mapped or removed</returns>
+        public abstract bool TryMapProperty(string property, out MappedPropertyInfo found);
+    }
+
+    internal readonly struct MappedPropertyInfo
+    {
+        public Object Component { get; }
+        public string Property { get; }
+
+        internal MappedPropertyInfo(Object component, string property)
+        {
+            Component = component;
+            Property = property;
+        }
     }
 }

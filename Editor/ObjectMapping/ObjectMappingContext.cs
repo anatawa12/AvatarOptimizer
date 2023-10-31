@@ -91,9 +91,9 @@ namespace Anatawa12.AvatarOptimizer
             public OriginalComponentInfo(T component) => _component = component;
 
             public override T MappedComponent => _component;
-            public override bool TryMapFloatProperty(string property, out (Object component, string property) found)
+            public override bool TryMapProperty(string property, out API.MappedPropertyInfo found)
             {
-                found = (_component, property);
+                found = new API.MappedPropertyInfo(_component, property);
                 return true;
             }
         }
@@ -105,17 +105,18 @@ namespace Anatawa12.AvatarOptimizer
             public ComponentInfo([NotNull] ComponentInfo info) => _info = info;
 
             public override T MappedComponent => EditorUtility.InstanceIDToObject(_info.MergedInto) as T;
-            public override bool TryMapFloatProperty(string property, out (Object component, string property) found)
+            public override bool TryMapProperty(string property, out API.MappedPropertyInfo found)
             {
                 found = default;
-                if (_info.PropertyMapping.TryGetValue(property, out var mappedProp))
-                {
-                    if (mappedProp.MappedProperty.Name == null)
-                        return false;
-                    found = (EditorUtility.InstanceIDToObject(mappedProp.MappedProperty.InstanceId),
-                        mappedProp.MappedProperty.Name);
-                }
-                throw new NotImplementedException();
+
+                if (!_info.PropertyMapping.TryGetValue(property, out var mappedProp)) return false;
+                if (mappedProp.MappedProperty.Name == null) return false;
+
+                found = new API.MappedPropertyInfo(
+                    EditorUtility.InstanceIDToObject(mappedProp.MappedProperty.InstanceId),
+                    mappedProp.MappedProperty.Name);
+                return true;
+
             }
         }
     }
