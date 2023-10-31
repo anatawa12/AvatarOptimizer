@@ -65,7 +65,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
     internal readonly struct FindUnusedObjectsProcessor
     {
-        private readonly ImmutableModificationsContainer _modifications;
         private readonly BuildContext _context;
         private readonly HashSet<GameObject> _exclusions;
         private readonly bool _preserveEndBone;
@@ -77,7 +76,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         {
             _context = context;
 
-            _modifications = state.Modifications;
             _preserveEndBone = state.PreserveEndBone;
             _noConfigureMergeBone = state.NoConfigureMergeBone;
             _noActivenessAnimation = state.NoActivenessAnimation;
@@ -87,7 +85,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         public void ProcessNew()
         {
-            var componentInfos = new GCComponentInfoHolder(_modifications, _context.AvatarRootObject);
+            var componentInfos = new GCComponentInfoHolder(_context);
             Mark(componentInfos);
             if (_gcDebug)
             {
@@ -112,14 +110,14 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 if (!componentInfo.Component) continue; // swept
                 if (componentInfo.IsEntrypoint) continue;
                 if (!componentInfo.HeavyBehaviourComponent) continue;
-                if (_modifications.GetModifiedProperties(componentInfo.Component).ContainsKey("m_Enabled"))
+                if (_context.GetAnimationComponent(componentInfo.Component).ContainsFloat("m_Enabled"))
                     continue; // enabled is animated so we will not generate activeness animation
 
                 HashSet<Component> resultSet;
                 using (var enumerator = componentInfo.DependantEntrypoint.Keys.GetEnumerator())
                 {
                     System.Diagnostics.Debug.Assert(enumerator.MoveNext());
-                    resultSet = GetEntrypointActiveness(enumerator.Current, _modifications, _context.AvatarRootTransform);
+                    resultSet = GetEntrypointActiveness(enumerator.Current, _context);
 
                     // resultSet.Count == 0 => no longer meaning
                     if (enumerator.MoveNext() && resultSet.Count != 0)
@@ -128,8 +126,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
                         do
                         {
-                            var current = GetEntrypointActiveness(enumerator.Current, _modifications,
-                                _context.AvatarRootTransform);
+                            var current = GetEntrypointActiveness(enumerator.Current, _context);
                             resultSet.IntersectWith(current);
                         } while (enumerator.MoveNext() && resultSet.Count != 0);
                     }
@@ -197,20 +194,20 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             }
 
             return;
-            
-            HashSet<Component> GetEntrypointActiveness(Component entryPoint,
-                ImmutableModificationsContainer modifications,
-                Transform avatarRoot)
+
+            HashSet<Component> GetEntrypointActiveness(Component entryPoint, BuildContext context)
             {
                 if (entryPointActiveness.TryGetValue(entryPoint, out var found))
                     return found;
                 var set = new HashSet<Component>();
 
-                if (modifications.GetModifiedProperties(entryPoint).ContainsKey("m_Enabled"))
+                if (context.GetAnimationComponent(entryPoint).ContainsFloat("m_Enabled"))
                     set.Add(entryPoint);
 
-                for (var transform = entryPoint.transform; transform != avatarRoot; transform = transform.parent)
-                    if (modifications.GetModifiedProperties(transform.gameObject).ContainsKey("m_IsActive"))
+                for (var transform = entryPoint.transform;
+                     transform != context.AvatarRootTransform;
+                     transform = transform.parent)
+                    if (context.GetAnimationComponent(transform.gameObject).ContainsFloat("m_IsActive"))
                         set.Add(transform);
 
                 entryPointActiveness.Add(entryPoint, set);
@@ -274,17 +271,17 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         private void MergeBone(GCComponentInfoHolder componentInfos)
         {
-            ConfigureRecursive(_context.AvatarRootTransform, _modifications);
+            ConfigureRecursive(_context.AvatarRootTransform, _context);
 
             // returns (original mergedChildren, list of merged children if merged, and null if not merged)
             //[CanBeNull]
-            (bool, List<Transform>) ConfigureRecursive(Transform transform, ImmutableModificationsContainer modifications)
+            (bool, List<Transform>) ConfigureRecursive(Transform transform, BuildContext context)
             {
                 var mergedChildren = true;
                 var afterChildren = new List<Transform>();
                 foreach (var child in transform.DirectChildrenEnumerable())
                 {
-                    var (newMergedChildren, newChildren) = ConfigureRecursive(child, modifications);
+                    var (newMergedChildren, newChildren) = ConfigureRecursive(child, context);
                     if (newChildren == null)
                     {
                         mergedChildren = false;
@@ -313,11 +310,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 // The bone cannot be used generally
                 if ((componentInfos.GetInfo(transform).AllUsages & ~AllowedUsages) != 0) return NotMerged();
                 // must not be animated
-                if (TransformAnimated(transform, modifications)) return NotMerged();
+                if (TransformAnimated(transform, context)) return NotMerged();
 
                 if (!mergedChildren)
                 {
-                    if (GameObjectAnimated(transform, modifications)) return NotMerged();
+                    if (GameObjectAnimated(transform, context)) return NotMerged();
 
                     var localScale = transform.localScale;
                     var identityTransform = localScale == Vector3.one && transform.localPosition == Vector3.zero &&
@@ -325,7 +322,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
                     if (!identityTransform)
                     {
-                        var childrenTransformAnimated = afterChildren.Any(x => TransformAnimated(x, modifications));
+                        var childrenTransformAnimated = afterChildren.Any(x => TransformAnimated(x, context));
                         if (childrenTransformAnimated)
                             // if this is not identity transform, animating children is not good
                             return NotMerged();
@@ -342,25 +339,22 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 return YesMerge();
             }
 
-            bool TransformAnimated(Transform transform, ImmutableModificationsContainer modifications)
+            bool TransformAnimated(Transform transform, BuildContext context)
             {
-                var transformProperties = modifications.GetModifiedProperties(transform);
-                if (transformProperties.Count != 0)
-                {
-                    // TODO: constant animation detection
-                    foreach (var transformProperty in TransformProperties)
-                        if (transformProperties.ContainsKey(transformProperty))
-                            return true;
-                }
+                var transformProperties = context.GetAnimationComponent(transform);
+                // TODO: constant animation detection
+                foreach (var transformProperty in TransformProperties)
+                    if (transformProperties.ContainsFloat(transformProperty))
+                        return true;
 
                 return false;
             }
 
-            bool GameObjectAnimated(Transform transform, ImmutableModificationsContainer modifications)
+            bool GameObjectAnimated(Transform transform, BuildContext context)
             {
-                var objectProperties = modifications.GetModifiedProperties(transform.gameObject);
+                var objectProperties = context.GetAnimationComponent(transform.gameObject);
 
-                if (objectProperties.ContainsKey("m_IsActive"))
+                if (objectProperties.ContainsFloat("m_IsActive"))
                     return true;
 
                 return false;

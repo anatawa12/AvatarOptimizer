@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Anatawa12.AvatarOptimizer.AnimatorParsers;
 using nadena.dev.ndmf;
 using UnityEngine;
 
@@ -10,7 +11,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         public bool FreezeBlendShape;
         public bool RemoveUnusedObjects;
         public bool RemoveZeroSizedPolygon;
-        public bool MmdWorldCompatibility;
+        public bool MmdWorldCompatibility = true;
 
         public bool PreserveEndBone;
         public HashSet<GameObject> Exclusions = new HashSet<GameObject>();
@@ -22,8 +23,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         public Dictionary<SkinnedMeshRenderer, HashSet<string>> PreserveBlendShapes =
             new Dictionary<SkinnedMeshRenderer, HashSet<string>>();
-
-        public ImmutableModificationsContainer Modifications;
 
         public TraceAndOptimizeState()
         {
@@ -59,18 +58,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             if (config)
                 context.GetState<TraceAndOptimizeState>().Initialize(config);
             Object.DestroyImmediate(config);
-        }
-    }
-
-    internal class ParseAnimator : Pass<ParseAnimator>
-    {
-        public override string DisplayName => "T&O: Parse Animator";
-
-        protected override void Execute(BuildContext context)
-        {
-            var state = context.GetState<TraceAndOptimizeState>();
-            if (state.Enabled)
-                state.Modifications = new AnimatorParser(state).GatherAnimationModifications(context);
         }
     }
 }
