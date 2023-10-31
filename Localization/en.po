@@ -264,7 +264,7 @@ msgid "MergeSkinnedMesh:prop:removeEmptyRendererObject"
 msgstr "Remove Empty Renderer Object"
 
 msgid "MergeSkinnedMesh:prop:skipEnabledMismatchedRenderers"
-msgstr "Skip Enabled Mismatched Renderers"
+msgstr "Skip Enablement Mismatched Renderers"
 
 msgid "MergeSkinnedMesh:label:Merge Materials"
 msgstr "Merge Materials"
