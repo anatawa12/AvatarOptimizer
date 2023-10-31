@@ -123,12 +123,13 @@ namespace Anatawa12.AvatarOptimizer
             }
 
             public static readonly AnimationPropertyInfo RemovedMarker = new AnimationPropertyInfo();
-            public AnimationFloatProperty AnimationFloat;
+            public AnimationFloatProperty? AnimationFloat;
 
             public void MergeTo(AnimationPropertyInfo property)
             {
                 MergedTo = property;
-                property.AnimationFloat = AnimationFloat.Merge(property.AnimationFloat, false);
+                // I want to use recursive switch with recursive pattern here but not avaiable yet
+                property.AnimationFloat = MergeFloat(AnimationFloat, property.AnimationFloat);
             }
 
             public void CopyTo(AnimationPropertyInfo property)
@@ -136,8 +137,14 @@ namespace Anatawa12.AvatarOptimizer
                 if (CopiedTo == null)
                     CopiedTo = new List<AnimationPropertyInfo>();
                 CopiedTo.Add(property);
-                property.AnimationFloat = AnimationFloat.Merge(property.AnimationFloat, false);
+                property.AnimationFloat = MergeFloat(AnimationFloat, property.AnimationFloat);
             }
+
+            private static AnimationFloatProperty? MergeFloat(AnimationFloatProperty? aProp,
+                AnimationFloatProperty? bProp) =>
+                aProp == null ? bProp
+                : bProp == null ? aProp 
+                : aProp.Value.Merge(bProp.Value, false);
 
             public MappedPropertyInfo GetMappedInfo()
             {
