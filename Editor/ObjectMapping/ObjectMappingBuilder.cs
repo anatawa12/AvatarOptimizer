@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Anatawa12.AvatarOptimizer.AnimatorParsers;
 using JetBrains.Annotations;
 using UnityEngine;
 
@@ -90,6 +91,12 @@ namespace Anatawa12.AvatarOptimizer
             return info;
         }
 
+        public void ImportModifications(ImmutableModificationsContainer modifications)
+        {
+            foreach (var (component, properties) in modifications.ModifiedProperties)
+                GetComponentInfo(component).ImportProperties(properties);
+        }
+
         public ObjectMapping BuildObjectMapping()
         {
             return new ObjectMapping(
@@ -101,9 +108,9 @@ namespace Anatawa12.AvatarOptimizer
         {
             [CanBeNull] public readonly BuildingComponentInfo Component;
             [CanBeNull] public readonly string Name;
-            [CanBeNull] public AnimationPropertyInfo MergedTo;
+            [CanBeNull] public AnimationPropertyInfo MergedTo { get; private set; }
             private MappedPropertyInfo? _mappedPropertyInfo;
-            [CanBeNull] public List<AnimationPropertyInfo> CopiedTo;
+            [CanBeNull] public List<AnimationPropertyInfo> CopiedTo { get; private set; }
 
             public AnimationPropertyInfo([NotNull] BuildingComponentInfo component, [NotNull] string name)
             {
@@ -116,6 +123,21 @@ namespace Anatawa12.AvatarOptimizer
             }
 
             public static readonly AnimationPropertyInfo RemovedMarker = new AnimationPropertyInfo();
+            public AnimationProperty Animation;
+
+            public void MergeTo(AnimationPropertyInfo property)
+            {
+                MergedTo = property;
+                property.Animation = Animation.Merge(property.Animation, false);
+            }
+
+            public void CopyTo(AnimationPropertyInfo property)
+            {
+                if (CopiedTo == null)
+                    CopiedTo = new List<AnimationPropertyInfo>();
+                CopiedTo.Add(property);
+                property.Animation = Animation.Merge(property.Animation, false);
+            }
 
             public MappedPropertyInfo GetMappedInfo()
             {
@@ -208,7 +230,7 @@ namespace Anatawa12.AvatarOptimizer
                 if (_mergedInto != null) throw new InvalidOperationException("Already merged");
                 _mergedInto = mergeTo ?? throw new ArgumentNullException(nameof(mergeTo));
                 foreach (var property in _afterPropertyIds.Values)
-                    property.MergedTo = mergeTo.GetProperty(property.Name);
+                    property.MergeTo(mergeTo.GetProperty(property.Name));
                 _afterPropertyIds.Clear();
             }
 
@@ -222,21 +244,19 @@ namespace Anatawa12.AvatarOptimizer
                     propertyIds[i] = GetProperty(props[i].old, remove: true);
 
                 for (var i = 0; i < propertyIds.Length; i++)
-                    propertyIds[i].MergedTo = GetProperty(props[i].@new);
+                    propertyIds[i].MergeTo(GetProperty(props[i].@new));
             }
 
             public void MoveProperty(BuildingComponentInfo toComponent, string oldProp, string newProp)
             {
                 if (Type == typeof(Transform)) throw new Exception("Move properties of Transform is not supported!");
-                GetProperty(oldProp, remove: true).MergedTo = toComponent.GetProperty(newProp);
+                GetProperty(oldProp, remove: true).MergeTo(toComponent.GetProperty(newProp));
             }
 
             public void CopyProperty(BuildingComponentInfo toComponent, string oldProp, string newProp)
             {
                 var prop = GetProperty(oldProp);
-                if (prop.CopiedTo == null)
-                    prop.CopiedTo = new List<AnimationPropertyInfo>();
-                prop.CopiedTo.Add(toComponent.GetProperty(newProp));
+                prop.CopyTo(toComponent.GetProperty(newProp));
             }
 
             public void RemoveProperty(string property)
@@ -244,7 +264,7 @@ namespace Anatawa12.AvatarOptimizer
                 if (Type == typeof(Transform)) throw new Exception("Removing properties of Transform is not supported!");
                 if (_mergedInto != null) throw new Exception("Already Merged");
 
-                GetProperty(property, remove: true).MergedTo = AnimationPropertyInfo.RemovedMarker;
+                GetProperty(property, remove: true).MergeTo(AnimationPropertyInfo.RemovedMarker);
             }
 
             public ComponentInfo Build()
@@ -261,6 +281,15 @@ namespace Anatawa12.AvatarOptimizer
                 }
 
                 return new ComponentInfo(InstanceId, mergedInfo.InstanceId, Type, propertyMapping);
+            }
+
+            public void ImportProperties(IReadOnlyDictionary<string, AnimationProperty> properties)
+            {
+                foreach (var (name, property) in properties)
+                {
+                    var propInfo = GetProperty(name);
+                    propInfo.Animation = property;
+                }
             }
         }
     }

@@ -322,6 +322,9 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
             // if asNewLayer and new layer is constant always, the value is used
             if (asNewLayer && b.State == PropertyState.ConstantAlways) return b;
 
+            if (State == PropertyState.Invalid) return b;
+            if (b.State == PropertyState.Invalid) return this;
+
             if (State == PropertyState.Variable) return Variable0(MergeSource(Sources, b.Sources));
             if (b.State == PropertyState.Variable) return Variable0(MergeSource(Sources, b.Sources));
 

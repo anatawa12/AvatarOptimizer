@@ -16,8 +16,12 @@ namespace Anatawa12.AvatarOptimizer.Processors
         {
             var traceAndOptimize = context.GetState<TraceAndOptimizes.TraceAndOptimizeState>();
             var animatorState = context.GetState<AnimatorState>();
-            animatorState.Modifications = new AnimatorParser(traceAndOptimize.MmdWorldCompatibility)
+            var modifications = new AnimatorParser(traceAndOptimize.MmdWorldCompatibility)
                 .GatherAnimationModifications(context);
+            animatorState.Modifications = modifications;
+            context.Extension<ObjectMappingContext>()
+                .MappingBuilder
+                .ImportModifications(modifications);
         }
     }
 }
