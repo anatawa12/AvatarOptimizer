@@ -50,6 +50,10 @@ BlendShapeは、頂点とBlendShapeの数に比例して負荷が大きくなる
 
 統合対象のSkinnedMeshRendererが属しているGameObjectにSkinnedMeshRenderer以外のコンポーネントが無い場合、そのGameObjectをヒエラルキーから取り除くオプションです。
 
+### 無効なレンダラーをスキップする {#skip-initially-disabled-renderers}
+
+このオプションが有効な場合、統合対象のSkinnedMeshRendererやMeshRendererがビルド時に無効になっている場合、統合対象から除外されます。
+
 ### マテリアルの統合 {#merge-materials}
 
 複数の(Skinned)MeshRendererで使用されているマテリアルがある場合、ここに一覧で表示されます。
