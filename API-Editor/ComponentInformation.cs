@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using JetBrains.Annotations;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.API
 {
@@ -47,6 +48,9 @@ namespace Anatawa12.AvatarOptimizer.API
             ComponentMutationsCollector collector) =>
             CollectMutations((TComponent)component, collector);
 
+        internal override void ApplySpecialMappingInternal(Component component, MappingSource collector) =>
+            ApplySpecialMapping((TComponent)component, collector);
+
         /// <summary>
         /// Collects runtime mutations by <see cref="component"/>.
         /// You have to call <see cref="collector"/>.<see cref="ComponentMutationsCollector.ModifyProperties"/>
@@ -68,7 +72,17 @@ namespace Anatawa12.AvatarOptimizer.API
         protected virtual void CollectMutations(TComponent component, ComponentMutationsCollector collector)
         {
         }
-        
+
+        /// <summary>
+        /// Applies some property mapping to your component.
+        /// For object replacements, AAO processes automatically so you don't have to implement that in this method.
+        /// </summary>
+        /// <param name="component">The component.</param>
+        /// <param name="mappingSource">The mapping source</param>
+        internal virtual void ApplySpecialMapping(TComponent component, MappingSource mappingSource)
+        {
+        }
+
         // Important note for future AAO developer
         // 1. You MUST NOT add abstract method onto this class
         // 2. When you added some virtual methods onto this class, implementer MAY NOT implement that method
@@ -198,5 +212,28 @@ namespace Anatawa12.AvatarOptimizer.API
         [PublicAPI]
         public void ModifyProperties([NotNull] Component component, [NotNull] string[] properties) =>
             ModifyProperties(component, (IEnumerable<string>) properties);
+    }
+
+    internal abstract class MappingSource
+    {
+        internal MappingSource()
+        {
+        }
+
+        public abstract MappedComponentInfo<T> GetMappedComponent<T>(T component) where T : Component;
+        public abstract MappedComponentInfo<GameObject> GetMappedGameObject(GameObject component);
+    }
+
+    internal abstract class MappedComponentInfo<T> where T : Object
+    {
+        public abstract T MappedComponent { get; }
+
+        /// <summary>
+        /// Returns false if the property is removed.
+        /// </summary>
+        /// <param name="property"></param>
+        /// <param name="found"></param>
+        /// <returns></returns>
+        public abstract bool TryMapFloatProperty(string property, out (Object component, string property) found);
     }
 }

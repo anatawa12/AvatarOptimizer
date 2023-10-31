@@ -3,6 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.API;
+using Anatawa12.AvatarOptimizer.ErrorReporting;
+using JetBrains.Annotations;
 using UnityEngine;
 using VRC.SDK3;
 using VRC.Core;
@@ -70,6 +72,62 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
                     throw new ArgumentOutOfRangeException();
             }
         }
+
+        internal override void ApplySpecialMapping(T component, MappingSource mappingSource)
+        {
+            base.ApplySpecialMapping(component, mappingSource);
+            
+            switch (component.lipSync)
+            {
+                case VRC_AvatarDescriptor.LipSyncStyle.Default:
+                    // TODO
+                    break;
+                case VRC_AvatarDescriptor.LipSyncStyle.JawFlapBone:
+                    break;
+                case VRC_AvatarDescriptor.LipSyncStyle.JawFlapBlendShape when component.VisemeSkinnedMesh != null:
+                {
+                    var info = mappingSource.GetMappedComponent(component.VisemeSkinnedMesh);
+                    if (info.TryMapFloatProperty($"blendShape.{component.MouthOpenBlendShapeName}", out var mapped))
+                    {
+                        component.VisemeSkinnedMesh = mapped.Item1 as SkinnedMeshRenderer;
+                        component.MouthOpenBlendShapeName = ParseBlendShapeProperty(mapped.Item2);
+                    }
+                    else
+                    {
+                        component.VisemeSkinnedMesh = null;
+                    }
+                    break;
+                }
+                case VRC_AvatarDescriptor.LipSyncStyle.VisemeBlendShape when component.VisemeSkinnedMesh != null:
+                {
+                    var info = mappingSource.GetMappedComponent(component.VisemeSkinnedMesh);
+                    component.VisemeSkinnedMesh = info.MappedComponent;
+                    var removed = false;
+                    foreach (ref var shapeName in component.VisemeBlendShapes.AsSpan())
+                    {
+                        if (info.TryMapFloatProperty($"blendShape.{shapeName}", out var mapped)
+                            && mapped.component == info.MappedComponent)
+                            shapeName = ParseBlendShapeProperty(mapped.property);
+                        else
+                            removed = true;
+                    }
+                    if (removed)
+                        BuildReport.LogFatal("ApplyObjectMapping:VRCAvatarDescriptor:viseme BlendShape Removed");
+                    break;
+                }
+                case VRC_AvatarDescriptor.LipSyncStyle.VisemeParameterOnly:
+                    // NOP
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+        
+        [NotNull]
+        private static string ParseBlendShapeProperty(string prop) =>
+            prop.StartsWith("blendShape.", StringComparison.Ordinal)
+                ? prop.Substring("blendShape.".Length)
+                : throw new Exception("invalid blendShape property");
     }
 
     [ComponentInformation(typeof(VRCAvatarDescriptor))]
@@ -148,6 +206,43 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
                             from index in component.customEyeLookSettings.eyelidsBlendshapes
                             where 0 <= index && index < mesh.blendShapeCount
                             select $"blendShape.{mesh.GetBlendShapeName(index)}");
+                    }
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+        }
+
+        internal override void ApplySpecialMapping(VRCAvatarDescriptor component, MappingSource mappingSource)
+        {
+            base.ApplySpecialMapping(component, mappingSource);
+            
+            if (component.enableEyeLook)
+            {
+                switch (component.customEyeLookSettings.eyelidType)
+                {
+                    case VRCAvatarDescriptor.EyelidType.None:
+                        break;
+                    case VRCAvatarDescriptor.EyelidType.Bones:
+                        break;
+                    case VRCAvatarDescriptor.EyelidType.Blendshapes
+                        when component.customEyeLookSettings.eyelidsSkinnedMesh != null:
+                    {
+                        var info = mappingSource.GetMappedComponent(component.customEyeLookSettings.eyelidsSkinnedMesh);
+                        component.customEyeLookSettings.eyelidsSkinnedMesh = info.MappedComponent;
+                        var removed = false;
+                        foreach (ref var eyelidsBlendshape in component.customEyeLookSettings.eyelidsBlendshapes.AsSpan())
+                        {
+                            if (info.TryMapFloatProperty(VProp.BlendShapeIndex(eyelidsBlendshape), out var mapped)
+                                && mapped.component == info.MappedComponent)
+                                eyelidsBlendshape = VProp.ParseBlendShapeIndex(mapped.property);
+                            else
+                                removed = true;
+                        }
+                        
+                        if (removed)
+                            BuildReport.LogFatal("ApplyObjectMapping:VRCAvatarDescriptor:eyelids BlendShape Removed");
                     }
                         break;
                     default:

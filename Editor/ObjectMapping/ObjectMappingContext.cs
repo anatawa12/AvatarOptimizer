@@ -1,16 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Anatawa12.AvatarOptimizer.API;
+using Anatawa12.AvatarOptimizer.APIInternal;
 using Anatawa12.AvatarOptimizer.ErrorReporting;
 using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
-
-#if AAO_VRCSDK3_AVATARS
-using VRC.SDK3.Avatars.Components;
-#endif
-
 using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer
@@ -27,14 +24,20 @@ namespace Anatawa12.AvatarOptimizer
         public void OnDeactivate(BuildContext context)
         {
             var mapping = MappingBuilder.BuildObjectMapping();
+            var mappingSource = new MappingSourceImpl(mapping);
 
             // replace all objects
             BuildReport.ReportingObjects(context.GetComponents<Component>(), component =>
             {
                 if (component is Transform) return;
+                
+                // apply special mapping
+                if (ComponentInfoRegistry.TryGetInformation(component.GetType(), out var info))
+                    info.ApplySpecialMappingInternal(component, mappingSource);
+
                 var serialized = new SerializedObject(component);
                 AnimatorControllerMapper mapper = null;
-                SpecialMappingApplier.Apply(component.GetType(), serialized, mapping, ref mapper);
+
                 foreach (var p in serialized.ObjectReferenceProperties())
                 {
                     if (mapping.MapComponentInstance(p.objectReferenceInstanceIDValue, out var mappedComponent))
@@ -58,53 +61,41 @@ namespace Anatawa12.AvatarOptimizer
         }
     }
 
-    internal static class SpecialMappingApplier
+    class MappingSourceImpl : MappingSource
     {
-        public static void Apply(Type type, SerializedObject serialized, 
-            ObjectMapping mapping, ref AnimatorControllerMapper mapper)
+        private readonly ObjectMapping _mapping;
+
+        public MappingSourceImpl(ObjectMapping mapping)
         {
-#if AAO_VRCSDK3_AVATARS
-            if (type.IsAssignableFrom(typeof(VRCAvatarDescriptor)))
-                VRCAvatarDescriptor(serialized, mapping, ref mapper);
-#endif
+            _mapping = mapping;
         }
-        
-#if AAO_VRCSDK3_AVATARS
-        // customEyeLookSettings.eyelidsBlendshapes is index
-        private static void VRCAvatarDescriptor(SerializedObject serialized,
-            ObjectMapping mapping, ref AnimatorControllerMapper mapper)
+
+        public override MappedComponentInfo<T> GetMappedComponent<T>(T component) =>
+            new ComponentInfo<T>(_mapping.GetComponentMapping(component.GetInstanceID()));
+
+        public override MappedComponentInfo<GameObject> GetMappedGameObject(GameObject component) =>
+            new ComponentInfo<GameObject>(_mapping.GetComponentMapping(component.GetInstanceID()));
+
+        private class ComponentInfo<T> : MappedComponentInfo<T> where T : Object
         {
-            var eyelidsEnabled = serialized.FindProperty("enableEyeLook");
-            var eyelidType = serialized.FindProperty("customEyeLookSettings.eyelidType");
-            var eyelidsSkinnedMesh = serialized.FindProperty("customEyeLookSettings.eyelidsSkinnedMesh");
-            var eyelidsBlendshapes = serialized.FindProperty("customEyeLookSettings.eyelidsBlendshapes");
+            private readonly ComponentInfo _info;
 
-            if (eyelidsEnabled.boolValue && 
-                eyelidType.enumValueIndex == (int)VRC.SDK3.Avatars.Components.VRCAvatarDescriptor.EyelidType.Blendshapes)
+            public ComponentInfo(ComponentInfo info) => _info = info;
+
+            public override T MappedComponent => EditorUtility.InstanceIDToObject(_info.MergedInto) as T;
+            public override bool TryMapFloatProperty(string property, out (Object component, string property) found)
             {
-                var info = mapping.GetComponentMapping(eyelidsSkinnedMesh.objectReferenceInstanceIDValue);
-                if (info == null) return;
-
-                eyelidsSkinnedMesh.objectReferenceValue = EditorUtility.InstanceIDToObject(info.MergedInto);
-
-                for (var i = 0; i < eyelidsBlendshapes.arraySize; i++)
+                found = default;
+                if (_info.PropertyMapping.TryGetValue(property, out var mappedProp))
                 {
-                    var indexProp = eyelidsBlendshapes.GetArrayElementAtIndex(i);
-                    if (info.PropertyMapping.TryGetValue(
-                            VProp.BlendShapeIndex(indexProp.intValue),
-                            out var mappedProp))
-                    {
-                        if (mappedProp.MappedProperty.Name == null)
-                        {
-                            BuildReport.LogFatal("ApplyObjectMapping:VRCAvatarDescriptor:eyelids BlendShape Removed");
-                            return;
-                        }
-                        indexProp.intValue = VProp.ParseBlendShapeIndex(mappedProp.MappedProperty.Name);
-                    }
+                    if (mappedProp.MappedProperty.Name == null)
+                        return false;
+                    found = (EditorUtility.InstanceIDToObject(mappedProp.MappedProperty.InstanceId),
+                        mappedProp.MappedProperty.Name);
                 }
+                throw new NotImplementedException();
             }
         }
-#endif
     }
 
     internal class AnimatorControllerMapper
