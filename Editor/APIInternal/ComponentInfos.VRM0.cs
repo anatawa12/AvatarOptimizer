@@ -28,6 +28,11 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
             foreach (var collider in component.ColliderGroups) collector.AddDependency(collider);
         }
 
+        protected override void CollectMutations(VRMSpringBone component, ComponentMutationsCollector collector)
+        {
+            foreach (var transform in component.GetComponentsInChildren<Transform>())
+                collector.TransformPositionAndRotation(transform);
+        }
     }
 
     [ComponentInformation(typeof(VRMSpringBoneColliderGroup))]
@@ -44,8 +49,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
     {
         protected override void CollectDependency(VRMBlendShapeProxy component, ComponentDependencyCollector collector)
         {
-            // FIXME: we need BuildContext.AvatarRootTransform, assume this is VRM0 avatar...
-            var avatarRootTransform = component.GetComponentInParent<VRMMeta>().transform;
+            var avatarRootTransform = component.transform;
 
             collector.MarkHeavyBehaviour();
             foreach (var clip in component.BlendShapeAvatar.Clips)
@@ -75,13 +79,34 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
         }
     }
 
+    [ComponentInformation(typeof(VRMLookAtBoneApplyer))]
+    internal class VRMLookAtBoneApplyerInformation : ComponentInformation<VRMLookAtBoneApplyer>
+    {
+        protected override void CollectDependency(VRMLookAtBoneApplyer component, ComponentDependencyCollector collector)
+        {
+            collector.MarkHeavyBehaviour();
+            collector.AddDependency(component.GetComponent<VRMLookAtHead>());
+            collector.AddDependency(component.LeftEye.Transform);
+            collector.AddDependency(component.RightEye.Transform);
+        }
+
+        protected override void CollectMutations(VRMLookAtBoneApplyer component, ComponentMutationsCollector collector)
+        {
+            collector.TransformRotation(component.LeftEye.Transform);
+            collector.TransformRotation(component.RightEye.Transform);
+        }
+    }
+
+
     [ComponentInformation(typeof(VRMLookAtBlendShapeApplyer))]
     internal class VRMLookAtBlendShapeApplyerInformation : ComponentInformation<VRMLookAtBlendShapeApplyer>
     {
         protected override void CollectDependency(VRMLookAtBlendShapeApplyer component, ComponentDependencyCollector collector)
         {
             collector.MarkHeavyBehaviour();
+            collector.AddDependency(component.GetComponent<VRMLookAtHead>());
         }
+
     }
 
 

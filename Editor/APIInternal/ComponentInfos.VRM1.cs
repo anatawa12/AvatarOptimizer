@@ -3,9 +3,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.API;
-using UniHumanoid;
+using UniGLTF.Extensions.VRMC_vrm;
 using UnityEngine;
 using UniVRM10;
+using Humanoid = UniHumanoid.Humanoid;
 
 namespace Anatawa12.AvatarOptimizer.APIInternal
 {
@@ -17,8 +18,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
     {
         protected override void CollectDependency(Vrm10Instance component, ComponentDependencyCollector collector)
         {
-            // FIXME: we need BuildContext.AvatarRootTransform, assume this is VRM1 avatar...
-            var avatarRootTransform = component.GetComponentInParent<Vrm10Instance>().transform;
+            var avatarRootTransform = component.transform;
 
             collector.MarkEntrypoint();
             
@@ -51,6 +51,59 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
             }
 
             // First Person and LookAt
+            // NOTE: these dependencies are satisfied by either Animator or Humanoid 
+            // collector.AddDependency(GetBoneTransformForVrm10(component, HumanBodyBones.Head));
+
+            // if (component.Vrm.LookAt.LookAtType == LookAtType.bone)
+            // {
+            //     if (GetBoneTransformForVrm10(component, HumanBodyBones.LeftEye) is Transform leftEye)
+            //     {
+            //         collector.AddDependency(leftEye);
+            //     }
+            //     if (GetBoneTransformForVrm10(component, HumanBodyBones.RightEye) is Transform rightEye)
+            //     {
+            //         collector.AddDependency(rightEye);
+            //     }
+            // }
+        }
+        
+        protected override void CollectMutations(Vrm10Instance component, ComponentMutationsCollector collector)
+        {
+            // SpringBones
+            foreach (var joint in component.SpringBone.Springs.SelectMany(spring => spring.Joints))
+            {
+                collector.TransformPositionAndRotation(joint.transform);
+            }
+
+            // Expressions
+
+            // First Person and LookAt
+            if (component.Vrm.LookAt.LookAtType == LookAtType.bone)
+            {
+                if (GetBoneTransformForVrm10(component, HumanBodyBones.LeftEye) is Transform leftEye)
+                {
+                    collector.TransformRotation(leftEye);
+                }
+                if (GetBoneTransformForVrm10(component, HumanBodyBones.RightEye) is Transform rightEye)
+                {
+                    collector.TransformRotation(rightEye);
+                }
+            }
+        }
+
+        Transform GetBoneTransformForVrm10(Vrm10Instance component, HumanBodyBones bones)
+        {
+            if (component.GetComponent<Humanoid>() is Humanoid avatarHumanoid)
+            {
+                return avatarHumanoid.GetBoneTransform(bones);
+            }
+            
+            if (component.GetComponent<Animator>() is Animator avatarAnimator)
+            {
+                return avatarAnimator.GetBoneTransform(bones);
+            }
+
+            return null;
         }
     }
 
@@ -83,6 +136,11 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
             collector.MarkHeavyBehaviour();
             collector.AddDependency(component.transform, component.Source);
         }
+
+        protected override void CollectMutations(Vrm10AimConstraint component, ComponentMutationsCollector collector)
+        {
+            collector.TransformRotation(component.transform);
+        }
     }
       
     [ComponentInformation(typeof(Vrm10RollConstraint))]
@@ -94,6 +152,11 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
             collector.MarkHeavyBehaviour();
             collector.AddDependency(component.transform, component.Source);
         }
+
+        protected override void CollectMutations(Vrm10RollConstraint component, ComponentMutationsCollector collector)
+        {
+            collector.TransformRotation(component.transform);
+        }
     }
 
     [ComponentInformation(typeof(Vrm10RotationConstraint))]
@@ -104,6 +167,11 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
         {
             collector.MarkHeavyBehaviour();
             collector.AddDependency(component.transform, component.Source);
+        }
+
+        protected override void CollectMutations(Vrm10RotationConstraint component, ComponentMutationsCollector collector)
+        {
+            collector.TransformRotation(component.transform);
         }
     }
 
