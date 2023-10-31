@@ -123,12 +123,12 @@ namespace Anatawa12.AvatarOptimizer
             }
 
             public static readonly AnimationPropertyInfo RemovedMarker = new AnimationPropertyInfo();
-            public AnimationProperty Animation;
+            public AnimationFloatProperty AnimationFloat;
 
             public void MergeTo(AnimationPropertyInfo property)
             {
                 MergedTo = property;
-                property.Animation = Animation.Merge(property.Animation, false);
+                property.AnimationFloat = AnimationFloat.Merge(property.AnimationFloat, false);
             }
 
             public void CopyTo(AnimationPropertyInfo property)
@@ -136,7 +136,7 @@ namespace Anatawa12.AvatarOptimizer
                 if (CopiedTo == null)
                     CopiedTo = new List<AnimationPropertyInfo>();
                 CopiedTo.Add(property);
-                property.Animation = Animation.Merge(property.Animation, false);
+                property.AnimationFloat = AnimationFloat.Merge(property.AnimationFloat, false);
             }
 
             public MappedPropertyInfo GetMappedInfo()
@@ -283,12 +283,12 @@ namespace Anatawa12.AvatarOptimizer
                 return new ComponentInfo(InstanceId, mergedInfo.InstanceId, Type, propertyMapping);
             }
 
-            public void ImportProperties(IReadOnlyDictionary<string, AnimationProperty> properties)
+            public void ImportProperties(IReadOnlyDictionary<string, AnimationFloatProperty> properties)
             {
                 foreach (var (name, property) in properties)
                 {
                     var propInfo = GetProperty(name);
-                    propInfo.Animation = property;
+                    propInfo.AnimationFloat = property;
                 }
             }
         }

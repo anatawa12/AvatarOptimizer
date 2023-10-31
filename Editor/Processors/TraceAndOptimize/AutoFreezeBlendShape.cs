@@ -59,12 +59,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     
                     switch (prop.State)
                     {
-                        case AnimationProperty.PropertyState.ConstantAlways:
+                        case AnimationFloatProperty.PropertyState.ConstantAlways:
                             newWeight = prop.ConstValue;
                             return true;
-                        case AnimationProperty.PropertyState.ConstantPartially:
+                        case AnimationFloatProperty.PropertyState.ConstantPartially:
                             return prop.ConstValue.CompareTo(weight) == 0;
-                        case AnimationProperty.PropertyState.Variable:
+                        case AnimationFloatProperty.PropertyState.Variable:
                             return false;
                         default:
                             throw new ArgumentOutOfRangeException();

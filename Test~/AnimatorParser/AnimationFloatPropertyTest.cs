@@ -2,14 +2,14 @@ using System;
 using System.Collections.Generic;
 using Anatawa12.AvatarOptimizer.AnimatorParsers;
 using NUnit.Framework;
-using static Anatawa12.AvatarOptimizer.AnimatorParsers.AnimationProperty;
+using static Anatawa12.AvatarOptimizer.AnimatorParsers.AnimationFloatProperty;
 
 namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
 {
     class AnimationPropertyTest
     {
         [TestCaseSource(nameof(TrueCause))]
-        public void TestEquals(AnimationProperty propA, AnimationProperty propB)
+        public void TestEquals(AnimationFloatProperty propA, AnimationFloatProperty propB)
         {
             Assert.That(propA.Equals(propB), Is.True);
         }
@@ -31,7 +31,7 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
         }
 
         [TestCaseSource(nameof(FalseCause))]
-        public void TestNotEquals(AnimationProperty propA, AnimationProperty propB)
+        public void TestNotEquals(AnimationFloatProperty propA, AnimationFloatProperty propB)
         {
             Assert.That(propA.Equals(propB), Is.False);
         }
