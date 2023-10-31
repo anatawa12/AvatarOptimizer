@@ -165,7 +165,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                         // const 
                         break;
                     case AnimationProperty.PropertyState.Variable:
-                        _properties[propertyName] = AnimationProperty.Variable();
+                        _properties[propertyName] = AnimationProperty.Variable(null); // TODO: merge source
                         break;
                     case AnimationProperty.PropertyState.Invalid:
                     default:
@@ -258,7 +258,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         {
             foreach (var properties in _modifiedProperties.Values)
                 foreach (var name in properties.Keys.ToArray())
-                    properties[name] = AnimationProperty.Variable();
+                    properties[name] = AnimationProperty.Variable(null); // source by properties
         }
     }
 
@@ -285,33 +285,53 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             }
         }
 
-        private AnimationProperty(PropertyState state, float constValue) =>
-            (State, _constValue) = (state, constValue);
+        private readonly Object[] _sources;
+        public Span<Object> Sources => _sources ?? Array.Empty<Object>();
 
-        public static AnimationProperty ConstAlways(float value) =>
-            new AnimationProperty(PropertyState.ConstantAlways, value);
+        private AnimationProperty(PropertyState state, float constValue, params Object[] modifiers) =>
+            (State, _constValue, _sources) = (state, constValue, modifiers);
 
-        public static AnimationProperty ConstPartially(float value) =>
-            new AnimationProperty(PropertyState.ConstantPartially, value);
+        public static AnimationProperty ConstAlways(float value, Object modifier) =>
+            ConstAlways0(value, new[] { modifier });
 
-        public static AnimationProperty Variable() =>
-            new AnimationProperty(PropertyState.Variable, float.NaN);
+        public static AnimationProperty ConstPartially(float value, Object modifier) =>
+            ConstPartially0(value, new[] { modifier });
+
+        public static AnimationProperty Variable(Object modifier) =>
+            Variable0(new[] { modifier });
+
+        private static AnimationProperty ConstAlways0(float value, Object[] modifiers) =>
+            new AnimationProperty(PropertyState.ConstantAlways, value, modifiers);
+
+        private static AnimationProperty ConstPartially0(float value, Object[] modifiers) =>
+            new AnimationProperty(PropertyState.ConstantPartially, value, modifiers);
+
+        private static AnimationProperty Variable0(Object[] modifiers) =>
+            new AnimationProperty(PropertyState.Variable, float.NaN, modifiers);
+
+        private Object[] MergeSource(Span<Object> aSource, Span<Object> bSource)
+        {
+            var merged = new Object[aSource.Length + bSource.Length];
+            aSource.CopyTo(merged.AsSpan().Slice(0, aSource.Length));
+            bSource.CopyTo(merged.AsSpan().Slice(aSource.Length, bSource.Length));
+            return merged;
+        }
 
         public AnimationProperty Merge(AnimationProperty b, bool asNewLayer)
         {
             // if asNewLayer and new layer is constant always, the value is used
             if (asNewLayer && b.State == PropertyState.ConstantAlways) return b;
 
-            if (State == PropertyState.Variable) return Variable();
-            if (b.State == PropertyState.Variable) return Variable();
+            if (State == PropertyState.Variable) return Variable0(MergeSource(Sources, b.Sources));
+            if (b.State == PropertyState.Variable) return Variable0(MergeSource(Sources, b.Sources));
 
             // now they are constant.
-            if (ConstValue.CompareTo(b.ConstValue) != 0) return Variable();
+            if (ConstValue.CompareTo(b.ConstValue) != 0) return Variable0(MergeSource(Sources, b.Sources));
 
             var value = ConstValue;
 
-            if (State == PropertyState.ConstantPartially) return ConstPartially(value);
-            if (b.State == PropertyState.ConstantPartially) return ConstPartially(value);
+            if (State == PropertyState.ConstantPartially) return ConstPartially0(value, MergeSource(Sources, b.Sources));
+            if (b.State == PropertyState.ConstantPartially) return ConstPartially0(value, MergeSource(Sources, b.Sources));
 
             System.Diagnostics.Debug.Assert(State == PropertyState.ConstantAlways);
             System.Diagnostics.Debug.Assert(b.State == PropertyState.ConstantAlways);
@@ -319,11 +339,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             return this;
         }
 
-        public static AnimationProperty? ParseProperty(AnimationCurve curve)
+        public static AnimationProperty? ParseProperty(AnimationCurve curve, Object source)
         {
             if (curve.keys.Length == 0) return null;
             if (curve.keys.Length == 1)
-                return ConstAlways(curve.keys[0].value);
+                return ConstAlways(curve.keys[0].value, source);
 
             float constValue = 0;
             foreach (var (preKey, postKey) in curve.keys.ZipWithNext())
@@ -331,7 +351,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 var preWeighted = preKey.weightedMode == WeightedMode.Out || preKey.weightedMode == WeightedMode.Both;
                 var postWeighted = postKey.weightedMode == WeightedMode.In || postKey.weightedMode == WeightedMode.Both;
 
-                if (preKey.value.CompareTo(postKey.value) != 0) return Variable();
+                if (preKey.value.CompareTo(postKey.value) != 0) return Variable(source);
                 constValue = preKey.value;
                 // it's constant
                 if (float.IsInfinity(preKey.outWeight) || float.IsInfinity(postKey.inTangent))
@@ -340,10 +360,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     continue;
                 if (preWeighted && postWeighted && preKey.outWeight == 0 && postKey.inWeight == 0)
                     continue;
-                return Variable();
+                return Variable(source);
             }
 
-            return ConstAlways(constValue);
+            return ConstAlways(constValue, source);
         }
 
         public AnimationProperty PartiallyApplied()
@@ -351,7 +371,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             switch (State)
             {
                 case PropertyState.ConstantAlways:
-                    return ConstPartially(ConstValue);
+                    return ConstPartially0(ConstValue, _sources);
                 case PropertyState.ConstantPartially:
                 case PropertyState.Variable:
                     return this;
@@ -359,6 +379,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     throw new ArgumentOutOfRangeException();
             }
         }
+
+        public AnimationProperty Variable() => Variable0(_sources);
 
         public enum PropertyState
         {
@@ -502,7 +524,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 case AnimatorWeightState.EitherZeroOrOne:
                     return property.PartiallyApplied();
                 case AnimatorWeightState.Variable:
-                    return AnimationProperty.Variable();
+                    return property.Variable();
                 case AnimatorWeightState.NotChanged:
                 case AnimatorWeightState.AlwaysZero:
                 default:
