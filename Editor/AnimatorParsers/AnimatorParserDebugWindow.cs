@@ -6,7 +6,7 @@ using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
+namespace Anatawa12.AvatarOptimizer.AnimatorParsers
 {
     internal class AnimatorParserDebugWindow : EditorWindow
     {
@@ -46,16 +46,16 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
                     switch (propState.State)
                     {
-                        case AnimationProperty.PropertyState.ConstantAlways:
+                        case AnimationFloatProperty.PropertyState.ConstantAlways:
                             propStateInfo = $"Always:{propState.ConstValue}";
                             break;
-                        case AnimationProperty.PropertyState.ConstantPartially:
+                        case AnimationFloatProperty.PropertyState.ConstantPartially:
                             propStateInfo = $"Partially:{propState.ConstValue}";
                             break;
-                        case AnimationProperty.PropertyState.Variable:
+                        case AnimationFloatProperty.PropertyState.Variable:
                             propStateInfo = "Variable";
                             break;
-                        case AnimationProperty.PropertyState.Invalid:
+                        case AnimationFloatProperty.PropertyState.Invalid:
                         default:
                             throw new ArgumentOutOfRangeException();
                     }
@@ -85,16 +85,16 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
                     switch (propState.State)
                     {
-                        case AnimationProperty.PropertyState.ConstantAlways:
+                        case AnimationFloatProperty.PropertyState.ConstantAlways:
                             propStateInfo = $"Always:{propState.ConstValue}";
                             break;
-                        case AnimationProperty.PropertyState.ConstantPartially:
+                        case AnimationFloatProperty.PropertyState.ConstantPartially:
                             propStateInfo = $"Partially:{propState.ConstValue}";
                             break;
-                        case AnimationProperty.PropertyState.Variable:
+                        case AnimationFloatProperty.PropertyState.Variable:
                             propStateInfo = "Variable";
                             break;
-                        case AnimationProperty.PropertyState.Invalid:
+                        case AnimationFloatProperty.PropertyState.Invalid:
                         default:
                             throw new ArgumentOutOfRangeException();
                     }
