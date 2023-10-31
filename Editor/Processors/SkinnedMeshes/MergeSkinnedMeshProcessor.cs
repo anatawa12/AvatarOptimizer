@@ -29,8 +29,20 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         public override void Process(BuildContext context, MeshInfo2 target)
         {
-            var skinnedMeshRenderers = SkinnedMeshRenderers.ToList();
-            var staticMeshRenderers = StaticMeshRenderers.ToList();
+            List<SkinnedMeshRenderer> skinnedMeshRenderers;
+            List<MeshRenderer> staticMeshRenderers;
+            if (Component.skipInitiallyDisabledRenderers)
+            {
+                Func<Renderer, bool> enabledFilter = x => x.enabled && x.gameObject.activeSelf;
+                skinnedMeshRenderers = SkinnedMeshRenderers.Where<SkinnedMeshRenderer>(enabledFilter).ToList();
+                staticMeshRenderers = StaticMeshRenderers.Where<MeshRenderer>(enabledFilter).ToList();
+            }
+            else
+            {
+                skinnedMeshRenderers = SkinnedMeshRenderers.ToList();
+                staticMeshRenderers = StaticMeshRenderers.ToList();
+            }
+
             Profiler.BeginSample("Merge PreserveBlendShapes");
             {
                 var state = context.GetState<TraceAndOptimizes.TraceAndOptimizeState>();
@@ -200,7 +212,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             var boneTransforms = new HashSet<Transform>(target.Bones.Select(x => x.Transform));
 
             Profiler.BeginSample("Postprocess Source Renderers");
-            foreach (var renderer in SkinnedMeshRenderers)
+            foreach (var renderer in skinnedMeshRenderers)
             {
                 // Avatars can have animation to hide source meshes.
                 // Such a animation often intended to hide/show some accessories but
@@ -225,7 +237,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 Object.DestroyImmediate(rendererGameObject);
             }
 
-            foreach (var renderer in StaticMeshRenderers)
+            foreach (var renderer in staticMeshRenderers)
             {
                 Object.DestroyImmediate(renderer.GetComponent<MeshFilter>());
                 Object.DestroyImmediate(renderer);

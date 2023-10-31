@@ -200,6 +200,9 @@ msgstr "静的レンダラー"
 msgid "MergeSkinnedMesh:prop:removeEmptyRendererObject"
 msgstr "空のレンダラーオブジェクトを削除する"
 
+msgid "MergeSkinnedMesh:prop:skipInitiallyDisabledRenderers"
+msgstr "無効なレンダラーをスキップする"
+
 msgid "MergeSkinnedMesh:label:Merge Materials"
 msgstr "マテリアルの統合"
 

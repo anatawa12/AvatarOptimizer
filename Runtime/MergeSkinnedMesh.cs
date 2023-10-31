@@ -1,3 +1,4 @@
+using System;
 using Anatawa12.AvatarOptimizer.ErrorReporting;
 using CustomLocalization4EditorExtension;
 using UnityEngine;
@@ -21,6 +22,15 @@ namespace Anatawa12.AvatarOptimizer
         [NotKeyable, CL4EELocalized("MergeSkinnedMesh:prop:removeEmptyRendererObject")]
         [ToggleLeft]
         public bool removeEmptyRendererObject = true;
+        [CL4EELocalized("MergeSkinnedMesh:prop:skipInitiallyDisabledRenderers")]
+        [NotKeyable]
+        [ToggleLeft]
+        public bool skipInitiallyDisabledRenderers;
+
+        private void Reset()
+        {
+            skipInitiallyDisabledRenderers = true;
+        }
 
         public MergeSkinnedMesh()
         {
