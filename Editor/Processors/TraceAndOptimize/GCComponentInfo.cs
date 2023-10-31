@@ -2,21 +2,22 @@ using System;
 using System.Collections.Generic;
 using Anatawa12.AvatarOptimizer.AnimatorParsers;
 using JetBrains.Annotations;
+using nadena.dev.ndmf;
 using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 {
     internal readonly partial struct GCComponentInfoHolder
     {
-        private readonly ImmutableModificationsContainer _modifications;
+        private readonly BuildContext _context;
         private readonly Dictionary<Component, GCComponentInfo> _dependencies;
 
-        public GCComponentInfoHolder(ImmutableModificationsContainer modifications, GameObject rootGameObject)
+        public GCComponentInfoHolder(BuildContext context)
         {
-            _modifications = modifications;
+            _context = context;
             // initialize _dependencies
             _dependencies = new Dictionary<Component, GCComponentInfo>();
-            InitializeDependencies(rootGameObject.transform, true);
+            InitializeDependencies(_context.AvatarRootTransform.transform, true);
         }
 
         private void InitializeDependencies(Transform transform, bool? parentActiveness)
@@ -119,22 +120,22 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             {
                 case Transform transform:
                     var gameObject = transform.gameObject;
-                    activeness = _modifications.GetConstantValue(gameObject, "m_IsActive", gameObject.activeSelf);
+                    activeness = _context.GetConstantValue(gameObject, "m_IsActive", gameObject.activeSelf);
                     break;
                 case Behaviour behaviour:
-                    activeness = _modifications.GetConstantValue(behaviour, "m_Enabled", behaviour.enabled);
+                    activeness = _context.GetConstantValue(behaviour, "m_Enabled", behaviour.enabled);
                     break;
                 case Cloth cloth:
-                    activeness = _modifications.GetConstantValue(cloth, "m_Enabled", cloth.enabled);
+                    activeness = _context.GetConstantValue(cloth, "m_Enabled", cloth.enabled);
                     break;
                 case Collider collider:
-                    activeness = _modifications.GetConstantValue(collider, "m_Enabled", collider.enabled);
+                    activeness = _context.GetConstantValue(collider, "m_Enabled", collider.enabled);
                     break;
                 case LODGroup lodGroup:
-                    activeness = _modifications.GetConstantValue(lodGroup, "m_Enabled", lodGroup.enabled);
+                    activeness = _context.GetConstantValue(lodGroup, "m_Enabled", lodGroup.enabled);
                     break;
                 case Renderer renderer:
-                    activeness = _modifications.GetConstantValue(renderer, "m_Enabled", renderer.enabled);
+                    activeness = _context.GetConstantValue(renderer, "m_Enabled", renderer.enabled);
                     break;
                 // components without isEnable
                 case CanvasRenderer _:

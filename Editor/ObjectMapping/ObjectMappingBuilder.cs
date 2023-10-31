@@ -80,6 +80,12 @@ namespace Anatawa12.AvatarOptimizer
         public void RecordRemoveProperty(ComponentOrGameObject from, string oldProp) =>
             GetComponentInfo(from).RemoveProperty(oldProp);
 
+        public AnimationComponentInfo GetAnimationComponent(ComponentOrGameObject component)
+            => GetComponentInfo(component);
+
+        public AnimationFloatProperty? GetFloatAnimation(ComponentOrGameObject component, string property) =>
+            GetComponentInfo(component).GetFloatAnimation(property);
+
         private BuildingComponentInfo GetComponentInfo(ComponentOrGameObject component)
         {
             if (!_componentInfos.TryGetValue(component.GetInstanceID(), out var info))
@@ -191,7 +197,7 @@ namespace Anatawa12.AvatarOptimizer
             }
         }
 
-        class BuildingComponentInfo
+        class BuildingComponentInfo : AnimationComponentInfo
         {
             internal readonly int InstanceId;
             internal readonly Type Type;
@@ -298,6 +304,29 @@ namespace Anatawa12.AvatarOptimizer
                     propInfo.AnimationFloat = property;
                 }
             }
+
+            public override bool ContainsFloat(string property) =>
+                _afterPropertyIds.TryGetValue(property, out var info) && info.AnimationFloat != null;
+
+            public override bool TryGetFloat(string propertyName, out AnimationFloatProperty animation)
+            {
+                animation = default;
+                if (!_afterPropertyIds.TryGetValue(propertyName, out var info))
+                    return false;
+                if (!(info.AnimationFloat is AnimationFloatProperty property))
+                    return false;
+                animation = property;
+                return true;
+            }
+
+            public AnimationFloatProperty? GetFloatAnimation(string property) =>
+                _afterPropertyIds.TryGetValue(property, out var info) ? info.AnimationFloat : null;
         }
+    }
+
+    internal abstract class AnimationComponentInfo
+    {
+        public abstract bool ContainsFloat(string property);
+        public abstract bool TryGetFloat(string propertyName, out AnimationFloatProperty animation);
     }
 }
