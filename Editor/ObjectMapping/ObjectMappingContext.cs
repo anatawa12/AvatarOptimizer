@@ -4,6 +4,7 @@ using System.Linq;
 using Anatawa12.AvatarOptimizer.API;
 using Anatawa12.AvatarOptimizer.APIInternal;
 using Anatawa12.AvatarOptimizer.ErrorReporting;
+using JetBrains.Annotations;
 using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEditor.Animations;
@@ -70,17 +71,38 @@ namespace Anatawa12.AvatarOptimizer
             _mapping = mapping;
         }
 
+        private MappedComponentInfo<T> GetMappedInternal<T>(T component) where T : Object
+        {
+            var componentInfo = _mapping.GetComponentMapping(component.GetInstanceID());
+            if (componentInfo == null) return new OriginalComponentInfo<T>(component);
+            return new ComponentInfo<T>(componentInfo);
+        }
+
         public override MappedComponentInfo<T> GetMappedComponent<T>(T component) =>
-            new ComponentInfo<T>(_mapping.GetComponentMapping(component.GetInstanceID()));
+            GetMappedInternal(component);
 
         public override MappedComponentInfo<GameObject> GetMappedGameObject(GameObject component) =>
-            new ComponentInfo<GameObject>(_mapping.GetComponentMapping(component.GetInstanceID()));
+            GetMappedInternal(component);
+
+        private class OriginalComponentInfo<T> : MappedComponentInfo<T> where T : Object
+        {
+            private readonly T _component;
+
+            public OriginalComponentInfo(T component) => _component = component;
+
+            public override T MappedComponent => _component;
+            public override bool TryMapFloatProperty(string property, out (Object component, string property) found)
+            {
+                found = (_component, property);
+                return true;
+            }
+        }
 
         private class ComponentInfo<T> : MappedComponentInfo<T> where T : Object
         {
-            private readonly ComponentInfo _info;
+            [NotNull] private readonly ComponentInfo _info;
 
-            public ComponentInfo(ComponentInfo info) => _info = info;
+            public ComponentInfo([NotNull] ComponentInfo info) => _info = info;
 
             public override T MappedComponent => EditorUtility.InstanceIDToObject(_info.MergedInto) as T;
             public override bool TryMapFloatProperty(string property, out (Object component, string property) found)
