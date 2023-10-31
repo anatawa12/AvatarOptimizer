@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes;
+using Anatawa12.AvatarOptimizer.AnimatorParsers;
 using NUnit.Framework;
 using UnityEditor.Animations;
 using UnityEngine;

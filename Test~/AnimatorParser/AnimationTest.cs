@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes;
+using Anatawa12.AvatarOptimizer.AnimatorParsers;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;

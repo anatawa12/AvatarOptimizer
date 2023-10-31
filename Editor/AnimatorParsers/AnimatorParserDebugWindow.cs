@@ -6,7 +6,7 @@ using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
+namespace Anatawa12.AvatarOptimizer.AnimatorParsers
 {
     internal class AnimatorParserDebugWindow : EditorWindow
     {

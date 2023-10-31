@@ -17,7 +17,7 @@ using VRC.SDK3.Avatars.Components;
 using VRC.SDKBase;
 #endif
 
-namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
+namespace Anatawa12.AvatarOptimizer.AnimatorParsers
 {
     class AnimatorParser
     {
@@ -27,11 +27,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         public AnimatorParser(bool mmdWorldCompatibility)
         {
             this.mmdWorldCompatibility = mmdWorldCompatibility;
-        }
-
-        public AnimatorParser(TraceAndOptimizeState config)
-        {
-            mmdWorldCompatibility = config.MmdWorldCompatibility;
         }
 
         public ImmutableModificationsContainer GatherAnimationModifications(BuildContext context)

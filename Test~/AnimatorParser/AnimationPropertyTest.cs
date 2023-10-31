@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes;
+using Anatawa12.AvatarOptimizer.AnimatorParsers;
 using NUnit.Framework;
-using static Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes.AnimationProperty;
+using static Anatawa12.AvatarOptimizer.AnimatorParsers.AnimationProperty;
 
 namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
 {

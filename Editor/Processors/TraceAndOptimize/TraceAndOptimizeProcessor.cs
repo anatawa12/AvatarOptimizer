@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Anatawa12.AvatarOptimizer.AnimatorParsers;
 using nadena.dev.ndmf;
 using UnityEngine;
 
@@ -68,7 +69,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         {
             var state = context.GetState<TraceAndOptimizeState>();
             if (state.Enabled)
-                state.Modifications = new AnimatorParser(state).GatherAnimationModifications(context);
+                state.Modifications = new AnimatorParser(state.MmdWorldCompatibility)
+                    .GatherAnimationModifications(context);
         }
     }
 }
