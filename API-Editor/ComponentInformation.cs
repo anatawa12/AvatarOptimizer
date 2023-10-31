@@ -79,7 +79,8 @@ namespace Anatawa12.AvatarOptimizer.API
         /// </summary>
         /// <param name="component">The component.</param>
         /// <param name="mappingSource">The mapping source</param>
-        internal virtual void ApplySpecialMapping(TComponent component, MappingSource mappingSource)
+        [PublicAPI]
+        protected virtual void ApplySpecialMapping(TComponent component, MappingSource mappingSource)
         {
         }
 
@@ -214,18 +215,25 @@ namespace Anatawa12.AvatarOptimizer.API
             ModifyProperties(component, (IEnumerable<string>) properties);
     }
 
-    internal abstract class MappingSource
+    public abstract class MappingSource
     {
         internal MappingSource()
         {
         }
 
+        [PublicAPI]
         public abstract MappedComponentInfo<T> GetMappedComponent<T>(T component) where T : Component;
+
+        [PublicAPI]
         public abstract MappedComponentInfo<GameObject> GetMappedGameObject(GameObject component);
     }
 
-    internal abstract class MappedComponentInfo<T> where T : Object
+    public abstract class MappedComponentInfo<T> where T : Object
     {
+        internal MappedComponentInfo()
+        {
+        }
+
         /// <summary>
         /// The mapped component (or GameObject).
         /// The component may be removed without mapped component.
@@ -234,6 +242,7 @@ namespace Anatawa12.AvatarOptimizer.API
         /// Even if the component is removed without mapped component,
         /// each animation property can be mapped to another component.
         /// </summary>
+        [PublicAPI]
         public abstract T MappedComponent { get; }
 
         /// <summary>
@@ -244,12 +253,16 @@ namespace Anatawa12.AvatarOptimizer.API
         /// <param name="property">The name of property will be mapped</param>
         /// <param name="found">The result parameter</param>
         /// <returns>Whether if the property is successfully mapped or removed</returns>
+        [PublicAPI]
         public abstract bool TryMapProperty(string property, out MappedPropertyInfo found);
     }
 
-    internal readonly struct MappedPropertyInfo
+    public readonly struct MappedPropertyInfo
     {
+        [PublicAPI]
         public Object Component { get; }
+
+        [PublicAPI]
         public string Property { get; }
 
         internal MappedPropertyInfo(Object component, string property)
