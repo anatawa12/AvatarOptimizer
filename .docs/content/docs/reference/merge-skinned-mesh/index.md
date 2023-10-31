@@ -56,7 +56,8 @@ any other components than SkinnedMeshRenderer, the GameObject will be removed fr
 
 ### Skip Initially Disabled Renderers
 
-If this checkbox is checked, SkinnedMeshRenderer and MeshRenderer will not be merged if they are disabled on the build time.
+If this checkbox is checked and merge target SkinnedMeshRenderer is enabled, 
+SkinnedMeshRenderer and MeshRenderer will not be merged if they are disabled on the build time.
 
 ### Merge Materials
 
