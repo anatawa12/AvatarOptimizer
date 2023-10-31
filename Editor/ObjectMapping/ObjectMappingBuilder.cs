@@ -97,25 +97,25 @@ namespace Anatawa12.AvatarOptimizer
                 _originalComponentInfos.ToDictionary(p => p.Key, p => p.Value.Build()));
         }
 
-        class AnimationProperty
+        class AnimationPropertyInfo
         {
             [CanBeNull] public readonly BuildingComponentInfo Component;
             [CanBeNull] public readonly string Name;
-            [CanBeNull] public AnimationProperty MergedTo;
+            [CanBeNull] public AnimationPropertyInfo MergedTo;
             private MappedPropertyInfo? _mappedPropertyInfo;
-            [CanBeNull] public List<AnimationProperty> CopiedTo;
+            [CanBeNull] public List<AnimationPropertyInfo> CopiedTo;
 
-            public AnimationProperty([NotNull] BuildingComponentInfo component, [NotNull] string name)
+            public AnimationPropertyInfo([NotNull] BuildingComponentInfo component, [NotNull] string name)
             {
                 Component = component ?? throw new ArgumentNullException(nameof(component));
                 Name = name ?? throw new ArgumentNullException(nameof(name));
             }
 
-            private AnimationProperty()
+            private AnimationPropertyInfo()
             {
             }
 
-            public static readonly AnimationProperty RemovedMarker = new AnimationProperty();
+            public static readonly AnimationPropertyInfo RemovedMarker = new AnimationPropertyInfo();
 
             public MappedPropertyInfo GetMappedInfo()
             {
@@ -170,11 +170,11 @@ namespace Anatawa12.AvatarOptimizer
             // id in this -> id in merged
             private BuildingComponentInfo _mergedInto;
 
-            private readonly Dictionary<string, AnimationProperty> _beforePropertyIds =
-                new Dictionary<string, AnimationProperty>();
+            private readonly Dictionary<string, AnimationPropertyInfo> _beforePropertyIds =
+                new Dictionary<string, AnimationPropertyInfo>();
 
-            private readonly Dictionary<string, AnimationProperty> _afterPropertyIds =
-                new Dictionary<string, AnimationProperty>();
+            private readonly Dictionary<string, AnimationPropertyInfo> _afterPropertyIds =
+                new Dictionary<string, AnimationPropertyInfo>();
 
             public BuildingComponentInfo(ComponentOrGameObject component)
             {
@@ -185,7 +185,7 @@ namespace Anatawa12.AvatarOptimizer
             internal bool IsMerged => _mergedInto != null;
 
             [NotNull]
-            private AnimationProperty GetProperty(string name, bool remove = false)
+            private AnimationPropertyInfo GetProperty(string name, bool remove = false)
             {
                 if (_afterPropertyIds.TryGetValue(name, out var prop))
                 {
@@ -194,7 +194,7 @@ namespace Anatawa12.AvatarOptimizer
                 }
                 else
                 {
-                    var newProp = new AnimationProperty(this, name);
+                    var newProp = new AnimationPropertyInfo(this, name);
                     if (!remove) _afterPropertyIds.Add(name, newProp);
                     if (!_beforePropertyIds.ContainsKey(name))
                         _beforePropertyIds.Add(name, newProp);
@@ -217,7 +217,7 @@ namespace Anatawa12.AvatarOptimizer
                 if (Type == typeof(Transform)) throw new Exception("Move properties of Transform is not supported!");
                 if (_mergedInto != null) throw new Exception("Already Merged");
 
-                var propertyIds = new AnimationProperty[props.Length];
+                var propertyIds = new AnimationPropertyInfo[props.Length];
                 for (var i = 0; i < props.Length; i++)
                     propertyIds[i] = GetProperty(props[i].old, remove: true);
 
@@ -235,7 +235,7 @@ namespace Anatawa12.AvatarOptimizer
             {
                 var prop = GetProperty(oldProp);
                 if (prop.CopiedTo == null)
-                    prop.CopiedTo = new List<AnimationProperty>();
+                    prop.CopiedTo = new List<AnimationPropertyInfo>();
                 prop.CopiedTo.Add(toComponent.GetProperty(newProp));
             }
 
@@ -244,7 +244,7 @@ namespace Anatawa12.AvatarOptimizer
                 if (Type == typeof(Transform)) throw new Exception("Removing properties of Transform is not supported!");
                 if (_mergedInto != null) throw new Exception("Already Merged");
 
-                GetProperty(property, remove: true).MergedTo = AnimationProperty.RemovedMarker;
+                GetProperty(property, remove: true).MergedTo = AnimationPropertyInfo.RemovedMarker;
             }
 
             public ComponentInfo Build()
