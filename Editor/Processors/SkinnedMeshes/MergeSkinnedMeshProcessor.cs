@@ -31,9 +31,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         {
             List<SkinnedMeshRenderer> skinnedMeshRenderers;
             List<MeshRenderer> staticMeshRenderers;
-            if (Component.skipInitiallyDisabledRenderers)
+            Func<Renderer, bool> enabledFilter = x => x.enabled && x.gameObject.activeSelf;
+            if (Component.skipInitiallyDisabledRenderers && enabledFilter(Target))
             {
-                Func<Renderer, bool> enabledFilter = x => x.enabled && x.gameObject.activeSelf;
                 skinnedMeshRenderers = SkinnedMeshRenderers.Where<SkinnedMeshRenderer>(enabledFilter).ToList();
                 staticMeshRenderers = StaticMeshRenderers.Where<MeshRenderer>(enabledFilter).ToList();
             }
