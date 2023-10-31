@@ -194,5 +194,9 @@ namespace Anatawa12.AvatarOptimizer.API
 
         [PublicAPI]
         public abstract void ModifyProperties([NotNull] Component component, [NotNull] IEnumerable<string> properties);
+
+        [PublicAPI]
+        public void ModifyProperties([NotNull] Component component, [NotNull] string[] properties) =>
+            ModifyProperties(component, (IEnumerable<string>) properties);
     }
 }
