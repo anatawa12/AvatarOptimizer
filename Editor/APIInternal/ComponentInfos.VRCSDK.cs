@@ -73,7 +73,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
             }
         }
 
-        internal override void ApplySpecialMapping(T component, MappingSource mappingSource)
+        protected override void ApplySpecialMapping(T component, MappingSource mappingSource)
         {
             base.ApplySpecialMapping(component, mappingSource);
             
@@ -89,8 +89,8 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
                     var info = mappingSource.GetMappedComponent(component.VisemeSkinnedMesh);
                     if (info.TryMapProperty($"blendShape.{component.MouthOpenBlendShapeName}", out var mapped))
                     {
-                        component.VisemeSkinnedMesh = mapped.Item1 as SkinnedMeshRenderer;
-                        component.MouthOpenBlendShapeName = ParseBlendShapeProperty(mapped.Item2);
+                        component.VisemeSkinnedMesh = mapped.Component as SkinnedMeshRenderer;
+                        component.MouthOpenBlendShapeName = ParseBlendShapeProperty(mapped.Property);
                     }
                     else
                     {
@@ -106,8 +106,8 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
                     foreach (ref var shapeName in component.VisemeBlendShapes.AsSpan())
                     {
                         if (info.TryMapProperty($"blendShape.{shapeName}", out var mapped)
-                            && mapped.component == info.MappedComponent)
-                            shapeName = ParseBlendShapeProperty(mapped.property);
+                            && mapped.Component == info.MappedComponent)
+                            shapeName = ParseBlendShapeProperty(mapped.Property);
                         else
                             removed = true;
                     }
@@ -214,7 +214,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
             }
         }
 
-        internal override void ApplySpecialMapping(VRCAvatarDescriptor component, MappingSource mappingSource)
+        protected override void ApplySpecialMapping(VRCAvatarDescriptor component, MappingSource mappingSource)
         {
             base.ApplySpecialMapping(component, mappingSource);
             
@@ -235,8 +235,8 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
                         foreach (ref var eyelidsBlendshape in component.customEyeLookSettings.eyelidsBlendshapes.AsSpan())
                         {
                             if (info.TryMapProperty(VProp.BlendShapeIndex(eyelidsBlendshape), out var mapped)
-                                && mapped.component == info.MappedComponent)
-                                eyelidsBlendshape = VProp.ParseBlendShapeIndex(mapped.property);
+                                && mapped.Component == info.MappedComponent)
+                                eyelidsBlendshape = VProp.ParseBlendShapeIndex(mapped.Property);
                             else
                                 removed = true;
                         }
