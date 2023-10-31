@@ -30,7 +30,7 @@ namespace Anatawa12.AvatarOptimizer
         [NotKeyable]
         [CL4EELocalized("TraceAndOptimize:prop:removeZeroSizedPolygons")]
         [ToggleLeft]
-        public bool removeZeroSizedPolygons = true;
+        public bool removeZeroSizedPolygons = false;
 
         // common parsing configuration
         [NotKeyable]
