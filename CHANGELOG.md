@@ -13,7 +13,7 @@ The format is based on [Keep a Changelog].
   - If you toggles your clothes with simple toggle, PhysBones on the your avatar will also be toggled automatically!
 - Small performance improve `#641`
 - Ability to prevent changing enablement of component `#668`
-- Skip initially disabled Renderers in Merge Skinned Mesh `#670`
+- Skip enablement mismatched Renderers in Merge Skinned Mesh `#670`
   - This is now enabled by default for newly added Merge Skinned Mesh.
 
 ### Changed
