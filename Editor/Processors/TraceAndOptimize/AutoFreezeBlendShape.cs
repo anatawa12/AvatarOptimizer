@@ -30,6 +30,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         void FreezeNonAnimatedBlendShapes(BuildContext context, TraceAndOptimizeState state)
         {
+            var modifications = context.GetState<AnimatorState>().Modifications;
             // first optimization: unused blend shapes
             foreach (var skinnedMeshRenderer in context.GetComponents<SkinnedMeshRenderer>())
             {
@@ -37,7 +38,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
                 var meshInfo = context.GetMeshInfoFor(skinnedMeshRenderer);
 
-                var modifies = state.Modifications.GetModifiedProperties(skinnedMeshRenderer);
+                var modifies = modifications.GetModifiedProperties(skinnedMeshRenderer);
 
                 var unchanged = new HashSet<string>();
 

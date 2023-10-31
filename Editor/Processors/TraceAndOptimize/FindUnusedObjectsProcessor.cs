@@ -78,7 +78,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         {
             _context = context;
 
-            _modifications = state.Modifications;
+            _modifications = context.GetState<AnimatorState>().Modifications;
             _preserveEndBone = state.PreserveEndBone;
             _noConfigureMergeBone = state.NoConfigureMergeBone;
             _noActivenessAnimation = state.NoActivenessAnimation;
