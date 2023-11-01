@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Public API for registering component information `#632`
+- Public API for registering component information `#632` `#668`
 - Disabling PhysBone animation based on mesh renderer enabled animation `#640`
   - If you toggles your clothes with simple toggle, PhysBones on the your avatar will also be toggled automatically!
 - Small performance improve `#641`
@@ -19,7 +19,6 @@ The format is based on [Keep a Changelog].
 - Improved Behaviour with multi-material multi pass rendering `#662`
   - Previously, multi-material multi pass rendering are flattened.
   - Since 1.6, flattened if component doesn't support that.
-- BREAKING API CHANGES: Behaviour components are renamed to HeavyBehaviour `#668`
 
 ### Deprecated
 
