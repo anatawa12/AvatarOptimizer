@@ -205,6 +205,17 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
                     .ToList());
             return this;
         }
+        
+        public void WithContext<T>(ReadOnlySpan<T> args)
+        {
+            foreach (var arg in args)
+            {
+                if (arg is Component c)
+                    referencedObjects.Add(new ObjectRef(c.gameObject));
+                else if (arg is GameObject go)
+                    referencedObjects.Add(new ObjectRef(go));
+            }
+        }
 
         internal ErrorLog(Exception e, string additionalStackTrace = "")
             : this(ReportLevel.InternalError,
