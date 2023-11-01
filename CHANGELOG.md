@@ -20,6 +20,7 @@ The format is based on [Keep a Changelog].
   - Previously, multi-material multi pass rendering are flattened.
   - Since 1.6, flattened if component doesn't support that.
 - BREAKING API CHANGES: Behaviour components are renamed to HeavyBehaviour `#668`
+- When you're animating activeness/enablement of source renderers, warning is shown since this release `#675`
 
 ### Deprecated
 

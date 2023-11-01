@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
+- When you're animating activeness/enablement of source renderers, warning is shown since this release `#675`
 
 ### Deprecated
 
