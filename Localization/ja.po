@@ -378,7 +378,7 @@ msgid "TraceAndOptimize:tooltip:preserveEndBone"
 msgstr "親が削除されていないendボーンを削除しないようにします。"
 
 msgid "TraceAndOptimize:prop:removeZeroSizedPolygons"
-msgstr "大きさのないポリゴンを削除する"
+msgstr "面積がゼロのポリゴンを自動的に削除する"
 
 # endregion
 
