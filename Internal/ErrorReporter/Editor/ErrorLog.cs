@@ -19,10 +19,15 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
         {
             if (!_cache.TryGetValue((guid, localId), out var obj))
             {
-                if (GlobalObjectId.TryParse($"GlobalObjectId_V1-{1}-{guid}-{localId}-{0}", out var goid))
+                // 1: Imported Asset
+                // 3: Source Asset
+                foreach (var type in new [] { 1, 3 })
                 {
-                    obj = GlobalObjectId.GlobalObjectIdentifierToObjectSlow(goid);
-                    if (obj) _cache[(guid, localId)] = obj;
+                    if (GlobalObjectId.TryParse($"GlobalObjectId_V1-{type}-{guid}-{localId}-{0}", out var goid))
+                    {
+                        obj = GlobalObjectId.GlobalObjectIdentifierToObjectSlow(goid);
+                        if (obj) _cache[(guid, localId)] = obj;
+                    }
                 }
             }
 
