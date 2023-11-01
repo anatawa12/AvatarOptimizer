@@ -278,7 +278,7 @@ msgstr ""
 "Please change import setting of models to include normals!"
 
 msgid "MergeSkinnedMesh:warning:removeZeroSizedPolygonOnSources"
-msgstr "Since Remove Zero Sized Polygons are proceed later, it on the source Skinned Mesh Renderers have no effects."
+msgstr "Since Remove Zero Sized Polygons are processed later, it has no effects if it is added with the source Skinned Mesh Renderers."
 
 # endregion
 
@@ -353,7 +353,7 @@ msgstr "Invert All"
 # region RemoveZeroSizedPolygon
 
 msgid "RemoveZeroSizedPolygon:description"
-msgstr "Removes polygons whose area is zero"
+msgstr "Removes polygons whose area are zero"
 
 # endregion
 
