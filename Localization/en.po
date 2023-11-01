@@ -451,6 +451,9 @@ msgstr "Remove Polygons with Area of Zero"
 msgid "ApplyObjectMapping:VRCAvatarDescriptor:eyelids BlendShape Removed"
 msgstr "BlendShape(s) for eyelids are Removed / frozen."
 
+msgid "ApplyObjectMapping:VRCAvatarDescriptor:viseme BlendShape Removed"
+msgstr "BlendShape(s) for viseme are Removed / frozen."
+
 #endregion
 
 #region MeshInfo2

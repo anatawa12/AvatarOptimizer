@@ -387,6 +387,9 @@ msgstr "大きさのないポリゴンを削除する"
 msgid "ApplyObjectMapping:VRCAvatarDescriptor:eyelids BlendShape Removed"
 msgstr "瞬き用のBlendShapeが削除・固定されています"
 
+msgid "ApplyObjectMapping:VRCAvatarDescriptor:viseme BlendShape Removed"
+msgstr "リップシンク用のBlendShapeが削除・固定されています"
+
 #endregion
 
 #region MeshInfo2
