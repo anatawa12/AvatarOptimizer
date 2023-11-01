@@ -442,7 +442,7 @@ msgid "TraceAndOptimize:tooltip:preserveEndBone"
 msgstr "Prevents removing end bones whose parent is not removed."
 
 msgid "TraceAndOptimize:prop:removeZeroSizedPolygons"
-msgstr "Remove Polygons with Area of Zero"
+msgstr "Automatically Remove Zero Sized Polygons"
 
 # endregion
 
