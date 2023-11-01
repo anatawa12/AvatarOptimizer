@@ -5,26 +5,26 @@ weight: 100
 
 # Remove Zero Sized Polygon
 
-面積が0なポリゴンを削除します。
+面積がゼロのポリゴンを削除します。
 
 このコンポーネントは、SkinnedMeshRendererコンポーネントのあるGameObjectに追加してください。
 
 {{< hint warning >}}
 
-このコンポーネントはビルドプロセスの最後の方に実行されるため、このコンポーネントは[Modifying Edit Skinned Mesh Component](../../component-kind/edit-skinned-mesh-components#modifying-component) では**ありません**。
+このコンポーネントはビルドの最後の方で実行されるため、[Modifying Edit Skinned Mesh Component](../../component-kind/edit-skinned-mesh-components#modifying-component) では**ありません**。
 
-このコンポーネントを[Merge Skinned Mesh](../merge-skinned-mesh)のソースSkinnedMeshRendererに追加しても効果はありません。
+このコンポーネントを[Merge Skinned Mesh](../merge-skinned-mesh)の統合対象となるSkinnedMeshRendererに追加しても効果がありません。
 
 {{< /hint >}}
 
 ## 利点 {#benefits}
 
-面積が0なポリゴンを削除することで、描画負荷を減らすことができます。
-面積が0なポリゴンは見た目にほとんど影響を与えません。
+面積がゼロのポリゴンを削除することで、描画負荷を減らすことができます。
+見た目に影響を与えることはほとんどありません。
 
 ## 設定 {#settings}
 
-現在のところ設定はありません。
+今のところ、このコンポーネントに設定項目はありません。
 
 ![component.png](component.png)
 
