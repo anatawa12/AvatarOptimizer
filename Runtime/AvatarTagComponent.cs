@@ -1,5 +1,5 @@
-using System;
 using Anatawa12.AvatarOptimizer.ErrorReporting;
+using nadena.dev.ndmf.runtime;
 using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer
@@ -19,7 +19,7 @@ namespace Anatawa12.AvatarOptimizer
     {
         private void OnValidate()
         {
-            if (RuntimeUtil.isPlaying) return;
+            if (RuntimeUtil.IsPlaying) return;
             ErrorReporterRuntime.TriggerChange();
         }
 
