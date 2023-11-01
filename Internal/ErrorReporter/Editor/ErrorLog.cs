@@ -201,10 +201,7 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
         {
             referencedObjects.InsertRange(0,
                 args.Where(o => o is Component || o is GameObject || o is Object)
-                    .Select(o => new ObjectRef(
-                        o is Component c ? c.gameObject
-                        : o is GameObject go ? go
-                        : (Object)o))
+                    .Select(o => new ObjectRef((Object)o))
                     .ToList());
             return this;
         }
@@ -214,7 +211,7 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
             foreach (var arg in args)
             {
                 if (arg is Component c)
-                    referencedObjects.Add(new ObjectRef(c.gameObject));
+                    referencedObjects.Add(new ObjectRef(c));
                 else if (arg is GameObject go)
                     referencedObjects.Add(new ObjectRef(go));
                 else if (arg is Object o)
