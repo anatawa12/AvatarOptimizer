@@ -190,6 +190,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             var boneTransforms = new HashSet<Transform>(target.Bones.Select(x => x.Transform));
 
+            var parents = new HashSet<Transform>(Target.transform.ParentEnumerable(context.AvatarRootTransform, includeMe: true));
+
             Profiler.BeginSample("Postprocess Source Renderers");
             foreach (var renderer in SkinnedMeshRenderers)
             {
@@ -200,6 +202,24 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 // property for original mesh in animation.
                 // This invalidation doesn't affect to m_Enabled property of merged mesh.
                 context.RecordRemoveProperty(renderer, "m_Enabled");
+
+                // Warn if the source mesh can be hidden differently than merged by animation.
+                foreach (var transform in renderer.transform.ParentEnumerable(context.AvatarRootTransform, includeMe: true))
+                {
+                    if (parents.Contains(transform)) break;
+                    if (context.GetAnimationComponent(transform.gameObject).TryGetFloat("m_IsActive", out var p))
+                        BuildReport.LogWarning("MergeSkinnedMesh:warning:animation-mesh-hide")
+                            ?.WithContext(renderer)
+                            ?.WithContext(transform.gameObject)
+                            ?.WithContext(p.Sources);
+                }
+                {
+                    if (context.GetAnimationComponent(renderer).TryGetFloat("m_Enabled", out var p))
+                        BuildReport.LogWarning("MergeSkinnedMesh:warning:animation-mesh-hide")
+                            ?.WithContext(renderer)
+                            ?.WithContext(p.Sources);
+                }
+
                 context.RecordMergeComponent(renderer, Target);
                 var rendererGameObject = renderer.gameObject;
                 Object.DestroyImmediate(renderer);

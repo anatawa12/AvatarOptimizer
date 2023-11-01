@@ -277,6 +277,11 @@ msgstr ""
 "Merging both meshes with and without normal is not supported."
 "Please change import setting of models to include normals!"
 
+msgid "MergeSkinnedMesh:warning:animation-mesh-hide"
+msgstr ""
+"We're merging meshes that visibility animated differently than the merged mesh."
+"The animation will not work. This might not be intended. Ignore this warning if it's intended."
+
 # endregion
 
 # region MergeToonLitMaterial

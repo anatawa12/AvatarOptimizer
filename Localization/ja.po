@@ -377,6 +377,11 @@ msgstr "瞬き用のBlendShapeが削除・固定されています"
 msgid "ApplyObjectMapping:VRCAvatarDescriptor:viseme BlendShape Removed"
 msgstr "リップシンク用のBlendShapeが削除・固定されています"
 
+msgid "MergeSkinnedMesh:warning:animation-mesh-hide"
+msgstr ""
+"統合されたメッシュとは異なるアニメーションで表示されるメッシュを統合しています。"
+"そのアニメーションは動かなくなります。意図してない可能性があります。意図している場合はこの警告を無視してください。"
+
 #endregion
 
 #region MeshInfo2
