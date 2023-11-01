@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Anatawa12.AvatarOptimizer.AnimatorParsers;
 using JetBrains.Annotations;
 using UnityEngine;
 
@@ -79,6 +80,12 @@ namespace Anatawa12.AvatarOptimizer
         public void RecordRemoveProperty(ComponentOrGameObject from, string oldProp) =>
             GetComponentInfo(from).RemoveProperty(oldProp);
 
+        public AnimationComponentInfo GetAnimationComponent(ComponentOrGameObject component)
+            => GetComponentInfo(component);
+
+        public AnimationFloatProperty? GetFloatAnimation(ComponentOrGameObject component, string property) =>
+            GetComponentInfo(component).GetFloatAnimation(property);
+
         private BuildingComponentInfo GetComponentInfo(ComponentOrGameObject component)
         {
             if (!_componentInfos.TryGetValue(component.GetInstanceID(), out var info))
@@ -90,6 +97,12 @@ namespace Anatawa12.AvatarOptimizer
             return info;
         }
 
+        public void ImportModifications(ImmutableModificationsContainer modifications)
+        {
+            foreach (var (component, properties) in modifications.ModifiedProperties)
+                GetComponentInfo(component).ImportProperties(properties);
+        }
+
         public ObjectMapping BuildObjectMapping()
         {
             return new ObjectMapping(
@@ -97,25 +110,47 @@ namespace Anatawa12.AvatarOptimizer
                 _originalComponentInfos.ToDictionary(p => p.Key, p => p.Value.Build()));
         }
 
-        class AnimationProperty
+        class AnimationPropertyInfo
         {
             [CanBeNull] public readonly BuildingComponentInfo Component;
             [CanBeNull] public readonly string Name;
-            [CanBeNull] public AnimationProperty MergedTo;
+            [CanBeNull] public AnimationPropertyInfo MergedTo { get; private set; }
             private MappedPropertyInfo? _mappedPropertyInfo;
-            [CanBeNull] public List<AnimationProperty> CopiedTo;
+            [CanBeNull] public List<AnimationPropertyInfo> CopiedTo { get; private set; }
 
-            public AnimationProperty([NotNull] BuildingComponentInfo component, [NotNull] string name)
+            public AnimationPropertyInfo([NotNull] BuildingComponentInfo component, [NotNull] string name)
             {
                 Component = component ?? throw new ArgumentNullException(nameof(component));
                 Name = name ?? throw new ArgumentNullException(nameof(name));
             }
 
-            private AnimationProperty()
+            private AnimationPropertyInfo()
             {
             }
 
-            public static readonly AnimationProperty RemovedMarker = new AnimationProperty();
+            public static readonly AnimationPropertyInfo RemovedMarker = new AnimationPropertyInfo();
+            public AnimationFloatProperty? AnimationFloat;
+
+            public void MergeTo(AnimationPropertyInfo property)
+            {
+                MergedTo = property;
+                // I want to use recursive switch with recursive pattern here but not avaiable yet
+                property.AnimationFloat = MergeFloat(AnimationFloat, property.AnimationFloat);
+            }
+
+            public void CopyTo(AnimationPropertyInfo property)
+            {
+                if (CopiedTo == null)
+                    CopiedTo = new List<AnimationPropertyInfo>();
+                CopiedTo.Add(property);
+                property.AnimationFloat = MergeFloat(AnimationFloat, property.AnimationFloat);
+            }
+
+            private static AnimationFloatProperty? MergeFloat(AnimationFloatProperty? aProp,
+                AnimationFloatProperty? bProp) =>
+                aProp == null ? bProp
+                : bProp == null ? aProp 
+                : aProp.Value.Merge(bProp.Value, false);
 
             public MappedPropertyInfo GetMappedInfo()
             {
@@ -162,7 +197,7 @@ namespace Anatawa12.AvatarOptimizer
             }
         }
 
-        class BuildingComponentInfo
+        class BuildingComponentInfo : AnimationComponentInfo
         {
             internal readonly int InstanceId;
             internal readonly Type Type;
@@ -170,11 +205,11 @@ namespace Anatawa12.AvatarOptimizer
             // id in this -> id in merged
             private BuildingComponentInfo _mergedInto;
 
-            private readonly Dictionary<string, AnimationProperty> _beforePropertyIds =
-                new Dictionary<string, AnimationProperty>();
+            private readonly Dictionary<string, AnimationPropertyInfo> _beforePropertyIds =
+                new Dictionary<string, AnimationPropertyInfo>();
 
-            private readonly Dictionary<string, AnimationProperty> _afterPropertyIds =
-                new Dictionary<string, AnimationProperty>();
+            private readonly Dictionary<string, AnimationPropertyInfo> _afterPropertyIds =
+                new Dictionary<string, AnimationPropertyInfo>();
 
             public BuildingComponentInfo(ComponentOrGameObject component)
             {
@@ -185,7 +220,7 @@ namespace Anatawa12.AvatarOptimizer
             internal bool IsMerged => _mergedInto != null;
 
             [NotNull]
-            private AnimationProperty GetProperty(string name, bool remove = false)
+            private AnimationPropertyInfo GetProperty(string name, bool remove = false)
             {
                 if (_afterPropertyIds.TryGetValue(name, out var prop))
                 {
@@ -194,7 +229,7 @@ namespace Anatawa12.AvatarOptimizer
                 }
                 else
                 {
-                    var newProp = new AnimationProperty(this, name);
+                    var newProp = new AnimationPropertyInfo(this, name);
                     if (!remove) _afterPropertyIds.Add(name, newProp);
                     if (!_beforePropertyIds.ContainsKey(name))
                         _beforePropertyIds.Add(name, newProp);
@@ -208,7 +243,7 @@ namespace Anatawa12.AvatarOptimizer
                 if (_mergedInto != null) throw new InvalidOperationException("Already merged");
                 _mergedInto = mergeTo ?? throw new ArgumentNullException(nameof(mergeTo));
                 foreach (var property in _afterPropertyIds.Values)
-                    property.MergedTo = mergeTo.GetProperty(property.Name);
+                    property.MergeTo(mergeTo.GetProperty(property.Name));
                 _afterPropertyIds.Clear();
             }
 
@@ -217,26 +252,24 @@ namespace Anatawa12.AvatarOptimizer
                 if (Type == typeof(Transform)) throw new Exception("Move properties of Transform is not supported!");
                 if (_mergedInto != null) throw new Exception("Already Merged");
 
-                var propertyIds = new AnimationProperty[props.Length];
+                var propertyIds = new AnimationPropertyInfo[props.Length];
                 for (var i = 0; i < props.Length; i++)
                     propertyIds[i] = GetProperty(props[i].old, remove: true);
 
                 for (var i = 0; i < propertyIds.Length; i++)
-                    propertyIds[i].MergedTo = GetProperty(props[i].@new);
+                    propertyIds[i].MergeTo(GetProperty(props[i].@new));
             }
 
             public void MoveProperty(BuildingComponentInfo toComponent, string oldProp, string newProp)
             {
                 if (Type == typeof(Transform)) throw new Exception("Move properties of Transform is not supported!");
-                GetProperty(oldProp, remove: true).MergedTo = toComponent.GetProperty(newProp);
+                GetProperty(oldProp, remove: true).MergeTo(toComponent.GetProperty(newProp));
             }
 
             public void CopyProperty(BuildingComponentInfo toComponent, string oldProp, string newProp)
             {
                 var prop = GetProperty(oldProp);
-                if (prop.CopiedTo == null)
-                    prop.CopiedTo = new List<AnimationProperty>();
-                prop.CopiedTo.Add(toComponent.GetProperty(newProp));
+                prop.CopyTo(toComponent.GetProperty(newProp));
             }
 
             public void RemoveProperty(string property)
@@ -244,7 +277,7 @@ namespace Anatawa12.AvatarOptimizer
                 if (Type == typeof(Transform)) throw new Exception("Removing properties of Transform is not supported!");
                 if (_mergedInto != null) throw new Exception("Already Merged");
 
-                GetProperty(property, remove: true).MergedTo = AnimationProperty.RemovedMarker;
+                GetProperty(property, remove: true).MergeTo(AnimationPropertyInfo.RemovedMarker);
             }
 
             public ComponentInfo Build()
@@ -262,6 +295,38 @@ namespace Anatawa12.AvatarOptimizer
 
                 return new ComponentInfo(InstanceId, mergedInfo.InstanceId, Type, propertyMapping);
             }
+
+            public void ImportProperties(IReadOnlyDictionary<string, AnimationFloatProperty> properties)
+            {
+                foreach (var (name, property) in properties)
+                {
+                    var propInfo = GetProperty(name);
+                    propInfo.AnimationFloat = property;
+                }
+            }
+
+            public override bool ContainsFloat(string property) =>
+                _afterPropertyIds.TryGetValue(property, out var info) && info.AnimationFloat != null;
+
+            public override bool TryGetFloat(string propertyName, out AnimationFloatProperty animation)
+            {
+                animation = default;
+                if (!_afterPropertyIds.TryGetValue(propertyName, out var info))
+                    return false;
+                if (!(info.AnimationFloat is AnimationFloatProperty property))
+                    return false;
+                animation = property;
+                return true;
+            }
+
+            public AnimationFloatProperty? GetFloatAnimation(string property) =>
+                _afterPropertyIds.TryGetValue(property, out var info) ? info.AnimationFloat : null;
         }
+    }
+
+    internal abstract class AnimationComponentInfo
+    {
+        public abstract bool ContainsFloat(string property);
+        public abstract bool TryGetFloat(string propertyName, out AnimationFloatProperty animation);
     }
 }

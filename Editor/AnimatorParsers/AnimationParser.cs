@@ -7,7 +7,7 @@ using UnityEditor.Animations;
 using UnityEngine;
 using static Anatawa12.AvatarOptimizer.ErrorReporting.BuildReport;
 
-namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
+namespace Anatawa12.AvatarOptimizer.AnimatorParsers
 {
     class AnimationParser
     {
@@ -81,9 +81,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     : throw new InvalidOperationException($"unexpected animated object: {obj} ({obj.GetType().Name}");
 
                 var curve = AnimationUtility.GetEditorCurve(clip, binding);
-                var currentPropertyMayNull = AnimationProperty.ParseProperty(curve);
+                var currentPropertyMayNull = AnimationFloatProperty.ParseProperty(curve, clip);
 
-                if (!(currentPropertyMayNull is AnimationProperty currentProperty)) continue;
+                if (!(currentPropertyMayNull is AnimationFloatProperty currentProperty)) continue;
 
                 modifications.ModifyObject(componentOrGameObject)
                     .AddModificationAsNewLayer(binding.propertyName, currentProperty);

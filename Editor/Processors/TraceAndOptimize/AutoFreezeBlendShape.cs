@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Anatawa12.AvatarOptimizer.AnimatorParsers;
 using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEngine;
@@ -36,7 +37,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
                 var meshInfo = context.GetMeshInfoFor(skinnedMeshRenderer);
 
-                var modifies = state.Modifications.GetModifiedProperties(skinnedMeshRenderer);
+                var modifies = context.GetAnimationComponent(skinnedMeshRenderer);
 
                 var unchanged = new HashSet<string>();
 
@@ -53,16 +54,16 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 bool IsUnchangedBlendShape(string name, float weight, out float newWeight)
                 {
                     newWeight = weight;
-                    if (!modifies.TryGetValue($"blendShape.{name}", out var prop)) return true;
+                    if (!modifies.TryGetFloat($"blendShape.{name}", out var prop)) return true;
                     
                     switch (prop.State)
                     {
-                        case AnimationProperty.PropertyState.ConstantAlways:
+                        case AnimationFloatProperty.PropertyState.ConstantAlways:
                             newWeight = prop.ConstValue;
                             return true;
-                        case AnimationProperty.PropertyState.ConstantPartially:
+                        case AnimationFloatProperty.PropertyState.ConstantPartially:
                             return prop.ConstValue.CompareTo(weight) == 0;
-                        case AnimationProperty.PropertyState.Variable:
+                        case AnimationFloatProperty.PropertyState.Variable:
                             return false;
                         default:
                             throw new ArgumentOutOfRangeException();

@@ -6,23 +6,23 @@ using JetBrains.Annotations;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
+namespace Anatawa12.AvatarOptimizer.AnimatorParsers
 {
     interface IModificationsContainer
     {
-        IReadOnlyDictionary<ComponentOrGameObject, IReadOnlyDictionary<string, AnimationProperty>> ModifiedProperties { get; }
+        IReadOnlyDictionary<ComponentOrGameObject, IReadOnlyDictionary<string, AnimationFloatProperty>> ModifiedProperties { get; }
         ModificationsContainer ToMutable();
         ImmutableModificationsContainer ToImmutable();
     }
 
     static class ModificationsUtils
     {
-        public static IReadOnlyDictionary<string, AnimationProperty> GetModifiedProperties<T>(this T container,
+        public static IReadOnlyDictionary<string, AnimationFloatProperty> GetModifiedProperties<T>(this T container,
             ComponentOrGameObject component)
             where T : IModificationsContainer
             => container.ModifiedProperties.TryGetValue(component, out var value)
                 ? value
-                : Utils.EmptyDictionary<string, AnimationProperty>();
+                : Utils.EmptyDictionary<string, AnimationFloatProperty>();
 
         public static bool? GetConstantValue<T>(this T container, ComponentOrGameObject obj, string property, bool currentValue)
             where T : IModificationsContainer
@@ -32,15 +32,15 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             switch (prop.State)
             {
-                case AnimationProperty.PropertyState.ConstantAlways:
+                case AnimationFloatProperty.PropertyState.ConstantAlways:
                     return FloatToBool(prop.ConstValue);
-                case AnimationProperty.PropertyState.ConstantPartially:
+                case AnimationFloatProperty.PropertyState.ConstantPartially:
                     var constValue = FloatToBool(prop.ConstValue);
                     if (constValue == currentValue) return currentValue;
                     return null;
-                case AnimationProperty.PropertyState.Variable:
+                case AnimationFloatProperty.PropertyState.Variable:
                     return null;
-                case AnimationProperty.PropertyState.Invalid:
+                case AnimationFloatProperty.PropertyState.Invalid:
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -82,19 +82,19 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
     readonly struct ImmutableModificationsContainer : IModificationsContainer
     {
-        private readonly IReadOnlyDictionary<ComponentOrGameObject, IReadOnlyDictionary<string, AnimationProperty>> _modifiedProperties;
+        private readonly IReadOnlyDictionary<ComponentOrGameObject, IReadOnlyDictionary<string, AnimationFloatProperty>> _modifiedProperties;
 
-        public IReadOnlyDictionary<ComponentOrGameObject, IReadOnlyDictionary<string, AnimationProperty>> ModifiedProperties =>
-            _modifiedProperties ?? Utils.EmptyDictionary<ComponentOrGameObject, IReadOnlyDictionary<string, AnimationProperty>>();
+        public IReadOnlyDictionary<ComponentOrGameObject, IReadOnlyDictionary<string, AnimationFloatProperty>> ModifiedProperties =>
+            _modifiedProperties ?? Utils.EmptyDictionary<ComponentOrGameObject, IReadOnlyDictionary<string, AnimationFloatProperty>>();
         public static ImmutableModificationsContainer Empty => default;
 
         public ImmutableModificationsContainer(ModificationsContainer from)
         {
-            IReadOnlyDictionary<string, AnimationProperty> MapDictionary(IReadOnlyDictionary<string, AnimationProperty> dict) =>
-                new ReadOnlyDictionary<string, AnimationProperty>(dict.ToDictionary(p1 => p1.Key, p1 => p1.Value));
+            IReadOnlyDictionary<string, AnimationFloatProperty> MapDictionary(IReadOnlyDictionary<string, AnimationFloatProperty> dict) =>
+                new ReadOnlyDictionary<string, AnimationFloatProperty>(dict.ToDictionary(p1 => p1.Key, p1 => p1.Value));
 
             _modifiedProperties =
-                new ReadOnlyDictionary<ComponentOrGameObject, IReadOnlyDictionary<string, AnimationProperty>>(from
+                new ReadOnlyDictionary<ComponentOrGameObject, IReadOnlyDictionary<string, AnimationFloatProperty>>(from
                     .ModifiedProperties.ToDictionary(p => p.Key, p => MapDictionary(p.Value)));
         }
 
@@ -104,29 +104,29 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
     class ModificationsContainer : IModificationsContainer
     {
-        private readonly Dictionary<ComponentOrGameObject, Dictionary<string, AnimationProperty>> _modifiedProperties;
+        private readonly Dictionary<ComponentOrGameObject, Dictionary<string, AnimationFloatProperty>> _modifiedProperties;
         
-        private static readonly IReadOnlyDictionary<string, AnimationProperty> EmptyProperties =
-            new ReadOnlyDictionary<string, AnimationProperty>(new Dictionary<string, AnimationProperty>());
+        private static readonly IReadOnlyDictionary<string, AnimationFloatProperty> EmptyProperties =
+            new ReadOnlyDictionary<string, AnimationFloatProperty>(new Dictionary<string, AnimationFloatProperty>());
 
-        public IReadOnlyDictionary<ComponentOrGameObject, IReadOnlyDictionary<string, AnimationProperty>> ModifiedProperties { get; }
+        public IReadOnlyDictionary<ComponentOrGameObject, IReadOnlyDictionary<string, AnimationFloatProperty>> ModifiedProperties { get; }
 
         public ModificationsContainer()
         {
-            _modifiedProperties = new Dictionary<ComponentOrGameObject, Dictionary<string, AnimationProperty>>();
-            ModifiedProperties = Utils.CastDic<IReadOnlyDictionary<string, AnimationProperty>>()
+            _modifiedProperties = new Dictionary<ComponentOrGameObject, Dictionary<string, AnimationFloatProperty>>();
+            ModifiedProperties = Utils.CastDic<IReadOnlyDictionary<string, AnimationFloatProperty>>()
                 .CastedDic(_modifiedProperties);
         }
 
         public ModificationsContainer(ImmutableModificationsContainer from)
         {
-            Dictionary<string, AnimationProperty> MapDictionary(IReadOnlyDictionary<string, AnimationProperty> dict) =>
+            Dictionary<string, AnimationFloatProperty> MapDictionary(IReadOnlyDictionary<string, AnimationFloatProperty> dict) =>
                 dict.ToDictionary(p1 => p1.Key, p1 => p1.Value);
 
             _modifiedProperties = from.ModifiedProperties
                 .ToDictionary(p => p.Key, p => MapDictionary(p.Value));
 
-            ModifiedProperties = Utils.CastDic<IReadOnlyDictionary<string, AnimationProperty>>()
+            ModifiedProperties = Utils.CastDic<IReadOnlyDictionary<string, AnimationFloatProperty>>()
                 .CastedDic(_modifiedProperties);
         }
 
@@ -138,17 +138,17 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         public ComponentAnimationUpdater ModifyObject(ComponentOrGameObject obj)
         {
             if (!_modifiedProperties.TryGetValue(obj, out var properties))
-                _modifiedProperties.Add(obj, properties = new Dictionary<string, AnimationProperty>());
+                _modifiedProperties.Add(obj, properties = new Dictionary<string, AnimationFloatProperty>());
             return new ComponentAnimationUpdater(properties);
         }
 
         public readonly struct ComponentAnimationUpdater
         {
-            private readonly Dictionary<string, AnimationProperty> _properties;
+            private readonly Dictionary<string, AnimationFloatProperty> _properties;
 
-            public ComponentAnimationUpdater(Dictionary<string, AnimationProperty> properties) => _properties = properties;
+            public ComponentAnimationUpdater(Dictionary<string, AnimationFloatProperty> properties) => _properties = properties;
 
-            public void AddModificationAsNewLayer(string propertyName, AnimationProperty propertyState)
+            public void AddModificationAsNewLayer(string propertyName, AnimationFloatProperty propertyState)
             {
                 if (_properties.TryGetValue(propertyName, out var property))
                     _properties[propertyName] = property.Merge(propertyState, asNewLayer: true);
@@ -156,18 +156,18 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     _properties.Add(propertyName, propertyState);
             }
             
-            public void AddModificationAsNewAdditiveLayer(string propertyName, AnimationProperty propertyState)
+            public void AddModificationAsNewAdditiveLayer(string propertyName, AnimationFloatProperty propertyState)
             {
                 switch (propertyState.State)
                 {
-                    case AnimationProperty.PropertyState.ConstantAlways:
-                    case AnimationProperty.PropertyState.ConstantPartially:
+                    case AnimationFloatProperty.PropertyState.ConstantAlways:
+                    case AnimationFloatProperty.PropertyState.ConstantPartially:
                         // const 
                         break;
-                    case AnimationProperty.PropertyState.Variable:
-                        _properties[propertyName] = AnimationProperty.Variable();
+                    case AnimationFloatProperty.PropertyState.Variable:
+                        _properties[propertyName] = AnimationFloatProperty.Variable(null); // TODO: merge source
                         break;
-                    case AnimationProperty.PropertyState.Invalid:
+                    case AnimationFloatProperty.PropertyState.Invalid:
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
@@ -229,12 +229,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
                     foreach (var (property, (thisState, otherState)) in thisProperties.ZipByKey(otherProperties))
                     {
-                        if (otherState.State == AnimationProperty.PropertyState.Invalid)
+                        if (otherState.State == AnimationFloatProperty.PropertyState.Invalid)
                         {
                             // the property is modified by current only: this modification should be marked partially
                             thisProperties[property] = thisState.PartiallyApplied();
                         }
-                        else if (thisState.State == AnimationProperty.PropertyState.Invalid)
+                        else if (thisState.State == AnimationFloatProperty.PropertyState.Invalid)
                         {
                             // the property is modified by other only: copied with marked partially
                             thisProperties.Add(property, otherState.PartiallyApplied());
@@ -248,8 +248,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 }
             }
 
-            Dictionary<string, AnimationProperty>
-                EverythingPartially(IReadOnlyDictionary<string, AnimationProperty> dictionary) =>
+            Dictionary<string, AnimationFloatProperty>
+                EverythingPartially(IReadOnlyDictionary<string, AnimationFloatProperty> dictionary) =>
                 dictionary.ToDictionary(k => k.Key, v => v.Value.PartiallyApplied());
         }
 
@@ -258,11 +258,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         {
             foreach (var properties in _modifiedProperties.Values)
                 foreach (var name in properties.Keys.ToArray())
-                    properties[name] = AnimationProperty.Variable();
+                    properties[name] = AnimationFloatProperty.Variable(null); // source by properties
         }
     }
 
-    readonly struct AnimationProperty : IEquatable<AnimationProperty>
+    readonly struct AnimationFloatProperty : IEquatable<AnimationFloatProperty>
     {
         public readonly PropertyState State;
         private readonly float _constValue;
@@ -285,33 +285,53 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             }
         }
 
-        private AnimationProperty(PropertyState state, float constValue) =>
-            (State, _constValue) = (state, constValue);
+        private readonly Object[] _sources;
+        public Span<Object> Sources => _sources ?? Array.Empty<Object>();
 
-        public static AnimationProperty ConstAlways(float value) =>
-            new AnimationProperty(PropertyState.ConstantAlways, value);
+        private AnimationFloatProperty(PropertyState state, float constValue, params Object[] modifiers) =>
+            (State, _constValue, _sources) = (state, constValue, modifiers);
 
-        public static AnimationProperty ConstPartially(float value) =>
-            new AnimationProperty(PropertyState.ConstantPartially, value);
+        public static AnimationFloatProperty ConstAlways(float value, Object modifier) =>
+            ConstAlways0(value, new[] { modifier });
 
-        public static AnimationProperty Variable() =>
-            new AnimationProperty(PropertyState.Variable, float.NaN);
+        public static AnimationFloatProperty ConstPartially(float value, Object modifier) =>
+            ConstPartially0(value, new[] { modifier });
 
-        public AnimationProperty Merge(AnimationProperty b, bool asNewLayer)
+        public static AnimationFloatProperty Variable(Object modifier) =>
+            Variable0(new[] { modifier });
+
+        private static AnimationFloatProperty ConstAlways0(float value, Object[] modifiers) =>
+            new AnimationFloatProperty(PropertyState.ConstantAlways, value, modifiers);
+
+        private static AnimationFloatProperty ConstPartially0(float value, Object[] modifiers) =>
+            new AnimationFloatProperty(PropertyState.ConstantPartially, value, modifiers);
+
+        private static AnimationFloatProperty Variable0(Object[] modifiers) =>
+            new AnimationFloatProperty(PropertyState.Variable, float.NaN, modifiers);
+
+        private Object[] MergeSource(Span<Object> aSource, Span<Object> bSource)
+        {
+            var merged = new Object[aSource.Length + bSource.Length];
+            aSource.CopyTo(merged.AsSpan().Slice(0, aSource.Length));
+            bSource.CopyTo(merged.AsSpan().Slice(aSource.Length, bSource.Length));
+            return merged;
+        }
+
+        public AnimationFloatProperty Merge(AnimationFloatProperty b, bool asNewLayer)
         {
             // if asNewLayer and new layer is constant always, the value is used
             if (asNewLayer && b.State == PropertyState.ConstantAlways) return b;
 
-            if (State == PropertyState.Variable) return Variable();
-            if (b.State == PropertyState.Variable) return Variable();
+            if (State == PropertyState.Variable) return Variable0(MergeSource(Sources, b.Sources));
+            if (b.State == PropertyState.Variable) return Variable0(MergeSource(Sources, b.Sources));
 
             // now they are constant.
-            if (ConstValue.CompareTo(b.ConstValue) != 0) return Variable();
+            if (ConstValue.CompareTo(b.ConstValue) != 0) return Variable0(MergeSource(Sources, b.Sources));
 
             var value = ConstValue;
 
-            if (State == PropertyState.ConstantPartially) return ConstPartially(value);
-            if (b.State == PropertyState.ConstantPartially) return ConstPartially(value);
+            if (State == PropertyState.ConstantPartially) return ConstPartially0(value, MergeSource(Sources, b.Sources));
+            if (b.State == PropertyState.ConstantPartially) return ConstPartially0(value, MergeSource(Sources, b.Sources));
 
             System.Diagnostics.Debug.Assert(State == PropertyState.ConstantAlways);
             System.Diagnostics.Debug.Assert(b.State == PropertyState.ConstantAlways);
@@ -319,11 +339,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             return this;
         }
 
-        public static AnimationProperty? ParseProperty(AnimationCurve curve)
+        public static AnimationFloatProperty? ParseProperty(AnimationCurve curve, Object source)
         {
             if (curve.keys.Length == 0) return null;
             if (curve.keys.Length == 1)
-                return ConstAlways(curve.keys[0].value);
+                return ConstAlways(curve.keys[0].value, source);
 
             float constValue = 0;
             foreach (var (preKey, postKey) in curve.keys.ZipWithNext())
@@ -331,7 +351,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 var preWeighted = preKey.weightedMode == WeightedMode.Out || preKey.weightedMode == WeightedMode.Both;
                 var postWeighted = postKey.weightedMode == WeightedMode.In || postKey.weightedMode == WeightedMode.Both;
 
-                if (preKey.value.CompareTo(postKey.value) != 0) return Variable();
+                if (preKey.value.CompareTo(postKey.value) != 0) return Variable(source);
                 constValue = preKey.value;
                 // it's constant
                 if (float.IsInfinity(preKey.outWeight) || float.IsInfinity(postKey.inTangent))
@@ -340,18 +360,18 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     continue;
                 if (preWeighted && postWeighted && preKey.outWeight == 0 && postKey.inWeight == 0)
                     continue;
-                return Variable();
+                return Variable(source);
             }
 
-            return ConstAlways(constValue);
+            return ConstAlways(constValue, source);
         }
 
-        public AnimationProperty PartiallyApplied()
+        public AnimationFloatProperty PartiallyApplied()
         {
             switch (State)
             {
                 case PropertyState.ConstantAlways:
-                    return ConstPartially(ConstValue);
+                    return ConstPartially0(ConstValue, _sources);
                 case PropertyState.ConstantPartially:
                 case PropertyState.Variable:
                     return this;
@@ -359,6 +379,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     throw new ArgumentOutOfRangeException();
             }
         }
+
+        public AnimationFloatProperty Variable() => Variable0(_sources);
 
         public enum PropertyState
         {
@@ -368,7 +390,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             Variable,
         }
 
-        public bool Equals(AnimationProperty other)
+        public bool Equals(AnimationFloatProperty other)
         {
             switch (State)
             {
@@ -384,7 +406,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         public override bool Equals(object obj)
         {
-            return obj is AnimationProperty other && Equals(other);
+            return obj is AnimationFloatProperty other && Equals(other);
         }
 
         public override int GetHashCode()
@@ -493,7 +515,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             throw new ArgumentOutOfRangeException();
         }
 
-        public static AnimationProperty ApplyToProperty(this AnimatorWeightState state, AnimationProperty property)
+        public static AnimationFloatProperty ApplyToProperty(this AnimatorWeightState state, AnimationFloatProperty property)
         {
             switch (state)
             {
@@ -502,7 +524,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 case AnimatorWeightState.EitherZeroOrOne:
                     return property.PartiallyApplied();
                 case AnimatorWeightState.Variable:
-                    return AnimationProperty.Variable();
+                    return property.Variable();
                 case AnimatorWeightState.NotChanged:
                 case AnimatorWeightState.AlwaysZero:
                 default:
