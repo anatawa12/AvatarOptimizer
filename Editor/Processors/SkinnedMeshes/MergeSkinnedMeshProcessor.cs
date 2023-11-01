@@ -68,23 +68,14 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             {
                 // collect (skinned) mesh renderers who doesn't have normal
                 // to show the list on the error reporting
-                var meshes = new Renderer[meshInfos.Length];
-                for (var i = 0; i < skinnedMeshRenderers.Count; i++)
-                    meshes[i] = skinnedMeshRenderers[i];
-                for (var i = 0; i < staticMeshRenderers.Count; i++)
-                    meshes[i + skinnedMeshRenderers.Count] = staticMeshRenderers[i];
-
-                var meshesWithoutNormals = new List<Renderer>();
-                for (var i = 0; i < meshInfos.Length; i++)
-                {
-                    var meshInfo2 = meshInfos[i];
-                    if (meshInfo2.Vertices.Count != 0 && !meshInfo2.HasNormals)
-                        meshesWithoutNormals.Add(meshes[i]);
-                }
-                // ReSharper disable once CoVariantArrayConversion
                 BuildReport.LogFatal("MergeSkinnedMesh:error:mix-normal-existence")
-                    ?.WithContext((object[])meshesWithoutNormals.ToArray());
+                    ?.WithContext((
+                        from meshInfo2 in meshInfos
+                        where meshInfo2.Vertices.Count != 0 && !meshInfo2.HasNormals
+                        select (object)meshInfo2.SourceRenderer
+                    ).ToArray());
             }
+
             Profiler.EndSample();
 
             Profiler.BeginSample("Merge Material Indices");
