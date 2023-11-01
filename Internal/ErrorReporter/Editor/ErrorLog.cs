@@ -200,12 +200,15 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
         public ErrorLog WithContext(params object[] args)
         {
             referencedObjects.InsertRange(0,
-                args.Where(o => o is Component || o is GameObject)
-                    .Select(o => new ObjectRef(o is Component c ? c.gameObject : (GameObject)o))
+                args.Where(o => o is Component || o is GameObject || o is Object)
+                    .Select(o => new ObjectRef(
+                        o is Component c ? c.gameObject
+                        : o is GameObject go ? go
+                        : (Object)o))
                     .ToList());
             return this;
         }
-        
+
         public void WithContext<T>(ReadOnlySpan<T> args)
         {
             foreach (var arg in args)
@@ -214,6 +217,8 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
                     referencedObjects.Add(new ObjectRef(c.gameObject));
                 else if (arg is GameObject go)
                     referencedObjects.Add(new ObjectRef(go));
+                else if (arg is Object o)
+                    referencedObjects.Add(new ObjectRef(o));
             }
         }
 
