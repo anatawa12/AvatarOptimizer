@@ -203,22 +203,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 // This invalidation doesn't affect to m_Enabled property of merged mesh.
                 context.RecordRemoveProperty(renderer, "m_Enabled");
 
-                // Warn if the source mesh can be hidden differently than merged by animation.
-                foreach (var transform in renderer.transform.ParentEnumerable(context.AvatarRootTransform, includeMe: true))
-                {
-                    if (parents.Contains(transform)) break;
-                    if (context.GetAnimationComponent(transform.gameObject).TryGetFloat("m_IsActive", out var p))
-                        BuildReport.LogWarning("MergeSkinnedMesh:warning:animation-mesh-hide")
-                            ?.WithContext(renderer)
-                            ?.WithContext(transform.gameObject)
-                            ?.WithContext(p.Sources);
-                }
-                {
-                    if (context.GetAnimationComponent(renderer).TryGetFloat("m_Enabled", out var p))
-                        BuildReport.LogWarning("MergeSkinnedMesh:warning:animation-mesh-hide")
-                            ?.WithContext(renderer)
-                            ?.WithContext(p.Sources);
-                }
+                ActivenessAnimationWarning(renderer, context, parents);
 
                 context.RecordMergeComponent(renderer, Target);
                 var rendererGameObject = renderer.gameObject;
@@ -238,6 +223,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             foreach (var renderer in StaticMeshRenderers)
             {
+                ActivenessAnimationWarning(renderer, context, parents);
                 Object.DestroyImmediate(renderer.GetComponent<MeshFilter>());
                 Object.DestroyImmediate(renderer);
             }
@@ -261,6 +247,32 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 Profiler.EndSample();
             }
 #endif
+        }
+
+        private void ActivenessAnimationWarning(Renderer renderer, BuildContext context, HashSet<Transform> parents)
+        {
+            ErrorLog log = null;
+
+            // Warn if the source mesh can be hidden differently than merged by animation.
+            {
+                if (context.GetAnimationComponent(renderer).TryGetFloat("m_Enabled", out var p))
+                {
+                    log = log ?? BuildReport.LogWarning("MergeSkinnedMesh:warning:animation-mesh-hide")
+                        ?.WithContext(renderer);
+                    log?.WithContext(p.Sources);
+                }
+            }
+            foreach (var transform in renderer.transform.ParentEnumerable(context.AvatarRootTransform, includeMe: true))
+            {
+                if (parents.Contains(transform)) break;
+                if (context.GetAnimationComponent(transform.gameObject).TryGetFloat("m_IsActive", out var p))
+                {
+                    log = log ?? BuildReport.LogWarning("MergeSkinnedMesh:warning:animation-mesh-hide")
+                        ?.WithContext(renderer);
+                    log?.WithContext(transform.gameObject);
+                    log?.WithContext(p.Sources);
+                }
+            }
         }
 
         private (int[][] mapping, List<Material> materials) CreateMergedMaterialsAndSubMeshIndexMapping(
