@@ -22,6 +22,11 @@ Adding this component to the SkinnedMeshRenderers to be merged by [Merge Skinned
 By removing polygons whose area are zero, you can reduce rendering cost.
 This will have almost zero effect on the appearance.
 
+## Notes
+
+In some shaders, even if size of polygon in model file is zero, something can be rendered so 
+there may be effect on the appearance.
+
 ## Settings
 
 This Component doesn't have any configuration for now.
