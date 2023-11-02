@@ -142,6 +142,10 @@ namespace Anatawa12.AvatarOptimizer
         {
             if (o is AnimationClip clip)
             {
+#if AAO_VRCSDK3_AVATARS
+                // TODO: when BuildContext have property to check if it is for VRCSDK3, additionally use it.
+                if (clip.IsProxy()) return clip;
+#endif
                 var newClip = new AnimationClip();
                 newClip.name = "rebased " + clip.name;
 
