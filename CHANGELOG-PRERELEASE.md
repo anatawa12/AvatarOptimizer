@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- proxy animation can be modified `#678`
 
 ### Security
 
