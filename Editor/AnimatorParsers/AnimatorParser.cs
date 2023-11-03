@@ -9,6 +9,7 @@ using nadena.dev.ndmf;
 using UnityEditor.Animations;
 using UnityEngine;
 using UnityEngine.Animations;
+using Object = UnityEngine.Object;
 
 #if AAO_VRCSDK3_AVATARS
 using VRC.Dynamics;
@@ -16,7 +17,7 @@ using VRC.SDK3.Avatars.Components;
 using VRC.SDKBase;
 #endif
 
-namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
+namespace Anatawa12.AvatarOptimizer.AnimatorParsers
 {
     class AnimatorParser
     {
@@ -26,11 +27,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         public AnimatorParser(bool mmdWorldCompatibility)
         {
             this.mmdWorldCompatibility = mmdWorldCompatibility;
-        }
-
-        public AnimatorParser(TraceAndOptimizeState config)
-        {
-            mmdWorldCompatibility = config.MmdWorldCompatibility;
         }
 
         public ImmutableModificationsContainer GatherAnimationModifications(BuildContext context)
@@ -137,11 +133,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             public Collector(ModificationsContainer modifications) => _modifications = modifications;
 
+            public Object Modifier { get; set; }
+
             public override void ModifyProperties(Component component, IEnumerable<string> properties)
             {
                 var updater = _modifications.ModifyObject(component);
                 foreach (var prop in properties)
-                    updater.AddModificationAsNewLayer(prop, AnimationProperty.Variable());
+                    updater.AddModificationAsNewLayer(prop, AnimationFloatProperty.Variable(Modifier));
             }
         }
 
@@ -153,6 +151,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             var collector = new Collector(mod);
             ReportingObjects(context.GetComponents<Component>(), component =>
             {
+                collector.Modifier = component;
                 if (ComponentInfoRegistry.TryGetInformation(component.GetType(), out var info))
                     info.CollectMutationsInternal(component, collector);
             });
@@ -243,84 +242,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             // TPose and IKPose should only affect to Humanoid so skip here~
 
-            switch (descriptor.lipSync)
-            {
-                // AvatarDescriptorから収集
-                case VRC_AvatarDescriptor.LipSyncStyle.VisemeBlendShape when descriptor.VisemeSkinnedMesh != null:
-                {
-                    var skinnedMeshRenderer = descriptor.VisemeSkinnedMesh;
-                    var updater = modificationsContainer.ModifyObject(skinnedMeshRenderer);
-                    foreach (var blendShape in descriptor.VisemeBlendShapes)
-                        updater.AddModificationAsNewLayer($"blendShape.{blendShape}", AnimationProperty.Variable());
-                    break;
-                }
-                case VRC_AvatarDescriptor.LipSyncStyle.JawFlapBlendShape when descriptor.VisemeSkinnedMesh != null:
-                {
-                    var skinnedMeshRenderer = descriptor.VisemeSkinnedMesh;
-                    var shape = descriptor.MouthOpenBlendShapeName;
-
-                    modificationsContainer.ModifyObject(skinnedMeshRenderer)
-                        .AddModificationAsNewLayer($"blendShape.{shape}", AnimationProperty.Variable());
-                    break;
-                }
-            }
-
-            if (descriptor.enableEyeLook)
-            {
-                var leftEye = descriptor.customEyeLookSettings.leftEye;
-                var rightEye = descriptor.customEyeLookSettings.rightEye;
-                if (leftEye)
-                {
-                    var updater = modificationsContainer.ModifyObject(leftEye);
-                    foreach (var prop in TransformRotationAnimationKeys)
-                        updater.AddModificationAsNewLayer(prop, AnimationProperty.Variable());
-                }
-
-
-                if (rightEye)
-                {
-                    var updater = modificationsContainer.ModifyObject(rightEye);
-                    foreach (var prop in TransformRotationAnimationKeys)
-                        updater.AddModificationAsNewLayer(prop, AnimationProperty.Variable());
-                }
-
-                switch (descriptor.customEyeLookSettings.eyelidType)
-                {
-                    case VRCAvatarDescriptor.EyelidType.None:
-                        break;
-                    case VRCAvatarDescriptor.EyelidType.Bones:
-                    {
-                        foreach (var eyelids in new[]
-                                 {
-                                     descriptor.customEyeLookSettings.lowerLeftEyelid,
-                                     descriptor.customEyeLookSettings.upperLeftEyelid,
-                                     descriptor.customEyeLookSettings.lowerRightEyelid,
-                                     descriptor.customEyeLookSettings.upperRightEyelid,
-                                 })
-                        {
-                            var updater = modificationsContainer.ModifyObject(eyelids);
-                            foreach (var prop in TransformRotationAnimationKeys)
-                                updater.AddModificationAsNewLayer(prop, AnimationProperty.Variable());
-                        }
-                    }
-                        break;
-                    case VRCAvatarDescriptor.EyelidType.Blendshapes
-                        when descriptor.customEyeLookSettings.eyelidsSkinnedMesh != null:
-                    {
-                        var skinnedMeshRenderer = descriptor.customEyeLookSettings.eyelidsSkinnedMesh;
-                        var mesh = skinnedMeshRenderer.sharedMesh;
-
-                        var updater = modificationsContainer.ModifyObject(skinnedMeshRenderer);
-
-                        foreach (var blendShape in from index in descriptor.customEyeLookSettings.eyelidsBlendshapes
-                                 where 0 <= index && index < mesh.blendShapeCount
-                                 select mesh.GetBlendShapeName(index))
-                            updater.AddModificationAsNewLayer($"blendShape.{blendShape}", AnimationProperty.Variable());
-                    }
-                        break;
-                }
-            }
-
             var bodySkinnedMesh = descriptor.transform.Find("Body")?.GetComponent<SkinnedMeshRenderer>();
 
             if (mmdWorldCompatibility && bodySkinnedMesh)
@@ -328,7 +249,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 var updater = modificationsContainer.ModifyObject(bodySkinnedMesh);
 
                 foreach (var shape in MmdBlendShapeNames)
-                    updater.AddModificationAsNewLayer($"blendShape.{shape}", AnimationProperty.Variable());
+                    updater.AddModificationAsNewLayer($"blendShape.{shape}", AnimationFloatProperty.Variable(descriptor));
             }
         }
 
@@ -454,7 +375,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 var updater = mutable.ModifyObject(transform);
 
                 foreach (var key in TransformRotationAnimationKeys)
-                    updater.AddModificationAsNewLayer(key, AnimationProperty.Variable());
+                    updater.AddModificationAsNewLayer(key, AnimationFloatProperty.Variable(animator));
             }
 
             return mutable;

@@ -47,7 +47,7 @@ namespace Anatawa12.AvatarOptimizer.ndmf
                     }, _ =>
                     {
                         seq.Run(Processors.TraceAndOptimizes.LoadTraceAndOptimizeConfiguration.Instance)
-                            .Then.Run(Processors.TraceAndOptimizes.ParseAnimator.Instance)
+                            .Then.Run(Processors.ParseAnimator.Instance)
                             .Then.Run(Processors.TraceAndOptimizes.AutoFreezeBlendShape.Instance)
 #if AAO_VRCSDK3_AVATARS
                             .Then.Run(Processors.ClearEndpointPositionProcessor.Instance)

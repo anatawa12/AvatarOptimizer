@@ -1,5 +1,6 @@
 using System;
 using System.Reflection;
+using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -52,8 +53,20 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 
     class ObjectEditorImpl : EditorBase<Object>
     {
-        public ObjectEditorImpl(SerializedProperty property, int nestCount) : base(property, nestCount)
+        [CanBeNull] private readonly Type _elementType;
+
+        public ObjectEditorImpl(SerializedProperty property, Type fieldType, int nestCount) : base(property, nestCount)
         {
+            while (fieldType != null)
+            {
+                if (fieldType.IsGenericType && fieldType.GetGenericTypeDefinition() == typeof(PrefabSafeSet<,>))
+                    break;
+                fieldType = fieldType.BaseType;
+            }
+            if (fieldType == null)
+                _elementType = null;
+            else
+                _elementType = fieldType.GenericTypeArguments[0];
         }
 
         private protected override Object GetValue(SerializedProperty prop) => prop.objectReferenceValue;
@@ -96,7 +109,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             var targetObject = FakeSlot.serializedObject.targetObject;
             if (targetObject != null && !EditorUtility.IsPersistent(targetObject))
                 allowSceneObjects = true;
-            return EditorGUI.ObjectField(position, label, value, null, allowSceneObjects);
+            return EditorGUI.ObjectField(position, label, value, _elementType, allowSceneObjects);
         }
 
         public void HandleDragEvent(Rect position, int lastControlId, Event @event)
@@ -113,7 +126,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                         foreach (var object1 in objectReferences)
                         {
                             referencesCache[0] = object1;
-                            var object2 = ValidateObjectFieldAssignment(referencesCache, FakeSlot);
+                            var object2 = ValidateObjectFieldAssignment(referencesCache, _elementType, FakeSlot);
                             if (object2 == null) continue;
                             DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
                             if (@event.type == EventType.DragPerform)
@@ -148,6 +161,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             typeof(EditorGUI).Assembly.GetType("UnityEditor.EditorGUI+ObjectFieldValidatorOptions");
 
         private static Object ValidateObjectFieldAssignment(Object[] references,
+            Type elementType,
             SerializedProperty property)
         {
             if (ValidateObjectFieldAssignmentMethod == null)
@@ -165,7 +179,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             }
 
             return ValidateObjectFieldAssignmentMethod.Invoke(null,
-                new[] { references, null, property, Enum.ToObject(ObjectFieldValidatorOptionsType, 0) }) as Object;
+                new[] { references, elementType, property, Enum.ToObject(ObjectFieldValidatorOptionsType, 0) }) as Object;
         }
     }
 }

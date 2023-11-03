@@ -4,7 +4,8 @@
         "com.anatawa12.avatar-optimizer.internal.error-reporter.runtime",
         "com.anatawa12.custom-localization-for-editor-extension.runtime",
         "com.anatawa12.avatar-optimizer.internal.prefab-safe-set",
-        "Unity.Burst"
+        "Unity.Burst",
+        "nadena.dev.ndmf.runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

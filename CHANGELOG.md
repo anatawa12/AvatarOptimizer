@@ -8,13 +8,17 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Public API for registering component information `#632`
+- Public API for registering component information `#632` `#668`
 - Disabling PhysBone animation based on mesh renderer enabled animation `#640`
   - If you toggles your clothes with simple toggle, PhysBones on the your avatar will also be toggled automatically!
 - Small performance improve `#641`
+- Ability to prevent changing enablement of component `#668`
 
 ### Changed
 - All logs passed to ErrorReport is now shown on the console log `#643`
+- Improved Behaviour with multi-material multi pass rendering `#662`
+  - Previously, multi-material multi pass rendering are flattened.
+  - Since 1.6, flattened if component doesn't support that.
 
 ### Deprecated
 
@@ -26,7 +30,7 @@ The format is based on [Keep a Changelog].
 ### Fixed
 - Improve support of newer Unity versions `#608`
 - Improve support of projects without VRCSDK `#609` `#625` `#627`
-- Prefab blinks when we see editor of PrefabSafeSet of prefab asset `#645`
+- Prefab blinks when we see editor of PrefabSafeSet of prefab asset `#645` `#664`
 
 ### Security
 

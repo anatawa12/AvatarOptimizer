@@ -8,22 +8,37 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Small performance improve `#641`
 
 ### Changed
-- All logs passed to ErrorReport is now shown on the console log `#643`
 
 ### Deprecated
 
 ### Removed
-- Preventing removing `IEditorOnly` in callback order -1024 `#658`
+
+### Fixed
+- proxy animation can be modified `#678`
+
+### Security
+
+## [1.6.0-beta.2] - 2023-10-31
+### Added
+- Small performance improve [`#641`](https://github.com/anatawa12/AvatarOptimizer/pull/641)
+- Ability to prevent changing enablement of component [`#668`](https://github.com/anatawa12/AvatarOptimizer/pull/668)
+
+### Changed
+- All logs passed to ErrorReport is now shown on the console log [`#643`](https://github.com/anatawa12/AvatarOptimizer/pull/643)
+- Improved Behaviour with multi-material multi pass rendering [`#662`](https://github.com/anatawa12/AvatarOptimizer/pull/662)
+  - Previously, multi-material multi pass rendering are flattened.
+  - Since 1.6, flattened if component doesn't support that.
+- BREAKING API CHANGES: Behaviour components are renamed to HeavyBehaviour [`#668`](https://github.com/anatawa12/AvatarOptimizer/pull/668)
+
+### Removed
+- Preventing removing `IEditorOnly` in callback order -1024 [`#658`](https://github.com/anatawa12/AvatarOptimizer/pull/658)
   - This is no longer needed sincd 1.5.0 but I forgot to remove so I removed in 1.6
 
 ### Fixed
-- Prefab blinks when we see editor of PrefabSafeSet of prefab asset `#645`
-- Fixes in 1.5.9 `#654`
-
-### Security
+- Prefab blinks when we see editor of PrefabSafeSet of prefab asset [`#645`](https://github.com/anatawa12/AvatarOptimizer/pull/645) [`#664`](https://github.com/anatawa12/AvatarOptimizer/pull/664)
+- Fixes in 1.5.9 [`#654`](https://github.com/anatawa12/AvatarOptimizer/pull/654)
 
 ## [1.5.9] - 2023-10-29
 ## [1.5.9-rc.1] - 2023-10-28
@@ -959,7 +974,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.2...HEAD
+[1.6.0-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.1...v1.6.0-beta.2
 [1.6.0-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.9...v1.6.0-beta.1
 [1.5.9]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.9-rc.1...v1.5.9
 [1.5.9-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.8...v1.5.9-rc.1

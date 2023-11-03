@@ -59,13 +59,15 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             {
                 var prop = property.FindPropertyRelative(Names.FakeSlot);
                 _caches[property.propertyPath] =
-                    cached = GetEditorImpl(prop.propertyType, property, GetNestCount(property.serializedObject.targetObject));
+                    cached = GetEditorImpl(prop.propertyType, property, fieldInfo.FieldType, 
+                        GetNestCount(property.serializedObject.targetObject));
             }
 
             return cached;
         }
 
-        private static EditorBase GetEditorImpl(SerializedPropertyType type, SerializedProperty property, int nestCount)
+        private static EditorBase GetEditorImpl(SerializedPropertyType type, SerializedProperty property,
+            Type fieldType, int nestCount)
         {
             switch (type)
             {
@@ -74,7 +76,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                 case SerializedPropertyType.String:
                     return new StringEditorImpl(property, nestCount);
                 case SerializedPropertyType.ObjectReference:
-                    return new ObjectEditorImpl(property, nestCount);
+                    return new ObjectEditorImpl(property, fieldType, nestCount);
                 case SerializedPropertyType.Boolean:
                 case SerializedPropertyType.Float:
                 case SerializedPropertyType.Color:

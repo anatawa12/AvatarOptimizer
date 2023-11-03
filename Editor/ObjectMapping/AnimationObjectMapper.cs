@@ -130,6 +130,12 @@ namespace Anatawa12.AvatarOptimizer
 
                 if (componentInfo.PropertyMapping.TryGetValue(binding.propertyName, out var newProp))
                 {
+                    // if mapped one is exactly same as original, return null
+                    if (newProp.AllCopiedTo.Length == 1
+                        && newProp.AllCopiedTo[0].InstanceId == instanceId
+                        && newProp.AllCopiedTo[0].Name == binding.propertyName)
+                        return null;
+
                     // there are mapping for property
                     var curveBindings = new EditorCurveBinding[newProp.AllCopiedTo.Length];
                     var copiedToIndex = 0;
