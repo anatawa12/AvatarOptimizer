@@ -128,6 +128,30 @@ namespace Anatawa12.AvatarOptimizer.Test
             }
         }
 
+        [Test]
+        public void BlendShapeWithFrameAtZero()
+        {
+            var mesh = BoxMesh();
+            var deltas = new Vector3[8];
+            deltas.AsSpan().Fill(new Vector3(1, 2, 3));
+            mesh.AddBlendShapeFrame("shape", 0, deltas, null, null);
+            mesh.AddBlendShapeFrame("shape", 1, deltas, null, null);
+
+            var go = new GameObject();
+            var smr = go.AddComponent<SkinnedMeshRenderer>();
+            smr.sharedMesh = mesh;
+
+            var meshInfo2 = new MeshInfo2(smr);
+
+            Vector3 position;
+            var vertex = meshInfo2.Vertices[0];
+            Assert.That(vertex.TryGetBlendShape("shape", 0, out position, out _, out _), Is.True);
+            Assert.That(position, Is.EqualTo(new Vector3(0, 0, 0)));
+
+            Assert.That(vertex.TryGetBlendShape("shape", 0, out position, out _, out _, getDefined: true), Is.True);
+            Assert.That(position, Is.EqualTo(new Vector3(1, 2, 3)));
+        }
+
         private Mesh BoxMesh()
         {
             var mesh = new Mesh
