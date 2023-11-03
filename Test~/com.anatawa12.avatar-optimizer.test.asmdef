@@ -22,7 +22,8 @@
         "VRC.SDK3.Dynamics.PhysBone.dll",
         "VRC.Dynamics.dll",
         "VRCSDK3A.dll",
-        "VRCSDKBase.dll"
+        "VRCSDKBase.dll",
+        "System.Memory.dll"
     ],
     "autoReferenced": false,
     "defineConstraints": [],

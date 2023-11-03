@@ -1,6 +1,8 @@
+using System;
 using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace Anatawa12.AvatarOptimizer.Test
 {
@@ -94,6 +96,78 @@ namespace Anatawa12.AvatarOptimizer.Test
             smr.rootBone = secondGo.transform;
             var meshInfo2 = new MeshInfo2(smr);
             Assert.That(meshInfo2.RootBone, Is.EqualTo(secondGo.transform));
+        }
+
+        [Test]
+        public void MultiFrameBlendShapeWithPartiallyIdentity()
+        {
+            var mesh = BoxMesh();
+            var deltas = new Vector3[8];
+            deltas.AsSpan().Fill(new Vector3(1, 2, 3));
+            mesh.AddBlendShapeFrame("shape", 0, new Vector3[8], null, null);
+            mesh.AddBlendShapeFrame("shape", 1, new Vector3[8], null, null);
+            mesh.AddBlendShapeFrame("shape", 2, new Vector3[8], null, null);
+            mesh.AddBlendShapeFrame("shape", 3, deltas, null, null);
+            mesh.AddBlendShapeFrame("shape", 4, new Vector3[8], null, null);
+
+            var go = new GameObject();
+            var smr = go.AddComponent<SkinnedMeshRenderer>();
+            smr.sharedMesh = mesh;
+
+            var meshInfo2 = new MeshInfo2(smr);
+
+            foreach (var vertex in meshInfo2.Vertices)
+            {
+                var frames = vertex.BlendShapes["shape"];
+                Assert.That(frames.Length, Is.EqualTo(5));
+                for (var i = 0; i < frames.Length; i++)
+                {
+                    Assert.That(frames[i].Weight, Is.EqualTo((float)i));
+                    Assert.That(frames[i].Position, Is.EqualTo(i == 3 ? new Vector3(1, 2, 3) : new Vector3()));
+                }
+            }
+        }
+
+        private Mesh BoxMesh()
+        {
+            var mesh = new Mesh
+            {
+                vertices = new[]
+                {
+                    new Vector3(-1, -1, -1),
+                    new Vector3(+1, -1, -1),
+                    new Vector3(-1, +1, -1),
+                    new Vector3(+1, +1, -1),
+                    new Vector3(-1, -1, +1),
+                    new Vector3(+1, -1, +1),
+                    new Vector3(-1, +1, +1),
+                    new Vector3(+1, +1, +1),
+                },
+                triangles = new[]
+                {
+                    0, 1, 2,
+                    1, 3, 2,
+
+                    4, 6, 5,
+                    5, 6, 7,
+
+                    0, 4, 1,
+
+                    1, 4, 5,
+                    1, 5, 3,
+                
+                    3, 5, 7,
+                    3, 7, 2,
+                
+                    2, 7, 6,
+                    2, 6, 0,
+                },
+            };
+
+            mesh.subMeshCount = 1;
+            mesh.SetSubMesh(0, new SubMeshDescriptor(0, mesh.triangles.Length));
+
+            return mesh;
         }
     }
 }
