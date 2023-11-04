@@ -48,7 +48,7 @@ jobs:
           extended: true
 
       - name: Check release is public
-        if: github.event.inputs.release_kind == 'stable'`
+        if: github.event.inputs.release_kind == 'stable'
         run:
           if [[ "$(jq '.private == true' < package.json)" == "true" ]]; then
             echo "package.json is private"
