@@ -266,8 +266,17 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
     {
         protected override void CollectDependency(Joint component, ComponentDependencyCollector collector)
         {
-            collector.AddDependency(component.GetComponent<Rigidbody>(), component);
-            collector.AddDependency(component.connectedBody);
+            var rigidBody = component.GetComponent<Rigidbody>();
+            if (rigidBody)
+            {
+                collector.AddDependency(rigidBody, component);
+                collector.AddDependency(rigidBody);
+            }
+            if (component.connectedBody)
+            {
+                collector.AddDependency(component.connectedBody, component);
+                collector.AddDependency(component.connectedBody);
+            }
         }
     }
 

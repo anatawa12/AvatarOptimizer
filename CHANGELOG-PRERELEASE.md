@@ -40,6 +40,10 @@ The format is based on [Keep a Changelog].
 - Prefab blinks when we see editor of PrefabSafeSet of prefab asset [`#645`](https://github.com/anatawa12/AvatarOptimizer/pull/645) [`#664`](https://github.com/anatawa12/AvatarOptimizer/pull/664)
 - Fixes in 1.5.9 [`#654`](https://github.com/anatawa12/AvatarOptimizer/pull/654)
 
+## [1.5.10] - 2023-11-04
+### Fixed
+- RigidBody Joint can be broken [`#683`](https://github.com/anatawa12/AvatarOptimizer/pull/683)
+
 ## [1.5.9] - 2023-10-29
 ## [1.5.9-rc.1] - 2023-10-28
 ### Fixed
@@ -976,7 +980,8 @@ This release is mistake.
 
 [Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.2...HEAD
 [1.6.0-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.1...v1.6.0-beta.2
-[1.6.0-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.9...v1.6.0-beta.1
+[1.6.0-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.10...v1.6.0-beta.1
+[1.5.10]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.9...v1.5.10
 [1.5.9]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.9-rc.1...v1.5.9
 [1.5.9-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.8...v1.5.9-rc.1
 [1.5.8]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.8-rc.1...v1.5.8

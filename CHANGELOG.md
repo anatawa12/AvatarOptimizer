@@ -34,6 +34,10 @@ The format is based on [Keep a Changelog].
 
 ### Security
 
+## [1.5.10] - 2023-11-04
+### Fixed
+- RigidBody Joint can be broken [`#683`](https://github.com/anatawa12/AvatarOptimizer/pull/683)
+
 ## [1.5.9] - 2023-10-29
 ### Fixed
 - Animation clip length can be changed [`#647`](https://github.com/anatawa12/AvatarOptimizer/pull/647)
@@ -639,7 +643,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.9...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.10...HEAD
+[1.5.10]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.9...v1.5.10
 [1.5.9]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.8...v1.5.9
 [1.5.8]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.7...v1.5.8
 [1.5.7]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.6...v1.5.7
