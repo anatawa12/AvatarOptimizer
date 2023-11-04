@@ -714,6 +714,53 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             foreach (var i in triangles)
                 Vertices.Add(vertices[i]);
         }
+
+        public bool TryGetPrimitiveSize(string component, out int primitiveSize)
+        {
+            switch (Topology)
+            {
+                case MeshTopology.Triangles:
+                    primitiveSize = 3;
+                    return true;
+                case MeshTopology.Quads:
+                    primitiveSize = 4;
+                    return true;
+                case MeshTopology.Lines:
+                    primitiveSize = 2;
+                    return true;
+                case MeshTopology.Points:
+                    primitiveSize = 1;
+                    return true;
+                case MeshTopology.LineStrip:
+                    BuildReport.LogWarning("MeshInfo2:warning:lineStrip", component);
+                    primitiveSize = default;
+                    return false;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
+        public void RemovePrimitives(string component, Func<Vertex[], bool> condition)
+        {
+            if (!TryGetPrimitiveSize(component, out var primitiveSize))
+                return;
+            var primitiveBuffer = new Vertex[primitiveSize];
+            int srcI = 0, dstI = 0;
+            for (; srcI < Vertices.Count; srcI += primitiveSize)
+            {
+                for (var i = 0; i < primitiveSize; i++)
+                    primitiveBuffer[i] = Vertices[srcI + i];
+
+                if (condition(primitiveBuffer))
+                    continue;
+
+                // no vertex is in box: 
+                for (var i = 0; i < primitiveSize; i++)
+                    Vertices[dstI + i] = primitiveBuffer[i];
+                dstI += primitiveSize;
+            }
+            Vertices.RemoveRange(dstI, Vertices.Count - dstI);
+        }
     }
 
     internal class Vertex

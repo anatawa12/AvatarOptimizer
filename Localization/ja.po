@@ -387,6 +387,9 @@ msgstr ""
 "実際の負荷に大きな差はありませんが、パフォーマンスランクにおけるポリゴン数が増えるなどの影響があります。\n"
 "マルチパスレンダリングの使用が意図したものであるかを確認してください。"
 
+msgid "MeshInfo2:warning:lineStrip"
+msgstr "LineStripを使用しているSubMeshは{0}コンポーネントによってスキップされます。"
+
 #endregion
 
 # region ErrorReporter
