@@ -357,6 +357,27 @@ namespace Anatawa12.AvatarOptimizer
                     newVrm10Object.name = vrm10Object.name + " (rebased)";
                     if (!_mapped) newVrm10Object = vrm10Object;
                     _cache[vrm10Object] = newVrm10Object;
+
+                    newVrm10Object.FirstPerson.Renderers = newVrm10Object.FirstPerson.Renderers
+                        .Select(r => new UniVRM10.RendererFirstPersonFlags
+                        {
+                            Renderer = _mapping.MapPath(r.Renderer, typeof(Renderer)),
+                            FirstPersonFlag = r.FirstPersonFlag
+                        })
+                        .Where(r => r.Renderer != null)
+                        .GroupBy(r => r.Renderer, r => r.FirstPersonFlag)
+                        .Select(grouping =>
+                        {
+                            var firstPersonFlags = grouping.Distinct().ToArray();
+                            return new UniVRM10.RendererFirstPersonFlags
+                            {
+                                Renderer = grouping.Key,
+                                FirstPersonFlag = firstPersonFlags.Length == 1 ? firstPersonFlags[0] :
+                                    firstPersonFlags.Contains(UniGLTF.Extensions.VRMC_vrm.FirstPersonType.both) ? UniGLTF.Extensions.VRMC_vrm.FirstPersonType.both :
+                                    UniGLTF.Extensions.VRMC_vrm.FirstPersonType.auto
+                            };
+                        }).ToList();
+
                     return newVrm10Object;
                 }
             }
