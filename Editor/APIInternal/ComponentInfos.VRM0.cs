@@ -1,5 +1,6 @@
 #if AAO_VRM0
 
+using System.Linq;
 using Anatawa12.AvatarOptimizer.API;
 using UnityEngine;
 using VRM;
@@ -119,8 +120,30 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
             collector.AddDependency(component.FirstPersonBone, component);
             collector.AddDependency(component.FirstPersonBone);
         }
+        
+        protected override void ApplySpecialMapping(VRMFirstPerson component, MappingSource mappingSource)
+        {
+            component.Renderers = component.Renderers
+                .Select(r => new VRMFirstPerson.RendererFirstPersonFlags
+                {
+                    Renderer = mappingSource.GetMappedComponent(r.Renderer).MappedComponent,
+                    FirstPersonFlag = r.FirstPersonFlag
+                })
+                .Where(r => r.Renderer)
+                .GroupBy(r => r.Renderer, r => r.FirstPersonFlag)
+                .Select(grouping =>
+                {
+                    var firstPersonFlags = grouping.Distinct().ToArray();
+                    return new VRMFirstPerson.RendererFirstPersonFlags
+                    {
+                        Renderer = grouping.Key,
+                        FirstPersonFlag = firstPersonFlags.Length == 1 ? firstPersonFlags[0] :
+                            firstPersonFlags.Contains(FirstPersonFlag.Both) ? FirstPersonFlag.Both :
+                            FirstPersonFlag.Auto
+                    };
+                }).ToList();
+        }
     }
-
 }
 
 #endif
