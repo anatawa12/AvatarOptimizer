@@ -213,12 +213,14 @@ namespace Anatawa12.AvatarOptimizer.API
         /// <param name="component">The component current component will modifies</param>
         /// <param name="properties">The list of properties current component will modifies</param>
         [PublicAPI]
-        public abstract void ModifyProperties([NotNull] Component component, [NotNull] IEnumerable<string> properties);
+        public abstract void ModifyProperties([NotNull] Component component,
+            [NotNull] [ItemNotNull] IEnumerable<string> properties);
 
         /// <inheritdoc cref="ModifyProperties(UnityEngine.Component,System.Collections.Generic.IEnumerable{string})"/>
         [PublicAPI]
-        public void ModifyProperties([NotNull] Component component, [NotNull] string[] properties) =>
-            ModifyProperties(component, (IEnumerable<string>) properties);
+        public void ModifyProperties([NotNull] Component component,
+            [NotNull] [ItemNotNull] params string[] properties) =>
+            ModifyProperties(component, (IEnumerable<string>)properties);
     }
 
     /// <summary>
