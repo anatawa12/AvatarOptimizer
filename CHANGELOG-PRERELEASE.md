@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- RigidBody Joint can be broken `#683`
 
 ### Security
 
