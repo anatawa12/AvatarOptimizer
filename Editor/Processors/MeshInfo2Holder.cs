@@ -2,10 +2,30 @@ using System.Collections.Generic;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.ErrorReporting;
 using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
+using JetBrains.Annotations;
+using nadena.dev.ndmf;
 using UnityEngine;
+using UnityEngine.Profiling;
+using Debug = System.Diagnostics.Debug;
 
 namespace Anatawa12.AvatarOptimizer.Processors
 {
+    internal class MeshInfo2Context : IExtensionContext
+    {
+        [CanBeNull] public MeshInfo2Holder Holder { get; private set; }
+        public void OnActivate(BuildContext context)
+        {
+            Holder = new MeshInfo2Holder(context.AvatarRootObject);
+        }
+
+        public void OnDeactivate(BuildContext context)
+        {
+            Debug.Assert(Holder != null, nameof(Holder) + " != null");
+            Holder.SaveToMesh();
+            Holder = null;
+        }
+    }
+
     internal class MeshInfo2Holder
     {
         private readonly Dictionary<SkinnedMeshRenderer, MeshInfo2> _skinnedCache =
@@ -18,10 +38,18 @@ namespace Anatawa12.AvatarOptimizer.Processors
             var avatarTagComponent = rootObject.GetComponentInChildren<AvatarTagComponent>(true);
             if (avatarTagComponent == null) return;
             foreach (var renderer in rootObject.GetComponentsInChildren<SkinnedMeshRenderer>(true))
+            {
+                Profiler.BeginSample($"Read Skinned Mesh");
                 GetMeshInfoFor(renderer);
+                Profiler.EndSample();
+            }
             
             foreach (var renderer in rootObject.GetComponentsInChildren<MeshRenderer>(true))
+            {
+                Profiler.BeginSample($"Read Static Mesh");
                 GetMeshInfoFor(renderer);
+                Profiler.EndSample();
+            }
         }
 
         public MeshInfo2 GetMeshInfoFor(SkinnedMeshRenderer renderer) =>
@@ -35,30 +63,25 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 ? cached
                 : _staticCache[renderer] = new MeshInfo2(renderer);
 
-        public void SaveToMesh(OptimizerSession session)
+        public void SaveToMesh()
         {
             foreach (var keyValuePair in _skinnedCache)
             {
                 var targetRenderer = keyValuePair.Key;
                 if (!targetRenderer) continue;
 
-                keyValuePair.Value.WriteToSkinnedMeshRenderer(targetRenderer, session);
+                Profiler.BeginSample($"Save Skinned Mesh {targetRenderer.name}");
+                keyValuePair.Value.WriteToSkinnedMeshRenderer(targetRenderer);
+                Profiler.EndSample();
             }
 
             foreach (var keyValuePair in _staticCache)
             {
                 var targetRenderer = keyValuePair.Key;
                 if (!targetRenderer) continue;
-                var meshInfo = keyValuePair.Value;
-                var meshFilter = targetRenderer.GetComponent<MeshFilter>();
-
-                BuildReport.ReportingObject(targetRenderer, () =>
-                {
-                    var mesh = new Mesh { name = $"AAOGeneratedMesh{targetRenderer.name}" };
-                    meshInfo.WriteToMesh(mesh);
-                    meshFilter.sharedMesh = mesh;
-                    targetRenderer.sharedMaterials = meshInfo.SubMeshes.Select(x => x.SharedMaterial).ToArray();
-                });
+                Profiler.BeginSample($"Save Static Mesh {targetRenderer.name}");
+                keyValuePair.Value.WriteToMeshRenderer(targetRenderer);
+                Profiler.EndSample();
             }
         }
     }

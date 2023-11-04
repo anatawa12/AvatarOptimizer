@@ -1,3 +1,5 @@
+#if AAO_VRCSDK3_AVATARS
+
 using UnityEngine;
 using UnityEngine.Animations;
 using VRC.Dynamics;
@@ -13,3 +15,5 @@ namespace Anatawa12.AvatarOptimizer
     {
     }
 }
+
+#endif

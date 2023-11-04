@@ -49,39 +49,37 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
         private int GetNestCount(Object obj) =>
             _nestCountCache != -1 ? _nestCountCache : _nestCountCache = PrefabSafeSetUtil.PrefabNestCount(obj);
 
-        private readonly Dictionary<string, Editor> _caches =
-            new Dictionary<string, Editor>();
+        private readonly Dictionary<string, EditorBase> _caches =
+            new Dictionary<string, EditorBase>();
 
         [CanBeNull]
-        private Editor GetCache(SerializedProperty property)
+        private EditorBase GetCache(SerializedProperty property)
         {
             if (!_caches.TryGetValue(property.propertyPath, out var cached))
             {
                 var prop = property.FindPropertyRelative(Names.FakeSlot);
-                if (IsSupportedPropType(prop.propertyType))
-                {
-                    _caches[property.propertyPath] = cached =
-                        new Editor(property, GetNestCount(property.serializedObject.targetObject));
-                }
-                else
-                {
-                    _caches[property.propertyPath] = cached = null;
-                }
+                _caches[property.propertyPath] =
+                    cached = GetEditorImpl(prop.propertyType, property, fieldInfo.FieldType, 
+                        GetNestCount(property.serializedObject.targetObject));
             }
 
             return cached;
         }
 
-        private static bool IsSupportedPropType(SerializedPropertyType type)
+        private static EditorBase GetEditorImpl(SerializedPropertyType type, SerializedProperty property,
+            Type fieldType, int nestCount)
         {
             switch (type)
             {
                 case SerializedPropertyType.Integer:
+                    return new IntegerEditorImpl(property, nestCount);
+                case SerializedPropertyType.String:
+                    return new StringEditorImpl(property, nestCount);
+                case SerializedPropertyType.ObjectReference:
+                    return new ObjectEditorImpl(property, fieldType, nestCount);
                 case SerializedPropertyType.Boolean:
                 case SerializedPropertyType.Float:
-                case SerializedPropertyType.String:
                 case SerializedPropertyType.Color:
-                case SerializedPropertyType.ObjectReference:
                 case SerializedPropertyType.LayerMask:
                 case SerializedPropertyType.Enum:
                 case SerializedPropertyType.Vector2:
@@ -97,177 +95,8 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                 case SerializedPropertyType.Vector3Int:
                 case SerializedPropertyType.RectInt:
                 case SerializedPropertyType.BoundsInt:
-                    return true;
                 default:
-                    return false;
-            }
-        }
-
-        private class Editor : EditorBase<object>
-        {
-            public Editor(SerializedProperty property, int nestCount) : base(property, nestCount)
-            {
-            }
-
-            public EditorUtil<object> GetEditorUtil() => EditorUtil;
-            public SerializedProperty GetFakeSlot() => FakeSlot;
-
-            private protected override object GetValue(SerializedProperty prop)
-            {
-                switch (prop.propertyType)
-                {
-                    case SerializedPropertyType.Integer:
-                        return prop.intValue;
-                    case SerializedPropertyType.Boolean:
-                        return prop.boolValue;
-                    case SerializedPropertyType.Float:
-                        return prop.floatValue;
-                    case SerializedPropertyType.String:
-                        return prop.stringValue;
-                    case SerializedPropertyType.Color:
-                        return prop.colorValue;
-                    case SerializedPropertyType.ObjectReference:
-                        return prop.objectReferenceValue;
-                    case SerializedPropertyType.LayerMask:
-                        return (LayerMask) prop.intValue;
-                    case SerializedPropertyType.Enum:
-                        return prop.enumValueIndex;
-                    case SerializedPropertyType.Vector2:
-                        return prop.vector2Value;
-                    case SerializedPropertyType.Vector3:
-                        return prop.vector3Value;
-                    case SerializedPropertyType.Vector4:
-                        return prop.vector4Value;
-                    case SerializedPropertyType.Rect:
-                        return prop.rectValue;
-                    case SerializedPropertyType.ArraySize:
-                        return prop.intValue;
-                    case SerializedPropertyType.Character:
-                        return (char) prop.intValue;
-                    case SerializedPropertyType.AnimationCurve:
-                        return prop.animationCurveValue;
-                    case SerializedPropertyType.Bounds:
-                        return prop.boundsValue;
-                    case SerializedPropertyType.ExposedReference:
-                        return prop.exposedReferenceValue;
-                    case SerializedPropertyType.Vector2Int:
-                        return prop.vector2IntValue;
-                    case SerializedPropertyType.Vector3Int:
-                        return prop.vector3IntValue;
-                    case SerializedPropertyType.RectInt:
-                        return prop.rectIntValue;
-                    case SerializedPropertyType.BoundsInt:
-                        return prop.boundsIntValue;
-                    default:
-                        throw new InvalidOperationException();
-                }
-            }
-
-            private protected override void SetValue(SerializedProperty prop, object value) 
-            {
-                switch (prop.propertyType)
-                {
-                    case SerializedPropertyType.Integer:
-                        prop.intValue = (int)value;
-                        break;
-                    case SerializedPropertyType.Boolean:
-                        prop.boolValue = (bool)value;
-                        break;
-                    case SerializedPropertyType.Float:
-                        prop.floatValue = (float)value;
-                        break;
-                    case SerializedPropertyType.String:
-                        prop.stringValue = (string)value;
-                        break;
-                    case SerializedPropertyType.Color:
-                        prop.colorValue = (Color)value;
-                        break;
-                    case SerializedPropertyType.ObjectReference:
-                        prop.objectReferenceValue = (Object)value;
-                        break;
-                    case SerializedPropertyType.LayerMask:
-                        prop.intValue = (LayerMask)value;
-                        break;
-                    case SerializedPropertyType.Enum:
-                        prop.enumValueIndex = (int)value;
-                        break;
-                    case SerializedPropertyType.Vector2:
-                        prop.vector2Value = (Vector2)value;
-                        break;
-                    case SerializedPropertyType.Vector3:
-                        prop.vector3Value = (Vector3)value;
-                        break;
-                    case SerializedPropertyType.Vector4:
-                        prop.vector4Value = (Vector4)value;
-                        break;
-                    case SerializedPropertyType.Rect:
-                        prop.rectValue = (Rect)value;
-                        break;
-                    case SerializedPropertyType.ArraySize:
-                        prop.intValue = (int)value;
-                        break;
-                    case SerializedPropertyType.Character:
-                        prop.intValue = (char)value;
-                        break;
-                    case SerializedPropertyType.AnimationCurve:
-                        prop.animationCurveValue = (AnimationCurve)value;
-                        break;
-                    case SerializedPropertyType.Bounds:
-                        prop.boundsValue = (Bounds)value;
-                        break;
-                    case SerializedPropertyType.ExposedReference:
-                        prop.exposedReferenceValue = (Object)value;
-                        break;
-                    case SerializedPropertyType.Vector2Int:
-                        prop.vector2IntValue = (Vector2Int)value;
-                        break;
-                    case SerializedPropertyType.Vector3Int:
-                        prop.vector3IntValue = (Vector3Int)value;
-                        break;
-                    case SerializedPropertyType.RectInt:
-                        prop.rectIntValue = (RectInt)value;
-                        break;
-                    case SerializedPropertyType.BoundsInt:
-                        prop.boundsIntValue = (BoundsInt)value;
-                        break;
-                    default:
-                        throw new InvalidOperationException();
-                }
-            }
-
-            private protected override float GetAddRegionSize() => EditorGUIUtility.singleLineHeight;
-
-            private protected override void OnGUIAddRegion(Rect position)
-            {
-                if (FakeSlot.propertyType == SerializedPropertyType.ObjectReference)
-                {
-                    var current = Event.current;
-                    var eventType = current.type;
-                    switch (eventType)
-                    {
-                        case EventType.DragUpdated:
-                        case EventType.DragPerform:
-                        case EventType.DragExited:
-                        {
-                            var controlId = GUIUtility.GetControlID("s_PPtrHash".GetHashCode(), FocusType.Keyboard, position);
-                            position = EditorGUI.PrefixLabel(position, controlId, EditorStatics.ToAdd);
-                            HandleDragEvent(position, controlId, current, this);
-                            break;
-                        }
-                        default:
-                        {
-                            SetValue(FakeSlot, default);
-                            EditorGUI.PropertyField(position, FakeSlot, EditorStatics.ToAdd);
-                            var addValue = FakeSlot.objectReferenceValue;
-                            if (addValue != null) EditorUtil.GetElementOf(addValue).Add();
-                            break;
-                        }
-                    }
-                }
-                else
-                {
-                    EditorGUI.LabelField(position, EditorStatics.ToAdd, EditorStatics.AddNotSupported);
-                }
+                    return null;
             }
         }
 
@@ -311,9 +140,9 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             }
         }
 
-        private bool PropertyGUI(Rect position, SerializedProperty property, GUIContent label, Editor editor)
+        private bool PropertyGUI(Rect position, SerializedProperty property, GUIContent label, EditorBase editor)
         {
-            var hasOverride = editor.GetEditorUtil().HasPrefabOverride();
+            var hasOverride = editor.HasPrefabOverride();
             if (hasOverride)
                 EditorGUI.BeginProperty(position, label, property);
 
@@ -329,53 +158,11 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 
             int lastControlId = GetLastControlId();
 
-            HandleDragEvent(position, lastControlId, @event, editor);
+            (editor as ObjectEditorImpl)?.HandleDragEvent(position, lastControlId, @event);
 
             if (hasOverride)
                 EditorGUI.EndProperty();
             return isExpanded;
-        }
-
-        private static void HandleDragEvent(Rect position, int lastControlId, Event @event, Editor editor)
-        {
-            switch (@event.type)
-            {
-                case EventType.DragUpdated:
-                case EventType.DragPerform:
-                    if (position.Contains(@event.mousePosition) && GUI.enabled)
-                    {
-                        var objectReferences = DragAndDrop.objectReferences;
-                        var referencesCache = new Object[1];
-                        var flag3 = false;
-                        foreach (var object1 in objectReferences)
-                        {
-                            referencesCache[0] = object1;
-                            var object2 = ValidateObjectFieldAssignment(referencesCache, editor.GetFakeSlot());
-                            if (object2 == null) continue;
-                            DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
-                            if (@event.type == EventType.DragPerform)
-                            {
-                                editor.GetEditorUtil().GetElementOf(object2).EnsureAdded();
-                                flag3 = true;
-                                DragAndDrop.activeControlID = 0;
-                            }
-                            else
-                                DragAndDrop.activeControlID = lastControlId;
-                        }
-
-                        if (flag3)
-                        {
-                            GUI.changed = true;
-                            DragAndDrop.AcceptDrag();
-                        }
-                    }
-
-                    break;
-                case EventType.DragExited:
-                    if (GUI.enabled)
-                        HandleUtility.Repaint();
-                    break;
-            }
         }
 
         private static readonly FieldInfo LastControlIdField =
@@ -391,34 +178,6 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 
             return (int)LastControlIdField.GetValue(null);
         }
-
-        private static readonly MethodInfo ValidateObjectFieldAssignmentMethod =
-            typeof(EditorGUI).GetMethod("ValidateObjectFieldAssignment", BindingFlags.Static | BindingFlags.NonPublic);
-
-        private static readonly Type ObjectFieldValidatorOptionsType =
-            typeof(EditorGUI).Assembly.GetType("UnityEditor.EditorGUI+ObjectFieldValidatorOptions");
-
-        private static Object ValidateObjectFieldAssignment(Object[] references,
-            SerializedProperty property)
-        {
-            if (ValidateObjectFieldAssignmentMethod == null)
-            {
-                Debug.LogError(
-                    "Compatibility with Unity broke: can't find ValidateObjectFieldAssignment method in EditorGUI");
-                return null;
-            }
-
-            if (ObjectFieldValidatorOptionsType == null)
-            {
-                Debug.LogError(
-                    "Compatibility with Unity broke: can't find ObjectFieldValidatorOptions type in EditorGUI");
-                return null;
-            }
-
-            return ValidateObjectFieldAssignmentMethod.Invoke(null,
-                new[] { references, null, property, Enum.ToObject(ObjectFieldValidatorOptionsType, 0) }) as Object;
-        }
-
     }
 
     /// <summary>
@@ -433,10 +192,17 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
         public const string Removes = nameof(PrefabLayer<object>.removes);
     }
 
-    internal abstract class EditorBase<T>
+    internal abstract class EditorBase
+    {
+        public abstract float GetPropertyHeight();
+        public abstract void OnGUI(Rect position);
+        public abstract bool HasPrefabOverride();
+    }
+
+    internal abstract class EditorBase<T> : EditorBase
     {
         [NotNull] protected readonly SerializedProperty FakeSlot;
-        protected readonly EditorUtil<T> EditorUtil;
+        internal readonly EditorUtil<T> EditorUtil;
 
         public EditorBase(SerializedProperty property, int nestCount)
         {
@@ -452,12 +218,16 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
         private protected abstract float GetAddRegionSize();
         private protected abstract void OnGUIAddRegion(Rect position);
 
-        public float GetPropertyHeight() =>
-            EditorUtil.ElementsCount * (FieldHeight() + EditorGUIUtility.standardVerticalSpacing) 
+        public override bool HasPrefabOverride() => EditorUtil.HasPrefabOverride();
+
+        private static readonly GUIContent content = new GUIContent("Element 0");
+
+        public override float GetPropertyHeight() =>
+            EditorUtil.ElementsCount * (FieldHeight(content) + EditorGUIUtility.standardVerticalSpacing) 
             + GetAddRegionSize();
 
         // position is 
-        public void OnGUI(Rect position)
+        public override void OnGUI(Rect position)
         {
             var elementI = 0;
             var newLabel = new GUIContent("");
@@ -511,7 +281,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                         break;
                 }
 
-                position.y += FieldHeight() + EditorGUIUtility.standardVerticalSpacing;
+                position.y += FieldHeight(newLabel) + EditorGUIUtility.standardVerticalSpacing;
             }
 
             action?.Invoke();
@@ -557,14 +327,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             return result;
         }
 
-        protected virtual float FieldHeight() => EditorGUI.GetPropertyHeight(FakeSlot);
-
-        protected virtual T Field(Rect position, GUIContent label, T value)
-        {
-            SetValue(FakeSlot, value);
-            EditorGUI.PropertyField(position, FakeSlot, label);
-            value = GetValue(FakeSlot);
-            return value;
-        }
+        protected abstract float FieldHeight(GUIContent label);
+        protected abstract T Field(Rect position, GUIContent label, T value);
     }
 }

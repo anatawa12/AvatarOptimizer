@@ -1,7 +1,10 @@
+#if AAO_VRCSDK3_AVATARS
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.ErrorReporting;
+using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEngine;
 using VRC.Dynamics;
@@ -10,13 +13,15 @@ using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.Processors
 {
-    internal class MergePhysBoneProcessor
+    internal class MergePhysBoneProcessor : Pass<MergePhysBoneProcessor>
     {
-        public void Process(OptimizerSession session)
+        public override string DisplayName => "MergePhysBone";
+
+        protected override void Execute(BuildContext context)
         {
-            BuildReport.ReportingObjects(session.GetComponents<MergePhysBone>(), mergePhysBone =>
+            BuildReport.ReportingObjects(context.GetComponents<MergePhysBone>(), mergePhysBone =>
             {
-                DoMerge(mergePhysBone, session);
+                DoMerge(mergePhysBone);
                 Object.DestroyImmediate(mergePhysBone);
             });
         }
@@ -24,7 +29,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
         private static bool SetEq<T>(IEnumerable<T> a, IEnumerable<T> b) => 
             new HashSet<T>(a).SetEquals(b);
 
-        internal static void DoMerge(MergePhysBone merge, OptimizerSession session)
+        internal static void DoMerge(MergePhysBone merge)
         {
             var sourceComponents = merge.componentsSet.GetAsList();
             if (sourceComponents.Count == 0) return;
@@ -204,3 +209,5 @@ namespace Anatawa12.AvatarOptimizer.Processors
         }
     }
 }
+
+#endif

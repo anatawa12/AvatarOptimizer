@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes;
 using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
@@ -93,7 +94,7 @@ namespace Anatawa12.AvatarOptimizer
 
             if (componentInfo != null)
             {
-                var component = EditorUtility.InstanceIDToObject(componentInfo.MergedInto) as Component;
+                var component = new ComponentOrGameObject(EditorUtility.InstanceIDToObject(componentInfo.MergedInto));
                 // there's mapping about component.
                 // this means the component is merged or some prop has mapping
                 if (!component) return null; // this means removed.
@@ -106,57 +107,89 @@ namespace Anatawa12.AvatarOptimizer
             else
             {
                 // The component is not merged & no prop mapping so process GameObject mapping
-
-                if (type != typeof(GameObject))
-                {
-                    var component = EditorUtility.InstanceIDToObject(instanceId) as Component;
-                    if (!component) return null; // this means removed
-                }
+                var component = EditorUtility.InstanceIDToObject(instanceId);
+                if (!component) return null; // this means removed
 
                 if (gameObjectInfo.NewPath == null) return null;
                 return gameObjectInfo.NewPath;
             }
         }
 
-        public EditorCurveBinding MapBinding(EditorCurveBinding binding)
+        [CanBeNull]
+        public EditorCurveBinding[] MapBinding(EditorCurveBinding binding)
         {
             var gameObjectInfo = GetGameObjectInfo(binding.path);
-            if (gameObjectInfo == null) return binding;
+            if (gameObjectInfo == null)
+                return null;
             var (instanceId, componentInfo) = gameObjectInfo.GetComponentByType(binding.type);
 
             if (componentInfo != null)
             {
-                var component = EditorUtility.InstanceIDToObject(componentInfo.MergedInto) as Component;
                 // there's mapping about component.
                 // this means the component is merged or some prop has mapping
-                if (!component) return default; // this means removed.
-
-                var newPath = Utils.RelativePath(_rootGameObject.transform, component.transform);
-                if (newPath == null) return default; // this means moved to out of the animator scope
-
-                binding.path = newPath;
 
                 if (componentInfo.PropertyMapping.TryGetValue(binding.propertyName, out var newProp))
                 {
-                    if (newProp == null) return default;
-                    binding.propertyName = newProp;
+                    // if mapped one is exactly same as original, return null
+                    if (newProp.AllCopiedTo.Length == 1
+                        && newProp.AllCopiedTo[0].InstanceId == instanceId
+                        && newProp.AllCopiedTo[0].Name == binding.propertyName)
+                        return null;
+
+                    // there are mapping for property
+                    var curveBindings = new EditorCurveBinding[newProp.AllCopiedTo.Length];
+                    var copiedToIndex = 0;
+                    for (var i = 0; i < newProp.AllCopiedTo.Length; i++)
+                    {
+                        var descriptor = newProp.AllCopiedTo[copiedToIndex++];
+                        var component = new ComponentOrGameObject(EditorUtility.InstanceIDToObject(descriptor.InstanceId));
+                        // this means removed.
+                        if (!component)
+                        {
+                            copiedToIndex -= 1;
+                            continue;
+                        }
+
+                        var newPath = Utils.RelativePath(_rootGameObject.transform, component.transform);
+
+                        // this means moved to out of the animator scope
+                        // TODO: add warning
+                        if (newPath == null) return Array.Empty<EditorCurveBinding>();
+
+                        binding.path = newPath;
+                        binding.type = descriptor.Type;
+                        binding.propertyName = descriptor.Name;
+                        curveBindings[i] = binding; // copy
+                    }
+
+                    if (copiedToIndex != curveBindings.Length)
+                        return curveBindings.AsSpan().Slice(0, copiedToIndex).ToArray();
+                    return curveBindings;
+                }
+                else
+                {
+                    var component = new ComponentOrGameObject(EditorUtility.InstanceIDToObject(componentInfo.MergedInto));
+                    if (!component) return Array.Empty<EditorCurveBinding>(); // this means removed.
+
+                    var newPath = Utils.RelativePath(_rootGameObject.transform, component.transform);
+                    if (newPath == null) return Array.Empty<EditorCurveBinding>(); // this means moved to out of the animator scope
+                    if (binding.path == newPath) return null;
+                    binding.path = newPath;
+                    return new []{ binding };
                 }
             }
             else
             {
                 // The component is not merged & no prop mapping so process GameObject mapping
 
-                if (binding.type != typeof(GameObject))
-                {
-                    var component = EditorUtility.InstanceIDToObject(instanceId) as Component;
-                    if (!component) return default; // this means removed
-                }
+                var component = EditorUtility.InstanceIDToObject(instanceId);
+                if (!component) return Array.Empty<EditorCurveBinding>(); // this means removed
 
-                if (gameObjectInfo.NewPath == null) return default;
+                if (gameObjectInfo.NewPath == null) return Array.Empty<EditorCurveBinding>();
+                if (binding.path == gameObjectInfo.NewPath) return null;
                 binding.path = gameObjectInfo.NewPath;
+                return new[] { binding };
             }
-
-            return binding;
         }
     }
 }

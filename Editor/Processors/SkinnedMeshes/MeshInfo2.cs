@@ -5,9 +5,12 @@ using System.Diagnostics;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.ErrorReporting;
 using JetBrains.Annotations;
+using Unity.Burst;
 using Unity.Collections;
+using Unity.Jobs;
 using UnityEngine;
 using UnityEngine.Assertions;
+using UnityEngine.Profiling;
 using UnityEngine.Rendering;
 using Debug = System.Diagnostics.Debug;
 
@@ -91,17 +94,30 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         private void SetMaterials(Renderer renderer)
         {
+            if (SubMeshes.Count == 0) return;
+
             var sourceMaterials = renderer.sharedMaterials;
 
             if (sourceMaterials.Length < SubMeshes.Count)
                 SubMeshes.RemoveRange(sourceMaterials.Length, SubMeshes.Count - sourceMaterials.Length);
 
-            for (var i = 0; i < SubMeshes.Count; i++)
-                SubMeshes[i].SharedMaterial = sourceMaterials[i];
-            var verticesForLastSubMesh =
-                SubMeshes.Count == 0 ? new List<Vertex>() : SubMeshes[SubMeshes.Count - 1].Triangles;
-            for (var i = SubMeshes.Count; i < sourceMaterials.Length; i++)
-                SubMeshes.Add(new SubMesh(verticesForLastSubMesh.ToList(), sourceMaterials[i]));
+            if (SubMeshes.Count == sourceMaterials.Length)
+            {
+                for (var i = 0; i < SubMeshes.Count; i++)
+                    SubMeshes[i].SharedMaterial = sourceMaterials[i];
+            }
+            else
+            {
+                // there are multi pass rendering
+                for (var i = 0; i < SubMeshes.Count - 1; i++)
+                    SubMeshes[i].SharedMaterial = sourceMaterials[i];
+
+                var lastMeshMaterials = new Material[sourceMaterials.Length - SubMeshes.Count + 1];
+                
+                for (int i = SubMeshes.Count - 1, j = 0; i < sourceMaterials.Length; i++, j++)
+                    lastMeshMaterials[j] = sourceMaterials[i];
+                SubMeshes[SubMeshes.Count - 1].SharedMaterials = lastMeshMaterials;
+            }
         }
 
         [Conditional("UNITY_ASSERTIONS")]
@@ -127,6 +143,17 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         {
             ReadStaticMesh(mesh);
 
+            Profiler.BeginSample("Read Skinned Mesh Part");
+            Profiler.BeginSample("Read Bones");
+            ReadBones(mesh);
+            Profiler.EndSample();
+            Profiler.BeginSample("Read BlendShapes");
+            ReadBlendShapes(mesh);
+            Profiler.EndSample();
+        }
+
+        private void ReadBones([NotNull] Mesh mesh)
+        {
             Bones.Clear();
             Bones.Capacity = Math.Max(Bones.Capacity, mesh.bindposes.Length);
             Bones.AddRange(mesh.bindposes.Select(x => new Bone(x)));
@@ -142,46 +169,109 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     Vertices[i].BoneWeights.Add((Bones[boneWeight1.boneIndex], boneWeight1.weight));
                 bonesBase += count;
             }
+        }
 
+        private void ReadBlendShapes([NotNull] Mesh mesh)
+        {
             BlendShapes.Clear();
+            Profiler.BeginSample("Prepare shared buffers");
+            var maxFrames = 0;
+            var frameCounts = new NativeArray<int>(mesh.blendShapeCount, Allocator.TempJob);
+            var shapeNames = new string[mesh.blendShapeCount];
+            for (var i = 0; i < mesh.blendShapeCount; i++)
+            {
+                var frames = mesh.GetBlendShapeFrameCount(i);
+                shapeNames[i] = mesh.GetBlendShapeName(i);
+                maxFrames = Math.Max(frames, maxFrames);
+                frameCounts[i] = frames;
+            }
+
             var deltaVertices = new Vector3[Vertices.Count];
             var deltaNormals = new Vector3[Vertices.Count];
             var deltaTangents = new Vector3[Vertices.Count];
-            for (var i = 0; i < mesh.blendShapeCount; i++)
+            var allFramesBuffer = new NativeArray3<Vertex.BlendShapeFrame>(mesh.blendShapeCount, Vertices.Count,
+                maxFrames, Allocator.TempJob);
+            var meaningfuls = new NativeArray2<bool>(mesh.blendShapeCount, Vertices.Count, Allocator.TempJob);
+            Profiler.EndSample();
+
+            for (var blendShape = 0; blendShape < mesh.blendShapeCount; blendShape++)
             {
-                var shapeName = mesh.GetBlendShapeName(i);
+                BlendShapes.Add((shapeNames[blendShape], 0.0f));
 
-                BlendShapes.Add((shapeName, 0.0f));
-
-                var frameCount = mesh.GetBlendShapeFrameCount(i);
-
-                var shapes = new Vertex.BlendShapeFrame[Vertices.Count][];
-                for (var vertex = 0; vertex < shapes.Length; vertex++)
-                    shapes[vertex] = new Vertex.BlendShapeFrame[frameCount];
-
-                for (var frame = 0; frame < frameCount; frame++)
+                for (var frame = 0; frame < frameCounts[blendShape]; frame++)
                 {
-                    mesh.GetBlendShapeFrameVertices(i, frame, deltaVertices, deltaNormals, deltaTangents);
-                    var weight = mesh.GetBlendShapeFrameWeight(i, frame);
+                    Profiler.BeginSample("GetFrameInfo");
+                    mesh.GetBlendShapeFrameVertices(blendShape, frame, deltaVertices, deltaNormals, deltaTangents);
+                    var weight = mesh.GetBlendShapeFrameWeight(blendShape, frame);
+                    Profiler.EndSample();
 
+                    Profiler.BeginSample("Copy to buffer");
                     for (var vertex = 0; vertex < deltaNormals.Length; vertex++)
                     {
                         var deltaVertex = deltaVertices[vertex];
                         var deltaNormal = deltaNormals[vertex];
                         var deltaTangent = deltaTangents[vertex];
-                        shapes[vertex][frame] =
-                            new Vertex.BlendShapeFrame(weight, deltaVertex, deltaNormal, deltaTangent);
+                        allFramesBuffer[blendShape, vertex, frame] = new Vertex.BlendShapeFrame(weight, deltaVertex, deltaNormal, deltaTangent);
                     }
-                }
-
-                for (var vertex = 0; vertex < shapes.Length; vertex++)
-                {
-                    if (IsMeaningful(shapes[vertex]))
-                        Vertices[vertex].BlendShapes[shapeName] = shapes[vertex];
+                    Profiler.EndSample();
                 }
             }
+
+            Profiler.BeginSample("Compute Meaningful with Job");
+            new ComputeMeaningfulJob
+            {
+                vertexCount = Vertices.Count,
+                allFramesBuffer = allFramesBuffer,
+                frameCounts = frameCounts,
+                meaningfuls = meaningfuls,
+            }.Schedule(Vertices.Count * mesh.blendShapeCount, 1).Complete();
+            Profiler.EndSample();
+
+            for (var blendShape = 0; blendShape < mesh.blendShapeCount; blendShape++)
+            {
+                Profiler.BeginSample("Save to Vertices");
+                for (var vertex = 0; vertex < Vertices.Count; vertex++)
+                {
+                    if (meaningfuls[blendShape, vertex])
+                    {
+                        Profiler.BeginSample("Clone BlendShapes");
+                        var slice = allFramesBuffer[blendShape, vertex].Slice(0, frameCounts[blendShape]);
+                        Vertices[vertex].BlendShapes[shapeNames[blendShape]] = slice.ToArray();
+                        Profiler.EndSample();
+                    }
+                }
+                Profiler.EndSample();
+            }
+
+            meaningfuls.Dispose();
+            frameCounts.Dispose();
+            allFramesBuffer.Dispose();
+            Profiler.EndSample();
+        }
+
+        [BurstCompile]
+        struct ComputeMeaningfulJob : IJobParallelFor
+        {
+            public int vertexCount;
+
+            // allFramesBuffer[blendShape][vertex][frame]
+            [ReadOnly]
+            public NativeArray3<Vertex.BlendShapeFrame> allFramesBuffer;
+            [ReadOnly]
+            public NativeArray<int> frameCounts;
+            // allFramesBuffer[blendShape][vertex]
+            [WriteOnly]
+            public NativeArray2<bool> meaningfuls;
+
+            public void Execute(int index)
+            {
+                var blendShape = index / vertexCount;
+                var vertex = index % vertexCount;
+                var slice = allFramesBuffer[blendShape, vertex].Slice(0, frameCounts[blendShape]);
+                meaningfuls[blendShape, vertex] = IsMeaningful(slice);
+            }
             
-            bool IsMeaningful(Vertex.BlendShapeFrame[] frames)
+            bool IsMeaningful(NativeSlice<Vertex.BlendShapeFrame> frames)
             {
                 foreach (var (_, position, normal, tangent) in frames)
                 {
@@ -196,6 +286,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         public void ReadStaticMesh([NotNull] Mesh mesh)
         {
+            Profiler.BeginSample($"Read Static Mesh Part");
             Vertices.Capacity = Math.Max(Vertices.Capacity, mesh.vertexCount);
             Vertices.Clear();
             for (var i = 0; i < mesh.vertexCount; i++) Vertices.Add(new Vertex());
@@ -250,6 +341,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             SubMeshes.Capacity = Math.Max(SubMeshes.Capacity, mesh.subMeshCount);
             for (var i = 0; i < mesh.subMeshCount; i++)
                 SubMeshes.Add(new SubMesh(Vertices, triangles, mesh.GetSubMesh(i)));
+            Profiler.EndSample();
         }
 
         void CopyVertexAttr<T>(T[] attributes, Action<Vertex, T> assign)
@@ -307,11 +399,33 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             Bones.RemoveAll(x => !usedBones.Contains(x));
         }
 
+        /// <returns>true if we flattened multi pass rendering</returns>
+        public void FlattenMultiPassRendering(string reasonComponent)
+        {
+            if (SubMeshes.All(x => x.SharedMaterials.Length == 1)) return;
+            
+            BuildReport.LogWarning("MeshInfo2:warning:multiPassRendering", reasonComponent)
+                ?.WithContext(SourceRenderer);
+
+            // flatten SubMeshes
+            var subMeshes = SubMeshes.ToArray();
+            SubMeshes.Clear();
+            foreach (var subMesh in subMeshes)
+            foreach (var material in subMesh.SharedMaterials)
+                SubMeshes.Add(new SubMesh(subMesh.Triangles, material));
+        }
+
         public void WriteToMesh(Mesh destMesh)
         {
             Optimize();
             destMesh.Clear();
 
+            // if mesh is empty, clearing mesh is enough!
+            if (SubMeshes.Count == 0) return; 
+
+            Profiler.BeginSample("Write to Mesh");
+
+            Profiler.BeginSample("Vertices and Normals");
             // Basic Vertex Attributes: vertices, normals
             {
                 var vertices = new Vector3[Vertices.Count];
@@ -328,14 +442,17 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     normals[i] = Vertices[i].Normal;
                 destMesh.normals = normals;
             }
+            Profiler.EndSample();
 
             // tangents
             if (HasTangent)
             {
+                Profiler.BeginSample("Tangents");
                 var tangents = new Vector4[Vertices.Count];
                 for (var i = 0; i < Vertices.Count; i++)
                     tangents[i] = Vertices[i].Tangent;
                 destMesh.tangents = tangents;
+                Profiler.EndSample();
             }
 
             // UVs
@@ -345,6 +462,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 var uv4 = new Vector4[Vertices.Count];
                 for (var uvIndex = 0; uvIndex < 8; uvIndex++)
                 {
+                    Profiler.BeginSample($"UV#{uvIndex}");
                     switch (GetTexCoordStatus(uvIndex))
                     {
                         case TexCoordStatus.NotDefined:
@@ -368,60 +486,91 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                         default:
                             throw new ArgumentOutOfRangeException();
                     }
+                    Profiler.EndSample();
                 }
             }
 
             // color
             if (HasColor)
             {
+                Profiler.BeginSample($"Vertex Color");
                 var colors = new Color32[Vertices.Count];
                 for (var i = 0; i < Vertices.Count; i++)
                     colors[i] = Vertices[i].Color;
                 destMesh.colors32 = colors;
+                Profiler.EndSample();
             }
 
             // bones
             destMesh.bindposes = Bones.Select(x => x.Bindpose.ToUnity()).ToArray();
 
             // triangles and SubMeshes
+            Profiler.BeginSample("Triangles");
             {
                 var vertexIndices = new Dictionary<Vertex, int>();
                 // first, set vertex indices
                 for (var i = 0; i < Vertices.Count; i++)
                     vertexIndices.Add(Vertices[i], i);
 
-                var triangles = new int[SubMeshes.Sum(x => x.Triangles.Count)];
-                var subMeshDescriptors = new SubMeshDescriptor[SubMeshes.Count];
-                var trianglesIndex = 0;
-                for (var i = 0; i < SubMeshes.Count; i++)
+                var totalTriangles = 0;
+                var totalSubMeshes = 0;
+                for (var i = 0; i < SubMeshes.Count - 1; i++)
                 {
-                    var subMesh = SubMeshes[i];
-                    var existingIndex = SubMeshes.FindIndex(0, i, sm => sm.Triangles.SequenceEqual(subMesh.Triangles));
-                    if (existingIndex != -1)
+                    // for non-last submesh, we have to duplicate submesh for multi pass rendering
+                    for (var j = 0; j < SubMeshes[i].SharedMaterials.Length; j++)
                     {
-                        subMeshDescriptors[i] = subMeshDescriptors[existingIndex];
-                    }
-                    else
-                    {
-                        subMeshDescriptors[i] = new SubMeshDescriptor(trianglesIndex, SubMeshes[i].Triangles.Count);
-                        foreach (var triangle in SubMeshes[i].Triangles)
-                            triangles[trianglesIndex++] = vertexIndices[triangle];
+                        totalTriangles += SubMeshes[i].Triangles.Count;
+                        totalSubMeshes++;
                     }
                 }
+                {
+                    // for last submesh, we can use single submesh for multi pass reendering
+                    totalTriangles += SubMeshes[SubMeshes.Count - 1].Triangles.Count;
+                    totalSubMeshes++;
+                }
 
-                triangles = triangles.Length == trianglesIndex
-                    ? triangles
-                    : triangles.AsSpan().Slice(0, trianglesIndex).ToArray();
+                var triangles = new int[totalTriangles];
+                var subMeshDescriptors = new SubMeshDescriptor[totalSubMeshes];
+                var trianglesIndex = 0;
+                var submeshIndex = 0;
+
+                for (var i = 0; i < SubMeshes.Count - 1; i++)
+                {
+                    var subMesh = SubMeshes[i];
+                    var descriptor = new SubMeshDescriptor(trianglesIndex, subMesh.Triangles.Count);
+                    foreach (var triangle in subMesh.Triangles)
+                        triangles[trianglesIndex++] = vertexIndices[triangle];
+
+                    // general case: for non-last submesh, we have to duplicate submesh for multi pass rendering
+                    for (var j = 0; j < subMesh.SharedMaterials.Length; j++)
+                        subMeshDescriptors[submeshIndex++] = descriptor;
+                }
+
+                {
+                    var subMesh = SubMeshes[SubMeshes.Count - 1];
+
+                    var descriptor = new SubMeshDescriptor(trianglesIndex, subMesh.Triangles.Count);
+                    foreach (var triangle in subMesh.Triangles)
+                        triangles[trianglesIndex++] = vertexIndices[triangle];
+
+                    // for last submesh, we can use single submesh for multi pass reendering
+                    subMeshDescriptors[submeshIndex++] = descriptor;
+                }
+
+                Debug.Assert(subMeshDescriptors.Length == submeshIndex);
+                Debug.Assert(triangles.Length == trianglesIndex);
 
                 destMesh.indexFormat = Vertices.Count <= ushort.MaxValue ? IndexFormat.UInt16 : IndexFormat.UInt32;
                 destMesh.triangles = triangles;
-                destMesh.subMeshCount = SubMeshes.Count;
-                for (var i = 0; i < SubMeshes.Count; i++)
+                destMesh.subMeshCount = submeshIndex;
+                for (var i = 0; i < subMeshDescriptors.Length; i++)
                     destMesh.SetSubMesh(i, subMeshDescriptors[i]);
             }
+            Profiler.EndSample();
 
             // BoneWeights
             if (Vertices.Any(x => x.BoneWeights.Count != 0)){
+                Profiler.BeginSample("BoneWeights");
                 var boneIndices = new Dictionary<Bone, int>();
                 for (var i = 0; i < Bones.Count; i++)
                     boneIndices.Add(Bones[i], i);
@@ -440,11 +589,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 }
 
                 destMesh.SetBoneWeights(bonesPerVertex, allBoneWeights);
+                Profiler.EndSample();
             }
 
             // BlendShapes
             if (BlendShapes.Count != 0)
             {
+                Profiler.BeginSample("BlendShapes");
                 for (var i = 0; i < BlendShapes.Count; i++)
                 {
                     Debug.Assert(destMesh.blendShapeCount == i, "Unexpected state: blend shape count");
@@ -484,10 +635,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                         destMesh.AddBlendShapeFrame(shapeName, weight, positions, normals, tangents);
                     }
                 }
+                Profiler.EndSample();
             }
+            Profiler.EndSample();
         }
 
-        public void WriteToSkinnedMeshRenderer(SkinnedMeshRenderer targetRenderer, OptimizerSession session)
+        public void WriteToSkinnedMeshRenderer(SkinnedMeshRenderer targetRenderer)
         {
             BuildReport.ReportingObject(targetRenderer, () =>
             {
@@ -497,12 +650,24 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 targetRenderer.sharedMesh = mesh;
                 for (var i = 0; i < BlendShapes.Count; i++)
                     targetRenderer.SetBlendShapeWeight(i, BlendShapes[i].weight);
-                targetRenderer.sharedMaterials = SubMeshes.Select(x => x.SharedMaterial).ToArray();
+                targetRenderer.sharedMaterials = SubMeshes.SelectMany(x => x.SharedMaterials).ToArray();
                 targetRenderer.bones = Bones.Select(x => x.Transform).ToArray();
 
                 targetRenderer.rootBone = RootBone;
                 if (Bounds != default)
                     targetRenderer.localBounds = Bounds;
+            });
+        }
+
+        public void WriteToMeshRenderer(MeshRenderer targetRenderer)
+        {
+            BuildReport.ReportingObject(targetRenderer, () =>
+            {
+                var mesh = new Mesh { name = $"AAOGeneratedMesh{targetRenderer.name}" };
+                var meshFilter = targetRenderer.GetComponent<MeshFilter>();
+                WriteToMesh(mesh);
+                meshFilter.sharedMesh = mesh;
+                targetRenderer.sharedMaterials = SubMeshes.SelectMany(x => x.SharedMaterials).ToArray();
             });
         }
     }
@@ -511,7 +676,14 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
     {
         // size of this must be 3 * n
         public readonly List<Vertex> Triangles = new List<Vertex>();
-        public Material SharedMaterial;
+
+        public Material SharedMaterial
+        {
+            get => SharedMaterials[0];
+            set => SharedMaterials[0] = value;
+        }
+
+        public Material[] SharedMaterials = { null };
 
         public SubMesh()
         {

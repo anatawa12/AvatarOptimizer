@@ -1,0 +1,455 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Anatawa12.AvatarOptimizer.API;
+using UnityEngine;
+using UnityEngine.Animations;
+using UnityEngine.Rendering;
+
+namespace Anatawa12.AvatarOptimizer.APIInternal
+{
+    [ComponentInformation(typeof(Light))]
+    [ComponentInformation(typeof(Camera))]
+    [ComponentInformation(typeof(Animation))]
+    [ComponentInformation(typeof(AudioSource))]
+    [ComponentInformation(typeof(nadena.dev.ndmf.runtime.AvatarActivator))]
+    // nadena.dev.ndmf.VRChat.ContextHolder with reflection
+    internal class EntrypointComponentInformation : ComponentInformation<Component>
+    {
+        protected override void CollectDependency(Component component, ComponentDependencyCollector collector)
+        {
+            collector.MarkEntrypoint();
+        }
+    }
+
+    [ComponentInformation(typeof(Transform))]
+    internal class TransformInformation : ComponentInformation<Transform>
+    {
+        protected override void CollectDependency(Transform component, ComponentDependencyCollector collector)
+        {
+            var casted = (Processors.TraceAndOptimizes.ComponentDependencyCollector.Collector)collector;
+            casted.AddParentDependency(component);
+            // For compatibility with UnusedBonesByReferenceTool
+            // https://github.com/anatawa12/AvatarOptimizer/issues/429
+            if (casted.PreserveEndBone &&
+                component.name.EndsWith("end", StringComparison.OrdinalIgnoreCase))
+            {
+                collector.AddDependency(component.parent, component).EvenIfDependantDisabled();
+            }
+        }
+    }
+
+    [ComponentInformation(typeof(Animator))]
+    internal class AnimatorInformation : ComponentInformation<Animator>
+    {
+        // Animator does not do much for motion, just changes states of other components.
+        // All State / Motion Changes are collected separately
+        protected override void CollectDependency(Animator component, ComponentDependencyCollector collector)
+        {
+            collector.MarkEntrypoint();
+
+            for (var bone = HumanBodyBones.Hips; bone < HumanBodyBones.LastBone; bone++)
+            {
+                var boneTransform = component.GetBoneTransform(bone);
+                foreach (var transform in boneTransform.ParentEnumerable())
+                {
+                    if (transform == component.transform) break;
+                    collector.AddDependency(transform);
+                }
+            }
+        }
+    }
+
+    internal class RendererInformation<T> : ComponentInformation<T> where T : Renderer
+    {
+        protected override void CollectDependency(T component, ComponentDependencyCollector collector)
+        {
+            collector.MarkEntrypoint();
+            // anchor proves
+            if (component.reflectionProbeUsage != ReflectionProbeUsage.Off ||
+                component.lightProbeUsage != LightProbeUsage.Off)
+                collector.AddDependency(component.probeAnchor);
+            if (component.lightProbeUsage == LightProbeUsage.UseProxyVolume)
+                collector.AddDependency(component.lightProbeProxyVolumeOverride.transform);
+        }
+    }
+
+    [ComponentInformation(typeof(SkinnedMeshRenderer))]
+    internal class SkinnedMeshRendererInformation : RendererInformation<SkinnedMeshRenderer>
+    {
+        protected override void CollectDependency(SkinnedMeshRenderer component,
+            ComponentDependencyCollector collector)
+        {
+            base.CollectDependency(component, collector);
+
+            var casted = (Processors.TraceAndOptimizes.ComponentDependencyCollector.Collector)collector;
+
+            var meshInfo2 = casted.GetMeshInfoFor(component);
+            foreach (var bone in meshInfo2.Bones)
+                casted.AddBoneDependency(bone.Transform);
+            collector.AddDependency(meshInfo2.RootBone);
+        }
+    }
+
+    [ComponentInformation(typeof(MeshRenderer))]
+    internal class MeshRendererInformation : RendererInformation<MeshRenderer>
+    {
+        protected override void CollectDependency(MeshRenderer component, ComponentDependencyCollector collector)
+        {
+            base.CollectDependency(component, collector);
+            collector.AddDependency(component.GetComponent<MeshFilter>());
+        }
+    }
+
+    [ComponentInformation(typeof(MeshFilter))]
+    internal class MeshFilterInformation : ComponentInformation<MeshFilter>
+    {
+        protected override void CollectDependency(MeshFilter component, ComponentDependencyCollector collector)
+        {
+        }
+    }
+
+    [ComponentInformation(typeof(ParticleSystem))]
+    internal class ParticleSystemInformation : ComponentInformation<ParticleSystem>
+    {
+        protected override void CollectDependency(ParticleSystem component, ComponentDependencyCollector collector)
+        {
+            collector.MarkEntrypoint();
+
+            if (component.main.simulationSpace == ParticleSystemSimulationSpace.Custom)
+                collector.AddDependency(component.main.customSimulationSpace);
+            if (component.shape.enabled)
+            {
+                switch (component.shape.shapeType)
+                {
+                    case ParticleSystemShapeType.MeshRenderer:
+                        collector.AddDependency(component.shape.meshRenderer);
+                        break;
+                    case ParticleSystemShapeType.SkinnedMeshRenderer:
+                        collector.AddDependency(component.shape.skinnedMeshRenderer);
+                        break;
+                    case ParticleSystemShapeType.SpriteRenderer:
+                        collector.AddDependency(component.shape.spriteRenderer);
+                        break;
+#pragma warning disable CS0618
+                    case ParticleSystemShapeType.Sphere:
+                    case ParticleSystemShapeType.SphereShell:
+                    case ParticleSystemShapeType.Hemisphere:
+                    case ParticleSystemShapeType.HemisphereShell:
+                    case ParticleSystemShapeType.Cone:
+                    case ParticleSystemShapeType.Box:
+                    case ParticleSystemShapeType.Mesh:
+                    case ParticleSystemShapeType.ConeShell:
+                    case ParticleSystemShapeType.ConeVolume:
+                    case ParticleSystemShapeType.ConeVolumeShell:
+                    case ParticleSystemShapeType.Circle:
+                    case ParticleSystemShapeType.CircleEdge:
+                    case ParticleSystemShapeType.SingleSidedEdge:
+                    case ParticleSystemShapeType.BoxShell:
+                    case ParticleSystemShapeType.BoxEdge:
+                    case ParticleSystemShapeType.Donut:
+                    case ParticleSystemShapeType.Rectangle:
+                    case ParticleSystemShapeType.Sprite:
+                    default:
+#pragma warning restore CS0618
+                        break;
+                }
+            }
+
+            if (component.collision.enabled)
+            {
+                switch (component.collision.type)
+                {
+                    case ParticleSystemCollisionType.Planes:
+#if UNITY_2020_2_OR_NEWER
+                        for (var i = 0; i < component.collision.planeCount; i++)
+#else
+                        for (var i = 0; i < component.collision.maxPlaneCount; i++)
+#endif
+                            collector.AddDependency(component.collision.GetPlane(i));
+                        break;
+                    case ParticleSystemCollisionType.World:
+                    default:
+                        break;
+                }
+            }
+
+            if (component.trigger.enabled)
+            {
+#if UNITY_2020_2_OR_NEWER
+                for (var i = 0; i < component.trigger.colliderCount; i++)
+#else
+                for (var i = 0; i < component.trigger.maxColliderCount; i++)
+#endif
+                    collector.AddDependency(component.trigger.GetCollider(i));
+            }
+
+            if (component.subEmitters.enabled)
+            {
+                for (var i = 0; i < component.subEmitters.subEmittersCount; i++)
+                    collector.AddDependency(component.subEmitters.GetSubEmitterSystem(i));
+            }
+
+            if (component.lights.enabled)
+            {
+                collector.AddDependency(component.lights.light);
+            }
+
+            collector.AddDependency(component.GetComponent<ParticleSystemRenderer>()).EvenIfDependantDisabled();
+        }
+    }
+
+    [ComponentInformation(typeof(ParticleSystemRenderer))]
+    internal class ParticleSystemRendererInformation : RendererInformation<ParticleSystemRenderer>
+    {
+        protected override void CollectDependency(ParticleSystemRenderer component,
+            ComponentDependencyCollector collector)
+        {
+            base.CollectDependency(component, collector);
+            collector.AddDependency(component.GetComponent<ParticleSystem>()).EvenIfDependantDisabled();
+        }
+    }
+
+    [ComponentInformation(typeof(TrailRenderer))]
+    internal class TrailRendererInformation : RendererInformation<TrailRenderer>
+    {
+    }
+
+    [ComponentInformation(typeof(LineRenderer))]
+    internal class LineRendererInformation : RendererInformation<LineRenderer>
+    {
+    }
+
+    [ComponentInformation(typeof(Cloth))]
+    internal class ClothInformation : ComponentInformation<Cloth>
+    {
+        protected override void CollectDependency(Cloth component, ComponentDependencyCollector collector)
+        {
+            // If Cloth is disabled, SMR work as SMR without Cloth
+            // If Cloth is enabled and SMR is disabled, SMR draw nothing.
+            var skinnedMesh = component.GetComponent<SkinnedMeshRenderer>();
+            collector.AddDependency(skinnedMesh, component).EvenIfDependantDisabled();
+            foreach (var collider in component.capsuleColliders)
+                collector.AddDependency(collider);
+            foreach (var collider in component.sphereColliders)
+            {
+                collector.AddDependency(collider.first);
+                collector.AddDependency(collider.second);
+            }
+        }
+    }
+
+    [ComponentInformation(typeof(Collider))]
+    [ComponentInformation(typeof(TerrainCollider))]
+    [ComponentInformation(typeof(BoxCollider))]
+    [ComponentInformation(typeof(SphereCollider))]
+    [ComponentInformation(typeof(MeshCollider))]
+    [ComponentInformation(typeof(CapsuleCollider))]
+    [ComponentInformation(typeof(WheelCollider))]
+    internal class ColliderInformation : ComponentInformation<Collider>
+    {
+        protected override void CollectDependency(Collider component, ComponentDependencyCollector collector)
+        {
+            collector.MarkEntrypoint();
+            var rigidbody = component.GetComponentInParent<Rigidbody>();
+            if (rigidbody) collector.AddDependency(rigidbody, component).OnlyIfTargetCanBeEnable();
+        }
+    }
+
+    [ComponentInformation(typeof(Joint))]
+    [ComponentInformation(typeof(CharacterJoint))]
+    [ComponentInformation(typeof(ConfigurableJoint))]
+    [ComponentInformation(typeof(FixedJoint))]
+    [ComponentInformation(typeof(HingeJoint))]
+    [ComponentInformation(typeof(SpringJoint))]
+    internal class JointInformation : ComponentInformation<Joint>
+    {
+        protected override void CollectDependency(Joint component, ComponentDependencyCollector collector)
+        {
+            var rigidBody = component.GetComponent<Rigidbody>();
+            if (rigidBody)
+            {
+                collector.AddDependency(rigidBody, component);
+                collector.AddDependency(rigidBody);
+            }
+            if (component.connectedBody)
+            {
+                collector.AddDependency(component.connectedBody, component);
+                collector.AddDependency(component.connectedBody);
+            }
+        }
+    }
+
+    [ComponentInformation(typeof(Rigidbody))]
+    internal class RigidbodyInformation : ComponentInformation<Rigidbody>
+    {
+        protected override void CollectDependency(Rigidbody component, ComponentDependencyCollector collector)
+        {
+            collector.AddDependency(component.transform, component).EvenIfDependantDisabled().OnlyIfTargetCanBeEnable();
+        }
+
+        protected override void CollectMutations(Rigidbody component, ComponentMutationsCollector collector)
+        {
+            collector.TransformPositionAndRotation(component.transform);
+        }
+    }
+
+    [ComponentInformation(typeof(FlareLayer))]
+    internal class FlareLayerInformation : ComponentInformation<FlareLayer>
+    {
+        protected override void CollectDependency(FlareLayer component, ComponentDependencyCollector collector)
+        {
+            collector.AddDependency(component.GetComponent<Camera>(), component);
+        }
+    }
+
+    internal class ConstraintInformation<T> : ComponentInformation<T> where T : Component, IConstraint
+    {
+        protected override void CollectDependency(T component, ComponentDependencyCollector collector)
+        {
+            collector.AddDependency(component.transform, component)
+                .OnlyIfTargetCanBeEnable()
+                .EvenIfDependantDisabled();
+            for (var i = 0; i < component.sourceCount; i++)
+                collector.AddDependency(component.GetSource(i).sourceTransform);
+            collector.MarkHeavyBehaviour();
+        }
+    }
+
+    [ComponentInformation(typeof(AimConstraint))]
+    internal class AimConstraintInformation : ConstraintInformation<AimConstraint>
+    {
+        protected override void CollectDependency(AimConstraint component, ComponentDependencyCollector collector)
+        {
+            base.CollectDependency(component, collector);
+            collector.AddDependency(component.worldUpObject);
+        }
+
+        protected override void CollectMutations(AimConstraint component, ComponentMutationsCollector collector)
+        {
+            collector.TransformRotation(component.transform);
+        }
+    }
+
+    [ComponentInformation(typeof(LookAtConstraint))]
+    internal class LookAtConstraintInformation : ConstraintInformation<LookAtConstraint>
+    {
+        protected override void CollectDependency(LookAtConstraint component, ComponentDependencyCollector collector)
+        {
+            base.CollectDependency(component, collector);
+            collector.AddDependency(component.worldUpObject);
+        }
+
+        protected override void CollectMutations(LookAtConstraint component, ComponentMutationsCollector collector)
+        {
+            collector.TransformRotation(component.transform);
+        }
+    }
+
+    [ComponentInformation(typeof(ParentConstraint))]
+    internal class ParentConstraintInformation : ConstraintInformation<ParentConstraint>
+    {
+        protected override void CollectMutations(ParentConstraint component, ComponentMutationsCollector collector)
+        {
+            collector.TransformPositionAndRotation(component.transform);
+        }
+    }
+
+    [ComponentInformation(typeof(RotationConstraint))]
+    internal class RotationConstraintInformation : ConstraintInformation<RotationConstraint>
+    {
+        protected override void CollectMutations(RotationConstraint component, ComponentMutationsCollector collector)
+        {
+            collector.TransformRotation(component.transform);
+        }
+    }
+
+    [ComponentInformation(typeof(PositionConstraint))]
+    internal class PositionConstraintInformation : ConstraintInformation<PositionConstraint>
+    {
+        protected override void CollectMutations(PositionConstraint component, ComponentMutationsCollector collector)
+        {
+            collector.TransformPosition(component.transform);
+        }
+    }
+
+    [ComponentInformation(typeof(ScaleConstraint))]
+    internal class ScaleConstraintInformation : ConstraintInformation<ScaleConstraint>
+    {
+        protected override void CollectMutations(ScaleConstraint component, ComponentMutationsCollector collector)
+        {
+            collector.TransformScale(component.transform);
+        }
+    }
+
+    [ComponentInformation(typeof(RemoveMeshByBlendShape))]
+    internal class RemoveMeshByBlendShapeInformation : ComponentInformation<RemoveMeshByBlendShape>
+    {
+        protected override void CollectDependency(RemoveMeshByBlendShape component, ComponentDependencyCollector collector)
+        {
+        }
+
+        protected override void CollectMutations(RemoveMeshByBlendShape component, ComponentMutationsCollector collector)
+        {
+            var blendShapes = component.RemovingShapeKeys;
+            {
+                collector.ModifyProperties(component.GetComponent<SkinnedMeshRenderer>(),
+                    blendShapes.Select(blendShape => $"blendShape.{blendShape}"));
+            }
+
+            DeriveMergeSkinnedMeshProperties(component.GetComponent<MergeSkinnedMesh>());
+
+            void DeriveMergeSkinnedMeshProperties(MergeSkinnedMesh mergeSkinnedMesh)
+            {
+                if (mergeSkinnedMesh == null) return;
+
+                foreach (var renderer in mergeSkinnedMesh.renderersSet.GetAsSet())
+                {
+                    collector.ModifyProperties(renderer, blendShapes.Select(blendShape => $"blendShape.{blendShape}"));
+
+                    DeriveMergeSkinnedMeshProperties(renderer.GetComponent<MergeSkinnedMesh>());
+                }
+            }
+        }
+    }
+    
+    [ComponentInformation(typeof(MergeBone))]
+    internal class MergeBoneInformation : ComponentInformation<MergeBone>
+    {
+        protected override void CollectDependency(MergeBone component, ComponentDependencyCollector collector)
+        {
+            collector.AddDependency(component.transform, component)
+                .EvenIfDependantDisabled();
+        }
+
+        protected override void CollectMutations(MergeBone component, ComponentMutationsCollector collector)
+        {
+        }
+    }
+
+    internal static class ComponentInformationExtensions
+    {
+        public static void TransformPositionAndRotation(this ComponentMutationsCollector collector,
+            Transform transform) =>
+            collector.ModifyProperties(transform,
+                TransformPositionAnimationKeys.Concat(TransformRotationAnimationKeys));
+
+        public static void TransformRotation(this ComponentMutationsCollector collector, Transform transform) =>
+            collector.ModifyProperties(transform, TransformRotationAnimationKeys);
+
+        public static void TransformPosition(this ComponentMutationsCollector collector, Transform transform) =>
+            collector.ModifyProperties(transform, TransformPositionAnimationKeys);
+
+        public static void TransformScale(this ComponentMutationsCollector collector, Transform transform) =>
+            collector.ModifyProperties(transform, TransformScaleAnimationKeys);
+
+        private static readonly string[] TransformRotationAnimationKeys =
+            { "m_LocalRotation.x", "m_LocalRotation.y", "m_LocalRotation.z", "m_LocalRotation.w" };
+
+        private static readonly string[] TransformPositionAnimationKeys =
+            { "m_LocalPosition.x", "m_LocalPosition.y", "m_LocalPosition.z" };
+
+        private static readonly string[] TransformScaleAnimationKeys =
+            { "m_LocalScale.x", "m_LocalScale.y", "m_LocalScale.z" };
+    }
+}

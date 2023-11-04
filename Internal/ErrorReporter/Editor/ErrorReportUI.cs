@@ -139,7 +139,7 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
 
             if (Selection.gameObjects.Length == 1)
             {
-                activeAvatarObject = Utils.FindAvatarInParents(Selection.activeGameObject.transform)?.gameObject;
+                activeAvatarObject = Utils.FindAvatarTransformInParents(Selection.activeGameObject.transform)?.gameObject;
                 if (activeAvatarObject != null)
                 {
                     var foundAvatarPath = Utils.RelativePath(null, activeAvatarObject);

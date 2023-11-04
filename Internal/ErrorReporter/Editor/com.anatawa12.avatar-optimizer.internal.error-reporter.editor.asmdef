@@ -1,11 +1,11 @@
 {
     "name": "com.anatawa12.avatar-optimizer.internal.error-reporter.editor",
     "references": [
-        "GUID:8d9ff9f975de4bf0b86c6cc50332d028",
-        "GUID:295ffbe0b63504ae3a7879cf089501ba",
-        "GUID:8264e72376854221affe9980c91c2fff",
-        "GUID:b23bdfe8d18741a29e869995d47026d0",
-        "GUID:62ced99b048af7f4d8dfe4bed8373d76"
+        "com.anatawa12.custom-localization-for-editor-extension",
+        "com.anatawa12.custom-localization-for-editor-extension.runtime",
+        "com.anatawa12.avatar-optimizer.internal.error-reporter.runtime",
+        "nadena.dev.ndmf",
+        "nadena.dev.ndmf.runtime"
     ],
     "includePlatforms": [
         "Editor"
@@ -20,6 +20,12 @@
     ],
     "autoReferenced": false,
     "defineConstraints": [],
-    "versionDefines": [],
+    "versionDefines": [
+        {
+            "name": "com.vrchat.avatars",
+            "expression": "",
+            "define": "AAO_VRCSDK3_AVATARS"
+        }
+    ],
     "noEngineReferences": false
 }
