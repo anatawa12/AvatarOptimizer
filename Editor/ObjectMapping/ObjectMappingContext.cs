@@ -368,13 +368,22 @@ namespace Anatawa12.AvatarOptimizer
                         .GroupBy(r => r.Renderer, r => r.FirstPersonFlag)
                         .Select(grouping =>
                         {
+                            UniGLTF.Extensions.VRMC_vrm.FirstPersonType mergedFirstPersonFlag;
                             var firstPersonFlags = grouping.Distinct().ToArray();
+                            if (firstPersonFlags.Length == 1)
+                            {
+                                mergedFirstPersonFlag = firstPersonFlags[0];
+                            }
+                            else
+                            {
+                                mergedFirstPersonFlag = firstPersonFlags.Contains(UniGLTF.Extensions.VRMC_vrm.FirstPersonType.both) ? UniGLTF.Extensions.VRMC_vrm.FirstPersonType.both : UniGLTF.Extensions.VRMC_vrm.FirstPersonType.auto;
+                                BuildReport.LogWarning("MergeSkinnedMesh:warning:VRM:FirstPersonFlagsMismatch", mergedFirstPersonFlag.ToString());
+                            }
+
                             return new UniVRM10.RendererFirstPersonFlags
                             {
                                 Renderer = grouping.Key,
-                                FirstPersonFlag = firstPersonFlags.Length == 1 ? firstPersonFlags[0] :
-                                    firstPersonFlags.Contains(UniGLTF.Extensions.VRMC_vrm.FirstPersonType.both) ? UniGLTF.Extensions.VRMC_vrm.FirstPersonType.both :
-                                    UniGLTF.Extensions.VRMC_vrm.FirstPersonType.auto
+                                FirstPersonFlag = mergedFirstPersonFlag
                             };
                         }).ToList();
 

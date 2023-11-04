@@ -2,6 +2,7 @@
 
 using System.Linq;
 using Anatawa12.AvatarOptimizer.API;
+using Anatawa12.AvatarOptimizer.ErrorReporting;
 using UnityEngine;
 using VRM;
 
@@ -133,13 +134,22 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
                 .GroupBy(r => r.Renderer, r => r.FirstPersonFlag)
                 .Select(grouping =>
                 {
+                    FirstPersonFlag mergedFirstPersonFlag;
                     var firstPersonFlags = grouping.Distinct().ToArray();
+                    if (firstPersonFlags.Length == 1)
+                    {
+                        mergedFirstPersonFlag = firstPersonFlags[0];
+                    }
+                    else
+                    {
+                        mergedFirstPersonFlag = firstPersonFlags.Contains(FirstPersonFlag.Both) ? FirstPersonFlag.Both : FirstPersonFlag.Auto;
+                        BuildReport.LogWarning("MergeSkinnedMesh:warning:VRM:FirstPersonFlagsMismatch", mergedFirstPersonFlag.ToString());
+                    }
+
                     return new VRMFirstPerson.RendererFirstPersonFlags
                     {
                         Renderer = grouping.Key,
-                        FirstPersonFlag = firstPersonFlags.Length == 1 ? firstPersonFlags[0] :
-                            firstPersonFlags.Contains(FirstPersonFlag.Both) ? FirstPersonFlag.Both :
-                            FirstPersonFlag.Auto
+                        FirstPersonFlag = mergedFirstPersonFlag
                     };
                 }).ToList();
         }

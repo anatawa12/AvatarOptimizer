@@ -183,6 +183,11 @@ msgstr ""
 "統合対象のSkinnedMeshRenderer間でBlendShape '{0}'の値が揃っていません。\n"
 "どの値を適用するかが不定になってしまうため、統合対象の同名BlendShapeの値は揃えるか固定・除去してください。"
 
+msgid "MergeSkinnedMesh:warning:VRM:FirstPersonFlagsMismatch"
+msgstr ""
+"統合対象のRenderer間でFirstPersonFlagsの値が揃っていなかったため、'{0}'に統合されました。\n"
+"MergeSkinnedMeshで統合されるRendererのFirstPersonFlagsの値は揃えることを推奨します。"
+
 msgid "MergeSkinnedMesh:warning:MeshIsNotNone"
 msgstr ""
 "SkinnedMeshRendererのMeshがNoneではありません!\n"
