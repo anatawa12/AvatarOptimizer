@@ -676,7 +676,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         {
             get
             {
-                Assert.AreEqual(MeshTopology.Triangles, Topology);
+                Debug.Assert(Topology == MeshTopology.Triangles);
                 return Vertices;
             }
         }
