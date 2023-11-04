@@ -249,6 +249,10 @@ namespace Anatawa12.AvatarOptimizer.API
         /// Maps animation property name to component and MappedPropertyInfo.
         /// If the property is not removed, returns true and <paramref name="found"/> is set.
         /// If the property is removed, returns false and <paramref name="found"/> will be default.
+        ///
+        /// To get mapped property probably, you must register the property as modified property by
+        /// <see cref="ComponentMutationsCollector.ModifyProperties(UnityEngine.Component,System.Collections.Generic.IEnumerable{string})"/>.
+        /// Unless that, renaming or moving the property may not be tracked by Avatar Optimizer.
         /// </summary>
         /// <param name="property">The name of property will be mapped</param>
         /// <param name="found">The result parameter</param>
