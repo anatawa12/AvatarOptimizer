@@ -22,6 +22,7 @@ The format is based on [Keep a Changelog].
 - Improved Behaviour with multi-material multi pass rendering `#662`
   - Previously, multi-material multi pass rendering are flattened.
   - Since 1.6, flattened if component doesn't support that.
+- When you're animating activeness/enablement of source renderers, warning is shown since this release `#675`
 
 ### Deprecated
 

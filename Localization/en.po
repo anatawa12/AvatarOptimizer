@@ -285,6 +285,11 @@ msgstr ""
 msgid "MergeSkinnedMesh:warning:removeZeroSizedPolygonOnSources"
 msgstr "Since Remove Zero Sized Polygons are processed later, it has no effects if it is added with the source Skinned Mesh Renderers."
 
+msgid "MergeSkinnedMesh:warning:animation-mesh-hide"
+msgstr ""
+"You're merging meshes that visibility animated differently than the merged mesh."
+"The animation will not work. This might not be intended, but if it's intended, ignore this warning."
+
 # endregion
 
 # region MergeToonLitMaterial

@@ -68,23 +68,14 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             {
                 // collect (skinned) mesh renderers who doesn't have normal
                 // to show the list on the error reporting
-                var meshes = new Renderer[meshInfos.Length];
-                for (var i = 0; i < skinnedMeshRenderers.Count; i++)
-                    meshes[i] = skinnedMeshRenderers[i];
-                for (var i = 0; i < staticMeshRenderers.Count; i++)
-                    meshes[i + skinnedMeshRenderers.Count] = staticMeshRenderers[i];
-
-                var meshesWithoutNormals = new List<Renderer>();
-                for (var i = 0; i < meshInfos.Length; i++)
-                {
-                    var meshInfo2 = meshInfos[i];
-                    if (meshInfo2.Vertices.Count != 0 && !meshInfo2.HasNormals)
-                        meshesWithoutNormals.Add(meshes[i]);
-                }
-                // ReSharper disable once CoVariantArrayConversion
                 BuildReport.LogFatal("MergeSkinnedMesh:error:mix-normal-existence")
-                    ?.WithContext((object[])meshesWithoutNormals.ToArray());
+                    ?.WithContext((
+                        from meshInfo2 in meshInfos
+                        where meshInfo2.Vertices.Count != 0 && !meshInfo2.HasNormals
+                        select (object)meshInfo2.SourceRenderer
+                    ).ToArray());
             }
+
             Profiler.EndSample();
 
             Profiler.BeginSample("Merge Material Indices");
@@ -202,6 +193,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             var boneTransforms = new HashSet<Transform>(target.Bones.Select(x => x.Transform));
 
+            var parents = new HashSet<Transform>(Target.transform.ParentEnumerable(context.AvatarRootTransform, includeMe: true));
+
             Profiler.BeginSample("Postprocess Source Renderers");
             foreach (var renderer in SkinnedMeshRenderers)
             {
@@ -212,6 +205,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 // property for original mesh in animation.
                 // This invalidation doesn't affect to m_Enabled property of merged mesh.
                 context.RecordRemoveProperty(renderer, "m_Enabled");
+
+                ActivenessAnimationWarning(renderer, context, parents);
+
                 context.RecordMergeComponent(renderer, Target);
                 var rendererGameObject = renderer.gameObject;
                 var toDestroy = renderer.GetComponent<RemoveZeroSizedPolygon>();
@@ -237,6 +233,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             foreach (var renderer in StaticMeshRenderers)
             {
+                ActivenessAnimationWarning(renderer, context, parents);
                 Object.DestroyImmediate(renderer.GetComponent<MeshFilter>());
                 Object.DestroyImmediate(renderer);
             }
@@ -260,6 +257,32 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 Profiler.EndSample();
             }
 #endif
+        }
+
+        private void ActivenessAnimationWarning(Renderer renderer, BuildContext context, HashSet<Transform> parents)
+        {
+            ErrorLog log = null;
+
+            // Warn if the source mesh can be hidden differently than merged by animation.
+            {
+                if (context.GetAnimationComponent(renderer).TryGetFloat("m_Enabled", out var p))
+                {
+                    log = log ?? BuildReport.LogWarning("MergeSkinnedMesh:warning:animation-mesh-hide")
+                        ?.WithContext(renderer);
+                    log?.WithContext(p.Sources);
+                }
+            }
+            foreach (var transform in renderer.transform.ParentEnumerable(context.AvatarRootTransform, includeMe: true))
+            {
+                if (parents.Contains(transform)) break;
+                if (context.GetAnimationComponent(transform.gameObject).TryGetFloat("m_IsActive", out var p))
+                {
+                    log = log ?? BuildReport.LogWarning("MergeSkinnedMesh:warning:animation-mesh-hide")
+                        ?.WithContext(renderer);
+                    log?.WithContext(transform.gameObject);
+                    log?.WithContext(p.Sources);
+                }
+            }
         }
 
         private (int[][] mapping, List<(MeshTopology topology, Material material)> materials)

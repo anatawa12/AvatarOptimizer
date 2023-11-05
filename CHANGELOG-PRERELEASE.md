@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog].
 - Support for Mesh Topologies other than Triangles `#692`
 
 ### Changed
+- When you're animating activeness/enablement of source renderers, warning is shown since this release `#675`
 
 ### Deprecated
 
