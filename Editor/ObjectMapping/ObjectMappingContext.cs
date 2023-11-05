@@ -256,17 +256,21 @@ namespace Anatawa12.AvatarOptimizer
                 var newBlendShapeClip = DefaultDeepClone(blendShapeClip, CustomClone);
                 newBlendShapeClip.Prefab = null; // This likely to point prefab before mapping, which is invalid by now
                 newBlendShapeClip.name = "rebased " + blendShapeClip.name;
-                newBlendShapeClip.Values = newBlendShapeClip.Values.Select(binding =>
+                newBlendShapeClip.Values = newBlendShapeClip.Values.SelectMany(binding =>
                 {
-                    var propertyName = VProp.BlendShapeIndex(binding.Index);
-                    var mappedPropertyName = _mapping.MapPropertyName(binding.RelativePath, propertyName, typeof(SkinnedMeshRenderer));
-                    _mapped = true;
-                    return new VRM.BlendShapeBinding
+                    var mappedBinding = _mapping.MapBinding((binding.RelativePath, typeof(SkinnedMeshRenderer), VProp.BlendShapeIndex(binding.Index)));
+                    if (mappedBinding == null)
                     {
-                        RelativePath = _mapping.MapPath(binding.RelativePath, typeof(SkinnedMeshRenderer)),
-                        Index = VProp.ParseBlendShapeIndex(mappedPropertyName),
-                        Weight = binding.Weight
-                    };
+                        return new[] { binding };
+                    }
+                    _mapped = true;
+                    return mappedBinding
+                        .Select(mapped => new VRM.BlendShapeBinding
+                        {
+                            RelativePath = _mapping.MapPath(mapped.path, typeof(SkinnedMeshRenderer)),
+                            Index = VProp.ParseBlendShapeIndex(mapped.propertyName),
+                            Weight = binding.Weight
+                        });
                 }).ToArray(); 
                 return newBlendShapeClip;
             }
@@ -277,17 +281,21 @@ namespace Anatawa12.AvatarOptimizer
                 var newVrm10Expression = DefaultDeepClone(vrm10Expression, CustomClone);
                 newVrm10Expression.Prefab = null; // This likely to point prefab before mapping, which is invalid by now
                 newVrm10Expression.name = "rebased " + vrm10Expression.name;
-                newVrm10Expression.MorphTargetBindings = newVrm10Expression.MorphTargetBindings.Select(binding =>
+                newVrm10Expression.MorphTargetBindings = newVrm10Expression.MorphTargetBindings.SelectMany(binding =>
                 {
-                    var propertyName = VProp.BlendShapeIndex(binding.Index);
-                    var mappedPropertyName = _mapping.MapPropertyName(binding.RelativePath, propertyName, typeof(SkinnedMeshRenderer));
-                    _mapped = true;
-                    return new UniVRM10.MorphTargetBinding
+                    var mappedBinding = _mapping.MapBinding((binding.RelativePath, typeof(SkinnedMeshRenderer), VProp.BlendShapeIndex(binding.Index)));
+                    if (mappedBinding == null)
                     {
-                        RelativePath = _mapping.MapPath(binding.RelativePath, typeof(SkinnedMeshRenderer)),
-                        Index = VProp.ParseBlendShapeIndex(mappedPropertyName),
-                        Weight = binding.Weight
-                    };
+                        return new[] { binding };
+                    }
+                    _mapped = true;
+                    return mappedBinding
+                        .Select(mapped => new UniVRM10.MorphTargetBinding
+                        {
+                            RelativePath = _mapping.MapPath(mapped.path, typeof(SkinnedMeshRenderer)),
+                            Index = VProp.ParseBlendShapeIndex(mapped.propertyName),
+                            Weight = binding.Weight
+                        });
                 }).ToArray(); 
                 return newVrm10Expression;
             }
