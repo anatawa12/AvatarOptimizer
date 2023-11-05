@@ -48,7 +48,7 @@ namespace Anatawa12.AvatarOptimizer.API
             ComponentMutationsCollector collector) =>
             CollectMutations((TComponent)component, collector);
 
-        internal override void ApplySpecialMappingInternal(Component component, MappingSource collector) =>
+        internal sealed override void ApplySpecialMappingInternal(Component component, MappingSource collector) =>
             ApplySpecialMapping((TComponent)component, collector);
 
         /// <summary>

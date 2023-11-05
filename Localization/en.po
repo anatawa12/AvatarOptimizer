@@ -246,6 +246,11 @@ msgstr ""
 "Some weights of BlendShape '{0}' of some source SkinnedMeshRenderer are not same value.\n"
 "In this case, the weight of final SkinnedMeshRenderer is not defined so please make uniform weight or freeze BlendShape."
 
+msgid "MergeSkinnedMesh:warning:VRM:FirstPersonFlagsMismatch"
+msgstr ""
+"Source Renderers had specified mixed FirstPersonFlags values, so fallbacked into '{0}'.\n"
+"It is recommended to set same FirstPersonFlags values for Renderers to be merged by MergeSkinnedMesh.\n"
+
 msgid "MergeSkinnedMesh:warning:MeshIsNotNone"
 msgstr ""
 "Mesh of SkinnedMeshRenderer is not None!\n"

@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog].
 ## [Unreleased]
 ### Added
 - Remove Zero Sized Polygons `#659`
+- Add support for UniVRM components `#653`
 
 ### Changed
 

@@ -174,6 +174,18 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
             if (descriptor)
                 CollectAvatarDescriptorModifications(modificationsContainer, descriptor);
 #endif
+            
+#if AAO_VRM0
+            var blendShapeProxy = session.AvatarRootObject.GetComponent<VRM.VRMBlendShapeProxy>();
+            if (blendShapeProxy)
+                CollectBlendShapeProxyModifications(session, modificationsContainer, blendShapeProxy);
+#endif
+            
+#if AAO_VRM1
+            var vrm10Instance = session.AvatarRootObject.GetComponent<UniVRM10.Vrm10Instance>();
+            if (vrm10Instance)
+                CollectVrm10InstanceModifications(session, modificationsContainer, vrm10Instance);
+#endif
 
             return modificationsContainer;
         }
@@ -353,6 +365,35 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
             if (controller == null)
                 throw new InvalidOperationException($"default controller for {layer.type} not found");
             return controller;
+        }
+#endif
+        
+#if AAO_VRM0
+        private void CollectBlendShapeProxyModifications(BuildContext context, ModificationsContainer modificationsContainer, VRM.VRMBlendShapeProxy vrmBlendShapeProxy)
+        {
+
+            var bindings = vrmBlendShapeProxy.BlendShapeAvatar.Clips.SelectMany(clip => clip.Values);
+            foreach (var binding in bindings)
+            {
+                var skinnedMeshRenderer = context.AvatarRootTransform.Find(binding.RelativePath).GetComponent<SkinnedMeshRenderer>();
+                var blendShapePropName = $"blendShape.{skinnedMeshRenderer.sharedMesh.GetBlendShapeName(binding.Index)}";
+                modificationsContainer.ModifyObject(skinnedMeshRenderer)
+                    .AddModificationAsNewLayer(blendShapePropName, AnimationFloatProperty.Variable(vrmBlendShapeProxy));
+            }
+        }
+#endif
+
+#if AAO_VRM1
+        private void CollectVrm10InstanceModifications(BuildContext context, ModificationsContainer modificationsContainer, UniVRM10.Vrm10Instance vrm10Instance)
+        {
+            var bindings = vrm10Instance.Vrm.Expression.Clips.SelectMany(clip => clip.Clip.MorphTargetBindings);
+            foreach (var binding in bindings)
+            {
+                var skinnedMeshRenderer = context.AvatarRootTransform.Find(binding.RelativePath).GetComponent<SkinnedMeshRenderer>();
+                var blendShapePropName = $"blendShape.{skinnedMeshRenderer.sharedMesh.GetBlendShapeName(binding.Index)}";
+                modificationsContainer.ModifyObject(skinnedMeshRenderer)
+                    .AddModificationAsNewLayer(blendShapePropName, AnimationFloatProperty.Variable(vrm10Instance));
+            }
         }
 #endif
         
