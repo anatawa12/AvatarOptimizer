@@ -44,50 +44,25 @@ namespace Anatawa12.AvatarOptimizer
                     if (mapping.MapComponentInstance(p.objectReferenceInstanceIDValue, out var mappedComponent))
                         p.objectReferenceValue = mappedComponent;
 
-                    switch (p.objectReferenceValue)
+                    var objectReferenceValue = p.objectReferenceValue;
+                    switch (objectReferenceValue)
                     {
-                        case RuntimeAnimatorController controller:
-                        {
-                            if (mapper == null)
-                                mapper = new AnimatorControllerMapper(mapping.CreateAnimationMapper(component.gameObject));
-
-                            // ReSharper disable once AccessToModifiedClosure
-                            var mapped = BuildReport.ReportingObject(controller,
-                                () => mapper.MapObject(controller));
-                            if (mapped != controller)
-                                p.objectReferenceValue = mapped;
-                            break;
-                        }
-
+                        case RuntimeAnimatorController _:
 #if AAO_VRM0
-                        case VRM.BlendShapeAvatar blendShapeAvatar:
-                        {
-                            if (mapper == null)
-                                mapper = new AnimatorControllerMapper(mapping.CreateAnimationMapper(component.gameObject));
-
-                            // ReSharper disable once AccessToModifiedClosure
-                            var mapped = BuildReport.ReportingObject(blendShapeAvatar,
-                                () => mapper.MapObject(blendShapeAvatar));
-                            if (mapped != blendShapeAvatar)
-                                p.objectReferenceValue = mapped;
-                            break;
-                        }
+                        case VRM.BlendShapeAvatar _:
 #endif
-                        
 #if AAO_VRM1
-                        case UniVRM10.VRM10Object vrm10Object:
-                        {
+                        case UniVRM10.VRM10Object _:
+#endif
                             if (mapper == null)
                                 mapper = new AnimatorControllerMapper(mapping.CreateAnimationMapper(component.gameObject));
 
                             // ReSharper disable once AccessToModifiedClosure
-                            var mapped = BuildReport.ReportingObject(vrm10Object,
-                                () => mapper.MapObject(vrm10Object));
-                            if (mapped != vrm10Object)
+                            var mapped = BuildReport.ReportingObject(objectReferenceValue,
+                                () => mapper.MapObject(objectReferenceValue));
+                            if (mapped != objectReferenceValue)
                                 p.objectReferenceValue = mapped;
                             break;
-                        }
-#endif
                     }
                 }
 
