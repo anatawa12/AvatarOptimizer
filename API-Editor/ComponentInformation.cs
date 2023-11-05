@@ -48,7 +48,7 @@ namespace Anatawa12.AvatarOptimizer.API
             ComponentMutationsCollector collector) =>
             CollectMutations((TComponent)component, collector);
 
-        internal override void ApplySpecialMappingInternal(Component component, MappingSource collector) =>
+        internal sealed override void ApplySpecialMappingInternal(Component component, MappingSource collector) =>
             ApplySpecialMapping((TComponent)component, collector);
 
         /// <summary>
@@ -207,23 +207,51 @@ namespace Anatawa12.AvatarOptimizer.API
         {
         }
 
+        /// <summary>
+        /// Registers <paramref name="properties"/> of the <paramref name="component"/> will be changed by current component.
+        /// </summary>
+        /// <param name="component">The component current component will modifies</param>
+        /// <param name="properties">The list of properties current component will modifies</param>
         [PublicAPI]
-        public abstract void ModifyProperties([NotNull] Component component, [NotNull] IEnumerable<string> properties);
+        public abstract void ModifyProperties([NotNull] Component component,
+            [NotNull] [ItemNotNull] IEnumerable<string> properties);
 
+        /// <inheritdoc cref="ModifyProperties(UnityEngine.Component,System.Collections.Generic.IEnumerable{string})"/>
         [PublicAPI]
-        public void ModifyProperties([NotNull] Component component, [NotNull] string[] properties) =>
-            ModifyProperties(component, (IEnumerable<string>) properties);
+        public void ModifyProperties([NotNull] Component component,
+            [NotNull] [ItemNotNull] params string[] properties) =>
+            ModifyProperties(component, (IEnumerable<string>)properties);
     }
 
+    /// <summary>
+    /// The class provides object and property replaced by Avatar Optimizer.
+    ///
+    /// Avatar Optimizer may replaces or merges component to another component.
+    /// This class provide the information about the replacement.
+    /// In addition, Avatar Optimizer may replace or merges some properties of the component.
+    /// This class also provide the information about the property replacement.
+    /// </summary>
     public abstract class MappingSource
     {
         internal MappingSource()
         {
         }
 
+        /// <summary>
+        /// Returns <see cref="MappedComponentInfo{T}"/> about the component instance.
+        /// The instance can be a missing component.
+        /// </summary>
+        /// <param name="component">The component to get information about</param>
+        /// <typeparam name="T">The type of component</typeparam>
         [PublicAPI]
         public abstract MappedComponentInfo<T> GetMappedComponent<T>(T component) where T : Component;
 
+        /// <summary>
+        /// Returns <see cref="MappedComponentInfo{T}"/> about the GameObject instance.
+        /// The instance can be a missing component.
+        /// </summary>
+        /// <param name="component">The component to get information about</param>
+        /// <typeparam name="T">The type of component</typeparam>
         [PublicAPI]
         public abstract MappedComponentInfo<GameObject> GetMappedGameObject(GameObject component);
     }
@@ -237,10 +265,11 @@ namespace Anatawa12.AvatarOptimizer.API
         /// <summary>
         /// The mapped component (or GameObject).
         /// The component may be removed without mapped component.
-        /// If there are not mapped component, this will be null.
+        /// If there are no mapped component, this will be null.
         ///
-        /// Even if the component is removed without mapped component,
-        /// each animation property can be mapped to another component.
+        /// Even if the component is removed without mapped component, some animation property can be mapped
+        /// to a property on another component so you should use <see cref="TryMapProperty"/> if the component is highly related
+        /// to animation property, for example, blendShape related SkinnedMeshRenderer.
         /// </summary>
         [PublicAPI]
         public abstract T MappedComponent { get; }
@@ -249,6 +278,10 @@ namespace Anatawa12.AvatarOptimizer.API
         /// Maps animation property name to component and MappedPropertyInfo.
         /// If the property is not removed, returns true and <paramref name="found"/> is set.
         /// If the property is removed, returns false and <paramref name="found"/> will be default.
+        ///
+        /// To get mapped property probably, you must register the property as modified property by
+        /// <see cref="ComponentMutationsCollector.ModifyProperties(UnityEngine.Component,System.Collections.Generic.IEnumerable{string})"/>.
+        /// Unless that, renaming or moving the property may not be tracked by Avatar Optimizer.
         /// </summary>
         /// <param name="property">The name of property will be mapped</param>
         /// <param name="found">The result parameter</param>
@@ -259,9 +292,15 @@ namespace Anatawa12.AvatarOptimizer.API
 
     public readonly struct MappedPropertyInfo
     {
+        /// <summary>
+        /// The Component or GameObject the property is on.
+        /// </summary>
         [PublicAPI]
         public Object Component { get; }
 
+        /// <summary>
+        /// The name of the mapped property.
+        /// </summary>
         [PublicAPI]
         public string Property { get; }
 

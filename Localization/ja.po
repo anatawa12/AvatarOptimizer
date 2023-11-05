@@ -183,6 +183,11 @@ msgstr ""
 "統合対象のSkinnedMeshRenderer間でBlendShape '{0}'の値が揃っていません。\n"
 "どの値を適用するかが不定になってしまうため、統合対象の同名BlendShapeの値は揃えるか固定・除去してください。"
 
+msgid "MergeSkinnedMesh:warning:VRM:FirstPersonFlagsMismatch"
+msgstr ""
+"統合対象のRenderer間でFirstPersonFlagsの値が揃っていなかったため、'{0}'に統一されました。\n"
+"MergeSkinnedMeshで統合されるRendererのFirstPersonFlagsの値は揃えることを推奨します。"
+
 msgid "MergeSkinnedMesh:warning:MeshIsNotNone"
 msgstr ""
 "SkinnedMeshRendererのMeshがNoneではありません!\n"
@@ -213,6 +218,9 @@ msgid "MergeSkinnedMesh:error:mix-normal-existence"
 msgstr ""
 "法線があるメッシュとないメッシュの両方を1つに統合する操作には対応していません。"
 "法線が含まれるようにモデルのインポート設定を変更してください!"
+
+msgid "MergeSkinnedMesh:warning:removeZeroSizedPolygonOnSources"
+msgstr "Remove Zero Sized Polygonsは遅めに処理されるため、統合対象のメッシュにつけても効果がありません"
 
 # endregion
 
@@ -281,6 +289,13 @@ msgstr "すべて有効にする"
 
 msgid "RemoveMeshByBlendShape:button:Invert All"
 msgstr "すべての有効/無効を入れ替える"
+
+# endregion
+
+# region RemoveZeroSizedPolygon
+
+msgid "RemoveZeroSizedPolygon:description"
+msgstr "面積がゼロのポリゴンを削除します。"
 
 # endregion
 
@@ -367,6 +382,9 @@ msgstr "endボーンを残す"
 msgid "TraceAndOptimize:tooltip:preserveEndBone"
 msgstr "親が削除されていないendボーンを削除しないようにします。"
 
+msgid "TraceAndOptimize:prop:removeZeroSizedPolygons"
+msgstr "面積がゼロのポリゴンを自動的に削除する"
+
 # endregion
 
 #region ApplyObjectMapping
@@ -391,6 +409,9 @@ msgstr ""
 "'{0}'コンポーネントを使用しているメッシュにおいて、複数マテリアルによるマルチパスレンダリングが使用されています。\n"
 "実際の負荷に大きな差はありませんが、パフォーマンスランクにおけるポリゴン数が増えるなどの影響があります。\n"
 "マルチパスレンダリングの使用が意図したものであるかを確認してください。"
+
+msgid "MeshInfo2:warning:lineStrip"
+msgstr "{0}コンポーネントはLineStripが使用されているSubMeshを処理しません。"
 
 #endregion
 

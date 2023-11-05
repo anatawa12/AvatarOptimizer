@@ -1,3 +1,6 @@
+#if AAO_VRCSDK3_AVATARS
+
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using VRC.Dynamics;
@@ -25,5 +28,10 @@ namespace Anatawa12.AvatarOptimizer
                         queue.Enqueue(child);
             }
         }
+
+        // https://creators.vrchat.com/avatars/#proxy-animations
+        public static bool IsProxy(this AnimationClip clip) => clip.name.StartsWith("proxy_", StringComparison.Ordinal);
     }
 }
+
+#endif

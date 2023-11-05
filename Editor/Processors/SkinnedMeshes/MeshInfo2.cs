@@ -124,7 +124,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         public void AssertInvariantContract(string context)
         {
             var vertices = new HashSet<Vertex>(Vertices);
-            Debug.Assert(SubMeshes.SelectMany(x => x.Triangles).All(vertices.Contains),
+            Debug.Assert(SubMeshes.SelectMany(x => x.Vertices).All(vertices.Contains),
                 $"{context}: some SubMesh has invalid triangles");
             var bones = new HashSet<Bone>(Bones);
             Debug.Assert(Vertices.SelectMany(x => x.BoneWeights).Select(x => x.bone).All(bones.Contains),
@@ -336,11 +336,15 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 // ReSharper restore AccessToModifiedClosure
             }
 
-            var triangles = mesh.triangles;
             SubMeshes.Clear();
             SubMeshes.Capacity = Math.Max(SubMeshes.Capacity, mesh.subMeshCount);
+
+            var triangles = new List<int>();
             for (var i = 0; i < mesh.subMeshCount; i++)
+            {
+                mesh.GetIndices(triangles, i);
                 SubMeshes.Add(new SubMesh(Vertices, triangles, mesh.GetSubMesh(i)));
+            }
             Profiler.EndSample();
         }
 
@@ -412,7 +416,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             SubMeshes.Clear();
             foreach (var subMesh in subMeshes)
             foreach (var material in subMesh.SharedMaterials)
-                SubMeshes.Add(new SubMesh(subMesh.Triangles, material));
+                SubMeshes.Add(new SubMesh(subMesh, material));
         }
 
         public void WriteToMesh(Mesh destMesh)
@@ -512,59 +516,50 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 for (var i = 0; i < Vertices.Count; i++)
                     vertexIndices.Add(Vertices[i], i);
 
-                var totalTriangles = 0;
+                var maxIndices = 0;
                 var totalSubMeshes = 0;
                 for (var i = 0; i < SubMeshes.Count - 1; i++)
                 {
+                    maxIndices = Mathf.Max(maxIndices, SubMeshes[i].Vertices.Count);
                     // for non-last submesh, we have to duplicate submesh for multi pass rendering
                     for (var j = 0; j < SubMeshes[i].SharedMaterials.Length; j++)
-                    {
-                        totalTriangles += SubMeshes[i].Triangles.Count;
                         totalSubMeshes++;
-                    }
                 }
                 {
+                    maxIndices = Mathf.Max(maxIndices, SubMeshes[SubMeshes.Count - 1].Vertices.Count);
                     // for last submesh, we can use single submesh for multi pass reendering
-                    totalTriangles += SubMeshes[SubMeshes.Count - 1].Triangles.Count;
                     totalSubMeshes++;
                 }
 
-                var triangles = new int[totalTriangles];
-                var subMeshDescriptors = new SubMeshDescriptor[totalSubMeshes];
-                var trianglesIndex = 0;
+                var indices = new int[maxIndices];
                 var submeshIndex = 0;
+
+                destMesh.indexFormat = Vertices.Count <= ushort.MaxValue ? IndexFormat.UInt16 : IndexFormat.UInt32;
+                destMesh.subMeshCount = totalSubMeshes;
 
                 for (var i = 0; i < SubMeshes.Count - 1; i++)
                 {
                     var subMesh = SubMeshes[i];
-                    var descriptor = new SubMeshDescriptor(trianglesIndex, subMesh.Triangles.Count);
-                    foreach (var triangle in subMesh.Triangles)
-                        triangles[trianglesIndex++] = vertexIndices[triangle];
+
+                    for (var index = 0; index < subMesh.Vertices.Count; index++)
+                        indices[index] = vertexIndices[subMesh.Vertices[index]];
 
                     // general case: for non-last submesh, we have to duplicate submesh for multi pass rendering
                     for (var j = 0; j < subMesh.SharedMaterials.Length; j++)
-                        subMeshDescriptors[submeshIndex++] = descriptor;
+                        destMesh.SetIndices(indices, 0, subMesh.Vertices.Count, subMesh.Topology, submeshIndex++);
                 }
 
                 {
                     var subMesh = SubMeshes[SubMeshes.Count - 1];
 
-                    var descriptor = new SubMeshDescriptor(trianglesIndex, subMesh.Triangles.Count);
-                    foreach (var triangle in subMesh.Triangles)
-                        triangles[trianglesIndex++] = vertexIndices[triangle];
+                    for (var index = 0; index < subMesh.Vertices.Count; index++)
+                        indices[index] = vertexIndices[subMesh.Vertices[index]];
 
                     // for last submesh, we can use single submesh for multi pass reendering
-                    subMeshDescriptors[submeshIndex++] = descriptor;
+                    destMesh.SetIndices(indices, 0, subMesh.Vertices.Count, subMesh.Topology, submeshIndex++);
                 }
 
-                Debug.Assert(subMeshDescriptors.Length == submeshIndex);
-                Debug.Assert(triangles.Length == trianglesIndex);
-
-                destMesh.indexFormat = Vertices.Count <= ushort.MaxValue ? IndexFormat.UInt16 : IndexFormat.UInt32;
-                destMesh.triangles = triangles;
-                destMesh.subMeshCount = submeshIndex;
-                for (var i = 0; i < subMeshDescriptors.Length; i++)
-                    destMesh.SetSubMesh(i, subMeshDescriptors[i]);
+                Debug.Assert(totalSubMeshes == submeshIndex);
             }
             Profiler.EndSample();
 
@@ -674,8 +669,19 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
     internal class SubMesh
     {
+        public readonly MeshTopology Topology = MeshTopology.Triangles;
+
         // size of this must be 3 * n
-        public readonly List<Vertex> Triangles = new List<Vertex>();
+        public List<Vertex> Triangles
+        {
+            get
+            {
+                Debug.Assert(Topology == MeshTopology.Triangles);
+                return Vertices;
+            }
+        }
+
+        public List<Vertex> Vertices { get; } = new List<Vertex>();
 
         public Material SharedMaterial
         {
@@ -689,18 +695,73 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         {
         }
 
-        public SubMesh(List<Vertex> vertices) => Triangles = vertices;
+        public SubMesh(List<Vertex> vertices) => Vertices = vertices;
         public SubMesh(List<Vertex> vertices, Material sharedMaterial) => 
-            (Triangles, SharedMaterial) = (vertices, sharedMaterial);
-        public SubMesh(Material sharedMaterial) => 
-            SharedMaterial = sharedMaterial;
+            (Vertices, SharedMaterial) = (vertices, sharedMaterial);
+        public SubMesh(Material sharedMaterial) => SharedMaterial = sharedMaterial;
+        public SubMesh(Material sharedMaterial, MeshTopology topology) =>
+            (SharedMaterial, Topology) = (sharedMaterial, topology);
 
-        public SubMesh(List<Vertex> vertices, ReadOnlySpan<int> triangles, SubMeshDescriptor descriptor)
+        public SubMesh(SubMesh subMesh, Material triangles)
         {
-            Assert.AreEqual(MeshTopology.Triangles, descriptor.topology);
-            Triangles.Capacity = descriptor.indexCount;
-            foreach (var i in triangles.Slice(descriptor.indexStart, descriptor.indexCount))
-                Triangles.Add(vertices[i]);
+            Topology = subMesh.Topology;
+            Vertices = new List<Vertex>(subMesh.Vertices);
+            SharedMaterial = triangles;
+        }
+
+        public SubMesh(List<Vertex> vertices, List<int> triangles, SubMeshDescriptor descriptor)
+        {
+            Topology = descriptor.topology;
+            Vertices.Capacity = descriptor.indexCount;
+            foreach (var i in triangles)
+                Vertices.Add(vertices[i]);
+        }
+
+        public bool TryGetPrimitiveSize(string component, out int primitiveSize)
+        {
+            switch (Topology)
+            {
+                case MeshTopology.Triangles:
+                    primitiveSize = 3;
+                    return true;
+                case MeshTopology.Quads:
+                    primitiveSize = 4;
+                    return true;
+                case MeshTopology.Lines:
+                    primitiveSize = 2;
+                    return true;
+                case MeshTopology.Points:
+                    primitiveSize = 1;
+                    return true;
+                case MeshTopology.LineStrip:
+                    BuildReport.LogWarning("MeshInfo2:warning:lineStrip", component);
+                    primitiveSize = default;
+                    return false;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
+        public void RemovePrimitives(string component, Func<Vertex[], bool> condition)
+        {
+            if (!TryGetPrimitiveSize(component, out var primitiveSize))
+                return;
+            var primitiveBuffer = new Vertex[primitiveSize];
+            int srcI = 0, dstI = 0;
+            for (; srcI < Vertices.Count; srcI += primitiveSize)
+            {
+                for (var i = 0; i < primitiveSize; i++)
+                    primitiveBuffer[i] = Vertices[srcI + i];
+
+                if (condition(primitiveBuffer))
+                    continue;
+
+                // no vertex is in box: 
+                for (var i = 0; i < primitiveSize; i++)
+                    Vertices[dstI + i] = primitiveBuffer[i];
+                dstI += primitiveSize;
+            }
+            Vertices.RemoveRange(dstI, Vertices.Count - dstI);
         }
     }
 

@@ -266,8 +266,17 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
     {
         protected override void CollectDependency(Joint component, ComponentDependencyCollector collector)
         {
-            collector.AddDependency(component.GetComponent<Rigidbody>(), component);
-            collector.AddDependency(component.connectedBody);
+            var rigidBody = component.GetComponent<Rigidbody>();
+            if (rigidBody)
+            {
+                collector.AddDependency(rigidBody, component);
+                collector.AddDependency(rigidBody);
+            }
+            if (component.connectedBody)
+            {
+                collector.AddDependency(component.connectedBody, component);
+                collector.AddDependency(component.connectedBody);
+            }
         }
     }
 
@@ -404,6 +413,19 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
         }
     }
     
+    [ComponentInformation(typeof(RemoveZeroSizedPolygon))]
+    internal class RemoveZeroSizedPolygonInformation : ComponentInformation<RemoveZeroSizedPolygon>
+    {
+        protected override void CollectDependency(RemoveZeroSizedPolygon component, ComponentDependencyCollector collector)
+        {
+            collector.AddDependency(component.GetComponent<SkinnedMeshRenderer>(), component);
+        }
+
+        protected override void CollectMutations(RemoveZeroSizedPolygon component, ComponentMutationsCollector collector)
+        {
+        }
+    }
+
     [ComponentInformation(typeof(MergeBone))]
     internal class MergeBoneInformation : ComponentInformation<MergeBone>
     {

@@ -8,18 +8,20 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Public API for registering component information `#632`
+- Public API for registering component information `#632` `#668`
 - Disabling PhysBone animation based on mesh renderer enabled animation `#640`
   - If you toggles your clothes with simple toggle, PhysBones on the your avatar will also be toggled automatically!
 - Small performance improve `#641`
 - Ability to prevent changing enablement of component `#668`
+- Remove Zero Sized Polygons `#659`
+- Add support for UniVRM components `#653`
+- Support for Mesh Topologies other than Triangles `#692`
 
 ### Changed
 - All logs passed to ErrorReport is now shown on the console log `#643`
 - Improved Behaviour with multi-material multi pass rendering `#662`
   - Previously, multi-material multi pass rendering are flattened.
   - Since 1.6, flattened if component doesn't support that.
-- BREAKING API CHANGES: Behaviour components are renamed to HeavyBehaviour `#668`
 - When you're animating activeness/enablement of source renderers, warning is shown since this release `#675`
 
 ### Deprecated
@@ -35,6 +37,10 @@ The format is based on [Keep a Changelog].
 - Prefab blinks when we see editor of PrefabSafeSet of prefab asset `#645` `#664`
 
 ### Security
+
+## [1.5.10] - 2023-11-04
+### Fixed
+- RigidBody Joint can be broken [`#683`](https://github.com/anatawa12/AvatarOptimizer/pull/683)
 
 ## [1.5.9] - 2023-10-29
 ### Fixed
@@ -641,7 +647,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.9...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.10...HEAD
+[1.5.10]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.9...v1.5.10
 [1.5.9]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.8...v1.5.9
 [1.5.8]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.7...v1.5.8
 [1.5.7]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.6...v1.5.7

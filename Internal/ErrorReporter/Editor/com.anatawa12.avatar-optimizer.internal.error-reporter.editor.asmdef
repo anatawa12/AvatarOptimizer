@@ -21,12 +21,6 @@
     ],
     "autoReferenced": false,
     "defineConstraints": [],
-    "versionDefines": [
-        {
-            "name": "com.vrchat.avatars",
-            "expression": "",
-            "define": "AAO_VRCSDK3_AVATARS"
-        }
-    ],
+    "versionDefines": [],
     "noEngineReferences": false
 }
