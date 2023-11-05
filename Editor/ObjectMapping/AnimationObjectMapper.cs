@@ -116,28 +116,28 @@ namespace Anatawa12.AvatarOptimizer
         }
 
         [CanBeNull]
-        public (string path, Type type, string propertyName)[] MapBinding((string path, Type type, string propertyName) binding)
+        public (string path, Type type, string propertyName)[] MapBinding(string path, Type type, string propertyName)
         {
-            var gameObjectInfo = GetGameObjectInfo(binding.path);
+            var gameObjectInfo = GetGameObjectInfo(path);
             if (gameObjectInfo == null)
                 return null;
-            var (instanceId, componentInfo) = gameObjectInfo.GetComponentByType(binding.type);
+            var (instanceId, componentInfo) = gameObjectInfo.GetComponentByType(type);
 
             if (componentInfo != null)
             {
                 // there's mapping about component.
                 // this means the component is merged or some prop has mapping
 
-                if (componentInfo.PropertyMapping.TryGetValue(binding.propertyName, out var newProp))
+                if (componentInfo.PropertyMapping.TryGetValue(propertyName, out var newProp))
                 {
                     // if mapped one is exactly same as original, return null
                     if (newProp.AllCopiedTo.Length == 1
                         && newProp.AllCopiedTo[0].InstanceId == instanceId
-                        && newProp.AllCopiedTo[0].Name == binding.propertyName)
+                        && newProp.AllCopiedTo[0].Name == propertyName)
                         return null;
 
                     // there are mapping for property
-                    var curveBindings = new (string path, Type type, string propertyName)[newProp.AllCopiedTo.Length];
+                    var mappedBindings = new (string path, Type type, string propertyName)[newProp.AllCopiedTo.Length];
                     var copiedToIndex = 0;
                     for (var i = 0; i < newProp.AllCopiedTo.Length; i++)
                     {
@@ -156,15 +156,12 @@ namespace Anatawa12.AvatarOptimizer
                         // TODO: add warning
                         if (newPath == null) return Array.Empty<(string path, Type type, string propertyName)>();
 
-                        binding.path = newPath;
-                        binding.type = descriptor.Type;
-                        binding.propertyName = descriptor.Name;
-                        curveBindings[i] = binding; // copy
+                        mappedBindings[i] = (newPath, descriptor.Type, descriptor.Name);
                     }
 
-                    if (copiedToIndex != curveBindings.Length)
-                        return curveBindings.AsSpan().Slice(0, copiedToIndex).ToArray();
-                    return curveBindings;
+                    if (copiedToIndex != mappedBindings.Length)
+                        return mappedBindings.AsSpan().Slice(0, copiedToIndex).ToArray();
+                    return mappedBindings;
                 }
                 else
                 {
@@ -173,9 +170,8 @@ namespace Anatawa12.AvatarOptimizer
 
                     var newPath = Utils.RelativePath(_rootGameObject.transform, component.transform);
                     if (newPath == null) return Array.Empty<(string path, Type type, string propertyName)>(); // this means moved to out of the animator scope
-                    if (binding.path == newPath) return null;
-                    binding.path = newPath;
-                    return new []{ binding };
+                    if (path == newPath) return null;
+                    return new []{ (newPath, type, propertyName) };
                 }
             }
             else
@@ -186,87 +182,29 @@ namespace Anatawa12.AvatarOptimizer
                 if (!component) return Array.Empty<(string path, Type type, string propertyName)>(); // this means removed
 
                 if (gameObjectInfo.NewPath == null) return Array.Empty<(string path, Type type, string propertyName)>();
-                if (binding.path == gameObjectInfo.NewPath) return null;
-                binding.path = gameObjectInfo.NewPath;
-                return new[] { binding };
+                if (path == gameObjectInfo.NewPath) return null;
+                return new[] { (gameObjectInfo.NewPath, type, propertyName) };
             }
         }
 
         [CanBeNull]
         public EditorCurveBinding[] MapBinding(EditorCurveBinding binding)
         {
-            var gameObjectInfo = GetGameObjectInfo(binding.path);
-            if (gameObjectInfo == null)
+            var mappedBindings = MapBinding(binding.path, binding.type, binding.propertyName);
+            if (mappedBindings == null)
+            {
                 return null;
-            var (instanceId, componentInfo) = gameObjectInfo.GetComponentByType(binding.type);
-
-            if (componentInfo != null)
-            {
-                // there's mapping about component.
-                // this means the component is merged or some prop has mapping
-
-                if (componentInfo.PropertyMapping.TryGetValue(binding.propertyName, out var newProp))
-                {
-                    // if mapped one is exactly same as original, return null
-                    if (newProp.AllCopiedTo.Length == 1
-                        && newProp.AllCopiedTo[0].InstanceId == instanceId
-                        && newProp.AllCopiedTo[0].Name == binding.propertyName)
-                        return null;
-
-                    // there are mapping for property
-                    var curveBindings = new EditorCurveBinding[newProp.AllCopiedTo.Length];
-                    var copiedToIndex = 0;
-                    for (var i = 0; i < newProp.AllCopiedTo.Length; i++)
-                    {
-                        var descriptor = newProp.AllCopiedTo[copiedToIndex++];
-                        var component = new ComponentOrGameObject(EditorUtility.InstanceIDToObject(descriptor.InstanceId));
-                        // this means removed.
-                        if (!component)
-                        {
-                            copiedToIndex -= 1;
-                            continue;
-                        }
-
-                        var newPath = Utils.RelativePath(_rootGameObject.transform, component.transform);
-
-                        // this means moved to out of the animator scope
-                        // TODO: add warning
-                        if (newPath == null) return Array.Empty<EditorCurveBinding>();
-
-                        binding.path = newPath;
-                        binding.type = descriptor.Type;
-                        binding.propertyName = descriptor.Name;
-                        curveBindings[i] = binding; // copy
-                    }
-
-                    if (copiedToIndex != curveBindings.Length)
-                        return curveBindings.AsSpan().Slice(0, copiedToIndex).ToArray();
-                    return curveBindings;
-                }
-                else
-                {
-                    var component = new ComponentOrGameObject(EditorUtility.InstanceIDToObject(componentInfo.MergedInto));
-                    if (!component) return Array.Empty<EditorCurveBinding>(); // this means removed.
-
-                    var newPath = Utils.RelativePath(_rootGameObject.transform, component.transform);
-                    if (newPath == null) return Array.Empty<EditorCurveBinding>(); // this means moved to out of the animator scope
-                    if (binding.path == newPath) return null;
-                    binding.path = newPath;
-                    return new []{ binding };
-                }
             }
-            else
+            
+            var curveBindings = new EditorCurveBinding[mappedBindings.Length];
+            for (var i = 0; i < mappedBindings.Length; i++)
             {
-                // The component is not merged & no prop mapping so process GameObject mapping
-
-                var component = EditorUtility.InstanceIDToObject(instanceId);
-                if (!component) return Array.Empty<EditorCurveBinding>(); // this means removed
-
-                if (gameObjectInfo.NewPath == null) return Array.Empty<EditorCurveBinding>();
-                if (binding.path == gameObjectInfo.NewPath) return null;
-                binding.path = gameObjectInfo.NewPath;
-                return new[] { binding };
+                binding.path = mappedBindings[i].path;
+                binding.type = mappedBindings[i].type;
+                binding.propertyName = mappedBindings[i].propertyName;
+                curveBindings[i] = binding; // copy everything else
             }
+            return curveBindings;
         }
     }
 }

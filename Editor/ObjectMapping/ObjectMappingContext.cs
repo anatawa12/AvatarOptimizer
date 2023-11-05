@@ -258,13 +258,13 @@ namespace Anatawa12.AvatarOptimizer
                 newBlendShapeClip.name = "rebased " + blendShapeClip.name;
                 newBlendShapeClip.Values = newBlendShapeClip.Values.SelectMany(binding =>
                 {
-                    var mappedBinding = _mapping.MapBinding((binding.RelativePath, typeof(SkinnedMeshRenderer), VProp.BlendShapeIndex(binding.Index)));
-                    if (mappedBinding == null)
+                    var mappedBindings = _mapping.MapBinding(binding.RelativePath, typeof(SkinnedMeshRenderer), VProp.BlendShapeIndex(binding.Index));
+                    if (mappedBindings == null)
                     {
                         return new[] { binding };
                     }
                     _mapped = true;
-                    return mappedBinding
+                    return mappedBindings
                         .Select(mapped => new VRM.BlendShapeBinding
                         {
                             RelativePath = _mapping.MapPath(mapped.path, typeof(SkinnedMeshRenderer)),
@@ -283,13 +283,13 @@ namespace Anatawa12.AvatarOptimizer
                 newVrm10Expression.name = "rebased " + vrm10Expression.name;
                 newVrm10Expression.MorphTargetBindings = newVrm10Expression.MorphTargetBindings.SelectMany(binding =>
                 {
-                    var mappedBinding = _mapping.MapBinding((binding.RelativePath, typeof(SkinnedMeshRenderer), VProp.BlendShapeIndex(binding.Index)));
-                    if (mappedBinding == null)
+                    var mappedBindings = _mapping.MapBinding(binding.RelativePath, typeof(SkinnedMeshRenderer), VProp.BlendShapeIndex(binding.Index));
+                    if (mappedBindings == null)
                     {
                         return new[] { binding };
                     }
                     _mapped = true;
-                    return mappedBinding
+                    return mappedBindings
                         .Select(mapped => new UniVRM10.MorphTargetBinding
                         {
                             RelativePath = _mapping.MapPath(mapped.path, typeof(SkinnedMeshRenderer)),
