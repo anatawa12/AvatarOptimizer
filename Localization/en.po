@@ -248,8 +248,8 @@ msgstr ""
 
 msgid "MergeSkinnedMesh:warning:VRM:FirstPersonFlagsMismatch"
 msgstr ""
-"Source Renderers had mixed FirstPersonFlags values specified, and fallbacked into '{0}'.\n"
-"It is advisable to set same FirstPersonFlags values for Renderers to be merged by MergeSkinnedMesh.\n"
+"Source Renderers had specified mixed FirstPersonFlags values, so fallbacked into '{0}'.\n"
+"It is recommended to set same FirstPersonFlags values for Renderers to be merged by MergeSkinnedMesh.\n"
 
 msgid "MergeSkinnedMesh:warning:MeshIsNotNone"
 msgstr ""

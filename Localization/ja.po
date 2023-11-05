@@ -185,7 +185,7 @@ msgstr ""
 
 msgid "MergeSkinnedMesh:warning:VRM:FirstPersonFlagsMismatch"
 msgstr ""
-"統合対象のRenderer間でFirstPersonFlagsの値が揃っていなかったため、'{0}'に統合されました。\n"
+"統合対象のRenderer間でFirstPersonFlagsの値が揃っていなかったため、'{0}'に統一されました。\n"
 "MergeSkinnedMeshで統合されるRendererのFirstPersonFlagsの値は揃えることを推奨します。"
 
 msgid "MergeSkinnedMesh:warning:MeshIsNotNone"

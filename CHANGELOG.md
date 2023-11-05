@@ -13,7 +13,7 @@ The format is based on [Keep a Changelog].
   - If you toggles your clothes with simple toggle, PhysBones on the your avatar will also be toggled automatically!
 - Small performance improve `#641`
 - Ability to prevent changing enablement of component `#668`
-- Add support of UniVRM components `#653`
+- Add support for UniVRM components `#653`
 
 ### Changed
 - All logs passed to ErrorReport is now shown on the console log `#643`
