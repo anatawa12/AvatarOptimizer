@@ -10,6 +10,7 @@ namespace Anatawa12.AvatarOptimizer
         private SerializedProperty _freezeBlendShape;
         private SerializedProperty _removeUnusedObjects;
         private SerializedProperty _preserveEndBone;
+        private SerializedProperty _removeZeroSizedPolygons;
         private SerializedProperty _mmdWorldCompatibility;
         private SerializedProperty _advancedSettings;
         private GUIContent _advancedSettingsLabel = new GUIContent();
@@ -19,6 +20,7 @@ namespace Anatawa12.AvatarOptimizer
             _freezeBlendShape = serializedObject.FindProperty(nameof(TraceAndOptimize.freezeBlendShape));
             _removeUnusedObjects = serializedObject.FindProperty(nameof(TraceAndOptimize.removeUnusedObjects));
             _preserveEndBone = serializedObject.FindProperty(nameof(TraceAndOptimize.preserveEndBone));
+            _removeZeroSizedPolygons = serializedObject.FindProperty(nameof(TraceAndOptimize.removeZeroSizedPolygons));
             _mmdWorldCompatibility = serializedObject.FindProperty(nameof(TraceAndOptimize.mmdWorldCompatibility));
             _advancedSettings = serializedObject.FindProperty(nameof(TraceAndOptimize.advancedSettings));
         }
@@ -39,6 +41,7 @@ namespace Anatawa12.AvatarOptimizer
                 EditorGUILayout.PropertyField(_preserveEndBone);
                 EditorGUI.indentLevel--;
             }
+            EditorGUILayout.PropertyField(_removeZeroSizedPolygons);
 
             _advancedSettingsLabel.text = CL4EE.Tr("TraceAndOptimize:prop:advancedSettings");
             if (EditorGUILayout.PropertyField(_advancedSettings, _advancedSettingsLabel, false))

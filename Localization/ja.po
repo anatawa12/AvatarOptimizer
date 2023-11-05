@@ -214,6 +214,9 @@ msgstr ""
 "法線があるメッシュとないメッシュの両方を1つに統合する操作には対応していません。"
 "法線が含まれるようにモデルのインポート設定を変更してください!"
 
+msgid "MergeSkinnedMesh:warning:removeZeroSizedPolygonOnSources"
+msgstr "Remove Zero Sized Polygonsは遅めに処理されるため、統合対象のメッシュにつけても効果がありません"
+
 # endregion
 
 # region MergeToonLitMaterial
@@ -281,6 +284,13 @@ msgstr "すべて有効にする"
 
 msgid "RemoveMeshByBlendShape:button:Invert All"
 msgstr "すべての有効/無効を入れ替える"
+
+# endregion
+
+# region RemoveZeroSizedPolygon
+
+msgid "RemoveZeroSizedPolygon:description"
+msgstr "面積がゼロのポリゴンを削除します。"
 
 # endregion
 
@@ -366,6 +376,9 @@ msgstr "endボーンを残す"
 
 msgid "TraceAndOptimize:tooltip:preserveEndBone"
 msgstr "親が削除されていないendボーンを削除しないようにします。"
+
+msgid "TraceAndOptimize:prop:removeZeroSizedPolygons"
+msgstr "面積がゼロのポリゴンを自動的に削除する"
 
 # endregion
 
