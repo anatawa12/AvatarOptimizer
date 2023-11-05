@@ -388,7 +388,7 @@ msgstr ""
 "マルチパスレンダリングの使用が意図したものであるかを確認してください。"
 
 msgid "MeshInfo2:warning:lineStrip"
-msgstr "LineStripを使用しているSubMeshは{0}コンポーネントによってスキップされます。"
+msgstr "{0}コンポーネントはLineStripが使用されているSubMeshをスキップします。"
 
 #endregion
 
