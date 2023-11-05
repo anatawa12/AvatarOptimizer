@@ -44,16 +44,25 @@ namespace Anatawa12.AvatarOptimizer
                     if (mapping.MapComponentInstance(p.objectReferenceInstanceIDValue, out var mappedComponent))
                         p.objectReferenceValue = mappedComponent;
 
-                    if (p.objectReferenceValue is RuntimeAnimatorController controller)
+                    var objectReferenceValue = p.objectReferenceValue;
+                    switch (objectReferenceValue)
                     {
-                        if (mapper == null)
-                            mapper = new AnimatorControllerMapper(mapping.CreateAnimationMapper(component.gameObject));
+                        case RuntimeAnimatorController _:
+#if AAO_VRM0
+                        case VRM.BlendShapeAvatar _:
+#endif
+#if AAO_VRM1
+                        case UniVRM10.VRM10Object _:
+#endif
+                            if (mapper == null)
+                                mapper = new AnimatorControllerMapper(mapping.CreateAnimationMapper(component.gameObject));
 
-                        // ReSharper disable once AccessToModifiedClosure
-                        var mapped = BuildReport.ReportingObject(controller,
-                            () => mapper.MapAnimatorController(controller));
-                        if (mapped != controller)
-                            p.objectReferenceValue = mapped;
+                            // ReSharper disable once AccessToModifiedClosure
+                            var mapped = BuildReport.ReportingObject(objectReferenceValue,
+                                () => mapper.MapObject(objectReferenceValue));
+                            if (mapped != objectReferenceValue)
+                                p.objectReferenceValue = mapped;
+                            break;
                     }
                 }
 
@@ -134,6 +143,9 @@ namespace Anatawa12.AvatarOptimizer
 
         public T MapAnimatorController<T>(T controller) where T : RuntimeAnimatorController =>
             DeepClone(controller, CustomClone);
+
+        public T MapObject<T>(T obj) where T : Object =>
+            DeepClone(obj, CustomClone);
 
         // https://github.com/bdunderscore/modular-avatar/blob/db49e2e210bc070671af963ff89df853ae4514a5/Packages/nadena.dev.modular-avatar/Editor/AnimatorMerger.cs#L199-L241
         // Originally under MIT License
@@ -238,6 +250,56 @@ namespace Anatawa12.AvatarOptimizer
 
                 return newMask;
             }
+#if AAO_VRM0
+            else if (o is VRM.BlendShapeClip blendShapeClip)
+            {
+                var newBlendShapeClip = DefaultDeepClone(blendShapeClip, CustomClone);
+                newBlendShapeClip.Prefab = null; // This likely to point prefab before mapping, which is invalid by now
+                newBlendShapeClip.name = "rebased " + blendShapeClip.name;
+                newBlendShapeClip.Values = newBlendShapeClip.Values.SelectMany(binding =>
+                {
+                    var mappedBindings = _mapping.MapBinding(binding.RelativePath, typeof(SkinnedMeshRenderer), VProp.BlendShapeIndex(binding.Index));
+                    if (mappedBindings == null)
+                    {
+                        return new[] { binding };
+                    }
+                    _mapped = true;
+                    return mappedBindings
+                        .Select(mapped => new VRM.BlendShapeBinding
+                        {
+                            RelativePath = _mapping.MapPath(mapped.path, typeof(SkinnedMeshRenderer)),
+                            Index = VProp.ParseBlendShapeIndex(mapped.propertyName),
+                            Weight = binding.Weight
+                        });
+                }).ToArray(); 
+                return newBlendShapeClip;
+            }
+#endif
+#if AAO_VRM1
+            else if (o is UniVRM10.VRM10Expression vrm10Expression)
+            {
+                var newVrm10Expression = DefaultDeepClone(vrm10Expression, CustomClone);
+                newVrm10Expression.Prefab = null; // This likely to point prefab before mapping, which is invalid by now
+                newVrm10Expression.name = "rebased " + vrm10Expression.name;
+                newVrm10Expression.MorphTargetBindings = newVrm10Expression.MorphTargetBindings.SelectMany(binding =>
+                {
+                    var mappedBindings = _mapping.MapBinding(binding.RelativePath, typeof(SkinnedMeshRenderer), VProp.BlendShapeIndex(binding.Index));
+                    if (mappedBindings == null)
+                    {
+                        return new[] { binding };
+                    }
+                    _mapped = true;
+                    return mappedBindings
+                        .Select(mapped => new UniVRM10.MorphTargetBinding
+                        {
+                            RelativePath = _mapping.MapPath(mapped.path, typeof(SkinnedMeshRenderer)),
+                            Index = VProp.ParseBlendShapeIndex(mapped.propertyName),
+                            Weight = binding.Weight
+                        });
+                }).ToArray(); 
+                return newVrm10Expression;
+            }
+#endif
             else if (o is RuntimeAnimatorController controller)
             {
                 using (new MappedScope(this))
@@ -249,6 +311,62 @@ namespace Anatawa12.AvatarOptimizer
                     return newController;
                 }
             }
+#if AAO_VRM0
+            else if (o is VRM.BlendShapeAvatar blendShapeAvatar)
+            {
+                using (new MappedScope(this))
+                {
+                    var newBlendShapeAvatar = DefaultDeepClone(blendShapeAvatar, CustomClone);
+                    newBlendShapeAvatar.name = blendShapeAvatar.name + " (rebased)";
+                    if (!_mapped) newBlendShapeAvatar = blendShapeAvatar;
+                    _cache[blendShapeAvatar] = newBlendShapeAvatar;
+                    return newBlendShapeAvatar;
+                }
+            }
+#endif
+#if AAO_VRM1
+            else if (o is UniVRM10.VRM10Object vrm10Object)
+            {
+                using (new MappedScope(this))
+                {
+                    var newVrm10Object = DefaultDeepClone(vrm10Object, CustomClone);
+                    newVrm10Object.name = vrm10Object.name + " (rebased)";
+                    if (!_mapped) newVrm10Object = vrm10Object;
+                    _cache[vrm10Object] = newVrm10Object;
+
+                    newVrm10Object.FirstPerson.Renderers = newVrm10Object.FirstPerson.Renderers
+                        .Select(r => new UniVRM10.RendererFirstPersonFlags
+                        {
+                            Renderer = _mapping.MapPath(r.Renderer, typeof(Renderer)),
+                            FirstPersonFlag = r.FirstPersonFlag
+                        })
+                        .Where(r => r.Renderer != null)
+                        .GroupBy(r => r.Renderer, r => r.FirstPersonFlag)
+                        .Select(grouping =>
+                        {
+                            UniGLTF.Extensions.VRMC_vrm.FirstPersonType mergedFirstPersonFlag;
+                            var firstPersonFlags = grouping.Distinct().ToArray();
+                            if (firstPersonFlags.Length == 1)
+                            {
+                                mergedFirstPersonFlag = firstPersonFlags[0];
+                            }
+                            else
+                            {
+                                mergedFirstPersonFlag = firstPersonFlags.Contains(UniGLTF.Extensions.VRMC_vrm.FirstPersonType.both) ? UniGLTF.Extensions.VRMC_vrm.FirstPersonType.both : UniGLTF.Extensions.VRMC_vrm.FirstPersonType.auto;
+                                BuildReport.LogWarning("MergeSkinnedMesh:warning:VRM:FirstPersonFlagsMismatch", mergedFirstPersonFlag.ToString());
+                            }
+
+                            return new UniVRM10.RendererFirstPersonFlags
+                            {
+                                Renderer = grouping.Key,
+                                FirstPersonFlag = mergedFirstPersonFlag
+                            };
+                        }).ToList();
+
+                    return newVrm10Object;
+                }
+            }
+#endif
             else
             {
                 return null;
@@ -295,10 +413,24 @@ namespace Anatawa12.AvatarOptimizer
                 case AvatarMask _:
                     break; // We want to clone these types
 
+                // also handle VRM objects here
+#if AAO_VRM0
+                case VRM.BlendShapeAvatar _:
+                case VRM.BlendShapeClip _:
+                    break; // We want to clone these types
+#endif
+
+#if AAO_VRM1
+                case UniVRM10.VRM10Object _:
+                case UniVRM10.VRM10Expression _:
+                    break; // We want to clone these types
+#endif
+
                 // Leave textures, materials, and script definitions alone
                 case Texture _:
                 case MonoScript _:
                 case Material _:
+                case GameObject _:
                     return original;
 
                 // Also avoid copying unknown scriptable objects.

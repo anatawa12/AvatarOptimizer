@@ -214,6 +214,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 context.RecordRemoveProperty(renderer, "m_Enabled");
                 context.RecordMergeComponent(renderer, Target);
                 var rendererGameObject = renderer.gameObject;
+                var toDestroy = renderer.GetComponent<RemoveZeroSizedPolygon>();
+                if (toDestroy)
+                {
+                    BuildReport.LogWarning("MergeSkinnedMesh:warning:removeZeroSizedPolygonOnSources")
+                        ?.WithContext(toDestroy);
+                    Object.DestroyImmediate(toDestroy);
+                }
                 Object.DestroyImmediate(renderer);
 
                 // process removeEmptyRendererObject

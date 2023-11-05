@@ -56,7 +56,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
                 case VRC_AvatarDescriptor.LipSyncStyle.JawFlapBlendShape when component.VisemeSkinnedMesh != null:
                 {
                     collector.ModifyProperties(component.VisemeSkinnedMesh,
-                        new[] { $"blendShape.{component.MouthOpenBlendShapeName}" });
+                        $"blendShape.{component.MouthOpenBlendShapeName}");
                     break;
                 }
                 case VRC_AvatarDescriptor.LipSyncStyle.VisemeBlendShape when component.VisemeSkinnedMesh != null:
