@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog].
 ### Added
 - Remove Zero Sized Polygons `#659`
 - Add support for UniVRM components `#653`
+- Support for Mesh Topologies other than Triangles `#692`
 
 ### Changed
 

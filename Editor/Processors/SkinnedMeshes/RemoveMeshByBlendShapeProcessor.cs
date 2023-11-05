@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using nadena.dev.ndmf;
@@ -26,27 +27,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     byBlendShapeVertices.Add(vertex);
             }
 
+            Func<Vertex[], bool> condition = primitive => primitive.Any(byBlendShapeVertices.Contains);
             foreach (var subMesh in target.SubMeshes)
-            {
-                int srcI = 0, dstI = 0;
-                for (; srcI < subMesh.Triangles.Count; srcI += 3)
-                {
-                    // process 3 vertex in sub mesh at once to process one polygon
-                    var v0 = subMesh.Triangles[srcI + 0];
-                    var v1 = subMesh.Triangles[srcI + 1];
-                    var v2 = subMesh.Triangles[srcI + 2];
-
-                    if (byBlendShapeVertices.Contains(v0) || byBlendShapeVertices.Contains(v1) || byBlendShapeVertices.Contains(v2))
-                        continue;
-
-                    // no vertex is affected by the blend shape: 
-                    subMesh.Triangles[dstI + 0] = v0;
-                    subMesh.Triangles[dstI + 1] = v1;
-                    subMesh.Triangles[dstI + 2] = v2;
-                    dstI += 3;
-                }
-                subMesh.Triangles.RemoveRange(dstI, subMesh.Triangles.Count - dstI);
-            }
+                subMesh.RemovePrimitives("RemoveMeshByBlendShape", condition);
 
             // remove unused vertices
             target.Vertices.RemoveAll(x => byBlendShapeVertices.Contains(x));

@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog].
 - Ability to prevent changing enablement of component `#668`
 - Remove Zero Sized Polygons `#659`
 - Add support for UniVRM components `#653`
+- Support for Mesh Topologies other than Triangles `#692`
 
 ### Changed
 - All logs passed to ErrorReport is now shown on the console log `#643`
