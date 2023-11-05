@@ -279,8 +279,8 @@ msgstr ""
 
 msgid "MergeSkinnedMesh:warning:animation-mesh-hide"
 msgstr ""
-"We're merging meshes that visibility animated differently than the merged mesh."
-"The animation will not work. This might not be intended. Ignore this warning if it's intended."
+"You're merging meshes that visibility animated differently than the merged mesh."
+"The animation will not work. This might not be intended, but if it's intended, ignore this warning."
 
 # endregion
 
