@@ -452,7 +452,7 @@ msgstr ""
 "Using multi pass rendering often not be intended. Please check if you intended to use multi pass rendering."
 
 msgid "MeshInfo2:warning:lineStrip"
-msgstr "SubMesh with LineStrip will be skipped with {0} Component."
+msgstr "{0} Component does not process SubMeshes with LineStrip."
 
 #endregion
 
