@@ -27,6 +27,11 @@ namespace Anatawa12.AvatarOptimizer
         [ToggleLeft]
         public bool preserveEndBone;
 
+        [NotKeyable]
+        [CL4EELocalized("TraceAndOptimize:prop:removeZeroSizedPolygons")]
+        [ToggleLeft]
+        public bool removeZeroSizedPolygons = false;
+
         // common parsing configuration
         [NotKeyable]
         [CL4EELocalized("TraceAndOptimize:prop:mmdWorldCompatibility",

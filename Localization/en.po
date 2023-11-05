@@ -282,6 +282,9 @@ msgstr ""
 "Merging both meshes with and without normal is not supported."
 "Please change import setting of models to include normals!"
 
+msgid "MergeSkinnedMesh:warning:removeZeroSizedPolygonOnSources"
+msgstr "Since Remove Zero Sized Polygons are processed later, it has no effects if it is added with the source Skinned Mesh Renderers."
+
 # endregion
 
 # region MergeToonLitMaterial
@@ -349,6 +352,13 @@ msgstr "Check All"
 
 msgid "RemoveMeshByBlendShape:button:Invert All"
 msgstr "Invert All"
+
+# endregion
+
+# region RemoveZeroSizedPolygon
+
+msgid "RemoveZeroSizedPolygon:description"
+msgstr "Removes polygons whose area are zero"
 
 # endregion
 
@@ -435,6 +445,9 @@ msgstr "Preserve EndBone"
 
 msgid "TraceAndOptimize:tooltip:preserveEndBone"
 msgstr "Prevents removing end bones whose parent is not removed."
+
+msgid "TraceAndOptimize:prop:removeZeroSizedPolygons"
+msgstr "Automatically Remove Zero Sized Polygons"
 
 # endregion
 
