@@ -53,7 +53,7 @@ namespace Anatawa12.AvatarOptimizer
 
                             // ReSharper disable once AccessToModifiedClosure
                             var mapped = BuildReport.ReportingObject(controller,
-                                () => mapper.MapAnimatorController(controller));
+                                () => mapper.MapObject(controller));
                             if (mapped != controller)
                                 p.objectReferenceValue = mapped;
                             break;
@@ -67,7 +67,7 @@ namespace Anatawa12.AvatarOptimizer
 
                             // ReSharper disable once AccessToModifiedClosure
                             var mapped = BuildReport.ReportingObject(blendShapeAvatar,
-                                () => mapper.MapBlendShapeAvatar(blendShapeAvatar));
+                                () => mapper.MapObject(blendShapeAvatar));
                             if (mapped != blendShapeAvatar)
                                 p.objectReferenceValue = mapped;
                             break;
@@ -82,7 +82,7 @@ namespace Anatawa12.AvatarOptimizer
 
                             // ReSharper disable once AccessToModifiedClosure
                             var mapped = BuildReport.ReportingObject(vrm10Object,
-                                () => mapper.MapVrm10Object(vrm10Object));
+                                () => mapper.MapObject(vrm10Object));
                             if (mapped != vrm10Object)
                                 p.objectReferenceValue = mapped;
                             break;
@@ -169,15 +169,8 @@ namespace Anatawa12.AvatarOptimizer
         public T MapAnimatorController<T>(T controller) where T : RuntimeAnimatorController =>
             DeepClone(controller, CustomClone);
 
-#if AAO_VRM0
-        public T MapBlendShapeAvatar<T>(T blendShapeAvatar) where T : VRM.BlendShapeAvatar =>
-            DeepClone(blendShapeAvatar, CustomClone);
-#endif
-        
-#if AAO_VRM1
-        public T MapVrm10Object<T>(T vrm10Object) where T : UniVRM10.VRM10Object =>
-            DeepClone(vrm10Object, CustomClone);
-#endif
+        public T MapObject<T>(T obj) where T : Object =>
+            DeepClone(obj, CustomClone);
 
         // https://github.com/bdunderscore/modular-avatar/blob/db49e2e210bc070671af963ff89df853ae4514a5/Packages/nadena.dev.modular-avatar/Editor/AnimatorMerger.cs#L199-L241
         // Originally under MIT License
