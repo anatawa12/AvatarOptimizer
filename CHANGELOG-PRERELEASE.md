@@ -8,24 +8,31 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Remove Zero Sized Polygons `#659`
-- Add support for UniVRM components `#653`
-- Support for Mesh Topologies other than Triangles `#692`
-- Skip enablement mismatched Renderers in Merge Skinned Mesh `#670`
-  - This is now enabled by default for newly added Merge Skinned Mesh.
 
 ### Changed
-- When you're animating activeness/enablement of source renderers, warning is shown since this release `#675`
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
-- proxy animation can be modified `#678`
-- complex shader with SkinnedMeshRenderer without Bones Brokebn `#694`
 
 ### Security
+
+## [1.6.0-beta.3] - 2023-11-06
+### Added
+- Remove Zero Sized Polygons [`#659`](https://github.com/anatawa12/AvatarOptimizer/pull/659)
+- Add support for UniVRM components [`#653`](https://github.com/anatawa12/AvatarOptimizer/pull/653)
+- Support for Mesh Topologies other than Triangles [`#692`](https://github.com/anatawa12/AvatarOptimizer/pull/692)
+- Skip enablement mismatched Renderers in Merge Skinned Mesh [`#670`](https://github.com/anatawa12/AvatarOptimizer/pull/670)
+  - This is now enabled by default for newly added Merge Skinned Mesh.
+
+### Changed
+- When you're animating activeness/enablement of source renderers, warning is shown since this release [`#675`](https://github.com/anatawa12/AvatarOptimizer/pull/675)
+
+### Fixed
+- proxy animation can be modified [`#678`](https://github.com/anatawa12/AvatarOptimizer/pull/678)
+- complex shader with SkinnedMeshRenderer without Bones Brokebn [`#694`](https://github.com/anatawa12/AvatarOptimizer/pull/694)
 
 ## [1.6.0-beta.2] - 2023-10-31
 ### Added
@@ -985,7 +992,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.2...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.3...HEAD
+[1.6.0-beta.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.2...v1.6.0-beta.3
 [1.6.0-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.1...v1.6.0-beta.2
 [1.6.0-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.10...v1.6.0-beta.1
 [1.5.10]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.9...v1.5.10
