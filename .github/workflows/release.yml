@@ -47,6 +47,14 @@ jobs:
           hugo-version: '0.111.3'
           extended: true
 
+      - name: Check release is public
+        if: github.event.inputs.release_kind == 'stable'
+        run:
+          if [[ "$(jq '.private == true' < package.json)" == "true" ]]; then
+            echo "package.json is private"
+            exit 255
+          fi
+      
       - name: Update Version Name
         id: update-version
         run: |

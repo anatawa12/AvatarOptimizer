@@ -286,7 +286,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
         }
 
         private readonly Object[] _sources;
-        public Span<Object> Sources => _sources ?? Array.Empty<Object>();
+        public ReadOnlySpan<Object> Sources => _sources ?? Array.Empty<Object>();
 
         private AnimationFloatProperty(PropertyState state, float constValue, params Object[] modifiers) =>
             (State, _constValue, _sources) = (state, constValue, modifiers);
@@ -309,7 +309,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
         private static AnimationFloatProperty Variable0(Object[] modifiers) =>
             new AnimationFloatProperty(PropertyState.Variable, float.NaN, modifiers);
 
-        private Object[] MergeSource(Span<Object> aSource, Span<Object> bSource)
+        private Object[] MergeSource(ReadOnlySpan<Object> aSource, ReadOnlySpan<Object> bSource)
         {
             var merged = new Object[aSource.Length + bSource.Length];
             aSource.CopyTo(merged.AsSpan().Slice(0, aSource.Length));

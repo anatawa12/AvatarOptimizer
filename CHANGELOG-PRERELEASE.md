@@ -8,16 +8,22 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Remove Zero Sized Polygons `#659`
+- Add support for UniVRM components `#653`
+- Support for Mesh Topologies other than Triangles `#692`
 - Skip enablement mismatched Renderers in Merge Skinned Mesh `#670`
   - This is now enabled by default for newly added Merge Skinned Mesh.
 
 ### Changed
+- When you're animating activeness/enablement of source renderers, warning is shown since this release `#675`
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
+- proxy animation can be modified `#678`
+- complex shader with SkinnedMeshRenderer without Bones Brokebn `#694`
 
 ### Security
 
@@ -40,6 +46,10 @@ The format is based on [Keep a Changelog].
 ### Fixed
 - Prefab blinks when we see editor of PrefabSafeSet of prefab asset [`#645`](https://github.com/anatawa12/AvatarOptimizer/pull/645) [`#664`](https://github.com/anatawa12/AvatarOptimizer/pull/664)
 - Fixes in 1.5.9 [`#654`](https://github.com/anatawa12/AvatarOptimizer/pull/654)
+
+## [1.5.10] - 2023-11-04
+### Fixed
+- RigidBody Joint can be broken [`#683`](https://github.com/anatawa12/AvatarOptimizer/pull/683)
 
 ## [1.5.9] - 2023-10-29
 ## [1.5.9-rc.1] - 2023-10-28
@@ -977,7 +987,8 @@ This release is mistake.
 
 [Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.2...HEAD
 [1.6.0-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.1...v1.6.0-beta.2
-[1.6.0-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.9...v1.6.0-beta.1
+[1.6.0-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.10...v1.6.0-beta.1
+[1.5.10]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.9...v1.5.10
 [1.5.9]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.9-rc.1...v1.5.9
 [1.5.9-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.8...v1.5.9-rc.1
 [1.5.8]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.8-rc.1...v1.5.8

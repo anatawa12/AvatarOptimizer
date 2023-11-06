@@ -14,18 +14,13 @@
     "allowUnsafeCode": false,
     "overrideReferences": true,
     "precompiledReferences": [
+        "System.Memory.dll",
         "VRCSDK3A.dll",
         "VRCSDKBase.dll",
         "VRCSDKBase-Editor.dll"
     ],
     "autoReferenced": false,
     "defineConstraints": [],
-    "versionDefines": [
-        {
-            "name": "com.vrchat.avatars",
-            "expression": "",
-            "define": "AAO_VRCSDK3_AVATARS"
-        }
-    ],
+    "versionDefines": [],
     "noEngineReferences": false
 }

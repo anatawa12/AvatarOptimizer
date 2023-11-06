@@ -10,6 +10,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         public bool Enabled;
         public bool FreezeBlendShape;
         public bool RemoveUnusedObjects;
+        public bool RemoveZeroSizedPolygon;
         public bool MmdWorldCompatibility = true;
 
         public bool PreserveEndBone;
@@ -31,6 +32,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         {
             FreezeBlendShape = config.freezeBlendShape;
             RemoveUnusedObjects = config.removeUnusedObjects;
+            RemoveZeroSizedPolygon = config.removeZeroSizedPolygons;
             MmdWorldCompatibility = config.mmdWorldCompatibility;
 
             PreserveEndBone = config.preserveEndBone;
