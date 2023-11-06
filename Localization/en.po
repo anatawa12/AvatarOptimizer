@@ -263,7 +263,7 @@ msgstr "Static Renderers"
 msgid "MergeSkinnedMesh:prop:removeEmptyRendererObject"
 msgstr "Remove Empty Renderer Object"
 
-msgid "MergeSkinnedMesh:prop:skipEnabledMismatchedRenderers"
+msgid "MergeSkinnedMesh:prop:skipEnablementMismatchedRenderers"
 msgstr "Skip Enablement Mismatched Renderers"
 
 msgid "MergeSkinnedMesh:label:Merge Materials"
