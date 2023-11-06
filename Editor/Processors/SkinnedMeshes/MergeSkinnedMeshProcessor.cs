@@ -29,8 +29,21 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         public override void Process(BuildContext context, MeshInfo2 target)
         {
-            var skinnedMeshRenderers = SkinnedMeshRenderers.ToList();
-            var staticMeshRenderers = StaticMeshRenderers.ToList();
+            List<SkinnedMeshRenderer> skinnedMeshRenderers;
+            List<MeshRenderer> staticMeshRenderers;
+            if (Component.skipEnablementMismatchedRenderers)
+            {
+                bool RendererEnabled(Renderer x) => x.enabled && x.gameObject.activeSelf;
+                var enabledSelf = RendererEnabled(Target);
+                skinnedMeshRenderers = SkinnedMeshRenderers.Where(x => RendererEnabled(x) != enabledSelf).ToList();
+                staticMeshRenderers = StaticMeshRenderers.Where(x => RendererEnabled(x) != enabledSelf).ToList();
+            }
+            else
+            {
+                skinnedMeshRenderers = SkinnedMeshRenderers.ToList();
+                staticMeshRenderers = StaticMeshRenderers.ToList();
+            }
+
             Profiler.BeginSample("Merge PreserveBlendShapes");
             {
                 var state = context.GetState<TraceAndOptimizes.TraceAndOptimizeState>();
@@ -197,7 +210,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             var parents = new HashSet<Transform>(Target.transform.ParentEnumerable(context.AvatarRootTransform, includeMe: true));
 
             Profiler.BeginSample("Postprocess Source Renderers");
-            foreach (var renderer in SkinnedMeshRenderers)
+            foreach (var renderer in skinnedMeshRenderers)
             {
                 // Avatars can have animation to hide source meshes.
                 // Such a animation often intended to hide/show some accessories but
@@ -232,7 +245,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 Object.DestroyImmediate(rendererGameObject);
             }
 
-            foreach (var renderer in StaticMeshRenderers)
+            foreach (var renderer in staticMeshRenderers)
             {
                 ActivenessAnimationWarning(renderer, context, parents);
                 Object.DestroyImmediate(renderer.GetComponent<MeshFilter>());

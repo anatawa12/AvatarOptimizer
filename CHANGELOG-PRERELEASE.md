@@ -11,6 +11,8 @@ The format is based on [Keep a Changelog].
 - Remove Zero Sized Polygons `#659`
 - Add support for UniVRM components `#653`
 - Support for Mesh Topologies other than Triangles `#692`
+- Skip enablement mismatched Renderers in Merge Skinned Mesh `#670`
+  - This is now enabled by default for newly added Merge Skinned Mesh.
 
 ### Changed
 - When you're animating activeness/enablement of source renderers, warning is shown since this release `#675`
