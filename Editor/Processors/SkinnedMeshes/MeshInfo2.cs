@@ -18,8 +18,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 {
     internal class MeshInfo2
     {
-        public readonly Renderer SourceRenderer;
-        public Transform RootBone;
+        [NotNull] public readonly Renderer SourceRenderer;
+        [NotNull] public Transform RootBone;
         public Bounds Bounds;
         public readonly List<Vertex> Vertices = new List<Vertex>(0);
 
@@ -45,10 +45,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             {
                 if (mesh)
                     ReadSkinnedMesh(mesh);
-
-                // if there's no bones: add one fake bone
-                if (Bones.Count == 0)
-                    SetIdentityBone(renderer.rootBone ? renderer.rootBone : renderer.transform);
 
                 Bounds = renderer.localBounds;
                 RootBone = renderer.rootBone ? renderer.rootBone : renderer.transform;
@@ -79,8 +75,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 var mesh = meshFilter ? meshFilter.sharedMesh : null;
                 if (mesh)
                     ReadStaticMesh(mesh);
-
-                SetIdentityBone(renderer.transform);
 
                 if (mesh)
                     Bounds = mesh.bounds;
@@ -131,9 +125,14 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 $"{context}: some SubMesh has invalid bone weights");
         }
 
-        private void SetIdentityBone(Transform transform)
+        /// <summary>
+        /// Makes all vertices in this MeshInfo2 boned.
+        /// </summary>
+        public void MakeBoned()
         {
-            Bones.Add(new Bone(Matrix4x4.identity, transform));
+            if (Bones.Count != 0) return;
+
+            Bones.Add(new Bone(Matrix4x4.identity, RootBone));
 
             foreach (var vertex in Vertices)
                 vertex.BoneWeights.Add((Bones[0], 1f));

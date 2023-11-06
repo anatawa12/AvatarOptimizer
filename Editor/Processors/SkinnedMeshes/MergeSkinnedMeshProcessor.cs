@@ -51,6 +51,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 .ToArray();
 
             foreach (var meshInfo2 in meshInfos) meshInfo2.FlattenMultiPassRendering("Merge Skinned Mesh");
+            foreach (var meshInfo2 in meshInfos) meshInfo2.MakeBoned();
 
             var sourceMaterials = meshInfos.Select(x => x.SubMeshes.Select(y => (y.Topology, y.SharedMaterial)).ToArray()).ToArray();
             Profiler.EndSample();
