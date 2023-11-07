@@ -118,7 +118,11 @@ namespace Anatawa12.AvatarOptimizer
             {
                 found = default;
 
-                if (!_info.PropertyMapping.TryGetValue(property, out var mappedProp)) return false;
+                if (!_info.PropertyMapping.TryGetValue(property, out var mappedProp))
+                {
+                    found = new API.MappedPropertyInfo(MappedComponent, property);
+                    return true;
+                }
                 if (mappedProp.MappedProperty.Name == null) return false;
 
                 found = new API.MappedPropertyInfo(
