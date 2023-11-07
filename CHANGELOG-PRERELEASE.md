@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- eyelids BlendShape Removed error for non-AAO avatars `#696`
 
 ### Security
 
