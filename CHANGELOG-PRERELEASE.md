@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - eyelids BlendShape Removed error for non-AAO avatars `#696`
+- bounds can be changed in apply on play if updateWhenOffscreen is true `#697`
 
 ### Security
 
