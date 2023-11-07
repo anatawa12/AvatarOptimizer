@@ -648,8 +648,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 targetRenderer.bones = Bones.Select(x => x.Transform).ToArray();
 
                 targetRenderer.rootBone = RootBone;
+                var offscreen = targetRenderer.updateWhenOffscreen;
+                targetRenderer.updateWhenOffscreen = false;
                 if (Bounds != default)
                     targetRenderer.localBounds = Bounds;
+                targetRenderer.updateWhenOffscreen = offscreen;
             });
         }
 
