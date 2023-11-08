@@ -176,7 +176,7 @@ namespace Anatawa12.AvatarOptimizer
 
                 foreach (var binding in AnimationUtility.GetCurveBindings(clip))
                 {
-                    var newBindings = _mapping.MapBinding(binding);
+                    var newBindings = _mapping.MapBinding(binding.path, binding.type, binding.propertyName);
                     if (newBindings == null)
                     {
                         newClip.SetCurve(binding.path, binding.type, binding.propertyName,
@@ -195,7 +195,7 @@ namespace Anatawa12.AvatarOptimizer
 
                 foreach (var binding in AnimationUtility.GetObjectReferenceCurveBindings(clip))
                 {
-                    var newBindings = _mapping.MapBinding(binding);
+                    var newBindings = _mapping.MapBinding(binding.path, binding.type, binding.propertyName);
                     if (newBindings == null)
                     {
                         AnimationUtility.SetObjectReferenceCurve(newClip, binding,
@@ -204,10 +204,14 @@ namespace Anatawa12.AvatarOptimizer
                     else
                     {
                         _mapped = true;
-                        foreach (var newBinding in newBindings)
+                        foreach (var tuple in newBindings)
                         {
+                            var newBinding = binding;
+                            newBinding.path = tuple.path;
+                            newBinding.type = tuple.type;
+                            newBinding.propertyName = tuple.propertyName;
                             AnimationUtility.SetObjectReferenceCurve(newClip, newBinding,
-                                AnimationUtility.GetObjectReferenceCurve(clip, binding));
+                                AnimationUtility.GetObjectReferenceCurve(clip, newBinding));
                         }
                     }
                 }

@@ -132,6 +132,7 @@ namespace Anatawa12.AvatarOptimizer
                 {
                     // if mapped one is exactly same as original, return null
                     if (newProp.AllCopiedTo.Length == 1
+                        && gameObjectInfo.NewPath == path
                         && newProp.AllCopiedTo[0].InstanceId == instanceId
                         && newProp.AllCopiedTo[0].Name == propertyName)
                         return null;
@@ -185,26 +186,6 @@ namespace Anatawa12.AvatarOptimizer
                 if (path == gameObjectInfo.NewPath) return null;
                 return new[] { (gameObjectInfo.NewPath, type, propertyName) };
             }
-        }
-
-        [CanBeNull]
-        public EditorCurveBinding[] MapBinding(EditorCurveBinding binding)
-        {
-            var mappedBindings = MapBinding(binding.path, binding.type, binding.propertyName);
-            if (mappedBindings == null)
-            {
-                return null;
-            }
-            
-            var curveBindings = new EditorCurveBinding[mappedBindings.Length];
-            for (var i = 0; i < mappedBindings.Length; i++)
-            {
-                binding.path = mappedBindings[i].path;
-                binding.type = mappedBindings[i].type;
-                binding.propertyName = mappedBindings[i].propertyName;
-                curveBindings[i] = binding; // copy everything else
-            }
-            return curveBindings;
         }
     }
 }
