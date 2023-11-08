@@ -20,20 +20,21 @@ namespace Anatawa12.AvatarOptimizer.Test
 
             var builder = new ObjectMappingBuilder(root);
             child11.transform.parent = child2.transform;
+            builder.RecordMoveProperty(child111, "m_IsActive", "m_IsActive");
 
             var built = builder.BuildObjectMapping();
 
             var rootMapper = built.CreateAnimationMapper(root);
             Assert.That(
-                rootMapper.MapBinding(B("child1/child11", typeof(GameObject), "m_Enabled")),
-                Is.EqualTo(B("child2/child11", typeof(GameObject), "m_Enabled")));
+                rootMapper.MapBinding(B("child1/child11", typeof(GameObject), "m_IsActive")),
+                Is.EqualTo(B("child2/child11", typeof(GameObject), "m_IsActive")));
 
             Assert.That(
-                rootMapper.MapBinding(B("child1/child11/child111", typeof(GameObject), "m_Enabled")),
-                Is.EqualTo(B("child2/child11/child111", typeof(GameObject), "m_Enabled")));
+                rootMapper.MapBinding(B("child1/child11/child111", typeof(GameObject), "m_IsActive")),
+                Is.EqualTo(B("child2/child11/child111", typeof(GameObject), "m_IsActive")));
             
             var child1Mapper = built.CreateAnimationMapper(child1);
-            ExAsset.MapBindingRemoved(child1Mapper, B("child11", typeof(GameObject), "m_Enabled"));
+            ExAsset.MapBindingRemoved(child1Mapper, B("child11", typeof(GameObject), "m_IsActive"));
         }
 
         [Test]
