@@ -1,6 +1,4 @@
 using Anatawa12.AvatarOptimizer.ErrorReporting;
-using UnityEngine;
-using VRC.SDKBase;
 
 namespace Anatawa12.AvatarOptimizer
 {

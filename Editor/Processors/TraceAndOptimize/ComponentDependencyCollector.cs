@@ -1,214 +1,91 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Anatawa12.AvatarOptimizer.API;
-using Anatawa12.AvatarOptimizer.APIBackend;
+using Anatawa12.AvatarOptimizer.APIInternal;
 using Anatawa12.AvatarOptimizer.ErrorReporting;
 using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
 using JetBrains.Annotations;
 using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.Animations;
-using UnityEngine.Rendering;
-using VRC.Core;
-using VRC.Dynamics;
-using VRC.SDK3.Avatars.Components;
-using VRC.SDK3.Dynamics.Contact.Components;
-using VRC.SDK3.Dynamics.PhysBone.Components;
-using VRC.SDKBase;
+using Debug = System.Diagnostics.Debug;
 
 namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 {
     /// <summary>
     /// This class collects ALL dependencies of each component
     /// </summary>
-    class ComponentDependencyCollector
+    readonly struct ComponentDependencyCollector
     {
         private readonly bool _preserveEndBone;
         private readonly BuildContext _session;
+        private readonly GCComponentInfoHolder _componentInfos;
 
-        public ComponentDependencyCollector(BuildContext session, bool preserveEndBone)
+        public ComponentDependencyCollector(BuildContext session, bool preserveEndBone,
+            GCComponentInfoHolder componentInfos)
         {
             _preserveEndBone = preserveEndBone;
             _session = session;
+            _componentInfos = componentInfos;
         }
 
-        private readonly Dictionary<Component, ComponentDependencies> _dependencies =
-            new Dictionary<Component, ComponentDependencies>();
-
-        public class ComponentDependencies
-        {
-            /// <summary>
-            /// True if this component has Active Meaning on the Avatar.
-            /// </summary>
-            public bool EntrypointComponent = false;
-
-            /// <summary>
-            /// Dependencies of this component
-            /// </summary>
-            [NotNull]
-            public IReadOnlyDictionary<Component, (DependencyFlags flags, DependencyType type)> Dependencies => _dependencies;
-
-            [NotNull] private readonly Dictionary<Component, (DependencyFlags, DependencyType)> _dependencies =
-                new Dictionary<Component, (DependencyFlags, DependencyType)>();
-
-            public ComponentDependencies(Component component)
-            {
-                const DependencyFlags ComponentToTransformFlags =
-                    DependencyFlags.EvenIfThisIsDisabled | DependencyFlags.EvenIfTargetIsDisabled;
-                _dependencies[component.gameObject.transform] = (ComponentToTransformFlags, DependencyType.ComponentToTransform);
-            }
-
-            public IComponentDependencyInfo AddDependency(Component component)
-            {
-                if (!component)
-                    return EmptyComponentDependencyInfo.Instance;
-                return new ComponentDependencyInfo(_dependencies, component).SetFlags();
-            }
-
-            public void AddParentDependency(Transform component)
-            {
-                var parent = component.parent;
-                if (parent) new ComponentDependencyInfo(_dependencies, parent, DependencyType.Parent)
-                    .EvenIfDependantDisabled();
-            }
-
-            public void AddBoneDependency(Transform bone)
-            {
-                if (bone) new ComponentDependencyInfo(_dependencies, bone, DependencyType.Bone).SetFlags();
-            }
-
-            class EmptyComponentDependencyInfo : IComponentDependencyInfo
-            {
-                public static EmptyComponentDependencyInfo Instance = new EmptyComponentDependencyInfo();
-
-                private EmptyComponentDependencyInfo()
-                {
-                }
-
-                public IComponentDependencyInfo EvenIfDependantDisabled() => this;
-                public IComponentDependencyInfo OnlyIfTargetCanBeEnable() => this;
-            }
-
-            private struct ComponentDependencyInfo : IComponentDependencyInfo
-            {
-                [NotNull] private readonly Dictionary<Component, (DependencyFlags, DependencyType)> _dependencies;
-                private readonly Component _component;
-
-                private readonly DependencyFlags _prevFlags;
-                private DependencyFlags _flags;
-                private readonly DependencyType _types;
-
-                public ComponentDependencyInfo(
-                    [NotNull] Dictionary<Component, (DependencyFlags, DependencyType)> dependencies, 
-                    [NotNull] Component component,
-                    DependencyType type = DependencyType.Normal)
-                {
-                    _dependencies = dependencies;
-                    _component = component;
-                    _dependencies.TryGetValue(component, out var pair);
-                    _prevFlags = pair.Item1;
-
-                    _flags = DependencyFlags.EvenIfTargetIsDisabled;
-                    _types = pair.Item2 | type;
-                }
-
-                internal ComponentDependencyInfo SetFlags()
-                {
-                    _dependencies[_component] = (_prevFlags | _flags, _types);
-                    return this;
-                }
-
-                public IComponentDependencyInfo EvenIfDependantDisabled()
-                {
-                    _flags |= DependencyFlags.EvenIfThisIsDisabled;
-                    SetFlags();
-                    return this;
-                }
-
-                public IComponentDependencyInfo OnlyIfTargetCanBeEnable()
-                {
-                    _flags &= ~DependencyFlags.EvenIfTargetIsDisabled;
-                    SetFlags();
-                    return this;
-                }
-            }
-        }
-
-        [Flags]
-        public enum DependencyFlags : byte
-        {
-            // dependency flags
-            EvenIfTargetIsDisabled = 1 << 0,
-            EvenIfThisIsDisabled = 1 << 1,
-        }
-
-        [Flags]
-        public enum DependencyType : byte
-        {
-            Normal = 1 << 0,
-            Parent = 1 << 1,
-            ComponentToTransform = 1 << 2,
-            Bone = 1 << 3,
-        }
-
-        [CanBeNull]
-        public ComponentDependencies TryGetDependencies(Component dependent) =>
-            _dependencies.TryGetValue(dependent, out var dependencies) ? dependencies : null;
-
-        [NotNull]
-        public ComponentDependencies GetDependencies(Component dependent) => _dependencies[dependent];
 
         public void CollectAllUsages()
         {
-            var components = _session.GetComponents<Component>().ToArray();
-            // first iteration: create mapping
-            foreach (var component in components) _dependencies.Add(component, new ComponentDependencies(component));
-
+            var collector = new Collector(this, _componentInfos);
             // second iteration: process parsers
-            BuildReport.ReportingObjects(components, component =>
+            foreach (var componentInfo in _componentInfos.AllInformation)
             {
-                // component requires GameObject.
-                if (ComponentInfoRegistry.TryGetInformation(component.GetType(), out var information))
+                var component = componentInfo.Component;
+                BuildReport.ReportingObject(component, () =>
                 {
-                    information.CollectDependencyInternal(component, new Collector(this, component));
-                }
-                else
-                {
-                    BuildReport.LogWarning("TraceAndOptimize:warn:unknown-type", component.GetType().Name);
+                    // component requires GameObject.
+                    collector.Init(componentInfo);
+                    if (ComponentInfoRegistry.TryGetInformation(component.GetType(), out var information))
+                    {
+                        information.CollectDependencyInternal(component, collector);
+                    }
+                    else
+                    {
+                        BuildReport.LogWarning("TraceAndOptimize:warn:unknown-type", component.GetType().Name);
 
-                    FallbackDependenciesParser(component);
-                }
-            });
+                        FallbackDependenciesParser(component, collector);
+                    }
+
+                    collector.FinalizeForComponent();
+                });
+            }
         }
 
-        private void FallbackDependenciesParser(Component component)
+        private static void FallbackDependenciesParser(Component component, API.ComponentDependencyCollector collector)
         {
             // fallback dependencies: All References are Always Dependencies.
-            var dependencies = GetDependencies(component);
-            dependencies.EntrypointComponent = true;
+            collector.MarkEntrypoint();
             using (var serialized = new SerializedObject(component))
             {
                 foreach (var property in serialized.ObjectReferenceProperties())
                 {
                     if (property.objectReferenceValue is GameObject go)
-                        dependencies.AddDependency(go.transform).EvenIfDependantDisabled();
+                        collector.AddDependency(go.transform).EvenIfDependantDisabled();
                     else if (property.objectReferenceValue is Component com)
-                        dependencies.AddDependency(com).EvenIfDependantDisabled();
+                        collector.AddDependency(com).EvenIfDependantDisabled();
                 }
             }
         }
 
-        internal class Collector : IComponentDependencyCollector
+        internal class Collector : API.ComponentDependencyCollector
         {
             private readonly ComponentDependencyCollector _collector;
-            private readonly ComponentDependencies _deps;
+            private GCComponentInfo _info;
+            [NotNull] private readonly ComponentDependencyInfo _dependencyInfoSharedInstance;
 
-            public Collector(ComponentDependencyCollector collector, Component component)
+            public Collector(ComponentDependencyCollector collector, GCComponentInfoHolder componentInfos)
             {
                 _collector = collector;
-                _deps = collector.GetDependencies(component);
+                _dependencyInfoSharedInstance = new ComponentDependencyInfo(componentInfos);
+            }
+            
+            public void Init(GCComponentInfo info)
+            {
+                Debug.Assert(_info == null, "Init on not finished");
+                _info = info;
             }
 
             public bool PreserveEndBone => _collector._preserveEndBone;
@@ -216,13 +93,111 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             public MeshInfo2 GetMeshInfoFor(SkinnedMeshRenderer renderer) =>
                 _collector._session.GetMeshInfoFor(renderer);
 
-            public void MarkEntrypoint() => _deps.EntrypointComponent = true;
-            public IComponentDependencyInfo AddDependency(Component dependant, Component dependency) =>
-                _collector.GetDependencies(dependant).AddDependency(dependency);
-            public IComponentDependencyInfo AddDependency(Component dependency) => _deps.AddDependency(dependency);
+            public override void MarkEntrypoint() => _info.EntrypointComponent = true;
 
-            public void AddParentDependency(Transform component) => _deps.AddParentDependency(component);
-            public void AddBoneDependency(Transform bone) => _deps.AddBoneDependency(bone);
+            public override void MarkHeavyBehaviour() => _info.HeavyBehaviourComponent = true;
+            public override void MarkBehaviour()
+            {
+                // currently NOP
+            }
+
+            private API.ComponentDependencyInfo AddDependencyInternal(
+                [NotNull] GCComponentInfo info,
+                [CanBeNull] Component dependency,
+                GCComponentInfo.DependencyType type = GCComponentInfo.DependencyType.Normal)
+            {
+                _dependencyInfoSharedInstance.Finish();
+                _dependencyInfoSharedInstance.Init(info, dependency, type);
+                return _dependencyInfoSharedInstance;
+            }
+
+            public override API.ComponentDependencyInfo AddDependency(Component dependant, Component dependency) =>
+                AddDependencyInternal(_collector._componentInfos.GetInfo(dependant), dependency);
+
+            public override API.ComponentDependencyInfo AddDependency(Component dependency) =>
+                AddDependencyInternal(_info, dependency);
+
+            public void AddParentDependency(Transform component) =>
+                AddDependencyInternal(_info, component.parent, GCComponentInfo.DependencyType.Parent)
+                    .EvenIfDependantDisabled();
+
+            public void AddBoneDependency(Transform bone) =>
+                AddDependencyInternal(_info, bone, GCComponentInfo.DependencyType.Bone);
+
+            public void FinalizeForComponent()
+            {
+                _dependencyInfoSharedInstance.Finish();
+                _info = null;
+            }
+
+            private class ComponentDependencyInfo : API.ComponentDependencyInfo
+            {
+                private readonly GCComponentInfoHolder _componentInfos;
+
+                [CanBeNull] private Component _dependency;
+                private GCComponentInfo _dependantInformation;
+                private GCComponentInfo.DependencyType _type;
+
+                private bool _evenIfTargetIsDisabled;
+                private bool _evenIfThisIsDisabled;
+
+                // ReSharper disable once NotNullOrRequiredMemberIsNotInitialized
+                public ComponentDependencyInfo(GCComponentInfoHolder componentInfos)
+                {
+                    _componentInfos = componentInfos;
+                }
+
+                internal void Init(GCComponentInfo dependantInformation,
+                    [CanBeNull] Component component,
+                    GCComponentInfo.DependencyType type = GCComponentInfo.DependencyType.Normal)
+                {
+                    Debug.Assert(_dependency == null, "Init on not finished");
+                    _dependency = component;
+                    _dependantInformation = dependantInformation;
+                    _evenIfTargetIsDisabled = true;
+                    _evenIfThisIsDisabled = false;
+                    _type = type;
+                }
+
+                internal void Finish()
+                {
+                    if (_dependency == null) return;
+                    SetToDictionary();
+                    _dependency = null;
+                }
+
+                private void SetToDictionary()
+                {
+                    Debug.Assert(_dependency != null, nameof(_dependency) + " != null");
+
+                    if (!_evenIfThisIsDisabled)
+                    {
+                        // dependant must can be able to be enable
+                        if (_dependantInformation.Activeness == false) return;
+                    }
+                    
+                    if (!_evenIfTargetIsDisabled)
+                    {
+                        // dependency must can be able to be enable
+                        if (_componentInfos.GetInfo(_dependency).Activeness == false) return;
+                    }
+
+                    _dependantInformation.Dependencies.TryGetValue(_dependency, out var type);
+                    _dependantInformation.Dependencies[_dependency] = type | _type;
+                }
+
+                public override API.ComponentDependencyInfo EvenIfDependantDisabled()
+                {
+                    _evenIfThisIsDisabled = true;
+                    return this;
+                }
+
+                public override API.ComponentDependencyInfo OnlyIfTargetCanBeEnable()
+                {
+                    _evenIfTargetIsDisabled = false;
+                    return this;
+                }
+            }
         }
     }
 }

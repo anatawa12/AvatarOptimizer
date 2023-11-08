@@ -246,6 +246,11 @@ msgstr ""
 "Some weights of BlendShape '{0}' of some source SkinnedMeshRenderer are not same value.\n"
 "In this case, the weight of final SkinnedMeshRenderer is not defined so please make uniform weight or freeze BlendShape."
 
+msgid "MergeSkinnedMesh:warning:VRM:FirstPersonFlagsMismatch"
+msgstr ""
+"Source Renderers had specified mixed FirstPersonFlags values, so fallbacked into '{0}'.\n"
+"It is recommended to set same FirstPersonFlags values for Renderers to be merged by MergeSkinnedMesh.\n"
+
 msgid "MergeSkinnedMesh:warning:MeshIsNotNone"
 msgstr ""
 "Mesh of SkinnedMeshRenderer is not None!\n"
@@ -263,6 +268,9 @@ msgstr "Static Renderers"
 msgid "MergeSkinnedMesh:prop:removeEmptyRendererObject"
 msgstr "Remove Empty Renderer Object"
 
+msgid "MergeSkinnedMesh:prop:skipEnablementMismatchedRenderers"
+msgstr "Skip Enablement Mismatched Renderers"
+
 msgid "MergeSkinnedMesh:label:Merge Materials"
 msgstr "Merge Materials"
 
@@ -276,6 +284,14 @@ msgid "MergeSkinnedMesh:error:mix-normal-existence"
 msgstr ""
 "Merging both meshes with and without normal is not supported."
 "Please change import setting of models to include normals!"
+
+msgid "MergeSkinnedMesh:warning:removeZeroSizedPolygonOnSources"
+msgstr "Since Remove Zero Sized Polygons are processed later, it has no effects if it is added with the source Skinned Mesh Renderers."
+
+msgid "MergeSkinnedMesh:warning:animation-mesh-hide"
+msgstr ""
+"You're merging meshes that visibility animated differently than the merged mesh."
+"The animation will not work. This might not be intended, but if it's intended, ignore this warning."
 
 # endregion
 
@@ -347,10 +363,20 @@ msgstr "Invert All"
 
 # endregion
 
+# region RemoveZeroSizedPolygon
+
+msgid "RemoveZeroSizedPolygon:description"
+msgstr "Removes polygons whose area are zero"
+
+# endregion
+
 # region AvatarGlobalComponent
 
 msgid "DeleteEditorOnlyGameObjects:NotOnAvatarDescriptor"
 msgstr "This component must be set on root of Avatar (GameObject with AvatarDescriptor)"
+
+msgid "DeleteEditorOnlyGameObjects:NotOnAvatarRoot"
+msgstr "This component must be set on root of Avatar (For VRChat avatars, GameObject with AvatarDescriptor)"
 
 # endregion
 
@@ -428,12 +454,31 @@ msgstr "Preserve EndBone"
 msgid "TraceAndOptimize:tooltip:preserveEndBone"
 msgstr "Prevents removing end bones whose parent is not removed."
 
+msgid "TraceAndOptimize:prop:removeZeroSizedPolygons"
+msgstr "Automatically Remove Zero Sized Polygons"
+
 # endregion
 
 #region ApplyObjectMapping
 
 msgid "ApplyObjectMapping:VRCAvatarDescriptor:eyelids BlendShape Removed"
 msgstr "BlendShape(s) for eyelids are Removed / frozen."
+
+msgid "ApplyObjectMapping:VRCAvatarDescriptor:viseme BlendShape Removed"
+msgstr "BlendShape(s) for viseme are Removed / frozen."
+
+#endregion
+
+#region MeshInfo2
+
+msgid "MeshInfo2:warning:multiPassRendering"
+msgstr ""
+"Multi pass rendering with multiple materials is used in mesh with '{0}' Component.\n"
+"There's no big difference in actual performance, but the number of polygons in the performance rank will increase.\n"
+"Using multi pass rendering often not be intended. Please check if you intended to use multi pass rendering."
+
+msgid "MeshInfo2:warning:lineStrip"
+msgstr "{0} Component does not process SubMeshes with LineStrip."
 
 #endregion
 

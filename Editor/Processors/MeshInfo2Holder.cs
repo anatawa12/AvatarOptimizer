@@ -39,14 +39,14 @@ namespace Anatawa12.AvatarOptimizer.Processors
             if (avatarTagComponent == null) return;
             foreach (var renderer in rootObject.GetComponentsInChildren<SkinnedMeshRenderer>(true))
             {
-                Profiler.BeginSample($"Read Skinned Mesh {renderer.name}");
+                Profiler.BeginSample($"Read Skinned Mesh");
                 GetMeshInfoFor(renderer);
                 Profiler.EndSample();
             }
             
             foreach (var renderer in rootObject.GetComponentsInChildren<MeshRenderer>(true))
             {
-                Profiler.BeginSample($"Read Static Mesh {renderer.name}");
+                Profiler.BeginSample($"Read Static Mesh");
                 GetMeshInfoFor(renderer);
                 Profiler.EndSample();
             }
@@ -79,17 +79,8 @@ namespace Anatawa12.AvatarOptimizer.Processors
             {
                 var targetRenderer = keyValuePair.Key;
                 if (!targetRenderer) continue;
-                var meshInfo = keyValuePair.Value;
-                var meshFilter = targetRenderer.GetComponent<MeshFilter>();
-
                 Profiler.BeginSample($"Save Static Mesh {targetRenderer.name}");
-                BuildReport.ReportingObject(targetRenderer, () =>
-                {
-                    var mesh = new Mesh { name = $"AAOGeneratedMesh{targetRenderer.name}" };
-                    meshInfo.WriteToMesh(mesh);
-                    meshFilter.sharedMesh = mesh;
-                    targetRenderer.sharedMaterials = meshInfo.SubMeshes.Select(x => x.SharedMaterial).ToArray();
-                });
+                keyValuePair.Value.WriteToMeshRenderer(targetRenderer);
                 Profiler.EndSample();
             }
         }

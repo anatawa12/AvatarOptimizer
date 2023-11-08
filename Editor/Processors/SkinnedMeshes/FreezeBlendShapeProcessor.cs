@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using nadena.dev.ndmf;
 using UnityEngine;
+using UnityEngine.Profiling;
 
 namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 {
@@ -30,22 +31,31 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             for (var i = 0; i < target.BlendShapes.Count; i++)
                 freezes[i] = freezeNames.Contains(target.BlendShapes[i].name);
 
+            Profiler.BeginSample("DoFreezeBlendShape");
             foreach (var vertex in target.Vertices)
             {
                 for (var i = 0; i < target.BlendShapes.Count; i++)
                 {
                     if (!freezes[i]) continue;
                     var (name, weight) = target.BlendShapes[i];
-                    if (!vertex.TryGetBlendShape(name, weight, out var position, out var normal, out var tangent)) continue;
+                    Profiler.BeginSample("TryGetBlendShape");
+                    var result =
+                        vertex.TryGetBlendShape(name, weight, out var position, out var normal, out var tangent);
+                    Profiler.EndSample();
+                    if (!result) continue;
 
+                    Profiler.BeginSample("Apply offsets");
                     vertex.Position += position;
                     vertex.Normal += normal;
                     tangent += (Vector3)vertex.Tangent;
                     vertex.Tangent = new Vector4(tangent.x, tangent.y, tangent.z, vertex.Tangent.w);
                     vertex.BlendShapes.Remove(name);
+                    Profiler.EndSample();
                 }
             }
+            Profiler.EndSample();
 
+            Profiler.BeginSample("MoveProperties");
             {
                 int srcI = 0, dstI = 0;
                 for (; srcI < target.BlendShapes.Count; srcI++)
@@ -66,6 +76,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
                 target.BlendShapes.RemoveRange(dstI, target.BlendShapes.Count - dstI);
             }
+            Profiler.EndSample();
         }
 
         public override IMeshInfoComputer GetComputer(IMeshInfoComputer upstream) => new MeshInfoComputer(this, upstream);

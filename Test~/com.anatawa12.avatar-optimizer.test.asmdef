@@ -1,16 +1,16 @@
 {
     "name": "com.anatawa12.avatar-optimizer.test",
     "references": [
-        "GUID:5718fb738711cd34ea54e9553040911d",
-        "GUID:3456780c4fb2d324ab9c633d6f1b0ddb",
-        "GUID:aeaad65d10ca4136b1d0ee8d9bef1709",
-        "GUID:7e6b618db39145b8a5eb4790d78c2972",
-        "GUID:f69eeb3e25674f4a9bd20e6d7e69e0e6",
-        "GUID:8542dbf824204440a818dbc2377cb4d6",
-        "GUID:b9880ca0b6584453a2627bd3c038759f",
-        "GUID:27619889b8ba8c24980f49ee34dbb44a",
-        "GUID:0acc523941302664db1f4e527237feb3",
-        "GUID:62ced99b048af7f4d8dfe4bed8373d76"
+        "VRC.SDK3A",
+        "VRC.SDKBase",
+        "com.anatawa12.avatar-optimizer.test.runtime",
+        "com.anatawa12.avatar-optimizer.editor",
+        "com.anatawa12.avatar-optimizer.runtime",
+        "com.anatawa12.avatar-optimizer.internal.prefab-safe-set",
+        "com.anatawa12.avatar-optimizer.internal.prefab-safe-set.editor",
+        "UnityEngine.TestRunner",
+        "UnityEditor.TestRunner",
+        "nadena.dev.ndmf"
     ],
     "includePlatforms": [
         "Editor"
@@ -22,7 +22,8 @@
         "VRC.SDK3.Dynamics.PhysBone.dll",
         "VRC.Dynamics.dll",
         "VRCSDK3A.dll",
-        "VRCSDKBase.dll"
+        "VRCSDKBase.dll",
+        "System.Memory.dll"
     ],
     "autoReferenced": false,
     "defineConstraints": [],
@@ -31,6 +32,16 @@
             "name": "com.vrchat.avatars",
             "expression": "",
             "define": "AAO_VRCSDK3_AVATARS"
+        },
+        {
+            "name": "com.vrmc.univrm",
+            "expression": "",
+            "define": "AAO_VRM0"
+        },
+        {
+            "name": "com.vrmc.vrm",
+            "expression": "",
+            "define": "AAO_VRM1"
         }
     ],
     "noEngineReferences": false

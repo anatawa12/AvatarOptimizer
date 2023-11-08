@@ -36,7 +36,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             foreach (var v in target.Vertices) users[v] = 0;
 
             foreach (var targetSubMesh in target.SubMeshes)
-            foreach (var v in targetSubMesh.Triangles.Distinct())
+            foreach (var v in targetSubMesh.Vertices.Distinct())
                 users[v]++;
 
             // compute per-material data
@@ -55,35 +55,36 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     var subMesh = target.SubMeshes[subMeshI];
                     var targetRect = targetRectForMaterial[subMeshI];
                     var vertexCache = new Dictionary<Vertex, Vertex>();
-                    for (var i = 0; i < subMesh.Triangles.Count; i++)
+                    for (var i = 0; i < subMesh.Vertices.Count; i++)
                     {
-                        if (vertexCache.TryGetValue(subMesh.Triangles[i], out var cached))
+                        if (vertexCache.TryGetValue(subMesh.Vertices[i], out var cached))
                         {
-                            subMesh.Triangles[i] = cached;
+                            subMesh.Vertices[i] = cached;
                             continue;
                         }
-                        if (users[subMesh.Triangles[i]] != 1)
+                        if (users[subMesh.Vertices[i]] != 1)
                         {
                             // if there are multiple users for the vertex: duplicate it
-                            var cloned = subMesh.Triangles[i].Clone();
+                            var cloned = subMesh.Vertices[i].Clone();
                             target.Vertices.Add(cloned);
 
-                            users[subMesh.Triangles[i]]--;
+                            users[subMesh.Vertices[i]]--;
 
-                            vertexCache[subMesh.Triangles[i]] = cloned;
-                            subMesh.Triangles[i] = cloned;
+                            vertexCache[subMesh.Vertices[i]] = cloned;
+                            subMesh.Vertices[i] = cloned;
                         }
                         else
                         {
-                            vertexCache[subMesh.Triangles[i]] = subMesh.Triangles[i];
+                            vertexCache[subMesh.Vertices[i]] = subMesh.Vertices[i];
                         }
 
-                        subMesh.Triangles[i].TexCoord0 = MapUV(subMesh.Triangles[i].TexCoord0, targetRect);
+                        subMesh.Vertices[i].TexCoord0 = MapUV(subMesh.Vertices[i].TexCoord0, targetRect);
                     }
                 }
             }
 
             // merge submeshes
+            target.FlattenMultiPassRendering("Merge Toon Lit");
             var copied = target.SubMeshes.Where((_, i) => !mergingIndices[i]);
             var materials = target.SubMeshes.Select(x => x.SharedMaterial).ToArray();
             var merged = Component.merges.Select(x => new SubMesh(

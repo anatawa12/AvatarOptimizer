@@ -8,26 +8,73 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Public API for registering component information `#632` `#668`
+- Disabling PhysBone animation based on mesh renderer enabled animation `#640`
+  - If you toggles your clothes with simple toggle, PhysBones on the your avatar will also be toggled automatically!
+- Small performance improve `#641`
+- Ability to prevent changing enablement of component `#668`
+- Remove Zero Sized Polygons `#659`
+- Add support for UniVRM components `#653`
+- Support for Mesh Topologies other than Triangles `#692`
+- Skip enablement mismatched Renderers in Merge Skinned Mesh `#670`
+  - This is now enabled by default for newly added Merge Skinned Mesh.
 
 ### Changed
-- Make no-op as possible if no AAO component attached for your avatar `#603`
-- Error Report window is refreshed after exiting play mode `#606`
+- All logs passed to ErrorReport is now shown on the console log `#643`
+- Improved Behaviour with multi-material multi pass rendering `#662`
+  - Previously, multi-material multi pass rendering are flattened.
+  - Since 1.6, flattened if component doesn't support that.
+- When you're animating activeness/enablement of source renderers, warning is shown since this release `#675`
 
 ### Deprecated
 
 ### Removed
-- Error for Read/Write Mesh off Mesh `#615`
+- Legacy GC `#633`
+- Preventing removing `IEditorOnly` in callback order -1024 `#658`
+  - This is no longer needed sincd 1.5.0 but I forgot to remove so I removed in 1.6
+
+### Fixed
+- Improve support of newer Unity versions `#608`
+- Improve support of projects without VRCSDK `#609` `#625` `#627`
+- Prefab blinks when we see editor of PrefabSafeSet of prefab asset `#645` `#664`
+- complex shader with SkinnedMeshRenderer without Bones Brokebn `#694`
+- bounds can be changed in apply on play if updateWhenOffscreen is true `#697`
+
+### Security
+
+## [1.5.10] - 2023-11-04
+### Fixed
+- RigidBody Joint can be broken [`#683`](https://github.com/anatawa12/AvatarOptimizer/pull/683)
+
+## [1.5.9] - 2023-10-29
+### Fixed
+- Animation clip length can be changed [`#647`](https://github.com/anatawa12/AvatarOptimizer/pull/647)
+
+## [1.5.8] - 2023-10-20
+### Fixed
+- warning about VRCTestMarker when Build & Test [`#628`](https://github.com/anatawa12/AvatarOptimizer/pull/628)
+
+## [1.5.7] - 2023-10-19
+### Added
+- Add compatibility for VRCQuestTools [`#619`](https://github.com/anatawa12/AvatarOptimizer/pull/619)
+
+### Fixed
+- AutoFreezeBlendShape will freeze BlendShapes with editor value instead of animated constant [`#622`](https://github.com/anatawa12/AvatarOptimizer/pull/622)
+
+## [1.5.6] - 2023-10-17
+### Changed
+- Make no-op as possible if no AAO component attached for your avatar [`#603`](https://github.com/anatawa12/AvatarOptimizer/pull/603)
+- Error Report window is refreshed after exiting play mode [`#606`](https://github.com/anatawa12/AvatarOptimizer/pull/606)
+
+### Removed
+- Error for Read/Write Mesh off Mesh [`#615`](https://github.com/anatawa12/AvatarOptimizer/pull/615)
   - Since AAO creates Mesh every time, no more error is required!
 
 ### Fixed
-- Multi-frame BlendShape can be broken `#601`
-- Update notice may show incorrect version `#602`
-- `Preview` button is not disabled even if mesh is none `#605`
-- BindPose Optimization may break mesh with scale 0 bone `#612`
-- Improve support of newer Unity versions `#608`
-- Improve support of projects without VRCSDK `#609`
-
-### Security
+- Multi-frame BlendShape can be broken [`#601`](https://github.com/anatawa12/AvatarOptimizer/pull/601)
+- Update notice may show incorrect version [`#602`](https://github.com/anatawa12/AvatarOptimizer/pull/602)
+- `Preview` button is not disabled even if mesh is none [`#605`](https://github.com/anatawa12/AvatarOptimizer/pull/605)
+- BindPose Optimization may break mesh with scale 0 bone [`#612`](https://github.com/anatawa12/AvatarOptimizer/pull/612)
 
 ## [1.5.5] - 2023-10-15
 ### Fixed
@@ -604,7 +651,12 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.5...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.10...HEAD
+[1.5.10]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.9...v1.5.10
+[1.5.9]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.8...v1.5.9
+[1.5.8]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.7...v1.5.8
+[1.5.7]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.6...v1.5.7
+[1.5.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.5...v1.5.6
 [1.5.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.4...v1.5.5
 [1.5.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.3...v1.5.4
 [1.5.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.2...v1.5.3

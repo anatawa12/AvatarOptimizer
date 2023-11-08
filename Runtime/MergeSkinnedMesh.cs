@@ -21,6 +21,15 @@ namespace Anatawa12.AvatarOptimizer
         [NotKeyable, CL4EELocalized("MergeSkinnedMesh:prop:removeEmptyRendererObject")]
         [ToggleLeft]
         public bool removeEmptyRendererObject = true;
+        [CL4EELocalized("MergeSkinnedMesh:prop:skipEnablementMismatchedRenderers")]
+        [NotKeyable]
+        [ToggleLeft]
+        public bool skipEnablementMismatchedRenderers;
+
+        private void Reset()
+        {
+            skipEnablementMismatchedRenderers = true;
+        }
 
         public MergeSkinnedMesh()
         {

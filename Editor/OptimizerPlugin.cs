@@ -47,16 +47,21 @@ namespace Anatawa12.AvatarOptimizer.ndmf
                     }, _ =>
                     {
                         seq.Run(Processors.TraceAndOptimizes.LoadTraceAndOptimizeConfiguration.Instance)
-                            .Then.Run(Processors.TraceAndOptimizes.ParseAnimator.Instance)
+                            .Then.Run(Processors.ParseAnimator.Instance)
                             .Then.Run(Processors.TraceAndOptimizes.AutoFreezeBlendShape.Instance)
+#if AAO_VRCSDK3_AVATARS
                             .Then.Run(Processors.ClearEndpointPositionProcessor.Instance)
                             .Then.Run(Processors.MergePhysBoneProcessor.Instance)
+#endif
                             .Then.Run(Processors.EditSkinnedMeshComponentProcessor.Instance)
                             .Then.Run("MakeChildrenProcessor",
                                 ctx => new Processors.MakeChildrenProcessor(early: false).Process(ctx)
                             )
                             .Then.Run(Processors.TraceAndOptimizes.FindUnusedObjects.Instance)
-                            .Then.Run(Processors.MergeBoneProcessor.Instance);
+                            .Then.Run(Processors.TraceAndOptimizes.ConfigureRemoveZeroSizedPolygon.Instance)
+                            .Then.Run(Processors.MergeBoneProcessor.Instance)
+                            .Then.Run(Processors.RemoveZeroSizedPolygonProcessor.Instance)
+                            ;
                     });
                     seq.Run("EmptyPass for Context Ordering", _ => {});
                 });

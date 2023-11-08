@@ -54,6 +54,11 @@ Drop to None element at the bottom to add renderer and reset to None to remove f
 If this checkbox is checked and the GameObject SkinnedMeshRenderer belongs to does not have
 any other components than SkinnedMeshRenderer, the GameObject will be removed from Hierarchy.
 
+### Skip Enablement Mismatched Renderers
+
+If this checkbox is checked, SkinnedMeshRenderer and MeshRenderer will not be merged
+if enablement is different than target renderer the on the build time.
+
 ### Merge Materials
 
 If MergeSkinnedMesh component found some Materials used in multiple renderers, the Materials will be listed here.

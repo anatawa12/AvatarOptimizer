@@ -1,3 +1,5 @@
+#if AAO_VRCSDK3_AVATARS
+
 using Anatawa12.AvatarOptimizer.PrefabSafeSet;
 using Anatawa12.AvatarOptimizer.Processors;
 using NUnit.Framework;
@@ -120,3 +122,5 @@ namespace Anatawa12.AvatarOptimizer.Test
         }
     }
 }
+
+#endif
