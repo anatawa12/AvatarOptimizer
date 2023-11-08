@@ -31,7 +31,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 - Legacy GC `#633`
 - Preventing removing `IEditorOnly` in callback order -1024 `#658`
-  - This is no longer needed sincd 1.5.0 but I forgot to remove so I removed in 1.6
+  - This is no longer needed since 1.5.0 but I forgot to remove so I removed in 1.6
 
 ### Fixed
 - Improve support of newer Unity versions `#608`

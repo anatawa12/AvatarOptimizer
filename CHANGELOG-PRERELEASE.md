@@ -54,7 +54,7 @@ The format is based on [Keep a Changelog].
 
 ### Removed
 - Preventing removing `IEditorOnly` in callback order -1024 [`#658`](https://github.com/anatawa12/AvatarOptimizer/pull/658)
-  - This is no longer needed sincd 1.5.0 but I forgot to remove so I removed in 1.6
+  - This is no longer needed since 1.5.0 but I forgot to remove so I removed in 1.6
 
 ### Fixed
 - Prefab blinks when we see editor of PrefabSafeSet of prefab asset [`#645`](https://github.com/anatawa12/AvatarOptimizer/pull/645) [`#664`](https://github.com/anatawa12/AvatarOptimizer/pull/664)
