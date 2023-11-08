@@ -377,7 +377,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             var rootMapper = built.CreateAnimationMapper(root);
 
             Assert.That(
-                rootMapper.MapBinding(Curve("child1/child11", typeof(GameObject), "m_IsActive"))?.Select(ToTuple),
+                rootMapper.MapBinding("child1/child11", typeof(GameObject), "m_IsActive"),
                 Is.Not.Null.And.EquivalentTo(new[]
                 {
                     B("child1/child11", typeof(GameObject), "m_IsActive"),
@@ -387,7 +387,7 @@ namespace Anatawa12.AvatarOptimizer.Test
                 }));
 
             Assert.That(
-                rootMapper.MapBinding(Curve("child1/child12", typeof(GameObject), "m_IsActive"))?.Select(ToTuple),
+                rootMapper.MapBinding("child1/child12", typeof(GameObject), "m_IsActive"),
                 Is.Not.Null.And.EquivalentTo(new[]
                 {
                     B("child1/child12", typeof(GameObject), "m_IsActive"),
@@ -408,7 +408,7 @@ namespace Anatawa12.AvatarOptimizer.Test
     {
         public static void MapBindingRemoved(AnimationObjectMapper mapping, (string, Type, string) binding)
         {
-            var result = mapping.MapBinding(EditorCurveBinding.PPtrCurve(binding.Item1, binding.Item2, binding.Item3));
+            var result = mapping.MapBinding(binding.Item1, binding.Item2, binding.Item3);
 
             Assert.That(result, Is.Not.Null);
             Assert.That(result.Length, Is.EqualTo(0));
@@ -416,14 +416,14 @@ namespace Anatawa12.AvatarOptimizer.Test
 
         public static void MapBindingUnchanged(AnimationObjectMapper mapping, (string, Type, string) binding)
         {
-            var result = mapping.MapBinding(EditorCurveBinding.PPtrCurve(binding.Item1, binding.Item2, binding.Item3));
+            var result = mapping.MapBinding(binding.Item1, binding.Item2, binding.Item3);
 
             Assert.That(result, Is.Null);
         }
 
         public static (string, Type, string) MapBinding(this AnimationObjectMapper mapping, (string, Type, string) binding)
         {
-            var result = mapping.MapBinding(EditorCurveBinding.PPtrCurve(binding.Item1, binding.Item2, binding.Item3));
+            var result = mapping.MapBinding(binding.Item1, binding.Item2, binding.Item3);
 
             Assert.That(result, Is.Not.Null);
             Assert.That(result.Length, Is.EqualTo(1));
