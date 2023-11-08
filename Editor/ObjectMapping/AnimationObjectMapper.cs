@@ -132,6 +132,7 @@ namespace Anatawa12.AvatarOptimizer
                 {
                     // if mapped one is exactly same as original, return null
                     if (newProp.AllCopiedTo.Length == 1
+                        && gameObjectInfo.NewPath == path
                         && newProp.AllCopiedTo[0].InstanceId == instanceId
                         && newProp.AllCopiedTo[0].Name == propertyName)
                         return null;
