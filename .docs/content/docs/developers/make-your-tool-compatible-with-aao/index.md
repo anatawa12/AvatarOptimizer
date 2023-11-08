@@ -41,19 +41,19 @@ If your tool is a non-destructive tool based on NDMF[^NDMF], please remove your 
 Avatar Optimizer processes. Avatar Optimizer does most things in Optimization phase
 so if your plugin do nothing in Optimization phase, nothing is problem.\
 If your tool needs your components in Optimization phase, 
-please execute before Avatar Optimizer processes with [`BeforePlugin`][ndmf-BeforePlugin]. 
+please consider executing before Avatar Optimizer processes by using [`BeforePlugin`][ndmf-BeforePlugin]. 
 QualifiedName of Avatar Optimizer in NDMF is `com.anatawa12.avatar-optimizer`.
 
-If your tool actually wants to do something with your components in Optimization phase,
+If your tool actually needs to do something with your components in Optimization phase after Avatar Optimizer processes,
 please [register your components][register-component] to Avatar Optimizer.
 
 ### For non-NDMF based non-destructive tools {#improve-compatibility-non-ndmf-based}
 
 If your tool is a non-destructive tool not based on NDMF[^NDMF], please consider
-make your tool based on NDMF.
+making it based on NDMF.
 
 If your tool is applied on play, to ensure compatibility with Avatar Optimizer, you have to use NDMF to
-guarantee applying ordering between Avatar Optimizer and your tool.
+guarantee applying ordering between Avatar Optimizer and your tool.\
 If your tool does something only on building avatar, making your tool based on NDMF is not required.
 
 If you don't want to make your tool based on NDMF, please remove your components before Avatar Optimizer processes.
@@ -107,8 +107,8 @@ internal class YourComponentInformation : ComponentInformation<YourComponent>
 #endif
 ```
 
-In `CollectDependency`, you should register build-time or run-time dependencies of your component.\
 In `CollectMutations`, you should register any mutation your component may do.\
+In `CollectDependency`, you should register build-time or run-time dependencies of your component.\
 Please refer xmldoc and method name for more datails.
 
 If your component is just for keeping data for your in-editor tool, both will be empty method.
