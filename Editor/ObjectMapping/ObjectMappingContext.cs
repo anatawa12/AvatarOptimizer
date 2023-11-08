@@ -211,7 +211,7 @@ namespace Anatawa12.AvatarOptimizer
                             newBinding.type = tuple.type;
                             newBinding.propertyName = tuple.propertyName;
                             AnimationUtility.SetObjectReferenceCurve(newClip, newBinding,
-                                AnimationUtility.GetObjectReferenceCurve(clip, newBinding));
+                                AnimationUtility.GetObjectReferenceCurve(clip, binding));
                         }
                     }
                 }
