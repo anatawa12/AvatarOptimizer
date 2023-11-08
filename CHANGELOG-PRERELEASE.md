@@ -16,11 +16,14 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- eyelids BlendShape Removed error for non-AAO avatars `#696`
-- bounds can be changed in apply on play if updateWhenOffscreen is true `#697`
-- Animations for most components under MergeBone is not mapped `#700`
 
 ### Security
+
+## [1.6.0-beta.4] - 2023-11-08
+### Fixed
+- eyelids BlendShape Removed error for non-AAO avatars [`#696`](https://github.com/anatawa12/AvatarOptimizer/pull/696)
+- bounds can be changed in apply on play if updateWhenOffscreen is true [`#697`](https://github.com/anatawa12/AvatarOptimizer/pull/697)
+- Animations for most components under MergeBone is not mapped [`#700`](https://github.com/anatawa12/AvatarOptimizer/pull/700)
 
 ## [1.6.0-beta.3] - 2023-11-06
 ### Added
@@ -995,7 +998,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.3...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.4...HEAD
+[1.6.0-beta.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.3...v1.6.0-beta.4
 [1.6.0-beta.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.2...v1.6.0-beta.3
 [1.6.0-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.1...v1.6.0-beta.2
 [1.6.0-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.10...v1.6.0-beta.1
