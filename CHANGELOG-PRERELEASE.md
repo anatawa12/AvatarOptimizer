@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Enablement mismatched renderers are merged instead of matched renderers `#705`
 
 ### Security
 
