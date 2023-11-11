@@ -40,6 +40,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
         {
             collector.MarkEntrypoint();
             collector.AddDependency(component.GetComponent<PipelineManager>()).EvenIfDependantDisabled();
+            collector.AddDependency(component.GetComponent<Animator>()).EvenIfDependantDisabled();
         }
 
         protected override void CollectMutations(T component, ComponentMutationsCollector collector)
