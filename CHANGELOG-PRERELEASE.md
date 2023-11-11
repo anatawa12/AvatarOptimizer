@@ -16,9 +16,12 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Animator of AvatarRoot diesappears `#711`
 
 ### Security
+
+## [1.6.0-beta.8] - 2023-11-11
+### Fixed
+- Animator of AvatarRoot diesappears [`#711`](https://github.com/anatawa12/AvatarOptimizer/pull/711)
 
 ## [1.6.0-beta.7] - 2023-11-11
 ### Fixed
@@ -1015,7 +1018,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.7...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.8...HEAD
+[1.6.0-beta.8]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.7...v1.6.0-beta.8
 [1.6.0-beta.7]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.6...v1.6.0-beta.7
 [1.6.0-beta.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.5...v1.6.0-beta.6
 [1.6.0-beta.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.4...v1.6.0-beta.5
