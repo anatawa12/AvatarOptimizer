@@ -10,17 +10,22 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
-- Remove Unused Objects removes meaningless Animators and Renderers `#709`
-  - Renderers without Mesh and Animators without AnimatorController is meaningless
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
-- Enablement mismatched renderers are merged instead of matched renderers `#705`
 
 ### Security
+
+## [1.6.0-beta.6] - 2023-11-11
+### Changed
+- Remove Unused Objects removes meaningless Animators and Renderers [`#709`](https://github.com/anatawa12/AvatarOptimizer/pull/709)
+  - Renderers without Mesh and Animators without AnimatorController is meaningless
+
+### Fixed
+- Enablement mismatched renderers are merged instead of matched renderers [`#705`](https://github.com/anatawa12/AvatarOptimizer/pull/705)
 
 ## [1.6.0-beta.5] - 2023-11-08
 ### Fixed
@@ -1005,7 +1010,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.5...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.6...HEAD
+[1.6.0-beta.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.5...v1.6.0-beta.6
 [1.6.0-beta.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.4...v1.6.0-beta.5
 [1.6.0-beta.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.3...v1.6.0-beta.4
 [1.6.0-beta.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.2...v1.6.0-beta.3
