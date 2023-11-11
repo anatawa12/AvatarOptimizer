@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- MergeSMR broken `#710`
 
 ### Security
 
