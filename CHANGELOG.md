@@ -25,6 +25,8 @@ The format is based on [Keep a Changelog].
   - Previously, multi-material multi pass rendering are flattened.
   - Since 1.6, flattened if component doesn't support that.
 - When you're animating activeness/enablement of source renderers, warning is shown since this release `#675`
+- Remove Unused Objects removes meaningless Animators and Renderers `#709`
+  - Renderers without Mesh and Animators without AnimatorController is meaningless
 
 ### Deprecated
 

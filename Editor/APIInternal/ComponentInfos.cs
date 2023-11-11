@@ -46,6 +46,8 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
         // All State / Motion Changes are collected separately
         protected override void CollectDependency(Animator component, ComponentDependencyCollector collector)
         {
+            // if AnimatorController is null, it does nothing.
+            if (!component.runtimeAnimatorController) return;
             collector.MarkEntrypoint();
 
             for (var bone = HumanBodyBones.Hips; bone < HumanBodyBones.LastBone; bone++)
@@ -80,6 +82,8 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
         protected override void CollectDependency(SkinnedMeshRenderer component,
             ComponentDependencyCollector collector)
         {
+            // SMR without mesh does nothing.
+            if (!component.sharedMesh) return;
             base.CollectDependency(component, collector);
 
             var casted = (Processors.TraceAndOptimizes.ComponentDependencyCollector.Collector)collector;
@@ -96,8 +100,12 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
     {
         protected override void CollectDependency(MeshRenderer component, ComponentDependencyCollector collector)
         {
+            var meshFilter = component.GetComponent<MeshFilter>();
+            // Mesh renderer without MeshFilter does nothing
+            // Mesh renderer without Mesh does nothing
+            if (!meshFilter || !meshFilter.sharedMesh) return;
             base.CollectDependency(component, collector);
-            collector.AddDependency(component.GetComponent<MeshFilter>());
+            collector.AddDependency(meshFilter);
         }
     }
 
