@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Animator of AvatarRoot diesappears `#711`
 
 ### Security
 
