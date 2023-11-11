@@ -33,7 +33,17 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             List<MeshRenderer> staticMeshRenderers;
             if (Component.skipEnablementMismatchedRenderers)
             {
-                bool RendererEnabled(Renderer x) => x.enabled && x.gameObject.activeSelf;
+                bool RendererEnabled(Renderer x)
+                {
+                    if (!x.enabled) return false;
+                    for (var transform = x.transform;
+                         transform != null && transform != context.AvatarRootTransform;
+                         transform = transform.parent)
+                        if (!transform.gameObject.activeSelf)
+                            return false;
+                    return true;
+                }
+
                 var enabledSelf = RendererEnabled(Target);
                 skinnedMeshRenderers = SkinnedMeshRenderers.Where(x => RendererEnabled(x) == enabledSelf).ToList();
                 staticMeshRenderers = StaticMeshRenderers.Where(x => RendererEnabled(x) == enabledSelf).ToList();
