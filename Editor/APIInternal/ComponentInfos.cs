@@ -82,6 +82,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
         protected override void CollectDependency(SkinnedMeshRenderer component,
             ComponentDependencyCollector collector)
         {
+            // IMPORTANT NOTE: We have to use MeshInfo to get information about the mesh!!!
             var casted = (Processors.TraceAndOptimizes.ComponentDependencyCollector.Collector)collector;
             var meshInfo2 = casted.GetMeshInfoFor(component);
             // SMR without mesh does nothing.
