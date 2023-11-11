@@ -31,8 +31,6 @@ namespace Anatawa12.AvatarOptimizer.Processors
         private readonly Dictionary<SkinnedMeshRenderer, MeshInfo2> _skinnedCache =
             new Dictionary<SkinnedMeshRenderer, MeshInfo2>();
 
-        private readonly Dictionary<MeshRenderer, MeshInfo2> _staticCache = new Dictionary<MeshRenderer, MeshInfo2>();
-
         public MeshInfo2Holder(GameObject rootObject)
         {
             var avatarTagComponent = rootObject.GetComponentInChildren<AvatarTagComponent>(true);
@@ -40,13 +38,6 @@ namespace Anatawa12.AvatarOptimizer.Processors
             foreach (var renderer in rootObject.GetComponentsInChildren<SkinnedMeshRenderer>(true))
             {
                 Profiler.BeginSample($"Read Skinned Mesh");
-                GetMeshInfoFor(renderer);
-                Profiler.EndSample();
-            }
-            
-            foreach (var renderer in rootObject.GetComponentsInChildren<MeshRenderer>(true))
-            {
-                Profiler.BeginSample($"Read Static Mesh");
                 GetMeshInfoFor(renderer);
                 Profiler.EndSample();
             }
@@ -58,11 +49,6 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 : _skinnedCache[renderer] = new MeshInfo2(renderer);
 
 
-        public MeshInfo2 GetMeshInfoFor(MeshRenderer renderer) =>
-            _staticCache.TryGetValue(renderer, out var cached)
-                ? cached
-                : _staticCache[renderer] = new MeshInfo2(renderer);
-
         public void SaveToMesh()
         {
             foreach (var keyValuePair in _skinnedCache)
@@ -72,15 +58,6 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
                 Profiler.BeginSample($"Save Skinned Mesh {targetRenderer.name}");
                 keyValuePair.Value.WriteToSkinnedMeshRenderer(targetRenderer);
-                Profiler.EndSample();
-            }
-
-            foreach (var keyValuePair in _staticCache)
-            {
-                var targetRenderer = keyValuePair.Key;
-                if (!targetRenderer) continue;
-                Profiler.BeginSample($"Save Static Mesh {targetRenderer.name}");
-                keyValuePair.Value.WriteToMeshRenderer(targetRenderer);
                 Profiler.EndSample();
             }
         }

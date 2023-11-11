@@ -25,9 +25,6 @@ namespace Anatawa12.AvatarOptimizer
         public static MeshInfo2 GetMeshInfoFor([NotNull] this BuildContext context, SkinnedMeshRenderer renderer) =>
             context.GetHolder().GetMeshInfoFor(renderer);
 
-        public static MeshInfo2 GetMeshInfoFor([NotNull] this BuildContext context, MeshRenderer renderer) =>
-            context.GetHolder().GetMeshInfoFor(renderer);
-
         private static ObjectMappingBuilder GetMappingBuilder([NotNull] this BuildContext context)
         {
             if (context == null) throw new ArgumentNullException(nameof(context));
