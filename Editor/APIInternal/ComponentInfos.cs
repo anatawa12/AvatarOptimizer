@@ -82,13 +82,13 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
         protected override void CollectDependency(SkinnedMeshRenderer component,
             ComponentDependencyCollector collector)
         {
+            var casted = (Processors.TraceAndOptimizes.ComponentDependencyCollector.Collector)collector;
+            var meshInfo2 = casted.GetMeshInfoFor(component);
             // SMR without mesh does nothing.
-            if (!component.sharedMesh) return;
+            if (meshInfo2.IsEmpty()) return;
+
             base.CollectDependency(component, collector);
 
-            var casted = (Processors.TraceAndOptimizes.ComponentDependencyCollector.Collector)collector;
-
-            var meshInfo2 = casted.GetMeshInfoFor(component);
             foreach (var bone in meshInfo2.Bones)
                 casted.AddBoneDependency(bone.Transform);
             collector.AddDependency(meshInfo2.RootBone);

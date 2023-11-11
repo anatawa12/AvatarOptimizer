@@ -387,6 +387,17 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             HasTangent = false;
         }
 
+        public bool IsEmpty() =>
+            Bounds == default &&
+            Vertices.Count == 0 &&
+            _texCoordStatus == default &&
+            SubMeshes.Count == 0 &&
+            BlendShapes.Count == 0 &&
+            Bones.Count == 0 &&
+            HasColor == false &&
+            HasNormals == false &&
+            HasTangent == false;
+
         public void Optimize()
         {
             RemoveUnusedBones();
