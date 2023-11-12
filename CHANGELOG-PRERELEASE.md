@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Humanoid of Avatar Root Animator broken `#714`
 
 ### Security
 
