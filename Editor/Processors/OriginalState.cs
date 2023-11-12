@@ -24,8 +24,11 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
         public Matrix4x4 GetOriginalLocalToWorld(Transform transform)
         {
-            if (_originalTransforms.TryGetValue(transform, out var matrix))
-                return AvatarRoot.localToWorldMatrix * matrix;
+            for (var current = transform; current != null && current != AvatarRoot; current = current.parent)
+            {
+                if (_originalTransforms.TryGetValue(current, out var matrix))
+                    return AvatarRoot.localToWorldMatrix * matrix * current.worldToLocalMatrix * transform.localToWorldMatrix;
+            }
             return transform.localToWorldMatrix;
         }
     }
