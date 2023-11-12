@@ -16,9 +16,12 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Humanoid of Avatar Root Animator broken `#714`
 
 ### Security
+
+## [1.6.0-beta.9] - 2023-11-12
+### Fixed
+- Humanoid of Avatar Root Animator broken [`#714`](https://github.com/anatawa12/AvatarOptimizer/pull/714)
 
 ## [1.6.0-beta.8] - 2023-11-11
 ### Fixed
@@ -1019,7 +1022,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.8...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.9...HEAD
+[1.6.0-beta.9]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.8...v1.6.0-beta.9
 [1.6.0-beta.8]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.7...v1.6.0-beta.8
 [1.6.0-beta.7]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.6...v1.6.0-beta.7
 [1.6.0-beta.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.5...v1.6.0-beta.6
