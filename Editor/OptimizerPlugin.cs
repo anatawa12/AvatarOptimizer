@@ -34,6 +34,11 @@ namespace Anatawa12.AvatarOptimizer.ndmf
                         )
                         .BeforePass(RemoveEditorOnlyPass.Instance);
                 });
+            InPhase(BuildPhase.Resolving)
+                .WithRequiredExtensions(new [] {typeof(BuildReportContext)}, seq =>
+                {
+                    seq.Run(Processors.FetchOriginalStatePass.Instance);
+                });
 
             // Run everything else in the optimize phase
             InPhase(BuildPhase.Optimizing)

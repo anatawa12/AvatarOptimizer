@@ -41,7 +41,10 @@ The format is based on [Keep a Changelog].
 - Prefab blinks when we see editor of PrefabSafeSet of prefab asset `#645` `#664`
 - complex shader with SkinnedMeshRenderer without Bones Brokebn `#694`
 - bounds can be changed in apply on play if updateWhenOffscreen is true `#697`
+- Compatibility with transform moving plugins `#715`
+  - Remove Mesh in Box was not working well with [FloorAdjuster]
 
+[FloorAdjuster]: https://github.com/Narazaka/FloorAdjuster
 ### Security
 
 ## [1.5.10] - 2023-11-04

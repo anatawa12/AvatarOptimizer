@@ -978,7 +978,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         public Vertex Clone() => new Vertex(this);
 
-        public Vector3 ComputeActualPosition(MeshInfo2 meshInfo2, Matrix4x4 rendererWorldToLocalMatrix)
+        public Vector3 ComputeActualPosition(MeshInfo2 meshInfo2, OriginalState originalState, Matrix4x4 rendererWorldToLocalMatrix)
         {
             var position = Position;
 
@@ -991,7 +991,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             var matrix = Matrix4x4.zero;
             foreach (var (bone, weight) in BoneWeights)
             {
-                var transformMat = bone.Transform ? (Matrix4x4)bone.Transform.localToWorldMatrix : Matrix4x4.identity;
+                var transformMat = bone.Transform
+                    ? originalState.GetOriginalLocalToWorld(bone.Transform)
+                    : Matrix4x4.identity;
                 var boneMat = transformMat * bone.Bindpose;
                 matrix += boneMat * weight;
             }

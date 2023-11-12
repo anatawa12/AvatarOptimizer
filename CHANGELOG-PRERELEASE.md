@@ -16,7 +16,10 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Compatibility with transform moving plugins `#715`
+  - Remove Mesh in Box was not working well with [FloorAdjuster]
 
+[FloorAdjuster]: https://github.com/Narazaka/FloorAdjuster
 ### Security
 
 ## [1.6.0-beta.9] - 2023-11-12
