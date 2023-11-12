@@ -46,9 +46,8 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
         // All State / Motion Changes are collected separately
         protected override void CollectDependency(Animator component, ComponentDependencyCollector collector)
         {
-            // if AnimatorController is null, it does nothing.
-            if (!component.runtimeAnimatorController) return;
-            collector.MarkEntrypoint();
+            // if AnimatorController is not null, it has side effect
+            if (component.runtimeAnimatorController) collector.MarkEntrypoint();
 
             for (var bone = HumanBodyBones.Hips; bone < HumanBodyBones.LastBone; bone++)
             {
