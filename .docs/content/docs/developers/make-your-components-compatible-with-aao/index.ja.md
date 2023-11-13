@@ -1,8 +1,8 @@
 ---
-title: ツールにAvatar Optimizerとの互換性をもたせる
+title: コンポーネントにAvatar Optimizerとの互換性をもたせる
 ---
 
-# ツールにAvatar Optimizerとの互換性をもたせる
+# コンポーネントにAvatar Optimizerとの互換性をもたせる
 
 このページでは以下の2つのことを説明します。
 

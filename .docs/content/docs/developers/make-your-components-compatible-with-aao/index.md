@@ -1,8 +1,8 @@
 ---
-title: Make your tool compatible with Avatar Optimizer
+title: Make your components compatible with Avatar Optimizer
 ---
 
-# Make your tool compatible with Avatar Optimizer
+# Make your components compatible with Avatar Optimizer
 
 This page describes the following two things.
 
