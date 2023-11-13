@@ -112,7 +112,7 @@ msgstr "名前の競合を避ける"
 msgid "MergeBone:tooltip:avoidNameConflict"
 msgstr "統合時に子GameObjectの名前を変更し、名前の重複を回避します"
 
-msigd "MergeBone:validation:onAvatarRoot"
+msgid "MergeBone:validation:onAvatarRoot"
 msgstr "アバターの最上位のMergeBoneはサポートされていません。"
 
 msgid "MergeBone:validation:thereAreComponent"
