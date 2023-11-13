@@ -80,6 +80,12 @@ msgstr "すべて有効にする"
 msgid "FreezeBlendShape:button:Invert All"
 msgstr "すべての有効/無効を入れ替える"
 
+msgid "FreezeBlendShape:warning:animation"
+msgstr ""
+"以下のアニメーションされてるBlendShapeを固定・削除しています。"
+"そのBlendShapeのアニメーションは機能しなくなります。意図的に行っている場合はこの警告を無視してください。\n"
+"{0}"
+
 # endregion
 
 # region MakeChildren
