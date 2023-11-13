@@ -66,6 +66,8 @@ namespace Anatawa12.AvatarOptimizer.Processors
             var mergeMapping = new Dictionary<Transform, Transform>();
             foreach (var component in context.GetComponents<MergeBone>())
             {
+                // Error by validator
+                if (component.transform == context.AvatarRootTransform) continue;
                 var transform = component.transform;
                 mergeMapping[transform] = transform.parent;
             }
