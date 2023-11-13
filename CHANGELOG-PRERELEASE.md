@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Warning for freezing animated BlendShapes `#719`
 
 ### Changed
 
