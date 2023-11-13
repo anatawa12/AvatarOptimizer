@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Error for MergeBone on the Avatar Root `#716`
 
 ### Changed
 

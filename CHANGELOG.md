@@ -18,6 +18,7 @@ The format is based on [Keep a Changelog].
 - Support for Mesh Topologies other than Triangles `#692`
 - Skip enablement mismatched Renderers in Merge Skinned Mesh `#670`
   - This is now enabled by default for newly added Merge Skinned Mesh.
+- Error for MergeBone on the Avatar Root `#716`
 
 ### Changed
 - All logs passed to ErrorReport is now shown on the console log `#643`
