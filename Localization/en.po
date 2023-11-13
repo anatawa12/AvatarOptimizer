@@ -109,6 +109,9 @@ msgstr "Avoid Name Conflict"
 msgid "MergeBone:tooltip:avoidNameConflict"
 msgstr "Renames child GameObjects to avoid name conflict"
 
+msigd "MergeBone:validation:onAvatarRoot"
+msgstr "MergeBone on the Avatar Root is not supported."
+
 msgid "MergeBone:validation:thereAreComponent"
 msgstr "There are some components other than Transform. This is not supported."
 
