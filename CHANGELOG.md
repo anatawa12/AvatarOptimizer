@@ -20,13 +20,13 @@ The format is based on [Keep a Changelog].
   - This is now enabled by default for newly added Merge Skinned Mesh.
 - Warning for conflicts with animation
   - Warning for freezing animated BlendShapes `#719`
+  - Warning for merging renderers that activeness/enablement animated differently `#675`
 
 ### Changed
 - All logs passed to ErrorReport is now shown on the console log `#643`
 - Improved Behaviour with multi-material multi pass rendering `#662`
   - Previously, multi-material multi pass rendering are flattened.
   - Since 1.6, flattened if component doesn't support that.
-- When you're animating activeness/enablement of source renderers, warning is shown since this release `#675`
 - Remove Unused Objects removes meaningless Animators and Renderers `#709`
   - Renderers without Mesh and Animators without AnimatorController is meaningless
 
