@@ -77,6 +77,12 @@ msgstr "Check All"
 msgid "FreezeBlendShape:button:Invert All"
 msgstr "Invert All"
 
+msgid "FreezeBlendShape:warning:animation"
+msgstr ""
+"You're freezing the following animated BlendShapes."
+"The animation will not work. This might not be intended, but if it's intended, ignore this warning.\n"
+"{0}"
+
 # endregion
 
 # region MakeChildren

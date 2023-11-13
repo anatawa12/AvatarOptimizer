@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Anatawa12.AvatarOptimizer.ErrorReporting;
 using nadena.dev.ndmf;
 using UnityEngine;
 using UnityEngine.Profiling;
@@ -17,16 +18,42 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         public override void Process(BuildContext context, MeshInfo2 target)
         {
-            FreezeBlendShapes(Target, context, target, Component.FreezingShapeKeys);
+            FreezeBlendShapes(Target, context, target, Component.FreezingShapeKeys, true);
         }
 
         public static void FreezeBlendShapes(
             SkinnedMeshRenderer targetSMR,
             BuildContext context,
             MeshInfo2 target,
-            HashSet<string> freezeNames
+            HashSet<string> freezeNames,
+            bool withWarning = false
         )
         {
+            // Warn for blendShape animation
+            if (withWarning) {
+                var modified = new HashSet<string>();
+                var sources = new HashSet<Object>();
+                var animationComponent = context.GetAnimationComponent(targetSMR);
+
+                foreach (var blendShape in freezeNames)
+                {
+                    if (animationComponent.TryGetFloat($"blendShape.{blendShape}", out var p))
+                    {
+                        modified.Add(blendShape);
+                        foreach (var source in p.Sources)
+                            sources.Add(source);
+                    }
+                }
+
+                if (modified.Count != 0)
+                {
+                    // ReSharper disable once CoVariantArrayConversion
+                    BuildReport.LogWarning("FreezeBlendShape:warning:animation", string.Join(", ", modified))
+                        ?.WithContext(targetSMR)
+                        ?.WithContext(sources.ToArray());
+                }
+            }
+
             var freezes = new BitArray(target.BlendShapes.Count);
             for (var i = 0; i < target.BlendShapes.Count; i++)
                 freezes[i] = freezeNames.Contains(target.BlendShapes[i].name);

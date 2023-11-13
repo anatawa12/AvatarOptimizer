@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog].
 ## [Unreleased]
 ### Added
 - Error for MergeBone on the Avatar Root `#716`
+- Warning for freezing animated BlendShapes `#719`
 
 ### Changed
 
