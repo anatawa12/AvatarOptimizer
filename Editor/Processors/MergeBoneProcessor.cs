@@ -7,6 +7,7 @@ using JetBrains.Annotations;
 using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEngine;
+using VRC.SDKBase;
 using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.Processors
@@ -19,6 +20,13 @@ namespace Anatawa12.AvatarOptimizer.Processors
             ComponentValidation.RegisterValidator<MergeBone>(mergeBone =>
             {
                 var errors = new ErrorLog[2];
+
+                // TODO: use AvatarRoot API
+                if (mergeBone.GetComponent<VRC_AvatarDescriptor>())
+                {
+                    errors[0] = ErrorLog.Validation("MergeBone:validation:onAvatarRoot");
+                    return errors;
+                }
 
                 if (mergeBone.GetComponents<Component>().Except(new Component[] { mergeBone, mergeBone.transform })
                     .Any())
@@ -58,6 +66,8 @@ namespace Anatawa12.AvatarOptimizer.Processors
             var mergeMapping = new Dictionary<Transform, Transform>();
             foreach (var component in context.GetComponents<MergeBone>())
             {
+                // Error by validator
+                if (component.transform == context.AvatarRootTransform) continue;
                 var transform = component.transform;
                 mergeMapping[transform] = transform.parent;
             }
