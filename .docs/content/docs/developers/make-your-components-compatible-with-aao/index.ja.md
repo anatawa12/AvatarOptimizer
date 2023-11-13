@@ -6,16 +6,14 @@ title: コンポーネントにAvatar Optimizerとの互換性をもたせる
 
 このページでは以下の2つのことを説明します。
 
-- ツールはどのような場合にAvatar Optimizerと非互換になるか
+- コンポーネントはどのような場合にAvatar Optimizerと非互換になるか
 - どのように互換性を改善するか
 
 もし質問があれば、お気軽に[fediverseで`@anatawa12@misskey.niri.la`][fediverse]にご連絡ください。
 
-## ツールはどのような場合にAvatar Optimizerと非互換になるか {#when-incompatible}
+## コンポーネントはどのような場合にAvatar Optimizerと非互換になるか {#when-incompatible}
 
-ツールがコンポーネントを追加せず、ビルド時に何もしないのであれば、そのツールは既にAvatar Optimizerと互換性があります！
-
-それに対し、ツールが何らかのコンポーネントをアバターに追加する場合、そのツールはAvatar Optimizerと互換性が無い可能性があります。
+もしコンポーネントがアバターに存在し、Avatar Optimizerが処理する時点でまだ存在している場合、そのコンポーネントはAvatar Optimizerと互換性が無い可能性があります。
 
 Avatar Optimizerはコンポーネント等に対するガベージコレクションシステムを実装しているため、最適化時にアバターに存在するすべてのコンポーネントのことを知る必要があります。
 
@@ -27,40 +25,25 @@ Avatar Optimizerはコンポーネント等に対するガベージコレクシ�
 
 ![unknown-component-warning](unknown-component-warning.png)
 
-また、ツールがNDMF[^NDMF]ベースでなく、Playモードに入るときに適用される非破壊ツールの場合、 Avatar
-Optimizerがそのツールより前に処理する可能性があります。
-
 ## どのように互換性を改善するか {#improve-compatibility}
 
-### NDMFを使用した非破壊ツールの場合 {#improve-compatibility-ndmf-based}
+Avatar Optimizerが処理する前にコンポーネントを削除することができれば、そのようにしてください。
+もし削除できない場合、Avatar Optimizerにコンポーネントを登録してください。
 
-ツールがNDMF[^NDMF]を使用した非破壊ツールの場合、Avatar Optimizerが処理する前にそのツールのコンポーネントを削除してください。
+コンポーネントを削除する方法はいくつかあります。
 
-Avatar OptimizerはOptimization phaseで殆どの処理を行うため、ツールがOptimization phaseで何もしないのであれば、特に問題はありません。\
-ツールがOptimization phaseでコンポーネントを使って何らかの処理を行う場合、[`BeforePlugin`][ndmf-BeforePlugin]を用いてAvatar Optimizerの前に処理することを検討してください。
-NDMFでのAvatar OptimizerのQualifiedNameは`com.anatawa12.avatar-optimizer`です。
+もしツールがNDMF[^NDMF]を使用した非破壊ツールの場合、NDMFのOptimization phaseの前、
+またはOptimization phaseの中で([`BeforePlugin`][ndmf-BeforePlugin]を用いて)`com.anatawa12.avatar-optimizer` plugin
+より前にコンポーネントを削除することを推奨します。
 
-Avatar Optimizerより後のOptimization phaseでコンポーネントを使って何らかの処理を行う必要がある場合、Avatar Optimizerに[コンポーネントを登録][register-component]してください。
-
-### NDMFを使用していない非破壊ツールの場合 {#improve-compatibility-non-ndmf-based}
-
-ツールがNDMF[^NDMF]を使用していない非破壊ツールの場合、NDMFを使用することを検討してください。
-
-ツールがPlayモードに入るときに適用されるものの場合、Avatar Optimizerとの処理順を保証するためにNDMFを使用する必要があります。\
-これに対し、アバターのビルド時にのみ処理を行う場合、NDMFを使用する必要はありません。
-
-NDMFを使用したくない場合、Avatar Optimizerが処理する前にそのツールのコンポーネントを削除してください。
-これを行うには、NDMFのOptimization phaseより前にツールに処理させる必要があります。\
+もしツールがNDMFを使用していない非破壊ツールの場合、NDMFのOptimization phaseの前で、
+`IVRCSDKPreprocessAvatarCallback`を用いてコンポーネントを削除することを推奨します。
 現在のNDMFは、VRCSDKの`RemoveAvatarEditorOnly`の直前であるorder `-1025`でOptimization phaseを実行するので、
-ツールの`IVRCSDKPreprocessAvatarCallback`はそれより小さい`callbackOrder`である必要があります。
+それより小さい`callbackOrder`の`IVRCSDKPreprocessAvatarCallback`でコンポーネントを削除してください。
 
-Avatar Optimizer(NDMFのOptimization phase)よりも後でコンポーネントを使って何らかの処理を行う必要がある場合、Avatar Optimizerに[コンポーネントを登録][register-component]してください。
-
-### データを保持するためだけにコンポーネントを持つツールの場合 {#improve-compatibility-destructive-tools}
-
-ツールのコンポーネントがデータを保持する役割しかなく、ビルド時には意味を持っていない場合、
-Avatar Optimizerが処理する前に`IVRCSDKPreprocessAvatarCallback`でコンポーネントを削除するか([この部分](#improve-compatibility-non-ndmf-based)を参照)、
-Avatar Optimizerにコンポーネントを登録してください([この部分][register-component]を参照)。
+もしコンポーネントがツールのための情報を保持するだけで、ビルド時には意味を持たない場合、
+`IVRCSDKPreprocessAvatarCallback`を用いてAvatar Optimizerが処理する前にコンポーネントを削除することを推奨します。
+上記の`IVRCSDKPreprocessAvatarCallback`の順序を参照してください。
 
 ### コンポーネントを登録する {#register-component}
 
