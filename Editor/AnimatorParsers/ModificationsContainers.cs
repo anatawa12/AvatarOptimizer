@@ -285,6 +285,24 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
             }
         }
 
+        public bool IsConst
+        {
+            get
+            {
+                switch (State)
+                {
+                    case PropertyState.ConstantAlways:
+                    case PropertyState.ConstantPartially:
+                        return true;
+                    case PropertyState.Invalid:
+                    case PropertyState.Variable:
+                        return false;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                } 
+            }
+        }
+
         private readonly Object[] _sources;
         public ReadOnlySpan<Object> Sources => _sources ?? Array.Empty<Object>();
 
