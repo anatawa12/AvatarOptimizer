@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -204,23 +205,30 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
 
         public ErrorLog WithContext(params object[] args)
         {
-            referencedObjects.InsertRange(0,
-                args.Where(o => o is Component || o is GameObject || o is Object)
-                    .Select(o => new ObjectRef((Object)o))
-                    .ToList());
+            AddContext(args);
             return this;
         }
 
-        public void WithContext<T>(ReadOnlySpan<T> args)
+        public ErrorLog WithContext<T>(ReadOnlySpan<T> args)
         {
-            foreach (var arg in args)
+            foreach (var arg in args) AddContext(arg);
+            return this;
+        }
+
+        private void AddContext(object value)
+        {
+            switch (value)
             {
-                if (arg is Component c)
-                    referencedObjects.Add(new ObjectRef(c));
-                else if (arg is GameObject go)
-                    referencedObjects.Add(new ObjectRef(go));
-                else if (arg is Object o)
+                case Object o:
                     referencedObjects.Add(new ObjectRef(o));
+                    break;
+                case IContextProvider provider:
+                    AddContext(provider.ProvideContext());
+                    break;
+                case IEnumerable enumerable:
+                    foreach (var element in enumerable)
+                        AddContext(element);
+                    break;
             }
         }
 
@@ -249,5 +257,10 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
 
         public static ErrorLog Error(string code, params string[] strings)
             => new ErrorLog(ReportLevel.Error, code, strings, Assembly.GetCallingAssembly());
+    }
+
+    public interface IContextProvider
+    {
+        object ProvideContext();
     }
 }
