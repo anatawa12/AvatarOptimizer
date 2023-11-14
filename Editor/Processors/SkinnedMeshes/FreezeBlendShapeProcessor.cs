@@ -32,7 +32,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             // Warn for blendShape animation
             if (withWarning) {
                 var modified = new HashSet<string>();
-                var sources = new HashSet<Object>();
+                var sources = new HashSet<object>();
                 var animationComponent = context.GetAnimationComponent(targetSMR);
 
                 foreach (var blendShape in freezeNames)
@@ -56,7 +56,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     // ReSharper disable once CoVariantArrayConversion
                     BuildReport.LogWarning("FreezeBlendShape:warning:animation", string.Join(", ", modified))
                         ?.WithContext(targetSMR)
-                        ?.WithContext(sources.ToArray());
+                        ?.WithContext(sources);
                 }
             }
 

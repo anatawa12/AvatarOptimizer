@@ -81,7 +81,8 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
                     : throw new InvalidOperationException($"unexpected animated object: {obj} ({obj.GetType().Name}");
 
                 var curve = AnimationUtility.GetEditorCurve(clip, binding);
-                var currentPropertyMayNull = AnimationFloatProperty.ParseProperty(curve, clip);
+                var source = new AnimationSource(clip, binding);
+                var currentPropertyMayNull = AnimationFloatProperty.ParseProperty(curve, source);
 
                 if (!(currentPropertyMayNull is AnimationFloatProperty currentProperty)) continue;
 

@@ -76,8 +76,10 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
 
             Assert.That(props.Count, Is.EqualTo(1));
             Assert.That(props.Keys, Has.Member(blendShapeProp));
-            
-            Assert.That(props[blendShapeProp], Is.EqualTo(AnimationFloatProperty.ConstAlways(constValue, clip)));
+
+            var source = new AnimationSource(clip,
+                EditorCurveBinding.FloatCurve("", typeof(SkinnedMeshRenderer), blendShapeProp));
+            Assert.That(props[blendShapeProp], Is.EqualTo(AnimationFloatProperty.ConstAlways(constValue, source)));
         }
 
         [TestCaseSource(nameof(VariableSourceAnimationsData))]

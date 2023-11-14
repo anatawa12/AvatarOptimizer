@@ -303,33 +303,33 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
             }
         }
 
-        private readonly Object[] _sources;
-        public ReadOnlySpan<Object> Sources => _sources ?? Array.Empty<Object>();
+        private readonly IModificationSource[] _sources;
+        public ReadOnlySpan<IModificationSource> Sources => _sources ?? Array.Empty<IModificationSource>();
 
-        private AnimationFloatProperty(PropertyState state, float constValue, params Object[] modifiers) =>
+        private AnimationFloatProperty(PropertyState state, float constValue, params IModificationSource[] modifiers) =>
             (State, _constValue, _sources) = (state, constValue, modifiers);
 
-        public static AnimationFloatProperty ConstAlways(float value, Object modifier) =>
+        public static AnimationFloatProperty ConstAlways(float value, IModificationSource modifier) =>
             ConstAlways0(value, new[] { modifier });
 
-        public static AnimationFloatProperty ConstPartially(float value, Object modifier) =>
+        public static AnimationFloatProperty ConstPartially(float value, IModificationSource modifier) =>
             ConstPartially0(value, new[] { modifier });
 
-        public static AnimationFloatProperty Variable(Object modifier) =>
+        public static AnimationFloatProperty Variable(IModificationSource modifier) =>
             Variable0(new[] { modifier });
 
-        private static AnimationFloatProperty ConstAlways0(float value, Object[] modifiers) =>
+        private static AnimationFloatProperty ConstAlways0(float value, IModificationSource[] modifiers) =>
             new AnimationFloatProperty(PropertyState.ConstantAlways, value, modifiers);
 
-        private static AnimationFloatProperty ConstPartially0(float value, Object[] modifiers) =>
+        private static AnimationFloatProperty ConstPartially0(float value, IModificationSource[] modifiers) =>
             new AnimationFloatProperty(PropertyState.ConstantPartially, value, modifiers);
 
-        private static AnimationFloatProperty Variable0(Object[] modifiers) =>
+        private static AnimationFloatProperty Variable0(IModificationSource[] modifiers) =>
             new AnimationFloatProperty(PropertyState.Variable, float.NaN, modifiers);
 
-        private Object[] MergeSource(ReadOnlySpan<Object> aSource, ReadOnlySpan<Object> bSource)
+        private IModificationSource[] MergeSource(ReadOnlySpan<IModificationSource> aSource, ReadOnlySpan<IModificationSource> bSource)
         {
-            var merged = new Object[aSource.Length + bSource.Length];
+            var merged = new IModificationSource[aSource.Length + bSource.Length];
             aSource.CopyTo(merged.AsSpan().Slice(0, aSource.Length));
             bSource.CopyTo(merged.AsSpan().Slice(aSource.Length, bSource.Length));
             return merged;
@@ -357,7 +357,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
             return this;
         }
 
-        public static AnimationFloatProperty? ParseProperty(AnimationCurve curve, Object source)
+        public static AnimationFloatProperty? ParseProperty(AnimationCurve curve, IModificationSource source)
         {
             if (curve.keys.Length == 0) return null;
             if (curve.keys.Length == 1)
