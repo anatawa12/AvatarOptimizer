@@ -39,6 +39,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 {
                     if (animationComponent.TryGetFloat($"blendShape.{blendShape}", out var p))
                     {
+                        // allow constant animation
+                        var weight = target.BlendShapes.Find(r => r.name == blendShape);
+                        // ReSharper disable once CompareOfFloatsByEqualityOperator
+                        if (p.IsConst && (weight.name == null || p.ConstValue == weight.weight))
+                            continue;
+
                         modified.Add(blendShape);
                         foreach (var source in p.Sources)
                             sources.Add(source);

@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- False Positive warning for constant animation in Freeze BlendShape `#722`
 
 ### Security
 
