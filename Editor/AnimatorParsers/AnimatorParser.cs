@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.API;
 using Anatawa12.AvatarOptimizer.APIInternal;
+using Anatawa12.AvatarOptimizer.ErrorReporting;
 using static Anatawa12.AvatarOptimizer.ErrorReporting.BuildReport;
 using JetBrains.Annotations;
 using nadena.dev.ndmf;
@@ -133,7 +134,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
 
             public Collector(ModificationsContainer modifications) => _modifications = modifications;
 
-            public Object Modifier { get; set; }
+            public IModificationSource Modifier { get; set; }
 
             public override void ModifyProperties(Component component, IEnumerable<string> properties)
             {
@@ -151,7 +152,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
             var collector = new Collector(mod);
             ReportingObjects(context.GetComponents<Component>(), component =>
             {
-                collector.Modifier = component;
+                collector.Modifier = new ComponentAnimationSource(component);
                 if (ComponentInfoRegistry.TryGetInformation(component.GetType(), out var info))
                     info.CollectMutationsInternal(component, collector);
             });
@@ -260,8 +261,9 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
             {
                 var updater = modificationsContainer.ModifyObject(bodySkinnedMesh);
 
+                var source = new ComponentAnimationSource(descriptor);
                 foreach (var shape in MmdBlendShapeNames)
-                    updater.AddModificationAsNewLayer($"blendShape.{shape}", AnimationFloatProperty.Variable(descriptor));
+                    updater.AddModificationAsNewLayer($"blendShape.{shape}", AnimationFloatProperty.Variable(source));
             }
         }
 
@@ -371,6 +373,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
 #if AAO_VRM0
         private void CollectBlendShapeProxyModifications(BuildContext context, ModificationsContainer modificationsContainer, VRM.VRMBlendShapeProxy vrmBlendShapeProxy)
         {
+            var source = new ComponentAnimationSource(vrmBlendShapeProxy);
 
             var bindings = vrmBlendShapeProxy.BlendShapeAvatar.Clips.SelectMany(clip => clip.Values);
             foreach (var binding in bindings)
@@ -378,7 +381,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
                 var skinnedMeshRenderer = context.AvatarRootTransform.Find(binding.RelativePath).GetComponent<SkinnedMeshRenderer>();
                 var blendShapePropName = $"blendShape.{skinnedMeshRenderer.sharedMesh.GetBlendShapeName(binding.Index)}";
                 modificationsContainer.ModifyObject(skinnedMeshRenderer)
-                    .AddModificationAsNewLayer(blendShapePropName, AnimationFloatProperty.Variable(vrmBlendShapeProxy));
+                    .AddModificationAsNewLayer(blendShapePropName, AnimationFloatProperty.Variable(source));
             }
         }
 #endif
@@ -386,13 +389,15 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
 #if AAO_VRM1
         private void CollectVrm10InstanceModifications(BuildContext context, ModificationsContainer modificationsContainer, UniVRM10.Vrm10Instance vrm10Instance)
         {
+            var source = new ComponentAnimationSource(vrm10Instance);
+
             var bindings = vrm10Instance.Vrm.Expression.Clips.SelectMany(clip => clip.Clip.MorphTargetBindings);
             foreach (var binding in bindings)
             {
                 var skinnedMeshRenderer = context.AvatarRootTransform.Find(binding.RelativePath).GetComponent<SkinnedMeshRenderer>();
                 var blendShapePropName = $"blendShape.{skinnedMeshRenderer.sharedMesh.GetBlendShapeName(binding.Index)}";
                 modificationsContainer.ModifyObject(skinnedMeshRenderer)
-                    .AddModificationAsNewLayer(blendShapePropName, AnimationFloatProperty.Variable(vrm10Instance));
+                    .AddModificationAsNewLayer(blendShapePropName, AnimationFloatProperty.Variable(source));
             }
         }
 #endif
@@ -407,6 +412,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
             // if it's not humanoid, this pass doesn't matter
             if (!animator.isHuman) return container;
 
+            var animatorSource = new ComponentAnimationSource(animator);
             var mutable = container.ToMutable();
             for (var bone = HumanBodyBones.Hips; bone < HumanBodyBones.LastBone; bone++)
             {
@@ -416,7 +422,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
                 var updater = mutable.ModifyObject(transform);
 
                 foreach (var key in TransformRotationAnimationKeys)
-                    updater.AddModificationAsNewLayer(key, AnimationFloatProperty.Variable(animator));
+                    updater.AddModificationAsNewLayer(key, AnimationFloatProperty.Variable(animatorSource));
             }
 
             return mutable;
