@@ -4,7 +4,6 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using JetBrains.Annotations;
 using UnityEngine;
-using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.AnimatorParsers
 {
@@ -32,15 +31,15 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
 
             switch (prop.State)
             {
-                case AnimationFloatProperty.PropertyState.ConstantAlways:
+                case AnimationPropertyState.ConstantAlways:
                     return FloatToBool(prop.ConstValue);
-                case AnimationFloatProperty.PropertyState.ConstantPartially:
+                case AnimationPropertyState.ConstantPartially:
                     var constValue = FloatToBool(prop.ConstValue);
                     if (constValue == currentValue) return currentValue;
                     return null;
-                case AnimationFloatProperty.PropertyState.Variable:
+                case AnimationPropertyState.Variable:
                     return null;
-                case AnimationFloatProperty.PropertyState.Invalid:
+                case AnimationPropertyState.Invalid:
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -160,14 +159,14 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
             {
                 switch (propertyState.State)
                 {
-                    case AnimationFloatProperty.PropertyState.ConstantAlways:
-                    case AnimationFloatProperty.PropertyState.ConstantPartially:
+                    case AnimationPropertyState.ConstantAlways:
+                    case AnimationPropertyState.ConstantPartially:
                         // const 
                         break;
-                    case AnimationFloatProperty.PropertyState.Variable:
+                    case AnimationPropertyState.Variable:
                         _properties[propertyName] = AnimationFloatProperty.Variable(null); // TODO: merge source
                         break;
-                    case AnimationFloatProperty.PropertyState.Invalid:
+                    case AnimationPropertyState.Invalid:
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
@@ -229,12 +228,12 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
 
                     foreach (var (property, (thisState, otherState)) in thisProperties.ZipByKey(otherProperties))
                     {
-                        if (otherState.State == AnimationFloatProperty.PropertyState.Invalid)
+                        if (otherState.State == AnimationPropertyState.Invalid)
                         {
                             // the property is modified by current only: this modification should be marked partially
                             thisProperties[property] = thisState.PartiallyApplied();
                         }
-                        else if (thisState.State == AnimationFloatProperty.PropertyState.Invalid)
+                        else if (thisState.State == AnimationPropertyState.Invalid)
                         {
                             // the property is modified by other only: copied with marked partially
                             thisProperties.Add(property, otherState.PartiallyApplied());
@@ -264,7 +263,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
 
     readonly struct AnimationFloatProperty : IEquatable<AnimationFloatProperty>
     {
-        public readonly PropertyState State;
+        public readonly AnimationPropertyState State;
         private readonly float _constValue;
 
         public float ConstValue
@@ -273,11 +272,11 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
             {
                 switch (State)
                 {
-                    case PropertyState.ConstantAlways:
-                    case PropertyState.ConstantPartially:
+                    case AnimationPropertyState.ConstantAlways:
+                    case AnimationPropertyState.ConstantPartially:
                         return _constValue;
-                    case PropertyState.Invalid:
-                    case PropertyState.Variable:
+                    case AnimationPropertyState.Invalid:
+                    case AnimationPropertyState.Variable:
                         throw new InvalidOperationException("Non Const State");
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -291,11 +290,11 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
             {
                 switch (State)
                 {
-                    case PropertyState.ConstantAlways:
-                    case PropertyState.ConstantPartially:
+                    case AnimationPropertyState.ConstantAlways:
+                    case AnimationPropertyState.ConstantPartially:
                         return true;
-                    case PropertyState.Invalid:
-                    case PropertyState.Variable:
+                    case AnimationPropertyState.Invalid:
+                    case AnimationPropertyState.Variable:
                         return false;
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -306,7 +305,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
         private readonly IModificationSource[] _sources;
         public ReadOnlySpan<IModificationSource> Sources => _sources ?? Array.Empty<IModificationSource>();
 
-        private AnimationFloatProperty(PropertyState state, float constValue, params IModificationSource[] modifiers) =>
+        private AnimationFloatProperty(AnimationPropertyState state, float constValue, params IModificationSource[] modifiers) =>
             (State, _constValue, _sources) = (state, constValue, modifiers);
 
         public static AnimationFloatProperty ConstAlways(float value, IModificationSource modifier) =>
@@ -319,13 +318,13 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
             Variable0(new[] { modifier });
 
         private static AnimationFloatProperty ConstAlways0(float value, IModificationSource[] modifiers) =>
-            new AnimationFloatProperty(PropertyState.ConstantAlways, value, modifiers);
+            new AnimationFloatProperty(AnimationPropertyState.ConstantAlways, value, modifiers);
 
         private static AnimationFloatProperty ConstPartially0(float value, IModificationSource[] modifiers) =>
-            new AnimationFloatProperty(PropertyState.ConstantPartially, value, modifiers);
+            new AnimationFloatProperty(AnimationPropertyState.ConstantPartially, value, modifiers);
 
         private static AnimationFloatProperty Variable0(IModificationSource[] modifiers) =>
-            new AnimationFloatProperty(PropertyState.Variable, float.NaN, modifiers);
+            new AnimationFloatProperty(AnimationPropertyState.Variable, float.NaN, modifiers);
 
         private IModificationSource[] MergeSource(ReadOnlySpan<IModificationSource> aSource, ReadOnlySpan<IModificationSource> bSource)
         {
@@ -338,21 +337,21 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
         public AnimationFloatProperty Merge(AnimationFloatProperty b, bool asNewLayer)
         {
             // if asNewLayer and new layer is constant always, the value is used
-            if (asNewLayer && b.State == PropertyState.ConstantAlways) return b;
+            if (asNewLayer && b.State == AnimationPropertyState.ConstantAlways) return b;
 
-            if (State == PropertyState.Variable) return Variable0(MergeSource(Sources, b.Sources));
-            if (b.State == PropertyState.Variable) return Variable0(MergeSource(Sources, b.Sources));
+            if (State == AnimationPropertyState.Variable) return Variable0(MergeSource(Sources, b.Sources));
+            if (b.State == AnimationPropertyState.Variable) return Variable0(MergeSource(Sources, b.Sources));
 
             // now they are constant.
             if (ConstValue.CompareTo(b.ConstValue) != 0) return Variable0(MergeSource(Sources, b.Sources));
 
             var value = ConstValue;
 
-            if (State == PropertyState.ConstantPartially) return ConstPartially0(value, MergeSource(Sources, b.Sources));
-            if (b.State == PropertyState.ConstantPartially) return ConstPartially0(value, MergeSource(Sources, b.Sources));
+            if (State == AnimationPropertyState.ConstantPartially) return ConstPartially0(value, MergeSource(Sources, b.Sources));
+            if (b.State == AnimationPropertyState.ConstantPartially) return ConstPartially0(value, MergeSource(Sources, b.Sources));
 
-            System.Diagnostics.Debug.Assert(State == PropertyState.ConstantAlways);
-            System.Diagnostics.Debug.Assert(b.State == PropertyState.ConstantAlways);
+            System.Diagnostics.Debug.Assert(State == AnimationPropertyState.ConstantAlways);
+            System.Diagnostics.Debug.Assert(b.State == AnimationPropertyState.ConstantAlways);
 
             return this;
         }
@@ -388,10 +387,10 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
         {
             switch (State)
             {
-                case PropertyState.ConstantAlways:
+                case AnimationPropertyState.ConstantAlways:
                     return ConstPartially0(ConstValue, _sources);
-                case PropertyState.ConstantPartially:
-                case PropertyState.Variable:
+                case AnimationPropertyState.ConstantPartially:
+                case AnimationPropertyState.Variable:
                     return this;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -400,23 +399,15 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
 
         public AnimationFloatProperty Variable() => Variable0(_sources);
 
-        public enum PropertyState
-        {
-            Invalid = 0,
-            ConstantAlways,
-            ConstantPartially,
-            Variable,
-        }
-
         public bool Equals(AnimationFloatProperty other)
         {
             switch (State)
             {
-                case PropertyState.ConstantAlways:
-                case PropertyState.ConstantPartially:
+                case AnimationPropertyState.ConstantAlways:
+                case AnimationPropertyState.ConstantPartially:
                     return State == other.State && _constValue.Equals(other.ConstValue);
-                case PropertyState.Invalid:
-                case PropertyState.Variable:
+                case AnimationPropertyState.Invalid:
+                case AnimationPropertyState.Variable:
                 default:
                     return State == other.State;
             }
@@ -431,12 +422,12 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
         {
             switch (State)
             {
-                case PropertyState.ConstantAlways:
-                case PropertyState.ConstantPartially:
+                case AnimationPropertyState.ConstantAlways:
+                case AnimationPropertyState.ConstantPartially:
                     return unchecked(((int)State * 397) ^ _constValue.GetHashCode());
                 default:
-                case PropertyState.Invalid:
-                case PropertyState.Variable:
+                case AnimationPropertyState.Invalid:
+                case AnimationPropertyState.Variable:
                     return unchecked(((int)State * 397));
             }
         }
@@ -445,20 +436,28 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
         {
             switch (State)
             {
-                case PropertyState.Invalid:
+                case AnimationPropertyState.Invalid:
                     return "Invalid";
-                case PropertyState.ConstantAlways:
+                case AnimationPropertyState.ConstantAlways:
                     return $"ConstantAlways({ConstValue})";
-                case PropertyState.ConstantPartially:
+                case AnimationPropertyState.ConstantPartially:
                     return $"ConstantPartially({ConstValue})";
-                case PropertyState.Variable:
+                case AnimationPropertyState.Variable:
                     return "Variable";
                 default:
                     throw new ArgumentOutOfRangeException();
             }
         }
     }
-    
+
+    enum AnimationPropertyState
+    {
+        Invalid = 0,
+        ConstantAlways,
+        ConstantPartially,
+        Variable,
+    }
+
     enum AnimatorWeightState
     {
         NotChanged,

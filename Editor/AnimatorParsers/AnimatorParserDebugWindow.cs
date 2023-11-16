@@ -46,16 +46,16 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
 
                     switch (propState.State)
                     {
-                        case AnimationFloatProperty.PropertyState.ConstantAlways:
+                        case AnimationPropertyState.ConstantAlways:
                             propStateInfo = $"Always:{propState.ConstValue}";
                             break;
-                        case AnimationFloatProperty.PropertyState.ConstantPartially:
+                        case AnimationPropertyState.ConstantPartially:
                             propStateInfo = $"Partially:{propState.ConstValue}";
                             break;
-                        case AnimationFloatProperty.PropertyState.Variable:
+                        case AnimationPropertyState.Variable:
                             propStateInfo = "Variable";
                             break;
-                        case AnimationFloatProperty.PropertyState.Invalid:
+                        case AnimationPropertyState.Invalid:
                         default:
                             throw new ArgumentOutOfRangeException();
                     }
@@ -85,16 +85,16 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
 
                     switch (propState.State)
                     {
-                        case AnimationFloatProperty.PropertyState.ConstantAlways:
+                        case AnimationPropertyState.ConstantAlways:
                             propStateInfo = $"Always:{propState.ConstValue}";
                             break;
-                        case AnimationFloatProperty.PropertyState.ConstantPartially:
+                        case AnimationPropertyState.ConstantPartially:
                             propStateInfo = $"Partially:{propState.ConstValue}";
                             break;
-                        case AnimationFloatProperty.PropertyState.Variable:
+                        case AnimationPropertyState.Variable:
                             propStateInfo = "Variable";
                             break;
-                        case AnimationFloatProperty.PropertyState.Invalid:
+                        case AnimationPropertyState.Invalid:
                         default:
                             throw new ArgumentOutOfRangeException();
                     }

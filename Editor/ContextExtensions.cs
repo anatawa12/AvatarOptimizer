@@ -57,15 +57,15 @@ namespace Anatawa12.AvatarOptimizer
 
             switch (prop.State)
             {
-                case AnimationFloatProperty.PropertyState.ConstantAlways:
+                case AnimationPropertyState.ConstantAlways:
                     return FloatToBool(prop.ConstValue);
-                case AnimationFloatProperty.PropertyState.ConstantPartially:
+                case AnimationPropertyState.ConstantPartially:
                     var constValue = FloatToBool(prop.ConstValue);
                     if (constValue == currentValue) return currentValue;
                     return null;
-                case AnimationFloatProperty.PropertyState.Variable:
+                case AnimationPropertyState.Variable:
                     return null;
-                case AnimationFloatProperty.PropertyState.Invalid:
+                case AnimationPropertyState.Invalid:
                 default:
                     throw new ArgumentOutOfRangeException();
             }
