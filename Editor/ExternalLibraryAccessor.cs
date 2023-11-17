@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using JetBrains.Annotations;
@@ -93,7 +94,6 @@ namespace Anatawa12.AvatarOptimizer
 
                 Colliders = DynamicBoneType.GetField("m_Colliders", BindingFlags.Instance | BindingFlags.Public) ??
                             throw new Exception();
-                if (Colliders.FieldType != typeof(List<>).MakeGenericType(ColliderType)) throw new Exception();
             }
 
 
