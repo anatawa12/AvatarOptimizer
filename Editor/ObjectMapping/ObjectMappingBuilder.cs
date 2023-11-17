@@ -99,8 +99,8 @@ namespace Anatawa12.AvatarOptimizer
 
         public void ImportModifications(ImmutableModificationsContainer modifications)
         {
-            foreach (var (component, properties) in modifications.ModifiedProperties)
-                GetComponentInfo(component).ImportProperties(properties);
+            foreach (var (component, c) in modifications.ModifiedProperties)
+                GetComponentInfo(component).ImportProperties(c);
         }
 
         public ObjectMapping BuildObjectMapping()
@@ -130,12 +130,14 @@ namespace Anatawa12.AvatarOptimizer
 
             public static readonly AnimationPropertyInfo RemovedMarker = new AnimationPropertyInfo();
             public AnimationFloatProperty? AnimationFloat;
+            public AnimationObjectProperty? AnimationObject;
 
             public void MergeTo(AnimationPropertyInfo property)
             {
                 MergedTo = property;
                 // I want to use recursive switch with recursive pattern here but not avaiable yet
                 property.AnimationFloat = MergeFloat(AnimationFloat, property.AnimationFloat);
+                property.AnimationObject = MergeObject(AnimationObject, property.AnimationObject);
             }
 
             public void CopyTo(AnimationPropertyInfo property)
@@ -144,10 +146,17 @@ namespace Anatawa12.AvatarOptimizer
                     CopiedTo = new List<AnimationPropertyInfo>();
                 CopiedTo.Add(property);
                 property.AnimationFloat = MergeFloat(AnimationFloat, property.AnimationFloat);
+                property.AnimationObject = MergeObject(AnimationObject, property.AnimationObject);
             }
 
             private static AnimationFloatProperty? MergeFloat(AnimationFloatProperty? aProp,
                 AnimationFloatProperty? bProp) =>
+                aProp == null ? bProp
+                : bProp == null ? aProp 
+                : aProp.Value.Merge(bProp.Value, false);
+
+            private static AnimationObjectProperty? MergeObject(AnimationObjectProperty? aProp,
+                AnimationObjectProperty? bProp) =>
                 aProp == null ? bProp
                 : bProp == null ? aProp 
                 : aProp.Value.Merge(bProp.Value, false);
@@ -296,12 +305,18 @@ namespace Anatawa12.AvatarOptimizer
                 return new ComponentInfo(InstanceId, mergedInfo.InstanceId, Type, propertyMapping);
             }
 
-            public void ImportProperties(IReadOnlyDictionary<string, AnimationFloatProperty> properties)
+            public void ImportProperties(AnimationComponent properties)
             {
-                foreach (var (name, property) in properties)
+                foreach (var (name, property) in properties.FloatProperties)
                 {
                     var propInfo = GetProperty(name);
                     propInfo.AnimationFloat = property;
+                }
+                
+                foreach (var (name, property) in properties.ObjectProperties)
+                {
+                    var propInfo = GetProperty(name);
+                    propInfo.AnimationObject = property;
                 }
             }
 

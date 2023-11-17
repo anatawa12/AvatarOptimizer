@@ -72,7 +72,7 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
             Assert.That(parsed.ModifiedProperties.Count, Is.EqualTo(1));
             Assert.That(parsed.ModifiedProperties.Keys, Has.Member((ComponentOrGameObject)skinnedRenderer));
 
-            var props = parsed.ModifiedProperties[skinnedRenderer];
+            var props = parsed.ModifiedProperties[skinnedRenderer].FloatProperties;
 
             Assert.That(props.Count, Is.EqualTo(1));
             Assert.That(props.Keys, Has.Member(blendShapeProp));
@@ -96,7 +96,7 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
             Assert.That(parsed.ModifiedProperties.Count, Is.EqualTo(1));
             Assert.That(parsed.ModifiedProperties.Keys, Has.Member((ComponentOrGameObject)skinnedRenderer));
 
-            var props = parsed.ModifiedProperties[skinnedRenderer];
+            var props = parsed.ModifiedProperties[skinnedRenderer].FloatProperties;
 
             Assert.That(props.Count, Is.EqualTo(1));
             Assert.That(props.Keys, Has.Member(blendShapeProp));

@@ -40,7 +40,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
             {
                 EditorGUILayout.ObjectField(gameObject, typeof(Object), true);
                 EditorGUI.indentLevel++;
-                foreach (var (propName, propState) in properties)
+                foreach (var (propName, propState) in properties.FloatProperties)
                 {
                     string propStateInfo;
 
@@ -79,7 +79,12 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
                 resultText.Append(Utils.RelativePath(root, gameObject)).Append(": ")
                     .Append(((Object)obj).GetType().FullName).Append('\n');
 
-                foreach (var (propName, propState) in properties)
+                foreach (var (propName, propState) in properties.FloatProperties)
+                    PrintAbout(propName, propState);
+                foreach (var (propName, propState) in properties.FloatProperties)
+                    PrintAbout(propName, propState);
+                
+                void PrintAbout<T>(string propName, IAnimationProperty<T> propState)
                 {
                     string propStateInfo;
 

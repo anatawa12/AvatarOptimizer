@@ -151,7 +151,7 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
             Assert.That(parsed.ModifiedProperties.Keys,
                 Is.EquivalentTo(new[] { (ComponentOrGameObject)_skinnedRenderer }));
 
-            var properties = parsed.ModifiedProperties[_skinnedRenderer];
+            var properties = parsed.ModifiedProperties[_skinnedRenderer].FloatProperties;
             Assert.That(properties.Keys, Is.EquivalentTo(new[]
             {
                 "blendShape.shape0",
@@ -225,7 +225,7 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
             Assert.That(parsed.ModifiedProperties.Keys,
                 Is.EquivalentTo(new[] { (ComponentOrGameObject)_skinnedRenderer }));
 
-            var properties = parsed.ModifiedProperties[_skinnedRenderer];
+            var properties = parsed.ModifiedProperties[_skinnedRenderer].FloatProperties;
             Assert.That(properties.Keys, Has.Member("blendShape.shape16"));
             Assert.That(properties.Keys, Has.No.EqualTo("blendShape.shape17"));
 
@@ -307,7 +307,7 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
         {
             Assert.That(parsed.ModifiedProperties.Keys,
                 Is.EquivalentTo(new[] { (ComponentOrGameObject)_skinnedRenderer }));
-            var properties = parsed.ModifiedProperties[_skinnedRenderer];
+            var properties = parsed.ModifiedProperties[_skinnedRenderer].FloatProperties;
             Assert.That(properties.Keys, Is.EquivalentTo(new[] { prop }));
             Assert.That(properties[prop], Is.EqualTo(property));
         }

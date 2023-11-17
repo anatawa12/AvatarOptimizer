@@ -32,6 +32,7 @@
         "VRCSDK3A.dll",
         "VRCSDKBase-Editor.dll",
         "VRCSDKBase.dll",
+        "System.Collections.Immutable.dll",
         "System.Memory.dll"
     ],
     "autoReferenced": false,

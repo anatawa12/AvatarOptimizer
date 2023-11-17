@@ -90,6 +90,24 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
                     .AddModificationAsNewLayer(binding.propertyName, currentProperty);
             }
 
+            foreach (var binding in AnimationUtility.GetObjectReferenceCurveBindings(clip))
+            {
+                var obj = AnimationUtility.GetAnimatedObject(root, binding);
+                if (obj == null) continue;
+                var componentOrGameObject = obj is Component component ? (ComponentOrGameObject)component
+                    : obj is GameObject gameObject ? (ComponentOrGameObject)gameObject
+                    : throw new InvalidOperationException($"unexpected animated object: {obj} ({obj.GetType().Name}");
+
+                var curve = AnimationUtility.GetObjectReferenceCurve(clip, binding);
+                var source = new AnimationSource(clip, binding);
+                var currentPropertyMayNull = AnimationObjectProperty.ParseProperty(curve, source);
+
+                if (!(currentPropertyMayNull is AnimationObjectProperty currentProperty)) continue;
+
+                modifications.ModifyObject(componentOrGameObject)
+                    .AddModificationAsNewLayer(binding.propertyName, currentProperty);
+            }
+
             return modifications.ToImmutable();
         }
     }
