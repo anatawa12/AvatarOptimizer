@@ -78,6 +78,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
         {
             base.ApplySpecialMapping(component, mappingSource);
             
+            // NOTE: we should not check VisemeSkinnedMesh for null because it can be missing object
             switch (component.lipSync)
             {
                 case VRC_AvatarDescriptor.LipSyncStyle.Default:
@@ -85,7 +86,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
                     break;
                 case VRC_AvatarDescriptor.LipSyncStyle.JawFlapBone:
                     break;
-                case VRC_AvatarDescriptor.LipSyncStyle.JawFlapBlendShape when component.VisemeSkinnedMesh != null:
+                case VRC_AvatarDescriptor.LipSyncStyle.JawFlapBlendShape:
                 {
                     var info = mappingSource.GetMappedComponent(component.VisemeSkinnedMesh);
                     if (info.TryMapProperty($"blendShape.{component.MouthOpenBlendShapeName}", out var mapped))
@@ -99,7 +100,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
                     }
                     break;
                 }
-                case VRC_AvatarDescriptor.LipSyncStyle.VisemeBlendShape when component.VisemeSkinnedMesh != null:
+                case VRC_AvatarDescriptor.LipSyncStyle.VisemeBlendShape:
                 {
                     var info = mappingSource.GetMappedComponent(component.VisemeSkinnedMesh);
                     component.VisemeSkinnedMesh = info.MappedComponent;
@@ -221,14 +222,14 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
             
             if (component.enableEyeLook)
             {
+                // NOTE: we should not check eyelidsSkinnedMesh for null because it can be missing object
                 switch (component.customEyeLookSettings.eyelidType)
                 {
                     case VRCAvatarDescriptor.EyelidType.None:
                         break;
                     case VRCAvatarDescriptor.EyelidType.Bones:
                         break;
-                    case VRCAvatarDescriptor.EyelidType.Blendshapes
-                        when component.customEyeLookSettings.eyelidsSkinnedMesh != null:
+                    case VRCAvatarDescriptor.EyelidType.Blendshapes:
                     {
                         var info = mappingSource.GetMappedComponent(component.customEyeLookSettings.eyelidsSkinnedMesh);
                         component.customEyeLookSettings.eyelidsSkinnedMesh = info.MappedComponent;
