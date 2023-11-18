@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - False Positive warning for constant animation in Freeze BlendShape `#722`
+- Error if we merged Viseme BlendShapes `#728`
 
 ### Security
 
