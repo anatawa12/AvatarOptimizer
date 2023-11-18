@@ -8,15 +8,46 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Public API for registering component information `#632` `#668`
+- Disabling PhysBone animation based on mesh renderer enabled animation `#640`
+  - If you toggles your clothes with simple toggle, PhysBones on the your avatar will also be toggled automatically!
+- Small performance improve `#641`
+- Ability to prevent changing enablement of component `#668`
+- Remove Zero Sized Polygons `#659`
+- Add support for UniVRM components `#653`
+- Support for Mesh Topologies other than Triangles `#692`
+- Skip enablement mismatched Renderers in Merge Skinned Mesh `#670`
+  - This is now enabled by default for newly added Merge Skinned Mesh.
+- Error for MergeBone on the Avatar Root `#716`
+- Warning for conflicts with animation
+  - Warning for freezing animated BlendShapes `#719`
+  - Warning for merging renderers that activeness/enablement animated differently `#675`
 
 ### Changed
+- All logs passed to ErrorReport is now shown on the console log `#643`
+- Improved Behaviour with multi-material multi pass rendering `#662`
+  - Previously, multi-material multi pass rendering are flattened.
+  - Since 1.6, flattened if component doesn't support that.
+- Remove Unused Objects removes meaningless Animators and Renderers `#709`
+  - Renderers without Mesh and Animators without AnimatorController is meaningless
 
 ### Deprecated
 
 ### Removed
+- Legacy GC `#633`
+- Preventing removing `IEditorOnly` in callback order -1024 `#658`
+  - This is no longer needed sincd 1.5.0 but I forgot to remove so I removed in 1.6
 
 ### Fixed
+- Improve support of newer Unity versions `#608`
+- Improve support of projects without VRCSDK `#609` `#625` `#627`
+- Prefab blinks when we see editor of PrefabSafeSet of prefab asset `#645` `#664`
+- complex shader with SkinnedMeshRenderer without Bones Brokebn `#694`
+- bounds can be changed in apply on play if updateWhenOffscreen is true `#697`
+- Compatibility with transform moving plugins `#715`
+  - Remove Mesh in Box was not working well with [FloorAdjuster]
 
+[FloorAdjuster]: https://github.com/Narazaka/FloorAdjuster
 ### Security
 
 ## [1.5.11] - 2023-11-18
@@ -76,7 +107,7 @@ The format is based on [Keep a Changelog].
 - Error with MeshRenderer without MeshFilter [`#581`](https://github.com/anatawa12/AvatarOptimizer/pull/581)
 - Preview not working with VRMConverter [`#582`](https://github.com/anatawa12/AvatarOptimizer/pull/582)
 - AvatarMask about HumanoidBone broken [`#586`](https://github.com/anatawa12/AvatarOptimizer/pull/586)
-- Unused Homanoid Bones can be removed [`#587`](https://github.com/anatawa12/AvatarOptimizer/pull/587)
+- Unused Humanoid Bones can be removed [`#587`](https://github.com/anatawa12/AvatarOptimizer/pull/587)
 
 ## [1.5.3] - 2023-10-11
 ### Changed

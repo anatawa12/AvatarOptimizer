@@ -16,6 +16,8 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- False Positive warning for constant animation in Freeze BlendShape `#722`
+- Error if we merged Viseme BlendShapes `#728`
 
 ### Security
 
@@ -23,6 +25,81 @@ The format is based on [Keep a Changelog].
 ## [1.5.11-beta.1] - 2023-11-17
 ### Fixed
 - Dynamic Bone support not working [`#727`](https://github.com/anatawa12/AvatarOptimizer/pull/727)
+
+## [1.6.0-beta.10] - 2023-11-13
+### Added
+- Error for MergeBone on the Avatar Root [`#716`](https://github.com/anatawa12/AvatarOptimizer/pull/716)
+- Warning for freezing animated BlendShapes [`#719`](https://github.com/anatawa12/AvatarOptimizer/pull/719)
+
+### Fixed
+- Compatibility with transform moving plugins [`#715`](https://github.com/anatawa12/AvatarOptimizer/pull/715)
+  - Remove Mesh in Box was not working well with [FloorAdjuster]
+
+[FloorAdjuster]: https://github.com/Narazaka/FloorAdjuster
+## [1.6.0-beta.9] - 2023-11-12
+### Fixed
+- Humanoid of Avatar Root Animator broken [`#714`](https://github.com/anatawa12/AvatarOptimizer/pull/714)
+
+## [1.6.0-beta.8] - 2023-11-11
+### Fixed
+- Animator of AvatarRoot diesappears [`#711`](https://github.com/anatawa12/AvatarOptimizer/pull/711)
+
+## [1.6.0-beta.7] - 2023-11-11
+### Fixed
+- MergeSMR broken [`#710`](https://github.com/anatawa12/AvatarOptimizer/pull/710)
+
+## [1.6.0-beta.6] - 2023-11-11
+### Changed
+- Remove Unused Objects removes meaningless Animators and Renderers [`#709`](https://github.com/anatawa12/AvatarOptimizer/pull/709)
+  - Renderers without Mesh and Animators without AnimatorController is meaningless
+
+### Fixed
+- Enablement mismatched renderers are merged instead of matched renderers [`#705`](https://github.com/anatawa12/AvatarOptimizer/pull/705)
+
+## [1.6.0-beta.5] - 2023-11-08
+### Fixed
+- PPtr / Object animation not working [`#703`](https://github.com/anatawa12/AvatarOptimizer/pull/703)
+
+## [1.6.0-beta.4] - 2023-11-08
+### Fixed
+- eyelids BlendShape Removed error for non-AAO avatars [`#696`](https://github.com/anatawa12/AvatarOptimizer/pull/696)
+- bounds can be changed in apply on play if updateWhenOffscreen is true [`#697`](https://github.com/anatawa12/AvatarOptimizer/pull/697)
+- Animations for most components under MergeBone is not mapped [`#700`](https://github.com/anatawa12/AvatarOptimizer/pull/700)
+
+## [1.6.0-beta.3] - 2023-11-06
+### Added
+- Remove Zero Sized Polygons [`#659`](https://github.com/anatawa12/AvatarOptimizer/pull/659)
+- Add support for UniVRM components [`#653`](https://github.com/anatawa12/AvatarOptimizer/pull/653)
+- Support for Mesh Topologies other than Triangles [`#692`](https://github.com/anatawa12/AvatarOptimizer/pull/692)
+- Skip enablement mismatched Renderers in Merge Skinned Mesh [`#670`](https://github.com/anatawa12/AvatarOptimizer/pull/670)
+  - This is now enabled by default for newly added Merge Skinned Mesh.
+
+### Changed
+- When you're animating activeness/enablement of source renderers, warning is shown since this release [`#675`](https://github.com/anatawa12/AvatarOptimizer/pull/675)
+
+### Fixed
+- proxy animation can be modified [`#678`](https://github.com/anatawa12/AvatarOptimizer/pull/678)
+- complex shader with SkinnedMeshRenderer without Bones Brokebn [`#694`](https://github.com/anatawa12/AvatarOptimizer/pull/694)
+
+## [1.6.0-beta.2] - 2023-10-31
+### Added
+- Small performance improve [`#641`](https://github.com/anatawa12/AvatarOptimizer/pull/641)
+- Ability to prevent changing enablement of component [`#668`](https://github.com/anatawa12/AvatarOptimizer/pull/668)
+
+### Changed
+- All logs passed to ErrorReport is now shown on the console log [`#643`](https://github.com/anatawa12/AvatarOptimizer/pull/643)
+- Improved Behaviour with multi-material multi pass rendering [`#662`](https://github.com/anatawa12/AvatarOptimizer/pull/662)
+  - Previously, multi-material multi pass rendering are flattened.
+  - Since 1.6, flattened if component doesn't support that.
+- BREAKING API CHANGES: Behaviour components are renamed to HeavyBehaviour [`#668`](https://github.com/anatawa12/AvatarOptimizer/pull/668)
+
+### Removed
+- Preventing removing `IEditorOnly` in callback order -1024 [`#658`](https://github.com/anatawa12/AvatarOptimizer/pull/658)
+  - This is no longer needed sincd 1.5.0 but I forgot to remove so I removed in 1.6
+
+### Fixed
+- Prefab blinks when we see editor of PrefabSafeSet of prefab asset [`#645`](https://github.com/anatawa12/AvatarOptimizer/pull/645) [`#664`](https://github.com/anatawa12/AvatarOptimizer/pull/664)
+- Fixes in 1.5.9 [`#654`](https://github.com/anatawa12/AvatarOptimizer/pull/654)
 
 ## [1.5.10] - 2023-11-04
 ### Fixed
@@ -32,6 +109,20 @@ The format is based on [Keep a Changelog].
 ## [1.5.9-rc.1] - 2023-10-28
 ### Fixed
 - Animation clip length can be changed [`#647`](https://github.com/anatawa12/AvatarOptimizer/pull/647)
+
+## [1.6.0-beta.1] - 2023-10-25
+### Added
+- Public API for registering component information [`#623`](https://github.com/anatawa12/AvatarOptimizer/pull/623)
+- Documentation for developers about compatibility with Avatar Optimizer [`#623`](https://github.com/anatawa12/AvatarOptimizer/pull/623) 
+- Disabling PhysBone animation based on mesh renderer enabled animation [`#640`](https://github.com/anatawa12/AvatarOptimizer/pull/640)
+  - If you toggles your clothes with simple toggle, PhysBones on the your avatar will also be toggled automatically!
+
+### Removed
+- Legacy GC [`#633`](https://github.com/anatawa12/AvatarOptimizer/pull/633)
+
+### Fixed
+- Improve support of newer Unity versions [`#608`](https://github.com/anatawa12/AvatarOptimizer/pull/608)
+- Improve support of projects without VRCSDK [`#609`](https://github.com/anatawa12/AvatarOptimizer/pull/609) [`#625`](https://github.com/anatawa12/AvatarOptimizer/pull/625) [`#627`](https://github.com/anatawa12/AvatarOptimizer/pull/627)
 
 ## [1.5.8] - 2023-10-20
 ## [1.5.8-rc.1] - 2023-10-20
@@ -92,7 +183,7 @@ The format is based on [Keep a Changelog].
 - Error with MeshRenderer without MeshFilter [`#581`](https://github.com/anatawa12/AvatarOptimizer/pull/581)
 - Preview not working with VRMConverter [`#582`](https://github.com/anatawa12/AvatarOptimizer/pull/582)
 - AvatarMask about HumanoidBone broken [`#586`](https://github.com/anatawa12/AvatarOptimizer/pull/586)
-- Unused Homanoid Bones can be removed [`#587`](https://github.com/anatawa12/AvatarOptimizer/pull/587)
+- Unused Humanoid Bones can be removed [`#587`](https://github.com/anatawa12/AvatarOptimizer/pull/587)
 
 ## [1.5.3] - 2023-10-11
 ### Changed
@@ -948,7 +1039,17 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.11...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.10...HEAD
+[1.6.0-beta.10]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.9...v1.6.0-beta.10
+[1.6.0-beta.9]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.8...v1.6.0-beta.9
+[1.6.0-beta.8]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.7...v1.6.0-beta.8
+[1.6.0-beta.7]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.6...v1.6.0-beta.7
+[1.6.0-beta.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.5...v1.6.0-beta.6
+[1.6.0-beta.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.4...v1.6.0-beta.5
+[1.6.0-beta.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.3...v1.6.0-beta.4
+[1.6.0-beta.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.2...v1.6.0-beta.3
+[1.6.0-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.1...v1.6.0-beta.2
+[1.6.0-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.11...v1.6.0-beta.1
 [1.5.11]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.11-beta.1...v1.5.11
 [1.5.11-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.10...v1.5.11-beta.1
 [1.5.10]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.9...v1.5.10

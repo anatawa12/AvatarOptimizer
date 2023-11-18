@@ -2,9 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.ErrorReporting;
+using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
+using UnityEngine.Profiling;
 using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
@@ -25,27 +27,59 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         public override EditSkinnedMeshProcessorOrder ProcessOrder => EditSkinnedMeshProcessorOrder.Generation;
 
-        public override void Process(OptimizerSession session, MeshInfo2 target)
+        public override void Process(BuildContext context, MeshInfo2 target)
         {
-            var skinnedMeshRenderers = SkinnedMeshRenderers.ToList();
-            var staticMeshRenderers = StaticMeshRenderers.ToList();
+            List<SkinnedMeshRenderer> skinnedMeshRenderers;
+            List<MeshRenderer> staticMeshRenderers;
+            if (Component.skipEnablementMismatchedRenderers)
             {
+                bool RendererEnabled(Renderer x)
+                {
+                    if (!x.enabled) return false;
+                    for (var transform = x.transform;
+                         transform != null && transform != context.AvatarRootTransform;
+                         transform = transform.parent)
+                        if (!transform.gameObject.activeSelf)
+                            return false;
+                    return true;
+                }
+
+                var enabledSelf = RendererEnabled(Target);
+                skinnedMeshRenderers = SkinnedMeshRenderers.Where(x => RendererEnabled(x) == enabledSelf).ToList();
+                staticMeshRenderers = StaticMeshRenderers.Where(x => RendererEnabled(x) == enabledSelf).ToList();
+            }
+            else
+            {
+                skinnedMeshRenderers = SkinnedMeshRenderers.ToList();
+                staticMeshRenderers = StaticMeshRenderers.ToList();
+            }
+
+            Profiler.BeginSample("Merge PreserveBlendShapes");
+            {
+                var state = context.GetState<TraceAndOptimizes.TraceAndOptimizeState>();
                 HashSet<string> thisPreserve = null;
                 foreach (var skinnedRenderer in skinnedMeshRenderers)
                 {
-                    if (!session.PreserveBlendShapes.TryGetValue(skinnedRenderer, out var preserve)) continue;
+                    if (!state.PreserveBlendShapes.TryGetValue(skinnedRenderer, out var preserve)) continue;
 
-                    if (thisPreserve == null && !session.PreserveBlendShapes.TryGetValue(Target, out thisPreserve))
-                        session.PreserveBlendShapes.Add(Target, thisPreserve = new HashSet<string>());
+                    if (thisPreserve == null && !state.PreserveBlendShapes.TryGetValue(Target, out thisPreserve))
+                        state.PreserveBlendShapes.Add(Target, thisPreserve = new HashSet<string>());
                     thisPreserve.UnionWith(preserve);
                 }
             }
-
-            var meshInfos = skinnedMeshRenderers.Select(session.MeshInfo2Holder.GetMeshInfoFor)
-                .Concat(staticMeshRenderers.Select(session.MeshInfo2Holder.GetMeshInfoFor))
+            Profiler.EndSample();
+            Profiler.BeginSample("Collect MeshInfos");
+            var meshInfos = skinnedMeshRenderers.Select(context.GetMeshInfoFor)
+                .Concat(staticMeshRenderers.Select(renderer => new MeshInfo2(renderer)))
                 .ToArray();
-            var sourceMaterials = meshInfos.Select(x => x.SubMeshes.Select(y => y.SharedMaterial).ToArray()).ToArray();
 
+            foreach (var meshInfo2 in meshInfos) meshInfo2.FlattenMultiPassRendering("Merge Skinned Mesh");
+            foreach (var meshInfo2 in meshInfos) meshInfo2.MakeBoned();
+
+            var sourceMaterials = meshInfos.Select(x => x.SubMeshes.Select(y => (y.Topology, y.SharedMaterial)).ToArray()).ToArray();
+            Profiler.EndSample();
+
+            Profiler.BeginSample("Material Normal Configuration Check");
             // check normal information.
             int hasNormal = 0;
             foreach (var meshInfo2 in meshInfos)
@@ -58,25 +92,19 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             {
                 // collect (skinned) mesh renderers who doesn't have normal
                 // to show the list on the error reporting
-                var meshes = new Renderer[meshInfos.Length];
-                for (var i = 0; i < skinnedMeshRenderers.Count; i++)
-                    meshes[i] = skinnedMeshRenderers[i];
-                for (var i = 0; i < staticMeshRenderers.Count; i++)
-                    meshes[i + skinnedMeshRenderers.Count] = staticMeshRenderers[i];
-
-                var meshesWithoutNormals = new List<Renderer>();
-                for (var i = 0; i < meshInfos.Length; i++)
-                {
-                    var meshInfo2 = meshInfos[i];
-                    if (meshInfo2.Vertices.Count != 0 && !meshInfo2.HasNormals)
-                        meshesWithoutNormals.Add(meshes[i]);
-                }
-                // ReSharper disable once CoVariantArrayConversion
                 BuildReport.LogFatal("MergeSkinnedMesh:error:mix-normal-existence")
-                    ?.WithContext((object[])meshesWithoutNormals.ToArray());
+                    ?.WithContext((
+                        from meshInfo2 in meshInfos
+                        where meshInfo2.Vertices.Count != 0 && !meshInfo2.HasNormals
+                        select (object)meshInfo2.SourceRenderer
+                    ).ToArray());
             }
 
+            Profiler.EndSample();
+
+            Profiler.BeginSample("Merge Material Indices");
             var (subMeshIndexMap, materials) = CreateMergedMaterialsAndSubMeshIndexMapping(sourceMaterials);
+            Profiler.EndSample();
 
             var sourceRootBone = target.RootBone;
             var updateBounds = sourceRootBone && target.Bounds == default;
@@ -84,7 +112,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             target.Clear();
             target.SubMeshes.Capacity = Math.Max(target.SubMeshes.Capacity, materials.Count);
             foreach (var material in materials)
-                target.SubMeshes.Add(new SubMesh(material));
+                target.SubMeshes.Add(new SubMesh(material.material, material.topology));
 
             TexCoordStatus TexCoordStatusMax(TexCoordStatus x, TexCoordStatus y) =>
                 (TexCoordStatus)Math.Max((int)x, (int)y);
@@ -97,6 +125,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             for (var i = 0; i < meshInfos.Length; i++)
             {
+                Profiler.BeginSample($"Process MeshInfo#{i}");
                 var meshInfo = meshInfos[i];
                 mappings.Clear();
 
@@ -110,7 +139,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 for (var j = 0; j < meshInfo.SubMeshes.Count; j++)
                 {
                     var targetSubMeshIndex = subMeshIndexMap[i][j];
-                    target.SubMeshes[targetSubMeshIndex].Triangles.AddRange(meshInfo.SubMeshes[j].Triangles);
+                    var targetSubMesh = target.SubMeshes[targetSubMeshIndex];
+                    var sourceSubMesh = meshInfo.SubMeshes[j];
+                    System.Diagnostics.Debug.Assert(targetSubMesh.Topology == sourceSubMesh.Topology);
+                    targetSubMesh.Vertices.AddRange(sourceSubMesh.Vertices);
                     mappings.Add(($"m_Materials.Array.data[{j}]",
                         $"m_Materials.Array.data[{targetSubMeshIndex}]"));
                 }
@@ -153,7 +185,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
                 }
 
-                session.MappingBuilder.RecordMoveProperties(meshInfo.SourceRenderer, mappings.ToArray());
+                context.RecordMoveProperties(meshInfo.SourceRenderer, mappings.ToArray());
 
                 target.RootBone = sourceRootBone;
                 target.Bones.AddRange(meshInfo.Bones);
@@ -163,13 +195,16 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 target.HasTangent |= meshInfo.HasTangent;
 
                 target.AssertInvariantContract($"processing meshInfo {Target.gameObject.name}");
+                Profiler.EndSample();
             }
 
 #if !UNITY_2021_2_OR_NEWER
+            Profiler.BeginSample("ShiftIndex Check");
             // material slot #4 should not be animated to avoid Unity bug
             // https://issuetracker.unity3d.com/issues/material-is-applied-to-two-slots-when-applying-material-to-a-single-slot-while-recording-animation
             const int SubMeshIndexToShiftIfAnimated = 4;
-            bool shouldShiftSubMeshIndex = CheckAnimateSubMeshIndex(session, meshInfos, subMeshIndexMap, SubMeshIndexToShiftIfAnimated);
+            bool shouldShiftSubMeshIndex = CheckAnimateSubMeshIndex(context, meshInfos, subMeshIndexMap, SubMeshIndexToShiftIfAnimated);
+            Profiler.EndSample();
 #endif
 
             foreach (var weightMismatchBlendShape in weightMismatchBlendShapes)
@@ -182,7 +217,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             var boneTransforms = new HashSet<Transform>(target.Bones.Select(x => x.Transform));
 
-            foreach (var renderer in SkinnedMeshRenderers)
+            var parents = new HashSet<Transform>(Target.transform.ParentEnumerable(context.AvatarRootTransform, includeMe: true));
+
+            Profiler.BeginSample("Postprocess Source Renderers");
+            foreach (var renderer in skinnedMeshRenderers)
             {
                 // Avatars can have animation to hide source meshes.
                 // Such a animation often intended to hide/show some accessories but
@@ -190,9 +228,19 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 // This often be a unexpected behavior so we invalidate changing m_Enabled
                 // property for original mesh in animation.
                 // This invalidation doesn't affect to m_Enabled property of merged mesh.
-                session.MappingBuilder.RecordRemoveProperty(renderer, "m_Enabled");
-                session.MappingBuilder.RecordMergeComponent(renderer, Target);
+                context.RecordRemoveProperty(renderer, "m_Enabled");
+
+                ActivenessAnimationWarning(renderer, context, parents);
+
+                context.RecordMergeComponent(renderer, Target);
                 var rendererGameObject = renderer.gameObject;
+                var toDestroy = renderer.GetComponent<RemoveZeroSizedPolygon>();
+                if (toDestroy)
+                {
+                    BuildReport.LogWarning("MergeSkinnedMesh:warning:removeZeroSizedPolygonOnSources")
+                        ?.WithContext(toDestroy);
+                    Object.DestroyImmediate(toDestroy);
+                }
                 Object.DestroyImmediate(renderer);
 
                 // process removeEmptyRendererObject
@@ -207,35 +255,66 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 Object.DestroyImmediate(rendererGameObject);
             }
 
-            foreach (var renderer in StaticMeshRenderers)
+            foreach (var renderer in staticMeshRenderers)
             {
+                ActivenessAnimationWarning(renderer, context, parents);
                 Object.DestroyImmediate(renderer.GetComponent<MeshFilter>());
                 Object.DestroyImmediate(renderer);
             }
+            Profiler.EndSample();
 
 #if !UNITY_2021_2_OR_NEWER
             if (shouldShiftSubMeshIndex)
             {
+                Profiler.BeginSample("ShiftIndex");
                 mappings.Clear();
                 for (var i = SubMeshIndexToShiftIfAnimated; i < target.SubMeshes.Count; i++)
                 {
                     mappings.Add(($"m_Materials.Array.data[{i}]", $"m_Materials.Array.data[{i + 1}]"));
                 }
 
-                session.MappingBuilder.RecordMoveProperties(target.SourceRenderer, mappings.ToArray());
+                context.RecordMoveProperties(target.SourceRenderer, mappings.ToArray());
 
                 target.SubMeshes.Insert(SubMeshIndexToShiftIfAnimated, new SubMesh());
 
                 target.AssertInvariantContract($"shifting meshInfo.SubMeshes {Target.gameObject.name}");
+                Profiler.EndSample();
             }
 #endif
         }
 
-        private (int[][] mapping, List<Material> materials) CreateMergedMaterialsAndSubMeshIndexMapping(
-            Material[][] sourceMaterials)
+        private void ActivenessAnimationWarning(Renderer renderer, BuildContext context, HashSet<Transform> parents)
+        {
+            ErrorLog log = null;
+
+            // Warn if the source mesh can be hidden differently than merged by animation.
+            {
+                if (context.GetAnimationComponent(renderer).TryGetFloat("m_Enabled", out var p))
+                {
+                    log = log ?? BuildReport.LogWarning("MergeSkinnedMesh:warning:animation-mesh-hide")
+                        ?.WithContext(renderer);
+                    log?.WithContext(p.Sources);
+                }
+            }
+            foreach (var transform in renderer.transform.ParentEnumerable(context.AvatarRootTransform, includeMe: true))
+            {
+                if (parents.Contains(transform)) break;
+                if (context.GetAnimationComponent(transform.gameObject).TryGetFloat("m_IsActive", out var p))
+                {
+                    log = log ?? BuildReport.LogWarning("MergeSkinnedMesh:warning:animation-mesh-hide")
+                        ?.WithContext(renderer);
+                    log?.WithContext(transform.gameObject);
+                    log?.WithContext(p.Sources);
+                }
+            }
+        }
+
+        private (int[][] mapping, List<(MeshTopology topology, Material material)> materials)
+            CreateMergedMaterialsAndSubMeshIndexMapping(
+                (MeshTopology topology, Material material)[][] sourceMaterials)
         {
             var doNotMerges = Component.doNotMergeMaterials.GetAsSet();
-            var resultMaterials = new List<Material>();
+            var resultMaterials = new List<(MeshTopology, Material)>();
             var resultIndices = new int[sourceMaterials.Length][];
 
             for (var i = 0; i < sourceMaterials.Length; i++)
@@ -247,7 +326,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 {
                     var material = materials[j];
                     var foundIndex = resultMaterials.IndexOf(material);
-                    if (doNotMerges.Contains(material) || foundIndex == -1)
+                    if (doNotMerges.Contains(material.material) || foundIndex == -1)
                     {
                         indices[j] = resultMaterials.Count;
                         resultMaterials.Add(material);
@@ -263,30 +342,27 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         }
 
 #if !UNITY_2021_2_OR_NEWER
-        private bool CheckAnimateSubMeshIndex(OptimizerSession session, MeshInfo2[] meshInfos, int[][] subMeshIndexMap, int targetSubMeshIndex)
+        private bool CheckAnimateSubMeshIndex(BuildContext context, MeshInfo2[] meshInfos, int[][] subMeshIndexMap, int targetSubMeshIndex)
         {
             var targetProperties = new HashSet<(Object, string)>(subMeshIndexMap
                 .SelectMany((x, i) => x.Select((y, j) => (renderer: meshInfos[i].SourceRenderer, srcSubMeshIndex: j, dstSubMeshIndex: y)))
                 .Where(x => x.dstSubMeshIndex == targetSubMeshIndex)
                 .Select(x => (x.renderer as Object, $"m_Materials.Array.data[{x.srcSubMeshIndex}]")));
-            foreach (var component in session.GetComponents<Component>())
+            foreach (var component in context.GetComponents<Component>())
             {
                 if (component is Transform) continue;
 
-                var serialized = new SerializedObject(component);
-                var prop = serialized.GetIterator();
-                var enterChildren = true;
-                while (prop.Next(enterChildren))
+                using (var serialized = new SerializedObject(component))
                 {
-                    enterChildren = prop.propertyType == SerializedPropertyType.Generic;
-
-                    if (prop.propertyType == SerializedPropertyType.ObjectReference &&
-                        prop.objectReferenceValue is AnimatorController controller &&
-                        controller.animationClips
+                    foreach (var prop in serialized.ObjectReferenceProperties())
+                    {
+                        if (!(prop.objectReferenceValue is AnimatorController controller)) continue;
+                        if (controller.animationClips
                             .SelectMany(x => AnimationUtility.GetObjectReferenceCurveBindings(x))
                             .Select(x => (AnimationUtility.GetAnimatedObject(component.gameObject, x), x.propertyName))
                             .Any(targetProperties.Contains))
-                        return true;
+                            return true;
+                    }
                 }
             }
             return false;
@@ -311,10 +387,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             {
                 var sourceMaterials = _processor.SkinnedMeshRenderers.Select(EditSkinnedMeshComponentUtil.GetMaterials)
                     .Concat(_processor.StaticMeshRenderers.Select(x => x.sharedMaterials))
+                    .Select(a => a.Select(b => (MeshTopology.Triangles, b)).ToArray())
                     .ToArray();
 
                 return _processor.CreateMergedMaterialsAndSubMeshIndexMapping(sourceMaterials)
                     .materials
+                    .Select(x => x.material)
                     .ToArray();
             }
 

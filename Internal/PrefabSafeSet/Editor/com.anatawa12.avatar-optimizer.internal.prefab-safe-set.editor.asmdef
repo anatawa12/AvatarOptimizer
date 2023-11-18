@@ -1,9 +1,9 @@
 {
     "name": "com.anatawa12.avatar-optimizer.internal.prefab-safe-set.editor",
     "references": [
-        "GUID:295ffbe0b63504ae3a7879cf089501ba",
-        "GUID:8264e72376854221affe9980c91c2fff",
-        "GUID:8542dbf824204440a818dbc2377cb4d6"
+        "com.anatawa12.custom-localization-for-editor-extension",
+        "com.anatawa12.custom-localization-for-editor-extension.runtime",
+        "com.anatawa12.avatar-optimizer.internal.prefab-safe-set"
     ],
     "includePlatforms": [
         "Editor"

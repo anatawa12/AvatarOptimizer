@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes;
+using Anatawa12.AvatarOptimizer.AnimatorParsers;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
@@ -76,8 +76,10 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
 
             Assert.That(props.Count, Is.EqualTo(1));
             Assert.That(props.Keys, Has.Member(blendShapeProp));
-            
-            Assert.That(props[blendShapeProp], Is.EqualTo(AnimationProperty.ConstAlways(constValue)));
+
+            var source = new AnimationSource(clip,
+                EditorCurveBinding.FloatCurve("", typeof(SkinnedMeshRenderer), blendShapeProp));
+            Assert.That(props[blendShapeProp], Is.EqualTo(AnimationFloatProperty.ConstAlways(constValue, source)));
         }
 
         [TestCaseSource(nameof(VariableSourceAnimationsData))]
@@ -99,7 +101,7 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
             Assert.That(props.Count, Is.EqualTo(1));
             Assert.That(props.Keys, Has.Member(blendShapeProp));
             
-            Assert.That(props[blendShapeProp], Is.EqualTo(AnimationProperty.Variable()));
+            Assert.That(props[blendShapeProp], Is.EqualTo(AnimationFloatProperty.Variable(null)));
         }
 
         #endregion

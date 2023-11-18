@@ -1,7 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Anatawa12.AvatarOptimizer.ErrorReporting;
+using nadena.dev.ndmf;
 using UnityEngine;
+using UnityEngine.Profiling;
 
 namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 {
@@ -13,38 +16,79 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         public override EditSkinnedMeshProcessorOrder ProcessOrder => EditSkinnedMeshProcessorOrder.AfterRemoveMesh;
 
-        public override void Process(OptimizerSession session, MeshInfo2 target)
+        public override void Process(BuildContext context, MeshInfo2 target)
         {
-            FreezeBlendShapes(Target, session, target, Component.FreezingShapeKeys);
+            FreezeBlendShapes(Target, context, target, Component.FreezingShapeKeys, true);
         }
 
         public static void FreezeBlendShapes(
             SkinnedMeshRenderer targetSMR,
-            OptimizerSession session,
+            BuildContext context,
             MeshInfo2 target,
-            HashSet<string> freezeNames
+            HashSet<string> freezeNames,
+            bool withWarning = false
         )
         {
+            // Warn for blendShape animation
+            if (withWarning) {
+                var modified = new HashSet<string>();
+                var sources = new HashSet<object>();
+                var animationComponent = context.GetAnimationComponent(targetSMR);
+
+                foreach (var blendShape in freezeNames)
+                {
+                    if (animationComponent.TryGetFloat($"blendShape.{blendShape}", out var p))
+                    {
+                        // allow constant animation
+                        var weight = target.BlendShapes.Find(r => r.name == blendShape);
+                        // ReSharper disable once CompareOfFloatsByEqualityOperator
+                        if (p.IsConst && (weight.name == null || p.ConstValue == weight.weight))
+                            continue;
+
+                        modified.Add(blendShape);
+                        foreach (var source in p.Sources)
+                            sources.Add(source);
+                    }
+                }
+
+                if (modified.Count != 0)
+                {
+                    // ReSharper disable once CoVariantArrayConversion
+                    BuildReport.LogWarning("FreezeBlendShape:warning:animation", string.Join(", ", modified))
+                        ?.WithContext(targetSMR)
+                        ?.WithContext(sources);
+                }
+            }
+
             var freezes = new BitArray(target.BlendShapes.Count);
             for (var i = 0; i < target.BlendShapes.Count; i++)
                 freezes[i] = freezeNames.Contains(target.BlendShapes[i].name);
 
+            Profiler.BeginSample("DoFreezeBlendShape");
             foreach (var vertex in target.Vertices)
             {
                 for (var i = 0; i < target.BlendShapes.Count; i++)
                 {
                     if (!freezes[i]) continue;
                     var (name, weight) = target.BlendShapes[i];
-                    if (!vertex.TryGetBlendShape(name, weight, out var position, out var normal, out var tangent)) continue;
+                    Profiler.BeginSample("TryGetBlendShape");
+                    var result =
+                        vertex.TryGetBlendShape(name, weight, out var position, out var normal, out var tangent);
+                    Profiler.EndSample();
+                    if (!result) continue;
 
+                    Profiler.BeginSample("Apply offsets");
                     vertex.Position += position;
                     vertex.Normal += normal;
                     tangent += (Vector3)vertex.Tangent;
                     vertex.Tangent = new Vector4(tangent.x, tangent.y, tangent.z, vertex.Tangent.w);
                     vertex.BlendShapes.Remove(name);
+                    Profiler.EndSample();
                 }
             }
+            Profiler.EndSample();
 
+            Profiler.BeginSample("MoveProperties");
             {
                 int srcI = 0, dstI = 0;
                 for (; srcI < target.BlendShapes.Count; srcI++)
@@ -52,21 +96,20 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     if (!freezes[srcI])
                     {
                         // for keep prop: move the BlendShape index. name is not changed.
-                        session.MappingBuilder.RecordMoveProperty(targetSMR, 
-                            VProp.BlendShapeIndex(srcI), 
-                            VProp.BlendShapeIndex(dstI));
+                        context.RecordMoveProperty(targetSMR, VProp.BlendShapeIndex(srcI), VProp.BlendShapeIndex(dstI));
                         target.BlendShapes[dstI++] = target.BlendShapes[srcI];
                     }
                     else
                     {
                         // for frozen prop: remove that BlendShape
-                        session.MappingBuilder.RecordRemoveProperty(targetSMR, VProp.BlendShapeIndex(srcI));
-                        session.MappingBuilder.RecordRemoveProperty(targetSMR, $"blendShape.{target.BlendShapes[srcI].name}");
+                        context.RecordRemoveProperty(targetSMR, VProp.BlendShapeIndex(srcI));
+                        context.RecordRemoveProperty(targetSMR, $"blendShape.{target.BlendShapes[srcI].name}");
                     }
                 }
 
                 target.BlendShapes.RemoveRange(dstI, target.BlendShapes.Count - dstI);
             }
+            Profiler.EndSample();
         }
 
         public override IMeshInfoComputer GetComputer(IMeshInfoComputer upstream) => new MeshInfoComputer(this, upstream);

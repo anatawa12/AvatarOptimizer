@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -19,10 +20,15 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
         {
             if (!_cache.TryGetValue((guid, localId), out var obj))
             {
-                if (GlobalObjectId.TryParse($"GlobalObjectId_V1-{1}-{guid}-{localId}-{0}", out var goid))
+                // 1: Imported Asset
+                // 3: Source Asset
+                foreach (var type in new [] { 1, 3 })
                 {
-                    obj = GlobalObjectId.GlobalObjectIdentifierToObjectSlow(goid);
-                    if (obj) _cache[(guid, localId)] = obj;
+                    if (GlobalObjectId.TryParse($"GlobalObjectId_V1-{type}-{guid}-{localId}-{0}", out var goid))
+                    {
+                        obj = GlobalObjectId.GlobalObjectIdentifierToObjectSlow(goid);
+                        if (obj) _cache[(guid, localId)] = obj;
+                    }
                 }
             }
 
@@ -199,11 +205,31 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
 
         public ErrorLog WithContext(params object[] args)
         {
-            referencedObjects.InsertRange(0,
-                args.Where(o => o is Component || o is GameObject)
-                    .Select(o => new ObjectRef(o is Component c ? c.gameObject : (GameObject)o))
-                    .ToList());
+            AddContext(args);
             return this;
+        }
+
+        public ErrorLog WithContext<T>(ReadOnlySpan<T> args)
+        {
+            foreach (var arg in args) AddContext(arg);
+            return this;
+        }
+
+        private void AddContext(object value)
+        {
+            switch (value)
+            {
+                case Object o:
+                    referencedObjects.Add(new ObjectRef(o));
+                    break;
+                case IContextProvider provider:
+                    AddContext(provider.ProvideContext());
+                    break;
+                case IEnumerable enumerable:
+                    foreach (var element in enumerable)
+                        AddContext(element);
+                    break;
+            }
         }
 
         internal ErrorLog(Exception e, string additionalStackTrace = "")
@@ -231,5 +257,10 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
 
         public static ErrorLog Error(string code, params string[] strings)
             => new ErrorLog(ReportLevel.Error, code, strings, Assembly.GetCallingAssembly());
+    }
+
+    public interface IContextProvider
+    {
+        object ProvideContext();
     }
 }

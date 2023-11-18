@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
+using nadena.dev.ndmf;
 using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
@@ -22,7 +23,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             Target = component.GetComponent<SkinnedMeshRenderer>();
         }
 
-        public abstract void Process(OptimizerSession session, MeshInfo2 target);
+        public abstract void Process(BuildContext context, MeshInfo2 target);
 
         public abstract IMeshInfoComputer GetComputer(IMeshInfoComputer upstream);
 
@@ -42,7 +43,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         IEnumerable<SkinnedMeshRenderer> Dependencies { get; }
         SkinnedMeshRenderer Target { get; }
         EditSkinnedMeshComponent Component { get; }
-        void Process(OptimizerSession session, MeshInfo2 target);
+        void Process(BuildContext context, MeshInfo2 target);
 
         [NotNull] IMeshInfoComputer GetComputer([NotNull] IMeshInfoComputer upstream);
     }

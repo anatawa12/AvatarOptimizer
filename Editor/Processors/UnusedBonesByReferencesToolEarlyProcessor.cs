@@ -1,18 +1,20 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Anatawa12.AvatarOptimizer.ErrorReporting;
+using nadena.dev.ndmf;
 using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer.Processors
 {
 #pragma warning disable CS0618
-    class UnusedBonesByReferencesToolEarlyProcessor
+    class UnusedBonesByReferencesToolEarlyProcessor : Pass<UnusedBonesByReferencesToolEarlyProcessor>
     {
-        public void Process(OptimizerSession session)
+        public override string DisplayName => "Early: UnusedBonesByReference";
+
+        protected override void Execute(BuildContext context)
         {
-            var configuration = session.GetRootComponent<UnusedBonesByReferencesTool>();
+            var configuration = context.AvatarRootObject.GetComponent<UnusedBonesByReferencesTool>();
             if (!configuration) return;
 
             BuildReport.ReportingObject(configuration, () =>

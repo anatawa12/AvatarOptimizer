@@ -4,13 +4,15 @@ using System.Linq;
 using Anatawa12.AvatarOptimizer.ErrorReporting;
 using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
 using JetBrains.Annotations;
+using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEngine;
+using VRC.SDKBase;
 using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.Processors
 {
-    internal class MergeBoneProcessor
+    internal class MergeBoneProcessor : Pass<MergeBoneProcessor>
     {
         [InitializeOnLoadMethod]
         private static void RegisterValidator()
@@ -18,6 +20,13 @@ namespace Anatawa12.AvatarOptimizer.Processors
             ComponentValidation.RegisterValidator<MergeBone>(mergeBone =>
             {
                 var errors = new ErrorLog[2];
+
+                // TODO: use AvatarRoot API
+                if (mergeBone.GetComponent<VRC_AvatarDescriptor>())
+                {
+                    errors[0] = ErrorLog.Validation("MergeBone:validation:onAvatarRoot");
+                    return errors;
+                }
 
                 if (mergeBone.GetComponents<Component>().Except(new Component[] { mergeBone, mergeBone.transform })
                     .Any())
@@ -51,12 +60,14 @@ namespace Anatawa12.AvatarOptimizer.Processors
                    CheckScale(localScale.y / localScale.z);
         }
 
-        public void Process(OptimizerSession session)
+        protected override void Execute(BuildContext context)
         {
             // merge from -> merge into
             var mergeMapping = new Dictionary<Transform, Transform>();
-            foreach (var component in session.GetComponents<MergeBone>())
+            foreach (var component in context.GetComponents<MergeBone>())
             {
+                // Error by validator
+                if (component.transform == context.AvatarRootTransform) continue;
                 var transform = component.transform;
                 mergeMapping[transform] = transform.parent;
             }
@@ -66,9 +77,9 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
             if (mergeMapping.Count == 0) return;
 
-            BuildReport.ReportingObjects(session.GetComponents<SkinnedMeshRenderer>(), renderer =>
+            BuildReport.ReportingObjects(context.GetComponents<SkinnedMeshRenderer>(), renderer =>
             {
-                var meshInfo2 = session.MeshInfo2Holder.GetMeshInfoFor(renderer);
+                var meshInfo2 = context.GetMeshInfoFor(renderer);
                 if (meshInfo2.Bones.Any(x => x.Transform && mergeMapping.ContainsKey(x.Transform)))
                     DoBoneMap2(meshInfo2, mergeMapping);
             });
@@ -263,7 +274,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
         }
         
 
-        struct MergeBoneTransParentInfo
+        public struct MergeBoneTransParentInfo
         {
             public Quaternion ParentRotation;
             public Matrix4x4 ParentMatrix;

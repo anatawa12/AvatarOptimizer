@@ -1,16 +1,21 @@
+#if AAO_VRCSDK3_AVATARS
+
 using System;
 using Anatawa12.AvatarOptimizer.ErrorReporting;
+using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEngine;
 using VRC.Dynamics;
 
 namespace Anatawa12.AvatarOptimizer.Processors
 {
-    internal class ClearEndpointPositionProcessor
+    internal class ClearEndpointPositionProcessor : Pass<ClearEndpointPositionProcessor>
     {
-        public void Process(OptimizerSession session)
+        public override string DisplayName => "ClearEndpointPosition";
+
+        protected override void Execute(BuildContext context)
         {
-            BuildReport.ReportingObjects(session.GetComponents<ClearEndpointPosition>(),
+            BuildReport.ReportingObjects(context.GetComponents<ClearEndpointPosition>(),
                 component => BuildReport.ReportingObjects(component.GetComponents<VRCPhysBoneBase>(), Process));
         }
 
@@ -47,3 +52,5 @@ namespace Anatawa12.AvatarOptimizer.Processors
         }
     }
 }
+
+#endif
