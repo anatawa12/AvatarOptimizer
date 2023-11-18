@@ -21,6 +21,11 @@ The format is based on [Keep a Changelog].
 
 ### Security
 
+## [1.5.11] - 2023-11-18
+## [1.5.11-beta.1] - 2023-11-17
+### Fixed
+- Dynamic Bone support not working [`#727`](https://github.com/anatawa12/AvatarOptimizer/pull/727)
+
 ## [1.6.0-beta.10] - 2023-11-13
 ### Added
 - Error for MergeBone on the Avatar Root [`#716`](https://github.com/anatawa12/AvatarOptimizer/pull/716)
@@ -1044,7 +1049,9 @@ This release is mistake.
 [1.6.0-beta.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.3...v1.6.0-beta.4
 [1.6.0-beta.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.2...v1.6.0-beta.3
 [1.6.0-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.1...v1.6.0-beta.2
-[1.6.0-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.10...v1.6.0-beta.1
+[1.6.0-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.11...v1.6.0-beta.1
+[1.5.11]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.11-beta.1...v1.5.11
+[1.5.11-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.10...v1.5.11-beta.1
 [1.5.10]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.9...v1.5.10
 [1.5.9]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.9-rc.1...v1.5.9
 [1.5.9-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.8...v1.5.9-rc.1
