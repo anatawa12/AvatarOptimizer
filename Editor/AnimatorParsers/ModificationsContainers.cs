@@ -165,7 +165,10 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
                         // const 
                         break;
                     case AnimationFloatProperty.PropertyState.Variable:
-                        _properties[propertyName] = AnimationFloatProperty.Variable(null); // TODO: merge source
+                        if (_properties.TryGetValue(propertyName, out var property))
+                            _properties[propertyName] = property.Merge(propertyState.Variable(), asNewLayer: false);
+                        else
+                            _properties.Add(propertyName, propertyState.Variable());
                         break;
                     case AnimationFloatProperty.PropertyState.Invalid:
                     default:
@@ -258,7 +261,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
         {
             foreach (var properties in _modifiedProperties.Values)
                 foreach (var name in properties.Keys.ToArray())
-                    properties[name] = AnimationFloatProperty.Variable(null); // source by properties
+                    properties[name] = properties[name].Variable();
         }
     }
 
@@ -309,14 +312,23 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
         private AnimationFloatProperty(PropertyState state, float constValue, params IModificationSource[] modifiers) =>
             (State, _constValue, _sources) = (state, constValue, modifiers);
 
-        public static AnimationFloatProperty ConstAlways(float value, IModificationSource modifier) =>
-            ConstAlways0(value, new[] { modifier });
+        public static AnimationFloatProperty ConstAlways(float value, [NotNull] IModificationSource modifier)
+        {
+            if (modifier == null) throw new ArgumentNullException(nameof(modifier));
+            return ConstAlways0(value, new[] { modifier });
+        }
 
-        public static AnimationFloatProperty ConstPartially(float value, IModificationSource modifier) =>
-            ConstPartially0(value, new[] { modifier });
+        public static AnimationFloatProperty ConstPartially(float value, [NotNull] IModificationSource modifier)
+        {
+            if (modifier == null) throw new ArgumentNullException(nameof(modifier));
+            return ConstPartially0(value, new[] { modifier });
+        }
 
-        public static AnimationFloatProperty Variable(IModificationSource modifier) =>
-            Variable0(new[] { modifier });
+        public static AnimationFloatProperty Variable([NotNull] IModificationSource modifier)
+        {
+            if (modifier == null) throw new ArgumentNullException(nameof(modifier));
+            return Variable0(new[] { modifier });
+        }
 
         private static AnimationFloatProperty ConstAlways0(float value, IModificationSource[] modifiers) =>
             new AnimationFloatProperty(PropertyState.ConstantAlways, value, modifiers);
@@ -327,12 +339,12 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
         private static AnimationFloatProperty Variable0(IModificationSource[] modifiers) =>
             new AnimationFloatProperty(PropertyState.Variable, float.NaN, modifiers);
 
-        private IModificationSource[] MergeSource(ReadOnlySpan<IModificationSource> aSource, ReadOnlySpan<IModificationSource> bSource)
+        private IModificationSource[] MergeSource(IModificationSource[] aSource, IModificationSource[] bSource)
         {
-            var merged = new IModificationSource[aSource.Length + bSource.Length];
-            aSource.CopyTo(merged.AsSpan().Slice(0, aSource.Length));
-            bSource.CopyTo(merged.AsSpan().Slice(aSource.Length, bSource.Length));
-            return merged;
+            if (aSource == null) return bSource;
+            if (bSource == null) return aSource;
+
+            return aSource.Concat(bSource).Distinct().ToArray();
         }
 
         public AnimationFloatProperty Merge(AnimationFloatProperty b, bool asNewLayer)
@@ -340,16 +352,16 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
             // if asNewLayer and new layer is constant always, the value is used
             if (asNewLayer && b.State == PropertyState.ConstantAlways) return b;
 
-            if (State == PropertyState.Variable) return Variable0(MergeSource(Sources, b.Sources));
-            if (b.State == PropertyState.Variable) return Variable0(MergeSource(Sources, b.Sources));
+            if (State == PropertyState.Variable) return Variable0(MergeSource(_sources, b._sources));
+            if (b.State == PropertyState.Variable) return Variable0(MergeSource(_sources, b._sources));
 
             // now they are constant.
-            if (ConstValue.CompareTo(b.ConstValue) != 0) return Variable0(MergeSource(Sources, b.Sources));
+            if (ConstValue.CompareTo(b.ConstValue) != 0) return Variable0(MergeSource(_sources, b._sources));
 
             var value = ConstValue;
 
-            if (State == PropertyState.ConstantPartially) return ConstPartially0(value, MergeSource(Sources, b.Sources));
-            if (b.State == PropertyState.ConstantPartially) return ConstPartially0(value, MergeSource(Sources, b.Sources));
+            if (State == PropertyState.ConstantPartially) return ConstPartially0(value, MergeSource(_sources, b._sources));
+            if (b.State == PropertyState.ConstantPartially) return ConstPartially0(value, MergeSource(_sources, b._sources));
 
             System.Diagnostics.Debug.Assert(State == PropertyState.ConstantAlways);
             System.Diagnostics.Debug.Assert(b.State == PropertyState.ConstantAlways);

@@ -101,7 +101,7 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
             Assert.That(props.Count, Is.EqualTo(1));
             Assert.That(props.Keys, Has.Member(blendShapeProp));
             
-            Assert.That(props[blendShapeProp], Is.EqualTo(AnimationFloatProperty.Variable(null)));
+            Assert.That(props[blendShapeProp], Is.EqualTo(AnimationFloatProperty.Variable(TestSourceImpl.Instance)));
         }
 
         #endregion
