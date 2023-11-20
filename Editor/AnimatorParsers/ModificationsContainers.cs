@@ -165,7 +165,10 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
                         // const 
                         break;
                     case AnimationFloatProperty.PropertyState.Variable:
-                        _properties[propertyName] = AnimationFloatProperty.Variable(null); // TODO: merge source
+                        if (_properties.TryGetValue(propertyName, out var property))
+                            _properties[propertyName] = property.Merge(propertyState.Variable(), asNewLayer: false);
+                        else
+                            _properties.Add(propertyName, propertyState.Variable());
                         break;
                     case AnimationFloatProperty.PropertyState.Invalid:
                     default:
@@ -258,7 +261,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
         {
             foreach (var properties in _modifiedProperties.Values)
                 foreach (var name in properties.Keys.ToArray())
-                    properties[name] = AnimationFloatProperty.Variable(null); // source by properties
+                    properties[name] = properties[name].Variable();
         }
     }
 
