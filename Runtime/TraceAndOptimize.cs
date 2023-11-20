@@ -69,8 +69,10 @@ namespace Anatawa12.AvatarOptimizer
             public bool skipFreezingNonAnimatedBlendShape;
             [ToggleLeft]
             public bool skipFreezingMeaninglessBlendShape;
-            [FormerlySerializedAs("isAnimatedOptimization")] [ToggleLeft]
+            [ToggleLeft]
             public bool skipIsAnimatedOptimization;
+            [ToggleLeft]
+            public bool skipMergePhysBoneCollider;
         }
     }
 }

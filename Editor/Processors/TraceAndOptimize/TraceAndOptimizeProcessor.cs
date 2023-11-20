@@ -21,6 +21,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         public bool SkipFreezingNonAnimatedBlendShape;
         public bool SkipFreezingMeaninglessBlendShape;
         public bool SkipIsAnimatedOptimization;
+        public bool SkipMergePhysBoneCollider;
 
         public Dictionary<SkinnedMeshRenderer, HashSet<string>> PreserveBlendShapes =
             new Dictionary<SkinnedMeshRenderer, HashSet<string>>();
@@ -42,6 +43,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             SkipFreezingNonAnimatedBlendShape = config.advancedSettings.skipFreezingNonAnimatedBlendShape;
             SkipFreezingMeaninglessBlendShape = config.advancedSettings.skipFreezingMeaninglessBlendShape;
             SkipIsAnimatedOptimization = config.advancedSettings.skipIsAnimatedOptimization;
+            SkipMergePhysBoneCollider = config.advancedSettings.skipMergePhysBoneCollider;
 
             Enabled = true;
         }
