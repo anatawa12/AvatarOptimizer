@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Anatawa12.AvatarOptimizer.AnimatorParsers;
 using nadena.dev.ndmf;
 using UnityEngine;
 
@@ -23,10 +22,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         public Dictionary<SkinnedMeshRenderer, HashSet<string>> PreserveBlendShapes =
             new Dictionary<SkinnedMeshRenderer, HashSet<string>>();
-
-        public TraceAndOptimizeState()
-        {
-        }
 
         public void Initialize(TraceAndOptimize config)
         {
@@ -59,5 +54,17 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 context.GetState<TraceAndOptimizeState>().Initialize(config);
             Object.DestroyImmediate(config);
         }
+    }
+
+    internal abstract class TraceAndOptimizePass<T> : Pass<T> where T : TraceAndOptimizePass<T>, new()
+    {
+        protected sealed override void Execute(BuildContext context)
+        {
+            var state = context.GetState<TraceAndOptimizeState>();
+            if (!state.Enabled) return;
+            Execute(context, state);
+        }
+
+        protected abstract void Execute(BuildContext context, TraceAndOptimizeState state);
     }
 }

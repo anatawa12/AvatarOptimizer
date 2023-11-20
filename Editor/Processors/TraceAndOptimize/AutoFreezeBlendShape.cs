@@ -13,13 +13,12 @@ using VRC.SDKBase;
 
 namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 {
-    internal class AutoFreezeBlendShape : Pass<AutoFreezeBlendShape>
+    internal class AutoFreezeBlendShape : TraceAndOptimizePass<AutoFreezeBlendShape>
     {
         public override string DisplayName => "T&O: AutoFreezeBlendShape";
 
-        protected override void Execute(BuildContext context)
+        protected override void Execute(BuildContext context, TraceAndOptimizeState state)
         {
-            var state = context.GetState<TraceAndOptimizeState>();
             if (!state.FreezeBlendShape) return;
 
             if (!state.SkipFreezingNonAnimatedBlendShape)

@@ -5,7 +5,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
 {
     internal class ParseAnimator : Pass<ParseAnimator>
     {
-        public override string DisplayName => "T&O: Parse Animator";
+        public override string DisplayName => "Parse Animator";
 
         protected override void Execute(BuildContext context)
         {

@@ -5,13 +5,12 @@ using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 {
-    internal class FindUnusedObjects : Pass<FindUnusedObjects>
+    internal class FindUnusedObjects : TraceAndOptimizePass<FindUnusedObjects>
     {
         public override string DisplayName => "T&O: FindUnusedObjects";
 
-        protected override void Execute(BuildContext context)
+        protected override void Execute(BuildContext context, TraceAndOptimizeState state)
         {
-            var state = context.GetState<TraceAndOptimizeState>();
             if (!state.RemoveUnusedObjects) return;
 
             var processor = new FindUnusedObjectsProcessor(context, state);
