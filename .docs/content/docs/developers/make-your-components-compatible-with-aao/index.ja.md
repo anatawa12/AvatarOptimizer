@@ -13,7 +13,7 @@ title: コンポーネントにAvatar Optimizerとの互換性をもたせる
 
 ## コンポーネントはどのような場合にAvatar Optimizerと非互換になるか {#when-incompatible}
 
-もしコンポーネントがアバターに存在し、Avatar Optimizerが処理する時点でまだ存在している場合、そのコンポーネントはAvatar Optimizerと互換性が無い可能性があります。
+Avatar Optimizerが処理する時点でアバターにコンポーネントが存在している場合、そのコンポーネントはAvatar Optimizerと互換性が無い可能性があります。
 
 Avatar Optimizerはコンポーネント等に対するガベージコレクションシステムを実装しているため、最適化時にアバターに存在するすべてのコンポーネントのことを知る必要があります。
 
@@ -27,21 +27,20 @@ Avatar Optimizerはコンポーネント等に対するガベージコレクシ�
 
 ## どのように互換性を改善するか {#improve-compatibility}
 
-Avatar Optimizerが処理する前にコンポーネントを削除することができれば、そのようにしてください。
-もし削除できない場合、Avatar Optimizerにコンポーネントを登録してください。
+Avatar Optimizerが処理する前にコンポーネントを削除出来る場合は、そのようにしてください。
+削除出来ない場合はAvatar Optimizerにコンポーネントを登録してください。
 
 コンポーネントを削除する方法はいくつかあります。
 
-もしツールがNDMF[^NDMF]を使用した非破壊ツールの場合、NDMFのOptimization phaseの前、
+ツールがNDMF[^NDMF]を使用した非破壊ツールの場合は、NDMFのOptimization phaseより前、
 またはOptimization phaseの中で([`BeforePlugin`][ndmf-BeforePlugin]を用いて)`com.anatawa12.avatar-optimizer` plugin
 より前にコンポーネントを削除することを推奨します。
 
-もしツールがNDMFを使用していない非破壊ツールの場合、NDMFのOptimization phaseの前で、
-`IVRCSDKPreprocessAvatarCallback`を用いてコンポーネントを削除することを推奨します。
-現在のNDMFは、VRCSDKの`RemoveAvatarEditorOnly`の直前であるorder `-1025`でOptimization phaseを実行するので、
-それより小さい`callbackOrder`の`IVRCSDKPreprocessAvatarCallback`でコンポーネントを削除してください。
+ツールがNDMFを使用していない非破壊ツールの場合は、NDMFのOptimization phaseより前にコンポーネントを削除することを推奨します。
+この場合、現在のNDMFはVRCSDKの`RemoveAvatarEditorOnly`の直前であるorder `-1025`でOptimization phaseを実行するので、
+それより小さい`callbackOrder`を指定した`IVRCSDKPreprocessAvatarCallback`でコンポーネントを削除してください。
 
-もしコンポーネントがツールのための情報を保持するだけで、ビルド時には意味を持たない場合、
+ツールのコンポーネントがデータを保持する役割しかなく、ビルド時には意味を持っていない場合、
 `IVRCSDKPreprocessAvatarCallback`を用いてAvatar Optimizerが処理する前にコンポーネントを削除することを推奨します。
 上記の`IVRCSDKPreprocessAvatarCallback`の順序を参照してください。
 
