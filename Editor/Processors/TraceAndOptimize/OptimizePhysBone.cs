@@ -95,6 +95,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                             var rotation = rootTransform.rotation * collider.rotation;
                             // TODO: for planes, position don't have to be same, just y-position at origin
                             var centerPosition = rootTransform.TransformPoint(collider.position);
+                            if (rotation == Quaternion.identity)
+                            {
+                                // currently this feature is intended for floor colliders so
+                                // special optimization for floor colliders
+                                centerPosition.x = 0;
+                                centerPosition.z = 0;
+                            }
                             return (rotation, centerPosition);
                         });
                         break;
