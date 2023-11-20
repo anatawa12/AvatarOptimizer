@@ -332,7 +332,7 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
                     var clip = TestUtils.GetAssetAt<AnimationClip>($"AnimatorParser/{animName}.anim");
                     var mods = new ModificationsContainer();
                     mods.ModifyObject(skinnedRenderer)
-                        .AddModificationAsNewLayer(property, AnimationFloatProperty.ConstAlways(constantValue, null));
+                        .AddModificationAsNewLayer(property, AnimationFloatProperty.ConstAlways(constantValue, Source));
                     _clips[clip] = mods.ToImmutable();
                 }
 
@@ -341,7 +341,7 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
                     var clip = TestUtils.GetAssetAt<AnimationClip>($"AnimatorParser/{animName}.anim");
                     var mods = new ModificationsContainer();
                     mods.ModifyObject(skinnedRenderer)
-                        .AddModificationAsNewLayer(property, AnimationFloatProperty.Variable(null));
+                        .AddModificationAsNewLayer(property, AnimationFloatProperty.Variable(Source));
                     _clips[clip] = mods.ToImmutable();
                 }
             }
