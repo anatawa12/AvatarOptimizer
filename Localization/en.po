@@ -439,6 +439,9 @@ msgstr "Automatically Freeze Blend Shape"
 msgid "TraceAndOptimize:prop:removeUnusedObjects"
 msgstr "Remove unused Objects Automatically"
 
+msgid "TraceAndOptimize:prop:optimizePhysBone"
+msgstr "Optimize PhysBone Settings"
+
 msgid "TraceAndOptimize:prop:mmdWorldCompatibility"
 msgstr "MMD World Compatibility"
 

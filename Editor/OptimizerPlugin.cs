@@ -62,6 +62,9 @@ namespace Anatawa12.AvatarOptimizer.ndmf
                             .Then.Run("MakeChildrenProcessor",
                                 ctx => new Processors.MakeChildrenProcessor(early: false).Process(ctx)
                             )
+#if AAO_VRCSDK3_AVATARS
+                            .Then.Run(Processors.TraceAndOptimizes.OptimizePhysBone.Instance)
+#endif
                             .Then.Run(Processors.TraceAndOptimizes.FindUnusedObjects.Instance)
                             .Then.Run(Processors.TraceAndOptimizes.ConfigureRemoveZeroSizedPolygon.Instance)
                             .Then.Run(Processors.MergeBoneProcessor.Instance)

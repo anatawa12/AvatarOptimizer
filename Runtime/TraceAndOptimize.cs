@@ -2,6 +2,7 @@ using System;
 using CustomLocalization4EditorExtension;
 using UnityEngine;
 using UnityEngine.Animations;
+using UnityEngine.Serialization;
 
 namespace Anatawa12.AvatarOptimizer
 {
@@ -32,6 +33,15 @@ namespace Anatawa12.AvatarOptimizer
         [ToggleLeft]
         public bool removeZeroSizedPolygons = false;
 
+        [NotKeyable]
+        [CL4EELocalized("TraceAndOptimize:prop:optimizePhysBone")]
+        [ToggleLeft]
+#if !AAO_VRCSDK3_AVATARS
+        // no meaning without VRCSDK
+        [HideInInspector]
+#endif
+        public bool optimizePhysBone = true;
+
         // common parsing configuration
         [NotKeyable]
         [CL4EELocalized("TraceAndOptimize:prop:mmdWorldCompatibility",
@@ -59,6 +69,10 @@ namespace Anatawa12.AvatarOptimizer
             public bool skipFreezingNonAnimatedBlendShape;
             [ToggleLeft]
             public bool skipFreezingMeaninglessBlendShape;
+            [ToggleLeft]
+            public bool skipIsAnimatedOptimization;
+            [ToggleLeft]
+            public bool skipMergePhysBoneCollider;
         }
     }
 }
