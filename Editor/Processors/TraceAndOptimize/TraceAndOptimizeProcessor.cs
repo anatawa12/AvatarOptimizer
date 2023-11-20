@@ -10,6 +10,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         public bool FreezeBlendShape;
         public bool RemoveUnusedObjects;
         public bool RemoveZeroSizedPolygon;
+        public bool OptimizePhysBone;
         public bool MmdWorldCompatibility = true;
 
         public bool PreserveEndBone;
@@ -19,6 +20,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         public bool NoActivenessAnimation;
         public bool SkipFreezingNonAnimatedBlendShape;
         public bool SkipFreezingMeaninglessBlendShape;
+        public bool SkipIsAnimatedOptimization;
 
         public Dictionary<SkinnedMeshRenderer, HashSet<string>> PreserveBlendShapes =
             new Dictionary<SkinnedMeshRenderer, HashSet<string>>();
@@ -28,6 +30,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             FreezeBlendShape = config.freezeBlendShape;
             RemoveUnusedObjects = config.removeUnusedObjects;
             RemoveZeroSizedPolygon = config.removeZeroSizedPolygons;
+            OptimizePhysBone = config.optimizePhysBone;
             MmdWorldCompatibility = config.mmdWorldCompatibility;
 
             PreserveEndBone = config.preserveEndBone;
@@ -38,6 +41,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             NoActivenessAnimation = config.advancedSettings.noActivenessAnimation;
             SkipFreezingNonAnimatedBlendShape = config.advancedSettings.skipFreezingNonAnimatedBlendShape;
             SkipFreezingMeaninglessBlendShape = config.advancedSettings.skipFreezingMeaninglessBlendShape;
+            SkipIsAnimatedOptimization = config.advancedSettings.skipIsAnimatedOptimization;
 
             Enabled = true;
         }
