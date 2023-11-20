@@ -312,14 +312,23 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
         private AnimationFloatProperty(PropertyState state, float constValue, params IModificationSource[] modifiers) =>
             (State, _constValue, _sources) = (state, constValue, modifiers);
 
-        public static AnimationFloatProperty ConstAlways(float value, IModificationSource modifier) =>
-            ConstAlways0(value, new[] { modifier });
+        public static AnimationFloatProperty ConstAlways(float value, [NotNull] IModificationSource modifier)
+        {
+            if (modifier == null) throw new ArgumentNullException(nameof(modifier));
+            return ConstAlways0(value, new[] { modifier });
+        }
 
-        public static AnimationFloatProperty ConstPartially(float value, IModificationSource modifier) =>
-            ConstPartially0(value, new[] { modifier });
+        public static AnimationFloatProperty ConstPartially(float value, [NotNull] IModificationSource modifier)
+        {
+            if (modifier == null) throw new ArgumentNullException(nameof(modifier));
+            return ConstPartially0(value, new[] { modifier });
+        }
 
-        public static AnimationFloatProperty Variable(IModificationSource modifier) =>
-            Variable0(new[] { modifier });
+        public static AnimationFloatProperty Variable([NotNull] IModificationSource modifier)
+        {
+            if (modifier == null) throw new ArgumentNullException(nameof(modifier));
+            return Variable0(new[] { modifier });
+        }
 
         private static AnimationFloatProperty ConstAlways0(float value, IModificationSource[] modifiers) =>
             new AnimationFloatProperty(PropertyState.ConstantAlways, value, modifiers);

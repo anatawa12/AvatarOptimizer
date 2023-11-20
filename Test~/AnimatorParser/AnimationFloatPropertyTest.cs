@@ -8,6 +8,8 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
 {
     class AnimationPropertyTest
     {
+        private static readonly TestSourceImpl Source = TestSourceImpl.Instance;
+
         [TestCaseSource(nameof(TrueCause))]
         public void TestEquals(AnimationFloatProperty propA, AnimationFloatProperty propB)
         {
@@ -16,17 +18,17 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
 
         public static IEnumerable<TestCaseData> TrueCause()
         {
-            yield return new TestCaseData(ConstAlways(0, null), ConstAlways(0, null));
-            yield return new TestCaseData(ConstAlways(1, null), ConstAlways(1, null));
-            yield return new TestCaseData(ConstAlways(float.NaN, null), ConstAlways(float.NaN, null));
-            yield return new TestCaseData(ConstAlways(float.NegativeInfinity, null), ConstAlways(float.NegativeInfinity, null));
+            yield return new TestCaseData(ConstAlways(0, Source), ConstAlways(0, Source));
+            yield return new TestCaseData(ConstAlways(1, Source), ConstAlways(1, Source));
+            yield return new TestCaseData(ConstAlways(float.NaN, Source), ConstAlways(float.NaN, Source));
+            yield return new TestCaseData(ConstAlways(float.NegativeInfinity, Source), ConstAlways(float.NegativeInfinity, Source));
 
-            yield return new TestCaseData(ConstPartially(0, null), ConstPartially(0, null));
-            yield return new TestCaseData(ConstPartially(1, null), ConstPartially(1, null));
-            yield return new TestCaseData(ConstPartially(float.NaN, null), ConstPartially(float.NaN, null));
-            yield return new TestCaseData(ConstPartially(float.NegativeInfinity, null), ConstPartially(float.NegativeInfinity, null));
+            yield return new TestCaseData(ConstPartially(0, Source), ConstPartially(0, Source));
+            yield return new TestCaseData(ConstPartially(1, Source), ConstPartially(1, Source));
+            yield return new TestCaseData(ConstPartially(float.NaN, Source), ConstPartially(float.NaN, Source));
+            yield return new TestCaseData(ConstPartially(float.NegativeInfinity, Source), ConstPartially(float.NegativeInfinity, Source));
 
-            yield return new TestCaseData(Variable(null), Variable(null));
+            yield return new TestCaseData(Variable(Source), Variable(Source));
             yield return new TestCaseData(default, default);
         }
 
@@ -38,10 +40,10 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
 
         public static IEnumerable<TestCaseData> FalseCause()
         {
-            yield return new TestCaseData(ConstAlways(0, null), ConstAlways(1, null));
-            yield return new TestCaseData(ConstAlways(1, null), ConstPartially(1, null));
-            yield return new TestCaseData(ConstAlways(0, null), Variable(null));
-            yield return new TestCaseData(default, Variable(null));
+            yield return new TestCaseData(ConstAlways(0, Source), ConstAlways(1, Source));
+            yield return new TestCaseData(ConstAlways(1, Source), ConstPartially(1, Source));
+            yield return new TestCaseData(ConstAlways(0, Source), Variable(Source));
+            yield return new TestCaseData(default, Variable(Source));
         }
     }
 }
