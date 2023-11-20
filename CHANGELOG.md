@@ -22,6 +22,9 @@ The format is based on [Keep a Changelog].
 - Warning for conflicts with animation
   - Warning for freezing animated BlendShapes `#719`
   - Warning for merging renderers that activeness/enablement animated differently `#675`
+- PhysBone Optimization `#733`
+  - Unnessesary isAnimated is now unconfigured
+  - Floor Colliders with same configuration will be merged to one floor collider
 
 ### Changed
 - All logs passed to ErrorReport is now shown on the console log `#643`
