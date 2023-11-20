@@ -3,13 +3,12 @@ using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 {
-    public class ConfigureRemoveZeroSizedPolygon : Pass<ConfigureRemoveZeroSizedPolygon>
+    internal class ConfigureRemoveZeroSizedPolygon : TraceAndOptimizePass<ConfigureRemoveZeroSizedPolygon>
     {
         public override string DisplayName => "T&O: ConfigureRemoveZeroSizedPolygon";
 
-        protected override void Execute(BuildContext context)
+        protected override void Execute(BuildContext context, TraceAndOptimizeState state)
         {
-            var state = context.GetState<TraceAndOptimizeState>();
             if (!state.RemoveZeroSizedPolygon) return;
 
             foreach (var renderer in context.GetComponents<SkinnedMeshRenderer>())
