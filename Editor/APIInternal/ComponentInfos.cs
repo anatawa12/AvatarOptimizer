@@ -125,11 +125,12 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
         {
             collector.MarkEntrypoint();
 
-            if (component.main.simulationSpace == ParticleSystemSimulationSpace.Custom)
+            if (component.main.simulationSpace == ParticleSystemSimulationSpace.Custom) // not animated
                 collector.AddDependency(component.main.customSimulationSpace);
-            if (component.shape.enabled)
+
+            if (collector.GetAnimatedFlag(component, "ShapeModule.enabled", component.shape.enabled) != false)
             {
-                switch (component.shape.shapeType)
+                switch (component.shape.shapeType) // not animated
                 {
                     case ParticleSystemShapeType.MeshRenderer:
                         collector.AddDependency(component.shape.meshRenderer);
@@ -165,9 +166,9 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
                 }
             }
 
-            if (component.collision.enabled)
+            if (collector.GetAnimatedFlag(component, "CollisionModule.enabled", component.collision.enabled) != false)
             {
-                switch (component.collision.type)
+                switch (component.collision.type) // not animated
                 {
                     case ParticleSystemCollisionType.Planes:
 #if UNITY_2020_2_OR_NEWER
@@ -183,7 +184,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
                 }
             }
 
-            if (component.trigger.enabled)
+            if (collector.GetAnimatedFlag(component, "TriggerModule.enabled", component.trigger.enabled) != false)
             {
 #if UNITY_2020_2_OR_NEWER
                 for (var i = 0; i < component.trigger.colliderCount; i++)
@@ -197,14 +198,14 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
                 }
             }
 
-            if (component.subEmitters.enabled)
+            if (component.subEmitters.enabled) // will not be animated
             {
                 for (var i = 0; i < component.subEmitters.subEmittersCount; i++)
                     collector.AddDependency(component.subEmitters.GetSubEmitterSystem(i))
                         .OnlyIfTargetCanBeEnable();
             }
 
-            if (component.lights.enabled)
+            if (collector.GetAnimatedFlag(component, "LightsModule.enabled", component.lights.enabled) != false)
             {
                 collector.AddDependency(component.lights.light);
             }
