@@ -200,7 +200,8 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
             if (component.subEmitters.enabled)
             {
                 for (var i = 0; i < component.subEmitters.subEmittersCount; i++)
-                    collector.AddDependency(component.subEmitters.GetSubEmitterSystem(i));
+                    collector.AddDependency(component.subEmitters.GetSubEmitterSystem(i))
+                        .OnlyIfTargetCanBeEnable();
             }
 
             if (component.lights.enabled)
