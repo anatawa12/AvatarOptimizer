@@ -170,6 +170,21 @@ namespace Anatawa12.AvatarOptimizer.API
         /// <returns>The object to configure the dependency</returns>
         [PublicAPI]
         public abstract ComponentDependencyInfo AddDependency(Component dependency);
+
+        // TODO: rename to better name and make public
+        // NOTE for external users: this is API Proposal to compute value of animatable bool property 
+        // such as ParticleSystem.trigger.enabled.
+        /// <summary>
+        /// Returns whether if <paramref name="animationProperty"/> is always true, false, or animated by some animation.
+        /// Returns true if initially true and not animated OR always animated to true.
+        /// Returns false if initially false and not animated OR always animated to false.
+        /// Returns null if the property is animated to both true and false.
+        /// </summary>
+        /// <param name="component"></param>
+        /// <param name="animationProperty"></param>
+        /// <param name="currentValue"></param>
+        /// <returns></returns>
+        internal abstract bool? GetAnimatedFlag(Component component, string animationProperty, bool currentValue);
     }
 
     public abstract class ComponentDependencyInfo

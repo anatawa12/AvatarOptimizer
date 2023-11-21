@@ -16,6 +16,9 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Remove Unused Object may break ParticleSystem `#738`
+  - Trigger Colliders can be disapper if you specify Transform instead of Collider instance.
+  - Initially diabled particle system module will be ignored
 
 ### Security
 

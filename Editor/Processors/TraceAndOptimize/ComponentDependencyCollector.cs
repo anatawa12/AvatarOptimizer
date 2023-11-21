@@ -117,6 +117,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             public override API.ComponentDependencyInfo AddDependency(Component dependency) =>
                 AddDependencyInternal(_info, dependency);
 
+            internal override bool? GetAnimatedFlag(Component component, string animationProperty, bool currentValue) =>
+                _collector._session.GetConstantValue(component, animationProperty, currentValue);
+
             public void AddParentDependency(Transform component) =>
                 AddDependencyInternal(_info, component.parent, GCComponentInfo.DependencyType.Parent)
                     .EvenIfDependantDisabled();
