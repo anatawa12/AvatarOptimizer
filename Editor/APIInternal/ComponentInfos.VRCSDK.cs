@@ -23,6 +23,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
     [ComponentInformation(typeof(PipelineManager))]
     [ComponentInformation(typeof(VRCSpatialAudioSource))]
     [ComponentInformation(typeof(VRC_SpatialAudioSource))]
+    [ComponentInformation(typeof(ONSPAudioSource))]
     // nadena.dev.ndmf.VRChat.ContextHolder with reflection
     internal class EntrypointComponentInformation : ComponentInformation<Component>
     {
