@@ -20,6 +20,8 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Some missing components warnings `#736`
+  - warning for `ONSPAudioSource`, `VRCImpostorSettings`, and `RectTransform` are fixed
 
 ### Security
 

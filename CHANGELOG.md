@@ -50,6 +50,8 @@ The format is based on [Keep a Changelog].
 - bounds can be changed in apply on play if updateWhenOffscreen is true `#697`
 - Compatibility with transform moving plugins `#715`
   - Remove Mesh in Box was not working well with [FloorAdjuster]
+- Some missing components warnings `#736`
+  - warning for `ONSPAudioSource`, `VRCImpostorSettings`, and `RectTransform` are fixed
 
 [FloorAdjuster]: https://github.com/Narazaka/FloorAdjuster
 ### Security

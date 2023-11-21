@@ -23,6 +23,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
     }
 
     [ComponentInformation(typeof(Transform))]
+    [ComponentInformation(typeof(RectTransform))]
     internal class TransformInformation : ComponentInformation<Transform>
     {
         protected override void CollectDependency(Transform component, ComponentDependencyCollector collector)

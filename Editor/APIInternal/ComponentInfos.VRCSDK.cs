@@ -23,6 +23,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
     [ComponentInformation(typeof(PipelineManager))]
     [ComponentInformation(typeof(VRCSpatialAudioSource))]
     [ComponentInformation(typeof(VRC_SpatialAudioSource))]
+    [ComponentInformation(typeof(ONSPAudioSource))]
     // nadena.dev.ndmf.VRChat.ContextHolder with reflection
     internal class EntrypointComponentInformation : ComponentInformation<Component>
     {
@@ -339,6 +340,20 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
         {
             collector.MarkEntrypoint();
             collector.AddDependency(component.rootTransform);
+        }
+    }
+
+    [ComponentInformation(typeof(VRCImpostorSettings))]
+    internal class VRCImpostorSettingsInformation : ComponentInformation<VRCImpostorSettings>
+    {
+        protected override void CollectDependency(VRCImpostorSettings component, ComponentDependencyCollector collector)
+        {
+            foreach (var transform in component.transformsToIgnore)
+                collector.AddDependency(transform);
+            foreach (var transform in component.reparentHere)
+                collector.AddDependency(transform);
+            foreach (var transform in component.extraChildTransforms)
+                collector.AddDependency(transform);
         }
     }
 }

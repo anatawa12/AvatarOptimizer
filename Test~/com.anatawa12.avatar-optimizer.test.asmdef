@@ -9,6 +9,7 @@
         "com.anatawa12.avatar-optimizer.internal.prefab-safe-set",
         "com.anatawa12.avatar-optimizer.internal.prefab-safe-set.editor",
         "com.anatawa12.avatar-optimizer.internal.error-reporter.editor",
+        "com.anatawa12.avatar-optimizer.api.editor",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
         "nadena.dev.ndmf"
