@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog].
 - PhysBone Optimization `#733`
   - Unnessesary isAnimated is now unconfigured
   - Floor Colliders with same configuration will be merged to one floor collider
+- Minimum Support for FinalIK `#735`
 
 ### Changed
 
