@@ -16,11 +16,14 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Remove Unused Object may break ParticleSystem `#738`
-  - Trigger Colliders can be disapper if you specify Transform instead of Collider instance.
-  - Initially diabled particle system module will be ignored
 
 ### Security
+
+## [1.6.0-rc.1] - 2023-11-21
+### Fixed
+- Remove Unused Object may break ParticleSystem [`#738`](https://github.com/anatawa12/AvatarOptimizer/pull/738)
+  - Trigger Colliders can be disapper if you specify Transform instead of Collider instance.
+  - Initially diabled particle system module will be ignored
 
 ## [1.6.0-beta.12] - 2023-11-21
 ### Added
@@ -1056,7 +1059,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.12...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-rc.1...HEAD
+[1.6.0-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.12...v1.6.0-rc.1
 [1.6.0-beta.12]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.11...v1.6.0-beta.12
 [1.6.0-beta.11]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.10...v1.6.0-beta.11
 [1.6.0-beta.10]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.9...v1.6.0-beta.10
