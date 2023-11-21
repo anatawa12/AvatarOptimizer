@@ -190,7 +190,11 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
 #else
                 for (var i = 0; i < component.trigger.maxColliderCount; i++)
 #endif
-                    collector.AddDependency(component.trigger.GetCollider(i));
+                {
+                    var collider = component.trigger.GetCollider(i);
+                    if (!collider) continue;
+                    collector.AddDependency(collider is Collider ? collider : collider.GetComponent<Collider>());
+                }
             }
 
             if (component.subEmitters.enabled)
