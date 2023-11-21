@@ -23,13 +23,15 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.Externals
     [ComponentInformationWithGUID("ebbd066464934494f896947690872ad4", 11500000)] // "FBBIKHeadEffector"
     [ComponentInformationWithGUID("52af154b35b9e48af96507346dc649ba", 11500000)] // "FABRIK"
     [ComponentInformationWithGUID("52af154b35b9e48af96507346dc649ba", 11500000)] // "FABRIK"
-    [ComponentInformationWithGUID("c9a2b10b17d604bb2a4d1bff880fc61a", 11500000)] // "FABRIKChain"
     [ComponentInformationWithGUID("6fb82f19cc3ce412892b525300de1141", 11500000)] // "FABRIKRoot"
     [ComponentInformationWithGUID("98b9a1a9e9a934b23a7db351dd9ec69e", 11500000)] // "CCDIK"
     [ComponentInformationWithGUID("197a3a7b95f0e4ac48f171363db95b5b", 11500000)] // "RotationLimit"
     [ComponentInformationWithGUID("484718f2c4ab849829491782b508958a", 11500000)] // "RotationLimitHinge"
     [ComponentInformationWithGUID("dae00b1bdc58d499396776ce508a5078", 11500000)] // "RotationLimitPolygonal"
     [ComponentInformationWithGUID("2ccb80eac3b2b4909a63c818e38ae6b8", 11500000)] // "RotationLimitSpline"
+
+    // not listed but allowed with inheritance
+    [ComponentInformationWithGUID("45281828b4c9247558c7c695124d6877", 11500000)] // "RotationLimitAngle"
     internal class FinalIKInformation : ComponentInformation<Component>, IExternalMarker
     {
         protected override void CollectDependency(Component component, ComponentDependencyCollector collector)
