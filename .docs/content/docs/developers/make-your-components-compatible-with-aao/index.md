@@ -6,14 +6,14 @@ title: Make your components compatible with Avatar Optimizer
 
 This page describes the following two things.
 
-- When can a components be incompatible with Avatar Optimizer?
+- When can components be incompatible with Avatar Optimizer?
 - How to improve the compatibility?
 
 If you have some question, please feel free to ask [`@anatawa12@misskey.niri.la` on fediverse][fediverse].
 
-## When can a components be incompatible with Avatar Optimizer? {#when-incompatible}
+## When can components be incompatible with Avatar Optimizer? {#when-incompatible}
 
-If your components are on the avatar and still exists on the time Avatar Optimizer processes, 
+If your components are on the avatar and still exist when Avatar Optimizer processes it, 
 your components can be incompatible with Avatar Optimizer.
 
 Since Avatar Optimizer has Garbage Collection system for Components and others, Avatar Optimizer has to 
@@ -30,8 +30,10 @@ However, the assumption can be incorrect, so Avatar Optimizer will generate the 
 
 ## How to improve the compatibility? {#improve-compatibility}
 
-Please remove your components before Avatar Optimizer processes if your tool adds components to the avatar as possible.
-If you cannot, please register your components to Avatar Optimizer.
+Please remove your components before Avatar Optimizer processes as much as possible.
+If you cannot remove some components, please register them to Avatar Optimizer.
+
+### Removing your components {#remove-component}
 
 You can remove your components with several ways.
 
@@ -40,9 +42,9 @@ or before `com.anatawa12.avatar-optimizer` plugin (with [`BeforePlugin`][ndmf-Be
 in the Optimization phase is recommended.
 
 If your tool is a non-destructive tool not based on NDMF[^NDMF], removing your components before 
-the NDMF's Optimization phase with `IVRCSDKPreprocessAvatarCallback` is recommended.
-Current NDMF executes Optimization phase in order `-1025`, which is JUST before VRCSDK's `RemoveAvatarEditorOnly`
-callback, so your tool should remove components in `IVRCSDKPreprocessAvatarCallback` with smaller `callbackOrder`.
+the NDMF's Optimization phase is recommended.
+In this case, current NDMF executes Optimization phase in order `-1025`, which is JUST before VRCSDK's `RemoveAvatarEditorOnly`
+callback, so your tool should remove components with `IVRCSDKPreprocessAvatarCallback` with smaller `callbackOrder`.
 
 If your components holds some information for your tool and has no meaning on the build time,
 removing your components before Avatar Optimizer processes with `IVRCSDKPreprocessAvatarCallback` is recommended.

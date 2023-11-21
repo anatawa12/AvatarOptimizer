@@ -30,23 +30,25 @@ Avatar Optimizerはコンポーネント等に対するガベージコレクシ�
 Avatar Optimizerが処理する前にコンポーネントを削除出来る場合は、そのようにしてください。
 削除出来ない場合はAvatar Optimizerにコンポーネントを登録してください。
 
+### コンポーネントを削除する {#remove-component}
+
 コンポーネントを削除する方法はいくつかあります。
 
 ツールがNDMF[^NDMF]を使用した非破壊ツールの場合は、NDMFのOptimization phaseより前、
 またはOptimization phaseの中で([`BeforePlugin`][ndmf-BeforePlugin]を用いて)`com.anatawa12.avatar-optimizer` plugin
 より前にコンポーネントを削除することを推奨します。
 
-ツールがNDMFを使用していない非破壊ツールの場合は、NDMFのOptimization phaseより前にコンポーネントを削除することを推奨します。
+ツールがNDMF[^NDMF]を使用していない非破壊ツールの場合は、NDMFのOptimization phaseより前にコンポーネントを削除することを推奨します。
 この場合、現在のNDMFはVRCSDKの`RemoveAvatarEditorOnly`の直前であるorder `-1025`でOptimization phaseを実行するので、
 それより小さい`callbackOrder`を指定した`IVRCSDKPreprocessAvatarCallback`でコンポーネントを削除してください。
 
 ツールのコンポーネントがデータを保持する役割しかなく、ビルド時には意味を持っていない場合、
 `IVRCSDKPreprocessAvatarCallback`を用いてAvatar Optimizerが処理する前にコンポーネントを削除することを推奨します。
-上記の`IVRCSDKPreprocessAvatarCallback`の順序を参照してください。
+`IVRCSDKPreprocessAvatarCallback`の順序については上記を参照してください。
 
 ### コンポーネントを登録する {#register-component}
 
-ツールのコンポーネントをAvatar Optimizerの処理で削除したい、または残しておきたい場合、
+ツールのコンポーネントをAvatar Optimizerの処理より後に残しておきたい場合、
 Avatar Optimizerにコンポーネントの情報を登録できます。
 
 まず、Avatar OptimizerのAPIを呼び出すために、assembly definitionファイル[^asmdef]を(存在しない場合)作成してください。
@@ -83,8 +85,6 @@ internal class YourComponentInformation : ComponentInformation<YourComponent>
 `CollectMutations`では、コンポーネントの処理によって変更される可能性があるプロパティを登録します。\
 `CollectDependency`では、ビルド時や実行時でのコンポーネントの依存関係を登録します。\
 詳しくはxmldocやメソッド名を参照してください。
-
-コンポーネントがデータを保持するためだけのものであれば、どちらも空にします。
 
 [fediverse]: https://misskey.niri.la/@anatawa12
 [ndmf-BeforePlugin]: https://ndmf.nadena.dev/api/nadena.dev.ndmf.fluent.Sequence.html#nadena_dev_ndmf_fluent_Sequence_BeforePlugin_System_String_System_String_System_Int32_
