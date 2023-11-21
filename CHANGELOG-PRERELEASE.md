@@ -8,10 +8,6 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- PhysBone Optimization `#733`
-  - Unnessesary isAnimated is now unconfigured
-  - Floor Colliders with same configuration will be merged to one floor collider
-- Minimum Support for FinalIK `#735`
 
 ### Changed
 
@@ -20,10 +16,19 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Some missing components warnings `#736`
-  - warning for `ONSPAudioSource`, `VRCImpostorSettings`, and `RectTransform` are fixed
 
 ### Security
+
+## [1.6.0-beta.12] - 2023-11-21
+### Added
+- PhysBone Optimization [`#733`](https://github.com/anatawa12/AvatarOptimizer/pull/733)
+  - Unnessesary isAnimated is now unconfigured
+  - Floor Colliders with same configuration will be merged to one floor collider
+- Minimum Support for FinalIK [`#735`](https://github.com/anatawa12/AvatarOptimizer/pull/735)
+
+### Fixed
+- Some missing components warnings [`#736`](https://github.com/anatawa12/AvatarOptimizer/pull/736)
+  - warning for `ONSPAudioSource`, `VRCImpostorSettings`, and `RectTransform` are fixed
 
 ## [1.6.0-beta.11] - 2023-11-18
 ### Fixed
@@ -1048,7 +1053,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.11...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.12...HEAD
+[1.6.0-beta.12]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.11...v1.6.0-beta.12
 [1.6.0-beta.11]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.10...v1.6.0-beta.11
 [1.6.0-beta.10]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.9...v1.6.0-beta.10
 [1.6.0-beta.9]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.8...v1.6.0-beta.9
