@@ -52,6 +52,9 @@ The format is based on [Keep a Changelog].
   - Remove Mesh in Box was not working well with [FloorAdjuster]
 - Some missing components warnings `#736`
   - warning for `ONSPAudioSource`, `VRCImpostorSettings`, and `RectTransform` are fixed
+- Remove Unused Object may break ParticleSystem `#738`
+  - Trigger Colliders can be disapper if you specify Transform instead of Collider instance.
+  - Initially diabled particle system module will be ignored
 
 [FloorAdjuster]: https://github.com/Narazaka/FloorAdjuster
 ### Security
