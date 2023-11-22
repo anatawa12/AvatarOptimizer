@@ -16,9 +16,12 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- FinalIK Components will be removed `#742`
 
 ### Security
+
+## [1.6.0-rc.2] - 2023-11-22
+### Fixed
+- FinalIK Components will be removed [`#742`](https://github.com/anatawa12/AvatarOptimizer/pull/742)
 
 ## [1.6.0-rc.1] - 2023-11-21
 ### Fixed
@@ -1060,7 +1063,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-rc.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-rc.2...HEAD
+[1.6.0-rc.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-rc.1...v1.6.0-rc.2
 [1.6.0-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.12...v1.6.0-rc.1
 [1.6.0-beta.12]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.11...v1.6.0-beta.12
 [1.6.0-beta.11]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.10...v1.6.0-beta.11
