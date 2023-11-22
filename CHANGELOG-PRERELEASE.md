@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- FinalIK Components will be removed `#742`
 
 ### Security
 
