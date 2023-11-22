@@ -36,6 +36,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.Externals
     {
         protected override void CollectDependency(Component component, ComponentDependencyCollector collector)
         {
+            collector.MarkEntrypoint();
             using (var serialized = new SerializedObject(component))
                 foreach (var property in serialized.ObjectReferenceProperties())
                     if (property.objectReferenceValue is Component c)
