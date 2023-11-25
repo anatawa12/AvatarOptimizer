@@ -16,9 +16,12 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Error if there are null in ingore transforms of PhysBone `#749`
 
 ### Security
+
+## [1.6.0-rc.4] - 2023-11-25
+### Fixed
+- Error if there are null in ingore transforms of PhysBone [`#749`](https://github.com/anatawa12/AvatarOptimizer/pull/749)
 
 ## [1.6.0-rc.3] - 2023-11-25
 ### Fixed
@@ -1069,7 +1072,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-rc.3...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-rc.4...HEAD
+[1.6.0-rc.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-rc.3...v1.6.0-rc.4
 [1.6.0-rc.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-rc.2...v1.6.0-rc.3
 [1.6.0-rc.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-rc.1...v1.6.0-rc.2
 [1.6.0-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.12...v1.6.0-rc.1
