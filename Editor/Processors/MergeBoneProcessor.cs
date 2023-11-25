@@ -127,6 +127,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
             while (processQueue.Count != 0)
             {
                 var transform = processQueue.Dequeue();
+                if (transform == null) continue;
                 if (!transform.gameObject.GetComponent<MergeBone>())
                 {
                     ignoreTransforms.Add(transform);
