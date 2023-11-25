@@ -55,5 +55,31 @@ namespace Anatawa12.AvatarOptimizer.Test
             Assert.That(physBone.ignoreTransforms,
                 Is.EquivalentTo(new[] { nonMergedIgnored.transform, mergedChild.transform }));
         }
+        
+        
+        [Test]
+        public void NullIgnoreTransformOfPb()
+        {
+            var root = TestUtils.NewAvatar();
+            var destoryed = Utils.NewGameObject("destoryed", root.transform);
+            var pbRoot = Utils.NewGameObject("merged", root.transform);
+            var child = Utils.NewGameObject("child", pbRoot.transform);
+            var mergedIgnored = Utils.NewGameObject("mergedIgnored", child.transform);
+            var mergedChild = Utils.NewGameObject("mergedChild", mergedIgnored.transform);
+
+            var nonMergedIgnored = Utils.NewGameObject("nonMergedIgnored", child.transform);
+
+            mergedIgnored.AddComponent<MergeBone>();
+
+            var physBone = pbRoot.AddComponent<VRCPhysBone>();
+
+            physBone.ignoreTransforms.Add(mergedIgnored.transform);
+            physBone.ignoreTransforms.Add(nonMergedIgnored.transform);
+            physBone.ignoreTransforms.Add(destoryed.transform);
+            physBone.ignoreTransforms.Add(null);
+            Object.DestroyImmediate(destoryed);
+
+            MergeBoneProcessor.MapIgnoreTransforms(physBone);
+        }
     }
 }
