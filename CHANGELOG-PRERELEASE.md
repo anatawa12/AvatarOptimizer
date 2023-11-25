@@ -16,10 +16,13 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- MergeBone breaks `ignoreTransforms` of PhysBone `#745`
-- freeze meaningless may cause `FreezeBlendShape:warning:animation` warning `#746`
 
 ### Security
+
+## [1.6.0-rc.3] - 2023-11-25
+### Fixed
+- MergeBone breaks `ignoreTransforms` of PhysBone [`#745`](https://github.com/anatawa12/AvatarOptimizer/pull/745)
+- freeze meaningless may cause `FreezeBlendShape:warning:animation` warning [`#746`](https://github.com/anatawa12/AvatarOptimizer/pull/746)
 
 ## [1.6.0-rc.2] - 2023-11-22
 ### Fixed
@@ -1065,7 +1068,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-rc.2...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-rc.3...HEAD
+[1.6.0-rc.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-rc.2...v1.6.0-rc.3
 [1.6.0-rc.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-rc.1...v1.6.0-rc.2
 [1.6.0-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.12...v1.6.0-rc.1
 [1.6.0-beta.12]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.11...v1.6.0-beta.12
