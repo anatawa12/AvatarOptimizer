@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Error if there are null in ingore transforms of PhysBone `#749`
 
 ### Security
 
