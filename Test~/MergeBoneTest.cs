@@ -1,6 +1,7 @@
 using Anatawa12.AvatarOptimizer.Processors;
 using NUnit.Framework;
 using UnityEngine;
+using VRC.SDK3.Dynamics.PhysBone.Components;
 
 namespace Anatawa12.AvatarOptimizer.Test
 {
@@ -29,6 +30,30 @@ namespace Anatawa12.AvatarOptimizer.Test
             Assert.That(movedAfter.scale, Is.EqualTo(epsilonVector3));
             Assert.That(movedAfter.position, Is.EqualTo(epsilonVector3));
             Assert.That(movedAfter.rotation, Is.EqualTo(Quaternion.identity));
+        }
+        
+        [Test]
+        public void IgnoreTransformOfPb()
+        {
+            var root = TestUtils.NewAvatar();
+            var pbRoot = Utils.NewGameObject("merged", root.transform);
+            var child = Utils.NewGameObject("child", pbRoot.transform);
+            var mergedIgnored = Utils.NewGameObject("mergedIgnored", child.transform);
+            var mergedChild = Utils.NewGameObject("mergedChild", mergedIgnored.transform);
+
+            var nonMergedIgnored = Utils.NewGameObject("nonMergedIgnored", child.transform);
+
+            mergedIgnored.AddComponent<MergeBone>();
+
+            var physBone = pbRoot.AddComponent<VRCPhysBone>();
+
+            physBone.ignoreTransforms.Add(mergedIgnored.transform);
+            physBone.ignoreTransforms.Add(nonMergedIgnored.transform);
+
+            MergeBoneProcessor.MapIgnoreTransforms(physBone);
+
+            Assert.That(physBone.ignoreTransforms,
+                Is.EquivalentTo(new[] { nonMergedIgnored.transform, mergedChild.transform }));
         }
     }
 }

@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- MergeBone breaks `ignoreTransforms` of PhysBone `#745`
 
 ### Security
 
