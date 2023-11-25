@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- freeze meaningless may cause `FreezeBlendShape:warning:animation` warning `#746`
 
 ### Security
 
