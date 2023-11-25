@@ -7,6 +7,7 @@ using JetBrains.Annotations;
 using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEngine;
+using VRC.Dynamics;
 using VRC.SDKBase;
 using Object = UnityEngine.Object;
 
@@ -77,6 +78,8 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
             if (mergeMapping.Count == 0) return;
 
+            BuildReport.ReportingObjects(context.GetComponents<VRCPhysBoneBase>(), MapIgnoreTransforms);
+
             BuildReport.ReportingObjects(context.GetComponents<SkinnedMeshRenderer>(), renderer =>
             {
                 var meshInfo2 = context.GetMeshInfoFor(renderer);
@@ -114,6 +117,28 @@ namespace Anatawa12.AvatarOptimizer.Processors
             foreach (var pair in mergeMapping.Keys)
                 if (pair)
                     Object.DestroyImmediate(pair.gameObject);
+        }
+
+        internal static void MapIgnoreTransforms(VRCPhysBoneBase physBone)
+        {
+            var ignoreTransforms = new HashSet<Transform>();
+
+            var processQueue = new Queue<Transform>(physBone.ignoreTransforms);
+            while (processQueue.Count != 0)
+            {
+                var transform = processQueue.Dequeue();
+                if (!transform.gameObject.GetComponent<MergeBone>())
+                {
+                    ignoreTransforms.Add(transform);
+                }
+                else
+                {
+                    foreach (var child in transform.DirectChildrenEnumerable())
+                        processQueue.Enqueue(child);
+                }
+            }
+
+            physBone.ignoreTransforms = ignoreTransforms.ToList();
         }
 
         private void DoBoneMap2(MeshInfo2 meshInfo2, Dictionary<Transform, Transform> mergeMapping)
