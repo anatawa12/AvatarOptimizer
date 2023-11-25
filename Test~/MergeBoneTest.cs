@@ -33,7 +33,7 @@ namespace Anatawa12.AvatarOptimizer.Test
         }
         
         [Test]
-        public void IgnoreTransformOfPb()
+        public void IgnoreTransformOfPhysBone()
         {
             var root = TestUtils.NewAvatar();
             var pbRoot = Utils.NewGameObject("merged", root.transform);
@@ -56,9 +56,8 @@ namespace Anatawa12.AvatarOptimizer.Test
                 Is.EquivalentTo(new[] { nonMergedIgnored.transform, mergedChild.transform }));
         }
         
-        
         [Test]
-        public void NullIgnoreTransformOfPb()
+        public void NullElementsInIgnoreTransformInPhysBone()
         {
             var root = TestUtils.NewAvatar();
             var destoryed = Utils.NewGameObject("destoryed", root.transform);
@@ -79,6 +78,16 @@ namespace Anatawa12.AvatarOptimizer.Test
             physBone.ignoreTransforms.Add(null);
             Object.DestroyImmediate(destoryed);
 
+            MergeBoneProcessor.MapIgnoreTransforms(physBone);
+        }
+        
+        [Test]
+        public void NullIgnoreTransformListInPhysBone()
+        {
+            var root = TestUtils.NewAvatar();
+            var pbRoot = Utils.NewGameObject("merged", root.transform);
+            var physBone = pbRoot.AddComponent<VRCPhysBone>();
+            physBone.ignoreTransforms = null;
             MergeBoneProcessor.MapIgnoreTransforms(physBone);
         }
     }
