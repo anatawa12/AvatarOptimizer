@@ -119,7 +119,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                     Object.DestroyImmediate(pair.gameObject);
         }
 
-        private void MapIgnoreTransforms(VRCPhysBoneBase physBone)
+        internal static void MapIgnoreTransforms(VRCPhysBoneBase physBone)
         {
             var ignoreTransforms = new HashSet<Transform>();
 
