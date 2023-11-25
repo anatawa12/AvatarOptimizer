@@ -55,6 +55,7 @@ The format is based on [Keep a Changelog].
 - Remove Unused Object may break ParticleSystem `#738`
   - Trigger Colliders can be disapper if you specify Transform instead of Collider instance.
   - Initially diabled particle system module will be ignored
+- MergeBone breaks `ignoreTransforms` of PhysBone `#745`
 
 [FloorAdjuster]: https://github.com/Narazaka/FloorAdjuster
 ### Security
