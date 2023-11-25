@@ -121,6 +121,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
         internal static void MapIgnoreTransforms(VRCPhysBoneBase physBone)
         {
+            if (physBone.ignoreTransforms == null) return;
             var ignoreTransforms = new HashSet<Transform>();
 
             var processQueue = new Queue<Transform>(physBone.ignoreTransforms);
