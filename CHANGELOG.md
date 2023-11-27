@@ -8,58 +8,67 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Public API for registering component information `#632` `#668`
-- Disabling PhysBone animation based on mesh renderer enabled animation `#640`
-  - If you toggles your clothes with simple toggle, PhysBones on the your avatar will also be toggled automatically!
-- Small performance improve `#641`
-- Ability to prevent changing enablement of component `#668`
-- Remove Zero Sized Polygons `#659`
-- Add support for UniVRM components `#653`
-- Support for Mesh Topologies other than Triangles `#692`
-- Skip enablement mismatched Renderers in Merge Skinned Mesh `#670`
-  - This is now enabled by default for newly added Merge Skinned Mesh.
-- Error for MergeBone on the Avatar Root `#716`
-- Warning for conflicts with animation
-  - Warning for freezing animated BlendShapes `#719`
-  - Warning for merging renderers that activeness/enablement animated differently `#675`
-- PhysBone Optimization `#733`
-  - Unnessesary isAnimated is now unconfigured
-  - Floor Colliders with same configuration will be merged to one floor collider
-- Minimum Support for FinalIK `#735`
 
 ### Changed
-- All logs passed to ErrorReport is now shown on the console log `#643`
-- Improved Behaviour with multi-material multi pass rendering `#662`
-  - Previously, multi-material multi pass rendering are flattened.
-  - Since 1.6, flattened if component doesn't support that.
-- Remove Unused Objects removes meaningless Animators and Renderers `#709`
-  - Renderers without Mesh and Animators without AnimatorController is meaningless
 
 ### Deprecated
 
 ### Removed
-- Legacy GC `#633`
-- Preventing removing `IEditorOnly` in callback order -1024 `#658`
+
+### Fixed
+
+### Security
+
+## [1.6.0] - 2023-11-27
+### Added
+- Public API for registering component information [`#632`](https://github.com/anatawa12/AvatarOptimizer/pull/632) [`#668`](https://github.com/anatawa12/AvatarOptimizer/pull/668)
+- Disabling PhysBone animation based on mesh renderer enabled animation [`#640`](https://github.com/anatawa12/AvatarOptimizer/pull/640)
+  - If you toggles your clothes with simple toggle, PhysBones on the your avatar will also be toggled automatically!
+- Small performance improve [`#641`](https://github.com/anatawa12/AvatarOptimizer/pull/641)
+- Ability to prevent changing enablement of component [`#668`](https://github.com/anatawa12/AvatarOptimizer/pull/668)
+- Remove Zero Sized Polygons [`#659`](https://github.com/anatawa12/AvatarOptimizer/pull/659)
+- Add support for UniVRM components [`#653`](https://github.com/anatawa12/AvatarOptimizer/pull/653)
+- Support for Mesh Topologies other than Triangles [`#692`](https://github.com/anatawa12/AvatarOptimizer/pull/692)
+- Skip enablement mismatched Renderers in Merge Skinned Mesh [`#670`](https://github.com/anatawa12/AvatarOptimizer/pull/670)
+  - This is now enabled by default for newly added Merge Skinned Mesh.
+- Error for MergeBone on the Avatar Root [`#716`](https://github.com/anatawa12/AvatarOptimizer/pull/716)
+- Warning for conflicts with animation
+  - Warning for freezing animated BlendShapes [`#719`](https://github.com/anatawa12/AvatarOptimizer/pull/719)
+  - Warning for merging renderers that activeness/enablement animated differently [`#675`](https://github.com/anatawa12/AvatarOptimizer/pull/675)
+- PhysBone Optimization [`#733`](https://github.com/anatawa12/AvatarOptimizer/pull/733)
+  - Unnessesary isAnimated is now unconfigured
+  - Floor Colliders with same configuration will be merged to one floor collider
+- Minimum Support for FinalIK [`#735`](https://github.com/anatawa12/AvatarOptimizer/pull/735)
+
+### Changed
+- All logs passed to ErrorReport is now shown on the console log [`#643`](https://github.com/anatawa12/AvatarOptimizer/pull/643)
+- Improved Behaviour with multi-material multi pass rendering [`#662`](https://github.com/anatawa12/AvatarOptimizer/pull/662)
+  - Previously, multi-material multi pass rendering are flattened.
+  - Since 1.6, flattened if component doesn't support that.
+- Remove Unused Objects removes meaningless Animators and Renderers [`#709`](https://github.com/anatawa12/AvatarOptimizer/pull/709)
+  - Renderers without Mesh and Animators without AnimatorController is meaningless
+
+### Removed
+- Legacy GC [`#633`](https://github.com/anatawa12/AvatarOptimizer/pull/633)
+- Preventing removing `IEditorOnly` in callback order -1024 [`#658`](https://github.com/anatawa12/AvatarOptimizer/pull/658)
   - This is no longer needed sincd 1.5.0 but I forgot to remove so I removed in 1.6
 
 ### Fixed
-- Improve support of newer Unity versions `#608`
-- Improve support of projects without VRCSDK `#609` `#625` `#627`
-- Prefab blinks when we see editor of PrefabSafeSet of prefab asset `#645` `#664`
-- complex shader with SkinnedMeshRenderer without Bones Brokebn `#694`
-- bounds can be changed in apply on play if updateWhenOffscreen is true `#697`
-- Compatibility with transform moving plugins `#715`
+- Improve support of newer Unity versions [`#608`](https://github.com/anatawa12/AvatarOptimizer/pull/608)
+- Improve support of projects without VRCSDK [`#609`](https://github.com/anatawa12/AvatarOptimizer/pull/609) [`#625`](https://github.com/anatawa12/AvatarOptimizer/pull/625) [`#627`](https://github.com/anatawa12/AvatarOptimizer/pull/627)
+- Prefab blinks when we see editor of PrefabSafeSet of prefab asset [`#645`](https://github.com/anatawa12/AvatarOptimizer/pull/645) [`#664`](https://github.com/anatawa12/AvatarOptimizer/pull/664)
+- complex shader with SkinnedMeshRenderer without Bones Brokebn [`#694`](https://github.com/anatawa12/AvatarOptimizer/pull/694)
+- bounds can be changed in apply on play if updateWhenOffscreen is true [`#697`](https://github.com/anatawa12/AvatarOptimizer/pull/697)
+- Compatibility with transform moving plugins [`#715`](https://github.com/anatawa12/AvatarOptimizer/pull/715)
   - Remove Mesh in Box was not working well with [FloorAdjuster]
-- Some missing components warnings `#736`
+- Some missing components warnings [`#736`](https://github.com/anatawa12/AvatarOptimizer/pull/736)
   - warning for `ONSPAudioSource`, `VRCImpostorSettings`, and `RectTransform` are fixed
-- Remove Unused Object may break ParticleSystem `#738`
+- Remove Unused Object may break ParticleSystem [`#738`](https://github.com/anatawa12/AvatarOptimizer/pull/738)
   - Trigger Colliders can be disapper if you specify Transform instead of Collider instance.
   - Initially diabled particle system module will be ignored
-- MergeBone breaks `ignoreTransforms` of PhysBone `#745`
+- MergeBone breaks `ignoreTransforms` of PhysBone [`#745`](https://github.com/anatawa12/AvatarOptimizer/pull/745)
 
 [FloorAdjuster]: https://github.com/Narazaka/FloorAdjuster
-### Security
-
 ## [1.5.11] - 2023-11-18
 ### Fixed
 - Dynamic Bone support not working [`#727`](https://github.com/anatawa12/AvatarOptimizer/pull/727)
@@ -673,7 +682,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.11...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0...HEAD
+[1.6.0]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.11...v1.6.0
 [1.5.11]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.10...v1.5.11
 [1.5.10]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.9...v1.5.10
 [1.5.9]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.8...v1.5.9
