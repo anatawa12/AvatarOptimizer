@@ -115,8 +115,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             foreach (var physBone in context.GetComponents<VRCPhysBoneBase>())
                 for (var i = 0; i < physBone.colliders.Count; i++)
-                    if (mergedColliders.TryGetValue(physBone.colliders[i], out var mergedTo))
-                        physBone.colliders[i] = mergedTo;
+                    if (physBone.colliders[i])
+                        if (mergedColliders.TryGetValue(physBone.colliders[i], out var mergedTo))
+                            physBone.colliders[i] = mergedTo;
 
             foreach (var colliderBase in mergedColliders.Keys.ToList())
                 Object.DestroyImmediate(colliderBase);

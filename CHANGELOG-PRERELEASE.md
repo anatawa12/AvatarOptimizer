@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Error if there are None colliders for PhysBone `#758`
 
 ### Security
 
