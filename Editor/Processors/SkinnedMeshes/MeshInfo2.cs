@@ -13,6 +13,7 @@ using UnityEngine.Assertions;
 using UnityEngine.Profiling;
 using UnityEngine.Rendering;
 using Debug = System.Diagnostics.Debug;
+using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 {
@@ -652,6 +653,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 var mesh = new Mesh { name = $"AAOGeneratedMesh{targetRenderer.name}" };
 
                 WriteToMesh(mesh);
+                // I don't know why but Instantiating mesh will fix broken blendshapes with
+                // https://github.com/anatawa12/AvatarOptimizer/issues/753
+                // https://booth.pm/ja/items/1054593.
+                mesh = Object.Instantiate(mesh);
+                mesh.name = $"AAOGeneratedMesh{targetRenderer.name}";
                 targetRenderer.sharedMesh = mesh;
                 for (var i = 0; i < BlendShapes.Count; i++)
                     targetRenderer.SetBlendShapeWeight(i, BlendShapes[i].weight);
