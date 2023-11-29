@@ -20,3 +20,6 @@ unsafe = true
 BookTheme = 'auto'
 BookRepo = 'https://github.com/anatawa12/AvatarOptimizer'
 BookEditPath = 'edit/master/.docs'
+
+# OGP settings
+title = 'Avatar Optimizer Official Docs'
