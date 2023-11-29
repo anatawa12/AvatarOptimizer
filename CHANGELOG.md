@@ -16,11 +16,14 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Error if there are None colliders for PhysBone `#758`
-- BlendShapes can broken in extreamly rare cases `#760`
-  - It seems this is due to Unity bug.
 
 ### Security
+
+## [1.6.1] - 2023-11-29
+### Fixed
+- Error if there are None colliders for PhysBone [`#758`](https://github.com/anatawa12/AvatarOptimizer/pull/758)
+- BlendShapes can broken in extreamly rare cases [`#760`](https://github.com/anatawa12/AvatarOptimizer/pull/760)
+  - It seems this is due to Unity bug.
 
 ## [1.6.0] - 2023-11-27
 ### Added
@@ -685,7 +688,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.1...HEAD
+[1.6.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0...v1.6.1
 [1.6.0]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.11...v1.6.0
 [1.5.11]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.10...v1.5.11
 [1.5.10]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.9...v1.5.10
