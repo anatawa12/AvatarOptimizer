@@ -17,6 +17,8 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - Error if there are None colliders for PhysBone `#758`
+- BlendShapes can broken in extreamly rare cases `#760`
+  - It seems this is due to Unity bug.
 
 ### Security
 
