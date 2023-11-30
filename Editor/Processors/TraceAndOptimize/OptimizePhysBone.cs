@@ -41,8 +41,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
                 var rootTransform = collider.GetRootTransform();
                 var transform = rootTransform;
-                while (transform != context.AvatarRootTransform && !IsAnimated())
+                while (transform != null && transform != context.AvatarRootTransform && !IsAnimated())
                     transform = transform.parent;
+                if (transform == null) continue; // it's PhysBone about the bone itself
 
                 bool IsAnimated()
                 {
