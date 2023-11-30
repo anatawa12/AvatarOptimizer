@@ -40,11 +40,7 @@ namespace Anatawa12.AvatarOptimizer
                 parentInfo.Children[transform.GetSiblingIndex()] = selfInfo;
             }
 
-#if DEBUG
-            // assertion
-            foreach (var info in _beforeGameObjectInfos.Values)
-                System.Diagnostics.Debug.Assert(info.Children.All(x => x != null), "info.Children.All(x => x != null)");
-#endif
+            _beforeGameObjectInfos[rootObject.GetInstanceID()].InitializeRecursive();
         }
 
         public void RecordMergeComponent<T>(T from, T mergeTo) where T: Component
