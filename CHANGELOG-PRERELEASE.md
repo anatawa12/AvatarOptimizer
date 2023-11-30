@@ -16,10 +16,13 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Path remapping for merge bone will not work well in some (relatively rare) case `#764`
-- Error due to PhysBone collider with root bone outside avatar `#766`
 
 ### Security
+
+## [1.6.2-rc.1] - 2023-11-30
+### Fixed
+- Path remapping for merge bone will not work well in some (relatively rare) case [`#764`](https://github.com/anatawa12/AvatarOptimizer/pull/764)
+- Error due to PhysBone collider with root bone outside avatar [`#766`](https://github.com/anatawa12/AvatarOptimizer/pull/766)
 
 ## [1.6.1] - 2023-11-29
 ### Fixed
@@ -1081,7 +1084,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.2-rc.1...HEAD
+[1.6.2-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.1...v1.6.2-rc.1
 [1.6.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0...v1.6.1
 [1.6.0]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-rc.4...v1.6.0
 [1.6.0-rc.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-rc.3...v1.6.0-rc.4
