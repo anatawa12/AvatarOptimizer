@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - Path remapping for merge bone will not work well in some (relatively rare) case `#764`
+- Error due to PhysBone collider with root bone outside avatar `#766`
 
 ### Security
 
