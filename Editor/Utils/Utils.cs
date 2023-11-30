@@ -85,6 +85,26 @@ namespace Anatawa12.AvatarOptimizer
             return rootObject;
         }
 
+        public static GameObject NewGameObject(string name, GameObject[] children)
+        {
+            var rootObject = new GameObject(name);
+            rootObject.transform.localPosition = Vector3.zero;
+            rootObject.transform.localRotation = Quaternion.identity;
+            rootObject.transform.localScale = Vector3.one;
+            foreach (var child in children)
+                child.transform.parent = rootObject.transform;
+            return rootObject;
+        }
+
+        public static GameObject NewGameObject(string name)
+        {
+            var rootObject = new GameObject(name);
+            rootObject.transform.localPosition = Vector3.zero;
+            rootObject.transform.localRotation = Quaternion.identity;
+            rootObject.transform.localScale = Vector3.one;
+            return rootObject;
+        }
+
         public static IEnumerable<(T, T)> ZipWithNext<T>(this IEnumerable<T> enumerable)
         {
             using (var enumerator = enumerable.GetEnumerator())
