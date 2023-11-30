@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using NUnit.Framework;
+using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -8,6 +9,59 @@ namespace Anatawa12.AvatarOptimizer.Test
 {
     public class ObjectMappingTest
     {
+        [TestCase("")]
+        [TestCase("child1")]
+        [TestCase("child1/child11")]
+        [TestCase("child2/child21")]
+        [TestCase("child2/child21/child211")]
+        [TestCase("child2/child21/inWithPathOnly")]
+        [TestCase("child2/child21/child211-2")]
+        [TestCase("child2/child21-2/inWithPathOnly-2-21-2")]
+        [Test]
+        public void PathResolution(string testPath)
+        {
+            var root = Utils.NewGameObject("root", new[]
+            {
+                Utils.NewGameObject("child1", new[]
+                {
+                    Utils.NewGameObject("child11"),
+                }),
+                Utils.NewGameObject("child2/child21", new []
+                {
+                    Utils.NewGameObject("inWithPathOnly"),
+                }),
+                Utils.NewGameObject("child2/child21-2", new []
+                {
+                    Utils.NewGameObject("inWithPathOnly-2-21-2"),
+                }),
+                Utils.NewGameObject("child2", new[]
+                {
+                    Utils.NewGameObject("child21", new[]
+                    {
+                        Utils.NewGameObject("child211"),
+                    }),
+                }),
+                Utils.NewGameObject("child2", new[]
+                {
+                    Utils.NewGameObject("child21", new[]
+                    {
+                        Utils.NewGameObject("child211-2"),
+                    }),
+                }),
+            });
+
+            var builder = new ObjectMappingBuilder(root).BuildObjectMapping().GetBeforeGameObjectTree(root);
+
+            var transform = (Transform) AnimationUtility.GetAnimatedObject(root,
+                EditorCurveBinding.FloatCurve(testPath, typeof(Transform), "m_LocalPosition.x"));
+            var resolvedGameObjectId = builder.ResolvePath(testPath)?.InstanceId;
+            var expectedGameObjectId = transform ? transform.gameObject.GetInstanceID() : (int?)null;
+
+            var resolvedName = resolvedGameObjectId is int id ? EditorUtility.InstanceIDToObject(id).name: "null";
+            Assert.That(resolvedGameObjectId, Is.EqualTo(expectedGameObjectId),
+                $"Expected {(transform ? transform.name : "null")} but was {resolvedName}");
+        }
+
         [Test]
         public void MoveObjectTest()
         {

@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Path remapping for merge bone will not work well in some (relatively rare) case `#764`
 
 ### Security
 
