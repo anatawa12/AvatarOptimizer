@@ -17,6 +17,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
         protected override void CollectDependency(VRMMeta component, ComponentDependencyCollector collector)
         {
             collector.MarkEntrypoint();
+            if (component.TryGetComponent<Animator>(out var animator)) collector.AddDependency(animator);
         }
     }
 
