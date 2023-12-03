@@ -26,7 +26,15 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
         protected override void CollectDependency(VRMSpringBone component, ComponentDependencyCollector collector)
         {
             collector.MarkHeavyBehaviour();
-            foreach (var transform in component.GetComponentsInChildren<Transform>()) collector.AddDependency(transform);
+            foreach (var rootBone in component.RootBones)
+            {
+                foreach (var transform in rootBone.GetComponentsInChildren<Transform>())
+                {
+                    collector.AddDependency(transform, component);
+                    collector.AddDependency(transform);
+                }
+            }
+
             foreach (var collider in component.ColliderGroups) collector.AddDependency(collider);
         }
 
