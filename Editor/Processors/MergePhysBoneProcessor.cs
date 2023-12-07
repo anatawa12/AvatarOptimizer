@@ -240,8 +240,8 @@ namespace Anatawa12.AvatarOptimizer.Processors
             protected override void PbPermissionProp(string label, PermissionConfigProp prop, bool forceOverride = false)
             {
                 var @override = forceOverride || prop.IsOverride;
-                _mergedPhysBone.FindProperty(prop.PhysBoneValueName).floatValue =
-                    prop.GetValueProperty(@override).floatValue;
+                _mergedPhysBone.FindProperty(prop.PhysBoneValueName).intValue =
+                    prop.GetValueProperty(@override).intValue;
                 _mergedPhysBone.FindProperty(prop.PhysBoneFilterName)
                     .CopyDataFrom(prop.GetFilterProperty(@override));
             }
@@ -255,9 +255,14 @@ namespace Anatawa12.AvatarOptimizer.Processors
             {
                 //return curve;
                 var offset = 1f / (_maxChainLength + 1);
+                var tangentRatio = (_maxChainLength + 1f) / _maxChainLength;
                 var keys = curve.keys;
                 foreach (ref var curveKey in keys.AsSpan())
+                {
                     curveKey.time = Mathf.LerpUnclamped(offset, 1, curveKey.time);
+                    curveKey.inTangent *= tangentRatio;
+                    curveKey.outTangent *= tangentRatio;
+                }
                 curve.keys = keys;
                 return curve;
             }
