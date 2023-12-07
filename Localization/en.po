@@ -156,6 +156,9 @@ msgstr "The values is differ between two or more sources. You have to set same v
 msgid "MergePhysBone:error:differValueSingle"
 msgstr "The value is differ between two or more sources. You have to set same value OR override this property"
 
+msgid "MergePhysBone:warning:differChainLength"
+msgstr "The chain length is differ between two or more sources. Shorter chain will be thicker than original."
+
 msgid "MergePhysBone:dialog:versionInfo:title"
 msgstr "Version Info" 
 

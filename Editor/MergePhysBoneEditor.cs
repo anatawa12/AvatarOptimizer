@@ -580,7 +580,17 @@ namespace Anatawa12.AvatarOptimizer
         {
         }
 
-        protected override void BeginPbConfig() => Void();
+        protected override void BeginPbConfig()
+        {
+            // TODO: skip if no curve from source is used
+            foreach (var vrcPhysBoneBase in SourcePhysBones)
+                vrcPhysBoneBase.InitTransforms(true);
+            var maxLength = SourcePhysBones.Max(x => x.BoneChainLength());
+            if (SourcePhysBones.Any(x => x.BoneChainLength() != maxLength))
+                _errorLogs.Add(ErrorLog.Warning("MergePhysBone:warning:differChainLength",
+                    string.Join(", ", _differProps)));
+        }
+
         protected override bool BeginSection(string name, string docTag) => true;
         protected override void EndSection() => Void();
         protected override void EndPbConfig() {

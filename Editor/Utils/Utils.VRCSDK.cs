@@ -31,6 +31,14 @@ namespace Anatawa12.AvatarOptimizer
 
         // https://creators.vrchat.com/avatars/#proxy-animations
         public static bool IsProxy(this AnimationClip clip) => clip.name.StartsWith("proxy_", StringComparison.Ordinal);
+
+        public static int BoneChainLength(this VRCPhysBoneBase physBoneBase)
+        {
+            var length = physBoneBase.maxBoneChainIndex;
+            if (physBoneBase.endpointPosition != Vector3.zero)
+                length++;
+            return length;
+        }
     }
 }
 
