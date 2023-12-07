@@ -333,27 +333,6 @@ namespace Anatawa12.AvatarOptimizer
             {
                 IsOverrideProperty = rootProperty.FindPropertyRelative("override");
             }
-
-            public abstract IEnumerable<(string, SerializedProperty)> GetActiveProps(bool @override);
-        }
-
-        partial class PermissionConfigProp
-        {
-            public override IEnumerable<(string, SerializedProperty)> GetActiveProps(bool @override)
-            {
-                if (@override) 
-                {
-                    if (OverrideValue.enumValueIndex == 2)
-                        return new[] { (PhysBoneValueName, OverrideValue), (PhysBoneFilterName, OverrideFilter) };
-                    return new[] { (PhysBoneValueName, OverrideValue) };
-                }
-                else
-                {
-                    if (SourceValue.enumValueIndex == 2)
-                        return new[] { (PhysBoneValueName, SourceValue), (PhysBoneFilterName, SourceFilter) };
-                    return new[] { (PhysBoneValueName, SourceValue) };
-                }
-            }
         }
 
         // Very Special Case

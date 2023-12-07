@@ -38,18 +38,6 @@ namespace Anatawa12.AvatarOptimizer
             }
             public SerializedProperty GetValueProperty(bool @override) => @override ? OverrideValue : SourceValue;
             public SerializedProperty GetCurveProperty(bool @override) => @override ? OverrideCurve : SourceCurve;
-            public override IEnumerable<(string, SerializedProperty)> GetActiveProps(bool @override) {
-                if (@override)
-                    return new[] {
-                        (PhysBoneValueName, OverrideValue),
-                        (PhysBoneCurveName, OverrideCurve),
-                    };
-                else
-                    return new[] {
-                        (PhysBoneValueName, SourceValue),
-                        (PhysBoneCurveName, SourceCurve),
-                    };
-            }
         }
         protected partial class CurveVector3ConfigProp : OverridePropBase
         {
@@ -95,22 +83,6 @@ namespace Anatawa12.AvatarOptimizer
             public SerializedProperty GetCurveXProperty(bool @override) => @override ? OverrideCurveX : SourceCurveX;
             public SerializedProperty GetCurveYProperty(bool @override) => @override ? OverrideCurveY : SourceCurveY;
             public SerializedProperty GetCurveZProperty(bool @override) => @override ? OverrideCurveZ : SourceCurveZ;
-            public override IEnumerable<(string, SerializedProperty)> GetActiveProps(bool @override) {
-                if (@override)
-                    return new[] {
-                        (PhysBoneValueName, OverrideValue),
-                        (PhysBoneCurveXName, OverrideCurveX),
-                        (PhysBoneCurveYName, OverrideCurveY),
-                        (PhysBoneCurveZName, OverrideCurveZ),
-                    };
-                else
-                    return new[] {
-                        (PhysBoneValueName, SourceValue),
-                        (PhysBoneCurveXName, SourceCurveX),
-                        (PhysBoneCurveYName, SourceCurveY),
-                        (PhysBoneCurveZName, SourceCurveZ),
-                    };
-            }
         }
         protected partial class PermissionConfigProp : OverridePropBase
         {
@@ -161,16 +133,6 @@ namespace Anatawa12.AvatarOptimizer
                 SourceValue = sourcePb.FindProperty(PhysBoneValueName);
             }
             public SerializedProperty GetValueProperty(bool @override) => @override ? OverrideValue : SourceValue;
-            public override IEnumerable<(string, SerializedProperty)> GetActiveProps(bool @override) {
-                if (@override)
-                    return new[] {
-                        (PhysBoneValueName, OverrideValue),
-                    };
-                else
-                    return new[] {
-                        (PhysBoneValueName, SourceValue),
-                    };
-            }
         }
         protected partial class NoOverrideValueConfigProp : PropBase
         {
