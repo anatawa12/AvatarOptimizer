@@ -581,7 +581,12 @@ namespace Anatawa12.AvatarOptimizer
         {
         }
 
-        protected override void BeginPbConfig() => Void();
+        protected override void BeginPbConfig()
+        {
+            if (SourcePhysBones.Count() <= 1)
+                _errorLogs.Add(ErrorLog.Validation("MergePhysBone:error:oneSource"));
+        }
+
         protected override bool BeginSection(string name, string docTag) => true;
         protected override void EndSection() => Void();
         protected override void EndPbConfig() {

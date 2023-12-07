@@ -143,6 +143,9 @@ msgstr "Parent of source PhysBone are differ. move to same parent OR use Make Ch
 msgid "MergePhysBone:error:noSources"
 msgstr "There's no source PhysBones"
 
+msgid "MergePhysBone:error:oneSource"
+msgstr "There is only one source PhysBones. You must specify two or more merge source PhysBones."
+
 msgid "MergePhysBone:error:multiChildType"
 msgstr "Some PysBone has multi child type != Ignore"
 

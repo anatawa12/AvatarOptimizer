@@ -146,6 +146,9 @@ msgstr "統合対象のPhysBoneの親が違います。同じ親の子にする�
 msgid "MergePhysBone:error:noSources"
 msgstr "統合対象のPhysBoneがありません。"
 
+msgid "MergePhysBone:error:oneSource"
+msgstr "統合対象のPhysBoneが一つしかありません。２つ以上指定してください。"
+
 msgid "MergePhysBone:error:multiChildType"
 msgstr "Multi Child TypeがIgnoreでないPhysBoneがあります。"
 
