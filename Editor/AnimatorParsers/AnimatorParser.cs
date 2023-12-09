@@ -315,7 +315,10 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
                                     layer = VRCAvatarDescriptor.AnimLayerType.Additive;
                                     break;
                                 default:
-                                    throw new ArgumentOutOfRangeException();
+                                    LogWarning("AnimatorParser:PlayableLayerControl:UnknownBlendablePlayableLayer",
+                                            $"{playableLayerControl.layer}")
+                                        ?.WithContext(stateMachineBehaviour);
+                                    continue;
                             }
 
                             var current = AnimatorLayerWeightStates.WeightStateFor(playableLayerControl.blendDuration,
@@ -341,7 +344,10 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
                                     layer = VRCAvatarDescriptor.AnimLayerType.Additive;
                                     break;
                                 default:
-                                    throw new ArgumentOutOfRangeException();
+                                    LogWarning("AnimatorParser:AnimatorLayerControl:UnknownBlendablePlayableLayer",
+                                            $"{animatorLayerControl.layer}")
+                                        ?.WithContext(stateMachineBehaviour);
+                                    continue;
                             }
 
                             var current = AnimatorLayerWeightStates.WeightStateFor(animatorLayerControl.blendDuration,

@@ -469,6 +469,9 @@ msgstr "Prevents removing end bones whose parent is not removed."
 msgid "TraceAndOptimize:prop:removeZeroSizedPolygons"
 msgstr "Automatically Remove Zero Sized Polygons"
 
+msgid "TraceAndOptimize:OptimizePhysBone:UnknownPhysBoneColliderShape"
+msgstr "Unknown PhysBone Collider Shape '{0}' specified"
+
 # endregion
 
 #region ApplyObjectMapping
@@ -478,6 +481,38 @@ msgstr "BlendShape(s) for eyelids are Removed / frozen."
 
 msgid "ApplyObjectMapping:VRCAvatarDescriptor:viseme BlendShape Removed"
 msgstr "BlendShape(s) for viseme are Removed / frozen."
+
+#endregion
+
+#region ComponentInfos
+
+msgid "ComponentInfos:VRCAvatarDescriptor:warning:NoVisemeSkinnedMesh"
+msgstr "No Skinned Mesh Renderer is specified for lip sync.
+
+msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownLipSyncStyle"
+msgstr "Unknown Lip Sync Style '{0}' is specified."
+
+msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownColliderState"
+msgstr "Unknown Standard Collider State '{0}' is specified for {1}."
+
+msgid "ComponentInfos:VRCAvatarDescriptor:warning:NoMeshInEyelidsSkinnedMesh"
+msgstr "No Mesh is specified for eyelids SkinnedMesh."
+
+msgid "ComponentInfos:VRCAvatarDescriptor:warning:NoEyelidsSkinnedMesh"
+msgstr "No Skinned Mesh Renderer is specified for eyelids."
+
+msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownEyelidType"
+msgstr "Unknown Eyelid Type '{0}' is specified."
+
+#endregion
+
+#region AnimatorParser
+
+msgid "AnimatorParser:PlayableLayerControl:UnknownBlendablePlayableLayer"
+msgstr "Unknown Playable Layer '{0}' is specified for Playable Layer Control."
+
+msgid "AnimatorParser:AnimatorLayerControl:UnknownBlendablePlayableLayer"
+msgstr "Unknown Playable Layer '{0}' is specified for Animator Layer Control."
 
 #endregion
 
