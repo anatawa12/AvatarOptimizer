@@ -19,6 +19,24 @@ The format is based on [Keep a Changelog].
 
 ### Security
 
+## [1.6.3] - 2023-12-09
+### Added
+- Support for VRCSDK 3.5.x [`#787`](https://github.com/anatawa12/AvatarOptimizer/pull/787)
+  - Actually, previous version of AAO works well with VRCSDK 3.5.x / Unity 2022 with tiny bugs.
+  - I've fixed some bugs in Unity 2022 in this release.
+  - Since this version, package.json declares Avatar Optimizer is compatible with VRCSDK 3.5.x.
+  - I was planned to release this changes while VRCSDK 3.5.0 is in beta.
+  - However, VRCSDK 3.5.0 beta was only 3 hours so I could not. 
+
+### Fixed
+- Fix NullReferenceException on Unity 2022 when extra Animator components are present [`#778`](https://github.com/anatawq12/AvatarOptimizer/pull/778)
+- Fix Errors with Generic Avatars [`#779`](https://github.com/anatawa12/AvatarOptimizer/pull/779)
+- Editing Prefabs with AAO Components in Unity 2022 will cause Error [`#782`](https://github.com/anatawa12/AvatarOptimizer/pull/782)
+- Error if there are reference to Prefab Asset PhysBone Collider [`#783`](https://github.com/anatawa12/AvatarOptimizer/pull/783)
+- Remove Mesh in Box editor broken if inspector is narrow [`#784`](https://github.com/anatawa12/AvatarOptimizer/pull/784)
+- Errors for partially incorrectly configured avatars [`#786`](https://github.com/anatawa12/AvatarOptimizer/pull/786)
+  - Since this release, instead of internal errors, warnings are shown
+
 ## [1.6.2] - 2023-11-30
 ### Fixed
 - Path remapping for merge bone will not work well in some (relatively rare) case [`#764`](https://github.com/anatawa12/AvatarOptimizer/pull/764)
@@ -693,7 +711,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.2...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.3...HEAD
+[1.6.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.2...v1.6.3
 [1.6.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.1...v1.6.2
 [1.6.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0...v1.6.1
 [1.6.0]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.11...v1.6.0

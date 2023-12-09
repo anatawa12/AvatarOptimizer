@@ -244,12 +244,14 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
                 modificationsContainer.MergeAsNewLayer(parsedLayer, weightState);
             }
 
+            var animator = descriptor.GetComponent<Animator>();
+            var isHumanoid = animator != null && animator.isHuman;
             MergeLayer(VRCAvatarDescriptor.AnimLayerType.Base, true, 1);
-            // Station Sitting
+            // Station Sitting here
             MergeLayer(VRCAvatarDescriptor.AnimLayerType.Sitting, false, 1);
-            MergeLayer(VRCAvatarDescriptor.AnimLayerType.Additive, false, 1); // Idle
-            MergeLayer(VRCAvatarDescriptor.AnimLayerType.Gesture, false, 1);
-            // Station Action
+            if (isHumanoid) MergeLayer(VRCAvatarDescriptor.AnimLayerType.Additive, false, 1); // Idle
+            if (isHumanoid) MergeLayer(VRCAvatarDescriptor.AnimLayerType.Gesture, false, 1);
+            // Station Action here
             MergeLayer(VRCAvatarDescriptor.AnimLayerType.Action, false, 0);
             MergeLayer(VRCAvatarDescriptor.AnimLayerType.FX, false, 1);
 
@@ -313,7 +315,10 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
                                     layer = VRCAvatarDescriptor.AnimLayerType.Additive;
                                     break;
                                 default:
-                                    throw new ArgumentOutOfRangeException();
+                                    LogWarning("AnimatorParser:PlayableLayerControl:UnknownBlendablePlayableLayer",
+                                            $"{playableLayerControl.layer}")
+                                        ?.WithContext(stateMachineBehaviour);
+                                    continue;
                             }
 
                             var current = AnimatorLayerWeightStates.WeightStateFor(playableLayerControl.blendDuration,
@@ -339,7 +344,10 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
                                     layer = VRCAvatarDescriptor.AnimLayerType.Additive;
                                     break;
                                 default:
-                                    throw new ArgumentOutOfRangeException();
+                                    LogWarning("AnimatorParser:AnimatorLayerControl:UnknownBlendablePlayableLayer",
+                                            $"{animatorLayerControl.layer}")
+                                        ?.WithContext(stateMachineBehaviour);
+                                    continue;
                             }
 
                             var current = AnimatorLayerWeightStates.WeightStateFor(animatorLayerControl.blendDuration,

@@ -55,11 +55,13 @@ namespace Anatawa12.AvatarOptimizer
 
             public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
             {
+                var vector3Height =
+                    EditorGUI.GetPropertyHeight(SerializedPropertyType.Vector3, new GUIContent("center"));
                 return EditorGUIUtility.singleLineHeight // header
-                       + EditorGUIUtility.standardVerticalSpacing + EditorGUIUtility.singleLineHeight // center
-                       + EditorGUIUtility.standardVerticalSpacing + EditorGUIUtility.singleLineHeight // size
-                       + EditorGUIUtility.standardVerticalSpacing + EditorGUIUtility.singleLineHeight // rotation
                        + EditorGUIUtility.standardVerticalSpacing + EditorGUIUtility.singleLineHeight //edit this box
+                       + EditorGUIUtility.standardVerticalSpacing + vector3Height // center
+                       + EditorGUIUtility.standardVerticalSpacing + vector3Height // size
+                       + EditorGUIUtility.standardVerticalSpacing + vector3Height // rotation
                     ;
             }
 
@@ -76,6 +78,9 @@ namespace Anatawa12.AvatarOptimizer
 
                 using (new EditorGUI.IndentLevelScope())
                 {
+                    var vector3Height =
+                        EditorGUI.GetPropertyHeight(SerializedPropertyType.Vector3, new GUIContent("center"));
+
                     using (new GUILayout.HorizontalScope())
                     {
                         if (_upstreamEditor)
@@ -97,9 +102,9 @@ namespace Anatawa12.AvatarOptimizer
                     }
 
                     EditorGUI.PropertyField(position, centerProp);
-                    position.y += EditorGUIUtility.standardVerticalSpacing + EditorGUIUtility.singleLineHeight;
+                    position.y += EditorGUIUtility.standardVerticalSpacing + vector3Height;
                     EditorGUI.PropertyField(position, sizeProp);
-                    position.y += EditorGUIUtility.standardVerticalSpacing + EditorGUIUtility.singleLineHeight;
+                    position.y += EditorGUIUtility.standardVerticalSpacing + vector3Height;
 
                     if (!_upstreamEditor ||
                         !_upstreamEditor._eulerAngles.TryGetValue(property.propertyPath, out var eulerCache) ||
@@ -125,7 +130,7 @@ namespace Anatawa12.AvatarOptimizer
                         _upstreamEditor._eulerAngles[property.propertyPath] = eulerCache;
 
                     EditorGUI.EndProperty();
-                    position.y += EditorGUIUtility.standardVerticalSpacing + EditorGUIUtility.singleLineHeight;
+                    position.y += EditorGUIUtility.standardVerticalSpacing + vector3Height;
                 }
             }
         }

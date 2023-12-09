@@ -107,7 +107,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                         });
                         break;
                     default:
-                        throw new ArgumentOutOfRangeException();
+                        BuildReport.LogWarning("TraceAndOptimize:OptimizePhysBone:UnknownPhysBoneColliderShape", shapeType.ToString())
+                            ?.WithContext(colliders);
+                        break;
                 }
             }
 

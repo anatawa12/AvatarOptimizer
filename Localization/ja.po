@@ -400,6 +400,9 @@ msgstr "親が削除されていないendボーンを削除しないようにし
 msgid "TraceAndOptimize:prop:removeZeroSizedPolygons"
 msgstr "面積がゼロのポリゴンを自動的に削除する"
 
+msgid "TraceAndOptimize:OptimizePhysBone:UnknownPhysBoneColliderShape"
+msgstr "未知のPhysBone Collider形状'{0}'が指定されています。"
+
 # endregion
 
 #region ApplyObjectMapping
@@ -414,6 +417,38 @@ msgid "MergeSkinnedMesh:warning:animation-mesh-hide"
 msgstr ""
 "統合先のメッシュとは異なるアニメーションで表示されるメッシュが統合対象に含まれているため、"
 "そのアニメーションによる切り替えは機能しなくなります。意図的に行っている場合はこの警告を無視してください。"
+
+#endregion
+
+#region ComponentInfos
+
+msgid "ComponentInfos:VRCAvatarDescriptor:warning:NoVisemeSkinnedMesh"
+msgstr "リップシンク用のSkinnedMeshRendererがありません。"
+
+msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownLipSyncStyle"
+msgstr "リップシンクの種類として未知の種類'{0}'が指定されています。"
+
+msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownColliderState"
+msgstr "{1}のStandard Colliderに未知の設定'{0}'が指定されています。"
+
+msgid "ComponentInfos:VRCAvatarDescriptor:warning:NoMeshInEyelidsSkinnedMesh"
+msgstr "瞬き用のSkinnedMeshRendererにメッシュがありません。"
+
+msgid "ComponentInfos:VRCAvatarDescriptor:warning:NoEyelidsSkinnedMesh"
+msgstr "瞬き用のSkinnedMeshRendererがありません。"
+
+msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownEyelidType"
+msgstr "瞬きの種類として未知の種類'{0}'が指定されています。"
+
+#endregion
+
+#region AnimatorParser
+
+msgid "AnimatorParser:PlayableLayerControl:UnknownBlendablePlayableLayer"
+msgstr "Playable Layer Controlに未知のレイヤー'{0}'が指定されています。"
+
+msgid "AnimatorParser:AnimatorLayerControl:UnknownBlendablePlayableLayer"
+msgstr "Animator Layer Controlに未知のレイヤー'{0}'が指定されています。"
 
 #endregion
 

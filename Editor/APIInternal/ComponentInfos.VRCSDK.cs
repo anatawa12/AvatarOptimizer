@@ -55,23 +55,38 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
                 case VRC_AvatarDescriptor.LipSyncStyle.JawFlapBone:
                     collector.TransformRotation(component.lipSyncJawBone);
                     break;
-                case VRC_AvatarDescriptor.LipSyncStyle.JawFlapBlendShape when component.VisemeSkinnedMesh != null:
+                case VRC_AvatarDescriptor.LipSyncStyle.JawFlapBlendShape:
                 {
-                    collector.ModifyProperties(component.VisemeSkinnedMesh,
-                        $"blendShape.{component.MouthOpenBlendShapeName}");
+                    if (component.VisemeSkinnedMesh != null)
+                    {
+                        collector.ModifyProperties(component.VisemeSkinnedMesh,
+                            $"blendShape.{component.MouthOpenBlendShapeName}");
+                    } else {
+                        BuildReport.LogWarning("ComponentInfos:VRCAvatarDescriptor:warning:NoVisemeSkinnedMesh")
+                            ?.WithContext(component);
+                    }
                     break;
                 }
-                case VRC_AvatarDescriptor.LipSyncStyle.VisemeBlendShape when component.VisemeSkinnedMesh != null:
+                case VRC_AvatarDescriptor.LipSyncStyle.VisemeBlendShape:
                 {
-                    collector.ModifyProperties(component.VisemeSkinnedMesh,
-                        component.VisemeBlendShapes.Select(blendShape => $"blendShape.{blendShape}"));
+                    if (component.VisemeSkinnedMesh != null)
+                    {
+                        collector.ModifyProperties(component.VisemeSkinnedMesh,
+                            component.VisemeBlendShapes.Select(blendShape => $"blendShape.{blendShape}"));
+                    } else {
+                        BuildReport.LogWarning("ComponentInfos:VRCAvatarDescriptor:warning:NoVisemeSkinnedMesh")
+                            ?.WithContext(component);
+                    }
                     break;
                 }
                 case VRC_AvatarDescriptor.LipSyncStyle.VisemeParameterOnly:
                     // NOP
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    BuildReport.LogWarning("ComponentInfos:VRCAvatarDescriptor:warning:UnknownLipSyncStyle", 
+                            component.lipSync.ToString())
+                        ?.WithContext(component);
+                    break;
             }
         }
 
@@ -122,7 +137,8 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
                     // NOP
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    // Warning Reported in CollectMutations
+                    break;
             }
         }
         
@@ -141,21 +157,21 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
         {
             base.CollectDependency(component, collector);
 
-            AddCollider(component.collider_head);
-            AddCollider(component.collider_torso);
-            AddCollider(component.collider_footR);
-            AddCollider(component.collider_footL);
-            AddCollider(component.collider_handR);
-            AddCollider(component.collider_handL);
-            AddCollider(component.collider_fingerIndexL);
-            AddCollider(component.collider_fingerMiddleL);
-            AddCollider(component.collider_fingerRingL);
-            AddCollider(component.collider_fingerLittleL);
-            AddCollider(component.collider_fingerIndexR);
-            AddCollider(component.collider_fingerMiddleR);
-            AddCollider(component.collider_fingerRingR);
-            AddCollider(component.collider_fingerLittleR);
-            void AddCollider(VRCAvatarDescriptor.ColliderConfig collider)
+            AddCollider(component.collider_head, "Head");
+            AddCollider(component.collider_torso, "Torso");
+            AddCollider(component.collider_footR, "FootR");
+            AddCollider(component.collider_footL, "FootL");
+            AddCollider(component.collider_handR, "HandR");
+            AddCollider(component.collider_handL, "HandL");
+            AddCollider(component.collider_fingerIndexL, "FingerIndexL");
+            AddCollider(component.collider_fingerMiddleL, "FingerMiddleL");
+            AddCollider(component.collider_fingerRingL, "FingerRingL");
+            AddCollider(component.collider_fingerLittleL, "FingerLittleL");
+            AddCollider(component.collider_fingerIndexR, "FingerIndexR");
+            AddCollider(component.collider_fingerMiddleR, "FingerMiddleR");
+            AddCollider(component.collider_fingerRingR, "FingerRingR");
+            AddCollider(component.collider_fingerLittleR, "FingerLittleR");
+            void AddCollider(VRCAvatarDescriptor.ColliderConfig collider, string where)
             {
                 switch (collider.state)
                 {
@@ -166,7 +182,10 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
                     case VRCAvatarDescriptor.ColliderConfig.State.Disabled:
                         break;
                     default:
-                        throw new ArgumentOutOfRangeException();
+                        BuildReport.LogWarning("ComponentInfos:VRCAvatarDescriptor:warning:UnknownColliderState",
+                                collider.ToString(), where)
+                            ?.WithContext(component);
+                        break;
                 }
             }
         }
@@ -199,20 +218,38 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
                             collector.TransformRotation(eyelids);
                     }
                         break;
-                    case VRCAvatarDescriptor.EyelidType.Blendshapes
-                        when component.customEyeLookSettings.eyelidsSkinnedMesh != null:
+                    case VRCAvatarDescriptor.EyelidType.Blendshapes:
                     {
-                        var skinnedMeshRenderer = component.customEyeLookSettings.eyelidsSkinnedMesh;
-                        var mesh = skinnedMeshRenderer.sharedMesh;
+                        if (component.customEyeLookSettings.eyelidsSkinnedMesh != null)
+                        {
+                            var skinnedMeshRenderer = component.customEyeLookSettings.eyelidsSkinnedMesh;
+                            var mesh = skinnedMeshRenderer.sharedMesh;
 
-                        collector.ModifyProperties(skinnedMeshRenderer,
-                            from index in component.customEyeLookSettings.eyelidsBlendshapes
-                            where 0 <= index && index < mesh.blendShapeCount
-                            select $"blendShape.{mesh.GetBlendShapeName(index)}");
+                            if (mesh != null)
+                            {
+                                collector.ModifyProperties(skinnedMeshRenderer,
+                                    from index in component.customEyeLookSettings.eyelidsBlendshapes
+                                    where 0 <= index && index < mesh.blendShapeCount
+                                    select $"blendShape.{mesh.GetBlendShapeName(index)}");
+                            }
+                            else
+                            {
+                                BuildReport.LogWarning("ComponentInfos:VRCAvatarDescriptor:warning:NoMeshInEyelidsSkinnedMesh")
+                                    ?.WithContext(component);
+                            }
+                        }
+                        else
+                        {
+                            BuildReport.LogWarning("ComponentInfos:VRCAvatarDescriptor:warning:NoEyelidsSkinnedMesh")
+                                ?.WithContext(component);
+                        }
                     }
                         break;
                     default:
-                        throw new ArgumentOutOfRangeException();
+                        BuildReport.LogWarning("ComponentInfos:VRCAvatarDescriptor:warning:UnknownEyelidType", 
+                                component.customEyeLookSettings.eyelidType.ToString())
+                            ?.WithContext(component);
+                        break;
                 }
             }
         }
@@ -249,7 +286,8 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
                     }
                         break;
                     default:
-                        throw new ArgumentOutOfRangeException();
+                        // Warning Reported in CollectMutations
+                        break;
                 }
             }
         }
