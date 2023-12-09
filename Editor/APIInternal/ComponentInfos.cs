@@ -49,10 +49,15 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
         {
             // if AnimatorController is not null, it has side effect
             if (component.runtimeAnimatorController) collector.MarkEntrypoint();
+            
+            // For sub-animators without humanoid bones, we can't call GetBoneTransform or it will result in an exception.
+            if (component.avatar == null) return;
 
             for (var bone = HumanBodyBones.Hips; bone < HumanBodyBones.LastBone; bone++)
             {
                 var boneTransform = component.GetBoneTransform(bone);
+                if (boneTransform == null) continue;
+                
                 foreach (var transform in boneTransform.ParentEnumerable())
                 {
                     if (transform == component.transform) break;
