@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog].
 - Fix NullReferenceException on Unity 2022 when extra Animator components are present [`#778`](https://github.com/anatawq12/AvatarOptimizer/pull/778)
 - Fix Errors with Generic Avatars `#779`
 - Editing Prefabs with AAO Components in Unity 2022 will cause Error `#782`
+- Error if there are reference to Prefab Asset PhysBone Collider `#783`
 
 ### Security
 
