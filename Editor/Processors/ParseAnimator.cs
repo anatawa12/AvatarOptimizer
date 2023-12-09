@@ -1,4 +1,5 @@
 using Anatawa12.AvatarOptimizer.AnimatorParsers;
+using Anatawa12.AvatarOptimizer.ndmf;
 using nadena.dev.ndmf;
 
 namespace Anatawa12.AvatarOptimizer.Processors
@@ -9,6 +10,9 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
         protected override void Execute(BuildContext context)
         {
+            // do not parse Animator if there are no AAO components in the project to avoid warnings
+            if (!context.GetState<AAOEnabled>().Enabled) return;
+
             var traceAndOptimize = context.GetState<TraceAndOptimizes.TraceAndOptimizeState>();
             var modifications = new AnimatorParser(traceAndOptimize.MmdWorldCompatibility)
                 .GatherAnimationModifications(context);
