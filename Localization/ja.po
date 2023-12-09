@@ -147,7 +147,7 @@ msgid "MergePhysBone:error:noSources"
 msgstr "統合対象のPhysBoneがありません。"
 
 msgid "MergePhysBone:error:oneSource"
-msgstr "統合対象のPhysBoneが一つしかありません。２つ以上指定してください。"
+msgstr "統合対象のPhysBoneが1つしかありません。2つ以上のPhysBoneを指定してください。"
 
 msgid "MergePhysBone:error:multiChildType"
 msgstr "Multi Child TypeがIgnoreでないPhysBoneがあります。"
@@ -163,7 +163,7 @@ msgid "MergePhysBone:error:differValueSingle"
 msgstr "複数の統合対象の間で値に差異があります。同じ値にするかOverrideする必要があります"
 
 msgid "MergePhysBone:warning:differChainLength"
-msgstr "複数の統合対象の間でチェーンの長さが異なります。短いチェーンのPBがもとより太くなる可能性があります。"
+msgstr "複数の統合対象の間でチェーンの長さが異なります。短いチェーンのPBは元よりも太くなる可能性があります。"
 
 msgid "MergePhysBone:dialog:versionInfo:title"
 msgstr "バージョンについて" 
