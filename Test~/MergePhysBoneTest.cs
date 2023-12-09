@@ -38,18 +38,20 @@ namespace Anatawa12.AvatarOptimizer.Test
             var child2Component = AddConfigure(child2);
             var merged = Utils.NewGameObject("merged", root.transform);
             var mergePhysBone = CreateMergePhysBone(merged, child1Component, child2Component);
+            mergePhysBone.endpointPositionConfig.@override = MergePhysBone.EndPointPositionConfig.Override.Copy;
 
             MergePhysBoneProcessor.DoMerge(mergePhysBone);
 
             var mergedPhysBone = merged.GetComponent<VRCPhysBoneBase>();
             Assert.That(mergedPhysBone.pull, Is.EqualTo(0.4f));            
-            Assert.That(mergedPhysBone.pullCurve, Is.EqualTo(AnimationCurve.Linear(0, 0, 1, 1)));
+            Assert.That(mergedPhysBone.pullCurve, Is.EqualTo(AnimationCurve.Linear(0.5f, 0, 1, 1)));
             Assert.That(mergedPhysBone.gravity, Is.EqualTo(0.5f));
             Assert.That(mergedPhysBone.allowPosing, Is.EqualTo(VRCPhysBoneBase.AdvancedBool.False));
             Assert.That(mergedPhysBone.allowGrabbing, Is.EqualTo(VRCPhysBoneBase.AdvancedBool.True));
             Assert.That(mergedPhysBone.allowCollision, Is.EqualTo(VRCPhysBoneBase.AdvancedBool.Other));
             Assert.That(mergedPhysBone.collisionFilter.allowOthers, Is.EqualTo(false));
             Assert.That(mergedPhysBone.collisionFilter.allowSelf, Is.EqualTo(true));
+            Assert.That(mergedPhysBone.endpointPosition, Is.EqualTo(Vector3.up));
 
             VRCPhysBone AddConfigure(GameObject go)
             {
@@ -62,6 +64,7 @@ namespace Anatawa12.AvatarOptimizer.Test
                 physBone.allowCollision = VRCPhysBoneBase.AdvancedBool.Other;
                 physBone.collisionFilter.allowOthers = false;
                 physBone.collisionFilter.allowSelf = true;
+                physBone.endpointPosition = Vector3.up;
                 return physBone;
             }
         }

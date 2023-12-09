@@ -10,6 +10,10 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
+- MergePhysBone now corrects curve settings `#775`
+- MergePhysBone now warns if chain length are not same `#775`
+- MergePhysBone with only one source is now error `#775`
+  - It was not working well and not a error by a bug.
 
 ### Deprecated
 
