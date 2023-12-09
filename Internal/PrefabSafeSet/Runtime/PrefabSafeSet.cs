@@ -77,8 +77,10 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
         protected PrefabSafeSet(Object outerObject)
         {
 #if UNITY_EDITOR
-            if (!outerObject) throw new ArgumentNullException(nameof(outerObject));
-            OuterObject = outerObject;
+            // I don't know why but Unity 2022 reports `this == null` in constructor of MonoBehaviour may be false
+            // so use actual null check instead of destroy check
+            // ReSharper disable once Unity.NoNullCoalescing
+            OuterObject = outerObject ?? throw new ArgumentNullException(nameof(outerObject));
 #endif
         }
 
