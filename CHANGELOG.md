@@ -8,6 +8,12 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Support for VRCSDK 3.5.x `#787`
+  - Actually, previous version of AAO works well with VRCSDK 3.5.x / Unity 2022 with tiny bugs.
+  - I've fixed some bugs in Unity 2022 in this release.
+  - Since this version, package.json declares Avatar Optimizer is compatible with VRCSDK 3.5.x.
+  - I was planned to release this changes while VRCSDK 3.5.0 is in beta.
+  - However, VRCSDK 3.5.0 beta was only 3 hours so I could not. 
 
 ### Changed
 
