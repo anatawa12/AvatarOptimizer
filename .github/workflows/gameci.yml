@@ -2,7 +2,7 @@ name: GameCI
 
 on:
   push:
-    branches: [master]
+    branches: [ master, master-* ]
   pull_request_target: {}
   workflow_dispatch: {}
 
