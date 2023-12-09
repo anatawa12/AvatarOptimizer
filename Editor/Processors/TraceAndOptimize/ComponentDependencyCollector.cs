@@ -79,7 +79,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             public Collector(ComponentDependencyCollector collector, GCComponentInfoHolder componentInfos)
             {
                 _collector = collector;
-                _dependencyInfoSharedInstance = new ComponentDependencyInfo(componentInfos);
+                _dependencyInfoSharedInstance = new ComponentDependencyInfo(collector, componentInfos);
             }
             
             public void Init(GCComponentInfo info)
@@ -135,6 +135,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             private class ComponentDependencyInfo : API.ComponentDependencyInfo
             {
+                private readonly ComponentDependencyCollector _collector;
                 private readonly GCComponentInfoHolder _componentInfos;
 
                 [CanBeNull] private Component _dependency;
@@ -145,8 +146,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 private bool _evenIfThisIsDisabled;
 
                 // ReSharper disable once NotNullOrRequiredMemberIsNotInitialized
-                public ComponentDependencyInfo(GCComponentInfoHolder componentInfos)
+                public ComponentDependencyInfo(ComponentDependencyCollector collector,
+                    GCComponentInfoHolder componentInfos)
                 {
+                    _collector = collector;
                     _componentInfos = componentInfos;
                 }
 
@@ -173,6 +176,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 {
                     Debug.Assert(_dependency != null, nameof(_dependency) + " != null");
 
+                    if (!_dependency.transform.IsChildOf(_collector._session.AvatarRootTransform))
+                        return;
                     if (!_evenIfThisIsDisabled)
                     {
                         // dependant must can be able to be enable
