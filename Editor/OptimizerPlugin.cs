@@ -51,7 +51,11 @@ namespace Anatawa12.AvatarOptimizer.ndmf
                         typeof(ObjectMappingContext),
                     }, _ =>
                     {
-                        seq.Run(Processors.TraceAndOptimizes.LoadTraceAndOptimizeConfiguration.Instance)
+                        seq.Run("Check if AAO is active", ctx =>
+                            {
+                                ctx.GetState<AAOEnabled>().Enabled = ctx.AvatarRootObject.GetComponent<AvatarTagComponent>();
+                            })
+                            .Then.Run(Processors.TraceAndOptimizes.LoadTraceAndOptimizeConfiguration.Instance)
                             .Then.Run(Processors.ParseAnimator.Instance)
                             .Then.Run(Processors.TraceAndOptimizes.AutoFreezeBlendShape.Instance)
 #if AAO_VRCSDK3_AVATARS
@@ -79,5 +83,10 @@ namespace Anatawa12.AvatarOptimizer.ndmf
         {
             BuildReport.ReportInternalError(e);
         }
+    }
+
+    internal class AAOEnabled
+    {
+        public bool Enabled { get; set; }
     }
 }

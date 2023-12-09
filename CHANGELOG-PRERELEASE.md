@@ -21,6 +21,8 @@ The format is based on [Keep a Changelog].
 - Editing Prefabs with AAO Components in Unity 2022 will cause Error `#782`
 - Error if there are reference to Prefab Asset PhysBone Collider `#783`
 - Remove Mesh in Box editor broken if inspector is narrow `#784`
+- Errors for partially incorrectly configured avatars `#786`
+  - Since this release, instead of internal errors, warnings are shown
 
 ### Security
 
