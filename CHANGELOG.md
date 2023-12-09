@@ -20,6 +20,7 @@ The format is based on [Keep a Changelog].
 - Fix Errors with Generic Avatars `#779`
 - Editing Prefabs with AAO Components in Unity 2022 will cause Error `#782`
 - Error if there are reference to Prefab Asset PhysBone Collider `#783`
+- Remove Mesh in Box editor broken if inspector is narrow `#784`
 
 ### Security
 
