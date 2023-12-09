@@ -25,6 +25,7 @@ jobs:
       - run: vrc-get repo add https://vpm.anatawa12.com/vpm.json
       - run: vrc-get i --yes com.vrchat.avatars 3.4.2
       - run: vrc-get i --yes nadena.dev.ndmf
+      - run: vrc-get i --yes com.anatawa12.custom-localization-for-editor-extension
       #- uses: anatawa12/sh-actions/resolve-vpm-packages@master
       #  with:
       #    repos: |
