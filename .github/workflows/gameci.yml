@@ -19,6 +19,10 @@ jobs:
         with:
           path: Packages/com.anatawa12.avatar-optimizer
           ref: ${{ github.event.pull_request.head.sha }}
+      - uses: anatawa12/sh-actions/setup-vrc-get@master
+        # lock 3.4.2 for now for unity 2022.
+        # see https://github.com/anatawa12/vrc-get/issues/262
+      - run: vrc-get i com.vrchat.avatars 3.4.2
       - uses: anatawa12/sh-actions/resolve-vpm-packages@master
         with:
           repos: |
