@@ -470,7 +470,7 @@ msgid "TraceAndOptimize:prop:removeZeroSizedPolygons"
 msgstr "Automatically Remove Zero Sized Polygons"
 
 msgid "TraceAndOptimize:OptimizePhysBone:UnknownPhysBoneColliderShape"
-msgstr "Unknown PhysBone Collider Shape '{0}' specified"
+msgstr "Unknown PhysBone Collider Shape '{0}' is specified."
 
 # endregion
 
