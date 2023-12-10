@@ -16,10 +16,13 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Error with generic avatar in 2022 `#794`
-- Assertion Error in some rare case `#795`
 
 ### Security
+
+## [1.6.4] - 2023-12-10
+### Fixed
+- Error with generic avatar in 2022 [`#794`](https://github.com/anatawa12/AvatarOptimizer/pull/794)
+- Assertion Error in some rare case [`#795`](https://github.com/anatawa12/AvatarOptimizer/pull/795)
 
 ## [1.6.3] - 2023-12-09
 ### Added
@@ -713,7 +716,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.3...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.4...HEAD
+[1.6.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.3...v1.6.4
 [1.6.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.2...v1.6.3
 [1.6.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.1...v1.6.2
 [1.6.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0...v1.6.1
