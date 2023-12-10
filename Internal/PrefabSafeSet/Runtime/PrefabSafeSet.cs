@@ -90,8 +90,9 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             if (OuterObject && UnityEditor.PrefabUtility.IsPartOfPrefabInstance(OuterObject)
                             && UnityEditor.PrefabUtility.IsPartOfAnyPrefab(OuterObject))
                 throw new InvalidOperationException("You cannot set value to Prefab Instance or Prefab");
-            Debug.Assert(prefabLayers.Length == 0);
 #endif
+            // in some (rare) cases, unpacked prefab may have prefabLayers so we need to clear it. 
+            prefabLayers = Array.Empty<TLayer>();
             mainSet = values.ToArray();
         }
 
