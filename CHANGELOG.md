@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - Error with generic avatar in 2022 `#794`
+- Assertion Error in some rare case `#795`
 
 ### Security
 
