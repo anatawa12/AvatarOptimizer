@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Fix support for UniVRM components `#802`
 
 ### Security
 

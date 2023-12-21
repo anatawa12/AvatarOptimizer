@@ -22,7 +22,8 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
             var avatarRootTransform = component.transform;
 
             collector.MarkEntrypoint();
-            
+            if (component.TryGetComponent<Animator>(out var animator)) collector.AddDependency(animator);
+
             // SpringBones
 
             foreach (var spring in component.SpringBone.Springs)
