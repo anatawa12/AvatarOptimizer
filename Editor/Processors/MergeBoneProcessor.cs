@@ -5,38 +5,32 @@ using Anatawa12.AvatarOptimizer.ErrorReporting;
 using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
 using JetBrains.Annotations;
 using nadena.dev.ndmf;
-using UnityEditor;
 using UnityEngine;
 using VRC.Dynamics;
-using VRC.SDKBase;
 using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.Processors
 {
     internal class MergeBoneProcessor : Pass<MergeBoneProcessor>
     {
-        [InitializeOnLoadMethod]
-        private static void RegisterValidator()
+        public static void Validate(MergeBone mergeBone, GameObject root)
         {
-            ComponentValidation.RegisterValidator<MergeBone>(mergeBone =>
+            // TODO: use AvatarRoot API
+            if (mergeBone.transform == root.transform)
             {
-                // TODO: use AvatarRoot API
-                if (mergeBone.GetComponent<VRC_AvatarDescriptor>())
-                {
-                    BuildReport.LogError("MergeBone:validation:onAvatarRoot");
-                }
+                BuildReport.LogError("MergeBone:validation:onAvatarRoot");
+            }
 
-                if (mergeBone.GetComponents<Component>().Except(new Component[] { mergeBone, mergeBone.transform })
-                    .Any())
-                    BuildReport.LogWarning("MergeBone:validation:thereAreComponent");
+            if (mergeBone.GetComponents<Component>().Except(new Component[] { mergeBone, mergeBone.transform })
+                .Any())
+                BuildReport.LogWarning("MergeBone:validation:thereAreComponent");
 
-                if (AnyNotMergedBone(mergeBone.transform))
-                {
-                    // if the bone has non-merged bones, uneven scaling is not supported.
-                    if (!ScaledEvenly(mergeBone.transform.localScale))
-                        BuildReport.LogWarning("MergeBone:validation:unevenScaling");
-                }
-            });
+            if (AnyNotMergedBone(mergeBone.transform))
+            {
+                // if the bone has non-merged bones, uneven scaling is not supported.
+                if (!ScaledEvenly(mergeBone.transform.localScale))
+                    BuildReport.LogWarning("MergeBone:validation:unevenScaling");
+            }
 
             bool AnyNotMergedBone(Transform bone)
             {

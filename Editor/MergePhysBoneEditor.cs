@@ -546,18 +546,12 @@ namespace Anatawa12.AvatarOptimizer
         }
     }
 
-    [InitializeOnLoad]
     sealed class MergePhysBoneValidator : MergePhysBoneEditorModificationUtils
     {
         private readonly List<string> _differProps = new List<string>();
         private readonly MergePhysBone _mergePhysBone;
 
-        static MergePhysBoneValidator()
-        {
-            ComponentValidation.RegisterValidator<MergePhysBone>(Validate);
-        }
-
-        private static void Validate(MergePhysBone mergePhysBone)
+        internal static void Validate(MergePhysBone mergePhysBone)
         {
             if (mergePhysBone.makeParent && mergePhysBone.transform.childCount != 0)
                 BuildReport.LogError("MergePhysBone:error:makeParentWithChildren", mergePhysBone);

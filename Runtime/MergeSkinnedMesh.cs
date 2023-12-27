@@ -1,4 +1,3 @@
-using Anatawa12.AvatarOptimizer.ErrorReporting;
 using CustomLocalization4EditorExtension;
 using UnityEngine;
 using UnityEngine.Animations;
@@ -9,7 +8,7 @@ namespace Anatawa12.AvatarOptimizer
     [RequireComponent(typeof(SkinnedMeshRenderer))]
     [DisallowMultipleComponent]
     [HelpURL("https://vpm.anatawa12.com/avatar-optimizer/ja/docs/reference/merge-skinned-mesh/")]
-    internal class MergeSkinnedMesh : EditSkinnedMeshComponent, IStaticValidated
+    internal class MergeSkinnedMesh : EditSkinnedMeshComponent
     {
         [CL4EELocalized("MergeSkinnedMesh:prop:renderers")]
         public PrefabSafeSet.SkinnedMeshRendererSet renderersSet;

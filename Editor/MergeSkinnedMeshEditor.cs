@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using Anatawa12.AvatarOptimizer.ErrorReporting;
 using CustomLocalization4EditorExtension;
 using UnityEditor;
 using UnityEngine;
@@ -8,7 +7,6 @@ using UnityEngine;
 namespace Anatawa12.AvatarOptimizer
 {
     [CustomEditor(typeof(MergeSkinnedMesh))]
-    [InitializeOnLoad]
     internal class MergeSkinnedMeshEditor : AvatarTagComponentEditorBase
     {
         private static class Style
@@ -24,19 +22,6 @@ namespace Anatawa12.AvatarOptimizer
                 normal = { textColor = Color.yellow },
                 wordWrap = false,
             };
-        }
-
-        static MergeSkinnedMeshEditor()
-        {
-            ComponentValidation.RegisterValidator<MergeSkinnedMesh>(component =>
-            {
-                var smr = component.GetComponent<SkinnedMeshRenderer>();
-                if (smr.sharedMesh)
-                    BuildReport.LogWarning("MergeSkinnedMesh:warning:MeshIsNotNone");
-
-                if (component.renderersSet.GetAsSet().Contains(smr))
-                    BuildReport.LogError("MergeSkinnedMesh:validation:self-recursive");
-            });
         }
 
         SerializedProperty _renderersSetProp;
