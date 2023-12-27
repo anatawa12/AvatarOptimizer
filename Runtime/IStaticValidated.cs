@@ -4,7 +4,7 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
     /// The marker interface for components to be validated.
     /// You must register validator to <c>ComponentValidation</c>.
     /// </summary>
-    public interface IStaticValidated
+    internal interface IStaticValidated
     {
         // TODO: remove this interface
     }

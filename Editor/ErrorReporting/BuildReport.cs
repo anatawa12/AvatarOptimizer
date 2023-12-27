@@ -9,7 +9,7 @@ using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.ErrorReporting
 {
-    public static class BuildReport
+    internal static class BuildReport
     {
         public static void LogInfo(string code, params object[] args) =>
             ErrorReport.ReportError(new InlineError(ErrorSeverity.Information, code, args));
@@ -73,7 +73,7 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
         protected override string[] HintSubst => DetailsSubst;
     }
 
-    public interface IContextProvider
+    internal interface IContextProvider
     {
         object ProvideContext();
     }

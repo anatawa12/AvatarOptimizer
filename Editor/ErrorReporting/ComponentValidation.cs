@@ -9,7 +9,7 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
 {
     using Validator = Action<IStaticValidated>;
 
-    public static class ComponentValidation
+    internal static class ComponentValidation
     {
         private static readonly ConditionalWeakTable<Type, Validator> Validators = new ConditionalWeakTable<Type, Validator>();
 
