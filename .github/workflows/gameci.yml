@@ -23,6 +23,7 @@ jobs:
         with:
           repos: |
             https://vpm.anatawa12.com/vpm.json
+            https://vpm.nadena.dev/vpm-prerelease.json
 
       - uses: actions/cache@v3
         with:
