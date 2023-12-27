@@ -6,7 +6,7 @@ using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
-using static Anatawa12.AvatarOptimizer.ErrorReporting.BuildReport;
+using Anatawa12.AvatarOptimizer.ErrorReporting;
 
 namespace Anatawa12.AvatarOptimizer.AnimatorParsers
 {
@@ -31,7 +31,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
                 case BlendTree blendTree:
                     return ParseBlendTree(root, blendTree, mapping);
                 default:
-                    LogError("Unknown Motion Type: {0} in motion {1}", motion.GetType().Name, motion.name);
+                    BuildLog.LogError("Unknown Motion Type: {0} in motion {1}", motion.GetType().Name, motion.name);
                     return ImmutableModificationsContainer.Empty;
             }
         }

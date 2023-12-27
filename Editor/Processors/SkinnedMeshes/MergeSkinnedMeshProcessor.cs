@@ -92,7 +92,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             {
                 // collect (skinned) mesh renderers who doesn't have normal
                 // to show the list on the error reporting
-                BuildReport.LogError("MergeSkinnedMesh:error:mix-normal-existence",
+                BuildLog.LogError("MergeSkinnedMesh:error:mix-normal-existence",
                     from meshInfo2 in meshInfos
                     where meshInfo2.Vertices.Count != 0 && !meshInfo2.HasNormals
                     select meshInfo2.SourceRenderer);
@@ -206,7 +206,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 #endif
 
             foreach (var weightMismatchBlendShape in weightMismatchBlendShapes)
-                BuildReport.LogWarning("MergeSkinnedMesh:warning:blendShapeWeightMismatch", weightMismatchBlendShape);
+                BuildLog.LogWarning("MergeSkinnedMesh:warning:blendShapeWeightMismatch", weightMismatchBlendShape);
 
             if (updateBounds && newBoundMin != Vector3.positiveInfinity && newBoundMax != Vector3.negativeInfinity)
             {
@@ -235,7 +235,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 var toDestroy = renderer.GetComponent<RemoveZeroSizedPolygon>();
                 if (toDestroy)
                 {
-                    BuildReport.LogWarning("MergeSkinnedMesh:warning:removeZeroSizedPolygonOnSources", toDestroy);
+                    BuildLog.LogWarning("MergeSkinnedMesh:warning:removeZeroSizedPolygonOnSources", toDestroy);
                     Object.DestroyImmediate(toDestroy);
                 }
                 Object.DestroyImmediate(renderer);
@@ -304,7 +304,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             }
 
             if (sources.Count != 0)
-                BuildReport.LogWarning("MergeSkinnedMesh:warning:animation-mesh-hide", sources);
+                BuildLog.LogWarning("MergeSkinnedMesh:warning:animation-mesh-hide", sources);
         }
 
         private (int[][] mapping, List<(MeshTopology topology, Material material)> materials)

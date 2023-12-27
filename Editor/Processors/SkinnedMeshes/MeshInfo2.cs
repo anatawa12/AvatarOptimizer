@@ -420,7 +420,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         {
             if (SubMeshes.All(x => x.SharedMaterials.Length == 1)) return;
             
-            BuildReport.LogWarning("MeshInfo2:warning:multiPassRendering", reasonComponent, SourceRenderer);
+            BuildLog.LogWarning("MeshInfo2:warning:multiPassRendering", reasonComponent, SourceRenderer);
 
             // flatten SubMeshes
             var subMeshes = SubMeshes.ToArray();
@@ -753,7 +753,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     primitiveSize = 1;
                     return true;
                 case MeshTopology.LineStrip:
-                    BuildReport.LogWarning("MeshInfo2:warning:lineStrip", component);
+                    BuildLog.LogWarning("MeshInfo2:warning:lineStrip", component);
                     primitiveSize = default;
                     return false;
                 default:

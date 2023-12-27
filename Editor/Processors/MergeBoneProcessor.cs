@@ -18,18 +18,18 @@ namespace Anatawa12.AvatarOptimizer.Processors
             // TODO: use AvatarRoot API
             if (mergeBone.transform == root.transform)
             {
-                BuildReport.LogError("MergeBone:validation:onAvatarRoot");
+                BuildLog.LogError("MergeBone:validation:onAvatarRoot");
             }
 
             if (mergeBone.GetComponents<Component>().Except(new Component[] { mergeBone, mergeBone.transform })
                 .Any())
-                BuildReport.LogWarning("MergeBone:validation:thereAreComponent");
+                BuildLog.LogWarning("MergeBone:validation:thereAreComponent");
 
             if (AnyNotMergedBone(mergeBone.transform))
             {
                 // if the bone has non-merged bones, uneven scaling is not supported.
                 if (!ScaledEvenly(mergeBone.transform.localScale))
-                    BuildReport.LogWarning("MergeBone:validation:unevenScaling");
+                    BuildLog.LogWarning("MergeBone:validation:unevenScaling");
             }
 
             bool AnyNotMergedBone(Transform bone)

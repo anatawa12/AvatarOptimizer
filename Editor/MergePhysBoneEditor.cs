@@ -554,7 +554,7 @@ namespace Anatawa12.AvatarOptimizer
         internal static void Validate(MergePhysBone mergePhysBone)
         {
             if (mergePhysBone.makeParent && mergePhysBone.transform.childCount != 0)
-                BuildReport.LogError("MergePhysBone:error:makeParentWithChildren", mergePhysBone);
+                BuildLog.LogError("MergePhysBone:error:makeParentWithChildren", mergePhysBone);
 
             new MergePhysBoneValidator(mergePhysBone).DoProcess();
         }
@@ -572,11 +572,11 @@ namespace Anatawa12.AvatarOptimizer
         protected override void EndPbConfig() {
             if (_differProps.Count != 0)
             {
-                BuildReport.LogError("MergePhysBone:error:differValues", string.Join(", ", _differProps));
+                BuildLog.LogError("MergePhysBone:error:differValues", string.Join(", ", _differProps));
             }
         }
 
-        protected override void NoSource() => BuildReport.LogError("MergePhysBone:error:noSources");
+        protected override void NoSource() => BuildLog.LogError("MergePhysBone:error:noSources");
 
         protected override void TransformSection()
         {
@@ -587,7 +587,7 @@ namespace Anatawa12.AvatarOptimizer
                     .ZipWithNext()
                     .Any(x => x.Item1 != x.Item2);
                 if (differ)
-                    BuildReport.LogError("MergePhysBone:error:parentDiffer");
+                    BuildLog.LogError("MergePhysBone:error:parentDiffer");
             }
 
             if (EndpointPosition.OverrideProperty.enumValueIndex ==
@@ -599,13 +599,13 @@ namespace Anatawa12.AvatarOptimizer
 
             var multiChildType = GetSourceProperty(nameof(VRCPhysBoneBase.multiChildType));
             if (multiChildType.enumValueIndex != 0 || multiChildType.hasMultipleDifferentValues)
-                BuildReport.LogError("MergePhysBone:error:multiChildType");
+                BuildLog.LogError("MergePhysBone:error:multiChildType");
         }
 
         protected override void OptionParameter() => Void();
         protected override void OptionIsAnimated() => Void();
 
-        protected override void UnsupportedPbVersion() => BuildReport.LogError("MergePhysBone:error:unsupportedPbVersion");
+        protected override void UnsupportedPbVersion() => BuildLog.LogError("MergePhysBone:error:unsupportedPbVersion");
 
         protected override void PbVersionProp(string label, ValueConfigProp prop, bool forceOverride = false)
             => PbProp(label, prop, forceOverride);

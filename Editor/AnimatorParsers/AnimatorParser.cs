@@ -4,16 +4,12 @@ using System.Linq;
 using Anatawa12.AvatarOptimizer.API;
 using Anatawa12.AvatarOptimizer.APIInternal;
 using Anatawa12.AvatarOptimizer.ErrorReporting;
-using static Anatawa12.AvatarOptimizer.ErrorReporting.BuildReport;
 using JetBrains.Annotations;
 using nadena.dev.ndmf;
 using UnityEditor.Animations;
 using UnityEngine;
-using UnityEngine.Animations;
-using Object = UnityEngine.Object;
 
 #if AAO_VRCSDK3_AVATARS
-using VRC.Dynamics;
 using VRC.SDK3.Avatars.Components;
 using VRC.SDKBase;
 #endif
@@ -319,7 +315,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
                                     layer = VRCAvatarDescriptor.AnimLayerType.Additive;
                                     break;
                                 default:
-                                    LogWarning("AnimatorParser:PlayableLayerControl:UnknownBlendablePlayableLayer",
+                                    BuildLog.LogWarning("AnimatorParser:PlayableLayerControl:UnknownBlendablePlayableLayer",
                                             $"{playableLayerControl.layer}",
                                             stateMachineBehaviour);
                                     continue;
@@ -348,7 +344,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
                                     layer = VRCAvatarDescriptor.AnimLayerType.Additive;
                                     break;
                                 default:
-                                    LogWarning("AnimatorParser:AnimatorLayerControl:UnknownBlendablePlayableLayer",
+                                    BuildLog.LogWarning("AnimatorParser:AnimatorLayerControl:UnknownBlendablePlayableLayer",
                                             $"{animatorLayerControl.layer}",
                                             stateMachineBehaviour);
                                     continue;

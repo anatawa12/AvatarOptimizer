@@ -107,7 +107,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                         });
                         break;
                     default:
-                        BuildReport.LogWarning("TraceAndOptimize:OptimizePhysBone:UnknownPhysBoneColliderShape", shapeType.ToString(), colliders);
+                        BuildLog.LogWarning("TraceAndOptimize:OptimizePhysBone:UnknownPhysBoneColliderShape", shapeType.ToString(), colliders);
                         break;
                 }
             }

@@ -20,10 +20,10 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
                     {
                         var smr = mergeSkinnedMesh.GetComponent<SkinnedMeshRenderer>();
                         if (smr.sharedMesh)
-                            BuildReport.LogWarning("MergeSkinnedMesh:warning:MeshIsNotNone");
+                            BuildLog.LogWarning("MergeSkinnedMesh:warning:MeshIsNotNone");
 
                         if (mergeSkinnedMesh.renderersSet.GetAsSet().Contains(smr))
-                            BuildReport.LogError("MergeSkinnedMesh:validation:self-recursive");
+                            BuildLog.LogError("MergeSkinnedMesh:validation:self-recursive");
                         break;
                     }
                     case MergeBone mergeBone:
@@ -35,7 +35,7 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
                     {
                         if (component.transform != root.transform)
 #if AAO_VRCSDK3_AVATARS
-                            BuildReport.LogError("AvatarGlobalComponent:NotOnAvatarDescriptor");
+                            BuildLog.LogError("AvatarGlobalComponent:NotOnAvatarDescriptor");
 #else
                             BuildReport.LogError("AvatarGlobalComponent:NotOnAvatarRoot");
 #endif

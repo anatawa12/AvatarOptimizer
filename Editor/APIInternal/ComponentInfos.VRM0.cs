@@ -152,7 +152,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
                     else
                     {
                         mergedFirstPersonFlag = firstPersonFlags.Contains(FirstPersonFlag.Both) ? FirstPersonFlag.Both : FirstPersonFlag.Auto;
-                        BuildReport.LogWarning("MergeSkinnedMesh:warning:VRM:FirstPersonFlagsMismatch", mergedFirstPersonFlag.ToString());
+                        BuildLog.LogWarning("MergeSkinnedMesh:warning:VRM:FirstPersonFlagsMismatch", mergedFirstPersonFlag.ToString());
                     }
 
                     return new VRMFirstPerson.RendererFirstPersonFlags
