@@ -1,7 +1,7 @@
 using Anatawa12.AvatarOptimizer.Processors;
 using UnityEngine;
 
-namespace Anatawa12.AvatarOptimizer.ErrorReporting
+namespace Anatawa12.AvatarOptimizer
 {
     internal static class ComponentValidation
     {

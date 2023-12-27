@@ -1,7 +1,6 @@
 #if AAO_VRCSDK3_AVATARS
 
 using System;
-using Anatawa12.AvatarOptimizer.ErrorReporting;
 using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEngine;

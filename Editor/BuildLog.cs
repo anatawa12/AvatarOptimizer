@@ -7,7 +7,7 @@ using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace Anatawa12.AvatarOptimizer.ErrorReporting
+namespace Anatawa12.AvatarOptimizer
 {
     internal static class BuildLog
     {

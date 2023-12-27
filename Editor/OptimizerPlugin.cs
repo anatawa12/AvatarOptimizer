@@ -1,5 +1,4 @@
 ﻿using System;
-using Anatawa12.AvatarOptimizer.ErrorReporting;
 using Anatawa12.AvatarOptimizer.ndmf;
 using nadena.dev.ndmf;
 using nadena.dev.ndmf.builtin;

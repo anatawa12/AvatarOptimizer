@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.API;
 using Anatawa12.AvatarOptimizer.APIInternal;
-using Anatawa12.AvatarOptimizer.ErrorReporting;
 using JetBrains.Annotations;
 using nadena.dev.ndmf;
 using UnityEditor.Animations;

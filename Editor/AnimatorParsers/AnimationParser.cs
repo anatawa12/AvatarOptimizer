@@ -6,7 +6,6 @@ using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
-using Anatawa12.AvatarOptimizer.ErrorReporting;
 
 namespace Anatawa12.AvatarOptimizer.AnimatorParsers
 {

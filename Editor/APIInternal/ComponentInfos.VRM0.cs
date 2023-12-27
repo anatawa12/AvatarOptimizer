@@ -2,7 +2,6 @@
 
 using System.Linq;
 using Anatawa12.AvatarOptimizer.API;
-using Anatawa12.AvatarOptimizer.ErrorReporting;
 using UnityEngine;
 using VRM;
 
