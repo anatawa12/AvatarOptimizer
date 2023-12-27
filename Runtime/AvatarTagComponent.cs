@@ -17,15 +17,5 @@ namespace Anatawa12.AvatarOptimizer
         , VRC.SDKBase.IEditorOnly
 #endif
     {
-        private void OnValidate()
-        {
-            if (RuntimeUtil.IsPlaying) return;
-            ErrorReporterRuntime.TriggerChange();
-        }
-
-        private void OnDestroy()
-        {
-            ErrorReporterRuntime.TriggerChange();
-        }
     }
 }

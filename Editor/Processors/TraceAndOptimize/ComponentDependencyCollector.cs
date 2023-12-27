@@ -34,7 +34,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             foreach (var componentInfo in _componentInfos.AllInformation)
             {
                 var component = componentInfo.Component;
-                BuildReport.ReportingObject(component, () =>
+                using (ErrorReport.WithContextObject(component))
                 {
                     // component requires GameObject.
                     collector.Init(componentInfo);
@@ -50,7 +50,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     }
 
                     collector.FinalizeForComponent();
-                });
+                }
             }
         }
 

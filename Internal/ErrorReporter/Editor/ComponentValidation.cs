@@ -1,32 +1,25 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using JetBrains.Annotations;
+using nadena.dev.ndmf;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.ErrorReporting
 {
-    using Validator = Func<IStaticValidated, IEnumerable<ErrorLog>>;
+    using Validator = Action<IStaticValidated>;
 
     public static class ComponentValidation
     {
         private static readonly ConditionalWeakTable<Type, Validator> Validators = new ConditionalWeakTable<Type, Validator>();
 
-        internal static List<ErrorLog> ValidateAll(GameObject root)
+        // TODO: make internal
+        public static void ValidateAll(GameObject root)
         {
-            return root.GetComponentsInChildren<IStaticValidated>(true)
-                .SelectMany(Validate)
-                .ToList();
+            foreach (var component in root.GetComponentsInChildren<IStaticValidated>(true))
+                using (ErrorReport.WithContextObject((Object)component))
+                    GetValidator(component.GetType())?.Invoke(component);
         }
-
-        private static IEnumerable<ErrorLog> Validate(IStaticValidated component) =>
-            GetValidator(component.GetType())
-                ?.Invoke(component)
-                ?.Where(x => x != null)
-                ?.OnEach(x => x.referencedObjects.Add(new ObjectRef((Object)component)))
-            ?? Array.Empty<ErrorLog>();
 
         private static Validator GetValidator(Type type)
         {
@@ -48,7 +41,7 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
             {
                 // if not found, make warning and set empty validator
                 Debug.LogWarning($"The StaticValidator for {type} not found. This must be a bug of {type.Assembly}");
-                validator = _ => null;
+                validator = _ => { };
             }
 
             Validators.Add(type, validator);
@@ -68,7 +61,7 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
         /// <li>The type implements ISelfStaticValidated</li>
         /// </ul>
         /// </exception>
-        public static void RegisterValidator<T>(Func<T, IEnumerable<ErrorLog>> validator)
+        public static void RegisterValidator<T>(Action<T> validator)
             where T : IStaticValidated
         {
             RegisterValidator(typeof(T), x => validator((T)x));

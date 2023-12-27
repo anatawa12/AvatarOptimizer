@@ -20,27 +20,22 @@ namespace Anatawa12.AvatarOptimizer.Processors
         {
             ComponentValidation.RegisterValidator<MergeBone>(mergeBone =>
             {
-                var errors = new ErrorLog[2];
-
                 // TODO: use AvatarRoot API
                 if (mergeBone.GetComponent<VRC_AvatarDescriptor>())
                 {
-                    errors[0] = ErrorLog.Validation("MergeBone:validation:onAvatarRoot");
-                    return errors;
+                    BuildReport.LogError("MergeBone:validation:onAvatarRoot");
                 }
 
                 if (mergeBone.GetComponents<Component>().Except(new Component[] { mergeBone, mergeBone.transform })
                     .Any())
-                    errors[0] = ErrorLog.Warning("MergeBone:validation:thereAreComponent");
+                    BuildReport.LogWarning("MergeBone:validation:thereAreComponent");
 
                 if (AnyNotMergedBone(mergeBone.transform))
                 {
                     // if the bone has non-merged bones, uneven scaling is not supported.
                     if (!ScaledEvenly(mergeBone.transform.localScale))
-                        errors[1] = ErrorLog.Warning("MergeBone:validation:unevenScaling");
+                        BuildReport.LogWarning("MergeBone:validation:unevenScaling");
                 }
-
-                return errors;
             });
 
             bool AnyNotMergedBone(Transform bone)
@@ -78,14 +73,19 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
             if (mergeMapping.Count == 0) return;
 
-            BuildReport.ReportingObjects(context.GetComponents<VRCPhysBoneBase>(), MapIgnoreTransforms);
+            foreach (var physBone in context.GetComponents<VRCPhysBoneBase>())
+                using (ErrorReport.WithContextObject(physBone))
+                    MapIgnoreTransforms(physBone);
 
-            BuildReport.ReportingObjects(context.GetComponents<SkinnedMeshRenderer>(), renderer =>
+            foreach (var renderer in context.GetComponents<SkinnedMeshRenderer>())
             {
-                var meshInfo2 = context.GetMeshInfoFor(renderer);
-                if (meshInfo2.Bones.Any(x => x.Transform && mergeMapping.ContainsKey(x.Transform)))
-                    DoBoneMap2(meshInfo2, mergeMapping);
-            });
+                using (ErrorReport.WithContextObject(renderer))
+                {
+                    var meshInfo2 = context.GetMeshInfoFor(renderer);
+                    if (meshInfo2.Bones.Any(x => x.Transform && mergeMapping.ContainsKey(x.Transform)))
+                        DoBoneMap2(meshInfo2, mergeMapping);
+                }
+            }
 
             var counter = 0;
 

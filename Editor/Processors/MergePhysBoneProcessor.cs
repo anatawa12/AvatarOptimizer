@@ -19,11 +19,14 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
         protected override void Execute(BuildContext context)
         {
-            BuildReport.ReportingObjects(context.GetComponents<MergePhysBone>(), mergePhysBone =>
+            foreach (var mergePhysBone in context.GetComponents<MergePhysBone>())
             {
-                DoMerge(mergePhysBone);
-                Object.DestroyImmediate(mergePhysBone);
-            });
+                using (ErrorReport.WithContextObject(mergePhysBone))
+                {
+                    DoMerge(mergePhysBone);
+                    Object.DestroyImmediate(mergePhysBone);
+                }
+            }
         }
 
         private static bool SetEq<T>(IEnumerable<T> a, IEnumerable<T> b) => 

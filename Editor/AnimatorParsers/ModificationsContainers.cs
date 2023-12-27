@@ -308,6 +308,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
 
         private readonly IModificationSource[] _sources;
         public ReadOnlySpan<IModificationSource> Sources => _sources ?? Array.Empty<IModificationSource>();
+        public IEnumerable<IModificationSource> SourcesEnum => _sources ?? Array.Empty<IModificationSource>();
 
         private AnimationFloatProperty(PropertyState state, float constValue, params IModificationSource[] modifiers) =>
             (State, _constValue, _sources) = (state, constValue, modifiers);

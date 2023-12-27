@@ -30,15 +30,12 @@ namespace Anatawa12.AvatarOptimizer
         {
             ComponentValidation.RegisterValidator<MergeSkinnedMesh>(component =>
             {
-                var err = new ErrorLog[2];
                 var smr = component.GetComponent<SkinnedMeshRenderer>();
                 if (smr.sharedMesh)
-                    err[0] = ErrorLog.Warning("MergeSkinnedMesh:warning:MeshIsNotNone");
+                    BuildReport.LogWarning("MergeSkinnedMesh:warning:MeshIsNotNone");
 
                 if (component.renderersSet.GetAsSet().Contains(smr))
-                    err[1] = ErrorLog.Validation("MergeSkinnedMesh:validation:self-recursive");
-
-                return err;
+                    BuildReport.LogError("MergeSkinnedMesh:validation:self-recursive");
             });
         }
 

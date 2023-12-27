@@ -4,6 +4,7 @@ using UnityEditor;
 using UnityEngine;
 
 #if AAO_VRCSDK3_AVATARS
+using nadena.dev.ndmf;
 using VRC.Core;
 using VRC.SDK3.Avatars.Components;
 #endif
@@ -18,12 +19,11 @@ namespace Anatawa12.AvatarOptimizer
             {
 #if AAO_VRCSDK3_AVATARS
                 if (!component.GetComponent<VRCAvatarDescriptor>())
-                    return new[] { ErrorLog.Validation("AvatarGlobalComponent:NotOnAvatarDescriptor") };
+                    BuildReport.LogError("AvatarGlobalComponent:NotOnAvatarDescriptor");
 #else
                 if (!nadena.dev.ndmf.runtime.RuntimeUtil.IsAvatarRoot(component.transform))
-                    return new[] { ErrorLog.Validation("AvatarGlobalComponent:NotOnAvatarRoot") };
+                    BuildReport.LogError("AvatarGlobalComponent:NotOnAvatarDescriptor");
 #endif
-                return null;
             });
         }
         protected override void OnInspectorGUIInner()

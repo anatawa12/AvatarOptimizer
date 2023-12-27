@@ -150,12 +150,16 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
         private static void OtherMutateComponents(ModificationsContainer mod, BuildContext context)
         {
             var collector = new Collector(mod);
-            ReportingObjects(context.GetComponents<Component>(), component =>
+            foreach (var component in context.GetComponents<Component>())
             {
-                collector.Modifier = new ComponentAnimationSource(component);
-                if (ComponentInfoRegistry.TryGetInformation(component.GetType(), out var info))
-                    info.CollectMutationsInternal(component, collector);
-            });
+                using (ErrorReport.WithContextObject(component))
+                {
+                    collector.Modifier = new ComponentAnimationSource(component);
+                    if (ComponentInfoRegistry.TryGetInformation(component.GetType(), out var info))
+                        info.CollectMutationsInternal(component, collector);
+
+                }
+            }
         }
 
         #endregion
@@ -273,7 +277,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
             AnimatorLayerMap<AnimatorWeightState> playableWeightChanged,
             AnimatorLayerMap<AnimatorLayerWeightMap<int>> animatorLayerWeightChanged)
         {
-            ReportingObject(runtimeController, () =>
+            using (ErrorReport.WithContextObject(runtimeController))
             {
                 var (controller, _) = GetControllerAndOverrides(runtimeController);
 
@@ -287,7 +291,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
                                      .stateMachine))
                             CollectWeightChangesInBehaviors(layer.GetOverrideBehaviours(state));
                 }
-            });
+            }
 
             return;
 
@@ -316,8 +320,8 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
                                     break;
                                 default:
                                     LogWarning("AnimatorParser:PlayableLayerControl:UnknownBlendablePlayableLayer",
-                                            $"{playableLayerControl.layer}")
-                                        ?.WithContext(stateMachineBehaviour);
+                                            $"{playableLayerControl.layer}",
+                                            stateMachineBehaviour);
                                     continue;
                             }
 
@@ -345,8 +349,8 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
                                     break;
                                 default:
                                     LogWarning("AnimatorParser:AnimatorLayerControl:UnknownBlendablePlayableLayer",
-                                            $"{animatorLayerControl.layer}")
-                                        ?.WithContext(stateMachineBehaviour);
+                                            $"{animatorLayerControl.layer}",
+                                            stateMachineBehaviour);
                                     continue;
                             }
 
@@ -439,12 +443,12 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
         public IModificationsContainer ParseAnimatorController(GameObject root, RuntimeAnimatorController controller,
             [CanBeNull] AnimatorLayerWeightMap<int> externallyWeightChanged = null)
         {
-            return ReportingObject(controller, () =>
+            using (ErrorReport.WithContextObject(controller))
             {
                 var (animatorController, mapping) = GetControllerAndOverrides(controller);
                 return AdvancedParseAnimatorController(root, animatorController, mapping,
                     externallyWeightChanged);
-            });
+            }
         }
 
         internal IModificationsContainer AdvancedParseAnimatorController(GameObject root, AnimatorController controller,

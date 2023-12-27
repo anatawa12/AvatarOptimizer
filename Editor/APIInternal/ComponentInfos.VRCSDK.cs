@@ -62,8 +62,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
                         collector.ModifyProperties(component.VisemeSkinnedMesh,
                             $"blendShape.{component.MouthOpenBlendShapeName}");
                     } else {
-                        BuildReport.LogWarning("ComponentInfos:VRCAvatarDescriptor:warning:NoVisemeSkinnedMesh")
-                            ?.WithContext(component);
+                        BuildReport.LogWarning("ComponentInfos:VRCAvatarDescriptor:warning:NoVisemeSkinnedMesh", component);
                     }
                     break;
                 }
@@ -74,8 +73,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
                         collector.ModifyProperties(component.VisemeSkinnedMesh,
                             component.VisemeBlendShapes.Select(blendShape => $"blendShape.{blendShape}"));
                     } else {
-                        BuildReport.LogWarning("ComponentInfos:VRCAvatarDescriptor:warning:NoVisemeSkinnedMesh")
-                            ?.WithContext(component);
+                        BuildReport.LogWarning("ComponentInfos:VRCAvatarDescriptor:warning:NoVisemeSkinnedMesh", component);
                     }
                     break;
                 }
@@ -84,8 +82,8 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
                     break;
                 default:
                     BuildReport.LogWarning("ComponentInfos:VRCAvatarDescriptor:warning:UnknownLipSyncStyle", 
-                            component.lipSync.ToString())
-                        ?.WithContext(component);
+                            component.lipSync.ToString(),
+                            component);
                     break;
             }
         }
@@ -130,7 +128,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
                             removed = true;
                     }
                     if (removed)
-                        BuildReport.LogFatal("ApplyObjectMapping:VRCAvatarDescriptor:viseme BlendShape Removed");
+                        BuildReport.LogError("ApplyObjectMapping:VRCAvatarDescriptor:viseme BlendShape Removed");
                     break;
                 }
                 case VRC_AvatarDescriptor.LipSyncStyle.VisemeParameterOnly:
@@ -183,8 +181,8 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
                         break;
                     default:
                         BuildReport.LogWarning("ComponentInfos:VRCAvatarDescriptor:warning:UnknownColliderState",
-                                collider.ToString(), where)
-                            ?.WithContext(component);
+                                collider.ToString(), where,
+                                component);
                         break;
                 }
             }
@@ -234,21 +232,21 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
                             }
                             else
                             {
-                                BuildReport.LogWarning("ComponentInfos:VRCAvatarDescriptor:warning:NoMeshInEyelidsSkinnedMesh")
-                                    ?.WithContext(component);
+                                BuildReport.LogWarning("ComponentInfos:VRCAvatarDescriptor:warning:NoMeshInEyelidsSkinnedMesh",
+                                        component);
                             }
                         }
                         else
                         {
-                            BuildReport.LogWarning("ComponentInfos:VRCAvatarDescriptor:warning:NoEyelidsSkinnedMesh")
-                                ?.WithContext(component);
+                            BuildReport.LogWarning("ComponentInfos:VRCAvatarDescriptor:warning:NoEyelidsSkinnedMesh",
+                                    component);
                         }
                     }
                         break;
                     default:
                         BuildReport.LogWarning("ComponentInfos:VRCAvatarDescriptor:warning:UnknownEyelidType", 
-                                component.customEyeLookSettings.eyelidType.ToString())
-                            ?.WithContext(component);
+                                component.customEyeLookSettings.eyelidType.ToString(),
+                                component);
                         break;
                 }
             }
@@ -282,7 +280,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
                         }
                         
                         if (removed)
-                            BuildReport.LogFatal("ApplyObjectMapping:VRCAvatarDescriptor:eyelids BlendShape Removed");
+                            BuildReport.LogError("ApplyObjectMapping:VRCAvatarDescriptor:eyelids BlendShape Removed");
                     }
                         break;
                     default:

@@ -313,10 +313,10 @@ msgstr "面積がゼロのポリゴンを削除します。"
 
 # region AvatarGlobalComponent
 
-msgid "DeleteEditorOnlyGameObjects:NotOnAvatarDescriptor"
+msgid "AvatarGlobalComponent:NotOnAvatarDescriptor"
 msgstr "このコンポーネントはアバターの最上位に付ける必要があります。(AvatarDescriptorのあるGameObject)"
 
-msgid "DeleteEditorOnlyGameObjects:NotOnAvatarRoot"
+msgid "AvatarGlobalComponent:NotOnAvatarRoot"
 msgstr "このコンポーネントはアバターの最上位に付ける必要があります。(VRChatのアバターでは、AvatarDescriptorのあるGameObject)"
 
 # endregion

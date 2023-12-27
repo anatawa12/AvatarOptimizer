@@ -17,12 +17,12 @@ namespace Anatawa12.AvatarOptimizer.Processors
             var configuration = context.AvatarRootObject.GetComponent<UnusedBonesByReferencesTool>();
             if (!configuration) return;
 
-            BuildReport.ReportingObject(configuration, () =>
+            using (ErrorReport.WithContextObject(configuration))
             {
                 UnusedBonesByReferences.Make(BoneReference.Make(configuration.transform,
                         configuration.detectExtraChild), configuration.preserveEndBone)
                     .SetEditorOnlyToBones();
-            });
+            }
         }
 
         #region UnusedBonesByReferencesTool

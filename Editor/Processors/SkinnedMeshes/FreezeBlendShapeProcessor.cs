@@ -54,9 +54,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 if (modified.Count != 0)
                 {
                     // ReSharper disable once CoVariantArrayConversion
-                    BuildReport.LogWarning("FreezeBlendShape:warning:animation", string.Join(", ", modified))
-                        ?.WithContext(targetSMR)
-                        ?.WithContext(sources);
+                    BuildReport.LogWarning("FreezeBlendShape:warning:animation", string.Join(", ", modified),
+                            targetSMR, sources);
                 }
             }
 

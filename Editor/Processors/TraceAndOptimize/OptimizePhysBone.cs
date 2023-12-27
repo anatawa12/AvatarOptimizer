@@ -107,8 +107,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                         });
                         break;
                     default:
-                        BuildReport.LogWarning("TraceAndOptimize:OptimizePhysBone:UnknownPhysBoneColliderShape", shapeType.ToString())
-                            ?.WithContext(colliders);
+                        BuildReport.LogWarning("TraceAndOptimize:OptimizePhysBone:UnknownPhysBoneColliderShape", shapeType.ToString(), colliders);
                         break;
                 }
             }
@@ -150,18 +149,21 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         private void IsAnimatedOptimization(BuildContext context)
         {
-            BuildReport.ReportingObjects(context.GetComponents<VRCPhysBoneBase>(), physBone =>
+            foreach (var physBone in context.GetComponents<VRCPhysBoneBase>())
             {
-                var isAnimated = physBone.GetAffectedTransforms()
-                    .Select(transform => context.GetAnimationComponent(transform))
-                    .Any(animation => IsAnimatedExternally(physBone, animation));
-                if (physBone.isAnimated && !isAnimated)
+                using (ErrorReport.WithContextObject(physBone))
                 {
-                    physBone.isAnimated = false;
-                    Debug.Log($"Optimized IsAnimated for {physBone.name}", physBone);
+                    var isAnimated = physBone.GetAffectedTransforms()
+                        .Select(transform => context.GetAnimationComponent(transform))
+                        .Any(animation => IsAnimatedExternally(physBone, animation));
+                    if (physBone.isAnimated && !isAnimated)
+                    {
+                        physBone.isAnimated = false;
+                        Debug.Log($"Optimized IsAnimated for {physBone.name}", physBone);
+                    }
+                    // TODO: add warning if physBone.isAnimated is false and isAnimated is true?                    
                 }
-                // TODO: add warning if physBone.isAnimated is false and isAnimated is true?
-            });
+            }
         }
 
         private static bool IsAnimatedExternally(VRCPhysBoneBase physBone, AnimationComponentInfo animation)

@@ -1,258 +1,80 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Text;
-using JetBrains.Annotations;
+using nadena.dev.ndmf;
+using nadena.dev.ndmf.localization;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.ErrorReporting
 {
-    [Serializable]
-    internal class AvatarReport
+    public static class BuildReport
     {
-        [SerializeField] internal ObjectRef objectRef;
-        [SerializeField] internal bool successful;
-        [SerializeField] internal List<ErrorLog> logs = new List<ErrorLog>();
+        public static void LogInfo(string code, params object[] args) =>
+            ErrorReport.ReportError(new InlineError(ErrorSeverity.Information, code, args));
+
+        public static void LogWarning(string code, params object[] args) =>
+            ErrorReport.ReportError(new InlineError(ErrorSeverity.NonFatal, code, args));
+
+        public static void LogError(string code, params object[] args) =>
+            ErrorReport.ReportError(new InlineError(ErrorSeverity.Error, code, args));
     }
 
-    [InitializeOnLoad]
-    [Serializable]
-    public class BuildReport
+    internal class InlineError : SimpleError, IError
     {
-        private const string Path = "Library/com.anatawa12.error-reporting.json";
-
-        private static BuildReport _report;
-        private Stack<Object> _references = new Stack<Object>();
-
-        [SerializeField] internal List<AvatarReport> avatars = new List<AvatarReport>();
-
-        internal ConditionalWeakTable<GameObject, AvatarReport> AvatarsByObject =
-            new ConditionalWeakTable<GameObject, AvatarReport>();
-        internal AvatarReport CurrentAvatar { get; set; }
-
-        internal static BuildReport CurrentReport
+        private static Localizer _localizer = new Localizer("en-US", () => new List<LocalizationAsset>()
         {
-            get
-            {
-                if (_report == null) _report = LoadReport() ?? new BuildReport();
-                return _report;
-            }
+            // en.po
+            AssetDatabase.LoadAssetAtPath<LocalizationAsset>(
+                AssetDatabase.GUIDToAssetPath("f9d382355a0a485980e8e7271bca53d7")),
+            // ja.po
+            AssetDatabase.LoadAssetAtPath<LocalizationAsset>(
+                AssetDatabase.GUIDToAssetPath("feed5ac7cc024b9e92e46f7e2dbdbe82")),
+        });
+
+        private readonly string _key;
+
+        public InlineError(ErrorSeverity errorSeverity, string key, params object[] args)
+        {
+            Localizer = _localizer;
+            Severity = errorSeverity;
+            // https://github.com/bdunderscore/ndmf/issues/99
+            // https://github.com/bdunderscore/ndmf/issues/98
+            _key = key;
+
+            DetailsSubst = Array.ConvertAll(args, o => o?.ToString());
+            Flatten(args, _references);
         }
 
-        static BuildReport()
+        protected override string DetailsKey => _key;
+
+        private static void Flatten(object arg, List<ObjectReference> list)
         {
-            EditorApplication.playModeStateChanged += change =>
-            {
-                switch (change)
-                {
-                    case PlayModeStateChange.ExitingEditMode:
-                        // TODO - skip if we're doing a VRCSDK build
-                        _report = new BuildReport();
-                        break;
-                }
-            };
+            // https://github.com/bdunderscore/ndmf/issues/95
+            // https://github.com/bdunderscore/ndmf/issues/96
+            if (arg is ObjectReference or)
+                list.Add(or);
+            else if (arg is Object uo)
+                list.Add(ObjectRegistry.GetReference(uo));
+            else if (arg is IContextProvider provider)
+                Flatten(provider.ProvideContext(), list);
+            else if (arg is IEnumerable enumerable)
+                foreach (var value in enumerable)
+                    Flatten(value, list);
         }
 
-        private static BuildReport LoadReport()
-        {
-            try
-            {
-                var data = File.ReadAllText(Path);
-                return JsonUtility.FromJson<BuildReport>(data);
-            }
-            catch (Exception)
-            {
-                return null;
-            }
-        }
+        protected override Localizer Localizer { get; }
+        public override ErrorSeverity Severity { get; }
+        protected override string TitleKey { get; }
 
-        internal static void SaveReport()
-        {
-            var report = CurrentReport;
-            var json = JsonUtility.ToJson(report);
+        protected override string[] DetailsSubst { get; }
 
-            File.WriteAllText(Path, json);
+        protected override string[] HintSubst => DetailsSubst;
+    }
 
-            ErrorReportUI.ReloadErrorReport();
-        }
-
-        internal AvatarReport Initialize([NotNull] GameObject avatarGameObject)
-        {
-            if (avatarGameObject == null) throw new ArgumentNullException(nameof(avatarGameObject));
-
-            AvatarReport report = new AvatarReport();
-            report.objectRef = new ObjectRef(avatarGameObject);
-            avatars.Add(report);
-            report.successful = true;
-
-            report.logs.AddRange(ComponentValidation.ValidateAll(avatarGameObject));
-
-            AvatarsByObject.Add(avatarGameObject, report);
-            return report;
-        }
-
-        [CanBeNull]
-        internal static ErrorLog Log(ReportLevel level, string code, string[] strings, Assembly assembly)
-        {
-            for (var i = 0; i < strings.Length; i++)
-                strings[i] = strings[i] ?? "";
-            var errorLog = new ErrorLog(level, code, strings, assembly);
-
-            var builder = new StringBuilder("BuildReport: ");
-            builder.Append(code);
-            foreach (var s in strings)
-                builder.Append(", '").Append(s).Append("'");
-            switch (level)
-            {
-                case ReportLevel.Validation:
-                case ReportLevel.Error:
-                case ReportLevel.InternalError:
-                    Debug.LogError(builder.ToString());
-                    break;
-                case ReportLevel.Info:
-                    Debug.Log(builder.ToString());
-                    break;
-                case ReportLevel.Warning:
-                    Debug.LogWarning(builder.ToString());
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(level), level, null);
-            }
-
-            var avatarReport = CurrentReport.CurrentAvatar;
-            if (avatarReport == null)
-            {
-                Debug.LogWarning("Error logged when not processing an avatar: " + errorLog);
-                return null;
-            }
-
-            avatarReport.logs.Add(errorLog);
-            return errorLog;
-        }
-
-        [CanBeNull]
-        public static ErrorLog LogInfo(string code, params string[] strings) => Log(ReportLevel.Info, code,
-            strings: strings, assembly: Assembly.GetCallingAssembly());
-
-        [CanBeNull]
-        public static ErrorLog LogWarning(string code, params string[] strings) => Log(ReportLevel.Warning, code,
-            strings: strings, assembly: Assembly.GetCallingAssembly());
-
-        [CanBeNull]
-        public static ErrorLog LogFatal(string code, params string[] strings)
-        {
-            var log = Log(ReportLevel.Error, code, strings: strings, assembly: Assembly.GetCallingAssembly());
-            if (CurrentReport.CurrentAvatar != null)
-            {
-                CurrentReport.CurrentAvatar.successful = false;
-            }
-            else
-            {
-                throw new Exception("Fatal error without error reporting scope");
-            }
-            return log;
-        }
-
-        internal static void LogException(Exception e, string additionalStackTrace = "")
-        {
-            var avatarReport = CurrentReport.CurrentAvatar;
-            if (avatarReport == null)
-            {
-                Debug.LogException(e);
-                return;
-            }
-            else
-            {
-                avatarReport.logs.Add(new ErrorLog(e, additionalStackTrace));
-            }
-        }
-
-        public static T ReportingObject<T>(Object obj, Func<T> action) => ReportingObject(obj, false, action);
-
-        public static T ReportingObject<T>(Object obj, bool needThrow, Func<T> action)
-        {
-            if (obj != null) CurrentReport._references.Push(obj);
-            try
-            {
-                return action();
-            }
-            catch (ReportedException)
-            {
-                throw; // rethrow only
-            }
-            catch (Exception e)
-            {
-                // just rethrow if BuildReport is not in progress
-                if (CurrentReport.CurrentAvatar == null && needThrow) throw;
-                ReportInternalError(e, 2);
-                if (needThrow) throw new ReportedException();
-                return default;
-            }
-            finally
-            {
-                if (obj != null) CurrentReport._references.Pop();
-            }
-        }
-
-        public static void ReportInternalError(Exception exception) => ReportInternalError(exception, 2);
-
-        private static void ReportInternalError(Exception exception, int strips)
-        {
-            if (exception is ReportedException) return; // reported exception is known internal error
-            var additionalStackTrace = string.Join("\n", 
-                Environment.StackTrace.Split('\n').Skip(strips)) + "\n";
-            LogException(exception, additionalStackTrace);
-        }
-
-        public static void ReportingObject(Object obj, Action action) => ReportingObject(obj, false, action);
-
-        public static void ReportingObject(Object obj, bool needThrow, Action action)
-        {
-            ReportingObject(obj, needThrow, () =>
-            {
-                action();
-                return true;
-            });
-        }
-
-        public static void ReportingObjects<T>(IEnumerable<T> objs, Action<T> action) where T : Object
-        {
-            foreach (var obj in objs)
-                ReportingObject(obj, () => action(obj));
-        }
-
-        internal IEnumerable<ObjectRef> GetActiveReferences()
-        {
-            return _references.Select(o => new ObjectRef(o));
-        }
-
-        public static void Clear()
-        {
-            _report = new BuildReport();
-        }
-
-        public static void RemapPaths(string original, string cloned)
-        {
-            foreach (var av in CurrentReport.avatars)
-            {
-                av.objectRef = av.objectRef.Remap(original, cloned);
-
-                foreach (var log in av.logs)
-                {
-                    log.referencedObjects = log.referencedObjects.Select(o => o.Remap(original, cloned)).ToList();
-                }
-            }
-
-            ErrorReportUI.ReloadErrorReport();
-        }
-
-        private class ReportedException : Exception
-        {
-        }
+    public interface IContextProvider
+    {
+        object ProvideContext();
     }
 }
