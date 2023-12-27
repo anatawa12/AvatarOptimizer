@@ -6,5 +6,6 @@ namespace Anatawa12.AvatarOptimizer.ErrorReporting
     /// </summary>
     public interface IStaticValidated
     {
+        // TODO: remove this interface
     }
 }
