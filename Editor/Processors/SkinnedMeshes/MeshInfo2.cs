@@ -3,13 +3,12 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Anatawa12.AvatarOptimizer.ErrorReporting;
 using JetBrains.Annotations;
+using nadena.dev.ndmf;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
 using UnityEngine;
-using UnityEngine.Assertions;
 using UnityEngine.Profiling;
 using UnityEngine.Rendering;
 using Debug = System.Diagnostics.Debug;
@@ -42,7 +41,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             SourceRenderer = renderer;
             var mesh = renderer.sharedMesh;
 
-            BuildReport.ReportingObject(renderer, true, () =>
+            using (ErrorReport.WithContextObject(renderer))
             {
                 if (mesh)
                     ReadSkinnedMesh(mesh);
@@ -64,13 +63,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 RemoveUnusedBones();
 
                 AssertInvariantContract("SkinnedMeshRenderer");
-            });
+            }
         }
 
         public MeshInfo2(MeshRenderer renderer)
         {
             SourceRenderer = renderer;
-            BuildReport.ReportingObject(renderer, true, () =>
+            using (ErrorReport.WithContextObject(renderer))
             {
                 var meshFilter = renderer.GetComponent<MeshFilter>();
                 var mesh = meshFilter ? meshFilter.sharedMesh : null;
@@ -84,7 +83,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 SetMaterials(renderer);
 
                 AssertInvariantContract("MeshRenderer");
-            });
+            }
         }
 
         private void SetMaterials(Renderer renderer)
@@ -419,8 +418,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         {
             if (SubMeshes.All(x => x.SharedMaterials.Length == 1)) return;
             
-            BuildReport.LogWarning("MeshInfo2:warning:multiPassRendering", reasonComponent)
-                ?.WithContext(SourceRenderer);
+            BuildLog.LogWarning("MeshInfo2:warning:multiPassRendering", reasonComponent, SourceRenderer);
 
             // flatten SubMeshes
             var subMeshes = SubMeshes.ToArray();
@@ -648,7 +646,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         public void WriteToSkinnedMeshRenderer(SkinnedMeshRenderer targetRenderer)
         {
-            BuildReport.ReportingObject(targetRenderer, () =>
+            using (ErrorReport.WithContextObject(targetRenderer))
             {
                 var mesh = new Mesh { name = $"AAOGeneratedMesh{targetRenderer.name}" };
 
@@ -670,19 +668,19 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 if (Bounds != default)
                     targetRenderer.localBounds = Bounds;
                 targetRenderer.updateWhenOffscreen = offscreen;
-            });
+            }
         }
 
         public void WriteToMeshRenderer(MeshRenderer targetRenderer)
         {
-            BuildReport.ReportingObject(targetRenderer, () =>
+            using (ErrorReport.WithContextObject(targetRenderer))
             {
                 var mesh = new Mesh { name = $"AAOGeneratedMesh{targetRenderer.name}" };
                 var meshFilter = targetRenderer.GetComponent<MeshFilter>();
                 WriteToMesh(mesh);
                 meshFilter.sharedMesh = mesh;
                 targetRenderer.sharedMaterials = SubMeshes.SelectMany(x => x.SharedMaterials).ToArray();
-            });
+            }
         }
     }
 
@@ -753,7 +751,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     primitiveSize = 1;
                     return true;
                 case MeshTopology.LineStrip:
-                    BuildReport.LogWarning("MeshInfo2:warning:lineStrip", component);
+                    BuildLog.LogWarning("MeshInfo2:warning:lineStrip", component);
                     primitiveSize = default;
                     return false;
                 default:

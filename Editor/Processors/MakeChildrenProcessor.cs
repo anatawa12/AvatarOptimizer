@@ -1,4 +1,3 @@
-using Anatawa12.AvatarOptimizer.ErrorReporting;
 using System.Linq;
 using nadena.dev.ndmf;
 using UnityEngine;
@@ -16,15 +15,16 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
         public void Process(BuildContext context)
         {
-            BuildReport.ReportingObjects(context.GetComponents<MakeChildren>(), makeChildren =>
+            foreach (var makeChildren in context.GetComponents<MakeChildren>())
             {
-                if (makeChildren.executeEarly != _early) return;
-                foreach (var makeChildrenChild in makeChildren.children.GetAsSet().Where(x => x))
+                using (ErrorReport.WithContextObject(makeChildren))
                 {
-                    makeChildrenChild.parent = makeChildren.transform;
+                    if (makeChildren.executeEarly != _early) continue;
+                    foreach (var makeChildrenChild in makeChildren.children.GetAsSet().Where(x => x))
+                        makeChildrenChild.parent = makeChildren.transform;
+                    Object.DestroyImmediate(makeChildren);
                 }
-                Object.DestroyImmediate(makeChildren);
-            });
+            }
         }
     }
 }

@@ -1,7 +1,6 @@
 #if AAO_VRCSDK3_AVATARS
 
 using System;
-using Anatawa12.AvatarOptimizer.ErrorReporting;
 using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEngine;
@@ -15,8 +14,10 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
         protected override void Execute(BuildContext context)
         {
-            BuildReport.ReportingObjects(context.GetComponents<ClearEndpointPosition>(),
-                component => BuildReport.ReportingObjects(component.GetComponents<VRCPhysBoneBase>(), Process));
+            foreach (var component in context.GetComponents<ClearEndpointPosition>())
+            foreach (var vrcPhysBoneBase in component.GetComponents<VRCPhysBoneBase>())
+                using (ErrorReport.WithContextObject(vrcPhysBoneBase))
+                    Process(vrcPhysBoneBase);
         }
 
         public static void Process(VRCPhysBoneBase pb)

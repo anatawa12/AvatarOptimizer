@@ -1,5 +1,4 @@
 using Anatawa12.AvatarOptimizer.APIInternal;
-using Anatawa12.AvatarOptimizer.ErrorReporting;
 using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
 using JetBrains.Annotations;
 using nadena.dev.ndmf;
@@ -34,7 +33,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             foreach (var componentInfo in _componentInfos.AllInformation)
             {
                 var component = componentInfo.Component;
-                BuildReport.ReportingObject(component, () =>
+                using (ErrorReport.WithContextObject(component))
                 {
                     // component requires GameObject.
                     collector.Init(componentInfo);
@@ -44,13 +43,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     }
                     else
                     {
-                        BuildReport.LogWarning("TraceAndOptimize:warn:unknown-type", component.GetType().Name);
+                        BuildLog.LogWarning("TraceAndOptimize:warn:unknown-type", component.GetType().Name);
 
                         FallbackDependenciesParser(component, collector);
                     }
 
                     collector.FinalizeForComponent();
-                });
+                }
             }
         }
 

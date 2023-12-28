@@ -1,4 +1,3 @@
-using Anatawa12.AvatarOptimizer.ErrorReporting;
 using UnityEditor;
 using UnityEngine;
 

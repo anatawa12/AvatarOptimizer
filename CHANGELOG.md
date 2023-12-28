@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
+- AvatarOptimizer now uses ErrorReporting API of NDMF instead of our own API `#805`
 
 ### Deprecated
 

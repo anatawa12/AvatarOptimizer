@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Anatawa12.AvatarOptimizer.ErrorReporting;
 using nadena.dev.ndmf;
 using UnityEngine;
 using UnityEngine.Profiling;
@@ -54,9 +53,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 if (modified.Count != 0)
                 {
                     // ReSharper disable once CoVariantArrayConversion
-                    BuildReport.LogWarning("FreezeBlendShape:warning:animation", string.Join(", ", modified))
-                        ?.WithContext(targetSMR)
-                        ?.WithContext(sources);
+                    BuildLog.LogWarning("FreezeBlendShape:warning:animation", string.Join(", ", modified),
+                            targetSMR, sources);
                 }
             }
 

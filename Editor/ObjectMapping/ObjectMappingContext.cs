@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.API;
 using Anatawa12.AvatarOptimizer.APIInternal;
-using Anatawa12.AvatarOptimizer.ErrorReporting;
 using JetBrains.Annotations;
 using nadena.dev.ndmf;
 using UnityEditor;
@@ -28,46 +27,49 @@ namespace Anatawa12.AvatarOptimizer
             var mappingSource = new MappingSourceImpl(mapping);
 
             // replace all objects
-            BuildReport.ReportingObjects(context.GetComponents<Component>(), component =>
+            foreach (var component in context.GetComponents<Component>())
             {
-                if (component is Transform) return;
-                
-                // apply special mapping
-                if (ComponentInfoRegistry.TryGetInformation(component.GetType(), out var info))
-                    info.ApplySpecialMappingInternal(component, mappingSource);
-
-                var serialized = new SerializedObject(component);
-                AnimatorControllerMapper mapper = null;
-
-                foreach (var p in serialized.ObjectReferenceProperties())
+                using (ErrorReport.WithContextObject(component))
                 {
-                    if (mapping.MapComponentInstance(p.objectReferenceInstanceIDValue, out var mappedComponent))
-                        p.objectReferenceValue = mappedComponent;
+                    if (component is Transform) return;
 
-                    var objectReferenceValue = p.objectReferenceValue;
-                    switch (objectReferenceValue)
+                    // apply special mapping
+                    if (ComponentInfoRegistry.TryGetInformation(component.GetType(), out var info))
+                        info.ApplySpecialMappingInternal(component, mappingSource);
+
+                    var serialized = new SerializedObject(component);
+                    AnimatorControllerMapper mapper = null;
+
+                    foreach (var p in serialized.ObjectReferenceProperties())
                     {
-                        case RuntimeAnimatorController _:
+                        if (mapping.MapComponentInstance(p.objectReferenceInstanceIDValue, out var mappedComponent))
+                            p.objectReferenceValue = mappedComponent;
+
+                        var objectReferenceValue = p.objectReferenceValue;
+                        switch (objectReferenceValue)
+                        {
+                            case RuntimeAnimatorController _:
 #if AAO_VRM0
-                        case VRM.BlendShapeAvatar _:
+                            case VRM.BlendShapeAvatar _:
 #endif
 #if AAO_VRM1
-                        case UniVRM10.VRM10Object _:
+                            case UniVRM10.VRM10Object _:
 #endif
-                            if (mapper == null)
-                                mapper = new AnimatorControllerMapper(mapping.CreateAnimationMapper(component.gameObject));
+                                if (mapper == null)
+                                    mapper = new AnimatorControllerMapper(
+                                        mapping.CreateAnimationMapper(component.gameObject));
 
-                            // ReSharper disable once AccessToModifiedClosure
-                            var mapped = BuildReport.ReportingObject(objectReferenceValue,
-                                () => mapper.MapObject(objectReferenceValue));
-                            if (mapped != objectReferenceValue)
-                                p.objectReferenceValue = mapped;
-                            break;
+                                // ReSharper disable once AccessToModifiedClosure
+                                var mapped = mapper.MapObject(objectReferenceValue);
+                                if (mapped != objectReferenceValue)
+                                    p.objectReferenceValue = mapped;
+                                break;
+                        }
                     }
-                }
 
-                serialized.ApplyModifiedPropertiesWithoutUndo();
-            });
+                    serialized.ApplyModifiedPropertiesWithoutUndo();
+                }
+            }
         }
     }
 
@@ -148,8 +150,11 @@ namespace Anatawa12.AvatarOptimizer
         public T MapAnimatorController<T>(T controller) where T : RuntimeAnimatorController =>
             DeepClone(controller, CustomClone);
 
-        public T MapObject<T>(T obj) where T : Object =>
-            DeepClone(obj, CustomClone);
+        public T MapObject<T>(T obj) where T : Object
+        {
+            using (ErrorReport.WithContextObject(obj))
+                return DeepClone(obj, CustomClone);
+        }
 
         // https://github.com/bdunderscore/modular-avatar/blob/db49e2e210bc070671af963ff89df853ae4514a5/Packages/nadena.dev.modular-avatar/Editor/AnimatorMerger.cs#L199-L241
         // Originally under MIT License
@@ -361,7 +366,7 @@ namespace Anatawa12.AvatarOptimizer
                             else
                             {
                                 mergedFirstPersonFlag = firstPersonFlags.Contains(UniGLTF.Extensions.VRMC_vrm.FirstPersonType.both) ? UniGLTF.Extensions.VRMC_vrm.FirstPersonType.both : UniGLTF.Extensions.VRMC_vrm.FirstPersonType.auto;
-                                BuildReport.LogWarning("MergeSkinnedMesh:warning:VRM:FirstPersonFlagsMismatch", mergedFirstPersonFlag.ToString());
+                                BuildLog.LogWarning("MergeSkinnedMesh:warning:VRM:FirstPersonFlagsMismatch", mergedFirstPersonFlag.ToString());
                             }
 
                             return new UniVRM10.RendererFirstPersonFlags

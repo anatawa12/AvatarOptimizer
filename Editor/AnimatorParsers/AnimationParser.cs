@@ -2,18 +2,21 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
+using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
-using static Anatawa12.AvatarOptimizer.ErrorReporting.BuildReport;
 
 namespace Anatawa12.AvatarOptimizer.AnimatorParsers
 {
     class AnimationParser
     {
         internal IModificationsContainer ParseMotion(GameObject root, Motion motion,
-            IReadOnlyDictionary<AnimationClip, AnimationClip> mapping) =>
-            ReportingObject(motion, () => ParseMotionInner(root, motion, mapping));
+            IReadOnlyDictionary<AnimationClip, AnimationClip> mapping)
+        {
+            using (ErrorReport.WithContextObject(motion))
+                return ParseMotionInner(root, motion, mapping);
+        }
 
         private IModificationsContainer ParseMotionInner(GameObject root, Motion motion,
             IReadOnlyDictionary<AnimationClip, AnimationClip> mapping)
@@ -27,7 +30,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
                 case BlendTree blendTree:
                     return ParseBlendTree(root, blendTree, mapping);
                 default:
-                    LogFatal("Unknown Motion Type: {0} in motion {1}", motion.GetType().Name, motion.name);
+                    BuildLog.LogError("Unknown Motion Type: {0} in motion {1}", motion.GetType().Name, motion.name);
                     return ImmutableModificationsContainer.Empty;
             }
         }
