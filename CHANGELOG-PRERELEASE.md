@@ -10,16 +10,21 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
-- AvatarOptimizer now uses ErrorReporting API of NDMF instead of our own API `#805`
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
-- Fix support for UniVRM components `#802`
 
 ### Security
+
+## [1.6.5-beta.1] - 2023-12-28
+### Changed
+- AvatarOptimizer now uses ErrorReporting API of NDMF instead of our own API [`#805`](https://github.com/anatawa12/AvatarOptimizer/pull/805)
+
+### Fixed
+- Fix support for UniVRM components [`#802`](https://github.com/anatawa12/AvatarOptimizer/pull/802)
 
 ## [1.6.4] - 2023-12-10
 ## [1.6.4-beta.1] - 2023-12-10
@@ -1111,7 +1116,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.4...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.5-beta.1...HEAD
+[1.6.5-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.4...v1.6.5-beta.1
 [1.6.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.4-beta.1...v1.6.4
 [1.6.4-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.3...v1.6.4-beta.1
 [1.6.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.2...v1.6.3
