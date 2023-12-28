@@ -1,10 +1,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using CustomLocalization4EditorExtension;
 using nadena.dev.ndmf;
 using nadena.dev.ndmf.localization;
-using UnityEditor;
-using UnityEngine;
+using Debug = System.Diagnostics.Debug;
 using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer
@@ -23,14 +24,13 @@ namespace Anatawa12.AvatarOptimizer
 
     internal class InlineError : SimpleError, IError
     {
-        private static Localizer _localizer = new Localizer("en-US", () => new List<LocalizationAsset>()
+        private static Localizer _localizer = new Localizer("en-US", () =>
         {
-            // en.po
-            AssetDatabase.LoadAssetAtPath<LocalizationAsset>(
-                AssetDatabase.GUIDToAssetPath("f9d382355a0a485980e8e7271bca53d7")),
-            // ja.po
-            AssetDatabase.LoadAssetAtPath<LocalizationAsset>(
-                AssetDatabase.GUIDToAssetPath("feed5ac7cc024b9e92e46f7e2dbdbe82")),
+            var localization = CL4EE.GetLocalization();
+            Debug.Assert(localization != null, nameof(localization) + " != null");
+            return localization.LocalizationByIsoCode.Values
+                .Select(locale => (locale.LocaleIsoCode, (Func<string, string>)locale.TryGetLocalizedString))
+                .ToList();
         });
 
         private readonly string _key;
