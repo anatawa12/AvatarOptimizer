@@ -31,7 +31,7 @@ namespace Anatawa12.AvatarOptimizer
             {
                 using (ErrorReport.WithContextObject(component))
                 {
-                    if (component is Transform) return;
+                    if (component is Transform) continue;
 
                     // apply special mapping
                     if (ComponentInfoRegistry.TryGetInformation(component.GetType(), out var info))
