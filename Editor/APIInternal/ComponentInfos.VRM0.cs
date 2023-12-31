@@ -59,23 +59,10 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
     {
         protected override void CollectDependency(VRMBlendShapeProxy component, ComponentDependencyCollector collector)
         {
-            var avatarRootTransform = component.transform;
-
-            collector.MarkHeavyBehaviour();
-            foreach (var clip in component.BlendShapeAvatar.Clips)
-            {
-                foreach (var binding in clip.Values)
-                {
-                    var target = avatarRootTransform.Find(binding.RelativePath);
-                    collector.AddDependency(target, component);
-                    collector.AddDependency(target);
-                }
-                foreach (var materialBinding in clip.MaterialValues)
-                {
-                    // TODO: I don't know what to do with BlendShape materials, so I pretend material names does not change (ex. MergeToonLitMaterial)
-                }
-            }
+            if (component.BlendShapeAvatar) collector.MarkEntrypoint();
         }
+
+        // BlendShape / Material mutations are collected through AnimatorParser, once we start tracking material changes
     }
 
     [ComponentInformation(typeof(VRMLookAtHead))]
