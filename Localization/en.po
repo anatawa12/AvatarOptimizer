@@ -460,7 +460,7 @@ msgid "TraceAndOptimize:warn:unknown-type"
 msgstr "Unknown Component Type '{0}' Found."
 
 msgid "TraceAndOptimize:warn:unknown-type:description"
-msgstr "There are some components Avatar Optimizer doesn't know.. This will reduce optimization performance and may break your Avatar."
+msgstr "There are some components Avatar Optimizer doesn't know. This will reduce optimization performance and may break your Avatar."
 
 msgid "TraceAndOptimize:warn:unknown-type:hint"
 msgstr ""
