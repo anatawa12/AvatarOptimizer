@@ -390,6 +390,10 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
                 modificationsContainer.ModifyObject(skinnedMeshRenderer)
                     .AddModificationAsNewLayer(blendShapePropName, AnimationFloatProperty.Variable(source));
             }
+            
+            // Currently, MaterialValueBindings are guaranteed to not change (MaterialName, in particular)
+            // unless MergeToonLitMaterial is used, which breaks material animations anyway.
+            // Gather material modifications here once we start tracking material changes...
         }
 #endif
 
@@ -406,6 +410,10 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
                 modificationsContainer.ModifyObject(skinnedMeshRenderer)
                     .AddModificationAsNewLayer(blendShapePropName, AnimationFloatProperty.Variable(source));
             }
+
+            // Currently, MaterialValueBindings are guaranteed to not change (MaterialName, in particular)
+            // unless MergeToonLitMaterial is used, which breaks material animations anyway.
+            // Gather material modifications here once we start tracking material changes...
         }
 #endif
         

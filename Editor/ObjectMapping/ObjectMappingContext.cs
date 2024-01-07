@@ -288,6 +288,9 @@ namespace Anatawa12.AvatarOptimizer
                             Weight = binding.Weight
                         });
                 }).ToArray(); 
+                // Currently, MaterialValueBindings are guaranteed to not change (MaterialName, in particular)
+                // unless MergeToonLitMaterial is used, which breaks material animations anyway.
+                // Map MaterialValues here once we start tracking material changes...
                 return newBlendShapeClip;
             }
 #endif
@@ -313,6 +316,9 @@ namespace Anatawa12.AvatarOptimizer
                             Weight = binding.Weight
                         });
                 }).ToArray(); 
+                // Currently, MaterialColorBindings and MaterialUVBindings are guaranteed to not change (MaterialName, in particular)
+                // unless MergeToonLitMaterial is used, which breaks material animations anyway.
+                // Map MaterialColorBindings / MaterialUVBindings here once we start tracking material changes...
                 return newVrm10Expression;
             }
 #endif

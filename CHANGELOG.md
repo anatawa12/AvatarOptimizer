@@ -18,6 +18,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - Fix support for UniVRM components `#802`
+- VRM: Fix MergeSkinnedMesh breaking BlendShapeClip / VRM10Expression `#810`
 
 ### Security
 
