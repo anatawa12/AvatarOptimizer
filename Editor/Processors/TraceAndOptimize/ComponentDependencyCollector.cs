@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using Anatawa12.AvatarOptimizer.APIInternal;
 using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
 using JetBrains.Annotations;
@@ -5,6 +7,7 @@ using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEngine;
 using Debug = System.Diagnostics.Debug;
+using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 {
@@ -29,6 +32,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         public void CollectAllUsages()
         {
             var collector = new Collector(this, _componentInfos);
+            var unknownComponents = new Dictionary<Type, List<Object>>();
             // second iteration: process parsers
             foreach (var componentInfo in _componentInfos.AllInformation)
             {
@@ -43,7 +47,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     }
                     else
                     {
-                        BuildLog.LogWarning("TraceAndOptimize:warn:unknown-type", component.GetType().Name);
+                        if (!unknownComponents.TryGetValue(component.GetType(), out var list))
+                            unknownComponents.Add(component.GetType(), list = new List<Object>());
+                        list.Add(component);
 
                         FallbackDependenciesParser(component, collector);
                     }
@@ -51,6 +57,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     collector.FinalizeForComponent();
                 }
             }
+            foreach (var (type, objects) in unknownComponents)
+                BuildLog.LogWarning("TraceAndOptimize:warn:unknown-type", type, objects);
         }
 
         private static void FallbackDependenciesParser(Component component, API.ComponentDependencyCollector collector)
