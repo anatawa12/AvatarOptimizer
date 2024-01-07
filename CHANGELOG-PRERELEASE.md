@@ -18,6 +18,8 @@ The format is based on [Keep a Changelog].
 ### Fixed
 - Reference to meshes will be merged is removed `#808`
 - VRM: Fix MergeSkinnedMesh breaking BlendShapeClip / VRM10Expression `#810`
+- Unknown component warning were shown multiple time for one type `#818`
+  - In addition, location of the unknown components are shown on the error report.
 
 ### Security
 
