@@ -18,6 +18,8 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - Fix support for UniVRM components `#802`
+- Unknown component warning were shown multiple time for one type `#818`
+  - In addition, location of the unknown components are shown on the error report.
 
 ### Security
 
