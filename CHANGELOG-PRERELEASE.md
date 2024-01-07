@@ -24,6 +24,7 @@ The format is based on [Keep a Changelog].
   - In addition, location of the unknown components are shown on the error report.
 - AvatarOptimizer didn't register modification to ObjectRegistry `#815`
 - Empty Armature trick broken `#819`
+- Added workaround for `Array index (n) is out of bounds (size=m)` error
 
 ### Security
 
