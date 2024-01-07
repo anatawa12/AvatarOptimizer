@@ -168,6 +168,7 @@ namespace Anatawa12.AvatarOptimizer
                 if (clip.IsProxy()) return clip;
 #endif
                 var newClip = new AnimationClip();
+                ObjectRegistry.RegisterReplacedObject(clip, newClip);
                 newClip.name = "rebased " + clip.name;
 
                 // copy m_UseHighQualityCurve with SerializedObject since m_UseHighQualityCurve doesn't have public API
@@ -242,6 +243,8 @@ namespace Anatawa12.AvatarOptimizer
             else if (o is AvatarMask mask)
             {
                 var newMask = new AvatarMask();
+                ObjectRegistry.RegisterReplacedObject(mask, newMask);
+
                 for (var part = AvatarMaskBodyPart.Root; part < AvatarMaskBodyPart.LastBodyPart; ++part)
                     newMask.SetHumanoidBodyPartActive(part, mask.GetHumanoidBodyPartActive(part));
                 newMask.name = "rebased " + mask.name;
@@ -489,6 +492,7 @@ namespace Anatawa12.AvatarOptimizer
                 EditorUtility.CopySerialized(original, obj);
             }
 
+            ObjectRegistry.RegisterReplacedObject(original, obj);
             _cache[original] = obj;
             _cache[obj] = obj;
 

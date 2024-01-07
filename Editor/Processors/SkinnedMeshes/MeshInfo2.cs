@@ -23,6 +23,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         public Bounds Bounds;
         public readonly List<Vertex> Vertices = new List<Vertex>(0);
 
+        private readonly Mesh _originalMesh;
+
         // TexCoordStatus which is 3 bits x 8 = 24 bits
         private ushort _texCoordStatus;
 
@@ -39,7 +41,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         public MeshInfo2(SkinnedMeshRenderer renderer)
         {
             SourceRenderer = renderer;
-            var mesh = renderer.sharedMesh;
+            var mesh = _originalMesh = renderer.sharedMesh;
 
             using (ErrorReport.WithContextObject(renderer))
             {
@@ -72,7 +74,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             using (ErrorReport.WithContextObject(renderer))
             {
                 var meshFilter = renderer.GetComponent<MeshFilter>();
-                var mesh = meshFilter ? meshFilter.sharedMesh : null;
+                var mesh = _originalMesh = meshFilter ? meshFilter.sharedMesh : null;
                 if (mesh)
                     ReadStaticMesh(mesh);
 
@@ -648,14 +650,16 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         {
             using (ErrorReport.WithContextObject(targetRenderer))
             {
-                var mesh = new Mesh { name = $"AAOGeneratedMesh{targetRenderer.name}" };
+                var name = $"AAOGeneratedMesh{targetRenderer.name}";
+                var mesh = new Mesh { name = name };
 
                 WriteToMesh(mesh);
                 // I don't know why but Instantiating mesh will fix broken blendshapes with
                 // https://github.com/anatawa12/AvatarOptimizer/issues/753
                 // https://booth.pm/ja/items/1054593.
                 mesh = Object.Instantiate(mesh);
-                mesh.name = $"AAOGeneratedMesh{targetRenderer.name}";
+                mesh.name = name;
+                if (_originalMesh) ObjectRegistry.RegisterReplacedObject(_originalMesh, mesh);
                 targetRenderer.sharedMesh = mesh;
                 for (var i = 0; i < BlendShapes.Count; i++)
                     targetRenderer.SetBlendShapeWeight(i, BlendShapes[i].weight);
@@ -678,6 +682,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 var mesh = new Mesh { name = $"AAOGeneratedMesh{targetRenderer.name}" };
                 var meshFilter = targetRenderer.GetComponent<MeshFilter>();
                 WriteToMesh(mesh);
+                if (_originalMesh) ObjectRegistry.RegisterReplacedObject(_originalMesh, mesh);
                 meshFilter.sharedMesh = mesh;
                 targetRenderer.sharedMaterials = SubMeshes.SelectMany(x => x.SharedMaterials).ToArray();
             }

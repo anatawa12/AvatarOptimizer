@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
+- Upgrades NDMF to 1.3.0-rc.1 `#815`
+  - Use Title instead of Description since substation in Title is implemented
 
 ### Deprecated
 
@@ -20,6 +22,7 @@ The format is based on [Keep a Changelog].
 - VRM: Fix MergeSkinnedMesh breaking BlendShapeClip / VRM10Expression `#810`
 - Unknown component warning were shown multiple time for one type `#818`
   - In addition, location of the unknown components are shown on the error report.
+- AvatarOptimizer didn't register modification to ObjectRegistry `#815`
 
 ### Security
 
