@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
+- use stable version of NDMF 1.3.0 or later `#821`
 
 ### Deprecated
 
