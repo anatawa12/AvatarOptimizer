@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.API;
 using JetBrains.Annotations;
+using nadena.dev.ndmf.runtime;
 using UnityEngine;
 using VRC.SDK3;
 using VRC.Core;
@@ -41,6 +42,23 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
             collector.MarkEntrypoint();
             collector.AddDependency(component.GetComponent<PipelineManager>()).EvenIfDependantDisabled();
             collector.AddDependency(component.GetComponent<Animator>()).EvenIfDependantDisabled();
+            
+            var animator = component.GetComponent<Animator>();
+            // for empty Armature trick which is only valid for VRCSDK, we need to keep parent objects of Hips bone
+            if (animator && animator.isHuman)
+            {
+                var hips = animator.GetBoneTransform(HumanBodyBones.Hips);
+                if (hips)
+                {
+                    var avatarRoot = component.gameObject;
+                    foreach (var parent in hips.ParentEnumerable(avatarRoot.transform))
+                    {
+                        var path = RuntimeUtil.RelativePath(avatarRoot, parent.gameObject);
+                        var parentByPath = avatarRoot.transform.Find(path);
+                        collector.AddDependency(parentByPath).EvenIfDependantDisabled();
+                    }
+                }
+            }
         }
 
         protected override void CollectMutations(T component, ComponentMutationsCollector collector)
