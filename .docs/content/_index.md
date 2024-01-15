@@ -3,7 +3,7 @@ title: Introduction
 type: docs
 ---
 
-# Avatar Optimizer
+# AAO: Avatar Optimizer
 
 Set of Anatawa12's non-Destructive Small Avatar Optimization Utilities.
 Those utilities are applied on entering play mode or building VRC Avatars.
