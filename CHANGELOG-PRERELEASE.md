@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Humanoid Bones may be removed by Trace and Optimize `#831`
 
 ### Security
 
