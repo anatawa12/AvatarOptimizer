@@ -3,7 +3,7 @@ title: Introduction
 type: docs
 ---
 
-# Avatar Optimizer
+# AAO: Avatar Optimizer
 
 anatawa12によるアバター軽量化用のちょっとした非破壊ユーティリティ群です。
 これらのユーティリティはPlayモードに入るときかアバターをビルドするときに適用されます。

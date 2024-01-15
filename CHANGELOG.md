@@ -11,6 +11,8 @@ The format is based on [Keep a Changelog].
 
 ### Changed
 - AvatarOptimizer now uses ErrorReporting API of NDMF instead of our own API `#805`
+- Project is slightly renamed to AAO: Avatar Optimizer `#830`
+  - The term `AAO` and `Avatar Optimizer` are not changed, but display name on the VCC is changed to `AAO: Avatar Optimizer`
 
 ### Deprecated
 
