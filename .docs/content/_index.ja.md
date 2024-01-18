@@ -20,7 +20,7 @@ Avatar Optimizerは[VPM][vpm]レポジトリを使用して公開されている
 {{< beta-only color="success" >}}
 {{< hint info >}}
 
-プレリリース版のAvatar Optimizerでは、anatawa12のvpmレポジトリで提供されていない、NDMFのプレリリース版が使用されてる場合があります。
+プレリリース版のAvatar Optimizerでは、anatawa12のvpmレポジトリで提供されていないNDMFのプレリリース版が使用されている場合があります。
 その場合、VCCにbd_ prereleasesレポジトリ(<https://vpm.nadena.dev/vpm-prerelease.json>)を追加する必要があります。
 
 {{< /hint >}}
