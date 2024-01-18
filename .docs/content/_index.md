@@ -17,6 +17,15 @@ Avatar Optimizer is a Open Source Software developed on [GitHub] published under
 
 Avatar Optimizer is published with [VPM][vpm] repository so you can install this package using any vpm clients.
 
+{{< beta-only color="success" >}}
+{{< hint info >}}
+
+For pre-releases of Avatar Optimizer, AAO may use pre-releases of NDMF, which is not mirrored to anatawa12's VPM repository.
+You may have to add <https://vpm.nadena.dev/vpm-prerelease.json>, bd_ prereleases repository, to your VCC.
+
+{{< /hint >}}
+{{< /beta-only >}}
+
 ### With VCC (Recommended) {#installation-vcc}
 
 1. Click [this link][VCC-add-repo-link] to add anatawa12's repository.
