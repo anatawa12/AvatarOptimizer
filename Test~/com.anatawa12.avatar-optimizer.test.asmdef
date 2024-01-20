@@ -27,9 +27,7 @@
         "System.Memory.dll"
     ],
     "autoReferenced": false,
-    "defineConstraints": [
-        "UNDEFINED1"
-    ],
+    "defineConstraints": [],
     "versionDefines": [
         {
             "name": "com.vrchat.avatars",
