@@ -117,9 +117,9 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
     {
         public readonly AnimatorWeightState Weight;
         public readonly AnimatorLayerBlendingMode BlendingMode;
-        public readonly PropModNode<T> Node;
+        public readonly ImmutablePropModNode<T> Node;
 
-        public AnimatorLayerNodeInfo(AnimatorWeightState weight, AnimatorLayerBlendingMode blendingMode, PropModNode<T> node)
+        public AnimatorLayerNodeInfo(AnimatorWeightState weight, AnimatorLayerBlendingMode blendingMode, ImmutablePropModNode<T> node)
         {
             Weight = weight;
             BlendingMode = blendingMode;
@@ -130,6 +130,17 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
     class AnimatorControllerPropModNode<T> : PropModNode<T>
     {
         private readonly IEnumerable<AnimatorLayerNodeInfo<T>> _layersReversed;
+
+        [CanBeNull]
+        public static AnimatorControllerPropModNode<T> Create(List<AnimatorLayerNodeInfo<T>> value)
+        {
+            if (value.Count == 0) return null;
+            if (value.All(x => x.BlendingMode == AnimatorLayerBlendingMode.Additive && x.Node.IsConstant))
+                return null; // unchanged constant
+
+            value.Reverse();
+            return new AnimatorControllerPropModNode<T>(value);
+        }
 
         public AnimatorControllerPropModNode(IEnumerable<AnimatorLayerNodeInfo<T>> layersReversed)
         {

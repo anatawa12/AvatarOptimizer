@@ -571,14 +571,14 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
             foreach (var ((target, prop), value) in floatNodes)
             {
-                value.Reverse();
-                container.Add(target, prop, new AnimatorControllerPropModNode<float>(value));
+                var node = AnimatorControllerPropModNode<float>.Create(value);
+                if (node != null) container.Add(target, prop, node);
             }
 
             return container;
         }
 
-        ImmutableNodeContainer ParseAnimatorControllerLayer(
+        public ImmutableNodeContainer ParseAnimatorControllerLayer(
             GameObject root,
             AnimatorController controller,
             IReadOnlyDictionary<AnimationClip, AnimationClip> mapping,
