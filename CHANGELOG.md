@@ -13,6 +13,10 @@ The format is based on [Keep a Changelog].
 - AvatarOptimizer now uses ErrorReporting API of NDMF instead of our own API `#805`
 - Project is slightly renamed to AAO: Avatar Optimizer `#830`
   - The term `AAO` and `Avatar Optimizer` are not changed, but display name on the VCC is changed to `AAO: Avatar Optimizer`
+- MergePhysBone now corrects curve settings `#775`
+- MergePhysBone now warns if chain length are not same `#775`
+- MergePhysBone with only one source is now error `#775`
+  - It was not working well and not a error by a bug.
 
 ### Deprecated
 

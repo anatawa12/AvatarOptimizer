@@ -133,6 +133,8 @@ namespace Anatawa12.AvatarOptimizer.Processors
         sealed class MergePhysBoneMerger : MergePhysBoneEditorModificationUtils
         {
             private SerializedObject _mergedPhysBone;
+            private int _maxChainLength;
+
             public MergePhysBoneMerger(SerializedObject serializedObject, SerializedObject mergedPhysBone) : base(serializedObject)
             {
                 _mergedPhysBone = mergedPhysBone;
@@ -140,6 +142,10 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
             protected override void BeginPbConfig()
             {
+                foreach (var vrcPhysBoneBase in SourcePhysBones)
+                    vrcPhysBoneBase.InitTransforms(true);
+
+                _maxChainLength = SourcePhysBones.Max(x => x.BoneChainLength());
             }
 
             protected override bool BeginSection(string name, string docTag)
@@ -185,28 +191,82 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 => PbProp(label, prop, forceOverride);
 
             protected override void PbProp(string label, ValueConfigProp prop, bool forceOverride = false)
-                => PbPropImpl(label, prop, forceOverride);
+            {
+                var @override = forceOverride || prop.IsOverride;
+                _mergedPhysBone.FindProperty(prop.PhysBoneValueName).CopyDataFrom(prop.GetValueProperty(@override));
+            }
 
             protected override void PbCurveProp(string label, CurveConfigProp prop, bool forceOverride = false)
-                => PbPropImpl(label, prop, forceOverride);
+            {
+                var @override = forceOverride || prop.IsOverride;
+                _mergedPhysBone.FindProperty(prop.PhysBoneValueName).floatValue =
+                    prop.GetValueProperty(@override).floatValue;
+                if (@override)
+                {
+                    _mergedPhysBone.FindProperty(prop.PhysBoneCurveName).animationCurveValue =
+                        prop.GetCurveProperty(@override).animationCurveValue;
+                }
+                else
+                {
+                    _mergedPhysBone.FindProperty(prop.PhysBoneCurveName).animationCurveValue =
+                        FixCurve(prop.GetCurveProperty(@override).animationCurveValue);
+                }
+            }
 
             protected override void Pb3DCurveProp(string label, string pbXCurveLabel, string pbYCurveLabel, string pbZCurveLabel,
                 CurveVector3ConfigProp prop, bool forceOverride = false)
-                => PbPropImpl(label, prop, forceOverride);
-
-            protected override void PbPermissionProp(string label, PermissionConfigProp prop, bool forceOverride = false)
-                => PbPropImpl(label, prop, forceOverride);
-
-            private void PbPropImpl(string label, OverridePropBase prop, bool forceOverride)
             {
                 var @override = forceOverride || prop.IsOverride;
-                foreach (var (pbName, property) in prop.GetActiveProps(@override))
-                    _mergedPhysBone.FindProperty(pbName).CopyDataFrom(property);
+                _mergedPhysBone.FindProperty(prop.PhysBoneValueName).floatValue =
+                    prop.GetValueProperty(@override).floatValue;
+                if (@override)
+                {
+                    _mergedPhysBone.FindProperty(prop.PhysBoneCurveXName).animationCurveValue =
+                        prop.GetCurveXProperty(@override).animationCurveValue;
+                    _mergedPhysBone.FindProperty(prop.PhysBoneCurveYName).animationCurveValue =
+                        prop.GetCurveYProperty(@override).animationCurveValue;
+                    _mergedPhysBone.FindProperty(prop.PhysBoneCurveZName).animationCurveValue =
+                        prop.GetCurveZProperty(@override).animationCurveValue;
+                }
+                else
+                {
+                    _mergedPhysBone.FindProperty(prop.PhysBoneCurveXName).animationCurveValue =
+                        FixCurve(prop.GetCurveXProperty(@override).animationCurveValue);
+                    _mergedPhysBone.FindProperty(prop.PhysBoneCurveYName).animationCurveValue =
+                        FixCurve(prop.GetCurveYProperty(@override).animationCurveValue);
+                    _mergedPhysBone.FindProperty(prop.PhysBoneCurveZName).animationCurveValue =
+                        FixCurve(prop.GetCurveZProperty(@override).animationCurveValue);
+                }
+            }
+
+            protected override void PbPermissionProp(string label, PermissionConfigProp prop, bool forceOverride = false)
+            {
+                var @override = forceOverride || prop.IsOverride;
+                _mergedPhysBone.FindProperty(prop.PhysBoneValueName).intValue =
+                    prop.GetValueProperty(@override).intValue;
+                _mergedPhysBone.FindProperty(prop.PhysBoneFilterName)
+                    .CopyDataFrom(prop.GetFilterProperty(@override));
             }
 
             protected override void CollidersProp(string label, CollidersConfigProp prop)
             {
                 // merged later
+            }
+            
+            private AnimationCurve FixCurve(AnimationCurve curve)
+            {
+                //return curve;
+                var offset = 1f / (_maxChainLength + 1);
+                var tangentRatio = (_maxChainLength + 1f) / _maxChainLength;
+                var keys = curve.keys;
+                foreach (ref var curveKey in keys.AsSpan())
+                {
+                    curveKey.time = Mathf.LerpUnclamped(offset, 1, curveKey.time);
+                    curveKey.inTangent *= tangentRatio;
+                    curveKey.outTangent *= tangentRatio;
+                }
+                curve.keys = keys;
+                return curve;
             }
         }
     }
