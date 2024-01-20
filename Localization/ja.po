@@ -319,10 +319,10 @@ msgstr "面積がゼロのポリゴンを削除します。"
 
 # region AvatarGlobalComponent
 
-msgid "DeleteEditorOnlyGameObjects:NotOnAvatarDescriptor"
+msgid "AvatarGlobalComponent:NotOnAvatarDescriptor"
 msgstr "このコンポーネントはアバターの最上位に付ける必要があります。(AvatarDescriptorのあるGameObject)"
 
-msgid "DeleteEditorOnlyGameObjects:NotOnAvatarRoot"
+msgid "AvatarGlobalComponent:NotOnAvatarRoot"
 msgstr "このコンポーネントはアバターの最上位に付ける必要があります。(VRChatのアバターでは、AvatarDescriptorのあるGameObject)"
 
 # endregion
@@ -394,8 +394,20 @@ msgstr "高度な設定はAvatarOptimizerのバグを回避するための設定
 "また、一部の高度な設定の変更は正しく機能しなかったり、その動作が変更される可能性があります。注意してください!"
 
 msgid "TraceAndOptimize:warn:unknown-type"
-msgstr "未知のコンポーネント'{0}'を検出しました! これにより最適化処理の品質が低下し、処理後のアバターが壊れる可能性があります。(元のアバターには影響しません)"
-"アバターが壊れた場合、これをAvatarOptimizerに報告してください!"
+msgstr "未知のコンポーネント'{0}'を検出しました!"
+
+msgid "TraceAndOptimize:warn:unknown-type:description"
+msgstr "Avatar Optimizerにとって未知のコンポーネントが見つかりました。これにより最適化処理の品質が低下し、処理後のアバターが壊れる可能性があります。(元のアバターには影響しません)"
+
+msgid "TraceAndOptimize:warn:unknown-type:hint"
+msgstr ""
+"アバターが壊れていない場合、この警告は無視しても問題ありません。\n"
+"\n"
+"このコンポーネントがあなたのツールのものである場合は、Avatar Optimizerにコンポーネントを登録することを検討してください。"
+"詳しくは https://vpm.anatawa12.com/avatar-optimizer/ja/docs/developers/make-your-components-compatible-with-aao/ をご覧ください。\n"
+"\n"
+"このコンポーネントがあなたの使っているツールのものである場合は、ツール作者にAvatar Optimizerへのコンポーネント登録を依頼するか、"
+"有名なツールであればAvatar Optimizerに対応を依頼してください。"
 
 msgid "TraceAndOptimize:prop:preserveEndBone"
 msgstr "endボーンを残す"

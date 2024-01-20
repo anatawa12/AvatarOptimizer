@@ -1,4 +1,5 @@
-using Anatawa12.AvatarOptimizer.ErrorReporting;
+using System.Collections.Generic;
+using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEngine;
 
@@ -6,7 +7,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
 {
     interface IModificationSource {}
 
-    class AnimationSource : IModificationSource, IContextProvider
+    class AnimationSource : IModificationSource, IErrorContext
     {
         public AnimationClip Clip { get; }
         public EditorCurveBinding Binding { get; }
@@ -17,15 +18,16 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
             Binding = binding;
         }
 
-        public object ProvideContext() => Clip;
+        IEnumerable<ObjectReference> IErrorContext.ContextReferences => new[] { ObjectRegistry.GetReference(Clip) };
     }
     
-    internal class ComponentAnimationSource : IModificationSource, IContextProvider
+    internal class ComponentAnimationSource : IModificationSource, IErrorContext
     {
         public Component Component { get; }
 
         public ComponentAnimationSource(Component component) => Component = component;
 
-        public object ProvideContext() => Component;
+        IEnumerable<ObjectReference> IErrorContext.ContextReferences =>
+            new[] { ObjectRegistry.GetReference(Component) };
     }
 }

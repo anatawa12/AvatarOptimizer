@@ -22,7 +22,8 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
             var avatarRootTransform = component.transform;
 
             collector.MarkEntrypoint();
-            
+            if (component.TryGetComponent<Animator>(out var animator)) collector.AddDependency(animator);
+
             // SpringBones
 
             foreach (var spring in component.SpringBone.Springs)
@@ -33,24 +34,6 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
             
             // Expressions
             
-            foreach (var clip in component.Vrm.Expression.Clips.Select(c => c.Clip))
-            {
-                foreach (var binding in clip.MorphTargetBindings)
-                {
-                    var target = avatarRootTransform.Find(binding.RelativePath);
-                    collector.AddDependency(target, component);
-                    collector.AddDependency(target);
-                }
-                foreach (var materialUVBinding in clip.MaterialUVBindings)
-                {
-                    // TODO: I don't know what to do with BlendShape materials, so I pretend material names does not change (ex. MergeToonLitMaterial)
-                }
-                foreach (var materialColorBinding in clip.MaterialColorBindings)
-                {
-                    // TODO: I don't know what to do with BlendShape materials, so I pretend material names does not change (ex. MergeToonLitMaterial)
-                }
-            }
-
             // First Person and LookAt
             // NOTE: these dependencies are satisfied by either Animator or Humanoid 
             // collector.AddDependency(GetBoneTransformForVrm10(component, HumanBodyBones.Head));
@@ -77,6 +60,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
             }
 
             // Expressions
+            // BlendShape / Material mutations are collected through AnimatorParser, once we start tracking material changes
 
             // First Person and LookAt
             if (component.Vrm.LookAt.LookAtType == LookAtType.bone)

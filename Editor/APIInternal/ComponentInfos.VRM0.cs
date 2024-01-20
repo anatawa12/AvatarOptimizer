@@ -2,7 +2,6 @@
 
 using System.Linq;
 using Anatawa12.AvatarOptimizer.API;
-using Anatawa12.AvatarOptimizer.ErrorReporting;
 using UnityEngine;
 using VRM;
 
@@ -17,6 +16,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
         protected override void CollectDependency(VRMMeta component, ComponentDependencyCollector collector)
         {
             collector.MarkEntrypoint();
+            if (component.TryGetComponent<Animator>(out var animator)) collector.AddDependency(animator);
         }
     }
 
@@ -26,7 +26,15 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
         protected override void CollectDependency(VRMSpringBone component, ComponentDependencyCollector collector)
         {
             collector.MarkHeavyBehaviour();
-            foreach (var transform in component.GetComponentsInChildren<Transform>()) collector.AddDependency(transform);
+            foreach (var rootBone in component.RootBones)
+            {
+                foreach (var transform in rootBone.GetComponentsInChildren<Transform>())
+                {
+                    collector.AddDependency(transform, component);
+                    collector.AddDependency(transform);
+                }
+            }
+
             foreach (var collider in component.ColliderGroups) collector.AddDependency(collider);
         }
 
@@ -51,23 +59,10 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
     {
         protected override void CollectDependency(VRMBlendShapeProxy component, ComponentDependencyCollector collector)
         {
-            var avatarRootTransform = component.transform;
-
-            collector.MarkHeavyBehaviour();
-            foreach (var clip in component.BlendShapeAvatar.Clips)
-            {
-                foreach (var binding in clip.Values)
-                {
-                    var target = avatarRootTransform.Find(binding.RelativePath);
-                    collector.AddDependency(target, component);
-                    collector.AddDependency(target);
-                }
-                foreach (var materialBinding in clip.MaterialValues)
-                {
-                    // TODO: I don't know what to do with BlendShape materials, so I pretend material names does not change (ex. MergeToonLitMaterial)
-                }
-            }
+            if (component.BlendShapeAvatar) collector.MarkEntrypoint();
         }
+
+        // BlendShape / Material mutations are collected through AnimatorParser, once we start tracking material changes
     }
 
     [ComponentInformation(typeof(VRMLookAtHead))]
@@ -143,7 +138,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
                     else
                     {
                         mergedFirstPersonFlag = firstPersonFlags.Contains(FirstPersonFlag.Both) ? FirstPersonFlag.Both : FirstPersonFlag.Auto;
-                        BuildReport.LogWarning("MergeSkinnedMesh:warning:VRM:FirstPersonFlagsMismatch", mergedFirstPersonFlag.ToString());
+                        BuildLog.LogWarning("MergeSkinnedMesh:warning:VRM:FirstPersonFlagsMismatch", mergedFirstPersonFlag.ToString());
                     }
 
                     return new VRMFirstPerson.RendererFirstPersonFlags

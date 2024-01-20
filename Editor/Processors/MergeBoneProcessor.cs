@@ -1,47 +1,35 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Anatawa12.AvatarOptimizer.ErrorReporting;
 using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
 using JetBrains.Annotations;
 using nadena.dev.ndmf;
-using UnityEditor;
 using UnityEngine;
 using VRC.Dynamics;
-using VRC.SDKBase;
 using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.Processors
 {
     internal class MergeBoneProcessor : Pass<MergeBoneProcessor>
     {
-        [InitializeOnLoadMethod]
-        private static void RegisterValidator()
+        public static void Validate(MergeBone mergeBone, GameObject root)
         {
-            ComponentValidation.RegisterValidator<MergeBone>(mergeBone =>
+            // TODO: use AvatarRoot API
+            if (mergeBone.transform == root.transform)
             {
-                var errors = new ErrorLog[2];
+                BuildLog.LogError("MergeBone:validation:onAvatarRoot");
+            }
 
-                // TODO: use AvatarRoot API
-                if (mergeBone.GetComponent<VRC_AvatarDescriptor>())
-                {
-                    errors[0] = ErrorLog.Validation("MergeBone:validation:onAvatarRoot");
-                    return errors;
-                }
+            if (mergeBone.GetComponents<Component>().Except(new Component[] { mergeBone, mergeBone.transform })
+                .Any())
+                BuildLog.LogWarning("MergeBone:validation:thereAreComponent");
 
-                if (mergeBone.GetComponents<Component>().Except(new Component[] { mergeBone, mergeBone.transform })
-                    .Any())
-                    errors[0] = ErrorLog.Warning("MergeBone:validation:thereAreComponent");
-
-                if (AnyNotMergedBone(mergeBone.transform))
-                {
-                    // if the bone has non-merged bones, uneven scaling is not supported.
-                    if (!ScaledEvenly(mergeBone.transform.localScale))
-                        errors[1] = ErrorLog.Warning("MergeBone:validation:unevenScaling");
-                }
-
-                return errors;
-            });
+            if (AnyNotMergedBone(mergeBone.transform))
+            {
+                // if the bone has non-merged bones, uneven scaling is not supported.
+                if (!ScaledEvenly(mergeBone.transform.localScale))
+                    BuildLog.LogWarning("MergeBone:validation:unevenScaling");
+            }
 
             bool AnyNotMergedBone(Transform bone)
             {
@@ -78,14 +66,19 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
             if (mergeMapping.Count == 0) return;
 
-            BuildReport.ReportingObjects(context.GetComponents<VRCPhysBoneBase>(), MapIgnoreTransforms);
+            foreach (var physBone in context.GetComponents<VRCPhysBoneBase>())
+                using (ErrorReport.WithContextObject(physBone))
+                    MapIgnoreTransforms(physBone);
 
-            BuildReport.ReportingObjects(context.GetComponents<SkinnedMeshRenderer>(), renderer =>
+            foreach (var renderer in context.GetComponents<SkinnedMeshRenderer>())
             {
-                var meshInfo2 = context.GetMeshInfoFor(renderer);
-                if (meshInfo2.Bones.Any(x => x.Transform && mergeMapping.ContainsKey(x.Transform)))
-                    DoBoneMap2(meshInfo2, mergeMapping);
-            });
+                using (ErrorReport.WithContextObject(renderer))
+                {
+                    var meshInfo2 = context.GetMeshInfoFor(renderer);
+                    if (meshInfo2.Bones.Any(x => x.Transform && mergeMapping.ContainsKey(x.Transform)))
+                        DoBoneMap2(meshInfo2, mergeMapping);
+                }
+            }
 
             var counter = 0;
 

@@ -10,6 +10,9 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
+- AvatarOptimizer now uses ErrorReporting API of NDMF instead of our own API `#805`
+- Project is slightly renamed to AAO: Avatar Optimizer `#830`
+  - The term `AAO` and `Avatar Optimizer` are not changed, but display name on the VCC is changed to `AAO: Avatar Optimizer`
 - MergePhysBone now corrects curve settings `#775`
 - MergePhysBone now warns if chain length are not same `#775`
 - MergePhysBone with only one source is now error `#775`
@@ -20,8 +23,20 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Fix support for UniVRM components `#802`
+- VRM: Fix MergeSkinnedMesh breaking BlendShapeClip / VRM10Expression `#810`
+- Unknown component warning were shown multiple time for one type `#818`
+  - In addition, location of the unknown components are shown on the error report.
+- Empty Armature trick broken `#819`
+- Added workaround for `Array index (n) is out of bounds (size=m)` error
+- Humanoid Bones may be removed by Trace and Optimize `#831`
 
 ### Security
+
+## [1.6.4] - 2023-12-10
+### Fixed
+- Error with generic avatar in 2022 [`#794`](https://github.com/anatawa12/AvatarOptimizer/pull/794)
+- Assertion Error in some rare case [`#795`](https://github.com/anatawa12/AvatarOptimizer/pull/795)
 
 ## [1.6.3] - 2023-12-09
 ### Added
@@ -715,7 +730,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.3...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.4...HEAD
+[1.6.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.3...v1.6.4
 [1.6.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.2...v1.6.3
 [1.6.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.1...v1.6.2
 [1.6.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0...v1.6.1

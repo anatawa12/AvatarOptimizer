@@ -3,7 +3,7 @@ title: Introduction
 type: docs
 ---
 
-# Avatar Optimizer
+# AAO: Avatar Optimizer
 
 anatawa12によるアバター軽量化用のちょっとした非破壊ユーティリティ群です。
 これらのユーティリティはPlayモードに入るときかアバターをビルドするときに適用されます。
@@ -16,6 +16,15 @@ Avatar Optimizerは[GitHub]上で開発され、[MIT License]で公開されて�
 ## インストール {#installation}
 
 Avatar Optimizerは[VPM][vpm]レポジトリを使用して公開されているため、任意のvpmクライアントを使用してインストールできます。
+
+{{< beta-only color="success" >}}
+{{< hint info >}}
+
+プレリリース版のAvatar Optimizerでは、anatawa12のvpmレポジトリで提供されていないNDMFのプレリリース版が使用されている場合があります。
+その場合、VCCにbd_ prereleasesレポジトリ(<https://vpm.nadena.dev/vpm-prerelease.json>)を追加する必要があります。
+
+{{< /hint >}}
+{{< /beta-only >}}
 
 ### VCC を使用する (推奨) {#installation-vcc}
 

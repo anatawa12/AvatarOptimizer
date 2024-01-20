@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Anatawa12.AvatarOptimizer.ErrorReporting;
 using CustomLocalization4EditorExtension;
 using JetBrains.Annotations;
 using UnityEditor;
@@ -546,36 +545,22 @@ namespace Anatawa12.AvatarOptimizer
         }
     }
 
-    [InitializeOnLoad]
     sealed class MergePhysBoneValidator : MergePhysBoneEditorModificationUtils
     {
-        private readonly List<ErrorLog> _errorLogs;
         private readonly List<string> _differProps = new List<string>();
         private readonly MergePhysBone _mergePhysBone;
         private bool _usingCopyCurve;
 
-        static MergePhysBoneValidator()
+        internal static void Validate(MergePhysBone mergePhysBone)
         {
-            ComponentValidation.RegisterValidator<MergePhysBone>(Validate);
-        }
-
-        private static List<ErrorLog> Validate(MergePhysBone mergePhysBone)
-        {
-            var list = new List<ErrorLog>();
             if (mergePhysBone.makeParent && mergePhysBone.transform.childCount != 0)
-                list.Add(ErrorLog.Validation("MergePhysBone:error:makeParentWithChildren").WithContext(mergePhysBone));
+                BuildLog.LogError("MergePhysBone:error:makeParentWithChildren", mergePhysBone);
 
-            new MergePhysBoneValidator(list, mergePhysBone).DoProcess();
-
-            return list;
+            new MergePhysBoneValidator(mergePhysBone).DoProcess();
         }
 
-        public MergePhysBoneValidator(List<ErrorLog> errorLogs, MergePhysBone mergePhysBone)
-            : base(new SerializedObject(mergePhysBone))
-        {
-            _errorLogs = errorLogs;
+        public MergePhysBoneValidator(MergePhysBone mergePhysBone) : base(new SerializedObject(mergePhysBone)) =>
             _mergePhysBone = mergePhysBone;
-        }
 
         private static void Void()
         {
@@ -592,8 +577,7 @@ namespace Anatawa12.AvatarOptimizer
         protected override void EndPbConfig() {
             if (_differProps.Count != 0)
             {
-                _errorLogs.Add(ErrorLog.Validation("MergePhysBone:error:differValues",
-                    string.Join(", ", _differProps)));
+                BuildLog.LogError("MergePhysBone:error:differValues", string.Join(", ", _differProps));
             }
             
             if (_usingCopyCurve)
@@ -607,8 +591,7 @@ namespace Anatawa12.AvatarOptimizer
             }
         }
 
-        protected override void NoSource() =>
-            _errorLogs.Add(ErrorLog.Validation("MergePhysBone:error:noSources"));
+        protected override void NoSource() => BuildLog.LogError("MergePhysBone:error:noSources");
 
         protected override void TransformSection()
         {
@@ -619,7 +602,7 @@ namespace Anatawa12.AvatarOptimizer
                     .ZipWithNext()
                     .Any(x => x.Item1 != x.Item2);
                 if (differ)
-                    _errorLogs.Add(ErrorLog.Validation("MergePhysBone:error:parentDiffer"));
+                    BuildLog.LogError("MergePhysBone:error:parentDiffer");
             }
 
             if (EndpointPosition.OverrideProperty.enumValueIndex ==
@@ -631,14 +614,13 @@ namespace Anatawa12.AvatarOptimizer
 
             var multiChildType = GetSourceProperty(nameof(VRCPhysBoneBase.multiChildType));
             if (multiChildType.enumValueIndex != 0 || multiChildType.hasMultipleDifferentValues)
-                _errorLogs.Add(ErrorLog.Validation("MergePhysBone:error:multiChildType"));
+                BuildLog.LogError("MergePhysBone:error:multiChildType");
         }
 
         protected override void OptionParameter() => Void();
         protected override void OptionIsAnimated() => Void();
 
-        protected override void UnsupportedPbVersion() =>
-            _errorLogs.Add(ErrorLog.Validation("MergePhysBone:error:unsupportedPbVersion"));
+        protected override void UnsupportedPbVersion() => BuildLog.LogError("MergePhysBone:error:unsupportedPbVersion");
 
         protected override void PbVersionProp(string label, ValueConfigProp prop, bool forceOverride = false)
             => PbProp(label, prop, forceOverride);

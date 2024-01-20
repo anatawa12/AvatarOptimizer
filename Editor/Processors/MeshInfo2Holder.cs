@@ -1,6 +1,6 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using Anatawa12.AvatarOptimizer.ErrorReporting;
 using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
 using JetBrains.Annotations;
 using nadena.dev.ndmf;
@@ -21,8 +21,35 @@ namespace Anatawa12.AvatarOptimizer.Processors
         public void OnDeactivate(BuildContext context)
         {
             Debug.Assert(Holder != null, nameof(Holder) + " != null");
-            Holder.SaveToMesh();
+            // avoid Array index (n) is out of bounds (size=m) error
+            // by assigning null to AnimatorController before changing blendShapes count
+            // and assigning back after changing blendShapes count.
+            // see https://github.com/anatawa12/AvatarOptimizer/issues/804
+            using (new EvacuateAnimatorController(context))
+            {
+                Holder.SaveToMesh();
+            }
             Holder = null;
+        }
+    }
+
+    internal struct EvacuateAnimatorController : IDisposable
+    {
+        private Dictionary<Animator, RuntimeAnimatorController> _controllers;
+
+        public EvacuateAnimatorController(BuildContext context)
+        {
+            _controllers = context.GetComponents<Animator>()
+                .ToDictionary(a => a, a => a.runtimeAnimatorController);
+
+            foreach (var animator in _controllers.Keys)
+                animator.runtimeAnimatorController = null;
+        }
+
+        public void Dispose()
+        {
+            foreach (var (animator, runtimeAnimatorController) in _controllers)
+                animator.runtimeAnimatorController = runtimeAnimatorController;
         }
     }
 
