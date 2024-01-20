@@ -41,12 +41,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                         // allow constant animation
                         var weight = target.BlendShapes.Find(r => r.name == blendShape);
                         // ReSharper disable once CompareOfFloatsByEqualityOperator
-                        if (p.IsConst && (weight.name == null || p.ConstValue == weight.weight))
+                        if (p.IsConstant && (weight.name == null || p.ConstantValue == weight.weight))
                             continue;
 
                         modified.Add(blendShape);
-                        foreach (var source in p.Sources)
-                            sources.Add(source);
+                        sources.Add(p.ContextReferences);
                     }
                 }
 

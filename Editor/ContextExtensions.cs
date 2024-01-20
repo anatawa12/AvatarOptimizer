@@ -1,5 +1,5 @@
 using System;
-using Anatawa12.AvatarOptimizer.AnimatorParsers;
+using Anatawa12.AvatarOptimizer.AnimatorParsersV2;
 using Anatawa12.AvatarOptimizer.Processors;
 using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
 using JetBrains.Annotations;
@@ -52,36 +52,22 @@ namespace Anatawa12.AvatarOptimizer
         
         public static bool? GetConstantValue([NotNull] this BuildContext context, ComponentOrGameObject obj, string property, bool currentValue)
         {
-            if (!context.GetAnimationComponent(obj).TryGetFloat(property, out var prop))
+            if (!context.GetAnimationComponent(obj).TryGetFloat(property, out var node))
                 return currentValue;
 
-            switch (prop.State)
+            return node.AsConstantValue(currentValue);
+        }
+        
+        public static bool? AsConstantValue(this RootPropModNode<float> node, bool currentValue)
+        {
+            if (node.IsConstant)
             {
-                case AnimationFloatProperty.PropertyState.ConstantAlways:
-                    return FloatToBool(prop.ConstValue);
-                case AnimationFloatProperty.PropertyState.ConstantPartially:
-                    var constValue = FloatToBool(prop.ConstValue);
-                    if (constValue == currentValue) return currentValue;
-                    return null;
-                case AnimationFloatProperty.PropertyState.Variable:
-                    return null;
-                case AnimationFloatProperty.PropertyState.Invalid:
-                default:
-                    throw new ArgumentOutOfRangeException();
+                var constValue = node.ConstantValue == 0;
+                if (node.AppliedAlways || constValue == currentValue)
+                    return constValue;
             }
 
-            bool? FloatToBool(float f)
-            {
-                switch (f)
-                {
-                    case 0:
-                        return false;
-                    case 1:
-                        return true;
-                    default:
-                        return null;
-                }
-            }
+            return null;
         }
     }
 }

@@ -23,7 +23,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         public Vector2 scrollView;
 
         public GameObject parsedRootObject;
-        public NodeContainer Container;
+        public INodeContainer Container;
 
         private void OnGUI()
         {
@@ -34,6 +34,8 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 if (GUILayout.Button("Copy Parsed Text"))
                     GUIUtility.systemCopyBuffer = CreateText();
             }
+
+            if (Container == null) return;
 
             scrollView = GUILayout.BeginScrollView(scrollView);
 
@@ -110,7 +112,6 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             parserSource = (ParserSource)EditorGUILayout.EnumPopup(parserSource);
             switch (parserSource)
             {
-                /*
                 case ParserSource.WholeAvatar:
                     ObjectField(ref avatar, "Avatar", true);
 
@@ -135,13 +136,11 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                         {
                             parsedRootObject = rootGameObject;
                             Container = new AnimatorParser(true)
-                                .ParseAnimatorController(rootGameObject, animatorController)
-                                .ToImmutable();
+                                .ParseAnimatorController(rootGameObject, animatorController);
                         }
                     }
 
                     break;
-                    */
                 case ParserSource.Motion:
                     ObjectField(ref motion, "Motion", false);
                     ObjectField(ref rootGameObject, "Root GameObject", true);
@@ -169,8 +168,8 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
         public enum ParserSource
         {
-            //WholeAvatar,
-            //AnimatorController,
+            WholeAvatar,
+            AnimatorController,
             Motion
         }
     }

@@ -1,9 +1,9 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
 using System.Linq;
-using Anatawa12.AvatarOptimizer.AnimatorParsers;
 using JetBrains.Annotations;
 using nadena.dev.ndmf;
 using UnityEditor;
@@ -44,15 +44,155 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         public abstract IEnumerable<ObjectReference> ContextReferences { get; }
     }
 
-    internal class NodeContainer
+    internal interface INodeContainer
+    {
+        IReadOnlyDictionary<(ComponentOrGameObject target, string prop), PropModNode<float>> FloatNodes { get; }
+    }
+
+    internal interface INodeContainer<TFloatNode>
+    {
+        Dictionary<(ComponentOrGameObject target, string prop), TFloatNode> FloatNodes { get; }
+    }
+
+    internal class AnimatorControllerNodeContainer : INodeContainer<AnimatorControllerPropModNode<float>>, INodeContainer
+    {
+        public Dictionary<(ComponentOrGameObject target, string prop), AnimatorControllerPropModNode<float>> FloatNodes { get; } =
+            new Dictionary<(ComponentOrGameObject, string), AnimatorControllerPropModNode<float>>();
+
+        IReadOnlyDictionary<(ComponentOrGameObject target, string prop), PropModNode<float>> INodeContainer.
+            FloatNodes => Utils.CastDic<PropModNode<float>>().CastedDic(FloatNodes);
+
+        public void Add(ComponentOrGameObject target, string prop, [NotNull] AnimatorControllerPropModNode<float> node)
+        {
+            if (node == null) throw new ArgumentNullException(nameof(node));
+            FloatNodes.Add((target, prop), node);
+        }
+    }
+
+    internal class RootPropModNodeContainer : INodeContainer<RootPropModNode<float>>, INodeContainer
+    {
+        public Dictionary<(ComponentOrGameObject target, string prop), RootPropModNode<float>> FloatNodes { get; } =
+            new Dictionary<(ComponentOrGameObject, string), RootPropModNode<float>>();
+
+        IReadOnlyDictionary<(ComponentOrGameObject target, string prop), PropModNode<float>> INodeContainer.FloatNodes => 
+            Utils.CastDic<PropModNode<float>>().CastedDic(FloatNodes);
+
+        public void Add(ComponentNodeContainer container)
+        {
+            foreach (var (key, value) in container.FloatNodes)
+            {
+                if (!FloatNodes.TryGetValue(key, out var node))
+                    FloatNodes.Add(key, node = new RootPropModNode<float>());
+                node.Add(value);
+            }
+        }
+
+        public bool? GetConstantValue(ComponentOrGameObject gameObject, string property, bool gameObjectActiveSelf)
+        {
+            if (!FloatNodes.TryGetValue((gameObject, property), out var node))
+                return gameObjectActiveSelf;
+
+            if (node.IsConstant)
+            {
+                var constValue = node.ConstantValue == 0;
+                if (node.AppliedAlways || constValue == gameObjectActiveSelf)
+                    return constValue;
+            }
+
+            return null;
+        }
+
+        public void Add(Component component, string prop, ComponentPropModNode<float> variableComponentPropModNode)
+        {
+            var key = (component, prop);
+            if (!FloatNodes.TryGetValue(key, out var node))
+                FloatNodes.Add(key, node = new RootPropModNode<float>());
+            node.Add(variableComponentPropModNode);
+        }
+    }
+
+    internal class ComponentNodeContainer : INodeContainer<ComponentPropModNode<float>>, INodeContainer
+    {
+        public Dictionary<(ComponentOrGameObject target, string prop), ComponentPropModNode<float>> FloatNodes { get; } =
+            new Dictionary<(ComponentOrGameObject, string), ComponentPropModNode<float>>();
+
+        IReadOnlyDictionary<(ComponentOrGameObject target, string prop), PropModNode<float>> INodeContainer.
+            FloatNodes => Utils.CastDic<PropModNode<float>>().CastedDic(FloatNodes);
+
+        public void Add(ComponentOrGameObject target, string prop, [NotNull] ComponentPropModNode<float> node)
+        {
+            if (node == null) throw new ArgumentNullException(nameof(node));
+            FloatNodes.Add((target, prop), node);
+        }
+    }
+
+    internal class ImmutableNodeContainer : INodeContainer<ImmutablePropModNode<float>>, INodeContainer
     {
         public Dictionary<(ComponentOrGameObject target, string prop), ImmutablePropModNode<float>> FloatNodes { get; } =
             new Dictionary<(ComponentOrGameObject, string), ImmutablePropModNode<float>>();
+
+        IReadOnlyDictionary<(ComponentOrGameObject target, string prop), PropModNode<float>> INodeContainer.
+            FloatNodes => Utils.CastDic<PropModNode<float>>().CastedDic(FloatNodes);
 
         public void Add(ComponentOrGameObject target, string prop, [NotNull] ImmutablePropModNode<float> node)
         {
             if (node == null) throw new ArgumentNullException(nameof(node));
             FloatNodes.Add((target, prop), node);
+        }
+    }
+
+    internal sealed class RootPropModNode<T> : PropModNode<T>, IErrorContext
+    {
+        private readonly List<ComponentPropModNode<T>> _children = new List<ComponentPropModNode<T>>();
+
+        public RootPropModNode(params RootPropModNode<T>[] props)
+        {
+            foreach (var prop in props)
+            foreach (var child in prop._children)
+                Add(child);
+        }
+
+        (bool, T) ComputeConstantInfo()
+        {
+            using (var enumerator = _children.GetEnumerator())
+            {
+                Debug.Assert(enumerator.MoveNext());
+
+                if (!enumerator.Current.IsConstant) return (false, default);
+
+                var value = enumerator.Current.ConstantValue;
+
+                while (enumerator.MoveNext())
+                {
+                    if (!enumerator.Current.IsConstant) return (false, default);
+
+                    if (!EqualityComparer<T>.Default.Equals(value, enumerator.Current.ConstantValue))
+                        return (false, default);
+                }
+
+                return (true, value);
+            }
+        }
+
+        public override bool AppliedAlways => _children.All(x => x.AppliedAlways);
+        public override IEnumerable<ObjectReference> ContextReferences => _children.SelectMany(x => x.ContextReferences);
+        public override bool IsConstant => ComputeConstantInfo().Item1;
+
+        public override T ConstantValue
+        {
+            get
+            {
+                var info = ComputeConstantInfo();
+                if (!info.Item1) throw new InvalidOperationException("Not Constant");
+                return info.Item2;
+            }
+        }
+
+        public IEnumerable<Component> SourceComponents => _children.Select(x => x.Component);
+
+        public void Add(ComponentPropModNode<T> value)
+        {
+            _children.Add(value);
         }
     }
 
@@ -186,5 +326,43 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             }
         }
 
+    }
+
+    abstract class ComponentPropModNode<T> : PropModNode<T>
+    {
+        protected ComponentPropModNode([NotNull] Component component)
+        {
+            if (!component) throw new ArgumentNullException(nameof(component));
+            Component = component;
+        }
+
+        public Component Component { get; }
+
+        public override IEnumerable<ObjectReference> ContextReferences => new [] { ObjectRegistry.GetReference(Component) };
+    }
+
+    class VariableComponentPropModNode<T> : ComponentPropModNode<T>
+    {
+        public VariableComponentPropModNode([NotNull] Component component) : base(component)
+        {
+        }
+
+        public override T ConstantValue => throw new InvalidOperationException("Not Constant");
+        public override bool IsConstant => false;
+        public override bool AppliedAlways => false;
+    }
+
+    class AnimationComponentPropModNode<T> : ComponentPropModNode<T>
+    {
+        private readonly ImmutablePropModNode<T> _animation;
+
+        public AnimationComponentPropModNode([NotNull] Component component, ImmutablePropModNode<T> animation) : base(component)
+        {
+            _animation = animation;
+        }
+
+        public override T ConstantValue => _animation.ConstantValue;
+        public override bool IsConstant => _animation.IsConstant;
+        public override bool AppliedAlways => false;
     }
 }

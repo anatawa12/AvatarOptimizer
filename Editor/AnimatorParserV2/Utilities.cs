@@ -5,7 +5,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 {
     static class NodesMerger
     {
-        public static NodeContainer Merge<Merge>(IEnumerable<NodeContainer> sources, Merge merger)
+        public static ImmutableNodeContainer Merge<Merge>(IEnumerable<ImmutableNodeContainer> sources, Merge merger)
             where Merge : struct, IMergeProperty
         {
             var floats = new Dictionary<(ComponentOrGameObject, string), List<ImmutablePropModNode<float>>>();
@@ -22,7 +22,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 }
             }
 
-            var nodes = new NodeContainer();
+            var nodes = new ImmutableNodeContainer();
 
             foreach (var (key, value) in floats)
                 nodes.FloatNodes.Add(key, merger.MergeNode(value, sourceCount));

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Anatawa12.AvatarOptimizer.AnimatorParsers;
 using JetBrains.Annotations;
 using nadena.dev.ndmf;
 using UnityEngine;

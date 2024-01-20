@@ -11,36 +11,36 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 {
     class AnimationParser
     {
-        internal NodeContainer ParseMotion(GameObject root, Motion motion,
+        internal ImmutableNodeContainer ParseMotion(GameObject root, Motion motion,
             IReadOnlyDictionary<AnimationClip, AnimationClip> mapping)
         {
             using (ErrorReport.WithContextObject(motion))
                 return ParseMotionInner(root, motion, mapping);
         }
 
-        private NodeContainer ParseMotionInner(GameObject root, Motion motion,
+        private ImmutableNodeContainer ParseMotionInner(GameObject root, Motion motion,
             IReadOnlyDictionary<AnimationClip, AnimationClip> mapping)
         {
             switch (motion)
             {
                 case null:
-                    return new NodeContainer();
+                    return new ImmutableNodeContainer();
                 case AnimationClip clip:
                     return GetParsedAnimation(root, mapping.TryGetValue(clip, out var newClip) ? newClip : clip);
                 case BlendTree blendTree:
                     return ParseBlendTree(root, blendTree, mapping);
                 default:
                     BuildLog.LogError("Unknown Motion Type: {0} in motion {1}", motion.GetType().Name, motion.name);
-                    return new NodeContainer();
+                    return new ImmutableNodeContainer();
             }
         }
 
-        private NodeContainer ParseBlendTree(GameObject root, BlendTree blendTree,
+        private ImmutableNodeContainer ParseBlendTree(GameObject root, BlendTree blendTree,
             IReadOnlyDictionary<AnimationClip, AnimationClip> mapping)
         {
             // for empty tree, return empty container
             if (blendTree.children.Length == 0)
-                return new NodeContainer();
+                return new ImmutableNodeContainer();
 
             // for single child tree, return child
             if (blendTree.children.Length == 1 && blendTree.blendType != BlendTreeType.Direct)
@@ -65,20 +65,20 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 new BlendTreeNode<T>(nodes, _blendType, partial: nodes.Count != sourceCount);
         }
 
-        private readonly Dictionary<(GameObject, AnimationClip), NodeContainer> _parsedAnimationCache =
-            new Dictionary<(GameObject, AnimationClip), NodeContainer>();
+        private readonly Dictionary<(GameObject, AnimationClip), ImmutableNodeContainer> _parsedAnimationCache =
+            new Dictionary<(GameObject, AnimationClip), ImmutableNodeContainer>();
 
-        internal NodeContainer GetParsedAnimation(GameObject root, [CanBeNull] AnimationClip clip)
+        internal ImmutableNodeContainer GetParsedAnimation(GameObject root, [CanBeNull] AnimationClip clip)
         {
-            if (clip == null) return new NodeContainer();
+            if (clip == null) return new ImmutableNodeContainer();
             if (!_parsedAnimationCache.TryGetValue((root, clip), out var parsed))
                 _parsedAnimationCache.Add((root, clip), parsed = ParseAnimation(root, clip));
             return parsed;
         }
 
-        public static NodeContainer ParseAnimation(GameObject root, [NotNull] AnimationClip clip)
+        public static ImmutableNodeContainer ParseAnimation(GameObject root, [NotNull] AnimationClip clip)
         {
-            var nodes = new NodeContainer();
+            var nodes = new ImmutableNodeContainer();
 
             foreach (var binding in AnimationUtility.GetCurveBindings(clip))
             {
