@@ -46,28 +46,23 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             if (blendTree.children.Length == 1 && blendTree.blendType != BlendTreeType.Direct)
                 return ParseMotionInner(root, blendTree.children[0].motion, mapping);
 
-            var floats = new Dictionary<(ComponentOrGameObject, string), List<ImmutablePropModNode<float>>>();
-
             var children = blendTree.children;
 
-            foreach (var container in children.Select(x => ParseMotionInner(root, x.motion, mapping)))
+            return NodesMerger.Merge(children.Select(x => ParseMotionInner(root, x.motion, mapping)),
+                new BlendTreeMergeProperty(blendTree.blendType));
+        }
+        
+        internal readonly struct BlendTreeMergeProperty : IMergeProperty
+        {
+            private readonly BlendTreeType _blendType;
+
+            public BlendTreeMergeProperty(BlendTreeType blendType)
             {
-                foreach (var (key, value) in container.FloatNodes)
-                {
-                    if (!floats.TryGetValue(key, out var list))
-                        floats.Add(key, list = new List<ImmutablePropModNode<float>>());
-                    list.Add(value);
-                }
+                _blendType = blendType;
             }
 
-            var nodes = new NodeContainer();
-
-            foreach (var ((gameObject, prop), value) in floats)
-            {
-                nodes.Add(gameObject, prop, new BlendTreeNode<float>(value, blendTree.blendType, partial: value.Count != children.Length));
-            }
-
-            return nodes;
+            public ImmutablePropModNode<T> MergeNode<T>(List<ImmutablePropModNode<T>> nodes, int sourceCount) => 
+                new BlendTreeNode<T>(nodes, _blendType, partial: nodes.Count != sourceCount);
         }
 
         private readonly Dictionary<(GameObject, AnimationClip), NodeContainer> _parsedAnimationCache =
@@ -101,4 +96,5 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             return nodes;
         }
     }
+
 }
