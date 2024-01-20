@@ -569,7 +569,7 @@ namespace Anatawa12.AvatarOptimizer
         protected override void BeginPbConfig()
         {
             if (SourcePhysBones.Count() <= 1)
-                _errorLogs.Add(ErrorLog.Validation("MergePhysBone:error:oneSource"));
+                BuildLog.LogError("MergePhysBone:error:oneSource");
         }
 
         protected override bool BeginSection(string name, string docTag) => true;
@@ -586,8 +586,8 @@ namespace Anatawa12.AvatarOptimizer
                     vrcPhysBoneBase.InitTransforms(true);
                 var maxLength = SourcePhysBones.Max(x => x.BoneChainLength());
                 if (SourcePhysBones.Any(x => x.BoneChainLength() != maxLength))
-                    _errorLogs.Add(ErrorLog.Warning("MergePhysBone:warning:differChainLength",
-                        string.Join(", ", _differProps)));
+                    BuildLog.LogWarning("MergePhysBone:warning:differChainLength",
+                        string.Join(", ", _differProps));
             }
         }
 
