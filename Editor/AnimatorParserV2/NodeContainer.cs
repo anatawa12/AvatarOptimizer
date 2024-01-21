@@ -53,9 +53,9 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             if (!FloatNodes.TryGetValue((gameObject, property), out var node))
                 return gameObjectActiveSelf;
 
-            if (node.IsConstant)
+            if (node.Constant.TryGetValue(out var value))
             {
-                var constValue = node.ConstantValue == 0;
+                var constValue = value == 0;
                 if (node.AppliedAlways || constValue == gameObjectActiveSelf)
                     return constValue;
             }

@@ -54,6 +54,12 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             _value = value;
             IsConstant = true;
         }
+
+        public bool TryGetValue(out T o)
+        {
+            o = _value;
+            return IsConstant;
+        }
     }
 
     internal static class NodeImplUtils
@@ -64,15 +70,15 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             {
                 Debug.Assert(enumerator.MoveNext());
 
-                if (!enumerator.Current.IsConstant) return ConstantInfo<T>.Variable;
-
-                var value = enumerator.Current.ConstantValue;
+                if (!enumerator.Current.Constant.TryGetValue(out var value))
+                    return ConstantInfo<T>.Variable;
 
                 while (enumerator.MoveNext())
                 {
-                    if (!enumerator.Current.IsConstant) return ConstantInfo<T>.Variable;
+                    if (!enumerator.Current.Constant.TryGetValue(out var otherValue))
+                        return ConstantInfo<T>.Variable;
 
-                    if (!EqualityComparer<T>.Default.Equals(value, enumerator.Current.ConstantValue))
+                    if (!EqualityComparer<T>.Default.Equals(value, otherValue))
                         return ConstantInfo<T>.Variable;
                 }
 
@@ -92,24 +98,24 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 {
                     case AnimatorWeightState.AlwaysOne:
                     case AnimatorWeightState.EitherZeroOrOne:
-                        if (!layer.Node.IsConstant) return ConstantInfo<T>.Variable;
+                        if (!layer.Node.Constant.TryGetValue(out var otherValue)) return ConstantInfo<T>.Variable;
 
                         if (layer.Node.AppliedAlways && layer.Weight == AnimatorWeightState.AlwaysOne &&
                             layer.BlendingMode == AnimatorLayerBlendingMode.Override)
                         {
                             // the layer is always applied at the highest property.
-                            return new ConstantInfo<T>(layer.Node.ConstantValue);
+                            return new ConstantInfo<T>(otherValue);
                         }
 
                         // partially applied constants so save that value and continue.
                         if (!initialized)
                         {
-                            value = layer.Node.ConstantValue;
+                            value = otherValue;
                             initialized = true;
                         }
                         else
                         {
-                            if (!EqualityComparer<T>.Default.Equals(value, layer.Node.ConstantValue))
+                            if (!EqualityComparer<T>.Default.Equals(value, otherValue))
                                 return ConstantInfo<T>.Variable;
                         }
 

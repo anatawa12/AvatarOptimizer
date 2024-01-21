@@ -60,9 +60,9 @@ namespace Anatawa12.AvatarOptimizer
         
         public static bool? AsConstantValue(this RootPropModNode<float> node, bool currentValue)
         {
-            if (node.IsConstant)
+            if (node.Constant.TryGetValue(out var constFloat))
             {
-                var constValue = node.ConstantValue == 0;
+                var constValue = constFloat == 0;
                 if (node.AppliedAlways || constValue == currentValue)
                     return constValue;
             }
