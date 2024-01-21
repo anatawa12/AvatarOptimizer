@@ -304,13 +304,5 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
             Assert.That(parsed.FloatNodes.Keys, Is.EquivalentTo(new[] { pair }));
             AssertPropertyNode(parsed.FloatNodes[pair], property);
         }
-
-        private void AssertPropertyNode(PropModNode<float> propertyNode, Expected property)
-        {
-            Assert.That(propertyNode.IsConstant, Is.EqualTo(property.Constant));
-            Assert.That(propertyNode.AppliedAlways, Is.EqualTo(property.Always));
-            if (property.Constant)
-                Assert.That(propertyNode.ConstantValue, Is.EqualTo(property.Value));
-        }
     }
 }

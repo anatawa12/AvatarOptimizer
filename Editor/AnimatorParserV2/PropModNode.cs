@@ -60,6 +60,13 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             o = _value;
             return IsConstant;
         }
+
+        public bool Equals(ConstantInfo<T> other) =>
+            IsConstant == other.IsConstant &&
+            (!IsConstant || EqualityComparer<T>.Default.Equals(_value, other._value));
+
+        public override bool Equals(object obj) => obj is ConstantInfo<T> other && Equals(other);
+        public override int GetHashCode() => !IsConstant ? 0 : EqualityComparer<T>.Default.GetHashCode(_value);
     }
 
     internal static class NodeImplUtils
