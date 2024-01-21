@@ -4,14 +4,13 @@ using Anatawa12.AvatarOptimizer.AnimatorParsersV2;
 using NUnit.Framework;
 using UnityEditor.Animations;
 using UnityEngine;
+using static Anatawa12.AvatarOptimizer.Test.AnimatorParserTest.TestUtil;
 using Is = NUnit.Framework.Is;
 
 namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
 {
     public class AnimatorTest
     {
-        private static readonly TestSourceImpl Source = TestSourceImpl.Instance;
-
         private GameObject _prefab;
         private SkinnedMeshRenderer _skinnedRenderer;
         private AnimatorController _controller;
@@ -23,25 +22,6 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
             _skinnedRenderer = _prefab.GetComponent<SkinnedMeshRenderer>() ?? throw new InvalidOperationException();
             _controller = TestUtils.GetAssetAt<AnimatorController>("AnimatorParser/TestController.controller");
         }
-
-        // (bool always, bool constant, float value)
-        private struct Expected
-        {
-            public readonly bool Always;
-            public readonly bool Constant;
-            public readonly float Value;
-
-            public Expected(bool always, bool constant, float value)
-            {
-                Always = always;
-                Constant = constant;
-                Value = value;
-            }
-        }
-
-        private Expected ConstantAlways(float value) => new Expected(true, true, value);
-        private Expected ConstantPartially(float value) => new Expected(false, true, value);
-        private Expected Variable(bool always = true) => new Expected(always, false, 0);
 
         [Test]
         public void TestLayer00_BaseAnimate0ToConst100() =>
