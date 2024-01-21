@@ -1,15 +1,12 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Data;
-using System.Diagnostics;
 using System.Linq;
 using JetBrains.Annotations;
 using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
-using UnityEngine.Assertions;
 using Debug = System.Diagnostics.Debug;
 
 namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
@@ -139,6 +136,105 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             if (node == null) throw new ArgumentNullException(nameof(node));
             FloatNodes.Add((target, prop), node);
         }
+    }
+
+    internal readonly struct ConstInfo<T>
+    {
+        public bool IsConst { get; }
+        private readonly T _value;
+
+        public T Value
+        {
+            get
+            {
+                if (!IsConst) throw new InvalidOperationException("Not Constant");
+                return _value;
+            }
+        }
+
+        public static ConstInfo<T> Variable => default;
+
+        public ConstInfo(T value)
+        {
+            _value = value;
+            IsConst = true;
+        }
+    }
+
+    internal static class NodeImplUtils
+    {
+        public static ConstInfo<T> ConstantInfoForSideBySide<T>(IEnumerable<PropModNode<T>> nodes)
+        {
+            using (var enumerator = nodes.GetEnumerator())
+            {
+                Debug.Assert(enumerator.MoveNext());
+
+                if (!enumerator.Current.IsConstant) return ConstInfo<T>.Variable;
+
+                var value = enumerator.Current.ConstantValue;
+
+                while (enumerator.MoveNext())
+                {
+                    if (!enumerator.Current.IsConstant) return ConstInfo<T>.Variable;
+
+                    if (!EqualityComparer<T>.Default.Equals(value, enumerator.Current.ConstantValue))
+                        return ConstInfo<T>.Variable;
+                }
+
+                return new ConstInfo<T>(value);
+            }
+        }
+
+        public static ConstInfo<T> ConstantInfoForOverriding<T, TLayer>(IEnumerable<TLayer> layersReversed)
+            where TLayer : ILayer<T>
+        {
+            T value = default;
+            bool initialized = false;
+
+            foreach (var layer in layersReversed)
+            {
+                switch (layer.Weight)
+                {
+                    case AnimatorWeightState.AlwaysOne:
+                    case AnimatorWeightState.EitherZeroOrOne:
+                        if (!layer.Node.IsConstant) return ConstInfo<T>.Variable;
+
+                        if (layer.Node.AppliedAlways && layer.Weight == AnimatorWeightState.AlwaysOne &&
+                            layer.BlendingMode == AnimatorLayerBlendingMode.Override)
+                        {
+                            // the layer is always applied at the highest property.
+                            return new ConstInfo<T>(layer.Node.ConstantValue);
+                        }
+
+                        // partially applied constants so save that value and continue.
+                        if (!initialized)
+                        {
+                            value = layer.Node.ConstantValue;
+                            initialized = true;
+                        }
+                        else
+                        {
+                            if (!EqualityComparer<T>.Default.Equals(value, layer.Node.ConstantValue))
+                                return ConstInfo<T>.Variable;
+                        }
+
+                        break;
+                    case AnimatorWeightState.Variable:
+                        return ConstInfo<T>.Variable;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+
+            return new ConstInfo<T>(value);
+        }
+    }
+
+    internal interface ILayer<T>
+    {
+        AnimatorWeightState Weight { get; }
+        AnimatorLayerBlendingMode BlendingMode { get; }
+        PropModNode<T> Node { get; }
     }
 
     internal sealed class RootPropModNode<T> : PropModNode<T>, IErrorContext
@@ -278,54 +374,27 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             _appliedAlways = new Lazy<bool>(() =>
             {
                 if (!WeightSumIsOne) return false;
-                if (partial) return false;
-                return _children.All(x => x.AppliedAlways);
+                return !partial && _children.All(x => x.AppliedAlways);
             }, isThreadSafe: false);
-            
 
-            _constantInfo = new Lazy<(bool, T)>(() =>
+            _constantInfo = new Lazy<ConstInfo<T>>(() =>
             {
-                if (!WeightSumIsOne) return (false, default);
-
-                using (var enumerator = _children.GetEnumerator())
-                {
-                    Debug.Assert(enumerator.MoveNext());
-
-                    if (!enumerator.Current.IsConstant) return (false, default);
-
-                    var value = enumerator.Current.ConstantValue;
-
-                    while (enumerator.MoveNext())
-                    {
-                        if (!enumerator.Current.IsConstant) return (false, default);
-
-                        if (!EqualityComparer<T>.Default.Equals(value, enumerator.Current.ConstantValue))
-                            return (false, default);
-                    }
-
-                    return (true, value);
-                }
+                if (!WeightSumIsOne) return ConstInfo<T>.Variable;
+                return NodeImplUtils.ConstantInfoForSideBySide(_children);
             }, isThreadSafe: false);
         }
 
 
         private bool WeightSumIsOne => _blendTreeType != BlendTreeType.Direct;
+
         private readonly Lazy<bool> _appliedAlways;
+        private readonly Lazy<ConstInfo<T>> _constantInfo;
+
         public override bool AppliedAlways => _appliedAlways.Value;
         public override IEnumerable<ObjectReference> ContextReferences => _children.SelectMany(x => x.ContextReferences);
 
-        private readonly Lazy<(bool, T)> _constantInfo;
-        public override bool IsConstant => _constantInfo.Value.Item1;
-
-        public override T ConstantValue
-        {
-            get
-            {
-                if (!_constantInfo.Value.Item1) throw new InvalidOperationException("Not Constant");
-                return _constantInfo.Value.Item2;
-            }
-        }
-
+        public override bool IsConstant => _constantInfo.Value.IsConst;
+        public override T ConstantValue => _constantInfo.Value.Value;
     }
 
     abstract class ComponentPropModNode<T> : PropModNode<T>

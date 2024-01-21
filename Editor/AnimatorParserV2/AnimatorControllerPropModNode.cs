@@ -19,11 +19,12 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         public override bool AppliedAlways => true;
     }
 
-    internal struct PlayableLayerNodeInfo<T>
+    internal readonly struct PlayableLayerNodeInfo<T> : ILayer<T>
     {
-        public readonly AnimatorWeightState Weight;
-        public readonly AnimatorLayerBlendingMode BlendingMode;
+        public AnimatorWeightState Weight { get; }
+        public AnimatorLayerBlendingMode BlendingMode { get; }
         public readonly AnimatorControllerPropModNode<T> Node;
+        PropModNode<T> ILayer<T>.Node => Node;
 
         public PlayableLayerNodeInfo(AnimatorWeightState weight, AnimatorLayerBlendingMode blendingMode,
             AnimatorControllerPropModNode<T> node)
@@ -46,62 +47,11 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             _layersReversed = layersReversed;
         }
 
-        private (T value, bool isConst) ComputeConstant()
-        {
-            var variable = (default(T), false);
+        public override bool IsConstant =>
+            NodeImplUtils.ConstantInfoForOverriding<T, PlayableLayerNodeInfo<T>>(_layersReversed).IsConst;
 
-            T value = default;
-            bool initialized = false;
-
-            foreach (var layer in _layersReversed)
-            {
-                switch (layer.Weight)
-                {
-                    case AnimatorWeightState.AlwaysOne:
-                    case AnimatorWeightState.EitherZeroOrOne:
-                        if (!layer.Node.IsConstant) return variable;
-
-                        if (layer.Node.AppliedAlways && layer.Weight == AnimatorWeightState.AlwaysOne &&
-                            layer.BlendingMode == AnimatorLayerBlendingMode.Override)
-                        {
-                            // the layer is always applied at the highest property.
-                            return (layer.Node.ConstantValue, true);
-                        }
-
-                        // partially applied constants so save that value and continue.
-                        if (!initialized)
-                        {
-                            value = layer.Node.ConstantValue;
-                            initialized = true;
-                        }
-                        else
-                        {
-                            if (!EqualityComparer<T>.Default.Equals(value, layer.Node.ConstantValue))
-                                return variable;
-                        }
-
-                        break;
-                    case AnimatorWeightState.Variable:
-                        return variable;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-            }
-
-            return (value, true);
-        }
-
-        public override bool IsConstant => ComputeConstant().isConst;
-
-        public override T ConstantValue
-        {
-            get
-            {
-                var computed = ComputeConstant();
-                if (!computed.isConst) throw new InvalidOperationException("Not Constant");
-                return computed.value;
-            }
-        }
+        public override T ConstantValue =>
+            NodeImplUtils.ConstantInfoForOverriding<T, PlayableLayerNodeInfo<T>>(_layersReversed).Value;
 
         // we may possible to implement complex logic which simulates state machine but not for now.
         public override bool AppliedAlways =>
@@ -113,11 +63,12 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             _layersReversed.SelectMany(x => x.Node.ContextReferences));
     }
 
-    internal struct AnimatorLayerNodeInfo<T>
+    internal readonly struct AnimatorLayerNodeInfo<T> : ILayer<T>
     {
-        public readonly AnimatorWeightState Weight;
-        public readonly AnimatorLayerBlendingMode BlendingMode;
+        public AnimatorWeightState Weight { get; }
+        public AnimatorLayerBlendingMode BlendingMode { get; }
         public readonly ImmutablePropModNode<T> Node;
+        PropModNode<T> ILayer<T>.Node => Node;
 
         public AnimatorLayerNodeInfo(AnimatorWeightState weight, AnimatorLayerBlendingMode blendingMode, ImmutablePropModNode<T> node)
         {
@@ -142,67 +93,13 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             return new AnimatorControllerPropModNode<T>(value);
         }
 
-        public AnimatorControllerPropModNode(IEnumerable<AnimatorLayerNodeInfo<T>> layersReversed)
-        {
+        private AnimatorControllerPropModNode(IEnumerable<AnimatorLayerNodeInfo<T>> layersReversed) =>
             _layersReversed = layersReversed;
-        }
 
-        private (T value, bool isConst) ComputeConstant()
-        {
-            var variable = (default(T), false);
-
-            T value = default;
-            bool initialized = false;
-
-            foreach (var layer in _layersReversed)
-            {
-                switch (layer.Weight)
-                {
-                    case AnimatorWeightState.AlwaysOne:
-                    case AnimatorWeightState.EitherZeroOrOne:
-                        if (!layer.Node.IsConstant) return variable;
-
-                        if (layer.Node.AppliedAlways && layer.Weight == AnimatorWeightState.AlwaysOne &&
-                            layer.BlendingMode == AnimatorLayerBlendingMode.Override)
-                        {
-                            // the layer is always applied at the highest property.
-                            return (layer.Node.ConstantValue, true);
-                        }
-
-                        // partially applied constants so save that value and continue.
-                        if (!initialized)
-                        {
-                            value = layer.Node.ConstantValue;
-                            initialized = true;
-                        }
-                        else
-                        {
-                            if (!EqualityComparer<T>.Default.Equals(value, layer.Node.ConstantValue))
-                                return variable;
-                        }
-
-                        break;
-                    case AnimatorWeightState.Variable:
-                        return variable;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-            }
-
-            return (value, true);
-        }
-
-        public override bool IsConstant => ComputeConstant().isConst;
-
-        public override T ConstantValue
-        {
-            get
-            {
-                var computed = ComputeConstant();
-                if (!computed.isConst) throw new InvalidOperationException("Not Constant");
-                return computed.value;
-            }
-        }
+        public override bool IsConstant =>
+            NodeImplUtils.ConstantInfoForOverriding<T, AnimatorLayerNodeInfo<T>>(_layersReversed).IsConst;
+        public override T ConstantValue =>
+            NodeImplUtils.ConstantInfoForOverriding<T, AnimatorLayerNodeInfo<T>>(_layersReversed).Value;
 
         // we may possible to implement complex logic which simulates state machine but not for now.
         public override bool AppliedAlways =>
@@ -233,51 +130,17 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             // ReSharper disable once PossibleMultipleEnumeration
             _children = children;
 
-            _appliedAlways = new Lazy<bool>(() =>
-            {
-                if (partial) return false;
-                return _children.All(x => x.AppliedAlways);
-            }, isThreadSafe: false);
-            
-
-            _constantInfo = new Lazy<(bool, T)>(() =>
-            {
-                using (var enumerator = _children.GetEnumerator())
-                {
-                    Debug.Assert(enumerator.MoveNext());
-
-                    if (!enumerator.Current.IsConstant) return (false, default);
-
-                    var value = enumerator.Current.ConstantValue;
-
-                    while (enumerator.MoveNext())
-                    {
-                        if (!enumerator.Current.IsConstant) return (false, default);
-
-                        if (!EqualityComparer<T>.Default.Equals(value, enumerator.Current.ConstantValue))
-                            return (false, default);
-                    }
-
-                    return (true, value);
-                }
-            }, isThreadSafe: false);
+            _appliedAlways = new Lazy<bool>(() => !partial && _children.All(x => x.AppliedAlways), isThreadSafe: false);
+            _constantInfo = new Lazy<ConstInfo<T>>(() => NodeImplUtils.ConstantInfoForSideBySide(_children),
+                isThreadSafe: false);
         }
 
 
         private readonly Lazy<bool> _appliedAlways;
+        private readonly Lazy<ConstInfo<T>> _constantInfo;
         public override bool AppliedAlways => _appliedAlways.Value;
+        public override bool IsConstant => _constantInfo.Value.IsConst;
+        public override T ConstantValue => _constantInfo.Value.Value;
         public override IEnumerable<ObjectReference> ContextReferences => _children.SelectMany(x => x.ContextReferences);
-
-        private readonly Lazy<(bool, T)> _constantInfo;
-        public override bool IsConstant => _constantInfo.Value.Item1;
-
-        public override T ConstantValue
-        {
-            get
-            {
-                if (!_constantInfo.Value.Item1) throw new InvalidOperationException("Not Constant");
-                return _constantInfo.Value.Item2;
-            }
-        }
     }
 }
