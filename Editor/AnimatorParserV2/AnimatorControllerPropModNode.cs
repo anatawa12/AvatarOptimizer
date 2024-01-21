@@ -32,6 +32,13 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             BlendingMode = blendingMode;
             Node = node;
         }
+        
+        public PlayableLayerNodeInfo(AnimatorControllerPropModNode<T> node)
+        {
+            Weight = AnimatorWeightState.AlwaysOne;
+            BlendingMode = AnimatorLayerBlendingMode.Override;
+            Node = node;
+        }
     }
 
     class AnimatorPropModNode<T> : ComponentPropModNode<T>

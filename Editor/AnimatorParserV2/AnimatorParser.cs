@@ -62,7 +62,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             {
                 ParseAnimationOrAnimator(animator, objectAlwaysActive, rootNode,
                     () => AddHumanoidModifications(
-                        ComponentFromLayers(animator,
+                        NodesMerger.AnimatorComponentFromController(animator,
                             ParseAnimatorController(gameObject, animator.runtimeAnimatorController)), animator));
             }
 
@@ -75,7 +75,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 // That's why we ignore Animation component if playAutomatically is false.
 
                 ParseAnimationOrAnimator(animation, objectAlwaysActive, rootNode,
-                    () => AnimationFromClip(animation,
+                    () => NodesMerger.AnimationComponentFromAnimationClip(animation,
                         _animationParser.GetParsedAnimation(gameObject, animation.clip)));
             }
 
@@ -266,7 +266,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             MergeLayer(VRCAvatarDescriptor.AnimLayerType.Action, false, 0);
             MergeLayer(VRCAvatarDescriptor.AnimLayerType.FX, false, 1);
 
-            modifications.Add(ComponentFromLayers(animator, playableLayers), true);
+            modifications.Add(NodesMerger.ComponentFromPlayableLayers(animator, playableLayers), true);
 
             // TPose and IKPose should only affect to Humanoid so skip here~
 
@@ -292,43 +292,6 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             foreach (var ((target, prop), node) in animationClip.FloatNodes)
             {
                 animatorNodeContainer.Add(target, prop, new AnimationComponentPropModNode<float>(animation, node));
-            }
-
-            return animatorNodeContainer;
-        }
-
-        [CanBeNull]
-        private ComponentNodeContainer ComponentFromLayers(Animator animator,
-            [CanBeNull] AnimatorControllerNodeContainer controller)
-        {
-            if (controller == null) return null;
-            return ComponentFromLayers(animator,
-                new[] { (AnimatorWeightState.AlwaysOne, AnimatorLayerBlendingMode.Override, controller) });
-        }
-
-        private ComponentNodeContainer ComponentFromLayers(Animator animator,
-            IEnumerable<(AnimatorWeightState, AnimatorLayerBlendingMode, AnimatorControllerNodeContainer)>
-                playableLayers)
-        {
-            Dictionary<(ComponentOrGameObject target, string prop), List<PlayableLayerNodeInfo<float>>> floatNodes =
-                new Dictionary<(ComponentOrGameObject, string), List<PlayableLayerNodeInfo<float>>>();
-
-            foreach (var (weight, mode, container) in playableLayers)
-            {
-                foreach (var (key, value) in container.FloatNodes)
-                {
-                    if (!floatNodes.TryGetValue(key, out var list))
-                        floatNodes.Add(key, list = new List<PlayableLayerNodeInfo<float>>());
-                    list.Add(new PlayableLayerNodeInfo<float>(weight, mode, value));
-                }
-            }
-
-            var animatorNodeContainer = new ComponentNodeContainer();
-
-            foreach (var ((target, prop), value) in floatNodes)
-            {
-                value.Reverse();
-                animatorNodeContainer.Add(target, prop, new AnimatorPropModNode<float>(animator, value));
             }
 
             return animatorNodeContainer;
