@@ -470,9 +470,9 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 var transform = animator.GetBoneTransform(bone);
                 if (!transform) continue;
 
-                foreach (var key in TransformRotationAnimationKeys)
+                foreach (var prop in TransformRotationAnimationKeys)
                     // overriding
-                    container.FloatNodes[(transform, key)] = new HumanoidAnimatorPropModNode(animator);
+                    container.Set(transform, prop, new HumanoidAnimatorPropModNode(animator));
             }
 
             return container;

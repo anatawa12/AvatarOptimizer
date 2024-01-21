@@ -27,8 +27,8 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
             var nodes = new ImmutableNodeContainer();
 
-            foreach (var (key, value) in floats)
-                nodes.FloatNodes.Add(key, merger.MergeNode(value, sourceCount));
+            foreach (var ((target, prop), value) in floats)
+                nodes.Add(target, prop, merger.MergeNode(value, sourceCount));
 
             return nodes;
         }

@@ -12,23 +12,25 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
     internal interface INodeContainer<TFloatNode>
     {
-        Dictionary<(ComponentOrGameObject target, string prop), TFloatNode> FloatNodes { get; }
+        IReadOnlyDictionary<(ComponentOrGameObject target, string prop), TFloatNode> FloatNodes { get; }
     }
 
     internal class RootPropModNodeContainer : INodeContainer<RootPropModNode<float>>, INodeContainer
     {
-        public Dictionary<(ComponentOrGameObject target, string prop), RootPropModNode<float>> FloatNodes { get; } =
+        private readonly Dictionary<(ComponentOrGameObject target, string prop), RootPropModNode<float>> _floatNodes =
             new Dictionary<(ComponentOrGameObject, string), RootPropModNode<float>>();
 
         IReadOnlyDictionary<(ComponentOrGameObject target, string prop), PropModNode<float>> INodeContainer.FloatNodes => 
             Utils.CastDic<PropModNode<float>>().CastedDic(FloatNodes);
+
+        public IReadOnlyDictionary<(ComponentOrGameObject target, string prop), RootPropModNode<float>> FloatNodes => _floatNodes;
 
         public void Add(ComponentNodeContainer container, bool alwaysApplied)
         {
             foreach (var (key, value) in container.FloatNodes)
             {
                 if (!FloatNodes.TryGetValue(key, out var node))
-                    FloatNodes.Add(key, node = new RootPropModNode<float>());
+                    _floatNodes.Add(key, node = new RootPropModNode<float>());
                 node.Add(value, alwaysApplied);
             }
         }
@@ -37,7 +39,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         {
             var key = (component, prop);
             if (!FloatNodes.TryGetValue(key, out var root))
-                FloatNodes.Add(key, root = new RootPropModNode<float>());
+                _floatNodes.Add(key, root = new RootPropModNode<float>());
             root.Add(node, alwaysApplied);
         }
 
@@ -60,16 +62,22 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
     internal class NodeContainerBase<TFloatNode> : INodeContainer<TFloatNode>, INodeContainer
         where TFloatNode : PropModNode<float>
     {
-        public Dictionary<(ComponentOrGameObject target, string prop), TFloatNode> FloatNodes { get; } =
-            new Dictionary<(ComponentOrGameObject, string), TFloatNode>();
+        private readonly Dictionary<(ComponentOrGameObject target, string prop), TFloatNode> _floatNodes = new Dictionary<(ComponentOrGameObject, string), TFloatNode>();
+
+        public IReadOnlyDictionary<(ComponentOrGameObject target, string prop), TFloatNode> FloatNodes => _floatNodes;
 
         IReadOnlyDictionary<(ComponentOrGameObject target, string prop), PropModNode<float>> INodeContainer.
-            FloatNodes => Utils.CastDic<PropModNode<float>>().CastedDic(FloatNodes);
+            FloatNodes => Utils.CastDic<PropModNode<float>>().CastedDic(_floatNodes);
 
         public void Add(ComponentOrGameObject target, string prop, [NotNull] TFloatNode node)
         {
             if (node == null) throw new ArgumentNullException(nameof(node));
-            FloatNodes.Add((target, prop), node);
+            _floatNodes.Add((target, prop), node);
+        }
+        
+        public void Set(ComponentOrGameObject target, string prop, [NotNull] TFloatNode node)
+        {
+            _floatNodes[(target, prop)] = node ?? throw new ArgumentNullException(nameof(node));
         }
     }
 
