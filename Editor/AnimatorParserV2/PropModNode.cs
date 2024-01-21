@@ -90,6 +90,14 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             }
         }
 
+        public static bool AlwaysAppliedForOverriding<T, TLayer>(IEnumerable<TLayer> layersReversed)
+            where TLayer : ILayer<T>
+        {
+            return layersReversed.Any(x =>
+                x.Weight == AnimatorWeightState.AlwaysOne && x.BlendingMode == AnimatorLayerBlendingMode.Override &&
+                x.Node.AppliedAlways);
+        }
+
         public static ConstantInfo<T> ConstantInfoForOverriding<T, TLayer>(IEnumerable<TLayer> layersReversed)
             where TLayer : ILayer<T>
         {
@@ -224,6 +232,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
     {
         private readonly IEnumerable<ImmutablePropModNode<T>> _children;
         private readonly BlendTreeType _blendTreeType;
+        private readonly bool _partial;
 
         public BlendTreeNode(IEnumerable<ImmutablePropModNode<T>> children, BlendTreeType blendTreeType, bool partial)
         {
@@ -233,29 +242,19 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             // ReSharper disable once PossibleMultipleEnumeration
             _children = children;
             _blendTreeType = blendTreeType;
-
-            _appliedAlways = new Lazy<bool>(() =>
-            {
-                if (!WeightSumIsOne) return false;
-                return !partial && _children.All(x => x.AppliedAlways);
-            }, isThreadSafe: false);
-
-            _constantInfo = new Lazy<ConstantInfo<T>>(() =>
-            {
-                if (!WeightSumIsOne) return ConstantInfo<T>.Variable;
-                return NodeImplUtils.ConstantInfoForSideBySide(_children);
-            }, isThreadSafe: false);
+            _partial = partial;
         }
 
 
         private bool WeightSumIsOne => _blendTreeType != BlendTreeType.Direct;
 
-        private readonly Lazy<bool> _appliedAlways;
-        private readonly Lazy<ConstantInfo<T>> _constantInfo;
+        public override bool AppliedAlways => WeightSumIsOne && !_partial && _children.All(x => x.AppliedAlways);
+        public override ConstantInfo<T> Constant => !WeightSumIsOne
+            ? ConstantInfo<T>.Variable
+            : NodeImplUtils.ConstantInfoForSideBySide(_children);
 
-        public override bool AppliedAlways => _appliedAlways.Value;
-        public override IEnumerable<ObjectReference> ContextReferences => _children.SelectMany(x => x.ContextReferences);
-        public override ConstantInfo<T> Constant => _constantInfo.Value;
+        public override IEnumerable<ObjectReference> ContextReferences =>
+            _children.SelectMany(x => x.ContextReferences);
     }
 
     abstract class ComponentPropModNode<T> : PropModNode<T>
@@ -288,9 +287,15 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         public AnimationComponentPropModNode([NotNull] Component component, ImmutablePropModNode<T> animation) : base(component)
         {
             _animation = animation;
+            _constantInfo = new Lazy<ConstantInfo<T>>(() => animation.Constant, isThreadSafe: false);
         }
 
+        private readonly Lazy<ConstantInfo<T>> _constantInfo;
+
         public override bool AppliedAlways => false;
-        public override ConstantInfo<T> Constant => _animation.Constant;
+        public override ConstantInfo<T> Constant => _constantInfo.Value;
+
+        public override IEnumerable<ObjectReference> ContextReferences =>
+            base.ContextReferences.Concat(_animation.ContextReferences);
     }
 }

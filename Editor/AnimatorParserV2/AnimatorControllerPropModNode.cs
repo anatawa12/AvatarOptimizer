@@ -44,17 +44,22 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         ) : base(component)
         {
             _layersReversed = layersReversed;
+
+            _appliedAlways = new Lazy<bool>(
+                () => NodeImplUtils.AlwaysAppliedForOverriding<T, PlayableLayerNodeInfo<T>>(_layersReversed),
+                isThreadSafe: false);
+
+            _constantInfo = new Lazy<ConstantInfo<T>>(
+                () => NodeImplUtils.ConstantInfoForOverriding<T, PlayableLayerNodeInfo<T>>(_layersReversed),
+                isThreadSafe: false);
         }
 
-        public override ConstantInfo<T> Constant =>
-            NodeImplUtils.ConstantInfoForOverriding<T, PlayableLayerNodeInfo<T>>(_layersReversed);
 
-        // we may possible to implement complex logic which simulates state machine but not for now.
-        public override bool AppliedAlways =>
-            _layersReversed.Any(x =>
-                x.Weight == AnimatorWeightState.AlwaysOne && x.BlendingMode == AnimatorLayerBlendingMode.Override &&
-                x.Node.AppliedAlways);
+        private readonly Lazy<bool> _appliedAlways;
+        private readonly Lazy<ConstantInfo<T>> _constantInfo;
 
+        public override bool AppliedAlways => _appliedAlways.Value;
+        public override ConstantInfo<T> Constant => _constantInfo.Value;
         public override IEnumerable<ObjectReference> ContextReferences => base.ContextReferences.Concat(
             _layersReversed.SelectMany(x => x.Node.ContextReferences));
     }
@@ -97,9 +102,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
         // we may possible to implement complex logic which simulates state machine but not for now.
         public override bool AppliedAlways =>
-            _layersReversed.Any(x =>
-                x.Weight == AnimatorWeightState.AlwaysOne && x.BlendingMode == AnimatorLayerBlendingMode.Override &&
-                x.Node.AppliedAlways);
+            NodeImplUtils.AlwaysAppliedForOverriding<T, AnimatorLayerNodeInfo<T>>(_layersReversed);
 
         public override IEnumerable<ObjectReference> ContextReferences =>
             _layersReversed.SelectMany(x => x.Node.ContextReferences);
@@ -115,6 +118,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
     internal class AnimatorLayerPropModNode<T> : ImmutablePropModNode<T>
     {
         private readonly IEnumerable<ImmutablePropModNode<T>> _children;
+        private readonly bool _partial;
 
         public AnimatorLayerPropModNode(IEnumerable<ImmutablePropModNode<T>> children, bool partial)
         {
@@ -123,17 +127,11 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             Debug.Assert(children.Any());
             // ReSharper disable once PossibleMultipleEnumeration
             _children = children;
-
-            _appliedAlways = new Lazy<bool>(() => !partial && _children.All(x => x.AppliedAlways), isThreadSafe: false);
-            _constantInfo = new Lazy<ConstantInfo<T>>(() => NodeImplUtils.ConstantInfoForSideBySide(_children),
-                isThreadSafe: false);
+            _partial = partial;
         }
 
-
-        private readonly Lazy<bool> _appliedAlways;
-        private readonly Lazy<ConstantInfo<T>> _constantInfo;
-        public override bool AppliedAlways => _appliedAlways.Value;
-        public override ConstantInfo<T> Constant => _constantInfo.Value;
+        public override bool AppliedAlways => !_partial && _children.All(x => x.AppliedAlways);
+        public override ConstantInfo<T> Constant => NodeImplUtils.ConstantInfoForSideBySide(_children);
         public override IEnumerable<ObjectReference> ContextReferences => _children.SelectMany(x => x.ContextReferences);
     }
 }
