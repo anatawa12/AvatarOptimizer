@@ -82,7 +82,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         public static AnimatorControllerPropModNode<T> Create(List<AnimatorLayerNodeInfo<T>> value)
         {
             if (value.Count == 0) return null;
-            if (value.All(x => x.BlendingMode == AnimatorLayerBlendingMode.Additive && x.Node.IsConstant))
+            if (value.All(x => x.BlendingMode == AnimatorLayerBlendingMode.Additive && x.Node.Constant.IsConstant))
                 return null; // unchanged constant
 
             value.Reverse();

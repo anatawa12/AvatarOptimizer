@@ -22,9 +22,6 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
     /// </summary>
     internal abstract class PropModNode<T> : IErrorContext
     {
-        public T ConstantValue => Constant.Value;
-        public bool IsConstant => Constant.IsConstant;
-
         /// <summary>
         /// Returns true if this node is always applied. For inactive nodes, this returns false.
         /// </summary>
