@@ -14,8 +14,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         {
         }
 
-        public override float ConstantValue => throw new Exception("Not Constant");
-        public override bool IsConstant => false;
+        public override ConstantInfo<float> Constant => ConstantInfo<float>.Variable;
         public override bool AppliedAlways => true;
     }
 
@@ -47,11 +46,8 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             _layersReversed = layersReversed;
         }
 
-        public override bool IsConstant =>
-            NodeImplUtils.ConstantInfoForOverriding<T, PlayableLayerNodeInfo<T>>(_layersReversed).IsConst;
-
-        public override T ConstantValue =>
-            NodeImplUtils.ConstantInfoForOverriding<T, PlayableLayerNodeInfo<T>>(_layersReversed).Value;
+        public override ConstantInfo<T> Constant =>
+            NodeImplUtils.ConstantInfoForOverriding<T, PlayableLayerNodeInfo<T>>(_layersReversed);
 
         // we may possible to implement complex logic which simulates state machine but not for now.
         public override bool AppliedAlways =>
@@ -96,10 +92,8 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         private AnimatorControllerPropModNode(IEnumerable<AnimatorLayerNodeInfo<T>> layersReversed) =>
             _layersReversed = layersReversed;
 
-        public override bool IsConstant =>
-            NodeImplUtils.ConstantInfoForOverriding<T, AnimatorLayerNodeInfo<T>>(_layersReversed).IsConst;
-        public override T ConstantValue =>
-            NodeImplUtils.ConstantInfoForOverriding<T, AnimatorLayerNodeInfo<T>>(_layersReversed).Value;
+        public override ConstantInfo<T> Constant =>
+            NodeImplUtils.ConstantInfoForOverriding<T, AnimatorLayerNodeInfo<T>>(_layersReversed);
 
         // we may possible to implement complex logic which simulates state machine but not for now.
         public override bool AppliedAlways =>
@@ -131,16 +125,15 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             _children = children;
 
             _appliedAlways = new Lazy<bool>(() => !partial && _children.All(x => x.AppliedAlways), isThreadSafe: false);
-            _constantInfo = new Lazy<ConstInfo<T>>(() => NodeImplUtils.ConstantInfoForSideBySide(_children),
+            _constantInfo = new Lazy<ConstantInfo<T>>(() => NodeImplUtils.ConstantInfoForSideBySide(_children),
                 isThreadSafe: false);
         }
 
 
         private readonly Lazy<bool> _appliedAlways;
-        private readonly Lazy<ConstInfo<T>> _constantInfo;
+        private readonly Lazy<ConstantInfo<T>> _constantInfo;
         public override bool AppliedAlways => _appliedAlways.Value;
-        public override bool IsConstant => _constantInfo.Value.IsConst;
-        public override T ConstantValue => _constantInfo.Value.Value;
+        public override ConstantInfo<T> Constant => _constantInfo.Value;
         public override IEnumerable<ObjectReference> ContextReferences => _children.SelectMany(x => x.ContextReferences);
     }
 }

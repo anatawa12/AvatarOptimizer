@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
 using JetBrains.Annotations;
 using nadena.dev.ndmf;
@@ -23,72 +22,65 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
     /// </summary>
     internal abstract class PropModNode<T> : IErrorContext
     {
-        /// <summary>
-        /// Returns the constant value of this node. If not constant, throws an exception.
-        /// </summary>
-        /// <throws cref="InvalidConstraintException">If not constant, or not active</throws>
-        public abstract T ConstantValue { get; }
-
-        /// <summary>
-        /// Returns true if this node is constant. For inactive nodes, this returns false.
-        /// </summary>
-        public abstract bool IsConstant { get; }
+        public T ConstantValue => Constant.Value;
+        public bool IsConstant => Constant.IsConstant;
 
         /// <summary>
         /// Returns true if this node is always applied. For inactive nodes, this returns false.
         /// </summary>
         public abstract bool AppliedAlways { get; }
+        public abstract ConstantInfo<T> Constant { get; }
         public abstract IEnumerable<ObjectReference> ContextReferences { get; }
     }
 
-    internal readonly struct ConstInfo<T>
+    internal readonly struct ConstantInfo<T>
     {
-        public bool IsConst { get; }
+        public bool IsConstant { get; }
         private readonly T _value;
 
         public T Value
         {
             get
             {
-                if (!IsConst) throw new InvalidOperationException("Not Constant");
+                if (!IsConstant) throw new InvalidOperationException("Not Constant");
                 return _value;
             }
         }
 
-        public static ConstInfo<T> Variable => default;
+        public static ConstantInfo<T> Variable => default;
 
-        public ConstInfo(T value)
+        public ConstantInfo(T value)
         {
             _value = value;
-            IsConst = true;
+            IsConstant = true;
         }
     }
 
     internal static class NodeImplUtils
     {
-        public static ConstInfo<T> ConstantInfoForSideBySide<T>(IEnumerable<PropModNode<T>> nodes)
+        public static ConstantInfo<T> ConstantInfoForSideBySide<T>(IEnumerable<PropModNode<T>> nodes)
         {
             using (var enumerator = nodes.GetEnumerator())
             {
                 Debug.Assert(enumerator.MoveNext());
 
-                if (!enumerator.Current.IsConstant) return ConstInfo<T>.Variable;
+                if (!enumerator.Current.IsConstant) return ConstantInfo<T>.Variable;
 
                 var value = enumerator.Current.ConstantValue;
 
                 while (enumerator.MoveNext())
                 {
-                    if (!enumerator.Current.IsConstant) return ConstInfo<T>.Variable;
+                    if (!enumerator.Current.IsConstant) return ConstantInfo<T>.Variable;
 
                     if (!EqualityComparer<T>.Default.Equals(value, enumerator.Current.ConstantValue))
-                        return ConstInfo<T>.Variable;
+                        return ConstantInfo<T>.Variable;
                 }
 
-                return new ConstInfo<T>(value);
+                return new ConstantInfo<T>(value);
             }
         }
 
-        public static ConstInfo<T> ConstantInfoForOverriding<T, TLayer>(IEnumerable<TLayer> layersReversed)
+        public static ConstantInfo<T> ConstantInfoForOverriding<T, TLayer>(IEnumerable<TLayer> layersReversed)
             where TLayer : ILayer<T>
         {
             T value = default;
@@ -100,13 +92,13 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 {
                     case AnimatorWeightState.AlwaysOne:
                     case AnimatorWeightState.EitherZeroOrOne:
-                        if (!layer.Node.IsConstant) return ConstInfo<T>.Variable;
+                        if (!layer.Node.IsConstant) return ConstantInfo<T>.Variable;
 
                         if (layer.Node.AppliedAlways && layer.Weight == AnimatorWeightState.AlwaysOne &&
                             layer.BlendingMode == AnimatorLayerBlendingMode.Override)
                         {
                             // the layer is always applied at the highest property.
-                            return new ConstInfo<T>(layer.Node.ConstantValue);
+                            return new ConstantInfo<T>(layer.Node.ConstantValue);
                         }
 
                         // partially applied constants so save that value and continue.
@@ -118,18 +110,18 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                         else
                         {
                             if (!EqualityComparer<T>.Default.Equals(value, layer.Node.ConstantValue))
-                                return ConstInfo<T>.Variable;
+                                return ConstantInfo<T>.Variable;
                         }
 
                         break;
                     case AnimatorWeightState.Variable:
-                        return ConstInfo<T>.Variable;
+                        return ConstantInfo<T>.Variable;
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
             }
 
-            return new ConstInfo<T>(value);
+            return new ConstantInfo<T>(value);
         }
     }
 
@@ -151,41 +143,9 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 Add(child);
         }
 
-        (bool, T) ComputeConstantInfo()
-        {
-            using (var enumerator = _children.GetEnumerator())
-            {
-                Debug.Assert(enumerator.MoveNext());
-
-                if (!enumerator.Current.IsConstant) return (false, default);
-
-                var value = enumerator.Current.ConstantValue;
-
-                while (enumerator.MoveNext())
-                {
-                    if (!enumerator.Current.IsConstant) return (false, default);
-
-                    if (!EqualityComparer<T>.Default.Equals(value, enumerator.Current.ConstantValue))
-                        return (false, default);
-                }
-
-                return (true, value);
-            }
-        }
-
         public override bool AppliedAlways => _children.All(x => x.AppliedAlways);
         public override IEnumerable<ObjectReference> ContextReferences => _children.SelectMany(x => x.ContextReferences);
-        public override bool IsConstant => ComputeConstantInfo().Item1;
-
-        public override T ConstantValue
-        {
-            get
-            {
-                var info = ComputeConstantInfo();
-                if (!info.Item1) throw new InvalidOperationException("Not Constant");
-                return info.Item2;
-            }
-        }
+        public override ConstantInfo<T> Constant => NodeImplUtils.ConstantInfoForSideBySide(_children);
 
         public IEnumerable<Component> SourceComponents => _children.Select(x => x.Component);
 
@@ -215,31 +175,21 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
         private FloatAnimationCurveNode(AnimationClip clip, AnimationCurve curve)
         {
-            System.Diagnostics.Debug.Assert(curve.keys.Length > 0);
+            Debug.Assert(curve.keys.Length > 0);
             Clip = clip;
             Curve = curve;
+            _constantInfo = new Lazy<ConstantInfo<float>>(() => ParseProperty(curve), isThreadSafe: false);
         }
 
-        private object _parsedProperty;
-        private object Parsed
-        {
-            get
-            {
-                if (_parsedProperty == null) return _parsedProperty = ParseProperty(Curve);
-                return _parsedProperty;
-            }
-        }
+        private readonly Lazy<ConstantInfo<float>> _constantInfo;
 
-        private static readonly object Variable = new object();
-
-        public override bool IsConstant => Parsed is float;
         public override bool AppliedAlways => true;
-        public override float ConstantValue => Parsed as float? ?? throw new InvalidOperationException("Non Constant");
+        public override ConstantInfo<float> Constant => _constantInfo.Value;
         public override IEnumerable<ObjectReference> ContextReferences => new []{ ObjectRegistry.GetReference(Clip) };
 
-        private static object ParseProperty(AnimationCurve curve)
+        private static ConstantInfo<float> ParseProperty(AnimationCurve curve)
         {
-            if (curve.keys.Length == 1) return curve.keys[0].value;
+            if (curve.keys.Length == 1) return new ConstantInfo<float>(curve.keys[0].value);
 
             float constValue = 0;
             foreach (var (preKey, postKey) in curve.keys.ZipWithNext())
@@ -247,16 +197,16 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 var preWeighted = preKey.weightedMode == WeightedMode.Out || preKey.weightedMode == WeightedMode.Both;
                 var postWeighted = postKey.weightedMode == WeightedMode.In || postKey.weightedMode == WeightedMode.Both;
 
-                if (preKey.value.CompareTo(postKey.value) != 0) return Variable;
+                if (preKey.value.CompareTo(postKey.value) != 0) return ConstantInfo<float>.Variable;
                 constValue = preKey.value;
                 // it's constant
                 if (float.IsInfinity(preKey.outWeight) || float.IsInfinity(postKey.inTangent)) continue;
                 if (preKey.outTangent == 0 && postKey.inTangent == 0) continue;
                 if (preWeighted && postWeighted && preKey.outWeight == 0 && postKey.inWeight == 0) continue;
-                return Variable;
+                return ConstantInfo<float>.Variable;
             }
 
-            return constValue;
+            return new ConstantInfo<float>(constValue);
         }
     }
 
@@ -280,9 +230,9 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 return !partial && _children.All(x => x.AppliedAlways);
             }, isThreadSafe: false);
 
-            _constantInfo = new Lazy<ConstInfo<T>>(() =>
+            _constantInfo = new Lazy<ConstantInfo<T>>(() =>
             {
-                if (!WeightSumIsOne) return ConstInfo<T>.Variable;
+                if (!WeightSumIsOne) return ConstantInfo<T>.Variable;
                 return NodeImplUtils.ConstantInfoForSideBySide(_children);
             }, isThreadSafe: false);
         }
@@ -291,13 +241,11 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         private bool WeightSumIsOne => _blendTreeType != BlendTreeType.Direct;
 
         private readonly Lazy<bool> _appliedAlways;
-        private readonly Lazy<ConstInfo<T>> _constantInfo;
+        private readonly Lazy<ConstantInfo<T>> _constantInfo;
 
         public override bool AppliedAlways => _appliedAlways.Value;
         public override IEnumerable<ObjectReference> ContextReferences => _children.SelectMany(x => x.ContextReferences);
-
-        public override bool IsConstant => _constantInfo.Value.IsConst;
-        public override T ConstantValue => _constantInfo.Value.Value;
+        public override ConstantInfo<T> Constant => _constantInfo.Value;
     }
 
     abstract class ComponentPropModNode<T> : PropModNode<T>
@@ -319,9 +267,8 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         {
         }
 
-        public override T ConstantValue => throw new InvalidOperationException("Not Constant");
-        public override bool IsConstant => false;
         public override bool AppliedAlways => false;
+        public override ConstantInfo<T> Constant => ConstantInfo<T>.Variable;
     }
 
     class AnimationComponentPropModNode<T> : ComponentPropModNode<T>
@@ -333,8 +280,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             _animation = animation;
         }
 
-        public override T ConstantValue => _animation.ConstantValue;
-        public override bool IsConstant => _animation.IsConstant;
         public override bool AppliedAlways => false;
+        public override ConstantInfo<T> Constant => _animation.Constant;
     }
 }
