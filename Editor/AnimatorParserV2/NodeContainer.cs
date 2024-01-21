@@ -38,14 +38,22 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         IReadOnlyDictionary<(ComponentOrGameObject target, string prop), PropModNode<float>> INodeContainer.FloatNodes => 
             Utils.CastDic<PropModNode<float>>().CastedDic(FloatNodes);
 
-        public void Add(ComponentNodeContainer container)
+        public void Add(ComponentNodeContainer container, bool alwaysApplied)
         {
             foreach (var (key, value) in container.FloatNodes)
             {
                 if (!FloatNodes.TryGetValue(key, out var node))
                     FloatNodes.Add(key, node = new RootPropModNode<float>());
-                node.Add(value);
+                node.Add(value, alwaysApplied);
             }
+        }
+
+        public void Add(Component component, string prop, ComponentPropModNode<float> node, bool alwaysApplied)
+        {
+            var key = (component, prop);
+            if (!FloatNodes.TryGetValue(key, out var root))
+                FloatNodes.Add(key, root = new RootPropModNode<float>());
+            root.Add(node, alwaysApplied);
         }
 
         public bool? GetConstantValue(ComponentOrGameObject gameObject, string property, bool gameObjectActiveSelf)
@@ -61,14 +69,6 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             }
 
             return null;
-        }
-
-        public void Add(Component component, string prop, ComponentPropModNode<float> variableComponentPropModNode)
-        {
-            var key = (component, prop);
-            if (!FloatNodes.TryGetValue(key, out var node))
-                FloatNodes.Add(key, node = new RootPropModNode<float>());
-            node.Add(variableComponentPropModNode);
         }
     }
 

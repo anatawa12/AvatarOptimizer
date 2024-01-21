@@ -121,7 +121,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             }
             */
 
-            modifications.Add(parsed);
+            modifications.Add(parsed, alwaysApplied);
         }
 
         #region OtherComponents
@@ -137,7 +137,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             public override void ModifyProperties(Component component, IEnumerable<string> properties)
             {
                 foreach (var prop in properties)
-                    _modifications.Add(component, prop, new VariableComponentPropModNode<float>(Modifier));
+                    _modifications.Add(component, prop, new VariableComponentPropModNode<float>(Modifier), true);
             }
         }
 
@@ -169,7 +169,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
             var animator = session.AvatarRootObject.GetComponent<Animator>();
             if (animator)
-                modifications.Add(AddHumanoidModifications(null, animator));
+                modifications.Add(AddHumanoidModifications(null, animator), true);
             
 #if AAO_VRCSDK3_AVATARS
             var descriptor = session.AvatarRootObject.GetComponent<VRCAvatarDescriptor>();
@@ -180,13 +180,13 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 #if AAO_VRM0
             var blendShapeProxy = session.AvatarRootObject.GetComponent<VRM.VRMBlendShapeProxy>();
             if (blendShapeProxy)
-                modifications.Add(CollectBlendShapeProxyModifications(session, blendShapeProxy));
+                modifications.Add(CollectBlendShapeProxyModifications(session, blendShapeProxy), true);
 #endif
             
 #if AAO_VRM1
             var vrm10Instance = session.AvatarRootObject.GetComponent<UniVRM10.Vrm10Instance>();
             if (vrm10Instance)
-                modifications.Add(CollectVrm10InstanceModifications(session, vrm10Instance));
+                modifications.Add(CollectVrm10InstanceModifications(session, vrm10Instance), true);
 #endif
         }
         
@@ -266,7 +266,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             MergeLayer(VRCAvatarDescriptor.AnimLayerType.Action, false, 0);
             MergeLayer(VRCAvatarDescriptor.AnimLayerType.FX, false, 1);
 
-            modifications.Add(ComponentFromLayers(animator, playableLayers));
+            modifications.Add(ComponentFromLayers(animator, playableLayers), true);
 
             // TPose and IKPose should only affect to Humanoid so skip here~
 
@@ -280,7 +280,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                     mmdNodeContainer.Add(bodySkinnedMesh, $"blendShape.{shape}",
                         new VariableComponentPropModNode<float>(descriptor));
 
-                modifications.Add(mmdNodeContainer);
+                modifications.Add(mmdNodeContainer, true);
             }
         }
 

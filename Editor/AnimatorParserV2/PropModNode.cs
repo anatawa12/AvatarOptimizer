@@ -152,24 +152,40 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
     internal sealed class RootPropModNode<T> : PropModNode<T>, IErrorContext
     {
-        private readonly List<ComponentPropModNode<T>> _children = new List<ComponentPropModNode<T>>();
+        readonly struct ComponentInfo
+        {
+            public readonly ComponentPropModNode<T> Node;
+            public readonly bool AlwaysApplied;
+
+            public bool AppliedAlways => Node.AppliedAlways && AlwaysApplied;
+            public IEnumerable<ObjectReference> ContextReferences => Node.ContextReferences;
+            public Component Component => Node.Component;
+
+            public ComponentInfo(ComponentPropModNode<T> node, bool alwaysApplied)
+            {
+                Node = node;
+                AlwaysApplied = alwaysApplied;
+            }
+        }
+
+        private readonly List<ComponentInfo> _children = new List<ComponentInfo>();
 
         public RootPropModNode(params RootPropModNode<T>[] props)
         {
             foreach (var prop in props)
             foreach (var child in prop._children)
-                Add(child);
+                _children.Add(child);
         }
 
         public override bool AppliedAlways => _children.All(x => x.AppliedAlways);
         public override IEnumerable<ObjectReference> ContextReferences => _children.SelectMany(x => x.ContextReferences);
-        public override ConstantInfo<T> Constant => NodeImplUtils.ConstantInfoForSideBySide(_children);
+        public override ConstantInfo<T> Constant => NodeImplUtils.ConstantInfoForSideBySide(_children.Select(x => x.Node));
 
         public IEnumerable<Component> SourceComponents => _children.Select(x => x.Component);
 
-        public void Add(ComponentPropModNode<T> value)
+        public void Add(ComponentPropModNode<T> node, bool alwaysApplied)
         {
-            _children.Add(value);
+            _children.Add(new ComponentInfo(node, alwaysApplied));
         }
     }
 
@@ -292,7 +308,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
         private readonly Lazy<ConstantInfo<T>> _constantInfo;
 
-        public override bool AppliedAlways => false;
+        public override bool AppliedAlways => true;
         public override ConstantInfo<T> Constant => _constantInfo.Value;
 
         public override IEnumerable<ObjectReference> ContextReferences =>
