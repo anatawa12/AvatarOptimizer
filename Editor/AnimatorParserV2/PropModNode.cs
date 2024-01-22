@@ -170,13 +170,6 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
         private readonly List<ComponentInfo> _children = new List<ComponentInfo>();
 
-        public RootPropModNode(params RootPropModNode<T>[] props)
-        {
-            foreach (var prop in props)
-            foreach (var child in prop._children)
-                _children.Add(child);
-        }
-
         public override bool AppliedAlways => _children.All(x => x.AppliedAlways);
         public override IEnumerable<ObjectReference> ContextReferences => _children.SelectMany(x => x.ContextReferences);
         public override ConstantInfo<T> Constant => NodeImplUtils.ConstantInfoForSideBySide(_children.Select(x => x.Node));
@@ -186,6 +179,13 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         public void Add(ComponentPropModNode<T> node, bool alwaysApplied)
         {
             _children.Add(new ComponentInfo(node, alwaysApplied));
+        }
+        
+        public void Add([NotNull] RootPropModNode<T> toAdd)
+        {
+            if (toAdd == null) throw new ArgumentNullException(nameof(toAdd));
+            foreach (var child in toAdd._children)
+                Add(child.Node, child.AppliedAlways);
         }
     }
 

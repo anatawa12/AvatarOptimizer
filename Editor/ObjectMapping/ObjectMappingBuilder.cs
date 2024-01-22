@@ -112,7 +112,10 @@ namespace Anatawa12.AvatarOptimizer
             [CanBeNull] public readonly string Name;
             [CanBeNull] public AnimationPropertyInfo MergedTo { get; private set; }
             private MappedPropertyInfo? _mappedPropertyInfo;
+            [CanBeNull] private RootPropModNode<float> _floatNode;
             [CanBeNull] public List<AnimationPropertyInfo> CopiedTo { get; private set; }
+            [CanBeNull]
+            public RootPropModNode<float> FloatNode => _floatNode;
 
             public AnimationPropertyInfo([NotNull] BuildingComponentInfo component, [NotNull] string name)
             {
@@ -125,13 +128,12 @@ namespace Anatawa12.AvatarOptimizer
             }
 
             public static readonly AnimationPropertyInfo RemovedMarker = new AnimationPropertyInfo();
-            [CanBeNull] public RootPropModNode<float> FloatNode;
 
             public void MergeTo(AnimationPropertyInfo property)
             {
                 MergedTo = property;
                 // I want to use recursive switch with recursive pattern here but not avaiable yet
-                property.FloatNode = MergeNode(FloatNode, property.FloatNode);
+                MergeNode(ref property._floatNode, ref _floatNode);
             }
 
             public void CopyTo(AnimationPropertyInfo property)
@@ -139,14 +141,8 @@ namespace Anatawa12.AvatarOptimizer
                 if (CopiedTo == null)
                     CopiedTo = new List<AnimationPropertyInfo>();
                 CopiedTo.Add(property);
-                property.FloatNode = MergeNode(FloatNode, property.FloatNode);
+                MergeNode(ref property._floatNode, ref _floatNode);
             }
-
-            [CanBeNull] private static RootPropModNode<T> MergeNode<T>([CanBeNull] RootPropModNode<T> aProp,
-                [CanBeNull] RootPropModNode<T> bProp) =>
-                aProp == null ? bProp
-                : bProp == null ? aProp 
-                : new RootPropModNode<T>(aProp, bProp);
 
             public MappedPropertyInfo GetMappedInfo()
             {
@@ -190,6 +186,32 @@ namespace Anatawa12.AvatarOptimizer
 
                     return new MappedPropertyInfo(descriptor, copied.ToArray());
                 }
+            }
+
+            private static void MergeNode<T>([CanBeNull] ref RootPropModNode<T> mergeTo,
+                [CanBeNull] ref RootPropModNode<T> merge)
+            {
+                if (merge == null) return;
+                if (mergeTo == null)
+                {
+                    mergeTo = merge;
+                    return;
+                }
+
+                mergeTo.Add(merge);
+                merge = null;
+            }
+
+            public void ImportProperty(RootPropModNode<float> node)
+            {
+                if (FloatNode != null) throw new InvalidOperationException();
+                _floatNode = node;
+            }
+
+            public void AddModification(ComponentPropModNode<float> node, bool alwaysApplied)
+            {
+                if (_floatNode == null) _floatNode = new RootPropModNode<float>();
+                _floatNode.Add(node, alwaysApplied);
             }
         }
 
@@ -304,18 +326,11 @@ namespace Anatawa12.AvatarOptimizer
                 return animation != null;
             }
 
-            public override void AddModification(string property, ComponentPropModNode<float> node, bool alwaysApplied)
-            {
-                if (!_afterPropertyIds.TryGetValue(property, out var info)) return;
-                if (info.FloatNode == null)
-                    info.FloatNode = new RootPropModNode<float>();
-                info.FloatNode.Add(node, alwaysApplied);
-            }
+            public override void AddModification(string prop, ComponentPropModNode<float> node, bool alwaysApplied) =>
+                GetProperty(prop).AddModification(node, alwaysApplied);
 
-            public void ImportProperty(string prop, RootPropModNode<float> value)
-            {
-                GetProperty(prop).FloatNode = value;
-            }
+            public void ImportProperty(string prop, RootPropModNode<float> node) =>
+                GetProperty(prop).ImportProperty(node);
         }
     }
 
@@ -323,6 +338,6 @@ namespace Anatawa12.AvatarOptimizer
     {
         public abstract bool ContainsFloat(string property);
         public abstract bool TryGetFloat(string propertyName, out RootPropModNode<float> animation);
-        public abstract void AddModification(string property, ComponentPropModNode<float> node, bool alwaysApplied);
+        public abstract void AddModification(string prop, ComponentPropModNode<float> node, bool alwaysApplied);
     }
 }
