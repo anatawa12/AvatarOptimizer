@@ -105,11 +105,10 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
             var parsed = parseComponent();
 
-            // TODO: restore post check
-            /*
             if (alwaysApplied)
             {
-                switch (parsed.GetConstantValue(animator, "m_Enabled", animator.enabled))
+                parsed.FloatNodes.TryGetValue((animator, "m_Enabled"), out var node);
+                switch (node.AsConstantValue(animator.enabled))
                 {
                     case null:
                     case false:
@@ -119,7 +118,6 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                         break;
                 }
             }
-            */
 
             modifications.Add(parsed, alwaysApplied);
         }
