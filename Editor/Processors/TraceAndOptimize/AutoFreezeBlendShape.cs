@@ -52,7 +52,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     newWeight = weight;
                     if (!modifies.TryGetFloat($"blendShape.{name}", out var prop)) return true;
 
-                    if (prop.Constant.TryGetValue(out var constWeight))
+                    if (prop.Value.TryGetConstantValue(out var constWeight))
                     {
                         if (prop.AppliedAlways)
                         {

@@ -14,7 +14,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         {
         }
 
-        public override ConstantInfo<float> Constant => ConstantInfo<float>.Variable;
+        public override ValueInfo<float> Value => ValueInfo<float>.Variable;
         public override bool AppliedAlways => true;
     }
 
@@ -56,17 +56,17 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 () => NodeImplUtils.AlwaysAppliedForOverriding<T, PlayableLayerNodeInfo<T>>(_layersReversed),
                 isThreadSafe: false);
 
-            _constantInfo = new Lazy<ConstantInfo<T>>(
+            _constantInfo = new Lazy<ValueInfo<T>>(
                 () => NodeImplUtils.ConstantInfoForOverriding<T, PlayableLayerNodeInfo<T>>(_layersReversed),
                 isThreadSafe: false);
         }
 
 
         private readonly Lazy<bool> _appliedAlways;
-        private readonly Lazy<ConstantInfo<T>> _constantInfo;
+        private readonly Lazy<ValueInfo<T>> _constantInfo;
 
         public override bool AppliedAlways => _appliedAlways.Value;
-        public override ConstantInfo<T> Constant => _constantInfo.Value;
+        public override ValueInfo<T> Value => _constantInfo.Value;
         public override IEnumerable<ObjectReference> ContextReferences => base.ContextReferences.Concat(
             _layersReversed.SelectMany(x => x.Node.ContextReferences));
     }
@@ -94,7 +94,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         public static AnimatorControllerPropModNode<T> Create(List<AnimatorLayerNodeInfo<T>> value)
         {
             if (value.Count == 0) return null;
-            if (value.All(x => x.BlendingMode == AnimatorLayerBlendingMode.Additive && x.Node.Constant.IsConstant))
+            if (value.All(x => x.BlendingMode == AnimatorLayerBlendingMode.Additive && x.Node.Value.IsConstant))
                 return null; // unchanged constant
 
             value.Reverse();
@@ -104,7 +104,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         private AnimatorControllerPropModNode(IEnumerable<AnimatorLayerNodeInfo<T>> layersReversed) =>
             _layersReversed = layersReversed;
 
-        public override ConstantInfo<T> Constant =>
+        public override ValueInfo<T> Value =>
             NodeImplUtils.ConstantInfoForOverriding<T, AnimatorLayerNodeInfo<T>>(_layersReversed);
 
         // we may possible to implement complex logic which simulates state machine but not for now.
@@ -138,7 +138,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         }
 
         public override bool AppliedAlways => !_partial && _children.All(x => x.AppliedAlways);
-        public override ConstantInfo<T> Constant => NodeImplUtils.ConstantInfoForSideBySide(_children);
+        public override ValueInfo<T> Value => NodeImplUtils.ConstantInfoForSideBySide(_children);
         public override IEnumerable<ObjectReference> ContextReferences => _children.SelectMany(x => x.ContextReferences);
     }
 }

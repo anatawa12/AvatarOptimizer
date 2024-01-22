@@ -9,23 +9,23 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
         public struct Expected
         {
             public readonly bool Always;
-            public readonly ConstantInfo<float> Constant;
+            public readonly ValueInfo<float> Value;
 
-            public Expected(bool always, ConstantInfo<float> constant)
+            public Expected(bool always, ValueInfo<float> value)
             {
                 Always = always;
-                Constant = constant;
+                Value = value;
             }
         }
 
-        public static Expected ConstantAlways(float value) => new Expected(true, new ConstantInfo<float>(value));
-        public static Expected ConstantPartially(float value) => new Expected(false, new ConstantInfo<float>(value));
-        public static Expected Variable(bool always = true) => new Expected(always, ConstantInfo<float>.Variable);
+        public static Expected ConstantAlways(float value) => new Expected(true, new ValueInfo<float>(value));
+        public static Expected ConstantPartially(float value) => new Expected(false, new ValueInfo<float>(value));
+        public static Expected Variable(bool always = true) => new Expected(always, ValueInfo<float>.Variable);
 
         public static void AssertPropertyNode(PropModNode<float> propertyNode, Expected property)
         {
             Assert.That(propertyNode.AppliedAlways, Is.EqualTo(property.Always));
-            Assert.That(propertyNode.Constant, Is.EqualTo(property.Constant));
+            Assert.That(propertyNode.Value, Is.EqualTo(property.Value));
         }
     }
 }
