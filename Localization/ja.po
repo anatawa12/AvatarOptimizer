@@ -468,6 +468,9 @@ msgstr "Playable Layer Controlに未知のレイヤー'{0}'が指定されてい
 msgid "AnimatorParser:AnimatorLayerControl:UnknownBlendablePlayableLayer"
 msgstr "Animator Layer Controlに未知のレイヤー'{0}'が指定されています。"
 
+msgid "AnimatorParser:AnimatorNotFoundAtAvatarRoot"
+msgstr "アバタールートにAnimatorコンポーネントがありません。"
+
 #endregion
 
 #region MeshInfo2

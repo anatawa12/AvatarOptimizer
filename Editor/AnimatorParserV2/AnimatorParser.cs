@@ -198,7 +198,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             var animator = descriptor.GetComponent<Animator>();
             if (animator == null)
             {
-                // TODO: make error
+                BuildLog.LogError("AnimatorParser:AnimatorNotFoundAtAvatarRoot", descriptor.gameObject);
                 return;
             }
 

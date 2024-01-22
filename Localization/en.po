@@ -532,6 +532,9 @@ msgstr "Unknown Playable Layer '{0}' is specified for Playable Layer Control."
 msgid "AnimatorParser:AnimatorLayerControl:UnknownBlendablePlayableLayer"
 msgstr "Unknown Playable Layer '{0}' is specified for Animator Layer Control."
 
+msgid "AnimatorParser:AnimatorNotFoundAtAvatarRoot"
+msgstr "Animator component not found at Avatar Root"
+
 #endregion
 
 #region MeshInfo2
