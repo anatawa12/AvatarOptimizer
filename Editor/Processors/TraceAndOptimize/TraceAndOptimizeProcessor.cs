@@ -58,7 +58,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             var config = context.AvatarRootObject.GetComponent<TraceAndOptimize>();
             if (config)
                 context.GetState<TraceAndOptimizeState>().Initialize(config);
-            Object.DestroyImmediate(config);
+            DestroyTracker.DestroyImmediate(config);
         }
     }
 

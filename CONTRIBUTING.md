@@ -60,3 +60,7 @@ Because I want to include link to pull request in the CHANGELOG files, I recomme
 4. Open draft Pull Request
 5. Make Changes in CHANGELOG file
 6. Mark the Pull Request ready for review
+
+## Notes for writing codes
+
+Do not use `Object.DestroyImmediate`, use `DestroyTracker.DestroyImmediate` instead.

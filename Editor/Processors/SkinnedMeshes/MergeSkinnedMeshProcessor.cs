@@ -235,9 +235,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 if (toDestroy)
                 {
                     BuildLog.LogWarning("MergeSkinnedMesh:warning:removeZeroSizedPolygonOnSources", toDestroy);
-                    Object.DestroyImmediate(toDestroy);
+                    DestroyTracker.DestroyImmediate(toDestroy);
                 }
-                Object.DestroyImmediate(renderer);
+                DestroyTracker.DestroyImmediate(renderer);
 
                 // process removeEmptyRendererObject
                 if (!Component.removeEmptyRendererObject) continue;
@@ -248,14 +248,14 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 if (rendererGameObject.transform.childCount != 0) continue;
                 // the SkinnedMeshRenderer may also be used as bone. it's not good to remove
                 if (boneTransforms.Contains(rendererGameObject.transform)) continue;
-                Object.DestroyImmediate(rendererGameObject);
+                DestroyTracker.DestroyImmediate(rendererGameObject);
             }
 
             foreach (var renderer in staticMeshRenderers)
             {
                 ActivenessAnimationWarning(renderer, context, parents);
-                Object.DestroyImmediate(renderer.GetComponent<MeshFilter>());
-                Object.DestroyImmediate(renderer);
+                DestroyTracker.DestroyImmediate(renderer.GetComponent<MeshFilter>());
+                DestroyTracker.DestroyImmediate(renderer);
             }
             Profiler.EndSample();
 
