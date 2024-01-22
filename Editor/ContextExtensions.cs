@@ -49,15 +49,13 @@ namespace Anatawa12.AvatarOptimizer
         public static AnimationComponentInfo GetAnimationComponent([NotNull] this BuildContext context,
             ComponentOrGameObject component) =>
             GetMappingBuilder(context).GetAnimationComponent(component);
-        
-        public static bool? GetConstantValue([NotNull] this BuildContext context, ComponentOrGameObject obj, string property, bool currentValue)
-        {
-            if (!context.GetAnimationComponent(obj).TryGetFloat(property, out var node))
-                return currentValue;
 
-            return node.AsConstantValue(currentValue);
-        }
-        
+        public static bool? GetConstantValue([NotNull] this BuildContext context, ComponentOrGameObject obj,
+            string property, bool currentValue) =>
+            !context.GetAnimationComponent(obj).TryGetFloat(property, out var node)
+                ? currentValue
+                : node.AsConstantValue(currentValue);
+
         public static bool? AsConstantValue(this RootPropModNode<float> node, bool currentValue)
         {
             if (node.Value.TryGetConstantValue(out var constFloat))

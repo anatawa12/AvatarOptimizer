@@ -43,20 +43,10 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             root.Add(node, alwaysApplied);
         }
 
-        public bool? GetConstantValue(ComponentOrGameObject gameObject, string property, bool gameObjectActiveSelf)
-        {
-            if (!FloatNodes.TryGetValue((gameObject, property), out var node))
-                return gameObjectActiveSelf;
-
-            if (node.Value.TryGetConstantValue(out var value))
-            {
-                var constValue = value == 0;
-                if (node.AppliedAlways || constValue == gameObjectActiveSelf)
-                    return constValue;
-            }
-
-            return null;
-        }
+        public bool? GetConstantValue(ComponentOrGameObject gameObject, string property, bool currentValue) =>
+            FloatNodes.TryGetValue((gameObject, property), out var node)
+                ? node.AsConstantValue(currentValue)
+                : currentValue;
     }
 
     internal class NodeContainerBase<TFloatNode> : INodeContainer<TFloatNode>, INodeContainer
