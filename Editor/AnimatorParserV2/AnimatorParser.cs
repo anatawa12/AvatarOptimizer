@@ -274,13 +274,9 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
             if (mmdWorldCompatibility && bodySkinnedMesh)
             {
-                var mmdNodeContainer = new ComponentNodeContainer();
-
                 foreach (var shape in MmdBlendShapeNames)
-                    mmdNodeContainer.Add(bodySkinnedMesh, $"blendShape.{shape}",
-                        new VariableComponentPropModNode<float>(descriptor));
-
-                modifications.Add(mmdNodeContainer, true);
+                    modifications.Add(bodySkinnedMesh, $"blendShape.{shape}",
+                        new VariableComponentPropModNode<float>(descriptor), true);
             }
         }
 
