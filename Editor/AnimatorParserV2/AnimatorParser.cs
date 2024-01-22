@@ -280,19 +280,6 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             }
         }
 
-        private ComponentNodeContainer AnimationFromClip(Animation animation,
-            ImmutableNodeContainer animationClip)
-        {
-            var animatorNodeContainer = new ComponentNodeContainer();
-
-            foreach (var ((target, prop), node) in animationClip.FloatNodes)
-            {
-                animatorNodeContainer.Add(target, prop, new AnimationComponentPropModNode<float>(animation, node));
-            }
-
-            return animatorNodeContainer;
-        }
-
         private void CollectWeightChangesInController(RuntimeAnimatorController runtimeController,
             AnimatorLayerMap<ParserAnimatorWeightState> playableWeightChanged,
             AnimatorLayerMap<AnimatorLayerWeightMap<int>> animatorLayerWeightChanged)
@@ -487,19 +474,13 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         }
 
         [CanBeNull]
-        internal AnimatorControllerNodeContainer AdvancedParseAnimatorController(GameObject root, AnimatorController controller,
-            IReadOnlyDictionary<AnimationClip, AnimationClip> mapping, 
+        internal AnimatorControllerNodeContainer AdvancedParseAnimatorController(GameObject root,
+            AnimatorController controller,
+            IReadOnlyDictionary<AnimationClip, AnimationClip> mapping,
             [CanBeNull] AnimatorLayerWeightMap<int> externallyWeightChanged)
         {
             var layers = controller.layers;
-            if (layers.Length == 0) return null;
-
-            Dictionary<(ComponentOrGameObject target, string prop), List<AnimatorLayerNodeInfo<float>>> floatNodes =
-                new Dictionary<(ComponentOrGameObject, string), List<AnimatorLayerNodeInfo<float>>>();
-
-            // layers excluding weight zero layers
-
-            for (var i = 0; i < layers.Length; i++)
+            return NodesMerger.AnimatorControllerFromAnimatorLayers(controller.layers.Select((layer, i) =>
             {
                 AnimatorWeightState weightState;
                 if (i == 0)
@@ -511,30 +492,15 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                     var external = externallyWeightChanged?.Get(i) ?? ParserAnimatorWeightState.NotChanged;
 
                     if (!(GetWeightState(layers[i].defaultWeight, external) is AnimatorWeightState parsed))
-                        continue; // skip weight zero layer
+                        return (default, default, null); // skip weight zero layer
 
                     weightState = parsed;
                 }
 
                 var parsedLayer = ParseAnimatorControllerLayer(root, controller, mapping, i);
 
-                foreach (var (key, value) in parsedLayer.FloatNodes)
-                {
-                    if (!floatNodes.TryGetValue(key, out var list))
-                        floatNodes.Add(key, list = new List<AnimatorLayerNodeInfo<float>>());
-                    list.Add(new AnimatorLayerNodeInfo<float>(weightState, layers[i].blendingMode, value));
-                }
-            }
-
-            var container = new AnimatorControllerNodeContainer();
-
-            foreach (var ((target, prop), value) in floatNodes)
-            {
-                var node = AnimatorControllerPropModNode<float>.Create(value);
-                if (node != null) container.Add(target, prop, node);
-            }
-
-            return container;
+                return (weightState, layer.blendingMode, parsedLayer);
+            }));
         }
 
         public ImmutableNodeContainer ParseAnimatorControllerLayer(

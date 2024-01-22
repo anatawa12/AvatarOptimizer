@@ -94,6 +94,34 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
             return animatorNodeContainer;
         }
+
+        internal static AnimatorControllerNodeContainer AnimatorControllerFromAnimatorLayers(
+            IEnumerable<(AnimatorWeightState, AnimatorLayerBlendingMode, ImmutableNodeContainer)> layers)
+        {
+            Dictionary<(ComponentOrGameObject target, string prop), List<AnimatorLayerNodeInfo<float>>> floatNodes =
+                new Dictionary<(ComponentOrGameObject, string), List<AnimatorLayerNodeInfo<float>>>();
+
+            foreach (var (weightState, bendingMode, parsedLayer) in layers)
+            {
+                if (parsedLayer == null) continue;
+                foreach (var (key, value) in parsedLayer.FloatNodes)
+                {
+                    if (!floatNodes.TryGetValue(key, out var list))
+                        floatNodes.Add(key, list = new List<AnimatorLayerNodeInfo<float>>());
+                    list.Add(new AnimatorLayerNodeInfo<float>(weightState, bendingMode, value));
+                }
+            }
+
+            var container = new AnimatorControllerNodeContainer();
+
+            foreach (var ((target, prop), value) in floatNodes)
+            {
+                var node = AnimatorControllerPropModNode<float>.Create(value);
+                if (node != null) container.Add(target, prop, node);
+            }
+
+            return container;
+        }
     }
     
     interface IMergeProperty
