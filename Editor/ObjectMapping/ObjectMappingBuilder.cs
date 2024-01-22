@@ -304,6 +304,14 @@ namespace Anatawa12.AvatarOptimizer
                 return animation != null;
             }
 
+            public override void AddModification(string property, ComponentPropModNode<float> node, bool alwaysApplied)
+            {
+                if (!_afterPropertyIds.TryGetValue(property, out var info)) return;
+                if (info.FloatNode == null)
+                    info.FloatNode = new RootPropModNode<float>();
+                info.FloatNode.Add(node, alwaysApplied);
+            }
+
             public void ImportProperty(string prop, RootPropModNode<float> value)
             {
                 GetProperty(prop).FloatNode = value;
@@ -315,5 +323,6 @@ namespace Anatawa12.AvatarOptimizer
     {
         public abstract bool ContainsFloat(string property);
         public abstract bool TryGetFloat(string propertyName, out RootPropModNode<float> animation);
+        public abstract void AddModification(string property, ComponentPropModNode<float> node, bool alwaysApplied);
     }
 }

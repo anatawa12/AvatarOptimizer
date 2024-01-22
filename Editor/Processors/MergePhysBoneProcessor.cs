@@ -3,6 +3,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Anatawa12.AvatarOptimizer.AnimatorParsersV2;
+using JetBrains.Annotations;
 using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEngine;
@@ -22,7 +24,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
             {
                 using (ErrorReport.WithContextObject(mergePhysBone))
                 {
-                    DoMerge(mergePhysBone);
+                    DoMerge(mergePhysBone, context);
                     Object.DestroyImmediate(mergePhysBone);
                 }
             }
@@ -31,7 +33,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
         private static bool SetEq<T>(IEnumerable<T> a, IEnumerable<T> b) => 
             new HashSet<T>(a).SetEquals(b);
 
-        internal static void DoMerge(MergePhysBone merge)
+        internal static void DoMerge(MergePhysBone merge, [CanBeNull] BuildContext context)
         {
             var sourceComponents = merge.componentsSet.GetAsList();
             if (sourceComponents.Count == 0) return;
@@ -128,7 +130,26 @@ namespace Anatawa12.AvatarOptimizer.Processors
             merged.hideFlags &= ~(HideFlags.HideInHierarchy | HideFlags.HideInInspector);
 
             foreach (var physBone in sourceComponents) Object.DestroyImmediate(physBone);
+
+            if (context != null)
+            {
+                // register modifications by merged component
+                foreach (var transform in merged.GetAffectedTransforms())
+                {
+                    var component = context.GetAnimationComponent(transform);
+                    foreach (var property in TransformRotationAndPositionAnimationKeys)
+                    {
+                        component.AddModification(property, new VariableComponentPropModNode<float>(merged), true);
+                    }
+                }
+            }
         }
+        
+        private static readonly string[] TransformRotationAndPositionAnimationKeys =
+        {
+            "m_LocalRotation.x", "m_LocalRotation.y", "m_LocalRotation.z", "m_LocalRotation.w", 
+            "m_LocalPosition.x", "m_LocalPosition.y", "m_LocalPosition.z" ,
+        };
 
         sealed class MergePhysBoneMerger : MergePhysBoneEditorModificationUtils
         {
