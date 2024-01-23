@@ -23,6 +23,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - Humanoid Bones may be removed by Trace and Optimize `#831`
+- Inspector of ComponentTypePair (GCDebug) is broken `#846`
 
 ### Security
 
