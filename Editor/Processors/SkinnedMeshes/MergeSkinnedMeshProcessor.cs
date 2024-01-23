@@ -288,7 +288,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 if (context.GetAnimationComponent(renderer).TryGetFloat("m_Enabled", out var p))
                 {
                     sources.Add(renderer);
-                    sources.Add(p.SourcesEnum);
+                    sources.Add(p.ContextReferences);
                 }
             }
             foreach (var transform in renderer.transform.ParentEnumerable(context.AvatarRootTransform, includeMe: true))
@@ -298,7 +298,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 {
                     sources.Add(renderer);
                     sources.Add(transform.gameObject);
-                    sources.Add(p.SourcesEnum);
+                    sources.Add(p.ContextReferences);
                 }
             }
 

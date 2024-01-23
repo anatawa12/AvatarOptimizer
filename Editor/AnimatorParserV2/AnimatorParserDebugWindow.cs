@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Text;
 using JetBrains.Annotations;
 using nadena.dev.ndmf;
@@ -6,12 +7,12 @@ using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace Anatawa12.AvatarOptimizer.AnimatorParsers
+namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 {
     internal class AnimatorParserDebugWindow : EditorWindow
     {
-        [MenuItem("Tools/Avatar Optimizer/Animator Parser Debug Window")]
-        private static void Open() => GetWindow<AnimatorParserDebugWindow>("AnimatorParser Debug Window");
+        [MenuItem("Tools/Avatar Optimizer/Animator Parser Debug Window V2")]
+        private static void Open() => GetWindow<AnimatorParserDebugWindow>("AnimatorParser Debug Window V2");
 
         public ParserSource parserSource;
         public RuntimeAnimatorController animatorController;
@@ -22,7 +23,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
         public Vector2 scrollView;
 
         public GameObject parsedRootObject;
-        public ImmutableModificationsContainer Container;
+        public INodeContainer Container;
 
         private void OnGUI()
         {
@@ -34,31 +35,25 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
                     GUIUtility.systemCopyBuffer = CreateText();
             }
 
+            if (Container == null) return;
+
             scrollView = GUILayout.BeginScrollView(scrollView);
 
-            foreach (var (gameObject, properties) in Container.ModifiedProperties)
+            foreach (var group in Container.FloatNodes.GroupBy(x => x.Key.target))
             {
-                EditorGUILayout.ObjectField(gameObject, typeof(Object), true);
+                EditorGUILayout.ObjectField(group.Key, typeof(Object), true);
                 EditorGUI.indentLevel++;
-                foreach (var (propName, propState) in properties)
+                foreach (var ((_, propName), propState) in group)
                 {
-                    string propStateInfo;
+                    string propStateInfo = "";
 
-                    switch (propState.State)
-                    {
-                        case AnimationFloatProperty.PropertyState.ConstantAlways:
-                            propStateInfo = $"Always:{propState.ConstValue}";
-                            break;
-                        case AnimationFloatProperty.PropertyState.ConstantPartially:
-                            propStateInfo = $"Partially:{propState.ConstValue}";
-                            break;
-                        case AnimationFloatProperty.PropertyState.Variable:
-                            propStateInfo = "Variable";
-                            break;
-                        case AnimationFloatProperty.PropertyState.Invalid:
-                        default:
-                            throw new ArgumentOutOfRangeException();
-                    }
+                    if (!propState.AppliedAlways)
+                        propStateInfo += "Partial:";
+
+                    if (propState.Value.TryGetConstantValue(out var value))
+                        propStateInfo += $"Const:{value}";
+                    else
+                        propStateInfo += "Variable";
 
                     NarrowValueLabelField(propName, propStateInfo);
                 }
@@ -73,31 +68,23 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
             var root = parsedRootObject.transform;
             var resultText = new StringBuilder();
             
-            foreach (var (obj, properties) in Container.ModifiedProperties)
+            foreach (var group in Container.FloatNodes.GroupBy(x => x.Key.target))
             {
-                var gameObject = obj.gameObject.transform;
+                var gameObject = group.Key.transform;
                 resultText.Append(Utils.RelativePath(root, gameObject)).Append(": ")
-                    .Append(((Object)obj).GetType().FullName).Append('\n');
+                    .Append(((Object)group.Key).GetType().FullName).Append('\n');
 
-                foreach (var (propName, propState) in properties)
+                foreach (var ((_, propName), propState) in group)
                 {
-                    string propStateInfo;
+                    string propStateInfo = "";
 
-                    switch (propState.State)
-                    {
-                        case AnimationFloatProperty.PropertyState.ConstantAlways:
-                            propStateInfo = $"Always:{propState.ConstValue}";
-                            break;
-                        case AnimationFloatProperty.PropertyState.ConstantPartially:
-                            propStateInfo = $"Partially:{propState.ConstValue}";
-                            break;
-                        case AnimationFloatProperty.PropertyState.Variable:
-                            propStateInfo = "Variable";
-                            break;
-                        case AnimationFloatProperty.PropertyState.Invalid:
-                        default:
-                            throw new ArgumentOutOfRangeException();
-                    }
+                    if (!propState.AppliedAlways)
+                        propStateInfo += "Partial:";
+
+                    if (propState.Value.TryGetConstantValue(out var value))
+                        propStateInfo += $"Const:{value}";
+                    else
+                        propStateInfo += "Variable";
 
                     resultText.Append(propName).Append(": ").Append(propStateInfo).Append('\n');
                 }
@@ -141,7 +128,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
                     break;
                 case ParserSource.AnimatorController:
                     ObjectField(ref animatorController, "Controller", false);
-                    ObjectField(ref rootGameObject, "Root GameObject", false);
+                    ObjectField(ref rootGameObject, "Root GameObject", true);
 
                     using (new EditorGUI.DisabledScope(!animatorController || !rootGameObject))
                     {
@@ -149,15 +136,14 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
                         {
                             parsedRootObject = rootGameObject;
                             Container = new AnimatorParser(true)
-                                .ParseAnimatorController(rootGameObject, animatorController)
-                                .ToImmutable();
+                                .ParseAnimatorController(rootGameObject, animatorController);
                         }
                     }
 
                     break;
                 case ParserSource.Motion:
                     ObjectField(ref motion, "Motion", false);
-                    ObjectField(ref rootGameObject, "Root GameObject", false);
+                    ObjectField(ref rootGameObject, "Root GameObject", true);
 
                     using (new EditorGUI.DisabledScope(!motion))
                     {
@@ -165,8 +151,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
                         {
                             parsedRootObject = rootGameObject;
                             Container = new AnimationParser()
-                                .ParseMotion(rootGameObject, motion, Utils.EmptyDictionary<AnimationClip, AnimationClip>())
-                                .ToImmutable();
+                                .ParseMotion(rootGameObject, motion, Utils.EmptyDictionary<AnimationClip, AnimationClip>());
                         }
                     }
 

@@ -13,7 +13,7 @@ using VRC.SDK3.Avatars.Components;
 using VRC.SDKBase;
 #endif
 
-namespace Anatawa12.AvatarOptimizer.AnimatorParsers
+namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 {
     class AnimatorParser
     {
@@ -25,27 +25,26 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
             this.mmdWorldCompatibility = mmdWorldCompatibility;
         }
 
-        public ImmutableModificationsContainer GatherAnimationModifications(BuildContext context)
+        public RootPropModNodeContainer GatherAnimationModifications(BuildContext context)
         {
-            var modificationsContainer = new ModificationsContainer();
+            var rootNode = new RootPropModNodeContainer();
 
-            modificationsContainer.MergeAsNewLayer(CollectAvatarRootAnimatorModifications(context), 
-                weightState: AnimatorWeightState.AlwaysOne);
+            CollectAvatarRootAnimatorModifications(context, rootNode);
 
             foreach (var child in context.AvatarRootTransform.DirectChildrenEnumerable())
-                WalkForAnimator(child, true, modificationsContainer);
+                WalkForAnimator(child, true, rootNode);
 
-            OtherMutateComponents(modificationsContainer, context);
+            OtherMutateComponents(rootNode, context);
 
-            return modificationsContainer.ToImmutable();
+            return rootNode;
         }
 
         private void WalkForAnimator(Transform transform, bool parentObjectAlwaysActive,
-            ModificationsContainer modificationsContainer)
+            RootPropModNodeContainer rootNode)
         {
             var gameObject = transform.gameObject;
             bool objectAlwaysActive;
-            switch (modificationsContainer.GetConstantValue(gameObject, "m_IsActive", gameObject.activeSelf))
+            switch (rootNode.GetConstantValue(gameObject, "m_IsActive", gameObject.activeSelf))
             {
                 case null:
                     objectAlwaysActive = false;
@@ -61,9 +60,10 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
             var animator = transform.GetComponent<Animator>();
             if (animator && animator.runtimeAnimatorController)
             {
-                ParseAnimationOrAnimator(animator, objectAlwaysActive, modificationsContainer,
+                ParseAnimationOrAnimator(animator, objectAlwaysActive, rootNode,
                     () => AddHumanoidModifications(
-                        ParseAnimatorController(gameObject, animator.runtimeAnimatorController), animator));
+                        NodesMerger.AnimatorComponentFromController(animator,
+                            ParseAnimatorController(gameObject, animator.runtimeAnimatorController)), animator));
             }
 
             var animation = transform.GetComponent<Animation>();
@@ -74,22 +74,23 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
                 // so if `Play Automatically` is disabled, we can do nothing with Animation component.
                 // That's why we ignore Animation component if playAutomatically is false.
 
-                ParseAnimationOrAnimator(animation, objectAlwaysActive, modificationsContainer,
-                    () => _animationParser.GetParsedAnimation(gameObject, animation.clip));
+                ParseAnimationOrAnimator(animation, objectAlwaysActive, rootNode,
+                    () => NodesMerger.AnimationComponentFromAnimationClip(animation,
+                        _animationParser.GetParsedAnimation(gameObject, animation.clip)));
             }
 
             foreach (var child in transform.DirectChildrenEnumerable())
-                WalkForAnimator(child, parentObjectAlwaysActive: objectAlwaysActive, modificationsContainer);
+                WalkForAnimator(child, parentObjectAlwaysActive: objectAlwaysActive, rootNode);
         }
 
         private void ParseAnimationOrAnimator(
             Behaviour animator,
             bool objectAlwaysActive,
-            ModificationsContainer modificationsContainer,
-            Func<IModificationsContainer> parseComponent)
+            RootPropModNodeContainer modifications,
+            Func<ComponentNodeContainer> parseComponent)
         {
             bool alwaysApplied;
-            switch (modificationsContainer.GetConstantValue(animator, "m_Enabled", animator.enabled))
+            switch (modifications.GetConstantValue(animator, "m_Enabled", animator.enabled))
             {
                 case null:
                     alwaysApplied = false;
@@ -106,7 +107,8 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
 
             if (alwaysApplied)
             {
-                switch (parsed.GetConstantValue(animator, "m_Enabled", animator.enabled))
+                parsed.FloatNodes.TryGetValue((animator, "m_Enabled"), out var node);
+                switch (node.AsConstantValue(animator.enabled))
                 {
                     case null:
                     case false:
@@ -117,39 +119,37 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
                 }
             }
 
-            modificationsContainer.MergeAsNewLayer(parsed,
-                weightState: AnimatorLayerWeightStates.ForAlwaysApplied(alwaysApplied));
+            modifications.Add(parsed, alwaysApplied);
         }
 
         #region OtherComponents
 
         private class Collector : ComponentMutationsCollector
         {
-            private readonly ModificationsContainer _modifications;
+            private readonly RootPropModNodeContainer _modifications;
 
-            public Collector(ModificationsContainer modifications) => _modifications = modifications;
+            public Collector(RootPropModNodeContainer modifications) => _modifications = modifications;
+            public Component Modifier { get; set; }
 
-            public IModificationSource Modifier { get; set; }
 
             public override void ModifyProperties(Component component, IEnumerable<string> properties)
             {
-                var updater = _modifications.ModifyObject(component);
                 foreach (var prop in properties)
-                    updater.AddModificationAsNewLayer(prop, AnimationFloatProperty.Variable(Modifier));
+                    _modifications.Add(component, prop, new VariableComponentPropModNode<float>(Modifier), true);
             }
         }
 
         /// <summary>
         /// Collect modifications by non-animation changes. For example, constraints, PhysBones, and else 
         /// </summary>
-        private static void OtherMutateComponents(ModificationsContainer mod, BuildContext context)
+        private static void OtherMutateComponents(RootPropModNodeContainer mod, BuildContext context)
         {
             var collector = new Collector(mod);
             foreach (var component in context.GetComponents<Component>())
             {
                 using (ErrorReport.WithContextObject(component))
                 {
-                    collector.Modifier = new ComponentAnimationSource(component);
+                    collector.Modifier = component;
                     if (ComponentInfoRegistry.TryGetInformation(component.GetType(), out var info))
                         info.CollectMutationsInternal(component, collector);
 
@@ -161,43 +161,48 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
 
         #region Avatar Root Animator
 
-        private IModificationsContainer CollectAvatarRootAnimatorModifications(BuildContext session)
+        private void CollectAvatarRootAnimatorModifications(BuildContext session,
+            RootPropModNodeContainer modifications)
         {
-            var modificationsContainer = new ModificationsContainer();
 
             var animator = session.AvatarRootObject.GetComponent<Animator>();
             if (animator)
-                modificationsContainer = AddHumanoidModifications(modificationsContainer, animator).ToMutable();
+                modifications.Add(AddHumanoidModifications(null, animator), true);
             
 #if AAO_VRCSDK3_AVATARS
             var descriptor = session.AvatarRootObject.GetComponent<VRCAvatarDescriptor>();
             if (descriptor)
-                CollectAvatarDescriptorModifications(modificationsContainer, descriptor);
+                CollectAvatarDescriptorModifications(modifications, descriptor);
 #endif
             
 #if AAO_VRM0
             var blendShapeProxy = session.AvatarRootObject.GetComponent<VRM.VRMBlendShapeProxy>();
             if (blendShapeProxy)
-                CollectBlendShapeProxyModifications(session, modificationsContainer, blendShapeProxy);
+                modifications.Add(CollectBlendShapeProxyModifications(session, blendShapeProxy), true);
 #endif
             
 #if AAO_VRM1
             var vrm10Instance = session.AvatarRootObject.GetComponent<UniVRM10.Vrm10Instance>();
             if (vrm10Instance)
-                CollectVrm10InstanceModifications(session, modificationsContainer, vrm10Instance);
+                modifications.Add(CollectVrm10InstanceModifications(session, vrm10Instance), true);
 #endif
-
-            return modificationsContainer;
         }
         
 #if AAO_VRCSDK3_AVATARS
-        private void CollectAvatarDescriptorModifications(ModificationsContainer modificationsContainer, VRCAvatarDescriptor descriptor)
+        private void CollectAvatarDescriptorModifications(RootPropModNodeContainer modifications, VRCAvatarDescriptor descriptor)
         {
             // process playable layers
             // see https://misskey.niri.la/notes/9ioemawdit
             // see https://creators.vrchat.com/avatars/playable-layers
 
-            var playableWeightChanged = new AnimatorLayerMap<AnimatorWeightState>();
+            var animator = descriptor.GetComponent<Animator>();
+            if (animator == null)
+            {
+                BuildLog.LogError("AnimatorParser:AnimatorNotFoundOnAvatarRoot", descriptor.gameObject);
+                return;
+            }
+
+            var playableWeightChanged = new AnimatorLayerMap<ParserAnimatorWeightState>();
             var animatorLayerWeightChanged = new AnimatorLayerMap<AnimatorLayerWeightMap<int>>
             {
                 [VRCAvatarDescriptor.AnimLayerType.Action] = new AnimatorLayerWeightMap<int>(),
@@ -214,8 +219,8 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
             if (mmdWorldCompatibility)
             {
                 var fxLayer = animatorLayerWeightChanged[VRCAvatarDescriptor.AnimLayerType.FX];
-                fxLayer[1] = fxLayer[1].Merge(AnimatorWeightState.EitherZeroOrOne);
-                fxLayer[2] = fxLayer[2].Merge(AnimatorWeightState.EitherZeroOrOne);
+                fxLayer[1] = Merge(fxLayer[1], ParserAnimatorWeightState.EitherZeroOrOne);
+                fxLayer[2] = Merge(fxLayer[2], ParserAnimatorWeightState.EitherZeroOrOne);
             }
 
             var controllers = new AnimatorLayerMap<RuntimeAnimatorController>();
@@ -225,34 +230,41 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
                 controllers[layer.type] = GetPlayableLayerController(layer, useDefaultLayers);
             }
 
-            void MergeLayer(VRCAvatarDescriptor.AnimLayerType type, bool alwaysApplied, float defaultWeight)
+            var playableLayers =
+                new List<(AnimatorWeightState, AnimatorLayerBlendingMode, AnimatorControllerNodeContainer)>();
+
+            void MergeLayer(
+                VRCAvatarDescriptor.AnimLayerType type, 
+                bool alwaysApplied, 
+                float defaultWeight,
+                AnimatorLayerBlendingMode mode = AnimatorLayerBlendingMode.Override
+            )
             {
-                AnimatorWeightState weightState;
+                AnimatorWeightState? weightState;
                 if (alwaysApplied)
                     weightState = AnimatorWeightState.AlwaysOne;
                 else
-                    weightState = AnimatorLayerWeightStates.WeightStateFor(defaultWeight)
-                        .Merge(playableWeightChanged[type]);
+                    weightState = GetWeightState(defaultWeight, playableWeightChanged[type]);
 
-                if (weightState == AnimatorWeightState.AlwaysZero) return;
+                if (weightState == null) return;
+                
 
-
-                var parsedLayer = ParseAnimatorController(descriptor.gameObject,
-                    controllers[type], animatorLayerWeightChanged[type]);
-
-                modificationsContainer.MergeAsNewLayer(parsedLayer, weightState);
+                var parsedLayer =
+                    ParseAnimatorController(descriptor.gameObject, controllers[type], animatorLayerWeightChanged[type]);
+                playableLayers.Add((weightState.Value, mode, parsedLayer));
             }
 
-            var animator = descriptor.GetComponent<Animator>();
             var isHumanoid = animator != null && animator.isHuman;
             MergeLayer(VRCAvatarDescriptor.AnimLayerType.Base, true, 1);
             // Station Sitting here
             MergeLayer(VRCAvatarDescriptor.AnimLayerType.Sitting, false, 1);
-            if (isHumanoid) MergeLayer(VRCAvatarDescriptor.AnimLayerType.Additive, false, 1); // Idle
+            if (isHumanoid) MergeLayer(VRCAvatarDescriptor.AnimLayerType.Additive, false, 1, AnimatorLayerBlendingMode.Additive); // A.K.A. Idle
             if (isHumanoid) MergeLayer(VRCAvatarDescriptor.AnimLayerType.Gesture, false, 1);
             // Station Action here
             MergeLayer(VRCAvatarDescriptor.AnimLayerType.Action, false, 0);
             MergeLayer(VRCAvatarDescriptor.AnimLayerType.FX, false, 1);
+
+            modifications.Add(NodesMerger.ComponentFromPlayableLayers(animator, playableLayers), true);
 
             // TPose and IKPose should only affect to Humanoid so skip here~
 
@@ -260,16 +272,14 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
 
             if (mmdWorldCompatibility && bodySkinnedMesh)
             {
-                var updater = modificationsContainer.ModifyObject(bodySkinnedMesh);
-
-                var source = new ComponentAnimationSource(descriptor);
                 foreach (var shape in MmdBlendShapeNames)
-                    updater.AddModificationAsNewLayer($"blendShape.{shape}", AnimationFloatProperty.Variable(source));
+                    modifications.Add(bodySkinnedMesh, $"blendShape.{shape}",
+                        new VariableComponentPropModNode<float>(descriptor), true);
             }
         }
 
         private void CollectWeightChangesInController(RuntimeAnimatorController runtimeController,
-            AnimatorLayerMap<AnimatorWeightState> playableWeightChanged,
+            AnimatorLayerMap<ParserAnimatorWeightState> playableWeightChanged,
             AnimatorLayerMap<AnimatorLayerWeightMap<int>> animatorLayerWeightChanged)
         {
             using (ErrorReport.WithContextObject(runtimeController))
@@ -322,7 +332,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
 
                             var current = AnimatorLayerWeightStates.WeightStateFor(playableLayerControl.blendDuration,
                                 playableLayerControl.goalWeight);
-                            playableWeightChanged[layer] = playableWeightChanged[layer].Merge(current);
+                            playableWeightChanged[layer] = Merge(playableWeightChanged[layer], current);
                         }
                             break;
                         case VRC_AnimatorLayerControl animatorLayerControl:
@@ -352,7 +362,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
                             var current = AnimatorLayerWeightStates.WeightStateFor(animatorLayerControl.blendDuration,
                                 animatorLayerControl.goalWeight);
                             animatorLayerWeightChanged[layer][animatorLayerControl.layer] =
-                                animatorLayerWeightChanged[layer][animatorLayerControl.layer].Merge(current);
+                                Merge(animatorLayerWeightChanged[layer][animatorLayerControl.layer], current);
                             break;
                         }
                     }
@@ -378,42 +388,48 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
 #endif
         
 #if AAO_VRM0
-        private void CollectBlendShapeProxyModifications(BuildContext context, ModificationsContainer modificationsContainer, VRM.VRMBlendShapeProxy vrmBlendShapeProxy)
+        private ComponentNodeContainer CollectBlendShapeProxyModifications(BuildContext context, VRM.VRMBlendShapeProxy vrmBlendShapeProxy)
         {
-            var source = new ComponentAnimationSource(vrmBlendShapeProxy);
+            var nodes = new ComponentNodeContainer();
 
             var bindings = vrmBlendShapeProxy.BlendShapeAvatar.Clips.SelectMany(clip => clip.Values);
             foreach (var binding in bindings)
             {
-                var skinnedMeshRenderer = context.AvatarRootTransform.Find(binding.RelativePath).GetComponent<SkinnedMeshRenderer>();
-                var blendShapePropName = $"blendShape.{skinnedMeshRenderer.sharedMesh.GetBlendShapeName(binding.Index)}";
-                modificationsContainer.ModifyObject(skinnedMeshRenderer)
-                    .AddModificationAsNewLayer(blendShapePropName, AnimationFloatProperty.Variable(source));
+                var skinnedMeshRenderer =
+                    context.AvatarRootTransform.Find(binding.RelativePath).GetComponent<SkinnedMeshRenderer>();
+                var blendShapePropName = 
+                    $"blendShape.{skinnedMeshRenderer.sharedMesh.GetBlendShapeName(binding.Index)}";
+                nodes.Add(skinnedMeshRenderer, blendShapePropName, new VariableComponentPropModNode<float>(vrmBlendShapeProxy));
             }
             
             // Currently, MaterialValueBindings are guaranteed to not change (MaterialName, in particular)
             // unless MergeToonLitMaterial is used, which breaks material animations anyway.
             // Gather material modifications here once we start tracking material changes...
+
+            return nodes;
         }
 #endif
 
 #if AAO_VRM1
-        private void CollectVrm10InstanceModifications(BuildContext context, ModificationsContainer modificationsContainer, UniVRM10.Vrm10Instance vrm10Instance)
+        private ComponentNodeContainer CollectVrm10InstanceModifications(BuildContext context, UniVRM10.Vrm10Instance vrm10Instance)
         {
-            var source = new ComponentAnimationSource(vrm10Instance);
+            var nodes = new ComponentNodeContainer();
 
             var bindings = vrm10Instance.Vrm.Expression.Clips.SelectMany(clip => clip.Clip.MorphTargetBindings);
             foreach (var binding in bindings)
             {
-                var skinnedMeshRenderer = context.AvatarRootTransform.Find(binding.RelativePath).GetComponent<SkinnedMeshRenderer>();
-                var blendShapePropName = $"blendShape.{skinnedMeshRenderer.sharedMesh.GetBlendShapeName(binding.Index)}";
-                modificationsContainer.ModifyObject(skinnedMeshRenderer)
-                    .AddModificationAsNewLayer(blendShapePropName, AnimationFloatProperty.Variable(source));
+                var skinnedMeshRenderer = 
+                    context.AvatarRootTransform.Find(binding.RelativePath).GetComponent<SkinnedMeshRenderer>();
+                var blendShapePropName = 
+                    $"blendShape.{skinnedMeshRenderer.sharedMesh.GetBlendShapeName(binding.Index)}";
+                nodes.Add(skinnedMeshRenderer, blendShapePropName, new VariableComponentPropModNode<float>(vrm10Instance));
             }
 
             // Currently, MaterialValueBindings are guaranteed to not change (MaterialName, in particular)
             // unless MergeToonLitMaterial is used, which breaks material animations anyway.
             // Gather material modifications here once we start tracking material changes...
+
+            return nodes;
         }
 #endif
         
@@ -422,28 +438,29 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
         #region Animator
 
         /// Mark rotations of humanoid bones as changeable variables
-        private IModificationsContainer AddHumanoidModifications(IModificationsContainer container, Animator animator)
+        [CanBeNull]
+        private ComponentNodeContainer AddHumanoidModifications([CanBeNull] ComponentNodeContainer container, Animator animator)
         {
             // if it's not humanoid, this pass doesn't matter
             if (!animator.isHuman) return container;
 
-            var animatorSource = new ComponentAnimationSource(animator);
-            var mutable = container.ToMutable();
+            if (container == null) container = new ComponentNodeContainer();
+
             for (var bone = HumanBodyBones.Hips; bone < HumanBodyBones.LastBone; bone++)
             {
                 var transform = animator.GetBoneTransform(bone);
                 if (!transform) continue;
 
-                var updater = mutable.ModifyObject(transform);
-
-                foreach (var key in TransformRotationAnimationKeys)
-                    updater.AddModificationAsNewLayer(key, AnimationFloatProperty.Variable(animatorSource));
+                foreach (var prop in TransformRotationAnimationKeys)
+                    // overriding
+                    container.Set(transform, prop, new HumanoidAnimatorPropModNode(animator));
             }
 
-            return mutable;
+            return container;
         }
 
-        public IModificationsContainer ParseAnimatorController(GameObject root, RuntimeAnimatorController controller,
+        [CanBeNull]
+        public AnimatorControllerNodeContainer ParseAnimatorController(GameObject root, RuntimeAnimatorController controller,
             [CanBeNull] AnimatorLayerWeightMap<int> externallyWeightChanged = null)
         {
             using (ErrorReport.WithContextObject(controller))
@@ -454,44 +471,37 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
             }
         }
 
-        internal IModificationsContainer AdvancedParseAnimatorController(GameObject root, AnimatorController controller,
+        [CanBeNull]
+        internal AnimatorControllerNodeContainer AdvancedParseAnimatorController(GameObject root,
+            AnimatorController controller,
             IReadOnlyDictionary<AnimationClip, AnimationClip> mapping,
             [CanBeNull] AnimatorLayerWeightMap<int> externallyWeightChanged)
         {
             var layers = controller.layers;
-            if (layers.Length == 0) return ImmutableModificationsContainer.Empty;
-
-            var mergedController = new ModificationsContainer();
-
-            for (var i = 0; i < layers.Length; i++)
+            return NodesMerger.AnimatorControllerFromAnimatorLayers(controller.layers.Select((layer, i) =>
             {
-                var weightState = i == 0
-                    ? AnimatorWeightState.AlwaysOne
-                    : AnimatorLayerWeightStates.WeightStateFor(layers[i].defaultWeight)
-                        .Merge(externallyWeightChanged?.Get(i) ?? AnimatorWeightState.NotChanged);
+                AnimatorWeightState weightState;
+                if (i == 0)
+                {
+                    weightState = AnimatorWeightState.AlwaysOne;
+                }
+                else
+                {
+                    var external = externallyWeightChanged?.Get(i) ?? ParserAnimatorWeightState.NotChanged;
 
-                if (weightState == AnimatorWeightState.AlwaysZero) continue;
+                    if (!(GetWeightState(layers[i].defaultWeight, external) is AnimatorWeightState parsed))
+                        return (default, default, null); // skip weight zero layer
+
+                    weightState = parsed;
+                }
 
                 var parsedLayer = ParseAnimatorControllerLayer(root, controller, mapping, i);
 
-
-                switch (layers[i].blendingMode)
-                {
-                    case AnimatorLayerBlendingMode.Override:
-                        mergedController.MergeAsNewLayer(parsedLayer, weightState);
-                        break;
-                    case AnimatorLayerBlendingMode.Additive:
-                        mergedController.MergeAsNewAdditiveLayer(parsedLayer, weightState);
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-            }
-
-            return mergedController;
+                return (weightState, layer.blendingMode, parsedLayer);
+            }));
         }
 
-        internal IModificationsContainer ParseAnimatorControllerLayer(
+        public ImmutableNodeContainer ParseAnimatorControllerLayer(
             GameObject root,
             AnimatorController controller,
             IReadOnlyDictionary<AnimationClip, AnimationClip> mapping,
@@ -501,12 +511,13 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
 
             var syncedLayer = layer.syncedLayerIndex;
 
-            IEnumerable<IModificationsContainer> parsedMotions;
+            IEnumerable<ImmutableNodeContainer> parsedMotions;
 
             if (syncedLayer == -1)
             {
                 parsedMotions = CollectStates(layer.stateMachine)
                     .Select(state => _animationParser.ParseMotion(root, state.motion, mapping));
+
             }
             else
             {
@@ -514,7 +525,13 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
                     .Select(state => _animationParser.ParseMotion(root, layer.GetOverrideMotion(state), mapping));
             }
 
-            return parsedMotions.MergeContainersSideBySide();
+            return NodesMerger.Merge(parsedMotions, default(LayerMerger));
+        }
+
+        struct LayerMerger : IMergeProperty
+        {
+            public ImmutablePropModNode<T> MergeNode<T>(List<ImmutablePropModNode<T>> nodes, int sourceCount) =>
+                new AnimatorLayerPropModNode<T>(nodes, nodes.Count != sourceCount);
         }
 
         private IEnumerable<AnimatorState> CollectStates(AnimatorStateMachine stateMachineIn)
@@ -568,6 +585,116 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsers
             }
         }
 
+        internal class AnimatorLayerWeightMap<TKey>
+        {
+            private Dictionary<TKey, ParserAnimatorWeightState> _backed =
+                new Dictionary<TKey, ParserAnimatorWeightState>();
+
+            public ParserAnimatorWeightState this[TKey key]
+            {
+                get
+                {
+                    _backed.TryGetValue(key, out var state);
+                    return state;
+                }
+                set => _backed[key] = value;
+            }
+
+            public ParserAnimatorWeightState Get(TKey key) => this[key];
+        }
+
+        public enum ParserAnimatorWeightState
+        {
+            NotChanged,
+            AlwaysZero,
+            AlwaysOne,
+            EitherZeroOrOne,
+            Variable
+        }
+
+        AnimatorWeightState? GetWeightState(float weight, ParserAnimatorWeightState external)
+        {
+            bool isOneWeight;
+            
+            if (weight == 0) isOneWeight = false;
+            // ReSharper disable once CompareOfFloatsByEqualityOperator
+            else if (weight == 1) isOneWeight = true;
+            else return AnimatorWeightState.Variable;
+            
+            switch (external)
+            {
+                case ParserAnimatorWeightState.NotChanged:
+                    if (!isOneWeight) return null; // skip weight zero layer
+                    return AnimatorWeightState.AlwaysOne;
+
+                case ParserAnimatorWeightState.AlwaysZero:
+                    if (!isOneWeight) return null; // skip weight zero layer
+                    return AnimatorWeightState.EitherZeroOrOne;
+
+                case ParserAnimatorWeightState.AlwaysOne:
+                    return isOneWeight
+                        ? AnimatorWeightState.AlwaysOne
+                        : AnimatorWeightState.EitherZeroOrOne;
+
+                case ParserAnimatorWeightState.EitherZeroOrOne:
+                    return AnimatorWeightState.EitherZeroOrOne;
+                case ParserAnimatorWeightState.Variable:
+                    return AnimatorWeightState.Variable;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
+        static ParserAnimatorWeightState Merge(ParserAnimatorWeightState a, ParserAnimatorWeightState b)
+        {
+            // 25 pattern
+            if (a == b) return a;
+
+            if (a == ParserAnimatorWeightState.NotChanged) return b;
+            if (b == ParserAnimatorWeightState.NotChanged) return a;
+
+            if (a == ParserAnimatorWeightState.Variable) return ParserAnimatorWeightState.Variable;
+            if (b == ParserAnimatorWeightState.Variable) return ParserAnimatorWeightState.Variable;
+
+            if (a == ParserAnimatorWeightState.AlwaysOne && b == ParserAnimatorWeightState.AlwaysZero)
+                return ParserAnimatorWeightState.EitherZeroOrOne;
+            if (b == ParserAnimatorWeightState.AlwaysOne && a == ParserAnimatorWeightState.AlwaysZero)
+                return ParserAnimatorWeightState.EitherZeroOrOne;
+
+            if (a == ParserAnimatorWeightState.EitherZeroOrOne && b == ParserAnimatorWeightState.AlwaysZero)
+                return ParserAnimatorWeightState.EitherZeroOrOne;
+            if (b == ParserAnimatorWeightState.EitherZeroOrOne && a == ParserAnimatorWeightState.AlwaysZero)
+                return ParserAnimatorWeightState.EitherZeroOrOne;
+
+            if (a == ParserAnimatorWeightState.EitherZeroOrOne && b == ParserAnimatorWeightState.AlwaysOne)
+                return ParserAnimatorWeightState.EitherZeroOrOne;
+            if (b == ParserAnimatorWeightState.EitherZeroOrOne && a == ParserAnimatorWeightState.AlwaysOne)
+                return ParserAnimatorWeightState.EitherZeroOrOne;
+
+            throw new ArgumentOutOfRangeException();
+        }
+
+    static class AnimatorLayerWeightStates
+    {
+        public static ParserAnimatorWeightState WeightStateFor(float duration, float weight) =>
+            duration != 0 ? ParserAnimatorWeightState.Variable : WeightStateFor(weight);
+
+        public static ParserAnimatorWeightState WeightStateFor(float weight)
+        {
+            switch (weight)
+            {
+                case 0:
+                    return ParserAnimatorWeightState.AlwaysZero;
+                case 1:
+                    return ParserAnimatorWeightState.AlwaysOne;
+                default:
+                    return ParserAnimatorWeightState.Variable;
+            }
+        }
+        
+        public static AnimatorWeightState ForAlwaysApplied(bool alwaysApplied) =>
+            alwaysApplied ? AnimatorWeightState.AlwaysOne : AnimatorWeightState.EitherZeroOrOne;
+    }
         #endregion
 
         #region Constants
