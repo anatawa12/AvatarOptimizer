@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using CustomLocalization4EditorExtension;
 using UnityEditor;
 using UnityEngine;
@@ -12,6 +14,34 @@ namespace Anatawa12.AvatarOptimizer
     {
         [SerializeField]
         private ClassReference[] meaninglessComponents = Array.Empty<ClassReference>();
+
+        const int MonoScriptIdentifierType = 1;
+
+        private static IEnumerable<AssetDescription> GetAllAssetDescriptions()
+        {
+            foreach (var findAsset in AssetDatabase.FindAssets("t:AssetDescription"))
+            {
+                var path = AssetDatabase.GUIDToAssetPath(findAsset);
+                var asset = AssetDatabase.LoadAssetAtPath<AssetDescription>(path);
+                if (asset) yield return asset;
+            }
+        }
+
+        public static IEnumerable<Type> GetMeaninglessComponents()
+        {
+            return GetAllAssetDescriptions()
+                .SelectMany(description => description.meaninglessComponents)
+                .Select(component => GetMonoScriptFromGuid(component.guid, component.fileid) as MonoScript)
+                .Where(monoScript => monoScript != null)
+                .Select(monoScript => monoScript.GetClass());
+        }
+
+        private static Object GetMonoScriptFromGuid(string guid, ulong fileid)
+        {
+            var idString = $"GlobalObjectId_V1-{MonoScriptIdentifierType}-{guid}-{fileid}-0";
+            Debug.Assert(GlobalObjectId.TryParse(idString, out var id));
+            return GlobalObjectId.GlobalObjectIdentifierToObjectSlow(id);
+        }
 
         [CustomEditor(typeof(AssetDescription))]
         internal class AssetDescriptionEditor : Editor
@@ -46,13 +76,13 @@ namespace Anatawa12.AvatarOptimizer
         struct ClassReference
         {
             [SerializeField]
-            private string className;
+            public string className;
             [SerializeField]
-            private string guid;
+            public string guid;
             [SerializeField]
-            private ulong fileid;
+            public ulong fileid;
             [SerializeField]
-            private string comment;
+            public string comment;
         }
         
         [CustomPropertyDrawer(typeof(ClassReference))]
@@ -74,8 +104,6 @@ namespace Anatawa12.AvatarOptimizer
                         ;
                 }
             }
-
-            const int IdentifierType = 1;
 
             public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
             {
@@ -106,28 +134,19 @@ namespace Anatawa12.AvatarOptimizer
                 }
                 else
                 {
-                    if (!GlobalObjectId.TryParse($"GlobalObjectId_V1-{IdentifierType}-{guid}-{fileid}-0", out var id))
+                    var obj = GetMonoScriptFromGuid(guid, (ulong)fileid);
+                    if (obj == null)
                     {
-                        // internal error
-                        EditorGUI.LabelField(position, scriptLabel,
-                            new GUIContent("Internal Error: paese ObjectId failed"));
+                        // missing
+                        EditorGUI.LabelField(position, scriptLabel, MissingScriptContent(classNameProperty.stringValue));
                     }
                     else
                     {
-                        var obj = GlobalObjectId.GlobalObjectIdentifierToObjectSlow(id);
-                        if (obj == null)
-                        {
-                            // missing
-                            EditorGUI.LabelField(position, scriptLabel, MissingScriptContent(classNameProperty.stringValue));
-                        }
-                        else
-                        {
-                            // found
-                            EditorGUI.BeginChangeCheck();
-                            var asset = EditorGUI.ObjectField(position, scriptLabel, obj, typeof(MonoScript), false);
-                            if (EditorGUI.EndChangeCheck())
-                                SetScript(asset);
-                        }
+                        // found
+                        EditorGUI.BeginChangeCheck();
+                        var asset = EditorGUI.ObjectField(position, scriptLabel, obj, typeof(MonoScript), false);
+                        if (EditorGUI.EndChangeCheck())
+                            SetScript(asset);
                     }
                 }
 
@@ -137,7 +156,7 @@ namespace Anatawa12.AvatarOptimizer
                     if (asset != null && type != null)
                     {
                         var id = GlobalObjectId.GetGlobalObjectIdSlow(asset);
-                        Debug.Assert(id.identifierType == IdentifierType);
+                        Debug.Assert(id.identifierType == MonoScriptIdentifierType);
                         Debug.Assert(id.targetPrefabId == 0);
                         guidProperty.stringValue = id.assetGUID.ToString();
                         fileidProperty.longValue = (long)id.targetObjectId;

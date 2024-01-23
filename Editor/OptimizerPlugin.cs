@@ -42,11 +42,13 @@ namespace Anatawa12.AvatarOptimizer.ndmf
                     typeof(ObjectMappingContext),
                 }, seq =>
                 {
-                    seq.Run("Check if AAO is active",
+                    seq.Run("Initial Step for Avatar Optimizer",
                             ctx =>
                             {
                                 ctx.GetState<AAOEnabled>().Enabled =
                                     ctx.AvatarRootObject.GetComponent<AvatarTagComponent>();
+                                // invalidate ComponentInfoRegistry cache to support newly added assets
+                                APIInternal.ComponentInfoRegistry.InvalidateCache();
                             })
                         .Then.Run("Validation", (ctx) => ComponentValidation.ValidateAll(ctx.AvatarRootObject))
                         .Then.Run(Processors.TraceAndOptimizes.LoadTraceAndOptimizeConfiguration.Instance)
