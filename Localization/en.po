@@ -553,3 +553,19 @@ msgid "ErrorReporter:error.internal_error"
 msgstr "An internal error has occurred: {0} when processing:"
 
 # endregion
+
+# region AssetDescription
+
+msgid "AssetDescription:Header"
+msgstr "Avatar Optimizer Asset Description"
+
+msgid "AssetDescription:Description"
+msgstr ""
+"Avatar Optimizer Asset Description is a asset that describe your assets for Avatar Optimizer.\n"
+"\n"
+"For more details please visit our documentation"
+
+msgid "AssetDescription:OpenDocs"
+msgstr "Open Documentation"
+
+# endregion

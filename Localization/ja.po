@@ -489,3 +489,19 @@ msgid "ErrorReporter:error.internal_error"
 msgstr "内部エラーが発生しました: {0} 以下の処理中です:"
 
 # endregion
+
+# region AssetDescription
+
+msgid "AssetDescription:Header"
+msgstr "Avatar Optimizer Asset Description"
+
+msgid "AssetDescription:Description"
+msgstr ""
+"Avatar Optimizer Asset DescriptionはAvatar Optimizerにアセットについて説明するアセットです。\n"
+"\n"
+"詳しくはドキュメントを参照してください。"
+
+msgid "AssetDescription:OpenDocs"
+msgstr "Open Documentation"
+
+# endregion
