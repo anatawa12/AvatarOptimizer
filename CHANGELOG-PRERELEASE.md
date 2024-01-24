@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog].
 ### Changed
 - Project is slightly renamed to AAO: Avatar Optimizer `#830`
   - The term `AAO` and `Avatar Optimizer` are not changed, but display name on the VCC is changed to `AAO: Avatar Optimizer`
+- Upgrades NDMF to 1.3.0-rc.4 `#853`
 
 ### Deprecated
 
