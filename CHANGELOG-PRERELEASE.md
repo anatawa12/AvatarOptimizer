@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - Humanoid Bones may be removed by Trace and Optimize `#831`
+- Add `license`, `documentationUrl`, and `changelogUrl` to package.json `#851`
 
 ### Security
 
