@@ -8,6 +8,9 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Asset Description `#847`
+  - Asset Description is the file to provide Avatar Optimizer information of your assets.
+  - Please see documentation for more details.
 
 ### Changed
 - AvatarOptimizer now uses ErrorReporting API of NDMF instead of our own API `#805`
@@ -21,6 +24,8 @@ The format is based on [Keep a Changelog].
 ### Deprecated
 
 ### Removed
+- Compatibility with VRCQuestTools v1.x `#847`
+  - Please use VRCQuestTools v2.x, which has compatibility with AAO.
 
 ### Fixed
 - Fix support for UniVRM components `#802`

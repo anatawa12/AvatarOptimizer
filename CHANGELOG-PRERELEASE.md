@@ -8,6 +8,9 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Asset Description `#847`
+  - Asset Description is the file to provide Avatar Optimizer information of your assets.
+  - Please see documentation for more details.
 
 ### Changed
 - Project is slightly renamed to AAO: Avatar Optimizer `#830`
@@ -20,6 +23,8 @@ The format is based on [Keep a Changelog].
 ### Deprecated
 
 ### Removed
+- Compatibility with VRCQuestTools v1.x `#847`
+  - Please use VRCQuestTools v2.x, which has compatibility with AAO.
 
 ### Fixed
 - Humanoid Bones may be removed by Trace and Optimize `#831`
