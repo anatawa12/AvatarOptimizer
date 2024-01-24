@@ -13,6 +13,7 @@ namespace Anatawa12.AvatarOptimizer
     internal class AssetDescription : ScriptableObject
     {
         [SerializeField]
+        [TextArea]
         private string comment = "";
         [SerializeField]
         private ClassReference[] meaninglessComponents = Array.Empty<ClassReference>();
@@ -60,7 +61,6 @@ namespace Anatawa12.AvatarOptimizer
             public override void OnInspectorGUI()
             {
                 CL4EE.DrawLanguagePicker();
-                GUILayout.Label(CL4EE.Tr("AssetDescription:Header"), EditorStyles.boldLabel);
                 EditorGUILayout.LabelField(CL4EE.Tr("AssetDescription:Description"), EditorStyles.wordWrappedLabel);
                 if (GUILayout.Button(CL4EE.Tr("AssetDescription:OpenDocs")))
                 {
@@ -71,7 +71,7 @@ namespace Anatawa12.AvatarOptimizer
                     Application.OpenURL(baseUrl);
                 }
 
-                EditorGUILayout.Space();
+                EditorGUILayout.Space(20f);
                 EditorGUILayout.PropertyField(_comment);
                 EditorGUILayout.PropertyField(_meaninglessComponents);
 
