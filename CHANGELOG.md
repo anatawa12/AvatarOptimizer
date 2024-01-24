@@ -26,6 +26,7 @@ The format is based on [Keep a Changelog].
 - Empty Armature trick broken `#819`
 - Added workaround for `Array index (n) is out of bounds (size=m)` error
 - Humanoid Bones may be removed by Trace and Optimize `#831`
+- Add `license`, `documentationUrl`, and `changelogUrl` to package.json `#851`
 
 ### Security
 
