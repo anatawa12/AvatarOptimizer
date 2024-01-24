@@ -10,18 +10,16 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 672cf279ebc041f5b87addc7c6c980bb, type: 3}
-  m_Name: ExternalsDescription
+  m_Name: SataniaKisetene
   m_EditorClassIdentifier: 
+  comment: KiseteneEx (https://booth.pm/ja/items/3952537)
   meaninglessComponents:
   - className: KiseteneComponent
     guid: e78466b6bcd24e5409dca557eb81d45b
     fileid: 11500000
-    comment: KiseteneEx (https://booth.pm/ja/items/3952537)
   - className: FlyAvatarSetupTool
     guid: 7f9c3fe1cfb9d1843a9dc7da26352ce2
     fileid: 11500000
-    comment: KiseteneEx (https://booth.pm/ja/items/3952537)
   - className: BlendShapeOverrider
     guid: 95f6e1368d803614f8a351322ab09bac
     fileid: 11500000
-    comment: KiseteneEx (https://booth.pm/ja/items/3952537)

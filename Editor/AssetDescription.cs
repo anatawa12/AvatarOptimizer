@@ -13,6 +13,8 @@ namespace Anatawa12.AvatarOptimizer
     internal class AssetDescription : ScriptableObject
     {
         [SerializeField]
+        private string comment = "";
+        [SerializeField]
         private ClassReference[] meaninglessComponents = Array.Empty<ClassReference>();
 
         const int MonoScriptIdentifierType = 1;
@@ -46,10 +48,12 @@ namespace Anatawa12.AvatarOptimizer
         [CustomEditor(typeof(AssetDescription))]
         internal class AssetDescriptionEditor : Editor
         {
+            private SerializedProperty _comment;
             private SerializedProperty _meaninglessComponents;
 
             private void OnEnable()
             {
+                _comment = serializedObject.FindProperty("comment");
                 _meaninglessComponents = serializedObject.FindProperty("meaninglessComponents");
             }
 
@@ -67,7 +71,11 @@ namespace Anatawa12.AvatarOptimizer
                     Application.OpenURL(baseUrl);
                 }
 
+                EditorGUILayout.Space();
+                EditorGUILayout.PropertyField(_comment);
                 EditorGUILayout.PropertyField(_meaninglessComponents);
+
+                serializedObject.ApplyModifiedProperties();
             }
         }
 
@@ -81,8 +89,6 @@ namespace Anatawa12.AvatarOptimizer
             public string guid;
             [SerializeField]
             public ulong fileid;
-            [SerializeField]
-            public string comment;
         }
         
         [CustomPropertyDrawer(typeof(ClassReference))]
@@ -90,29 +96,11 @@ namespace Anatawa12.AvatarOptimizer
         {
             public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
             {
-                var line = EditorGUIUtility.singleLineHeight;
-                var space = EditorGUIUtility.standardVerticalSpacing;
-                if (!property.isExpanded)
-                {
-                    return line;
-                }
-                else
-                {
-                    return line // header
-                           + space + line // class
-                           + space + line // comment
-                        ;
-                }
+                return EditorGUIUtility.singleLineHeight;
             }
 
             public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
             {
-                position.height = EditorGUIUtility.singleLineHeight;
-                property.isExpanded = EditorGUI.Foldout(position, property.isExpanded, label, true);
-                if (!property.isExpanded) return;
-
-                position.y += EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
-
                 // class
                 var guidProperty = property.FindPropertyRelative("guid");
                 var fileidProperty = property.FindPropertyRelative("fileid");
@@ -124,12 +112,10 @@ namespace Anatawa12.AvatarOptimizer
                 var guid = guidProperty.stringValue;
                 var fileid = fileidProperty.longValue;
 
-                var scriptLabel = new GUIContent("Script");
-
                 if (guid == "" && fileid == 0)
                 {
                     // it's none
-                    var asset = EditorGUI.ObjectField(position, scriptLabel, null, typeof(MonoScript), false);
+                    var asset = EditorGUI.ObjectField(position, label, null, typeof(MonoScript), false);
                     if (asset != null) SetScript(asset);
                 }
                 else
@@ -138,13 +124,13 @@ namespace Anatawa12.AvatarOptimizer
                     if (obj == null)
                     {
                         // missing
-                        EditorGUI.LabelField(position, scriptLabel, MissingScriptContent(classNameProperty.stringValue));
+                        EditorGUI.LabelField(position, label, MissingScriptContent(classNameProperty.stringValue));
                     }
                     else
                     {
                         // found
                         EditorGUI.BeginChangeCheck();
-                        var asset = EditorGUI.ObjectField(position, scriptLabel, obj, typeof(MonoScript), false);
+                        var asset = EditorGUI.ObjectField(position, label, obj, typeof(MonoScript), false);
                         if (EditorGUI.EndChangeCheck())
                             SetScript(asset);
                     }
@@ -171,11 +157,6 @@ namespace Anatawa12.AvatarOptimizer
                 }
 
                 EditorGUI.showMixedValue = false;
-
-                // comment
-                position.y += EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
-                var commentProperty = property.FindPropertyRelative("comment");
-                EditorGUI.PropertyField(position, commentProperty, new GUIContent("Comment"));
             }
 
             static class Constants
