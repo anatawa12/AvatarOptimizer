@@ -120,7 +120,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                             physBone.colliders[i] = mergedTo;
 
             foreach (var colliderBase in mergedColliders.Keys.ToList())
-                Object.DestroyImmediate(colliderBase);
+                DestroyTracker.DestroyImmediate(colliderBase);
         }
         
         void MergeColliders<TKey>(IEnumerable<VRCPhysBoneColliderBase> colliders,

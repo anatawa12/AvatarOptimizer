@@ -115,7 +115,7 @@ namespace Anatawa12.AvatarOptimizer
             [CanBeNull] private RootPropModNode<float> _floatNode;
             [CanBeNull] public List<AnimationPropertyInfo> CopiedTo { get; private set; }
             [CanBeNull]
-            public RootPropModNode<float> FloatNode => _floatNode;
+            public RootPropModNode<float> FloatNode => _floatNode?.Normalize();
 
             public AnimationPropertyInfo([NotNull] BuildingComponentInfo component, [NotNull] string name)
             {
@@ -132,7 +132,6 @@ namespace Anatawa12.AvatarOptimizer
             public void MergeTo(AnimationPropertyInfo property)
             {
                 MergedTo = property;
-                // I want to use recursive switch with recursive pattern here but not avaiable yet
                 MergeNode(ref property._floatNode, ref _floatNode);
             }
 
@@ -191,14 +190,15 @@ namespace Anatawa12.AvatarOptimizer
             private static void MergeNode<T>([CanBeNull] ref RootPropModNode<T> mergeTo,
                 [CanBeNull] ref RootPropModNode<T> merge)
             {
-                if (merge == null) return;
-                if (mergeTo == null)
+                if (merge == null || merge.IsEmpty) return;
+                if (mergeTo == null || merge.IsEmpty)
                 {
                     mergeTo = merge;
                     return;
                 }
 
                 mergeTo.Add(merge);
+                merge.Invalidate();
                 merge = null;
             }
 

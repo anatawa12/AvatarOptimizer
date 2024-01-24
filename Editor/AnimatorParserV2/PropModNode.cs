@@ -162,7 +162,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             public readonly ComponentPropModNode<T> Node;
             public readonly bool AlwaysApplied;
 
-            public bool AppliedAlways => Node.AppliedAlways && AlwaysApplied;
+            public bool AppliedAlways => AlwaysApplied && Node.AppliedAlways;
             public IEnumerable<ObjectReference> ContextReferences => Node.ContextReferences;
             public Component Component => Node.Component;
 
@@ -179,11 +179,14 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         public override IEnumerable<ObjectReference> ContextReferences => _children.SelectMany(x => x.ContextReferences);
         public override ValueInfo<T> Value => NodeImplUtils.ConstantInfoForSideBySide(_children.Select(x => x.Node));
 
+        public bool IsEmpty => _children.Count == 0;
+
         public IEnumerable<Component> SourceComponents => _children.Select(x => x.Component);
 
         public void Add(ComponentPropModNode<T> node, bool alwaysApplied)
         {
             _children.Add(new ComponentInfo(node, alwaysApplied));
+            DestroyTracker.Track(node.Component, OnDestroy);
         }
         
         public void Add([NotNull] RootPropModNode<T> toAdd)
@@ -192,6 +195,20 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             foreach (var child in toAdd._children)
                 Add(child.Node, child.AppliedAlways);
         }
+
+        private void OnDestroy(int objectId)
+        {
+            _children.RemoveAll(x => x.Component.GetInstanceID() == objectId);
+        }
+
+        public void Invalidate()
+        {
+            foreach (var componentInfo in _children)
+                DestroyTracker.Untrack(componentInfo.Component, OnDestroy);
+            _children.Clear();
+        }
+
+        [CanBeNull] public RootPropModNode<T> Normalize() => IsEmpty ? null : this;
     }
 
     internal abstract class ImmutablePropModNode<T> : PropModNode<T>

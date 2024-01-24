@@ -288,7 +288,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             var texture = CopyFromRenderTarget(target, finalFormat);
 
-            Object.DestroyImmediate(target);
+            DestroyTracker.DestroyImmediate(target);
 
             if (compress && IsCompressedFormat(finalFormat))
                 EditorUtility.CompressTexture(texture, (TextureFormat)finalFormat, TextureCompressionQuality.Normal);

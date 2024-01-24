@@ -40,6 +40,7 @@ namespace Anatawa12.AvatarOptimizer.ndmf
                 {
                     typeof(Processors.MeshInfo2Context),
                     typeof(ObjectMappingContext),
+                    typeof(DestroyTracker.ExtensionContext),
                 }, seq =>
                 {
                     seq.Run("Check if AAO is active",

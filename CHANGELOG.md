@@ -31,6 +31,9 @@ The format is based on [Keep a Changelog].
 - Added workaround for `Array index (n) is out of bounds (size=m)` error
 - Humanoid Bones may be removed by Trace and Optimize `#831`
 - Inspector of ComponentTypePair (GCDebug) is broken `#846`
+- Bones swung by unused PhysBones (which will be removed by AAO) are not merged `#850`
+  - Note that To fix this problem, AnimatorParser is almost completely rewritten.
+  - It's not expected to have behavior change, but if you found some, please report it.
 
 ### Security
 

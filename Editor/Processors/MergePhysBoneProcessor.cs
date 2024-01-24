@@ -25,7 +25,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 using (ErrorReport.WithContextObject(mergePhysBone))
                 {
                     DoMerge(mergePhysBone, context);
-                    Object.DestroyImmediate(mergePhysBone);
+                    DestroyTracker.DestroyImmediate(mergePhysBone);
                 }
             }
         }
@@ -129,7 +129,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
             // show the new PhysBone
             merged.hideFlags &= ~(HideFlags.HideInHierarchy | HideFlags.HideInInspector);
 
-            foreach (var physBone in sourceComponents) Object.DestroyImmediate(physBone);
+            foreach (var physBone in sourceComponents) DestroyTracker.DestroyImmediate(physBone);
 
             if (context != null)
             {
