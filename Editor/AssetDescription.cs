@@ -33,7 +33,7 @@ namespace Anatawa12.AvatarOptimizer
         {
             return GetAllAssetDescriptions()
                 .SelectMany(description => description.meaninglessComponents)
-                .Select(component => GetMonoScriptFromGuid(component.guid, component.fileid) as MonoScript)
+                .Select(component => GetMonoScriptFromGuid(component.guid, component.fileID) as MonoScript)
                 .Where(monoScript => monoScript != null)
                 .Select(monoScript => monoScript.GetClass());
         }
@@ -88,7 +88,7 @@ namespace Anatawa12.AvatarOptimizer
             [SerializeField]
             public string guid;
             [SerializeField]
-            public ulong fileid;
+            public ulong fileID;
         }
         
         [CustomPropertyDrawer(typeof(ClassReference))]
@@ -103,16 +103,16 @@ namespace Anatawa12.AvatarOptimizer
             {
                 // class
                 var guidProperty = property.FindPropertyRelative("guid");
-                var fileidProperty = property.FindPropertyRelative("fileid");
+                var fileIDProperty = property.FindPropertyRelative("fileID");
                 var classNameProperty = property.FindPropertyRelative("className");
 
-                var mixed = guidProperty.hasMultipleDifferentValues || fileidProperty.hasMultipleDifferentValues;
+                var mixed = guidProperty.hasMultipleDifferentValues || fileIDProperty.hasMultipleDifferentValues;
                 EditorGUI.showMixedValue = mixed;
 
                 var guid = guidProperty.stringValue;
-                var fileid = fileidProperty.longValue;
+                var fileID = fileIDProperty.longValue;
 
-                if (guid == "" && fileid == 0)
+                if (guid == "" && fileID == 0)
                 {
                     // it's none
                     var asset = EditorGUI.ObjectField(position, label, null, typeof(MonoScript), false);
@@ -120,7 +120,7 @@ namespace Anatawa12.AvatarOptimizer
                 }
                 else
                 {
-                    var obj = GetMonoScriptFromGuid(guid, (ulong)fileid);
+                    var obj = GetMonoScriptFromGuid(guid, (ulong)fileID);
                     if (obj == null)
                     {
                         // missing
@@ -145,13 +145,13 @@ namespace Anatawa12.AvatarOptimizer
                         Debug.Assert(id.identifierType == MonoScriptIdentifierType);
                         Debug.Assert(id.targetPrefabId == 0);
                         guidProperty.stringValue = id.assetGUID.ToString();
-                        fileidProperty.longValue = (long)id.targetObjectId;
+                        fileIDProperty.longValue = (long)id.targetObjectId;
                         classNameProperty.stringValue = type.Name;
                     }
                     else if (asset == null)
                     {
                         guidProperty.stringValue = "";
-                        fileidProperty.longValue = 0;
+                        fileIDProperty.longValue = 0;
                         classNameProperty.stringValue = "";
                     }
                 }

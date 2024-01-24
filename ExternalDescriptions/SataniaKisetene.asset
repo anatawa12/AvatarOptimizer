@@ -16,10 +16,10 @@ MonoBehaviour:
   meaninglessComponents:
   - className: KiseteneComponent
     guid: e78466b6bcd24e5409dca557eb81d45b
-    fileid: 11500000
+    fileID: 11500000
   - className: FlyAvatarSetupTool
     guid: 7f9c3fe1cfb9d1843a9dc7da26352ce2
-    fileid: 11500000
+    fileID: 11500000
   - className: BlendShapeOverrider
     guid: 95f6e1368d803614f8a351322ab09bac
-    fileid: 11500000
+    fileID: 11500000
