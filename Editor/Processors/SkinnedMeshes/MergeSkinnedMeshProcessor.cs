@@ -122,17 +122,23 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             for (var i = 0; i < meshInfos.Length; i++)
             {
-                Profiler.BeginSample($"Process MeshInfo#{i}");
+                Profiler.BeginSample($"Process MeshInfo");
                 var meshInfo = meshInfos[i];
                 mappings.Clear();
 
                 meshInfo.AssertInvariantContract($"processing source #{i} of {Target.gameObject.name}");
 
+                Profiler.BeginSample("Copy Vertices");
                 target.Vertices.AddRange(meshInfo.Vertices);
+                Profiler.EndSample();
+
+                Profiler.BeginSample("Merge TexCoordStatus");
                 for (var j = 0; j < 8; j++)
                     target.SetTexCoordStatus(j,
                         TexCoordStatusMax(target.GetTexCoordStatus(j), meshInfo.GetTexCoordStatus(j)));
+                Profiler.EndSample();
 
+                Profiler.BeginSample("Merge SubMeshes");
                 for (var j = 0; j < meshInfo.SubMeshes.Count; j++)
                 {
                     var targetSubMeshIndex = subMeshIndexMap[i][j];
@@ -143,8 +149,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     mappings.Add(($"m_Materials.Array.data[{j}]",
                         $"m_Materials.Array.data[{targetSubMeshIndex}]"));
                 }
+                Profiler.EndSample();
 
 
+                Profiler.BeginSample("Merge BlendShape Name Index Mapping");
                 // add blend shape if not defined by name
                 for (var sourceI = 0; sourceI < meshInfo.BlendShapes.Count; sourceI++)
                 {
@@ -164,9 +172,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
                     mappings.Add((VProp.BlendShapeIndex(sourceI), VProp.BlendShapeIndex(newIndex)));
                 }
+                Profiler.EndSample();
 
                 if (updateBounds && meshInfo.RootBone)
                 {
+                    Profiler.BeginSample("Update Bounds");
                     foreach (var inSource in meshInfo.Bounds.Corners())
                     {
                         var vector3 = sourceRootBone.InverseTransformPoint(
@@ -179,17 +189,21 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                         newBoundMax.y = Mathf.Max(vector3.y, newBoundMax.y);
                         newBoundMax.z = Mathf.Max(vector3.z, newBoundMax.z);
                     }
-
+                    Profiler.EndSample();
                 }
 
+                Profiler.BeginSample("Update Properties");
                 context.RecordMoveProperties(meshInfo.SourceRenderer, mappings.ToArray());
+                Profiler.EndSample();
 
+                Profiler.BeginSample("Merge Settings");
                 target.RootBone = sourceRootBone;
                 target.Bones.AddRange(meshInfo.Bones);
 
                 target.HasColor |= meshInfo.HasColor;
                 target.HasNormals |= meshInfo.HasNormals;
                 target.HasTangent |= meshInfo.HasTangent;
+                Profiler.EndSample();
 
                 target.AssertInvariantContract($"processing meshInfo {Target.gameObject.name}");
                 Profiler.EndSample();
@@ -227,7 +241,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 // This invalidation doesn't affect to m_Enabled property of merged mesh.
                 context.RecordRemoveProperty(renderer, "m_Enabled");
 
+                Profiler.BeginSample("ActivenessAnimationWarning");
                 ActivenessAnimationWarning(renderer, context, parents);
+                Profiler.EndSample();
 
                 context.RecordMergeComponent(renderer, Target);
                 var rendererGameObject = renderer.gameObject;
