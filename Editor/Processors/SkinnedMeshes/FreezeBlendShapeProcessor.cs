@@ -1,6 +1,8 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using nadena.dev.ndmf;
 using UnityEngine;
 using UnityEngine.Profiling;
@@ -63,7 +65,18 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 freezes[i] = freezeNames.Contains(target.BlendShapes[i].name);
 
             Profiler.BeginSample("DoFreezeBlendShape");
-            foreach (var vertex in target.Vertices)
+            var parallel = Environment.ProcessorCount;
+            // round up Vertices.Count / parallel
+            var parThread = (target.Vertices.Count + parallel - 1) / parallel;
+            Parallel.For(0, parallel, thread =>
+            {
+                var lower = parThread * thread;
+                var upper = Math.Min(parThread * (thread + 1), target.Vertices.Count);
+                for (var i = lower; i < upper; i++) ProcessVertex(target.Vertices[i]);
+            });
+            Profiler.EndSample();
+
+            void ProcessVertex(Vertex vertex)
             {
                 for (var i = 0; i < target.BlendShapes.Count; i++)
                 {
@@ -84,7 +97,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     Profiler.EndSample();
                 }
             }
-            Profiler.EndSample();
 
             Profiler.BeginSample("MoveProperties");
             {
