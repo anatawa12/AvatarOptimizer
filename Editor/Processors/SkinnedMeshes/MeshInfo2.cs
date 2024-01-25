@@ -938,6 +938,28 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 return false;
             }
 
+            if (frames.Length == 1)
+            {
+                // fast path for likely single frame
+
+                if (!getDefined && Mathf.Abs(weight) <= 0.0001f)
+                {
+                    position = Vector3.zero;
+                    normal = Vector3.zero;
+                    tangent = Vector3.zero;
+                    return true;
+                }
+                else
+                {
+                    var frame = frames[0];
+                    var ratio = weight / frame.Weight;
+                    position = frame.Position * ratio;
+                    normal = frame.Normal * ratio;
+                    tangent = frame.Tangent * ratio;
+                    return true;
+                }
+            }
+
             if (!getDefined && Mathf.Abs(weight) <= 0.0001f && ZeroForWeightZero())
             {
                 position = Vector3.zero;
