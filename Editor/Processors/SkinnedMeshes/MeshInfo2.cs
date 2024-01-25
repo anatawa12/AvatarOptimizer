@@ -116,8 +116,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             }
         }
 
-        [Conditional("UNITY_ASSERTIONS")]
-        //[Conditional("AAO_SLOW_ASSERTIONS")]
+        [Conditional("AAO_SLOW_ASSERTIONS")] // TODO: make global configuration
         public void AssertInvariantContract(string context)
         {
             Profiler.BeginSample("AssertInvariantContract");
