@@ -119,13 +119,61 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         [Conditional("UNITY_ASSERTIONS")]
         public void AssertInvariantContract(string context)
         {
-            var vertices = new HashSet<Vertex>(Vertices);
-            Debug.Assert(SubMeshes.SelectMany(x => x.Vertices).All(vertices.Contains),
-                $"{context}: some SubMesh has invalid triangles");
-            var bones = new HashSet<Bone>(Bones);
-            Debug.Assert(Vertices.SelectMany(x => x.BoneWeights).Select(x => x.bone).All(bones.Contains),
-                $"{context}: some SubMesh has invalid bone weights");
+            Profiler.BeginSample("AssertInvariantContract");
+            Debug.Assert(AssertVertices(), $"{context}: some SubMesh has invalid triangles");
+            Debug.Assert(AssertBones(), $"{context}: some SubMesh has invalid bone weights");
+            Profiler.EndSample();
         }
+
+        private bool AssertVertices()
+        {
+            var vertices = new HashSet<Vertex>(Vertices);
+            var parallel = Environment.ProcessorCount;
+            // round up SubMeshes.Count / parallel
+            var parThreads = new int[SubMeshes.Count];
+            for (var i = 0; i < SubMeshes.Count; i++)
+                parThreads[i] = RoundUpDiv(SubMeshes[i].Vertices.Count, parallel);
+            
+            return Enumerable.Range(0, parallel).AsParallel().All(thread =>
+            {
+                for (var subMeshI = 0; subMeshI < SubMeshes.Count; subMeshI++)
+                {
+                    var subMesh = SubMeshes[subMeshI];
+                    var parThread = parThreads[subMeshI];
+
+                    var lower = parThread * thread;
+                    var upper = Math.Min(parThread * (thread + 1), subMesh.Vertices.Count);
+                    for (var vertexI = lower; vertexI < upper; vertexI++)
+                    {
+                        if (!vertices.Contains(subMesh.Vertices[vertexI])) return false;
+                    }
+                }
+                return true;
+            });
+        }
+
+        private bool AssertBones()
+        {
+            var bones = new HashSet<Bone>(Bones);
+            var parallel = Environment.ProcessorCount;
+            // round up Vertices.Count / parallel
+            var parThread = RoundUpDiv(Vertices.Count, parallel);
+            return Enumerable.Range(0, parallel).AsParallel().All(thread =>
+            {
+                var lower = parThread * thread;
+                var upper = Math.Min(parThread * (thread + 1), Vertices.Count);
+                for (var i = lower; i < upper; i++)
+                {
+                    foreach (var (bone, _) in Vertices[i].BoneWeights)
+                    {
+                        if (!bones.Contains(bone)) return false;
+                    }
+                }
+                return true;
+            });
+        }
+
+        private int RoundUpDiv(int a, int b) => (a + b - 1) / b;
 
         /// <summary>
         /// Makes all vertices in this MeshInfo2 boned.
