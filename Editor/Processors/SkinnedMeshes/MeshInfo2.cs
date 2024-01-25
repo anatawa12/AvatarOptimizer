@@ -25,7 +25,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         private readonly Mesh _originalMesh;
 
-        // TexCoordStatus which is 3 bits x 8 = 24 bits
+        // TexCoordStatus which is 2 bits x 8 = 16 bits
         private ushort _texCoordStatus;
 
         public readonly List<SubMesh> SubMeshes = new List<SubMesh>(0);
@@ -151,6 +151,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             Profiler.BeginSample("Read BlendShapes");
             ReadBlendShapes(mesh);
             Profiler.EndSample();
+            Profiler.EndSample();
         }
 
         private void ReadBones([NotNull] Mesh mesh)
@@ -247,7 +248,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             meaningfuls.Dispose();
             frameCounts.Dispose();
             allFramesBuffer.Dispose();
-            Profiler.EndSample();
         }
 
         [BurstCompile]
