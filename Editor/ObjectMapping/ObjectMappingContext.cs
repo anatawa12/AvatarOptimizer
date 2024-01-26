@@ -383,6 +383,7 @@ namespace Anatawa12.AvatarOptimizer
             {
                 // Any object referenced by an animator that we intend to mutate needs to be listed here.
                 case Motion _:
+                case AvatarMask _:
                 case AnimatorController _:
                 case AnimatorOverrideController _:
                 case AnimatorState _:
