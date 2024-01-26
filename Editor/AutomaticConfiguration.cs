@@ -13,6 +13,7 @@ namespace Anatawa12.AvatarOptimizer
         private SerializedProperty _removeZeroSizedPolygons;
         private SerializedProperty _optimizePhysBone;
         private SerializedProperty _mmdWorldCompatibility;
+        private SerializedProperty _animatorOptimizer;
         private SerializedProperty _advancedSettings;
         private GUIContent _advancedSettingsLabel = new GUIContent();
 
@@ -24,6 +25,7 @@ namespace Anatawa12.AvatarOptimizer
             _removeZeroSizedPolygons = serializedObject.FindProperty(nameof(TraceAndOptimize.removeZeroSizedPolygons));
             _optimizePhysBone = serializedObject.FindProperty(nameof(TraceAndOptimize.optimizePhysBone));
             _mmdWorldCompatibility = serializedObject.FindProperty(nameof(TraceAndOptimize.mmdWorldCompatibility));
+            _animatorOptimizer = serializedObject.FindProperty(nameof(TraceAndOptimize.animatorOptimizer));
             _advancedSettings = serializedObject.FindProperty(nameof(TraceAndOptimize.advancedSettings));
         }
 
@@ -45,6 +47,17 @@ namespace Anatawa12.AvatarOptimizer
             }
             EditorGUILayout.PropertyField(_removeZeroSizedPolygons);
             EditorGUILayout.PropertyField(_optimizePhysBone);
+
+            var animatorOptimizer = _animatorOptimizer.Copy();
+            System.Diagnostics.Debug.Assert(animatorOptimizer.NextVisible(true));
+            EditorGUILayout.PropertyField(animatorOptimizer); // enabled
+            if (animatorOptimizer.boolValue)
+            {
+                EditorGUI.indentLevel++;
+                while (animatorOptimizer.NextVisible(false))
+                    EditorGUILayout.PropertyField(animatorOptimizer);
+                EditorGUI.indentLevel--;
+            }
 
             _advancedSettingsLabel.text = CL4EE.Tr("TraceAndOptimize:prop:advancedSettings");
             if (EditorGUILayout.PropertyField(_advancedSettings, _advancedSettingsLabel, false))

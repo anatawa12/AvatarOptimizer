@@ -385,6 +385,9 @@ msgstr "MMDワールドとの互換性"
 msgid "TraceAndOptimize:tooltip:mmdWorldCompatibility"
 msgstr "MMD用BlendShapeを固定しないなどのMMDワールドとの互換性機能を有効化します"
 
+msgid "TraceAndOptimize:prop:animatorOptimizer"
+msgstr "アニメータの最適化"
+
 msgid "TraceAndOptimize:prop:advancedSettings"
 msgstr "高度な設定"
 

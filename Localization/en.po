@@ -454,6 +454,9 @@ msgstr "MMD World Compatibility"
 msgid "TraceAndOptimize:tooltip:mmdWorldCompatibility"
 msgstr "Enable MMD World Compatibility features such as keeping some BlendShapes"
 
+msgid "TraceAndOptimize:prop:animatorOptimizer"
+msgstr "Animator Optimizer"
+
 msgid "TraceAndOptimize:prop:advancedSettings"
 msgstr "Advanced Settings"
 

@@ -50,6 +50,9 @@ namespace Anatawa12.AvatarOptimizer
         public bool mmdWorldCompatibility = true;
 
         [NotKeyable]
+        public AnimatorOptimizer animatorOptimizer;
+
+        [NotKeyable]
         public AdvancedSettings advancedSettings;
         
         [Serializable]
@@ -73,6 +76,14 @@ namespace Anatawa12.AvatarOptimizer
             public bool skipIsAnimatedOptimization;
             [ToggleLeft]
             public bool skipMergePhysBoneCollider;
+        }
+
+        [Serializable]
+        internal struct AnimatorOptimizer
+        {
+            [CL4EELocalized("TraceAndOptimize:prop:animatorOptimizer")]
+            [ToggleLeft]
+            public bool enabled;
         }
     }
 }
