@@ -35,7 +35,8 @@ namespace Anatawa12.AvatarOptimizer.ndmf
             ;
 
             // Run everything else in the optimize phase
-            InPhase(BuildPhase.Optimizing)
+            var mainSequence = InPhase(BuildPhase.Optimizing);
+            mainSequence
                 .WithRequiredExtensions(new[]
                 {
                     typeof(Processors.MeshInfo2Context),
@@ -70,6 +71,9 @@ namespace Anatawa12.AvatarOptimizer.ndmf
                         .Then.Run(Processors.RemoveZeroSizedPolygonProcessor.Instance)
                         ;
                 });
+
+            mainSequence.Run(Processors.AnimatorOptimizer.InitializeAnimatorOptimizer.Instance)
+                ;
         }
 
         protected override void OnUnhandledException(Exception e)
