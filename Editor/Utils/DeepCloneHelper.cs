@@ -79,8 +79,6 @@ namespace Anatawa12.AvatarOptimizer
             var obj = CustomClone(original);
             if (obj == null) return DefaultDeepClone(original);
 
-            if (original != obj)
-                ObjectRegistry.RegisterReplacedObject(original, obj);
             _cache[original] = obj;
             _cache[obj] = obj;
             return (T)obj;
