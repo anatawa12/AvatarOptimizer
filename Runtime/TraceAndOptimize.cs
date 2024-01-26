@@ -85,9 +85,14 @@ namespace Anatawa12.AvatarOptimizer
             [ToggleLeft]
             public bool enabled;
 
+            [CL4EELocalized("TraceAndOptimize:prop:entryExitToBlendTree")]
+            [ToggleLeft]
+            public bool entryExitToBlendTree;
+
             public static AnimatorOptimizer Default = new AnimatorOptimizer
             {
                 enabled = true,
+                entryExitToBlendTree = true,
             };
         }
     }

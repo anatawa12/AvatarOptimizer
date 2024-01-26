@@ -73,6 +73,7 @@ namespace Anatawa12.AvatarOptimizer.ndmf
                 });
 
             mainSequence.Run(Processors.AnimatorOptimizer.InitializeAnimatorOptimizer.Instance)
+                .Then.Run(Processors.AnimatorOptimizer.EntryExitToBlendTree.Instance)
                 ;
         }
 
