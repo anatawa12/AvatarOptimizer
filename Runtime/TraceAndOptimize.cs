@@ -50,7 +50,7 @@ namespace Anatawa12.AvatarOptimizer
         public bool mmdWorldCompatibility = true;
 
         [NotKeyable]
-        public AnimatorOptimizer animatorOptimizer;
+        public AnimatorOptimizer animatorOptimizer = AnimatorOptimizer.Default;
 
         [NotKeyable]
         public AdvancedSettings advancedSettings;
@@ -84,6 +84,11 @@ namespace Anatawa12.AvatarOptimizer
             [CL4EELocalized("TraceAndOptimize:prop:animatorOptimizer")]
             [ToggleLeft]
             public bool enabled;
+
+            public static AnimatorOptimizer Default = new AnimatorOptimizer
+            {
+                enabled = true,
+            };
         }
     }
 }
