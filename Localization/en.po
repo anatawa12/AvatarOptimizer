@@ -457,6 +457,9 @@ msgstr "Enable MMD World Compatibility features such as keeping some BlendShapes
 msgid "TraceAndOptimize:prop:animatorOptimizer"
 msgstr "Animator Optimizer"
 
+msgid "TraceAndOptimize:prop:removeUnusedAnimatingProperties"
+msgstr "Remove Unused Animating Properties"
+
 msgid "TraceAndOptimize:prop:entryExitToBlendTree"
 msgstr "Convert Entry/Exit to BlendTree"
 

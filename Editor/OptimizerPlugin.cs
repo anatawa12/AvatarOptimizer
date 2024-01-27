@@ -69,6 +69,7 @@ namespace Anatawa12.AvatarOptimizer.ndmf
                         .Then.Run(Processors.TraceAndOptimizes.ConfigureRemoveZeroSizedPolygon.Instance)
                         .Then.Run(Processors.MergeBoneProcessor.Instance)
                         .Then.Run(Processors.RemoveZeroSizedPolygonProcessor.Instance)
+                        .Then.Run(Processors.AnimatorOptimizer.RemoveInvalidProperties.Instance)
                         ;
                 });
 

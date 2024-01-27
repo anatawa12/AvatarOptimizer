@@ -85,6 +85,10 @@ namespace Anatawa12.AvatarOptimizer
             [ToggleLeft]
             public bool enabled;
 
+            [CL4EELocalized("TraceAndOptimize:prop:removeUnusedAnimatingProperties")]
+            [ToggleLeft]
+            public bool removeUnusedAnimatingProperties;
+
             [CL4EELocalized("TraceAndOptimize:prop:entryExitToBlendTree")]
             [ToggleLeft]
             public bool entryExitToBlendTree;
