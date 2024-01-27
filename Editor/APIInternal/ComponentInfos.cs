@@ -330,7 +330,15 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
                 .EvenIfDependantDisabled();
             for (var i = 0; i < component.sourceCount; i++)
                 collector.AddDependency(component.GetSource(i).sourceTransform);
-            collector.MarkHeavyBehaviour();
+            var isNestedConstraint =
+                component.GetComponentsInChildren<IConstraint>() != null &&
+                component.GetComponentsInParent<IConstraint>() != null;
+            // for nested constraint, our optimizer may breaks the constraint
+            // https://github.com/anatawa12/AvatarOptimizer/issues/856
+            if (isNestedConstraint)
+                collector.MarkBehaviour();
+            else
+                collector.MarkHeavyBehaviour();
         }
     }
 

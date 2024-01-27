@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Nested Constraint can be broken with Trace and Optimize `#857`
 
 ### Security
 

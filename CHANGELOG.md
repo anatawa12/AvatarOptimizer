@@ -27,6 +27,7 @@ The format is based on [Keep a Changelog].
 - Added workaround for `Array index (n) is out of bounds (size=m)` error
 - Humanoid Bones may be removed by Trace and Optimize `#831`
 - Add `license`, `documentationUrl`, and `changelogUrl` to package.json `#851`
+- Nested Constraint can be broken with Trace and Optimize `#857`
 
 ### Security
 
