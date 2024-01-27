@@ -388,6 +388,9 @@ msgstr "MMD用BlendShapeを固定しないなどのMMDワールドとの互換�
 msgid "TraceAndOptimize:prop:animatorOptimizer"
 msgstr "アニメータの最適化"
 
+msgid "TraceAndOptimize:prop:entryExitToBlendTree"
+msgstr "Convert Entry/Exit to BlendTree"
+
 msgid "TraceAndOptimize:prop:advancedSettings"
 msgstr "高度な設定"
 

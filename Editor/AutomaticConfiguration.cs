@@ -13,7 +13,8 @@ namespace Anatawa12.AvatarOptimizer
         private SerializedProperty _removeZeroSizedPolygons;
         private SerializedProperty _optimizePhysBone;
         private SerializedProperty _mmdWorldCompatibility;
-        private SerializedProperty _animatorOptimizer;
+        private SerializedProperty _animatorOptimizerEnabled;
+        private SerializedProperty _animatorOptimizerEnd;
         private SerializedProperty _advancedSettings;
         private GUIContent _advancedSettingsLabel = new GUIContent();
 
@@ -25,7 +26,9 @@ namespace Anatawa12.AvatarOptimizer
             _removeZeroSizedPolygons = serializedObject.FindProperty(nameof(TraceAndOptimize.removeZeroSizedPolygons));
             _optimizePhysBone = serializedObject.FindProperty(nameof(TraceAndOptimize.optimizePhysBone));
             _mmdWorldCompatibility = serializedObject.FindProperty(nameof(TraceAndOptimize.mmdWorldCompatibility));
-            _animatorOptimizer = serializedObject.FindProperty(nameof(TraceAndOptimize.animatorOptimizer));
+            var animatorOptimizer = serializedObject.FindProperty(nameof(TraceAndOptimize.animatorOptimizer));
+            _animatorOptimizerEnabled = animatorOptimizer.FindPropertyRelative(nameof(TraceAndOptimize.AnimatorOptimizer.enabled));
+            _animatorOptimizerEnd = animatorOptimizer.GetEndProperty();
             _advancedSettings = serializedObject.FindProperty(nameof(TraceAndOptimize.advancedSettings));
         }
 
@@ -48,14 +51,14 @@ namespace Anatawa12.AvatarOptimizer
             EditorGUILayout.PropertyField(_removeZeroSizedPolygons);
             EditorGUILayout.PropertyField(_optimizePhysBone);
 
-            var animatorOptimizer = _animatorOptimizer.Copy();
-            System.Diagnostics.Debug.Assert(animatorOptimizer.NextVisible(true));
-            EditorGUILayout.PropertyField(animatorOptimizer); // enabled
-            if (animatorOptimizer.boolValue)
+            EditorGUILayout.PropertyField(_animatorOptimizerEnabled); // enabled
+            if (_animatorOptimizerEnabled.boolValue)
             {
+                var iterator = _animatorOptimizerEnabled.Copy();
                 EditorGUI.indentLevel++;
-                while (animatorOptimizer.NextVisible(false))
-                    EditorGUILayout.PropertyField(animatorOptimizer);
+                while (iterator.NextVisible(false) &&
+                       !SerializedProperty.EqualContents(iterator, _animatorOptimizerEnd))
+                    EditorGUILayout.PropertyField(iterator);
                 EditorGUI.indentLevel--;
             }
 
