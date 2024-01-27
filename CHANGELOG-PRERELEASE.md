@@ -10,6 +10,9 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
+- Reverted NDMF to 1.3.0-rc.3 `#858`
+  - NDMF 1.3.0-rc.4 or later does not execute Optimizing phase on entering play mode.
+  - See [this issue](https://github.com/bdunderscore/ndmf/issues/129) for more details.
 
 ### Deprecated
 
