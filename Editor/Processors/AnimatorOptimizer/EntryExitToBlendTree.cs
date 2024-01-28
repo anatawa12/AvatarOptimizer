@@ -391,6 +391,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 blendType = BlendTreeType.Simple1D,
                 blendParameter = info.ParameterName,
                 useAutomaticThresholds = false,
+                minThreshold = children.First().threshold,
+                maxThreshold = children.Last().threshold,
                 name = $"EntryExit to BlendTree by AAO for {layer.name}",
                 children = children.ToArray(),
             };
@@ -411,6 +413,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 }
             };
 
+            layer.stateMachine.entryTransitions = Array.Empty<AnimatorTransition>();
             layer.stateMachine.defaultState = newState;
 
             ChildMotion CreateChild(int value, Motion motion) =>
