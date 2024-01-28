@@ -558,8 +558,8 @@ msgstr "An internal error has occurred: {0} when processing:"
 
 msgid "AssetDescription:Description"
 msgstr ""
-"Avatar Optimizer Asset Description is a asset that describe your assets for Avatar Optimizer.\n"
-"For more details please visit our documentation"
+"Avatar Optimizer Asset Description is an asset that describe your assets to Avatar Optimizer.\n"
+"For more details, please visit our documentation."
 
 msgid "AssetDescription:OpenDocs"
 msgstr "Open Documentation"
