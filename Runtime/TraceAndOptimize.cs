@@ -42,6 +42,11 @@ namespace Anatawa12.AvatarOptimizer
 #endif
         public bool optimizePhysBone = true;
 
+        [NotKeyable]
+        [CL4EELocalized("TraceAndOptimize:prop:optimizeAnimator")]
+        [ToggleLeft]
+        public bool optimizeAnimator = true;
+
         // common parsing configuration
         [NotKeyable]
         [CL4EELocalized("TraceAndOptimize:prop:mmdWorldCompatibility",
@@ -73,6 +78,10 @@ namespace Anatawa12.AvatarOptimizer
             public bool skipIsAnimatedOptimization;
             [ToggleLeft]
             public bool skipMergePhysBoneCollider;
+            [ToggleLeft]
+            public bool skipEntryExitToBlendTree;
+            [ToggleLeft]
+            public bool skipRemoveUnusedAnimatingProperties;
         }
     }
 }

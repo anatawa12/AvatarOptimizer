@@ -8,6 +8,11 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Animator Optimizer `#854`
+  - Animator Optimizer optimizes your Animator Controller without behaviour Changes
+  - Current Optimizer includes the following optimization
+    - Remove meaningless properties `#854`
+    - Converts Entry / Exit to 1D BlendTree `#854`
 
 ### Changed
 - Project is slightly renamed to AAO: Avatar Optimizer `#830`

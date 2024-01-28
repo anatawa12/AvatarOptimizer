@@ -35,7 +35,8 @@ namespace Anatawa12.AvatarOptimizer.ndmf
             ;
 
             // Run everything else in the optimize phase
-            InPhase(BuildPhase.Optimizing)
+            var mainSequence = InPhase(BuildPhase.Optimizing);
+            mainSequence
                 .WithRequiredExtensions(new[]
                 {
                     typeof(Processors.MeshInfo2Context),
@@ -68,8 +69,16 @@ namespace Anatawa12.AvatarOptimizer.ndmf
                         .Then.Run(Processors.TraceAndOptimizes.ConfigureRemoveZeroSizedPolygon.Instance)
                         .Then.Run(Processors.MergeBoneProcessor.Instance)
                         .Then.Run(Processors.RemoveZeroSizedPolygonProcessor.Instance)
+                        .Then.Run(Processors.AnimatorOptimizer.RemoveInvalidProperties.Instance)
                         ;
                 });
+
+            mainSequence.Run(Processors.AnimatorOptimizer.InitializeAnimatorOptimizer.Instance)
+#if AAO_VRCSDK3_AVATARS
+                // EntryExit to BlendTree optimization heavily depends on VRChat's behavior
+                .Then.Run(Processors.AnimatorOptimizer.EntryExitToBlendTree.Instance)
+#endif
+                ;
         }
 
         protected override void OnUnhandledException(Exception e)

@@ -80,6 +80,9 @@ namespace Anatawa12.AvatarOptimizer
         public AnimationComponentInfo GetAnimationComponent(ComponentOrGameObject component)
             => GetComponentInfo(component);
 
+        public IEnumerable<AnimationComponentInfo> GetAllAnimationComponents() =>
+            _componentInfos.Values.Where(x => !x.IsMerged);
+
         private BuildingComponentInfo GetComponentInfo(ComponentOrGameObject component)
         {
             if (!_componentInfos.TryGetValue(component.GetInstanceID(), out var info))
@@ -290,7 +293,7 @@ namespace Anatawa12.AvatarOptimizer
                 prop.CopyTo(toComponent.GetProperty(newProp));
             }
 
-            public void RemoveProperty(string property)
+            public override void RemoveProperty(string property)
             {
                 if (Type == typeof(Transform)) throw new Exception("Removing properties of Transform is not supported!");
                 if (_mergedInto != null) throw new Exception("Already Merged");
@@ -314,6 +317,18 @@ namespace Anatawa12.AvatarOptimizer
                 return new ComponentInfo(InstanceId, mergedInfo.InstanceId, Type, propertyMapping);
             }
 
+            public override ComponentOrGameObject TargetComponent
+            {
+                get
+                {
+                    if (_mergedInto != null) throw new Exception("Already Merged");
+                    var instance = EditorUtility.InstanceIDToObject(InstanceId);
+                    return new ComponentOrGameObject(instance ? instance : null);
+                }
+            }
+
+            public override string[] Properties => _afterPropertyIds.Keys.ToArray();
+
             public override bool ContainsFloat(string property) =>
                 _afterPropertyIds.TryGetValue(property, out var info) && info.FloatNode != null;
 
@@ -336,6 +351,10 @@ namespace Anatawa12.AvatarOptimizer
 
     internal abstract class AnimationComponentInfo
     {
+        public abstract string[] Properties { get; }
+        public abstract ComponentOrGameObject TargetComponent { get; }
+
+        public abstract void RemoveProperty(string property);
         public abstract bool ContainsFloat(string property);
         public abstract bool TryGetFloat(string propertyName, out RootPropModNode<float> animation);
         public abstract void AddModification(string prop, ComponentPropModNode<float> node, bool alwaysApplied);
