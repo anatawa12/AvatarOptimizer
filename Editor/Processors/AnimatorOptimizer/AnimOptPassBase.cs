@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes;
 using JetBrains.Annotations;
 using nadena.dev.ndmf;
 using UnityEditor;
@@ -21,24 +22,23 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
         }
     }
 
-    abstract class AnimOptPassBase<T> : TraceAndOptimizes.TraceAndOptimizePass<T> 
-        where T : TraceAndOptimizes.TraceAndOptimizePass<T>, new()
+    abstract class AnimOptPassBase<T> : TraceAndOptimizePass<T> where T : TraceAndOptimizePass<T>, new()
     {
         public override string DisplayName => "T&O: AnimOpt: " + typeof(T).Name;
 
-        protected sealed override void Execute(BuildContext context, TraceAndOptimizes.TraceAndOptimizeState state)
+        protected sealed override void Execute(BuildContext context, TraceAndOptimizeState state)
         {
-            if (!state.AnimatorOptimizer.enabled) return;
+            if (!state.OptimizeAnimator) return;
             foreach (var controller in context.GetState<AnimatorOptimizerState>().Controllers)
             {
                 Profiler.BeginSample("Apply to Animator");
-                Execute(context, controller, state.AnimatorOptimizer);
+                Execute(context, controller, state);
                 Profiler.EndSample();
             }
         }
 
         protected abstract void Execute(BuildContext context, AOAnimatorController controller,
-            TraceAndOptimize.AnimatorOptimizer settings);
+            TraceAndOptimizeState settings);
     }
 
     // This pass prepares animator optimizer
@@ -46,19 +46,15 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
     // - Collects all AnimatorController objects and save to state
     // - Clones AnimatorController and StateMachines to avoid modifying original AnimatorController if needed
     // - If the RuntimeAnimatorController is AnimatorOverrideController, convert it to AnimatorController
-    class InitializeAnimatorOptimizer : TraceAndOptimizes.TraceAndOptimizePass<InitializeAnimatorOptimizer>
+    class InitializeAnimatorOptimizer : TraceAndOptimizePass<InitializeAnimatorOptimizer>
     {
         public override string DisplayName => "AnimOpt: Initialize";
 
-        protected override void Execute(BuildContext context, TraceAndOptimizes.TraceAndOptimizeState state)
+        protected override void Execute(BuildContext context, TraceAndOptimizeState state)
         {
-            if (!state.AnimatorOptimizer.enabled) return;
+            if (!state.OptimizeAnimator) return;
 
             var animatorState = context.GetState<AnimatorOptimizerState>();
-            
-            var traceAndOptimizeState = context.GetState<TraceAndOptimizes.TraceAndOptimizeState>();
-            if (!traceAndOptimizeState.Enabled) return;
-            if (!traceAndOptimizeState.AnimatorOptimizer.enabled) return;
 
             foreach (var component in context.AvatarRootObject.GetComponents<Component>())
             {

@@ -42,8 +42,9 @@ namespace Anatawa12.AvatarOptimizer
 #endif
         public bool optimizePhysBone = true;
 
-        [NotKeyable]
-        public AnimatorOptimizer animatorOptimizer = new AnimatorOptimizer();
+        [CL4EELocalized("TraceAndOptimize:prop:optimizeAnimator")]
+        [ToggleLeft]
+        public bool optimizeAnimator = true;
 
         // common parsing configuration
         [NotKeyable]
@@ -76,26 +77,10 @@ namespace Anatawa12.AvatarOptimizer
             public bool skipIsAnimatedOptimization;
             [ToggleLeft]
             public bool skipMergePhysBoneCollider;
-        }
-
-        [Serializable]
-        internal class AnimatorOptimizer
-        {
-            [CL4EELocalized("TraceAndOptimize:prop:animatorOptimizer")]
             [ToggleLeft]
-            public bool enabled = true;
-
-            [CL4EELocalized("TraceAndOptimize:prop:removeUnusedAnimatingProperties")]
+            public bool skipEntryExitToBlendTree;
             [ToggleLeft]
-            public bool removeUnusedAnimatingProperties = true;
-
-            [CL4EELocalized("TraceAndOptimize:prop:entryExitToBlendTree")]
-            [ToggleLeft]
-#if !AAO_VRCSDK3_AVATARS
-            // EntryExit to BlendTree optimization heavily depends on VRChat's behavior
-            [HideInInspector]
-#endif
-            public bool entryExitToBlendTree = true;
+            public bool skipRemoveUnusedAnimatingProperties;
         }
     }
 }

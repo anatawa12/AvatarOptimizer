@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes;
 using JetBrains.Annotations;
 using nadena.dev.ndmf;
 using UnityEditor;
@@ -36,9 +37,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
     class EntryExitToBlendTree : AnimOptPassBase<EntryExitToBlendTree>
     {
         protected override void Execute(BuildContext context, AOAnimatorController controller,
-            TraceAndOptimize.AnimatorOptimizer settings)
+            TraceAndOptimizeState settings)
         {
-            if (!settings.entryExitToBlendTree) return; // feature disabled
+            if (settings.SkipEntryExitToBlendTree) return; // feature disabled
 
             Execute(controller);
         }

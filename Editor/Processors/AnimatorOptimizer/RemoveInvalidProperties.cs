@@ -14,8 +14,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 
         protected override void Execute(BuildContext context, TraceAndOptimizeState state)
         {
-            if (!state.AnimatorOptimizer.enabled) return;
-            if (!state.AnimatorOptimizer.removeUnusedAnimatingProperties) return;
+            if (!state.OptimizeAnimator) return;
+            if (state.SkipRemoveUnusedAnimatingProperties) return;
 
             var mappingBuilder = context.GetMappingBuilder();
 

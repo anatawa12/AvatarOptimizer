@@ -11,6 +11,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         public bool RemoveUnusedObjects;
         public bool RemoveZeroSizedPolygon;
         public bool OptimizePhysBone;
+        public bool OptimizeAnimator;
         public bool MmdWorldCompatibility = true;
 
         public bool PreserveEndBone;
@@ -22,7 +23,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         public bool SkipFreezingMeaninglessBlendShape;
         public bool SkipIsAnimatedOptimization;
         public bool SkipMergePhysBoneCollider;
-        public TraceAndOptimize.AnimatorOptimizer AnimatorOptimizer;
+        public bool SkipEntryExitToBlendTree;
+        public bool SkipRemoveUnusedAnimatingProperties;
 
         public Dictionary<SkinnedMeshRenderer, HashSet<string>> PreserveBlendShapes =
             new Dictionary<SkinnedMeshRenderer, HashSet<string>>();
@@ -33,6 +35,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             RemoveUnusedObjects = config.removeUnusedObjects;
             RemoveZeroSizedPolygon = config.removeZeroSizedPolygons;
             OptimizePhysBone = config.optimizePhysBone;
+            OptimizeAnimator = config.optimizeAnimator;
             MmdWorldCompatibility = config.mmdWorldCompatibility;
 
             PreserveEndBone = config.preserveEndBone;
@@ -45,8 +48,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             SkipFreezingMeaninglessBlendShape = config.advancedSettings.skipFreezingMeaninglessBlendShape;
             SkipIsAnimatedOptimization = config.advancedSettings.skipIsAnimatedOptimization;
             SkipMergePhysBoneCollider = config.advancedSettings.skipMergePhysBoneCollider;
-
-            AnimatorOptimizer = config.animatorOptimizer;
+            SkipEntryExitToBlendTree = config.advancedSettings.skipEntryExitToBlendTree;
+            SkipRemoveUnusedAnimatingProperties = config.advancedSettings.skipRemoveUnusedAnimatingProperties;
 
             Enabled = true;
         }

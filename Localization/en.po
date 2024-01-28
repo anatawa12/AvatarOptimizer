@@ -448,20 +448,14 @@ msgstr "Remove unused Objects Automatically"
 msgid "TraceAndOptimize:prop:optimizePhysBone"
 msgstr "Optimize PhysBone Settings"
 
+msgid "TraceAndOptimize:prop:optimizeAnimator"
+msgstr "Optimize Animator"
+
 msgid "TraceAndOptimize:prop:mmdWorldCompatibility"
 msgstr "MMD World Compatibility"
 
 msgid "TraceAndOptimize:tooltip:mmdWorldCompatibility"
 msgstr "Enable MMD World Compatibility features such as keeping some BlendShapes"
-
-msgid "TraceAndOptimize:prop:animatorOptimizer"
-msgstr "Animator Optimizer"
-
-msgid "TraceAndOptimize:prop:removeUnusedAnimatingProperties"
-msgstr "Remove Unused Animating Properties"
-
-msgid "TraceAndOptimize:prop:entryExitToBlendTree"
-msgstr "Convert Entry/Exit to BlendTree"
 
 msgid "TraceAndOptimize:prop:advancedSettings"
 msgstr "Advanced Settings"

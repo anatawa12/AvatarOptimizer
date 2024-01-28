@@ -379,20 +379,14 @@ msgstr "使われていないObjectを自動的に削除する"
 msgid "TraceAndOptimize:prop:optimizePhysBone"
 msgstr "PhysBoneの設定を最適化する"
 
+msgid "TraceAndOptimize:prop:animatorOptimizer"
+msgstr "アニメータを最適化する"
+
 msgid "TraceAndOptimize:prop:mmdWorldCompatibility"
 msgstr "MMDワールドとの互換性"
 
 msgid "TraceAndOptimize:tooltip:mmdWorldCompatibility"
 msgstr "MMD用BlendShapeを固定しないなどのMMDワールドとの互換性機能を有効化します"
-
-msgid "TraceAndOptimize:prop:animatorOptimizer"
-msgstr "アニメータの最適化"
-
-msgid "TraceAndOptimize:prop:removeUnusedAnimatingProperties"
-msgstr "使われてないアニメーションプロパティを削除する"
-
-msgid "TraceAndOptimize:prop:entryExitToBlendTree"
-msgstr "Convert Entry/Exit to BlendTree"
 
 msgid "TraceAndOptimize:prop:advancedSettings"
 msgstr "高度な設定"
