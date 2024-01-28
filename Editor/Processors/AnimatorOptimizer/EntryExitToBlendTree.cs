@@ -17,7 +17,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
     /// </summary>
     class EntryExitToBlendTree : AnimOptPassBase<EntryExitToBlendTree>
     {
-        protected override void Execute(BuildContext context, AnimatorController controller,
+        protected override void Execute(BuildContext context, AOAnimatorController controller,
             TraceAndOptimize.AnimatorOptimizer settings)
         {
             if (!settings.entryExitToBlendTree) return; // feature disabled
@@ -28,7 +28,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 
             // first, collect transformable layers
             var layers = controller.layers;
-            var convertInfos = new ConvertibleLayerInfo[layers.Length];
+            var convertInfos = new ConvertibleLayerInfo[layers.Count()];
             var layerByParameter = new Dictionary<string, List<int>>();
             for (var i = 0; i < layers.Length; i++)
             {
@@ -43,11 +43,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                     }
                 }
             }
-
-            // next, check if layers we're going to convert are not used by synced layer
-            foreach (var layer in layers)
-                if (layer.syncedLayerIndex != -1)
-                    convertInfos[layer.syncedLayerIndex] = null;
 
             // then, check the parameters are not used by other conditions.
             for (var i = 0; i < layers.Length; i++)
@@ -111,9 +106,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
         }
 
         [CanBeNull]
-        private ConvertibleLayerInfo TryParseLayer(AnimatorControllerLayer layer, HashSet<string> intParameters)
+        private ConvertibleLayerInfo TryParseLayer(AOAnimatorControllerLayer layer, HashSet<string> intParameters)
         {
-            if (layer.syncedLayerIndex != -1) return null; // synced layer is not supported
+            if (layer.IsSynced || layer.IsSyncedToOtherLayer) return null; // synced layer is not supported
             if (!layer.stateMachine) return null;
             var stateMachine = layer.stateMachine;
             var states = stateMachine.states;
@@ -343,7 +338,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             }
         }
 
-        private void DoConvert(ConvertibleLayerInfo info, AnimatorControllerLayer layer)
+        private void DoConvert(ConvertibleLayerInfo info, AOAnimatorControllerLayer layer)
         {
             var valueForStates = info.ValueForStates;
             valueForStates.Remove(info.DefaultState); // default states are proceed always so remove from this list

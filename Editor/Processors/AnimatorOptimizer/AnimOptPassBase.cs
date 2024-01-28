@@ -12,10 +12,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 {
     class AnimatorOptimizerState
     {
-        private HashSet<AnimatorController> _contollers = new HashSet<AnimatorController>();
-        public IEnumerable<AnimatorController> Controllers => _contollers;
+        private HashSet<AOAnimatorController> _contollers = new HashSet<AOAnimatorController>();
+        public IEnumerable<AOAnimatorController> Controllers => _contollers;
 
-        public void Add(AnimatorController cloned)
+        public void Add(AOAnimatorController cloned)
         {
             _contollers.Add(cloned);
         }
@@ -37,7 +37,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             }
         }
 
-        protected abstract void Execute(BuildContext context, AnimatorController controller, TraceAndOptimize.AnimatorOptimizer settings);
+        protected abstract void Execute(BuildContext context, AOAnimatorController controller,
+            TraceAndOptimize.AnimatorOptimizer settings);
     }
 
     // This pass prepares animator optimizer
@@ -68,7 +69,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                         if (property.objectReferenceValue is RuntimeAnimatorController runtimeController)
                         {
                             var cloned = AnimatorControllerCloner.Clone(context, runtimeController);
-                            animatorState.Add(cloned);
+                            animatorState.Add(new AOAnimatorController(cloned));
                             property.objectReferenceValue = cloned;
                         }
                     }
