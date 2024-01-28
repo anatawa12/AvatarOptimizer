@@ -42,15 +42,15 @@ namespace Anatawa12.AvatarOptimizer
 #endif
         public bool optimizePhysBone = true;
 
+        [NotKeyable]
+        public AnimatorOptimizer animatorOptimizer = new AnimatorOptimizer();
+
         // common parsing configuration
         [NotKeyable]
         [CL4EELocalized("TraceAndOptimize:prop:mmdWorldCompatibility",
             "TraceAndOptimize:tooltip:mmdWorldCompatibility")]
         [ToggleLeft]
         public bool mmdWorldCompatibility = true;
-
-        [NotKeyable]
-        public AnimatorOptimizer animatorOptimizer = new AnimatorOptimizer();
 
         [NotKeyable]
         public AdvancedSettings advancedSettings;

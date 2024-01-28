@@ -12,9 +12,9 @@ namespace Anatawa12.AvatarOptimizer
         private SerializedProperty _preserveEndBone;
         private SerializedProperty _removeZeroSizedPolygons;
         private SerializedProperty _optimizePhysBone;
-        private SerializedProperty _mmdWorldCompatibility;
         private SerializedProperty _animatorOptimizerEnabled;
         private SerializedProperty _animatorOptimizerEnd;
+        private SerializedProperty _mmdWorldCompatibility;
         private SerializedProperty _advancedSettings;
         private GUIContent _advancedSettingsLabel = new GUIContent();
 
@@ -25,10 +25,10 @@ namespace Anatawa12.AvatarOptimizer
             _preserveEndBone = serializedObject.FindProperty(nameof(TraceAndOptimize.preserveEndBone));
             _removeZeroSizedPolygons = serializedObject.FindProperty(nameof(TraceAndOptimize.removeZeroSizedPolygons));
             _optimizePhysBone = serializedObject.FindProperty(nameof(TraceAndOptimize.optimizePhysBone));
-            _mmdWorldCompatibility = serializedObject.FindProperty(nameof(TraceAndOptimize.mmdWorldCompatibility));
             var animatorOptimizer = serializedObject.FindProperty(nameof(TraceAndOptimize.animatorOptimizer));
             _animatorOptimizerEnabled = animatorOptimizer.FindPropertyRelative(nameof(TraceAndOptimize.AnimatorOptimizer.enabled));
             _animatorOptimizerEnd = animatorOptimizer.GetEndProperty();
+            _mmdWorldCompatibility = serializedObject.FindProperty(nameof(TraceAndOptimize.mmdWorldCompatibility));
             _advancedSettings = serializedObject.FindProperty(nameof(TraceAndOptimize.advancedSettings));
         }
 
