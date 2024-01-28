@@ -380,7 +380,7 @@ msgid "TraceAndOptimize:prop:optimizePhysBone"
 msgstr "PhysBoneの設定を最適化する"
 
 msgid "TraceAndOptimize:prop:animatorOptimizer"
-msgstr "アニメータを最適化する"
+msgstr "アニメーターを最適化する"
 
 msgid "TraceAndOptimize:prop:mmdWorldCompatibility"
 msgstr "MMDワールドとの互換性"
