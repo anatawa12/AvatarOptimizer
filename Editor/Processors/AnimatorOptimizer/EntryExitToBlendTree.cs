@@ -69,28 +69,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 var layer = layers[i];
                 if (layer.IsSynced) continue;
 
-                CheckConditions(layer.stateMachine);
-
-                void CheckConditions(AnimatorStateMachine stateMachine)
-                {
-                    if (stateMachine == null) return;
-
-                    foreach (var transition in stateMachine.entryTransitions)
-                        CheckCondition(transition);
-
-                    foreach (var state in stateMachine.states)
-                    foreach (var transition in state.state.transitions)
-                            CheckCondition(transition);
-
-                    foreach (var childStateMachine in stateMachine.stateMachines)
-                    {
-                        foreach (var transition in stateMachine.GetStateMachineTransitions(childStateMachine.stateMachine))
-                            CheckCondition(transition);
-
-                        CheckConditions(childStateMachine.stateMachine);
-                    }
-                }
-                void CheckCondition(AnimatorTransitionBase transition)
+                foreach (var transition in AOUtils.AllTransitions(layer.stateMachine))
                 {
                     foreach (var condition in transition.conditions)
                     {
@@ -359,7 +338,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             }
         }
 
-        private void DoConvert(ConvertibleLayerInfo info, AOAnimatorControllerLayer layer)
+        private static void DoConvert(ConvertibleLayerInfo info, AOAnimatorControllerLayer layer)
         {
             var valueForStates = info.ValueForStates;
             valueForStates.Remove(info.DefaultState); // default states are proceed always so remove from this list
