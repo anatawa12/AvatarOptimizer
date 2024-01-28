@@ -9,7 +9,7 @@ The format is based on [Keep a Changelog].
 ## [Unreleased]
 ### Added
 - Asset Description `#847`
-  - Asset Description is the file to provide Avatar Optimizer information of your assets.
+  - Asset Description is the file to provide information of your assets for Avatar Optimizer.
   - Please see documentation for more details.
 
 ### Changed
