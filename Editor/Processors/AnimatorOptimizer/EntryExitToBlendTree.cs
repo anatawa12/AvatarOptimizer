@@ -177,6 +177,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 var state = childStateInfo.state;
                 if (!state) return null;
                 if (state.behaviours.Length != 0) return null; // we cannot execute state machine behaviour in blend tree
+                // TODO: for linear animation, we can simulate motion time with 1d blend tree
+                if (state.timeParameterActive) return null; // motion time is not allowed. 
 
                 var motion = state.motion;
 
