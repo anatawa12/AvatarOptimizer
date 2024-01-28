@@ -42,6 +42,7 @@ namespace Anatawa12.AvatarOptimizer
 #endif
         public bool optimizePhysBone = true;
 
+        [NotKeyable]
         [CL4EELocalized("TraceAndOptimize:prop:optimizeAnimator")]
         [ToggleLeft]
         public bool optimizeAnimator = true;
