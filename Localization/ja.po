@@ -379,6 +379,9 @@ msgstr "使われていないObjectを自動的に削除する"
 msgid "TraceAndOptimize:prop:optimizePhysBone"
 msgstr "PhysBoneの設定を最適化する"
 
+msgid "TraceAndOptimize:prop:animatorOptimizer"
+msgstr "アニメーターを最適化する"
+
 msgid "TraceAndOptimize:prop:mmdWorldCompatibility"
 msgstr "MMDワールドとの互換性"
 
@@ -467,6 +470,9 @@ msgstr "Playable Layer Controlに未知のレイヤー'{0}'が指定されてい
 
 msgid "AnimatorParser:AnimatorLayerControl:UnknownBlendablePlayableLayer"
 msgstr "Animator Layer Controlに未知のレイヤー'{0}'が指定されています。"
+
+msgid "AnimatorParser:AnimatorNotFoundOnAvatarRoot"
+msgstr "アバターの最上位にAnimatorコンポーネントがありません。"
 
 #endregion
 

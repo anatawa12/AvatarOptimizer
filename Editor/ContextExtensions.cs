@@ -1,5 +1,5 @@
 using System;
-using Anatawa12.AvatarOptimizer.AnimatorParsers;
+using Anatawa12.AvatarOptimizer.AnimatorParsersV2;
 using Anatawa12.AvatarOptimizer.Processors;
 using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
 using JetBrains.Annotations;
@@ -25,7 +25,7 @@ namespace Anatawa12.AvatarOptimizer
         public static MeshInfo2 GetMeshInfoFor([NotNull] this BuildContext context, SkinnedMeshRenderer renderer) =>
             context.GetHolder().GetMeshInfoFor(renderer);
 
-        private static ObjectMappingBuilder GetMappingBuilder([NotNull] this BuildContext context)
+        public static ObjectMappingBuilder GetMappingBuilder([NotNull] this BuildContext context)
         {
             if (context == null) throw new ArgumentNullException(nameof(context));
             return context.Extension<ObjectMappingContext>().MappingBuilder;
@@ -49,39 +49,24 @@ namespace Anatawa12.AvatarOptimizer
         public static AnimationComponentInfo GetAnimationComponent([NotNull] this BuildContext context,
             ComponentOrGameObject component) =>
             GetMappingBuilder(context).GetAnimationComponent(component);
-        
-        public static bool? GetConstantValue([NotNull] this BuildContext context, ComponentOrGameObject obj, string property, bool currentValue)
+
+        public static bool? GetConstantValue([NotNull] this BuildContext context, ComponentOrGameObject obj,
+            string property, bool currentValue) =>
+            !context.GetAnimationComponent(obj).TryGetFloat(property, out var node)
+                ? currentValue
+                : node.AsConstantValue(currentValue);
+
+        public static bool? AsConstantValue([CanBeNull] this PropModNode<float> node, bool currentValue)
         {
-            if (!context.GetAnimationComponent(obj).TryGetFloat(property, out var prop))
-                return currentValue;
-
-            switch (prop.State)
+            if (node == null) return currentValue;
+            if (node.Value.TryGetConstantValue(out var constFloat))
             {
-                case AnimationFloatProperty.PropertyState.ConstantAlways:
-                    return FloatToBool(prop.ConstValue);
-                case AnimationFloatProperty.PropertyState.ConstantPartially:
-                    var constValue = FloatToBool(prop.ConstValue);
-                    if (constValue == currentValue) return currentValue;
-                    return null;
-                case AnimationFloatProperty.PropertyState.Variable:
-                    return null;
-                case AnimationFloatProperty.PropertyState.Invalid:
-                default:
-                    throw new ArgumentOutOfRangeException();
+                var constValue = constFloat == 0;
+                if (node.AppliedAlways || constValue == currentValue)
+                    return constValue;
             }
 
-            bool? FloatToBool(float f)
-            {
-                switch (f)
-                {
-                    case 0:
-                        return false;
-                    case 1:
-                        return true;
-                    default:
-                        return null;
-                }
-            }
+            return null;
         }
     }
 }

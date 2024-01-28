@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Anatawa12.AvatarOptimizer.AnimatorParsers;
+using Anatawa12.AvatarOptimizer.AnimatorParsersV2;
 using JetBrains.Annotations;
+using UnityEditor;
 using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer
@@ -79,8 +80,8 @@ namespace Anatawa12.AvatarOptimizer
         public AnimationComponentInfo GetAnimationComponent(ComponentOrGameObject component)
             => GetComponentInfo(component);
 
-        public AnimationFloatProperty? GetFloatAnimation(ComponentOrGameObject component, string property) =>
-            GetComponentInfo(component).GetFloatAnimation(property);
+        public IEnumerable<AnimationComponentInfo> GetAllAnimationComponents() =>
+            _componentInfos.Values.Where(x => !x.IsMerged);
 
         private BuildingComponentInfo GetComponentInfo(ComponentOrGameObject component)
         {
@@ -93,10 +94,12 @@ namespace Anatawa12.AvatarOptimizer
             return info;
         }
 
-        public void ImportModifications(ImmutableModificationsContainer modifications)
+        public void ImportModifications(
+            RootPropModNodeContainer modifications
+        )
         {
-            foreach (var (component, properties) in modifications.ModifiedProperties)
-                GetComponentInfo(component).ImportProperties(properties);
+            foreach (var ((target, prop), value) in modifications.FloatNodes)
+                GetComponentInfo(target).ImportProperty(prop, value);
         }
 
         public ObjectMapping BuildObjectMapping()
@@ -112,7 +115,10 @@ namespace Anatawa12.AvatarOptimizer
             [CanBeNull] public readonly string Name;
             [CanBeNull] public AnimationPropertyInfo MergedTo { get; private set; }
             private MappedPropertyInfo? _mappedPropertyInfo;
+            [CanBeNull] private RootPropModNode<float> _floatNode;
             [CanBeNull] public List<AnimationPropertyInfo> CopiedTo { get; private set; }
+            [CanBeNull]
+            public RootPropModNode<float> FloatNode => _floatNode?.Normalize();
 
             public AnimationPropertyInfo([NotNull] BuildingComponentInfo component, [NotNull] string name)
             {
@@ -125,13 +131,11 @@ namespace Anatawa12.AvatarOptimizer
             }
 
             public static readonly AnimationPropertyInfo RemovedMarker = new AnimationPropertyInfo();
-            public AnimationFloatProperty? AnimationFloat;
 
             public void MergeTo(AnimationPropertyInfo property)
             {
                 MergedTo = property;
-                // I want to use recursive switch with recursive pattern here but not avaiable yet
-                property.AnimationFloat = MergeFloat(AnimationFloat, property.AnimationFloat);
+                MergeNode(ref property._floatNode, ref _floatNode);
             }
 
             public void CopyTo(AnimationPropertyInfo property)
@@ -139,14 +143,8 @@ namespace Anatawa12.AvatarOptimizer
                 if (CopiedTo == null)
                     CopiedTo = new List<AnimationPropertyInfo>();
                 CopiedTo.Add(property);
-                property.AnimationFloat = MergeFloat(AnimationFloat, property.AnimationFloat);
+                MergeNode(ref property._floatNode, ref _floatNode);
             }
-
-            private static AnimationFloatProperty? MergeFloat(AnimationFloatProperty? aProp,
-                AnimationFloatProperty? bProp) =>
-                aProp == null ? bProp
-                : bProp == null ? aProp 
-                : aProp.Value.Merge(bProp.Value, false);
 
             public MappedPropertyInfo GetMappedInfo()
             {
@@ -190,6 +188,33 @@ namespace Anatawa12.AvatarOptimizer
 
                     return new MappedPropertyInfo(descriptor, copied.ToArray());
                 }
+            }
+
+            private static void MergeNode<T>([CanBeNull] ref RootPropModNode<T> mergeTo,
+                [CanBeNull] ref RootPropModNode<T> merge)
+            {
+                if (merge == null || merge.IsEmpty) return;
+                if (mergeTo == null || merge.IsEmpty)
+                {
+                    mergeTo = merge;
+                    return;
+                }
+
+                mergeTo.Add(merge);
+                merge.Invalidate();
+                merge = null;
+            }
+
+            public void ImportProperty(RootPropModNode<float> node)
+            {
+                if (FloatNode != null) throw new InvalidOperationException();
+                _floatNode = node;
+            }
+
+            public void AddModification(ComponentPropModNode<float> node, bool alwaysApplied)
+            {
+                if (_floatNode == null) _floatNode = new RootPropModNode<float>();
+                _floatNode.Add(node, alwaysApplied);
             }
         }
 
@@ -268,7 +293,7 @@ namespace Anatawa12.AvatarOptimizer
                 prop.CopyTo(toComponent.GetProperty(newProp));
             }
 
-            public void RemoveProperty(string property)
+            public override void RemoveProperty(string property)
             {
                 if (Type == typeof(Transform)) throw new Exception("Removing properties of Transform is not supported!");
                 if (_mergedInto != null) throw new Exception("Already Merged");
@@ -292,37 +317,46 @@ namespace Anatawa12.AvatarOptimizer
                 return new ComponentInfo(InstanceId, mergedInfo.InstanceId, Type, propertyMapping);
             }
 
-            public void ImportProperties(IReadOnlyDictionary<string, AnimationFloatProperty> properties)
+            public override ComponentOrGameObject TargetComponent
             {
-                foreach (var (name, property) in properties)
+                get
                 {
-                    var propInfo = GetProperty(name);
-                    propInfo.AnimationFloat = property;
+                    if (_mergedInto != null) throw new Exception("Already Merged");
+                    var instance = EditorUtility.InstanceIDToObject(InstanceId);
+                    return new ComponentOrGameObject(instance ? instance : null);
                 }
             }
 
-            public override bool ContainsFloat(string property) =>
-                _afterPropertyIds.TryGetValue(property, out var info) && info.AnimationFloat != null;
+            public override string[] Properties => _afterPropertyIds.Keys.ToArray();
 
-            public override bool TryGetFloat(string propertyName, out AnimationFloatProperty animation)
+            public override bool ContainsFloat(string property) =>
+                _afterPropertyIds.TryGetValue(property, out var info) && info.FloatNode != null;
+
+            public override bool TryGetFloat(string propertyName, out RootPropModNode<float> animation)
             {
                 animation = default;
                 if (!_afterPropertyIds.TryGetValue(propertyName, out var info))
                     return false;
-                if (!(info.AnimationFloat is AnimationFloatProperty property))
-                    return false;
-                animation = property;
-                return true;
+                animation = info.FloatNode;
+                return animation != null;
             }
 
-            public AnimationFloatProperty? GetFloatAnimation(string property) =>
-                _afterPropertyIds.TryGetValue(property, out var info) ? info.AnimationFloat : null;
+            public override void AddModification(string prop, ComponentPropModNode<float> node, bool alwaysApplied) =>
+                GetProperty(prop).AddModification(node, alwaysApplied);
+
+            public void ImportProperty(string prop, RootPropModNode<float> node) =>
+                GetProperty(prop).ImportProperty(node);
         }
     }
 
     internal abstract class AnimationComponentInfo
     {
+        public abstract string[] Properties { get; }
+        public abstract ComponentOrGameObject TargetComponent { get; }
+
+        public abstract void RemoveProperty(string property);
         public abstract bool ContainsFloat(string property);
-        public abstract bool TryGetFloat(string propertyName, out AnimationFloatProperty animation);
+        public abstract bool TryGetFloat(string propertyName, out RootPropModNode<float> animation);
+        public abstract void AddModification(string prop, ComponentPropModNode<float> node, bool alwaysApplied);
     }
 }

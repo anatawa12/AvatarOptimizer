@@ -8,6 +8,11 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Animator Optimizer `#854`
+  - Animator Optimizer optimizes your Animator Controller without behaviour Changes
+  - Current Optimizer includes the following optimization
+    - Remove meaningless properties `#854`
+    - Converts Entry / Exit to 1D BlendTree `#854`
 - Asset Description `#847`
   - Asset Description is the file to provide information of your assets for Avatar Optimizer.
   - Please see documentation for more details.
@@ -20,6 +25,8 @@ The format is based on [Keep a Changelog].
 - MergePhysBone now warns if chain length are not same `#775`
 - MergePhysBone with only one source is now error `#775`
   - It was not working well and not a error by a bug.
+- PhysBone that swings no bones are now removed `#864`
+  - I found such a PhysBone on Lime so I added this feature.
 
 ### Deprecated
 
@@ -36,6 +43,9 @@ The format is based on [Keep a Changelog].
 - Added workaround for `Array index (n) is out of bounds (size=m)` error
 - Humanoid Bones may be removed by Trace and Optimize `#831`
 - Inspector of ComponentTypePair (GCDebug) is broken `#846`
+- Bones swung by unused PhysBones (which will be removed by AAO) are not merged `#850`
+  - Note that To fix this problem, AnimatorParser is almost completely rewritten.
+  - It's not expected to have behavior change, but if you found some, please report it.
 
 ### Security
 

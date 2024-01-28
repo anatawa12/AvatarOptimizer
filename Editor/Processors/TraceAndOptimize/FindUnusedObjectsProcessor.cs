@@ -258,11 +258,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     if (componentInfo.Component is Transform)
                     {
                         // Treat Transform Component as GameObject because they are two sides of the same coin
-                        Object.DestroyImmediate(componentInfo.Component.gameObject);
+                        DestroyTracker.DestroyImmediate(componentInfo.Component.gameObject);
                     }
                     else
                     {
-                        Object.DestroyImmediate(componentInfo.Component);
+                        DestroyTracker.DestroyImmediate(componentInfo.Component);
                     }
                 }
             }

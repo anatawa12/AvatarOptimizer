@@ -40,7 +40,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             var mergePhysBone = CreateMergePhysBone(merged, child1Component, child2Component);
             mergePhysBone.endpointPositionConfig.@override = MergePhysBone.EndPointPositionConfig.Override.Copy;
 
-            MergePhysBoneProcessor.DoMerge(mergePhysBone);
+            MergePhysBoneProcessor.DoMerge(mergePhysBone, null);
 
             var mergedPhysBone = merged.GetComponent<VRCPhysBoneBase>();
             Assert.That(mergedPhysBone.pull, Is.EqualTo(0.4f));            
@@ -93,7 +93,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             mergePhysBone.allowCollisionConfig.filter.allowOthers = false;
             mergePhysBone.allowCollisionConfig.filter.allowSelf = true;
 
-            MergePhysBoneProcessor.DoMerge(mergePhysBone);
+            MergePhysBoneProcessor.DoMerge(mergePhysBone, null);
 
             var mergedPhysBone = merged.GetComponent<VRCPhysBoneBase>();
             Assert.That(mergedPhysBone.pull, Is.EqualTo(0.4f));            

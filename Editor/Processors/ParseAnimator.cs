@@ -1,4 +1,4 @@
-using Anatawa12.AvatarOptimizer.AnimatorParsers;
+using Anatawa12.AvatarOptimizer.AnimatorParsersV2;
 using Anatawa12.AvatarOptimizer.ndmf;
 using nadena.dev.ndmf;
 
