@@ -40,6 +40,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
         {
             if (!settings.entryExitToBlendTree) return; // feature disabled
 
+            Execute(controller);
+        }
+        
+        public static void Execute(AOAnimatorController controller)
+        {
             var intParameters = new HashSet<string>(controller.parameters
                 .Where(x => x.type == AnimatorControllerParameterType.Int)
                 .Select(x => x.name));
@@ -103,7 +108,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
         }
 
         [CanBeNull]
-        private ConvertibleLayerInfo TryParseLayer(AOAnimatorControllerLayer layer, HashSet<string> intParameters)
+        private static ConvertibleLayerInfo TryParseLayer(AOAnimatorControllerLayer layer, HashSet<string> intParameters)
         {
             if (layer.IsSynced || layer.IsSyncedToOtherLayer) return null; // synced layer is not supported
             if (!layer.stateMachine) return null;
@@ -309,7 +314,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
         }
 
         [CanBeNull]
-        private HashSet<EditorCurveBinding> CollectAnimatingProperties(Motion motion)
+        private static HashSet<EditorCurveBinding> CollectAnimatingProperties(Motion motion)
         {
             
             switch (motion)
