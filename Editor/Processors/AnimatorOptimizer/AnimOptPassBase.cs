@@ -37,7 +37,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             }
         }
 
-        protected abstract void Execute(BuildContext context, AnimatorController controller, in TraceAndOptimize.AnimatorOptimizer settings);
+        protected abstract void Execute(BuildContext context, AnimatorController controller, TraceAndOptimize.AnimatorOptimizer settings);
     }
 
     // This pass prepares animator optimizer

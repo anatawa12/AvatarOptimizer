@@ -50,7 +50,7 @@ namespace Anatawa12.AvatarOptimizer
         public bool mmdWorldCompatibility = true;
 
         [NotKeyable]
-        public AnimatorOptimizer animatorOptimizer = AnimatorOptimizer.Default;
+        public AnimatorOptimizer animatorOptimizer = new AnimatorOptimizer();
 
         [NotKeyable]
         public AdvancedSettings advancedSettings;
@@ -79,25 +79,19 @@ namespace Anatawa12.AvatarOptimizer
         }
 
         [Serializable]
-        internal struct AnimatorOptimizer
+        internal class AnimatorOptimizer
         {
             [CL4EELocalized("TraceAndOptimize:prop:animatorOptimizer")]
             [ToggleLeft]
-            public bool enabled;
+            public bool enabled = true;
 
             [CL4EELocalized("TraceAndOptimize:prop:removeUnusedAnimatingProperties")]
             [ToggleLeft]
-            public bool removeUnusedAnimatingProperties;
+            public bool removeUnusedAnimatingProperties = true;
 
             [CL4EELocalized("TraceAndOptimize:prop:entryExitToBlendTree")]
             [ToggleLeft]
-            public bool entryExitToBlendTree;
-
-            public static AnimatorOptimizer Default = new AnimatorOptimizer
-            {
-                enabled = true,
-                entryExitToBlendTree = true,
-            };
+            public bool entryExitToBlendTree = true;
         }
     }
 }

@@ -18,7 +18,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
     class EntryExitToBlendTree : AnimOptPassBase<EntryExitToBlendTree>
     {
         protected override void Execute(BuildContext context, AnimatorController controller,
-            in TraceAndOptimize.AnimatorOptimizer settings)
+            TraceAndOptimize.AnimatorOptimizer settings)
         {
             if (!settings.entryExitToBlendTree) return; // feature disabled
 
