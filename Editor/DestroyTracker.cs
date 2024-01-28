@@ -39,6 +39,7 @@ namespace Anatawa12.AvatarOptimizer
 
         public static void DestroyImmediate(Object obj)
         {
+            if (obj == null) return;
             var instanceId = obj.GetInstanceID();
             Object.DestroyImmediate(obj);
             var tracker = _tracker;
