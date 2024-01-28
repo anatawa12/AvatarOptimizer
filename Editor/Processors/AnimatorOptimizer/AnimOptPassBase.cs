@@ -106,19 +106,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             {
                 if (_mapping != null && _mapping.TryGetValue(clip, out var mapped))
                     return mapped;
-            }
-
-            if (_context.IsTemporaryAsset(o))
-            {
-                RegisterNotCloned(o);
-
-                using (var so = new SerializedObject(o))
-                {
-                    foreach (var prop in so.ObjectReferenceProperties())
-                        prop.objectReferenceValue = DeepClone(prop.objectReferenceValue);
-
-                    so.ApplyModifiedPropertiesWithoutUndo();
-                }
+                return clip;
             }
 
             return null;
