@@ -91,6 +91,10 @@ namespace Anatawa12.AvatarOptimizer
 
             [CL4EELocalized("TraceAndOptimize:prop:entryExitToBlendTree")]
             [ToggleLeft]
+#if !AAO_VRCSDK3_AVATARS
+            // EntryExit to BlendTree optimization heavily depends on VRChat's behavior
+            [HideInInspector]
+#endif
             public bool entryExitToBlendTree = true;
         }
     }

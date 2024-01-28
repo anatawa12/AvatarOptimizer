@@ -74,7 +74,10 @@ namespace Anatawa12.AvatarOptimizer.ndmf
                 });
 
             mainSequence.Run(Processors.AnimatorOptimizer.InitializeAnimatorOptimizer.Instance)
+#if AAO_VRCSDK3_AVATARS
+                // EntryExit to BlendTree optimization heavily depends on VRChat's behavior
                 .Then.Run(Processors.AnimatorOptimizer.EntryExitToBlendTree.Instance)
+#endif
                 ;
         }
 
