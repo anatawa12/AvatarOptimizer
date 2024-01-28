@@ -6,21 +6,21 @@ title: Asset Description
 
 Asset DescriptionはAvatar Optimizerにアセットの情報を提供するためのファイルです。
 
-## Asset Descriptionはなぜ必要なのか
+## なぜAsset Descriptionが必要なのか {#why-asset-description-is-needed}
 
-Avatar Optimizerはアバターのいらない要素削除するため、アバターにあるすべてのコンポーネントについての知識が必要があります。\
-Avatar Optimizer v1.6.0で[コンポーネントの互換性を持たせるためのドキュメント][make-component-compatible]とAPIが追加されましたが、
-非破壊ツールではなく、ビルド時に処理を行わないツールにとってはコンポーネントを `IVRCSDKPreprocessAvatarCallback`で削除するのは少し煩雑であろうと考えました。\
-そのため、ビルド時に意味のない、Avatar Optimizerに無視してほしいコンポーネントを指定するためのシンプルな仕組みとしてAsset Descriptionが1.7.0で追加されました。
+アバター上の不要な要素を削除するために、Avatar Optimizerはアバターに存在するすべてのコンポーネントのことを知る必要があります。\
+Avatar Optimizer v1.6.0で[コンポーネントにAAOとの互換性をもたせるためのドキュメント][make-component-compatible]とAPIが追加されましたが、
+非破壊ツールでなく、ビルド時に処理を行わないようなツールでは、`IVRCSDKPreprocessAvatarCallback`でコンポーネントを削除するのは少し面倒だろうと考えました。\
+そのため、Avatar Optimizerに無視してほしい、ビルド時には意味のないコンポーネントを指定するためのシンプルな仕組みとして、Asset Descriptionがv1.7.0で追加されました。
 
-非破壊ツールについては実行順が正しくなかったときにAvatarOptimizerによってコンポーネントを誤って削除されてしまうのを防ぐため、今まで通り`IVRCSDKPreprocessAvatarCallback`で削除することを推奨します。
+なお、非破壊ツールの場合については、正しくない実行順で処理が行われた場合に、Avatar Optimizerがコンポーネントを誤って削除してしまわないように、従来通り`IVRCSDKPreprocessAvatarCallback`でコンポーネントを削除することを推奨します。
 
 [make-component-compatible]: ../make-your-components-compatible-with-aao
 
 ## Asset Descriptionの作成 {#create-asset-description}
 
-Asset Descriptionを作成するには Project ウィンドウの右クリックメニューから `Create/Avatar Optimizer/Asset Description` を選択してください。\
-Avatar Optimizerはすべてのファイルから検索するため、Asset Descriptionの名前、場所は自由です。
+Asset Descriptionを作成するには、Projectウィンドウの右クリックメニューから`Create/Avatar Optimizer/Asset Description`を選択してください。\
+Avatar Optimizerはすべてのファイルの中からファイル検索を行うため、Asset Descriptionの名前、場所は自由です。
 
 ## Asset Descriptionの編集 {#edit-asset-description}
 
@@ -33,9 +33,9 @@ Avatar Optimizerはコメントを無視します。
 
 ### Meaningless Components {#meaningless-components}
 
-Meaningless ComponentsにはAvatar Optimizerに無視してほしいコンポーネントの型を列挙するものです。
+Meaningless ComponentsはAvatar Optimizerに無視してほしいコンポーネントの型の一覧です。
 コンポーネントのScript Assetを指定してください。
-指定されたScript Assetの型もしくはそのサブクラスのコンポーネントはAvatar Optimizerに無視されます。
+指定されたScript Assetの型のコンポーネントと、そのサブクラスのコンポーネントはAvatar Optimizerに無視されます。
 
-Asset Descriptionでは実際のScene上のコンポーネントと同様に、Script AssetのguidとfileIDの形で保持されています。
-そのため、クラス名を変更してもシーン上のコンポーネントが壊れない限りはAsset Descriptionでの指定も問題なく機能します。
+Asset Descriptionでは実際のScene上のコンポーネントと同様に、Script AssetがguidとfileIDの形で保持されています。
+そのため、クラス名を変更したとしても、シーン上のコンポーネントが壊れていない限り、Asset Descriptionでの指定も問題なく機能します。
