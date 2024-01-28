@@ -15,6 +15,24 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
     ///
     /// Currently this class only supports entry transition with 1 parameter equals condition. 
     /// </summary>
+    
+    // detailed explanation of current limitations
+    // This optimization expects
+    // (about state machine)
+    // - there are no child state machine
+    // - there are no state machine behaviour
+    // (about transitions)
+    // - all transitions are associated with same single parameter
+    // - all states are connected from entry transition
+    // - all states are connected to exit
+    // - there are no other transitions except entry and exit
+    // - all states will leave state to exit when parameter value become values not listed in entry transitions
+    // (semantics)
+    // - each state has corresponding parameter value for the parameter
+    // (motion / state)
+    // - all states have same write defaults value
+    // - if write defaults is off, all states have same animating properties
+    // - all states must not have motion time. you have to use 1d blend tree for gesture weight.
     class EntryExitToBlendTree : AnimOptPassBase<EntryExitToBlendTree>
     {
         protected override void Execute(BuildContext context, AOAnimatorController controller,
@@ -49,7 +67,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             {
                 if (convertInfos[i] != null) continue;
                 var layer = layers[i];
-                if (layer.syncedLayerIndex != -1) continue;
+                if (layer.IsSynced) continue;
 
                 CheckConditions(layer.stateMachine);
 
@@ -133,7 +151,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 if (condition.mode != AnimatorConditionMode.Equals) return null;
                 if (conditionParameter == null)
                 {
-                    if (!intParameters.Contains(condition.parameter)) return null;
+                    if (!intParameters.Contains(condition.parameter)) return null; // non int parameter
                     conditionParameter = condition.parameter;
                 }
                 else
@@ -150,6 +168,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 allValues.Add(value);
             }
 
+            // check there are no states without entry transition.
             var defaultState = stateMachine.defaultState;
             if (stateValues.ContainsKey(defaultState))
             {
@@ -172,7 +191,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             foreach (var childStateInfo in states)
             {
                 var state = childStateInfo.state;
-                if (!state) return null; // for safety: unlikely
+                if (!state) return null;
+                if (state.behaviours.Length != 0) return null; // we cannot execute state machine behaviour in blend tree
+
                 var motion = state.motion;
 
                 // check WD and animating properties
@@ -201,8 +222,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                     }
                 }
 
-                if (state.behaviours.Length != 0) return null; // we cannot execute state machine behaviour in blend tree
-
                 // check for transitions
                 var transitions = state.transitions;
 
@@ -217,8 +236,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                     if (transition.duration != 0) return null;
                 }
 
+                // transition condition check.
                 if (defaultState == state)
                 {
+                    // for default state, 
                     HashSet<int> exitValues;
                     if (stateValues.TryGetValue(state, out var values))
                     {
@@ -365,7 +386,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 var (currentValue, currentMotion) = states[i];
                 var (nextValue, _) = states[i + 1];
 
-                if (prevValue < currentValue - 1)
+                // if prevValue is currentValue - 1,
+                //   we don't have to add defaultMotion frame
+                // if nextValue is currentValue - 2,
+                //   we have to add single defaultMotion frame but we already have in post-check of previous frame
+                // if nextValue less than currentValue - 2,
+                //   we have to add two defaultMotion frame so we add one in post-check of previous frame and one here
+                if (prevValue < currentValue - 2)
                     children.Add(CreateChild(currentValue - 1, defaultMotion));
 
                 children.Add(CreateChild(currentValue, currentMotion));
