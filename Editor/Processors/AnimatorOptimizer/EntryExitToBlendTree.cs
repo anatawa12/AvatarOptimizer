@@ -178,6 +178,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 if (!state) return null;
                 if (state.behaviours.Length != 0) return null; // we cannot execute state machine behaviour in blend tree
                 // TODO: for linear animation, we can simulate motion time with 1d blend tree
+                // https://github.com/anatawa12/AvatarOptimizer/issues/861
                 if (state.timeParameterActive) return null; // motion time is not allowed. 
 
                 var motion = state.motion;
@@ -239,6 +240,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 
                     // for default states, it have to leave state if any of exit values are set
                     // TODO: users can create condition like `< minValue` or `> maxValue` to leave state
+                    // https://github.com/anatawa12/AvatarOptimizer/issues/862
                     if (!MultipleEqualsTransition()
                         && !NotEqualsTransition()) return null;
 
@@ -272,6 +274,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 {
                     // for other states, it have to leave state if value is not any of current value
                     // TODO: users can create condition like `< minValue` or `> maxValue` to leave state
+                    // https://github.com/anatawa12/AvatarOptimizer/issues/862
                     var values = stateValues[state];
                     if (!PossibleValuesExitTransitionCheck(values)) return null;
                 }
