@@ -13,7 +13,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 {
     class AnimatorOptimizerState
     {
-        private HashSet<AOAnimatorController> _contollers = new HashSet<AOAnimatorController>();
+        private List<AOAnimatorController> _contollers = new List<AOAnimatorController>();
         public IEnumerable<AOAnimatorController> Controllers => _contollers;
 
         public void Add(AOAnimatorController cloned)
