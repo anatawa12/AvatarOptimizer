@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using JetBrains.Annotations;
 using UnityEditor.Animations;
+using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 {
@@ -33,6 +34,24 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             foreach (var child in stateMachine.stateMachines)
             foreach (var transition in AllTransitions(child.stateMachine))
                 yield return transition;
+        }
+
+
+        public static IEnumerable<AnimationClip> AllClips([CanBeNull] Motion motion)
+        {
+            switch (motion)
+            {
+                case null:
+                    yield break;
+                case AnimationClip clip:
+                    yield return clip;
+                    break;
+                case BlendTree blendTree:
+                    foreach (var child in blendTree.children)
+                    foreach (var clip in AllClips(child.motion))
+                        yield return clip;
+                    break;
+            }
         }
     }
 }
