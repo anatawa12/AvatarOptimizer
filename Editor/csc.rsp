@@ -1,0 +1,2 @@
+#"Shared csc.rsp file. origin is at Editor/csc.rsp. symlinked to Runtime/csc.rsp and Test~/csc.rsp"
+-langversion:7.3
