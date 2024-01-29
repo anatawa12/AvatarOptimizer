@@ -23,6 +23,10 @@ The format is based on [Keep a Changelog].
   - It was not working well and not a error by a bug.
 - PhysBone that swings no bones are now removed `#864`
   - I found such a PhysBone on Lime so I added this feature.
+- Switched Localization system to NDMF from CL4EE `#873`
+  - Since this release, Avatar Optimizer is no longer depends on CL4EE.
+  - Because VCC doesn't remove unused packages, CL4EE may still be installed on your project.
+  - If you want to remove CL4EE, please remove it manually.
 
 ### Deprecated
 

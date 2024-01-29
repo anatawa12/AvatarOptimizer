@@ -1,4 +1,3 @@
-using CustomLocalization4EditorExtension;
 using UnityEngine;
 using UnityEngine.Animations;
 
@@ -9,7 +8,7 @@ namespace Anatawa12.AvatarOptimizer
     [HelpURL("https://vpm.anatawa12.com/avatar-optimizer/ja/docs/reference/merge-bone/")]
     internal class MergeBone : AvatarTagComponent
     {
-        [NotKeyable, CL4EELocalized("MergeBone:prop:avoidNameConflict", "MergeBone:tooltip:avoidNameConflict")]
+        [NotKeyable, AAOLocalized("MergeBone:prop:avoidNameConflict", "MergeBone:tooltip:avoidNameConflict")]
         [ToggleLeft]
         public bool avoidNameConflict;
 

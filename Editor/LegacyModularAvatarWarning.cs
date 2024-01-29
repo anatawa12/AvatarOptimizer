@@ -1,6 +1,5 @@
 #if LEGACY_MODULAR_AVATAR
-using System.Diagnostics;
-using CustomLocalization4EditorExtension;
+using nadena.dev.ndmf.localization;
 using UnityEditor;
 
 namespace Anatawa12.AvatarOptimizer
@@ -17,17 +16,15 @@ namespace Anatawa12.AvatarOptimizer
 
         private static void DisplayWarning()
         {
-            var localization = CL4EE.GetLocalization();
-            Debug.Assert(localization != null, nameof(localization) + " != null");
             for (;;)
             {
                 var result = EditorUtility.DisplayDialog("AvatarOptimizer",
-                    localization.Tr("LegacyModularAvatarWarning:message"),
+                    AAOL10N.Tr("LegacyModularAvatarWarning:message"),
                     "OK",
-                    localization.Tr("LegacyModularAvatarWarning:readWithNextLocale"));
+                    AAOL10N.Tr("LegacyModularAvatarWarning:readWithNextLocale"));
                 if (result) return;
 
-                localization.CurrentLocaleCode = localization.Tr("LegacyModularAvatarWarning:nextLocale");
+                LanguagePrefs.Language = AAOL10N.Tr("LegacyModularAvatarWarning:nextLocale");
             }
         }
     }

@@ -1,7 +1,6 @@
 #if AAO_VRCSDK3_AVATARS
 
 using Anatawa12.AvatarOptimizer.Processors;
-using CustomLocalization4EditorExtension;
 using UnityEditor;
 using UnityEngine;
 using VRC.Dynamics;
@@ -13,7 +12,7 @@ namespace Anatawa12.AvatarOptimizer
     {
         protected override void OnInspectorGUIInner()
         {
-            if (GUILayout.Button(CL4EE.Tr("ClearEndpointPosition:button:Apply and Remove Component")))
+            if (GUILayout.Button(AAOL10N.Tr("ClearEndpointPosition:button:Apply and Remove Component")))
             {
                 var pb = ((Component)target).GetComponent<VRCPhysBoneBase>();
                 Undo.SetCurrentGroupName("Clear Endpoint Position");

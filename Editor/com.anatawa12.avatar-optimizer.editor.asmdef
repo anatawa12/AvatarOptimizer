@@ -1,8 +1,9 @@
 {
     "name": "com.anatawa12.avatar-optimizer.editor",
+    "rootNamespace": "Anatawa12.AvatarOptimizer",
     "references": [
-        "com.anatawa12.custom-localization-for-editor-extension",
-        "com.anatawa12.custom-localization-for-editor-extension.runtime",
+        "com.anatawa12.avatar-optimizer.internal.localization.editor",
+        "com.anatawa12.avatar-optimizer.internal.localization.runtime",
         "com.anatawa12.avatar-optimizer.runtime",
         "com.anatawa12.avatar-optimizer.internal.unsafe",
         "com.anatawa12.avatar-optimizer.internal.prefab-safe-set.editor",

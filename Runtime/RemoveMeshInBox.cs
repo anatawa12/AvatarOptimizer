@@ -1,5 +1,4 @@
 using System;
-using CustomLocalization4EditorExtension;
 using Unity.Burst;
 using UnityEngine;
 
@@ -21,11 +20,11 @@ namespace Anatawa12.AvatarOptimizer
         [Serializable]
         public struct BoundingBox
         {
-            [CL4EELocalized("RemoveMeshInBox:BoundingBox:prop:center")]
+            [AAOLocalized("RemoveMeshInBox:BoundingBox:prop:center")]
             public Vector3 center;
-            [CL4EELocalized("RemoveMeshInBox:BoundingBox:prop:size")]
+            [AAOLocalized("RemoveMeshInBox:BoundingBox:prop:size")]
             public Vector3 size;
-            [CL4EELocalized("RemoveMeshInBox:BoundingBox:prop:rotation")]
+            [AAOLocalized("RemoveMeshInBox:BoundingBox:prop:rotation")]
             public Quaternion rotation;
 
             public static BoundingBox Default = new BoundingBox

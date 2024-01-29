@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using CustomLocalization4EditorExtension;
 using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
@@ -29,7 +28,7 @@ namespace Anatawa12.AvatarOptimizer
         {
             EditorGUILayout.PropertyField(_makeParent);
             if (_makeParent.boolValue && ((Component)target).transform.childCount != 0)
-                EditorGUILayout.HelpBox(CL4EE.Tr("MergePhysBone:error:makeParentWithChildren"), MessageType.Error);
+                EditorGUILayout.HelpBox(AAOL10N.Tr("MergePhysBone:error:makeParentWithChildren"), MessageType.Error);
 
             EditorGUILayout.PropertyField(_componentsSetProp);
 
@@ -79,11 +78,11 @@ namespace Anatawa12.AvatarOptimizer
 
         protected override void UnsupportedPbVersion()
         {
-            EditorGUILayout.HelpBox(CL4EE.Tr("MergePhysBone:error:unsupportedPbVersion"), MessageType.Error);
+            EditorGUILayout.HelpBox(AAOL10N.Tr("MergePhysBone:error:unsupportedPbVersion"), MessageType.Error);
         }
 
         protected override void NoSource() {
-            EditorGUILayout.HelpBox(CL4EE.Tr("MergePhysBone:error:noSources"), MessageType.Error);
+            EditorGUILayout.HelpBox(AAOL10N.Tr("MergePhysBone:error:noSources"), MessageType.Error);
         }
 
         protected override void TransformSection() {
@@ -95,14 +94,14 @@ namespace Anatawa12.AvatarOptimizer
                     .ZipWithNext()
                     .Any(x => x.Item1 != x.Item2);
                 if (differ)
-                    EditorGUILayout.HelpBox(CL4EE.Tr("MergePhysBone:error:parentDiffer"), MessageType.Error);
+                    EditorGUILayout.HelpBox(AAOL10N.Tr("MergePhysBone:error:parentDiffer"), MessageType.Error);
             }
             EditorGUILayout.LabelField("Ignore Transforms", "Automatically Merged");
             EndpointPositionProp("Endpoint Position", EndpointPosition);
             EditorGUILayout.LabelField("Multi Child Type", "Must be Ignore");
             var multiChildType = GetSourceProperty("multiChildType");
             if (multiChildType.enumValueIndex != 0 || multiChildType.hasMultipleDifferentValues)
-                EditorGUILayout.HelpBox(CL4EE.Tr("MergePhysBone:error:multiChildType"), MessageType.Error);
+                EditorGUILayout.HelpBox(AAOL10N.Tr("MergePhysBone:error:multiChildType"), MessageType.Error);
         }
         protected override void OptionParameter() {
             EditorGUILayout.PropertyField(Parameter.OverrideValue, new GUIContent("Parameter"));
@@ -182,7 +181,7 @@ namespace Anatawa12.AvatarOptimizer
 
                 if (differ)
                 {
-                    EditorGUILayout.HelpBox(CL4EE.Tr("MergePhysBone:error:differValueSingle"), MessageType.Error);
+                    EditorGUILayout.HelpBox(AAOL10N.Tr("MergePhysBone:error:differValueSingle"), MessageType.Error);
                 }
             }
             
@@ -201,11 +200,11 @@ namespace Anatawa12.AvatarOptimizer
                 if (prevValue != newValue)
                 {
                     switch (EditorUtility.DisplayDialogComplex(
-                                CL4EE.Tr("MergePhysBone:dialog:versionInfo:title"), 
-                                CL4EE.Tr("MergePhysBone:dialog:versionInfo:message"),
-                                CL4EE.Tr("MergePhysBone:dialog:versionInfo:openDoc"), 
-                                CL4EE.Tr("MergePhysBone:dialog:versionInfo:revert"),
-                                CL4EE.Tr("MergePhysBone:dialog:versionInfo:continue")))
+                                AAOL10N.Tr("MergePhysBone:dialog:versionInfo:title"), 
+                                AAOL10N.Tr("MergePhysBone:dialog:versionInfo:message"),
+                                AAOL10N.Tr("MergePhysBone:dialog:versionInfo:openDoc"), 
+                                AAOL10N.Tr("MergePhysBone:dialog:versionInfo:revert"),
+                                AAOL10N.Tr("MergePhysBone:dialog:versionInfo:continue")))
                     {
                         case 0:
                             Application.OpenURL(docURL);
@@ -406,7 +405,7 @@ namespace Anatawa12.AvatarOptimizer
 
                 if (differ)
                 {
-                    EditorGUILayout.HelpBox(CL4EE.Tr("MergePhysBone:error:differValueSingle"), MessageType.Error);
+                    EditorGUILayout.HelpBox(AAOL10N.Tr("MergePhysBone:error:differValueSingle"), MessageType.Error);
                 }
             }
         }
@@ -433,7 +432,7 @@ namespace Anatawa12.AvatarOptimizer
 
                     if (colliders.hasMultipleDifferentValues)
                     {
-                        EditorGUILayout.HelpBox(CL4EE.Tr("MergePhysBone:error:differValueSingle"), MessageType.Error);
+                        EditorGUILayout.HelpBox(AAOL10N.Tr("MergePhysBone:error:differValueSingle"), MessageType.Error);
                     }
                 }
                     break;
@@ -509,7 +508,7 @@ namespace Anatawa12.AvatarOptimizer
 
                     if (valueProperty.hasMultipleDifferentValues)
                     {
-                        EditorGUILayout.HelpBox(CL4EE.Tr("MergePhysBone:error:differValueSingle"), MessageType.Error);
+                        EditorGUILayout.HelpBox(AAOL10N.Tr("MergePhysBone:error:differValueSingle"), MessageType.Error);
                     }
                 }
                     break;
