@@ -15,7 +15,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             TraceAndOptimizeState settings)
         {
             if (!settings.SkipMergeDirectBlendTreeLayers) return;
+            Execute(controller);
+        }
 
+        public static void Execute(AOAnimatorController controller)
+        {
             var directBlendTrees = new List<(int layerIndex, BlendTree tree)>();
 
             var modifiedProperties = new HashSet<EditorCurveBinding>();
@@ -54,6 +58,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             // if we found only one, leave it as is
             if (directBlendTrees.Count < 2) return;
 
+            directBlendTrees.Reverse();
+
             // create merged layer
             var newLayer = controller.AddLayer("Merged Direct BlendTrees");
             var newState = new AnimatorState { name = "Merged Direct BlendTrees" };
@@ -77,7 +83,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
         }
 
         [CanBeNull]
-        protected BlendTree GetSingleDirectBlendTree(AOAnimatorControllerLayer layer)
+        private static BlendTree GetSingleDirectBlendTree(AOAnimatorControllerLayer layer)
         {
             if (layer.IsSyncedToOtherLayer || layer.IsSynced) return null;
             // ReSharper disable once CompareOfFloatsByEqualityOperator
