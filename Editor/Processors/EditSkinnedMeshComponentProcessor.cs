@@ -31,7 +31,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                     target.AssertInvariantContract(
                         $"after {processor.GetType().Name} " +
                         $"for {processor.Target.gameObject.name}");
-                    Object.DestroyImmediate(processor.Component);
+                    DestroyTracker.DestroyImmediate(processor.Component);
                     Profiler.EndSample();
                 }
                 Profiler.EndSample();

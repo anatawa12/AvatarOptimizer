@@ -549,6 +549,7 @@ namespace Anatawa12.AvatarOptimizer
     {
         private readonly List<string> _differProps = new List<string>();
         private readonly MergePhysBone _mergePhysBone;
+        private bool _usingCopyCurve;
 
         internal static void Validate(MergePhysBone mergePhysBone)
         {
@@ -565,13 +566,28 @@ namespace Anatawa12.AvatarOptimizer
         {
         }
 
-        protected override void BeginPbConfig() => Void();
+        protected override void BeginPbConfig()
+        {
+            if (SourcePhysBones.Count() <= 1)
+                BuildLog.LogError("MergePhysBone:error:oneSource");
+        }
+
         protected override bool BeginSection(string name, string docTag) => true;
         protected override void EndSection() => Void();
         protected override void EndPbConfig() {
             if (_differProps.Count != 0)
             {
                 BuildLog.LogError("MergePhysBone:error:differValues", string.Join(", ", _differProps));
+            }
+            
+            if (_usingCopyCurve)
+            {
+                foreach (var vrcPhysBoneBase in SourcePhysBones)
+                    vrcPhysBoneBase.InitTransforms(true);
+                var maxLength = SourcePhysBones.Max(x => x.BoneChainLength());
+                if (SourcePhysBones.Any(x => x.BoneChainLength() != maxLength))
+                    BuildLog.LogWarning("MergePhysBone:warning:differChainLength",
+                        string.Join(", ", _differProps));
             }
         }
 
@@ -610,24 +626,56 @@ namespace Anatawa12.AvatarOptimizer
             => PbProp(label, prop, forceOverride);
 
         protected override void PbProp(string label, ValueConfigProp prop, bool forceOverride = false)
-            => PbPropImpl(label, prop, forceOverride);
-
-        protected override void PbCurveProp(string label, CurveConfigProp prop, bool forceOverride = false)
-            => PbPropImpl(label, prop, forceOverride);
-
-        protected override void Pb3DCurveProp(string label, string pbXCurveLabel, string pbYCurveLabel, string pbZCurveLabel,
-            CurveVector3ConfigProp prop, bool forceOverride = false)
-            => PbPropImpl(label, prop, forceOverride);
-
-        protected override void PbPermissionProp(string label, PermissionConfigProp prop, bool forceOverride = false)
-            => PbPropImpl(label, prop, forceOverride);
-
-        private void PbPropImpl(string label, OverridePropBase prop, bool forceOverride)
         {
             if (forceOverride || prop.IsOverride) return;
-            
-            if (prop.GetActiveProps(false).Any(x => x.Item2.hasMultipleDifferentValues))
+
+            if (prop.GetValueProperty(false).hasMultipleDifferentValues)
                 _differProps.Add(label);
+        }
+
+        protected override void PbCurveProp(string label, CurveConfigProp prop, bool forceOverride = false)
+        {
+            if (forceOverride || prop.IsOverride) return;
+
+            if (prop.GetValueProperty(false).hasMultipleDifferentValues
+                || prop.GetCurveProperty(false).hasMultipleDifferentValues)
+                _differProps.Add(label);
+
+            _usingCopyCurve |= prop.GetCurveProperty(false).animationCurveValue.length > 0;
+        }
+
+        protected override void Pb3DCurveProp(string label,
+            string pbXCurveLabel, string pbYCurveLabel, string pbZCurveLabel,
+            CurveVector3ConfigProp prop, bool forceOverride = false)
+        {
+            if (forceOverride || prop.IsOverride) return;
+
+            if (prop.SourceValue.hasMultipleDifferentValues
+                || prop.SourceCurveX.hasMultipleDifferentValues
+                || prop.SourceCurveY.hasMultipleDifferentValues
+                || prop.SourceCurveZ.hasMultipleDifferentValues)
+                _differProps.Add(label);
+
+            _usingCopyCurve |= prop.GetCurveXProperty(false).animationCurveValue.length > 0;
+            _usingCopyCurve |= prop.GetCurveYProperty(false).animationCurveValue.length > 0;
+            _usingCopyCurve |= prop.GetCurveZProperty(false).animationCurveValue.length > 0;
+        }
+
+        protected override void PbPermissionProp(string label, PermissionConfigProp prop, bool forceOverride = false)
+        {
+            if (forceOverride || prop.IsOverride) return;
+
+            if (prop.SourceValue.enumValueIndex == 2)
+            {
+                if (prop.SourceValue.hasMultipleDifferentValues
+                    || prop.SourceFilter.hasMultipleDifferentValues)
+                    _differProps.Add(label);
+            }
+            else
+            {
+                if (prop.SourceValue.hasMultipleDifferentValues)
+                    _differProps.Add(label);
+            }
         }
 
         protected override void CollidersProp(string label, CollidersConfigProp prop)

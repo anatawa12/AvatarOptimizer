@@ -35,7 +35,7 @@ namespace Anatawa12.AvatarOptimizer.Test
                 stateMachine = new AnimatorStateMachine() { name = "layer" },
             });
 
-            var mappedController = rootMapper.MapAnimatorController(animatorController);
+            var mappedController = rootMapper.MapObject(animatorController);
             Assert.That(mappedController, Is.Not.EqualTo(animatorController));
             Assert.That(mappedController.layers[0].avatarMask.GetTransformPath(0), 
                 Is.EqualTo("child1/child12"));
@@ -69,7 +69,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             state.motion = clip;
             animatorController.AddLayer(layer);
 
-            var mappedController = rootMapper.MapAnimatorController(animatorController);
+            var mappedController = rootMapper.MapObject(animatorController);
             Assert.That(mappedController, Is.Not.EqualTo(animatorController));
             var mappedClip = mappedController.layers[0].stateMachine.states[0].state.motion as AnimationClip;
             Assert.That(mappedClip, Is.Not.Null);
@@ -112,7 +112,7 @@ namespace Anatawa12.AvatarOptimizer.Test
 
             animatorController.AddLayer(layer);
 
-            var mappedController = rootMapper.MapAnimatorController(animatorController);
+            var mappedController = rootMapper.MapObject(animatorController);
             Assert.That(mappedController, Is.Not.EqualTo(animatorController));
 
             // ensure non-proxy mapped
