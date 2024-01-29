@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using CustomLocalization4EditorExtension;
 using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer
@@ -11,7 +10,7 @@ namespace Anatawa12.AvatarOptimizer
     internal class RemoveMeshByBlendShape : EditSkinnedMeshComponent
     {
         public PrefabSafeSet.StringSet shapeKeysSet;
-        [CL4EELocalized("RemoveMeshByBlendShape:prop:Tolerance",
+        [AAOLocalized("RemoveMeshByBlendShape:prop:Tolerance",
             "RemoveMeshByBlendShape:tooltip:Tolerance")]
         public double tolerance = 0.001;
 

@@ -1,4 +1,3 @@
-using CustomLocalization4EditorExtension;
 using UnityEditor;
 using UnityEngine;
 
@@ -51,11 +50,11 @@ namespace Anatawa12.AvatarOptimizer
             EditorGUILayout.PropertyField(_optimizePhysBone);
             EditorGUILayout.PropertyField(_optimizeAnimator);
 
-            _advancedSettingsLabel.text = CL4EE.Tr("TraceAndOptimize:prop:advancedSettings");
+            _advancedSettingsLabel.text = AAOL10N.Tr("TraceAndOptimize:prop:advancedSettings");
             if (EditorGUILayout.PropertyField(_advancedSettings, _advancedSettingsLabel, false))
             {
                 EditorGUI.indentLevel++;
-                EditorGUILayout.HelpBox(CL4EE.Tr("TraceAndOptimize:warn:advancedSettings"), MessageType.Warning);
+                EditorGUILayout.HelpBox(AAOL10N.Tr("TraceAndOptimize:warn:advancedSettings"), MessageType.Warning);
                 var iterator = _advancedSettings.Copy();
                 var enterChildren = true;
                 while (iterator.NextVisible(enterChildren))

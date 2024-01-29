@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
-using CustomLocalization4EditorExtension;
 using UnityEditor;
 using UnityEngine;
 using Debug = System.Diagnostics.Debug;
@@ -100,9 +99,9 @@ namespace Anatawa12.AvatarOptimizer
 
             var component = (MergeToonLitMaterial)target;
 
-            DrawList(ref component.merges, CL4EE.Tr("MergeToonLitMaterial:button:Add Merged Material"), (componentMerge, i) =>
+            DrawList(ref component.merges, AAOL10N.Tr("MergeToonLitMaterial:button:Add Merged Material"), (componentMerge, i) =>
                 {
-                    DrawList(ref componentMerge.source, CL4EE.Tr("MergeToonLitMaterial:button:Add Source"), (mergeSource, _2) =>
+                    DrawList(ref componentMerge.source, AAOL10N.Tr("MergeToonLitMaterial:button:Add Source"), (mergeSource, _2) =>
                         {
                             var found = _materials.FirstOrDefault(x => x.index == mergeSource.materialIndex);
                             _candidateNames[0] = found.mat != null ? found.mat.name : "(invalid)";
@@ -121,7 +120,7 @@ namespace Anatawa12.AvatarOptimizer
                     );
 
                     componentMerge.textureSize =
-                        EditorGUILayout.Vector2IntField(CL4EE.Tr("MergeToonLitMaterial:label:Texture Size"), componentMerge.textureSize);
+                        EditorGUILayout.Vector2IntField(AAOL10N.Tr("MergeToonLitMaterial:label:Texture Size"), componentMerge.textureSize);
 
                     componentMerge.mergedFormat = (MergeToonLitMaterial.MergedTextureFormat)EditorGUILayout.EnumPopup("Format", componentMerge.mergedFormat);
 
@@ -140,7 +139,7 @@ namespace Anatawa12.AvatarOptimizer
             if (EditorGUI.EndChangeCheck())
                 OnChanged();
 
-            if (GUILayout.Button(CL4EE.Tr("MergeToonLitMaterial:button:Generate Preview")))
+            if (GUILayout.Button(AAOL10N.Tr("MergeToonLitMaterial:button:Generate Preview")))
             {
                 _generatedPreviews = MergeToonLitMaterialProcessor.GenerateTextures(component, _upstreamMaterials, false);
             }            

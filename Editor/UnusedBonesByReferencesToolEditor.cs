@@ -1,6 +1,5 @@
 using System;
 using Anatawa12.AvatarOptimizer.Processors;
-using CustomLocalization4EditorExtension;
 using UnityEditor;
 using UnityEngine;
 
@@ -24,8 +23,8 @@ namespace Anatawa12.AvatarOptimizer
             EditorGUILayout.PropertyField(_preserveEndBone);
             EditorGUILayout.PropertyField(_detectExtraChild);
 
-            EditorGUILayout.HelpBox(CL4EE.Tr("UnusedBonesByReferencesTool:suggestMigrate"), MessageType.Info);
-            if (GUILayout.Button(CL4EE.Tr("UnusedBonesByReferencesTool:migrate")))
+            EditorGUILayout.HelpBox(AAOL10N.Tr("UnusedBonesByReferencesTool:suggestMigrate"), MessageType.Info);
+            if (GUILayout.Button(AAOL10N.Tr("UnusedBonesByReferencesTool:migrate")))
             {
                 const string CONTENT_UNDO_NAME = "Migrate UnusedBonesByReferencesTool to Trace and Optimize";
 
@@ -56,8 +55,8 @@ namespace Anatawa12.AvatarOptimizer
                 Undo.DestroyObjectImmediate(component);
                 Undo.SetCurrentGroupName(CONTENT_UNDO_NAME);
 
-                EditorUtility.DisplayDialog(CL4EE.Tr("UnusedBonesByReferencesTool:migrationFinished:title"),
-                    CL4EE.Tr("UnusedBonesByReferencesTool:migrationFinished:description"),
+                EditorUtility.DisplayDialog(AAOL10N.Tr("UnusedBonesByReferencesTool:migrationFinished:title"),
+                    AAOL10N.Tr("UnusedBonesByReferencesTool:migrationFinished:description"),
                     "Ok");
             }
         }
