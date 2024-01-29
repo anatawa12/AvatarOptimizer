@@ -71,5 +71,12 @@ namespace Anatawa12.AvatarOptimizer
                     queue.Enqueue(childStateMachine.stateMachine);
             }
         }
+
+        public static int ComputeLayerCount(this RuntimeAnimatorController controller)
+        {
+            while (controller is AnimatorOverrideController overrideController)
+                controller = overrideController.runtimeAnimatorController;
+            return ((AnimatorController)controller).layers.Length;
+        }
     }
 }

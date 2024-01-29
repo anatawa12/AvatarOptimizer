@@ -196,22 +196,22 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
         {
             var parser = new AnimatorParser(true);
 
-            var externallyWeightChanged = new AnimatorParser.AnimatorLayerWeightMap<int>
+            var externallyWeightChanged = new AnimatorWeightChangesList(_controller.layers.Length)
             {
                 // this should be ignored.
-                [0] = AnimatorParser.ParserAnimatorWeightState.Variable,
+                [0] = AnimatorWeightChange.Variable,
                 // variable even if external change is always 1
-                [3] = AnimatorParser.ParserAnimatorWeightState.AlwaysOne,
+                [3] = AnimatorWeightChange.AlwaysOne,
                 //
-                [7] = AnimatorParser.ParserAnimatorWeightState.AlwaysZero,
-                [8] = AnimatorParser.ParserAnimatorWeightState.EitherZeroOrOne,
-                [9] = AnimatorParser.ParserAnimatorWeightState.Variable,
+                [7] = AnimatorWeightChange.AlwaysZero,
+                [8] = AnimatorWeightChange.EitherZeroOrOne,
+                [9] = AnimatorWeightChange.Variable,
                 // if original have 1, no meaning
-                [10] = AnimatorParser.ParserAnimatorWeightState.AlwaysOne,
+                [10] = AnimatorWeightChange.AlwaysOne,
                 // original is 0 and override is 1
-                [20] = AnimatorParser.ParserAnimatorWeightState.AlwaysOne,
+                [20] = AnimatorWeightChange.AlwaysOne,
                 // original is 0 and override is 0
-                [21] = AnimatorParser.ParserAnimatorWeightState.AlwaysOne,
+                [21] = AnimatorWeightChange.AlwaysOne,
             };
 
             var rendererTarget = (ComponentOrGameObject)_skinnedRenderer;

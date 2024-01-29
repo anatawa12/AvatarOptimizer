@@ -202,16 +202,24 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 return;
             }
 
-            var playableWeightChanged = new AnimatorLayerMap<ParserAnimatorWeightState>();
-            var animatorLayerWeightChanged = new AnimatorLayerMap<AnimatorLayerWeightMap<int>>
-            {
-                [VRCAvatarDescriptor.AnimLayerType.Action] = new AnimatorLayerWeightMap<int>(),
-                [VRCAvatarDescriptor.AnimLayerType.FX] = new AnimatorLayerWeightMap<int>(),
-                [VRCAvatarDescriptor.AnimLayerType.Gesture] = new AnimatorLayerWeightMap<int>(),
-                [VRCAvatarDescriptor.AnimLayerType.Additive] = new AnimatorLayerWeightMap<int>(),
-            };
             var useDefaultLayers = !descriptor.customizeAnimationLayers;
 
+            // load controllers
+            var controllers = new AnimatorLayerMap<RuntimeAnimatorController>();
+            foreach (var layer in descriptor.specialAnimationLayers.Concat(descriptor.baseAnimationLayers))
+                controllers[layer.type] = GetPlayableLayerController(layer, useDefaultLayers);
+            
+            // parse weight changes
+            var animatorLayerWeightChanged = new AnimatorLayerMap<AnimatorWeightChangesList>();
+            foreach (var layer in new[] 
+                     {
+                         VRCAvatarDescriptor.AnimLayerType.Action,
+                         VRCAvatarDescriptor.AnimLayerType.FX,
+                         VRCAvatarDescriptor.AnimLayerType.Gesture,
+                         VRCAvatarDescriptor.AnimLayerType.Additive,
+                     })
+                animatorLayerWeightChanged[layer] = new AnimatorWeightChangesList(controllers[layer].ComputeLayerCount());
+            var playableWeightChanged = new AnimatorLayerMap<AnimatorWeightChange>();
             foreach (var layer in descriptor.baseAnimationLayers)
                 CollectWeightChangesInController(GetPlayableLayerController(layer, useDefaultLayers),
                     playableWeightChanged, animatorLayerWeightChanged);
@@ -219,15 +227,8 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             if (mmdWorldCompatibility)
             {
                 var fxLayer = animatorLayerWeightChanged[VRCAvatarDescriptor.AnimLayerType.FX];
-                fxLayer[1] = Merge(fxLayer[1], ParserAnimatorWeightState.EitherZeroOrOne);
-                fxLayer[2] = Merge(fxLayer[2], ParserAnimatorWeightState.EitherZeroOrOne);
-            }
-
-            var controllers = new AnimatorLayerMap<RuntimeAnimatorController>();
-
-            foreach (var layer in descriptor.specialAnimationLayers.Concat(descriptor.baseAnimationLayers))
-            {
-                controllers[layer.type] = GetPlayableLayerController(layer, useDefaultLayers);
+                fxLayer[1] = fxLayer[1].Merge(AnimatorWeightChange.EitherZeroOrOne);
+                fxLayer[2] = fxLayer[2].Merge(AnimatorWeightChange.EitherZeroOrOne);
             }
 
             var playableLayers =
@@ -279,8 +280,8 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         }
 
         private void CollectWeightChangesInController(RuntimeAnimatorController runtimeController,
-            AnimatorLayerMap<ParserAnimatorWeightState> playableWeightChanged,
-            AnimatorLayerMap<AnimatorLayerWeightMap<int>> animatorLayerWeightChanged)
+            AnimatorLayerMap<AnimatorWeightChange> playableWeightChanged,
+            AnimatorLayerMap<AnimatorWeightChangesList> animatorLayerWeightChanged)
         {
             using (ErrorReport.WithContextObject(runtimeController))
             {
@@ -303,67 +304,68 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             void CollectWeightChangesInBehavior(StateMachineBehaviour stateMachineBehaviour)
             {
                 switch (stateMachineBehaviour)
+                {
+                    case VRC_PlayableLayerControl playableLayerControl:
                     {
-                        case VRC_PlayableLayerControl playableLayerControl:
+                        VRCAvatarDescriptor.AnimLayerType layer;
+                        switch (playableLayerControl.layer)
                         {
-                            VRCAvatarDescriptor.AnimLayerType layer;
-                            switch (playableLayerControl.layer)
-                            {
-                                case VRC_PlayableLayerControl.BlendableLayer.Action:
-                                    layer = VRCAvatarDescriptor.AnimLayerType.Action;
-                                    break;
-                                case VRC_PlayableLayerControl.BlendableLayer.FX:
-                                    layer = VRCAvatarDescriptor.AnimLayerType.FX;
-                                    break;
-                                case VRC_PlayableLayerControl.BlendableLayer.Gesture:
-                                    layer = VRCAvatarDescriptor.AnimLayerType.Gesture;
-                                    break;
-                                case VRC_PlayableLayerControl.BlendableLayer.Additive:
-                                    layer = VRCAvatarDescriptor.AnimLayerType.Additive;
-                                    break;
-                                default:
-                                    BuildLog.LogWarning("AnimatorParser:PlayableLayerControl:UnknownBlendablePlayableLayer",
-                                            $"{playableLayerControl.layer}",
-                                            stateMachineBehaviour);
-                                    return;
-                            }
-
-                            var current = AnimatorLayerWeightStates.WeightStateFor(playableLayerControl.blendDuration,
-                                playableLayerControl.goalWeight);
-                            playableWeightChanged[layer] = Merge(playableWeightChanged[layer], current);
+                            case VRC_PlayableLayerControl.BlendableLayer.Action:
+                                layer = VRCAvatarDescriptor.AnimLayerType.Action;
+                                break;
+                            case VRC_PlayableLayerControl.BlendableLayer.FX:
+                                layer = VRCAvatarDescriptor.AnimLayerType.FX;
+                                break;
+                            case VRC_PlayableLayerControl.BlendableLayer.Gesture:
+                                layer = VRCAvatarDescriptor.AnimLayerType.Gesture;
+                                break;
+                            case VRC_PlayableLayerControl.BlendableLayer.Additive:
+                                layer = VRCAvatarDescriptor.AnimLayerType.Additive;
+                                break;
+                            default:
+                                BuildLog.LogWarning("AnimatorParser:PlayableLayerControl:UnknownBlendablePlayableLayer",
+                                    $"{playableLayerControl.layer}",
+                                    stateMachineBehaviour);
+                                return;
                         }
-                            break;
-                        case VRC_AnimatorLayerControl animatorLayerControl:
-                        {
-                            VRCAvatarDescriptor.AnimLayerType layer;
-                            switch (animatorLayerControl.playable)
-                            {
-                                case VRC_AnimatorLayerControl.BlendableLayer.Action:
-                                    layer = VRCAvatarDescriptor.AnimLayerType.Action;
-                                    break;
-                                case VRC_AnimatorLayerControl.BlendableLayer.FX:
-                                    layer = VRCAvatarDescriptor.AnimLayerType.FX;
-                                    break;
-                                case VRC_AnimatorLayerControl.BlendableLayer.Gesture:
-                                    layer = VRCAvatarDescriptor.AnimLayerType.Gesture;
-                                    break;
-                                case VRC_AnimatorLayerControl.BlendableLayer.Additive:
-                                    layer = VRCAvatarDescriptor.AnimLayerType.Additive;
-                                    break;
-                                default:
-                                    BuildLog.LogWarning("AnimatorParser:AnimatorLayerControl:UnknownBlendablePlayableLayer",
-                                            $"{animatorLayerControl.layer}",
-                                            stateMachineBehaviour);
-                                    return;
-                            }
 
-                            var current = AnimatorLayerWeightStates.WeightStateFor(animatorLayerControl.blendDuration,
-                                animatorLayerControl.goalWeight);
-                            animatorLayerWeightChanged[layer][animatorLayerControl.layer] =
-                                Merge(animatorLayerWeightChanged[layer][animatorLayerControl.layer], current);
-                            break;
-                        }
+                        var current = AnimatorWeightChanges.ForDurationAndWeight(playableLayerControl.blendDuration,
+                            playableLayerControl.goalWeight);
+                        playableWeightChanged[layer] = playableWeightChanged[layer].Merge(current);
                     }
+                        break;
+                    case VRC_AnimatorLayerControl animatorLayerControl:
+                    {
+                        VRCAvatarDescriptor.AnimLayerType layer;
+                        switch (animatorLayerControl.playable)
+                        {
+                            case VRC_AnimatorLayerControl.BlendableLayer.Action:
+                                layer = VRCAvatarDescriptor.AnimLayerType.Action;
+                                break;
+                            case VRC_AnimatorLayerControl.BlendableLayer.FX:
+                                layer = VRCAvatarDescriptor.AnimLayerType.FX;
+                                break;
+                            case VRC_AnimatorLayerControl.BlendableLayer.Gesture:
+                                layer = VRCAvatarDescriptor.AnimLayerType.Gesture;
+                                break;
+                            case VRC_AnimatorLayerControl.BlendableLayer.Additive:
+                                layer = VRCAvatarDescriptor.AnimLayerType.Additive;
+                                break;
+                            default:
+                                BuildLog.LogWarning("AnimatorParser:AnimatorLayerControl:UnknownBlendablePlayableLayer",
+                                    $"{animatorLayerControl.layer}",
+                                    stateMachineBehaviour);
+                                return;
+                        }
+
+                        var current = AnimatorWeightChanges.ForDurationAndWeight(animatorLayerControl.blendDuration,
+                            animatorLayerControl.goalWeight);
+                        var changesForPlayableLayer = animatorLayerWeightChanged[layer];
+                        changesForPlayableLayer[animatorLayerControl.layer] =
+                            changesForPlayableLayer[animatorLayerControl.layer].Merge(current);
+                        break;
+                    }
+                }
             }
         }
 
@@ -458,7 +460,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
         [CanBeNull]
         public AnimatorControllerNodeContainer ParseAnimatorController(GameObject root, RuntimeAnimatorController controller,
-            [CanBeNull] AnimatorLayerWeightMap<int> externallyWeightChanged = null)
+            [CanBeNull] AnimatorWeightChangesList externallyWeightChanged = null)
         {
             using (ErrorReport.WithContextObject(controller))
             {
@@ -472,7 +474,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         internal AnimatorControllerNodeContainer AdvancedParseAnimatorController(GameObject root,
             AnimatorController controller,
             IReadOnlyDictionary<AnimationClip, AnimationClip> mapping,
-            [CanBeNull] AnimatorLayerWeightMap<int> externallyWeightChanged)
+            [CanBeNull] AnimatorWeightChangesList externallyWeightChanged)
         {
             var layers = controller.layers;
             return NodesMerger.AnimatorControllerFromAnimatorLayers(controller.layers.Select((layer, i) =>
@@ -484,7 +486,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 }
                 else
                 {
-                    var external = externallyWeightChanged?.Get(i) ?? ParserAnimatorWeightState.NotChanged;
+                    var external = externallyWeightChanged?.Get(i) ?? AnimatorWeightChange.NotChanged;
 
                     if (!(GetWeightState(layers[i].defaultWeight, external) is AnimatorWeightState parsed))
                         return (default, default, null); // skip weight zero layer
@@ -531,34 +533,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 new AnimatorLayerPropModNode<T>(nodes, nodes.Count != sourceCount);
         }
 
-        internal class AnimatorLayerWeightMap<TKey>
-        {
-            private Dictionary<TKey, ParserAnimatorWeightState> _backed =
-                new Dictionary<TKey, ParserAnimatorWeightState>();
-
-            public ParserAnimatorWeightState this[TKey key]
-            {
-                get
-                {
-                    _backed.TryGetValue(key, out var state);
-                    return state;
-                }
-                set => _backed[key] = value;
-            }
-
-            public ParserAnimatorWeightState Get(TKey key) => this[key];
-        }
-
-        public enum ParserAnimatorWeightState
-        {
-            NotChanged,
-            AlwaysZero,
-            AlwaysOne,
-            EitherZeroOrOne,
-            Variable
-        }
-
-        AnimatorWeightState? GetWeightState(float weight, ParserAnimatorWeightState external)
+        AnimatorWeightState? GetWeightState(float weight, AnimatorWeightChange external)
         {
             bool isOneWeight;
             
@@ -569,78 +544,28 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             
             switch (external)
             {
-                case ParserAnimatorWeightState.NotChanged:
+                case AnimatorWeightChange.NotChanged:
                     if (!isOneWeight) return null; // skip weight zero layer
                     return AnimatorWeightState.AlwaysOne;
 
-                case ParserAnimatorWeightState.AlwaysZero:
+                case AnimatorWeightChange.AlwaysZero:
                     if (!isOneWeight) return null; // skip weight zero layer
                     return AnimatorWeightState.EitherZeroOrOne;
 
-                case ParserAnimatorWeightState.AlwaysOne:
+                case AnimatorWeightChange.AlwaysOne:
                     return isOneWeight
                         ? AnimatorWeightState.AlwaysOne
                         : AnimatorWeightState.EitherZeroOrOne;
 
-                case ParserAnimatorWeightState.EitherZeroOrOne:
+                case AnimatorWeightChange.EitherZeroOrOne:
                     return AnimatorWeightState.EitherZeroOrOne;
-                case ParserAnimatorWeightState.Variable:
+                case AnimatorWeightChange.Variable:
                     return AnimatorWeightState.Variable;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
         }
 
-        static ParserAnimatorWeightState Merge(ParserAnimatorWeightState a, ParserAnimatorWeightState b)
-        {
-            // 25 pattern
-            if (a == b) return a;
-
-            if (a == ParserAnimatorWeightState.NotChanged) return b;
-            if (b == ParserAnimatorWeightState.NotChanged) return a;
-
-            if (a == ParserAnimatorWeightState.Variable) return ParserAnimatorWeightState.Variable;
-            if (b == ParserAnimatorWeightState.Variable) return ParserAnimatorWeightState.Variable;
-
-            if (a == ParserAnimatorWeightState.AlwaysOne && b == ParserAnimatorWeightState.AlwaysZero)
-                return ParserAnimatorWeightState.EitherZeroOrOne;
-            if (b == ParserAnimatorWeightState.AlwaysOne && a == ParserAnimatorWeightState.AlwaysZero)
-                return ParserAnimatorWeightState.EitherZeroOrOne;
-
-            if (a == ParserAnimatorWeightState.EitherZeroOrOne && b == ParserAnimatorWeightState.AlwaysZero)
-                return ParserAnimatorWeightState.EitherZeroOrOne;
-            if (b == ParserAnimatorWeightState.EitherZeroOrOne && a == ParserAnimatorWeightState.AlwaysZero)
-                return ParserAnimatorWeightState.EitherZeroOrOne;
-
-            if (a == ParserAnimatorWeightState.EitherZeroOrOne && b == ParserAnimatorWeightState.AlwaysOne)
-                return ParserAnimatorWeightState.EitherZeroOrOne;
-            if (b == ParserAnimatorWeightState.EitherZeroOrOne && a == ParserAnimatorWeightState.AlwaysOne)
-                return ParserAnimatorWeightState.EitherZeroOrOne;
-
-            throw new ArgumentOutOfRangeException();
-        }
-
-    static class AnimatorLayerWeightStates
-    {
-        public static ParserAnimatorWeightState WeightStateFor(float duration, float weight) =>
-            duration != 0 ? ParserAnimatorWeightState.Variable : WeightStateFor(weight);
-
-        public static ParserAnimatorWeightState WeightStateFor(float weight)
-        {
-            switch (weight)
-            {
-                case 0:
-                    return ParserAnimatorWeightState.AlwaysZero;
-                case 1:
-                    return ParserAnimatorWeightState.AlwaysOne;
-                default:
-                    return ParserAnimatorWeightState.Variable;
-            }
-        }
-        
-        public static AnimatorWeightState ForAlwaysApplied(bool alwaysApplied) =>
-            alwaysApplied ? AnimatorWeightState.AlwaysOne : AnimatorWeightState.EitherZeroOrOne;
-    }
         #endregion
 
         #region Constants
