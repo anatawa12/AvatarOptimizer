@@ -3,9 +3,9 @@ using JetBrains.Annotations;
 using UnityEditor.Animations;
 using UnityEngine;
 
-namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
+namespace Anatawa12.AvatarOptimizer
 {
-    static class AOUtils
+    static partial class ACUtils
     {
         public static IEnumerable<AnimatorState> AllStates([CanBeNull] AnimatorStateMachine stateMachine)
         {
@@ -36,7 +36,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 yield return transition;
         }
 
-
         public static IEnumerable<AnimationClip> AllClips([CanBeNull] Motion motion)
         {
             switch (motion)
@@ -51,6 +50,25 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                     foreach (var clip in AllClips(child.motion))
                         yield return clip;
                     break;
+            }
+        }
+
+        public static IEnumerable<StateMachineBehaviour> StateMachineBehaviours(AnimatorStateMachine stateMachineIn)
+        {
+            var queue = new Queue<AnimatorStateMachine>();
+            queue.Enqueue(stateMachineIn);
+
+            while (queue.Count != 0)
+            {
+                var stateMachine = queue.Dequeue();
+                foreach (var behaviour in stateMachine.behaviours)
+                    yield return behaviour;
+                foreach (var state in stateMachine.states)
+                foreach (var behaviour in state.state.behaviours)
+                    yield return behaviour;
+
+                foreach (var childStateMachine in stateMachine.stateMachines)
+                    queue.Enqueue(childStateMachine.stateMachine);
             }
         }
     }

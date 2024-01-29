@@ -289,22 +289,20 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 foreach (var layer in controller.layers)
                 {
                     if (layer.syncedLayerIndex == -1)
-                        foreach (var state in CollectStates(layer.stateMachine))
-                            CollectWeightChangesInBehaviors(state.behaviours);
+                        foreach (var behaviour in ACUtils.StateMachineBehaviours(layer.stateMachine))
+                            CollectWeightChangesInBehavior(behaviour);
                     else
-                        foreach (var state in CollectStates(controller.layers[layer.syncedLayerIndex]
-                                     .stateMachine))
-                            CollectWeightChangesInBehaviors(layer.GetOverrideBehaviours(state));
+                        foreach (var state in ACUtils.AllStates(controller.layers[layer.syncedLayerIndex].stateMachine))
+                        foreach (var behaviour in layer.GetOverrideBehaviours(state))
+                            CollectWeightChangesInBehavior(behaviour);
                 }
             }
 
             return;
 
-            void CollectWeightChangesInBehaviors(StateMachineBehaviour[] stateBehaviours)
+            void CollectWeightChangesInBehavior(StateMachineBehaviour stateMachineBehaviour)
             {
-                foreach (var stateMachineBehaviour in stateBehaviours)
-                {
-                    switch (stateMachineBehaviour)
+                switch (stateMachineBehaviour)
                     {
                         case VRC_PlayableLayerControl playableLayerControl:
                         {
@@ -327,7 +325,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                                     BuildLog.LogWarning("AnimatorParser:PlayableLayerControl:UnknownBlendablePlayableLayer",
                                             $"{playableLayerControl.layer}",
                                             stateMachineBehaviour);
-                                    continue;
+                                    return;
                             }
 
                             var current = AnimatorLayerWeightStates.WeightStateFor(playableLayerControl.blendDuration,
@@ -356,7 +354,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                                     BuildLog.LogWarning("AnimatorParser:AnimatorLayerControl:UnknownBlendablePlayableLayer",
                                             $"{animatorLayerControl.layer}",
                                             stateMachineBehaviour);
-                                    continue;
+                                    return;
                             }
 
                             var current = AnimatorLayerWeightStates.WeightStateFor(animatorLayerControl.blendDuration,
@@ -366,7 +364,6 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                             break;
                         }
                     }
-                }
             }
         }
 
@@ -515,13 +512,13 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
             if (syncedLayer == -1)
             {
-                parsedMotions = CollectStates(layer.stateMachine)
+                parsedMotions = ACUtils.AllStates(layer.stateMachine)
                     .Select(state => _animationParser.ParseMotion(root, state.motion, mapping));
 
             }
             else
             {
-                parsedMotions = CollectStates(controller.layers[syncedLayer].stateMachine)
+                parsedMotions = ACUtils.AllStates(controller.layers[syncedLayer].stateMachine)
                     .Select(state => _animationParser.ParseMotion(root, layer.GetOverrideMotion(state), mapping));
             }
 
@@ -532,22 +529,6 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         {
             public ImmutablePropModNode<T> MergeNode<T>(List<ImmutablePropModNode<T>> nodes, int sourceCount) =>
                 new AnimatorLayerPropModNode<T>(nodes, nodes.Count != sourceCount);
-        }
-
-        private IEnumerable<AnimatorState> CollectStates(AnimatorStateMachine stateMachineIn)
-        {
-            var queue = new Queue<AnimatorStateMachine>();
-            queue.Enqueue(stateMachineIn);
-
-            while (queue.Count != 0)
-            {
-                var stateMachine = queue.Dequeue();
-                foreach (var state in stateMachine.states)
-                    yield return state.state;
-
-                foreach (var childStateMachine in stateMachine.stateMachines)
-                    queue.Enqueue(childStateMachine.stateMachine);
-            }
         }
 
         public static (AnimatorController, IReadOnlyDictionary<AnimationClip, AnimationClip>) GetControllerAndOverrides(
