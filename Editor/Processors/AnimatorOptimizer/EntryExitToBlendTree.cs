@@ -41,10 +41,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
         {
             if (settings.SkipEntryExitToBlendTree) return; // feature disabled
 
-            Execute(controller);
+            var state = context.GetState<AnimatorOptimizerState>();
+            Execute(state, controller);
         }
         
-        public static void Execute(AOAnimatorController controller)
+        public static void Execute(AnimatorOptimizerState state, AOAnimatorController controller)
         {
             var intParameters = new HashSet<string>(controller.parameters
                 .Where(x => x.type == AnimatorControllerParameterType.Int)
@@ -56,7 +57,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             var layerByParameter = new Dictionary<string, List<int>>();
             for (var i = 0; i < layers.Length; i++)
             {
-                var info = convertInfos[i] = TryParseLayer(layers[i], intParameters);
+                var info = convertInfos[i] = TryParseLayer(layers[i], state, intParameters);
                 if (info != null)
                 {
                     foreach (var parameter in info.Parameters)
@@ -109,7 +110,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
         }
 
         [CanBeNull]
-        private static ConvertibleLayerInfo TryParseLayer(AOAnimatorControllerLayer layer, HashSet<string> intParameters)
+        private static ConvertibleLayerInfo TryParseLayer(AOAnimatorControllerLayer layer,
+            AnimatorOptimizerState optimizerState, HashSet<string> intParameters)
         {
             if (layer.IsSynced || layer.IsSyncedToOtherLayer) return null; // synced layer is not supported
             if (!layer.stateMachine) return null;
@@ -209,6 +211,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                         if (!animatingProperties.SetEquals(newAnimatingProperties)) return null;
                     }
                 }
+
+                // the clip is time dependant, we cannot convert it to blend tree
+                foreach (var clip in AOUtils.AllClips(motion))
+                    if (optimizerState.IsTimeDependentClip(clip)) return null;
 
                 // check for transitions
                 var transitions = state.transitions;
