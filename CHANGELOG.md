@@ -13,6 +13,8 @@ The format is based on [Keep a Changelog].
   - Current Optimizer includes the following optimization
     - Remove meaningless properties `#854`
     - Converts Entry / Exit to 1D BlendTree `#854` `#867`
+    - Merges multiple Direct BlendTree to single Direct BlendTree `#870`
+    - Removes meaningless Animator Layers `#870`
 
 ### Changed
 - AvatarOptimizer now uses ErrorReporting API of NDMF instead of our own API `#805`
