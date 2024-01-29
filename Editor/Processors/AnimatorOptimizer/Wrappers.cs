@@ -110,6 +110,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
         public string name => Layer.name;
 
         public bool IsBaseLayer { get; set; }
+        public bool IsOverride => Layer.blendingMode == AnimatorLayerBlendingMode.Override;
         // ReSharper restore InconsistentNaming
 
         public Motion GetOverrideMotion(AnimatorState state) => Layer.GetOverrideMotion(state);
