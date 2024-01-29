@@ -4,6 +4,8 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using VRC.Dynamics;
+using VRC.SDK3.Avatars.Components;
+using VRC.SDKBase;
 
 namespace Anatawa12.AvatarOptimizer
 {
@@ -38,6 +40,42 @@ namespace Anatawa12.AvatarOptimizer
             if (physBoneBase.endpointPosition != Vector3.zero)
                 length++;
             return length;
+        }
+
+        public static VRCAvatarDescriptor.AnimLayerType? ToAnimLayerType(
+            this VRC_PlayableLayerControl.BlendableLayer layer)
+        {
+            switch (layer)
+            {
+                case VRC_PlayableLayerControl.BlendableLayer.Action:
+                    return VRCAvatarDescriptor.AnimLayerType.Action;
+                case VRC_PlayableLayerControl.BlendableLayer.FX:
+                    return VRCAvatarDescriptor.AnimLayerType.FX;
+                case VRC_PlayableLayerControl.BlendableLayer.Gesture:
+                    return VRCAvatarDescriptor.AnimLayerType.Gesture;
+                case VRC_PlayableLayerControl.BlendableLayer.Additive:
+                    return VRCAvatarDescriptor.AnimLayerType.Additive;
+                default:
+                    return null;
+            }
+        }
+
+        public static VRCAvatarDescriptor.AnimLayerType? ToAnimLayerType(
+            this VRC_AnimatorLayerControl.BlendableLayer layer)
+        {
+            switch (layer)
+            {
+                case VRC_AnimatorLayerControl.BlendableLayer.Action:
+                    return VRCAvatarDescriptor.AnimLayerType.Action;
+                case VRC_AnimatorLayerControl.BlendableLayer.FX:
+                    return VRCAvatarDescriptor.AnimLayerType.FX;
+                case VRC_AnimatorLayerControl.BlendableLayer.Gesture:
+                    return VRCAvatarDescriptor.AnimLayerType.Gesture;
+                case VRC_AnimatorLayerControl.BlendableLayer.Additive:
+                    return VRCAvatarDescriptor.AnimLayerType.Additive;
+                default:
+                    return null;
+            }
         }
     }
 }

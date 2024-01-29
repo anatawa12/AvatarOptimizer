@@ -33,27 +33,13 @@ namespace Anatawa12.AvatarOptimizer
 
         private static void AddPlayableLayerChanges(VRC_PlayableLayerControl control, AnimatorLayerMap<AnimatorWeightChange> playableWeightChanged)
         {
-            VRCAvatarDescriptor.AnimLayerType layer;
-            switch (control.layer)
+            if (!(control.layer.ToAnimLayerType() is VRCAvatarDescriptor.AnimLayerType layer))
             {
-                case VRC_PlayableLayerControl.BlendableLayer.Action:
-                    layer = VRCAvatarDescriptor.AnimLayerType.Action;
-                    break;
-                case VRC_PlayableLayerControl.BlendableLayer.FX:
-                    layer = VRCAvatarDescriptor.AnimLayerType.FX;
-                    break;
-                case VRC_PlayableLayerControl.BlendableLayer.Gesture:
-                    layer = VRCAvatarDescriptor.AnimLayerType.Gesture;
-                    break;
-                case VRC_PlayableLayerControl.BlendableLayer.Additive:
-                    layer = VRCAvatarDescriptor.AnimLayerType.Additive;
-                    break;
-                default:
-                    BuildLog.LogWarning(
-                        "AnimatorParser:PlayableLayerControl:UnknownBlendablePlayableLayer",
-                        $"{control.layer}",
-                        control);
-                    return;
+                BuildLog.LogWarning(
+                    "AnimatorParser:PlayableLayerControl:UnknownBlendablePlayableLayer",
+                    $"{control.layer}",
+                    control);
+                return;
             }
 
             var current = AnimatorWeightChanges.ForDurationAndWeight(control.blendDuration,
@@ -63,27 +49,13 @@ namespace Anatawa12.AvatarOptimizer
         
         private static void AddAnimatorLayerChanges(VRC_AnimatorLayerControl control, AnimatorLayerMap<AnimatorWeightChangesList> animatorLayerWeightChanged)
         {
-            VRCAvatarDescriptor.AnimLayerType layer;
-            switch (control.playable)
+            if (!(control.playable.ToAnimLayerType() is VRCAvatarDescriptor.AnimLayerType layer))
             {
-                case VRC_AnimatorLayerControl.BlendableLayer.Action:
-                    layer = VRCAvatarDescriptor.AnimLayerType.Action;
-                    break;
-                case VRC_AnimatorLayerControl.BlendableLayer.FX:
-                    layer = VRCAvatarDescriptor.AnimLayerType.FX;
-                    break;
-                case VRC_AnimatorLayerControl.BlendableLayer.Gesture:
-                    layer = VRCAvatarDescriptor.AnimLayerType.Gesture;
-                    break;
-                case VRC_AnimatorLayerControl.BlendableLayer.Additive:
-                    layer = VRCAvatarDescriptor.AnimLayerType.Additive;
-                    break;
-                default:
-                    BuildLog.LogWarning(
-                        "AnimatorParser:AnimatorLayerControl:UnknownBlendablePlayableLayer",
-                        $"{control.layer}",
-                        control);
-                    return;
+                BuildLog.LogWarning(
+                    "AnimatorParser:AnimatorLayerControl:UnknownBlendablePlayableLayer",
+                    $"{control.layer}",
+                    control);
+                return;
             }
 
             var current = AnimatorWeightChanges.ForDurationAndWeight(control.blendDuration,
