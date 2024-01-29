@@ -4,7 +4,7 @@ using nadena.dev.ndmf;
 
 namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 {
-    class RemoveMeaninglessLayer : AnimOptPassBase<MergeDirectBlendTree>
+    class RemoveMeaninglessLayer : AnimOptPassBase<RemoveMeaninglessLayer>
     {
         protected override void Execute(BuildContext context, AOAnimatorController controller, TraceAndOptimizeState settings)
         {
