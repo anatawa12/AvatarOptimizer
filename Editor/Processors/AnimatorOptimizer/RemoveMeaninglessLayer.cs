@@ -8,6 +8,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
     {
         protected override void Execute(BuildContext context, AOAnimatorController controller, TraceAndOptimizeState settings)
         {
+            if (settings.SkipRemoveMeaninglessAnimatorLayer) return;
             Execute(controller);
         }
 

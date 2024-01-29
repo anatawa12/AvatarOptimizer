@@ -84,6 +84,8 @@ namespace Anatawa12.AvatarOptimizer
             public bool skipRemoveUnusedAnimatingProperties;
             [ToggleLeft]
             public bool skipMergeDirectBlendTreeLayers;
+            [ToggleLeft]
+            public bool skipRemoveMeaninglessAnimatorLayer;
         }
     }
 }
