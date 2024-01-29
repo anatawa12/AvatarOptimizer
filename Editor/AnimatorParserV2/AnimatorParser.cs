@@ -10,7 +10,6 @@ using UnityEngine;
 
 #if AAO_VRCSDK3_AVATARS
 using VRC.SDK3.Avatars.Components;
-using VRC.SDKBase;
 #endif
 
 namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
@@ -221,7 +220,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 animatorLayerWeightChanged[layer] = new AnimatorWeightChangesList(controllers[layer].ComputeLayerCount());
             var playableWeightChanged = new AnimatorLayerMap<AnimatorWeightChange>();
             foreach (var layer in descriptor.baseAnimationLayers)
-                CollectWeightChangesInController(GetPlayableLayerController(layer, useDefaultLayers),
+                ACUtils.CollectWeightChangesInController(controllers[layer.type],
                     playableWeightChanged, animatorLayerWeightChanged);
 
             if (mmdWorldCompatibility)
@@ -276,86 +275,6 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 foreach (var shape in MmdBlendShapeNames)
                     modifications.Add(bodySkinnedMesh, $"blendShape.{shape}",
                         new VariableComponentPropModNode<float>(descriptor), true);
-            }
-        }
-
-        private void CollectWeightChangesInController(RuntimeAnimatorController runtimeController,
-            AnimatorLayerMap<AnimatorWeightChange> playableWeightChanged,
-            AnimatorLayerMap<AnimatorWeightChangesList> animatorLayerWeightChanged)
-        {
-            using (ErrorReport.WithContextObject(runtimeController))
-            {
-                foreach (var behaviour in ACUtils.StateMachineBehaviours(runtimeController))
-                    CollectWeightChangesInBehavior(behaviour);
-            }
-
-            return;
-
-            void CollectWeightChangesInBehavior(StateMachineBehaviour stateMachineBehaviour)
-            {
-                switch (stateMachineBehaviour)
-                {
-                    case VRC_PlayableLayerControl playableLayerControl:
-                    {
-                        VRCAvatarDescriptor.AnimLayerType layer;
-                        switch (playableLayerControl.layer)
-                        {
-                            case VRC_PlayableLayerControl.BlendableLayer.Action:
-                                layer = VRCAvatarDescriptor.AnimLayerType.Action;
-                                break;
-                            case VRC_PlayableLayerControl.BlendableLayer.FX:
-                                layer = VRCAvatarDescriptor.AnimLayerType.FX;
-                                break;
-                            case VRC_PlayableLayerControl.BlendableLayer.Gesture:
-                                layer = VRCAvatarDescriptor.AnimLayerType.Gesture;
-                                break;
-                            case VRC_PlayableLayerControl.BlendableLayer.Additive:
-                                layer = VRCAvatarDescriptor.AnimLayerType.Additive;
-                                break;
-                            default:
-                                BuildLog.LogWarning("AnimatorParser:PlayableLayerControl:UnknownBlendablePlayableLayer",
-                                    $"{playableLayerControl.layer}",
-                                    stateMachineBehaviour);
-                                return;
-                        }
-
-                        var current = AnimatorWeightChanges.ForDurationAndWeight(playableLayerControl.blendDuration,
-                            playableLayerControl.goalWeight);
-                        playableWeightChanged[layer] = playableWeightChanged[layer].Merge(current);
-                    }
-                        break;
-                    case VRC_AnimatorLayerControl animatorLayerControl:
-                    {
-                        VRCAvatarDescriptor.AnimLayerType layer;
-                        switch (animatorLayerControl.playable)
-                        {
-                            case VRC_AnimatorLayerControl.BlendableLayer.Action:
-                                layer = VRCAvatarDescriptor.AnimLayerType.Action;
-                                break;
-                            case VRC_AnimatorLayerControl.BlendableLayer.FX:
-                                layer = VRCAvatarDescriptor.AnimLayerType.FX;
-                                break;
-                            case VRC_AnimatorLayerControl.BlendableLayer.Gesture:
-                                layer = VRCAvatarDescriptor.AnimLayerType.Gesture;
-                                break;
-                            case VRC_AnimatorLayerControl.BlendableLayer.Additive:
-                                layer = VRCAvatarDescriptor.AnimLayerType.Additive;
-                                break;
-                            default:
-                                BuildLog.LogWarning("AnimatorParser:AnimatorLayerControl:UnknownBlendablePlayableLayer",
-                                    $"{animatorLayerControl.layer}",
-                                    stateMachineBehaviour);
-                                return;
-                        }
-
-                        var current = AnimatorWeightChanges.ForDurationAndWeight(animatorLayerControl.blendDuration,
-                            animatorLayerControl.goalWeight);
-                        var changesForPlayableLayer = animatorLayerWeightChanged[layer];
-                        changesForPlayableLayer[animatorLayerControl.layer] =
-                            changesForPlayableLayer[animatorLayerControl.layer].Merge(current);
-                        break;
-                    }
-                }
             }
         }
 
