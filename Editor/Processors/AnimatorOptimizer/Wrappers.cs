@@ -18,7 +18,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
         {
             if (!animatorController) throw new ArgumentNullException(nameof(animatorController));
             _animatorController = animatorController;
-            layers = _animatorController.layers.Select(x => new AOAnimatorControllerLayer(x)).ToArray();
+            layers = _animatorController.layers.Select(x => new AOAnimatorControllerLayer(this, x)).ToArray();
+            if (layers.Length != 0)
+                layers[0].IsBaseLayer = true;
             foreach (var layer in layers)
             {
                 var syncedLayerIndex = layer.syncedLayerIndex;
@@ -53,7 +55,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                     hideFlags = HideFlags.HideInHierarchy
                 }
             };
-            var wrappedLayer = new AOAnimatorControllerLayer(layer);
+            var wrappedLayer = new AOAnimatorControllerLayer(this, layer);
 
             // add to controller
             var animatorControllerLayers = _animatorController.layers;
@@ -67,16 +69,26 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 
             return wrappedLayer;
         }
+
+        public void UpdateLayers()
+        {
+            _animatorController.layers = layers.Select(x => x.Layer).ToArray();
+        }
     }
 
     class AOAnimatorControllerLayer
     {
-        private readonly AnimatorControllerLayer _layer;
+        public readonly AnimatorControllerLayer Layer;
+        private readonly AOAnimatorController _parent;
 
-        public AOAnimatorControllerLayer([NotNull] AnimatorControllerLayer layer) =>
-            _layer = layer ?? throw new ArgumentNullException(nameof(layer));
+        public AOAnimatorControllerLayer(AOAnimatorController parent,
+            [NotNull] AnimatorControllerLayer layer)
+        {
+            _parent = parent;
+            Layer = layer ?? throw new ArgumentNullException(nameof(layer));
+        }
 
-        public bool IsSynced => _layer.syncedLayerIndex != -1;
+        public bool IsSynced => Layer.syncedLayerIndex != -1;
         public bool IsSyncedToOtherLayer = false;
         [CanBeNull] public AOAnimatorControllerLayer SyncedLayer { get; internal set; }
 
@@ -85,16 +97,22 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
         // ReSharper disable InconsistentNaming
         public float defaultWeight
         {
-            get => _layer.defaultWeight;
-            set => _layer.defaultWeight = value;
+            get => IsBaseLayer ? 1 : Layer.defaultWeight;
+            set
+            {
+                Layer.defaultWeight = value;
+                _parent.UpdateLayers();
+            }
         }
 
-        public int syncedLayerIndex => _layer.syncedLayerIndex;
-        public AnimatorStateMachine stateMachine => _layer.stateMachine ? _layer.stateMachine : null;
-        public string name => _layer.name;
+        public int syncedLayerIndex => Layer.syncedLayerIndex;
+        public AnimatorStateMachine stateMachine => Layer.stateMachine ? Layer.stateMachine : null;
+        public string name => Layer.name;
+
+        public bool IsBaseLayer { get; set; }
         // ReSharper restore InconsistentNaming
 
-        public Motion GetOverrideMotion(AnimatorState state) => _layer.GetOverrideMotion(state);
+        public Motion GetOverrideMotion(AnimatorState state) => Layer.GetOverrideMotion(state);
 
         public IEnumerable<Motion> GetMotions() => SyncedLayer == null
             ? ACUtils.AllStates(stateMachine).Select(x => x.motion)

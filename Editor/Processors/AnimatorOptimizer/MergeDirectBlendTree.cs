@@ -69,6 +69,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 
             var newBlendTree = new BlendTree() { name = "Merged Direct BlendTrees" };
             newState.motion = newBlendTree;
+            newBlendTree.blendType = BlendTreeType.Direct;
             newBlendTree.children = directBlendTrees.SelectMany(x => x.tree.children).ToArray();
 
             // clear original layers
