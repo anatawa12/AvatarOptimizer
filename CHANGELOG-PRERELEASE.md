@@ -10,7 +10,6 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
-- use stable version of NDMF 1.3.0 or later `#821`
 
 ### Deprecated
 
@@ -19,6 +18,10 @@ The format is based on [Keep a Changelog].
 ### Fixed
 
 ### Security
+
+## [1.6.5] - 2024-01-29
+### Changed
+- use stable version of NDMF 1.3.0 or later [`#821`](https://github.com/anatawa12/AvatarOptimizer/pull/821)
 
 ## [1.6.5-rc.3] - 2024-01-27
 ### Changed
@@ -1150,7 +1153,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.5-rc.3...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.5...HEAD
+[1.6.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.5-rc.3...v1.6.5
 [1.6.5-rc.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.5-rc.2...v1.6.5-rc.3
 [1.6.5-rc.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.5-rc.1...v1.6.5-rc.2
 [1.6.5-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.5-beta.1...v1.6.5-rc.1

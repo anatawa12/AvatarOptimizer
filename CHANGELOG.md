@@ -10,26 +10,31 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
-- AvatarOptimizer now uses ErrorReporting API of NDMF instead of our own API `#805`
-- Project is slightly renamed to AAO: Avatar Optimizer `#830`
-  - The term `AAO` and `Avatar Optimizer` are not changed, but display name on the VCC is changed to `AAO: Avatar Optimizer`
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
-- Fix support for UniVRM components `#802`
-- VRM: Fix MergeSkinnedMesh breaking BlendShapeClip / VRM10Expression `#810`
-- Unknown component warning were shown multiple time for one type `#818`
-  - In addition, location of the unknown components are shown on the error report.
-- Empty Armature trick broken `#819`
-- Added workaround for `Array index (n) is out of bounds (size=m)` error
-- Humanoid Bones may be removed by Trace and Optimize `#831`
-- Add `license`, `documentationUrl`, and `changelogUrl` to package.json `#851`
-- Nested Constraint can be broken with Trace and Optimize `#857`
 
 ### Security
+
+## [1.6.5] - 2024-01-29
+### Changed
+- AvatarOptimizer now uses ErrorReporting API of NDMF instead of our own API [`#805`](https://github.com/anatawa12/AvatarOptimizer/pull/805)
+- Project is slightly renamed to AAO: Avatar Optimizer [`#830`](https://github.com/anatawa12/AvatarOptimizer/pull/830)
+  - The term `AAO` and `Avatar Optimizer` are not changed, but display name on the VCC is changed to `AAO: Avatar Optimizer`
+
+### Fixed
+- Fix support for UniVRM components [`#802`](https://github.com/anatawa12/AvatarOptimizer/pull/802)
+- VRM: Fix MergeSkinnedMesh breaking BlendShapeClip / VRM10Expression [`#810`](https://github.com/anatawa12/AvatarOptimizer/pull/810)
+- Unknown component warning were shown multiple time for one type [`#818`](https://github.com/anatawa12/AvatarOptimizer/pull/818)
+  - In addition, location of the unknown components are shown on the error report.
+- Empty Armature trick broken [`#819`](https://github.com/anatawa12/AvatarOptimizer/pull/819)
+- Added workaround for `Array index (n) is out of bounds (size=m)` error
+- Humanoid Bones may be removed by Trace and Optimize [`#831`](https://github.com/anatawa12/AvatarOptimizer/pull/831)
+- Add `license`, `documentationUrl`, and `changelogUrl` to package.json [`#851`](https://github.com/anatawa12/AvatarOptimizer/pull/851)
+- Nested Constraint can be broken with Trace and Optimize [`#857`](https://github.com/anatawa12/AvatarOptimizer/pull/857)
 
 ## [1.6.4] - 2023-12-10
 ### Fixed
@@ -728,7 +733,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.4...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.5...HEAD
+[1.6.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.4...v1.6.5
 [1.6.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.3...v1.6.4
 [1.6.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.2...v1.6.3
 [1.6.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.1...v1.6.2
