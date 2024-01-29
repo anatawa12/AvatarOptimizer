@@ -1,5 +1,6 @@
 {
     "name": "com.anatawa12.avatar-optimizer.internal.prefab-safe-set",
+    "rootNamespace": "Anatawa12.AvatarOptimizer.PrefabSafeSet",
     "references": [
         "com.anatawa12.custom-localization-for-editor-extension.runtime"
     ],
