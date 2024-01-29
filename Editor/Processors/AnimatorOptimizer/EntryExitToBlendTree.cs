@@ -76,7 +76,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 var layer = layers[i];
                 if (layer.IsSynced) continue;
 
-                foreach (var transition in AOUtils.AllTransitions(layer.stateMachine))
+                foreach (var transition in ACUtils.AllTransitions(layer.stateMachine))
                 {
                     foreach (var condition in transition.conditions)
                     {
@@ -213,7 +213,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 }
 
                 // the clip is time dependant, we cannot convert it to blend tree
-                foreach (var clip in AOUtils.AllClips(motion))
+                foreach (var clip in ACUtils.AllClips(motion))
                     if (optimizerState.IsTimeDependentClip(clip)) return null;
 
                 // check for transitions

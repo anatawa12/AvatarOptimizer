@@ -13,7 +13,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 {
     class AnimatorOptimizerState
     {
-        private HashSet<AOAnimatorController> _contollers = new HashSet<AOAnimatorController>();
+        private List<AOAnimatorController> _contollers = new List<AOAnimatorController>();
         public IEnumerable<AOAnimatorController> Controllers => _contollers;
 
         public void Add(AOAnimatorController cloned)
@@ -125,7 +125,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
         public static AnimatorController Clone([NotNull] BuildContext context,
             [NotNull] RuntimeAnimatorController runtimeController)
         {
-            var (controller, mapping) = AnimatorParsersV2.AnimatorParser.GetControllerAndOverrides(runtimeController);
+            var (controller, mapping) = ACUtils.GetControllerAndOverrides(runtimeController);
 
             return new AnimatorControllerCloner(context, mapping).MapObject(controller);
         }
