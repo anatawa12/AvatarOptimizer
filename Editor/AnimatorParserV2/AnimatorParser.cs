@@ -284,7 +284,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         {
             using (ErrorReport.WithContextObject(runtimeController))
             {
-                var (controller, _) = GetControllerAndOverrides(runtimeController);
+                var (controller, _) = ACUtils.GetControllerAndOverrides(runtimeController);
 
                 foreach (var layer in controller.layers)
                 {
@@ -462,7 +462,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         {
             using (ErrorReport.WithContextObject(controller))
             {
-                var (animatorController, mapping) = GetControllerAndOverrides(controller);
+                var (animatorController, mapping) = ACUtils.GetControllerAndOverrides(controller);
                 return AdvancedParseAnimatorController(root, animatorController, mapping,
                     externallyWeightChanged);
             }
@@ -529,41 +529,6 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         {
             public ImmutablePropModNode<T> MergeNode<T>(List<ImmutablePropModNode<T>> nodes, int sourceCount) =>
                 new AnimatorLayerPropModNode<T>(nodes, nodes.Count != sourceCount);
-        }
-
-        public static (AnimatorController, IReadOnlyDictionary<AnimationClip, AnimationClip>) GetControllerAndOverrides(
-            RuntimeAnimatorController runtimeController)
-        {
-            if (runtimeController is AnimatorController originalController)
-                return (originalController, Utils.EmptyDictionary<AnimationClip, AnimationClip>());
-
-            var overrides = new Dictionary<AnimationClip, AnimationClip>();
-            var overridesBuffer = new List<KeyValuePair<AnimationClip, AnimationClip>>();
-
-            for (;;)
-            {
-                if (runtimeController is AnimatorController controller)
-                    return (controller, overrides);
-
-                var overrideController = (AnimatorOverrideController)runtimeController;
-
-                runtimeController = overrideController.runtimeAnimatorController;
-                overrideController.GetOverrides(overridesBuffer);
-                overridesBuffer.RemoveAll(x => !x.Value);
-
-                var currentOverrides = overridesBuffer
-                    .GroupBy(kvp => kvp.Value, kvp => kvp.Key)
-                    .ToDictionary(g => g.Key, g => g.ToList());
-
-                foreach (var upperMappedFrom in overrides.Keys.ToArray())
-                    if (currentOverrides.TryGetValue(upperMappedFrom, out var currentMappedFrom))
-                        foreach (var mappedFrom in currentMappedFrom)
-                            overrides[mappedFrom] = overrides[upperMappedFrom];
-
-                foreach (var (original, mapped) in overridesBuffer)
-                    if (!overrides.ContainsKey(original))
-                        overrides.Add(original, mapped);
-            }
         }
 
         internal class AnimatorLayerWeightMap<TKey>

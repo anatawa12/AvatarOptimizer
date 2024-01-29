@@ -250,7 +250,7 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
             var controller = TestUtils.GetAssetAt<RuntimeAnimatorController>("AnimatorParser/OneLayerOverrideController.overrideController");
             var animate0To100 = TestUtils.GetAssetAt<AnimationClip>("AnimatorParser/Animate0To100.anim");
             var animate1To100 = TestUtils.GetAssetAt<AnimationClip>("AnimatorParser/Animate1To100.anim");
-            var (original, mapping) = AnimatorParser.GetControllerAndOverrides(controller);
+            var (original, mapping) = ACUtils.GetControllerAndOverrides(controller);
 
             Assert.That(original, Is.EqualTo(_controller));
             Assert.That(mapping, Is.EquivalentTo(new []
@@ -267,7 +267,7 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
             var animate1To100 = TestUtils.GetAssetAt<AnimationClip>("AnimatorParser/Animate1To100.anim");
             var animate1ToVariable = TestUtils.GetAssetAt<AnimationClip>("AnimatorParser/Animate1ToVariable.anim");
             var animate2ToVariable = TestUtils.GetAssetAt<AnimationClip>("AnimatorParser/Animate2ToVariable.anim");
-            var (original, mapping) = AnimatorParser.GetControllerAndOverrides(controller);
+            var (original, mapping) = ACUtils.GetControllerAndOverrides(controller);
 
             Assert.That(original, Is.EqualTo(_controller));
             Assert.That(mapping, Is.EquivalentTo(new []
