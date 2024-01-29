@@ -79,6 +79,7 @@ namespace Anatawa12.AvatarOptimizer.ndmf
                 .Then.Run(Processors.AnimatorOptimizer.EntryExitToBlendTree.Instance)
 #endif
                 .Then.Run(Processors.AnimatorOptimizer.MergeDirectBlendTree.Instance)
+                .Then.Run(Processors.AnimatorOptimizer.RemoveMeaninglessLayer.Instance)
                 ;
         }
 

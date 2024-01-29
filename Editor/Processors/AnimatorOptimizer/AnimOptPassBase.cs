@@ -160,6 +160,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                             var layer = wrapper.layers[control.layer];
 
                             layer.WeightChange = layer.WeightChange.Merge(ourChange);
+                            layer.LayerIndexUpdated += index => control.layer = index;
                         }
 
                         // process MMD world compatibility
@@ -169,6 +170,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                             {
                                 if (wrapper.layers.Length > i)
                                 {
+                                    wrapper.layers[i].MarkUnRemovable();
                                     wrapper.layers[i].WeightChange = wrapper.layers[i].WeightChange
                                         .Merge(AnimatorWeightChange.EitherZeroOrOne);
                                 }

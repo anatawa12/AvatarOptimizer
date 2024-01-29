@@ -44,6 +44,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
         public AOAnimatorControllerLayer[] layers { get; private set; }
         // ReSharper restore InconsistentNaming
 
+        public void SetLayersUnsafe(AOAnimatorControllerLayer[] layers)
+        {
+            this.layers = layers;
+            UpdateLayers();
+        }
+
         public AOAnimatorControllerLayer AddLayer(string layerName)
         {
             var layer = new AnimatorControllerLayer
@@ -57,15 +63,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             };
             var wrappedLayer = new AOAnimatorControllerLayer(this, layer);
 
-            // add to controller
-            var animatorControllerLayers = _animatorController.layers;
-            ArrayUtility.Add(ref animatorControllerLayers, layer);
-            _animatorController.layers = animatorControllerLayers;
-
             // update our layers
             var wrappedLayers = layers;
             ArrayUtility.Add(ref wrappedLayers, wrappedLayer);
             layers = wrappedLayers;
+
+            UpdateLayers();
 
             return wrappedLayer;
         }
@@ -108,10 +111,17 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
         public int syncedLayerIndex => Layer.syncedLayerIndex;
         public AnimatorStateMachine stateMachine => Layer.stateMachine ? Layer.stateMachine : null;
         public string name => Layer.name;
+        public AvatarMask avatarMask => Layer.avatarMask;
+        // ReSharper restore InconsistentNaming
+
+        private bool _removable = true;
+        public bool IsRemovable => !IsBaseLayer && _removable;
+        public void MarkUnRemovable() => _removable = false;
+        public event Action<int> LayerIndexUpdated;
+        public virtual void OnLayerIndexUpdated(int obj) => LayerIndexUpdated?.Invoke(obj);
 
         public bool IsBaseLayer { get; set; }
         public bool IsOverride => Layer.blendingMode == AnimatorLayerBlendingMode.Override;
-        // ReSharper restore InconsistentNaming
 
         public Motion GetOverrideMotion(AnimatorState state) => Layer.GetOverrideMotion(state);
 
