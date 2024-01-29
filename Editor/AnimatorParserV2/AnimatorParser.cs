@@ -285,18 +285,8 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         {
             using (ErrorReport.WithContextObject(runtimeController))
             {
-                var (controller, _) = ACUtils.GetControllerAndOverrides(runtimeController);
-
-                foreach (var layer in controller.layers)
-                {
-                    if (layer.syncedLayerIndex == -1)
-                        foreach (var behaviour in ACUtils.StateMachineBehaviours(layer.stateMachine))
-                            CollectWeightChangesInBehavior(behaviour);
-                    else
-                        foreach (var state in ACUtils.AllStates(controller.layers[layer.syncedLayerIndex].stateMachine))
-                        foreach (var behaviour in layer.GetOverrideBehaviours(state))
-                            CollectWeightChangesInBehavior(behaviour);
-                }
+                foreach (var behaviour in ACUtils.StateMachineBehaviours(runtimeController))
+                    CollectWeightChangesInBehavior(behaviour);
             }
 
             return;

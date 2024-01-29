@@ -53,6 +53,23 @@ namespace Anatawa12.AvatarOptimizer
             }
         }
 
+        public static IEnumerable<StateMachineBehaviour> StateMachineBehaviours(
+            RuntimeAnimatorController runtimeController)
+        {
+            var (controller, _) = GetControllerAndOverrides(runtimeController);
+
+            foreach (var layer in controller.layers)
+            {
+                if (layer.syncedLayerIndex == -1)
+                    foreach (var behaviour in StateMachineBehaviours(layer.stateMachine))
+                        yield return behaviour;
+                else
+                    foreach (var state in AllStates(controller.layers[layer.syncedLayerIndex].stateMachine))
+                    foreach (var behaviour in layer.GetOverrideBehaviours(state))
+                        yield return behaviour;
+            }
+        }
+
         public static IEnumerable<StateMachineBehaviour> StateMachineBehaviours(AnimatorStateMachine stateMachineIn)
         {
             var queue = new Queue<AnimatorStateMachine>();
