@@ -11,6 +11,8 @@ The format is based on [Keep a Changelog].
 
 ### Changed
 - AvatarOptimizer now uses ErrorReporting API of NDMF instead of our own API `#805`
+- Project is slightly renamed to AAO: Avatar Optimizer `#830`
+  - The term `AAO` and `Avatar Optimizer` are not changed, but display name on the VCC is changed to `AAO: Avatar Optimizer`
 
 ### Deprecated
 
@@ -23,6 +25,9 @@ The format is based on [Keep a Changelog].
   - In addition, location of the unknown components are shown on the error report.
 - Empty Armature trick broken `#819`
 - Added workaround for `Array index (n) is out of bounds (size=m)` error
+- Humanoid Bones may be removed by Trace and Optimize `#831`
+- Add `license`, `documentationUrl`, and `changelogUrl` to package.json `#851`
+- Nested Constraint can be broken with Trace and Optimize `#857`
 
 ### Security
 

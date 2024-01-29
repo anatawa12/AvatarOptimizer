@@ -20,6 +20,25 @@ The format is based on [Keep a Changelog].
 
 ### Security
 
+## [1.6.5-rc.3] - 2024-01-27
+### Changed
+- Reverted NDMF to 1.3.0-rc.3 [`#858`](https://github.com/anatawa12/AvatarOptimizer/pull/858)
+  - NDMF 1.3.0-rc.4 or later does not execute Optimizing phase on entering play mode.
+  - See [this issue](https://github.com/bdunderscore/ndmf/issues/129) for more details.
+
+### Fixed
+- Nested Constraint can be broken with Trace and Optimize [`#857`](https://github.com/anatawa12/AvatarOptimizer/pull/857)
+
+## [1.6.5-rc.2] - 2024-01-24
+### Changed
+- Project is slightly renamed to AAO: Avatar Optimizer [`#830`](https://github.com/anatawa12/AvatarOptimizer/pull/830)
+  - The term `AAO` and `Avatar Optimizer` are not changed, but display name on the VCC is changed to `AAO: Avatar Optimizer`
+- Upgrades NDMF to 1.3.0-rc.4 [`#853`](https://github.com/anatawa12/AvatarOptimizer/pull/853)
+
+### Fixed
+- Humanoid Bones may be removed by Trace and Optimize [`#831`](https://github.com/anatawa12/AvatarOptimizer/pull/831)
+- Add `license`, `documentationUrl`, and `changelogUrl` to package.json [`#851`](https://github.com/anatawa12/AvatarOptimizer/pull/851)
+
 ## [1.6.5-rc.1] - 2024-01-07
 ### Changed
 - Upgrades NDMF to 1.3.0-rc.1 [`#815`](https://github.com/anatawa12/AvatarOptimizer/pull/815)
@@ -1131,7 +1150,9 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.5-rc.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.5-rc.3...HEAD
+[1.6.5-rc.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.5-rc.2...v1.6.5-rc.3
+[1.6.5-rc.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.5-rc.1...v1.6.5-rc.2
 [1.6.5-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.5-beta.1...v1.6.5-rc.1
 [1.6.5-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.4...v1.6.5-beta.1
 [1.6.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.4-beta.1...v1.6.4
