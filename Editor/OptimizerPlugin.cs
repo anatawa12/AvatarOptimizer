@@ -78,6 +78,7 @@ namespace Anatawa12.AvatarOptimizer.ndmf
                 // EntryExit to BlendTree optimization heavily depends on VRChat's behavior
                 .Then.Run(Processors.AnimatorOptimizer.EntryExitToBlendTree.Instance)
 #endif
+                .Then.Run(Processors.AnimatorOptimizer.MergeDirectBlendTree.Instance)
                 ;
         }
 

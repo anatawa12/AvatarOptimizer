@@ -9,6 +9,11 @@ using UnityEngine;
 using UnityEngine.Profiling;
 using Object = UnityEngine.Object;
 
+#if AAO_VRCSDK3_AVATARS
+using VRC.SDKBase;
+using VRC.SDK3.Avatars.Components;
+#endif
+
 namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 {
     class AnimatorOptimizerState
@@ -16,10 +21,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
         private List<AOAnimatorController> _contollers = new List<AOAnimatorController>();
         public IEnumerable<AOAnimatorController> Controllers => _contollers;
 
-        public void Add(AOAnimatorController cloned)
-        {
-            _contollers.Add(cloned);
-        }
+        public void Add(AOAnimatorController wrapper) => _contollers.Add(wrapper);
 
         private Dictionary<AnimationClip, bool> _isTimeDependentClipCache = new Dictionary<AnimationClip, bool>();
         public bool IsTimeDependentClip(AnimationClip clip)
@@ -90,6 +92,19 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 
             var animatorState = context.GetState<AnimatorOptimizerState>();
 
+#if AAO_VRCSDK3_AVATARS
+            // According to VRCSDK 3.5.0, default animation controllers doesn't have AnimatorLayerWeightControl so
+            // we don't have to care about them.
+            var changerBehaviours = new AnimatorLayerMap<HashSet<VRC_AnimatorLayerControl>>();
+            {
+                changerBehaviours[VRCAvatarDescriptor.AnimLayerType.Action] = new HashSet<VRC_AnimatorLayerControl>();
+                changerBehaviours[VRCAvatarDescriptor.AnimLayerType.FX] = new HashSet<VRC_AnimatorLayerControl>();
+                changerBehaviours[VRCAvatarDescriptor.AnimLayerType.Gesture] = new HashSet<VRC_AnimatorLayerControl>();
+                changerBehaviours[VRCAvatarDescriptor.AnimLayerType.Additive] = new HashSet<VRC_AnimatorLayerControl>();
+            }
+#endif
+            var clonedToController = new Dictionary<AnimatorController, AOAnimatorController>();
+
             foreach (var component in context.AvatarRootObject.GetComponents<Component>())
             {
                 using (var serializedObject = new SerializedObject(component))
@@ -99,14 +114,70 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                         if (property.objectReferenceValue is RuntimeAnimatorController runtimeController)
                         {
                             var cloned = AnimatorControllerCloner.Clone(context, runtimeController);
-                            animatorState.Add(new AOAnimatorController(cloned));
+                            var wrapper = new AOAnimatorController(cloned);
+                            animatorState.Add(wrapper);
                             property.objectReferenceValue = cloned;
+                            clonedToController.Add(cloned, wrapper);
+
+#if AAO_VRCSDK3_AVATARS
+                            foreach (var behaviour in ACUtils.StateMachineBehaviours(cloned))
+                            {
+                                switch (behaviour)
+                                {
+                                    case VRC_AnimatorLayerControl control:
+                                        if (control.playable.ToAnimLayerType() is VRCAvatarDescriptor.AnimLayerType l)
+                                            changerBehaviours[l].Add(control);
+                                        break;
+                                }
+                            }
+#endif
                         }
                     }
 
                     serializedObject.ApplyModifiedPropertiesWithoutUndo();
                 }
             }
+            
+#if AAO_VRCSDK3_AVATARS
+            {
+                var descriptor = context.AvatarDescriptor;
+                if (descriptor.customizeAnimationLayers)
+                {
+                    foreach (var playableLayer in descriptor.baseAnimationLayers)
+                    {
+                        if (playableLayer.isDefault || !playableLayer.animatorController ||
+                            changerBehaviours[playableLayer.type] == null) continue;
+
+                        var wrapper = clonedToController[(AnimatorController)playableLayer.animatorController];
+
+                        foreach (var control in changerBehaviours[playableLayer.type])
+                        {
+                            if (control.layer < 0 || wrapper.layers.Length <= control.layer) continue;
+
+                            var ourChange =
+                                AnimatorWeightChanges.ForDurationAndWeight(control.blendDuration, control.goalWeight);
+
+                            var layer = wrapper.layers[control.layer];
+
+                            layer.WeightChange = layer.WeightChange.Merge(ourChange);
+                        }
+
+                        // process MMD world compatibility
+                        if (playableLayer.type == VRCAvatarDescriptor.AnimLayerType.FX && state.MmdWorldCompatibility)
+                        {
+                            for (var i = 1; i <= 2; i++)
+                            {
+                                if (wrapper.layers.Length > i)
+                                {
+                                    wrapper.layers[i].WeightChange = wrapper.layers[i].WeightChange
+                                        .Merge(AnimatorWeightChange.EitherZeroOrOne);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+#endif
         }
     }
 
