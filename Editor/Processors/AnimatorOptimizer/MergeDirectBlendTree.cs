@@ -87,7 +87,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
         private static BlendTree GetSingleDirectBlendTree(AOAnimatorControllerLayer layer)
         {
             if (layer.IsSyncedToOtherLayer || layer.IsSynced) return null;
-            if (layer.IsOverride) return null;
+            if (!layer.IsOverride) return null;
             // ReSharper disable once CompareOfFloatsByEqualityOperator
             if (layer.defaultWeight != 1) return null;
             if (layer.WeightChange != AnimatorWeightChange.NotChanged &&
