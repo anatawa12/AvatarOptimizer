@@ -10,12 +10,29 @@ namespace Anatawa12.AvatarOptimizer.Test
 {
     public class PublicApiCheck
     {
+        // since AllTypes returns too many types, gameCI fails to upload test results so I aggregate them.
         [Test]
-        [TestCaseSource(nameof(AllTypes))]
+        public void CheckPublicApiAll()
+        {
+            var exceptions = new List<Exception>();
+            foreach (var type in AllTypes())
+            {
+                try
+                {
+                    CheckPublicApi(type);
+                }
+                catch (Exception e)
+                {
+                    exceptions.Add(e);
+                }
+            }
+
+            if (exceptions.Count != 0)
+                throw new AggregateException(exceptions);
+        }
+
         public void CheckPublicApi(Type type)
         {
-            UnityEngine.Debug.Log(type.Name  + " is " + type.Attributes);
-
             var parsed = new TypeInfo(type);
 
             if (!parsed.PubliclyAccessible)
@@ -35,8 +52,8 @@ namespace Anatawa12.AvatarOptimizer.Test
             if (type.IsInterface)
             {
                 Assert.That(type.GetInterfaces().All(IsAAOApi),
-                    "interface must not inherit from non-AAO api");
-                Assert.That(allowInherit, Is.True, "public interface must be inheritable");
+                    $"{type} is publicly accessible but not all interfaces are AAO api");
+                Assert.That(allowInherit, Is.True, $"{type} is public interface but not allowed to inherit");
                 return;
             }
 
@@ -58,7 +75,8 @@ namespace Anatawa12.AvatarOptimizer.Test
             {
                 // not allowed to inherit and not sealed so we have to seal with internal constructor
                 // actually, we can seal with internal or private protected abstract members but we choose internal constructor
-                Assert.That(!parsed.AllowInherit, "non-sealed class must not have public constructor");
+                Assert.That(!parsed.AllowInherit,
+                    $"{type} is not allowed to inherit but has publicly accessible constructor");
             }
 
             // process members
