@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using JetBrains.Annotations;
 using UnityEditor.Animations;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 {
@@ -12,6 +13,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             where Merge : struct, IMergeProperty
         {
             var floats = new Dictionary<(ComponentOrGameObject, string), List<ImmutablePropModNode<float>>>();
+            var objects = new Dictionary<(ComponentOrGameObject, string), List<ImmutablePropModNode<Object>>>();
             var sourceCount = 0;
 
             foreach (var container in sources)
@@ -23,11 +25,21 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                         floats.Add(key, list = new List<ImmutablePropModNode<float>>());
                     list.Add(value);
                 }
+
+                foreach (var (key, value) in container.ObjectNodes)
+                {
+                    if (!objects.TryGetValue(key, out var list))
+                        objects.Add(key, list = new List<ImmutablePropModNode<Object>>());
+                    list.Add(value);
+                }
             }
 
             var nodes = new ImmutableNodeContainer();
 
             foreach (var ((target, prop), value) in floats)
+                nodes.Add(target, prop, merger.MergeNode(value, sourceCount));
+
+            foreach (var ((target, prop), value) in objects)
                 nodes.Add(target, prop, merger.MergeNode(value, sourceCount));
 
             return nodes;
@@ -49,6 +61,12 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                     new AnimatorPropModNode<float>(animator, new[] { new PlayableLayerNodeInfo<float>(value) }));
             }
 
+            foreach (var ((target, prop), value) in controller.ObjectNodes)
+            {
+                animatorNodeContainer.Add(target, prop,
+                    new AnimatorPropModNode<Object>(animator, new[] { new PlayableLayerNodeInfo<Object>(value) }));
+            }
+
             return animatorNodeContainer;
         }
 
@@ -64,6 +82,11 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 animatorNodeContainer.Add(target, prop, new AnimationComponentPropModNode<float>(animation, node));
             }
 
+            foreach (var ((target, prop), value) in animationClip.ObjectNodes)
+            {
+                animatorNodeContainer.Add(target, prop, new AnimationComponentPropModNode<Object>(animation, value));
+            }
+
             return animatorNodeContainer;
         }
 
@@ -73,6 +96,8 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         {
             Dictionary<(ComponentOrGameObject target, string prop), List<PlayableLayerNodeInfo<float>>> floatNodes =
                 new Dictionary<(ComponentOrGameObject, string), List<PlayableLayerNodeInfo<float>>>();
+            Dictionary<(ComponentOrGameObject target, string prop), List<PlayableLayerNodeInfo<Object>>> objectNodes =
+                new Dictionary<(ComponentOrGameObject, string), List<PlayableLayerNodeInfo<Object>>>();
 
             foreach (var (weight, mode, container) in playableLayers)
             {
@@ -81,6 +106,12 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                     if (!floatNodes.TryGetValue(key, out var list))
                         floatNodes.Add(key, list = new List<PlayableLayerNodeInfo<float>>());
                     list.Add(new PlayableLayerNodeInfo<float>(weight, mode, value));
+                }
+                foreach (var (key, value) in container.ObjectNodes)
+                {
+                    if (!objectNodes.TryGetValue(key, out var list))
+                        objectNodes.Add(key, list = new List<PlayableLayerNodeInfo<Object>>());
+                    list.Add(new PlayableLayerNodeInfo<Object>(weight, mode, value));
                 }
             }
 
@@ -91,6 +122,11 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 value.Reverse();
                 animatorNodeContainer.Add(target, prop, new AnimatorPropModNode<float>(animator, value));
             }
+            foreach (var ((target, prop), value) in objectNodes)
+            {
+                value.Reverse();
+                animatorNodeContainer.Add(target, prop, new AnimatorPropModNode<Object>(animator, value));
+            }
 
             return animatorNodeContainer;
         }
@@ -100,6 +136,8 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         {
             Dictionary<(ComponentOrGameObject target, string prop), List<AnimatorLayerNodeInfo<float>>> floatNodes =
                 new Dictionary<(ComponentOrGameObject, string), List<AnimatorLayerNodeInfo<float>>>();
+            Dictionary<(ComponentOrGameObject target, string prop), List<AnimatorLayerNodeInfo<Object>>> objectNodes =
+                new Dictionary<(ComponentOrGameObject, string), List<AnimatorLayerNodeInfo<Object>>>();
 
             foreach (var (weightState, bendingMode, parsedLayer) in layers)
             {
@@ -110,6 +148,12 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                         floatNodes.Add(key, list = new List<AnimatorLayerNodeInfo<float>>());
                     list.Add(new AnimatorLayerNodeInfo<float>(weightState, bendingMode, value));
                 }
+                foreach (var (key, value) in parsedLayer.ObjectNodes)
+                {
+                    if (!objectNodes.TryGetValue(key, out var list))
+                        objectNodes.Add(key, list = new List<AnimatorLayerNodeInfo<Object>>());
+                    list.Add(new AnimatorLayerNodeInfo<Object>(weightState, bendingMode, value));
+                }
             }
 
             var container = new AnimatorControllerNodeContainer();
@@ -117,6 +161,11 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             foreach (var ((target, prop), value) in floatNodes)
             {
                 var node = AnimatorControllerPropModNode<float>.Create(value);
+                if (node != null) container.Add(target, prop, node);
+            }
+            foreach (var ((target, prop), value) in objectNodes)
+            {
+                var node = AnimatorControllerPropModNode<Object>.Create(value);
                 if (node != null) container.Add(target, prop, node);
             }
 

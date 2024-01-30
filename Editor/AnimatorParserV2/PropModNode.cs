@@ -7,6 +7,7 @@ using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
 using Debug = System.Diagnostics.Debug;
+using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 {
@@ -32,66 +33,100 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
     /// <summary>
     /// The abstract information about actual value of PropModNode.
-    ///
-    /// This struct currently only handles single constant value, but will handle more complex values in the future.
     /// </summary>
+    // by design, this struct doesn't handle blending between two states.
     internal readonly struct ValueInfo<T>
     {
-        public bool IsConstant { get; }
-        private readonly T _value;
+        public bool IsConstant => _possibleValues != null && _possibleValues.Length == 1;
+        [CanBeNull] private readonly T[] _possibleValues;
 
         public T ConstantValue
         {
             get
             {
                 if (!IsConstant) throw new InvalidOperationException("Not Constant");
-                return _value;
+                Debug.Assert(_possibleValues != null, nameof(_possibleValues) + " != null");
+                return _possibleValues[0];
             }
         }
 
+        [CanBeNull] public T[] PossibleValues => _possibleValues;
+
         public static ValueInfo<T> Variable => default;
 
-        public ValueInfo(T value)
+        public ValueInfo(T value) => _possibleValues = new[] { value };
+
+        public ValueInfo([NotNull] T[] possibleValues)
         {
-            _value = value;
-            IsConstant = true;
+            if (possibleValues == null) throw new ArgumentNullException(nameof(possibleValues));
+            if (possibleValues.Length == 0)
+                throw new ArgumentException("Value cannot be an empty array.", nameof(possibleValues));
+            if (possibleValues.Distinct().Count() != possibleValues.Length)
+                throw new ArgumentException("Value cannot contain duplicate values.", nameof(possibleValues));
+            _possibleValues = possibleValues;
         }
 
         public bool TryGetConstantValue(out T o)
         {
-            o = _value;
-            return IsConstant;
+            if (IsConstant)
+            {
+                o = ConstantValue;
+                return true;
+            }
+            else
+            {
+                o = default;
+                return false;
+            }
         }
 
-        public bool Equals(ValueInfo<T> other) =>
-            IsConstant == other.IsConstant &&
-            (!IsConstant || EqualityComparer<T>.Default.Equals(_value, other._value));
+        public bool Equals(ValueInfo<T> other)
+        {
+            return NodeImplUtils.SetEquals(_possibleValues, other._possibleValues);
+        }
 
         public override bool Equals(object obj) => obj is ValueInfo<T> other && Equals(other);
-        public override int GetHashCode() => !IsConstant ? 0 : EqualityComparer<T>.Default.GetHashCode(_value);
+
+        public override int GetHashCode() => _possibleValues == null
+            ? 0
+            : _possibleValues.Aggregate(0, (current, value) => current ^ value.GetHashCode());
+
+        public override string ToString() =>
+            _possibleValues == null
+                ? $"ValueInfo<{typeof(T).Name}>{{Variable}}"
+                : $"ValueInfo<{typeof(T).Name}>{{PossibleValues={string.Join(",", _possibleValues)}}}";
     }
 
     internal static class NodeImplUtils
     {
+        public static bool SetEquals<T>(T[] a, T[] b)
+        {
+            if (a == null && b == null) return true;
+            if (a == null || b == null) return false;
+            if (a.Length != b.Length) return false;
+            return new HashSet<T>(a).SetEquals(b);
+        }
+
         public static ValueInfo<T> ConstantInfoForSideBySide<T>(IEnumerable<PropModNode<T>> nodes)
         {
             using (var enumerator = nodes.GetEnumerator())
             {
                 Debug.Assert(enumerator.MoveNext());
 
-                if (!enumerator.Current.Value.TryGetConstantValue(out var value))
+                if (!(enumerator.Current.Value.PossibleValues is T[] possibleValues))
                     return ValueInfo<T>.Variable;
+
+                var allPossibleValues = new HashSet<T>(possibleValues);
 
                 while (enumerator.MoveNext())
                 {
-                    if (!enumerator.Current.Value.TryGetConstantValue(out var otherValue))
+                    if (!(enumerator.Current.Value.PossibleValues is T[] otherValues))
                         return ValueInfo<T>.Variable;
 
-                    if (!EqualityComparer<T>.Default.Equals(value, otherValue))
-                        return ValueInfo<T>.Variable;
+                    allPossibleValues.UnionWith(otherValues);
                 }
 
-                return new ValueInfo<T>(value);
+                return new ValueInfo<T>(allPossibleValues.ToArray());
             }
         }
 
@@ -106,8 +141,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         public static ValueInfo<T> ConstantInfoForOverriding<T, TLayer>(IEnumerable<TLayer> layersReversed)
             where TLayer : ILayer<T>
         {
-            T value = default;
-            bool initialized = false;
+            var allPossibleValues = new HashSet<T>();
 
             foreach (var layer in layersReversed)
             {
@@ -115,26 +149,16 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 {
                     case AnimatorWeightState.AlwaysOne:
                     case AnimatorWeightState.EitherZeroOrOne:
-                        if (!layer.Node.Value.TryGetConstantValue(out var otherValue)) return ValueInfo<T>.Variable;
+                        if (!(layer.Node.Value.PossibleValues is T[] otherValues)) return ValueInfo<T>.Variable;
 
                         if (layer.Node.AppliedAlways && layer.Weight == AnimatorWeightState.AlwaysOne &&
                             layer.BlendingMode == AnimatorLayerBlendingMode.Override)
                         {
                             // the layer is always applied at the highest property.
-                            return new ValueInfo<T>(otherValue);
+                            return new ValueInfo<T>(otherValues);
                         }
 
-                        // partially applied constants so save that value and continue.
-                        if (!initialized)
-                        {
-                            value = otherValue;
-                            initialized = true;
-                        }
-                        else
-                        {
-                            if (!EqualityComparer<T>.Default.Equals(value, otherValue))
-                                return ValueInfo<T>.Variable;
-                        }
+                        allPossibleValues.UnionWith(otherValues);
 
                         break;
                     case AnimatorWeightState.Variable:
@@ -144,7 +168,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 }
             }
 
-            return new ValueInfo<T>(value);
+            return new ValueInfo<T>(allPossibleValues.ToArray());
         }
     }
 
@@ -264,6 +288,40 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
             return new ValueInfo<float>(constValue);
         }
+    }
+
+    internal class ObjectAnimationCurveNode : ImmutablePropModNode<Object>
+    {
+        public AnimationCurve Curve { get; }
+        public ObjectReferenceKeyframe[] Frames { get; set; }
+        public AnimationClip Clip { get; }
+
+        [CanBeNull]
+        public static ObjectAnimationCurveNode Create([NotNull] AnimationClip clip, EditorCurveBinding binding)
+        {
+            var curve = AnimationUtility.GetObjectReferenceCurve(clip, binding);
+            if (curve == null) return null;
+            if (curve.Length == 0) return null;
+            return new ObjectAnimationCurveNode(clip, curve);
+        }
+
+        private ObjectAnimationCurveNode(AnimationClip clip, ObjectReferenceKeyframe[] frames)
+        {
+            Debug.Assert(frames.Length > 0);
+            Clip = clip;
+            Frames = frames;
+            _constantInfo = new Lazy<ValueInfo<Object>>(() => ParseProperty(frames), isThreadSafe: false);
+        }
+
+
+        private readonly Lazy<ValueInfo<Object>> _constantInfo;
+
+        public override bool AppliedAlways => true;
+        public override ValueInfo<Object> Value => _constantInfo.Value;
+        public override IEnumerable<ObjectReference> ContextReferences => new []{ ObjectRegistry.GetReference(Clip) };
+
+        private static ValueInfo<Object> ParseProperty(ObjectReferenceKeyframe[] frames) =>
+            new ValueInfo<Object>(frames.Select(x => x.value).Distinct().ToArray());
     }
 
     internal class BlendTreeNode<T> : ImmutablePropModNode<T>

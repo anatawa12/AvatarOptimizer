@@ -7,6 +7,7 @@ using JetBrains.Annotations;
 using nadena.dev.ndmf;
 using UnityEditor.Animations;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 #if AAO_VRCSDK3_AVATARS
 using VRC.SDK3.Avatars.Components;
@@ -135,6 +136,8 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             {
                 foreach (var prop in properties)
                     _modifications.Add(component, prop, new VariableComponentPropModNode<float>(Modifier), true);
+                foreach (var prop in properties)
+                    _modifications.Add(component, prop, new VariableComponentPropModNode<Object>(Modifier), true);
             }
         }
 
