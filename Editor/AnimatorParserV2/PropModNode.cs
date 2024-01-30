@@ -91,6 +91,11 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         public override int GetHashCode() => _possibleValues == null
             ? 0
             : _possibleValues.Aggregate(0, (current, value) => current ^ value.GetHashCode());
+
+        public override string ToString() =>
+            _possibleValues == null
+                ? $"ValueInfo<{typeof(T).Name}>{{Variable}}"
+                : $"ValueInfo<{typeof(T).Name}>{{PossibleValues={string.Join(",", _possibleValues)}}}";
     }
 
     internal static class NodeImplUtils
