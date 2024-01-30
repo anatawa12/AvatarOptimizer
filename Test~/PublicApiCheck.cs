@@ -65,7 +65,7 @@ namespace Anatawa12.AvatarOptimizer.Test
 
             var publicMethods = new HashSet<MethodInfo>();
             // PublicAPIAttribute on properties and events
-            foreach (var eventInfo in type.GetEvents())
+            foreach (var eventInfo in type.GetEvents(AllMembers))
             {
                 if (eventInfo.GetCustomAttribute<PublicAPIAttribute>() != null)
                 {
@@ -73,7 +73,7 @@ namespace Anatawa12.AvatarOptimizer.Test
                     if (eventInfo.RemoveMethod != null) publicMethods.Add(eventInfo.RemoveMethod);
                 }
             }
-            foreach (var propertyInfo in type.GetProperties())
+            foreach (var propertyInfo in type.GetProperties(AllMembers))
             {
                 if (propertyInfo.GetCustomAttribute<PublicAPIAttribute>() != null)
                 {
@@ -83,7 +83,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             }
 
             // check method
-            foreach (var methodInfo in type.GetMethods())
+            foreach (var methodInfo in type.GetMethods(AllMembers))
             {
                 // for inherited methods from external assembly, we do not check PublicAPIAttribute
                 // ReSharper disable once PossibleNullReferenceException
@@ -103,7 +103,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             }
 
             // fields are not allowed to be public
-            foreach (var fieldInfo in type.GetFields())
+            foreach (var fieldInfo in type.GetFields(AllMembers))
             {
                 Assert.That(IsPubliclyAccessible(fieldInfo.Attributes, allowInherit), Is.False,
                     $"{fieldInfo} is publicly accessible but not marked as PublicAPIAttribute");
