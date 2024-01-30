@@ -115,7 +115,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             _layersReversed.SelectMany(x => x.Node.ContextReferences);
     }
 
-    public enum AnimatorWeightState
+    internal enum AnimatorWeightState
     {
         AlwaysOne,
         EitherZeroOrOne,

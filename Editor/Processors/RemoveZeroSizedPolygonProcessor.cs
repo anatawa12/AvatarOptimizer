@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer.Processors
 {
-    public class RemoveZeroSizedPolygonProcessor : Pass<RemoveZeroSizedPolygonProcessor>
+    internal class RemoveZeroSizedPolygonProcessor : Pass<RemoveZeroSizedPolygonProcessor>
     {
         public override string DisplayName => "RemoveZeroSizedPolygonProcessor";
 
