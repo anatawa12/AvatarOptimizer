@@ -33,9 +33,8 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
     /// <summary>
     /// The abstract information about actual value of PropModNode.
-    ///
-    /// This struct currently only handles single constant value, but will handle more complex values in the future.
     /// </summary>
+    // by design, this struct doesn't handle blending between two states.
     internal readonly struct ValueInfo<T>
     {
         public bool IsConstant => _possibleValues != null && _possibleValues.Length == 1;
@@ -117,16 +116,17 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 if (!(enumerator.Current.Value.PossibleValues is T[] possibleValues))
                     return ValueInfo<T>.Variable;
 
+                var allPossibleValues = new HashSet<T>(possibleValues);
+
                 while (enumerator.MoveNext())
                 {
                     if (!(enumerator.Current.Value.PossibleValues is T[] otherValues))
                         return ValueInfo<T>.Variable;
 
-                    if (!SetEquals(possibleValues, otherValues))
-                        return ValueInfo<T>.Variable;
+                    allPossibleValues.UnionWith(otherValues);
                 }
 
-                return new ValueInfo<T>(possibleValues);
+                return new ValueInfo<T>(allPossibleValues.ToArray());
             }
         }
 
@@ -141,7 +141,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         public static ValueInfo<T> ConstantInfoForOverriding<T, TLayer>(IEnumerable<TLayer> layersReversed)
             where TLayer : ILayer<T>
         {
-            T[] possibleValues = null;
+            var allPossibleValues = new HashSet<T>();
 
             foreach (var layer in layersReversed)
             {
@@ -158,16 +158,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                             return new ValueInfo<T>(otherValues);
                         }
 
-                        // partially applied constants so save that value and continue.
-                        if (possibleValues == null)
-                        {
-                            possibleValues = otherValues;
-                        }
-                        else
-                        {
-                            if (!SetEquals(possibleValues, otherValues))
-                                return ValueInfo<T>.Variable;
-                        }
+                        allPossibleValues.UnionWith(otherValues);
 
                         break;
                     case AnimatorWeightState.Variable:
@@ -177,7 +168,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 }
             }
 
-            return new ValueInfo<T>(possibleValues);
+            return new ValueInfo<T>(allPossibleValues.ToArray());
         }
     }
 

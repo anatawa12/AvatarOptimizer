@@ -51,12 +51,12 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
         [Test]
         public void TestLayer05_Animate5To100_0WithMultipleState() =>
             LayerTest(5, "Animate5To100/0WithMultipleState",
-                "blendShape.shape5", Variable());
+                "blendShape.shape5", MultipleAlways(0, 100));
 
         [Test]
         public void TestLayer06_Animate6To100_0WithSubStateMachine() =>
             LayerTest(6, "Animate6To100/0WithSubStateMachine",
-                "blendShape.shape6", Variable());
+                "blendShape.shape6", MultipleAlways(0, 100));
 
         [Test]
         public void TestLayer07_Animate7To100With1DBlendTree() =>
@@ -176,8 +176,8 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
             AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape2")], Variable());
             AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape3")], Variable(always: false));
             AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape4")], ConstantAlways(100));
-            AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape5")], Variable());
-            AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape6")], Variable());
+            AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape5")], MultipleAlways(0, 100));
+            AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape6")], MultipleAlways(0, 100));
             AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape7")], ConstantAlways(100));
             AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape8")], ConstantAlways(100));
             AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape9")], ConstantAlways(100));

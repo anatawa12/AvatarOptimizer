@@ -22,6 +22,9 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
         public static Expected ConstantPartially(float value) => new Expected(false, new ValueInfo<float>(value));
         public static Expected Variable(bool always = true) => new Expected(always, ValueInfo<float>.Variable);
 
+        public static Expected MultipleAlways(params float[] values) =>
+            new Expected(true, new ValueInfo<float>(values));
+
         public static void AssertPropertyNode(PropModNode<float> propertyNode, Expected property)
         {
             Assert.That(propertyNode.AppliedAlways, Is.EqualTo(property.Always));
