@@ -70,3 +70,12 @@ There are several exceptions and important notes for stability of save format.
   (If your avatar behavior is changed by the `Trace and Optimize` component, please report it as a bug.)
 - The behavior of the components just after adding components or resetting component is not part of the stable save format.
   The default settings of the components might be changed, but it will never change existing / already added components behavior.
+
+### Other notes for Versioning
+
+AAO is a tool on Unity and AAO mostly depends on VRChat SDK.
+
+AAO will update minimum version of VRChat SDK or Unity in minor version of AAO.\
+AAO will add support for newer version of VRChat SDK or Unity in patch release of AAO.
+
+Dropping older version of VRChat SDK or Unity will be expressed in the release notes.
