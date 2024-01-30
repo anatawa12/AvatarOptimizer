@@ -7,6 +7,7 @@ using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
 using Debug = System.Diagnostics.Debug;
+using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 {
@@ -291,6 +292,40 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
             return new ValueInfo<float>(constValue);
         }
+    }
+
+    internal class ObjectAnimationCurveNode : ImmutablePropModNode<Object>
+    {
+        public AnimationCurve Curve { get; }
+        public ObjectReferenceKeyframe[] Frames { get; set; }
+        public AnimationClip Clip { get; }
+
+        [CanBeNull]
+        public static ObjectAnimationCurveNode Create([NotNull] AnimationClip clip, EditorCurveBinding binding)
+        {
+            var curve = AnimationUtility.GetObjectReferenceCurve(clip, binding);
+            if (curve == null) return null;
+            if (curve.Length == 0) return null;
+            return new ObjectAnimationCurveNode(clip, curve);
+        }
+
+        private ObjectAnimationCurveNode(AnimationClip clip, ObjectReferenceKeyframe[] frames)
+        {
+            Debug.Assert(frames.Length > 0);
+            Clip = clip;
+            Frames = frames;
+            _constantInfo = new Lazy<ValueInfo<Object>>(() => ParseProperty(frames), isThreadSafe: false);
+        }
+
+
+        private readonly Lazy<ValueInfo<Object>> _constantInfo;
+
+        public override bool AppliedAlways => true;
+        public override ValueInfo<Object> Value => _constantInfo.Value;
+        public override IEnumerable<ObjectReference> ContextReferences => new []{ ObjectRegistry.GetReference(Clip) };
+
+        private static ValueInfo<Object> ParseProperty(ObjectReferenceKeyframe[] frames) =>
+            new ValueInfo<Object>(frames.Select(x => x.value).Distinct().ToArray());
     }
 
     internal class BlendTreeNode<T> : ImmutablePropModNode<T>

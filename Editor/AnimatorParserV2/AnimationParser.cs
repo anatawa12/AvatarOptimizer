@@ -93,6 +93,19 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 nodes.Add(componentOrGameObject, binding.propertyName, node);
             }
 
+            foreach (var binding in AnimationUtility.GetObjectReferenceCurveBindings(clip))
+            {
+                var obj = AnimationUtility.GetAnimatedObject(root, binding);
+                if (obj == null) continue;
+                var componentOrGameObject = obj is Component component ? (ComponentOrGameObject)component
+                    : obj is GameObject gameObject ? (ComponentOrGameObject)gameObject
+                    : throw new InvalidOperationException($"unexpected animated object: {obj} ({obj.GetType().Name}");
+
+                var node = ObjectAnimationCurveNode.Create(clip, binding);
+                if (node == null) continue;
+                nodes.Add(componentOrGameObject, binding.propertyName, node);
+            }
+
             return nodes;
         }
     }
