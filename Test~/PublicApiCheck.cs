@@ -94,6 +94,11 @@ namespace Anatawa12.AvatarOptimizer.Test
                     var attribute = methodInfo.GetCustomAttribute<PublicAPIAttribute>();
                     Assert.That(attribute != null || publicMethods.Contains(methodInfo), Is.True,
                         $"{methodInfo} is publicly accessible but not marked as PublicAPIAttribute");
+
+                    Assert.That(IsAAOApi(methodInfo.ReturnType), Is.True,
+                        $"{methodInfo} is publicly accessible but return type is not AAO api");
+                    Assert.That(methodInfo.GetParameters().All(x => IsAAOApi(x.ParameterType)), Is.True,
+                        $"{methodInfo} is publicly accessible but return type is not AAO api");
                 }
             }
 
