@@ -63,6 +63,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         public bool HeavyBehaviourComponent = false;
 
         /// <summary>
+        /// True if activeness of this component has meaning
+        /// </summary>
+        public bool BehaviourComponent = false;
+
+        /// <summary>
         /// Dependencies of this component
         /// </summary>
         [NotNull] internal readonly Dictionary<Component, DependencyType> Dependencies =
