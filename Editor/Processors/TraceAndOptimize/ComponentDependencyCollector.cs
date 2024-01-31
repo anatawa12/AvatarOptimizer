@@ -100,10 +100,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             public MeshInfo2 GetMeshInfoFor(SkinnedMeshRenderer renderer) =>
                 _collector._session.GetMeshInfoFor(renderer);
 
-            public override void MarkEntrypoint() => _info.EntrypointComponent = true;
-
-            public override void MarkHeavyBehaviour() => _info.HeavyBehaviourComponent = true;
-            public override void MarkBehaviour() => _info.BehaviourComponent = true;
+            public override void MarkEntrypoint() => _info.MarkEntrypoint();
+            public override void MarkHeavyBehaviour() => _info.MarkHeavyBehaviour();
+            public override void MarkBehaviour() => _info.MarkBehaviour();
 
             private API.ComponentDependencyInfo AddDependencyInternal(
                 [NotNull] GCComponentInfo info,

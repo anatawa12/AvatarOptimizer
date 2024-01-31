@@ -113,6 +113,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             Activeness = activeness;
         }
 
+
+        public void MarkEntrypoint() => EntrypointComponent = true;
+        public void MarkHeavyBehaviour() => HeavyBehaviourComponent = true;
+        public void MarkBehaviour() => BehaviourComponent = true;
+
         [Flags]
         public enum DependencyType : byte
         {
