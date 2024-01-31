@@ -12,21 +12,29 @@ The format is based on [Keep a Changelog].
   - Animator Optimizer optimizes your Animator Controller without behaviour Changes
   - Current Optimizer includes the following optimization
     - Remove meaningless properties `#854`
-    - Converts Entry / Exit to 1D BlendTree `#854`
+    - Converts Entry / Exit to 1D BlendTree `#854` `#867`
+    - Merges multiple Direct BlendTree to single Direct BlendTree `#870`
+    - Removes meaningless Animator Layers `#870`
 - Asset Description `#847`
   - Asset Description is the file to provide information of your assets for Avatar Optimizer.
   - Please see documentation for more details.
 
 ### Changed
-- AvatarOptimizer now uses ErrorReporting API of NDMF instead of our own API `#805`
-- Project is slightly renamed to AAO: Avatar Optimizer `#830`
-  - The term `AAO` and `Avatar Optimizer` are not changed, but display name on the VCC is changed to `AAO: Avatar Optimizer`
 - MergePhysBone now corrects curve settings `#775`
 - MergePhysBone now warns if chain length are not same `#775`
 - MergePhysBone with only one source is now error `#775`
   - It was not working well and not a error by a bug.
 - PhysBone that swings no bones are now removed `#864`
   - I found such a PhysBone on Lime so I added this feature.
+- Switched Localization system to NDMF from CL4EE `#873`
+  - Since this release, Avatar Optimizer is no longer depends on CL4EE.
+  - Because VCC doesn't remove unused packages, CL4EE may still be installed on your project.
+  - If you want to remove CL4EE, please remove it manually.
+- Suppressed animated blendshape warning of FreezeBlendShape if it's animated to a few constants `#881`
+  - Modern models have tons of blendshapes to change their face shape but emotion animation of some of them animates such a blendshapes to constant (default value).
+  - That's unnecessary (incorrect I think) and force users to remove or change the clip when user wants to face shape.
+  - I see AAO users use `FreezeBlendShapes` for overriding such a blendshapes on twitter.
+  - I think using this way is reasonable enough so I suppressed the warning if AAO detected such a usage.
 
 ### Deprecated
 
@@ -35,19 +43,34 @@ The format is based on [Keep a Changelog].
   - Please use VRCQuestTools v2.x, which has compatibility with AAO.
 
 ### Fixed
-- Fix support for UniVRM components `#802`
-- VRM: Fix MergeSkinnedMesh breaking BlendShapeClip / VRM10Expression `#810`
-- Unknown component warning were shown multiple time for one type `#818`
-  - In addition, location of the unknown components are shown on the error report.
-- Empty Armature trick broken `#819`
-- Added workaround for `Array index (n) is out of bounds (size=m)` error
-- Humanoid Bones may be removed by Trace and Optimize `#831`
 - Inspector of ComponentTypePair (GCDebug) is broken `#846`
 - Bones swung by unused PhysBones (which will be removed by AAO) are not merged `#850`
   - Note that To fix this problem, AnimatorParser is almost completely rewritten.
   - It's not expected to have behavior change, but if you found some, please report it.
+- Re-fix Nested Constraint can be broken with Trace and Optimize `#880`
 
 ### Security
+
+## [1.6.6] - 2024-01-31
+### Fixed
+- Some features are not working well if `Trace and Optimize` is not attached [`#876`](https://github.com/anatawa12/AvatarOptimizer/pull/876)
+
+## [1.6.5] - 2024-01-29
+### Changed
+- AvatarOptimizer now uses ErrorReporting API of NDMF instead of our own API [`#805`](https://github.com/anatawa12/AvatarOptimizer/pull/805)
+- Project is slightly renamed to AAO: Avatar Optimizer [`#830`](https://github.com/anatawa12/AvatarOptimizer/pull/830)
+  - The term `AAO` and `Avatar Optimizer` are not changed, but display name on the VCC is changed to `AAO: Avatar Optimizer`
+
+### Fixed
+- Fix support for UniVRM components [`#802`](https://github.com/anatawa12/AvatarOptimizer/pull/802)
+- VRM: Fix MergeSkinnedMesh breaking BlendShapeClip / VRM10Expression [`#810`](https://github.com/anatawa12/AvatarOptimizer/pull/810)
+- Unknown component warning were shown multiple time for one type [`#818`](https://github.com/anatawa12/AvatarOptimizer/pull/818)
+  - In addition, location of the unknown components are shown on the error report.
+- Empty Armature trick broken [`#819`](https://github.com/anatawa12/AvatarOptimizer/pull/819)
+- Added workaround for `Array index (n) is out of bounds (size=m)` error
+- Humanoid Bones may be removed by Trace and Optimize [`#831`](https://github.com/anatawa12/AvatarOptimizer/pull/831)
+- Add `license`, `documentationUrl`, and `changelogUrl` to package.json [`#851`](https://github.com/anatawa12/AvatarOptimizer/pull/851)
+- Nested Constraint can be broken with Trace and Optimize [`#857`](https://github.com/anatawa12/AvatarOptimizer/pull/857)
 
 ## [1.6.4] - 2023-12-10
 ### Fixed
@@ -746,7 +769,9 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.4...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.6...HEAD
+[1.6.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.5...v1.6.6
+[1.6.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.4...v1.6.5
 [1.6.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.3...v1.6.4
 [1.6.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.2...v1.6.3
 [1.6.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.1...v1.6.2

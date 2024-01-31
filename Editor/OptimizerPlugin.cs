@@ -48,7 +48,7 @@ namespace Anatawa12.AvatarOptimizer.ndmf
                             ctx =>
                             {
                                 ctx.GetState<AAOEnabled>().Enabled =
-                                    ctx.AvatarRootObject.GetComponent<AvatarTagComponent>();
+                                    ctx.AvatarRootObject.GetComponentInChildren<AvatarTagComponent>();
                                 // invalidate ComponentInfoRegistry cache to support newly added assets
                                 APIInternal.ComponentInfoRegistry.InvalidateCache();
                             })
@@ -80,6 +80,8 @@ namespace Anatawa12.AvatarOptimizer.ndmf
                 // EntryExit to BlendTree optimization heavily depends on VRChat's behavior
                 .Then.Run(Processors.AnimatorOptimizer.EntryExitToBlendTree.Instance)
 #endif
+                .Then.Run(Processors.AnimatorOptimizer.MergeDirectBlendTree.Instance)
+                .Then.Run(Processors.AnimatorOptimizer.RemoveMeaninglessLayer.Instance)
                 ;
         }
 

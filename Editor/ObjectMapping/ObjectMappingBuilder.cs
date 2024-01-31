@@ -5,6 +5,7 @@ using Anatawa12.AvatarOptimizer.AnimatorParsersV2;
 using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer
 {
@@ -100,6 +101,9 @@ namespace Anatawa12.AvatarOptimizer
         {
             foreach (var ((target, prop), value) in modifications.FloatNodes)
                 GetComponentInfo(target).ImportProperty(prop, value);
+            
+            foreach (var ((target, prop), value) in modifications.ObjectNodes)
+                GetComponentInfo(target).ImportProperty(prop, value);
         }
 
         public ObjectMapping BuildObjectMapping()
@@ -116,9 +120,11 @@ namespace Anatawa12.AvatarOptimizer
             [CanBeNull] public AnimationPropertyInfo MergedTo { get; private set; }
             private MappedPropertyInfo? _mappedPropertyInfo;
             [CanBeNull] private RootPropModNode<float> _floatNode;
+            [CanBeNull] private RootPropModNode<Object> _objectNode;
             [CanBeNull] public List<AnimationPropertyInfo> CopiedTo { get; private set; }
             [CanBeNull]
             public RootPropModNode<float> FloatNode => _floatNode?.Normalize();
+            public RootPropModNode<Object> ObjectNode => _objectNode?.Normalize();
 
             public AnimationPropertyInfo([NotNull] BuildingComponentInfo component, [NotNull] string name)
             {
@@ -210,8 +216,14 @@ namespace Anatawa12.AvatarOptimizer
                 if (FloatNode != null) throw new InvalidOperationException();
                 _floatNode = node;
             }
+            
+            public void ImportProperty(RootPropModNode<Object> node)
+            {
+                if (ObjectNode != null) throw new InvalidOperationException();
+                _objectNode = node;
+            }
 
-            public void AddModification(ComponentPropModNode<float> node, bool alwaysApplied)
+            public void AddModification(ComponentPropModNodeBase<float> node, bool alwaysApplied)
             {
                 if (_floatNode == null) _floatNode = new RootPropModNode<float>();
                 _floatNode.Add(node, alwaysApplied);
@@ -341,11 +353,19 @@ namespace Anatawa12.AvatarOptimizer
                 return animation != null;
             }
 
-            public override void AddModification(string prop, ComponentPropModNode<float> node, bool alwaysApplied) =>
+            public override void AddModification(string prop, ComponentPropModNodeBase<float> node, bool alwaysApplied) =>
                 GetProperty(prop).AddModification(node, alwaysApplied);
 
             public void ImportProperty(string prop, RootPropModNode<float> node) =>
                 GetProperty(prop).ImportProperty(node);
+
+            public void ImportProperty(string prop, RootPropModNode<Object> node) =>
+                GetProperty(prop).ImportProperty(node);
+            
+            public override IEnumerable<(string, RootPropModNode<float>)> AllFloatProperties =>
+                _afterPropertyIds
+                    .Where(x => x.Value.FloatNode != null)
+                    .Select(x => (x.Key, x.Value.FloatNode));
         }
     }
 
@@ -357,6 +377,7 @@ namespace Anatawa12.AvatarOptimizer
         public abstract void RemoveProperty(string property);
         public abstract bool ContainsFloat(string property);
         public abstract bool TryGetFloat(string propertyName, out RootPropModNode<float> animation);
-        public abstract void AddModification(string prop, ComponentPropModNode<float> node, bool alwaysApplied);
+        public abstract void AddModification(string prop, ComponentPropModNodeBase<float> node, bool alwaysApplied);
+        public abstract IEnumerable<(string, RootPropModNode<float>)> AllFloatProperties { get; }
     }
 }

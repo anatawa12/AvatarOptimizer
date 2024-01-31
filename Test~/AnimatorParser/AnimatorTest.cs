@@ -51,12 +51,12 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
         [Test]
         public void TestLayer05_Animate5To100_0WithMultipleState() =>
             LayerTest(5, "Animate5To100/0WithMultipleState",
-                "blendShape.shape5", Variable());
+                "blendShape.shape5", MultipleAlways(0, 100));
 
         [Test]
         public void TestLayer06_Animate6To100_0WithSubStateMachine() =>
             LayerTest(6, "Animate6To100/0WithSubStateMachine",
-                "blendShape.shape6", Variable());
+                "blendShape.shape6", MultipleAlways(0, 100));
 
         [Test]
         public void TestLayer07_Animate7To100With1DBlendTree() =>
@@ -176,8 +176,8 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
             AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape2")], Variable());
             AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape3")], Variable(always: false));
             AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape4")], ConstantAlways(100));
-            AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape5")], Variable());
-            AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape6")], Variable());
+            AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape5")], MultipleAlways(0, 100));
+            AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape6")], MultipleAlways(0, 100));
             AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape7")], ConstantAlways(100));
             AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape8")], ConstantAlways(100));
             AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape9")], ConstantAlways(100));
@@ -196,22 +196,22 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
         {
             var parser = new AnimatorParser(true);
 
-            var externallyWeightChanged = new AnimatorParser.AnimatorLayerWeightMap<int>
+            var externallyWeightChanged = new AnimatorWeightChangesList(_controller.layers.Length)
             {
                 // this should be ignored.
-                [0] = AnimatorParser.ParserAnimatorWeightState.Variable,
+                [0] = AnimatorWeightChange.Variable,
                 // variable even if external change is always 1
-                [3] = AnimatorParser.ParserAnimatorWeightState.AlwaysOne,
+                [3] = AnimatorWeightChange.AlwaysOne,
                 //
-                [7] = AnimatorParser.ParserAnimatorWeightState.AlwaysZero,
-                [8] = AnimatorParser.ParserAnimatorWeightState.EitherZeroOrOne,
-                [9] = AnimatorParser.ParserAnimatorWeightState.Variable,
+                [7] = AnimatorWeightChange.AlwaysZero,
+                [8] = AnimatorWeightChange.EitherZeroOrOne,
+                [9] = AnimatorWeightChange.Variable,
                 // if original have 1, no meaning
-                [10] = AnimatorParser.ParserAnimatorWeightState.AlwaysOne,
+                [10] = AnimatorWeightChange.AlwaysOne,
                 // original is 0 and override is 1
-                [20] = AnimatorParser.ParserAnimatorWeightState.AlwaysOne,
+                [20] = AnimatorWeightChange.AlwaysOne,
                 // original is 0 and override is 0
-                [21] = AnimatorParser.ParserAnimatorWeightState.AlwaysOne,
+                [21] = AnimatorWeightChange.AlwaysOne,
             };
 
             var rendererTarget = (ComponentOrGameObject)_skinnedRenderer;
@@ -250,7 +250,7 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
             var controller = TestUtils.GetAssetAt<RuntimeAnimatorController>("AnimatorParser/OneLayerOverrideController.overrideController");
             var animate0To100 = TestUtils.GetAssetAt<AnimationClip>("AnimatorParser/Animate0To100.anim");
             var animate1To100 = TestUtils.GetAssetAt<AnimationClip>("AnimatorParser/Animate1To100.anim");
-            var (original, mapping) = AnimatorParser.GetControllerAndOverrides(controller);
+            var (original, mapping) = ACUtils.GetControllerAndOverrides(controller);
 
             Assert.That(original, Is.EqualTo(_controller));
             Assert.That(mapping, Is.EquivalentTo(new []
@@ -267,7 +267,7 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
             var animate1To100 = TestUtils.GetAssetAt<AnimationClip>("AnimatorParser/Animate1To100.anim");
             var animate1ToVariable = TestUtils.GetAssetAt<AnimationClip>("AnimatorParser/Animate1ToVariable.anim");
             var animate2ToVariable = TestUtils.GetAssetAt<AnimationClip>("AnimatorParser/Animate2ToVariable.anim");
-            var (original, mapping) = AnimatorParser.GetControllerAndOverrides(controller);
+            var (original, mapping) = ACUtils.GetControllerAndOverrides(controller);
 
             Assert.That(original, Is.EqualTo(_controller));
             Assert.That(mapping, Is.EquivalentTo(new []
@@ -296,7 +296,7 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
             AssertContainer(parsed, propertyName, property);
         }
 
-        private void AssertContainer(ImmutableNodeContainer parsed, string prop, Expected property)
+        private void AssertContainer(INodeContainer parsed, string prop, Expected property)
         {
             var pair = ((ComponentOrGameObject)_skinnedRenderer, prop);
             Assert.That(parsed.FloatNodes.Keys, Is.EquivalentTo(new[] { pair }));

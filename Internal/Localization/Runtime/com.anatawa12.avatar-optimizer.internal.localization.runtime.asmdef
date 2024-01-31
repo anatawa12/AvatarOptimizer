@@ -1,0 +1,14 @@
+{
+    "name": "com.anatawa12.avatar-optimizer.internal.localization.runtime",
+    "rootNamespace": "Anatawa12.AvatarOptimizer",
+    "references": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

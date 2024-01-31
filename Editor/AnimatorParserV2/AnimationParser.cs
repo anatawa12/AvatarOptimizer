@@ -6,6 +6,7 @@ using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 {
@@ -48,11 +49,23 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
             var children = blendTree.children;
 
-            return NodesMerger.Merge(children.Select(x => ParseMotionInner(root, x.motion, mapping)),
+            return NodesMerger.Merge<
+                ImmutableNodeContainer, ImmutablePropModNode<float>, ImmutablePropModNode<Object>,
+                ImmutablePropModNode<float>, ImmutablePropModNode<Object>,
+                ImmutableNodeContainer, ImmutableNodeContainer, ImmutablePropModNode<float>, 
+                ImmutablePropModNode<Object>,
+                BlendTreeMergeProperty
+            >(children.Select(x => ParseMotionInner(root, x.motion, mapping)),
                 new BlendTreeMergeProperty(blendTree.blendType));
         }
-        
-        internal readonly struct BlendTreeMergeProperty : IMergeProperty
+
+        internal readonly struct BlendTreeMergeProperty : 
+            IMergeProperty1<
+                ImmutableNodeContainer, ImmutablePropModNode<float>, ImmutablePropModNode<Object>,
+                ImmutablePropModNode<float>, ImmutablePropModNode<Object>,
+                ImmutableNodeContainer, ImmutableNodeContainer, ImmutablePropModNode<float>,
+                ImmutablePropModNode<Object>
+            >
         {
             private readonly BlendTreeType _blendType;
 
@@ -61,8 +74,20 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 _blendType = blendType;
             }
 
-            public ImmutablePropModNode<T> MergeNode<T>(List<ImmutablePropModNode<T>> nodes, int sourceCount) => 
-                new BlendTreeNode<T>(nodes, _blendType, partial: nodes.Count != sourceCount);
+            public ImmutableNodeContainer CreateContainer() => new ImmutableNodeContainer();
+            public ImmutableNodeContainer GetContainer(ImmutableNodeContainer source) => source;
+
+            public ImmutablePropModNode<float> GetIntermediate(ImmutableNodeContainer source,
+                ImmutablePropModNode<float> node, int index) => node;
+
+            public ImmutablePropModNode<Object> GetIntermediate(ImmutableNodeContainer source,
+                ImmutablePropModNode<Object> node, int index) => node;
+
+            public ImmutablePropModNode<float> MergeNode(List<ImmutablePropModNode<float>> nodes, int sourceCount) =>
+                new BlendTreeNode<float>(nodes, _blendType, partial: nodes.Count != sourceCount);
+
+            public ImmutablePropModNode<Object> MergeNode(List<ImmutablePropModNode<Object>> nodes, int sourceCount) =>
+                new BlendTreeNode<Object>(nodes, _blendType, partial: nodes.Count != sourceCount);
         }
 
         private readonly Dictionary<(GameObject, AnimationClip), ImmutableNodeContainer> _parsedAnimationCache =
@@ -89,6 +114,19 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                     : throw new InvalidOperationException($"unexpected animated object: {obj} ({obj.GetType().Name}");
 
                 var node = FloatAnimationCurveNode.Create(clip, binding);
+                if (node == null) continue;
+                nodes.Add(componentOrGameObject, binding.propertyName, node);
+            }
+
+            foreach (var binding in AnimationUtility.GetObjectReferenceCurveBindings(clip))
+            {
+                var obj = AnimationUtility.GetAnimatedObject(root, binding);
+                if (obj == null) continue;
+                var componentOrGameObject = obj is Component component ? (ComponentOrGameObject)component
+                    : obj is GameObject gameObject ? (ComponentOrGameObject)gameObject
+                    : throw new InvalidOperationException($"unexpected animated object: {obj} ({obj.GetType().Name}");
+
+                var node = ObjectAnimationCurveNode.Create(clip, binding);
                 if (node == null) continue;
                 nodes.Add(componentOrGameObject, binding.propertyName, node);
             }

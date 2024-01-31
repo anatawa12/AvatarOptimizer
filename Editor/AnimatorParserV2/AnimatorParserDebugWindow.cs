@@ -50,8 +50,8 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                     if (!propState.AppliedAlways)
                         propStateInfo += "Partial:";
 
-                    if (propState.Value.TryGetConstantValue(out var value))
-                        propStateInfo += $"Const:{value}";
+                    if (propState.Value.PossibleValues is float[] values)
+                        propStateInfo += $"Const:{string.Join(",", values)}";
                     else
                         propStateInfo += "Variable";
 
@@ -81,8 +81,8 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                     if (!propState.AppliedAlways)
                         propStateInfo += "Partial:";
 
-                    if (propState.Value.TryGetConstantValue(out var value))
-                        propStateInfo += $"Const:{value}";
+                    if (propState.Value.PossibleValues is float[] values)
+                        propStateInfo += $"Const:{string.Join(",", values)}";
                     else
                         propStateInfo += "Variable";
 

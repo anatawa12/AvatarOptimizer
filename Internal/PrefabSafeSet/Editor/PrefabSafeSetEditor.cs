@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using CustomLocalization4EditorExtension;
 using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
@@ -13,9 +12,9 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
     {
         private static GUIContent WithLocalization(GUIContent content, string key, string tooltip = null)
         {
-            content.text = CL4EE.Tr(key);
+            content.text = AAOL10N.Tr(key);
             if (tooltip != null)
-                content.tooltip = CL4EE.Tr(tooltip);
+                content.tooltip = AAOL10N.Tr(tooltip);
             return content;
         }
 
@@ -242,25 +241,25 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                 switch (element.Status)
                 {
                     case ElementStatus.Natural:
-                        newLabel.text = string.Format(CL4EE.Tr("PrefabSafeSet:label:Element {0}"), elementI++);
+                        newLabel.text = string.Format(AAOL10N.Tr("PrefabSafeSet:label:Element {0}"), elementI++);
                         fieldModKind = ModificationKind.Natural;
                         break;
                     case ElementStatus.Removed:
-                        newLabel.text = CL4EE.Tr("PrefabSafeSet:label:(Removed)");
+                        newLabel.text = AAOL10N.Tr("PrefabSafeSet:label:(Removed)");
                         fieldModKind = ModificationKind.Remove;
                         break;
                     case ElementStatus.NewElement:
-                        newLabel.text = string.Format(CL4EE.Tr("PrefabSafeSet:label:Element {0}"), elementI++);
+                        newLabel.text = string.Format(AAOL10N.Tr("PrefabSafeSet:label:Element {0}"), elementI++);
                         fieldModKind = ModificationKind.Add;
                         break;
                     case ElementStatus.AddedTwice:
                         newLabel.text =
-                            string.Format(CL4EE.Tr("PrefabSafeSet:label:Element {0} (Added twice)"), elementI++);
+                            string.Format(AAOL10N.Tr("PrefabSafeSet:label:Element {0} (Added twice)"), elementI++);
                         fieldModKind = ModificationKind.Add;
                         break;
                     case ElementStatus.FakeRemoved:
                         newLabel.text =
-                            CL4EE.Tr("PrefabSafeSet:label:(Removed but not found)");
+                            AAOL10N.Tr("PrefabSafeSet:label:(Removed but not found)");
                         fieldModKind = ModificationKind.Remove;
                         break;
                     default:

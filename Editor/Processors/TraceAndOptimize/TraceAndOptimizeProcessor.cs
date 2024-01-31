@@ -25,6 +25,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         public bool SkipMergePhysBoneCollider;
         public bool SkipEntryExitToBlendTree;
         public bool SkipRemoveUnusedAnimatingProperties;
+        public bool SkipMergeDirectBlendTreeLayers;
+        public bool SkipRemoveMeaninglessAnimatorLayer;
 
         public Dictionary<SkinnedMeshRenderer, HashSet<string>> PreserveBlendShapes =
             new Dictionary<SkinnedMeshRenderer, HashSet<string>>();
@@ -50,6 +52,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             SkipMergePhysBoneCollider = config.advancedSettings.skipMergePhysBoneCollider;
             SkipEntryExitToBlendTree = config.advancedSettings.skipEntryExitToBlendTree;
             SkipRemoveUnusedAnimatingProperties = config.advancedSettings.skipRemoveUnusedAnimatingProperties;
+            SkipMergeDirectBlendTreeLayers = config.advancedSettings.skipMergeDirectBlendTreeLayers;
+            SkipRemoveMeaninglessAnimatorLayer = config.advancedSettings.skipRemoveMeaninglessAnimatorLayer;
 
             Enabled = true;
         }
