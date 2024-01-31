@@ -27,6 +27,11 @@ The format is based on [Keep a Changelog].
   - Since this release, Avatar Optimizer is no longer depends on CL4EE.
   - Because VCC doesn't remove unused packages, CL4EE may still be installed on your project.
   - If you want to remove CL4EE, please remove it manually.
+- Suppressed animated blendshape warning of FreezeBlendShape if it's animated to a few constants `#881`
+  - Modern models have tons of blendshapes to change their face shape but emotion animation of some of them animates such a blendshapes to constant (default value).
+  - That's unnecessary (incorrect I think) and force users to remove or change the clip when user wants to face shape.
+  - I see AAO users use `FreezeBlendShapes` for overriding such a blendshapes on twitter.
+  - I think using this way is reasonable enough so I suppressed the warning if AAO detected such a usage.
 
 ### Deprecated
 

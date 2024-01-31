@@ -40,10 +40,20 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     {
                         // allow constant animation
                         var weight = target.BlendShapes.Find(r => r.name == blendShape);
-                        // ReSharper disable once CompareOfFloatsByEqualityOperator
-                        if (p.Value.TryGetConstantValue(out var constValue) &&
-                            (weight.name == null || constValue == weight.weight))
-                            continue;
+                        if (weight.name == null) continue; // no such blendShape 
+                        var values = p.Value.PossibleValues;
+                        if (values != null)
+                        {
+                            // animated to constant.
+                            // we think the constant is the original constant value.
+                            // we assume user want to override it.
+                            if (values.Length == 1) continue;
+                            // animated to two constant and one is current.
+                            // we think the one is created during creating the new animation and
+                            // the other is the original constant value.
+                            // and we assume user want to override it.
+                            if (values.Length == 2 && values.Contains(weight.weight)) continue;
+                        } 
 
                         modified.Add(blendShape);
                         sources.Add(p.ContextReferences);
