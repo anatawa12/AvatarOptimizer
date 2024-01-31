@@ -422,49 +422,52 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
             var syncedLayer = layer.syncedLayerIndex;
 
-            IEnumerable<ImmutableNodeContainer> parsedMotions;
+            IEnumerable<(AnimatorState, ImmutableNodeContainer)> parsedMotions;
 
             if (syncedLayer == -1)
             {
                 parsedMotions = ACUtils.AllStates(layer.stateMachine)
-                    .Select(state => _animationParser.ParseMotion(root, state.motion, mapping));
-
+                    .Select(state => (state, _animationParser.ParseMotion(root, state.motion, mapping)));
             }
             else
             {
                 parsedMotions = ACUtils.AllStates(controller.layers[syncedLayer].stateMachine)
-                    .Select(state => _animationParser.ParseMotion(root, layer.GetOverrideMotion(state), mapping));
+                    .Select(state => (state, _animationParser.ParseMotion(root, layer.GetOverrideMotion(state), mapping)));
             }
 
             return NodesMerger.Merge<
                 AnimatorLayerNodeContainer, AnimatorLayerPropModNode<float>, AnimatorLayerPropModNode<Object>,
-                ImmutablePropModNode<float>, ImmutablePropModNode<Object>,
-                ImmutableNodeContainer, ImmutableNodeContainer, ImmutablePropModNode<float>, ImmutablePropModNode<Object>,
+                AnimatorStatePropModNode<float>, AnimatorStatePropModNode<Object>,
+                (AnimatorState, ImmutableNodeContainer), 
+                ImmutableNodeContainer, ImmutablePropModNode<float>, ImmutablePropModNode<Object>,
                 LayerMerger
             >(parsedMotions, default);
         }
 
         struct LayerMerger : IMergeProperty1<
             AnimatorLayerNodeContainer, AnimatorLayerPropModNode<float>, AnimatorLayerPropModNode<Object>,
-            ImmutablePropModNode<float>, ImmutablePropModNode<Object>,
-            ImmutableNodeContainer, ImmutableNodeContainer, ImmutablePropModNode<float>, ImmutablePropModNode<Object>
+            AnimatorStatePropModNode<float>, AnimatorStatePropModNode<Object>,
+            (AnimatorState, ImmutableNodeContainer), 
+            ImmutableNodeContainer, ImmutablePropModNode<float>, ImmutablePropModNode<Object>
         >
         {
             public AnimatorLayerNodeContainer CreateContainer() => new AnimatorLayerNodeContainer();
-            public ImmutableNodeContainer GetContainer(ImmutableNodeContainer source) => source;
+            public ImmutableNodeContainer GetContainer((AnimatorState, ImmutableNodeContainer) source) => source.Item2;
 
-            public ImmutablePropModNode<float> GetIntermediate(ImmutableNodeContainer source,
-                ImmutablePropModNode<float> node, int index) => node;
+            public AnimatorStatePropModNode<float> GetIntermediate((AnimatorState, ImmutableNodeContainer) source,
+                ImmutablePropModNode<float> node, int index) =>
+                new AnimatorStatePropModNode<float>(node, source.Item1);
 
-            public ImmutablePropModNode<Object> GetIntermediate(ImmutableNodeContainer source,
-                ImmutablePropModNode<Object> node, int index) => node;
+            public AnimatorStatePropModNode<Object> GetIntermediate((AnimatorState, ImmutableNodeContainer) source,
+                ImmutablePropModNode<Object> node, int index) => 
+                new AnimatorStatePropModNode<Object>(node, source.Item1);
 
             public AnimatorLayerPropModNode<float>
-                MergeNode(List<ImmutablePropModNode<float>> nodes, int sourceCount) =>
+                MergeNode(List<AnimatorStatePropModNode<float>> nodes, int sourceCount) =>
                 new AnimatorLayerPropModNode<float>(nodes, nodes.Count != sourceCount);
 
             public AnimatorLayerPropModNode<Object>
-                MergeNode(List<ImmutablePropModNode<Object>> nodes, int sourceCount) =>
+                MergeNode(List<AnimatorStatePropModNode<Object>> nodes, int sourceCount) =>
                 new AnimatorLayerPropModNode<Object>(nodes, nodes.Count != sourceCount);
         }
 

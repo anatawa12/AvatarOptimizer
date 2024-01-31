@@ -135,10 +135,10 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
     internal class AnimatorLayerPropModNode<T> : ImmutablePropModNode<T>
     {
-        private readonly IEnumerable<ImmutablePropModNode<T>> _children;
+        private readonly IEnumerable<AnimatorStatePropModNode<T>> _children;
         private readonly bool _partial;
 
-        public AnimatorLayerPropModNode(IEnumerable<ImmutablePropModNode<T>> children, bool partial)
+        public AnimatorLayerPropModNode(IEnumerable<AnimatorStatePropModNode<T>> children, bool partial)
         {
             // expected to pass list or array
             // ReSharper disable once PossibleMultipleEnumeration
@@ -151,5 +151,24 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         public override bool AppliedAlways => !_partial && _children.All(x => x.AppliedAlways);
         public override ValueInfo<T> Value => NodeImplUtils.ConstantInfoForSideBySide(_children);
         public override IEnumerable<ObjectReference> ContextReferences => _children.SelectMany(x => x.ContextReferences);
+        public IEnumerable<AnimatorStatePropModNode<T>> Children => _children;
+    }
+
+    internal class AnimatorStatePropModNode<T> : ImmutablePropModNode<T>
+    {
+        private readonly ImmutablePropModNode<T> _node;
+        private readonly AnimatorState _state;
+
+        public AnimatorStatePropModNode(ImmutablePropModNode<T> node, AnimatorState state)
+        {
+            _node = node;
+            _state = state;
+        }
+
+        public ImmutablePropModNode<T> Node => _node;
+        public AnimatorState State => _state;
+        public override bool AppliedAlways => _node.AppliedAlways;
+        public override ValueInfo<T> Value => _node.Value;
+        public override IEnumerable<ObjectReference> ContextReferences => _node.ContextReferences;
     }
 }
