@@ -80,6 +80,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             var sourceMaterials = meshInfos.Select(x => x.SubMeshes.Select(y => (y.Topology, y.SharedMaterial)).ToArray()).ToArray();
             Profiler.EndSample();
 
+            Profiler.BeginSample("Material / Shader Parameter Animation Warnings");
+            MaterialParameterAnimationWarnings(skinnedMeshRenderers.Concat<Renderer>(staticMeshRenderers).ToList(), context);
+            Profiler.EndSample();
+
             Profiler.BeginSample("Material Normal Configuration Check");
             // check normal information.
             int hasNormal = 0;
@@ -217,10 +221,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             var boneTransforms = new HashSet<Transform>(target.Bones.Select(x => x.Transform));
 
             var parents = new HashSet<Transform>(Target.transform.ParentEnumerable(context.AvatarRootTransform, includeMe: true));
-
-            Profiler.BeginSample("Material / Shader Parameter Animation Warnings");
-            MaterialParameterAnimationWarnings(skinnedMeshRenderers.Concat<Renderer>(staticMeshRenderers).ToList(), context);
-            Profiler.EndSample();
 
             Profiler.BeginSample("Postprocess Source Renderers");
             foreach (var renderer in skinnedMeshRenderers)
