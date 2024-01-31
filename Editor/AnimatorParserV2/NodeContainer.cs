@@ -115,6 +115,11 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         }
     }
 
+    internal class AnimatorLayerNodeContainer : NodeContainerBase<AnimatorLayerPropModNode<float>,
+        AnimatorLayerPropModNode<Object>>
+    {
+    }
+
     internal class AnimatorControllerNodeContainer : NodeContainerBase<AnimatorControllerPropModNode<float>,
         AnimatorControllerPropModNode<Object>>
     {

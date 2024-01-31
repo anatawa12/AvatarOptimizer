@@ -190,7 +190,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         }
 
         internal static AnimatorControllerNodeContainer AnimatorControllerFromAnimatorLayers(
-            IEnumerable<(AnimatorWeightState, AnimatorLayerBlendingMode, ImmutableNodeContainer)> layers)
+            IEnumerable<(AnimatorWeightState, AnimatorLayerBlendingMode, AnimatorLayerNodeContainer)> layers)
         {
             Dictionary<(ComponentOrGameObject target, string prop), List<AnimatorLayerNodeInfo<float>>> floatNodes =
                 new Dictionary<(ComponentOrGameObject, string), List<AnimatorLayerNodeInfo<float>>>();

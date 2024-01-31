@@ -81,12 +81,12 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         public AnimatorWeightState Weight { get; }
         public AnimatorLayerBlendingMode BlendingMode { get; }
         public int LayerIndex { get; }
-        public readonly ImmutablePropModNode<T> Node;
+        public readonly AnimatorLayerPropModNode<T> Node;
         PropModNode<T> ILayer<T>.Node => Node;
         IPropModNode ILayer.Node => Node;
 
         public AnimatorLayerNodeInfo(AnimatorWeightState weight, AnimatorLayerBlendingMode blendingMode,
-            ImmutablePropModNode<T> node, int layerIndex)
+            AnimatorLayerPropModNode<T> node, int layerIndex)
         {
             Weight = weight;
             BlendingMode = blendingMode;

@@ -412,7 +412,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             }));
         }
 
-        public ImmutableNodeContainer ParseAnimatorControllerLayer(
+        public AnimatorLayerNodeContainer ParseAnimatorControllerLayer(
             GameObject root,
             AnimatorController controller,
             IReadOnlyDictionary<AnimationClip, AnimationClip> mapping,
@@ -437,7 +437,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             }
 
             return NodesMerger.Merge<
-                ImmutableNodeContainer, ImmutablePropModNode<float>, ImmutablePropModNode<Object>,
+                AnimatorLayerNodeContainer, AnimatorLayerPropModNode<float>, AnimatorLayerPropModNode<Object>,
                 ImmutablePropModNode<float>, ImmutablePropModNode<Object>,
                 ImmutableNodeContainer, ImmutableNodeContainer, ImmutablePropModNode<float>, ImmutablePropModNode<Object>,
                 LayerMerger
@@ -445,12 +445,12 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         }
 
         struct LayerMerger : IMergeProperty1<
-            ImmutableNodeContainer, ImmutablePropModNode<float>, ImmutablePropModNode<Object>,
+            AnimatorLayerNodeContainer, AnimatorLayerPropModNode<float>, AnimatorLayerPropModNode<Object>,
             ImmutablePropModNode<float>, ImmutablePropModNode<Object>,
             ImmutableNodeContainer, ImmutableNodeContainer, ImmutablePropModNode<float>, ImmutablePropModNode<Object>
         >
         {
-            public ImmutableNodeContainer CreateContainer() => new ImmutableNodeContainer();
+            public AnimatorLayerNodeContainer CreateContainer() => new AnimatorLayerNodeContainer();
             public ImmutableNodeContainer GetContainer(ImmutableNodeContainer source) => source;
 
             public ImmutablePropModNode<float> GetIntermediate(ImmutableNodeContainer source,
@@ -459,13 +459,13 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             public ImmutablePropModNode<Object> GetIntermediate(ImmutableNodeContainer source,
                 ImmutablePropModNode<Object> node, int index) => node;
 
-            public ImmutablePropModNode<float>
+            public AnimatorLayerPropModNode<float>
                 MergeNode(List<ImmutablePropModNode<float>> nodes, int sourceCount) =>
-                new ImmutablePropModNode<float>(nodes, nodes.Count != sourceCount);
+                new AnimatorLayerPropModNode<float>(nodes, nodes.Count != sourceCount);
 
-            public ImmutablePropModNode<Object>
+            public AnimatorLayerPropModNode<Object>
                 MergeNode(List<ImmutablePropModNode<Object>> nodes, int sourceCount) =>
-                new ImmutablePropModNode<Object>(nodes, nodes.Count != sourceCount);
+                new AnimatorLayerPropModNode<Object>(nodes, nodes.Count != sourceCount);
         }
 
         AnimatorWeightState? GetWeightState(float weight, AnimatorWeightChange external)
