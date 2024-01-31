@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using CustomLocalization4EditorExtension;
 using UnityEditor;
 using UnityEngine;
 
@@ -50,7 +49,7 @@ namespace Anatawa12.AvatarOptimizer
             var component = (MergeSkinnedMesh)target;
             if (component.GetComponent<SkinnedMeshRenderer>().sharedMesh)
             {
-                EditorGUILayout.HelpBox(CL4EE.Tr("MergeSkinnedMesh:warning:MeshIsNotNone"), MessageType.Warning);
+                EditorGUILayout.HelpBox(AAOL10N.Tr("MergeSkinnedMesh:warning:MeshIsNotNone"), MessageType.Warning);
             }
 
             EditorGUILayout.PropertyField(_renderersSetProp);
@@ -60,7 +59,7 @@ namespace Anatawa12.AvatarOptimizer
 
             serializedObject.ApplyModifiedProperties();
 
-            EditorGUILayout.LabelField(CL4EE.Tr("MergeSkinnedMesh:label:Merge Materials"), EditorStyles.boldLabel);
+            EditorGUILayout.LabelField(AAOL10N.Tr("MergeSkinnedMesh:label:Merge Materials"), EditorStyles.boldLabel);
             if (targets.Length != 1)
                 EditorGUILayout.LabelField("MergeMaterial is not supported with Multi Target Editor");
             else
@@ -91,11 +90,11 @@ namespace Anatawa12.AvatarOptimizer
                 EditorGUI.indentLevel++;
                 var element = _doNotMergeMaterials.GetElementOf(group.Key);
                 var fieldPosition = EditorGUILayout.GetControlRect();
-                var label = new GUIContent(CL4EE.Tr("MergeSkinnedMesh:label:Merge"));
+                var label = new GUIContent(AAOL10N.Tr("MergeSkinnedMesh:label:Merge"));
                 using (new PrefabSafeSet.PropertyScope<Material>(element, fieldPosition, label))
                     element.SetExistence(!EditorGUI.ToggleLeft(fieldPosition, label, !element.Contains));
 
-                EditorGUILayout.LabelField(CL4EE.Tr("MergeSkinnedMesh:label:Renderers"));
+                EditorGUILayout.LabelField(AAOL10N.Tr("MergeSkinnedMesh:label:Renderers"));
                 EditorGUI.indentLevel++;
                 EditorGUI.BeginDisabledGroup(true);
                 foreach (var (_, rendererIndex, _) in group)

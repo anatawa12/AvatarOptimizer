@@ -22,7 +22,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                     if (makeChildren.executeEarly != _early) continue;
                     foreach (var makeChildrenChild in makeChildren.children.GetAsSet().Where(x => x))
                         makeChildrenChild.parent = makeChildren.transform;
-                    Object.DestroyImmediate(makeChildren);
+                    DestroyTracker.DestroyImmediate(makeChildren);
                 }
             }
         }

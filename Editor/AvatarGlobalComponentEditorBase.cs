@@ -1,4 +1,3 @@
-using CustomLocalization4EditorExtension;
 using UnityEditor;
 using UnityEngine;
 
@@ -15,11 +14,11 @@ namespace Anatawa12.AvatarOptimizer
         {
 #if AAO_VRCSDK3_AVATARS
             if (!((Component)serializedObject.targetObject).GetComponent<VRCAvatarDescriptor>())
-                EditorGUILayout.HelpBox(CL4EE.Tr("AvatarGlobalComponent:NotOnAvatarDescriptor"),
+                EditorGUILayout.HelpBox(AAOL10N.Tr("AvatarGlobalComponent:NotOnAvatarDescriptor"),
                     MessageType.Error);
 #else
             if (!nadena.dev.ndmf.runtime.RuntimeUtil.IsAvatarRoot(((Component)serializedObject.targetObject).transform))
-                EditorGUILayout.HelpBox(CL4EE.Tr("AvatarGlobalComponent:NotOnAvatarRoot"),
+                EditorGUILayout.HelpBox(AAOL10N.Tr("AvatarGlobalComponent:NotOnAvatarRoot"),
                     MessageType.Error);
 #endif
         }

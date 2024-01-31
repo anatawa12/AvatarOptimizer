@@ -1,4 +1,3 @@
-using CustomLocalization4EditorExtension;
 using Unity.Collections;
 using UnityEditor;
 using UnityEngine;
@@ -37,8 +36,8 @@ namespace Anatawa12.AvatarOptimizer
                 EditorGUI.BeginDisabledGroup(true);
                 EditorGUILayout.ToggleLeft(
                     new GUIContent(
-                        CL4EE.Tr("RemoveMeshByBlendShape:editor:automaticallySetWeightWhenToggle"),
-                        CL4EE.Tr("RemoveMeshByBlendShape:tooltip:automaticallySetWeightWhenToggle:noRenderer")
+                        AAOL10N.Tr("RemoveMeshByBlendShape:editor:automaticallySetWeightWhenToggle"),
+                        AAOL10N.Tr("RemoveMeshByBlendShape:tooltip:automaticallySetWeightWhenToggle:noRenderer")
                     ),
                     false);
                 automaticallySetWeightWhenToggle = false;
@@ -48,8 +47,8 @@ namespace Anatawa12.AvatarOptimizer
                 EditorGUI.BeginDisabledGroup(!_renderer || !_renderer.sharedMesh);
                 EditorGUILayout.ToggleLeft(
                         new GUIContent(
-                            CL4EE.Tr("RemoveMeshByBlendShape:editor:automaticallySetWeightWhenToggle"),
-                            CL4EE.Tr("RemoveMeshByBlendShape:tooltip:automaticallySetWeightWhenToggle:noMesh")
+                            AAOL10N.Tr("RemoveMeshByBlendShape:editor:automaticallySetWeightWhenToggle"),
+                            AAOL10N.Tr("RemoveMeshByBlendShape:tooltip:automaticallySetWeightWhenToggle:noMesh")
                             ),
                         false);
                 automaticallySetWeightWhenToggle = false;
@@ -60,8 +59,8 @@ namespace Anatawa12.AvatarOptimizer
                 automaticallySetWeightWhenToggle =
                     EditorGUILayout.ToggleLeft(
                         new GUIContent(
-                            CL4EE.Tr("RemoveMeshByBlendShape:editor:automaticallySetWeightWhenToggle"),
-                            CL4EE.Tr("RemoveMeshByBlendShape:tooltip:automaticallySetWeightWhenToggle")
+                            AAOL10N.Tr("RemoveMeshByBlendShape:editor:automaticallySetWeightWhenToggle"),
+                            AAOL10N.Tr("RemoveMeshByBlendShape:tooltip:automaticallySetWeightWhenToggle")
                         ),
                         automaticallySetWeightWhenToggle);
             }
@@ -110,13 +109,13 @@ namespace Anatawa12.AvatarOptimizer
 
             using (new GUILayout.HorizontalScope())
             {
-                if (GUILayout.Button(CL4EE.Tr("RemoveMeshByBlendShape:button:Check All")))
+                if (GUILayout.Button(AAOL10N.Tr("RemoveMeshByBlendShape:button:Check All")))
                 {
                     foreach (var (shapeKeyName, _) in shapes)
                         _shapeKeysSet.GetElementOf(shapeKeyName).EnsureAdded();
                 }
                 
-                if (GUILayout.Button(CL4EE.Tr("RemoveMeshByBlendShape:button:Invert All")))
+                if (GUILayout.Button(AAOL10N.Tr("RemoveMeshByBlendShape:button:Invert All")))
                 {
                     foreach (var (shapeKeyName, _) in shapes)
                     {

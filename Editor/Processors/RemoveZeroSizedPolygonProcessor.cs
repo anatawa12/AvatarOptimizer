@@ -16,7 +16,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 var mesh = removeZeroSizedPolygon.GetComponent<SkinnedMeshRenderer>();
                 if (!mesh) continue;
                 Process(context.GetMeshInfoFor(mesh), removeZeroSizedPolygon);
-                Object.DestroyImmediate(removeZeroSizedPolygon);
+                DestroyTracker.DestroyImmediate(removeZeroSizedPolygon);
             }
         }
 

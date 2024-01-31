@@ -11,6 +11,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         public bool RemoveUnusedObjects;
         public bool RemoveZeroSizedPolygon;
         public bool OptimizePhysBone;
+        public bool OptimizeAnimator;
         public bool MmdWorldCompatibility = true;
 
         public bool PreserveEndBone;
@@ -22,6 +23,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         public bool SkipFreezingMeaninglessBlendShape;
         public bool SkipIsAnimatedOptimization;
         public bool SkipMergePhysBoneCollider;
+        public bool SkipEntryExitToBlendTree;
+        public bool SkipRemoveUnusedAnimatingProperties;
+        public bool SkipMergeDirectBlendTreeLayers;
+        public bool SkipRemoveMeaninglessAnimatorLayer;
 
         public Dictionary<SkinnedMeshRenderer, HashSet<string>> PreserveBlendShapes =
             new Dictionary<SkinnedMeshRenderer, HashSet<string>>();
@@ -32,6 +37,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             RemoveUnusedObjects = config.removeUnusedObjects;
             RemoveZeroSizedPolygon = config.removeZeroSizedPolygons;
             OptimizePhysBone = config.optimizePhysBone;
+            OptimizeAnimator = config.optimizeAnimator;
             MmdWorldCompatibility = config.mmdWorldCompatibility;
 
             PreserveEndBone = config.preserveEndBone;
@@ -44,6 +50,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             SkipFreezingMeaninglessBlendShape = config.advancedSettings.skipFreezingMeaninglessBlendShape;
             SkipIsAnimatedOptimization = config.advancedSettings.skipIsAnimatedOptimization;
             SkipMergePhysBoneCollider = config.advancedSettings.skipMergePhysBoneCollider;
+            SkipEntryExitToBlendTree = config.advancedSettings.skipEntryExitToBlendTree;
+            SkipRemoveUnusedAnimatingProperties = config.advancedSettings.skipRemoveUnusedAnimatingProperties;
+            SkipMergeDirectBlendTreeLayers = config.advancedSettings.skipMergeDirectBlendTreeLayers;
+            SkipRemoveMeaninglessAnimatorLayer = config.advancedSettings.skipRemoveMeaninglessAnimatorLayer;
 
             Enabled = true;
         }
@@ -58,7 +68,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             var config = context.AvatarRootObject.GetComponent<TraceAndOptimize>();
             if (config)
                 context.GetState<TraceAndOptimizeState>().Initialize(config);
-            Object.DestroyImmediate(config);
+            DestroyTracker.DestroyImmediate(config);
         }
     }
 

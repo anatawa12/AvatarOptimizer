@@ -1,5 +1,3 @@
-using System;
-using CustomLocalization4EditorExtension;
 using UnityEditor;
 
 namespace Anatawa12.AvatarOptimizer
@@ -22,7 +20,7 @@ namespace Anatawa12.AvatarOptimizer
             EditorGUILayout.PropertyField(_executeEarly);
             if (_executeEarly.boolValue)
             {
-                EditorGUILayout.HelpBox(CL4EE.Tr("MakeChildren:executeEarly does not support animation"), MessageType.Warning);
+                EditorGUILayout.HelpBox(AAOL10N.Tr("MakeChildren:executeEarly does not support animation"), MessageType.Warning);
             }
             EditorGUILayout.PropertyField(_children);
             serializedObject.ApplyModifiedProperties();

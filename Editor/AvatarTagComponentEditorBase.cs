@@ -1,4 +1,3 @@
-using CustomLocalization4EditorExtension;
 using JetBrains.Annotations;
 using UnityEditor;
 
@@ -8,7 +7,7 @@ namespace Anatawa12.AvatarOptimizer
     {
         public sealed override void OnInspectorGUI()
         {
-            CL4EE.DrawLanguagePicker();
+            AAOL10N.DrawLanguagePicker();
 
             var description = Description;
             if (!string.IsNullOrEmpty(description))
@@ -25,7 +24,7 @@ namespace Anatawa12.AvatarOptimizer
             {
                 if (_descriptionKey == null)
                     _descriptionKey = $"{serializedObject.targetObject.GetType().Name}:description";
-                return CL4EE.GetLocalization()?.TryTr(_descriptionKey);
+                return AAOL10N.TryTr(_descriptionKey);
             }
         }
 

@@ -1,4 +1,3 @@
-using CustomLocalization4EditorExtension;
 using UnityEditor;
 using UnityEngine;
 
@@ -39,13 +38,13 @@ namespace Anatawa12.AvatarOptimizer
 
             using (new GUILayout.HorizontalScope())
             {
-                if (GUILayout.Button(CL4EE.Tr("FreezeBlendShape:button:Check All")))
+                if (GUILayout.Button(AAOL10N.Tr("FreezeBlendShape:button:Check All")))
                 {
                     foreach (var (shapeKeyName, _) in shapes)
                         _shapeKeysSet.GetElementOf(shapeKeyName).EnsureAdded();
                 }
                 
-                if (GUILayout.Button(CL4EE.Tr("FreezeBlendShape:button:Invert All")))
+                if (GUILayout.Button(AAOL10N.Tr("FreezeBlendShape:button:Invert All")))
                 {
                     foreach (var (shapeKeyName, _) in shapes)
                     {

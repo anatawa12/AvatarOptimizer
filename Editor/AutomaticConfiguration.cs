@@ -1,4 +1,3 @@
-using CustomLocalization4EditorExtension;
 using UnityEditor;
 using UnityEngine;
 
@@ -12,6 +11,9 @@ namespace Anatawa12.AvatarOptimizer
         private SerializedProperty _preserveEndBone;
         private SerializedProperty _removeZeroSizedPolygons;
         private SerializedProperty _optimizePhysBone;
+        private SerializedProperty _optimizeAnimator;
+        private SerializedProperty _animatorOptimizerEnabled;
+        private SerializedProperty _animatorOptimizerEnd;
         private SerializedProperty _mmdWorldCompatibility;
         private SerializedProperty _advancedSettings;
         private GUIContent _advancedSettingsLabel = new GUIContent();
@@ -23,6 +25,7 @@ namespace Anatawa12.AvatarOptimizer
             _preserveEndBone = serializedObject.FindProperty(nameof(TraceAndOptimize.preserveEndBone));
             _removeZeroSizedPolygons = serializedObject.FindProperty(nameof(TraceAndOptimize.removeZeroSizedPolygons));
             _optimizePhysBone = serializedObject.FindProperty(nameof(TraceAndOptimize.optimizePhysBone));
+            _optimizeAnimator = serializedObject.FindProperty(nameof(TraceAndOptimize.optimizeAnimator));
             _mmdWorldCompatibility = serializedObject.FindProperty(nameof(TraceAndOptimize.mmdWorldCompatibility));
             _advancedSettings = serializedObject.FindProperty(nameof(TraceAndOptimize.advancedSettings));
         }
@@ -45,12 +48,13 @@ namespace Anatawa12.AvatarOptimizer
             }
             EditorGUILayout.PropertyField(_removeZeroSizedPolygons);
             EditorGUILayout.PropertyField(_optimizePhysBone);
+            EditorGUILayout.PropertyField(_optimizeAnimator);
 
-            _advancedSettingsLabel.text = CL4EE.Tr("TraceAndOptimize:prop:advancedSettings");
+            _advancedSettingsLabel.text = AAOL10N.Tr("TraceAndOptimize:prop:advancedSettings");
             if (EditorGUILayout.PropertyField(_advancedSettings, _advancedSettingsLabel, false))
             {
                 EditorGUI.indentLevel++;
-                EditorGUILayout.HelpBox(CL4EE.Tr("TraceAndOptimize:warn:advancedSettings"), MessageType.Warning);
+                EditorGUILayout.HelpBox(AAOL10N.Tr("TraceAndOptimize:warn:advancedSettings"), MessageType.Warning);
                 var iterator = _advancedSettings.Copy();
                 var enterChildren = true;
                 while (iterator.NextVisible(enterChildren))
