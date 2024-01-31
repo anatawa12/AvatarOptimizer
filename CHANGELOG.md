@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Some features are not working well if `Trace and Optimize` is not attached `#876`
 
 ### Security
 
