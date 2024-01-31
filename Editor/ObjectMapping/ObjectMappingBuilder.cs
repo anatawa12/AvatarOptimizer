@@ -361,6 +361,11 @@ namespace Anatawa12.AvatarOptimizer
 
             public void ImportProperty(string prop, RootPropModNode<Object> node) =>
                 GetProperty(prop).ImportProperty(node);
+            
+            public override IEnumerable<(string, RootPropModNode<float>)> AllFloatProperties =>
+                _afterPropertyIds
+                    .Where(x => x.Value.FloatNode != null)
+                    .Select(x => (x.Key, x.Value.FloatNode));
         }
     }
 
@@ -373,5 +378,6 @@ namespace Anatawa12.AvatarOptimizer
         public abstract bool ContainsFloat(string property);
         public abstract bool TryGetFloat(string propertyName, out RootPropModNode<float> animation);
         public abstract void AddModification(string prop, ComponentPropModNodeBase<float> node, bool alwaysApplied);
+        public abstract IEnumerable<(string, RootPropModNode<float>)> AllFloatProperties { get; }
     }
 }
