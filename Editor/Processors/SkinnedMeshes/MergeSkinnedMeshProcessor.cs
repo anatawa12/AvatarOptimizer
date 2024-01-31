@@ -287,9 +287,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         private void MaterialParameterAnimationWarnings(MeshInfo2[] sourceRenderers, BuildContext context)
         {
-            // TODO: filter by shaders. If some animation only affects to some shaders and not affects to others, it's not a problem.
-
             var properties = new Dictionary<string, List<(RootPropModNode<float>, MeshInfo2)>>();
+            var materialByMeshInfo2 = new List<(MeshInfo2 meshInfo2, List<Material> materials)>();
             foreach (var meshInfo2 in sourceRenderers)
             {
                 var component = context.GetAnimationComponent(meshInfo2.SourceRenderer);
@@ -303,30 +302,39 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
                     list.Add((property, meshInfo2));
                 }
+                var materials = new List<Material>();
+                for (var i = 0; i < meshInfo2.SubMeshes.Count; i++)
+                {
+                    if (component.TryGetObject($"m_Materials.Array.data[{i}]", out var objectNode))
+                        materials.AddRange(objectNode.Value.PossibleValues?.OfType<Material>().Where(x => x) ??
+                                           Enumerable.Empty<Material>());
+                    if (meshInfo2.SubMeshes[i].SharedMaterial)
+                        materials.Add(meshInfo2.SubMeshes[i].SharedMaterial);
+                }
+                materialByMeshInfo2.Add((meshInfo2, materials));
             }
 
             foreach (var (propertyName, animatingProperties) in properties)
             {
-                bool animatedPartially;
-                if (sourceRenderers.Length == animatingProperties.Count)
-                {
-                    var rendererBySource = new Dictionary<AnimationLocation, List<MeshInfo2>>();
+                var rendererBySource = new Dictionary<AnimationLocation, HashSet<MeshInfo2>>();
 
-                    foreach (var (property, renderer) in animatingProperties)
-                    foreach (var animationLocation in AnimationLocation.CollectAnimationLocation(property))
-                    {
-                        if (!rendererBySource.TryGetValue(animationLocation, out List<MeshInfo2> renderers))
-                            rendererBySource.Add(animationLocation, renderers = new List<MeshInfo2>());
-                        renderers.Add(renderer);
-                    }
-
-                    animatedPartially = rendererBySource.Values
-                        .Any(renderersCount => renderersCount.Count != sourceRenderers.Length);
-                }
-                else
+                foreach (var (property, renderer) in animatingProperties)
+                foreach (var animationLocation in AnimationLocation.CollectAnimationLocation(property))
                 {
-                    animatedPartially = true;
+                    if (!rendererBySource.TryGetValue(animationLocation, out HashSet<MeshInfo2> renderers))
+                        rendererBySource.Add(animationLocation, renderers = new HashSet<MeshInfo2>());
+                    renderers.Add(renderer);
                 }
+
+                var animatedPartially = rendererBySource.Values.Any(renderers =>
+                {
+                    return materialByMeshInfo2
+                            .Where(x => !renderers.Contains(x.Item1))
+                            .SelectMany(x => x.materials.Select(material => (x.meshInfo2, material)))
+                            .Any(x => ShaderKnowledge.IsParameterAnimationAffected(x.material, x.meshInfo2,
+                                propertyName))
+                        ;
+                });
 
                 if (animatedPartially)
                     BuildLog.LogWarning("MergeSkinnedMesh:warning:material-animation-differently", propertyName,

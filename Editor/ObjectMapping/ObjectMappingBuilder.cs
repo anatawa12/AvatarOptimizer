@@ -228,6 +228,12 @@ namespace Anatawa12.AvatarOptimizer
                 if (_floatNode == null) _floatNode = new RootPropModNode<float>();
                 _floatNode.Add(node, alwaysApplied);
             }
+            
+            public void AddModification(ComponentPropModNodeBase<Object> node, bool alwaysApplied)
+            {
+                if (_objectNode == null) _objectNode = new RootPropModNode<Object>();
+                _objectNode.Add(node, alwaysApplied);
+            }
         }
 
         class BuildingComponentInfo : AnimationComponentInfo
@@ -366,6 +372,26 @@ namespace Anatawa12.AvatarOptimizer
                 _afterPropertyIds
                     .Where(x => x.Value.FloatNode != null)
                     .Select(x => (x.Key, x.Value.FloatNode));
+            
+            public override bool ContainsObject(string property) =>
+                _afterPropertyIds.TryGetValue(property, out var info) && info.ObjectNode != null;
+
+            public override bool TryGetObject(string propertyName, out RootPropModNode<Object> animation)
+            {
+                animation = default;
+                if (!_afterPropertyIds.TryGetValue(propertyName, out var info))
+                    return false;
+                animation = info.ObjectNode;
+                return animation != null;
+            }
+
+            public override void AddModification(string prop, ComponentPropModNodeBase<Object> node, bool alwaysApplied) =>
+                GetProperty(prop).AddModification(node, alwaysApplied);
+
+            public override IEnumerable<(string, RootPropModNode<Object>)> AllObjectProperties =>
+                _afterPropertyIds
+                    .Where(x => x.Value.ObjectNode != null)
+                    .Select(x => (x.Key, x.Value.ObjectNode));
         }
     }
 
@@ -379,5 +405,10 @@ namespace Anatawa12.AvatarOptimizer
         public abstract bool TryGetFloat(string propertyName, out RootPropModNode<float> animation);
         public abstract void AddModification(string prop, ComponentPropModNodeBase<float> node, bool alwaysApplied);
         public abstract IEnumerable<(string, RootPropModNode<float>)> AllFloatProperties { get; }
+
+        public abstract bool ContainsObject(string property);
+        public abstract bool TryGetObject(string propertyName, out RootPropModNode<Object> animation);
+        public abstract void AddModification(string prop, ComponentPropModNodeBase<Object> node, bool alwaysApplied);
+        public abstract IEnumerable<(string, RootPropModNode<Object>)> AllObjectProperties { get; }
     }
 }
