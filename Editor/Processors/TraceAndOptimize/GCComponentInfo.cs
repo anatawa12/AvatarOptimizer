@@ -66,7 +66,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         /// <summary>
         /// True if activeness of this component has meaning
         /// </summary>
-        public bool BehaviourComponent = false;
+        public bool BehaviourComponent => _behaviourComponent || HeavyBehaviourComponent;
 
         /// <summary>
         /// Dependencies of this component
@@ -105,6 +105,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         public bool IsEntrypoint => EntrypointComponent && Activeness != false;
 
         public readonly bool? Activeness;
+        private bool _behaviourComponent = false;
 
         public GCComponentInfo(Component component, bool? activeness)
         {
@@ -116,7 +117,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         public void MarkEntrypoint() => EntrypointComponent = true;
         public void MarkHeavyBehaviour() => HeavyBehaviourComponent = true;
-        public void MarkBehaviour() => BehaviourComponent = true;
+        public void MarkBehaviour() => _behaviourComponent = true;
 
         [Flags]
         public enum DependencyType : byte
