@@ -11,6 +11,11 @@ using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 {
+     interface IPropModNode
+    {
+        bool AppliedAlways { get; }
+    }
+
     /// <summary>
     /// This class represents a node in the property modification tree.
     ///
@@ -21,7 +26,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
     ///
     /// Most nodes are immutable but some nodes are mutable.
     /// </summary>
-    internal abstract class PropModNode<T> : IErrorContext
+    internal abstract class PropModNode<T> : IErrorContext, IPropModNode
     {
         /// <summary>
         /// Returns true if this node is always applied. For inactive nodes, this returns false.
@@ -151,8 +156,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                     case AnimatorWeightState.EitherZeroOrOne:
                         if (!(layer.Node.Value.PossibleValues is T[] otherValues)) return ValueInfo<T>.Variable;
 
-                        if (layer.Node.AppliedAlways && layer.Weight == AnimatorWeightState.AlwaysOne &&
-                            layer.BlendingMode == AnimatorLayerBlendingMode.Override)
+                        if (layer.IsAlwaysOverride())
                         {
                             // the layer is always applied at the highest property.
                             return new ValueInfo<T>(otherValues);
@@ -170,27 +174,51 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
             return new ValueInfo<T>(allPossibleValues.ToArray());
         }
+
+        public static bool IsAlwaysOverride<TLayer>(this TLayer layer)
+            where TLayer : ILayer
+        {
+            return layer.Node.AppliedAlways && layer.Weight == AnimatorWeightState.AlwaysOne &&
+                   layer.BlendingMode == AnimatorLayerBlendingMode.Override;
+        }
+
+        public static IEnumerable<TLayer> WhileApplied<TLayer>(this IEnumerable<TLayer> layer)
+        where TLayer : ILayer
+        {
+            foreach (var layerInfo in layer)
+            {
+                yield return layerInfo;
+                if (layerInfo.IsAlwaysOverride()) yield break;
+            }
+        }
     }
 
-    internal interface ILayer<T>
+    interface ILayer
     {
         AnimatorWeightState Weight { get; }
         AnimatorLayerBlendingMode BlendingMode { get; }
-        PropModNode<T> Node { get; }
+        IPropModNode Node { get; }
+    }
+
+    internal interface ILayer<T> : ILayer
+    {
+        new AnimatorWeightState Weight { get; }
+        new AnimatorLayerBlendingMode BlendingMode { get; }
+        new PropModNode<T> Node { get; }
     }
 
     internal sealed class RootPropModNode<T> : PropModNode<T>, IErrorContext
     {
         readonly struct ComponentInfo
         {
-            public readonly ComponentPropModNode<T> Node;
+            public readonly ComponentPropModNodeBase<T> Node;
             public readonly bool AlwaysApplied;
 
             public bool AppliedAlways => AlwaysApplied && Node.AppliedAlways;
             public IEnumerable<ObjectReference> ContextReferences => Node.ContextReferences;
             public Component Component => Node.Component;
 
-            public ComponentInfo(ComponentPropModNode<T> node, bool alwaysApplied)
+            public ComponentInfo(ComponentPropModNodeBase<T> node, bool alwaysApplied)
             {
                 Node = node;
                 AlwaysApplied = alwaysApplied;
@@ -206,8 +234,9 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         public bool IsEmpty => _children.Count == 0;
 
         public IEnumerable<Component> SourceComponents => _children.Select(x => x.Component);
+        public IEnumerable<ComponentPropModNodeBase<T>> ComponentNodes => _children.Select(x => x.Node);
 
-        public void Add(ComponentPropModNode<T> node, bool alwaysApplied)
+        public void Add(ComponentPropModNodeBase<T> node, bool alwaysApplied)
         {
             _children.Add(new ComponentInfo(node, alwaysApplied));
             DestroyTracker.Track(node.Component, OnDestroy);
@@ -326,11 +355,11 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
     internal class BlendTreeNode<T> : ImmutablePropModNode<T>
     {
-        private readonly IEnumerable<ImmutablePropModNode<T>> _children;
+        private readonly List<ImmutablePropModNode<T>> _children;
         private readonly BlendTreeType _blendTreeType;
         private readonly bool _partial;
 
-        public BlendTreeNode(IEnumerable<ImmutablePropModNode<T>> children, BlendTreeType blendTreeType, bool partial)
+        public BlendTreeNode(List<ImmutablePropModNode<T>> children, BlendTreeType blendTreeType, bool partial)
         {
             // expected to pass list or array
             // ReSharper disable once PossibleMultipleEnumeration
@@ -343,7 +372,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
 
         private bool WeightSumIsOne => _blendTreeType != BlendTreeType.Direct;
-
+        public IReadOnlyList<ImmutablePropModNode<T>> Children => _children;
         public override bool AppliedAlways => WeightSumIsOne && !_partial && _children.All(x => x.AppliedAlways);
         public override ValueInfo<T> Value => !WeightSumIsOne
             ? ValueInfo<T>.Variable
@@ -353,9 +382,9 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             _children.SelectMany(x => x.ContextReferences);
     }
 
-    abstract class ComponentPropModNode<T> : PropModNode<T>
+    abstract class ComponentPropModNodeBase<T> : PropModNode<T>
     {
-        protected ComponentPropModNode([NotNull] Component component)
+        protected ComponentPropModNodeBase([NotNull] Component component)
         {
             if (!component) throw new ArgumentNullException(nameof(component));
             Component = component;
@@ -366,7 +395,21 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         public override IEnumerable<ObjectReference> ContextReferences => new [] { ObjectRegistry.GetReference(Component) };
     }
 
-    class VariableComponentPropModNode<T> : ComponentPropModNode<T>
+    abstract class ComponentPropModNode<T, TComponent> : ComponentPropModNodeBase<T>
+        where TComponent : Component
+    {
+        protected ComponentPropModNode([NotNull] TComponent component) : base(component)
+        {
+            if (!component) throw new ArgumentNullException(nameof(component));
+            Component = component;
+        }
+
+        public new TComponent Component { get; }
+
+        public override IEnumerable<ObjectReference> ContextReferences => new [] { ObjectRegistry.GetReference(Component) };
+    }
+
+    class VariableComponentPropModNode<T> : ComponentPropModNode<T, Component>
     {
         public VariableComponentPropModNode([NotNull] Component component) : base(component)
         {
@@ -376,11 +419,11 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         public override ValueInfo<T> Value => ValueInfo<T>.Variable;
     }
 
-    class AnimationComponentPropModNode<T> : ComponentPropModNode<T>
+    class AnimationComponentPropModNode<T> : ComponentPropModNode<T, Animation>
     {
         private readonly ImmutablePropModNode<T> _animation;
 
-        public AnimationComponentPropModNode([NotNull] Component component, ImmutablePropModNode<T> animation) : base(component)
+        public AnimationComponentPropModNode([NotNull] Animation component, ImmutablePropModNode<T> animation) : base(component)
         {
             _animation = animation;
             _constantInfo = new Lazy<ValueInfo<T>>(() => animation.Value, isThreadSafe: false);

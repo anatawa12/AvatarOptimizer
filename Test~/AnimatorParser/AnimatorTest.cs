@@ -296,7 +296,7 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
             AssertContainer(parsed, propertyName, property);
         }
 
-        private void AssertContainer(ImmutableNodeContainer parsed, string prop, Expected property)
+        private void AssertContainer(INodeContainer parsed, string prop, Expected property)
         {
             var pair = ((ComponentOrGameObject)_skinnedRenderer, prop);
             Assert.That(parsed.FloatNodes.Keys, Is.EquivalentTo(new[] { pair }));

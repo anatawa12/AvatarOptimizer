@@ -7,44 +7,102 @@ using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 {
-    static class NodesMerger
+    static partial class NodesMerger
     {
-        public static ImmutableNodeContainer Merge<Merge>(IEnumerable<ImmutableNodeContainer> sources, Merge merger)
-            where Merge : struct, IMergeProperty
+        public static TResultContainer Merge<
+            TResultContainer,
+            TResultFloatNode,
+            TResultObjectNode,
+
+            TIntermediateFloat,
+            TIntermediateObject,
+
+            TSource,
+            TSourceContainer,
+            TSourceFloatNode,
+            TSourceObjectNode,
+
+            TMerger
+        >(IEnumerable<TSource> sources, TMerger merger)
+            where TResultContainer : NodeContainerBase<TResultFloatNode, TResultObjectNode>
+            where TResultFloatNode : PropModNode<float>
+            where TResultObjectNode : PropModNode<Object>
+
+            where TSourceContainer : INodeContainer<TSourceFloatNode, TSourceObjectNode>
+
+            where TMerger : struct, IMergeProperty1<
+                TResultContainer, TResultFloatNode, TResultObjectNode,
+                TIntermediateFloat, TIntermediateObject,
+                TSource, TSourceContainer, TSourceFloatNode, TSourceObjectNode
+            >
         {
-            var floats = new Dictionary<(ComponentOrGameObject, string), List<ImmutablePropModNode<float>>>();
-            var objects = new Dictionary<(ComponentOrGameObject, string), List<ImmutablePropModNode<Object>>>();
+            var floats = new Dictionary<(ComponentOrGameObject, string), List<TIntermediateFloat>>();
+            var objects = new Dictionary<(ComponentOrGameObject, string), List<TIntermediateObject>>();
+            var index = 0;
             var sourceCount = 0;
 
-            foreach (var container in sources)
+            foreach (var source in sources)
             {
+                index++;
+                var container = merger.GetContainer(source);
+                if (container == null) continue;
                 sourceCount++;
-                foreach (var (key, value) in container.FloatNodes)
+                foreach (var (key, node) in container.FloatNodes)
                 {
                     if (!floats.TryGetValue(key, out var list))
-                        floats.Add(key, list = new List<ImmutablePropModNode<float>>());
-                    list.Add(value);
+                        floats.Add(key, list = new List<TIntermediateFloat>());
+                    list.Add(merger.GetIntermediate(source, node, index));
                 }
 
-                foreach (var (key, value) in container.ObjectNodes)
+                foreach (var (key, node) in container.ObjectNodes)
                 {
                     if (!objects.TryGetValue(key, out var list))
-                        objects.Add(key, list = new List<ImmutablePropModNode<Object>>());
-                    list.Add(value);
+                        objects.Add(key, list = new List<TIntermediateObject>());
+                    list.Add(merger.GetIntermediate(source, node, index));
                 }
             }
 
-            var nodes = new ImmutableNodeContainer();
+            var nodes = merger.CreateContainer();
 
             foreach (var ((target, prop), value) in floats)
-                nodes.Add(target, prop, merger.MergeNode(value, sourceCount));
+                if (merger.MergeNode(value, sourceCount) is TResultFloatNode merged)
+                    nodes.Add(target, prop, merged);
 
             foreach (var ((target, prop), value) in objects)
-                nodes.Add(target, prop, merger.MergeNode(value, sourceCount));
+                if (merger.MergeNode(value, sourceCount) is TResultObjectNode merged)
+                    nodes.Add(target, prop, merged);
 
             return nodes;
         }
+    }
 
+    interface IMergeProperty1 <
+        TResultContainer,
+        TResultFloatNode,
+        TResultObjectNode,
+
+        TIntermediateFloat,
+        TIntermediateObject,
+
+        TSource,
+        TSourceContainer,
+        TSourceFloatNode,
+        TSourceObjectNode
+    >
+    {
+        TResultContainer CreateContainer();
+
+        TSourceContainer GetContainer(TSource source);
+
+        TIntermediateFloat GetIntermediate(TSource source, TSourceFloatNode node, int index);
+        TIntermediateObject GetIntermediate(TSource source, TSourceObjectNode node, int index);
+
+        TResultFloatNode MergeNode(List<TIntermediateFloat> nodes, int sourceCount);
+        TResultObjectNode MergeNode(List<TIntermediateObject> nodes, int sourceCount);
+    }
+
+    static partial class NodesMerger 
+    {
         [CanBeNull]
         [ContractAnnotation("controller: null => null")]
         [ContractAnnotation("controller: notnull => notnull")]
@@ -58,13 +116,13 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             foreach (var ((target, prop), value) in controller.FloatNodes)
             {
                 animatorNodeContainer.Add(target, prop,
-                    new AnimatorPropModNode<float>(animator, new[] { new PlayableLayerNodeInfo<float>(value) }));
+                    new AnimatorPropModNode<float>(animator, new[] { new PlayableLayerNodeInfo<float>(value, 0) }));
             }
 
             foreach (var ((target, prop), value) in controller.ObjectNodes)
             {
                 animatorNodeContainer.Add(target, prop,
-                    new AnimatorPropModNode<Object>(animator, new[] { new PlayableLayerNodeInfo<Object>(value) }));
+                    new AnimatorPropModNode<Object>(animator, new[] { new PlayableLayerNodeInfo<Object>(value, 0) }));
             }
 
             return animatorNodeContainer;
@@ -92,89 +150,91 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
         public static ComponentNodeContainer ComponentFromPlayableLayers(Animator animator,
             IEnumerable<(AnimatorWeightState, AnimatorLayerBlendingMode, AnimatorControllerNodeContainer)>
-                playableLayers)
+                playableLayers) =>
+            Merge<
+                ComponentNodeContainer, ComponentPropModNodeBase<float>, ComponentPropModNodeBase<Object>,
+                PlayableLayerNodeInfo<float>, PlayableLayerNodeInfo<Object>,
+                (AnimatorWeightState, AnimatorLayerBlendingMode, AnimatorControllerNodeContainer),
+                AnimatorControllerNodeContainer, AnimatorControllerPropModNode<float>,
+                AnimatorControllerPropModNode<Object>,
+                PlayableLayerMerger
+            >(playableLayers, new PlayableLayerMerger(animator));
+
+        readonly struct PlayableLayerMerger : IMergeProperty1<
+            ComponentNodeContainer, ComponentPropModNodeBase<float>, ComponentPropModNodeBase<Object>,
+            PlayableLayerNodeInfo<float>, PlayableLayerNodeInfo<Object>,
+            (AnimatorWeightState, AnimatorLayerBlendingMode, AnimatorControllerNodeContainer),
+            AnimatorControllerNodeContainer, AnimatorControllerPropModNode<float>, AnimatorControllerPropModNode<Object>
+        >
         {
-            Dictionary<(ComponentOrGameObject target, string prop), List<PlayableLayerNodeInfo<float>>> floatNodes =
-                new Dictionary<(ComponentOrGameObject, string), List<PlayableLayerNodeInfo<float>>>();
-            Dictionary<(ComponentOrGameObject target, string prop), List<PlayableLayerNodeInfo<Object>>> objectNodes =
-                new Dictionary<(ComponentOrGameObject, string), List<PlayableLayerNodeInfo<Object>>>();
+            private readonly Animator _animator;
 
-            foreach (var (weight, mode, container) in playableLayers)
-            {
-                foreach (var (key, value) in container.FloatNodes)
-                {
-                    if (!floatNodes.TryGetValue(key, out var list))
-                        floatNodes.Add(key, list = new List<PlayableLayerNodeInfo<float>>());
-                    list.Add(new PlayableLayerNodeInfo<float>(weight, mode, value));
-                }
-                foreach (var (key, value) in container.ObjectNodes)
-                {
-                    if (!objectNodes.TryGetValue(key, out var list))
-                        objectNodes.Add(key, list = new List<PlayableLayerNodeInfo<Object>>());
-                    list.Add(new PlayableLayerNodeInfo<Object>(weight, mode, value));
-                }
-            }
+            public PlayableLayerMerger(Animator animator) => _animator = animator;
 
-            var animatorNodeContainer = new ComponentNodeContainer();
+            public ComponentNodeContainer CreateContainer() => new ComponentNodeContainer();
 
-            foreach (var ((target, prop), value) in floatNodes)
-            {
-                value.Reverse();
-                animatorNodeContainer.Add(target, prop, new AnimatorPropModNode<float>(animator, value));
-            }
-            foreach (var ((target, prop), value) in objectNodes)
-            {
-                value.Reverse();
-                animatorNodeContainer.Add(target, prop, new AnimatorPropModNode<Object>(animator, value));
-            }
+            public AnimatorControllerNodeContainer GetContainer(
+                (AnimatorWeightState, AnimatorLayerBlendingMode, AnimatorControllerNodeContainer) source) =>
+                source.Item3;
 
-            return animatorNodeContainer;
+            public PlayableLayerNodeInfo<float> GetIntermediate(
+                (AnimatorWeightState, AnimatorLayerBlendingMode, AnimatorControllerNodeContainer) source,
+                AnimatorControllerPropModNode<float> node, int index) =>
+                new PlayableLayerNodeInfo<float>(source.Item1, source.Item2, node, index);
+
+            public PlayableLayerNodeInfo<Object> GetIntermediate(
+                (AnimatorWeightState, AnimatorLayerBlendingMode, AnimatorControllerNodeContainer) source,
+                AnimatorControllerPropModNode<Object> node, int index) =>
+                new PlayableLayerNodeInfo<Object>(source.Item1, source.Item2, node, index);
+
+            public ComponentPropModNodeBase<float> MergeNode(List<PlayableLayerNodeInfo<float>> nodes, int sourceCount) =>
+                new AnimatorPropModNode<float>(_animator, nodes);
+
+            public ComponentPropModNodeBase<Object> MergeNode(List<PlayableLayerNodeInfo<Object>> nodes, int sourceCount) =>
+                new AnimatorPropModNode<Object>(_animator, nodes);
         }
 
         internal static AnimatorControllerNodeContainer AnimatorControllerFromAnimatorLayers(
-            IEnumerable<(AnimatorWeightState, AnimatorLayerBlendingMode, ImmutableNodeContainer)> layers)
+            IEnumerable<(AnimatorWeightState, AnimatorLayerBlendingMode, AnimatorLayerNodeContainer)> layers) =>
+            Merge<
+                AnimatorControllerNodeContainer, AnimatorControllerPropModNode<float>, AnimatorControllerPropModNode<Object>,
+                AnimatorLayerNodeInfo<float>, AnimatorLayerNodeInfo<Object>,
+                (AnimatorWeightState, AnimatorLayerBlendingMode, AnimatorLayerNodeContainer),
+                AnimatorLayerNodeContainer, AnimatorLayerPropModNode<float>, AnimatorLayerPropModNode<Object>,
+                AnimatorLayerMerger
+            >(layers, default);
+
+        private struct AnimatorLayerMerger : IMergeProperty1<
+            AnimatorControllerNodeContainer, AnimatorControllerPropModNode<float>, AnimatorControllerPropModNode<Object>
+            ,
+            AnimatorLayerNodeInfo<float>, AnimatorLayerNodeInfo<Object>,
+            (AnimatorWeightState, AnimatorLayerBlendingMode, AnimatorLayerNodeContainer),
+            AnimatorLayerNodeContainer, AnimatorLayerPropModNode<float>, AnimatorLayerPropModNode<Object>
+        >
         {
-            Dictionary<(ComponentOrGameObject target, string prop), List<AnimatorLayerNodeInfo<float>>> floatNodes =
-                new Dictionary<(ComponentOrGameObject, string), List<AnimatorLayerNodeInfo<float>>>();
-            Dictionary<(ComponentOrGameObject target, string prop), List<AnimatorLayerNodeInfo<Object>>> objectNodes =
-                new Dictionary<(ComponentOrGameObject, string), List<AnimatorLayerNodeInfo<Object>>>();
+            public AnimatorControllerNodeContainer CreateContainer() => new AnimatorControllerNodeContainer();
 
-            foreach (var (weightState, bendingMode, parsedLayer) in layers)
-            {
-                if (parsedLayer == null) continue;
-                foreach (var (key, value) in parsedLayer.FloatNodes)
-                {
-                    if (!floatNodes.TryGetValue(key, out var list))
-                        floatNodes.Add(key, list = new List<AnimatorLayerNodeInfo<float>>());
-                    list.Add(new AnimatorLayerNodeInfo<float>(weightState, bendingMode, value));
-                }
-                foreach (var (key, value) in parsedLayer.ObjectNodes)
-                {
-                    if (!objectNodes.TryGetValue(key, out var list))
-                        objectNodes.Add(key, list = new List<AnimatorLayerNodeInfo<Object>>());
-                    list.Add(new AnimatorLayerNodeInfo<Object>(weightState, bendingMode, value));
-                }
-            }
+            public AnimatorLayerNodeContainer GetContainer(
+                (AnimatorWeightState, AnimatorLayerBlendingMode, AnimatorLayerNodeContainer) source) =>
+                source.Item3;
 
-            var container = new AnimatorControllerNodeContainer();
+            public AnimatorLayerNodeInfo<float> GetIntermediate(
+                (AnimatorWeightState, AnimatorLayerBlendingMode, AnimatorLayerNodeContainer) source,
+                AnimatorLayerPropModNode<float> node, int index) =>
+                new AnimatorLayerNodeInfo<float>(source.Item1, source.Item2, node, index);
 
-            foreach (var ((target, prop), value) in floatNodes)
-            {
-                var node = AnimatorControllerPropModNode<float>.Create(value);
-                if (node != null) container.Add(target, prop, node);
-            }
-            foreach (var ((target, prop), value) in objectNodes)
-            {
-                var node = AnimatorControllerPropModNode<Object>.Create(value);
-                if (node != null) container.Add(target, prop, node);
-            }
+            public AnimatorLayerNodeInfo<Object> GetIntermediate(
+                (AnimatorWeightState, AnimatorLayerBlendingMode, AnimatorLayerNodeContainer) source,
+                AnimatorLayerPropModNode<Object> node, int index) =>
+                new AnimatorLayerNodeInfo<Object>(source.Item1, source.Item2, node, index);
 
-            return container;
+            public AnimatorControllerPropModNode<float> MergeNode(List<AnimatorLayerNodeInfo<float>> nodes,
+                int sourceCount) =>
+                AnimatorControllerPropModNode<float>.Create(nodes);
+
+            public AnimatorControllerPropModNode<Object> MergeNode(List<AnimatorLayerNodeInfo<Object>> nodes,
+                int sourceCount) =>
+                AnimatorControllerPropModNode<Object>.Create(nodes);
         }
-    }
-    
-    interface IMergeProperty
-    {
-        ImmutablePropModNode<T> MergeNode<T>(List<ImmutablePropModNode<T>> nodes, int sourceCount);
     }
 }

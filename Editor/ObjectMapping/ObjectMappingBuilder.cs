@@ -223,7 +223,7 @@ namespace Anatawa12.AvatarOptimizer
                 _objectNode = node;
             }
 
-            public void AddModification(ComponentPropModNode<float> node, bool alwaysApplied)
+            public void AddModification(ComponentPropModNodeBase<float> node, bool alwaysApplied)
             {
                 if (_floatNode == null) _floatNode = new RootPropModNode<float>();
                 _floatNode.Add(node, alwaysApplied);
@@ -353,7 +353,7 @@ namespace Anatawa12.AvatarOptimizer
                 return animation != null;
             }
 
-            public override void AddModification(string prop, ComponentPropModNode<float> node, bool alwaysApplied) =>
+            public override void AddModification(string prop, ComponentPropModNodeBase<float> node, bool alwaysApplied) =>
                 GetProperty(prop).AddModification(node, alwaysApplied);
 
             public void ImportProperty(string prop, RootPropModNode<float> node) =>
@@ -361,6 +361,11 @@ namespace Anatawa12.AvatarOptimizer
 
             public void ImportProperty(string prop, RootPropModNode<Object> node) =>
                 GetProperty(prop).ImportProperty(node);
+            
+            public override IEnumerable<(string, RootPropModNode<float>)> AllFloatProperties =>
+                _afterPropertyIds
+                    .Where(x => x.Value.FloatNode != null)
+                    .Select(x => (x.Key, x.Value.FloatNode));
         }
     }
 
@@ -372,6 +377,7 @@ namespace Anatawa12.AvatarOptimizer
         public abstract void RemoveProperty(string property);
         public abstract bool ContainsFloat(string property);
         public abstract bool TryGetFloat(string propertyName, out RootPropModNode<float> animation);
-        public abstract void AddModification(string prop, ComponentPropModNode<float> node, bool alwaysApplied);
+        public abstract void AddModification(string prop, ComponentPropModNodeBase<float> node, bool alwaysApplied);
+        public abstract IEnumerable<(string, RootPropModNode<float>)> AllFloatProperties { get; }
     }
 }
