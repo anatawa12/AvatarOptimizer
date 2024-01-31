@@ -58,13 +58,13 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             foreach (var ((target, prop), value) in controller.FloatNodes)
             {
                 animatorNodeContainer.Add(target, prop,
-                    new AnimatorPropModNode<float>(animator, new[] { new PlayableLayerNodeInfo<float>(value) }));
+                    new AnimatorPropModNode<float>(animator, new[] { new PlayableLayerNodeInfo<float>(value, 0) }));
             }
 
             foreach (var ((target, prop), value) in controller.ObjectNodes)
             {
                 animatorNodeContainer.Add(target, prop,
-                    new AnimatorPropModNode<Object>(animator, new[] { new PlayableLayerNodeInfo<Object>(value) }));
+                    new AnimatorPropModNode<Object>(animator, new[] { new PlayableLayerNodeInfo<Object>(value, 0) }));
             }
 
             return animatorNodeContainer;
@@ -99,20 +99,23 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             Dictionary<(ComponentOrGameObject target, string prop), List<PlayableLayerNodeInfo<Object>>> objectNodes =
                 new Dictionary<(ComponentOrGameObject, string), List<PlayableLayerNodeInfo<Object>>>();
 
+            var layerIndex = 0;
             foreach (var (weight, mode, container) in playableLayers)
             {
                 foreach (var (key, value) in container.FloatNodes)
                 {
                     if (!floatNodes.TryGetValue(key, out var list))
                         floatNodes.Add(key, list = new List<PlayableLayerNodeInfo<float>>());
-                    list.Add(new PlayableLayerNodeInfo<float>(weight, mode, value));
+                    list.Add(new PlayableLayerNodeInfo<float>(weight, mode, value, layerIndex));
                 }
                 foreach (var (key, value) in container.ObjectNodes)
                 {
                     if (!objectNodes.TryGetValue(key, out var list))
                         objectNodes.Add(key, list = new List<PlayableLayerNodeInfo<Object>>());
-                    list.Add(new PlayableLayerNodeInfo<Object>(weight, mode, value));
+                    list.Add(new PlayableLayerNodeInfo<Object>(weight, mode, value, layerIndex));
                 }
+
+                layerIndex++;
             }
 
             var animatorNodeContainer = new ComponentNodeContainer();
@@ -139,6 +142,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             Dictionary<(ComponentOrGameObject target, string prop), List<AnimatorLayerNodeInfo<Object>>> objectNodes =
                 new Dictionary<(ComponentOrGameObject, string), List<AnimatorLayerNodeInfo<Object>>>();
 
+            var layerIndex = 0;
             foreach (var (weightState, bendingMode, parsedLayer) in layers)
             {
                 if (parsedLayer == null) continue;
@@ -146,14 +150,16 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 {
                     if (!floatNodes.TryGetValue(key, out var list))
                         floatNodes.Add(key, list = new List<AnimatorLayerNodeInfo<float>>());
-                    list.Add(new AnimatorLayerNodeInfo<float>(weightState, bendingMode, value));
+                    list.Add(new AnimatorLayerNodeInfo<float>(weightState, bendingMode, value, layerIndex));
                 }
                 foreach (var (key, value) in parsedLayer.ObjectNodes)
                 {
                     if (!objectNodes.TryGetValue(key, out var list))
                         objectNodes.Add(key, list = new List<AnimatorLayerNodeInfo<Object>>());
-                    list.Add(new AnimatorLayerNodeInfo<Object>(weightState, bendingMode, value));
+                    list.Add(new AnimatorLayerNodeInfo<Object>(weightState, bendingMode, value, layerIndex));
                 }
+
+                layerIndex++;
             }
 
             var container = new AnimatorControllerNodeContainer();
