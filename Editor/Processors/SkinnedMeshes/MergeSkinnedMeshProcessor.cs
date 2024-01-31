@@ -81,7 +81,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             Profiler.EndSample();
 
             Profiler.BeginSample("Material / Shader Parameter Animation Warnings");
-            MaterialParameterAnimationWarnings(skinnedMeshRenderers.Concat<Renderer>(staticMeshRenderers).ToList(), context);
+            MaterialParameterAnimationWarnings(meshInfos, context);
             Profiler.EndSample();
 
             Profiler.BeginSample("Material Normal Configuration Check");
@@ -285,43 +285,43 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 #endif
         }
 
-        private void MaterialParameterAnimationWarnings(List<Renderer> sourceRenderers, BuildContext context)
+        private void MaterialParameterAnimationWarnings(MeshInfo2[] sourceRenderers, BuildContext context)
         {
             // TODO: filter by shaders. If some animation only affects to some shaders and not affects to others, it's not a problem.
 
-            var properties = new Dictionary<string, List<(RootPropModNode<float>, Renderer)>>();
-            foreach (var renderer in sourceRenderers)
+            var properties = new Dictionary<string, List<(RootPropModNode<float>, MeshInfo2)>>();
+            foreach (var meshInfo2 in sourceRenderers)
             {
-                var component = context.GetAnimationComponent(renderer);
+                var component = context.GetAnimationComponent(meshInfo2.SourceRenderer);
                 foreach (var (name, property) in component.AllFloatProperties)
                 {
                     if (!name.StartsWith("material.", StringComparison.Ordinal)) continue;
                     var materialPropertyName = name.Substring("material.".Length);
 
                     if (!properties.TryGetValue(materialPropertyName, out var list))
-                        properties.Add(materialPropertyName, list = new List<(RootPropModNode<float>, Renderer)>());
+                        properties.Add(materialPropertyName, list = new List<(RootPropModNode<float>, MeshInfo2)>());
 
-                    list.Add((property, renderer));
+                    list.Add((property, meshInfo2));
                 }
             }
 
             foreach (var (propertyName, animatingProperties) in properties)
             {
                 bool animatedPartially;
-                if (sourceRenderers.Count == animatingProperties.Count)
+                if (sourceRenderers.Length == animatingProperties.Count)
                 {
-                    var rendererBySource = new Dictionary<AnimationLocation, List<Renderer>>();
+                    var rendererBySource = new Dictionary<AnimationLocation, List<MeshInfo2>>();
 
                     foreach (var (property, renderer) in animatingProperties)
                     foreach (var animationLocation in AnimationLocation.CollectAnimationLocation(property))
                     {
-                        if (!rendererBySource.TryGetValue(animationLocation, out var renderers))
-                            rendererBySource.Add(animationLocation, renderers = new List<Renderer>());
+                        if (!rendererBySource.TryGetValue(animationLocation, out List<MeshInfo2> renderers))
+                            rendererBySource.Add(animationLocation, renderers = new List<MeshInfo2>());
                         renderers.Add(renderer);
                     }
 
                     animatedPartially = rendererBySource.Values
-                        .Any(renderersCount => renderersCount.Count != sourceRenderers.Count);
+                        .Any(renderersCount => renderersCount.Count != sourceRenderers.Length);
                 }
                 else
                 {
