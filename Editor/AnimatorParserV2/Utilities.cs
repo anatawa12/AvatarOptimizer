@@ -152,7 +152,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             IEnumerable<(AnimatorWeightState, AnimatorLayerBlendingMode, AnimatorControllerNodeContainer)>
                 playableLayers) =>
             Merge<
-                ComponentNodeContainer, ComponentPropModNode<float>, ComponentPropModNode<Object>,
+                ComponentNodeContainer, ComponentPropModNodeBase<float>, ComponentPropModNodeBase<Object>,
                 PlayableLayerNodeInfo<float>, PlayableLayerNodeInfo<Object>,
                 (AnimatorWeightState, AnimatorLayerBlendingMode, AnimatorControllerNodeContainer),
                 AnimatorControllerNodeContainer, AnimatorControllerPropModNode<float>,
@@ -161,7 +161,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             >(playableLayers, new PlayableLayerMerger(animator));
 
         readonly struct PlayableLayerMerger : IMergeProperty1<
-            ComponentNodeContainer, ComponentPropModNode<float>, ComponentPropModNode<Object>,
+            ComponentNodeContainer, ComponentPropModNodeBase<float>, ComponentPropModNodeBase<Object>,
             PlayableLayerNodeInfo<float>, PlayableLayerNodeInfo<Object>,
             (AnimatorWeightState, AnimatorLayerBlendingMode, AnimatorControllerNodeContainer),
             AnimatorControllerNodeContainer, AnimatorControllerPropModNode<float>, AnimatorControllerPropModNode<Object>
@@ -187,10 +187,10 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 AnimatorControllerPropModNode<Object> node, int index) =>
                 new PlayableLayerNodeInfo<Object>(source.Item1, source.Item2, node, index);
 
-            public ComponentPropModNode<float> MergeNode(List<PlayableLayerNodeInfo<float>> nodes, int sourceCount) =>
+            public ComponentPropModNodeBase<float> MergeNode(List<PlayableLayerNodeInfo<float>> nodes, int sourceCount) =>
                 new AnimatorPropModNode<float>(_animator, nodes);
 
-            public ComponentPropModNode<Object> MergeNode(List<PlayableLayerNodeInfo<Object>> nodes, int sourceCount) =>
+            public ComponentPropModNodeBase<Object> MergeNode(List<PlayableLayerNodeInfo<Object>> nodes, int sourceCount) =>
                 new AnimatorPropModNode<Object>(_animator, nodes);
         }
 

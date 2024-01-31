@@ -56,7 +56,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             }
         }
 
-        public void Add(Component component, string prop, ComponentPropModNode<float> node, bool alwaysApplied)
+        public void Add(Component component, string prop, ComponentPropModNodeBase<float> node, bool alwaysApplied)
         {
             var key = (component, prop);
             if (!FloatNodes.TryGetValue(key, out var root))
@@ -64,7 +64,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             root.Add(node, alwaysApplied);
         }
 
-        public void Add(Component component, string prop, ComponentPropModNode<Object> node, bool alwaysApplied)
+        public void Add(Component component, string prop, ComponentPropModNodeBase<Object> node, bool alwaysApplied)
         {
             var key = (component, prop);
             if (!_objectNodes.TryGetValue(key, out var root))
@@ -125,7 +125,8 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
     {
     }
 
-    internal class ComponentNodeContainer : NodeContainerBase<ComponentPropModNode<float>, ComponentPropModNode<Object>>
+    internal class ComponentNodeContainer
+        : NodeContainerBase<ComponentPropModNodeBase<float>, ComponentPropModNodeBase<Object>>
     {
     }
 

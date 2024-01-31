@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 {
-    class HumanoidAnimatorPropModNode : ComponentPropModNode<float>
+    class HumanoidAnimatorPropModNode : ComponentPropModNode<float, Animator>
     {
         public HumanoidAnimatorPropModNode([NotNull] Animator component) : base(component)
         {
@@ -45,7 +45,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         }
     }
 
-    class AnimatorPropModNode<T> : ComponentPropModNode<T>
+    class AnimatorPropModNode<T> : ComponentPropModNode<T, Animator>
     {
         private readonly IEnumerable<PlayableLayerNodeInfo<T>> _layersReversed;
 
