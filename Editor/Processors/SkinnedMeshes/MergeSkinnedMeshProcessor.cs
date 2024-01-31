@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Anatawa12.AvatarOptimizer.AnimatorParsersV2;
+using JetBrains.Annotations;
 using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEditor.Animations;
@@ -216,6 +218,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             var parents = new HashSet<Transform>(Target.transform.ParentEnumerable(context.AvatarRootTransform, includeMe: true));
 
+            Profiler.BeginSample("Material / Shader Parameter Animation Warnings");
+            MaterialParameterAnimationWarnings(skinnedMeshRenderers.Concat<Renderer>(staticMeshRenderers).ToList(), context);
+            Profiler.EndSample();
+
             Profiler.BeginSample("Postprocess Source Renderers");
             foreach (var renderer in skinnedMeshRenderers)
             {
@@ -277,6 +283,55 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 Profiler.EndSample();
             }
 #endif
+        }
+
+        private void MaterialParameterAnimationWarnings(List<Renderer> sourceRenderers, BuildContext context)
+        {
+            // TODO: filter by shaders. If some animation only affects to some shaders and not affects to others, it's not a problem.
+
+            var properties = new Dictionary<string, List<(RootPropModNode<float>, Renderer)>>();
+            foreach (var renderer in sourceRenderers)
+            {
+                var component = context.GetAnimationComponent(renderer);
+                foreach (var (name, property) in component.AllFloatProperties)
+                {
+                    if (!name.StartsWith("material.", StringComparison.Ordinal)) continue;
+                    var materialPropertyName = name.Substring("material.".Length);
+
+                    if (!properties.TryGetValue(materialPropertyName, out var list))
+                        properties.Add(materialPropertyName, list = new List<(RootPropModNode<float>, Renderer)>());
+
+                    list.Add((property, renderer));
+                }
+            }
+
+            foreach (var (propertyName, animatingProperties) in properties)
+            {
+                bool animatedPartially;
+                if (sourceRenderers.Count == animatingProperties.Count)
+                {
+                    var rendererBySource = new Dictionary<AnimationLocation, List<Renderer>>();
+
+                    foreach (var (property, renderer) in animatingProperties)
+                    foreach (var animationLocation in AnimationLocation.CollectAnimationLocation(property))
+                    {
+                        if (!rendererBySource.TryGetValue(animationLocation, out var renderers))
+                            rendererBySource.Add(animationLocation, renderers = new List<Renderer>());
+                        renderers.Add(renderer);
+                    }
+
+                    animatedPartially = rendererBySource.Values
+                        .Any(renderersCount => renderersCount.Count != sourceRenderers.Count);
+                }
+                else
+                {
+                    animatedPartially = true;
+                }
+
+                if (animatedPartially)
+                    BuildLog.LogWarning("MergeSkinnedMesh:warning:material-animation-differently", propertyName,
+                        Component);
+            }
         }
 
         private void ActivenessAnimationWarning(Renderer renderer, BuildContext context, HashSet<Transform> parents)
