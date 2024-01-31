@@ -314,6 +314,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 materialByMeshInfo2.Add((meshInfo2, materials));
             }
 
+            var animatedProperties = new List<string>();
+
             foreach (var (propertyName, animatingProperties) in properties)
             {
                 var rendererBySource = new Dictionary<AnimationLocation, HashSet<MeshInfo2>>();
@@ -337,9 +339,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 });
 
                 if (animatedPartially)
-                    BuildLog.LogWarning("MergeSkinnedMesh:warning:material-animation-differently", propertyName,
-                        Component);
+                    animatedProperties.Add(propertyName);
             }
+
+            if (animatedProperties.Count != 0)
+                BuildLog.LogWarning("MergeSkinnedMesh:warning:material-animation-differently",
+                    string.Join(",", animatedProperties), Component);
         }
 
         private void ActivenessAnimationWarning(Renderer renderer, BuildContext context, HashSet<Transform> parents)
