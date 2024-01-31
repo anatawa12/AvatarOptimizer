@@ -436,13 +436,36 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                     .Select(state => _animationParser.ParseMotion(root, layer.GetOverrideMotion(state), mapping));
             }
 
-            return NodesMerger.Merge(parsedMotions, default(LayerMerger));
+            return NodesMerger.Merge<
+                ImmutableNodeContainer, ImmutablePropModNode<float>, ImmutablePropModNode<Object>,
+                ImmutablePropModNode<float>, ImmutablePropModNode<Object>,
+                ImmutableNodeContainer, ImmutableNodeContainer, ImmutablePropModNode<float>, ImmutablePropModNode<Object>,
+                LayerMerger
+            >(parsedMotions, default);
         }
 
-        struct LayerMerger : IMergeProperty
+        struct LayerMerger : IMergeProperty1<
+            ImmutableNodeContainer, ImmutablePropModNode<float>, ImmutablePropModNode<Object>,
+            ImmutablePropModNode<float>, ImmutablePropModNode<Object>,
+            ImmutableNodeContainer, ImmutableNodeContainer, ImmutablePropModNode<float>, ImmutablePropModNode<Object>
+        >
         {
-            public ImmutablePropModNode<T> MergeNode<T>(List<ImmutablePropModNode<T>> nodes, int sourceCount) =>
-                new AnimatorLayerPropModNode<T>(nodes, nodes.Count != sourceCount);
+            public ImmutableNodeContainer CreateContainer() => new ImmutableNodeContainer();
+            public ImmutableNodeContainer GetContainer(ImmutableNodeContainer source) => source;
+
+            public ImmutablePropModNode<float> GetIntermediate(ImmutableNodeContainer source,
+                ImmutablePropModNode<float> node, int index) => node;
+
+            public ImmutablePropModNode<Object> GetIntermediate(ImmutableNodeContainer source,
+                ImmutablePropModNode<Object> node, int index) => node;
+
+            public ImmutablePropModNode<float>
+                MergeNode(List<ImmutablePropModNode<float>> nodes, int sourceCount) =>
+                new ImmutablePropModNode<float>(nodes, nodes.Count != sourceCount);
+
+            public ImmutablePropModNode<Object>
+                MergeNode(List<ImmutablePropModNode<Object>> nodes, int sourceCount) =>
+                new ImmutablePropModNode<Object>(nodes, nodes.Count != sourceCount);
         }
 
         AnimatorWeightState? GetWeightState(float weight, AnimatorWeightChange external)

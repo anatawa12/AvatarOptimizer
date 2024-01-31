@@ -7,34 +7,61 @@ using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 {
-    static class NodesMerger
+    static partial class NodesMerger
     {
-        public static ImmutableNodeContainer Merge<Merge>(IEnumerable<ImmutableNodeContainer> sources, Merge merger)
-            where Merge : struct, IMergeProperty
-        {
-            var floats = new Dictionary<(ComponentOrGameObject, string), List<ImmutablePropModNode<float>>>();
-            var objects = new Dictionary<(ComponentOrGameObject, string), List<ImmutablePropModNode<Object>>>();
-            var sourceCount = 0;
+        public static TResultContainer Merge<
+            TResultContainer,
+            TResultFloatNode,
+            TResultObjectNode,
 
-            foreach (var container in sources)
+            TIntermediateFloat,
+            TIntermediateObject,
+
+            TSource,
+            TSourceContainer,
+            TSourceFloatNode,
+            TSourceObjectNode,
+
+            TMerger
+        >(IEnumerable<TSource> sources, TMerger merger)
+            where TResultContainer : NodeContainerBase<TResultFloatNode, TResultObjectNode>
+            where TResultFloatNode : PropModNode<float>
+            where TResultObjectNode : PropModNode<Object>
+
+            where TSourceContainer : INodeContainer<TSourceFloatNode, TSourceObjectNode>
+
+            where TMerger : struct, IMergeProperty1<
+                TResultContainer, TResultFloatNode, TResultObjectNode,
+                TIntermediateFloat, TIntermediateObject,
+                TSource, TSourceContainer, TSourceFloatNode, TSourceObjectNode
+            >
+        {
+            var floats = new Dictionary<(ComponentOrGameObject, string), List<TIntermediateFloat>>();
+            var objects = new Dictionary<(ComponentOrGameObject, string), List<TIntermediateObject>>();
+            var index = 0;
+
+            foreach (var source in sources)
             {
-                sourceCount++;
-                foreach (var (key, value) in container.FloatNodes)
+                var container = merger.GetContainer(source);
+                index++;
+                foreach (var (key, node) in container.FloatNodes)
                 {
                     if (!floats.TryGetValue(key, out var list))
-                        floats.Add(key, list = new List<ImmutablePropModNode<float>>());
-                    list.Add(value);
+                        floats.Add(key, list = new List<TIntermediateFloat>());
+                    list.Add(merger.GetIntermediate(source, node, index));
                 }
 
-                foreach (var (key, value) in container.ObjectNodes)
+                foreach (var (key, node) in container.ObjectNodes)
                 {
                     if (!objects.TryGetValue(key, out var list))
-                        objects.Add(key, list = new List<ImmutablePropModNode<Object>>());
-                    list.Add(value);
+                        objects.Add(key, list = new List<TIntermediateObject>());
+                    list.Add(merger.GetIntermediate(source, node, index));
                 }
             }
 
-            var nodes = new ImmutableNodeContainer();
+            var sourceCount = index;
+
+            var nodes = merger.CreateContainer();
 
             foreach (var ((target, prop), value) in floats)
                 nodes.Add(target, prop, merger.MergeNode(value, sourceCount));
@@ -44,7 +71,35 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
             return nodes;
         }
+    }
 
+    interface IMergeProperty1 <
+        TResultContainer,
+        TResultFloatNode,
+        TResultObjectNode,
+
+        TIntermediateFloat,
+        TIntermediateObject,
+
+        TSource,
+        TSourceContainer,
+        TSourceFloatNode,
+        TSourceObjectNode
+    >
+    {
+        TResultContainer CreateContainer();
+
+        TSourceContainer GetContainer(TSource source);
+
+        TIntermediateFloat GetIntermediate(TSource source, TSourceFloatNode node, int index);
+        TIntermediateObject GetIntermediate(TSource source, TSourceObjectNode node, int index);
+
+        TResultFloatNode MergeNode(List<TIntermediateFloat> nodes, int sourceCount);
+        TResultObjectNode MergeNode(List<TIntermediateObject> nodes, int sourceCount);
+    }
+
+    static partial class NodesMerger 
+    {
         [CanBeNull]
         [ContractAnnotation("controller: null => null")]
         [ContractAnnotation("controller: notnull => notnull")]
@@ -177,10 +232,5 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
             return container;
         }
-    }
-    
-    interface IMergeProperty
-    {
-        ImmutablePropModNode<T> MergeNode<T>(List<ImmutablePropModNode<T>> nodes, int sourceCount);
     }
 }
