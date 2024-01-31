@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using JetBrains.Annotations;
 using nadena.dev.ndmf;
 using UnityEngine;
@@ -79,9 +80,18 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         [NotNull] internal readonly Dictionary<Component, DependencyType> DependantEntrypoint =
             new Dictionary<Component, DependencyType>();
 
+        /// <summary>
+        /// Dependants entrypoint components 
+        /// </summary>
+        [NotNull] internal readonly Dictionary<Component, DependencyType> DependantBehaviours =
+            new Dictionary<Component, DependencyType>();
+
+        internal IEnumerable<Component> DependantComponents =>
+            DependantEntrypoint.Keys.Concat(DependantBehaviours.Keys);
+
         internal readonly Component Component;
 
-        public DependencyType AllUsages
+        public DependencyType AllEntrypointUsages
         {
             get
             {
