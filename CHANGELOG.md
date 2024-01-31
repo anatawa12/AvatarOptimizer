@@ -15,6 +15,10 @@ The format is based on [Keep a Changelog].
     - Converts Entry / Exit to 1D BlendTree `#854` `#867`
     - Merges multiple Direct BlendTree to single Direct BlendTree `#870`
     - Removes meaningless Animator Layers `#870`
+- Warning for material animation in Merge Skinned Mesh `#769`
+  - Since first version of Merge Skinned Mesh, animating material properties differently is not supported (in other words, it might be broken).
+  - Since this version, AAO will warn for such a case.
+  - If you animated all materials from same animations, your animation will not be warned.
 
 ### Changed
 - MergePhysBone now corrects curve settings `#775`
