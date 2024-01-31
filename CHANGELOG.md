@@ -40,6 +40,10 @@ The format is based on [Keep a Changelog].
 
 ### Security
 
+## [1.6.6] - 2024-01-31
+### Fixed
+- Some features are not working well if `Trace and Optimize` is not attached [`#876`](https://github.com/anatawa12/AvatarOptimizer/pull/876)
+
 ## [1.6.5] - 2024-01-29
 ### Changed
 - AvatarOptimizer now uses ErrorReporting API of NDMF instead of our own API [`#805`](https://github.com/anatawa12/AvatarOptimizer/pull/805)
@@ -754,7 +758,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.5...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.6...HEAD
+[1.6.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.5...v1.6.6
 [1.6.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.4...v1.6.5
 [1.6.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.3...v1.6.4
 [1.6.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.2...v1.6.3

@@ -48,7 +48,7 @@ namespace Anatawa12.AvatarOptimizer.ndmf
                             ctx =>
                             {
                                 ctx.GetState<AAOEnabled>().Enabled =
-                                    ctx.AvatarRootObject.GetComponent<AvatarTagComponent>();
+                                    ctx.AvatarRootObject.GetComponentInChildren<AvatarTagComponent>();
                             })
                         .Then.Run("Validation", (ctx) => ComponentValidation.ValidateAll(ctx.AvatarRootObject))
                         .Then.Run(Processors.TraceAndOptimizes.LoadTraceAndOptimizeConfiguration.Instance)
