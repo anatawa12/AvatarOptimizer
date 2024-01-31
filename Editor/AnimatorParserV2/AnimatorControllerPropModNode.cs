@@ -24,6 +24,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         public AnimatorLayerBlendingMode BlendingMode { get; }
         public readonly AnimatorControllerPropModNode<T> Node;
         PropModNode<T> ILayer<T>.Node => Node;
+        IPropModNode ILayer.Node => Node;
 
         public PlayableLayerNodeInfo(AnimatorWeightState weight, AnimatorLayerBlendingMode blendingMode,
             AnimatorControllerPropModNode<T> node)
@@ -65,6 +66,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         private readonly Lazy<bool> _appliedAlways;
         private readonly Lazy<ValueInfo<T>> _constantInfo;
 
+        public IEnumerable<PlayableLayerNodeInfo<T>> LayersReversed => _layersReversed;
         public override bool AppliedAlways => _appliedAlways.Value;
         public override ValueInfo<T> Value => _constantInfo.Value;
         public override IEnumerable<ObjectReference> ContextReferences => base.ContextReferences.Concat(
@@ -77,6 +79,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         public AnimatorLayerBlendingMode BlendingMode { get; }
         public readonly ImmutablePropModNode<T> Node;
         PropModNode<T> ILayer<T>.Node => Node;
+        IPropModNode ILayer.Node => Node;
 
         public AnimatorLayerNodeInfo(AnimatorWeightState weight, AnimatorLayerBlendingMode blendingMode, ImmutablePropModNode<T> node)
         {
@@ -103,6 +106,8 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
         private AnimatorControllerPropModNode(IEnumerable<AnimatorLayerNodeInfo<T>> layersReversed) =>
             _layersReversed = layersReversed;
+
+        public IEnumerable<AnimatorLayerNodeInfo<T>> LayersReversed => _layersReversed;
 
         public override ValueInfo<T> Value =>
             NodeImplUtils.ConstantInfoForOverriding<T, AnimatorLayerNodeInfo<T>>(_layersReversed);

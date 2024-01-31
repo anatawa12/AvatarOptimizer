@@ -11,6 +11,11 @@ using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 {
+     interface IPropModNode
+    {
+        bool AppliedAlways { get; }
+    }
+
     /// <summary>
     /// This class represents a node in the property modification tree.
     ///
@@ -21,7 +26,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
     ///
     /// Most nodes are immutable but some nodes are mutable.
     /// </summary>
-    internal abstract class PropModNode<T> : IErrorContext
+    internal abstract class PropModNode<T> : IErrorContext, IPropModNode
     {
         /// <summary>
         /// Returns true if this node is always applied. For inactive nodes, this returns false.
@@ -151,8 +156,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                     case AnimatorWeightState.EitherZeroOrOne:
                         if (!(layer.Node.Value.PossibleValues is T[] otherValues)) return ValueInfo<T>.Variable;
 
-                        if (layer.Node.AppliedAlways && layer.Weight == AnimatorWeightState.AlwaysOne &&
-                            layer.BlendingMode == AnimatorLayerBlendingMode.Override)
+                        if (layer.IsAlwaysOverride())
                         {
                             // the layer is always applied at the highest property.
                             return new ValueInfo<T>(otherValues);
@@ -170,13 +174,37 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
             return new ValueInfo<T>(allPossibleValues.ToArray());
         }
+
+        public static bool IsAlwaysOverride<TLayer>(this TLayer layer)
+            where TLayer : ILayer
+        {
+            return layer.Node.AppliedAlways && layer.Weight == AnimatorWeightState.AlwaysOne &&
+                   layer.BlendingMode == AnimatorLayerBlendingMode.Override;
+        }
+
+        public static IEnumerable<TLayer> WhileApplied<TLayer>(this IEnumerable<TLayer> layer)
+        where TLayer : ILayer
+        {
+            foreach (var layerInfo in layer)
+            {
+                yield return layerInfo;
+                if (layerInfo.IsAlwaysOverride()) yield break;
+            }
+        }
     }
 
-    internal interface ILayer<T>
+    interface ILayer
     {
         AnimatorWeightState Weight { get; }
         AnimatorLayerBlendingMode BlendingMode { get; }
-        PropModNode<T> Node { get; }
+        IPropModNode Node { get; }
+    }
+
+    internal interface ILayer<T> : ILayer
+    {
+        new AnimatorWeightState Weight { get; }
+        new AnimatorLayerBlendingMode BlendingMode { get; }
+        new PropModNode<T> Node { get; }
     }
 
     internal sealed class RootPropModNode<T> : PropModNode<T>, IErrorContext
@@ -206,6 +234,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         public bool IsEmpty => _children.Count == 0;
 
         public IEnumerable<Component> SourceComponents => _children.Select(x => x.Component);
+        public IEnumerable<ComponentPropModNode<T>> ComponentPropModNodes => _children.Select(x => x.Node);
 
         public void Add(ComponentPropModNode<T> node, bool alwaysApplied)
         {
