@@ -308,6 +308,28 @@ msgstr ""
 "You're merging meshes that visibility animated differently than the merged mesh."
 "The animation will not work. This might not be intended, but if it's intended, ignore this warning."
 
+msgid "MergeSkinnedMesh:warning:material-animation-differently"
+msgstr "Differently animated material property is detected: {0}"
+
+msgid "MergeSkinnedMesh:warning:material-animation-differently:description"
+msgstr ""
+"You're merging meshes that material properties are animated differently between meshes.\n"
+"Since material property animation affects whole mesh, the animation will affects unintended area which can be unintended.\n"
+
+msgid "MergeSkinnedMesh:warning:material-animation-differently:hint"
+msgstr ""
+"If the animation is intended to apply to whole merged mesh, \n"
+"- Animate each source meshes with same curve and animation clip,\n"
+"- Animate the merged mesh, or\n"
+"- Just ignore this warning\n"
+"\n"
+"If you think you're animating all renderers with same curve, the way animating multiple renderers might not be good.\n"
+"Avatar Optimizer thinks it's animated similarly if property is animated with same shaped curve and same animation clip on the exactly same state.\n"
+"This means if you animated similarly with different layer or clip, your animation will be recognized as animated differently.\n"
+"\n"
+"If the animation will not affects to other meshes, (for example, it affects only to the disabled shader features of meshes) please report this issue to Avatar Optimizer.\n"
+"If the shader is well-known, I'll add logic to check if the feature is enabled for renderers other than animated.\n"
+
 # endregion
 
 # region MergeToonLitMaterial
