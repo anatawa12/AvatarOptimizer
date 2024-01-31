@@ -32,6 +32,8 @@ The format is based on [Keep a Changelog].
   - That's unnecessary (incorrect I think) and force users to remove or change the clip when user wants to face shape.
   - I see AAO users use `FreezeBlendShapes` for overriding such a blendshapes on twitter.
   - I think using this way is reasonable enough so I suppressed the warning if AAO detected such a usage.
+- Changed minimum VRCSDK to 3.3.0 `#882`
+  - VRCSDK 3.3.0 is required for stable NDMF-VRCSDK compatibility.
 
 ### Deprecated
 
