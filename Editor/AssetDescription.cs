@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using CustomLocalization4EditorExtension;
+using nadena.dev.ndmf.localization;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -60,12 +60,12 @@ namespace Anatawa12.AvatarOptimizer
 
             public override void OnInspectorGUI()
             {
-                CL4EE.DrawLanguagePicker();
-                EditorGUILayout.LabelField(CL4EE.Tr("AssetDescription:Description"), EditorStyles.wordWrappedLabel);
-                if (GUILayout.Button(CL4EE.Tr("AssetDescription:OpenDocs")))
+                AAOL10N.DrawLanguagePicker();
+                EditorGUILayout.LabelField(AAOL10N.Tr("AssetDescription:Description"), EditorStyles.wordWrappedLabel);
+                if (GUILayout.Button(AAOL10N.Tr("AssetDescription:OpenDocs")))
                 {
                     var baseUrl = CheckForUpdate.IsBeta ? "https://vpm.anatawa12.com/avatar-optimizer/beta/" : "https://vpm.anatawa12.com/avatar-optimizer/";
-                    var isJapanese = CL4EE.GetLocalization()?.CurrentLocaleCode == "ja";
+                    var isJapanese = LanguagePrefs.Language == "ja";
                     baseUrl += isJapanese ? "ja/" : "en/";
                     baseUrl += "developers/asset-description/";
                     Application.OpenURL(baseUrl);
