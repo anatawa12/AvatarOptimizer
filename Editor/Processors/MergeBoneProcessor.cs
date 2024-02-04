@@ -5,7 +5,6 @@ using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
 using JetBrains.Annotations;
 using nadena.dev.ndmf;
 using UnityEngine;
-using VRC.Dynamics;
 using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.Processors
@@ -66,9 +65,11 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
             if (mergeMapping.Count == 0) return;
 
-            foreach (var physBone in context.GetComponents<VRCPhysBoneBase>())
+#if AAO_VRCSDK3_AVATARS
+            foreach (var physBone in context.GetComponents<VRC.Dynamics.VRCPhysBoneBase>())
                 using (ErrorReport.WithContextObject(physBone))
                     MapIgnoreTransforms(physBone);
+#endif
 
             foreach (var renderer in context.GetComponents<SkinnedMeshRenderer>())
             {
@@ -112,7 +113,8 @@ namespace Anatawa12.AvatarOptimizer.Processors
                     Object.DestroyImmediate(pair.gameObject);
         }
 
-        internal static void MapIgnoreTransforms(VRCPhysBoneBase physBone)
+#if AAO_VRCSDK3_AVATARS
+        internal static void MapIgnoreTransforms(VRC.Dynamics.VRCPhysBoneBase physBone)
         {
             if (physBone.ignoreTransforms == null) return;
             var ignoreTransforms = new HashSet<Transform>();
@@ -135,6 +137,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
             physBone.ignoreTransforms = ignoreTransforms.ToList();
         }
+#endif
 
         private void DoBoneMap2(MeshInfo2 meshInfo2, Dictionary<Transform, Transform> mergeMapping)
         {
