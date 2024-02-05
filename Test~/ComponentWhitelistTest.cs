@@ -1,3 +1,5 @@
+#if AAO_VRCSDK3_AVATARS
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -109,3 +111,5 @@ namespace Anatawa12.AvatarOptimizer.Test
         };
     }
 }
+
+#endif
