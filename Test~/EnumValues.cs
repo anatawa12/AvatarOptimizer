@@ -1,3 +1,5 @@
+#if AAO_VRCSDK3_AVATARS
+
 using System;
 using NUnit.Framework;
 using VRC.SDK3.Avatars.Components;
@@ -57,3 +59,5 @@ namespace Anatawa12.AvatarOptimizer.Test
         }
     }
 }
+
+#endif

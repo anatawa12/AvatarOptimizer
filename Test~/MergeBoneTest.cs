@@ -1,7 +1,10 @@
 using Anatawa12.AvatarOptimizer.Processors;
 using NUnit.Framework;
 using UnityEngine;
+
+#if AAO_VRCSDK3_AVATARS
 using VRC.SDK3.Dynamics.PhysBone.Components;
+#endif
 
 namespace Anatawa12.AvatarOptimizer.Test
 {
@@ -32,6 +35,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             Assert.That(movedAfter.rotation, Is.EqualTo(Quaternion.identity));
         }
         
+#if AAO_VRCSDK3_AVATARS
         [Test]
         public void IgnoreTransformOfPhysBone()
         {
@@ -90,5 +94,6 @@ namespace Anatawa12.AvatarOptimizer.Test
             physBone.ignoreTransforms = null;
             MergeBoneProcessor.MapIgnoreTransforms(physBone);
         }
+#endif
     }
 }
