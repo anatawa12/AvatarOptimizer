@@ -15,7 +15,10 @@ The format is based on [Keep a Changelog].
     - Converts Entry / Exit to 1D BlendTree `#854` `#867`
     - Merges multiple Direct BlendTree to single Direct BlendTree `#870`
     - Removes meaningless Animator Layers `#870`
-f
+- Asset Description `#847`
+  - Asset Description is the file to provide information of your assets for Avatar Optimizer.
+  - Please see documentation for more details.
+
 ### Changed
 - MergePhysBone now corrects curve settings `#775`
 - MergePhysBone now warns if chain length are not same `#775`
@@ -38,6 +41,8 @@ f
 ### Deprecated
 
 ### Removed
+- Compatibility with VRCQuestTools v1.x `#847`
+  - Please use VRCQuestTools v2.x, which has compatibility with AAO.
 
 ### Fixed
 - Inspector of ComponentTypePair (GCDebug) is broken `#846`

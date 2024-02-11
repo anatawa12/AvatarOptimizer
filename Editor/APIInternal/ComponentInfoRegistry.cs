@@ -90,8 +90,61 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
             }
         }
 
-        internal static bool TryGetInformation(Type type, out ComponentInformation information) =>
-            InformationByType.TryGetValue(type, out information);
+        internal static bool TryGetInformation(Type type, out ComponentInformation information)
+        {
+            if (InformationByType.TryGetValue(type, out information)) return true;
+
+            // we could not find registered type so check if the type is meaningless
+            if (IsMeaninglessType(type))
+            {
+                information = MeaninglessComponentInformation.Instance;
+                return true;
+            }
+
+            return false;
+        }
+
+        private static HashSet<Type> _meaninglessTypes;
+
+        public static void InvalidateCache() => _meaninglessTypes = null;
+
+        private static bool IsMeaninglessType(Type type)
+        {
+            if (_meaninglessTypes == null)
+                _meaninglessTypes = new HashSet<Type>(AssetDescription.GetMeaninglessComponents());
+
+            // fast path: simple check
+            if (_meaninglessTypes.Contains(type)) return true;
+            // slow path: check for parent class
+            for (var current = type.BaseType; current != null; current = current.BaseType)
+                if (_meaninglessTypes.Contains(current))
+                    return true;
+
+            return false;
+        }
+
+        class MeaninglessComponentInformation : ComponentInformation
+        {
+            public static MeaninglessComponentInformation Instance { get; } = new MeaninglessComponentInformation();
+
+            private MeaninglessComponentInformation()
+            {
+            }
+
+            internal override void CollectDependencyInternal(Component component,
+                API.ComponentDependencyCollector collector)
+            {
+            }
+
+            internal override void CollectMutationsInternal(Component component,
+                API.ComponentMutationsCollector collector)
+            {
+            }
+
+            internal override void ApplySpecialMappingInternal(Component component, API.MappingSource mappingSource)
+            {
+            }
+        }
     }
 }
 
