@@ -51,6 +51,7 @@ The format is based on [Keep a Changelog].
   - It's not expected to have behavior change, but if you found some, please report it.
 - Re-fix Nested Constraint can be broken with Trace and Optimize `#880`
 - Fix non-VRChat project support `#884`
+- Fix VRM support `#892`
 
 ### Security
 
