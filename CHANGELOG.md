@@ -35,6 +35,8 @@ The format is based on [Keep a Changelog].
   - That's unnecessary (incorrect I think) and force users to remove or change the clip when user wants to face shape.
   - I see AAO users use `FreezeBlendShapes` for overriding such a blendshapes on twitter.
   - I think using this way is reasonable enough so I suppressed the warning if AAO detected such a usage.
+- Changed minimum VRCSDK to 3.3.0 `#882`
+  - VRCSDK 3.3.0 is required for stable NDMF-VRCSDK compatibility.
 
 ### Deprecated
 
@@ -48,6 +50,7 @@ The format is based on [Keep a Changelog].
   - Note that To fix this problem, AnimatorParser is almost completely rewritten.
   - It's not expected to have behavior change, but if you found some, please report it.
 - Re-fix Nested Constraint can be broken with Trace and Optimize `#880`
+- Fix non-VRChat project support `#884`
 
 ### Security
 
