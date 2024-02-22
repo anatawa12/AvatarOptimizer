@@ -58,7 +58,7 @@ The current configuration version for the component can be retrieved with docume
 
 The Semantic Versioning will also be applied to save format of the most components.
 
-For patch versions, the save format will not be changed. In other words, forwards compatibility in same minor version is guaranteed. \
+For patch versions, the save format will not be changed. In other words, forwards compatibility in the same minor version is guaranteed.\
 For minor versions, the save format might be changed in a backwards compatible way.\
 For major versions, the save format might not be compatible. There are no guarantees for v2.0.0 or later.
 
