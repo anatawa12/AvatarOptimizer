@@ -41,12 +41,13 @@ This project uses [Semantic Versioning 2.0.0](https://semver.org/spec/v2.0.0.htm
 As section 1 of the specification requires, this part of README defines what is the public API of AAO.
 
 ### Stability for scripting usage
-First, most of the assemblies in this project are not part of the public API, especially for internal assemblies.
-The `com.anatawa12.avatar-optimizer.api.editor` and `com.anatawa12.avatar-optimizer.runtime` are the assemblies includes public API.
 
-In those assemblies, most members exposed to other assemblies in the C# code are part of the public API.
-The exception is the members in the namespaces includes `Internal` in the name.
-For example, members in `Anatawa12.AvatarOptimizer.APIInternal` namespace is not part of the public API.
+First, most of the assemblies in this project are not part of the public API, especially for internal assemblies.
+Public API is included in the assemblies `com.anatawa12.avatar-optimizer.api.editor` and `com.anatawa12.avatar-optimizer.runtime`.
+
+In those assemblies, most members exposed to other assemblies in the C# code are part of the public API,
+but the members in the namespaces includes `Internal` in the name are not.
+For example, members in `Anatawa12.AvatarOptimizer.APIInternal` namespace are not part of the public API.
 
 In addition, adding components of AAO needs extra care since default behavior of the components might be changed as described below.
 You have to call `void Initialize(int version)` with the configuration version you want to use just after adding the component (calling `AddComponent`) to guarantee expected behaviour.
@@ -58,7 +59,7 @@ The current configuration version for the component can be retrieved with docume
 The Semantic Versioning will also be applied to save format of the most components.
 
 For patch versions, the save format will not be changed. In other words, forwards compatibility in same minor version is guaranteed. \
-For minor versions, the save format might be changed in backwards compatibility way.  \
+For minor versions, the save format might be changed in a backwards compatible way.\
 For major versions, the save format might not be compatible. There are no guarantees for v2.0.0 or later.
 
 There are several exceptions and important notes for stability of save format.
@@ -66,16 +67,16 @@ There are several exceptions and important notes for stability of save format.
   For example, Advanced Options on the Trace and Optimize might be changed in any version.
 - The features marked as experimental are not guaranteed to follow the rules above.
 - The behavior of `Trace and Optimize` component might be changed by implementing new optimization.
-  However, the default settings of `Trace and Optimize` component will never change the behavior of the your avatar so changes must not affect your avatar.
+  However, the default settings of `Trace and Optimize` component will never change the behavior of your avatar, so changes must not affect the avatar.
   (If your avatar behavior is changed by the `Trace and Optimize` component, please report it as a bug.)
-- The behavior of the components just after adding components or resetting component is not part of the stable save format.
+- The behavior of the components just after adding components or resetting components is not part of the stable save format.
   The default settings of the components might be changed, but it will never change existing / already added components behavior.
 
 ### Other notes for Versioning
 
-AAO is a tool on Unity and AAO mostly depends on VRChat SDK.
+AAO is a tool on Unity and mostly depends on VRChat SDK.
 
 AAO will update minimum version of VRChat SDK or Unity in minor version of AAO.\
 AAO will add support for newer version of VRChat SDK or Unity in patch release of AAO.
 
-Dropping older version of VRChat SDK or Unity will be expressed in the release notes.
+Dropping older version of VRChat SDK or Unity will be documented in the release notes.
