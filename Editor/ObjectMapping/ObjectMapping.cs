@@ -46,6 +46,9 @@ namespace Anatawa12.AvatarOptimizer
             return false;
         }
 
+        internal BeforeGameObjectTree GetBeforeGameObjectTree(GameObject rootGameObject) =>
+            _beforeTree.TryGetValue(rootGameObject.GetInstanceID(), out var tree) ? tree : null;
+
         // null means nothing to map
         [CanBeNull]
         public ComponentInfo GetComponentMapping(int instanceId) =>
@@ -66,6 +69,8 @@ namespace Anatawa12.AvatarOptimizer
         [NotNull] public readonly IReadOnlyDictionary<Type, int> ComponentInstanceIdByType;
         [NotNull] public readonly int[] ComponentInstanceIds;
         [NotNull] public readonly BeforeGameObjectTree[] Children;
+        public bool HasSlashInNameInDirectChildren { get; private set; }
+        public bool HasSlashInNameInChildren { get; private set; }
 
         public BeforeGameObjectTree(GameObject gameObject)
         {
@@ -97,6 +102,46 @@ namespace Anatawa12.AvatarOptimizer
             componentByType[typeof(GameObject)] = InstanceId;
 
             ComponentInstanceIdByType = componentByType;
+        }
+
+        public void InitializeRecursive()
+        {
+            foreach (var child in Children)
+                child.InitializeRecursive();
+
+            HasSlashInNameInDirectChildren = Children.Any(x => x.HasSlashInNameInChildren || x.Name.Contains('/'));
+            HasSlashInNameInChildren = Children.Any(x => x.HasSlashInNameInChildren || x.Name.Contains('/'));
+        }
+
+        [CanBeNull]
+        public BeforeGameObjectTree ResolvePath(string relative) =>
+            relative == "" ? this : ResolvePathAll(relative).FirstOrDefault();
+
+        private IEnumerable<BeforeGameObjectTree> ResolvePathAll(string relative)
+        {
+            if (relative == "")
+                return new[] { this };
+            // otherwise, match as possible from start
+
+            // simplest
+            var slashIndex = relative.IndexOf('/');
+
+            if (slashIndex == -1)
+                return Children.Where(x => x.Name == relative);
+
+            for (;slashIndex != -1; slashIndex = relative.IndexOf('/', slashIndex + 1))
+            {
+                var name = relative.Substring(0, slashIndex);
+
+                if (Children.Any(x => x.Name == name))
+                {
+                    var remaining = relative.Substring(slashIndex + 1);
+
+                    return Children.Where(x => x.Name == name).SelectMany(x => x.ResolvePathAll(remaining));
+                }
+            }
+
+            return Array.Empty<BeforeGameObjectTree>();
         }
     }
 
@@ -179,6 +224,7 @@ namespace Anatawa12.AvatarOptimizer
     {
         private const string ExtraProps = "AvatarOptimizerExtraProps";
         public static string BlendShapeIndex(int index) => $"{ExtraProps}.BlendShapeIndex.{index}";
+        public static bool IsBlendShapeIndex(string prop) => prop.StartsWith($"{ExtraProps}.BlendShapeIndex.");
 
         public static int ParseBlendShapeIndex(string prop)
         {

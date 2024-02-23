@@ -1,7 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Anatawa12.AvatarOptimizer.AnimatorParsers;
+using Anatawa12.AvatarOptimizer.AnimatorParsersV2;
+using static Anatawa12.AvatarOptimizer.Test.AnimatorParserTest.TestUtil;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
@@ -66,18 +67,14 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
             var skinnedRenderer = prefab.GetComponent<SkinnedMeshRenderer>() ?? throw new InvalidOperationException();
             var parser = new AnimationParser();
 
-            var parsed = parser.ParseMotion(prefab, clip, Utils.EmptyDictionary<AnimationClip, AnimationClip>())
-                .ToImmutable();
+            var parsed = parser.ParseMotion(prefab, clip, Utils.EmptyDictionary<AnimationClip, AnimationClip>());
 
-            Assert.That(parsed.ModifiedProperties.Count, Is.EqualTo(1));
-            Assert.That(parsed.ModifiedProperties.Keys, Has.Member((ComponentOrGameObject)skinnedRenderer));
+            Assert.That(parsed.FloatNodes.Count, Is.EqualTo(1));
+            Assert.That(parsed.FloatNodes.Keys, Has.Member(((ComponentOrGameObject)skinnedRenderer, blendShapeProp)));
 
-            var props = parsed.ModifiedProperties[skinnedRenderer];
+            var node = parsed.FloatNodes[(skinnedRenderer, blendShapeProp)];
 
-            Assert.That(props.Count, Is.EqualTo(1));
-            Assert.That(props.Keys, Has.Member(blendShapeProp));
-            
-            Assert.That(props[blendShapeProp], Is.EqualTo(AnimationFloatProperty.ConstAlways(constValue, clip)));
+            AssertPropertyNode(node, ConstantAlways(constValue));
         }
 
         [TestCaseSource(nameof(VariableSourceAnimationsData))]
@@ -88,18 +85,14 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
             var skinnedRenderer = prefab.GetComponent<SkinnedMeshRenderer>() ?? throw new InvalidOperationException();
             var parser = new AnimationParser();
 
-            var parsed = parser.ParseMotion(prefab, clip, Utils.EmptyDictionary<AnimationClip, AnimationClip>())
-                .ToImmutable();
+            var parsed = parser.ParseMotion(prefab, clip, Utils.EmptyDictionary<AnimationClip, AnimationClip>());
 
-            Assert.That(parsed.ModifiedProperties.Count, Is.EqualTo(1));
-            Assert.That(parsed.ModifiedProperties.Keys, Has.Member((ComponentOrGameObject)skinnedRenderer));
+            Assert.That(parsed.FloatNodes.Count, Is.EqualTo(1));
+            Assert.That(parsed.FloatNodes.Keys, Has.Member(((ComponentOrGameObject)skinnedRenderer, blendShapeProp)));
 
-            var props = parsed.ModifiedProperties[skinnedRenderer];
+            var node = parsed.FloatNodes[(skinnedRenderer, blendShapeProp)];
 
-            Assert.That(props.Count, Is.EqualTo(1));
-            Assert.That(props.Keys, Has.Member(blendShapeProp));
-            
-            Assert.That(props[blendShapeProp], Is.EqualTo(AnimationFloatProperty.Variable(null)));
+            AssertPropertyNode(node, Variable());
         }
 
         #endregion

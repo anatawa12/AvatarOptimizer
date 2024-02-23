@@ -77,6 +77,12 @@ msgstr "Check All"
 msgid "FreezeBlendShape:button:Invert All"
 msgstr "Invert All"
 
+msgid "FreezeBlendShape:warning:animation"
+msgstr ""
+"You're freezing the following animated BlendShapes."
+"The animation will not work. This might not be intended, but if it's intended, ignore this warning.\n"
+"{0}"
+
 # endregion
 
 # region MakeChildren
@@ -109,6 +115,9 @@ msgstr "Avoid Name Conflict"
 msgid "MergeBone:tooltip:avoidNameConflict"
 msgstr "Renames child GameObjects to avoid name conflict"
 
+msgid "MergeBone:validation:onAvatarRoot"
+msgstr "MergeBone on the Avatar Root is not supported."
+
 msgid "MergeBone:validation:thereAreComponent"
 msgstr "There are some components other than Transform. This is not supported."
 
@@ -134,6 +143,9 @@ msgstr "Parent of source PhysBone are differ. move to same parent OR use Make Ch
 msgid "MergePhysBone:error:noSources"
 msgstr "There's no source PhysBones"
 
+msgid "MergePhysBone:error:oneSource"
+msgstr "There is only one source PhysBone. You must specify two or more merge source PhysBones."
+
 msgid "MergePhysBone:error:multiChildType"
 msgstr "Some PysBone has multi child type != Ignore"
 
@@ -146,6 +158,9 @@ msgstr "The values is differ between two or more sources. You have to set same v
 
 msgid "MergePhysBone:error:differValueSingle"
 msgstr "The value is differ between two or more sources. You have to set same value OR override this property"
+
+msgid "MergePhysBone:warning:differChainLength"
+msgstr "The chain length is differ between two or more sources. Shorter chain will be thicker than original."
 
 msgid "MergePhysBone:dialog:versionInfo:title"
 msgstr "Version Info" 
@@ -372,10 +387,10 @@ msgstr "Removes polygons whose area are zero"
 
 # region AvatarGlobalComponent
 
-msgid "DeleteEditorOnlyGameObjects:NotOnAvatarDescriptor"
+msgid "AvatarGlobalComponent:NotOnAvatarDescriptor"
 msgstr "This component must be set on root of Avatar (GameObject with AvatarDescriptor)"
 
-msgid "DeleteEditorOnlyGameObjects:NotOnAvatarRoot"
+msgid "AvatarGlobalComponent:NotOnAvatarRoot"
 msgstr "This component must be set on root of Avatar (For VRChat avatars, GameObject with AvatarDescriptor)"
 
 # endregion
@@ -430,6 +445,12 @@ msgstr "Automatically Freeze Blend Shape"
 msgid "TraceAndOptimize:prop:removeUnusedObjects"
 msgstr "Remove unused Objects Automatically"
 
+msgid "TraceAndOptimize:prop:optimizePhysBone"
+msgstr "Optimize PhysBone Settings"
+
+msgid "TraceAndOptimize:prop:optimizeAnimator"
+msgstr "Optimize Animator"
+
 msgid "TraceAndOptimize:prop:mmdWorldCompatibility"
 msgstr "MMD World Compatibility"
 
@@ -445,8 +466,20 @@ msgstr "Advanced Settings is for workaround bugs in Avatar Optimizer.\n"
 "In addition, Some modification of Advanced Settings may not well-tested or its behaviour is likely to be changed. Be careful!"
 
 msgid "TraceAndOptimize:warn:unknown-type"
-msgstr "Unknown Component Type '{0}' Found. This will reduce optimization performance and may break your Avatar."
-"If your avatar got broken, Please report this error to AvatarOptimizer!"
+msgstr "Unknown Component Type '{0}' Found."
+
+msgid "TraceAndOptimize:warn:unknown-type:description"
+msgstr "There are some components Avatar Optimizer doesn't know. This will reduce optimization performance and may break your Avatar."
+
+msgid "TraceAndOptimize:warn:unknown-type:hint"
+msgstr ""
+"If your avatar is not broken, you can ignore this warning.\n"
+"\n"
+"If it is a component of your tool, please consider registering it to Avatar Optimizer.\n"
+"See https://vpm.anatawa12.com/avatar-optimizer/en/docs/developers/make-your-components-compatible-with-aao/ for more details.\n"
+"\n"
+"If it is a component of a tool you are using, please ask tool author to register the component to Avatar Optimizer\n"
+"or ask Avatar Optimizer to support the component if the tool is a well-known one."
 
 msgid "TraceAndOptimize:prop:preserveEndBone"
 msgstr "Preserve EndBone"
@@ -457,6 +490,9 @@ msgstr "Prevents removing end bones whose parent is not removed."
 msgid "TraceAndOptimize:prop:removeZeroSizedPolygons"
 msgstr "Automatically Remove Zero Sized Polygons"
 
+msgid "TraceAndOptimize:OptimizePhysBone:UnknownPhysBoneColliderShape"
+msgstr "Unknown PhysBone Collider Shape '{0}' is specified."
+
 # endregion
 
 #region ApplyObjectMapping
@@ -466,6 +502,41 @@ msgstr "BlendShape(s) for eyelids are Removed / frozen."
 
 msgid "ApplyObjectMapping:VRCAvatarDescriptor:viseme BlendShape Removed"
 msgstr "BlendShape(s) for viseme are Removed / frozen."
+
+#endregion
+
+#region ComponentInfos
+
+msgid "ComponentInfos:VRCAvatarDescriptor:warning:NoVisemeSkinnedMesh"
+msgstr "No Skinned Mesh Renderer is specified for LipSync."
+
+msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownLipSyncStyle"
+msgstr "Unknown LipSync Mode '{0}' is specified."
+
+msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownColliderState"
+msgstr "Unknown Standard Collider State '{0}' is specified for {1}."
+
+msgid "ComponentInfos:VRCAvatarDescriptor:warning:NoMeshInEyelidsSkinnedMesh"
+msgstr "No Mesh is specified for Eyelids SkinnedMesh."
+
+msgid "ComponentInfos:VRCAvatarDescriptor:warning:NoEyelidsSkinnedMesh"
+msgstr "No Skinned Mesh Renderer is specified for Eyelids."
+
+msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownEyelidType"
+msgstr "Unknown Eyelid Type '{0}' is specified."
+
+#endregion
+
+#region AnimatorParser
+
+msgid "AnimatorParser:PlayableLayerControl:UnknownBlendablePlayableLayer"
+msgstr "Unknown Playable Layer '{0}' is specified for Playable Layer Control."
+
+msgid "AnimatorParser:AnimatorLayerControl:UnknownBlendablePlayableLayer"
+msgstr "Unknown Playable Layer '{0}' is specified for Animator Layer Control."
+
+msgid "AnimatorParser:AnimatorNotFoundOnAvatarRoot"
+msgstr "Animator component not found on Avatar Root"
 
 #endregion
 
@@ -486,5 +557,17 @@ msgstr "{0} Component does not process SubMeshes with LineStrip."
 
 msgid "ErrorReporter:error.internal_error"
 msgstr "An internal error has occurred: {0} when processing:"
+
+# endregion
+
+# region AssetDescription
+
+msgid "AssetDescription:Description"
+msgstr ""
+"Avatar Optimizer Asset Description is an asset that describe your assets to Avatar Optimizer.\n"
+"For more details, please visit our documentation."
+
+msgid "AssetDescription:OpenDocs"
+msgstr "Open Documentation"
 
 # endregion

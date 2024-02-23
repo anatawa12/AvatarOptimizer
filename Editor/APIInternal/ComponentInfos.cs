@@ -23,6 +23,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
     }
 
     [ComponentInformation(typeof(Transform))]
+    [ComponentInformation(typeof(RectTransform))]
     internal class TransformInformation : ComponentInformation<Transform>
     {
         protected override void CollectDependency(Transform component, ComponentDependencyCollector collector)
@@ -46,15 +47,19 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
         // All State / Motion Changes are collected separately
         protected override void CollectDependency(Animator component, ComponentDependencyCollector collector)
         {
-            collector.MarkEntrypoint();
-
-            for (var bone = HumanBodyBones.Hips; bone < HumanBodyBones.LastBone; bone++)
+            // if AnimatorController is not null, it has side effect
+            if (component.runtimeAnimatorController) collector.MarkEntrypoint();
+            
+            // For sub-animators without humanoid bones, we can't call GetBoneTransform or it will result in an exception.
+            if (component.isHuman)
             {
-                var boneTransform = component.GetBoneTransform(bone);
-                foreach (var transform in boneTransform.ParentEnumerable())
+                for (var bone = HumanBodyBones.Hips; bone < HumanBodyBones.LastBone; bone++)
                 {
-                    if (transform == component.transform) break;
-                    collector.AddDependency(transform);
+                    var boneTransform = component.GetBoneTransform(bone);
+                    if (boneTransform == null) continue;
+
+                    foreach (var transform in boneTransform.ParentEnumerable(root: component.transform, includeMe: true))
+                        collector.AddDependency(transform);
                 }
             }
         }
@@ -80,11 +85,14 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
         protected override void CollectDependency(SkinnedMeshRenderer component,
             ComponentDependencyCollector collector)
         {
+            // IMPORTANT NOTE: We have to use MeshInfo to get information about the mesh!!!
+            var casted = (Processors.TraceAndOptimizes.ComponentDependencyCollector.Collector)collector;
+            var meshInfo2 = casted.GetMeshInfoFor(component);
+            // SMR without mesh does nothing.
+            if (meshInfo2.IsEmpty()) return;
+
             base.CollectDependency(component, collector);
 
-            var casted = (Processors.TraceAndOptimizes.ComponentDependencyCollector.Collector)collector;
-
-            var meshInfo2 = casted.GetMeshInfoFor(component);
             foreach (var bone in meshInfo2.Bones)
                 casted.AddBoneDependency(bone.Transform);
             collector.AddDependency(meshInfo2.RootBone);
@@ -96,8 +104,12 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
     {
         protected override void CollectDependency(MeshRenderer component, ComponentDependencyCollector collector)
         {
+            var meshFilter = component.GetComponent<MeshFilter>();
+            // Mesh renderer without MeshFilter does nothing
+            // Mesh renderer without Mesh does nothing
+            if (!meshFilter || !meshFilter.sharedMesh) return;
             base.CollectDependency(component, collector);
-            collector.AddDependency(component.GetComponent<MeshFilter>());
+            collector.AddDependency(meshFilter);
         }
     }
 
@@ -116,11 +128,12 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
         {
             collector.MarkEntrypoint();
 
-            if (component.main.simulationSpace == ParticleSystemSimulationSpace.Custom)
+            if (component.main.simulationSpace == ParticleSystemSimulationSpace.Custom) // not animated
                 collector.AddDependency(component.main.customSimulationSpace);
-            if (component.shape.enabled)
+
+            if (collector.GetAnimatedFlag(component, "ShapeModule.enabled", component.shape.enabled) != false)
             {
-                switch (component.shape.shapeType)
+                switch (component.shape.shapeType) // not animated
                 {
                     case ParticleSystemShapeType.MeshRenderer:
                         collector.AddDependency(component.shape.meshRenderer);
@@ -156,9 +169,9 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
                 }
             }
 
-            if (component.collision.enabled)
+            if (collector.GetAnimatedFlag(component, "CollisionModule.enabled", component.collision.enabled) != false)
             {
-                switch (component.collision.type)
+                switch (component.collision.type) // not animated
                 {
                     case ParticleSystemCollisionType.Planes:
 #if UNITY_2020_2_OR_NEWER
@@ -174,23 +187,28 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
                 }
             }
 
-            if (component.trigger.enabled)
+            if (collector.GetAnimatedFlag(component, "TriggerModule.enabled", component.trigger.enabled) != false)
             {
 #if UNITY_2020_2_OR_NEWER
                 for (var i = 0; i < component.trigger.colliderCount; i++)
 #else
                 for (var i = 0; i < component.trigger.maxColliderCount; i++)
 #endif
-                    collector.AddDependency(component.trigger.GetCollider(i));
+                {
+                    var collider = component.trigger.GetCollider(i);
+                    if (!collider) continue;
+                    collector.AddDependency(collider is Collider ? collider : collider.GetComponent<Collider>());
+                }
             }
 
-            if (component.subEmitters.enabled)
+            if (component.subEmitters.enabled) // will not be animated
             {
                 for (var i = 0; i < component.subEmitters.subEmittersCount; i++)
-                    collector.AddDependency(component.subEmitters.GetSubEmitterSystem(i));
+                    collector.AddDependency(component.subEmitters.GetSubEmitterSystem(i))
+                        .OnlyIfTargetCanBeEnable();
             }
 
-            if (component.lights.enabled)
+            if (collector.GetAnimatedFlag(component, "LightsModule.enabled", component.lights.enabled) != false)
             {
                 collector.AddDependency(component.lights.light);
             }

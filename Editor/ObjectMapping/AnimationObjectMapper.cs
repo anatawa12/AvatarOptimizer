@@ -31,16 +31,7 @@ namespace Anatawa12.AvatarOptimizer
         {
             if (_pathsCache.TryGetValue(path, out var info)) return info;
 
-            var tree = _beforeGameObjectTree;
-
-            if (path != "")
-            {
-                foreach (var pathSegment in path.Split('/'))
-                {
-                    tree = tree.Children.FirstOrDefault(x => x.Name == pathSegment);
-                    if (tree == null) break;
-                }
-            }
+            var tree = _beforeGameObjectTree.ResolvePath(path);
 
             if (tree == null)
             {

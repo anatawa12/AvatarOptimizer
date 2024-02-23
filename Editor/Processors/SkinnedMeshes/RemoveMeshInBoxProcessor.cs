@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Anatawa12.AvatarOptimizer.ErrorReporting;
 using nadena.dev.ndmf;
 using UnityEngine;
 
@@ -18,10 +17,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         public override void Process(BuildContext context, MeshInfo2 target)
         {
             var inBoxVertices = new HashSet<Vertex>();
+            var originalState = context.GetState<OriginalState>();
             // Vertex.AdditionalTemporal: 0 if in box, 1 if out of box
             foreach (var vertex in target.Vertices)
             {
-                var actualPosition = vertex.ComputeActualPosition(target, Target.transform.worldToLocalMatrix);
+                var actualPosition = vertex.ComputeActualPosition(target, originalState, Target.transform.worldToLocalMatrix);
                 if (Component.boxes.Any(x => x.ContainsVertex(actualPosition)))
                     inBoxVertices.Add(vertex);
             }

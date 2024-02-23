@@ -1,4 +1,3 @@
-using Anatawa12.AvatarOptimizer.ErrorReporting;
 using nadena.dev.ndmf.runtime;
 using UnityEngine;
 
@@ -17,15 +16,5 @@ namespace Anatawa12.AvatarOptimizer
         , VRC.SDKBase.IEditorOnly
 #endif
     {
-        private void OnValidate()
-        {
-            if (RuntimeUtil.IsPlaying) return;
-            ErrorReporterRuntime.TriggerChange();
-        }
-
-        private void OnDestroy()
-        {
-            ErrorReporterRuntime.TriggerChange();
-        }
     }
 }

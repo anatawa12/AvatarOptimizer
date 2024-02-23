@@ -1,9 +1,6 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using Anatawa12.AvatarOptimizer.AnimatorParsers;
 using nadena.dev.ndmf;
-using UnityEditor;
 using UnityEngine;
 
 #if AAO_VRCSDK3_AVATARS
@@ -13,13 +10,12 @@ using VRC.SDKBase;
 
 namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 {
-    internal class AutoFreezeBlendShape : Pass<AutoFreezeBlendShape>
+    internal class AutoFreezeBlendShape : TraceAndOptimizePass<AutoFreezeBlendShape>
     {
         public override string DisplayName => "T&O: AutoFreezeBlendShape";
 
-        protected override void Execute(BuildContext context)
+        protected override void Execute(BuildContext context, TraceAndOptimizeState state)
         {
-            var state = context.GetState<TraceAndOptimizeState>();
             if (!state.FreezeBlendShape) return;
 
             if (!state.SkipFreezingNonAnimatedBlendShape)
@@ -55,18 +51,22 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 {
                     newWeight = weight;
                     if (!modifies.TryGetFloat($"blendShape.{name}", out var prop)) return true;
-                    
-                    switch (prop.State)
+
+                    if (prop.Value.TryGetConstantValue(out var constWeight))
                     {
-                        case AnimationFloatProperty.PropertyState.ConstantAlways:
-                            newWeight = prop.ConstValue;
+                        if (prop.AppliedAlways)
+                        {
+                            newWeight = constWeight;
                             return true;
-                        case AnimationFloatProperty.PropertyState.ConstantPartially:
-                            return prop.ConstValue.CompareTo(weight) == 0;
-                        case AnimationFloatProperty.PropertyState.Variable:
-                            return false;
-                        default:
-                            throw new ArgumentOutOfRangeException();
+                        }
+                        else
+                        {
+                            return constWeight.Equals(weight);
+                        }
+                    }
+                    else
+                    {
+                        return false;
                     }
                 }
 

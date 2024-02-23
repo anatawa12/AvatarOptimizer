@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using nadena.dev.ndmf;
@@ -5,13 +6,12 @@ using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 {
-    internal class FindUnusedObjects : Pass<FindUnusedObjects>
+    internal class FindUnusedObjects : TraceAndOptimizePass<FindUnusedObjects>
     {
         public override string DisplayName => "T&O: FindUnusedObjects";
 
-        protected override void Execute(BuildContext context)
+        protected override void Execute(BuildContext context, TraceAndOptimizeState state)
         {
-            var state = context.GetState<TraceAndOptimizeState>();
             if (!state.RemoveUnusedObjects) return;
 
             var processor = new FindUnusedObjectsProcessor(context, state);
@@ -22,14 +22,17 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
     internal readonly struct MarkObjectContext {
         private readonly GCComponentInfoHolder _componentInfos;
 
+        private readonly Func<GCComponentInfo, Dictionary<Component, GCComponentInfo.DependencyType>> _getDependantMap;
         private readonly Queue<Component> _processPending;
         private readonly Component _entrypoint;
 
-        public MarkObjectContext(GCComponentInfoHolder componentInfos, Component entrypoint)
+        public MarkObjectContext(GCComponentInfoHolder componentInfos, Component entrypoint,
+            Func<GCComponentInfo, Dictionary<Component, GCComponentInfo.DependencyType>> getDependantMap)
         {
             _componentInfos = componentInfos;
             _processPending = new Queue<Component>();
             _entrypoint = entrypoint;
+            _getDependantMap = getDependantMap;
         }
 
         public void MarkComponent(Component component,
@@ -38,14 +41,15 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             var dependencies = _componentInfos.TryGetInfo(component);
             if (dependencies == null) return;
 
-            if (dependencies.DependantEntrypoint.TryGetValue(_entrypoint, out var existingFlags))
+            var dependantMap = _getDependantMap(dependencies);
+            if (dependantMap.TryGetValue(_entrypoint, out var existingFlags))
             {
-                dependencies.DependantEntrypoint[_entrypoint] = existingFlags | type;
+                dependantMap[_entrypoint] = existingFlags | type;
             }
             else
             {
                 _processPending.Enqueue(component);
-                dependencies.DependantEntrypoint.Add(_entrypoint, type);
+                dependantMap.Add(_entrypoint, type);
             }
         }
 
@@ -95,6 +99,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             Sweep(componentInfos);
             if (!_noConfigureMergeBone)
                 MergeBone(componentInfos);
+            MarkDependant(componentInfos);
             if (!_noActivenessAnimation)
                 ActivenessAnimation(componentInfos);
         }
@@ -114,7 +119,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     continue; // enabled is animated so we will not generate activeness animation
 
                 HashSet<Component> resultSet;
-                using (var enumerator = componentInfo.DependantEntrypoint.Keys.GetEnumerator())
+                using (var enumerator = componentInfo.DependantComponents.GetEnumerator())
                 {
                     System.Diagnostics.Debug.Assert(enumerator.MoveNext());
                     resultSet = GetEntrypointActiveness(enumerator.Current, _context);
@@ -228,7 +233,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 if (componentInfo.IsEntrypoint)
                 {
                     var component = componentInfo.Component;
-                    var markContext = new MarkObjectContext(componentInfos, component);
+
+                    var markContext = new MarkObjectContext(componentInfos, component, GetDependantMap);
                     markContext.MarkComponent(component, GCComponentInfo.DependencyType.Normal);
                     markContext.MarkRecursively();
                 }
@@ -236,7 +242,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             if (_exclusions.Count != 0) {
                 // excluded GameObjects must be exists
-                var markContext = new MarkObjectContext(componentInfos, _context.AvatarRootTransform);
+                var markContext = new MarkObjectContext(componentInfos, _context.AvatarRootTransform, GetDependantMap);
 
                 foreach (var gameObject in _exclusions)
                 foreach (var component in gameObject.GetComponents<Component>())
@@ -245,6 +251,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 markContext.MarkRecursively();
             }
 
+            Dictionary<Component, GCComponentInfo.DependencyType> GetDependantMap(GCComponentInfo x) =>
+                x.DependantEntrypoint;
         }
 
         private void Sweep(GCComponentInfoHolder componentInfos)
@@ -259,14 +267,43 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     if (componentInfo.Component is Transform)
                     {
                         // Treat Transform Component as GameObject because they are two sides of the same coin
-                        Object.DestroyImmediate(componentInfo.Component.gameObject);
+                        DestroyTracker.DestroyImmediate(componentInfo.Component.gameObject);
                     }
                     else
                     {
-                        Object.DestroyImmediate(componentInfo.Component);
+                        DestroyTracker.DestroyImmediate(componentInfo.Component);
                     }
                 }
             }
+        }
+
+        private void MarkDependant(GCComponentInfoHolder componentInfos)
+        {
+            // entrypoint for mark & sweep is active-able GameObjects
+            foreach (var componentInfo in componentInfos.AllInformation)
+            {
+                if (componentInfo.BehaviourComponent)
+                {
+                    var component = componentInfo.Component;
+                    var markContext = new MarkObjectContext(componentInfos, component, GetDependantMap);
+                    markContext.MarkComponent(component, GCComponentInfo.DependencyType.Normal);
+                    markContext.MarkRecursively();
+                }
+            }
+
+            if (_exclusions.Count != 0) {
+                // excluded GameObjects must be exists
+                var markContext = new MarkObjectContext(componentInfos, _context.AvatarRootTransform, GetDependantMap);
+
+                foreach (var gameObject in _exclusions)
+                foreach (var component in gameObject.GetComponents<Component>())
+                    markContext.MarkComponent(component, GCComponentInfo.DependencyType.Normal);
+
+                markContext.MarkRecursively();
+            }
+
+            Dictionary<Component, GCComponentInfo.DependencyType> GetDependantMap(GCComponentInfo x) =>
+                x.DependantBehaviours;
         }
 
         private void MergeBone(GCComponentInfoHolder componentInfos)
@@ -308,7 +345,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 // Components must be Transform Only
                 if (transform.GetComponents<Component>().Length != 1) return NotMerged();
                 // The bone cannot be used generally
-                if ((componentInfos.GetInfo(transform).AllUsages & ~AllowedUsages) != 0) return NotMerged();
+                if ((componentInfos.GetInfo(transform).AllEntrypointUsages & ~AllowedUsages) != 0) return NotMerged();
                 // must not be animated
                 if (TransformAnimated(transform, context)) return NotMerged();
 

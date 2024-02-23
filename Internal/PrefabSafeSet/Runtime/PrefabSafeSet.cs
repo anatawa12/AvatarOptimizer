@@ -77,8 +77,10 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
         protected PrefabSafeSet(Object outerObject)
         {
 #if UNITY_EDITOR
-            if (!outerObject) throw new ArgumentNullException(nameof(outerObject));
-            OuterObject = outerObject;
+            // I don't know why but Unity 2022 reports `this == null` in constructor of MonoBehaviour may be false
+            // so use actual null check instead of destroy check
+            // ReSharper disable once Unity.NoNullCoalescing
+            OuterObject = outerObject ?? throw new ArgumentNullException(nameof(outerObject));
 #endif
         }
 
@@ -88,8 +90,9 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             if (OuterObject && UnityEditor.PrefabUtility.IsPartOfPrefabInstance(OuterObject)
                             && UnityEditor.PrefabUtility.IsPartOfAnyPrefab(OuterObject))
                 throw new InvalidOperationException("You cannot set value to Prefab Instance or Prefab");
-            Debug.Assert(prefabLayers.Length == 0);
 #endif
+            // in some (rare) cases, unpacked prefab may have prefabLayers so we need to clear it. 
+            prefabLayers = Array.Empty<TLayer>();
             mainSet = values.ToArray();
         }
 

@@ -85,22 +85,6 @@ for (let [type, info] of Object.entries(config)) {
     for (let [value] of info.values) {
         console.log(`            public SerializedProperty Get${value}Property(bool @override) => @override ? Override${value} : Source${value};`)
     }
-    if(!info.noGenerateActiveProps) {
-        console.log(`            public override IEnumerable<(string, SerializedProperty)> GetActiveProps(bool @override) {`)
-        console.log(`                if (@override)`)
-        console.log(`                    return new[] {`)
-        for (let [value] of info.values) {
-            console.log(`                        (PhysBone${value}Name, Override${value}),`)
-        }
-        console.log(`                    };`)
-        console.log(`                else`)
-        console.log(`                    return new[] {`)
-        for (let [value] of info.values) {
-            console.log(`                        (PhysBone${value}Name, Source${value}),`)
-        }
-        console.log(`                    };`)
-        console.log(`            }`)
-    }
     console.log(`        }`)
 }
 console.log("    }")

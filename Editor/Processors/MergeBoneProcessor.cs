@@ -1,38 +1,38 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Anatawa12.AvatarOptimizer.ErrorReporting;
 using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
 using JetBrains.Annotations;
 using nadena.dev.ndmf;
-using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
+
+#if AAO_VRCSDK3_AVATARS
+using VRC.Dynamics;
+#endif
 
 namespace Anatawa12.AvatarOptimizer.Processors
 {
     internal class MergeBoneProcessor : Pass<MergeBoneProcessor>
     {
-        [InitializeOnLoadMethod]
-        private static void RegisterValidator()
+        public static void Validate(MergeBone mergeBone, GameObject root)
         {
-            ComponentValidation.RegisterValidator<MergeBone>(mergeBone =>
+            // TODO: use AvatarRoot API
+            if (mergeBone.transform == root.transform)
             {
-                var errors = new ErrorLog[2];
+                BuildLog.LogError("MergeBone:validation:onAvatarRoot");
+            }
 
-                if (mergeBone.GetComponents<Component>().Except(new Component[] { mergeBone, mergeBone.transform })
-                    .Any())
-                    errors[0] = ErrorLog.Warning("MergeBone:validation:thereAreComponent");
+            if (mergeBone.GetComponents<Component>().Except(new Component[] { mergeBone, mergeBone.transform })
+                .Any())
+                BuildLog.LogWarning("MergeBone:validation:thereAreComponent");
 
-                if (AnyNotMergedBone(mergeBone.transform))
-                {
-                    // if the bone has non-merged bones, uneven scaling is not supported.
-                    if (!ScaledEvenly(mergeBone.transform.localScale))
-                        errors[1] = ErrorLog.Warning("MergeBone:validation:unevenScaling");
-                }
-
-                return errors;
-            });
+            if (AnyNotMergedBone(mergeBone.transform))
+            {
+                // if the bone has non-merged bones, uneven scaling is not supported.
+                if (!ScaledEvenly(mergeBone.transform.localScale))
+                    BuildLog.LogWarning("MergeBone:validation:unevenScaling");
+            }
 
             bool AnyNotMergedBone(Transform bone)
             {
@@ -58,6 +58,8 @@ namespace Anatawa12.AvatarOptimizer.Processors
             var mergeMapping = new Dictionary<Transform, Transform>();
             foreach (var component in context.GetComponents<MergeBone>())
             {
+                // Error by validator
+                if (component.transform == context.AvatarRootTransform) continue;
                 var transform = component.transform;
                 mergeMapping[transform] = transform.parent;
             }
@@ -67,12 +69,20 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
             if (mergeMapping.Count == 0) return;
 
-            BuildReport.ReportingObjects(context.GetComponents<SkinnedMeshRenderer>(), renderer =>
+#if AAO_VRCSDK3_AVATARS
+            foreach (var physBone in context.GetComponents<VRCPhysBoneBase>())
+                using (ErrorReport.WithContextObject(physBone))
+                    MapIgnoreTransforms(physBone);
+#endif
+            foreach (var renderer in context.GetComponents<SkinnedMeshRenderer>())
             {
-                var meshInfo2 = context.GetMeshInfoFor(renderer);
-                if (meshInfo2.Bones.Any(x => x.Transform && mergeMapping.ContainsKey(x.Transform)))
-                    DoBoneMap2(meshInfo2, mergeMapping);
-            });
+                using (ErrorReport.WithContextObject(renderer))
+                {
+                    var meshInfo2 = context.GetMeshInfoFor(renderer);
+                    if (meshInfo2.Bones.Any(x => x.Transform && mergeMapping.ContainsKey(x.Transform)))
+                        DoBoneMap2(meshInfo2, mergeMapping);
+                }
+            }
 
             var counter = 0;
 
@@ -103,8 +113,34 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
             foreach (var pair in mergeMapping.Keys)
                 if (pair)
-                    Object.DestroyImmediate(pair.gameObject);
+                    DestroyTracker.DestroyImmediate(pair.gameObject);
         }
+
+#if AAO_VRCSDK3_AVATARS
+        internal static void MapIgnoreTransforms(VRCPhysBoneBase physBone)
+        {
+            if (physBone.ignoreTransforms == null) return;
+            var ignoreTransforms = new HashSet<Transform>();
+
+            var processQueue = new Queue<Transform>(physBone.ignoreTransforms);
+            while (processQueue.Count != 0)
+            {
+                var transform = processQueue.Dequeue();
+                if (transform == null) continue;
+                if (!transform.gameObject.GetComponent<MergeBone>())
+                {
+                    ignoreTransforms.Add(transform);
+                }
+                else
+                {
+                    foreach (var child in transform.DirectChildrenEnumerable())
+                        processQueue.Enqueue(child);
+                }
+            }
+
+            physBone.ignoreTransforms = ignoreTransforms.ToList();
+        }
+#endif
 
         private void DoBoneMap2(MeshInfo2 meshInfo2, Dictionary<Transform, Transform> mergeMapping)
         {

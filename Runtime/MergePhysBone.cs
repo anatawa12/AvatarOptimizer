@@ -2,8 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using Anatawa12.AvatarOptimizer.ErrorReporting;
-using CustomLocalization4EditorExtension;
 using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.Animations;
@@ -15,10 +13,10 @@ namespace Anatawa12.AvatarOptimizer
     [DisallowMultipleComponent]
     [ExecuteAlways]
     [HelpURL("https://vpm.anatawa12.com/avatar-optimizer/ja/docs/reference/merge-physbone/")]
-    internal class MergePhysBone : AvatarTagComponent, IStaticValidated
+    internal class MergePhysBone : AvatarTagComponent
     {
         [NotKeyable]
-        [CL4EELocalized("MergePhysBone:prop:makeParent", "MergePhysBone:tooltip:makeParent")]
+        [AAOLocalized("MergePhysBone:prop:makeParent", "MergePhysBone:tooltip:makeParent")]
         public bool makeParent;
 
         #region OverrideAndValue
@@ -230,7 +228,7 @@ namespace Anatawa12.AvatarOptimizer
 
         #endregion
 
-        [CL4EELocalized("MergePhysBone:prop:components")]
+        [AAOLocalized("MergePhysBone:prop:components")]
         public PrefabSafeSet.VRCPhysBoneBaseSet componentsSet;
 
         public MergePhysBone()

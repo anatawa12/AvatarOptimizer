@@ -2,6 +2,10 @@ using Anatawa12.AvatarOptimizer.Processors;
 using NUnit.Framework;
 using UnityEngine;
 
+#if AAO_VRCSDK3_AVATARS
+using VRC.SDK3.Dynamics.PhysBone.Components;
+#endif
+
 namespace Anatawa12.AvatarOptimizer.Test
 {
     public class MergeBoneTest
@@ -30,5 +34,66 @@ namespace Anatawa12.AvatarOptimizer.Test
             Assert.That(movedAfter.position, Is.EqualTo(epsilonVector3));
             Assert.That(movedAfter.rotation, Is.EqualTo(Quaternion.identity));
         }
+        
+#if AAO_VRCSDK3_AVATARS
+        [Test]
+        public void IgnoreTransformOfPhysBone()
+        {
+            var root = TestUtils.NewAvatar();
+            var pbRoot = Utils.NewGameObject("merged", root.transform);
+            var child = Utils.NewGameObject("child", pbRoot.transform);
+            var mergedIgnored = Utils.NewGameObject("mergedIgnored", child.transform);
+            var mergedChild = Utils.NewGameObject("mergedChild", mergedIgnored.transform);
+
+            var nonMergedIgnored = Utils.NewGameObject("nonMergedIgnored", child.transform);
+
+            mergedIgnored.AddComponent<MergeBone>();
+
+            var physBone = pbRoot.AddComponent<VRCPhysBone>();
+
+            physBone.ignoreTransforms.Add(mergedIgnored.transform);
+            physBone.ignoreTransforms.Add(nonMergedIgnored.transform);
+
+            MergeBoneProcessor.MapIgnoreTransforms(physBone);
+
+            Assert.That(physBone.ignoreTransforms,
+                Is.EquivalentTo(new[] { nonMergedIgnored.transform, mergedChild.transform }));
+        }
+        
+        [Test]
+        public void NullElementsInIgnoreTransformInPhysBone()
+        {
+            var root = TestUtils.NewAvatar();
+            var destoryed = Utils.NewGameObject("destoryed", root.transform);
+            var pbRoot = Utils.NewGameObject("merged", root.transform);
+            var child = Utils.NewGameObject("child", pbRoot.transform);
+            var mergedIgnored = Utils.NewGameObject("mergedIgnored", child.transform);
+            var mergedChild = Utils.NewGameObject("mergedChild", mergedIgnored.transform);
+
+            var nonMergedIgnored = Utils.NewGameObject("nonMergedIgnored", child.transform);
+
+            mergedIgnored.AddComponent<MergeBone>();
+
+            var physBone = pbRoot.AddComponent<VRCPhysBone>();
+
+            physBone.ignoreTransforms.Add(mergedIgnored.transform);
+            physBone.ignoreTransforms.Add(nonMergedIgnored.transform);
+            physBone.ignoreTransforms.Add(destoryed.transform);
+            physBone.ignoreTransforms.Add(null);
+            Object.DestroyImmediate(destoryed);
+
+            MergeBoneProcessor.MapIgnoreTransforms(physBone);
+        }
+        
+        [Test]
+        public void NullIgnoreTransformListInPhysBone()
+        {
+            var root = TestUtils.NewAvatar();
+            var pbRoot = Utils.NewGameObject("merged", root.transform);
+            var physBone = pbRoot.AddComponent<VRCPhysBone>();
+            physBone.ignoreTransforms = null;
+            MergeBoneProcessor.MapIgnoreTransforms(physBone);
+        }
+#endif
     }
 }

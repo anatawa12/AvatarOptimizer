@@ -1,4 +1,3 @@
-using Anatawa12.AvatarOptimizer.ErrorReporting;
 using Anatawa12.AvatarOptimizer.ndmf;
 using nadena.dev.ndmf;
 using UnityEngine;
@@ -28,11 +27,11 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 foreach (var processor in processors.GetSorted())
                 {
                     Profiler.BeginSample($"{processor.GetType().Name}: {processors.Target.name}");
-                    BuildReport.ReportingObject(processor.Component, () => processor.Process(context, target));
+                    using (ErrorReport.WithContextObject(processor.Component)) processor.Process(context, target);
                     target.AssertInvariantContract(
                         $"after {processor.GetType().Name} " +
                         $"for {processor.Target.gameObject.name}");
-                    Object.DestroyImmediate(processor.Component);
+                    DestroyTracker.DestroyImmediate(processor.Component);
                     Profiler.EndSample();
                 }
                 Profiler.EndSample();

@@ -80,6 +80,12 @@ msgstr "すべて有効にする"
 msgid "FreezeBlendShape:button:Invert All"
 msgstr "すべての有効/無効を入れ替える"
 
+msgid "FreezeBlendShape:warning:animation"
+msgstr ""
+"固定・除去対象である以下のBlendShapeはアニメーションされています。"
+"固定・除去されたBlendShapeはアニメーションで動かせなくなります。意図的に行っている場合はこの警告を無視してください。\n"
+"{0}"
+
 # endregion
 
 # region MakeChildren
@@ -112,6 +118,9 @@ msgstr "名前の競合を避ける"
 msgid "MergeBone:tooltip:avoidNameConflict"
 msgstr "統合時に子GameObjectの名前を変更し、名前の重複を回避します"
 
+msgid "MergeBone:validation:onAvatarRoot"
+msgstr "MergeBoneをアバターの最上位に付けることはサポートされていません。"
+
 msgid "MergeBone:validation:thereAreComponent"
 msgstr "Transform以外のコンポーネントがあります。これはサポートされていません。"
 
@@ -137,6 +146,9 @@ msgstr "統合対象のPhysBoneの親が違います。同じ親の子にする�
 msgid "MergePhysBone:error:noSources"
 msgstr "統合対象のPhysBoneがありません。"
 
+msgid "MergePhysBone:error:oneSource"
+msgstr "統合対象のPhysBoneが1つしかありません。2つ以上のPhysBoneを指定してください。"
+
 msgid "MergePhysBone:error:multiChildType"
 msgstr "Multi Child TypeがIgnoreでないPhysBoneがあります。"
 
@@ -149,6 +161,9 @@ msgstr "複数の統合対象の間で値に差異があります。以下の値
 
 msgid "MergePhysBone:error:differValueSingle"
 msgstr "複数の統合対象の間で値に差異があります。同じ値にするかOverrideする必要があります"
+
+msgid "MergePhysBone:warning:differChainLength"
+msgstr "複数の統合対象の間でチェーンの長さが異なります。短いチェーンのPBは元よりも太くなる可能性があります。"
 
 msgid "MergePhysBone:dialog:versionInfo:title"
 msgstr "バージョンについて" 
@@ -304,10 +319,10 @@ msgstr "面積がゼロのポリゴンを削除します。"
 
 # region AvatarGlobalComponent
 
-msgid "DeleteEditorOnlyGameObjects:NotOnAvatarDescriptor"
+msgid "AvatarGlobalComponent:NotOnAvatarDescriptor"
 msgstr "このコンポーネントはアバターの最上位に付ける必要があります。(AvatarDescriptorのあるGameObject)"
 
-msgid "DeleteEditorOnlyGameObjects:NotOnAvatarRoot"
+msgid "AvatarGlobalComponent:NotOnAvatarRoot"
 msgstr "このコンポーネントはアバターの最上位に付ける必要があります。(VRChatのアバターでは、AvatarDescriptorのあるGameObject)"
 
 # endregion
@@ -361,6 +376,12 @@ msgstr "BlendShapeを自動的に固定・削除する"
 msgid "TraceAndOptimize:prop:removeUnusedObjects"
 msgstr "使われていないObjectを自動的に削除する"
 
+msgid "TraceAndOptimize:prop:optimizePhysBone"
+msgstr "PhysBoneの設定を最適化する"
+
+msgid "TraceAndOptimize:prop:animatorOptimizer"
+msgstr "アニメーターを最適化する"
+
 msgid "TraceAndOptimize:prop:mmdWorldCompatibility"
 msgstr "MMDワールドとの互換性"
 
@@ -376,8 +397,20 @@ msgstr "高度な設定はAvatarOptimizerのバグを回避するための設定
 "また、一部の高度な設定の変更は正しく機能しなかったり、その動作が変更される可能性があります。注意してください!"
 
 msgid "TraceAndOptimize:warn:unknown-type"
-msgstr "未知のコンポーネント'{0}'を検出しました! これにより最適化処理の品質が低下し、処理後のアバターが壊れる可能性があります。(元のアバターには影響しません)"
-"アバターが壊れた場合、これをAvatarOptimizerに報告してください!"
+msgstr "未知のコンポーネント'{0}'を検出しました!"
+
+msgid "TraceAndOptimize:warn:unknown-type:description"
+msgstr "Avatar Optimizerにとって未知のコンポーネントが見つかりました。これにより最適化処理の品質が低下し、処理後のアバターが壊れる可能性があります。(元のアバターには影響しません)"
+
+msgid "TraceAndOptimize:warn:unknown-type:hint"
+msgstr ""
+"アバターが壊れていない場合、この警告は無視しても問題ありません。\n"
+"\n"
+"このコンポーネントがあなたのツールのものである場合は、Avatar Optimizerにコンポーネントを登録することを検討してください。"
+"詳しくは https://vpm.anatawa12.com/avatar-optimizer/ja/docs/developers/make-your-components-compatible-with-aao/ をご覧ください。\n"
+"\n"
+"このコンポーネントがあなたの使っているツールのものである場合は、ツール作者にAvatar Optimizerへのコンポーネント登録を依頼するか、"
+"有名なツールであればAvatar Optimizerに対応を依頼してください。"
 
 msgid "TraceAndOptimize:prop:preserveEndBone"
 msgstr "endボーンを残す"
@@ -387,6 +420,9 @@ msgstr "親が削除されていないendボーンを削除しないようにし
 
 msgid "TraceAndOptimize:prop:removeZeroSizedPolygons"
 msgstr "面積がゼロのポリゴンを自動的に削除する"
+
+msgid "TraceAndOptimize:OptimizePhysBone:UnknownPhysBoneColliderShape"
+msgstr "未知のPhysBone Collider形状'{0}'が指定されています。"
 
 # endregion
 
@@ -402,6 +438,41 @@ msgid "MergeSkinnedMesh:warning:animation-mesh-hide"
 msgstr ""
 "統合先のメッシュとは異なるアニメーションで表示されるメッシュが統合対象に含まれているため、"
 "そのアニメーションによる切り替えは機能しなくなります。意図的に行っている場合はこの警告を無視してください。"
+
+#endregion
+
+#region ComponentInfos
+
+msgid "ComponentInfos:VRCAvatarDescriptor:warning:NoVisemeSkinnedMesh"
+msgstr "リップシンク用のSkinnedMeshRendererがありません。"
+
+msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownLipSyncStyle"
+msgstr "リップシンクの種類として未知の種類'{0}'が指定されています。"
+
+msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownColliderState"
+msgstr "{1}のStandard Colliderに未知の設定'{0}'が指定されています。"
+
+msgid "ComponentInfos:VRCAvatarDescriptor:warning:NoMeshInEyelidsSkinnedMesh"
+msgstr "瞬き用のSkinnedMeshRendererにメッシュがありません。"
+
+msgid "ComponentInfos:VRCAvatarDescriptor:warning:NoEyelidsSkinnedMesh"
+msgstr "瞬き用のSkinnedMeshRendererがありません。"
+
+msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownEyelidType"
+msgstr "瞬きの種類として未知の種類'{0}'が指定されています。"
+
+#endregion
+
+#region AnimatorParser
+
+msgid "AnimatorParser:PlayableLayerControl:UnknownBlendablePlayableLayer"
+msgstr "Playable Layer Controlに未知のレイヤー'{0}'が指定されています。"
+
+msgid "AnimatorParser:AnimatorLayerControl:UnknownBlendablePlayableLayer"
+msgstr "Animator Layer Controlに未知のレイヤー'{0}'が指定されています。"
+
+msgid "AnimatorParser:AnimatorNotFoundOnAvatarRoot"
+msgstr "アバターの最上位にAnimatorコンポーネントがありません。"
 
 #endregion
 
@@ -422,5 +493,17 @@ msgstr "{0}コンポーネントはLineStripが使用されているSubMeshを�
 
 msgid "ErrorReporter:error.internal_error"
 msgstr "内部エラーが発生しました: {0} 以下の処理中です:"
+
+# endregion
+
+# region AssetDescription
+
+msgid "AssetDescription:Description"
+msgstr ""
+"Avatar Optimizer Asset Descriptionは、あなたのアセットについての情報をAvatar Optimizerに与えるためのアセットです。\n"
+"詳しくはドキュメントを参照してください。"
+
+msgid "AssetDescription:OpenDocs"
+msgstr "Open Documentation"
 
 # endregion

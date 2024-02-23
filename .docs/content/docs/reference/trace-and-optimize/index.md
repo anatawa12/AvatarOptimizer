@@ -23,6 +23,8 @@ Currently the following optimizations are applied automatically.
     Prevents removing end bones[^endbone] whose parent is not removed.
 - `Automatically Remove Zero Sized Polygons`
   Removes polygons whose area are zero.
+- `Optimize Animator`
+  Optimizes Animator Controller.
 
 Also, You can adjust optimization with the following settings
 - `MMD World Compatibility`  

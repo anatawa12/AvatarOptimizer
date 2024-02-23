@@ -1,6 +1,6 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using Anatawa12.AvatarOptimizer.ErrorReporting;
 using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
 using JetBrains.Annotations;
 using nadena.dev.ndmf;
@@ -21,8 +21,35 @@ namespace Anatawa12.AvatarOptimizer.Processors
         public void OnDeactivate(BuildContext context)
         {
             Debug.Assert(Holder != null, nameof(Holder) + " != null");
-            Holder.SaveToMesh();
+            // avoid Array index (n) is out of bounds (size=m) error
+            // by assigning null to AnimatorController before changing blendShapes count
+            // and assigning back after changing blendShapes count.
+            // see https://github.com/anatawa12/AvatarOptimizer/issues/804
+            using (new EvacuateAnimatorController(context))
+            {
+                Holder.SaveToMesh();
+            }
             Holder = null;
+        }
+    }
+
+    internal struct EvacuateAnimatorController : IDisposable
+    {
+        private Dictionary<Animator, RuntimeAnimatorController> _controllers;
+
+        public EvacuateAnimatorController(BuildContext context)
+        {
+            _controllers = context.GetComponents<Animator>()
+                .ToDictionary(a => a, a => a.runtimeAnimatorController);
+
+            foreach (var animator in _controllers.Keys)
+                animator.runtimeAnimatorController = null;
+        }
+
+        public void Dispose()
+        {
+            foreach (var (animator, runtimeAnimatorController) in _controllers)
+                animator.runtimeAnimatorController = runtimeAnimatorController;
         }
     }
 
@@ -30,8 +57,6 @@ namespace Anatawa12.AvatarOptimizer.Processors
     {
         private readonly Dictionary<SkinnedMeshRenderer, MeshInfo2> _skinnedCache =
             new Dictionary<SkinnedMeshRenderer, MeshInfo2>();
-
-        private readonly Dictionary<MeshRenderer, MeshInfo2> _staticCache = new Dictionary<MeshRenderer, MeshInfo2>();
 
         public MeshInfo2Holder(GameObject rootObject)
         {
@@ -43,13 +68,6 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 GetMeshInfoFor(renderer);
                 Profiler.EndSample();
             }
-            
-            foreach (var renderer in rootObject.GetComponentsInChildren<MeshRenderer>(true))
-            {
-                Profiler.BeginSample($"Read Static Mesh");
-                GetMeshInfoFor(renderer);
-                Profiler.EndSample();
-            }
         }
 
         public MeshInfo2 GetMeshInfoFor(SkinnedMeshRenderer renderer) =>
@@ -57,11 +75,6 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 ? cached
                 : _skinnedCache[renderer] = new MeshInfo2(renderer);
 
-
-        public MeshInfo2 GetMeshInfoFor(MeshRenderer renderer) =>
-            _staticCache.TryGetValue(renderer, out var cached)
-                ? cached
-                : _staticCache[renderer] = new MeshInfo2(renderer);
 
         public void SaveToMesh()
         {
@@ -72,15 +85,6 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
                 Profiler.BeginSample($"Save Skinned Mesh {targetRenderer.name}");
                 keyValuePair.Value.WriteToSkinnedMeshRenderer(targetRenderer);
-                Profiler.EndSample();
-            }
-
-            foreach (var keyValuePair in _staticCache)
-            {
-                var targetRenderer = keyValuePair.Key;
-                if (!targetRenderer) continue;
-                Profiler.BeginSample($"Save Static Mesh {targetRenderer.name}");
-                keyValuePair.Value.WriteToMeshRenderer(targetRenderer);
                 Profiler.EndSample();
             }
         }

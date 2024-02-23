@@ -1,9 +1,7 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.API;
 using Anatawa12.AvatarOptimizer.APIInternal;
-using Anatawa12.AvatarOptimizer.ErrorReporting;
 using JetBrains.Annotations;
 using nadena.dev.ndmf;
 using UnityEditor;
@@ -28,46 +26,49 @@ namespace Anatawa12.AvatarOptimizer
             var mappingSource = new MappingSourceImpl(mapping);
 
             // replace all objects
-            BuildReport.ReportingObjects(context.GetComponents<Component>(), component =>
+            foreach (var component in context.GetComponents<Component>())
             {
-                if (component is Transform) return;
-                
-                // apply special mapping
-                if (ComponentInfoRegistry.TryGetInformation(component.GetType(), out var info))
-                    info.ApplySpecialMappingInternal(component, mappingSource);
-
-                var serialized = new SerializedObject(component);
-                AnimatorControllerMapper mapper = null;
-
-                foreach (var p in serialized.ObjectReferenceProperties())
+                using (ErrorReport.WithContextObject(component))
                 {
-                    if (mapping.MapComponentInstance(p.objectReferenceInstanceIDValue, out var mappedComponent))
-                        p.objectReferenceValue = mappedComponent;
+                    if (component is Transform) continue;
 
-                    var objectReferenceValue = p.objectReferenceValue;
-                    switch (objectReferenceValue)
+                    // apply special mapping
+                    if (ComponentInfoRegistry.TryGetInformation(component.GetType(), out var info))
+                        info.ApplySpecialMappingInternal(component, mappingSource);
+
+                    var serialized = new SerializedObject(component);
+                    AnimatorControllerMapper mapper = null;
+
+                    foreach (var p in serialized.ObjectReferenceProperties())
                     {
-                        case RuntimeAnimatorController _:
+                        if (mapping.MapComponentInstance(p.objectReferenceInstanceIDValue, out var mappedComponent))
+                            p.objectReferenceValue = mappedComponent;
+
+                        var objectReferenceValue = p.objectReferenceValue;
+                        switch (objectReferenceValue)
+                        {
+                            case RuntimeAnimatorController _:
 #if AAO_VRM0
-                        case VRM.BlendShapeAvatar _:
+                            case VRM.BlendShapeAvatar _:
 #endif
 #if AAO_VRM1
-                        case UniVRM10.VRM10Object _:
+                            case UniVRM10.VRM10Object _:
 #endif
-                            if (mapper == null)
-                                mapper = new AnimatorControllerMapper(mapping.CreateAnimationMapper(component.gameObject));
+                                if (mapper == null)
+                                    mapper = new AnimatorControllerMapper(
+                                        mapping.CreateAnimationMapper(component.gameObject));
 
-                            // ReSharper disable once AccessToModifiedClosure
-                            var mapped = BuildReport.ReportingObject(objectReferenceValue,
-                                () => mapper.MapObject(objectReferenceValue));
-                            if (mapped != objectReferenceValue)
-                                p.objectReferenceValue = mapped;
-                            break;
+                                // ReSharper disable once AccessToModifiedClosure
+                                var mapped = mapper.MapObject(objectReferenceValue);
+                                if (mapped != objectReferenceValue)
+                                    p.objectReferenceValue = mapped;
+                                break;
+                        }
                     }
-                }
 
-                serialized.ApplyModifiedPropertiesWithoutUndo();
-            });
+                    serialized.ApplyModifiedPropertiesWithoutUndo();
+                }
+            }
         }
     }
 
@@ -134,27 +135,16 @@ namespace Anatawa12.AvatarOptimizer
         }
     }
 
-    internal class AnimatorControllerMapper
+    internal class AnimatorControllerMapper : DeepCloneHelper
     {
         private readonly AnimationObjectMapper _mapping;
-        private readonly Dictionary<Object, Object> _cache = new Dictionary<Object, Object>();
-        private bool _mapped = false;
 
         public AnimatorControllerMapper(AnimationObjectMapper mapping)
         {
             _mapping = mapping;
         }
 
-        public T MapAnimatorController<T>(T controller) where T : RuntimeAnimatorController =>
-            DeepClone(controller, CustomClone);
-
-        public T MapObject<T>(T obj) where T : Object =>
-            DeepClone(obj, CustomClone);
-
-        // https://github.com/bdunderscore/modular-avatar/blob/db49e2e210bc070671af963ff89df853ae4514a5/Packages/nadena.dev.modular-avatar/Editor/AnimatorMerger.cs#L199-L241
-        // Originally under MIT License
-        // Copyright (c) 2022 bd_
-        private Object CustomClone(Object o)
+        protected override Object CustomClone(Object o)
         {
             if (o is AnimationClip clip)
             {
@@ -163,6 +153,7 @@ namespace Anatawa12.AvatarOptimizer
                 if (clip.IsProxy()) return clip;
 #endif
                 var newClip = new AnimationClip();
+                ObjectRegistry.RegisterReplacedObject(clip, newClip);
                 newClip.name = "rebased " + clip.name;
 
                 // copy m_UseHighQualityCurve with SerializedObject since m_UseHighQualityCurve doesn't have public API
@@ -184,7 +175,7 @@ namespace Anatawa12.AvatarOptimizer
                     }
                     else
                     {
-                        _mapped = true;
+                        Changed();
                         foreach (var newBinding in newBindings)
                         {
                             newClip.SetCurve(newBinding.path, newBinding.type, newBinding.propertyName,
@@ -203,7 +194,7 @@ namespace Anatawa12.AvatarOptimizer
                     }
                     else
                     {
-                        _mapped = true;
+                        Changed();
                         foreach (var tuple in newBindings)
                         {
                             var newBinding = binding;
@@ -211,7 +202,7 @@ namespace Anatawa12.AvatarOptimizer
                             newBinding.type = tuple.type;
                             newBinding.propertyName = tuple.propertyName;
                             AnimationUtility.SetObjectReferenceCurve(newClip, newBinding,
-                                AnimationUtility.GetObjectReferenceCurve(clip, newBinding));
+                                AnimationUtility.GetObjectReferenceCurve(clip, binding));
                         }
                     }
                 }
@@ -237,6 +228,8 @@ namespace Anatawa12.AvatarOptimizer
             else if (o is AvatarMask mask)
             {
                 var newMask = new AvatarMask();
+                ObjectRegistry.RegisterReplacedObject(mask, newMask);
+
                 for (var part = AvatarMaskBodyPart.Root; part < AvatarMaskBodyPart.LastBodyPart; ++part)
                     newMask.SetHumanoidBodyPartActive(part, mask.GetHumanoidBodyPartActive(part));
                 newMask.name = "rebased " + mask.name;
@@ -252,7 +245,7 @@ namespace Anatawa12.AvatarOptimizer
                         newMask.SetTransformActive(dstI, mask.GetTransformActive(srcI));
                         dstI++;
                     }
-                    if (path != newPath) _mapped = true;
+                    if (path != newPath) Changed();
                 }
                 newMask.transformCount = dstI;
 
@@ -261,7 +254,7 @@ namespace Anatawa12.AvatarOptimizer
 #if AAO_VRM0
             else if (o is VRM.BlendShapeClip blendShapeClip)
             {
-                var newBlendShapeClip = DefaultDeepClone(blendShapeClip, CustomClone);
+                var newBlendShapeClip = DefaultDeepClone(blendShapeClip);
                 newBlendShapeClip.Prefab = null; // This likely to point prefab before mapping, which is invalid by now
                 newBlendShapeClip.name = "rebased " + blendShapeClip.name;
                 newBlendShapeClip.Values = newBlendShapeClip.Values.SelectMany(binding =>
@@ -271,7 +264,7 @@ namespace Anatawa12.AvatarOptimizer
                     {
                         return new[] { binding };
                     }
-                    _mapped = true;
+                    Changed();
                     return mappedBindings
                         .Select(mapped => new VRM.BlendShapeBinding
                         {
@@ -280,13 +273,16 @@ namespace Anatawa12.AvatarOptimizer
                             Weight = binding.Weight
                         });
                 }).ToArray(); 
+                // Currently, MaterialValueBindings are guaranteed to not change (MaterialName, in particular)
+                // unless MergeToonLitMaterial is used, which breaks material animations anyway.
+                // Map MaterialValues here once we start tracking material changes...
                 return newBlendShapeClip;
             }
 #endif
 #if AAO_VRM1
             else if (o is UniVRM10.VRM10Expression vrm10Expression)
             {
-                var newVrm10Expression = DefaultDeepClone(vrm10Expression, CustomClone);
+                var newVrm10Expression = DefaultDeepClone(vrm10Expression);
                 newVrm10Expression.Prefab = null; // This likely to point prefab before mapping, which is invalid by now
                 newVrm10Expression.name = "rebased " + vrm10Expression.name;
                 newVrm10Expression.MorphTargetBindings = newVrm10Expression.MorphTargetBindings.SelectMany(binding =>
@@ -296,7 +292,7 @@ namespace Anatawa12.AvatarOptimizer
                     {
                         return new[] { binding };
                     }
-                    _mapped = true;
+                    Changed();
                     return mappedBindings
                         .Select(mapped => new UniVRM10.MorphTargetBinding
                         {
@@ -305,6 +301,9 @@ namespace Anatawa12.AvatarOptimizer
                             Weight = binding.Weight
                         });
                 }).ToArray(); 
+                // Currently, MaterialColorBindings and MaterialUVBindings are guaranteed to not change (MaterialName, in particular)
+                // unless MergeToonLitMaterial is used, which breaks material animations anyway.
+                // Map MaterialColorBindings / MaterialUVBindings here once we start tracking material changes...
                 return newVrm10Expression;
             }
 #endif
@@ -312,10 +311,9 @@ namespace Anatawa12.AvatarOptimizer
             {
                 using (new MappedScope(this))
                 {
-                    var newController = DefaultDeepClone(controller, CustomClone);
+                    var newController = DefaultDeepClone(controller);
                     newController.name = controller.name + " (rebased)";
-                    if (!_mapped) newController = controller;
-                    _cache[controller] = newController;
+                    if (!HasChanged()) newController = controller;
                     return newController;
                 }
             }
@@ -324,10 +322,9 @@ namespace Anatawa12.AvatarOptimizer
             {
                 using (new MappedScope(this))
                 {
-                    var newBlendShapeAvatar = DefaultDeepClone(blendShapeAvatar, CustomClone);
+                    var newBlendShapeAvatar = DefaultDeepClone(blendShapeAvatar);
                     newBlendShapeAvatar.name = blendShapeAvatar.name + " (rebased)";
-                    if (!_mapped) newBlendShapeAvatar = blendShapeAvatar;
-                    _cache[blendShapeAvatar] = newBlendShapeAvatar;
+                    if (!HasChanged()) newBlendShapeAvatar = blendShapeAvatar;
                     return newBlendShapeAvatar;
                 }
             }
@@ -337,10 +334,9 @@ namespace Anatawa12.AvatarOptimizer
             {
                 using (new MappedScope(this))
                 {
-                    var newVrm10Object = DefaultDeepClone(vrm10Object, CustomClone);
+                    var newVrm10Object = DefaultDeepClone(vrm10Object);
                     newVrm10Object.name = vrm10Object.name + " (rebased)";
-                    if (!_mapped) newVrm10Object = vrm10Object;
-                    _cache[vrm10Object] = newVrm10Object;
+                    if (!HasChanged()) newVrm10Object = vrm10Object;
 
                     newVrm10Object.FirstPerson.Renderers = newVrm10Object.FirstPerson.Renderers
                         .Select(r => new UniVRM10.RendererFirstPersonFlags
@@ -361,7 +357,7 @@ namespace Anatawa12.AvatarOptimizer
                             else
                             {
                                 mergedFirstPersonFlag = firstPersonFlags.Contains(UniGLTF.Extensions.VRMC_vrm.FirstPersonType.both) ? UniGLTF.Extensions.VRMC_vrm.FirstPersonType.both : UniGLTF.Extensions.VRMC_vrm.FirstPersonType.auto;
-                                BuildReport.LogWarning("MergeSkinnedMesh:warning:VRM:FirstPersonFlagsMismatch", mergedFirstPersonFlag.ToString());
+                                BuildLog.LogWarning("MergeSkinnedMesh:warning:VRM:FirstPersonFlagsMismatch", mergedFirstPersonFlag.ToString());
                             }
 
                             return new UniVRM10.RendererFirstPersonFlags
@@ -380,116 +376,48 @@ namespace Anatawa12.AvatarOptimizer
                 return null;
             }
         }
-
-        private readonly struct MappedScope : IDisposable
+        
+        protected override ComponentSupport GetComponentSupport(Object original)
         {
-            private readonly AnimatorControllerMapper _mapper;
-            private readonly bool _previous;
-
-            public MappedScope(AnimatorControllerMapper mapper)
-            {
-                _mapper = mapper;
-                _previous = mapper._mapped;
-                mapper._mapped = false;
-            }
-
-            public void Dispose()
-            {
-                _mapper._mapped |= _previous;
-            }
-        }
-
-        // https://github.com/bdunderscore/modular-avatar/blob/db49e2e210bc070671af963ff89df853ae4514a5/Packages/nadena.dev.modular-avatar/Editor/AnimatorMerger.cs#LL242-L340C10
-        // Originally under MIT License
-        // Copyright (c) 2022 bd_
-        private T DeepClone<T>(T original, Func<Object, Object> visitor) where T : Object
-        {
-            if (original == null) return null;
-
-            // We want to avoid trying to copy assets not part of the animation system (eg - textures, meshes,
-            // MonoScripts...), so check for the types we care about here
             switch (original)
             {
                 // Any object referenced by an animator that we intend to mutate needs to be listed here.
                 case Motion _:
+                case AvatarMask _:
                 case AnimatorController _:
                 case AnimatorOverrideController _:
                 case AnimatorState _:
                 case AnimatorStateMachine _:
                 case AnimatorTransitionBase _:
                 case StateMachineBehaviour _:
-                case AvatarMask _:
-                    break; // We want to clone these types
 
                 // also handle VRM objects here
 #if AAO_VRM0
                 case VRM.BlendShapeAvatar _:
                 case VRM.BlendShapeClip _:
-                    break; // We want to clone these types
 #endif
-
 #if AAO_VRM1
                 case UniVRM10.VRM10Object _:
                 case UniVRM10.VRM10Expression _:
-                    break; // We want to clone these types
 #endif
+                    return ComponentSupport.Clone;
 
                 // Leave textures, materials, and script definitions alone
                 case Texture _:
                 case MonoScript _:
                 case Material _:
                 case GameObject _:
-                    return original;
+                    return ComponentSupport.NoClone;
 
                 // Also avoid copying unknown scriptable objects.
                 // This ensures compatibility with e.g. avatar remote, which stores state information in a state
                 // behaviour referencing a custom ScriptableObject
                 case ScriptableObject _:
-                    return original;
+                    return ComponentSupport.NoClone;
 
                 default:
-                    throw new Exception($"Unknown type referenced from animator: {original.GetType()}");
+                    return ComponentSupport.Unsupported;
             }
-
-            if (_cache.TryGetValue(original, out var cached)) return (T)cached;
-
-            var obj = visitor(original);
-            if (obj != null)
-            {
-                _cache[original] = obj;
-                _cache[obj] = obj;
-                return (T)obj;
-            }
-
-            return DefaultDeepClone(original, visitor);
-        }
-
-        private T DefaultDeepClone<T>(T original, Func<Object, Object> visitor) where T : Object
-        {
-            Object obj;
-            var ctor = original.GetType().GetConstructor(Type.EmptyTypes);
-            if (ctor == null || original is ScriptableObject)
-            {
-                obj = Object.Instantiate(original);
-            }
-            else
-            {
-                obj = (T)ctor.Invoke(Array.Empty<object>());
-                EditorUtility.CopySerialized(original, obj);
-            }
-
-            _cache[original] = obj;
-            _cache[obj] = obj;
-
-            using (var so = new SerializedObject(obj))
-            {
-                foreach (var prop in so.ObjectReferenceProperties())
-                    prop.objectReferenceValue = DeepClone(prop.objectReferenceValue, visitor);
-
-                so.ApplyModifiedPropertiesWithoutUndo();
-            }
-
-            return (T)obj;
         }
     }
 }

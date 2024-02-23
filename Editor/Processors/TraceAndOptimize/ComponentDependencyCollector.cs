@@ -1,11 +1,13 @@
+using System;
+using System.Collections.Generic;
 using Anatawa12.AvatarOptimizer.APIInternal;
-using Anatawa12.AvatarOptimizer.ErrorReporting;
 using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
 using JetBrains.Annotations;
 using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEngine;
 using Debug = System.Diagnostics.Debug;
+using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 {
@@ -30,11 +32,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         public void CollectAllUsages()
         {
             var collector = new Collector(this, _componentInfos);
+            var unknownComponents = new Dictionary<Type, List<Object>>();
             // second iteration: process parsers
             foreach (var componentInfo in _componentInfos.AllInformation)
             {
                 var component = componentInfo.Component;
-                BuildReport.ReportingObject(component, () =>
+                using (ErrorReport.WithContextObject(component))
                 {
                     // component requires GameObject.
                     collector.Init(componentInfo);
@@ -44,14 +47,18 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     }
                     else
                     {
-                        BuildReport.LogWarning("TraceAndOptimize:warn:unknown-type", component.GetType().Name);
+                        if (!unknownComponents.TryGetValue(component.GetType(), out var list))
+                            unknownComponents.Add(component.GetType(), list = new List<Object>());
+                        list.Add(component);
 
                         FallbackDependenciesParser(component, collector);
                     }
 
                     collector.FinalizeForComponent();
-                });
+                }
             }
+            foreach (var (type, objects) in unknownComponents)
+                BuildLog.LogWarning("TraceAndOptimize:warn:unknown-type", type, objects);
         }
 
         private static void FallbackDependenciesParser(Component component, API.ComponentDependencyCollector collector)
@@ -79,7 +86,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             public Collector(ComponentDependencyCollector collector, GCComponentInfoHolder componentInfos)
             {
                 _collector = collector;
-                _dependencyInfoSharedInstance = new ComponentDependencyInfo(componentInfos);
+                _dependencyInfoSharedInstance = new ComponentDependencyInfo(collector, componentInfos);
             }
             
             public void Init(GCComponentInfo info)
@@ -93,13 +100,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             public MeshInfo2 GetMeshInfoFor(SkinnedMeshRenderer renderer) =>
                 _collector._session.GetMeshInfoFor(renderer);
 
-            public override void MarkEntrypoint() => _info.EntrypointComponent = true;
-
-            public override void MarkHeavyBehaviour() => _info.HeavyBehaviourComponent = true;
-            public override void MarkBehaviour()
-            {
-                // currently NOP
-            }
+            public override void MarkEntrypoint() => _info.MarkEntrypoint();
+            public override void MarkHeavyBehaviour() => _info.MarkHeavyBehaviour();
+            public override void MarkBehaviour() => _info.MarkBehaviour();
 
             private API.ComponentDependencyInfo AddDependencyInternal(
                 [NotNull] GCComponentInfo info,
@@ -117,6 +120,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             public override API.ComponentDependencyInfo AddDependency(Component dependency) =>
                 AddDependencyInternal(_info, dependency);
 
+            internal override bool? GetAnimatedFlag(Component component, string animationProperty, bool currentValue) =>
+                _collector._session.GetConstantValue(component, animationProperty, currentValue);
+
             public void AddParentDependency(Transform component) =>
                 AddDependencyInternal(_info, component.parent, GCComponentInfo.DependencyType.Parent)
                     .EvenIfDependantDisabled();
@@ -132,6 +138,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             private class ComponentDependencyInfo : API.ComponentDependencyInfo
             {
+                private readonly ComponentDependencyCollector _collector;
                 private readonly GCComponentInfoHolder _componentInfos;
 
                 [CanBeNull] private Component _dependency;
@@ -142,8 +149,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 private bool _evenIfThisIsDisabled;
 
                 // ReSharper disable once NotNullOrRequiredMemberIsNotInitialized
-                public ComponentDependencyInfo(GCComponentInfoHolder componentInfos)
+                public ComponentDependencyInfo(ComponentDependencyCollector collector,
+                    GCComponentInfoHolder componentInfos)
                 {
+                    _collector = collector;
                     _componentInfos = componentInfos;
                 }
 
@@ -170,6 +179,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 {
                     Debug.Assert(_dependency != null, nameof(_dependency) + " != null");
 
+                    if (!_dependency.transform.IsChildOf(_collector._session.AvatarRootTransform))
+                        return;
                     if (!_evenIfThisIsDisabled)
                     {
                         // dependant must can be able to be enable

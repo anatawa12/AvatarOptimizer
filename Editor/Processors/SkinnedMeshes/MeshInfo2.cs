@@ -3,16 +3,16 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Anatawa12.AvatarOptimizer.ErrorReporting;
 using JetBrains.Annotations;
+using nadena.dev.ndmf;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
 using UnityEngine;
-using UnityEngine.Assertions;
 using UnityEngine.Profiling;
 using UnityEngine.Rendering;
 using Debug = System.Diagnostics.Debug;
+using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 {
@@ -22,6 +22,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         [NotNull] public Transform RootBone;
         public Bounds Bounds;
         public readonly List<Vertex> Vertices = new List<Vertex>(0);
+
+        private readonly Mesh _originalMesh;
 
         // TexCoordStatus which is 3 bits x 8 = 24 bits
         private ushort _texCoordStatus;
@@ -39,9 +41,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         public MeshInfo2(SkinnedMeshRenderer renderer)
         {
             SourceRenderer = renderer;
-            var mesh = renderer.sharedMesh;
+            var mesh = _originalMesh = renderer.sharedMesh;
 
-            BuildReport.ReportingObject(renderer, true, () =>
+            using (ErrorReport.WithContextObject(renderer))
             {
                 if (mesh)
                     ReadSkinnedMesh(mesh);
@@ -63,16 +65,16 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 RemoveUnusedBones();
 
                 AssertInvariantContract("SkinnedMeshRenderer");
-            });
+            }
         }
 
         public MeshInfo2(MeshRenderer renderer)
         {
             SourceRenderer = renderer;
-            BuildReport.ReportingObject(renderer, true, () =>
+            using (ErrorReport.WithContextObject(renderer))
             {
                 var meshFilter = renderer.GetComponent<MeshFilter>();
-                var mesh = meshFilter ? meshFilter.sharedMesh : null;
+                var mesh = _originalMesh = meshFilter ? meshFilter.sharedMesh : null;
                 if (mesh)
                     ReadStaticMesh(mesh);
 
@@ -83,7 +85,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 SetMaterials(renderer);
 
                 AssertInvariantContract("MeshRenderer");
-            });
+            }
         }
 
         private void SetMaterials(Renderer renderer)
@@ -387,6 +389,17 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             HasTangent = false;
         }
 
+        public bool IsEmpty() =>
+            Bounds == default &&
+            Vertices.Count == 0 &&
+            _texCoordStatus == default &&
+            SubMeshes.Count == 0 &&
+            BlendShapes.Count == 0 &&
+            Bones.Count == 0 &&
+            HasColor == false &&
+            HasNormals == false &&
+            HasTangent == false;
+
         public void Optimize()
         {
             RemoveUnusedBones();
@@ -407,8 +420,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         {
             if (SubMeshes.All(x => x.SharedMaterials.Length == 1)) return;
             
-            BuildReport.LogWarning("MeshInfo2:warning:multiPassRendering", reasonComponent)
-                ?.WithContext(SourceRenderer);
+            BuildLog.LogWarning("MeshInfo2:warning:multiPassRendering", reasonComponent, SourceRenderer);
 
             // flatten SubMeshes
             var subMeshes = SubMeshes.ToArray();
@@ -636,11 +648,18 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         public void WriteToSkinnedMeshRenderer(SkinnedMeshRenderer targetRenderer)
         {
-            BuildReport.ReportingObject(targetRenderer, () =>
+            using (ErrorReport.WithContextObject(targetRenderer))
             {
-                var mesh = new Mesh { name = $"AAOGeneratedMesh{targetRenderer.name}" };
+                var name = $"AAOGeneratedMesh{targetRenderer.name}";
+                var mesh = new Mesh { name = name };
 
                 WriteToMesh(mesh);
+                // I don't know why but Instantiating mesh will fix broken blendshapes with
+                // https://github.com/anatawa12/AvatarOptimizer/issues/753
+                // https://booth.pm/ja/items/1054593.
+                mesh = Object.Instantiate(mesh);
+                mesh.name = name;
+                if (_originalMesh) ObjectRegistry.RegisterReplacedObject(_originalMesh, mesh);
                 targetRenderer.sharedMesh = mesh;
                 for (var i = 0; i < BlendShapes.Count; i++)
                     targetRenderer.SetBlendShapeWeight(i, BlendShapes[i].weight);
@@ -653,19 +672,20 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 if (Bounds != default)
                     targetRenderer.localBounds = Bounds;
                 targetRenderer.updateWhenOffscreen = offscreen;
-            });
+            }
         }
 
         public void WriteToMeshRenderer(MeshRenderer targetRenderer)
         {
-            BuildReport.ReportingObject(targetRenderer, () =>
+            using (ErrorReport.WithContextObject(targetRenderer))
             {
                 var mesh = new Mesh { name = $"AAOGeneratedMesh{targetRenderer.name}" };
                 var meshFilter = targetRenderer.GetComponent<MeshFilter>();
                 WriteToMesh(mesh);
+                if (_originalMesh) ObjectRegistry.RegisterReplacedObject(_originalMesh, mesh);
                 meshFilter.sharedMesh = mesh;
                 targetRenderer.sharedMaterials = SubMeshes.SelectMany(x => x.SharedMaterials).ToArray();
-            });
+            }
         }
     }
 
@@ -736,7 +756,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     primitiveSize = 1;
                     return true;
                 case MeshTopology.LineStrip:
-                    BuildReport.LogWarning("MeshInfo2:warning:lineStrip", component);
+                    BuildLog.LogWarning("MeshInfo2:warning:lineStrip", component);
                     primitiveSize = default;
                     return false;
                 default:
@@ -967,7 +987,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         public Vertex Clone() => new Vertex(this);
 
-        public Vector3 ComputeActualPosition(MeshInfo2 meshInfo2, Matrix4x4 rendererWorldToLocalMatrix)
+        public Vector3 ComputeActualPosition(MeshInfo2 meshInfo2, OriginalState originalState, Matrix4x4 rendererWorldToLocalMatrix)
         {
             var position = Position;
 
@@ -980,7 +1000,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             var matrix = Matrix4x4.zero;
             foreach (var (bone, weight) in BoneWeights)
             {
-                var transformMat = bone.Transform ? (Matrix4x4)bone.Transform.localToWorldMatrix : Matrix4x4.identity;
+                var transformMat = bone.Transform
+                    ? originalState.GetOriginalLocalToWorld(bone.Transform)
+                    : Matrix4x4.identity;
                 var boneMat = transformMat * bone.Bindpose;
                 matrix += boneMat * weight;
             }

@@ -1,5 +1,4 @@
 using System;
-using CustomLocalization4EditorExtension;
 using UnityEngine;
 using UnityEngine.Animations;
 
@@ -12,29 +11,43 @@ namespace Anatawa12.AvatarOptimizer
     internal class TraceAndOptimize : AvatarGlobalComponent
     {
         [NotKeyable]
-        [CL4EELocalized("TraceAndOptimize:prop:freezeBlendShape")]
+        [AAOLocalized("TraceAndOptimize:prop:freezeBlendShape")]
         [ToggleLeft]
         public bool freezeBlendShape = true;
         [NotKeyable]
-        [CL4EELocalized("TraceAndOptimize:prop:removeUnusedObjects")]
+        [AAOLocalized("TraceAndOptimize:prop:removeUnusedObjects")]
         [ToggleLeft]
         public bool removeUnusedObjects = true;
 
         // Remove Unused Objects Options
         [NotKeyable]
-        [CL4EELocalized("TraceAndOptimize:prop:preserveEndBone",
+        [AAOLocalized("TraceAndOptimize:prop:preserveEndBone",
             "TraceAndOptimize:tooltip:preserveEndBone")]
         [ToggleLeft]
         public bool preserveEndBone;
 
         [NotKeyable]
-        [CL4EELocalized("TraceAndOptimize:prop:removeZeroSizedPolygons")]
+        [AAOLocalized("TraceAndOptimize:prop:removeZeroSizedPolygons")]
         [ToggleLeft]
         public bool removeZeroSizedPolygons = false;
 
+        [NotKeyable]
+        [AAOLocalized("TraceAndOptimize:prop:optimizePhysBone")]
+        [ToggleLeft]
+#if !AAO_VRCSDK3_AVATARS
+        // no meaning without VRCSDK
+        [HideInInspector]
+#endif
+        public bool optimizePhysBone = true;
+
+        [NotKeyable]
+        [AAOLocalized("TraceAndOptimize:prop:optimizeAnimator")]
+        [ToggleLeft]
+        public bool optimizeAnimator = true;
+
         // common parsing configuration
         [NotKeyable]
-        [CL4EELocalized("TraceAndOptimize:prop:mmdWorldCompatibility",
+        [AAOLocalized("TraceAndOptimize:prop:mmdWorldCompatibility",
             "TraceAndOptimize:tooltip:mmdWorldCompatibility")]
         [ToggleLeft]
         public bool mmdWorldCompatibility = true;
@@ -59,6 +72,18 @@ namespace Anatawa12.AvatarOptimizer
             public bool skipFreezingNonAnimatedBlendShape;
             [ToggleLeft]
             public bool skipFreezingMeaninglessBlendShape;
+            [ToggleLeft]
+            public bool skipIsAnimatedOptimization;
+            [ToggleLeft]
+            public bool skipMergePhysBoneCollider;
+            [ToggleLeft]
+            public bool skipEntryExitToBlendTree;
+            [ToggleLeft]
+            public bool skipRemoveUnusedAnimatingProperties;
+            [ToggleLeft]
+            public bool skipMergeDirectBlendTreeLayers;
+            [ToggleLeft]
+            public bool skipRemoveMeaninglessAnimatorLayer;
         }
     }
 }

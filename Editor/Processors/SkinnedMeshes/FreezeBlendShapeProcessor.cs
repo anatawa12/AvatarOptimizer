@@ -17,16 +17,57 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         public override void Process(BuildContext context, MeshInfo2 target)
         {
-            FreezeBlendShapes(Target, context, target, Component.FreezingShapeKeys);
+            FreezeBlendShapes(Target, context, target, Component.FreezingShapeKeys, true);
         }
 
         public static void FreezeBlendShapes(
             SkinnedMeshRenderer targetSMR,
             BuildContext context,
             MeshInfo2 target,
-            HashSet<string> freezeNames
+            HashSet<string> freezeNames,
+            bool withWarning = false
         )
         {
+            // Warn for blendShape animation
+            if (withWarning) {
+                var modified = new HashSet<string>();
+                var sources = new HashSet<object>();
+                var animationComponent = context.GetAnimationComponent(targetSMR);
+
+                foreach (var blendShape in freezeNames)
+                {
+                    if (animationComponent.TryGetFloat($"blendShape.{blendShape}", out var p))
+                    {
+                        // allow constant animation
+                        var weight = target.BlendShapes.Find(r => r.name == blendShape);
+                        if (weight.name == null) continue; // no such blendShape 
+                        var values = p.Value.PossibleValues;
+                        if (values != null)
+                        {
+                            // animated to constant.
+                            // we think the constant is the original constant value.
+                            // we assume user want to override it.
+                            if (values.Length == 1) continue;
+                            // animated to two constant and one is current.
+                            // we think the one is created during creating the new animation and
+                            // the other is the original constant value.
+                            // and we assume user want to override it.
+                            if (values.Length == 2 && values.Contains(weight.weight)) continue;
+                        } 
+
+                        modified.Add(blendShape);
+                        sources.Add(p.ContextReferences);
+                    }
+                }
+
+                if (modified.Count != 0)
+                {
+                    // ReSharper disable once CoVariantArrayConversion
+                    BuildLog.LogWarning("FreezeBlendShape:warning:animation", string.Join(", ", modified),
+                            targetSMR, sources);
+                }
+            }
+
             var freezes = new BitArray(target.BlendShapes.Count);
             for (var i = 0; i < target.BlendShapes.Count; i++)
                 freezes[i] = freezeNames.Contains(target.BlendShapes[i].name);

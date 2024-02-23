@@ -8,16 +8,210 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Animator Optimizer `#854`
+  - Animator Optimizer optimizes your Animator Controller without behaviour Changes
+  - Current Optimizer includes the following optimization
+    - Remove meaningless properties `#854`
+    - Converts Entry / Exit to 1D BlendTree `#854` `#867`
+    - Merges multiple Direct BlendTree to single Direct BlendTree `#870`
+    - Removes meaningless Animator Layers `#870`
+- Asset Description `#847`
+  - Asset Description is the file to provide information of your assets for Avatar Optimizer.
+  - Please see documentation for more details.
 
 ### Changed
+- MergePhysBone now corrects curve settings `#775`
+- MergePhysBone now warns if chain length are not same `#775`
+- MergePhysBone with only one source is now error `#775`
+  - It was not working well and not a error by a bug.
+- PhysBone that swings no bones are now removed `#864`
+  - I found such a PhysBone on Lime so I added this feature.
+- Switched Localization system to NDMF from CL4EE `#873`
+  - Since this release, Avatar Optimizer is no longer depends on CL4EE.
+  - Because VCC doesn't remove unused packages, CL4EE may still be installed on your project.
+  - If you want to remove CL4EE, please remove it manually.
+- Suppressed animated blendshape warning of FreezeBlendShape if it's animated to a few constants `#881`
+  - Modern models have tons of blendshapes to change their face shape but emotion animation of some of them animates such a blendshapes to constant (default value).
+  - That's unnecessary (incorrect I think) and force users to remove or change the clip when user wants to face shape.
+  - I see AAO users use `FreezeBlendShapes` for overriding such a blendshapes on twitter.
+  - I think using this way is reasonable enough so I suppressed the warning if AAO detected such a usage.
+- Minimum VRCSDK to 3.3.0 `#882`
+  - VRCSDK 3.3.0 is required for stable NDMF-VRCSDK compatibility.
 
 ### Deprecated
 
 ### Removed
+- Compatibility with VRCQuestTools v1.x `#847`
+  - Please use VRCQuestTools v2.x, which has compatibility with AAO.
 
 ### Fixed
+- Inspector of ComponentTypePair (GCDebug) is broken `#846`
+- Bones swung by unused PhysBones (which will be removed by AAO) are not merged `#850`
+  - Note that To fix this problem, AnimatorParser is almost completely rewritten.
+  - It's not expected to have behavior change, but if you found some, please report it.
+- Re-fix Nested Constraint can be broken with Trace and Optimize `#880`
+- Fix non-VRChat project support `#884`
 
 ### Security
+
+## [1.6.6] - 2024-01-31
+### Fixed
+- Some features are not working well if `Trace and Optimize` is not attached [`#876`](https://github.com/anatawa12/AvatarOptimizer/pull/876)
+
+## [1.6.5] - 2024-01-29
+### Changed
+- use stable version of NDMF 1.3.0 or later [`#821`](https://github.com/anatawa12/AvatarOptimizer/pull/821)
+
+## [1.6.5-rc.3] - 2024-01-27
+### Changed
+- Reverted NDMF to 1.3.0-rc.3 [`#858`](https://github.com/anatawa12/AvatarOptimizer/pull/858)
+  - NDMF 1.3.0-rc.4 or later does not execute Optimizing phase on entering play mode.
+  - See [this issue](https://github.com/bdunderscore/ndmf/issues/129) for more details.
+
+### Fixed
+- Nested Constraint can be broken with Trace and Optimize [`#857`](https://github.com/anatawa12/AvatarOptimizer/pull/857)
+
+## [1.6.5-rc.2] - 2024-01-24
+### Changed
+- Project is slightly renamed to AAO: Avatar Optimizer [`#830`](https://github.com/anatawa12/AvatarOptimizer/pull/830)
+  - The term `AAO` and `Avatar Optimizer` are not changed, but display name on the VCC is changed to `AAO: Avatar Optimizer`
+- Upgrades NDMF to 1.3.0-rc.4 [`#853`](https://github.com/anatawa12/AvatarOptimizer/pull/853)
+
+### Fixed
+- Humanoid Bones may be removed by Trace and Optimize [`#831`](https://github.com/anatawa12/AvatarOptimizer/pull/831)
+- Add `license`, `documentationUrl`, and `changelogUrl` to package.json [`#851`](https://github.com/anatawa12/AvatarOptimizer/pull/851)
+
+## [1.6.5-rc.1] - 2024-01-07
+### Changed
+- Upgrades NDMF to 1.3.0-rc.1 [`#815`](https://github.com/anatawa12/AvatarOptimizer/pull/815)
+  - Use Title instead of Description since substation in Title is implemented
+
+### Fixed
+- Reference to meshes will be merged is removed [`#808`](https://github.com/anatawa12/AvatarOptimizer/pull/808)
+- VRM: Fix MergeSkinnedMesh breaking BlendShapeClip / VRM10Expression [`#810`](https://github.com/anatawa12/AvatarOptimizer/pull/810)
+- Unknown component warning were shown multiple time for one type [`#818`](https://github.com/anatawa12/AvatarOptimizer/pull/818)
+  - In addition, location of the unknown components are shown on the error report.
+- AvatarOptimizer didn't register modification to ObjectRegistry [`#815`](https://github.com/anatawa12/AvatarOptimizer/pull/815)
+- Empty Armature trick broken [`#819`](https://github.com/anatawa12/AvatarOptimizer/pull/819)
+- Added workaround for `Array index (n) is out of bounds (size=m)` error
+
+## [1.6.5-beta.1] - 2023-12-28
+### Changed
+- AvatarOptimizer now uses ErrorReporting API of NDMF instead of our own API [`#805`](https://github.com/anatawa12/AvatarOptimizer/pull/805)
+
+### Fixed
+- Fix support for UniVRM components [`#802`](https://github.com/anatawa12/AvatarOptimizer/pull/802)
+
+## [1.6.4] - 2023-12-10
+## [1.6.4-beta.1] - 2023-12-10
+### Fixed
+- Error with generic avatar in 2022 [`#794`](https://github.com/anatawa12/AvatarOptimizer/pull/794)
+- Assertion Error in some rare case [`#795`](https://github.com/anatawa12/AvatarOptimizer/pull/795)
+
+## [1.6.3] - 2023-12-09
+### Added
+- Support for VRCSDK 3.5.x [`#787`](https://github.com/anatawa12/AvatarOptimizer/pull/787)
+  - Actually, previous version of AAO works well with VRCSDK 3.5.x / Unity 2022 with tiny bugs.
+  - I've fixed some bugs in Unity 2022 in this release.
+  - Since this version, package.json declares Avatar Optimizer is compatible with VRCSDK 3.5.x.
+  - I was planned to release this changes while VRCSDK 3.5.0 is in beta.
+  - However, VRCSDK 3.5.0 beta was only 3 hours so I could not. 
+
+### Fixed
+- Fix NullReferenceException on Unity 2022 when extra Animator components are present [`#778`](https://github.com/anatawq12/AvatarOptimizer/pull/778)
+- Fix Errors with Generic Avatars [`#779`](https://github.com/anatawa12/AvatarOptimizer/pull/779)
+- Editing Prefabs with AAO Components in Unity 2022 will cause Error [`#782`](https://github.com/anatawa12/AvatarOptimizer/pull/782)
+- Error if there are reference to Prefab Asset PhysBone Collider [`#783`](https://github.com/anatawa12/AvatarOptimizer/pull/783)
+- Remove Mesh in Box editor broken if inspector is narrow [`#784`](https://github.com/anatawa12/AvatarOptimizer/pull/784)
+- Errors for partially incorrectly configured avatars [`#786`](https://github.com/anatawa12/AvatarOptimizer/pull/786)
+  - Since this release, instead of internal errors, warnings are shown
+
+## [1.6.2] - 2023-11-30
+## [1.6.2-rc.1] - 2023-11-30
+### Fixed
+- Path remapping for merge bone will not work well in some (relatively rare) case [`#764`](https://github.com/anatawa12/AvatarOptimizer/pull/764)
+- Error due to PhysBone collider with root bone outside avatar [`#766`](https://github.com/anatawa12/AvatarOptimizer/pull/766)
+
+## [1.6.1] - 2023-11-29
+### Fixed
+- Error if there are None colliders for PhysBone [`#758`](https://github.com/anatawa12/AvatarOptimizer/pull/758)
+- BlendShapes can broken in extreamly rare cases [`#760`](https://github.com/anatawa12/AvatarOptimizer/pull/760)
+  - It seems this is due to Unity bug.
+
+## [1.6.0] - 2023-11-27
+## [1.6.0-rc.4] - 2023-11-25
+### Fixed
+- Error if there are null in ingore transforms of PhysBone [`#749`](https://github.com/anatawa12/AvatarOptimizer/pull/749)
+
+## [1.6.0-rc.3] - 2023-11-25
+### Fixed
+- MergeBone breaks `ignoreTransforms` of PhysBone [`#745`](https://github.com/anatawa12/AvatarOptimizer/pull/745)
+- freeze meaningless may cause `FreezeBlendShape:warning:animation` warning [`#746`](https://github.com/anatawa12/AvatarOptimizer/pull/746)
+
+## [1.6.0-rc.2] - 2023-11-22
+### Fixed
+- FinalIK Components will be removed [`#742`](https://github.com/anatawa12/AvatarOptimizer/pull/742)
+
+## [1.6.0-rc.1] - 2023-11-21
+### Fixed
+- Remove Unused Object may break ParticleSystem [`#738`](https://github.com/anatawa12/AvatarOptimizer/pull/738)
+  - Trigger Colliders can be disapper if you specify Transform instead of Collider instance.
+  - Initially diabled particle system module will be ignored
+
+## [1.6.0-beta.12] - 2023-11-21
+### Added
+- PhysBone Optimization [`#733`](https://github.com/anatawa12/AvatarOptimizer/pull/733)
+  - Unnessesary isAnimated is now unconfigured
+  - Floor Colliders with same configuration will be merged to one floor collider
+- Minimum Support for FinalIK [`#735`](https://github.com/anatawa12/AvatarOptimizer/pull/735)
+
+### Fixed
+- Some missing components warnings [`#736`](https://github.com/anatawa12/AvatarOptimizer/pull/736)
+  - warning for `ONSPAudioSource`, `VRCImpostorSettings`, and `RectTransform` are fixed
+
+## [1.6.0-beta.11] - 2023-11-18
+### Fixed
+- False Positive warning for constant animation in Freeze BlendShape [`#722`](https://github.com/anatawa12/AvatarOptimizer/pull/722)
+- Error if we merged Viseme BlendShapes [`#728`](https://github.com/anatawa12/AvatarOptimizer/pull/728)
+
+## [1.5.11] - 2023-11-18
+## [1.5.11-beta.1] - 2023-11-17
+### Fixed
+- Dynamic Bone support not working [`#727`](https://github.com/anatawa12/AvatarOptimizer/pull/727)
+
+## [1.6.0-beta.10] - 2023-11-13
+### Added
+- Error for MergeBone on the Avatar Root [`#716`](https://github.com/anatawa12/AvatarOptimizer/pull/716)
+- Warning for freezing animated BlendShapes [`#719`](https://github.com/anatawa12/AvatarOptimizer/pull/719)
+
+### Fixed
+- Compatibility with transform moving plugins [`#715`](https://github.com/anatawa12/AvatarOptimizer/pull/715)
+  - Remove Mesh in Box was not working well with [FloorAdjuster]
+
+[FloorAdjuster]: https://github.com/Narazaka/FloorAdjuster
+## [1.6.0-beta.9] - 2023-11-12
+### Fixed
+- Humanoid of Avatar Root Animator broken [`#714`](https://github.com/anatawa12/AvatarOptimizer/pull/714)
+
+## [1.6.0-beta.8] - 2023-11-11
+### Fixed
+- Animator of AvatarRoot diesappears [`#711`](https://github.com/anatawa12/AvatarOptimizer/pull/711)
+
+## [1.6.0-beta.7] - 2023-11-11
+### Fixed
+- MergeSMR broken [`#710`](https://github.com/anatawa12/AvatarOptimizer/pull/710)
+
+## [1.6.0-beta.6] - 2023-11-11
+### Changed
+- Remove Unused Objects removes meaningless Animators and Renderers [`#709`](https://github.com/anatawa12/AvatarOptimizer/pull/709)
+  - Renderers without Mesh and Animators without AnimatorController is meaningless
+
+### Fixed
+- Enablement mismatched renderers are merged instead of matched renderers [`#705`](https://github.com/anatawa12/AvatarOptimizer/pull/705)
+
+## [1.6.0-beta.5] - 2023-11-08
+### Fixed
+- PPtr / Object animation not working [`#703`](https://github.com/anatawa12/AvatarOptimizer/pull/703)
 
 ## [1.6.0-beta.4] - 2023-11-08
 ### Fixed
@@ -998,11 +1192,38 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.4...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.6...HEAD
+[1.6.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.5...v1.6.6
+[1.6.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.5-rc.3...v1.6.5
+[1.6.5-rc.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.5-rc.2...v1.6.5-rc.3
+[1.6.5-rc.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.5-rc.1...v1.6.5-rc.2
+[1.6.5-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.5-beta.1...v1.6.5-rc.1
+[1.6.5-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.4...v1.6.5-beta.1
+[1.6.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.4-beta.1...v1.6.4
+[1.6.4-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.3...v1.6.4-beta.1
+[1.6.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.2...v1.6.3
+[1.6.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.2-rc.1...v1.6.2
+[1.6.2-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.1...v1.6.2-rc.1
+[1.6.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0...v1.6.1
+[1.6.0]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-rc.4...v1.6.0
+[1.6.0-rc.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-rc.3...v1.6.0-rc.4
+[1.6.0-rc.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-rc.2...v1.6.0-rc.3
+[1.6.0-rc.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-rc.1...v1.6.0-rc.2
+[1.6.0-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.12...v1.6.0-rc.1
+[1.6.0-beta.12]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.11...v1.6.0-beta.12
+[1.6.0-beta.11]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.10...v1.6.0-beta.11
+[1.6.0-beta.10]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.9...v1.6.0-beta.10
+[1.6.0-beta.9]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.8...v1.6.0-beta.9
+[1.6.0-beta.8]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.7...v1.6.0-beta.8
+[1.6.0-beta.7]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.6...v1.6.0-beta.7
+[1.6.0-beta.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.5...v1.6.0-beta.6
+[1.6.0-beta.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.4...v1.6.0-beta.5
 [1.6.0-beta.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.3...v1.6.0-beta.4
 [1.6.0-beta.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.2...v1.6.0-beta.3
 [1.6.0-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.0-beta.1...v1.6.0-beta.2
-[1.6.0-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.10...v1.6.0-beta.1
+[1.6.0-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.11...v1.6.0-beta.1
+[1.5.11]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.11-beta.1...v1.5.11
+[1.5.11-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.10...v1.5.11-beta.1
 [1.5.10]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.9...v1.5.10
 [1.5.9]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.9-rc.1...v1.5.9
 [1.5.9-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.5.8...v1.5.9-rc.1

@@ -1,5 +1,4 @@
 ﻿using System;
-using Anatawa12.AvatarOptimizer.ErrorReporting;
 using Anatawa12.AvatarOptimizer.ndmf;
 using nadena.dev.ndmf;
 using nadena.dev.ndmf.builtin;
@@ -10,7 +9,7 @@ namespace Anatawa12.AvatarOptimizer.ndmf
 {
     internal class OptimizerPlugin : Plugin<OptimizerPlugin>
     {
-        public override string DisplayName => "Anatawa12's Avatar Optimizer";
+        public override string DisplayName => "AAO: Avatar Optimizer";
 
         public override string QualifiedName => "com.anatawa12.avatar-optimizer";
 
@@ -18,58 +17,82 @@ namespace Anatawa12.AvatarOptimizer.ndmf
         {
             // Run early steps before EditorOnly objects are purged
             InPhase(BuildPhase.Resolving)
-                .WithRequiredExtensions(new [] {typeof(BuildReportContext)}, seq =>
+                .Run("Info if AAO is Out of Date", ctx =>
                 {
-                    seq.Run("Info if AAO is Out of Date", ctx =>
-                        {
-                            // we skip check for update 
-                            var components = ctx.AvatarRootObject.GetComponentInChildren<AvatarTagComponent>(true);
-                            if (components && CheckForUpdate.OutOfDate)
-                                BuildReport.LogInfo("CheckForUpdate:out-of-date", 
-                                    CheckForUpdate.LatestVersionName, CheckForUpdate.CurrentVersionName);
-                        })
-                        .Then.Run(Processors.UnusedBonesByReferencesToolEarlyProcessor.Instance)
-                        .Then.Run("Early: MakeChildren",
-                            ctx => new Processors.MakeChildrenProcessor(early: true).Process(ctx)
-                        )
-                        .BeforePass(RemoveEditorOnlyPass.Instance);
-                });
+                    // we skip check for update 
+                    var components = ctx.AvatarRootObject.GetComponentInChildren<AvatarTagComponent>(true);
+                    if (components && CheckForUpdate.OutOfDate)
+                        BuildLog.LogInfo("CheckForUpdate:out-of-date",
+                            CheckForUpdate.LatestVersionName, CheckForUpdate.CurrentVersionName);
+                })
+                .Then.Run(Processors.UnusedBonesByReferencesToolEarlyProcessor.Instance)
+                .Then.Run("Early: MakeChildren",
+                    ctx => new Processors.MakeChildrenProcessor(early: true).Process(ctx)
+                )
+                .BeforePass(RemoveEditorOnlyPass.Instance);
+
+            InPhase(BuildPhase.Resolving).Run(Processors.FetchOriginalStatePass.Instance);
+            ;
 
             // Run everything else in the optimize phase
-            InPhase(BuildPhase.Optimizing)
-                .WithRequiredExtension(typeof(BuildReportContext), seq =>
+            var mainSequence = InPhase(BuildPhase.Optimizing);
+            mainSequence
+                .WithRequiredExtensions(new[]
                 {
-                    seq.Run("EmptyPass for Context Ordering", _ => {});
-                    seq.WithRequiredExtensions(new[]
-                    {
-                        typeof(Processors.MeshInfo2Context),
-                        typeof(ObjectMappingContext),
-                    }, _ =>
-                    {
-                        seq.Run(Processors.TraceAndOptimizes.LoadTraceAndOptimizeConfiguration.Instance)
-                            .Then.Run(Processors.ParseAnimator.Instance)
-                            .Then.Run(Processors.TraceAndOptimizes.AutoFreezeBlendShape.Instance)
+                    typeof(Processors.MeshInfo2Context),
+                    typeof(ObjectMappingContext),
+                    typeof(DestroyTracker.ExtensionContext),
+                }, seq =>
+                {
+                    seq.Run("Initial Step for Avatar Optimizer",
+                            ctx =>
+                            {
+                                ctx.GetState<AAOEnabled>().Enabled =
+                                    ctx.AvatarRootObject.GetComponentInChildren<AvatarTagComponent>();
+                                // invalidate ComponentInfoRegistry cache to support newly added assets
+                                APIInternal.ComponentInfoRegistry.InvalidateCache();
+                            })
+                        .Then.Run("Validation", (ctx) => ComponentValidation.ValidateAll(ctx.AvatarRootObject))
+                        .Then.Run(Processors.TraceAndOptimizes.LoadTraceAndOptimizeConfiguration.Instance)
+                        .Then.Run(Processors.ParseAnimator.Instance)
+                        .Then.Run(Processors.TraceAndOptimizes.AutoFreezeBlendShape.Instance)
 #if AAO_VRCSDK3_AVATARS
-                            .Then.Run(Processors.ClearEndpointPositionProcessor.Instance)
-                            .Then.Run(Processors.MergePhysBoneProcessor.Instance)
+                        .Then.Run(Processors.ClearEndpointPositionProcessor.Instance)
+                        .Then.Run(Processors.MergePhysBoneProcessor.Instance)
 #endif
-                            .Then.Run(Processors.EditSkinnedMeshComponentProcessor.Instance)
-                            .Then.Run("MakeChildrenProcessor",
-                                ctx => new Processors.MakeChildrenProcessor(early: false).Process(ctx)
-                            )
-                            .Then.Run(Processors.TraceAndOptimizes.FindUnusedObjects.Instance)
-                            .Then.Run(Processors.TraceAndOptimizes.ConfigureRemoveZeroSizedPolygon.Instance)
-                            .Then.Run(Processors.MergeBoneProcessor.Instance)
-                            .Then.Run(Processors.RemoveZeroSizedPolygonProcessor.Instance)
-                            ;
-                    });
-                    seq.Run("EmptyPass for Context Ordering", _ => {});
+                        .Then.Run(Processors.EditSkinnedMeshComponentProcessor.Instance)
+                        .Then.Run("MakeChildrenProcessor",
+                            ctx => new Processors.MakeChildrenProcessor(early: false).Process(ctx)
+                        )
+#if AAO_VRCSDK3_AVATARS
+                        .Then.Run(Processors.TraceAndOptimizes.OptimizePhysBone.Instance)
+#endif
+                        .Then.Run(Processors.TraceAndOptimizes.FindUnusedObjects.Instance)
+                        .Then.Run(Processors.TraceAndOptimizes.ConfigureRemoveZeroSizedPolygon.Instance)
+                        .Then.Run(Processors.MergeBoneProcessor.Instance)
+                        .Then.Run(Processors.RemoveZeroSizedPolygonProcessor.Instance)
+                        .Then.Run(Processors.AnimatorOptimizer.RemoveInvalidProperties.Instance)
+                        ;
                 });
+
+            mainSequence.Run(Processors.AnimatorOptimizer.InitializeAnimatorOptimizer.Instance)
+#if AAO_VRCSDK3_AVATARS
+                // EntryExit to BlendTree optimization heavily depends on VRChat's behavior
+                .Then.Run(Processors.AnimatorOptimizer.EntryExitToBlendTree.Instance)
+#endif
+                .Then.Run(Processors.AnimatorOptimizer.MergeDirectBlendTree.Instance)
+                .Then.Run(Processors.AnimatorOptimizer.RemoveMeaninglessLayer.Instance)
+                ;
         }
 
         protected override void OnUnhandledException(Exception e)
         {
-            BuildReport.ReportInternalError(e);
+            ErrorReport.ReportException(e);
         }
+    }
+
+    internal class AAOEnabled
+    {
+        public bool Enabled { get; set; }
     }
 }

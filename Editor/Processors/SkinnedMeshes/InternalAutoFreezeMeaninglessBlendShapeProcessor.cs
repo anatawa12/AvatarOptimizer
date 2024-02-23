@@ -23,6 +23,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             foreach (var vertex in target.Vertices)
                 meaninglessBlendShapes.ExceptWith(vertex.BlendShapes.Keys);
 
+            foreach (var meaninglessBlendShape in meaninglessBlendShapes)
+                context.RecordRemoveProperty(Target, $"blendShape.{meaninglessBlendShape}");
+
             var freezeBlendShape = Target.GetComponent<FreezeBlendShape>();
             var set = freezeBlendShape.shapeKeysSet.GetAsSet();
             set.UnionWith(meaninglessBlendShapes);

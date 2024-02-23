@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Anatawa12.AvatarOptimizer.ErrorReporting;
 using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEditor.Animations;
@@ -33,10 +32,20 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             List<MeshRenderer> staticMeshRenderers;
             if (Component.skipEnablementMismatchedRenderers)
             {
-                bool RendererEnabled(Renderer x) => x.enabled && x.gameObject.activeSelf;
+                bool RendererEnabled(Renderer x)
+                {
+                    if (!x.enabled) return false;
+                    for (var transform = x.transform;
+                         transform != null && transform != context.AvatarRootTransform;
+                         transform = transform.parent)
+                        if (!transform.gameObject.activeSelf)
+                            return false;
+                    return true;
+                }
+
                 var enabledSelf = RendererEnabled(Target);
-                skinnedMeshRenderers = SkinnedMeshRenderers.Where(x => RendererEnabled(x) != enabledSelf).ToList();
-                staticMeshRenderers = StaticMeshRenderers.Where(x => RendererEnabled(x) != enabledSelf).ToList();
+                skinnedMeshRenderers = SkinnedMeshRenderers.Where(x => RendererEnabled(x) == enabledSelf).ToList();
+                staticMeshRenderers = StaticMeshRenderers.Where(x => RendererEnabled(x) == enabledSelf).ToList();
             }
             else
             {
@@ -60,7 +69,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             Profiler.EndSample();
             Profiler.BeginSample("Collect MeshInfos");
             var meshInfos = skinnedMeshRenderers.Select(context.GetMeshInfoFor)
-                .Concat(staticMeshRenderers.Select(context.GetMeshInfoFor))
+                .Concat(staticMeshRenderers.Select(renderer => new MeshInfo2(renderer)))
                 .ToArray();
 
             foreach (var meshInfo2 in meshInfos) meshInfo2.FlattenMultiPassRendering("Merge Skinned Mesh");
@@ -82,12 +91,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             {
                 // collect (skinned) mesh renderers who doesn't have normal
                 // to show the list on the error reporting
-                BuildReport.LogFatal("MergeSkinnedMesh:error:mix-normal-existence")
-                    ?.WithContext((
-                        from meshInfo2 in meshInfos
-                        where meshInfo2.Vertices.Count != 0 && !meshInfo2.HasNormals
-                        select (object)meshInfo2.SourceRenderer
-                    ).ToArray());
+                BuildLog.LogError("MergeSkinnedMesh:error:mix-normal-existence",
+                    from meshInfo2 in meshInfos
+                    where meshInfo2.Vertices.Count != 0 && !meshInfo2.HasNormals
+                    select meshInfo2.SourceRenderer);
             }
 
             Profiler.EndSample();
@@ -198,7 +205,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 #endif
 
             foreach (var weightMismatchBlendShape in weightMismatchBlendShapes)
-                BuildReport.LogWarning("MergeSkinnedMesh:warning:blendShapeWeightMismatch", weightMismatchBlendShape);
+                BuildLog.LogWarning("MergeSkinnedMesh:warning:blendShapeWeightMismatch", weightMismatchBlendShape);
 
             if (updateBounds && newBoundMin != Vector3.positiveInfinity && newBoundMax != Vector3.negativeInfinity)
             {
@@ -227,11 +234,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 var toDestroy = renderer.GetComponent<RemoveZeroSizedPolygon>();
                 if (toDestroy)
                 {
-                    BuildReport.LogWarning("MergeSkinnedMesh:warning:removeZeroSizedPolygonOnSources")
-                        ?.WithContext(toDestroy);
-                    Object.DestroyImmediate(toDestroy);
+                    BuildLog.LogWarning("MergeSkinnedMesh:warning:removeZeroSizedPolygonOnSources", toDestroy);
+                    DestroyTracker.DestroyImmediate(toDestroy);
                 }
-                Object.DestroyImmediate(renderer);
+                DestroyTracker.DestroyImmediate(renderer);
 
                 // process removeEmptyRendererObject
                 if (!Component.removeEmptyRendererObject) continue;
@@ -242,14 +248,14 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 if (rendererGameObject.transform.childCount != 0) continue;
                 // the SkinnedMeshRenderer may also be used as bone. it's not good to remove
                 if (boneTransforms.Contains(rendererGameObject.transform)) continue;
-                Object.DestroyImmediate(rendererGameObject);
+                DestroyTracker.DestroyImmediate(rendererGameObject);
             }
 
             foreach (var renderer in staticMeshRenderers)
             {
                 ActivenessAnimationWarning(renderer, context, parents);
-                Object.DestroyImmediate(renderer.GetComponent<MeshFilter>());
-                Object.DestroyImmediate(renderer);
+                DestroyTracker.DestroyImmediate(renderer.GetComponent<MeshFilter>());
+                DestroyTracker.DestroyImmediate(renderer);
             }
             Profiler.EndSample();
 
@@ -275,15 +281,14 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         private void ActivenessAnimationWarning(Renderer renderer, BuildContext context, HashSet<Transform> parents)
         {
-            ErrorLog log = null;
+            var sources = new List<object>();
 
             // Warn if the source mesh can be hidden differently than merged by animation.
             {
                 if (context.GetAnimationComponent(renderer).TryGetFloat("m_Enabled", out var p))
                 {
-                    log = log ?? BuildReport.LogWarning("MergeSkinnedMesh:warning:animation-mesh-hide")
-                        ?.WithContext(renderer);
-                    log?.WithContext(p.Sources);
+                    sources.Add(renderer);
+                    sources.Add(p.ContextReferences);
                 }
             }
             foreach (var transform in renderer.transform.ParentEnumerable(context.AvatarRootTransform, includeMe: true))
@@ -291,12 +296,14 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 if (parents.Contains(transform)) break;
                 if (context.GetAnimationComponent(transform.gameObject).TryGetFloat("m_IsActive", out var p))
                 {
-                    log = log ?? BuildReport.LogWarning("MergeSkinnedMesh:warning:animation-mesh-hide")
-                        ?.WithContext(renderer);
-                    log?.WithContext(transform.gameObject);
-                    log?.WithContext(p.Sources);
+                    sources.Add(renderer);
+                    sources.Add(transform.gameObject);
+                    sources.Add(p.ContextReferences);
                 }
             }
+
+            if (sources.Count != 0)
+                BuildLog.LogWarning("MergeSkinnedMesh:warning:animation-mesh-hide", sources);
         }
 
         private (int[][] mapping, List<(MeshTopology topology, Material material)> materials)

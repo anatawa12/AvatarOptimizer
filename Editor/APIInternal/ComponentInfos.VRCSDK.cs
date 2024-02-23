@@ -3,8 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.API;
-using Anatawa12.AvatarOptimizer.ErrorReporting;
 using JetBrains.Annotations;
+using nadena.dev.ndmf.runtime;
 using UnityEngine;
 using VRC.SDK3;
 using VRC.Core;
@@ -23,6 +23,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
     [ComponentInformation(typeof(PipelineManager))]
     [ComponentInformation(typeof(VRCSpatialAudioSource))]
     [ComponentInformation(typeof(VRC_SpatialAudioSource))]
+    [ComponentInformation(typeof(ONSPAudioSource))]
     // nadena.dev.ndmf.VRChat.ContextHolder with reflection
     internal class EntrypointComponentInformation : ComponentInformation<Component>
     {
@@ -40,6 +41,24 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
         {
             collector.MarkEntrypoint();
             collector.AddDependency(component.GetComponent<PipelineManager>()).EvenIfDependantDisabled();
+            collector.AddDependency(component.GetComponent<Animator>()).EvenIfDependantDisabled();
+            
+            var animator = component.GetComponent<Animator>();
+            // for empty Armature trick which is only valid for VRCSDK, we need to keep parent objects of Hips bone
+            if (animator && animator.isHuman)
+            {
+                var hips = animator.GetBoneTransform(HumanBodyBones.Hips);
+                if (hips)
+                {
+                    var avatarRoot = component.gameObject;
+                    foreach (var parent in hips.ParentEnumerable(avatarRoot.transform))
+                    {
+                        var path = RuntimeUtil.RelativePath(avatarRoot, parent.gameObject);
+                        var parentByPath = avatarRoot.transform.Find(path);
+                        collector.AddDependency(parentByPath).EvenIfDependantDisabled();
+                    }
+                }
+            }
         }
 
         protected override void CollectMutations(T component, ComponentMutationsCollector collector)
@@ -53,23 +72,36 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
                 case VRC_AvatarDescriptor.LipSyncStyle.JawFlapBone:
                     collector.TransformRotation(component.lipSyncJawBone);
                     break;
-                case VRC_AvatarDescriptor.LipSyncStyle.JawFlapBlendShape when component.VisemeSkinnedMesh != null:
+                case VRC_AvatarDescriptor.LipSyncStyle.JawFlapBlendShape:
                 {
-                    collector.ModifyProperties(component.VisemeSkinnedMesh,
-                        $"blendShape.{component.MouthOpenBlendShapeName}");
+                    if (component.VisemeSkinnedMesh != null)
+                    {
+                        collector.ModifyProperties(component.VisemeSkinnedMesh,
+                            $"blendShape.{component.MouthOpenBlendShapeName}");
+                    } else {
+                        BuildLog.LogWarning("ComponentInfos:VRCAvatarDescriptor:warning:NoVisemeSkinnedMesh", component);
+                    }
                     break;
                 }
-                case VRC_AvatarDescriptor.LipSyncStyle.VisemeBlendShape when component.VisemeSkinnedMesh != null:
+                case VRC_AvatarDescriptor.LipSyncStyle.VisemeBlendShape:
                 {
-                    collector.ModifyProperties(component.VisemeSkinnedMesh,
-                        component.VisemeBlendShapes.Select(blendShape => $"blendShape.{blendShape}"));
+                    if (component.VisemeSkinnedMesh != null)
+                    {
+                        collector.ModifyProperties(component.VisemeSkinnedMesh,
+                            component.VisemeBlendShapes.Select(blendShape => $"blendShape.{blendShape}"));
+                    } else {
+                        BuildLog.LogWarning("ComponentInfos:VRCAvatarDescriptor:warning:NoVisemeSkinnedMesh", component);
+                    }
                     break;
                 }
                 case VRC_AvatarDescriptor.LipSyncStyle.VisemeParameterOnly:
                     // NOP
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    BuildLog.LogWarning("ComponentInfos:VRCAvatarDescriptor:warning:UnknownLipSyncStyle", 
+                            component.lipSync.ToString(),
+                            component);
+                    break;
             }
         }
 
@@ -77,6 +109,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
         {
             base.ApplySpecialMapping(component, mappingSource);
             
+            // NOTE: we should not check VisemeSkinnedMesh for null because it can be missing object
             switch (component.lipSync)
             {
                 case VRC_AvatarDescriptor.LipSyncStyle.Default:
@@ -84,7 +117,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
                     break;
                 case VRC_AvatarDescriptor.LipSyncStyle.JawFlapBone:
                     break;
-                case VRC_AvatarDescriptor.LipSyncStyle.JawFlapBlendShape when component.VisemeSkinnedMesh != null:
+                case VRC_AvatarDescriptor.LipSyncStyle.JawFlapBlendShape:
                 {
                     var info = mappingSource.GetMappedComponent(component.VisemeSkinnedMesh);
                     if (info.TryMapProperty($"blendShape.{component.MouthOpenBlendShapeName}", out var mapped))
@@ -98,7 +131,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
                     }
                     break;
                 }
-                case VRC_AvatarDescriptor.LipSyncStyle.VisemeBlendShape when component.VisemeSkinnedMesh != null:
+                case VRC_AvatarDescriptor.LipSyncStyle.VisemeBlendShape:
                 {
                     var info = mappingSource.GetMappedComponent(component.VisemeSkinnedMesh);
                     component.VisemeSkinnedMesh = info.MappedComponent;
@@ -112,14 +145,15 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
                             removed = true;
                     }
                     if (removed)
-                        BuildReport.LogFatal("ApplyObjectMapping:VRCAvatarDescriptor:viseme BlendShape Removed");
+                        BuildLog.LogError("ApplyObjectMapping:VRCAvatarDescriptor:viseme BlendShape Removed");
                     break;
                 }
                 case VRC_AvatarDescriptor.LipSyncStyle.VisemeParameterOnly:
                     // NOP
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    // Warning Reported in CollectMutations
+                    break;
             }
         }
         
@@ -138,21 +172,21 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
         {
             base.CollectDependency(component, collector);
 
-            AddCollider(component.collider_head);
-            AddCollider(component.collider_torso);
-            AddCollider(component.collider_footR);
-            AddCollider(component.collider_footL);
-            AddCollider(component.collider_handR);
-            AddCollider(component.collider_handL);
-            AddCollider(component.collider_fingerIndexL);
-            AddCollider(component.collider_fingerMiddleL);
-            AddCollider(component.collider_fingerRingL);
-            AddCollider(component.collider_fingerLittleL);
-            AddCollider(component.collider_fingerIndexR);
-            AddCollider(component.collider_fingerMiddleR);
-            AddCollider(component.collider_fingerRingR);
-            AddCollider(component.collider_fingerLittleR);
-            void AddCollider(VRCAvatarDescriptor.ColliderConfig collider)
+            AddCollider(component.collider_head, "Head");
+            AddCollider(component.collider_torso, "Torso");
+            AddCollider(component.collider_footR, "FootR");
+            AddCollider(component.collider_footL, "FootL");
+            AddCollider(component.collider_handR, "HandR");
+            AddCollider(component.collider_handL, "HandL");
+            AddCollider(component.collider_fingerIndexL, "FingerIndexL");
+            AddCollider(component.collider_fingerMiddleL, "FingerMiddleL");
+            AddCollider(component.collider_fingerRingL, "FingerRingL");
+            AddCollider(component.collider_fingerLittleL, "FingerLittleL");
+            AddCollider(component.collider_fingerIndexR, "FingerIndexR");
+            AddCollider(component.collider_fingerMiddleR, "FingerMiddleR");
+            AddCollider(component.collider_fingerRingR, "FingerRingR");
+            AddCollider(component.collider_fingerLittleR, "FingerLittleR");
+            void AddCollider(VRCAvatarDescriptor.ColliderConfig collider, string where)
             {
                 switch (collider.state)
                 {
@@ -163,7 +197,10 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
                     case VRCAvatarDescriptor.ColliderConfig.State.Disabled:
                         break;
                     default:
-                        throw new ArgumentOutOfRangeException();
+                        BuildLog.LogWarning("ComponentInfos:VRCAvatarDescriptor:warning:UnknownColliderState",
+                                collider.ToString(), where,
+                                component);
+                        break;
                 }
             }
         }
@@ -196,20 +233,38 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
                             collector.TransformRotation(eyelids);
                     }
                         break;
-                    case VRCAvatarDescriptor.EyelidType.Blendshapes
-                        when component.customEyeLookSettings.eyelidsSkinnedMesh != null:
+                    case VRCAvatarDescriptor.EyelidType.Blendshapes:
                     {
-                        var skinnedMeshRenderer = component.customEyeLookSettings.eyelidsSkinnedMesh;
-                        var mesh = skinnedMeshRenderer.sharedMesh;
+                        if (component.customEyeLookSettings.eyelidsSkinnedMesh != null)
+                        {
+                            var skinnedMeshRenderer = component.customEyeLookSettings.eyelidsSkinnedMesh;
+                            var mesh = skinnedMeshRenderer.sharedMesh;
 
-                        collector.ModifyProperties(skinnedMeshRenderer,
-                            from index in component.customEyeLookSettings.eyelidsBlendshapes
-                            where 0 <= index && index < mesh.blendShapeCount
-                            select $"blendShape.{mesh.GetBlendShapeName(index)}");
+                            if (mesh != null)
+                            {
+                                collector.ModifyProperties(skinnedMeshRenderer,
+                                    from index in component.customEyeLookSettings.eyelidsBlendshapes
+                                    where 0 <= index && index < mesh.blendShapeCount
+                                    select $"blendShape.{mesh.GetBlendShapeName(index)}");
+                            }
+                            else
+                            {
+                                BuildLog.LogWarning("ComponentInfos:VRCAvatarDescriptor:warning:NoMeshInEyelidsSkinnedMesh",
+                                        component);
+                            }
+                        }
+                        else
+                        {
+                            BuildLog.LogWarning("ComponentInfos:VRCAvatarDescriptor:warning:NoEyelidsSkinnedMesh",
+                                    component);
+                        }
                     }
                         break;
                     default:
-                        throw new ArgumentOutOfRangeException();
+                        BuildLog.LogWarning("ComponentInfos:VRCAvatarDescriptor:warning:UnknownEyelidType", 
+                                component.customEyeLookSettings.eyelidType.ToString(),
+                                component);
+                        break;
                 }
             }
         }
@@ -220,14 +275,14 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
             
             if (component.enableEyeLook)
             {
+                // NOTE: we should not check eyelidsSkinnedMesh for null because it can be missing object
                 switch (component.customEyeLookSettings.eyelidType)
                 {
                     case VRCAvatarDescriptor.EyelidType.None:
                         break;
                     case VRCAvatarDescriptor.EyelidType.Bones:
                         break;
-                    case VRCAvatarDescriptor.EyelidType.Blendshapes
-                        when component.customEyeLookSettings.eyelidsSkinnedMesh != null:
+                    case VRCAvatarDescriptor.EyelidType.Blendshapes:
                     {
                         var info = mappingSource.GetMappedComponent(component.customEyeLookSettings.eyelidsSkinnedMesh);
                         component.customEyeLookSettings.eyelidsSkinnedMesh = info.MappedComponent;
@@ -242,11 +297,12 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
                         }
                         
                         if (removed)
-                            BuildReport.LogFatal("ApplyObjectMapping:VRCAvatarDescriptor:eyelids BlendShape Removed");
+                            BuildLog.LogError("ApplyObjectMapping:VRCAvatarDescriptor:eyelids BlendShape Removed");
                     }
                         break;
                     default:
-                        throw new ArgumentOutOfRangeException();
+                        // Warning Reported in CollectMutations
+                        break;
                 }
             }
         }
@@ -278,6 +334,9 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
     {
         protected override void CollectDependency(VRCPhysBoneBase component, ComponentDependencyCollector collector)
         {
+            if (!IsOperatingPhysBone(component))
+                return;
+
             // first, Transform <=> PhysBone
             // Transform is used even if the bone is inactive so Transform => PB is always dependency
             // PhysBone works only if enabled so PB => Transform is active dependency
@@ -306,6 +365,33 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
             // https://github.com/anatawa12/AvatarOptimizer/issues/450
             if (!string.IsNullOrEmpty(component.parameter))
                 collector.MarkEntrypoint();
+        }
+
+        private bool IsOperatingPhysBone(VRCPhysBoneBase component)
+        {
+            var ignoreTransforms = new HashSet<Transform>(component.ignoreTransforms);
+            foreach (var bone in component.GetAffectedTransforms())
+            {
+                var childCount = bone.DirectChildrenEnumerable().Count(x => !ignoreTransforms.Contains(x));
+                if (childCount == 0)
+                {
+                    // it's leaf bone: if endpoint position is not zero, it's swung
+                    if (component.endpointPosition != Vector3.zero) return true;
+                } 
+                else if (childCount == 1)
+                {
+                    // single child: it's swung
+                    return true;
+                }
+                else
+                {
+                    // two or more children: it's swung if multi child type is not Ignore
+                    if (component.multiChildType != VRCPhysBoneBase.MultiChildType.Ignore)
+                        return true;
+                }
+            }
+
+            return false;
         }
 
         protected override void CollectMutations(VRCPhysBoneBase component, ComponentMutationsCollector collector)
@@ -337,6 +423,20 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
         {
             collector.MarkEntrypoint();
             collector.AddDependency(component.rootTransform);
+        }
+    }
+
+    [ComponentInformation(typeof(VRCImpostorSettings))]
+    internal class VRCImpostorSettingsInformation : ComponentInformation<VRCImpostorSettings>
+    {
+        protected override void CollectDependency(VRCImpostorSettings component, ComponentDependencyCollector collector)
+        {
+            foreach (var transform in component.transformsToIgnore)
+                collector.AddDependency(transform);
+            foreach (var transform in component.reparentHere)
+                collector.AddDependency(transform);
+            foreach (var transform in component.extraChildTransforms)
+                collector.AddDependency(transform);
         }
     }
 }
