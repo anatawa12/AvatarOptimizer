@@ -10,7 +10,7 @@ Asset Description is the file to provide information of your assets for Avatar O
 
 Avatar Optimizer has to know about all existing components in the Avatar to remove unnecessary ones.\
 Avatar Optimizer v1.6.0 added [document to make your components compatible with AAO][make-component-compatible] and API for it, but
-for tools that are not non-destructive and do not process during build, 
+for in-place tools that do not process during build, 
 it's a little bit complicated to remove components by `IVRCSDKPreprocessAvatarCallback` instead of Avatar Optimizer.
 Therefore, Asset Description was added in v1.7.0 as a simple mechanism to specify components that should be ignored by Avatar Optimizer at build time.
 
