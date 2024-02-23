@@ -15,7 +15,7 @@ aliases:
 このコンポーネントはアバターのルートに追加してください。(分類: [Avatar Global Component](../../component-kind/avatar-global-components))
 
 現在、以下の機能を使った自動最適化が可能です。
-- `BlendShapeを自動的に固定・削除する`  
+- `BlendShapeを自動的に固定・除去する`  
   アニメーションなどで使われていないBlendShapeを自動的に固定・除去します。
 - `使われていないObjectを自動的に削除する`  
   アニメーションなどを走査して、使われていないObject(GameObjectやコンポーネントなど)を自動的に削除します。
