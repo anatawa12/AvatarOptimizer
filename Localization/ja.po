@@ -119,7 +119,7 @@ msgid "MergeBone:tooltip:avoidNameConflict"
 msgstr "統合時に子GameObjectの名前を変更し、名前の重複を回避します"
 
 msgid "MergeBone:validation:onAvatarRoot"
-msgstr "MergeBoneをアバターの最上位に付けることはサポートされていません。"
+msgstr "MergeBoneをアバターのルートに付けることはサポートされていません。"
 
 msgid "MergeBone:validation:thereAreComponent"
 msgstr "Transform以外のコンポーネントがあります。これはサポートされていません。"
@@ -320,10 +320,10 @@ msgstr "面積がゼロのポリゴンを削除します。"
 # region AvatarGlobalComponent
 
 msgid "AvatarGlobalComponent:NotOnAvatarDescriptor"
-msgstr "このコンポーネントはアバターの最上位に付ける必要があります。(AvatarDescriptorのあるGameObject)"
+msgstr "このコンポーネントはアバターのルートに付ける必要があります。(AvatarDescriptorのあるGameObject)"
 
 msgid "AvatarGlobalComponent:NotOnAvatarRoot"
-msgstr "このコンポーネントはアバターの最上位に付ける必要があります。(VRChatのアバターでは、AvatarDescriptorのあるGameObject)"
+msgstr "このコンポーネントはアバターのルートに付ける必要があります。(VRChatのアバターでは、AvatarDescriptorのあるGameObject)"
 
 # endregion
 
@@ -472,7 +472,7 @@ msgid "AnimatorParser:AnimatorLayerControl:UnknownBlendablePlayableLayer"
 msgstr "Animator Layer Controlに未知のレイヤー'{0}'が指定されています。"
 
 msgid "AnimatorParser:AnimatorNotFoundOnAvatarRoot"
-msgstr "アバターの最上位にAnimatorコンポーネントがありません。"
+msgstr "アバターのルートにAnimatorコンポーネントがありません。"
 
 #endregion
 
