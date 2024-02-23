@@ -24,4 +24,4 @@ By freezing BlendShape, the weights cannot be changed on Animation.
 
 ![component.png](component.png)
 
-You'll see list of blend shapes and check to freeze blend shape.
+You'll see list of BlendShapes and check to freeze BlendShape.

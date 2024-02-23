@@ -145,7 +145,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 }
 
 
-                // add blend shape if not defined by name
+                // add BlendShape if not defined by name
                 for (var sourceI = 0; sourceI < meshInfo.BlendShapes.Count; sourceI++)
                 {
                     var (name, weight) = meshInfo.BlendShapes[sourceI];

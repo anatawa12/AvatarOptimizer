@@ -30,10 +30,10 @@ The format is based on [Keep a Changelog].
   - Since this release, Avatar Optimizer is no longer depends on CL4EE.
   - Because VCC doesn't remove unused packages, CL4EE may still be installed on your project.
   - If you want to remove CL4EE, please remove it manually.
-- Suppressed animated blendshape warning of FreezeBlendShape if it's animated to a few constants `#881`
-  - Modern models have tons of blendshapes to change their face shape but emotion animation of some of them animates such a blendshapes to constant (default value).
+- Suppressed animated BlendShape warning of FreezeBlendShape if it's animated to a few constants `#881`
+  - Modern models have tons of BlendShapes to change their face shape but emotion animation of some of them animates such a BlendShapes to constant (default value).
   - That's unnecessary (incorrect I think) and force users to remove or change the clip when user wants to face shape.
-  - I see AAO users use `FreezeBlendShapes` for overriding such a blendshapes on twitter.
+  - I see AAO users use `FreezeBlendShapes` for overriding such a BlendShapes on twitter.
   - I think using this way is reasonable enough so I suppressed the warning if AAO detected such a usage.
 - Changed minimum VRCSDK to 3.3.0 `#882`
   - VRCSDK 3.3.0 is required for stable NDMF-VRCSDK compatibility.
@@ -316,7 +316,7 @@ The format is based on [Keep a Changelog].
   - This also understands Additive Layer and BlendTree, so extremely rare problem in previous Animator Parser 
     with Additive Layer or BlendTree will be fixed with this parser.
 - Multi Pass Rendering of Last SubMesh support [`#384`](https://github.com/anatawa12/AvatarOptimizer/pull/384)
-- Remove Mesh By BlendShape Editor now can set blendshape weights to 0/100
+- Remove Mesh By BlendShape Editor now can set BlendShape weights to 0/100
 
 ### Changed
 - Auto FreezeBlendShape now freezes meaningless BlendShape [`#334`](https://github.com/anatawa12/AvatarOptimizer/pull/334)
@@ -373,7 +373,7 @@ The format is based on [Keep a Changelog].
 ## [1.3.0] - 2023-08-12
 ### Added
 - Remove always disabled objects [`#278`](https://github.com/anatawa12/AvatarOptimizer/pull/278)
-- The new Remove Mesh By Blend Shape component removes mesh data based on blend shapes. [`#275`](https://github.com/anatawa12/AvatarOptimizer/pull/275)
+- The new Remove Mesh By BlendShape component removes mesh data based on BlendShapes. [`#275`](https://github.com/anatawa12/AvatarOptimizer/pull/275)
 - Option to process Make Children before modular avatar [`#296`](https://github.com/anatawa12/AvatarOptimizer/pull/296)
 
 ### Changed
@@ -455,7 +455,7 @@ The format is based on [Keep a Changelog].
 
 ## [0.4.11] - 2023-06-19
 ### Changed
-- Show error with user friendly message if blendshape for eyelids are removed / frozen. [`#253`](https://github.com/anatawa12/AvatarOptimizer/pull/253)
+- Show error with user friendly message if BlendShape for eyelids are removed / frozen. [`#253`](https://github.com/anatawa12/AvatarOptimizer/pull/253)
 
 ### Fixed
 - eyelids BlendShape settings are mapped even if it's disabled [`#235`](https://github.com/anatawa12/AvatarOptimizer/pull/235)

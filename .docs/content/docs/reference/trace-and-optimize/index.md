@@ -15,7 +15,7 @@ You can enable/disable some automatic optimization features with checkboxes.
 This component should be added to an avatar root. (Kind: [Avatar Global Component](../../component-kind/avatar-global-components))
 
 Currently the following optimizations are applied automatically.
-- `Automatically Freeze Blend Shape`  
+- `Automatically Freeze BlendShape`  
   Automatically freezes unused BlendShapes in animation or else.
 - `Remove unused Objects`  
   By scanning animation etc., automatically removes unused Objects (e.g. GameObjects, Components).
