@@ -19,7 +19,7 @@ The format is based on [Keep a Changelog].
   - Asset Description is the file to provide information of your assets for Avatar Optimizer.
   - Please see documentation for more details.
 - Warning for material animation in Merge Skinned Mesh `#769`
-  - Since first version of Merge Skinned Mesh, animating material properties differently is not supported (in other words, it might be broken).
+  - Merge Skinned Mesh does not support animating material properties differently. (In other words, it can be broken.)
   - Since this version, AAO will warn for such a case.
   - If you animated all materials from same animations, your animation will not be warned.
 
