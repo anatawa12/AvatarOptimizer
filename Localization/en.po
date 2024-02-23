@@ -387,11 +387,8 @@ msgstr "Removes polygons whose area are zero"
 
 # region AvatarGlobalComponent
 
-msgid "AvatarGlobalComponent:NotOnAvatarDescriptor"
-msgstr "This component must be set on root of Avatar (GameObject with AvatarDescriptor)"
-
 msgid "AvatarGlobalComponent:NotOnAvatarRoot"
-msgstr "This component must be set on root of Avatar (For VRChat avatars, GameObject with AvatarDescriptor)"
+msgstr "This component must be set on root of Avatar"
 
 # endregion
 

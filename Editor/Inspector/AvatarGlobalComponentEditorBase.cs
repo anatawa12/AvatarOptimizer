@@ -14,7 +14,7 @@ namespace Anatawa12.AvatarOptimizer
         {
 #if AAO_VRCSDK3_AVATARS
             if (!((Component)serializedObject.targetObject).GetComponent<VRCAvatarDescriptor>())
-                EditorGUILayout.HelpBox(AAOL10N.Tr("AvatarGlobalComponent:NotOnAvatarDescriptor"),
+                EditorGUILayout.HelpBox(AAOL10N.Tr("AvatarGlobalComponent:NotOnAvatarRoot"),
                     MessageType.Error);
 #else
             if (!nadena.dev.ndmf.runtime.RuntimeUtil.IsAvatarRoot(((Component)serializedObject.targetObject).transform))

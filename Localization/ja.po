@@ -319,11 +319,8 @@ msgstr "面積がゼロのポリゴンを削除します。"
 
 # region AvatarGlobalComponent
 
-msgid "AvatarGlobalComponent:NotOnAvatarDescriptor"
-msgstr "このコンポーネントはアバターのルートに付ける必要があります。(AvatarDescriptorのあるGameObject)"
-
 msgid "AvatarGlobalComponent:NotOnAvatarRoot"
-msgstr "このコンポーネントはアバターのルートに付ける必要があります。(VRChatのアバターでは、AvatarDescriptorのあるGameObject)"
+msgstr "このコンポーネントはアバターのルートに付ける必要があります。"
 
 # endregion
 
