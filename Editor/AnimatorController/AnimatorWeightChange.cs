@@ -72,7 +72,7 @@ namespace Anatawa12.AvatarOptimizer
         public AnimatorWeightChange Get(int i) => this[i];
     }
 
-    public enum AnimatorWeightChange
+    internal enum AnimatorWeightChange
     {
         NotChanged,
         AlwaysZero,

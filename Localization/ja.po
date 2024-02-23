@@ -517,3 +517,15 @@ msgid "ErrorReporter:error.internal_error"
 msgstr "内部エラーが発生しました: {0} 以下の処理中です:"
 
 # endregion
+
+# region AssetDescription
+
+msgid "AssetDescription:Description"
+msgstr ""
+"Avatar Optimizer Asset Descriptionは、あなたのアセットについての情報をAvatar Optimizerに与えるためのアセットです。\n"
+"詳しくはドキュメントを参照してください。"
+
+msgid "AssetDescription:OpenDocs"
+msgstr "Open Documentation"
+
+# endregion

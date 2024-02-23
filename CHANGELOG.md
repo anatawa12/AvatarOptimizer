@@ -15,6 +15,9 @@ The format is based on [Keep a Changelog].
     - Converts Entry / Exit to 1D BlendTree `#854` `#867`
     - Merges multiple Direct BlendTree to single Direct BlendTree `#870`
     - Removes meaningless Animator Layers `#870`
+- Asset Description `#847`
+  - Asset Description is the file to provide information of your assets for Avatar Optimizer.
+  - Please see documentation for more details.
 - Warning for material animation in Merge Skinned Mesh `#769`
   - Since first version of Merge Skinned Mesh, animating material properties differently is not supported (in other words, it might be broken).
   - Since this version, AAO will warn for such a case.
@@ -31,16 +34,28 @@ The format is based on [Keep a Changelog].
   - Since this release, Avatar Optimizer is no longer depends on CL4EE.
   - Because VCC doesn't remove unused packages, CL4EE may still be installed on your project.
   - If you want to remove CL4EE, please remove it manually.
+- Suppressed animated blendshape warning of FreezeBlendShape if it's animated to a few constants `#881`
+  - Modern models have tons of blendshapes to change their face shape but emotion animation of some of them animates such a blendshapes to constant (default value).
+  - That's unnecessary (incorrect I think) and force users to remove or change the clip when user wants to face shape.
+  - I see AAO users use `FreezeBlendShapes` for overriding such a blendshapes on twitter.
+  - I think using this way is reasonable enough so I suppressed the warning if AAO detected such a usage.
+- Changed minimum VRCSDK to 3.3.0 `#882`
+  - VRCSDK 3.3.0 is required for stable NDMF-VRCSDK compatibility.
 
 ### Deprecated
 
 ### Removed
+- Compatibility with VRCQuestTools v1.x `#847`
+  - Please use VRCQuestTools v2.x, which has compatibility with AAO.
 
 ### Fixed
 - Inspector of ComponentTypePair (GCDebug) is broken `#846`
 - Bones swung by unused PhysBones (which will be removed by AAO) are not merged `#850`
   - Note that To fix this problem, AnimatorParser is almost completely rewritten.
   - It's not expected to have behavior change, but if you found some, please report it.
+- Re-fix Nested Constraint can be broken with Trace and Optimize `#880`
+- Fix non-VRChat project support `#884`
+- Fix VRM support `#892`
 
 ### Security
 

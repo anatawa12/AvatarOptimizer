@@ -11,11 +11,13 @@ namespace Anatawa12.AvatarOptimizer
             {
                 switch (component)
                 {
+#if AAO_VRCSDK3_AVATARS
                     case MergePhysBone mergePhysBone:
                     {
                         MergePhysBoneValidator.Validate(mergePhysBone);
                         break;
                     }
+#endif
                     case MergeSkinnedMesh mergeSkinnedMesh:
                     {
                         var smr = mergeSkinnedMesh.GetComponent<SkinnedMeshRenderer>();
@@ -37,7 +39,7 @@ namespace Anatawa12.AvatarOptimizer
 #if AAO_VRCSDK3_AVATARS
                             BuildLog.LogError("AvatarGlobalComponent:NotOnAvatarDescriptor");
 #else
-                            BuildReport.LogError("AvatarGlobalComponent:NotOnAvatarRoot");
+                            BuildLog.LogError("AvatarGlobalComponent:NotOnAvatarRoot");
 #endif
                         break;
                     }
