@@ -304,7 +304,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             var nodes = new ComponentNodeContainer();
 
             var bindings = vrmBlendShapeProxy.BlendShapeAvatar.Clips.SelectMany(clip => clip.Values);
-            foreach (var binding in bindings)
+            foreach (var binding in bindings.Select(binding => (binding.RelativePath, binding.Index)).Distinct())
             {
                 var skinnedMeshRenderer =
                     context.AvatarRootTransform.Find(binding.RelativePath).GetComponent<SkinnedMeshRenderer>();
@@ -327,7 +327,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             var nodes = new ComponentNodeContainer();
 
             var bindings = vrm10Instance.Vrm.Expression.Clips.SelectMany(clip => clip.Clip.MorphTargetBindings);
-            foreach (var binding in bindings)
+            foreach (var binding in bindings.Select(binding => (binding.RelativePath, binding.Index)).Distinct())
             {
                 var skinnedMeshRenderer = 
                     context.AvatarRootTransform.Find(binding.RelativePath).GetComponent<SkinnedMeshRenderer>();
