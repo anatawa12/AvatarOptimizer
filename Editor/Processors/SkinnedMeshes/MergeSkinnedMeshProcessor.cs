@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Anatawa12.AvatarOptimizer.AnimatorParsersV2;
+using JetBrains.Annotations;
 using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEditor.Animations;
@@ -76,6 +78,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             foreach (var meshInfo2 in meshInfos) meshInfo2.MakeBoned();
 
             var sourceMaterials = meshInfos.Select(x => x.SubMeshes.Select(y => (y.Topology, y.SharedMaterial)).ToArray()).ToArray();
+            Profiler.EndSample();
+
+            Profiler.BeginSample("Material / Shader Parameter Animation Warnings");
+            MaterialParameterAnimationWarnings(meshInfos, context);
             Profiler.EndSample();
 
             Profiler.BeginSample("Material Normal Configuration Check");
@@ -277,6 +283,68 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 Profiler.EndSample();
             }
 #endif
+        }
+
+        private void MaterialParameterAnimationWarnings(MeshInfo2[] sourceRenderers, BuildContext context)
+        {
+            var properties = new Dictionary<string, List<(RootPropModNode<float>, MeshInfo2)>>();
+            var materialByMeshInfo2 = new List<(MeshInfo2 meshInfo2, List<Material> materials)>();
+            foreach (var meshInfo2 in sourceRenderers)
+            {
+                var component = context.GetAnimationComponent(meshInfo2.SourceRenderer);
+                foreach (var (name, property) in component.AllFloatProperties)
+                {
+                    if (!name.StartsWith("material.", StringComparison.Ordinal)) continue;
+                    var materialPropertyName = name.Substring("material.".Length);
+
+                    if (!properties.TryGetValue(materialPropertyName, out var list))
+                        properties.Add(materialPropertyName, list = new List<(RootPropModNode<float>, MeshInfo2)>());
+
+                    list.Add((property, meshInfo2));
+                }
+                var materials = new List<Material>();
+                for (var i = 0; i < meshInfo2.SubMeshes.Count; i++)
+                {
+                    if (component.TryGetObject($"m_Materials.Array.data[{i}]", out var objectNode))
+                        materials.AddRange(objectNode.Value.PossibleValues?.OfType<Material>().Where(x => x) ??
+                                           Enumerable.Empty<Material>());
+                    if (meshInfo2.SubMeshes[i].SharedMaterial)
+                        materials.Add(meshInfo2.SubMeshes[i].SharedMaterial);
+                }
+                materialByMeshInfo2.Add((meshInfo2, materials));
+            }
+
+            var animatedProperties = new List<string>();
+
+            foreach (var (propertyName, animatingProperties) in properties)
+            {
+                var rendererBySource = new Dictionary<AnimationLocation, HashSet<MeshInfo2>>();
+
+                foreach (var (property, renderer) in animatingProperties)
+                foreach (var animationLocation in AnimationLocation.CollectAnimationLocation(property))
+                {
+                    if (!rendererBySource.TryGetValue(animationLocation, out HashSet<MeshInfo2> renderers))
+                        rendererBySource.Add(animationLocation, renderers = new HashSet<MeshInfo2>());
+                    renderers.Add(renderer);
+                }
+
+                var animatedPartially = rendererBySource.Values.Any(renderers =>
+                {
+                    return materialByMeshInfo2
+                            .Where(x => !renderers.Contains(x.Item1))
+                            .SelectMany(x => x.materials.Select(material => (x.meshInfo2, material)))
+                            .Any(x => ShaderKnowledge.IsParameterAnimationAffected(x.material, x.meshInfo2,
+                                propertyName))
+                        ;
+                });
+
+                if (animatedPartially)
+                    animatedProperties.Add(propertyName);
+            }
+
+            if (animatedProperties.Count != 0)
+                BuildLog.LogWarning("MergeSkinnedMesh:warning:material-animation-differently",
+                    string.Join(",", animatedProperties), Component);
         }
 
         private void ActivenessAnimationWarning(Renderer renderer, BuildContext context, HashSet<Transform> parents)
