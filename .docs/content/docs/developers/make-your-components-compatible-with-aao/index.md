@@ -37,13 +37,13 @@ If you cannot remove some components, please register them to Avatar Optimizer.
 
 You can remove your components with several ways.
 
-If your tool is a non-destructive tool based on NDMF[^NDMF], removing your components before the Optimization phase
+If your tool is a non-destructive tool based on NDMF[^NDMF], removing your components before the Optimizing phase
 or before `com.anatawa12.avatar-optimizer` plugin (with [`BeforePlugin`][ndmf-BeforePlugin]) 
-in the Optimization phase is recommended.
+in the Optimizing phase is recommended.
 
 If your tool is a non-destructive tool not based on NDMF[^NDMF], removing your components before 
-the NDMF's Optimization phase is recommended.
-In this case, current NDMF executes Optimization phase in order `-1025`, which is JUST before VRCSDK's `RemoveAvatarEditorOnly`
+the NDMF's Optimizing phase is recommended.
+In this case, current NDMF executes Optimizing phase in order `-1025`, which is JUST before VRCSDK's `RemoveAvatarEditorOnly`
 callback, so your tool should remove components with `IVRCSDKPreprocessAvatarCallback` with smaller `callbackOrder`.
 
 If your components holds some information for your tool and has no meaning on the build time,
