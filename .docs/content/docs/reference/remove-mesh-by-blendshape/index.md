@@ -19,4 +19,7 @@ You can use this component to easily remove polygons with BlendShapes for shrink
 ![component.png](component.png)
 
 You'll see list of BlendShapes and check to select blendShapes.
-If some vertices in your mesh is moved more than `Tolerance` by selected BlendShape, this component will remove the vertices. 
+If some vertices in your mesh is moved more than `Tolerance` by selected BlendShape, this component will remove the vertices.
+
+In case the mesh you want to remove is not removed, increase the `Tolerance` value.
+In case the mesh you do not want to remove is removed, decrease the `Tolerance` value.
