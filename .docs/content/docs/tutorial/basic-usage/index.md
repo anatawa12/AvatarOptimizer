@@ -110,7 +110,7 @@ Let's add `Remove Mesh By BlendShape` to Body Mesh!
 Enable `Automatically set BlendShape weight for preview when toggled` to make sure that unintended parts of the body are not removed, and
 select BlendShapes from the BlendShapes list below that shrink the parts of the body you want to remove!
 
-In case the mesh you want to remove is not removed, or you do not want to remove is removed, you need to adjust the `Tolerance` value!
+In case polygons you want to remove is not removed, or you do not want to remove is removed, you need to adjust the `Tolerance` value!
 `Tolerance` decides how much the vertex is moved by BlendShape to be removed.
 In the first case, increase the value a little, in the second case, decrease it a little!
 
