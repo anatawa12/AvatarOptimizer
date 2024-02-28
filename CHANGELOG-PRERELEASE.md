@@ -17,6 +17,8 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - Compilation Error due to VRCImposterSettings with VRCSDK 3.2.x `#905`
+- Skinned Mesh Renderers with None mesh will become Mesh with no polygons `#906`
+  - This may affects bounds of Performance Rank in VRChat
 
 ### Security
 

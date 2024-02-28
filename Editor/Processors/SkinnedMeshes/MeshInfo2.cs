@@ -389,16 +389,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             HasTangent = false;
         }
 
-        public bool IsEmpty() =>
-            Bounds == default &&
+        public bool IsEmpty() => Bounds == default && IsEmptyMesh();
+        
+        public bool IsEmptyMesh() =>
             Vertices.Count == 0 &&
-            _texCoordStatus == default &&
             SubMeshes.Count == 0 &&
             BlendShapes.Count == 0 &&
-            Bones.Count == 0 &&
-            HasColor == false &&
-            HasNormals == false &&
-            HasTangent == false;
+            Bones.Count == 0;
 
         public void Optimize()
         {
@@ -650,17 +647,21 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         {
             using (ErrorReport.WithContextObject(targetRenderer))
             {
-                var name = $"AAOGeneratedMesh{targetRenderer.name}";
-                var mesh = new Mesh { name = name };
+                if (!IsEmptyMesh() || _originalMesh != null)
+                {
+                    var name = $"AAOGeneratedMesh{targetRenderer.name}";
+                    var mesh = new Mesh { name = name };
 
-                WriteToMesh(mesh);
-                // I don't know why but Instantiating mesh will fix broken blendshapes with
-                // https://github.com/anatawa12/AvatarOptimizer/issues/753
-                // https://booth.pm/ja/items/1054593.
-                mesh = Object.Instantiate(mesh);
-                mesh.name = name;
-                if (_originalMesh) ObjectRegistry.RegisterReplacedObject(_originalMesh, mesh);
-                targetRenderer.sharedMesh = mesh;
+                    WriteToMesh(mesh);
+                    // I don't know why but Instantiating mesh will fix broken blendshapes with
+                    // https://github.com/anatawa12/AvatarOptimizer/issues/753
+                    // https://booth.pm/ja/items/1054593.
+                    mesh = Object.Instantiate(mesh);
+                    mesh.name = name;
+                    if (_originalMesh) ObjectRegistry.RegisterReplacedObject(_originalMesh, mesh);
+                    targetRenderer.sharedMesh = mesh;
+                }
+
                 for (var i = 0; i < BlendShapes.Count; i++)
                     targetRenderer.SetBlendShapeWeight(i, BlendShapes[i].weight);
                 targetRenderer.sharedMaterials = SubMeshes.SelectMany(x => x.SharedMaterials).ToArray();
