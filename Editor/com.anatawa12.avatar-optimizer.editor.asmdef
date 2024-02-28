@@ -1,5 +1,6 @@
 {
     "name": "com.anatawa12.avatar-optimizer.editor",
+    "rootNamespace": "",
     "references": [
         "com.anatawa12.custom-localization-for-editor-extension",
         "com.anatawa12.custom-localization-for-editor-extension.runtime",
@@ -45,6 +46,11 @@
             "name": "com.vrchat.avatars",
             "expression": "",
             "define": "AAO_VRCSDK3_AVATARS"
+        },
+        {
+            "name": "com.vrchat.avatars",
+            "expression": "3.3.0",
+            "define": "AAO_VRCSDK3_AVATARS_IMPOSTER"
         },
         {
             "name": "com.vrmc.univrm",
