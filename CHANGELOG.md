@@ -20,7 +20,7 @@ The format is based on [Keep a Changelog].
 - Skinned Mesh Renderers with None mesh will become Mesh with no polygons `#906`
   - This may affects bounds of Performance Rank in VRChat
 - Exclusions not working with Automatically Remove Zero Sized Polygons `#907`
-- Fix non-VRChat project support `#884`
+- Fix non-VRChat project support `#884` (backport in `#909`)
 
 ### Security
 
