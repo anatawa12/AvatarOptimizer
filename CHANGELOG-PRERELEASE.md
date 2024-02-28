@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Compilation Error due to VRCImposterSettings with VRCSDK 3.2.x `#905`
 
 ### Security
 

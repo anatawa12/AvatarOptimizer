@@ -396,6 +396,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
         }
     }
 
+#if AAO_VRCSDK3_AVATARS_IMPOSTER
     [ComponentInformation(typeof(VRCImpostorSettings))]
     internal class VRCImpostorSettingsInformation : ComponentInformation<VRCImpostorSettings>
     {
@@ -409,5 +410,6 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
                 collector.AddDependency(transform);
         }
     }
+#endif
 }
 #endif
