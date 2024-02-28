@@ -12,7 +12,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             if (!state.RemoveZeroSizedPolygon) return;
 
             foreach (var renderer in context.GetComponents<SkinnedMeshRenderer>())
-                renderer.gameObject.GetOrAddComponent<RemoveZeroSizedPolygon>();
+                if (!state.Exclusions.Contains(renderer.gameObject))
+                    renderer.gameObject.GetOrAddComponent<RemoveZeroSizedPolygon>();
         }
     }
 }
