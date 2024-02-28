@@ -96,7 +96,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         }
 
         private Vector2 MapUV(Vector2 vector2, Rect destSourceRect) =>
-            vector2 * new Vector2(destSourceRect.width, destSourceRect.height) 
+            new Vector2(vector2.x % 1, vector2.y % 1) * new Vector2(destSourceRect.width, destSourceRect.height) 
             + new Vector2(destSourceRect.x, destSourceRect.y);
 
 
