@@ -23,6 +23,9 @@ Currently the following optimizations are applied automatically.
     Prevents removing end bones[^endbone] whose parent is not removed.
 - `Automatically Remove Zero Sized Polygons`
   Removes polygons whose area are zero.
+- `Optimize PhysBone Settings` Optimizes PhysBone settings for better performance. This performs the following optimizations.
+  - Unifies the PhysBone Colliders with the exactly same settings into one PhysBone Collider.
+  - Unchecks `Is Animated` if it's not necessary.
 
 Also, You can adjust optimization with the following settings
 - `MMD World Compatibility`  
