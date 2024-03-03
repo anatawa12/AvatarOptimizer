@@ -14,6 +14,14 @@ You can enable/disable some automatic optimization features with checkboxes.
 
 This component should be added to an avatar root. (Kind: [Avatar Global Component](../../component-kind/avatar-global-components))
 
+{{< hint info >}}
+
+Trace and Optimize is quite carefully designed under the premise that "**never let it affect the appearance**."\
+So, if any problems occur, such as appearance is affected or some gimmick stops working, they are all caused by bugs in AAO, without exception.\
+Therefore, if you encounter any problems with this component, please report it and it will most likely be fixed.
+
+{{< /hint >}}
+
 Currently the following optimizations are applied automatically.
 - `Automatically Freeze BlendShape`  
   Automatically freezes unused BlendShapes in animation or else.
