@@ -18,7 +18,7 @@ title: 基本的な使い方
 - アニメーションしたりPhysBoneで揺らしたりすることのないボーンの統合
   - 服のボーンを素体のボーンに入れ子状にして着せるような場合には、それ自身を動かすことがないボーンが多く発生します。そのようなボーンは余分な負荷を発生させてしまいます。
 
-AvatarOptimizerでは、アバターのルートに`Trace And Optimize`コンポーネントを追加するだけで、これらの最適化を自動で行うことができます！
+AvatarOptimizerでは、アバターのルートに`AAO Trace And Optimize`コンポーネントを追加するだけで、これらの最適化を自動で行うことができます！
 
 ![add-trace-and-optimize.png](add-trace-and-optimize.png)
 
@@ -49,19 +49,19 @@ Skinned Meshを統合することでメッシュを変形させる処理の回�
 
 ![create-empty.png](./create-empty.png)
 
-次に、`Anon_Merged`に`Merge Skinned Mesh`コンポーネントを追加しましょう。
+次に、`Anon_Merged`に`AAO Merge Skinned Mesh`コンポーネントを追加しましょう。
 
 ![add-merge-skinned-mesh.png](./add-merge-skinned-mesh.png)
 
-すると`Merge Skinned Mesh`コンポーネントと`Skinned Mesh Renderer`コンポーネントが追加されます。
+すると`AAO Merge Skinned Mesh`コンポーネントと`Skinned Mesh Renderer`コンポーネントが追加されます。
 後者が統合先のメッシュ[^mesh]になります。
 
-統合したいメッシュを`Merge Skinned Mesh`コンポーネントに楽に指定するために、`Anon_Merged`を選択した状態でinspectorをロックしましょう。
+統合したいメッシュを`AAO Merge Skinned Mesh`コンポーネントに楽に指定するために、`Anon_Merged`を選択した状態でinspectorをロックしましょう。
 こうすることで複数のメッシュをまとめてドラックアンドドロップできるようになります。[^tip-lock-inspector]
 
 ![lock-inspector.png](./lock-inspector.png)
 
-それでは、顔のメッシュであるBody以外のメッシュをHierarchyで選択し、`Merge Skinned Mesh`コンポーネント内のSkinned Renderersにドラックアンドドロップで指定しましょう！
+それでは、顔のメッシュであるBody以外のメッシュをHierarchyで選択し、`AAO Merge Skinned Mesh`コンポーネント内のSkinned Renderersにドラックアンドドロップで指定しましょう！
 
 ![drag-and-drop.png](./drag-and-drop.png)
 
@@ -76,8 +76,8 @@ BlendShape(シェイプキー)は頂点数とBlendShape数の積に比例して�
 
 続いて、`Anon_Merged`の設定をしましょう！
 
-`Merge Skinned Mesh`は諸事情[^merge-skinned-mesh]により、ボーン、メッシュ、マテリアル、BlendShape、Bounds以外の設定を自動的には行いません。
-そのため、統合先のメッシュ(`Merge Skinned Mesh`コンポーネントと同時に追加された`Skinned Mesh Renderer`コンポーネント)にある`Anchor Override`, `Root Bone`等の項目には別途手動で設定が必要です。
+`AAO Merge Skinned Mesh`は諸事情[^merge-skinned-mesh]により、ボーン、メッシュ、マテリアル、BlendShape、Bounds以外の設定を自動的には行いません。
+そのため、統合先のメッシュ(`AAO Merge Skinned Mesh`コンポーネントと同時に追加された`Skinned Mesh Renderer`コンポーネント)にある`Anchor Override`, `Root Bone`等の項目には別途手動で設定が必要です。
 `Anchor Override`には素体(Body等)で設定されているものを、`Root Bone`には`Hips`を指定すると上手くいくことが多いと思います。
 
 {{< hint info >}}
@@ -104,7 +104,7 @@ BlendShape(シェイプキー)は頂点数とBlendShape数の積に比例して�
 服で隠れていたりして見えないような部分のメッシュを削除すると、見た目に影響させずに描画負荷やBlendShapeの処理負荷などを減らして軽量化することができます。
 これを簡単に実現するために、AvatarOptimizerでは多くの素体に含まれている貫通防止用のBlendShapeを利用してメッシュを削除することができます！
 
-素体のメッシュに`Remove Mesh By BlendShape`コンポーネントを追加しましょう！
+素体のメッシュに`AAO Remove Mesh By BlendShape`コンポーネントを追加しましょう！
 
 想定外の部位が削除されてしまわないかを確認するために`プレビューのために切り替えたBlendShapeの値を自動的に変更する`にチェックし、
 削除したい部位の貫通防止用BlendShapeを下の一覧から選択しましょう！
