@@ -6,7 +6,7 @@ type: docs
 # AAO: Avatar Optimizer
 
 Set of Anatawa12's non-Destructive Small Avatar Optimization Utilities.
-Those utilities are applied on entering play mode or building VRC Avatars.
+Those utilities are applied on entering play mode or building avatars.
 
 Avatar Optimizer is a Open Source Software developed on [GitHub] published under the [MIT License].
 
