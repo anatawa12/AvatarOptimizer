@@ -25,7 +25,7 @@ We will fix it as much as we can.
 
 Currently the following optimizations are applied automatically.
 - `Automatically Freeze BlendShape`\
-  Automatically freezes unused BlendShapes in animation or else.
+  Automatically freezes BlendShapes which are always the same value or unused in animation, etc.
 - `Remove unused Objects`\
   By scanning animation etc., automatically removes unused Objects (e.g. GameObjects, Components).
   - `Preserve EndBone`\
