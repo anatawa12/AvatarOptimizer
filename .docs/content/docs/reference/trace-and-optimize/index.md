@@ -24,11 +24,11 @@ We will fix it as much as we can.
 {{< /hint >}}
 
 Currently the following optimizations are applied automatically.
-- `Automatically Freeze BlendShape`  
+- `Automatically Freeze BlendShape`\
   Automatically freezes unused BlendShapes in animation or else.
-- `Remove unused Objects`  
+- `Remove unused Objects`\
   By scanning animation etc., automatically removes unused Objects (e.g. GameObjects, Components).
-  - `Preserve EndBone`  
+  - `Preserve EndBone`\
     Prevents removing end bones[^endbone] whose parent is not removed.
 - `Automatically Remove Zero Sized Polygons`
   Removes polygons whose area are zero.
@@ -36,7 +36,7 @@ Currently the following optimizations are applied automatically.
   Optimizes Animator Controller.
 
 Also, You can adjust optimization with the following settings
-- `MMD World Compatibility`  
+- `MMD World Compatibility`\
   Optimize with considering compatibility with MMD Worlds. e.g. Not freezing BlendShapes used by MMD Worlds.
 
 In addition, there is `Advanced Settings` which is for workaround bugs but it's unstable & not well-tested.

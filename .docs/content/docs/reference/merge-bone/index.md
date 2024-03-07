@@ -22,5 +22,5 @@ All children of GameObject where this component is applied will belong to parent
 
 ![component.png](component.png)
 
-- `Avoid Name Conflict`  
+- `Avoid Name Conflict`\
   Avoids animation problems with name conflict by renaming child GameObjects
