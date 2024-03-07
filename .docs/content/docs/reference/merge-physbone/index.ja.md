@@ -3,7 +3,7 @@ title: Merge PhysBone
 weight: 100
 ---
 
-# Merge PhysBone
+# Merge PhysBone (MergePB) {#merge-physbone}
 
 このコンポーネントは、複数のPhysBoneコンポーネントを1つに統合します。
 MultiChildTypeはIgnoreになります。

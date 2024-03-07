@@ -5,7 +5,7 @@ aliases:
   - /en/docs/reference/automatic-configuration/
 ---
 
-# Trace And Optimize
+# Trace And Optimize (T&O) {#trace-and-optimize}
 
 <i>Previously known as Automatic Configuration</i>
 

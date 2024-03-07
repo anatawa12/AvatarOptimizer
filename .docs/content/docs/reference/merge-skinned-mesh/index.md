@@ -3,7 +3,7 @@ title: Merge Skinned Mesh
 weight: 21
 ---
 
-# Merge Skinned Mesh
+# Merge Skinned Mesh (MergeSMR) {#merge-skinned-mesh}
 
 Merges one or more SkinnedMeshRenderer and MeshRenderers into one SkinnedMeshRenderer.
 

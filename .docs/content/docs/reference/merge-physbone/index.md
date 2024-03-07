@@ -3,7 +3,7 @@ title: Merge PhysBone
 weight: 100
 ---
 
-# Merge PhysBone
+# Merge PhysBone (MergePB) {#merge-physbone}
 
 This component merges multiple PhysBone Components into one Component with MultiChildType == Ignore.
 
