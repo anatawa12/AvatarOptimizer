@@ -5,7 +5,7 @@ weight: 21
 
 # Merge Skinned Mesh (MergeSMR) {#merge-skinned-mesh}
 
-Merges one or more SkinnedMeshRenderer and MeshRenderers into one SkinnedMeshRenderer.
+Merges one or more SkinnedMeshRenderers and MeshRenderers into one SkinnedMeshRenderer.
 
 This component should be added to a new GameObject which has a SkinnedMeshRenderer component without Mesh specified. (Kind: [Source Edit Skinned Mesh Component](../../component-kind/edit-skinned-mesh-components#source-component))
 
@@ -51,16 +51,15 @@ Drop to None element at the bottom to add renderer and reset to None to remove f
 
 ### Remove Empty Renderer GameObject
 
-If this checkbox is checked and the GameObject SkinnedMeshRenderer belongs to does not have
+If this checkbox is checked and the GameObject where SkinnedMeshRenderer belongs does not have
 any other components than SkinnedMeshRenderer, the GameObject will be removed from Hierarchy.
 
 ### Skip Enablement Mismatched Renderers
 
-If this checkbox is checked, SkinnedMeshRenderer and MeshRenderer will not be merged
-if enablement is different than target renderer the on the build time.
+If this checkbox is checked, renderers whose enablement is different than target renderer on the build time will not be merged.
 
 ### Merge Materials
 
-If MergeSkinnedMesh component found some Materials used in multiple renderers, the Materials will be listed here.
+If this component found some Materials used in multiple renderers, the Materials will be listed here.
 
 Check `Merge` to merge those MaterialSlots (SubMeshes) into one MaterialSlot. This reduces DrawCalls.

@@ -47,7 +47,7 @@ There are several optimizations which can be performed automatically for Avatars
 - Merging bones which is not animated or swayed with PhysBones
   - If the clothes bones are nested into the body bones, there will be many bones which are never moved locally. Such bones cause extra cost.
 
-With AvatarOptimizer, these optimizations can be performed automatically by simply adding a `AAO Trace And Optimize` to the Avatar Root!
+With AvatarOptimizer, these optimizations can be performed automatically by simply adding `AAO Trace And Optimize` component to the Avatar Root!
 
 ![add-trace-and-optimize.png](add-trace-and-optimize.png)
 
@@ -60,7 +60,7 @@ Reduce polygons with BlendShapes which shrink parts of the body {#remove-mesh-by
 By removing polygons which are hidden by clothes or something, you can reduce rendering cost, BlendShape processing cost, etc. without affecting the appearance so much.
 To make this easier, AvatarOptimizer allows you to remove polygons with BlendShapes for shrinking parts of the body, which many avatars have!
 
-Let's add `AAO Remove Mesh By BlendShape` to Body Mesh!
+Let's add `AAO Remove Mesh By BlendShape` component to Body Mesh!
 
 Enable `Automatically set BlendShape weight for preview when toggled` to make sure that unintended parts of the body are not removed, and
 select BlendShapes from the BlendShapes list below that shrink the parts of the body you want to remove!
@@ -96,18 +96,18 @@ Then, rename to understandable name. In this document, I call it as `Anon_Merged
 
 ![create-empty.png](./create-empty.png)
 
-Then, Add `AAO Merge Skinned Mesh` to `Anon_Merged`.
+Then, Add `AAO Merge Skinned Mesh` component to `Anon_Merged`.
 
 ![add-merge-skinned-mesh.png](./add-merge-skinned-mesh.png)
 
-This adds `AAO Merge Skinned Mesh` and `Skinned Mesh Renderer` (which will be the merged mesh).
+This adds `AAO Merge Skinned Mesh` component and `Skinned Mesh Renderer` component (which will be the merged mesh).
 
-To make it easy to specifying merge target meshes to `AAO Merge Skinned Mesh`, lock the inspector with `Anon_Merged` selected.
+To make it easy to specifying merge target meshes to `AAO Merge Skinned Mesh` component, lock the inspector with `Anon_Merged` selected.
 This allow us to drag & drop multiple meshes at once.[^tip-lock-inspector]
 
 ![lock-inspector.png](./lock-inspector.png)
 
-Then, select meshes except for Body, which is the face mesh, and drag & drop to Skinned Renderers of `AAO Merge Skinned Mesh`!
+Then, select meshes except for Body, which is the face mesh, and drag & drop to Skinned Renderers of `AAO Merge Skinned Mesh` component!
 
 ![drag-and-drop.png](./drag-and-drop.png)
 
@@ -123,8 +123,8 @@ so I recommend not to merge face mesh.
 
 Next, configure `Anon_Merged`!
 
-Because of many reasons[^merge-skinned-mesh], `AAO Merge Skinned Mesh` doesn't configure anything except of bones, meshes, materials, BlendShapes and bounds.
-So, please configure Anchor Override, Root Bone and so on yourself on the merged mesh (`Skinned Mesh Renderer` which is added at the same time as the `AAO Merge Skinned Mesh`).
+Because of many reasons[^merge-skinned-mesh], `AAO Merge Skinned Mesh` component doesn't configure anything except of bones, meshes, materials, BlendShapes and bounds.
+So, please configure Anchor Override, Root Bone and so on yourself on the merged mesh (`Skinned Mesh Renderer` component which is added at the same time as the `AAO Merge Skinned Mesh`component).
 I think specifying what is configured in your avatar's body as Anchor Override, and setting `Hips` as the Root Bone will work well.
 
 [^tip-lock-inspector]: It is useful to keep in mind that it can be used in many other places such as specifying multiple colliders for PhysBone.
