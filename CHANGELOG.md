@@ -87,7 +87,7 @@ The format is based on [Keep a Changelog].
   - I've fixed some bugs in Unity 2022 in this release.
   - Since this version, package.json declares Avatar Optimizer is compatible with VRCSDK 3.5.x.
   - I was planned to release this changes while VRCSDK 3.5.0 is in beta.
-  - However, VRCSDK 3.5.0 beta was only 3 hours so I could not. 
+  - However, VRCSDK 3.5.0 beta was only 3 hours so I could not.
 
 ### Fixed
 - Fix NullReferenceException on Unity 2022 when extra Animator components are present [`#778`](https://github.com/anatawq12/AvatarOptimizer/pull/778)
@@ -311,9 +311,9 @@ The format is based on [Keep a Changelog].
 - Add link to help page [`#382`](https://github.com/anatawa12/AvatarOptimizer/pull/382)
 - Advanced Animator Parser [`#343`](https://github.com/anatawa12/AvatarOptimizer/pull/343)
   - This is new AnimatorController parser to collect animated properties
-  - This parser understands AnimatorLayers, so with this parser, 
+  - This parser understands AnimatorLayers, so with this parser,
     AAO can freeze BlendShapes which are always finally animated to a constant value.
-  - This also understands Additive Layer and BlendTree, so extremely rare problem in previous Animator Parser 
+  - This also understands Additive Layer and BlendTree, so extremely rare problem in previous Animator Parser
     with Additive Layer or BlendTree will be fixed with this parser.
 - Multi Pass Rendering of Last SubMesh support [`#384`](https://github.com/anatawa12/AvatarOptimizer/pull/384)
 - Remove Mesh By BlendShape Editor now can set BlendShape weights to 0/100
@@ -517,7 +517,7 @@ The format is based on [Keep a Changelog].
   - This should reduce build time
 - Disable animating `m_Enabled` of source SkinnedMeshRenderer [`#190`](https://github.com/anatawa12/AvatarOptimizer/pull/190)
   - Animating `m_Enabled` of source SkinnedMeshRenderer now doesn't affects merged SkinnedMeshRenderer
-  - If you actually want to enable/disable merged SkinnedMeshRenderer, 
+  - If you actually want to enable/disable merged SkinnedMeshRenderer,
     animate `m_Enabled` of merged SkinnedMeshRenderer instead.
 
 ### Fixed
@@ -565,7 +565,7 @@ The format is based on [Keep a Changelog].
 ### Added
 - Error Reporting System [`#124`](https://github.com/anatawa12/AvatarOptimizer/pull/124)
   - This adds window shows errors on build
-  - This is based on Modular Avatar's Error Reporting Window. thanks `@bdunderscore` 
+  - This is based on Modular Avatar's Error Reporting Window. thanks `@bdunderscore`
 - Website for AvatarOptimizer [`#139`](https://github.com/anatawa12/AvatarOptimizer/pull/139)
   - Available at <https://vpm.anatawa12.com/avatar-optimizer/>
 - Manual Bake Avatar [`#147`](https://github.com/anatawa12/AvatarOptimizer/pull/147)
@@ -638,8 +638,8 @@ The format is based on [Keep a Changelog].
 ## [0.2.6] - 2023-03-31
 ### Added
 - Internationalization support [`#77`](https://github.com/anatawa12/AvatarOptimizer/pull/77)
-  - This adds way to translate editor elements. 
-  - However, no other language translation than English is not added yet. 
+  - This adds way to translate editor elements.
+  - However, no other language translation than English is not added yet.
   - Please feel free to make PullRequest if you can maintain the translation.
 
 ### Fixed
@@ -649,7 +649,7 @@ The format is based on [Keep a Changelog].
 - Assertion does not work well [`#85`](https://github.com/anatawa12/AvatarOptimizer/pull/85)
   - This can make invalid mesh
 - Mesh is broken if more than 65536 vertices are exists [`#87`](https://github.com/anatawa12/AvatarOptimizer/pull/87)
-  - Because we didn't check for vertices count and index format, vertex index can be overflow before. 
+  - Because we didn't check for vertices count and index format, vertex index can be overflow before.
 - Generated assets are invisible for a while [`#88`](https://github.com/anatawa12/AvatarOptimizer/pull/88)
 
 ## [0.2.5] - 2023-03-24

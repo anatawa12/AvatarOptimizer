@@ -42,9 +42,9 @@ Almost all parts of this project has no stable public APIs assembly for now.
 The only stable public API is in `com.anatawa12.avatar-optimizer.api.editor` assembly.
 For this assembly, The Semantic Versioning is applied to the API.
 
-For other parts of the Avatar Optimizer, the Semantic Versioning will be applied to save format of the components, 
+For other parts of the Avatar Optimizer, the Semantic Versioning will be applied to save format of the components,
 but not for scripting usage for now.  Even if any parts of this project is exposed as public in C# code,
 it can be changed / removed in future release, especially for assemblies in the `Internal` folder.
 
-In addition, features only for debugging the components (e.g. Advanced Options on the Trace and Optimize) 
+In addition, features only for debugging the components (e.g. Advanced Options on the Trace and Optimize)
 are not stable, might be changed in minor / patch versions.

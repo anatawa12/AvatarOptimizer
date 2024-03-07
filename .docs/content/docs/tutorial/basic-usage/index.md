@@ -64,7 +64,7 @@ Merging Skinned Mesh will not allow you to turn them on and off individually, bu
 **Why will we merge Skinned Mesh?**
 
 Merging Skinned Mesh will reduce number of deforming mesh (skinning).
-Also, Merging with MergeSkinnedMesh can reduce material slots so we can reduce number of drawing. 
+Also, Merging with MergeSkinnedMesh can reduce material slots so we can reduce number of drawing.
 
 {{< /hint >}}
 

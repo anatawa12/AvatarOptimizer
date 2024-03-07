@@ -5,7 +5,7 @@ weight: 20
 
 # Edit Skinned Mesh Components
 
-Edit Skinned Mesh Component is a kind of component which should be added to 
+Edit Skinned Mesh Component is a kind of component which should be added to
 a GameObject which has a SkinnedMeshRenderer component, and applies some modification to the SkinnedMeshRenderer.
 
 There are two sub-kinds.

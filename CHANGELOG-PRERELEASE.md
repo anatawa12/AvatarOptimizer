@@ -115,7 +115,7 @@ The format is based on [Keep a Changelog].
   - I've fixed some bugs in Unity 2022 in this release.
   - Since this version, package.json declares Avatar Optimizer is compatible with VRCSDK 3.5.x.
   - I was planned to release this changes while VRCSDK 3.5.0 is in beta.
-  - However, VRCSDK 3.5.0 beta was only 3 hours so I could not. 
+  - However, VRCSDK 3.5.0 beta was only 3 hours so I could not.
 
 ### Fixed
 - Fix NullReferenceException on Unity 2022 when extra Animator components are present [`#778`](https://github.com/anatawq12/AvatarOptimizer/pull/778)
@@ -266,7 +266,7 @@ The format is based on [Keep a Changelog].
 ## [1.6.0-beta.1] - 2023-10-25
 ### Added
 - Public API for registering component information [`#623`](https://github.com/anatawa12/AvatarOptimizer/pull/623)
-- Documentation for developers about compatibility with Avatar Optimizer [`#623`](https://github.com/anatawa12/AvatarOptimizer/pull/623) 
+- Documentation for developers about compatibility with Avatar Optimizer [`#623`](https://github.com/anatawa12/AvatarOptimizer/pull/623)
 - Disabling PhysBone animation based on mesh renderer enabled animation [`#640`](https://github.com/anatawa12/AvatarOptimizer/pull/640)
   - If you toggles your clothes with simple toggle, PhysBones on the your avatar will also be toggled automatically!
 
@@ -764,7 +764,7 @@ This release is mistake.
 
 ## [0.4.11] - 2023-06-19
 ### Changed
-- Show error with user friendly message if BlendShape for eyelids are removed / frozen. [`#253`](https://github.com/anatawa12/AvatarOptimizer/pull/253) 
+- Show error with user friendly message if BlendShape for eyelids are removed / frozen. [`#253`](https://github.com/anatawa12/AvatarOptimizer/pull/253)
 
 ### Fixed
 - eyelids BlendShape settings are mapped even if it's disabled [`#235`](https://github.com/anatawa12/AvatarOptimizer/pull/235)
