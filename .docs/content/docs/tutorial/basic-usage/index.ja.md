@@ -5,6 +5,33 @@ title: 基本的な使い方
 基本的な使い方
 ===
 
+アップロード方法 {#how-to-upload}
+---
+
+AAO: Avatar Optimizerは非破壊改変ツールであり、Playモードに入るときかアバターをビルドするときに処理が行われるため、アップロードを行うのに特別な手順は必要ありません。
+
+ただし、Android(Quest)向けアップロードを行う場合などにおいて、Avatar Optimizerの最適化等によって制限の範囲内に収まるにも関わらず、VRCSDKのビルド前チェックの時点で制限を超過していてアップロードボタンが押せなくなっている場合には、以下の方法が使用できます。
+
+- `Manual bake avatar`を使用して生成したアバターをアップロードする。\
+(アバターのGameObjectを選択した後、Unityウィンドウ上部のToolsから、`NDM Framework`の中にある`Manual bake avatar`を押す)
+- Sayamame-beansによる[Upload without pre-check]を使用してアップロードする。
+
+[Upload without pre-check]: https://github.com/Sayamame-beans/Upload-without-preCheck?tab=readme-ov-file#upload-without-pre-check
+
+{{< hint info >}}
+
+### UploadせずにPerformance Rankを見る方法 {#performance-rank-without-upload}
+
+非破壊改変ツールを使用した改変では、VRCSDKのControl Panel上のPerformance Rankはあてにならなくなります。
+
+その代わりとして、Playモードに入った際のPerformance Rankをanatawa12's Gist PackのActual Performance Windowを使用して確認することができます。
+詳しくは[anatawa12's Gist Packの使い方][gists-basic-usage]および[Actual Performance Windowのドキュメント][Actual Performance Window]を参照してください。
+
+[gists-basic-usage]: https://vpm.anatawa12.com/gists/ja/docs/basic-usage/
+[Actual Performance Window]: https://vpm.anatawa12.com/gists/ja/docs/reference/actual-performance-window/
+
+{{< /hint >}}
+
 自動最適化を使用する {#trace-and-optimize}
 ---
 
@@ -79,20 +106,6 @@ BlendShape(シェイプキー)は頂点数とBlendShape数の積に比例して�
 `AAO Merge Skinned Mesh`は諸事情[^merge-skinned-mesh]により、ボーン、メッシュ、マテリアル、BlendShape、Bounds以外の設定を自動的には行いません。
 そのため、統合先のメッシュ(`AAO Merge Skinned Mesh`コンポーネントと同時に追加された`Skinned Mesh Renderer`コンポーネント)にある`Anchor Override`, `Root Bone`等の項目には別途手動で設定が必要です。
 `Anchor Override`には素体(Body等)で設定されているものを、`Root Bone`には`Hips`を指定すると上手くいくことが多いと思います。
-
-{{< hint info >}}
-
-### UploadせずにPerformance Rankを見る方法 {#performance-rank-without-upload}
-
-このAvatar Optimizerは非破壊改変ツールのため、VRCSDKのControl Panel上のPerformance Rankはあてにならなくなります。
-
-その代わりにPlayモードに入った際のPerformance Rankをanatawa12's Gist PackのActual Performance Windowを使用してみられます。
-詳しくは[anatawa12's Gist Packの使い方][gists-basic-usage]および[Actual Performance Windowのドキュメント][Actual Performance Window]を参照してください。
-
-[gists-basic-usage]: https://vpm.anatawa12.com/gists/ja/docs/basic-usage/
-[Actual Performance Window]: https://vpm.anatawa12.com/gists/ja/docs/reference/actual-performance-window/
-
-{{< /hint >}}
 
 [^tip-lock-inspector]: PhysBoneに複数のコライダーを指定したりするのにも使えます。色んなところで使えるので覚えておくと便利だと思います。
 [^merge-skinned-mesh]: Root Bone/Anchor Overrideは等しくないと統合できないため対応予定がありません。もし良いアルゴリズムがあれば教えてください。

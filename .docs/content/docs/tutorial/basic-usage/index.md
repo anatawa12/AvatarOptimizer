@@ -5,6 +5,35 @@ title: Basic Usage
 Basic Usage
 ===
 
+How to Upload
+---
+
+AAO: Avatar Optimizer is a non-destructive avatar modification tool, and processes avatars on entering play mode or building them.
+Therefore, no special steps are required for uploading.
+
+However, even though the hard limit will not be exceeded through Avatar Optimizer optimization, etc.,
+the upload button cannot be pressed because the limit has been exceeded at the time of the VRCSDK pre-build check, the following methods can be used.
+
+- Upload the avatar generated with `Manual bake avatar`.\
+(Select the GameObject of the avatar, then press `Manual bake avatar` in `NDM Framework` from Tools at the top of the Unity window)
+- Upload using [Upload without pre-check] by Sayamame-beans.
+
+[Upload without pre-check]: https://github.com/Sayamame-beans/Upload-without-preCheck?tab=readme-ov-file#upload-without-pre-check
+
+{{< hint info >}}
+
+### Checking performance rank without uploading avatar {#performance-rank-without-upload}
+
+When using non-destructive avatar modification tools, Performance Rank on the VRCSDK Control Panel is no loner be relied upon.
+
+Instead, you can check Performance Rank in Play Mode with Actual Performance Window of anatawa12's Gist Pack.
+Please check [basic usages of anatawa12's Gist Pack][gists-basic-usage] and [documentation of Actual Performance Window][Actual Performance Window] for more details。
+
+[gists-basic-usage]: https://vpm.anatawa12.com/gists/ja/docs/basic-usage/
+[Actual Performance Window]: https://vpm.anatawa12.com/gists/ja/docs/reference/actual-performance-window/
+
+{{< /hint >}}
+
 Use Automatic Optimization {#trace-and-optimize}
 ---
 
@@ -79,21 +108,6 @@ Next, configure `Anon_Merged`!
 Because of many reasons[^merge-skinned-mesh], `AAO Merge Skinned Mesh` doesn't configure anything except of bones, meshes, materials, BlendShapes and bounds.
 So, please configure Anchor Override, Root Bone and so on yourself on the merged mesh (`Skinned Mesh Renderer` which is added at the same time as the `AAO Merge Skinned Mesh`).
 I think specifying what is configured in your avatar's body as Anchor Override, and setting `Hips` as the Root Bone will work well.
-
-{{< hint info >}}
-
-### Checking performance rank without uploading avatar {#performance-rank-without-upload}
-
-Because Avatar Optimizer is a non-destructive avatar modification tool,
-Performance Rank on the VRCSDK Control Panel is no loner be relied upon.
-
-Instead, you can check Performance Rank in Play Mode with Actual Performance Window of anatawa12's Gist Pack.
-Please check [basic usages of anatawa12's Gist Pack][gists-basic-usage] and [documentation of Actual Performance Window][Actual Performance Window] for more details。
-
-[gists-basic-usage]: https://vpm.anatawa12.com/gists/ja/docs/basic-usage/
-[Actual Performance Window]: https://vpm.anatawa12.com/gists/ja/docs/reference/actual-performance-window/
-
-{{< /hint >}}
 
 [^tip-lock-inspector]: It is useful to keep in mind that it can be used in many other places such as specifying multiple colliders for PhysBone.
 [^merge-skinned-mesh]: Root Bone and Anchor Override are impossible to merge automatically I think. If you know any good algorithm, please tel me that.
