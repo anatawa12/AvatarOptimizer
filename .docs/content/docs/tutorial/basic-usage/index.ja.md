@@ -41,7 +41,7 @@ AAO: Avatar Optimizerは非破壊改変ツールであり、Playモードに入�
   - BlendShapeの値が0以外のときは処理負荷が発生するため、値をアニメーション等で変更しないBlendShapeは固定すると負荷が軽くなります。
   - 値が常に0である場合でも、固定することでアバターの容量を削減することができます。
 - 使われていないPhysBone等の削除
-  - 揺らす対象として存在するメッシュが常に無効になっているPhysBoneなどのように、揺らす必要のないPhysBoneが有効になっている場合は計算負荷が余分に発生してしまいます。
+  - 揺らす対象として存在するメッシュ[^mesh]が常に無効になっているPhysBoneなどのように、揺らす必要のないPhysBoneが有効になっている場合は計算負荷が余分に発生してしまいます。
 - アニメーションしたりPhysBoneで揺らしたりすることのないボーンの統合
   - 服のボーンを素体のボーンに入れ子状にして着せるような場合には、それ自身を動かすことがないボーンが多く発生します。そのようなボーンは余分な負荷を発生させてしまいます。
 
@@ -50,6 +50,7 @@ AvatarOptimizerでは、アバターのルートに`AAO Trace And Optimize`コ�
 ![add-trace-and-optimize.png](add-trace-and-optimize.png)
 
 [^blend-shape]: BlendShapeはUnity上のシェイプキーの名前です。UnityやMayaではBlendShape、BlenderではShape Key、MetasequoiaやMMDではモーフと呼ばれます。
+[^mesh]: この記事でのメッシュは、UnityのMesh assetではなく、SkinnedMeshRendererやMeshRendererを意味しています。
 
 メッシュを統合してMesh Renderersを減らす {#merge-skinned-mesh}
 --
@@ -81,7 +82,7 @@ Skinned Meshを統合することでメッシュを変形させる処理の回�
 ![add-merge-skinned-mesh.png](./add-merge-skinned-mesh.png)
 
 すると`AAO Merge Skinned Mesh`コンポーネントと`Skinned Mesh Renderer`コンポーネントが追加されます。
-後者が統合先のメッシュ[^mesh]になります。
+後者が統合先のメッシュになります。
 
 統合したいメッシュを`AAO Merge Skinned Mesh`コンポーネントに楽に指定するために、`Anon_Merged`を選択した状態でinspectorをロックしましょう。
 こうすることで複数のメッシュをまとめてドラックアンドドロップできるようになります。[^tip-lock-inspector]
@@ -109,7 +110,6 @@ BlendShape(シェイプキー)は頂点数とBlendShape数の積に比例して�
 
 [^tip-lock-inspector]: PhysBoneに複数のコライダーを指定したりするのにも使えます。色んなところで使えるので覚えておくと便利だと思います。
 [^merge-skinned-mesh]: Root Bone/Anchor Overrideは等しくないと統合できないため対応予定がありません。もし良いアルゴリズムがあれば教えてください。
-[^mesh]: この記事ではメッシュはUnityのMesh assetではなくSkinnedMeshRendererの意味で使用しています。
 
 貫通防止用BlendShapeを利用してポリゴンを減らす {#remove-mesh-by-blendshape}
 ---

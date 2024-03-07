@@ -43,7 +43,7 @@ There are several optimizations which can be performed automatically for Avatars
   - For BlendShapes with non-zero weight, freezing BlendShapes will reduce processing cost.
   - Even if the weight is zero, removing BlendShapes will reduce the size of avatars.
 - Removing unused Behaviours such as PhysBones
-  - If there are enabled PhysBones which do not need to be swayed (e.g., the swaying target mesh is always disabled), extra computational cost is caused.
+  - If there are enabled PhysBones which do not need to be swayed (e.g., the swaying target mesh[^mesh] is always disabled), extra computational cost is caused.
 - Merging bones which is not animated or swayed with PhysBones
   - If the clothes bones are nested into the body bones, there will be many bones which are never moved locally. Such bones cause extra cost.
 
@@ -52,6 +52,7 @@ With AvatarOptimizer, these optimizations can be performed automatically by simp
 ![add-trace-and-optimize.png](add-trace-and-optimize.png)
 
 [^blend-shape]: BlendShape is the name of Shape Keys in Unity. Unity and Maya call them as BlendShape, Blender calls them as Shape Key, Metasequoia and MMD call them as Morph.
+[^mesh]: In this document, mesh means SkinnedMeshRenderer or MeshRenderer, not the Mesh asset in Unity.
 
 Merge Meshes to reduce # of Skinned Renderers {#merge-skinned-mesh}
 --
@@ -72,7 +73,7 @@ This time, I'll optimize Anon-chan as a simplest case.
 
 ![start.png](./start.png)
 
-First, create GameObject for merged mesh[^mesh].
+First, create GameObject for merged mesh.
 Right-click avatar GameObject and click `Create Empty` to create new GameObject.
 Then, rename to understandable name. In this document, I call it as `Anon_Merged`.
 
@@ -111,7 +112,6 @@ I think specifying what is configured in your avatar's body as Anchor Override, 
 
 [^tip-lock-inspector]: It is useful to keep in mind that it can be used in many other places such as specifying multiple colliders for PhysBone.
 [^merge-skinned-mesh]: Root Bone and Anchor Override are impossible to merge automatically I think. If you know any good algorithm, please tel me that.
-[^mesh]: In this document mesh means SkinnedMeshRenderer, not the Mesh asset in Unity.
 
 Reduce polygons with BlendShapes which shrink parts of the body {#remove-mesh-by-blendshape}
 ---
