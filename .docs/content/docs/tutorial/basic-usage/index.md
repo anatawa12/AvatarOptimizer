@@ -54,8 +54,25 @@ With AvatarOptimizer, these optimizations can be performed automatically by simp
 [^blend-shape]: BlendShape is the name of Shape Keys in Unity. Unity and Maya call them as BlendShape, Blender calls them as Shape Key, Metasequoia and MMD call them as Morph.
 [^mesh]: In this document, mesh means SkinnedMeshRenderer or MeshRenderer, not the Mesh asset in Unity.
 
+Reduce polygons with BlendShapes which shrink parts of the body {#remove-mesh-by-blendshape}
+---
+
+By removing polygons which are hidden by clothes or something, you can reduce rendering cost, BlendShape processing cost, etc. without affecting the appearance so much.
+To make this easier, AvatarOptimizer allows you to remove polygons with BlendShapes for shrinking parts of the body, which many avatars have!
+
+Let's add `AAO Remove Mesh By BlendShape` to Body Mesh!
+
+Enable `Automatically set BlendShape weight for preview when toggled` to make sure that unintended parts of the body are not removed, and
+select BlendShapes from the BlendShapes list below that shrink the parts of the body you want to remove!
+
+In case polygons you want to remove are not removed, or you do not want to remove are removed, you need to adjust the `Tolerance` value!
+`Tolerance` decides how much the vertex is moved by BlendShape to be removed.
+In the first case, increase the value a little, in the second case, decrease it a little!
+
+![remove mesh by BlendShape](./remove-mesh-by-blendshape.png)
+
 Merge Meshes to reduce # of Skinned Renderers {#merge-skinned-mesh}
---
+---
 
 You can easily merge Skinned Mesh with Avatar Optimizer!
 Merging Skinned Mesh will not allow you to turn them on and off individually, but merging them will reduce rendering cost!
@@ -112,20 +129,3 @@ I think specifying what is configured in your avatar's body as Anchor Override, 
 
 [^tip-lock-inspector]: It is useful to keep in mind that it can be used in many other places such as specifying multiple colliders for PhysBone.
 [^merge-skinned-mesh]: Root Bone and Anchor Override are impossible to merge automatically I think. If you know any good algorithm, please tel me that.
-
-Reduce polygons with BlendShapes which shrink parts of the body {#remove-mesh-by-blendshape}
----
-
-By removing polygons which are hidden by clothes or something, you can reduce rendering cost, BlendShape processing cost, etc. without affecting the appearance so much.
-To make this easier, AvatarOptimizer allows you to remove polygons with BlendShapes for shrinking parts of the body, which many avatars have!
-
-Let's add `AAO Remove Mesh By BlendShape` to Body Mesh!
-
-Enable `Automatically set BlendShape weight for preview when toggled` to make sure that unintended parts of the body are not removed, and
-select BlendShapes from the BlendShapes list below that shrink the parts of the body you want to remove!
-
-In case polygons you want to remove are not removed, or you do not want to remove are removed, you need to adjust the `Tolerance` value!
-`Tolerance` decides how much the vertex is moved by BlendShape to be removed.
-In the first case, increase the value a little, in the second case, decrease it a little!
-
-![remove mesh by BlendShape](./remove-mesh-by-blendshape.png)
