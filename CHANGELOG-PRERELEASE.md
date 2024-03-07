@@ -18,6 +18,10 @@ The format is based on [Keep a Changelog].
 - Asset Description `#847`
   - Asset Description is the file to provide information of your assets for Avatar Optimizer.
   - Please see documentation for more details.
+- Warning for material animation in Merge Skinned Mesh `#769`
+  - Merge Skinned Mesh does not support animating material properties differently. (In other words, it can be broken.)
+  - Since this version, AAO will warn for such a case.
+  - If you animated all materials from same animations, your animation will not be warned.
 
 ### Changed
 - MergePhysBone now corrects curve settings `#775`
@@ -51,6 +55,7 @@ The format is based on [Keep a Changelog].
   - It's not expected to have behavior change, but if you found some, please report it.
 - Re-fix Nested Constraint can be broken with Trace and Optimize `#880`
 - Fix non-VRChat project support `#884`
+- Fix VRM support `#892`
 
 ### Security
 

@@ -4,7 +4,7 @@ using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer
 {
-    public readonly struct ComponentOrGameObject : IEquatable<ComponentOrGameObject>
+    internal readonly struct ComponentOrGameObject : IEquatable<ComponentOrGameObject>
     {
         private readonly Object _object;
 

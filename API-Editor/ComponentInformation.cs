@@ -21,8 +21,10 @@ namespace Anatawa12.AvatarOptimizer.API
     [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
     [MeansImplicitUse]
     [BaseTypeRequired(typeof(ComponentInformation<>))]
+    [PublicAPI]
     public sealed class ComponentInformationAttribute : APIInternal.ComponentInformationAttributeBase
     {
+        [PublicAPI]
         public Type TargetType { get; }
 
         [PublicAPI]
@@ -35,6 +37,7 @@ namespace Anatawa12.AvatarOptimizer.API
     }
 
     [PublicAPI]
+    [APIInternal.AllowInherit]
     public abstract class ComponentInformation<TComponent> :
         APIInternal.ComponentInformation,
         APIInternal.IComponentInformation<TComponent>
@@ -92,6 +95,7 @@ namespace Anatawa12.AvatarOptimizer.API
         //    and do fallback process in that method.
     }
 
+    [PublicAPI]
     public abstract class ComponentDependencyCollector
     {
         internal ComponentDependencyCollector()
@@ -187,6 +191,7 @@ namespace Anatawa12.AvatarOptimizer.API
         internal abstract bool? GetAnimatedFlag(Component component, string animationProperty, bool currentValue);
     }
 
+    [PublicAPI]
     public abstract class ComponentDependencyInfo
     {
         internal ComponentDependencyInfo()
@@ -216,6 +221,7 @@ namespace Anatawa12.AvatarOptimizer.API
     /// }
     /// </code>
     /// </example>
+    [PublicAPI]
     public abstract class ComponentMutationsCollector
     {
         internal ComponentMutationsCollector()
@@ -246,6 +252,7 @@ namespace Anatawa12.AvatarOptimizer.API
     /// In addition, Avatar Optimizer may replace or merges some properties of the component.
     /// This class also provide the information about the property replacement.
     /// </summary>
+    [PublicAPI]
     public abstract class MappingSource
     {
         internal MappingSource()
@@ -271,6 +278,7 @@ namespace Anatawa12.AvatarOptimizer.API
         public abstract MappedComponentInfo<GameObject> GetMappedGameObject(GameObject component);
     }
 
+    [PublicAPI]
     public abstract class MappedComponentInfo<T> where T : Object
     {
         internal MappedComponentInfo()
@@ -305,6 +313,7 @@ namespace Anatawa12.AvatarOptimizer.API
         public abstract bool TryMapProperty(string property, out MappedPropertyInfo found);
     }
 
+    [PublicAPI]
     public readonly struct MappedPropertyInfo
     {
         /// <summary>

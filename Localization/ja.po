@@ -157,7 +157,7 @@ msgstr "このPhysBoneバージョンは(まだ)Avatar Optimizerによって対�
 "作者にtwitter (@anatawa12_vrc)またはGitHub (anatawa12/AvatarOptimizer)で連絡してください！"
 
 msgid "MergePhysBone:error:differValues"
-msgstr "複数の統合対象の間で値に差異があります。以下の値は同じ値にするかOverrideする必要があります:  {0}"
+msgstr "複数の統合対象の間で値に差異があります。以下の値は同じ値にするかOverrideする必要があります: {0}"
 
 msgid "MergePhysBone:error:differValueSingle"
 msgstr "複数の統合対象の間で値に差異があります。同じ値にするかOverrideする必要があります"
@@ -435,6 +435,28 @@ msgid "MergeSkinnedMesh:warning:animation-mesh-hide"
 msgstr ""
 "統合先のメッシュとは異なるアニメーションで表示されるメッシュが統合対象に含まれているため、"
 "そのアニメーションによる切り替えは機能しなくなります。意図的に行っている場合はこの警告を無視してください。"
+
+msgid "MergeSkinnedMesh:warning:material-animation-differently"
+msgstr "統合対象のメッシュ間で、以下のマテリアルプロパティに対するアニメーションが異なります: {0}"
+
+msgid "MergeSkinnedMesh:warning:material-animation-differently:description"
+msgstr ""
+"統合対象のメッシュ間で、マテリアルに対するアニメーションが異なります。\n"
+"マテリアルに対するアニメーションはメッシュ全体に影響するため、意図していない部分にアニメーションが適用されてしまう可能性があります。\n"
+
+msgid "MergeSkinnedMesh:warning:material-animation-differently:hint"
+msgstr ""
+"アニメーションが統合したメッシュ全体に影響することを意図している場合は、以下のいずれかを行ってください。\n"
+"- 統合対象のメッシュのマテリアルプロパティを、共通のアニメーションクリップ内ですべて同じようにアニメーションする。\n"
+"- 統合先のメッシュをアニメーションする。\n"
+"- この警告を無視する。\n"
+"\n"
+"統合対象のすべてのメッシュを同じようにアニメーションしているにもかかわらず、この警告が表示されている場合は、複数のメッシュに対するアニメーションのさせ方が良くないかもしれません。\n"
+"Avatar Optimizerは、同じアニメーションクリップにおいて、同じ形のカーブかつ、同じState上でアニメーションされている場合に、それらが同じようにアニメーションされていると判断します。\n"
+"つまり、同じようにアニメーションしている場合でも、異なるレイヤーやアニメーションクリップからアニメーションしている場合は別のアニメーションとして認識されることになります。\n"
+"\n"
+"アニメーションが他のメッシュに影響しない場合(例えば、メッシュ上で無効になっているシェーダー機能にしか影響しない場合)は、この問題をAvatar Optimizerに報告してください。\n"
+"シェーダーが有名なものであれば、アニメーションされていないメッシュに対してもその機能が有効なのかどうかを確認する処理を追加します。\n"
 
 #endregion
 
