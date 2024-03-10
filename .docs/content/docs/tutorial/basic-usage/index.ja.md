@@ -5,6 +5,26 @@ title: 基本的な使い方
 基本的な使い方
 ===
 
+自動最適化を使用する {#trace-and-optimize}
+---
+
+アバターには自動的に行える最適化がいくつかあります。
+
+- 使用していないBlendShape(シェイプキー)[^blend-shape]の除去
+  - BlendShapeの値が0以外のときは処理負荷が発生するため、値をアニメーション等で変更しないBlendShapeは固定すると負荷が軽くなります。
+  - 値が常に0である場合でも、固定することでアバターの容量を削減することができます。
+- 使われていないPhysBone等の削除
+  - 揺らす対象として存在するメッシュ[^mesh]が常に無効になっているPhysBoneなどのように、揺らす必要のないPhysBoneが有効になっている場合は計算負荷が余分に発生してしまいます。
+- アニメーションしたりPhysBoneで揺らしたりすることのないボーンの統合
+  - 服のボーンを素体のボーンに入れ子状にして着せるような場合には、それ自身を動かすことがないボーンが多く発生します。そのようなボーンは余分な負荷を発生させてしまいます。
+
+AvatarOptimizerでは、アバターのルートに`AAO Trace And Optimize`コンポーネントを追加するだけで、これらの最適化を自動で行うことができます！
+
+![add-trace-and-optimize.png](add-trace-and-optimize.png)
+
+[^blend-shape]: BlendShapeはUnity上のシェイプキーの名前です。UnityやMayaではBlendShape、BlenderではShape Key、MetasequoiaやMMDではモーフと呼ばれます。
+[^mesh]: この記事でのメッシュは、UnityのMesh assetではなく、SkinnedMeshRendererやMeshRendererを意味しています。
+
 アップロード方法 {#how-to-upload}
 ---
 
@@ -31,26 +51,6 @@ AAO: Avatar Optimizerは非破壊改変ツールであり、Playモードに入�
 [Actual Performance Window]: https://vpm.anatawa12.com/gists/ja/docs/reference/actual-performance-window/
 
 {{< /hint >}}
-
-自動最適化を使用する {#trace-and-optimize}
----
-
-アバターには自動的に行える最適化がいくつかあります。
-
-- 使用していないBlendShape(シェイプキー)[^blend-shape]の除去
-  - BlendShapeの値が0以外のときは処理負荷が発生するため、値をアニメーション等で変更しないBlendShapeは固定すると負荷が軽くなります。
-  - 値が常に0である場合でも、固定することでアバターの容量を削減することができます。
-- 使われていないPhysBone等の削除
-  - 揺らす対象として存在するメッシュ[^mesh]が常に無効になっているPhysBoneなどのように、揺らす必要のないPhysBoneが有効になっている場合は計算負荷が余分に発生してしまいます。
-- アニメーションしたりPhysBoneで揺らしたりすることのないボーンの統合
-  - 服のボーンを素体のボーンに入れ子状にして着せるような場合には、それ自身を動かすことがないボーンが多く発生します。そのようなボーンは余分な負荷を発生させてしまいます。
-
-AvatarOptimizerでは、アバターのルートに`AAO Trace And Optimize`コンポーネントを追加するだけで、これらの最適化を自動で行うことができます！
-
-![add-trace-and-optimize.png](add-trace-and-optimize.png)
-
-[^blend-shape]: BlendShapeはUnity上のシェイプキーの名前です。UnityやMayaではBlendShape、BlenderではShape Key、MetasequoiaやMMDではモーフと呼ばれます。
-[^mesh]: この記事でのメッシュは、UnityのMesh assetではなく、SkinnedMeshRendererやMeshRendererを意味しています。
 
 貫通防止用BlendShapeを利用してポリゴンを減らす {#remove-mesh-by-blendshape}
 ---

@@ -5,6 +5,26 @@ title: Basic Usage
 Basic Usage
 ===
 
+Use Automatic Optimization {#trace-and-optimize}
+---
+
+There are several optimizations which can be performed automatically for Avatars.
+
+- Removing Unused BlendShapes(Shape Keys)[^blend-shape]
+  - For BlendShapes with non-zero weight, freezing BlendShapes will reduce processing cost.
+  - Even if the weight is zero, removing BlendShapes will reduce the size of avatars.
+- Removing unused Behaviours such as PhysBones
+  - If there are enabled PhysBones which do not need to be swayed (e.g., the swaying target mesh[^mesh] is always disabled), extra computational cost is caused.
+- Merging bones which is not animated or swayed with PhysBones
+  - If the clothes bones are nested into the body bones, there will be many bones which are never moved locally. Such bones cause extra cost.
+
+With AvatarOptimizer, these optimizations can be performed automatically by simply adding `AAO Trace And Optimize` component to the Avatar Root!
+
+![add-trace-and-optimize.png](add-trace-and-optimize.png)
+
+[^blend-shape]: BlendShape is the name of Shape Keys in Unity. Unity and Maya call them as BlendShape, Blender calls them as Shape Key, Metasequoia and MMD call them as Morph.
+[^mesh]: In this document, mesh means SkinnedMeshRenderer or MeshRenderer, not the Mesh asset in Unity.
+
 How to Upload
 ---
 
@@ -33,26 +53,6 @@ Please check [basic usages of anatawa12's Gist Pack][gists-basic-usage] and [doc
 [Actual Performance Window]: https://vpm.anatawa12.com/gists/ja/docs/reference/actual-performance-window/
 
 {{< /hint >}}
-
-Use Automatic Optimization {#trace-and-optimize}
----
-
-There are several optimizations which can be performed automatically for Avatars.
-
-- Removing Unused BlendShapes(Shape Keys)[^blend-shape]
-  - For BlendShapes with non-zero weight, freezing BlendShapes will reduce processing cost.
-  - Even if the weight is zero, removing BlendShapes will reduce the size of avatars.
-- Removing unused Behaviours such as PhysBones
-  - If there are enabled PhysBones which do not need to be swayed (e.g., the swaying target mesh[^mesh] is always disabled), extra computational cost is caused.
-- Merging bones which is not animated or swayed with PhysBones
-  - If the clothes bones are nested into the body bones, there will be many bones which are never moved locally. Such bones cause extra cost.
-
-With AvatarOptimizer, these optimizations can be performed automatically by simply adding `AAO Trace And Optimize` component to the Avatar Root!
-
-![add-trace-and-optimize.png](add-trace-and-optimize.png)
-
-[^blend-shape]: BlendShape is the name of Shape Keys in Unity. Unity and Maya call them as BlendShape, Blender calls them as Shape Key, Metasequoia and MMD call them as Morph.
-[^mesh]: In this document, mesh means SkinnedMeshRenderer or MeshRenderer, not the Mesh asset in Unity.
 
 Reduce polygons with BlendShapes which shrink parts of the body {#remove-mesh-by-blendshape}
 ---
