@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- If some component refers external component, internal error `#921`
 
 ### Security
 
