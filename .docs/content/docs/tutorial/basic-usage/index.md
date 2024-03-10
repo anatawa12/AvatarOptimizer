@@ -25,11 +25,13 @@ With AvatarOptimizer, these optimizations can be performed automatically by simp
 [^blend-shape]: BlendShape is the name of Shape Keys in Unity. Unity and Maya call them as BlendShape, Blender calls them as Shape Key, Metasequoia and MMD call them as Morph.
 [^mesh]: In this document, mesh means SkinnedMeshRenderer or MeshRenderer, not the Mesh asset in Unity.
 
-How to Upload
+Upload Avatar
 ---
 
+Now that you have added `AAO Trace and Optimize` component, let's try uploading your avatar!
 AAO: Avatar Optimizer is a non-destructive avatar modification tool, and processes avatars on entering play mode or building them.
 Therefore, no special steps are required for uploading.
+Upload your avatar via VRCSDK Control Panal as usual.
 
 However, even though the hard limit will not be exceeded through Avatar Optimizer optimization, etc.,
 the upload button cannot be pressed because the limit has been exceeded at the time of the VRCSDK pre-build check, the following methods can be used.

@@ -25,10 +25,12 @@ AvatarOptimizerでは、アバターのルートに`AAO Trace And Optimize`コ�
 [^blend-shape]: BlendShapeはUnity上のシェイプキーの名前です。UnityやMayaではBlendShape、BlenderではShape Key、MetasequoiaやMMDではモーフと呼ばれます。
 [^mesh]: この記事でのメッシュは、UnityのMesh assetではなく、SkinnedMeshRendererやMeshRendererを意味しています。
 
-アップロード方法 {#how-to-upload}
+アバターをアップロードする {#upload-avatar}
 ---
 
+`AAO Trace and Optimize`コンポーネントを付けた状態で、試しにアバターをアップロードしてみましょう！
 AAO: Avatar Optimizerは非破壊改変ツールであり、Playモードに入るときかアバターをビルドするときに処理が行われるため、アップロードを行うのに特別な手順は必要ありません。
+通常と同じように、VRCSDKのControl Panelからアバターをアップロードしてください。
 
 ただし、Android(Quest)向けアップロードを行う場合などにおいて、Avatar Optimizerの最適化等によって制限の範囲内に収まるにも関わらず、VRCSDKのビルド前チェックの時点で制限を超過していてアップロードボタンが押せなくなっている場合には、以下の方法が使用できます。
 
