@@ -26,7 +26,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         void FreezeNonAnimatedBlendShapes(BuildContext context, TraceAndOptimizeState state)
         {
-            // first optimization: unused blend shapes
+            // first optimization: unused BlendShapes
             foreach (var skinnedMeshRenderer in context.GetComponents<SkinnedMeshRenderer>())
             {
                 if (state.Exclusions.Contains(skinnedMeshRenderer.gameObject)) continue; // manual exclusiton

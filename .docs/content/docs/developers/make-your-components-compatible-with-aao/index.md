@@ -13,10 +13,10 @@ If you have some question, please feel free to ask [`@anatawa12@misskey.niri.la`
 
 ## When can components be incompatible with Avatar Optimizer? {#when-incompatible}
 
-If your components are on the avatar and still exist when Avatar Optimizer processes it, 
+If your components are on the avatar and still exist when Avatar Optimizer processes it,
 your components can be incompatible with Avatar Optimizer.
 
-Since Avatar Optimizer has Garbage Collection system for Components and others, Avatar Optimizer has to 
+Since Avatar Optimizer has Garbage Collection system for Components and others, Avatar Optimizer has to
 know about all existing components in the Avatar at the optimization.
 
 To avoid problem with unknown components, Avatar Optimizer currently assumes unknown components
@@ -37,13 +37,13 @@ If you cannot remove some components, please register them to Avatar Optimizer.
 
 You can remove your components with several ways.
 
-If your tool is a non-destructive tool based on NDMF[^NDMF], removing your components before the Optimization phase
-or before `com.anatawa12.avatar-optimizer` plugin (with [`BeforePlugin`][ndmf-BeforePlugin]) 
-in the Optimization phase is recommended.
+If your tool is a non-destructive tool based on NDMF[^NDMF], removing your components before the Optimizing phase
+or before `com.anatawa12.avatar-optimizer` plugin (with [`BeforePlugin`][ndmf-BeforePlugin])
+in the Optimizing phase is recommended.
 
-If your tool is a non-destructive tool not based on NDMF[^NDMF], removing your components before 
-the NDMF's Optimization phase is recommended.
-In this case, current NDMF executes Optimization phase in order `-1025`, which is JUST before VRCSDK's `RemoveAvatarEditorOnly`
+If your tool is a non-destructive tool not based on NDMF[^NDMF], removing your components before
+the NDMF's Optimizing phase is recommended.
+In this case, current NDMF executes Optimizing phase in order `-1025`, which is JUST before VRCSDK's `RemoveAvatarEditorOnly`
 callback, so your tool should remove components with `IVRCSDKPreprocessAvatarCallback` with smaller `callbackOrder`.
 
 If your components holds some information for your tool and has no meaning on the build time,
@@ -59,7 +59,7 @@ First, to call APIs of Avatar Optimizer, please make an assembly definition file
 
 Next, add `com.anatawa12.avatar-optimizer.api.editor` to assembly references in asmdef file.\
 If your tool doesn't want to depends on Avatar Optimizer, please use [Version Defines].
-Because Avatar Optimizer didn't have public API prior to 1.6.0 and will break in 2.0.0, 
+Because Avatar Optimizer didn't have public API prior to 1.6.0 and will break in 2.0.0,
 it's recommended to add version range like `[1.6,2.0)`
 (or stricter like `[1.7,2.0)` when you need new APIs that can be available in the future).
 
@@ -96,8 +96,8 @@ Please refer xmldoc and method name for more datails.
 [register-component]: #register-component
 
 [^asmdef]: The file defines assembly other than Assembly-CSharp. Please refer [unity docs](https://docs.unity3d.com/2019.4/Documentation/Manual/ScriptCompilationAssemblyDefinitionFiles.html).
-[^NDMF]: [NDMF], Non-Destructive Modular Framework, is a framework for running non-destructive build plugins when 
-building avatars by bdunderscore. Avatar Optimizer uses that framework for compatibility 
+[^NDMF]: [NDMF], Non-Destructive Modular Framework, is a framework for running non-destructive build plugins when
+building avatars by bdunderscore. Avatar Optimizer uses that framework for compatibility
 with many non-destructive tools based on NDMF.
 
 [NDMF]: https://ndmf.nadena.dev/

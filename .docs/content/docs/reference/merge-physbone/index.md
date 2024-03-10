@@ -3,15 +3,24 @@ title: Merge PhysBone
 weight: 100
 ---
 
-# Merge PhysBone
+# Merge PhysBone (MergePB) {#merge-physbone}
 
 This component merges multiple PhysBone Components into one Component with MultiChildType == Ignore.
 
 This component should be added to a new GameObject.
 
+## Notes
+
+Merge target PhysBones must be children of the same GameObject.
+Alternatively, you can use `Make Children of Me` option.
+
 ## Settings
 
 ![component.png](component.png)
+
+### Make Children of Me
+
+Make the bones swayed by merge target PhysBones into children of this GameObject.
 
 ### Components
 

@@ -24,7 +24,7 @@ This will have almost zero effect on the appearance.
 
 ## Notes
 
-In some shaders, even if size of polygon in model file is zero, something can be rendered so 
+In some shaders, even if size of polygon in model file is zero, something can be rendered so
 there may be effect on the appearance.
 
 ## Settings

@@ -14,7 +14,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
     class BlendShapePreviewContext : IDisposable
     {
         private readonly int _vertexCount;
-        // blendshape vertex transforms. _blendShapeVertices[vertexIndex + frameIndex * vertexCount]
+        // BlendShape vertex transforms. _blendShapeVertices[vertexIndex + frameIndex * vertexCount]
         private NativeArray<Vector3> _blendShapeVertices;
         // frame info. _blendShapeFrameInfo[blendShapeIndex][frameIndexInShape]
         private readonly (float weight, int globalIndex)[][] _blendShapeFrameInfo;

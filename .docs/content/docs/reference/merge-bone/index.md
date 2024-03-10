@@ -5,6 +5,12 @@ weight: 100
 
 # Merge Bone
 
+{{< hint info >}}
+
+[Trace And Optimize](../trace-and-optimize) will automatically do the same process, so in most cases you do not need to use this component.
+
+{{< /hint >}}
+
 If you add this component to some GameObject, the GameObject will be removed and merged to parent GameObject.
 Also, if some other components are attached to the target GameObject, they will be removed too.
 
@@ -16,4 +22,5 @@ All children of GameObject where this component is applied will belong to parent
 
 ![component.png](component.png)
 
-- `Avoid Name Conflict` Avoids animation problems with name conflict by renaming child GameObjects
+- `Avoid Name Conflict`\
+  Avoids animation problems with name conflict by renaming child GameObjects

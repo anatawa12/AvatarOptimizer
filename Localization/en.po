@@ -375,7 +375,7 @@ msgid "RemoveMeshByBlendShape:editor:automaticallySetWeightWhenToggle"
 msgstr "Automatically set BlendShape weight for preview when toggled"
 
 msgid "RemoveMeshByBlendShape:tooltip:automaticallySetWeightWhenToggle"
-msgstr "Automatically set weight to 100 or 0 for blendshapes which are toggled while this option is enabled."
+msgstr "Automatically set weight to 100 or 0 for BlendShapes which are toggled while this option is enabled."
 
 msgid "RemoveMeshByBlendShape:tooltip:automaticallySetWeightWhenToggle:noRenderer"
 msgstr "This option cannot be used because SkinnedMeshRenderer is not found"
@@ -388,7 +388,7 @@ msgstr "Tolerance"
 
 msgid "RemoveMeshByBlendShape:tooltip:Tolerance"
 msgstr ""
-"If a vertex is transformed by more than this amount by any of the selected blendshapes, it will be deleted.\n"
+"If a vertex is transformed by more than this amount by any of the selected BlendShapes, it will be deleted.\n"
 "Try increasing this value if vertices are unexpectedly deleted or decreasing it if vertices are unexpectedly not deleted.\n"
 "This is typically a small value."
 
@@ -409,11 +409,8 @@ msgstr "Removes polygons whose area are zero"
 
 # region AvatarGlobalComponent
 
-msgid "AvatarGlobalComponent:NotOnAvatarDescriptor"
-msgstr "This component must be set on root of Avatar (GameObject with AvatarDescriptor)"
-
 msgid "AvatarGlobalComponent:NotOnAvatarRoot"
-msgstr "This component must be set on root of Avatar (For VRChat avatars, GameObject with AvatarDescriptor)"
+msgstr "This component must be set on root of Avatar"
 
 # endregion
 
@@ -462,7 +459,7 @@ msgid "TraceAndOptimize:description"
 msgstr "When you added this component to your avatar, AvatarOptimizer will trace your avatar and optimize automatically."
 
 msgid "TraceAndOptimize:prop:freezeBlendShape"
-msgstr "Automatically Freeze Blend Shape"
+msgstr "Automatically Freeze BlendShape"
 
 msgid "TraceAndOptimize:prop:removeUnusedObjects"
 msgstr "Remove unused Objects Automatically"

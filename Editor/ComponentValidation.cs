@@ -36,11 +36,7 @@ namespace Anatawa12.AvatarOptimizer
                     case AvatarGlobalComponent _:
                     {
                         if (component.transform != root.transform)
-#if AAO_VRCSDK3_AVATARS
-                            BuildLog.LogError("AvatarGlobalComponent:NotOnAvatarDescriptor");
-#else
                             BuildLog.LogError("AvatarGlobalComponent:NotOnAvatarRoot");
-#endif
                         break;
                     }
                 }

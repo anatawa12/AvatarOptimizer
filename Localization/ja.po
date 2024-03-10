@@ -119,7 +119,7 @@ msgid "MergeBone:tooltip:avoidNameConflict"
 msgstr "統合時に子GameObjectの名前を変更し、名前の重複を回避します"
 
 msgid "MergeBone:validation:onAvatarRoot"
-msgstr "MergeBoneをアバターの最上位に付けることはサポートされていません。"
+msgstr "MergeBoneをアバターのルートに付けることはサポートされていません。"
 
 msgid "MergeBone:validation:thereAreComponent"
 msgstr "Transform以外のコンポーネントがあります。これはサポートされていません。"
@@ -154,7 +154,7 @@ msgstr "Multi Child TypeがIgnoreでないPhysBoneがあります。"
 
 msgid "MergePhysBone:error:unsupportedPbVersion"
 msgstr "このPhysBoneバージョンは(まだ)Avatar Optimizerによって対応されていません。\n"
-"作者にtwitter (@anatawa12_vrc)またはGitHub (anatawa12/AvatarOptimizer)で連絡してください!"
+"作者にtwitter (@anatawa12_vrc)またはGitHub (anatawa12/AvatarOptimizer)で連絡してください！"
 
 msgid "MergePhysBone:error:differValues"
 msgstr "複数の統合対象の間で値に差異があります。以下の値は同じ値にするかOverrideする必要があります: {0}"
@@ -205,11 +205,11 @@ msgstr ""
 
 msgid "MergeSkinnedMesh:warning:MeshIsNotNone"
 msgstr ""
-"SkinnedMeshRendererのMeshがNoneではありません!\n"
-"MergeSkinnedMeshは新規のSkinnedMeshRendererがついたGameObjectに追加するべきです!"
+"SkinnedMeshRendererのMeshがNoneではありません！\n"
+"MergeSkinnedMeshは新規のSkinnedMeshRendererがついたGameObjectに追加するべきです！"
 
 msgid "MergeSkinnedMesh:validation:self-recursive"
-msgstr "統合対象のスキンメッシュレンダラーに、MergeSkinnedMesh自身のスキンメッシュレンダラーが含まれています!"
+msgstr "統合対象のスキンメッシュレンダラーに、MergeSkinnedMesh自身のスキンメッシュレンダラーが含まれています！"
 
 msgid "MergeSkinnedMesh:prop:renderers"
 msgstr "スキンメッシュレンダラー"
@@ -235,7 +235,7 @@ msgstr "レンダラー:"
 msgid "MergeSkinnedMesh:error:mix-normal-existence"
 msgstr ""
 "法線があるメッシュとないメッシュの両方を1つに統合する操作には対応していません。"
-"法線が含まれるようにモデルのインポート設定を変更してください!"
+"法線が含まれるようにモデルのインポート設定を変更してください！"
 
 msgid "MergeSkinnedMesh:warning:removeZeroSizedPolygonOnSources"
 msgstr "Remove Zero Sized Polygonsは遅めに処理されるため、統合対象のメッシュにつけても効果がありません"
@@ -319,11 +319,8 @@ msgstr "面積がゼロのポリゴンを削除します。"
 
 # region AvatarGlobalComponent
 
-msgid "AvatarGlobalComponent:NotOnAvatarDescriptor"
-msgstr "このコンポーネントはアバターの最上位に付ける必要があります。(AvatarDescriptorのあるGameObject)"
-
 msgid "AvatarGlobalComponent:NotOnAvatarRoot"
-msgstr "このコンポーネントはアバターの最上位に付ける必要があります。(VRChatのアバターでは、AvatarDescriptorのあるGameObject)"
+msgstr "このコンポーネントはアバターのルートに付ける必要があります。"
 
 # endregion
 
@@ -351,8 +348,8 @@ msgstr "チェックされている場合、子にボーン以外を持つボー
 
 msgid "UnusedBonesByReferencesTool:suggestMigrate"
 msgstr ""
-"UnusedBonesByReferencesToolは非推奨です! Trace and Optimizeには同じ機能が含まれており、より賢い処理を行います。\n"
-"下のボタンを押し、Trace and Optimizeに移行しませんか? (設定は引き継がれます)"
+"UnusedBonesByReferencesToolは非推奨です！ Trace and Optimizeには同じ機能が含まれており、より賢い処理を行います。\n"
+"下のボタンを押し、Trace and Optimizeに移行しませんか？ (設定は引き継がれます)"
 
 msgid "UnusedBonesByReferencesTool:migrate"
 msgstr "Trace and Optimizeに移行する"
@@ -361,7 +358,7 @@ msgid "UnusedBonesByReferencesTool:migrationFinished:title"
 msgstr "移行完了"
 
 msgid "UnusedBonesByReferencesTool:migrationFinished:description"
-msgstr "Trace and Optimizeへの移行が完了しました!"
+msgstr "Trace and Optimizeへの移行が完了しました！"
 
 # endregion
 
@@ -371,7 +368,7 @@ msgid "TraceAndOptimize:description"
 msgstr "このコンポーネントをアバターにつけると、アバターを走査して自動的にできる限りの最適化を行います。"
 
 msgid "TraceAndOptimize:prop:freezeBlendShape"
-msgstr "BlendShapeを自動的に固定・削除する"
+msgstr "BlendShapeを自動的に固定・除去する"
 
 msgid "TraceAndOptimize:prop:removeUnusedObjects"
 msgstr "使われていないObjectを自動的に削除する"
@@ -394,10 +391,10 @@ msgstr "高度な設定"
 msgid "TraceAndOptimize:warn:advancedSettings"
 msgstr "高度な設定はAvatarOptimizerのバグを回避するための設定です。\n"
 "高度な設定を変更すると、アバターが適切に最適化されなくなる可能性があります。\n"
-"また、一部の高度な設定の変更は正しく機能しなかったり、その動作が変更される可能性があります。注意してください!"
+"また、一部の高度な設定の変更は正しく機能しなかったり、その動作が変更される可能性があります。注意してください！"
 
 msgid "TraceAndOptimize:warn:unknown-type"
-msgstr "未知のコンポーネント'{0}'を検出しました!"
+msgstr "未知のコンポーネント'{0}'を検出しました！"
 
 msgid "TraceAndOptimize:warn:unknown-type:description"
 msgstr "Avatar Optimizerにとって未知のコンポーネントが見つかりました。これにより最適化処理の品質が低下し、処理後のアバターが壊れる可能性があります。(元のアバターには影響しません)"
@@ -429,10 +426,10 @@ msgstr "未知のPhysBone Collider形状'{0}'が指定されています。"
 #region ApplyObjectMapping
 
 msgid "ApplyObjectMapping:VRCAvatarDescriptor:eyelids BlendShape Removed"
-msgstr "瞬き用のBlendShapeが削除・固定されています"
+msgstr "瞬き用のBlendShapeが固定・除去されています"
 
 msgid "ApplyObjectMapping:VRCAvatarDescriptor:viseme BlendShape Removed"
-msgstr "リップシンク用のBlendShapeが削除・固定されています"
+msgstr "リップシンク用のBlendShapeが固定・除去されています"
 
 msgid "MergeSkinnedMesh:warning:animation-mesh-hide"
 msgstr ""
@@ -494,7 +491,7 @@ msgid "AnimatorParser:AnimatorLayerControl:UnknownBlendablePlayableLayer"
 msgstr "Animator Layer Controlに未知のレイヤー'{0}'が指定されています。"
 
 msgid "AnimatorParser:AnimatorNotFoundOnAvatarRoot"
-msgstr "アバターの最上位にAnimatorコンポーネントがありません。"
+msgstr "アバターのルートにAnimatorコンポーネントがありません。"
 
 #endregion
 
