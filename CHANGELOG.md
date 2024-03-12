@@ -16,9 +16,12 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- If some component refers external component, internal error `#921`
 
 ### Security
+
+## [1.6.8] - 2024-03-12
+### Fixed
+- If some component refers external component, internal error [`#921`](https://github.com/anatawa12/AvatarOptimizer/pull/921)
 
 ## [1.6.7] - 2024-02-28
 ### Fixed
@@ -747,7 +750,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.7...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.8...HEAD
+[1.6.8]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.7...v1.6.8
 [1.6.7]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.6...v1.6.7
 [1.6.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.5...v1.6.6
 [1.6.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.4...v1.6.5
