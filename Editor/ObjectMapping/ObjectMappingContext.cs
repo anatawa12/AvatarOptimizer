@@ -435,6 +435,8 @@ namespace Anatawa12.AvatarOptimizer
                 case AvatarMask _:
                     break; // We want to clone these types
 
+                case AudioClip _: // Used in VRC Animator Play Audio State Behavior
+
                 // also handle VRM objects here
 #if AAO_VRM0
                 case VRM.BlendShapeAvatar _:
