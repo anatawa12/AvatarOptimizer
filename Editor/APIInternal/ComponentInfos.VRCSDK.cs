@@ -423,6 +423,30 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
             collector.MarkEntrypoint();
         }
     }
+
+    [ComponentInformation(typeof(VRCHeadChop))]
+    internal class VRCHeadChopInformation : ComponentInformation<VRCHeadChop>
+    {
+        protected override void CollectDependency(VRCHeadChop component, ComponentDependencyCollector collector)
+        {
+            // This is ad-hoc implementation because this component has no documentation.
+            // see https://feedback.vrchat.com/open-beta/p/352-beta1-2-vrcheadchop-component-has-no-public-access-to-configuration-so-exter
+
+            // use AppendDesiredTransformWeights to get all bones specified in this component
+            var headChopBones = new Dictionary<Transform, VRCHeadChop.HeadChopData>();
+            component.AppendDesiredTransformWeights(headChopBones, false);
+            component.AppendDesiredTransformWeights(headChopBones, true);
+
+            // declare dependency relationship
+            foreach (var pair in headChopBones)
+            {
+                collector.AddDependency(pair.Key);
+                collector.AddDependency(pair.Key, component).EvenIfDependantDisabled();
+            }
+
+            collector.MarkBehaviour();
+        }
+    }
 #endif
 }
 #endif
