@@ -411,5 +411,18 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
         }
     }
 #endif
+    
+    #if AAO_VRCSDK3_AVATARS_3_3_2
+    // this component has no documentation so this implementation is based on assumption
+    [ComponentInformation(typeof(VRCImpostorEnvironment))]
+    internal class VRCImpostorEnvironmentInformation : ComponentInformation<VRCImpostorEnvironment>
+    {
+        protected override void CollectDependency(VRCImpostorEnvironment component, ComponentDependencyCollector collector)
+        {
+            // prevent from removing
+            collector.MarkEntrypoint();
+        }
+    }
+#endif
 }
 #endif
