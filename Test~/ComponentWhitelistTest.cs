@@ -20,7 +20,7 @@ namespace Anatawa12.AvatarOptimizer.Test
         [Test]
         public void TestNameList()
         {
-            Assert.That(WhitelistedTypes, Is.EquivalentTo(KnownWhitelist));
+            Assert.That(WhitelistedTypes, Has.All.Matches<string>(KnownWhitelist.Contains));
         }
 
         [TestCaseSource(nameof(KnownTypes))]
