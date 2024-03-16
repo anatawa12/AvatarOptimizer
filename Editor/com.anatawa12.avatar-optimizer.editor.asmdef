@@ -54,8 +54,8 @@
         },
         {
             "name": "com.vrchat.avatars",
-            "expression": "3.3.2-beta.1",
-            "define": "AAO_VRCSDK3_AVATARS_3_3_2"
+            "expression": "3.5.2-beta.1",
+            "define": "AAO_VRCSDK3_AVATARS_3_5_2"
         },
         {
             "name": "com.vrmc.univrm",

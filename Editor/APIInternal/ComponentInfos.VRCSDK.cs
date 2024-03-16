@@ -412,7 +412,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
     }
 #endif
     
-    #if AAO_VRCSDK3_AVATARS_3_3_2
+#if AAO_VRCSDK3_AVATARS_3_5_2
     // this component has no documentation so this implementation is based on assumption
     [ComponentInformation(typeof(VRCImpostorEnvironment))]
     internal class VRCImpostorEnvironmentInformation : ComponentInformation<VRCImpostorEnvironment>
