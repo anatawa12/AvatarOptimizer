@@ -149,6 +149,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 var dest = entryTransition.destinationState;
                 if (!stateValues.TryGetValue(dest, out var values))
                     stateValues.Add(dest, values = new HashSet<int>());
+                if (!float.IsFinite(condition.threshold)) return null; // not finite makes casting to int undefined
                 var value = (int)condition.threshold;
                 if (allValues.Contains(value)) return null; // duplicated value
                 values.Add(value);
