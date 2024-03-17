@@ -368,37 +368,62 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             foreach (var value in values)
                 states.Add((value, state.motion));
 
-            // to avoid border condition, add min and max which are impossible expressed with float
-            states.Add((int.MinValue, defaultMotion));
-            states.Add((int.MaxValue, defaultMotion));
-
             // sort increasing order
             states.Sort((x, y) => x.value.CompareTo(y.value));
 
             var children = new List<ChildMotion>();
 
-            for (var i = 1; i < states.Count - 1; i++)
+            void AddFrames(int before, Motion beforeMotion, int after, Motion afterMotion)
             {
-                var (prevValue, _) = states[i - 1];
-                var (currentValue, currentMotion) = states[i];
-                var (nextValue, _) = states[i + 1];
-
-                // if prevValue is currentValue - 1,
-                //   we don't have to add defaultMotion frame
-                // if nextValue is currentValue - 2,
-                //   we have to add single defaultMotion frame but we already have in post-check of previous frame
-                // if nextValue less than currentValue - 2,
-                //   we have to add two defaultMotion frame so we add one in post-check of previous frame and one here
-                if (prevValue < currentValue - 2)
-                    children.Add(CreateChild(currentValue - 1, defaultMotion));
-
-                children.Add(CreateChild(currentValue, currentMotion));
-
-                if (nextValue != currentValue + 1)
-                    children.Add(CreateChild(currentValue + 1, defaultMotion));
+                var threshold = before + 0.5f;
+                var rounded = Mathf.Round(threshold);
+                // ReSharper disable once CompareOfFloatsByEqualityOperator
+                if (rounded == after)
+                {
+                    Debug.Assert((int)Mathf.Round(Utils.PreviousFloat(threshold)) == before);
+                    // in this case, .5 will go the motion so default is one before .5
+                    children.Add(CreateChild(Utils.PreviousFloat(threshold), beforeMotion));
+                    children.Add(CreateChild(threshold, afterMotion));
+                }
+                // ReSharper disable once CompareOfFloatsByEqualityOperator
+                else if (rounded == before)
+                {
+                    Debug.Assert((int)Mathf.Round(Utils.NextFloat(threshold)) == after);
+                    // in this case, .5 will go to default motion so default is .5
+                    children.Add(CreateChild(threshold, beforeMotion));
+                    children.Add(CreateChild(Utils.NextFloat(threshold), afterMotion));
+                }
+                else
+                {
+                    throw new InvalidOperationException("unexpected: rounding x - 0.5 is not x - 1 or x");
+                }
             }
 
-            
+            {
+                // first frame: add defaultMotion before first state
+                var (value, motion) = states[0];
+                AddFrames(value - 1, defaultMotion,
+                    value, motion);
+            }
+
+            for (var i = 1; i < states.Count; i++)
+            {
+                // other frames: add motions if needed
+                var (prevValue, prevMotion) = states[i - 1];
+                var (currentValue, currentMotion) = states[i];
+
+                if (prevMotion != currentMotion)
+                    AddFrames(prevValue, prevMotion,
+                        currentValue, currentMotion);
+            }
+
+            {
+                // last frame: add last state to defaultMotion
+                var (value, motion) = states[states.Count - 1];
+                AddFrames(value, motion,
+                    value + 1, defaultMotion);
+            }
+
             var blendTree = new BlendTree
             {
                 blendType = BlendTreeType.Simple1D,
@@ -429,7 +454,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             layer.stateMachine.entryTransitions = Array.Empty<AnimatorTransition>();
             layer.stateMachine.defaultState = newState;
 
-            ChildMotion CreateChild(int value, Motion motion) =>
+            ChildMotion CreateChild(float value, Motion motion) =>
                 new ChildMotion
                 {
                     motion = motion,
