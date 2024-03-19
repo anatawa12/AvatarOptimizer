@@ -157,9 +157,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 
                     foreach (var child in stateMachine.stateMachines)
                     {
+                        var transitions = stateMachine.GetStateMachineTransitions(child.stateMachine);
+                        if (transitions.Length == 0) continue;
                         stateMachine.SetStateMachineTransitions(child.stateMachine,
-                            ConvertTransitions(stateMachine.GetStateMachineTransitions(child.stateMachine),
-                                CloneTransition));
+                            ConvertTransitions(transitions, CloneTransition));
                     }
                 }
             }

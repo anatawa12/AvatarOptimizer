@@ -435,8 +435,6 @@ AnimatorStateMachine:
     second:
     - {fileID: 7000526239846692179}
     - {fileID: -4432561137090724766}
-  - first: {fileID: -2315226660276262503}
-    second: []
   m_StateMachineBehaviours: []
   m_AnyStatePosition: {x: 50, y: 20, z: 0}
   m_EntryPosition: {x: 50, y: 120, z: 0}
