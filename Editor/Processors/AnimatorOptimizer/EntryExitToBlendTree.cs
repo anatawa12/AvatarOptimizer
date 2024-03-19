@@ -151,8 +151,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                     stateMachine.entryTransitions = ConvertTransitions(stateMachine.entryTransitions, CloneTransition);
                     stateMachine.anyStateTransitions =
                         ConvertTransitions(stateMachine.anyStateTransitions, CloneStateTransition);
-                    foreach (var animatorState in ACUtils.AllStates(stateMachine))
-                        animatorState.transitions = ConvertTransitions(animatorState.transitions, CloneStateTransition);
+                    foreach (var animatorState in stateMachine.states)
+                        animatorState.state.transitions =
+                            ConvertTransitions(animatorState.state.transitions, CloneStateTransition);
 
                     foreach (var child in stateMachine.stateMachines)
                     {
