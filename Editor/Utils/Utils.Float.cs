@@ -10,7 +10,7 @@ namespace Anatawa12.AvatarOptimizer
         // Those utility methods computes the next / previous value of the given float.
         //
         // The binary32 format is like the following:
-        //   seeeeeeeefffffffffffffffffffffff
+        //   seeeeeee efffffff ffffffff ffffffff
         //   s: sign bit
         //   e: exponent
         //   f: fraction
@@ -48,6 +48,9 @@ namespace Anatawa12.AvatarOptimizer
         //    max normal: 0x7F7FFFFF = 3.40282347E+38 = float.MaxValue
         //          next: 0x7F7FFFFF + 1 = 0x7F800000 = +Infinity // becomes infinity but I accept this as next value
         //          prev: 0x7F7FFFFE - 1 = 0x7F7FFFFD = 3.402823E+38
+        // normal fraction overflow:
+        // just before overflow: 0x00FFFFFF = 2.35098856E-38
+        //                 next: 0x00FFFFFF + 1 = 0x01000000 = 2.3509887E-38
 
         public static float NextFloat(float x)
         {
