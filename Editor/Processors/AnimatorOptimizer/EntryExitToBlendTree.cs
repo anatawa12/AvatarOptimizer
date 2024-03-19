@@ -16,7 +16,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
     ///
     /// Currently this class only supports entry transition with 1 parameter equals condition. 
     /// </summary>
-    
+
     // detailed explanation of current limitations
     // This optimization expects
     // (about state machine)
@@ -44,7 +44,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             var state = context.GetState<AnimatorOptimizerState>();
             Execute(state, controller);
         }
-        
+
         public static void Execute(AnimatorOptimizerState state, AOAnimatorController controller)
         {
             var intParameters = new HashSet<string>(controller.parameters
@@ -69,27 +69,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 }
             }
 
-            // then, check the parameters are not used by other conditions.
-            for (var i = 0; i < layers.Length; i++)
-            {
-                if (convertInfos[i] != null) continue;
-                var layer = layers[i];
-                if (layer.IsSynced) continue;
-
-                foreach (var transition in ACUtils.AllTransitions(layer.stateMachine))
-                {
-                    foreach (var condition in transition.conditions)
-                    {
-                        if (layerByParameter.TryGetValue(condition.parameter, out var list))
-                        {
-                            layerByParameter.Remove(condition.parameter);
-                            foreach (var removeLayerIndex in list)
-                                convertInfos[removeLayerIndex] = null;
-                        }
-                    }
-                }
-            }
-
             // finally, convert layers & change type of parameters
 
             for (var i = 0; i < layers.Length; i++)
@@ -105,6 +84,86 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             foreach (ref var parameter in parameters.AsSpan())
                 if (layerByParameter.ContainsKey(parameter.name))
                     parameter.type = AnimatorControllerParameterType.Float;
+
+            Predicate<string> needsConvert = parameter => layerByParameter.ContainsKey(parameter);
+
+            T[] ConvertTransitions<T>(T[] transitions, Func<T, AnimatorCondition[], T> clone)
+                where T : AnimatorTransitionBase
+            {
+                if (transitions.Length == 0) return transitions;
+
+                var entryTransitions = new LinkedList<T>(transitions);
+                for (var cursor = entryTransitions.First; cursor != null; cursor = cursor.Next)
+                {
+                    if (!NeedsConversion(cursor.Value.conditions, needsConvert)) continue;
+                    var conditions = cursor.Value.conditions;
+                    var newConditions = ConvertIntConditionsToFloat(conditions, needsConvert);
+                    var toRemove = cursor;
+                    foreach (var animatorConditions in FlattenConditions(newConditions))
+                        cursor = entryTransitions.AddAfter(cursor, clone(toRemove.Value, animatorConditions));
+                    entryTransitions.Remove(toRemove);
+                }
+
+                return entryTransitions.ToArray();
+            }
+
+            AnimatorTransition CloneTransition(AnimatorTransition transition, AnimatorCondition[] conditions) =>
+                new AnimatorTransition
+                {
+                    name = transition.name,
+                    conditions = conditions,
+                    destinationStateMachine = transition.destinationStateMachine,
+                    destinationState = transition.destinationState,
+                    solo = transition.solo,
+                    mute = transition.mute,
+                    isExit = transition.isExit,
+                };
+
+            AnimatorStateTransition CloneStateTransition(AnimatorStateTransition transition,
+                AnimatorCondition[] conditions) =>
+                new AnimatorStateTransition
+                {
+                    name = transition.name,
+                    conditions = conditions,
+                    destinationStateMachine = transition.destinationStateMachine,
+                    destinationState = transition.destinationState,
+                    solo = transition.solo,
+                    mute = transition.mute,
+                    isExit = transition.isExit,
+                    duration = transition.duration,
+                    offset = transition.offset,
+                    exitTime = transition.exitTime,
+                    hasExitTime = transition.hasExitTime,
+                    hasFixedDuration = transition.hasFixedDuration,
+                    interruptionSource = transition.interruptionSource,
+                    orderedInterruption = transition.orderedInterruption,
+                    canTransitionToSelf = transition.canTransitionToSelf,
+                };
+
+            for (var layerI = 0; layerI < layers.Length; layerI++)
+            {
+                if (convertInfos[layerI] != null) continue;
+                var layer = layers[layerI];
+                if (layer.IsSynced) continue;
+
+                foreach (var stateMachine in ACUtils.AllStateMachines(layer.stateMachine))
+                {
+                    stateMachine.entryTransitions = ConvertTransitions(stateMachine.entryTransitions, CloneTransition);
+                    stateMachine.anyStateTransitions =
+                        ConvertTransitions(stateMachine.anyStateTransitions, CloneStateTransition);
+                    foreach (var animatorState in stateMachine.states)
+                        animatorState.state.transitions =
+                            ConvertTransitions(animatorState.state.transitions, CloneStateTransition);
+
+                    foreach (var child in stateMachine.stateMachines)
+                    {
+                        var transitions = stateMachine.GetStateMachineTransitions(child.stateMachine);
+                        if (transitions.Length == 0) continue;
+                        stateMachine.SetStateMachineTransitions(child.stateMachine,
+                            ConvertTransitions(transitions, CloneTransition));
+                    }
+                }
+            }
 
             controller.parameters = parameters;
         }
@@ -149,6 +208,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 var dest = entryTransition.destinationState;
                 if (!stateValues.TryGetValue(dest, out var values))
                     stateValues.Add(dest, values = new HashSet<int>());
+                // not finite makes casting to int undefined
+                if (float.IsNaN(condition.threshold) || float.IsInfinity(condition.threshold)) return null;
                 var value = (int)condition.threshold;
                 if (allValues.Contains(value)) return null; // duplicated value
                 values.Add(value);
@@ -165,7 +226,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             {
                 if (stateValues.Count != states.Length - 1) return null;
             }
-            
+
             // check for each states
             // we have to check
             // - write defaults are same in the layer
@@ -179,7 +240,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             {
                 var state = childStateInfo.state;
                 if (!state) return null;
-                if (state.behaviours.Length != 0) return null; // we cannot execute state machine behaviour in blend tree
+                if (state.behaviours.Length != 0)
+                    return null; // we cannot execute state machine behaviour in blend tree
                 // TODO: for linear animation, we can simulate motion time with 1d blend tree
                 // https://github.com/anatawa12/AvatarOptimizer/issues/861
                 if (state.timeParameterActive) return null; // motion time is not allowed. 
@@ -214,7 +276,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 
                 // the clip is time dependant, we cannot convert it to blend tree
                 foreach (var clip in ACUtils.AllClips(motion))
-                    if (optimizerState.IsTimeDependentClip(clip)) return null;
+                    if (optimizerState.IsTimeDependentClip(clip))
+                        return null;
 
                 // check for transitions
                 var transitions = state.transitions;
@@ -315,7 +378,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             public readonly AnimatorState DefaultState;
             public readonly Dictionary<AnimatorState, HashSet<int>> ValueForStates;
 
-            public ConvertibleLayerInfo(string parameterName, AnimatorState defaultState, Dictionary<AnimatorState, HashSet<int>> valueForStates)
+            public ConvertibleLayerInfo(string parameterName, AnimatorState defaultState,
+                Dictionary<AnimatorState, HashSet<int>> valueForStates)
             {
                 ParameterName = parameterName;
                 DefaultState = defaultState;
@@ -328,7 +392,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
         [CanBeNull]
         private static HashSet<EditorCurveBinding> CollectAnimatingProperties(Motion motion)
         {
-            
             switch (motion)
             {
                 case AnimationClip clip:
@@ -367,37 +430,62 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             foreach (var value in values)
                 states.Add((value, state.motion));
 
-            // to avoid border condition, add min and max which are impossible expressed with float
-            states.Add((int.MinValue, defaultMotion));
-            states.Add((int.MaxValue, defaultMotion));
-
             // sort increasing order
             states.Sort((x, y) => x.value.CompareTo(y.value));
 
             var children = new List<ChildMotion>();
 
-            for (var i = 1; i < states.Count - 1; i++)
+            void AddFrames(int before, Motion beforeMotion, int after, Motion afterMotion)
             {
-                var (prevValue, _) = states[i - 1];
-                var (currentValue, currentMotion) = states[i];
-                var (nextValue, _) = states[i + 1];
-
-                // if prevValue is currentValue - 1,
-                //   we don't have to add defaultMotion frame
-                // if nextValue is currentValue - 2,
-                //   we have to add single defaultMotion frame but we already have in post-check of previous frame
-                // if nextValue less than currentValue - 2,
-                //   we have to add two defaultMotion frame so we add one in post-check of previous frame and one here
-                if (prevValue < currentValue - 2)
-                    children.Add(CreateChild(currentValue - 1, defaultMotion));
-
-                children.Add(CreateChild(currentValue, currentMotion));
-
-                if (nextValue != currentValue + 1)
-                    children.Add(CreateChild(currentValue + 1, defaultMotion));
+                var threshold = before + 0.5f;
+                var rounded = Mathf.Round(threshold);
+                // ReSharper disable once CompareOfFloatsByEqualityOperator
+                if (rounded == after)
+                {
+                    Debug.Assert((int)Mathf.Round(Utils.PreviousFloat(threshold)) == before);
+                    // in this case, .5 will go the motion so default is one before .5
+                    children.Add(CreateChild(Utils.PreviousFloat(threshold), beforeMotion));
+                    children.Add(CreateChild(threshold, afterMotion));
+                }
+                // ReSharper disable once CompareOfFloatsByEqualityOperator
+                else if (rounded == before)
+                {
+                    Debug.Assert((int)Mathf.Round(Utils.NextFloat(threshold)) == after);
+                    // in this case, .5 will go to default motion so default is .5
+                    children.Add(CreateChild(threshold, beforeMotion));
+                    children.Add(CreateChild(Utils.NextFloat(threshold), afterMotion));
+                }
+                else
+                {
+                    throw new InvalidOperationException("unexpected: rounding x - 0.5 is not x - 1 or x");
+                }
             }
 
-            
+            {
+                // first frame: add defaultMotion before first state
+                var (value, motion) = states[0];
+                AddFrames(value - 1, defaultMotion,
+                    value, motion);
+            }
+
+            for (var i = 1; i < states.Count; i++)
+            {
+                // other frames: add motions if needed
+                var (prevValue, prevMotion) = states[i - 1];
+                var (currentValue, currentMotion) = states[i];
+
+                if (prevMotion != currentMotion)
+                    AddFrames(prevValue, prevMotion,
+                        currentValue, currentMotion);
+            }
+
+            {
+                // last frame: add last state to defaultMotion
+                var (value, motion) = states[states.Count - 1];
+                AddFrames(value, motion,
+                    value + 1, defaultMotion);
+            }
+
             var blendTree = new BlendTree
             {
                 blendType = BlendTreeType.Simple1D,
@@ -428,7 +516,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             layer.stateMachine.entryTransitions = Array.Empty<AnimatorTransition>();
             layer.stateMachine.defaultState = newState;
 
-            ChildMotion CreateChild(int value, Motion motion) =>
+            ChildMotion CreateChild(float value, Motion motion) =>
                 new ChildMotion
                 {
                     motion = motion,
@@ -436,6 +524,202 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                     threshold = value,
                     directBlendParameter = "",
                 };
+        }
+
+        public static IEnumerable<AnimatorCondition[]> FlattenConditions(AnimatorCondition[][] conditions)
+        {
+            var indices = new int[conditions.Length];
+
+            while (true)
+            {
+                var result = new AnimatorCondition[conditions.Length];
+                for (var i = 0; i < conditions.Length; i++)
+                    result[i] = conditions[i][indices[i]];
+
+                yield return result;
+
+                for (var i = 0; i < conditions.Length; i++)
+                {
+                    indices[i]++;
+                    if (indices[i] < conditions[i].Length) break;
+                    indices[i] = 0;
+                    if (i == conditions.Length - 1) yield break;
+                }
+            }
+        }
+
+        public static bool NeedsConversion(AnimatorCondition[] conditions, Predicate<string> shouldConvert)
+        {
+            foreach (var condition in conditions)
+                if (shouldConvert(condition.parameter))
+                    return true;
+            return false;
+        }
+
+        // AnimatorCondition[and][or]
+        public static AnimatorCondition[][] ConvertIntConditionsToFloat(AnimatorCondition[] condition,
+            Predicate<string> shouldConvert)
+        {
+            var result = new List<AnimatorCondition[]>();
+            foreach (var cond in condition)
+                if (shouldConvert(cond.parameter))
+                    result.AddRange(ConvertIntConditionToFloat(cond));
+                else
+                    result.Add(new[] { cond });
+            return result.ToArray();
+        }
+
+        // AnimatorCondition[and][or]
+        public static AnimatorCondition[][] ConvertIntConditionToFloat(AnimatorCondition condition)
+        {
+            switch (condition.mode)
+            {
+                case AnimatorConditionMode.Greater:
+                {
+                    var thresholdRound = Mathf.Round(condition.threshold);
+                    var threshold = thresholdRound - 0.5f;
+                    // ReSharper disable once CompareOfFloatsByEqualityOperator
+                    if (Mathf.Round(threshold) == thresholdRound)
+                        threshold = Utils.PreviousFloat(threshold);
+
+                    // ReSharper disable once CompareOfFloatsByEqualityOperator
+                    Debug.Assert(Mathf.Round(threshold) == thresholdRound - 1);
+                    // ReSharper disable once CompareOfFloatsByEqualityOperator
+                    Debug.Assert(Mathf.Round(Utils.NextFloat(threshold)) == thresholdRound);
+
+                    return new[]
+                    {
+                        new[]
+                        {
+                            new AnimatorCondition()
+                            {
+                                mode = AnimatorConditionMode.Greater,
+                                parameter = condition.parameter,
+                                threshold = threshold,
+                            },
+                        },
+                    };
+                }
+                case AnimatorConditionMode.Less:
+                {
+                    var thresholdRound = Mathf.Round(condition.threshold);
+                    var threshold = thresholdRound + 0.5f;
+                    // ReSharper disable once CompareOfFloatsByEqualityOperator
+                    if (Mathf.Round(threshold) == thresholdRound)
+                        threshold = Utils.NextFloat(threshold);
+
+                    // ReSharper disable once CompareOfFloatsByEqualityOperator
+                    Debug.Assert(Mathf.Round(threshold) == thresholdRound + 1);
+                    // ReSharper disable once CompareOfFloatsByEqualityOperator
+                    Debug.Assert(Mathf.Round(Utils.PreviousFloat(threshold)) == thresholdRound);
+
+                    return new[]
+                    {
+                        new[]
+                        {
+                            new AnimatorCondition()
+                            {
+                                mode = AnimatorConditionMode.Less,
+                                parameter = condition.parameter,
+                                threshold = threshold,
+                            },
+                        },
+                    };
+                }
+                case AnimatorConditionMode.Equals:
+                {
+                    var thresholdRound = Mathf.Round(condition.threshold);
+                    var lowerThreshold = thresholdRound - 0.5f;
+                    var upperThreshold = thresholdRound + 0.5f;
+
+                    // ReSharper disable once CompareOfFloatsByEqualityOperator
+                    if (Mathf.Round(lowerThreshold) == thresholdRound)
+                        lowerThreshold = Utils.PreviousFloat(lowerThreshold);
+                    // ReSharper disable once CompareOfFloatsByEqualityOperator
+                    if (Mathf.Round(upperThreshold) == thresholdRound)
+                        upperThreshold = Utils.NextFloat(upperThreshold);
+
+                    // ReSharper disable once CompareOfFloatsByEqualityOperator
+                    Debug.Assert(Mathf.Round(lowerThreshold) == thresholdRound - 1);
+                    // ReSharper disable once CompareOfFloatsByEqualityOperator
+                    Debug.Assert(Mathf.Round(Utils.NextFloat(lowerThreshold)) == thresholdRound);
+                    // ReSharper disable once CompareOfFloatsByEqualityOperator
+                    Debug.Assert(Mathf.Round(Utils.PreviousFloat(upperThreshold)) == thresholdRound);
+                    // ReSharper disable once CompareOfFloatsByEqualityOperator
+                    Debug.Assert(Mathf.Round(upperThreshold) == thresholdRound + 1);
+
+                    // AND condition
+                    return new[]
+                    {
+                        new[]
+                        {
+                            new AnimatorCondition()
+                            {
+                                mode = AnimatorConditionMode.Greater,
+                                parameter = condition.parameter,
+                                threshold = lowerThreshold,
+                            },
+                        },
+                        new[]
+                        {
+                            new AnimatorCondition()
+                            {
+                                mode = AnimatorConditionMode.Less,
+                                parameter = condition.parameter,
+                                threshold = upperThreshold,
+                            },
+                        },
+                    };
+                }
+                case AnimatorConditionMode.NotEqual:
+                {
+                    var thresholdRound = Mathf.Round(condition.threshold);
+                    var lowerThreshold = thresholdRound - 0.5f;
+                    var upperThreshold = thresholdRound + 0.5f;
+
+                    // ReSharper disable once CompareOfFloatsByEqualityOperator
+                    if (Mathf.Round(lowerThreshold) != thresholdRound)
+                        lowerThreshold = Utils.NextFloat(lowerThreshold);
+                    // ReSharper disable once CompareOfFloatsByEqualityOperator
+                    if (Mathf.Round(upperThreshold) != thresholdRound)
+                        upperThreshold = Utils.PreviousFloat(upperThreshold);
+
+                    // ReSharper disable once CompareOfFloatsByEqualityOperator
+                    Debug.Assert(Mathf.Round(Utils.PreviousFloat(lowerThreshold)) == thresholdRound - 1);
+                    // ReSharper disable once CompareOfFloatsByEqualityOperator
+                    Debug.Assert(Mathf.Round(lowerThreshold) == thresholdRound);
+                    // ReSharper disable once CompareOfFloatsByEqualityOperator
+                    Debug.Assert(Mathf.Round(upperThreshold) == thresholdRound);
+                    // ReSharper disable once CompareOfFloatsByEqualityOperator
+                    Debug.Assert(Mathf.Round(Utils.NextFloat(upperThreshold)) == thresholdRound + 1);
+
+                    // OR condition
+                    return new[]
+                    {
+                        new[]
+                        {
+                            new AnimatorCondition()
+                            {
+                                mode = AnimatorConditionMode.Less,
+                                parameter = condition.parameter,
+                                threshold = lowerThreshold,
+                            },
+                            new AnimatorCondition()
+                            {
+                                mode = AnimatorConditionMode.Greater,
+                                parameter = condition.parameter,
+                                threshold = upperThreshold,
+                            },
+                        },
+                    };
+                }
+
+                // for bool
+                case AnimatorConditionMode.If:
+                case AnimatorConditionMode.IfNot:
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
         }
     }
 }

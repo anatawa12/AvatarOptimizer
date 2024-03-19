@@ -1,5 +1,6 @@
 using Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer;
 using NUnit.Framework;
+using UnityEditor;
 
 namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
 {
@@ -14,6 +15,16 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
             controller.name = "GestureConvertibleSimple.converted";
             EntryExitToBlendTree.Execute(_state, new AOAnimatorController(controller));
             var except = LoadAnimatorController("GestureConvertibleSimple.converted");
+            RecursiveCheckEquals(except, controller);
+        }
+
+        [Test]
+        public void GestureConvertibleWithIntCondition()
+        {
+            var controller = LoadCloneAnimatorController("GestureConvertibleWithIntCondition");
+            controller.name = "GestureConvertibleWithIntCondition.converted";
+            EntryExitToBlendTree.Execute(_state, new AOAnimatorController(controller));
+            var except = LoadAnimatorController("GestureConvertibleWithIntCondition.converted");
             RecursiveCheckEquals(except, controller);
         }
 

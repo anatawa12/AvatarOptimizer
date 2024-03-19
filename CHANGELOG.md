@@ -12,7 +12,7 @@ The format is based on [Keep a Changelog].
   - Animator Optimizer optimizes your Animator Controller without behaviour Changes
   - Current Optimizer includes the following optimization
     - Remove meaningless properties `#854`
-    - Converts Entry / Exit to 1D BlendTree `#854` `#867`
+    - Converts Entry / Exit to 1D BlendTree `#854` `#867` `#927`
     - Merges multiple Direct BlendTree to single Direct BlendTree `#870`
     - Removes meaningless Animator Layers `#870`
 - Asset Description `#847`

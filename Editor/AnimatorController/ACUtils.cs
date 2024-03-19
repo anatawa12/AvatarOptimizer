@@ -7,6 +7,16 @@ namespace Anatawa12.AvatarOptimizer
 {
     static partial class ACUtils
     {
+        public static IEnumerable<AnimatorStateMachine> AllStateMachines([CanBeNull] AnimatorStateMachine stateMachine)
+        {
+            if (stateMachine == null) yield break;
+            yield return stateMachine;
+
+            foreach (var child in stateMachine.stateMachines)
+            foreach (var machine in AllStateMachines(child.stateMachine))
+                yield return machine;
+        }
+
         public static IEnumerable<AnimatorState> AllStates([CanBeNull] AnimatorStateMachine stateMachine)
         {
             if (stateMachine == null) yield break;
@@ -32,8 +42,12 @@ namespace Anatawa12.AvatarOptimizer
                 yield return transition;
 
             foreach (var child in stateMachine.stateMachines)
-            foreach (var transition in AllTransitions(child.stateMachine))
-                yield return transition;
+            {
+                foreach (var transition in stateMachine.GetStateMachineTransitions(child.stateMachine))
+                    yield return transition;
+                foreach (var transition in AllTransitions(child.stateMachine))
+                    yield return transition;
+            }
         }
 
         public static IEnumerable<AnimationClip> AllClips([CanBeNull] Motion motion)
