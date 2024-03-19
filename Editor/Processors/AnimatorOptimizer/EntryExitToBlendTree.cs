@@ -106,6 +106,84 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 if (layerByParameter.ContainsKey(parameter.name))
                     parameter.type = AnimatorControllerParameterType.Float;
 
+            Predicate<string> needsConvert = parameter => layerByParameter.ContainsKey(parameter);
+
+            T[] ConvertTransitions<T>(T[] transitions, Func<T, AnimatorCondition[], T> clone)
+                where T : AnimatorTransitionBase
+            {
+                if (transitions.Length == 0) return transitions;
+
+                var entryTransitions = new LinkedList<T>(transitions);
+                for (var cursor = entryTransitions.First; cursor != null; cursor = cursor.Next)
+                {
+                    if (!NeedsConversion(cursor.Value.conditions, needsConvert)) continue;
+                    var conditions = cursor.Value.conditions;
+                    var newConditions = ConvertIntConditionsToFloat(conditions, needsConvert);
+                    var toRemove = cursor;
+                    foreach (var animatorConditions in FlattenConditions(newConditions))
+                        cursor = entryTransitions.AddAfter(cursor, clone(toRemove.Value, animatorConditions));
+                    entryTransitions.Remove(toRemove);
+                }
+
+                return entryTransitions.ToArray();
+            }
+
+            AnimatorTransition CloneTransition(AnimatorTransition transition, AnimatorCondition[] conditions) =>
+                new AnimatorTransition
+                {
+                    name = transition.name,
+                    conditions = conditions,
+                    destinationStateMachine = transition.destinationStateMachine,
+                    destinationState = transition.destinationState,
+                    solo = transition.solo,
+                    mute = transition.mute,
+                    isExit = transition.isExit,
+                };
+
+            AnimatorStateTransition CloneStateTransition(AnimatorStateTransition transition,
+                AnimatorCondition[] conditions) =>
+                new AnimatorStateTransition
+                {
+                    name = transition.name,
+                    conditions = conditions,
+                    destinationStateMachine = transition.destinationStateMachine,
+                    destinationState = transition.destinationState,
+                    solo = transition.solo,
+                    mute = transition.mute,
+                    isExit = transition.isExit,
+                    duration = transition.duration,
+                    offset = transition.offset,
+                    exitTime = transition.exitTime,
+                    hasExitTime = transition.hasExitTime,
+                    hasFixedDuration = transition.hasFixedDuration,
+                    interruptionSource = transition.interruptionSource,
+                    orderedInterruption = transition.orderedInterruption,
+                    canTransitionToSelf = transition.canTransitionToSelf,
+                };
+
+            for (var layerI = 0; layerI < layers.Length; layerI++)
+            {
+                if (convertInfos[layerI] != null) continue;
+                var layer = layers[layerI];
+                if (layer.IsSynced) continue;
+
+                foreach (var stateMachine in ACUtils.AllStateMachines(layer.stateMachine))
+                {
+                    stateMachine.entryTransitions = ConvertTransitions(stateMachine.entryTransitions, CloneTransition);
+                    stateMachine.anyStateTransitions =
+                        ConvertTransitions(stateMachine.anyStateTransitions, CloneStateTransition);
+                    foreach (var animatorState in ACUtils.AllStates(stateMachine))
+                        animatorState.transitions = ConvertTransitions(animatorState.transitions, CloneStateTransition);
+
+                    foreach (var child in stateMachine.stateMachines)
+                    {
+                        stateMachine.SetStateMachineTransitions(child.stateMachine,
+                            ConvertTransitions(stateMachine.GetStateMachineTransitions(child.stateMachine),
+                                CloneTransition));
+                    }
+                }
+            }
+
             controller.parameters = parameters;
         }
 
@@ -333,7 +411,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
         [CanBeNull]
         private static HashSet<EditorCurveBinding> CollectAnimatingProperties(Motion motion)
         {
-
             switch (motion)
             {
                 case AnimationClip clip:
@@ -499,14 +576,15 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
         }
 
         // AnimatorCondition[and][or]
-        public static AnimatorCondition[][] ConvertIntConditionsToFloat(AnimatorCondition[] condition, Predicate<string> shouldConvert)
+        public static AnimatorCondition[][] ConvertIntConditionsToFloat(AnimatorCondition[] condition,
+            Predicate<string> shouldConvert)
         {
             var result = new List<AnimatorCondition[]>();
             foreach (var cond in condition)
                 if (shouldConvert(cond.parameter))
                     result.AddRange(ConvertIntConditionToFloat(cond));
                 else
-                    result.Add(new [] { cond });
+                    result.Add(new[] { cond });
             return result.ToArray();
         }
 
