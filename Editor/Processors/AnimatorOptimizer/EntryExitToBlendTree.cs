@@ -69,27 +69,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 }
             }
 
-            // then, check the parameters are not used by other conditions.
-            for (var i = 0; i < layers.Length; i++)
-            {
-                if (convertInfos[i] != null) continue;
-                var layer = layers[i];
-                if (layer.IsSynced) continue;
-
-                foreach (var transition in ACUtils.AllTransitions(layer.stateMachine))
-                {
-                    foreach (var condition in transition.conditions)
-                    {
-                        if (layerByParameter.TryGetValue(condition.parameter, out var list))
-                        {
-                            layerByParameter.Remove(condition.parameter);
-                            foreach (var removeLayerIndex in list)
-                                convertInfos[removeLayerIndex] = null;
-                        }
-                    }
-                }
-            }
-
             // finally, convert layers & change type of parameters
 
             for (var i = 0; i < layers.Length; i++)
