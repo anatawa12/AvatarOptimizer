@@ -4,7 +4,7 @@ using UnityEditor;
 
 namespace Anatawa12.AvatarOptimizer
 {
-    internal partial class Utils
+    partial class Utils
     {
         public static ObjectReferencePropertiesEnumerable ObjectReferenceProperties(this SerializedObject obj)
             => new ObjectReferencePropertiesEnumerable(obj);

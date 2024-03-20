@@ -3,7 +3,7 @@ using System;
 
 namespace Anatawa12.AvatarOptimizer
 {
-    internal partial class Utils
+    partial class Utils
     {
         // the float in C# is 32bit IEC 60559 / IEEE 754 floating point number.
         // The value is finite possible values so there is next / previous value.

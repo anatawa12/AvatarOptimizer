@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer
 {
-    internal partial class Utils
+    partial class Utils
     {
         public static TransformParentEnumerable ParentEnumerable(this Transform transform) =>
             transform.ParentEnumerable(null);

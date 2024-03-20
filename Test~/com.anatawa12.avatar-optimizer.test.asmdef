@@ -1,5 +1,6 @@
 {
     "name": "com.anatawa12.avatar-optimizer.test",
+    "rootNamespace": "",
     "references": [
         "VRC.SDK3A",
         "VRC.SDKBase",
@@ -8,6 +9,7 @@
         "com.anatawa12.avatar-optimizer.runtime",
         "com.anatawa12.avatar-optimizer.internal.prefab-safe-set",
         "com.anatawa12.avatar-optimizer.internal.prefab-safe-set.editor",
+        "com.anatawa12.avatar-optimizer.internal.utils",
         "com.anatawa12.avatar-optimizer.api.editor",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",

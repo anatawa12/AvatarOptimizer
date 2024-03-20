@@ -19,7 +19,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         private static Material _helperMaterial;
 
         private static Material HelperMaterial =>
-            _helperMaterial ? _helperMaterial : _helperMaterial = new Material(Utils.MergeTextureHelper);
+            _helperMaterial ? _helperMaterial : _helperMaterial = new Material(Assets.MergeTextureHelper);
 
         public MergeToonLitMaterialProcessor(MergeToonLitMaterial component) : base(component)
         {
@@ -119,7 +119,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             var copied = upstream.Where((_, i) => !mergingIndices[i]);
             if (fast)
             {
-                return copied.Concat(Component.merges.Select(x => new Material(Utils.ToonLitShader))).ToArray();
+                return copied.Concat(Component.merges.Select(x => new Material(Assets.ToonLitShader))).ToArray();
             }
             else
             {
@@ -130,7 +130,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         private static Material CreateMaterial(Texture texture)
         {
-            var mat = new Material(Utils.ToonLitShader);
+            var mat = new Material(Assets.ToonLitShader);
             mat.SetTexture(MainTexProp, texture);
             return mat;
         }
