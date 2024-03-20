@@ -1,0 +1,18 @@
+{
+    "name": "com.anatawa12.avatar-optimizer.internal.animator-controller",
+    "rootNamespace": "Anatawa12.AvatarOptimizer",
+    "references": [
+        "com.anatawa12.avatar-optimizer.internal.utils"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
