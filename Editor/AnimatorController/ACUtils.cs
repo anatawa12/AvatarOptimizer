@@ -7,6 +7,8 @@ namespace Anatawa12.AvatarOptimizer
 {
     static partial class ACUtils
     {
+        [ItemNotNull]
+        [NotNull]
         public static IEnumerable<AnimatorStateMachine> AllStateMachines([CanBeNull] AnimatorStateMachine stateMachine)
         {
             if (stateMachine == null) yield break;
@@ -17,6 +19,8 @@ namespace Anatawa12.AvatarOptimizer
                 yield return machine;
         }
 
+        [ItemNotNull]
+        [NotNull]
         public static IEnumerable<AnimatorState> AllStates([CanBeNull] AnimatorStateMachine stateMachine)
         {
             if (stateMachine == null) yield break;
@@ -28,6 +32,8 @@ namespace Anatawa12.AvatarOptimizer
                 yield return state;
         }
 
+        [ItemNotNull]
+        [NotNull]
         public static IEnumerable<AnimatorTransitionBase> AllTransitions([CanBeNull] AnimatorStateMachine stateMachine)
         {
             if (stateMachine == null) yield break;
@@ -50,6 +56,8 @@ namespace Anatawa12.AvatarOptimizer
             }
         }
 
+        [NotNull]
+        [ItemNotNull]
         public static IEnumerable<AnimationClip> AllClips([CanBeNull] Motion motion)
         {
             switch (motion)
@@ -67,8 +75,10 @@ namespace Anatawa12.AvatarOptimizer
             }
         }
 
+        [NotNull]
+        [ItemNotNull]
         public static IEnumerable<StateMachineBehaviour> StateMachineBehaviours(
-            RuntimeAnimatorController runtimeController)
+            [NotNull] RuntimeAnimatorController runtimeController)
         {
             var (controller, _) = GetControllerAndOverrides(runtimeController);
 
@@ -84,7 +94,9 @@ namespace Anatawa12.AvatarOptimizer
             }
         }
 
-        public static IEnumerable<StateMachineBehaviour> StateMachineBehaviours(AnimatorStateMachine stateMachineIn)
+        [NotNull]
+        [ItemNotNull]
+        public static IEnumerable<StateMachineBehaviour> StateMachineBehaviours([NotNull] AnimatorStateMachine stateMachineIn)
         {
             var queue = new Queue<AnimatorStateMachine>();
             queue.Enqueue(stateMachineIn);
@@ -93,17 +105,19 @@ namespace Anatawa12.AvatarOptimizer
             {
                 var stateMachine = queue.Dequeue();
                 foreach (var behaviour in stateMachine.behaviours)
-                    yield return behaviour;
+                    if (behaviour != null)
+                        yield return behaviour;
                 foreach (var state in stateMachine.states)
                 foreach (var behaviour in state.state.behaviours)
-                    yield return behaviour;
+                    if (behaviour != null)
+                        yield return behaviour;
 
                 foreach (var childStateMachine in stateMachine.stateMachines)
                     queue.Enqueue(childStateMachine.stateMachine);
             }
         }
 
-        public static int ComputeLayerCount(this RuntimeAnimatorController controller)
+        public static int ComputeLayerCount([NotNull] this RuntimeAnimatorController controller)
         {
             while (controller is AnimatorOverrideController overrideController)
                 controller = overrideController.runtimeAnimatorController;
