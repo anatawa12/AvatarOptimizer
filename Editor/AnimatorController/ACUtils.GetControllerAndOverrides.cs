@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
 using UnityEditor.Animations;
 using UnityEngine;
 
@@ -8,7 +9,7 @@ namespace Anatawa12.AvatarOptimizer
     static partial class ACUtils
     {
         public static (AnimatorController, IReadOnlyDictionary<AnimationClip, AnimationClip>) GetControllerAndOverrides(
-            RuntimeAnimatorController runtimeController)
+            [NotNull] RuntimeAnimatorController runtimeController)
         {
             if (runtimeController is AnimatorController originalController)
                 return (originalController, Utils.EmptyDictionary<AnimationClip, AnimationClip>());

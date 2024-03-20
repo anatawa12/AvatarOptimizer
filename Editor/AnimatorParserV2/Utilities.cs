@@ -23,7 +23,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             TSourceObjectNode,
 
             TMerger
-        >(IEnumerable<TSource> sources, TMerger merger)
+        >([NotNull] [ItemNotNull] IEnumerable<TSource> sources, TMerger merger)
             where TResultContainer : NodeContainerBase<TResultFloatNode, TResultObjectNode>
             where TResultFloatNode : PropModNode<float>
             where TResultObjectNode : PropModNode<Object>
@@ -89,16 +89,20 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         TSourceFloatNode,
         TSourceObjectNode
     >
+        where TResultContainer : NodeContainerBase<TResultFloatNode, TResultObjectNode>
+        where TResultFloatNode : PropModNode<float>
+        where TResultObjectNode : PropModNode<Object>
+        where TSourceContainer : INodeContainer<TSourceFloatNode, TSourceObjectNode>
     {
-        TResultContainer CreateContainer();
+        [NotNull] TResultContainer CreateContainer();
 
-        TSourceContainer GetContainer(TSource source);
+        [CanBeNull] TSourceContainer GetContainer([NotNull] TSource source);
 
-        TIntermediateFloat GetIntermediate(TSource source, TSourceFloatNode node, int index);
-        TIntermediateObject GetIntermediate(TSource source, TSourceObjectNode node, int index);
+        [NotNull] TIntermediateFloat GetIntermediate([NotNull] TSource source, [NotNull] TSourceFloatNode node, int index);
+        [NotNull] TIntermediateObject GetIntermediate([NotNull] TSource source, [NotNull] TSourceObjectNode node, int index);
 
-        TResultFloatNode MergeNode(List<TIntermediateFloat> nodes, int sourceCount);
-        TResultObjectNode MergeNode(List<TIntermediateObject> nodes, int sourceCount);
+        [CanBeNull] TResultFloatNode MergeNode([NotNull] [ItemNotNull] List<TIntermediateFloat> nodes, int sourceCount);
+        [CanBeNull] TResultObjectNode MergeNode([NotNull] [ItemNotNull] List<TIntermediateObject> nodes, int sourceCount);
     }
 
     static partial class NodesMerger 
@@ -106,7 +110,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         [CanBeNull]
         [ContractAnnotation("controller: null => null")]
         [ContractAnnotation("controller: notnull => notnull")]
-        public static ComponentNodeContainer AnimatorComponentFromController(Animator animator,
+        public static ComponentNodeContainer AnimatorComponentFromController([NotNull] Animator animator,
             [CanBeNull] AnimatorControllerNodeContainer controller)
         {
             if (controller == null) return null;
@@ -129,7 +133,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         }
 
         [NotNull]
-        public static ComponentNodeContainer AnimationComponentFromAnimationClip(Animation animation,
+        public static ComponentNodeContainer AnimationComponentFromAnimationClip([NotNull] Animation animation,
             [NotNull] ImmutableNodeContainer animationClip)
         {
             if (animationClip == null) throw new ArgumentNullException(nameof(animationClip));

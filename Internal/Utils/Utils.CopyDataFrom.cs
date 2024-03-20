@@ -4,7 +4,7 @@ using UnityEngine.Assertions;
 
 namespace Anatawa12.AvatarOptimizer
 {
-    internal partial class Utils
+    partial class Utils
     {
         // based on https://gist.github.com/anatawa12/16fbf529c8da4a0fb993c866b1d86512
         public static void CopyDataFrom(this SerializedProperty dest, SerializedProperty source)

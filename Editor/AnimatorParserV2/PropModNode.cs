@@ -321,7 +321,6 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
     internal class ObjectAnimationCurveNode : ImmutablePropModNode<Object>
     {
-        public AnimationCurve Curve { get; }
         public ObjectReferenceKeyframe[] Frames { get; set; }
         public AnimationClip Clip { get; }
 
@@ -359,7 +358,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         private readonly BlendTreeType _blendTreeType;
         private readonly bool _partial;
 
-        public BlendTreeNode(List<ImmutablePropModNode<T>> children, BlendTreeType blendTreeType, bool partial)
+        public BlendTreeNode([NotNull] [ItemNotNull] List<ImmutablePropModNode<T>> children, BlendTreeType blendTreeType, bool partial)
         {
             // expected to pass list or array
             // ReSharper disable once PossibleMultipleEnumeration

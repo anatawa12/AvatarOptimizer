@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer
 {
-    internal partial class Utils
+    partial class Utils
     {
         public static BoundsCornersEnumerable Corners(this Bounds bounds)
         {

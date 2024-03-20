@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Anatawa12.AvatarOptimizer
 {
-    internal partial class Utils
+    partial class Utils
     {
         public static DicCaster<TValueCasted> CastDic<TValueCasted>()
             => new DicCaster<TValueCasted>();

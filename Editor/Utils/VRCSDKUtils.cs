@@ -9,7 +9,7 @@ using VRC.SDKBase;
 
 namespace Anatawa12.AvatarOptimizer
 {
-    partial class Utils
+    internal static partial class VRCSDKUtils
     {
         public static Transform GetTarget(this VRCPhysBoneBase physBoneBase) =>
             physBoneBase.rootTransform ? physBoneBase.rootTransform : physBoneBase.transform;

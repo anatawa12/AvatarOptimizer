@@ -1,0 +1,16 @@
+{
+    "name": "com.anatawa12.avatar-optimizer.internal.utils",
+    "rootNamespace": "Anatawa12.AvatarOptimizer",
+    "references": [],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

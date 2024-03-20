@@ -124,7 +124,7 @@ namespace Anatawa12.AvatarOptimizer
 
                     componentMerge.mergedFormat = (MergeToonLitMaterial.MergedTextureFormat)EditorGUILayout.EnumPopup("Format", componentMerge.mergedFormat);
 
-                    var preview = _generatedPreviews != null ? _generatedPreviews[i] : Utils.PreviewHereTex;
+                    var preview = _generatedPreviews != null ? _generatedPreviews[i] : Assets.PreviewHereTex;
                     EditorGUILayout.LabelField(new GUIContent(preview), GUILayout.MaxHeight(256), GUILayout.MaxHeight(256));
 
                     Utils.HorizontalLine();
@@ -166,7 +166,7 @@ namespace Anatawa12.AvatarOptimizer
                 .GetMaterials(component.GetComponent<SkinnedMeshRenderer>(), component);
             _materials = _upstreamMaterials
                 .Select((mat, index) => (mat, index))
-                .Where(x => x.mat.shader == Utils.ToonLitShader)
+                .Where(x => x.mat.shader == Assets.ToonLitShader)
                 .ToArray();
             OnChanged(dirty: false);
         }

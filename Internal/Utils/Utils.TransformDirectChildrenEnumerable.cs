@@ -4,12 +4,12 @@ using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer
 {
-    internal static partial class Utils
+    partial class Utils
     {
         public static TransformDirectChildrenEnumerable DirectChildrenEnumerable(this Transform transform) =>
             new TransformDirectChildrenEnumerable(transform);
 
-        internal readonly struct TransformDirectChildrenEnumerable : IEnumerable<Transform>
+        public readonly struct TransformDirectChildrenEnumerable : IEnumerable<Transform>
         {
             private readonly Transform _parent;
 

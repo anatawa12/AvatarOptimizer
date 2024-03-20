@@ -1,5 +1,6 @@
 #if AAO_VRCSDK3_AVATARS
 
+using JetBrains.Annotations;
 using nadena.dev.ndmf;
 using UnityEngine;
 using VRC.SDK3.Avatars.Components;
@@ -9,9 +10,9 @@ namespace Anatawa12.AvatarOptimizer
 {
     static partial class ACUtils
     {
-        public static void CollectWeightChangesInController(RuntimeAnimatorController runtimeController,
-            AnimatorLayerMap<AnimatorWeightChange> playableWeightChanged,
-            AnimatorLayerMap<AnimatorWeightChangesList> animatorLayerWeightChanged)
+        public static void CollectWeightChangesInController([CanBeNull] RuntimeAnimatorController runtimeController,
+            [NotNull] AnimatorLayerMap<AnimatorWeightChange> playableWeightChanged,
+            [NotNull] AnimatorLayerMap<AnimatorWeightChangesList> animatorLayerWeightChanged)
         {
             if (runtimeController == null) return;
             using (ErrorReport.WithContextObject(runtimeController))
@@ -31,7 +32,8 @@ namespace Anatawa12.AvatarOptimizer
             }
         }
 
-        private static void AddPlayableLayerChanges(VRC_PlayableLayerControl control, AnimatorLayerMap<AnimatorWeightChange> playableWeightChanged)
+        private static void AddPlayableLayerChanges([NotNull] VRC_PlayableLayerControl control,
+            [NotNull] AnimatorLayerMap<AnimatorWeightChange> playableWeightChanged)
         {
             if (!(control.layer.ToAnimLayerType() is VRCAvatarDescriptor.AnimLayerType layer))
             {
@@ -46,8 +48,9 @@ namespace Anatawa12.AvatarOptimizer
                 control.goalWeight);
             playableWeightChanged[layer] = playableWeightChanged[layer].Merge(current);
         }
-        
-        private static void AddAnimatorLayerChanges(VRC_AnimatorLayerControl control, AnimatorLayerMap<AnimatorWeightChangesList> animatorLayerWeightChanged)
+
+        private static void AddAnimatorLayerChanges([NotNull] VRC_AnimatorLayerControl control,
+            [NotNull] AnimatorLayerMap<AnimatorWeightChangesList> animatorLayerWeightChanged)
         {
             if (!(control.playable.ToAnimLayerType() is VRCAvatarDescriptor.AnimLayerType layer))
             {

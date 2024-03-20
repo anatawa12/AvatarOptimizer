@@ -12,15 +12,15 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 {
     class AnimationParser
     {
-        internal ImmutableNodeContainer ParseMotion(GameObject root, Motion motion,
-            IReadOnlyDictionary<AnimationClip, AnimationClip> mapping)
+        internal ImmutableNodeContainer ParseMotion([NotNull] GameObject root, [CanBeNull] Motion motion,
+            [NotNull] IReadOnlyDictionary<AnimationClip, AnimationClip> mapping)
         {
             using (ErrorReport.WithContextObject(motion))
                 return ParseMotionInner(root, motion, mapping);
         }
 
-        private ImmutableNodeContainer ParseMotionInner(GameObject root, Motion motion,
-            IReadOnlyDictionary<AnimationClip, AnimationClip> mapping)
+        private ImmutableNodeContainer ParseMotionInner([NotNull] GameObject root, [CanBeNull] Motion motion,
+            [NotNull] IReadOnlyDictionary<AnimationClip, AnimationClip> mapping)
         {
             switch (motion)
             {
@@ -90,10 +90,10 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 new BlendTreeNode<Object>(nodes, _blendType, partial: nodes.Count != sourceCount);
         }
 
-        private readonly Dictionary<(GameObject, AnimationClip), ImmutableNodeContainer> _parsedAnimationCache =
+        [NotNull] private readonly Dictionary<(GameObject, AnimationClip), ImmutableNodeContainer> _parsedAnimationCache =
             new Dictionary<(GameObject, AnimationClip), ImmutableNodeContainer>();
 
-        internal ImmutableNodeContainer GetParsedAnimation(GameObject root, [CanBeNull] AnimationClip clip)
+        internal ImmutableNodeContainer GetParsedAnimation([NotNull] GameObject root, [CanBeNull] AnimationClip clip)
         {
             if (clip == null) return new ImmutableNodeContainer();
             if (!_parsedAnimationCache.TryGetValue((root, clip), out var parsed))
@@ -101,7 +101,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             return parsed;
         }
 
-        public static ImmutableNodeContainer ParseAnimation(GameObject root, [NotNull] AnimationClip clip)
+        public static ImmutableNodeContainer ParseAnimation([NotNull] GameObject root, [NotNull] AnimationClip clip)
         {
             var nodes = new ImmutableNodeContainer();
 

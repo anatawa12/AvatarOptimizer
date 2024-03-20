@@ -28,7 +28,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         IPropModNode ILayer.Node => Node;
 
         public PlayableLayerNodeInfo(AnimatorWeightState weight, AnimatorLayerBlendingMode blendingMode,
-            AnimatorControllerPropModNode<T> node, int layerIndex)
+            [NotNull] AnimatorControllerPropModNode<T> node, int layerIndex)
         {
             Weight = weight;
             BlendingMode = blendingMode;
@@ -36,7 +36,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             Node = node;
         }
         
-        public PlayableLayerNodeInfo(AnimatorControllerPropModNode<T> node, int layerIndex)
+        public PlayableLayerNodeInfo([NotNull] AnimatorControllerPropModNode<T> node, int layerIndex)
         {
             Weight = AnimatorWeightState.AlwaysOne;
             BlendingMode = AnimatorLayerBlendingMode.Override;
@@ -51,7 +51,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
         public AnimatorPropModNode(
             [NotNull] Animator component,
-            IEnumerable<PlayableLayerNodeInfo<T>> layersReversed
+            [NotNull] IEnumerable<PlayableLayerNodeInfo<T>> layersReversed
         ) : base(component)
         {
             _layersReversed = layersReversed;
@@ -86,7 +86,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         IPropModNode ILayer.Node => Node;
 
         public AnimatorLayerNodeInfo(AnimatorWeightState weight, AnimatorLayerBlendingMode blendingMode,
-            AnimatorLayerPropModNode<T> node, int layerIndex)
+            [NotNull] AnimatorLayerPropModNode<T> node, int layerIndex)
         {
             Weight = weight;
             BlendingMode = blendingMode;
@@ -100,7 +100,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         private readonly IEnumerable<AnimatorLayerNodeInfo<T>> _layersReversed;
 
         [CanBeNull]
-        public static AnimatorControllerPropModNode<T> Create(List<AnimatorLayerNodeInfo<T>> value)
+        public static AnimatorControllerPropModNode<T> Create([NotNull] List<AnimatorLayerNodeInfo<T>> value)
         {
             if (value.Count == 0) return null;
             if (value.All(x => x.BlendingMode == AnimatorLayerBlendingMode.Additive && x.Node.Value.IsConstant))
