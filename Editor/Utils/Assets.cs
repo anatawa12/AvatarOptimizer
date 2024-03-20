@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer
 {
-    public class Assets
+    internal class Assets
     {
         private static CachedGuidLoader<Shader> _toonLitShader = "affc81f3d164d734d8f13053effb1c5c";
         public static Shader ToonLitShader => _toonLitShader.Value;
