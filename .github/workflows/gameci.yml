@@ -39,7 +39,7 @@ jobs:
         with:
           path: Library
           key: Library-${{ matrix.unity }}
-          restore-keys: Library-
+          restore-keys: Library-${{ matrix.unity }}
 
       - uses: game-ci/unity-test-runner@v3
         id: gameci
