@@ -421,6 +421,9 @@ msgstr "面積がゼロのポリゴンを自動的に削除する"
 msgid "TraceAndOptimize:OptimizePhysBone:UnknownPhysBoneColliderShape"
 msgstr "未知のPhysBone Collider形状'{0}'が指定されています。"
 
+msgid "TraceAndOptimize:OptimizeAnimator:Unity2019"
+msgstr "Unity 2019では、Optimize Animatorの多くの機能がサポートされていません。Unity 2021以降に更新するのをご検討ください。"
+
 # endregion
 
 #region ApplyObjectMapping
