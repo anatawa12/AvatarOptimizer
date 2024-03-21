@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog].
 ## [Unreleased]
 ### Added
 - Animator Optimizer `#854`
+  - Most features of Animator Optimizer is not available in Unity 2019.
   - Animator Optimizer optimizes your Animator Controller without behaviour Changes
   - Current Optimizer includes the following optimization
     - Remove meaningless properties `#854`
