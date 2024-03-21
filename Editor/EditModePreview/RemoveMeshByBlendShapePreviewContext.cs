@@ -8,7 +8,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
     class RemoveMeshByBlendShapePreviewContext : IDisposable
     {
         // PerVertexBlendShapeRemoveFlags[vertexIndex / 32 + blendShapeIndex * _rowVertexCount / 32] & 1 << (vertexIndex % 32)
-        // blendshape vertex transforms. _blendShapeVertices[vertexIndex + blendShapeIndex * vertexCount]
+        // BlendShape vertex transforms. _blendShapeVertices[vertexIndex + blendShapeIndex * vertexCount]
         public NativeArray<Vector3> BlendShapeMovements => _blendShapeMovements;
 
         private NativeArray<Vector3> _blendShapeMovements;

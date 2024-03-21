@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Anatawa12.AvatarOptimizer.AnimatorParsersV2;
+using JetBrains.Annotations;
 using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEditor.Animations;
@@ -78,6 +80,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             var sourceMaterials = meshInfos.Select(x => x.SubMeshes.Select(y => (y.Topology, y.SharedMaterial)).ToArray()).ToArray();
             Profiler.EndSample();
 
+            Profiler.BeginSample("Material / Shader Parameter Animation Warnings");
+            MaterialParameterAnimationWarnings(meshInfos, context);
+            Profiler.EndSample();
+
             Profiler.BeginSample("Material Normal Configuration Check");
             // check normal information.
             int hasNormal = 0;
@@ -145,7 +151,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 }
 
 
-                // add blend shape if not defined by name
+                // add BlendShape if not defined by name
                 for (var sourceI = 0; sourceI < meshInfo.BlendShapes.Count; sourceI++)
                 {
                     var (name, weight) = meshInfo.BlendShapes[sourceI];
@@ -235,9 +241,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 if (toDestroy)
                 {
                     BuildLog.LogWarning("MergeSkinnedMesh:warning:removeZeroSizedPolygonOnSources", toDestroy);
-                    Object.DestroyImmediate(toDestroy);
+                    DestroyTracker.DestroyImmediate(toDestroy);
                 }
-                Object.DestroyImmediate(renderer);
+                DestroyTracker.DestroyImmediate(renderer);
 
                 // process removeEmptyRendererObject
                 if (!Component.removeEmptyRendererObject) continue;
@@ -248,14 +254,14 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 if (rendererGameObject.transform.childCount != 0) continue;
                 // the SkinnedMeshRenderer may also be used as bone. it's not good to remove
                 if (boneTransforms.Contains(rendererGameObject.transform)) continue;
-                Object.DestroyImmediate(rendererGameObject);
+                DestroyTracker.DestroyImmediate(rendererGameObject);
             }
 
             foreach (var renderer in staticMeshRenderers)
             {
                 ActivenessAnimationWarning(renderer, context, parents);
-                Object.DestroyImmediate(renderer.GetComponent<MeshFilter>());
-                Object.DestroyImmediate(renderer);
+                DestroyTracker.DestroyImmediate(renderer.GetComponent<MeshFilter>());
+                DestroyTracker.DestroyImmediate(renderer);
             }
             Profiler.EndSample();
 
@@ -279,6 +285,68 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 #endif
         }
 
+        private void MaterialParameterAnimationWarnings(MeshInfo2[] sourceRenderers, BuildContext context)
+        {
+            var properties = new Dictionary<string, List<(RootPropModNode<float>, MeshInfo2)>>();
+            var materialByMeshInfo2 = new List<(MeshInfo2 meshInfo2, List<Material> materials)>();
+            foreach (var meshInfo2 in sourceRenderers)
+            {
+                var component = context.GetAnimationComponent(meshInfo2.SourceRenderer);
+                foreach (var (name, property) in component.AllFloatProperties)
+                {
+                    if (!name.StartsWith("material.", StringComparison.Ordinal)) continue;
+                    var materialPropertyName = name.Substring("material.".Length);
+
+                    if (!properties.TryGetValue(materialPropertyName, out var list))
+                        properties.Add(materialPropertyName, list = new List<(RootPropModNode<float>, MeshInfo2)>());
+
+                    list.Add((property, meshInfo2));
+                }
+                var materials = new List<Material>();
+                for (var i = 0; i < meshInfo2.SubMeshes.Count; i++)
+                {
+                    if (component.TryGetObject($"m_Materials.Array.data[{i}]", out var objectNode))
+                        materials.AddRange(objectNode.Value.PossibleValues?.OfType<Material>().Where(x => x) ??
+                                           Enumerable.Empty<Material>());
+                    if (meshInfo2.SubMeshes[i].SharedMaterial)
+                        materials.Add(meshInfo2.SubMeshes[i].SharedMaterial);
+                }
+                materialByMeshInfo2.Add((meshInfo2, materials));
+            }
+
+            var animatedProperties = new List<string>();
+
+            foreach (var (propertyName, animatingProperties) in properties)
+            {
+                var rendererBySource = new Dictionary<AnimationLocation, HashSet<MeshInfo2>>();
+
+                foreach (var (property, renderer) in animatingProperties)
+                foreach (var animationLocation in AnimationLocation.CollectAnimationLocation(property))
+                {
+                    if (!rendererBySource.TryGetValue(animationLocation, out HashSet<MeshInfo2> renderers))
+                        rendererBySource.Add(animationLocation, renderers = new HashSet<MeshInfo2>());
+                    renderers.Add(renderer);
+                }
+
+                var animatedPartially = rendererBySource.Values.Any(renderers =>
+                {
+                    return materialByMeshInfo2
+                            .Where(x => !renderers.Contains(x.Item1))
+                            .SelectMany(x => x.materials.Select(material => (x.meshInfo2, material)))
+                            .Any(x => ShaderKnowledge.IsParameterAnimationAffected(x.material, x.meshInfo2,
+                                propertyName))
+                        ;
+                });
+
+                if (animatedPartially)
+                    animatedProperties.Add(propertyName);
+            }
+
+            if (animatedProperties.Count != 0)
+                BuildLog.LogWarning("MergeSkinnedMesh:warning:material-animation-differently",
+                    string.Join(",", animatedProperties), Component);
+        }
+
         private void ActivenessAnimationWarning(Renderer renderer, BuildContext context, HashSet<Transform> parents)
         {
             var sources = new List<object>();
@@ -288,7 +356,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 if (context.GetAnimationComponent(renderer).TryGetFloat("m_Enabled", out var p))
                 {
                     sources.Add(renderer);
-                    sources.Add(p.SourcesEnum);
+                    sources.Add(p.ContextReferences);
                 }
             }
             foreach (var transform in renderer.transform.ParentEnumerable(context.AvatarRootTransform, includeMe: true))
@@ -298,7 +366,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 {
                     sources.Add(renderer);
                     sources.Add(transform.gameObject);
-                    sources.Add(p.SourcesEnum);
+                    sources.Add(p.ContextReferences);
                 }
             }
 

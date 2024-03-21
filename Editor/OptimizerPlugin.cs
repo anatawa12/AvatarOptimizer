@@ -35,18 +35,22 @@ namespace Anatawa12.AvatarOptimizer.ndmf
             ;
 
             // Run everything else in the optimize phase
-            InPhase(BuildPhase.Optimizing)
+            var mainSequence = InPhase(BuildPhase.Optimizing);
+            mainSequence
                 .WithRequiredExtensions(new[]
                 {
                     typeof(Processors.MeshInfo2Context),
                     typeof(ObjectMappingContext),
+                    typeof(DestroyTracker.ExtensionContext),
                 }, seq =>
                 {
-                    seq.Run("Check if AAO is active",
+                    seq.Run("Initial Step for Avatar Optimizer",
                             ctx =>
                             {
                                 ctx.GetState<AAOEnabled>().Enabled =
                                     ctx.AvatarRootObject.GetComponentInChildren<AvatarTagComponent>();
+                                // invalidate ComponentInfoRegistry cache to support newly added assets
+                                APIInternal.ComponentInfoRegistry.InvalidateCache();
                             })
                         .Then.Run("Validation", (ctx) => ComponentValidation.ValidateAll(ctx.AvatarRootObject))
                         .Then.Run(Processors.TraceAndOptimizes.LoadTraceAndOptimizeConfiguration.Instance)
@@ -67,8 +71,18 @@ namespace Anatawa12.AvatarOptimizer.ndmf
                         .Then.Run(Processors.TraceAndOptimizes.ConfigureRemoveZeroSizedPolygon.Instance)
                         .Then.Run(Processors.MergeBoneProcessor.Instance)
                         .Then.Run(Processors.RemoveZeroSizedPolygonProcessor.Instance)
+                        .Then.Run(Processors.AnimatorOptimizer.RemoveInvalidProperties.Instance)
                         ;
                 });
+
+            mainSequence.Run(Processors.AnimatorOptimizer.InitializeAnimatorOptimizer.Instance)
+#if AAO_VRCSDK3_AVATARS
+                // EntryExit to BlendTree optimization heavily depends on VRChat's behavior
+                .Then.Run(Processors.AnimatorOptimizer.EntryExitToBlendTree.Instance)
+#endif
+                .Then.Run(Processors.AnimatorOptimizer.MergeDirectBlendTree.Instance)
+                .Then.Run(Processors.AnimatorOptimizer.RemoveMeaninglessLayer.Instance)
+                ;
         }
 
         protected override void OnUnhandledException(Exception e)

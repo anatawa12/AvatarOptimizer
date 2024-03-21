@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Anatawa12.AvatarOptimizer.AnimatorParsers;
 using nadena.dev.ndmf;
 using UnityEngine;
 using VRC.Dynamics;
@@ -121,7 +120,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                             physBone.colliders[i] = mergedTo;
 
             foreach (var colliderBase in mergedColliders.Keys.ToList())
-                Object.DestroyImmediate(colliderBase);
+                DestroyTracker.DestroyImmediate(colliderBase);
         }
         
         void MergeColliders<TKey>(IEnumerable<VRCPhysBoneColliderBase> colliders,
@@ -170,10 +169,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             foreach (var transformProperty in TransformProperties)
             {
                 if (!animation.TryGetFloat(transformProperty, out var property)) continue;
-                foreach (var modificationSource in property.Sources)
-                    if (!(modificationSource is ComponentAnimationSource componentSource) ||
-                        componentSource.Component != physBone)
-                        return true;
+                if (property.SourceComponents.Any(sourceComponent => sourceComponent != physBone)) return true;
             }
 
             return false;

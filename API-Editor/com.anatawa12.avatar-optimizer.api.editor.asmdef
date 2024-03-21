@@ -1,5 +1,6 @@
 {
     "name": "com.anatawa12.avatar-optimizer.api.editor",
+    "rootNamespace": "Anatawa12.AvatarOptimizer.API",
     "references": [],
     "includePlatforms": [
         "Editor"

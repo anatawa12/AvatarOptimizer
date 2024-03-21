@@ -113,7 +113,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
             foreach (var pair in mergeMapping.Keys)
                 if (pair)
-                    Object.DestroyImmediate(pair.gameObject);
+                    DestroyTracker.DestroyImmediate(pair.gameObject);
         }
 
 #if AAO_VRCSDK3_AVATARS

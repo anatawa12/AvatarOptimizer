@@ -334,6 +334,9 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
     {
         protected override void CollectDependency(VRCPhysBoneBase component, ComponentDependencyCollector collector)
         {
+            if (!IsOperatingPhysBone(component))
+                return;
+
             // first, Transform <=> PhysBone
             // Transform is used even if the bone is inactive so Transform => PB is always dependency
             // PhysBone works only if enabled so PB => Transform is active dependency
@@ -362,6 +365,33 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
             // https://github.com/anatawa12/AvatarOptimizer/issues/450
             if (!string.IsNullOrEmpty(component.parameter))
                 collector.MarkEntrypoint();
+        }
+
+        private bool IsOperatingPhysBone(VRCPhysBoneBase component)
+        {
+            var ignoreTransforms = new HashSet<Transform>(component.ignoreTransforms);
+            foreach (var bone in component.GetAffectedTransforms())
+            {
+                var childCount = bone.DirectChildrenEnumerable().Count(x => !ignoreTransforms.Contains(x));
+                if (childCount == 0)
+                {
+                    // it's leaf bone: if endpoint position is not zero, it's swung
+                    if (component.endpointPosition != Vector3.zero) return true;
+                } 
+                else if (childCount == 1)
+                {
+                    // single child: it's swung
+                    return true;
+                }
+                else
+                {
+                    // two or more children: it's swung if multi child type is not Ignore
+                    if (component.multiChildType != VRCPhysBoneBase.MultiChildType.Ignore)
+                        return true;
+                }
+            }
+
+            return false;
         }
 
         protected override void CollectMutations(VRCPhysBoneBase component, ComponentMutationsCollector collector)
@@ -396,7 +426,6 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
         }
     }
 
-#if AAO_VRCSDK3_AVATARS_IMPOSTER
     [ComponentInformation(typeof(VRCImpostorSettings))]
     internal class VRCImpostorSettingsInformation : ComponentInformation<VRCImpostorSettings>
     {
@@ -410,7 +439,6 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
                 collector.AddDependency(transform);
         }
     }
-#endif
     
 #if AAO_VRCSDK3_AVATARS_3_5_2
     // this component has no documentation so this implementation is based on assumption

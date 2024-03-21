@@ -130,7 +130,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     var rect = new Rect(position.x + EditorGUIUtility.labelWidth + spacing, position.y, 
                         position.width - EditorGUIUtility.labelWidth - spacing, position.height);
 
-                    EditorGUI.ObjectField(labelPosition, property.FindPropertyRelative("component"));
+                    EditorGUI.ObjectField(labelPosition, property.FindPropertyRelative("component"), GUIContent.none);
                     GUI.Label(rect, ((GCComponentInfo.DependencyType)property.FindPropertyRelative("type").intValue).ToString());
                 }
             }

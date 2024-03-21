@@ -1,7 +1,8 @@
 {
   "name": "com.anatawa12.avatar-optimizer",
-  "version": "1.6.9-beta.1",
-  "private": false,
+  "version": "1.7.0-beta.0",
+  "private": true,
+  "private-beta": true,
   "unity": "2019.4",
   "description": "Set of Anatawa12's Small Avatar Optimization Utilities",
   "displayName": "AAO: AvatarOptimizer",
@@ -15,8 +16,7 @@
   "changelogUrl": "https://vpm.anatawa12.com/avatar-optimizer/en/docs/changelog/",
   "license": "MIT",
   "vpmDependencies": {
-    "com.anatawa12.custom-localization-for-editor-extension": "^1.2.0",
     "nadena.dev.ndmf": "^1.3.0",
-    "com.vrchat.avatars": ">=3.2.0-beta.1 <3.6.0"
+    "com.vrchat.avatars": ">=3.3.0 <3.6.0"
   }
 }

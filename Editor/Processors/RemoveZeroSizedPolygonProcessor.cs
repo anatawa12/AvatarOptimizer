@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer.Processors
 {
-    public class RemoveZeroSizedPolygonProcessor : Pass<RemoveZeroSizedPolygonProcessor>
+    internal class RemoveZeroSizedPolygonProcessor : Pass<RemoveZeroSizedPolygonProcessor>
     {
         public override string DisplayName => "RemoveZeroSizedPolygonProcessor";
 
@@ -16,7 +16,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 var mesh = removeZeroSizedPolygon.GetComponent<SkinnedMeshRenderer>();
                 if (!mesh) continue;
                 Process(context.GetMeshInfoFor(mesh), removeZeroSizedPolygon);
-                Object.DestroyImmediate(removeZeroSizedPolygon);
+                DestroyTracker.DestroyImmediate(removeZeroSizedPolygon);
             }
         }
 

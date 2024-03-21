@@ -34,12 +34,12 @@ Avatar Optimizerが処理する前にコンポーネントを削除出来る場�
 
 コンポーネントを削除する方法はいくつかあります。
 
-ツールがNDMF[^NDMF]を使用した非破壊ツールの場合は、NDMFのOptimization phaseより前、
-またはOptimization phaseの中で([`BeforePlugin`][ndmf-BeforePlugin]を用いて)`com.anatawa12.avatar-optimizer` plugin
+ツールがNDMF[^NDMF]を使用した非破壊ツールの場合は、NDMFのOptimizing phaseより前、
+またはOptimizing phaseの中で([`BeforePlugin`][ndmf-BeforePlugin]を用いて)`com.anatawa12.avatar-optimizer` plugin
 より前にコンポーネントを削除することを推奨します。
 
-ツールがNDMF[^NDMF]を使用していない非破壊ツールの場合は、NDMFのOptimization phaseより前にコンポーネントを削除することを推奨します。
-この場合、現在のNDMFはVRCSDKの`RemoveAvatarEditorOnly`の直前であるorder `-1025`でOptimization phaseを実行するので、
+ツールがNDMF[^NDMF]を使用していない非破壊ツールの場合は、NDMFのOptimizing phaseより前にコンポーネントを削除することを推奨します。
+この場合、現在のNDMFはVRCSDKの`RemoveAvatarEditorOnly`の直前であるorder `-1025`でOptimizing phaseを実行するので、
 それより小さい`callbackOrder`を指定した`IVRCSDKPreprocessAvatarCallback`でコンポーネントを削除してください。
 
 ツールのコンポーネントがデータを保持する役割しかなく、ビルド時には意味を持っていない場合、

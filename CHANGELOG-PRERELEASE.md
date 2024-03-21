@@ -8,14 +8,54 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Animator Optimizer `#854`
+  - Animator Optimizer optimizes your Animator Controller without behaviour Changes
+  - Current Optimizer includes the following optimization
+    - Remove meaningless properties `#854`
+    - Converts Entry / Exit to 1D BlendTree `#854` `#867` `#927`
+    - Merges multiple Direct BlendTree to single Direct BlendTree `#870`
+    - Removes meaningless Animator Layers `#870`
+- Asset Description `#847`
+  - Asset Description is the file to provide information of your assets for Avatar Optimizer.
+  - Please see documentation for more details.
+- Warning for material animation in Merge Skinned Mesh `#769`
+  - Merge Skinned Mesh does not support animating material properties differently. (In other words, it can be broken.)
+  - Since this version, AAO will warn for such a case.
+  - If you animated all materials from same animations, your animation will not be warned.
 
 ### Changed
+- MergePhysBone now corrects curve settings `#775`
+- MergePhysBone now warns if chain length are not same `#775`
+- MergePhysBone with only one source is now error `#775`
+  - It was not working well and not a error by a bug.
+- PhysBone that swings no bones are now removed `#864`
+  - I found such a PhysBone on Lime so I added this feature.
+- Switched Localization system to NDMF from CL4EE `#873`
+  - Since this release, Avatar Optimizer is no longer depends on CL4EE.
+  - Because VCC doesn't remove unused packages, CL4EE may still be installed on your project.
+  - If you want to remove CL4EE, please remove it manually.
+- Suppressed animated BlendShape warning of FreezeBlendShape if it's animated to a few constants `#881`
+  - Modern models have tons of BlendShapes to change their face shape but emotion animation of some of them animates such a BlendShapes to constant (default value).
+  - That's unnecessary (incorrect I think) and force users to remove or change the clip when user wants to face shape.
+  - I see AAO users use `FreezeBlendShapes` for overriding such a BlendShapes on twitter.
+  - I think using this way is reasonable enough so I suppressed the warning if AAO detected such a usage.
+- Minimum VRCSDK to 3.3.0 `#882`
+  - VRCSDK 3.3.0 is required for stable NDMF-VRCSDK compatibility.
 
 ### Deprecated
 
 ### Removed
+- Compatibility with VRCQuestTools v1.x `#847`
+  - Please use VRCQuestTools v2.x, which has compatibility with AAO.
 
 ### Fixed
+- Inspector of ComponentTypePair (GCDebug) is broken `#846`
+- Bones swung by unused PhysBones (which will be removed by AAO) are not merged `#850`
+  - Note that To fix this problem, AnimatorParser is almost completely rewritten.
+  - It's not expected to have behavior change, but if you found some, please report it.
+- Re-fix Nested Constraint can be broken with Trace and Optimize `#880`
+- Fix non-VRChat project support `#884`
+- Fix VRM support `#892`
 
 ### Security
 
@@ -98,7 +138,7 @@ The format is based on [Keep a Changelog].
   - I've fixed some bugs in Unity 2022 in this release.
   - Since this version, package.json declares Avatar Optimizer is compatible with VRCSDK 3.5.x.
   - I was planned to release this changes while VRCSDK 3.5.0 is in beta.
-  - However, VRCSDK 3.5.0 beta was only 3 hours so I could not. 
+  - However, VRCSDK 3.5.0 beta was only 3 hours so I could not.
 
 ### Fixed
 - Fix NullReferenceException on Unity 2022 when extra Animator components are present [`#778`](https://github.com/anatawq12/AvatarOptimizer/pull/778)
@@ -231,7 +271,7 @@ The format is based on [Keep a Changelog].
 
 ### Removed
 - Preventing removing `IEditorOnly` in callback order -1024 [`#658`](https://github.com/anatawa12/AvatarOptimizer/pull/658)
-  - This is no longer needed sincd 1.5.0 but I forgot to remove so I removed in 1.6
+  - This is no longer needed since 1.5.0 but I forgot to remove so I removed in 1.6
 
 ### Fixed
 - Prefab blinks when we see editor of PrefabSafeSet of prefab asset [`#645`](https://github.com/anatawa12/AvatarOptimizer/pull/645) [`#664`](https://github.com/anatawa12/AvatarOptimizer/pull/664)
@@ -249,7 +289,7 @@ The format is based on [Keep a Changelog].
 ## [1.6.0-beta.1] - 2023-10-25
 ### Added
 - Public API for registering component information [`#623`](https://github.com/anatawa12/AvatarOptimizer/pull/623)
-- Documentation for developers about compatibility with Avatar Optimizer [`#623`](https://github.com/anatawa12/AvatarOptimizer/pull/623) 
+- Documentation for developers about compatibility with Avatar Optimizer [`#623`](https://github.com/anatawa12/AvatarOptimizer/pull/623)
 - Disabling PhysBone animation based on mesh renderer enabled animation [`#640`](https://github.com/anatawa12/AvatarOptimizer/pull/640)
   - If you toggles your clothes with simple toggle, PhysBones on the your avatar will also be toggled automatically!
 
@@ -560,7 +600,7 @@ The format is based on [Keep a Changelog].
 
 ## [1.4.0-rc.2] - 2023-08-29
 ### Added
-- Remove Mesh By BlendShape Editor now can set blendshape weights to 0/100 [`#389`](https://github.com/anatawa12/AvatarOptimizer/pull/389)
+- Remove Mesh By BlendShape Editor now can set BlendShape weights to 0/100 [`#389`](https://github.com/anatawa12/AvatarOptimizer/pull/389)
 
 ### Fixed
 - Clear Endpoint Position may not work well with ignore transforms [`#390`](https://github.com/anatawa12/AvatarOptimizer/pull/390)
@@ -650,7 +690,7 @@ The format is based on [Keep a Changelog].
 ## [1.3.0-rc.1] - 2023-08-10
 ### Added
 - Remove always disabled objects [`#278`](https://github.com/anatawa12/AvatarOptimizer/pull/278)
-- The new Remove Mesh By Blend Shape component removes mesh data based on blend shapes. [`#275`](https://github.com/anatawa12/AvatarOptimizer/pull/275)
+- The new Remove Mesh By BlendShape component removes mesh data based on BlendShapes. [`#275`](https://github.com/anatawa12/AvatarOptimizer/pull/275)
 - Option to process Make Children before modular avatar [`#296`](https://github.com/anatawa12/AvatarOptimizer/pull/296)
 
 ### Changed
@@ -747,7 +787,7 @@ This release is mistake.
 
 ## [0.4.11] - 2023-06-19
 ### Changed
-- Show error with user friendly message if blendshape for eyelids are removed / frozen. [`#253`](https://github.com/anatawa12/AvatarOptimizer/pull/253) 
+- Show error with user friendly message if BlendShape for eyelids are removed / frozen. [`#253`](https://github.com/anatawa12/AvatarOptimizer/pull/253)
 
 ### Fixed
 - eyelids BlendShape settings are mapped even if it's disabled [`#235`](https://github.com/anatawa12/AvatarOptimizer/pull/235)

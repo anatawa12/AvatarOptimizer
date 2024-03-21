@@ -3,16 +3,25 @@ title: Merge PhysBone
 weight: 100
 ---
 
-# Merge PhysBone
+# Merge PhysBone (MergePB) {#merge-physbone}
 
 このコンポーネントは、複数のPhysBoneコンポーネントを1つに統合します。
 MultiChildTypeはIgnoreになります。
 
 このコンポーネントは新規GameObjectに追加してください。
 
+## 備考 {#notes}
+
+統合対象は同じGameObjectの子である必要があります。
+代わりに`このGameObjectの子にする`オプションを使用することも出来ます。
+
 ## 設定 {#settings}
 
 ![component.png](component.png)
+
+### このGameObjectの子にする {#make-children-of-me}
+
+チェックされている場合、統合対象のPhysBoneが揺らすボーンがこのGameObjectの子になるようにします。
 
 ### コンポーネント {#components}
 

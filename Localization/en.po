@@ -143,6 +143,9 @@ msgstr "Parent of source PhysBone are differ. move to same parent OR use Make Ch
 msgid "MergePhysBone:error:noSources"
 msgstr "There's no source PhysBones"
 
+msgid "MergePhysBone:error:oneSource"
+msgstr "There is only one source PhysBone. You must specify two or more merge source PhysBones."
+
 msgid "MergePhysBone:error:multiChildType"
 msgstr "Some PysBone has multi child type != Ignore"
 
@@ -155,6 +158,9 @@ msgstr "The values is differ between two or more sources. You have to set same v
 
 msgid "MergePhysBone:error:differValueSingle"
 msgstr "The value is differ between two or more sources. You have to set same value OR override this property"
+
+msgid "MergePhysBone:warning:differChainLength"
+msgstr "The chain length is differ between two or more sources. Shorter chain will be thicker than original."
 
 msgid "MergePhysBone:dialog:versionInfo:title"
 msgstr "Version Info" 
@@ -302,6 +308,28 @@ msgstr ""
 "You're merging meshes that visibility animated differently than the merged mesh."
 "The animation will not work. This might not be intended, but if it's intended, ignore this warning."
 
+msgid "MergeSkinnedMesh:warning:material-animation-differently"
+msgstr "Differently animated material property is detected: {0}"
+
+msgid "MergeSkinnedMesh:warning:material-animation-differently:description"
+msgstr ""
+"You're merging meshes that material properties are animated differently between meshes.\n"
+"Since material property animation affects whole mesh, the animation will affects unintended area.\n"
+
+msgid "MergeSkinnedMesh:warning:material-animation-differently:hint"
+msgstr ""
+"If the animation is intended to apply to whole merged mesh, \n"
+"- Animate each source meshes with same curve and animation clip,\n"
+"- Animate the merged mesh, or\n"
+"- Just ignore this warning\n"
+"\n"
+"If you think you're animating all renderers with same curve, the way animating multiple renderers might not be good.\n"
+"Avatar Optimizer assumes it's animated similarly if property is animated with same shaped curve and same animation clip on the exactly same state.\n"
+"This means if you animated similarly with different layer or clip, your animation will be recognized as animated differently.\n"
+"\n"
+"If the animation will not affects to other meshes, (for example, it affects only to the disabled shader features of meshes) please report this issue to Avatar Optimizer.\n"
+"If the shader is well-known, I'll add logic to check if the feature is enabled for renderers other than animated.\n"
+
 # endregion
 
 # region MergeToonLitMaterial
@@ -347,7 +375,7 @@ msgid "RemoveMeshByBlendShape:editor:automaticallySetWeightWhenToggle"
 msgstr "Automatically set BlendShape weight for preview when toggled"
 
 msgid "RemoveMeshByBlendShape:tooltip:automaticallySetWeightWhenToggle"
-msgstr "Automatically set weight to 100 or 0 for blendshapes which are toggled while this option is enabled."
+msgstr "Automatically set weight to 100 or 0 for BlendShapes which are toggled while this option is enabled."
 
 msgid "RemoveMeshByBlendShape:tooltip:automaticallySetWeightWhenToggle:noRenderer"
 msgstr "This option cannot be used because SkinnedMeshRenderer is not found"
@@ -360,7 +388,7 @@ msgstr "Tolerance"
 
 msgid "RemoveMeshByBlendShape:tooltip:Tolerance"
 msgstr ""
-"If a vertex is transformed by more than this amount by any of the selected blendshapes, it will be deleted.\n"
+"If a vertex is transformed by more than this amount by any of the selected BlendShapes, it will be deleted.\n"
 "Try increasing this value if vertices are unexpectedly deleted or decreasing it if vertices are unexpectedly not deleted.\n"
 "This is typically a small value."
 
@@ -381,11 +409,8 @@ msgstr "Removes polygons whose area are zero"
 
 # region AvatarGlobalComponent
 
-msgid "AvatarGlobalComponent:NotOnAvatarDescriptor"
-msgstr "This component must be set on root of Avatar (GameObject with AvatarDescriptor)"
-
 msgid "AvatarGlobalComponent:NotOnAvatarRoot"
-msgstr "This component must be set on root of Avatar (For VRChat avatars, GameObject with AvatarDescriptor)"
+msgstr "This component must be set on root of Avatar"
 
 # endregion
 
@@ -434,13 +459,16 @@ msgid "TraceAndOptimize:description"
 msgstr "When you added this component to your avatar, AvatarOptimizer will trace your avatar and optimize automatically."
 
 msgid "TraceAndOptimize:prop:freezeBlendShape"
-msgstr "Automatically Freeze Blend Shape"
+msgstr "Automatically Freeze BlendShape"
 
 msgid "TraceAndOptimize:prop:removeUnusedObjects"
 msgstr "Remove unused Objects Automatically"
 
 msgid "TraceAndOptimize:prop:optimizePhysBone"
 msgstr "Optimize PhysBone Settings"
+
+msgid "TraceAndOptimize:prop:optimizeAnimator"
+msgstr "Optimize Animator"
 
 msgid "TraceAndOptimize:prop:mmdWorldCompatibility"
 msgstr "MMD World Compatibility"
@@ -526,6 +554,9 @@ msgstr "Unknown Playable Layer '{0}' is specified for Playable Layer Control."
 msgid "AnimatorParser:AnimatorLayerControl:UnknownBlendablePlayableLayer"
 msgstr "Unknown Playable Layer '{0}' is specified for Animator Layer Control."
 
+msgid "AnimatorParser:AnimatorNotFoundOnAvatarRoot"
+msgstr "Animator component not found on Avatar Root"
+
 #endregion
 
 #region MeshInfo2
@@ -545,5 +576,17 @@ msgstr "{0} Component does not process SubMeshes with LineStrip."
 
 msgid "ErrorReporter:error.internal_error"
 msgstr "An internal error has occurred: {0} when processing:"
+
+# endregion
+
+# region AssetDescription
+
+msgid "AssetDescription:Description"
+msgstr ""
+"Avatar Optimizer Asset Description is an asset that describe your assets to Avatar Optimizer.\n"
+"For more details, please visit our documentation."
+
+msgid "AssetDescription:OpenDocs"
+msgstr "Open Documentation"
 
 # endregion

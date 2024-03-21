@@ -1,5 +1,4 @@
 using System;
-using CustomLocalization4EditorExtension;
 using UnityEngine;
 using UnityEngine.Animations;
 
@@ -12,13 +11,13 @@ namespace Anatawa12.AvatarOptimizer
     internal class UnusedBonesByReferencesTool : AvatarGlobalComponent
     {
         [NotKeyable]
-        [CL4EELocalized("UnusedBonesByReferencesTool:prop:preserveEndBone", 
+        [AAOLocalized("UnusedBonesByReferencesTool:prop:preserveEndBone", 
         "UnusedBonesByReferencesTool:tooltip:preserveEndBone")]
         [ToggleLeft]
         public bool preserveEndBone = true;
 
         [NotKeyable]
-        [CL4EELocalized("UnusedBonesByReferencesTool:prop:detectExtraChild", 
+        [AAOLocalized("UnusedBonesByReferencesTool:prop:detectExtraChild", 
         "UnusedBonesByReferencesTool:tooltip:detectExtraChild")]
         [ToggleLeft]
         public bool detectExtraChild;

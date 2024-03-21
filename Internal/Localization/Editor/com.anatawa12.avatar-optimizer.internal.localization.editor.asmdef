@@ -1,0 +1,19 @@
+{
+    "name": "com.anatawa12.avatar-optimizer.internal.localization.editor",
+    "rootNamespace": "Anatawa12.AvatarOptimizer",
+    "references": [
+        "nadena.dev.ndmf",
+        "com.anatawa12.avatar-optimizer.internal.localization.runtime"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

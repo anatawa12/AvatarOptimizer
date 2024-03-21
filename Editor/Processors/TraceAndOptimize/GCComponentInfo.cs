@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using Anatawa12.AvatarOptimizer.AnimatorParsers;
+using System.Linq;
 using JetBrains.Annotations;
 using nadena.dev.ndmf;
 using UnityEngine;
@@ -64,6 +64,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         public bool HeavyBehaviourComponent = false;
 
         /// <summary>
+        /// True if activeness of this component has meaning
+        /// </summary>
+        public bool BehaviourComponent => _behaviourComponent || HeavyBehaviourComponent;
+
+        /// <summary>
         /// Dependencies of this component
         /// </summary>
         [NotNull] internal readonly Dictionary<Component, DependencyType> Dependencies =
@@ -75,9 +80,18 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         [NotNull] internal readonly Dictionary<Component, DependencyType> DependantEntrypoint =
             new Dictionary<Component, DependencyType>();
 
+        /// <summary>
+        /// Dependants entrypoint components 
+        /// </summary>
+        [NotNull] internal readonly Dictionary<Component, DependencyType> DependantBehaviours =
+            new Dictionary<Component, DependencyType>();
+
+        internal IEnumerable<Component> DependantComponents =>
+            DependantEntrypoint.Keys.Concat(DependantBehaviours.Keys);
+
         internal readonly Component Component;
 
-        public DependencyType AllUsages
+        public DependencyType AllEntrypointUsages
         {
             get
             {
@@ -91,6 +105,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         public bool IsEntrypoint => EntrypointComponent && Activeness != false;
 
         public readonly bool? Activeness;
+        private bool _behaviourComponent = false;
 
         public GCComponentInfo(Component component, bool? activeness)
         {
@@ -98,6 +113,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             Dependencies[component.gameObject.transform] = DependencyType.ComponentToTransform;
             Activeness = activeness;
         }
+
+
+        public void MarkEntrypoint() => EntrypointComponent = true;
+        public void MarkHeavyBehaviour() => HeavyBehaviourComponent = true;
+        public void MarkBehaviour() => _behaviourComponent = true;
 
         [Flags]
         public enum DependencyType : byte
