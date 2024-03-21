@@ -36,7 +36,9 @@
         "System.Memory.dll"
     ],
     "autoReferenced": false,
-    "defineConstraints": [],
+    "defineConstraints": [
+        "UNITY_2021_3_OR_NEWER"
+    ],
     "versionDefines": [
         {
             "name": "com.vrchat.avatars",
