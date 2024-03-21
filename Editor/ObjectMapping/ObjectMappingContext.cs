@@ -391,6 +391,8 @@ namespace Anatawa12.AvatarOptimizer
                 case AnimatorTransitionBase _:
                 case StateMachineBehaviour _:
 
+                case AudioClip _: // Used in VRC Animator Play Audio State Behavior
+
                 // also handle VRM objects here
 #if AAO_VRM0
                 case VRM.BlendShapeAvatar _:

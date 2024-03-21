@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Support for VRCSDK 3.5.2-beta.1 `#926`
 - Animator Optimizer `#854`
   - Animator Optimizer optimizes your Animator Controller without behaviour Changes
   - Current Optimizer includes the following optimization
@@ -58,6 +59,19 @@ The format is based on [Keep a Changelog].
 - Fix VRM support `#892`
 
 ### Security
+
+## [1.6.8] - 2024-03-12
+### Fixed
+- If some component refers external component, internal error [`#921`](https://github.com/anatawa12/AvatarOptimizer/pull/921)
+
+## [1.6.7] - 2024-02-28
+### Fixed
+- Compilation Error due to VRCImposterSettings with VRCSDK 3.2.x [`#905`](https://github.com/anatawa12/AvatarOptimizer/pull/905)
+- Skinned Mesh Renderers with None mesh will become Mesh with no polygons [`#906`](https://github.com/anatawa12/AvatarOptimizer/pull/906)
+  - This may affects bounds of Performance Rank in VRChat
+- Exclusions not working with Automatically Remove Zero Sized Polygons [`#907`](https://github.com/anatawa12/AvatarOptimizer/pull/907)
+- Fix non-VRChat project support [`#884`](https://github.com/anatawa12/AvatarOptimizer/pull/884) (backport in `#909`)
+- Merge Toonlit with uv tiling is broken [`#911`](https://github.com/anatawa12/AvatarOptimizer/pull/911)
 
 ## [1.6.6] - 2024-01-31
 ### Fixed
@@ -777,7 +791,9 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.6...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.8...HEAD
+[1.6.8]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.7...v1.6.8
+[1.6.7]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.6...v1.6.7
 [1.6.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.5...v1.6.6
 [1.6.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.4...v1.6.5
 [1.6.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.3...v1.6.4

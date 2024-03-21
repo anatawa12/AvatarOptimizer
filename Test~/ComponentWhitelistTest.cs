@@ -20,7 +20,7 @@ namespace Anatawa12.AvatarOptimizer.Test
         [Test]
         public void TestNameList()
         {
-            Assert.That(WhitelistedTypes, Is.EquivalentTo(KnownWhitelist));
+            Assert.That(WhitelistedTypes, Has.All.Matches<string>(KnownWhitelist.Contains));
         }
 
         [TestCaseSource(nameof(KnownTypes))]
@@ -104,6 +104,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             "VRC.SDK3.Avatars.Components.VRCStation",
             "VRC.SDK3.Avatars.Components.VRCImpostorSettings",
             "VRC.SDK3.Avatars.Components.VRCImpostorEnvironment",
+            "VRC.SDK3.Avatars.Components.VRCHeadChop",
             "VRC.SDK3.Dynamics.PhysBone.Components.VRCPhysBone",
             "VRC.SDK3.Dynamics.PhysBone.Components.VRCPhysBoneCollider",
             "VRC.SDK3.Dynamics.Contact.Components.VRCContactSender",
