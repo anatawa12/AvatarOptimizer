@@ -35,10 +35,10 @@ jobs:
           repos: |
             https://vpm.anatawa12.com/vpm.json
 
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           path: Library
-          key: Library-${{ matrix.projectPath }}
+          key: Library-${{ matrix.unity }}
           restore-keys: Library-
 
       - uses: game-ci/unity-test-runner@v3
@@ -50,16 +50,17 @@ jobs:
           githubToken: ${{ github.token }}
           coverageOptions: generateAdditionalMetrics;generateHtmlReport;generateBadgeReport;assemblyFilters:+com.anatawa12.avatar-optimizer.*
           customParameters: -nographics -assemblyNames com.anatawa12.avatar-optimizer.test
+          checkName: Test results ${{ matrix.unity }}
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: Test results
+          name: Test results ${{ matrix.unity }}
           path: ${{ steps.gameci.outputs.artifactsPath }}
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: Coverage results
+          name: Coverage results ${{ matrix.unity }}
           path: ${{ steps.gameci.outputs.coveragePath }}
 
   conclude-gameci:
