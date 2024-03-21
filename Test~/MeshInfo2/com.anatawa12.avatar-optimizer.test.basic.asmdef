@@ -1,10 +1,11 @@
 {
-    "name": "com.anatawa12.avatar-optimizer.test",
+    "name": "com.anatawa12.avatar-optimizer.test.meshinfo2",
     "rootNamespace": "",
     "references": [
         "VRC.SDK3A",
         "VRC.SDKBase",
         "com.anatawa12.avatar-optimizer.test.runtime",
+        "com.anatawa12.avatar-optimizer.test.utils",
         "com.anatawa12.avatar-optimizer.editor",
         "com.anatawa12.avatar-optimizer.runtime",
         "com.anatawa12.avatar-optimizer.internal.prefab-safe-set",

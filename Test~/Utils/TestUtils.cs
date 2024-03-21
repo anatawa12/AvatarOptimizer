@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer.Test
 {
-    internal static class TestUtils
+    public static class TestUtils
     {
         public static GameObject NewAvatar(string name = null)
         {
@@ -20,7 +20,7 @@ namespace Anatawa12.AvatarOptimizer.Test
 
         public static string GetAssetPath(string testRelativePath)
         {
-            var path = AssetDatabase.GUIDToAssetPath("fc50cab76afb46348d98df4ce8d84e8b");
+            var path = AssetDatabase.GUIDToAssetPath("801b64144a3842adb8909fd2d209241a");
             var baseDir = path.Substring(0, path.LastIndexOf('/'));
             return $"{baseDir}/{testRelativePath}";
         }

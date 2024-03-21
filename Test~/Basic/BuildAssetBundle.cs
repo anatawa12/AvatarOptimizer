@@ -17,7 +17,7 @@ namespace Anatawa12.AvatarOptimizer.Test
                 {
                     new AssetBundleBuild
                     {
-                        assetNames = new[] { TestUtils.GetAssetPath("Empty.prefab") },
+                        assetNames = new[] { TestUtils.GetAssetPath("Basic/Empty.prefab") },
                         assetBundleName = "asset.unity3d"
                     }
                 },
