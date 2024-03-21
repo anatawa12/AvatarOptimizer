@@ -18,6 +18,8 @@ If you have problems or questions about this tool, please feel free to contact m
 
 For more information, check out the [documentation].
 
+dummy edit
+
 ---
 
 anatawa12によるアバター軽量化用のちょっとした非破壊ユーティリティ群です。
