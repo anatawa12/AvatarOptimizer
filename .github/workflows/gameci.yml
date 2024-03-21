@@ -9,12 +9,23 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - unity: 2019
+            projectRef: b552a002fa121b0d7c233b49241f5f6279d0fa90 # project-for-test-2019
+          - unity: 2022
+            projectRef: de0b2dde7824e33986730c40866d74cfe526942b # project-for-test-2022
+        unity:
+          - 2019
+          - 2022
     permissions:
       checks: write
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: project-for-test
+          ref: ${{ matrix.projectRef }}
       - uses: actions/checkout@v4
         with:
           path: Packages/com.anatawa12.avatar-optimizer
@@ -24,11 +35,11 @@ jobs:
           repos: |
             https://vpm.anatawa12.com/vpm.json
 
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           path: Library
-          key: Library-${{ matrix.projectPath }}
-          restore-keys: Library-
+          key: Library-${{ matrix.unity }}
+          restore-keys: Library-${{ matrix.unity }}
 
       - uses: game-ci/unity-test-runner@v3
         id: gameci
@@ -39,14 +50,26 @@ jobs:
           githubToken: ${{ github.token }}
           coverageOptions: generateAdditionalMetrics;generateHtmlReport;generateBadgeReport;assemblyFilters:+com.anatawa12.avatar-optimizer.*
           customParameters: -nographics -assemblyNames com.anatawa12.avatar-optimizer.test
+          checkName: Test results ${{ matrix.unity }}
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: Test results
+          name: Test results ${{ matrix.unity }}
           path: ${{ steps.gameci.outputs.artifactsPath }}
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: Coverage results
+          name: Coverage results ${{ matrix.unity }}
           path: ${{ steps.gameci.outputs.coveragePath }}
+
+  conclude-gameci:
+    runs-on: ubuntu-latest
+    if: ${{ always() }}
+    needs: [build-and-test]
+    steps:
+      - name: Conclude Tests
+        env: { NEEDS: "${{ toJSON(needs) }}" }
+        run: |
+          echo "$NEEDS" | jq -c '. | to_entries[] | [.key, .value.result]'
+          echo "$NEEDS" | jq -e '. | all(.result == "success")' > /dev/null
