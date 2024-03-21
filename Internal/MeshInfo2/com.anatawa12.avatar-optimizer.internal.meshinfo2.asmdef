@@ -7,10 +7,7 @@
         "nadena.dev.ndmf",
         "com.anatawa12.avatar-optimizer.internal.utils",
         "com.anatawa12.avatar-optimizer.internal.localization.editor",
-        "VRC.SDKBase",
-        "UniHumanoid",
-        "VRM",
-        "VRM10"
+        "com.anatawa12.avatar-optimizer.internal.unsafe"
     ],
     "includePlatforms": [
         "Editor"
@@ -19,44 +16,10 @@
     "allowUnsafeCode": false,
     "overrideReferences": true,
     "precompiledReferences": [
-        "VRC.Dynamics.dll",
-        "VRC.SDK3.Dynamics.PhysBone.dll",
-        "VRC.SDK3.Dynamics.Contact.dll",
-        "VRCCore-Editor.dll",
-        "VRCSDK3A-Editor.dll",
-        "VRCSDK3A.dll",
-        "VRCSDKBase-Editor.dll",
-        "VRCSDKBase.dll",
         "System.Memory.dll"
     ],
     "autoReferenced": false,
     "defineConstraints": [],
-    "versionDefines": [
-        {
-            "name": "com.vrchat.avatars",
-            "expression": "",
-            "define": "AAO_VRCSDK3_AVATARS"
-        },
-        {
-            "name": "com.vrchat.avatars",
-            "expression": "3.5.1",
-            "define": "AAO_VRCSDK3_AVATARS_IMPOSTER_SETTINGS"
-        },
-        {
-            "name": "com.vrchat.avatars",
-            "expression": "3.5.2-beta.1",
-            "define": "AAO_VRCSDK3_AVATARS_3_5_2"
-        },
-        {
-            "name": "com.vrmc.univrm",
-            "expression": "",
-            "define": "AAO_VRM0"
-        },
-        {
-            "name": "com.vrmc.vrm",
-            "expression": "",
-            "define": "AAO_VRM1"
-        }
-    ],
+    "versionDefines": [],
     "noEngineReferences": false
 }
