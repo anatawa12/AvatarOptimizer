@@ -5,7 +5,7 @@ using Unity.Collections;
 namespace Anatawa12.AvatarOptimizer
 {
     [BurstCompile]
-    struct NativeArray2<T> : IDisposable where T : unmanaged
+    public struct NativeArray2<T> : IDisposable where T : unmanaged
     {
         private NativeArray<T> _array;
         private readonly int _firstDimension;
@@ -28,7 +28,7 @@ namespace Anatawa12.AvatarOptimizer
     }
     
     [BurstCompile]
-    struct NativeArray3<T> : IDisposable where T : unmanaged
+    public struct NativeArray3<T> : IDisposable where T : unmanaged
     {
         private NativeArray<T> _array;
         private readonly int _firstDimension;

@@ -2,7 +2,7 @@ using nadena.dev.ndmf;
 
 namespace Anatawa12.AvatarOptimizer
 {
-    internal static class BuildLog
+    public static class BuildLog
     {
         public static void LogInfo(string code, params object[] args) =>
             ErrorReport.ReportError(AAOL10N.Localizer, ErrorSeverity.Information, code, args);

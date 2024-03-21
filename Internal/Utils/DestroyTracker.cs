@@ -9,7 +9,7 @@ namespace Anatawa12.AvatarOptimizer
     /// <summary>
     /// This class allows users to track destroyed objects
     /// </summary>
-    internal class DestroyTracker
+    public class DestroyTracker
     {
         [CanBeNull] private static DestroyTracker _tracker;
 
@@ -53,7 +53,7 @@ namespace Anatawa12.AvatarOptimizer
             }
         }
 
-        internal class ExtensionContext : IExtensionContext
+        public class ExtensionContext : IExtensionContext
         {
             public void OnActivate(BuildContext context) => _tracker = new DestroyTracker();
 

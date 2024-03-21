@@ -2,7 +2,7 @@ using System;
 
 namespace Anatawa12.AvatarOptimizer
 {
-    static class AnimatorWeightChanges
+    public static class AnimatorWeightChanges
     {
         public static AnimatorWeightChange ForDurationAndWeight(float duration, float weight) =>
             duration != 0 ? AnimatorWeightChange.Variable : ForWeight(weight);
@@ -50,7 +50,7 @@ namespace Anatawa12.AvatarOptimizer
         }
     }
 
-    class AnimatorWeightChangesList
+    public class AnimatorWeightChangesList
     {
         private readonly AnimatorWeightChange[] _changes;
 
@@ -72,7 +72,7 @@ namespace Anatawa12.AvatarOptimizer
         public AnimatorWeightChange Get(int i) => this[i];
     }
 
-    internal enum AnimatorWeightChange
+    public enum AnimatorWeightChange
     {
         NotChanged,
         AlwaysZero,

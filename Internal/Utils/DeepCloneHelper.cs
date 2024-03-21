@@ -7,7 +7,7 @@ using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer
 {
-    abstract class DeepCloneHelper
+    public abstract class DeepCloneHelper
     {
         private readonly Dictionary<Object, Object> _cache = new Dictionary<Object, Object>();
         private bool _mapped = false;

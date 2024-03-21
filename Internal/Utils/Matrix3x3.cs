@@ -7,7 +7,7 @@ namespace Anatawa12.AvatarOptimizer
     /// AAO internal replacement for UnityEngine.Matrix3x3 for more math operations
     /// </summary>
     // ReSharper disable once InconsistentNaming
-    struct Matrix3x3 : IEquatable<Matrix3x3>
+    public struct Matrix3x3 : IEquatable<Matrix3x3>
     {
         // ReSharper disable InconsistentNaming
         public static Matrix3x3 zero = new Matrix3x3(0, 0, 0, 0, 0, 0, 0, 0, 0);

@@ -1,21 +1,12 @@
 {
-    "name": "com.anatawa12.avatar-optimizer.editor",
-    "rootNamespace": "Anatawa12.AvatarOptimizer",
+    "name": "com.anatawa12.avatar-optimizer.internal.meshinfo2",
+    "rootNamespace": "Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes",
     "references": [
-        "com.anatawa12.avatar-optimizer.internal.localization.editor",
-        "com.anatawa12.avatar-optimizer.internal.localization.runtime",
         "com.anatawa12.avatar-optimizer.runtime",
-        "com.anatawa12.avatar-optimizer.internal.unsafe",
-        "com.anatawa12.avatar-optimizer.internal.prefab-safe-set.editor",
-        "com.anatawa12.avatar-optimizer.internal.prefab-safe-set",
-        "com.anatawa12.avatar-optimizer.internal.trace-and-optimize-base",
-        "com.anatawa12.avatar-optimizer.internal.animator-optimizer",
-        "com.anatawa12.avatar-optimizer.internal.meshinfo2",
-        "com.anatawa12.avatar-optimizer.internal.utils",
         "Unity.Burst",
         "nadena.dev.ndmf",
-        "nadena.dev.ndmf.runtime",
-        "com.anatawa12.avatar-optimizer.api.editor",
+        "com.anatawa12.avatar-optimizer.internal.utils",
+        "com.anatawa12.avatar-optimizer.internal.localization.editor",
         "VRC.SDKBase",
         "UniHumanoid",
         "VRM",
@@ -41,11 +32,6 @@
     "autoReferenced": false,
     "defineConstraints": [],
     "versionDefines": [
-        {
-            "name": "nadena.dev.modular-avatar",
-            "expression": "(,1.8-a)",
-            "define": "LEGACY_MODULAR_AVATAR"
-        },
         {
             "name": "com.vrchat.avatars",
             "expression": "",

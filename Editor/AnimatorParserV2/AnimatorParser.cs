@@ -224,7 +224,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                     new AnimatorWeightChangesList(controllers[layer]?.ComputeLayerCount() ?? 0);
             var playableWeightChanged = new AnimatorLayerMap<AnimatorWeightChange>();
             foreach (var layer in descriptor.baseAnimationLayers)
-                ACUtils.CollectWeightChangesInController(controllers[layer.type],
+                VRCSDKUtils.CollectWeightChangesInController(controllers[layer.type],
                     playableWeightChanged, animatorLayerWeightChanged);
 
             if (_mmdWorldCompatibility)

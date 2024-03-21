@@ -8,7 +8,7 @@ namespace Anatawa12.AvatarOptimizer
     /// AAO internal replacement for UnityEngine.Matrix4x4 for more math operations
     /// </summary>
     // ReSharper disable once InconsistentNaming
-    struct Matrix4x4 : IEquatable<Matrix4x4>
+    public struct Matrix4x4 : IEquatable<Matrix4x4>
     {
         // ReSharper disable InconsistentNaming
         public static readonly Matrix4x4 zero = new Matrix4x4(UnityMatrix4x4.zero);

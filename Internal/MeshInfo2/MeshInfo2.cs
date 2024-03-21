@@ -16,7 +16,7 @@ using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 {
-    internal class MeshInfo2
+    public class MeshInfo2
     {
         [NotNull] public readonly Renderer SourceRenderer;
         [NotNull] public Transform RootBone;
@@ -690,7 +690,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         }
     }
 
-    internal class SubMesh
+    public class SubMesh
     {
         public readonly MeshTopology Topology = MeshTopology.Triangles;
 
@@ -788,7 +788,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         }
     }
 
-    internal class Vertex
+    public class Vertex
     {
         public Vector3 Position { get; set; }
         public Vector3 Normal { get; set; }
@@ -988,7 +988,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         public Vertex Clone() => new Vertex(this);
 
-        public Vector3 ComputeActualPosition(MeshInfo2 meshInfo2, OriginalState originalState, Matrix4x4 rendererWorldToLocalMatrix)
+        public Vector3 ComputeActualPosition(MeshInfo2 meshInfo2, Func<Transform, Matrix4x4> getLocalToWorld, Matrix4x4 rendererWorldToLocalMatrix)
         {
             var position = Position;
 
@@ -1002,7 +1002,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             foreach (var (bone, weight) in BoneWeights)
             {
                 var transformMat = bone.Transform
-                    ? originalState.GetOriginalLocalToWorld(bone.Transform)
+                    ? getLocalToWorld(bone.Transform)
                     : Matrix4x4.identity;
                 var boneMat = transformMat * bone.Bindpose;
                 matrix += boneMat * weight;
@@ -1013,7 +1013,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         }
     }
 
-    internal class Bone
+    public class Bone
     {
         public Matrix4x4 Bindpose;
         public Transform Transform;
@@ -1022,7 +1022,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         public Bone(Matrix4x4 bindPose, Transform transform) => (Bindpose, Transform) = (bindPose, transform);
     }
 
-    internal enum TexCoordStatus
+    public enum TexCoordStatus
     {
         NotDefined = 0,
         Vector2 = 1,

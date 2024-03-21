@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer
 {
-    static partial class ACUtils
+    public static partial class ACUtils
     {
         [ItemNotNull]
         [NotNull]

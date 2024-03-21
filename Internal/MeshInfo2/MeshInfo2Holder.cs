@@ -10,9 +10,9 @@ using Debug = System.Diagnostics.Debug;
 
 namespace Anatawa12.AvatarOptimizer.Processors
 {
-    internal class MeshInfo2Context : IExtensionContext
+    public class MeshInfo2Context : IExtensionContext
     {
-        [CanBeNull] public MeshInfo2Holder Holder { get; private set; }
+        internal MeshInfo2Holder Holder { get; private set; }
         public void OnActivate(BuildContext context)
         {
             Holder = new MeshInfo2Holder(context.AvatarRootObject);
@@ -39,7 +39,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
         public EvacuateAnimatorController(BuildContext context)
         {
-            _controllers = context.GetComponents<Animator>()
+            _controllers = context.AvatarRootObject.GetComponentsInChildren<Animator>()
                 .ToDictionary(a => a, a => a.runtimeAnimatorController);
 
             foreach (var animator in _controllers.Keys)

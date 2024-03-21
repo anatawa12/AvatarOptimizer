@@ -16,15 +16,6 @@ namespace Anatawa12.AvatarOptimizer
             return context.AvatarRootObject.GetComponentsInChildren<T>(true);
         }
 
-        private static MeshInfo2Holder GetHolder([NotNull] this BuildContext context)
-        {
-            if (context == null) throw new ArgumentNullException(nameof(context));
-            return context.Extension<MeshInfo2Context>().Holder;
-        }
-
-        public static MeshInfo2 GetMeshInfoFor([NotNull] this BuildContext context, SkinnedMeshRenderer renderer) =>
-            context.GetHolder().GetMeshInfoFor(renderer);
-
         public static ObjectMappingBuilder GetMappingBuilder([NotNull] this BuildContext context)
         {
             if (context == null) throw new ArgumentNullException(nameof(context));

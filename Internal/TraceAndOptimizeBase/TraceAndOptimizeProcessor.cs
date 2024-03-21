@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 {
-    class TraceAndOptimizeState
+    public class TraceAndOptimizeState
     {
         public bool Enabled;
         public bool FreezeBlendShape;
@@ -31,7 +31,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         public Dictionary<SkinnedMeshRenderer, HashSet<string>> PreserveBlendShapes =
             new Dictionary<SkinnedMeshRenderer, HashSet<string>>();
 
-        public void Initialize(TraceAndOptimize config)
+        internal void Initialize(TraceAndOptimize config)
         {
             FreezeBlendShape = config.freezeBlendShape;
             RemoveUnusedObjects = config.removeUnusedObjects;
@@ -59,7 +59,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         }
     }
 
-    internal class LoadTraceAndOptimizeConfiguration : Pass<LoadTraceAndOptimizeConfiguration>
+    public class LoadTraceAndOptimizeConfiguration : Pass<LoadTraceAndOptimizeConfiguration>
     {
         public override string DisplayName => "T&O: Load Configuration";
 
@@ -72,7 +72,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         }
     }
 
-    internal abstract class TraceAndOptimizePass<T> : Pass<T> where T : TraceAndOptimizePass<T>, new()
+    public abstract class TraceAndOptimizePass<T> : Pass<T> where T : TraceAndOptimizePass<T>, new()
     {
         protected sealed override void Execute(BuildContext context)
         {

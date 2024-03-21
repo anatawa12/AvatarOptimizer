@@ -8,7 +8,7 @@ using VRC.SDKBase;
 
 namespace Anatawa12.AvatarOptimizer
 {
-    static partial class ACUtils
+    partial class VRCSDKUtils
     {
         public static void CollectWeightChangesInController([CanBeNull] RuntimeAnimatorController runtimeController,
             [NotNull] AnimatorLayerMap<AnimatorWeightChange> playableWeightChanged,
@@ -17,7 +17,7 @@ namespace Anatawa12.AvatarOptimizer
             if (runtimeController == null) return;
             using (ErrorReport.WithContextObject(runtimeController))
             {
-                foreach (var behaviour in StateMachineBehaviours(runtimeController))
+                foreach (var behaviour in ACUtils.StateMachineBehaviours(runtimeController))
                 {
                     switch (behaviour)
                     {

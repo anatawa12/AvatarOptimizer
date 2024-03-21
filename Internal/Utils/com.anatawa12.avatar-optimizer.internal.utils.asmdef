@@ -1,7 +1,10 @@
 {
     "name": "com.anatawa12.avatar-optimizer.internal.utils",
     "rootNamespace": "Anatawa12.AvatarOptimizer",
-    "references": [],
+    "references": [
+        "Unity.Burst",
+        "nadena.dev.ndmf"
+    ],
     "includePlatforms": [
         "Editor"
     ],
