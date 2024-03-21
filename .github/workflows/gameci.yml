@@ -16,7 +16,6 @@ jobs:
             projectRef: b552a002fa121b0d7c233b49241f5f6279d0fa90 # project-for-test-2019
         unity:
           - 2019
-          - 2022
     permissions:
       checks: write
     steps:
@@ -58,3 +57,14 @@ jobs:
         with:
           name: Coverage results
           path: ${{ steps.gameci.outputs.coveragePath }}
+
+  conclude-gameci:
+    runs-on: ubuntu-latest
+    if: ${{ always() }}
+    needs: [build-and-test]
+    steps:
+      - name: Conclude Tests
+        env: { NEEDS: "${{ toJSON(needs) }}" }
+        run: |
+          echo "$NEEDS" | jq -c '. | to_entries[] | [.key, .value.result]'
+          echo "$NEEDS" | jq -e '. | all(.result == "success")' > /dev/null
