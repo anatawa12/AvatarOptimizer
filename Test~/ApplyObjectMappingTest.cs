@@ -13,7 +13,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             var root = new GameObject();
             var child1 = Utils.NewGameObject("child1", root.transform);
             var child11 = Utils.NewGameObject("child11", child1.transform);
-            var builder = new ObjectMappingBuilder(root);
+            var builder = new ObjectMappingBuilder<DummyPropInfo>(root);
 
             child11.name = "child12";
 
@@ -49,7 +49,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             var root = new GameObject();
             var child1 = Utils.NewGameObject("child1", root.transform);
             var child11 = Utils.NewGameObject("child11", child1.transform);
-            var builder = new ObjectMappingBuilder(root);
+            var builder = new ObjectMappingBuilder<DummyPropInfo>(root);
 
             Object.DestroyImmediate(child11);
 
@@ -85,7 +85,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             var root = new GameObject();
             var child1 = Utils.NewGameObject("child1", root.transform);
             var child11 = Utils.NewGameObject("child11", child1.transform);
-            var builder = new ObjectMappingBuilder(root);
+            var builder = new ObjectMappingBuilder<DummyPropInfo>(root);
 
             Object.DestroyImmediate(child11);
 

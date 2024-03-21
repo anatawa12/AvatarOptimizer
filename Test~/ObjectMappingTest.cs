@@ -7,6 +7,17 @@ using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.Test
 {
+    struct DummyPropInfo : IPropertyInfo<DummyPropInfo>
+    {
+        public void MergeTo(ref DummyPropInfo property)
+        {
+        }
+
+        public void CopyTo(ref DummyPropInfo property)
+        {
+        }
+    }
+
     public class ObjectMappingTest
     {
         [TestCase("")]
@@ -50,7 +61,7 @@ namespace Anatawa12.AvatarOptimizer.Test
                 }),
             });
 
-            var builder = new ObjectMappingBuilder(root).BuildObjectMapping().GetBeforeGameObjectTree(root);
+            var builder = new ObjectMappingBuilder<DummyPropInfo>(root).BuildObjectMapping().GetBeforeGameObjectTree(root);
 
             var transform = (Transform) AnimationUtility.GetAnimatedObject(root,
                 EditorCurveBinding.FloatCurve(testPath, typeof(Transform), "m_LocalPosition.x"));
@@ -71,7 +82,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             var child111 = Utils.NewGameObject("child111", child11.transform);
             var child2 = Utils.NewGameObject("child2", root.transform);
 
-            var builder = new ObjectMappingBuilder(root);
+            var builder = new ObjectMappingBuilder<DummyPropInfo>(root);
             child11.transform.parent = child2.transform;
             builder.RecordMoveProperty(child111, "m_IsActive", "m_IsActive");
 
@@ -100,7 +111,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             var child11 = Utils.NewGameObject("child11", child1.transform);
             var child111 = Utils.NewGameObject("child111", child11.transform);
 
-            var builder = new ObjectMappingBuilder(root);
+            var builder = new ObjectMappingBuilder<DummyPropInfo>(root);
             Object.DestroyImmediate(child11);
 
             var built = builder.BuildObjectMapping();
@@ -129,7 +140,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             var child2 = Utils.NewGameObject("child2", root.transform);
             var child2Component = child2.AddComponent<SkinnedMeshRenderer>();
 
-            var builder = new ObjectMappingBuilder(root);
+            var builder = new ObjectMappingBuilder<DummyPropInfo>(root);
             builder.RecordMergeComponent(child1Component, child2Component);
             Object.DestroyImmediate(child1Component);
             var child1ComponentId = child1Component.GetInstanceID();
@@ -159,7 +170,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             var child1 = Utils.NewGameObject("child1", root.transform);
             var child1Component = child1.AddComponent<SkinnedMeshRenderer>();
 
-            var builder = new ObjectMappingBuilder(root);
+            var builder = new ObjectMappingBuilder<DummyPropInfo>(root);
             Object.DestroyImmediate(child1Component);
             var child1ComponentId = child1Component.GetInstanceID(); 
 
@@ -187,7 +198,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             var child1 = Utils.NewGameObject("child1", root.transform);
             var child1Component = child1.AddComponent<SkinnedMeshRenderer>();
 
-            var builder = new ObjectMappingBuilder(root);
+            var builder = new ObjectMappingBuilder<DummyPropInfo>(root);
             builder.RecordMoveProperty(child1Component, "blendShapes.test", "blendShapes.changed");
 
             var built = builder.BuildObjectMapping();
@@ -211,7 +222,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             var child1 = Utils.NewGameObject("child1", root.transform);
             var child1Component = child1.AddComponent<SkinnedMeshRenderer>();
 
-            var builder = new ObjectMappingBuilder(root);
+            var builder = new ObjectMappingBuilder<DummyPropInfo>(root);
             builder.RecordMoveProperties(child1Component, 
                 ("blendShapes.first", "blendShapes.second"),
                 ("blendShapes.second", "blendShapes.first"));
@@ -237,7 +248,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             var child1 = Utils.NewGameObject("child1", root.transform);
             var child1Component = child1.AddComponent<SkinnedMeshRenderer>();
 
-            var builder = new ObjectMappingBuilder(root);
+            var builder = new ObjectMappingBuilder<DummyPropInfo>(root);
             builder.RecordMoveProperty(child1Component, "blendShapes.test", "blendShapes.changed0");
             builder.RecordMoveProperty(child1Component, "blendShapes.changed0", "blendShapes.changed");
 
@@ -260,7 +271,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             var child1 = Utils.NewGameObject("child1", root.transform);
             var child1Component = child1.AddComponent<SkinnedMeshRenderer>();
 
-            var builder = new ObjectMappingBuilder(root);
+            var builder = new ObjectMappingBuilder<DummyPropInfo>(root);
             builder.RecordRemoveProperty(child1Component, "blendShapes.test");
 
             var built = builder.BuildObjectMapping();
@@ -285,7 +296,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             var child1Component = child1.AddComponent<SkinnedMeshRenderer>();
             var child2Component = child2.AddComponent<SkinnedMeshRenderer>();
 
-            var builder = new ObjectMappingBuilder(root);
+            var builder = new ObjectMappingBuilder<DummyPropInfo>(root);
             builder.RecordMoveProperty(child2Component, "blendShapes.child2", "blendShapes.child2Changed");
             builder.RecordMoveProperty(child1Component, "blendShapes.child1", "blendShapes.child1Changed");
             builder.RecordMergeComponent(child1Component, child2Component);
@@ -330,7 +341,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             var child11Component = child11.AddComponent<SkinnedMeshRenderer>();
             var child2 = Utils.NewGameObject("child2", root.transform);
 
-            var builder = new ObjectMappingBuilder(root);
+            var builder = new ObjectMappingBuilder<DummyPropInfo>(root);
             builder.RecordMoveProperty(child11Component, "blendShapes.child11", "blendShapes.child11Changed");
             child11.transform.parent = child2.transform;
             builder.RecordMoveProperty(child11Component, "blendShapes.moved", "blendShapes.movedChanged");
@@ -358,7 +369,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             var child2 = Utils.NewGameObject("child2", root.transform);
             var child2Component = child2.AddComponent<SkinnedMeshRenderer>();
 
-            var builder = new ObjectMappingBuilder(root);
+            var builder = new ObjectMappingBuilder<DummyPropInfo>(root);
             builder.RecordRemoveProperty(child1Component, "m_Enabled");
             builder.RecordMergeComponent(child1Component, child2Component);
             Object.DestroyImmediate(child1Component);
@@ -388,7 +399,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             var child11Component = child11.AddComponent<SkinnedMeshRenderer>();
             var child2 = Utils.NewGameObject("child2", root.transform);
 
-            var builder = new ObjectMappingBuilder(root);
+            var builder = new ObjectMappingBuilder<DummyPropInfo>(root);
             builder.RecordMoveProperty(child11Component, "blendShapes.child11", "blendShapes.child11Changed");
             child11.transform.parent = child2.transform;
             builder.RecordMoveProperty(child11Component, "blendShapes.moved", "blendShapes.movedChanged");
@@ -414,7 +425,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             var child1 = Utils.NewGameObject("child1", root.transform);
             var child11 = Utils.NewGameObject("child11", child1.transform);
 
-            var builder = new ObjectMappingBuilder(root);
+            var builder = new ObjectMappingBuilder<DummyPropInfo>(root);
             builder.RecordMoveProperty(child11, "m_IsActive", child1, "m_IsActive");
 
             var built = builder.BuildObjectMapping();
@@ -437,7 +448,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             var child13 = Utils.NewGameObject("child13", child1.transform);
             var child14 = Utils.NewGameObject("child14", child1.transform);
 
-            var builder = new ObjectMappingBuilder(root);
+            var builder = new ObjectMappingBuilder<DummyPropInfo>(root);
             builder.RecordCopyProperty(child11, "m_IsActive",
                 child12, "m_IsActive");
             builder.RecordCopyProperty(child11, "m_IsActive",

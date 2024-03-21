@@ -82,7 +82,7 @@ namespace Anatawa12.AvatarOptimizer
 
     internal static class AnimationComponentInfoExtensions
     {
-        public static void ImportModifications([NotNull] this ObjectMappingBuilder builder,
+        public static void ImportModifications([NotNull] this ObjectMappingBuilder<PropertyInfo> builder,
             RootPropModNodeContainer modifications)
         {
             foreach (var ((target, prop), value) in modifications.FloatNodes)
@@ -92,13 +92,15 @@ namespace Anatawa12.AvatarOptimizer
                 builder.GetAnimationComponent(target).GetPropertyInfo(prop).ImportProperty(value);
         }
 
-        public static bool ContainsFloat([NotNull] this AnimationComponentInfo info, string property)
+        public static bool ContainsFloat([NotNull] this AnimationComponentInfo<PropertyInfo> info, string property)
         {
             if (info == null) throw new ArgumentNullException(nameof(info));
             return info.TryGetPropertyInfo(property).FloatNode != null;
         }
 
-        public static bool TryGetFloat([NotNull] this AnimationComponentInfo info, string property,
+        [Pure]
+        [ContractAnnotation("=> true, animation: notnull; => false, animation: null")]
+        public static bool TryGetFloat([NotNull] this AnimationComponentInfo<PropertyInfo> info, string property,
             [CanBeNull] out RootPropModNode<float> animation)
         {
             if (info == null) throw new ArgumentNullException(nameof(info));
@@ -106,20 +108,20 @@ namespace Anatawa12.AvatarOptimizer
             return animation != null;
         }
 
-        public static void AddModification([NotNull] this AnimationComponentInfo info, string property,
+        public static void AddModification([NotNull] this AnimationComponentInfo<PropertyInfo> info, string property,
             ComponentPropModNodeBase<float> node, bool alwaysApplied)
         {
             if (info == null) throw new ArgumentNullException(nameof(info));
             info.GetPropertyInfo(property).AddModification(node, alwaysApplied);
         }
 
-        public static bool ContainsObject([NotNull] this AnimationComponentInfo info, string property)
+        public static bool ContainsObject([NotNull] this AnimationComponentInfo<PropertyInfo> info, string property)
         {
             if (info == null) throw new ArgumentNullException(nameof(info));
             return info.TryGetPropertyInfo(property).ObjectNode != null;
         }
 
-        public static bool TryGetObject([NotNull] this AnimationComponentInfo info, string property,
+        public static bool TryGetObject([NotNull] this AnimationComponentInfo<PropertyInfo> info, string property,
             out RootPropModNode<Object> animation)
         {
             if (info == null) throw new ArgumentNullException(nameof(info));
@@ -127,7 +129,7 @@ namespace Anatawa12.AvatarOptimizer
             return animation != null;
         }
 
-        public static void AddModification([NotNull] this AnimationComponentInfo info, string property,
+        public static void AddModification([NotNull] this AnimationComponentInfo<PropertyInfo> info, string property,
             ComponentPropModNodeBase<Object> node, bool alwaysApplied)
         {
             if (info == null) throw new ArgumentNullException(nameof(info));
@@ -135,14 +137,14 @@ namespace Anatawa12.AvatarOptimizer
         }
 
         public static IEnumerable<(string, RootPropModNode<float>)> GetAllFloatProperties(
-            [NotNull] this AnimationComponentInfo info)
+            [NotNull] this AnimationComponentInfo<PropertyInfo> info)
         {
             return info.GetAllPropertyInfo.Where(x => x.info.FloatNode != null)
                 .Select(x => (x.name, x.info.FloatNode));
         }
 
         public static IEnumerable<(string, RootPropModNode<Object>)> GetAllObjectProperties(
-            [NotNull] this AnimationComponentInfo info)
+            [NotNull] this AnimationComponentInfo<PropertyInfo> info)
         {
             return info.GetAllPropertyInfo.Where(x => x.info.ObjectNode != null)
                 .Select(x => (x.name, x.info.ObjectNode));

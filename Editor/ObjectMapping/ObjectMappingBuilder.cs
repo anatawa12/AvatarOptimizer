@@ -10,7 +10,8 @@ namespace Anatawa12.AvatarOptimizer
     /// <summary>
     /// The class manages Object location mapping
     /// </summary>
-    internal class ObjectMappingBuilder
+    internal class ObjectMappingBuilder<TPropInfo>
+        where TPropInfo : struct, IPropertyInfo<TPropInfo>
     {
         // Responsibility of this class can be classified to the following parts
         // - Track moving GameObjects
@@ -76,10 +77,10 @@ namespace Anatawa12.AvatarOptimizer
         public void RecordRemoveProperty(ComponentOrGameObject from, string oldProp) =>
             GetComponentInfo(from).RemoveProperty(oldProp);
 
-        public AnimationComponentInfo GetAnimationComponent(ComponentOrGameObject component)
+        public AnimationComponentInfo<TPropInfo> GetAnimationComponent(ComponentOrGameObject component)
             => GetComponentInfo(component);
 
-        public IEnumerable<AnimationComponentInfo> GetAllAnimationComponents() =>
+        public IEnumerable<AnimationComponentInfo<TPropInfo>> GetAllAnimationComponents() =>
             _componentInfos.Values.Where(x => !x.IsMerged);
 
         private BuildingComponentInfo GetComponentInfo(ComponentOrGameObject component)
@@ -107,7 +108,7 @@ namespace Anatawa12.AvatarOptimizer
             [CanBeNull] public AnimationPropertyInfo MergedTo { get; private set; }
             private MappedPropertyInfo? _mappedPropertyInfo;
 
-            public PropertyInfo PropertyInfo;
+            public TPropInfo PropertyInfo;
 
             [CanBeNull] public List<AnimationPropertyInfo> CopiedTo { get; private set; }
 
@@ -182,7 +183,7 @@ namespace Anatawa12.AvatarOptimizer
             }
         }
 
-        class BuildingComponentInfo : AnimationComponentInfo
+        class BuildingComponentInfo : AnimationComponentInfo<TPropInfo>
         {
             internal readonly int InstanceId;
             internal readonly Type Type;
@@ -293,15 +294,15 @@ namespace Anatawa12.AvatarOptimizer
 
             public override string[] Properties => _afterPropertyIds.Keys.ToArray();
 
-            public override ref PropertyInfo GetPropertyInfo(string property) => ref GetProperty(property).PropertyInfo;
-            public override PropertyInfo TryGetPropertyInfo(string property)
+            public override ref TPropInfo GetPropertyInfo(string property) => ref GetProperty(property).PropertyInfo;
+            public override TPropInfo TryGetPropertyInfo(string property)
             {
                 if (_afterPropertyIds.TryGetValue(property, out var info))
                     return info.PropertyInfo;
                 return default;
             }
 
-            public override IEnumerable<(string, PropertyInfo)> GetAllPropertyInfo =>
+            public override IEnumerable<(string name, TPropInfo info)> GetAllPropertyInfo =>
                 _afterPropertyIds.Select((x) => (x.Key, x.Value.PropertyInfo));
         }
     }
@@ -313,15 +314,16 @@ namespace Anatawa12.AvatarOptimizer
         void CopyTo(ref T property);
     }
 
-    internal abstract class AnimationComponentInfo
+    internal abstract class AnimationComponentInfo<TPropInfo>
+        where TPropInfo : struct, IPropertyInfo<TPropInfo>
     {
         public abstract string[] Properties { get; }
         public abstract ComponentOrGameObject TargetComponent { get; }
 
         public abstract void RemoveProperty(string property);
 
-        public abstract ref PropertyInfo GetPropertyInfo(string property);
-        public abstract PropertyInfo TryGetPropertyInfo(string property);
-        public abstract IEnumerable<(string name, PropertyInfo info)> GetAllPropertyInfo { get; }
+        public abstract ref TPropInfo GetPropertyInfo(string property);
+        public abstract TPropInfo TryGetPropertyInfo(string property);
+        public abstract IEnumerable<(string name, TPropInfo info)> GetAllPropertyInfo { get; }
     }
 }
