@@ -9,9 +9,9 @@ using UnityEditor.Animations;
 
 namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 {
-    internal class MergeDirectBlendTree : AnimOptPassBase<MergeDirectBlendTree>
+    public class MergeDirectBlendTree : AnimOptPassBase<MergeDirectBlendTree>
     {
-        protected override void Execute(BuildContext context, AOAnimatorController controller,
+        private protected override void Execute(BuildContext context, AOAnimatorController controller,
             TraceAndOptimizeState settings)
         {
             if (!settings.SkipMergeDirectBlendTreeLayers) return;

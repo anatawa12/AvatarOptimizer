@@ -9,6 +9,7 @@
         "com.anatawa12.avatar-optimizer.internal.prefab-safe-set.editor",
         "com.anatawa12.avatar-optimizer.internal.prefab-safe-set",
         "com.anatawa12.avatar-optimizer.internal.trace-and-optimize-base",
+        "com.anatawa12.avatar-optimizer.internal.object-mapping",
         "com.anatawa12.avatar-optimizer.internal.animator-optimizer",
         "com.anatawa12.avatar-optimizer.internal.meshinfo2",
         "com.anatawa12.avatar-optimizer.internal.utils",

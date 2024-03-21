@@ -4,9 +4,9 @@ using nadena.dev.ndmf;
 
 namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 {
-    class RemoveMeaninglessLayer : AnimOptPassBase<RemoveMeaninglessLayer>
+    public class RemoveMeaninglessLayer : AnimOptPassBase<RemoveMeaninglessLayer>
     {
-        protected override void Execute(BuildContext context, AOAnimatorController controller, TraceAndOptimizeState settings)
+        private protected override void Execute(BuildContext context, AOAnimatorController controller, TraceAndOptimizeState settings)
         {
             if (settings.SkipRemoveMeaninglessAnimatorLayer) return;
             Execute(controller);

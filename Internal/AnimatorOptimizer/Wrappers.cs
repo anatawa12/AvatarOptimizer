@@ -10,7 +10,7 @@ using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 {
-    class AOAnimatorController
+    public class AOAnimatorController
     {
         private AnimatorController _animatorController;
 
@@ -79,7 +79,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
         }
     }
 
-    class AOAnimatorControllerLayer
+    public class AOAnimatorControllerLayer
     {
         public readonly AnimatorControllerLayer Layer;
         private readonly AOAnimatorController _parent;

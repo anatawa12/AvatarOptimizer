@@ -34,9 +34,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
     // - all states have same write defaults value
     // - if write defaults is off, all states have same animating properties
     // - all states must not have motion time. you have to use 1d blend tree for gesture weight.
-    class EntryExitToBlendTree : AnimOptPassBase<EntryExitToBlendTree>
+    public class EntryExitToBlendTree : AnimOptPassBase<EntryExitToBlendTree>
     {
-        protected override void Execute(BuildContext context, AOAnimatorController controller,
+        private protected override void Execute(BuildContext context, AOAnimatorController controller,
             TraceAndOptimizeState settings)
         {
             if (settings.SkipEntryExitToBlendTree) return; // feature disabled
