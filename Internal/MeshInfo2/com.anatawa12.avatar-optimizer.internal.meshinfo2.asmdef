@@ -1,0 +1,25 @@
+{
+    "name": "com.anatawa12.avatar-optimizer.internal.meshinfo2",
+    "rootNamespace": "Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes",
+    "references": [
+        "com.anatawa12.avatar-optimizer.runtime",
+        "Unity.Burst",
+        "nadena.dev.ndmf",
+        "com.anatawa12.avatar-optimizer.internal.utils",
+        "com.anatawa12.avatar-optimizer.internal.localization.editor",
+        "com.anatawa12.avatar-optimizer.internal.unsafe"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "System.Memory.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

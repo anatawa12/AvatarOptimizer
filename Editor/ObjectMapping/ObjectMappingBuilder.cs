@@ -1,18 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Anatawa12.AvatarOptimizer.AnimatorParsersV2;
 using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
-using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer
 {
     /// <summary>
     /// The class manages Object location mapping
     /// </summary>
-    internal class ObjectMappingBuilder
+    internal class ObjectMappingBuilder<TPropInfo>
+        where TPropInfo : struct, IPropertyInfo<TPropInfo>
     {
         // Responsibility of this class can be classified to the following parts
         // - Track moving GameObjects
@@ -78,10 +77,10 @@ namespace Anatawa12.AvatarOptimizer
         public void RecordRemoveProperty(ComponentOrGameObject from, string oldProp) =>
             GetComponentInfo(from).RemoveProperty(oldProp);
 
-        public AnimationComponentInfo GetAnimationComponent(ComponentOrGameObject component)
+        public AnimationComponentInfo<TPropInfo> GetAnimationComponent(ComponentOrGameObject component)
             => GetComponentInfo(component);
 
-        public IEnumerable<AnimationComponentInfo> GetAllAnimationComponents() =>
+        public IEnumerable<AnimationComponentInfo<TPropInfo>> GetAllAnimationComponents() =>
             _componentInfos.Values.Where(x => !x.IsMerged);
 
         private BuildingComponentInfo GetComponentInfo(ComponentOrGameObject component)
@@ -93,17 +92,6 @@ namespace Anatawa12.AvatarOptimizer
                 _componentInfos.Add(component.GetInstanceID(), info);
             }
             return info;
-        }
-
-        public void ImportModifications(
-            RootPropModNodeContainer modifications
-        )
-        {
-            foreach (var ((target, prop), value) in modifications.FloatNodes)
-                GetComponentInfo(target).ImportProperty(prop, value);
-            
-            foreach (var ((target, prop), value) in modifications.ObjectNodes)
-                GetComponentInfo(target).ImportProperty(prop, value);
         }
 
         public ObjectMapping BuildObjectMapping()
@@ -119,12 +107,10 @@ namespace Anatawa12.AvatarOptimizer
             [CanBeNull] public readonly string Name;
             [CanBeNull] public AnimationPropertyInfo MergedTo { get; private set; }
             private MappedPropertyInfo? _mappedPropertyInfo;
-            [CanBeNull] private RootPropModNode<float> _floatNode;
-            [CanBeNull] private RootPropModNode<Object> _objectNode;
+
+            public TPropInfo PropertyInfo;
+
             [CanBeNull] public List<AnimationPropertyInfo> CopiedTo { get; private set; }
-            [CanBeNull]
-            public RootPropModNode<float> FloatNode => _floatNode?.Normalize();
-            public RootPropModNode<Object> ObjectNode => _objectNode?.Normalize();
 
             public AnimationPropertyInfo([NotNull] BuildingComponentInfo component, [NotNull] string name)
             {
@@ -141,7 +127,7 @@ namespace Anatawa12.AvatarOptimizer
             public void MergeTo(AnimationPropertyInfo property)
             {
                 MergedTo = property;
-                MergeNode(ref property._floatNode, ref _floatNode);
+                PropertyInfo.MergeTo(ref property.PropertyInfo);
             }
 
             public void CopyTo(AnimationPropertyInfo property)
@@ -149,7 +135,7 @@ namespace Anatawa12.AvatarOptimizer
                 if (CopiedTo == null)
                     CopiedTo = new List<AnimationPropertyInfo>();
                 CopiedTo.Add(property);
-                MergeNode(ref property._floatNode, ref _floatNode);
+                PropertyInfo.CopyTo(ref property.PropertyInfo);
             }
 
             public MappedPropertyInfo GetMappedInfo()
@@ -195,48 +181,9 @@ namespace Anatawa12.AvatarOptimizer
                     return new MappedPropertyInfo(descriptor, copied.ToArray());
                 }
             }
-
-            private static void MergeNode<T>([CanBeNull] ref RootPropModNode<T> mergeTo,
-                [CanBeNull] ref RootPropModNode<T> merge)
-            {
-                if (merge == null || merge.IsEmpty) return;
-                if (mergeTo == null || merge.IsEmpty)
-                {
-                    mergeTo = merge;
-                    return;
-                }
-
-                mergeTo.Add(merge);
-                merge.Invalidate();
-                merge = null;
-            }
-
-            public void ImportProperty(RootPropModNode<float> node)
-            {
-                if (FloatNode != null) throw new InvalidOperationException();
-                _floatNode = node;
-            }
-            
-            public void ImportProperty(RootPropModNode<Object> node)
-            {
-                if (ObjectNode != null) throw new InvalidOperationException();
-                _objectNode = node;
-            }
-
-            public void AddModification(ComponentPropModNodeBase<float> node, bool alwaysApplied)
-            {
-                if (_floatNode == null) _floatNode = new RootPropModNode<float>();
-                _floatNode.Add(node, alwaysApplied);
-            }
-            
-            public void AddModification(ComponentPropModNodeBase<Object> node, bool alwaysApplied)
-            {
-                if (_objectNode == null) _objectNode = new RootPropModNode<Object>();
-                _objectNode.Add(node, alwaysApplied);
-            }
         }
 
-        class BuildingComponentInfo : AnimationComponentInfo
+        class BuildingComponentInfo : AnimationComponentInfo<TPropInfo>
         {
             internal readonly int InstanceId;
             internal readonly Type Type;
@@ -347,68 +294,36 @@ namespace Anatawa12.AvatarOptimizer
 
             public override string[] Properties => _afterPropertyIds.Keys.ToArray();
 
-            public override bool ContainsFloat(string property) =>
-                _afterPropertyIds.TryGetValue(property, out var info) && info.FloatNode != null;
-
-            public override bool TryGetFloat(string propertyName, out RootPropModNode<float> animation)
+            public override ref TPropInfo GetPropertyInfo(string property) => ref GetProperty(property).PropertyInfo;
+            public override TPropInfo TryGetPropertyInfo(string property)
             {
-                animation = default;
-                if (!_afterPropertyIds.TryGetValue(propertyName, out var info))
-                    return false;
-                animation = info.FloatNode;
-                return animation != null;
+                if (_afterPropertyIds.TryGetValue(property, out var info))
+                    return info.PropertyInfo;
+                return default;
             }
 
-            public override void AddModification(string prop, ComponentPropModNodeBase<float> node, bool alwaysApplied) =>
-                GetProperty(prop).AddModification(node, alwaysApplied);
-
-            public void ImportProperty(string prop, RootPropModNode<float> node) =>
-                GetProperty(prop).ImportProperty(node);
-
-            public void ImportProperty(string prop, RootPropModNode<Object> node) =>
-                GetProperty(prop).ImportProperty(node);
-            
-            public override IEnumerable<(string, RootPropModNode<float>)> AllFloatProperties =>
-                _afterPropertyIds
-                    .Where(x => x.Value.FloatNode != null)
-                    .Select(x => (x.Key, x.Value.FloatNode));
-            
-            public override bool ContainsObject(string property) =>
-                _afterPropertyIds.TryGetValue(property, out var info) && info.ObjectNode != null;
-
-            public override bool TryGetObject(string propertyName, out RootPropModNode<Object> animation)
-            {
-                animation = default;
-                if (!_afterPropertyIds.TryGetValue(propertyName, out var info))
-                    return false;
-                animation = info.ObjectNode;
-                return animation != null;
-            }
-
-            public override void AddModification(string prop, ComponentPropModNodeBase<Object> node, bool alwaysApplied) =>
-                GetProperty(prop).AddModification(node, alwaysApplied);
-
-            public override IEnumerable<(string, RootPropModNode<Object>)> AllObjectProperties =>
-                _afterPropertyIds
-                    .Where(x => x.Value.ObjectNode != null)
-                    .Select(x => (x.Key, x.Value.ObjectNode));
+            public override IEnumerable<(string name, TPropInfo info)> GetAllPropertyInfo =>
+                _afterPropertyIds.Select((x) => (x.Key, x.Value.PropertyInfo));
         }
     }
 
-    internal abstract class AnimationComponentInfo
+    internal interface IPropertyInfo<T>
+        where T : struct, IPropertyInfo<T>
+    {
+        void MergeTo(ref T property);
+        void CopyTo(ref T property);
+    }
+
+    internal abstract class AnimationComponentInfo<TPropInfo>
+        where TPropInfo : struct, IPropertyInfo<TPropInfo>
     {
         public abstract string[] Properties { get; }
         public abstract ComponentOrGameObject TargetComponent { get; }
 
         public abstract void RemoveProperty(string property);
-        public abstract bool ContainsFloat(string property);
-        public abstract bool TryGetFloat(string propertyName, out RootPropModNode<float> animation);
-        public abstract void AddModification(string prop, ComponentPropModNodeBase<float> node, bool alwaysApplied);
-        public abstract IEnumerable<(string, RootPropModNode<float>)> AllFloatProperties { get; }
 
-        public abstract bool ContainsObject(string property);
-        public abstract bool TryGetObject(string propertyName, out RootPropModNode<Object> animation);
-        public abstract void AddModification(string prop, ComponentPropModNodeBase<Object> node, bool alwaysApplied);
-        public abstract IEnumerable<(string, RootPropModNode<Object>)> AllObjectProperties { get; }
+        public abstract ref TPropInfo GetPropertyInfo(string property);
+        public abstract TPropInfo TryGetPropertyInfo(string property);
+        public abstract IEnumerable<(string name, TPropInfo info)> GetAllPropertyInfo { get; }
     }
 }

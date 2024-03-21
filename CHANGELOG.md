@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog].
 ### Added
 - Support for VRCSDK 3.5.2-beta.1 `#926`
 - Animator Optimizer `#854`
+  - Most features of Animator Optimizer is not available in Unity 2019.
   - Animator Optimizer optimizes your Animator Controller without behaviour Changes
   - Current Optimizer includes the following optimization
     - Remove meaningless properties `#854`

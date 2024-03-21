@@ -1,0 +1,24 @@
+{
+    "name": "com.anatawa12.avatar-optimizer.test.animator-optimizer",
+    "rootNamespace": "",
+    "references": [
+        "com.anatawa12.avatar-optimizer.test.utils",
+        "com.anatawa12.avatar-optimizer.internal.animator-optimizer",
+        "com.anatawa12.avatar-optimizer.internal.trace-and-optimize-base",
+        "UnityEngine.TestRunner",
+        "nadena.dev.ndmf"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_2021_3_OR_NEWER"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

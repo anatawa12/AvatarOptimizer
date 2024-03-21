@@ -1,20 +1,22 @@
-using nadena.dev.ndmf.runtime;
+using JetBrains.Annotations;
 using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer
 {
-    // https://github.com/bdunderscore/modular-avatar/blob/db49e2e210bc070671af963ff89df853ae4514a5/Packages/nadena.dev.modular-avatar/Runtime/AvatarTagComponent.cs
-    // Originally under MIT License
-    // Copyright (c) 2022 bd_
     /**
-     * This abstract base class is injected into the VRCSDK avatar component allowlist to avoid
+     * This class is the base class for most components in Avatar Optimizer.
+     * When you found instance of this class, you can assume that it's a part of Avatar Optimizer.
      */
     [DefaultExecutionOrder(-9990)] // run before av3emu
     [ExecuteAlways]
-    internal abstract class AvatarTagComponent : MonoBehaviour
+    [PublicAPI]
+    public abstract class AvatarTagComponent : MonoBehaviour
 #if AAO_VRCSDK3_AVATARS
         , VRC.SDKBase.IEditorOnly
 #endif
     {
+        private protected AvatarTagComponent()
+        {
+        }
     }
 }

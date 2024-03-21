@@ -292,7 +292,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             foreach (var meshInfo2 in sourceRenderers)
             {
                 var component = context.GetAnimationComponent(meshInfo2.SourceRenderer);
-                foreach (var (name, property) in component.AllFloatProperties)
+                foreach (var (name, property) in component.GetAllFloatProperties())
                 {
                     if (!name.StartsWith("material.", StringComparison.Ordinal)) continue;
                     var materialPropertyName = name.Substring("material.".Length);

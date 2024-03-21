@@ -164,7 +164,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             }
         }
 
-        private static bool IsAnimatedExternally(VRCPhysBoneBase physBone, AnimationComponentInfo animation)
+        private static bool IsAnimatedExternally(VRCPhysBoneBase physBone, AnimationComponentInfo<PropertyInfo> animation)
         {
             foreach (var transformProperty in TransformProperties)
             {

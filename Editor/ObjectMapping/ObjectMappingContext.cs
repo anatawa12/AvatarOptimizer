@@ -13,11 +13,11 @@ namespace Anatawa12.AvatarOptimizer
 {
     internal class ObjectMappingContext : IExtensionContext
     {
-        public ObjectMappingBuilder MappingBuilder { get; private set; }
+        public ObjectMappingBuilder<PropertyInfo> MappingBuilder { get; private set; }
 
         public void OnActivate(BuildContext context)
         {
-            MappingBuilder = new ObjectMappingBuilder(context.AvatarRootObject);
+            MappingBuilder = new ObjectMappingBuilder<PropertyInfo>(context.AvatarRootObject);
         }
 
         public void OnDeactivate(BuildContext context)
