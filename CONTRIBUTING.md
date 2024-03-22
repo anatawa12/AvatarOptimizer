@@ -71,7 +71,7 @@ Do not use `Object.DestroyImmediate`, use `DestroyTracker.DestroyImmediate` inst
 
 ## Adding Localization Locales
 
-If you can be the maintainer of the locale, I'm glad to add new locale for localization.
+If you can be the maintainer of the new locale, I'm glad to add it for localization.
 As a maintainer, you should keep the locale up-to-date as possible.
 
 To add new locale, please follow the steps below.
@@ -79,12 +79,12 @@ To add new locale, please follow the steps below.
 2. Add the `<langid>.po` to `Internal/Localization/Editor.AAOL10N.cs`
 3. Fill the translations in `<langid>.po`.
 4. Create draft pull request.
-5. Make changes in CHANGELOG file
+5. Make changes in CHANGELOG file as a notice of adding new locale
 6. Mark the Pull Request ready for review
 
 ## Adding Documentation Locales
 
-If you can be the maintainer of the locale, I'm glad to add new locale for localization.
+If you can be the maintainer of the new locale, I'm glad to add it for document localization.
 As a maintainer, you should keep the locale up-to-date as possible.
 
 To add new locale, please follow the steps below.
