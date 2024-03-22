@@ -425,7 +425,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
     }
 #endif
 
-#if AAO_VRCSDK3_AVATARS_3_5_2
+#if AAO_VRCSDK3_AVATARS_HEAD_CHOP
     [ComponentInformation(typeof(VRCHeadChop))]
     internal class VRCHeadChopInformation : ComponentInformation<VRCHeadChop>
     {
