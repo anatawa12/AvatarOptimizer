@@ -54,7 +54,7 @@ If your change is published in snapshots but not in release, please update `CHAN
 
 Because I want to include link to pull request in the CHANGELOG files, I recommend the following steps for creating Pull Requests.
 
-For localization or documentation changes, updating CHANGELOG is not required.
+For documentation or localization changes, updating CHANGELOG is not required.
 The CI will fail due to the lack of CHANGELOG update, but you can ignore it.
 I'll add `documentation` or `localization` label to the PR and the CI will ignore the CHANGELOG update.
 
@@ -89,5 +89,5 @@ As a maintainer, you should keep the locale up-to-date as possible.
 
 To add new locale, please follow the steps below.
 1. Add your locale to `.docs/config.toml`
-2. Create `page.<langid>.md` in all files in `.docs/content` directory.
+2. Create `index.<langid>.md` in all files in `.docs/content` directory.
 3. Create pull request. The CI will fail due to the lack of CHANGELOG update, but you can ignore it.
