@@ -105,7 +105,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             public override void MarkBehaviour() => _info.MarkBehaviour();
 
             private API.ComponentDependencyInfo AddDependencyInternal(
-                [NotNull] GCComponentInfo info,
+                [CanBeNull] GCComponentInfo info,
                 [CanBeNull] Component dependency,
                 GCComponentInfo.DependencyType type = GCComponentInfo.DependencyType.Normal)
             {
@@ -115,7 +115,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             }
 
             public override API.ComponentDependencyInfo AddDependency(Component dependant, Component dependency) =>
-                AddDependencyInternal(_collector._componentInfos.GetInfo(dependant), dependency);
+                AddDependencyInternal(_collector._componentInfos.TryGetInfo(dependant), dependency);
 
             public override API.ComponentDependencyInfo AddDependency(Component dependency) =>
                 AddDependencyInternal(_info, dependency);
@@ -142,7 +142,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 private readonly GCComponentInfoHolder _componentInfos;
 
                 [CanBeNull] private Component _dependency;
-                private GCComponentInfo _dependantInformation;
+                [CanBeNull] private GCComponentInfo _dependantInformation;
                 private GCComponentInfo.DependencyType _type;
 
                 private bool _evenIfTargetIsDisabled;
@@ -156,7 +156,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     _componentInfos = componentInfos;
                 }
 
-                internal void Init(GCComponentInfo dependantInformation,
+                internal void Init(
+                    [CanBeNull] GCComponentInfo dependantInformation,
                     [CanBeNull] Component component,
                     GCComponentInfo.DependencyType type = GCComponentInfo.DependencyType.Normal)
                 {
@@ -179,6 +180,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 {
                     Debug.Assert(_dependency != null, nameof(_dependency) + " != null");
 
+                    if (_dependantInformation == null) return;
                     if (!_dependency.transform.IsChildOf(_collector._session.AvatarRootTransform))
                         return;
                     if (!_evenIfThisIsDisabled)

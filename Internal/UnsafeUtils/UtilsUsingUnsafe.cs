@@ -4,7 +4,7 @@ using Unity.Collections.LowLevel.Unsafe;
 
 namespace Anatawa12.AvatarOptimizer
 {
-    internal static class UtilsUsingUnsafe
+    public static class UtilsUsingUnsafe
     {
         public static unsafe Span<T> AsSpan<T>(this NativeArray<T> self) where T : unmanaged =>
             new Span<T>(self.GetUnsafePtr(), self.Length);

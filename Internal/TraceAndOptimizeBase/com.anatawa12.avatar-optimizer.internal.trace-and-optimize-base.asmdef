@@ -1,0 +1,20 @@
+{
+    "name": "com.anatawa12.avatar-optimizer.internal.trace-and-optimize-base",
+    "rootNamespace": "Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes",
+    "references": [
+        "com.anatawa12.avatar-optimizer.runtime",
+        "com.anatawa12.avatar-optimizer.internal.utils",
+        "nadena.dev.ndmf"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
