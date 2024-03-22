@@ -31,13 +31,18 @@ jobs:
   create-release:
     runs-on: ubuntu-latest
     environment:
-      name: master branch
+      name: actions-github-app
     outputs:
       version: ${{ steps.update-version.outputs.version }}
     steps:
+      - uses: actions/create-github-app-token@v1
+        id: app-token
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.PRIVATE_KEY }}
       - uses: actions/checkout@v4
         with:
-          token: ${{ secrets.MASTER_GITHUB_PAT }}
+          token: ${{ steps.app-token.outputs.token }}
           submodules: recursive
       - uses: anatawa12/something-releaser@v2
       - uses: snow-actions/git-config-user@v1.0.0
