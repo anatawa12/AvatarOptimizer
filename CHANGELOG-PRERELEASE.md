@@ -8,7 +8,6 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Support for VRCSDK 3.5.2-beta.2 `#935`
 
 ### Changed
 
@@ -19,6 +18,10 @@ The format is based on [Keep a Changelog].
 ### Fixed
 
 ### Security
+
+## [1.6.9-beta.2] - 2024-03-22
+### Added
+- Support for VRCSDK 3.5.2-beta.2 [`#935`](https://github.com/anatawa12/AvatarOptimizer/pull/935)
 
 ## [1.6.9-beta.1] - 2024-03-16
 ### Added
@@ -1176,7 +1179,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.9-beta.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.9-beta.2...HEAD
+[1.6.9-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.9-beta.1...v1.6.9-beta.2
 [1.6.9-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.8...v1.6.9-beta.1
 [1.6.8]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.7...v1.6.8
 [1.6.7]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.7-beta.1...v1.6.7
