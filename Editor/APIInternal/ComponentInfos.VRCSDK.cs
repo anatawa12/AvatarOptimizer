@@ -412,7 +412,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
     }
 #endif
     
-#if AAO_VRCSDK3_AVATARS_3_5_2
+#if AAO_VRCSDK3_AVATARS_IMPOSTER_SETTINGS
     // this component has no documentation so this implementation is based on assumption
     [ComponentInformation(typeof(VRCImpostorEnvironment))]
     internal class VRCImpostorEnvironmentInformation : ComponentInformation<VRCImpostorEnvironment>
@@ -423,25 +423,19 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
             collector.MarkEntrypoint();
         }
     }
+#endif
 
+#if AAO_VRCSDK3_AVATARS_HEAD_CHOP
     [ComponentInformation(typeof(VRCHeadChop))]
     internal class VRCHeadChopInformation : ComponentInformation<VRCHeadChop>
     {
         protected override void CollectDependency(VRCHeadChop component, ComponentDependencyCollector collector)
         {
-            // This is ad-hoc implementation because this component has no documentation.
-            // see https://feedback.vrchat.com/open-beta/p/352-beta1-2-vrcheadchop-component-has-no-public-access-to-configuration-so-exter
-
-            // use AppendDesiredTransformWeights to get all bones specified in this component
-            var headChopBones = new Dictionary<Transform, VRCHeadChop.HeadChopData>();
-            component.AppendDesiredTransformWeights(headChopBones, false);
-            component.AppendDesiredTransformWeights(headChopBones, true);
-
             // declare dependency relationship
-            foreach (var pair in headChopBones)
+            foreach (var headChopBone in component.targetBones)
             {
-                collector.AddDependency(pair.Key);
-                collector.AddDependency(pair.Key, component).EvenIfDependantDisabled();
+                collector.AddDependency(headChopBone.transform);
+                collector.AddDependency(headChopBone.transform, component).EvenIfDependantDisabled();
             }
 
             collector.MarkBehaviour();

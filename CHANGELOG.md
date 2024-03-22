@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Support for VRCSDK 3.5.2-beta.1 `#926`
+- Support for VRCSDK 3.5.2 `#926` `#935`
 
 ### Changed
 
