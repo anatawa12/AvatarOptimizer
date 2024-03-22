@@ -54,6 +54,10 @@ If your change is published in snapshots but not in release, please update `CHAN
 
 Because I want to include link to pull request in the CHANGELOG files, I recommend the following steps for creating Pull Requests.
 
+For documentation or localization changes, updating CHANGELOG is not required.
+The CI will fail due to the lack of CHANGELOG update, but you can ignore it.
+I'll add `documentation` or `localization` label to the PR and the CI will ignore the CHANGELOG update.
+
 1. Fork this repository
 2. Create branch for changes
 3. Make changes on the branch
@@ -64,3 +68,26 @@ Because I want to include link to pull request in the CHANGELOG files, I recomme
 ## Notes for writing codes
 
 Do not use `Object.DestroyImmediate`, use `DestroyTracker.DestroyImmediate` instead.
+
+## Adding Localization Locales
+
+If you can be the maintainer of the new locale, I'm glad to add it for localization.
+As a maintainer, you should keep the locale up-to-date as possible.
+
+To add new locale, please follow the steps below.
+1. Create `<langid>.po` file in `Localization` directory.
+2. Add the `<langid>.po` to `Internal/Localization/Editor.AAOL10N.cs`
+3. Fill the translations in `<langid>.po`.
+4. Create draft pull request.
+5. Make changes in CHANGELOG file as a notice of adding new locale
+6. Mark the Pull Request ready for review
+
+## Adding Documentation Locales
+
+If you can be the maintainer of the new locale, I'm glad to add it for document localization.
+As a maintainer, you should keep the locale up-to-date as possible.
+
+To add new locale, please follow the steps below.
+1. Add your locale to `.docs/config.toml`
+2. Create `index.<langid>.md` in all files in `.docs/content` directory.
+3. Create pull request. The CI will fail due to the lack of CHANGELOG update, but you can ignore it.
