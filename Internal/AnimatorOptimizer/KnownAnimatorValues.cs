@@ -1,8 +1,10 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 {
     static class KnownParameterValues
     {
-        public static bool GetIntValues(string param, out int[] values)
+        public static bool GetIntValues(string param, [NotNullWhen(true)] out int[]? values)
         {
             switch (param)
             {
