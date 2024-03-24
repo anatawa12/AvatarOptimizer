@@ -69,6 +69,12 @@ namespace Anatawa12.AvatarOptimizer
         [NotKeyable] public BoolConfig resetWhenDisabledConfig;
         #endregion
 
+        private void Reset()
+        {
+            // copy by default for newly added component
+            endpointPositionConfig.@override = EndPointPositionConfig.Override.Copy;
+        }
+
         [Serializable]
         public struct EndPointPositionConfig
         {

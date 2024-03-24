@@ -43,6 +43,8 @@ The format is based on [Keep a Changelog].
   - I think using this way is reasonable enough so I suppressed the warning if AAO detected such a usage.
 - Changed minimum VRCSDK to 3.3.0 `#882`
   - VRCSDK 3.3.0 is required for stable NDMF-VRCSDK compatibility.
+- Endpoint Position settings for newly created MergePhysBone is now Copy instead of Clear `#945`
+  - The Clear settings will increase the number of PhysBone Transforms so it's not better as a default settings.
 
 ### Deprecated
 
