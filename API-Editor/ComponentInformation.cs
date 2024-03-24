@@ -175,6 +175,49 @@ namespace Anatawa12.AvatarOptimizer.API
         [PublicAPI]
         public abstract ComponentDependencyInfo AddDependency(Component dependency);
 
+        /// <summary>
+        /// Adds relative path from <see cref="root"/> to <see cref="dependency"/> as dependencies of current component.
+        ///
+        /// This API is added in AvatarOptimizer 1.7.0.
+        /// </summary>
+        /// <remarks>
+        /// This method is used to add dependencies that are referenced by relative path from
+        /// the <see cref="root"/> GameObject. This can be use for Avatar definition of Animator component.
+        ///
+        /// This does not try to preserve the name of the <see cref="root"/> GameObject.
+        ///
+        /// AvatarOptimizer will work as possible to not change the relative path of the dependency,
+        /// but the path of the component may be changed by the request of the user or some other reasons
+        /// so it's highly recommended to re-compute the relative path on ApplySpecialMapping.
+        /// </remarks>
+        /// <remarks>
+        /// This method is added in AvatarOptimizer 1.7.0.
+        /// If you want to use this API in previous versions of Avatar Optimizer,
+        /// you can use the following extension method as a fallback.
+        /// Thanks to the method resolution rules with extension methods and actual methods in C#,
+        /// You can stay the extension method in the scope even in AvatarOptimizer 1.7.0 or later.
+        ///
+        /// Please note that this implementation is only for AvatarOptimizer 1.6.x or older.
+        /// This may not work as expected in the future versions.
+        ///
+        /// <code><![CDATA[
+        /// static class Extensions
+        /// {
+        ///     public static void AddPathDependency([NotNull] this ComponentDependencyCollector collector,
+        ///         [NotNull] Transform dependency, [NotNull] Transform root)
+        ///     {
+        ///         for (var current = dependency; current != null && current != root; current = current.parent)
+        ///             collector.AddDependency(current);
+        ///     }
+        /// }
+        /// ]]></code>
+        /// </remarks>
+        /// <param name="dependency">The GameObject referenced with relative path</param>
+        /// <param name="root">The GameObject the relative path starts from</param>
+        /// <exception cref="ArgumentException">If the <see cref="dependency"/> is not child of <see cref="root"/>.</exception>
+        [PublicAPI]
+        public abstract PathDependencyInfo AddPathDependency([NotNull] Transform dependency, [NotNull] Transform root);
+
         // TODO: rename to better name and make public
         // NOTE for external users: this is API Proposal to compute value of animatable bool property 
         // such as ParticleSystem.trigger.enabled.
@@ -189,6 +232,21 @@ namespace Anatawa12.AvatarOptimizer.API
         /// <param name="currentValue"></param>
         /// <returns></returns>
         internal abstract bool? GetAnimatedFlag(Component component, string animationProperty, bool currentValue);
+    }
+
+    [PublicAPI]
+    public abstract class PathDependencyInfo
+    {
+        internal PathDependencyInfo()
+        {
+        }
+
+        /// <summary>
+        /// Indicates the dependency is required even if dependant component is disabled.
+        /// </summary>
+        /// <returns>this object for method chain</returns>
+        [PublicAPI]
+        public abstract PathDependencyInfo EvenIfDependantDisabled();
     }
 
     [PublicAPI]
