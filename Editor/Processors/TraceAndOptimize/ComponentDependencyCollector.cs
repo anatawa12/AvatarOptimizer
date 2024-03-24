@@ -80,13 +80,14 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         internal class Collector : API.ComponentDependencyCollector
         {
             private readonly ComponentDependencyCollector _collector;
+            private readonly GCComponentInfoHolder _componentInfos;
             private GCComponentInfo _info;
-            [NotNull] private readonly ComponentDependencyInfo _dependencyInfoSharedInstance;
+            [CanBeNull] private IDependencyInfo _dependencyInfo;
 
             public Collector(ComponentDependencyCollector collector, GCComponentInfoHolder componentInfos)
             {
                 _collector = collector;
-                _dependencyInfoSharedInstance = new ComponentDependencyInfo(collector, componentInfos);
+                _componentInfos = componentInfos;
             }
             
             public void Init(GCComponentInfo info)
@@ -109,9 +110,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 [CanBeNull] Component dependency,
                 GCComponentInfo.DependencyType type = GCComponentInfo.DependencyType.Normal)
             {
-                _dependencyInfoSharedInstance.Finish();
-                _dependencyInfoSharedInstance.Init(info, dependency, type);
-                return _dependencyInfoSharedInstance;
+                _dependencyInfo?.Finish();
+                var dependencyInfo = new ComponentDependencyInfo(_collector, _componentInfos, info, dependency, type);
+                _dependencyInfo = dependencyInfo;
+                return dependencyInfo;
             }
 
             public override API.ComponentDependencyInfo AddDependency(Component dependant, Component dependency) =>
@@ -132,36 +134,36 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             public void FinalizeForComponent()
             {
-                _dependencyInfoSharedInstance.Finish();
+                _dependencyInfo?.Finish();
                 _info = null;
             }
 
-            private class ComponentDependencyInfo : API.ComponentDependencyInfo
+            internal interface IDependencyInfo
+            {
+                void Finish();
+            }
+
+            private class ComponentDependencyInfo : API.ComponentDependencyInfo, IDependencyInfo
             {
                 private readonly ComponentDependencyCollector _collector;
                 private readonly GCComponentInfoHolder _componentInfos;
 
                 [CanBeNull] private Component _dependency;
-                [CanBeNull] private GCComponentInfo _dependantInformation;
-                private GCComponentInfo.DependencyType _type;
+                [CanBeNull] private readonly GCComponentInfo _dependantInformation;
+                private readonly GCComponentInfo.DependencyType _type;
 
                 private bool _evenIfTargetIsDisabled;
                 private bool _evenIfThisIsDisabled;
 
                 // ReSharper disable once NotNullOrRequiredMemberIsNotInitialized
                 public ComponentDependencyInfo(ComponentDependencyCollector collector,
-                    GCComponentInfoHolder componentInfos)
-                {
-                    _collector = collector;
-                    _componentInfos = componentInfos;
-                }
-
-                internal void Init(
+                    GCComponentInfoHolder componentInfos,
                     [CanBeNull] GCComponentInfo dependantInformation,
                     [CanBeNull] Component component,
                     GCComponentInfo.DependencyType type = GCComponentInfo.DependencyType.Normal)
                 {
-                    Debug.Assert(_dependency == null, "Init on not finished");
+                    _collector = collector;
+                    _componentInfos = componentInfos;
                     _dependency = component;
                     _dependantInformation = dependantInformation;
                     _evenIfTargetIsDisabled = true;
@@ -169,7 +171,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     _type = type;
                 }
 
-                internal void Finish()
+                public void Finish()
                 {
                     if (_dependency == null) return;
                     SetToDictionary();
@@ -201,12 +203,14 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
                 public override API.ComponentDependencyInfo EvenIfDependantDisabled()
                 {
+                    if (_dependency == null) throw new InvalidOperationException("Called after another call");
                     _evenIfThisIsDisabled = true;
                     return this;
                 }
 
                 public override API.ComponentDependencyInfo OnlyIfTargetCanBeEnable()
                 {
+                    if (_dependency == null) throw new InvalidOperationException("Called after another call");
                     _evenIfTargetIsDisabled = false;
                     return this;
                 }
