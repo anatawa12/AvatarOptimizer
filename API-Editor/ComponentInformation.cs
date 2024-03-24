@@ -189,6 +189,8 @@ namespace Anatawa12.AvatarOptimizer.API
         /// AvatarOptimizer will work as possible to not change the relative path of the dependency,
         /// but the path of the component may be changed by the request of the user or some other reasons
         /// so it's highly recommended to re-compute the relative path on ApplySpecialMapping.
+        /// In addition, for other NDMF plugin-compatibility, it might be better to resolve / replace 
+        /// the path reference with UnityEngine.Object reference in Resolving phase.
         /// </remarks>
         /// <remarks>
         /// This method is added in AvatarOptimizer 1.7.0.
