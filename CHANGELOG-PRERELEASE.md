@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- ContextHolder become unknown component in NDMF 1.4.0 `#946`
 
 ### Security
 
