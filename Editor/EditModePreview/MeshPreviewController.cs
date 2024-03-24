@@ -17,9 +17,9 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
         public static bool Previewing => instance.previewing;
 
         [SerializeField] private bool previewing;
-        [SerializeField] private Mesh previewMesh;
-        [SerializeField] private Mesh originalMesh;
-        [SerializeField] private SkinnedMeshRenderer targetRenderer;
+        [SerializeField] [CanBeNull] private Mesh previewMesh;
+        [SerializeField] [CanBeNull] private Mesh originalMesh;
+        [SerializeField] [CanBeNull] private SkinnedMeshRenderer targetRenderer;
         [SerializeField] private AnimationModeDriver driverCached;
 
         private AnimationModeDriver DriverCached => driverCached ? driverCached : driverCached = CreateDriver();
@@ -42,6 +42,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
             EditorApplication.update -= Update;
         }
 
+        [CanBeNull]
         private Object ActiveEditor()
         {
             var editors = ActiveEditorTracker.sharedTracker.activeEditors;
@@ -52,10 +53,10 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
         {
             if (previewing)
             {
-                if (_previewController == null)
+                if (_previewController == null && targetRenderer != null)
                     _previewController = new RemoveMeshPreviewController(targetRenderer, originalMesh, previewMesh);
 
-                if (targetRenderer == null || ActiveEditor() != targetRenderer.gameObject)
+                if (_previewController == null || targetRenderer == null || ActiveEditor() != targetRenderer.gameObject)
                 {
                     StopPreview();
                     return;
@@ -155,7 +156,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
             }
         }
 
-        public void StartPreview(GameObject expectedGameObject = null)
+        public void StartPreview([CanBeNull] GameObject expectedGameObject = null)
         {
             // Already in AnimationMode of other object
             if (AnimationMode.InAnimationMode())
@@ -168,6 +169,8 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                 throw new Exception("Unexpected GameObject");
 
             targetRenderer = targetGameObject.GetComponent<SkinnedMeshRenderer>();
+            if (targetRenderer == null)
+                throw new Exception("No SkinnedMeshRenderer");
             _previewController = new RemoveMeshPreviewController(targetRenderer);
             targetRenderer = _previewController.TargetRenderer;
             previewMesh = _previewController.PreviewMesh;
