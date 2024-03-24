@@ -12,9 +12,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 {
     public class AOAnimatorController
     {
-        private AnimatorController _animatorController;
+        private readonly AnimatorController _animatorController;
 
-        public AOAnimatorController([NotNull] AnimatorController animatorController)
+        public AOAnimatorController(AnimatorController animatorController)
         {
             if (!animatorController) throw new ArgumentNullException(nameof(animatorController));
             _animatorController = animatorController;
@@ -84,8 +84,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
         public readonly AnimatorControllerLayer Layer;
         private readonly AOAnimatorController _parent;
 
-        public AOAnimatorControllerLayer(AOAnimatorController parent,
-            [NotNull] AnimatorControllerLayer layer)
+        public AOAnimatorControllerLayer(AOAnimatorController parent, AnimatorControllerLayer layer)
         {
             _parent = parent;
             Layer = layer ?? throw new ArgumentNullException(nameof(layer));
@@ -93,7 +92,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 
         public bool IsSynced => Layer.syncedLayerIndex != -1;
         public bool IsSyncedToOtherLayer = false;
-        [CanBeNull] public AOAnimatorControllerLayer SyncedLayer { get; internal set; }
+        public AOAnimatorControllerLayer? SyncedLayer { get; internal set; }
 
         public AnimatorWeightChange WeightChange;
 
@@ -109,23 +108,23 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
         }
 
         public int syncedLayerIndex => Layer.syncedLayerIndex;
-        public AnimatorStateMachine stateMachine => Layer.stateMachine ? Layer.stateMachine : null;
+        public AnimatorStateMachine? stateMachine => Layer.stateMachine ? Layer.stateMachine : null;
         public string name => Layer.name;
-        public AvatarMask avatarMask => Layer.avatarMask;
+        public AvatarMask? avatarMask => Layer.avatarMask;
         // ReSharper restore InconsistentNaming
 
         private bool _removable = true;
         public bool IsRemovable => !IsBaseLayer && _removable;
         public void MarkUnRemovable() => _removable = false;
-        public event Action<int> LayerIndexUpdated;
+        public event Action<int>? LayerIndexUpdated;
         public virtual void OnLayerIndexUpdated(int obj) => LayerIndexUpdated?.Invoke(obj);
 
         public bool IsBaseLayer { get; set; }
         public bool IsOverride => Layer.blendingMode == AnimatorLayerBlendingMode.Override;
 
-        public Motion GetOverrideMotion(AnimatorState state) => Layer.GetOverrideMotion(state);
+        public Motion? GetOverrideMotion(AnimatorState state) => Layer.GetOverrideMotion(state);
 
-        public IEnumerable<Motion> GetMotions() => SyncedLayer == null
+        public IEnumerable<Motion?> GetMotions() => SyncedLayer == null
             ? ACUtils.AllStates(stateMachine).Select(x => x.motion)
             : ACUtils.AllStates(SyncedLayer.stateMachine).Select(GetOverrideMotion);
     }

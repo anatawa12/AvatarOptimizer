@@ -53,7 +53,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 
             // first, collect transformable layers
             var layers = controller.layers;
-            var convertInfos = new ConvertibleLayerInfo[layers.Count()];
+            var convertInfos = new ConvertibleLayerInfo?[layers.Length];
             var layerByParameter = new Dictionary<string, List<int>>();
             for (var i = 0; i < layers.Length; i++)
             {
@@ -73,10 +73,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 
             for (var i = 0; i < layers.Length; i++)
             {
-                if (convertInfos[i] == null) continue;
-                var info = convertInfos[i];
+                if (convertInfos[i] is not { } info) continue;
                 var layer = layers[i];
-
                 DoConvert(info, layer);
             }
 
@@ -107,38 +105,36 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 return entryTransitions.ToArray();
             }
 
-            AnimatorTransition CloneTransition(AnimatorTransition transition, AnimatorCondition[] conditions) =>
-                new AnimatorTransition
-                {
-                    name = transition.name,
-                    conditions = conditions,
-                    destinationStateMachine = transition.destinationStateMachine,
-                    destinationState = transition.destinationState,
-                    solo = transition.solo,
-                    mute = transition.mute,
-                    isExit = transition.isExit,
-                };
+            AnimatorTransition CloneTransition(AnimatorTransition transition, AnimatorCondition[] conditions) => new()
+            {
+                name = transition.name,
+                conditions = conditions,
+                destinationStateMachine = transition.destinationStateMachine,
+                destinationState = transition.destinationState,
+                solo = transition.solo,
+                mute = transition.mute,
+                isExit = transition.isExit,
+            };
 
             AnimatorStateTransition CloneStateTransition(AnimatorStateTransition transition,
-                AnimatorCondition[] conditions) =>
-                new AnimatorStateTransition
-                {
-                    name = transition.name,
-                    conditions = conditions,
-                    destinationStateMachine = transition.destinationStateMachine,
-                    destinationState = transition.destinationState,
-                    solo = transition.solo,
-                    mute = transition.mute,
-                    isExit = transition.isExit,
-                    duration = transition.duration,
-                    offset = transition.offset,
-                    exitTime = transition.exitTime,
-                    hasExitTime = transition.hasExitTime,
-                    hasFixedDuration = transition.hasFixedDuration,
-                    interruptionSource = transition.interruptionSource,
-                    orderedInterruption = transition.orderedInterruption,
-                    canTransitionToSelf = transition.canTransitionToSelf,
-                };
+                AnimatorCondition[] conditions) => new()
+            {
+                name = transition.name,
+                conditions = conditions,
+                destinationStateMachine = transition.destinationStateMachine,
+                destinationState = transition.destinationState,
+                solo = transition.solo,
+                mute = transition.mute,
+                isExit = transition.isExit,
+                duration = transition.duration,
+                offset = transition.offset,
+                exitTime = transition.exitTime,
+                hasExitTime = transition.hasExitTime,
+                hasFixedDuration = transition.hasFixedDuration,
+                interruptionSource = transition.interruptionSource,
+                orderedInterruption = transition.orderedInterruption,
+                canTransitionToSelf = transition.canTransitionToSelf,
+            };
 
             for (var layerI = 0; layerI < layers.Length; layerI++)
             {
@@ -168,56 +164,82 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             controller.parameters = parameters;
         }
 
-        [CanBeNull]
-        private static ConvertibleLayerInfo TryParseLayer(AOAnimatorControllerLayer layer,
+        private static ConvertibleLayerInfo? TryParseLayer(AOAnimatorControllerLayer layer,
             AnimatorOptimizerState optimizerState, HashSet<string> intParameters)
         {
-            if (layer.IsSynced || layer.IsSyncedToOtherLayer) return null; // synced layer is not supported
-            if (!layer.stateMachine) return null;
-            var stateMachine = layer.stateMachine;
-            var states = stateMachine.states;
-
-            if (stateMachine.anyStateTransitions.Length != 0) return null;
-            if (stateMachine.stateMachines.Length != 0) return null;
-            if (stateMachine.defaultState == null) return null;
-            if (stateMachine.states.Length < 2) return null;
+            if (layer is not
+                {
+                    IsSynced: false,
+                    IsSyncedToOtherLayer: false,
+                    stateMachine:
+                    {
+                        anyStateTransitions: { Length: 0 },
+                        stateMachines: { Length: 0 },
+                        defaultState: { } defaultState,
+                        states: { Length: >= 2 } states,
+                        entryTransitions: { Length: >= 1 } entryTransitions,
+                    }
+                })
+                return null;
 
             // check for conditions of entry transitions
 
-            string conditionParameter = null;
+            string conditionParameter;
             var stateValues = new Dictionary<AnimatorState, HashSet<int>>();
             var allValues = new HashSet<int>();
-            foreach (var entryTransition in stateMachine.entryTransitions)
+
             {
-                if (entryTransition.destinationStateMachine != null) return null;
-                if (entryTransition.destinationState == null) return null;
-                if (entryTransition.conditions.Length != 1) return null;
+                var entryTransition = entryTransitions[0];
 
-                var condition = entryTransition.conditions[0];
-                if (condition.mode != AnimatorConditionMode.Equals) return null;
-                if (conditionParameter == null)
-                {
-                    if (!intParameters.Contains(condition.parameter)) return null; // non int parameter
-                    conditionParameter = condition.parameter;
-                }
-                else
-                {
-                    if (condition.parameter != conditionParameter) return null;
-                }
+                if (entryTransition is not
+                    {
+                        isExit: false,
+                        destinationStateMachine: null,
+                        destinationState: not null,
+                        conditions: { Length: 1 } conditions
+                    })
+                    return null;
 
-                var dest = entryTransition.destinationState;
+                if (conditions[0] is not
+                    {
+                        mode: AnimatorConditionMode.Equals,
+                        parameter: {} parameter,
+                    }) return null;
+                if (!intParameters.Contains(parameter)) return null; // non int parameter
+                conditionParameter = parameter;
+            }
+
+            foreach (var entryTransition in entryTransitions)
+            {
+                if (entryTransition is not
+                    {
+                        isExit: false,
+                        destinationStateMachine: null,
+                        destinationState: { } dest,
+                        conditions: { Length: 1 } conditions
+                    }) return null;
+
+                if (conditions[0] is not
+                    {
+                        mode: AnimatorConditionMode.Equals,
+                        parameter: {} parameter,
+                        threshold: var threshold,
+                    }) return null;
+
+                if (parameter != conditionParameter) return null;
+
+                // not finite makes casting to int undefined
+                if (!float.IsFinite(threshold)) return null;
+                var value = (int)threshold;
+
                 if (!stateValues.TryGetValue(dest, out var values))
                     stateValues.Add(dest, values = new HashSet<int>());
-                // not finite makes casting to int undefined
-                if (float.IsNaN(condition.threshold) || float.IsInfinity(condition.threshold)) return null;
-                var value = (int)condition.threshold;
                 if (allValues.Contains(value)) return null; // duplicated value
                 values.Add(value);
                 allValues.Add(value);
             }
 
             // check there are no states without entry transition.
-            var defaultState = stateMachine.defaultState;
             if (stateValues.ContainsKey(defaultState))
             {
                 if (stateValues.Count != states.Length) return null;
@@ -234,45 +256,51 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             // - exit transitions are correct for that state
             // - there are no other transitions
             // - there are no behaviors
-            bool? writeDefaults = null;
-            HashSet<EditorCurveBinding> animatingProperties = null;
+
+            // check write defaults and animating properties
+            if (states[0].state.writeDefaultValues)
+            {
+                for (var index = 1; index < states.Length; index++)
+                {
+                    // check WD
+                    if (states[index] is not { state: { writeDefaultValues: true } }) return null;
+                }
+            }
+            else
+            {
+                if (states[0].state.motion == null) return null; // with WD=off, motion=None will cause broken animator
+                var expectAnimatingProperties = CollectAnimatingProperties(states[0].state.motion);
+                if (expectAnimatingProperties == null) return null; // we found unsupported motion
+
+                for (var index = 1; index < states.Length; index++)
+                {
+                    // check WD and animating properties
+                    var childStateInfo = states[index];
+                    if (childStateInfo is not { state: { motion: var motion, writeDefaultValues: false } })
+                        return null;
+
+                    if (motion == null) return null; // with WD=off, motion=None will cause broken animator
+                    var newAnimatingProperties = CollectAnimatingProperties(motion);
+                    if (newAnimatingProperties == null) return null; // we found unsupported motion
+                    if (!newAnimatingProperties.SetEquals(expectAnimatingProperties)) return null;
+                }
+            }
+
             foreach (var childStateInfo in states)
             {
-                var state = childStateInfo.state;
-                if (!state) return null;
-                if (state.behaviours.Length != 0)
-                    return null; // we cannot execute state machine behaviour in blend tree
                 // TODO: for linear animation, we can simulate motion time with 1d blend tree
                 // https://github.com/anatawa12/AvatarOptimizer/issues/861
-                if (state.timeParameterActive) return null; // motion time is not allowed. 
 
-                var motion = state.motion;
-
-                // check WD and animating properties
-                if (writeDefaults == null)
-                {
-                    // first state in the stateMachine
-                    writeDefaults = state.writeDefaultValues;
-                    if (!state.writeDefaultValues)
+                if (childStateInfo is not
                     {
-                        if (!motion) return null; // with WD=off, motion=None will cause broken animator
-                        animatingProperties = CollectAnimatingProperties(motion);
-                        if (animatingProperties == null) return null; // we found unsupported motion
-                    }
-                }
-                else
-                {
-                    // other states: check with first state
-                    if (state.writeDefaultValues != writeDefaults) return null;
-                    if (!state.writeDefaultValues)
-                    {
-                        if (!motion) return null; // with WD=off, motion=None will cause broken animator
-                        var newAnimatingProperties = CollectAnimatingProperties(motion);
-                        if (newAnimatingProperties == null) return null; // we found unsupported motion
-                        Debug.Assert(animatingProperties != null, nameof(animatingProperties) + " != null");
-                        if (!animatingProperties.SetEquals(newAnimatingProperties)) return null;
-                    }
-                }
+                        state:
+                        {
+                            behaviours: { Length: 0 },
+                            timeParameterActive: false,
+                            motion: var motion,
+                            transitions: var transitions,
+                        } state,
+                    }) return null;
 
                 // the clip is time dependant, we cannot convert it to blend tree
                 foreach (var clip in ACUtils.AllClips(motion))
@@ -280,17 +308,23 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                         return null;
 
                 // check for transitions
-                var transitions = state.transitions;
 
                 // basic transition check: all transitions are exit transitions without blending
                 foreach (var transition in transitions)
                 {
-                    // it's not a exit transition
-                    if (!transition.isExit) return null;
-                    // hasExitTime = true means changing condition may not change state immediately
-                    if (transition.hasExitTime) return null;
-                    // duration != 0 means has blending
-                    if (transition.duration != 0) return null;
+                    if (transition is not
+                        {
+                            isExit: true,
+                            solo: false,
+                            mute: false,
+                            destinationState: null,
+                            destinationStateMachine: null,
+
+                            hasExitTime: false,
+                            duration: 0,
+                            offset: 0,
+                            // since duration is zero, interruption should not be happened
+                        }) return null;
                 }
 
                 // transition condition check.
@@ -389,8 +423,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             public IEnumerable<string> Parameters => new[] { ParameterName };
         }
 
-        [CanBeNull]
-        private static HashSet<EditorCurveBinding> CollectAnimatingProperties(Motion motion)
+        private static HashSet<EditorCurveBinding>? CollectAnimatingProperties(Motion? motion)
         {
             switch (motion)
             {
@@ -481,7 +514,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 
             {
                 // last frame: add last state to defaultMotion
-                var (value, motion) = states[states.Count - 1];
+                var (value, motion) = states[^1];
                 AddFrames(value, motion,
                     value + 1, defaultMotion);
             }
@@ -504,7 +537,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 writeDefaultValues = true, // WD on to avoid unexpected blendtree behaviour
             };
 
-            layer.stateMachine.states = new ChildAnimatorState[]
+            layer.stateMachine!.states = new[]
             {
                 new ChildAnimatorState()
                 {
@@ -516,14 +549,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             layer.stateMachine.entryTransitions = Array.Empty<AnimatorTransition>();
             layer.stateMachine.defaultState = newState;
 
-            ChildMotion CreateChild(float value, Motion motion) =>
-                new ChildMotion
-                {
-                    motion = motion,
-                    timeScale = 1,
-                    threshold = value,
-                    directBlendParameter = "",
-                };
+            ChildMotion CreateChild(float value, Motion motion) => new()
+            {
+                motion = motion,
+                timeScale = 1,
+                threshold = value,
+                directBlendParameter = "",
+            };
         }
 
         public static IEnumerable<AnimatorCondition[]> FlattenConditions(AnimatorCondition[][] conditions)

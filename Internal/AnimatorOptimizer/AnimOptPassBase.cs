@@ -9,12 +9,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 {
     public class AnimatorOptimizerState
     {
-        private List<AOAnimatorController> _contollers = new List<AOAnimatorController>();
+        private readonly List<AOAnimatorController> _contollers = new();
         public IEnumerable<AOAnimatorController> Controllers => _contollers;
 
         public void Add(AOAnimatorController wrapper) => _contollers.Add(wrapper);
 
-        private Dictionary<AnimationClip, bool> _isTimeDependentClipCache = new Dictionary<AnimationClip, bool>();
+        private readonly Dictionary<AnimationClip, bool> _isTimeDependentClipCache = new();
         public bool IsTimeDependentClip(AnimationClip clip)
         {
             if (_isTimeDependentClipCache.TryGetValue(clip, out var result))
