@@ -111,7 +111,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 GCComponentInfo.DependencyType type = GCComponentInfo.DependencyType.Normal)
             {
                 _dependencyInfo?.Finish();
-                var dependencyInfo = new ComponentDependencyInfo(_collector, _componentInfos, info, dependency, type);
+                _dependencyInfo = null;
+
+                if (dependency == null) return DummyComponentDependencyInfo.Instance;
+                if (info == null) return DummyComponentDependencyInfo.Instance;
+                if (!dependency.transform.IsChildOf(_collector._session.AvatarRootTransform)) return DummyComponentDependencyInfo.Instance;
+
+                var dependencyInfo = new ComponentDependencyInfo(_componentInfos, info, dependency, type);
                 _dependencyInfo = dependencyInfo;
                 return dependencyInfo;
             }
@@ -135,6 +141,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             public void FinalizeForComponent()
             {
                 _dependencyInfo?.Finish();
+                _dependencyInfo = null;
                 _info = null;
             }
 
@@ -143,31 +150,35 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 void Finish();
             }
 
+            private class DummyComponentDependencyInfo : API.ComponentDependencyInfo
+            {
+                public static DummyComponentDependencyInfo Instance { get; } = new DummyComponentDependencyInfo();
+
+                public override API.ComponentDependencyInfo EvenIfDependantDisabled() => this;
+                public override API.ComponentDependencyInfo OnlyIfTargetCanBeEnable() => this;
+            }
+
             private class ComponentDependencyInfo : API.ComponentDependencyInfo, IDependencyInfo
             {
-                private readonly ComponentDependencyCollector _collector;
                 private readonly GCComponentInfoHolder _componentInfos;
 
                 [CanBeNull] private Component _dependency;
-                [CanBeNull] private readonly GCComponentInfo _dependantInformation;
+                [NotNull] private readonly GCComponentInfo _dependantInformation;
                 private readonly GCComponentInfo.DependencyType _type;
 
-                private bool _evenIfTargetIsDisabled;
-                private bool _evenIfThisIsDisabled;
+                private bool _evenIfTargetIsDisabled = true;
+                private bool _evenIfThisIsDisabled = false;
 
                 // ReSharper disable once NotNullOrRequiredMemberIsNotInitialized
-                public ComponentDependencyInfo(ComponentDependencyCollector collector,
+                public ComponentDependencyInfo(
                     GCComponentInfoHolder componentInfos,
-                    [CanBeNull] GCComponentInfo dependantInformation,
-                    [CanBeNull] Component component,
+                    [NotNull] GCComponentInfo dependantInformation,
+                    [NotNull] Component component,
                     GCComponentInfo.DependencyType type = GCComponentInfo.DependencyType.Normal)
                 {
-                    _collector = collector;
                     _componentInfos = componentInfos;
                     _dependency = component;
                     _dependantInformation = dependantInformation;
-                    _evenIfTargetIsDisabled = true;
-                    _evenIfThisIsDisabled = false;
                     _type = type;
                 }
 
@@ -182,9 +193,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 {
                     Debug.Assert(_dependency != null, nameof(_dependency) + " != null");
 
-                    if (_dependantInformation == null) return;
-                    if (!_dependency.transform.IsChildOf(_collector._session.AvatarRootTransform))
-                        return;
                     if (!_evenIfThisIsDisabled)
                     {
                         // dependant must can be able to be enable
