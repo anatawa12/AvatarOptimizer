@@ -58,6 +58,7 @@ The format is based on [Keep a Changelog].
 - Re-fix Nested Constraint can be broken with Trace and Optimize `#880`
 - Fix non-VRChat project support `#884`
 - Fix VRM support `#892`
+- ArgumentNullException in Edit-mode Remove Mesh Preview `#942`
 
 ### Security
 
