@@ -131,6 +131,28 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             internal override bool? GetAnimatedFlag(Component component, string animationProperty, bool currentValue) =>
                 _collector._session.GetConstantValue(component, animationProperty, currentValue);
 
+            public override API.PathDependencyInfo AddPathDependency(Transform dependency, Transform root)
+            {
+                if (dependency == null) throw new ArgumentNullException(nameof(dependency));
+                if (root == null) throw new ArgumentNullException(nameof(root));
+
+                var transforms = new List<Transform>();
+                foreach (var transform in dependency.ParentEnumerable(root, includeMe: true))
+                    transforms.Add(transform);
+
+                if (transforms.Count == 0)
+                    throw new ArgumentException("dependency is not child of root");
+                if (transforms[transforms.Count - 1].parent != root)
+                    throw new ArgumentException("dependency is not child of root");
+
+                if (!dependency.transform.IsChildOf(_collector._session.AvatarRootTransform))
+                    return DummyPathDependencyInfo.Instance;
+
+                var dependencyInfo = new PathDependencyInfo(_info, transforms.ToArray());
+                _dependencyInfo = dependencyInfo;
+                return dependencyInfo;
+            }
+
             public void AddParentDependency(Transform component) =>
                 AddDependencyInternal(_info, component.parent, GCComponentInfo.DependencyType.Parent)
                     .EvenIfDependantDisabled();
@@ -220,6 +242,62 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 {
                     if (_dependency == null) throw new InvalidOperationException("Called after another call");
                     _evenIfTargetIsDisabled = false;
+                    return this;
+                }
+            }
+
+            private class DummyPathDependencyInfo : API.PathDependencyInfo
+            {
+                public static DummyPathDependencyInfo Instance { get; } = new DummyPathDependencyInfo();
+
+                public override API.PathDependencyInfo EvenIfDependantDisabled() => this;
+            }
+
+            private class PathDependencyInfo : API.PathDependencyInfo, IDependencyInfo
+            {
+                [CanBeNull] [ItemNotNull] private Transform[] _dependencies;
+                [NotNull] private readonly GCComponentInfo _dependantInformation;
+
+                private bool _evenIfThisIsDisabled;
+
+                // ReSharper disable once NotNullOrRequiredMemberIsNotInitialized
+                public PathDependencyInfo(
+                    [NotNull] GCComponentInfo dependantInformation,
+                    [NotNull] [ItemCanBeNull] Transform[] component)
+                {
+                    _dependencies = component;
+                    _dependantInformation = dependantInformation;
+                    _evenIfThisIsDisabled = false;
+                }
+
+                public void Finish()
+                {
+                    if (_dependencies == null) return;
+                    SetToDictionary();
+                    _dependencies = null;
+                }
+
+                private void SetToDictionary()
+                {
+                    Debug.Assert(_dependencies != null, nameof(_dependencies) + " != null");
+
+                    if (!_evenIfThisIsDisabled)
+                    {
+                        // dependant must can be able to be enable
+                        if (_dependantInformation.Activeness == false) return;
+                    }
+
+                    foreach (var dependency in _dependencies)
+                    {
+                        _dependantInformation.Dependencies.TryGetValue(dependency, out var type);
+                        _dependantInformation.Dependencies[dependency] = type | GCComponentInfo.DependencyType.Normal;
+                    }
+                }
+
+                public override API.PathDependencyInfo EvenIfDependantDisabled()
+                {
+                    if (_dependencies == null) throw new InvalidOperationException("Called after another call");
+                    _evenIfThisIsDisabled = true;
                     return this;
                 }
             }
