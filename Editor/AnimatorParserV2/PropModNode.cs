@@ -270,8 +270,8 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
     internal class FloatAnimationCurveNode : ImmutablePropModNode<float>
     {
-        public AnimationCurve Curve { get; }
-        public AnimationClip Clip { get; }
+        [NotNull] public AnimationCurve Curve { get; }
+        [NotNull] public AnimationClip Clip { get; }
 
         [CanBeNull]
         public static FloatAnimationCurveNode Create([NotNull] AnimationClip clip, EditorCurveBinding binding)
@@ -282,8 +282,10 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             return new FloatAnimationCurveNode(clip, curve);
         }
 
-        private FloatAnimationCurveNode(AnimationClip clip, AnimationCurve curve)
+        private FloatAnimationCurveNode([NotNull] AnimationClip clip, [NotNull] AnimationCurve curve)
         {
+            if (!clip) throw new ArgumentNullException(nameof(clip));
+            if (curve == null) throw new ArgumentNullException(nameof(curve));
             Debug.Assert(curve.keys.Length > 0);
             Clip = clip;
             Curve = curve;

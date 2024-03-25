@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.AnimatorParsersV2;
 using JetBrains.Annotations;
+using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
@@ -10,7 +11,7 @@ using UnityEngine;
 namespace Anatawa12.AvatarOptimizer
 {
     // The class describes the location of the animation curve
-    internal sealed class AnimationLocation
+    internal sealed class AnimationLocation : IErrorContext
     {
         [NotNull] public Animator Component { get; }
         public int PlayableLayerIndex { get; }
@@ -18,9 +19,11 @@ namespace Anatawa12.AvatarOptimizer
         [NotNull] public AnimatorState AnimatorState { get; }
         [NotNull] public int[] BlendTreeLocation { get; }
         [NotNull] public AnimationCurve Curve { get; }
+        [NotNull] public AnimationClip Clip { get; set; }
 
         public AnimationLocation([NotNull] Animator component, int playableLayerIndex, int animationLayerIndex,
-            [NotNull] AnimatorState state, int[] blendTreeLocation, [NotNull] AnimationCurve curve)
+            [NotNull] AnimatorState state, int[] blendTreeLocation, [NotNull] AnimationCurve curve,
+            [NotNull] AnimationClip clip)
         {
             if (!component) throw new ArgumentNullException(nameof(component));
             if (!state) throw new ArgumentNullException(nameof(state));
@@ -31,6 +34,7 @@ namespace Anatawa12.AvatarOptimizer
             AnimatorState = state;
             BlendTreeLocation = blendTreeLocation ?? Array.Empty<int>();
             Curve = curve ?? throw new ArgumentNullException(nameof(curve));
+            Clip = clip;
         }
 
         public static IEnumerable<AnimationLocation> CollectAnimationLocation(RootPropModNode<float> node)
@@ -54,7 +58,7 @@ namespace Anatawa12.AvatarOptimizer
                 return new[]
                 {
                     new AnimationLocation(animator, playableLayer, animatorLayer,
-                        state, null, floatNode.Curve)
+                        state, null, floatNode.Curve, floatNode.Clip)
                 };
             return CollectAnimationLocationSlow(animator, playableLayer, animatorLayer, state, node);
         }
@@ -78,7 +82,7 @@ namespace Anatawa12.AvatarOptimizer
                     {
                         case FloatAnimationCurveNode floatNode:
                             yield return new AnimationLocation(animator, playableLayer, animatorLayer, state,
-                                newLocation, floatNode.Curve);
+                                newLocation, floatNode.Curve, floatNode.Clip);
                             break;
                         case BlendTreeNode<float> childBlendTree:
                             queue.Enqueue((childBlendTree, newLocation));
@@ -115,5 +119,8 @@ namespace Anatawa12.AvatarOptimizer
                 return hashCode;
             }
         }
+
+        public IEnumerable<ObjectReference> ContextReferences => new[]
+            { ObjectRegistry.GetReference(Component), ObjectRegistry.GetReference(Clip) };
     }
 }

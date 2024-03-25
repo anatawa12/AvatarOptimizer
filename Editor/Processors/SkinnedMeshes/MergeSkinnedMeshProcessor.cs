@@ -221,7 +221,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             var boneTransforms = new HashSet<Transform>(target.Bones.Select(x => x.Transform));
 
             Profiler.BeginSample("Generate ActivenessWarning");
-            ActivenessAnimationWarning(skinnedMeshRenderers, staticMeshRenderers, context);
+            ActivenessAnimationWarning(skinnedMeshRenderers.Concat<Renderer>(staticMeshRenderers), context);
             Profiler.EndSample();
 
             Profiler.BeginSample("Postprocess Source Renderers");
@@ -346,44 +346,39 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     string.Join(",", animatedProperties), Component);
         }
 
-        private void ActivenessAnimationWarning(List<SkinnedMeshRenderer> skinnedMeshRenderers, List<MeshRenderer> staticMeshRenderers, BuildContext context)
+        private void ActivenessAnimationWarning(IEnumerable<Renderer> renderers, BuildContext context)
         {
-            var parents = new HashSet<Transform>(Target.transform.ParentEnumerable(context.AvatarRootTransform, includeMe: true));
+            // collect activeness animation for the merged object
+            var animationLocationsForMerged = GetAnimationLocations(context, Target);
+
             var sources = new List<object>();
 
-            foreach (var renderer in skinnedMeshRenderers)
-                ActivenessAnimationWarning(sources, renderer, context, parents);
-            foreach (var renderer in staticMeshRenderers)
-                ActivenessAnimationWarning(sources, renderer, context, parents);
+            foreach (var renderer in renderers)
+            {
+                var animationLocationsForSource = GetAnimationLocations(context, renderer);
+                if (animationLocationsForSource.SetEquals(animationLocationsForMerged)) continue;
+
+                // if the source has different activeness animation, warn it.
+                animationLocationsForSource.ExceptWith(animationLocationsForMerged);
+                sources.Add(renderer);
+                sources.Add(animationLocationsForSource);
+            }
 
             if (sources.Count != 0)
                 BuildLog.LogWarning("MergeSkinnedMesh:warning:animation-mesh-hide", sources);
         }
 
-        private void ActivenessAnimationWarning(
-            List<object> sources, 
-            Renderer renderer,
-            BuildContext context,
-            HashSet<Transform> parents)
+        private static HashSet<AnimationLocation> GetAnimationLocations(BuildContext context, Component component)
         {
-            // Warn if the source mesh can be hidden differently than merged by animation.
+            var locations = new HashSet<AnimationLocation>();
             {
-                if (context.GetAnimationComponent(renderer).TryGetFloat("m_Enabled", out var p))
-                {
-                    sources.Add(renderer);
-                    sources.Add(p.ContextReferences);
-                }
+                if (context.GetAnimationComponent(component).TryGetFloat("m_Enabled", out var p))
+                    locations.UnionWith(AnimationLocation.CollectAnimationLocation(p));
             }
-            foreach (var transform in renderer.transform.ParentEnumerable(context.AvatarRootTransform, includeMe: true))
-            {
-                if (parents.Contains(transform)) break;
+            foreach (var transform in component.transform.ParentEnumerable(context.AvatarRootTransform, includeMe: true))
                 if (context.GetAnimationComponent(transform.gameObject).TryGetFloat("m_IsActive", out var p))
-                {
-                    sources.Add(renderer);
-                    sources.Add(transform.gameObject);
-                    sources.Add(p.ContextReferences);
-                }
-            }
+                    locations.UnionWith(AnimationLocation.CollectAnimationLocation(p));
+            return locations;
         }
 
         private (int[][] mapping, List<(MeshTopology topology, Material material)> materials)
