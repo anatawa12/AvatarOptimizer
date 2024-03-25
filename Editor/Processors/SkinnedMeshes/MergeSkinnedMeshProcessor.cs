@@ -349,17 +349,23 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         private void ActivenessAnimationWarning(List<SkinnedMeshRenderer> skinnedMeshRenderers, List<MeshRenderer> staticMeshRenderers, BuildContext context)
         {
             var parents = new HashSet<Transform>(Target.transform.ParentEnumerable(context.AvatarRootTransform, includeMe: true));
-
-            foreach (var renderer in skinnedMeshRenderers)
-                ActivenessAnimationWarning(renderer, context, parents);
-            foreach (var renderer in staticMeshRenderers)
-                ActivenessAnimationWarning(renderer, context, parents);
-        }
-
-        private void ActivenessAnimationWarning(Renderer renderer, BuildContext context, HashSet<Transform> parents)
-        {
             var sources = new List<object>();
 
+            foreach (var renderer in skinnedMeshRenderers)
+                ActivenessAnimationWarning(sources, renderer, context, parents);
+            foreach (var renderer in staticMeshRenderers)
+                ActivenessAnimationWarning(sources, renderer, context, parents);
+
+            if (sources.Count != 0)
+                BuildLog.LogWarning("MergeSkinnedMesh:warning:animation-mesh-hide", sources);
+        }
+
+        private void ActivenessAnimationWarning(
+            List<object> sources, 
+            Renderer renderer,
+            BuildContext context,
+            HashSet<Transform> parents)
+        {
             // Warn if the source mesh can be hidden differently than merged by animation.
             {
                 if (context.GetAnimationComponent(renderer).TryGetFloat("m_Enabled", out var p))
@@ -378,9 +384,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     sources.Add(p.ContextReferences);
                 }
             }
-
-            if (sources.Count != 0)
-                BuildLog.LogWarning("MergeSkinnedMesh:warning:animation-mesh-hide", sources);
         }
 
         private (int[][] mapping, List<(MeshTopology topology, Material material)> materials)
