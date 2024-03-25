@@ -23,6 +23,8 @@ The format is based on [Keep a Changelog].
   - Merge Skinned Mesh does not support animating material properties differently. (In other words, it can be broken.)
   - Since this version, AAO will warn for such a case.
   - If you animated all materials from same animations, your animation will not be warned.
+- API for declaring dependency relationship to the name of the component `#943`
+  - You can use this API to not change the name of the GameObject.
 
 ### Changed
 - MergePhysBone now corrects curve settings `#775`

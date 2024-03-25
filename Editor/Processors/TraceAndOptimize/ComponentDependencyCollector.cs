@@ -80,13 +80,14 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         internal class Collector : API.ComponentDependencyCollector
         {
             private readonly ComponentDependencyCollector _collector;
+            private readonly GCComponentInfoHolder _componentInfos;
             private GCComponentInfo _info;
-            [NotNull] private readonly ComponentDependencyInfo _dependencyInfoSharedInstance;
+            [CanBeNull] private IDependencyInfo _dependencyInfo;
 
             public Collector(ComponentDependencyCollector collector, GCComponentInfoHolder componentInfos)
             {
                 _collector = collector;
-                _dependencyInfoSharedInstance = new ComponentDependencyInfo(collector, componentInfos);
+                _componentInfos = componentInfos;
             }
             
             public void Init(GCComponentInfo info)
@@ -109,9 +110,16 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 [CanBeNull] Component dependency,
                 GCComponentInfo.DependencyType type = GCComponentInfo.DependencyType.Normal)
             {
-                _dependencyInfoSharedInstance.Finish();
-                _dependencyInfoSharedInstance.Init(info, dependency, type);
-                return _dependencyInfoSharedInstance;
+                _dependencyInfo?.Finish();
+                _dependencyInfo = null;
+
+                if (dependency == null) return DummyComponentDependencyInfo.Instance;
+                if (info == null) return DummyComponentDependencyInfo.Instance;
+                if (!dependency.transform.IsChildOf(_collector._session.AvatarRootTransform)) return DummyComponentDependencyInfo.Instance;
+
+                var dependencyInfo = new ComponentDependencyInfo(_componentInfos, info, dependency, type);
+                _dependencyInfo = dependencyInfo;
+                return dependencyInfo;
             }
 
             public override API.ComponentDependencyInfo AddDependency(Component dependant, Component dependency) =>
@@ -123,6 +131,28 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             internal override bool? GetAnimatedFlag(Component component, string animationProperty, bool currentValue) =>
                 _collector._session.GetConstantValue(component, animationProperty, currentValue);
 
+            public override API.PathDependencyInfo AddPathDependency(Transform dependency, Transform root)
+            {
+                if (dependency == null) throw new ArgumentNullException(nameof(dependency));
+                if (root == null) throw new ArgumentNullException(nameof(root));
+
+                var transforms = new List<Transform>();
+                foreach (var transform in dependency.ParentEnumerable(root, includeMe: true))
+                    transforms.Add(transform);
+
+                if (transforms.Count == 0)
+                    throw new ArgumentException("dependency is not child of root");
+                if (transforms[transforms.Count - 1].parent != root)
+                    throw new ArgumentException("dependency is not child of root");
+
+                if (!dependency.transform.IsChildOf(_collector._session.AvatarRootTransform))
+                    return DummyPathDependencyInfo.Instance;
+
+                var dependencyInfo = new PathDependencyInfo(_info, transforms.ToArray());
+                _dependencyInfo = dependencyInfo;
+                return dependencyInfo;
+            }
+
             public void AddParentDependency(Transform component) =>
                 AddDependencyInternal(_info, component.parent, GCComponentInfo.DependencyType.Parent)
                     .EvenIfDependantDisabled();
@@ -132,44 +162,49 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             public void FinalizeForComponent()
             {
-                _dependencyInfoSharedInstance.Finish();
+                _dependencyInfo?.Finish();
+                _dependencyInfo = null;
                 _info = null;
             }
 
-            private class ComponentDependencyInfo : API.ComponentDependencyInfo
+            internal interface IDependencyInfo
             {
-                private readonly ComponentDependencyCollector _collector;
+                void Finish();
+            }
+
+            private class DummyComponentDependencyInfo : API.ComponentDependencyInfo
+            {
+                public static DummyComponentDependencyInfo Instance { get; } = new DummyComponentDependencyInfo();
+
+                public override API.ComponentDependencyInfo EvenIfDependantDisabled() => this;
+                public override API.ComponentDependencyInfo OnlyIfTargetCanBeEnable() => this;
+            }
+
+            private class ComponentDependencyInfo : API.ComponentDependencyInfo, IDependencyInfo
+            {
                 private readonly GCComponentInfoHolder _componentInfos;
 
                 [CanBeNull] private Component _dependency;
-                [CanBeNull] private GCComponentInfo _dependantInformation;
-                private GCComponentInfo.DependencyType _type;
+                [NotNull] private readonly GCComponentInfo _dependantInformation;
+                private readonly GCComponentInfo.DependencyType _type;
 
-                private bool _evenIfTargetIsDisabled;
-                private bool _evenIfThisIsDisabled;
+                private bool _evenIfTargetIsDisabled = true;
+                private bool _evenIfThisIsDisabled = false;
 
                 // ReSharper disable once NotNullOrRequiredMemberIsNotInitialized
-                public ComponentDependencyInfo(ComponentDependencyCollector collector,
-                    GCComponentInfoHolder componentInfos)
-                {
-                    _collector = collector;
-                    _componentInfos = componentInfos;
-                }
-
-                internal void Init(
-                    [CanBeNull] GCComponentInfo dependantInformation,
-                    [CanBeNull] Component component,
+                public ComponentDependencyInfo(
+                    GCComponentInfoHolder componentInfos,
+                    [NotNull] GCComponentInfo dependantInformation,
+                    [NotNull] Component component,
                     GCComponentInfo.DependencyType type = GCComponentInfo.DependencyType.Normal)
                 {
-                    Debug.Assert(_dependency == null, "Init on not finished");
+                    _componentInfos = componentInfos;
                     _dependency = component;
                     _dependantInformation = dependantInformation;
-                    _evenIfTargetIsDisabled = true;
-                    _evenIfThisIsDisabled = false;
                     _type = type;
                 }
 
-                internal void Finish()
+                public void Finish()
                 {
                     if (_dependency == null) return;
                     SetToDictionary();
@@ -180,9 +215,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 {
                     Debug.Assert(_dependency != null, nameof(_dependency) + " != null");
 
-                    if (_dependantInformation == null) return;
-                    if (!_dependency.transform.IsChildOf(_collector._session.AvatarRootTransform))
-                        return;
                     if (!_evenIfThisIsDisabled)
                     {
                         // dependant must can be able to be enable
@@ -201,13 +233,71 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
                 public override API.ComponentDependencyInfo EvenIfDependantDisabled()
                 {
+                    if (_dependency == null) throw new InvalidOperationException("Called after another call");
                     _evenIfThisIsDisabled = true;
                     return this;
                 }
 
                 public override API.ComponentDependencyInfo OnlyIfTargetCanBeEnable()
                 {
+                    if (_dependency == null) throw new InvalidOperationException("Called after another call");
                     _evenIfTargetIsDisabled = false;
+                    return this;
+                }
+            }
+
+            private class DummyPathDependencyInfo : API.PathDependencyInfo
+            {
+                public static DummyPathDependencyInfo Instance { get; } = new DummyPathDependencyInfo();
+
+                public override API.PathDependencyInfo EvenIfDependantDisabled() => this;
+            }
+
+            private class PathDependencyInfo : API.PathDependencyInfo, IDependencyInfo
+            {
+                [CanBeNull] [ItemNotNull] private Transform[] _dependencies;
+                [NotNull] private readonly GCComponentInfo _dependantInformation;
+
+                private bool _evenIfThisIsDisabled;
+
+                // ReSharper disable once NotNullOrRequiredMemberIsNotInitialized
+                public PathDependencyInfo(
+                    [NotNull] GCComponentInfo dependantInformation,
+                    [NotNull] [ItemCanBeNull] Transform[] component)
+                {
+                    _dependencies = component;
+                    _dependantInformation = dependantInformation;
+                    _evenIfThisIsDisabled = false;
+                }
+
+                public void Finish()
+                {
+                    if (_dependencies == null) return;
+                    SetToDictionary();
+                    _dependencies = null;
+                }
+
+                private void SetToDictionary()
+                {
+                    Debug.Assert(_dependencies != null, nameof(_dependencies) + " != null");
+
+                    if (!_evenIfThisIsDisabled)
+                    {
+                        // dependant must can be able to be enable
+                        if (_dependantInformation.Activeness == false) return;
+                    }
+
+                    foreach (var dependency in _dependencies)
+                    {
+                        _dependantInformation.Dependencies.TryGetValue(dependency, out var type);
+                        _dependantInformation.Dependencies[dependency] = type | GCComponentInfo.DependencyType.Normal;
+                    }
+                }
+
+                public override API.PathDependencyInfo EvenIfDependantDisabled()
+                {
+                    if (_dependencies == null) throw new InvalidOperationException("Called after another call");
+                    _evenIfThisIsDisabled = true;
                     return this;
                 }
             }

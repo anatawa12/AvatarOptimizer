@@ -58,8 +58,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
                     var boneTransform = component.GetBoneTransform(bone);
                     if (boneTransform == null) continue;
 
-                    foreach (var transform in boneTransform.ParentEnumerable(root: component.transform, includeMe: true))
-                        collector.AddDependency(transform);
+                    collector.AddPathDependency(boneTransform, component.transform);
                 }
             }
         }
