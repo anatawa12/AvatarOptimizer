@@ -220,7 +220,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             var boneTransforms = new HashSet<Transform>(target.Bones.Select(x => x.Transform));
 
-            var parents = new HashSet<Transform>(Target.transform.ParentEnumerable(context.AvatarRootTransform, includeMe: true));
+            Profiler.BeginSample("Generate ActivenessWarning");
+            ActivenessAnimationWarning(skinnedMeshRenderers.Concat<Renderer>(staticMeshRenderers), context);
+            Profiler.EndSample();
 
             Profiler.BeginSample("Postprocess Source Renderers");
             foreach (var renderer in skinnedMeshRenderers)
@@ -232,8 +234,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 // property for original mesh in animation.
                 // This invalidation doesn't affect to m_Enabled property of merged mesh.
                 context.RecordRemoveProperty(renderer, "m_Enabled");
-
-                ActivenessAnimationWarning(renderer, context, parents);
 
                 context.RecordMergeComponent(renderer, Target);
                 var rendererGameObject = renderer.gameObject;
@@ -259,7 +259,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             foreach (var renderer in staticMeshRenderers)
             {
-                ActivenessAnimationWarning(renderer, context, parents);
                 DestroyTracker.DestroyImmediate(renderer.GetComponent<MeshFilter>());
                 DestroyTracker.DestroyImmediate(renderer);
             }
@@ -347,31 +346,39 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     string.Join(",", animatedProperties), Component);
         }
 
-        private void ActivenessAnimationWarning(Renderer renderer, BuildContext context, HashSet<Transform> parents)
+        private void ActivenessAnimationWarning(IEnumerable<Renderer> renderers, BuildContext context)
         {
+            // collect activeness animation for the merged object
+            var animationLocationsForMerged = GetAnimationLocations(context, Target);
+
             var sources = new List<object>();
 
-            // Warn if the source mesh can be hidden differently than merged by animation.
+            foreach (var renderer in renderers)
             {
-                if (context.GetAnimationComponent(renderer).TryGetFloat("m_Enabled", out var p))
-                {
-                    sources.Add(renderer);
-                    sources.Add(p.ContextReferences);
-                }
-            }
-            foreach (var transform in renderer.transform.ParentEnumerable(context.AvatarRootTransform, includeMe: true))
-            {
-                if (parents.Contains(transform)) break;
-                if (context.GetAnimationComponent(transform.gameObject).TryGetFloat("m_IsActive", out var p))
-                {
-                    sources.Add(renderer);
-                    sources.Add(transform.gameObject);
-                    sources.Add(p.ContextReferences);
-                }
+                var animationLocationsForSource = GetAnimationLocations(context, renderer);
+                if (animationLocationsForSource.SetEquals(animationLocationsForMerged)) continue;
+
+                // if the source has different activeness animation, warn it.
+                animationLocationsForSource.ExceptWith(animationLocationsForMerged);
+                sources.Add(renderer);
+                sources.Add(animationLocationsForSource);
             }
 
             if (sources.Count != 0)
                 BuildLog.LogWarning("MergeSkinnedMesh:warning:animation-mesh-hide", sources);
+        }
+
+        private static HashSet<AnimationLocation> GetAnimationLocations(BuildContext context, Component component)
+        {
+            var locations = new HashSet<AnimationLocation>();
+            {
+                if (context.GetAnimationComponent(component).TryGetFloat("m_Enabled", out var p))
+                    locations.UnionWith(AnimationLocation.CollectAnimationLocation(p));
+            }
+            foreach (var transform in component.transform.ParentEnumerable(context.AvatarRootTransform, includeMe: true))
+                if (context.GetAnimationComponent(transform.gameObject).TryGetFloat("m_IsActive", out var p))
+                    locations.UnionWith(AnimationLocation.CollectAnimationLocation(p));
+            return locations;
         }
 
         private (int[][] mapping, List<(MeshTopology topology, Material material)> materials)
