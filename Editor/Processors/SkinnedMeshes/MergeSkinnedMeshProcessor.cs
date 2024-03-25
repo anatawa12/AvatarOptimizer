@@ -237,11 +237,17 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
                 context.RecordMergeComponent(renderer, Target);
                 var rendererGameObject = renderer.gameObject;
-                var toDestroy = renderer.GetComponent<RemoveZeroSizedPolygon>();
-                if (toDestroy)
+                var removeZeroSizedPolygon = renderer.GetComponent<RemoveZeroSizedPolygon>();
+                if (removeZeroSizedPolygon)
                 {
-                    BuildLog.LogWarning("MergeSkinnedMesh:warning:removeZeroSizedPolygonOnSources", toDestroy);
-                    DestroyTracker.DestroyImmediate(toDestroy);
+                    BuildLog.LogWarning("MergeSkinnedMesh:warning:removeZeroSizedPolygonOnSources", removeZeroSizedPolygon);
+                    DestroyTracker.DestroyImmediate(removeZeroSizedPolygon);
+                }
+                var cloth = renderer.GetComponent<Cloth>();
+                if (cloth)
+                {
+                    BuildLog.LogError("MergeSkinnedMesh:error:clothOnSources", cloth);
+                    DestroyTracker.DestroyImmediate(removeZeroSizedPolygon);
                 }
                 DestroyTracker.DestroyImmediate(renderer);
 

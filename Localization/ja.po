@@ -240,6 +240,12 @@ msgstr ""
 msgid "MergeSkinnedMesh:warning:removeZeroSizedPolygonOnSources"
 msgstr "Remove Zero Sized Polygonsは遅めに処理されるため、統合対象のメッシュにつけても効果がありません"
 
+msgid "MergeSkinnedMesh:error:clothOnSources"
+msgstr "Clothコンポーネントが統合対象のメッシュについているため、統合できません"
+
+msgid "MergeSkinnedMesh:error:clothOnSources:description"
+msgstr "統合対象のメッシュからClothコンポーネントを削除するか、統合対象のメッシュから除外してください"
+
 # endregion
 
 # region MergeToonLitMaterial
