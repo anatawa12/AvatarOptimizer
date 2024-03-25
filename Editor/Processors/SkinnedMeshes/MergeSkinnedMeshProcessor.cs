@@ -220,7 +220,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             var boneTransforms = new HashSet<Transform>(target.Bones.Select(x => x.Transform));
 
-            var parents = new HashSet<Transform>(Target.transform.ParentEnumerable(context.AvatarRootTransform, includeMe: true));
+            Profiler.BeginSample("Generate ActivenessWarning");
+            ActivenessAnimationWarning(skinnedMeshRenderers, staticMeshRenderers, context);
+            Profiler.EndSample();
 
             Profiler.BeginSample("Postprocess Source Renderers");
             foreach (var renderer in skinnedMeshRenderers)
@@ -232,8 +234,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 // property for original mesh in animation.
                 // This invalidation doesn't affect to m_Enabled property of merged mesh.
                 context.RecordRemoveProperty(renderer, "m_Enabled");
-
-                ActivenessAnimationWarning(renderer, context, parents);
 
                 context.RecordMergeComponent(renderer, Target);
                 var rendererGameObject = renderer.gameObject;
@@ -259,7 +259,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             foreach (var renderer in staticMeshRenderers)
             {
-                ActivenessAnimationWarning(renderer, context, parents);
                 DestroyTracker.DestroyImmediate(renderer.GetComponent<MeshFilter>());
                 DestroyTracker.DestroyImmediate(renderer);
             }
@@ -345,6 +344,16 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             if (animatedProperties.Count != 0)
                 BuildLog.LogWarning("MergeSkinnedMesh:warning:material-animation-differently",
                     string.Join(",", animatedProperties), Component);
+        }
+
+        private void ActivenessAnimationWarning(List<SkinnedMeshRenderer> skinnedMeshRenderers, List<MeshRenderer> staticMeshRenderers, BuildContext context)
+        {
+            var parents = new HashSet<Transform>(Target.transform.ParentEnumerable(context.AvatarRootTransform, includeMe: true));
+
+            foreach (var renderer in skinnedMeshRenderers)
+                ActivenessAnimationWarning(renderer, context, parents);
+            foreach (var renderer in staticMeshRenderers)
+                ActivenessAnimationWarning(renderer, context, parents);
         }
 
         private void ActivenessAnimationWarning(Renderer renderer, BuildContext context, HashSet<Transform> parents)
