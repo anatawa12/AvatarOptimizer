@@ -44,6 +44,14 @@ The format is based on [Keep a Changelog].
   - VRCSDK 3.3.0 is required for stable NDMF-VRCSDK compatibility.
 - Endpoint Position settings for newly created MergePhysBone is now Copy instead of Clear `#945`
   - The Clear settings will increase the number of PhysBone Transforms so it's not better as a default settings.
+- Improved activeness animation warning in Merge Skinned Mesh `#948`
+  - Reduced false-positive warnings
+    - Previously, AAO warns if activeness warning is applied to different GameObjects.
+    - However, this can be false-positive if animation is applied to different GameObjects with same timing.
+    - Since this version, AAO will not warn if the activeness is animated in same animation clip with same curve.
+  - Combined warning per Merge Skinned Mesh component.
+    - Previously, AAO warns for each source Renderers.
+    - Since this version, AAO creates one warning for each Merge Skinned Mesh component.
 
 ### Deprecated
 
