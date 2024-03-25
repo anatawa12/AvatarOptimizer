@@ -330,6 +330,12 @@ msgstr ""
 "If the animation will not affects to other meshes, (for example, it affects only to the disabled shader features of meshes) please report this issue to Avatar Optimizer.\n"
 "If the shader is well-known, I'll add logic to check if the feature is enabled for renderers other than animated.\n"
 
+msgid "MergeSkinnedMesh:error:clothOnSources"
+msgstr "Cloth component is attached to the source SkinnedMeshRenderer, so it cannot be merged."
+
+msgid "MergeSkinnedMesh:error:clothOnSources:description"
+msgstr "Please remove Cloth component from the source SkinnedMeshRenderer or exclude the source SkinnedMeshRenderer."
+
 # endregion
 
 # region MergeToonLitMaterial

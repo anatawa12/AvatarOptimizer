@@ -52,6 +52,10 @@ The format is based on [Keep a Changelog].
   - Combined warning per Merge Skinned Mesh component.
     - Previously, AAO warns for each source Renderers.
     - Since this version, AAO creates one warning for each Merge Skinned Mesh component.
+- An error is occured with Cloth component in Merge Skinned Mesh component `#949`
+  - The Cloth component is not supported by Merge Skinned Mesh component.
+  - In previous versions, AAO will keep the source Skinned Mesh Renderer if it's with Cloth component by bug.
+  - Since this version, AAO will make an error if the source Skinned Mesh Renderer is with Cloth component.
 
 ### Deprecated
 
