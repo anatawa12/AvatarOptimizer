@@ -189,6 +189,16 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 }
 
                 context.RecordMoveProperties(meshInfo.SourceRenderer, mappings.ToArray());
+                
+                // Avatars can have animation to hide source meshes.
+                // Such a animation often intended to hide/show some accessories but
+                // after we merge mesh, it affects to big merged mesh.
+                // This often be a unexpected behavior so we invalidate changing m_Enabled
+                // property for original mesh in animation.
+                // This invalidation doesn't affect to m_Enabled property of merged mesh.
+                context.RecordRemoveProperty(meshInfo.SourceRenderer, "m_Enabled");
+
+                context.RecordMergeComponent(meshInfo.SourceRenderer, Target);
 
                 target.RootBone = sourceRootBone;
                 target.Bones.AddRange(meshInfo.Bones);
@@ -246,15 +256,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             foreach (var renderer in skinnedMeshRenderers)
             {
                 var rendererGameObject = renderer.gameObject;
-                // Avatars can have animation to hide source meshes.
-                // Such a animation often intended to hide/show some accessories but
-                // after we merge mesh, it affects to big merged mesh.
-                // This often be a unexpected behavior so we invalidate changing m_Enabled
-                // property for original mesh in animation.
-                // This invalidation doesn't affect to m_Enabled property of merged mesh.
-                context.RecordRemoveProperty(renderer, "m_Enabled");
-
-                context.RecordMergeComponent(renderer, Target);
                 DestroyTracker.DestroyImmediate(renderer);
 
                 // process removeEmptyRendererObject
