@@ -31,6 +31,12 @@ You can freeze & remove BlendShape using [Freeze BlendShape](../freeze-blendshap
 Add this component to both/either merge source SkinnedMeshRenderer and/or merged SkinnedMeshRenderer to freeze & remove BlendShapes.
 Also, you can use `Automatically Freeze BlendShape` of [Trace and Optimize](../trace-and-optimize) component to get the same benefits.
 
+{{< hint info >}}
+
+[Trace And Optimize](../trace-and-optimize) will automatically do the same process so in some cases you do not need to use this component.
+
+{{< /hint >}}
+
 ## Settings
 
 ![component.png](component.png)
