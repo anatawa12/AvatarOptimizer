@@ -33,6 +33,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             var (subMeshIndexMap, materials) = GenerateSubMeshMapping(context, target, meshInfos);
 
             DoMerge(context, target, meshInfos, subMeshIndexMap, materials);
+            MergeBounds(target, meshInfos);
 
             RemoveOldRenderers(target, meshInfos, Component.removeEmptyRendererObject);
         }
@@ -275,6 +276,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 target.AssertInvariantContract($"processing meshInfo {target.SourceRenderer.gameObject.name}");
                 Profiler.EndSample();
             }
+        }
+
+        public static void MergeBounds(
+            MeshInfo2 target,
+            MeshInfo2[] meshInfos
+        ) {
 
             Profiler.BeginSample("Update Bounds");
             var sourceRootBone = target.RootBone;
