@@ -37,20 +37,6 @@ namespace Anatawa12.AvatarOptimizer
             Clip = clip;
         }
 
-        public static IEnumerable<AnimationLocation> CollectActivenessAnimationLocations(
-            BuildContext context, Component component)
-        {
-            {
-                if (context.GetAnimationComponent(component).TryGetFloat("m_Enabled", out var p))
-                    foreach (var location in CollectAnimationLocation(p))
-                        yield return location;
-            }
-            foreach (var transform in component.transform.ParentEnumerable(context.AvatarRootTransform, includeMe: true))
-                if (context.GetAnimationComponent(transform.gameObject).TryGetFloat("m_IsActive", out var p))
-                    foreach (var location in CollectAnimationLocation(p))
-                        yield return location;
-        }
-
         public static IEnumerable<AnimationLocation> CollectAnimationLocation(RootPropModNode<float> node)
         {
             foreach (var animatorNode in node.ComponentNodes.OfType<AnimatorPropModNode<float>>())
