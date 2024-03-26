@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -30,6 +31,16 @@ namespace Anatawa12.AvatarOptimizer
             hash = unchecked(hash * 314159 + curve.weightedMode.GetHashCode());
             hash = unchecked(hash * 314159 + curve.inWeight.GetHashCode());
             hash = unchecked(hash * 314159 + curve.outWeight.GetHashCode());
+            return hash;
+        }
+
+        // The HashSet doesn't implement HashCode
+        public static int GetHashCode2<T>(this HashSet<T> set)
+        {
+            // we use XOR to make the hashcode order-independent
+            var hash = set.Count;
+            foreach (var item in set)
+                hash ^= item.GetHashCode();
             return hash;
         }
     }
