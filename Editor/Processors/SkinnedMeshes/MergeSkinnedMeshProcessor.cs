@@ -127,6 +127,30 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             }
             Profiler.EndSample();
 
+            Profiler.BeginSample("BlendShape Default Weight Mismatch Warning");
+            var defaultWeights = new Dictionary<string, float>();
+
+            foreach (var meshInfo in meshInfos)
+            {
+                // add BlendShape if not defined by name
+                foreach (var (name, weight) in meshInfo.BlendShapes)
+                {
+                    if (defaultWeights.TryGetValue(name, out var existingWeight))
+                    {
+                        // ReSharper disable once CompareOfFloatsByEqualityOperator
+                        // this value is likely to be a integer value without any arithmetic operation
+                        if (existingWeight != weight)
+                            BuildLog.LogWarning("MergeSkinnedMesh:warning:blendShapeWeightMismatch", name);
+                    }
+                    else
+                    {
+                        defaultWeights.Add(name, weight);
+                    }
+                }
+            }
+
+            Profiler.EndSample();
+
             Profiler.BeginSample("Merge Material Indices");
             var (subMeshIndexMap, materials) = CreateMergedMaterialsAndSubMeshIndexMapping(sourceMaterials);
             Profiler.EndSample();
@@ -146,7 +170,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             var newBoundMax = Vector3.negativeInfinity;
 
             var mappings = new List<(string, string)>();
-            var weightMismatchBlendShapes = new HashSet<string>();
 
             for (var i = 0; i < meshInfos.Length; i++)
             {
@@ -182,12 +205,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     {
                         newIndex = target.BlendShapes.Count;
                         target.BlendShapes.Add((name, weight));
-                    }
-                    else
-                    {
-                        // ReSharper disable once CompareOfFloatsByEqualityOperator
-                        if (weight != target.BlendShapes[newIndex].weight)
-                            weightMismatchBlendShapes.Add(name);
                     }
 
                     mappings.Add((VProp.BlendShapeIndex(sourceI), VProp.BlendShapeIndex(newIndex)));
@@ -241,9 +258,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             bool shouldShiftSubMeshIndex = CheckAnimateSubMeshIndex(context, meshInfos, subMeshIndexMap, SubMeshIndexToShiftIfAnimated);
             Profiler.EndSample();
 #endif
-
-            foreach (var weightMismatchBlendShape in weightMismatchBlendShapes)
-                BuildLog.LogWarning("MergeSkinnedMesh:warning:blendShapeWeightMismatch", weightMismatchBlendShape);
 
             if (updateBounds && newBoundMin != Vector3.positiveInfinity && newBoundMax != Vector3.negativeInfinity)
             {
