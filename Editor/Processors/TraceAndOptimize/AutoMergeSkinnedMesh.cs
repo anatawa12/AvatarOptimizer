@@ -95,7 +95,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             else
                 createSubMeshes = CreateSubMeshesMergePreserveOrder;
 
-            int index = 0;
+            var index = 0;
+            Func<GameObject> gameObjectFactory = () => new GameObject($"$$AAO_AUTO_MERGE_SKINNED_MESH_{index++}");
+
             var mappingBuilder = context.GetMappingBuilder();
 
             foreach (var (key, meshInfos) in categorizedMeshes)
@@ -103,140 +105,155 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 if (key.ActivenessAnimationLocations.Count == 0)
                 {
                     if (!state.SkipMergeStaticSkinnedMesh)
-                    {
-                        // if there's no activeness animation, we merge them at root
-                        var newSkinnedMeshRenderer = CreateNewRenderer($"Merged Skinned Mesh Renderer {index++}",
-                            context.AvatarRootTransform, key);
-                        var newMeshInfo = context.GetMeshInfoFor(newSkinnedMeshRenderer);
-                        var meshInfosArray = meshInfos.ToArray();
-
-                        var (subMeshIndexMap, materials) = createSubMeshes(meshInfosArray);
-
-                        MergeSkinnedMeshProcessor.DoMerge(context, newMeshInfo, meshInfosArray, subMeshIndexMap,
-                            materials);
-
-                        // We process FindUnusedObjects after this pass so we wipe empty renderer object in that pass
-                        MergeSkinnedMeshProcessor.RemoveOldRenderers(newMeshInfo, meshInfosArray,
-                            removeEmptyRendererObject: false);
-                    }
+                        MergeStaticSkinnedMesh(context, gameObjectFactory, key, meshInfos, createSubMeshes);
                 }
                 else
                 {
                     if (!state.SkipMergeAnimatingSkinnedMesh)
-                    {
-                        // if there is activeness animation, we have to decide the parent of merged mesh
-                        var commonParents = new HashSet<Transform>(meshInfos[0].SourceRenderer.transform
-                            .ParentEnumerable(root: context.AvatarRootTransform));
-                        foreach (var meshInfo in meshInfos.Skip(1))
-                            commonParents.IntersectWith(
-                                meshInfo.SourceRenderer.transform.ParentEnumerable(root: context.AvatarRootTransform));
-
-                        Transform commonParent = null;
-                        // we merge at the child-most common parent
-                        foreach (var someCommonParent in commonParents)
-                        {
-                            if (someCommonParent.DirectChildrenEnumerable().All(c => !commonParents.Contains(c)))
-                            {
-                                commonParent = someCommonParent;
-                                break;
-                            }
-                        }
-
-                        // if there's no common parent, we merge them at root
-                        if (commonParent == null)
-                            commonParent = context.AvatarRootTransform;
-
-                        var activenessAnimationPropertiesNotAffectsCommonParent =
-                            new List<(ComponentOrGameObject, string)>();
-
-                        {
-                            var meshInfo = meshInfos[0];
-                            {
-                                if (context.GetAnimationComponent(meshInfo.SourceRenderer).ContainsFloat("m_Enabled"))
-                                {
-                                    activenessAnimationPropertiesNotAffectsCommonParent.Add((meshInfo.SourceRenderer,
-                                        "m_Enabled"));
-                                }
-                            }
-                            foreach (var transform in
-                                     meshInfo.SourceRenderer.transform.ParentEnumerable(commonParent, includeMe: true))
-                            {
-                                if (context.GetAnimationComponent(transform.gameObject).ContainsFloat("m_IsActive"))
-                                {
-                                    activenessAnimationPropertiesNotAffectsCommonParent.Add((transform.gameObject,
-                                        "m_IsActive"));
-                                }
-                            }
-                        }
-
-                        // we have to have intermediate GameObject to simulate activeness animation 
-                        while (activenessAnimationPropertiesNotAffectsCommonParent.Count > 2)
-                        {
-                            var (sourceComponent, property) =
-                                activenessAnimationPropertiesNotAffectsCommonParent.Last();
-                            activenessAnimationPropertiesNotAffectsCommonParent.RemoveAt(
-                                activenessAnimationPropertiesNotAffectsCommonParent.Count - 1);
-
-                            var newIntermediateGameObject =
-                                new GameObject($"Activeness Intermediate GameObject {index++}");
-                            newIntermediateGameObject.transform.SetParent(commonParent);
-                            newIntermediateGameObject.transform.localPosition = Vector3.zero;
-                            newIntermediateGameObject.transform.localRotation = Quaternion.identity;
-                            newIntermediateGameObject.transform.localScale = Vector3.one;
-
-                            mappingBuilder.RecordCopyProperty(
-                                sourceComponent, property,
-                                newIntermediateGameObject, "m_IsActive");
-
-                            commonParent = newIntermediateGameObject.transform;
-                        }
-
-                        var newSkinnedMeshRenderer = CreateNewRenderer($"Merged Skinned Mesh Renderer {index++}",
-                            commonParent, key);
-
-                        // process rest activeness animation
-                        if (activenessAnimationPropertiesNotAffectsCommonParent.Count > 0)
-                        {
-                            var (sourceComponent, property) =
-                                activenessAnimationPropertiesNotAffectsCommonParent.Last();
-                            activenessAnimationPropertiesNotAffectsCommonParent.RemoveAt(
-                                activenessAnimationPropertiesNotAffectsCommonParent.Count - 1);
-
-                            mappingBuilder.RecordCopyProperty(
-                                sourceComponent, property,
-                                newSkinnedMeshRenderer.gameObject, "m_IsActive");
-                        }
-
-                        if (activenessAnimationPropertiesNotAffectsCommonParent.Count > 0)
-                        {
-                            var (sourceComponent, property) =
-                                activenessAnimationPropertiesNotAffectsCommonParent.Last();
-                            activenessAnimationPropertiesNotAffectsCommonParent.RemoveAt(
-                                activenessAnimationPropertiesNotAffectsCommonParent.Count - 1);
-
-                            mappingBuilder.RecordCopyProperty(
-                                sourceComponent, property,
-                                newSkinnedMeshRenderer, "m_Enabled");
-                        }
-
-                        Debug.Assert(activenessAnimationPropertiesNotAffectsCommonParent.Count == 0);
-
-                        var newMeshInfo = context.GetMeshInfoFor(newSkinnedMeshRenderer);
-                        var meshInfosArray = meshInfos.ToArray();
-
-                        var (subMeshIndexMap, materials) = createSubMeshes(meshInfosArray);
-
-                        MergeSkinnedMeshProcessor.DoMerge(context, newMeshInfo, meshInfosArray, subMeshIndexMap,
-                            materials);
-
-                        // We process FindUnusedObjects after this pass so we wipe empty renderer object in that pass
-                        MergeSkinnedMeshProcessor.RemoveOldRenderers(newMeshInfo, meshInfosArray,
-                            removeEmptyRendererObject: false);
-                    }
+                        MergeAnimatingSkinnedMesh(context, gameObjectFactory, key, meshInfos, createSubMeshes, mappingBuilder);
                 }
             }
 
             Profiler.EndSample();
+        }
+
+        private void MergeStaticSkinnedMesh(
+            BuildContext context,
+            Func<GameObject> gameObjectFactory,
+            CategorizationKey key,
+            List<MeshInfo2> meshInfos,
+            Func<MeshInfo2[], (int[][], List<(MeshTopology, Material)>)> createSubMeshes
+        )
+        {
+            // if there's no activeness animation, we merge them at root
+            var newSkinnedMeshRenderer = CreateNewRenderer(gameObjectFactory, context.AvatarRootTransform, key);
+            var newMeshInfo = context.GetMeshInfoFor(newSkinnedMeshRenderer);
+            var meshInfosArray = meshInfos.ToArray();
+
+            var (subMeshIndexMap, materials) = createSubMeshes(meshInfosArray);
+
+            MergeSkinnedMeshProcessor.DoMerge(context, newMeshInfo, meshInfosArray, subMeshIndexMap,
+                materials);
+
+            // We process FindUnusedObjects after this pass so we wipe empty renderer object in that pass
+            MergeSkinnedMeshProcessor.RemoveOldRenderers(newMeshInfo, meshInfosArray,
+                removeEmptyRendererObject: false);
+        }
+
+        private void MergeAnimatingSkinnedMesh(
+            BuildContext context,
+            Func<GameObject> gameObjectFactory,
+            CategorizationKey key,
+            List<MeshInfo2> meshInfos,
+            Func<MeshInfo2[], (int[][], List<(MeshTopology, Material)>)> createSubMeshes,
+            ObjectMappingBuilder<PropertyInfo> mappingBuilder)
+        {
+            // if there is activeness animation, we have to decide the parent of merged mesh
+            var commonParents = new HashSet<Transform>(meshInfos[0].SourceRenderer.transform
+                .ParentEnumerable(root: context.AvatarRootTransform));
+            foreach (var meshInfo in meshInfos.Skip(1))
+                commonParents.IntersectWith(
+                    meshInfo.SourceRenderer.transform.ParentEnumerable(root: context.AvatarRootTransform));
+
+            Transform commonParent = null;
+            // we merge at the child-most common parent
+            foreach (var someCommonParent in commonParents)
+            {
+                if (someCommonParent.DirectChildrenEnumerable().All(c => !commonParents.Contains(c)))
+                {
+                    commonParent = someCommonParent;
+                    break;
+                }
+            }
+
+            // if there's no common parent, we merge them at root
+            if (commonParent == null)
+                commonParent = context.AvatarRootTransform;
+
+            var activenessAnimationPropertiesNotAffectsCommonParent =
+                new List<(ComponentOrGameObject, string)>();
+
+            {
+                var meshInfo = meshInfos[0];
+                {
+                    if (context.GetAnimationComponent(meshInfo.SourceRenderer).ContainsFloat("m_Enabled"))
+                    {
+                        activenessAnimationPropertiesNotAffectsCommonParent.Add((meshInfo.SourceRenderer,
+                            "m_Enabled"));
+                    }
+                }
+                foreach (var transform in
+                         meshInfo.SourceRenderer.transform.ParentEnumerable(commonParent, includeMe: true))
+                {
+                    if (context.GetAnimationComponent(transform.gameObject).ContainsFloat("m_IsActive"))
+                    {
+                        activenessAnimationPropertiesNotAffectsCommonParent.Add((transform.gameObject,
+                            "m_IsActive"));
+                    }
+                }
+            }
+
+            // we have to have intermediate GameObject to simulate activeness animation 
+            while (activenessAnimationPropertiesNotAffectsCommonParent.Count > 2)
+            {
+                var (sourceComponent, property) =
+                    activenessAnimationPropertiesNotAffectsCommonParent.Last();
+                activenessAnimationPropertiesNotAffectsCommonParent.RemoveAt(
+                    activenessAnimationPropertiesNotAffectsCommonParent.Count - 1);
+
+                var newIntermediateGameObject = gameObjectFactory();
+                newIntermediateGameObject.transform.SetParent(commonParent);
+                newIntermediateGameObject.transform.localPosition = Vector3.zero;
+                newIntermediateGameObject.transform.localRotation = Quaternion.identity;
+                newIntermediateGameObject.transform.localScale = Vector3.one;
+
+                mappingBuilder.RecordCopyProperty(
+                    sourceComponent, property,
+                    newIntermediateGameObject, "m_IsActive");
+
+                commonParent = newIntermediateGameObject.transform;
+            }
+
+            var newSkinnedMeshRenderer = CreateNewRenderer(gameObjectFactory, commonParent, key);
+
+            // process rest activeness animation
+            if (activenessAnimationPropertiesNotAffectsCommonParent.Count > 0)
+            {
+                var (sourceComponent, property) =
+                    activenessAnimationPropertiesNotAffectsCommonParent.Last();
+                activenessAnimationPropertiesNotAffectsCommonParent.RemoveAt(
+                    activenessAnimationPropertiesNotAffectsCommonParent.Count - 1);
+
+                mappingBuilder.RecordCopyProperty(
+                    sourceComponent, property,
+                    newSkinnedMeshRenderer.gameObject, "m_IsActive");
+            }
+
+            if (activenessAnimationPropertiesNotAffectsCommonParent.Count > 0)
+            {
+                var (sourceComponent, property) =
+                    activenessAnimationPropertiesNotAffectsCommonParent.Last();
+                activenessAnimationPropertiesNotAffectsCommonParent.RemoveAt(
+                    activenessAnimationPropertiesNotAffectsCommonParent.Count - 1);
+
+                mappingBuilder.RecordCopyProperty(
+                    sourceComponent, property,
+                    newSkinnedMeshRenderer, "m_Enabled");
+            }
+
+            Debug.Assert(activenessAnimationPropertiesNotAffectsCommonParent.Count == 0);
+
+            var newMeshInfo = context.GetMeshInfoFor(newSkinnedMeshRenderer);
+            var meshInfosArray = meshInfos.ToArray();
+
+            var (subMeshIndexMap, materials) = createSubMeshes(meshInfosArray);
+
+            MergeSkinnedMeshProcessor.DoMerge(context, newMeshInfo, meshInfosArray, subMeshIndexMap,
+                materials);
+
+            // We process FindUnusedObjects after this pass so we wipe empty renderer object in that pass
+            MergeSkinnedMeshProcessor.RemoveOldRenderers(newMeshInfo, meshInfosArray,
+                removeEmptyRendererObject: false);
         }
 
         [CanBeNull]
@@ -266,12 +283,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         }
 
         private SkinnedMeshRenderer CreateNewRenderer(
-            string name,
+            Func<GameObject> gameObjectFactory,
             Transform parent,
             CategorizationKey key
         )
         {
-            var newRenderer = new GameObject(name);
+            var newRenderer = gameObjectFactory();
             newRenderer.transform.SetParent(parent);
             newRenderer.transform.localPosition = Vector3.zero;
             newRenderer.transform.localRotation = Quaternion.identity;
