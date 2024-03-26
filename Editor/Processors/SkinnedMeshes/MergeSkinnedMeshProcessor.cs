@@ -155,6 +155,16 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             var (subMeshIndexMap, materials) = CreateMergedMaterialsAndSubMeshIndexMapping(sourceMaterials);
             Profiler.EndSample();
 
+#if !UNITY_2021_2_OR_NEWER
+            Profiler.BeginSample("ShiftIndex For Unity Bug");
+            // material slot #4 should not be animated to avoid Unity bug
+            // https://issuetracker.unity3d.com/issues/material-is-applied-to-two-slots-when-applying-material-to-a-single-slot-while-recording-animation
+            const int subMeshIndexToShiftIfAnimated = 4;
+            if (IsAnimatingTheSubMeshIndex(context, meshInfos, subMeshIndexMap, subMeshIndexToShiftIfAnimated))
+                MakeHoleSubMesh(subMeshIndexMap, materials, subMeshIndexToShiftIfAnimated);
+            Profiler.EndSample();
+#endif
+
             target.Clear();
             target.SubMeshes.Capacity = Math.Max(target.SubMeshes.Capacity, materials.Count);
             foreach (var material in materials)
@@ -226,15 +236,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 Profiler.EndSample();
             }
 
-#if !UNITY_2021_2_OR_NEWER
-            Profiler.BeginSample("ShiftIndex Check");
-            // material slot #4 should not be animated to avoid Unity bug
-            // https://issuetracker.unity3d.com/issues/material-is-applied-to-two-slots-when-applying-material-to-a-single-slot-while-recording-animation
-            const int SubMeshIndexToShiftIfAnimated = 4;
-            bool shouldShiftSubMeshIndex = CheckAnimateSubMeshIndex(context, meshInfos, subMeshIndexMap, SubMeshIndexToShiftIfAnimated);
-            Profiler.EndSample();
-#endif
-
             Profiler.BeginSample("Update Bounds");
             var sourceRootBone = target.RootBone;
             var updateBounds = sourceRootBone && target.Bounds == default;
@@ -296,25 +297,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 DestroyTracker.DestroyImmediate(renderer);
             }
             Profiler.EndSample();
-
-#if !UNITY_2021_2_OR_NEWER
-            if (shouldShiftSubMeshIndex)
-            {
-                Profiler.BeginSample("ShiftIndex");
-                mappings.Clear();
-                for (var i = SubMeshIndexToShiftIfAnimated; i < target.SubMeshes.Count; i++)
-                {
-                    mappings.Add(($"m_Materials.Array.data[{i}]", $"m_Materials.Array.data[{i + 1}]"));
-                }
-
-                context.RecordMoveProperties(target.SourceRenderer, mappings.ToArray());
-
-                target.SubMeshes.Insert(SubMeshIndexToShiftIfAnimated, new SubMesh());
-
-                target.AssertInvariantContract($"shifting meshInfo.SubMeshes {Target.gameObject.name}");
-                Profiler.EndSample();
-            }
-#endif
         }
 
         private void MaterialParameterAnimationWarnings(MeshInfo2[] sourceRenderers, BuildContext context)
@@ -447,30 +429,43 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         }
 
 #if !UNITY_2021_2_OR_NEWER
-        private bool CheckAnimateSubMeshIndex(BuildContext context, MeshInfo2[] meshInfos, int[][] subMeshIndexMap, int targetSubMeshIndex)
+        private static bool IsAnimatingTheSubMeshIndex(BuildContext context, MeshInfo2[] meshInfos,
+            int[][] subMeshIndexMap, int targetSubMeshIndex)
         {
-            var targetProperties = new HashSet<(Object, string)>(subMeshIndexMap
-                .SelectMany((x, i) => x.Select((y, j) => (renderer: meshInfos[i].SourceRenderer, srcSubMeshIndex: j, dstSubMeshIndex: y)))
-                .Where(x => x.dstSubMeshIndex == targetSubMeshIndex)
-                .Select(x => (x.renderer as Object, $"m_Materials.Array.data[{x.srcSubMeshIndex}]")));
-            foreach (var component in context.GetComponents<Component>())
+            for (var i = 0; i < subMeshIndexMap.Length; i++)
             {
-                if (component is Transform) continue;
+                var indices = subMeshIndexMap[i];
 
-                using (var serialized = new SerializedObject(component))
+                for (var sourceSubMesh = 0; sourceSubMesh < indices.Length; sourceSubMesh++)
                 {
-                    foreach (var prop in serialized.ObjectReferenceProperties())
+                    var destSubMesh = indices[sourceSubMesh];
+                    if (destSubMesh == targetSubMeshIndex)
                     {
-                        if (!(prop.objectReferenceValue is AnimatorController controller)) continue;
-                        if (controller.animationClips
-                            .SelectMany(x => AnimationUtility.GetObjectReferenceCurveBindings(x))
-                            .Select(x => (AnimationUtility.GetAnimatedObject(component.gameObject, x), x.propertyName))
-                            .Any(targetProperties.Contains))
+                        var animationComponent = context.GetAnimationComponent(meshInfos[i].SourceRenderer);
+                        if (animationComponent.ContainsObject($"m_Materials.Array.data[{sourceSubMesh}]"))
+                        {
                             return true;
+                        }
                     }
                 }
             }
+
             return false;
+        }
+
+        private void MakeHoleSubMesh(int[][] subMeshIndexMap, List<(MeshTopology, Material)> materials,
+            int targetSubMeshIndex)
+        {
+            materials.Insert(targetSubMeshIndex, (MeshTopology.Triangles, null));
+
+            foreach (var indices in subMeshIndexMap)
+            {
+                for (var sourceSubMesh = 0; sourceSubMesh < indices.Length; sourceSubMesh++)
+                {
+                    if (indices[sourceSubMesh] >= targetSubMeshIndex)
+                        indices[sourceSubMesh]++;
+                }
+            }
         }
 #endif
 
