@@ -60,8 +60,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             var categorizedMeshes = new Dictionary<CategorizationKey, List<MeshInfo2>>();
             foreach (var meshInfo2 in mergeMeshes)
             {
-                var activenessAnimationLocations = new HashSet<AnimationLocation>(
-                    AnimationLocation.CollectActivenessAnimationLocations(context, meshInfo2.SourceRenderer));
+                var activenessAnimationLocations = GetAnimationLocations(context, meshInfo2.SourceRenderer);
+                if (activenessAnimationLocations == null)
+                    continue; // animating activeness with non animator is not supported
                 var key = new CategorizationKey(meshInfo2, activenessAnimationLocations);
                 if (!categorizedMeshes.TryGetValue(key, out var list))
                 {
@@ -121,6 +122,32 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             }
 
             Profiler.EndSample();
+        }
+
+        [CanBeNull]
+        private static HashSet<AnimationLocation> GetAnimationLocations(BuildContext context, Component component)
+        {
+            var locations = new HashSet<AnimationLocation>();
+            {
+                if (context.GetAnimationComponent(component).TryGetFloat("m_Enabled", out var p))
+                {
+                    if (p.ComponentNodes.Any(x => !(x is AnimatorParsersV2.AnimatorPropModNode<float>)))
+                        return null;
+                    locations.UnionWith(AnimationLocation.CollectAnimationLocation(p));
+                }
+            }
+            foreach (var transform in
+                     component.transform.ParentEnumerable(context.AvatarRootTransform, includeMe: true))
+            {
+                if (context.GetAnimationComponent(transform.gameObject).TryGetFloat("m_IsActive", out var p))
+                {
+                    if (p.ComponentNodes.Any(x => !(x is AnimatorParsersV2.AnimatorPropModNode<float>)))
+                        return null;
+                    locations.UnionWith(AnimationLocation.CollectAnimationLocation(p));
+                }
+            }
+
+            return locations;
         }
 
         private SkinnedMeshRenderer CreateNewRenderer(
