@@ -26,6 +26,9 @@ The format is based on [Keep a Changelog].
   - If you animated all materials from same animations, your animation will not be warned.
 - API for declaring dependency relationship to the name of the component `#943`
   - You can use this API to not change the name of the GameObject.
+- Automatic Merge Skinned Mesh `#952`
+  - Trace and Optimize now automatically merges Skinned Meshes if possible.
+  - Trace and Optimize will merge your mesh if the material properties of the mesh is not animated and has no BlensShapes.
 
 ### Changed
 - MergePhysBone now corrects curve settings `#775`
