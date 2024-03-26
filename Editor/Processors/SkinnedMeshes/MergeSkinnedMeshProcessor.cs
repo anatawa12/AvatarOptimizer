@@ -30,7 +30,14 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             GenerateWarningsOrErrors(context, target, meshInfos);
 
-            var (subMeshIndexMap, materials) = GenerateSubMeshMapping(context, target, meshInfos);
+            var (subMeshIndexMap, materials) =
+                GenerateSubMeshMapping(meshInfos, Component.doNotMergeMaterials.GetAsSet());
+
+#if !UNITY_2021_2_OR_NEWER
+            Profiler.BeginSample("ShiftIndex For Unity Bug");
+            ShiftIndexForUnityBugWorkaround(context, meshInfos, materials, subMeshIndexMap);
+            Profiler.EndSample();
+#endif
 
             DoMerge(context, target, meshInfos, subMeshIndexMap, materials);
             MergeBounds(target, meshInfos);
@@ -173,28 +180,17 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         }
 
-        public (int[][] subMeshIndexMap, List<(MeshTopology topology, Material material)> materials)
+        public static (int[][] subMeshIndexMap, List<(MeshTopology topology, Material material)> materials)
             GenerateSubMeshMapping(
-                BuildContext context,
-                MeshInfo2 target,
-                MeshInfo2[] meshInfos
-            )
+                MeshInfo2[] meshInfos,
+                HashSet<Material> doNotMerges)
         {
             Profiler.BeginSample("Merge Material Indices");
             var sourceMaterials = meshInfos
                 .Select(x => x.SubMeshes.Select(y => (y.Topology, y.SharedMaterial)).ToArray()).ToArray();
-            var (subMeshIndexMap, materials) = CreateMergedMaterialsAndSubMeshIndexMapping(sourceMaterials);
+            var (subMeshIndexMap, materials) =
+                CreateMergedMaterialsAndSubMeshIndexMapping(sourceMaterials, doNotMerges);
             Profiler.EndSample();
-
-#if !UNITY_2021_2_OR_NEWER
-            Profiler.BeginSample("ShiftIndex For Unity Bug");
-            // material slot #4 should not be animated to avoid Unity bug
-            // https://issuetracker.unity3d.com/issues/material-is-applied-to-two-slots-when-applying-material-to-a-single-slot-while-recording-animation
-            const int subMeshIndexToShiftIfAnimated = 4;
-            if (IsAnimatingTheSubMeshIndex(context, meshInfos, subMeshIndexMap, subMeshIndexToShiftIfAnimated))
-                MakeHoleSubMesh(subMeshIndexMap, materials, subMeshIndexToShiftIfAnimated);
-            Profiler.EndSample();
-#endif
 
             return (subMeshIndexMap, materials);
         }
@@ -454,11 +450,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             return locations;
         }
 
-        private (int[][] mapping, List<(MeshTopology topology, Material material)> materials)
-            CreateMergedMaterialsAndSubMeshIndexMapping(
-                (MeshTopology topology, Material material)[][] sourceMaterials)
+        private static (int[][] mapping, List<(MeshTopology topology, Material material)> materials)
+            CreateMergedMaterialsAndSubMeshIndexMapping((MeshTopology topology, Material material)[][] sourceMaterials,
+                HashSet<Material> doNotMerges)
         {
-            var doNotMerges = Component.doNotMergeMaterials.GetAsSet();
             var resultMaterials = new List<(MeshTopology, Material)>();
             var resultIndices = new int[sourceMaterials.Length][];
 
@@ -486,7 +481,21 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             return (resultIndices, resultMaterials);
         }
 
-#if true
+#if !UNITY_2021_2_OR_NEWER
+        // material slot #4 should not be animated to avoid Unity bug
+        // https://issuetracker.unity3d.com/issues/material-is-applied-to-two-slots-when-applying-material-to-a-single-slot-while-recording-animation
+        private static void ShiftIndexForUnityBugWorkaround(
+            BuildContext context,
+            MeshInfo2[] meshInfos,
+            List<(MeshTopology, Material)> materials,
+            int[][] subMeshIndexMap
+        )
+        {
+            const int subMeshIndexToShiftIfAnimated = 4;
+            if (IsAnimatingTheSubMeshIndex(context, meshInfos, subMeshIndexMap, subMeshIndexToShiftIfAnimated))
+                MakeHoleSubMesh(subMeshIndexMap, materials, subMeshIndexToShiftIfAnimated);
+        }
+
         private static bool IsAnimatingTheSubMeshIndex(BuildContext context, MeshInfo2[] meshInfos,
             int[][] subMeshIndexMap, int targetSubMeshIndex)
         {
@@ -511,7 +520,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             return false;
         }
 
-        private void MakeHoleSubMesh(int[][] subMeshIndexMap, List<(MeshTopology, Material)> materials,
+        private static void MakeHoleSubMesh(int[][] subMeshIndexMap, List<(MeshTopology, Material)> materials,
             int targetSubMeshIndex)
         {
             materials.Insert(targetSubMeshIndex, (MeshTopology.Triangles, null));
@@ -548,7 +557,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     .Select(a => a.Select(b => (MeshTopology.Triangles, b)).ToArray())
                     .ToArray();
 
-                return _processor.CreateMergedMaterialsAndSubMeshIndexMapping(sourceMaterials)
+                return CreateMergedMaterialsAndSubMeshIndexMapping(sourceMaterials, 
+                        _processor.Component.doNotMergeMaterials.GetAsSet())
                     .materials
                     .Select(x => x.material)
                     .ToArray();
