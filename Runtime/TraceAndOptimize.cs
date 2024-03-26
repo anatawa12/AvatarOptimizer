@@ -50,6 +50,14 @@ namespace Anatawa12.AvatarOptimizer
         [ToggleLeft]
         public bool mergeSkinnedMesh = true;
 
+        // TODO: make true by default if it's safe
+        // see https://github.com/anatawa12/AvatarOptimizer/issues/954
+        [NotKeyable]
+        [AAOLocalized("TraceAndOptimize:prop:allowShuffleMaterialSlots",
+            "TraceAndOptimize:tooltip:allowShuffleMaterialSlots")]
+        [ToggleLeft]
+        public bool allowShuffleMaterialSlots;
+
         // common parsing configuration
         [NotKeyable]
         [AAOLocalized("TraceAndOptimize:prop:mmdWorldCompatibility",

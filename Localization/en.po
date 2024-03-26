@@ -479,6 +479,12 @@ msgstr "Optimize Animator"
 msgid "TraceAndOptimize:prop:mergeSkinnedMesh"
 msgstr "Merge Skinned Mesh"
 
+msgid "TraceAndOptimize:prop:allowShuffleMaterialSlots"
+msgstr "Allow Shuffling Material Slots"
+
+msgid "TraceAndOptimize:tooltip:allowShuffleMaterialSlots"
+msgstr "Allow shuffling material slots to reduce draw calls. however, this may change the order of rendering a bit."
+
 msgid "TraceAndOptimize:prop:mmdWorldCompatibility"
 msgstr "MMD World Compatibility"
 

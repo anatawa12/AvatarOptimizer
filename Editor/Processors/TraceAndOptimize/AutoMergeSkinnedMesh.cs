@@ -90,6 +90,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             if (state.SkipMergeMaterials)
                 createSubMeshes = CreateSubMeshesNoMerge;
+            else if (state.AllowShuffleMaterialSlots)
+                createSubMeshes = CreateSubMeshesMergeShuffling;
             else
                 createSubMeshes = CreateSubMeshesMergePreserveOrder;
 
@@ -311,6 +313,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             return (subMeshIndexMap, materials);
         }
+
+        private (int[][], List<(MeshTopology, Material)>) CreateSubMeshesMergeShuffling(MeshInfo2[] meshInfos) =>
+            MergeSkinnedMeshProcessor.GenerateSubMeshMapping(meshInfos, new HashSet<Material>());
 
         private (int[][], List<(MeshTopology, Material)>) CreateSubMeshesMergePreserveOrder(MeshInfo2[] meshInfos)
         {

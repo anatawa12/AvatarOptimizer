@@ -388,6 +388,12 @@ msgstr "アニメーターを最適化する"
 msgid "TraceAndOptimize:prop:mergeSkinnedMesh"
 msgstr "スキンメッシュを結合する"
 
+msgid "TraceAndOptimize:prop:allowShuffleMaterialSlots"
+msgstr "マテリアルスロットの前後関係を壊すのを許可する"
+
+msgid "TraceAndOptimize:tooltip:allowShuffleMaterialSlots"
+msgstr "マテリアルスロットの前後関係を壊すことで描画コール数を減らすことを許可します。ただし、これは描画順序を少し変更する可能性があります。"
+
 msgid "TraceAndOptimize:prop:mmdWorldCompatibility"
 msgstr "MMDワールドとの互換性"
 
