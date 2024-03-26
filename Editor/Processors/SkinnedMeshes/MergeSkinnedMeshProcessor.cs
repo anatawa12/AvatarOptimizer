@@ -422,13 +422,15 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             BuildContext context)
         {
             // collect activeness animation for the merged object
-            var animationLocationsForMerged = GetAnimationLocations(context, target);
+            var animationLocationsForMerged = new HashSet<AnimationLocation>(
+                AnimationLocation.CollectActivenessAnimationLocations(context, target));
 
             var sources = new List<object>();
 
             foreach (var renderer in renderers)
             {
-                var animationLocationsForSource = GetAnimationLocations(context, renderer);
+                var animationLocationsForSource = new HashSet<AnimationLocation>(
+                    AnimationLocation.CollectActivenessAnimationLocations(context, target));
                 if (animationLocationsForSource.SetEquals(animationLocationsForMerged)) continue;
 
                 // if the source has different activeness animation, warn it.
@@ -439,19 +441,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             if (sources.Count != 0)
                 BuildLog.LogWarning("MergeSkinnedMesh:warning:animation-mesh-hide", sources);
-        }
-
-        private static HashSet<AnimationLocation> GetAnimationLocations(BuildContext context, Component component)
-        {
-            var locations = new HashSet<AnimationLocation>();
-            {
-                if (context.GetAnimationComponent(component).TryGetFloat("m_Enabled", out var p))
-                    locations.UnionWith(AnimationLocation.CollectAnimationLocation(p));
-            }
-            foreach (var transform in component.transform.ParentEnumerable(context.AvatarRootTransform, includeMe: true))
-                if (context.GetAnimationComponent(transform.gameObject).TryGetFloat("m_IsActive", out var p))
-                    locations.UnionWith(AnimationLocation.CollectAnimationLocation(p));
-            return locations;
         }
 
         private (int[][] mapping, List<(MeshTopology topology, Material material)> materials)
