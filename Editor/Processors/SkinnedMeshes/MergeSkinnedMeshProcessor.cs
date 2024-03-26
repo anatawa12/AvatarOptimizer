@@ -105,6 +105,28 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             Profiler.EndSample();
 
+            Profiler.BeginSample("Generate ActivenessWarning");
+            ActivenessAnimationWarning(skinnedMeshRenderers.Concat<Renderer>(staticMeshRenderers), context);
+            Profiler.EndSample();
+
+            Profiler.BeginSample("Remove Unsupported Components");
+            foreach (var renderer in skinnedMeshRenderers)
+            {
+                var removeZeroSizedPolygon = renderer.GetComponent<RemoveZeroSizedPolygon>();
+                if (removeZeroSizedPolygon)
+                {
+                    BuildLog.LogWarning("MergeSkinnedMesh:warning:removeZeroSizedPolygonOnSources", removeZeroSizedPolygon);
+                    DestroyTracker.DestroyImmediate(removeZeroSizedPolygon);
+                }
+                var cloth = renderer.GetComponent<Cloth>();
+                if (cloth)
+                {
+                    BuildLog.LogError("MergeSkinnedMesh:error:clothOnSources", cloth);
+                    DestroyTracker.DestroyImmediate(cloth);
+                }
+            }
+            Profiler.EndSample();
+
             Profiler.BeginSample("Merge Material Indices");
             var (subMeshIndexMap, materials) = CreateMergedMaterialsAndSubMeshIndexMapping(sourceMaterials);
             Profiler.EndSample();
@@ -229,28 +251,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             }
 
             var boneTransforms = new HashSet<Transform>(target.Bones.Select(x => x.Transform));
-
-            Profiler.BeginSample("Generate ActivenessWarning");
-            ActivenessAnimationWarning(skinnedMeshRenderers.Concat<Renderer>(staticMeshRenderers), context);
-            Profiler.EndSample();
-
-            Profiler.BeginSample("Remove Unsupported Components");
-            foreach (var renderer in skinnedMeshRenderers)
-            {
-                var removeZeroSizedPolygon = renderer.GetComponent<RemoveZeroSizedPolygon>();
-                if (removeZeroSizedPolygon)
-                {
-                    BuildLog.LogWarning("MergeSkinnedMesh:warning:removeZeroSizedPolygonOnSources", removeZeroSizedPolygon);
-                    DestroyTracker.DestroyImmediate(removeZeroSizedPolygon);
-                }
-                var cloth = renderer.GetComponent<Cloth>();
-                if (cloth)
-                {
-                    BuildLog.LogError("MergeSkinnedMesh:error:clothOnSources", cloth);
-                    DestroyTracker.DestroyImmediate(cloth);
-                }
-            }
-            Profiler.EndSample();
 
             Profiler.BeginSample("Postprocess Source Renderers");
             foreach (var renderer in skinnedMeshRenderers)
