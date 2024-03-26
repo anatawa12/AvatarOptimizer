@@ -38,6 +38,11 @@ Currently the following optimizations are applied automatically.
   - Unchecks `Is Animated` if it's not necessary.
 - `Optimize Animator`
   Optimizes Animator Controller.
+- `Merge Skinned Meshes`\
+  Merge skinned meshes that don't need to be separated.
+  - `Allow Shuffling Material Slots`\
+    Allow shuffling material slots.\
+    The order of material slots usually doesn't matter, but it may affect the drawing order in rare cases.
 
 Also, You can adjust optimization with the following settings
 - `MMD World Compatibility`\
