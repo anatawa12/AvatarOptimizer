@@ -376,9 +376,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 ((uint)value & TexCoordStatusMask) << (BitsPerTexCoordStatus * index));
         }
 
-        public void Clear()
+        public void ClearMeshData()
         {
-            Bounds = default;
             Vertices.Clear();
             _texCoordStatus = default;
             SubMeshes.Clear();

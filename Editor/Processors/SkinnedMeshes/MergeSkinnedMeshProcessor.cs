@@ -2,13 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.AnimatorParsersV2;
-using JetBrains.Annotations;
 using nadena.dev.ndmf;
-using UnityEditor;
-using UnityEditor.Animations;
 using UnityEngine;
 using UnityEngine.Profiling;
-using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 {
@@ -30,6 +26,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         public override void Process(BuildContext context, MeshInfo2 target)
         {
+            #region Compute SkinnedMeshRenderers and StaticMeshRenderers
+
             List<SkinnedMeshRenderer> skinnedMeshRenderers;
             List<MeshRenderer> staticMeshRenderers;
             if (Component.skipEnablementMismatchedRenderers)
@@ -55,6 +53,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 staticMeshRenderers = StaticMeshRenderers.ToList();
             }
 
+            #endregion
+
             Profiler.BeginSample("Merge PreserveBlendShapes");
             {
                 var state = context.GetState<TraceAndOptimizes.TraceAndOptimizeState>();
@@ -69,6 +69,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 }
             }
             Profiler.EndSample();
+
             Profiler.BeginSample("Collect MeshInfos");
             var meshInfos = skinnedMeshRenderers.Select(context.GetMeshInfoFor)
                 .Concat(staticMeshRenderers.Select(renderer => new MeshInfo2(renderer)))
@@ -76,9 +77,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             foreach (var meshInfo2 in meshInfos) meshInfo2.FlattenMultiPassRendering("Merge Skinned Mesh");
             foreach (var meshInfo2 in meshInfos) meshInfo2.MakeBoned();
-
-            var sourceMaterials = meshInfos.Select(x => x.SubMeshes.Select(y => (y.Topology, y.SharedMaterial)).ToArray()).ToArray();
             Profiler.EndSample();
+
+            #region Warnings or Errors
 
             Profiler.BeginSample("Material / Shader Parameter Animation Warnings");
             MaterialParameterAnimationWarnings(meshInfos, context);
@@ -109,7 +110,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             ActivenessAnimationWarning(skinnedMeshRenderers.Concat<Renderer>(staticMeshRenderers), context);
             Profiler.EndSample();
 
-            Profiler.BeginSample("Remove Unsupported Components");
+            Profiler.BeginSample("Warn / Error Unsupported Components");
             foreach (var renderer in skinnedMeshRenderers)
             {
                 var removeZeroSizedPolygon = renderer.GetComponent<RemoveZeroSizedPolygon>();
@@ -151,7 +152,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             Profiler.EndSample();
 
+            #endregion
+
             Profiler.BeginSample("Merge Material Indices");
+            var sourceMaterials = meshInfos.Select(x => x.SubMeshes.Select(y => (y.Topology, y.SharedMaterial)).ToArray()).ToArray();
             var (subMeshIndexMap, materials) = CreateMergedMaterialsAndSubMeshIndexMapping(sourceMaterials);
             Profiler.EndSample();
 
@@ -165,7 +169,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             Profiler.EndSample();
 #endif
 
-            target.Clear();
+            target.ClearMeshData();
             target.SubMeshes.Capacity = Math.Max(target.SubMeshes.Capacity, materials.Count);
             foreach (var material in materials)
                 target.SubMeshes.Add(new SubMesh(material.material, material.topology));
@@ -428,7 +432,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             return (resultIndices, resultMaterials);
         }
 
-#if !UNITY_2021_2_OR_NEWER
+#if true
         private static bool IsAnimatingTheSubMeshIndex(BuildContext context, MeshInfo2[] meshInfos,
             int[][] subMeshIndexMap, int targetSubMeshIndex)
         {
