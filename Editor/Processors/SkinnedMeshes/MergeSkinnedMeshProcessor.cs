@@ -155,9 +155,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             var (subMeshIndexMap, materials) = CreateMergedMaterialsAndSubMeshIndexMapping(sourceMaterials);
             Profiler.EndSample();
 
-            var sourceRootBone = target.RootBone;
-            var updateBounds = sourceRootBone && target.Bounds == default;
-
             target.Clear();
             target.SubMeshes.Capacity = Math.Max(target.SubMeshes.Capacity, materials.Count);
             foreach (var material in materials)
@@ -165,9 +162,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             TexCoordStatus TexCoordStatusMax(TexCoordStatus x, TexCoordStatus y) =>
                 (TexCoordStatus)Math.Max((int)x, (int)y);
-
-            var newBoundMin = Vector3.positiveInfinity;
-            var newBoundMax = Vector3.negativeInfinity;
 
             var mappings = new List<(string, string)>();
 
@@ -210,23 +204,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     mappings.Add((VProp.BlendShapeIndex(sourceI), VProp.BlendShapeIndex(newIndex)));
                 }
 
-                if (updateBounds && meshInfo.RootBone)
-                {
-                    foreach (var inSource in meshInfo.Bounds.Corners())
-                    {
-                        var vector3 = sourceRootBone.InverseTransformPoint(
-                            meshInfo.RootBone.TransformPoint(inSource));
-
-                        newBoundMin.x = Mathf.Min(vector3.x, newBoundMin.x);
-                        newBoundMin.y = Mathf.Min(vector3.y, newBoundMin.y);
-                        newBoundMin.z = Mathf.Min(vector3.z, newBoundMin.z);
-                        newBoundMax.x = Mathf.Max(vector3.x, newBoundMax.x);
-                        newBoundMax.y = Mathf.Max(vector3.y, newBoundMax.y);
-                        newBoundMax.z = Mathf.Max(vector3.z, newBoundMax.z);
-                    }
-
-                }
-
                 context.RecordMoveProperties(meshInfo.SourceRenderer, mappings.ToArray());
                 
                 // Avatars can have animation to hide source meshes.
@@ -239,7 +216,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
                 context.RecordMergeComponent(meshInfo.SourceRenderer, Target);
 
-                target.RootBone = sourceRootBone;
                 target.Bones.AddRange(meshInfo.Bones);
 
                 target.HasColor |= meshInfo.HasColor;
@@ -259,10 +235,40 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             Profiler.EndSample();
 #endif
 
-            if (updateBounds && newBoundMin != Vector3.positiveInfinity && newBoundMax != Vector3.negativeInfinity)
+            Profiler.BeginSample("Update Bounds");
+            var sourceRootBone = target.RootBone;
+            var updateBounds = sourceRootBone && target.Bounds == default;
+
+            if (updateBounds)
             {
-                target.Bounds.SetMinMax(newBoundMin, newBoundMax);
+                var newBoundMin = Vector3.positiveInfinity;
+                var newBoundMax = Vector3.negativeInfinity;
+                foreach (var meshInfo in meshInfos)
+                {
+                    if (meshInfo.RootBone)
+                    {
+                        foreach (var inSource in meshInfo.Bounds.Corners())
+                        {
+                            var vector3 = sourceRootBone.InverseTransformPoint(
+                                meshInfo.RootBone.TransformPoint(inSource));
+
+                            newBoundMin.x = Mathf.Min(vector3.x, newBoundMin.x);
+                            newBoundMin.y = Mathf.Min(vector3.y, newBoundMin.y);
+                            newBoundMin.z = Mathf.Min(vector3.z, newBoundMin.z);
+                            newBoundMax.x = Mathf.Max(vector3.x, newBoundMax.x);
+                            newBoundMax.y = Mathf.Max(vector3.y, newBoundMax.y);
+                            newBoundMax.z = Mathf.Max(vector3.z, newBoundMax.z);
+                        }
+                    }
+                }
+
+                if (newBoundMin != Vector3.positiveInfinity && newBoundMax != Vector3.negativeInfinity)
+                {
+                    target.Bounds.SetMinMax(newBoundMin, newBoundMax);
+                }
             }
+
+            Profiler.EndSample();
 
             var boneTransforms = new HashSet<Transform>(target.Bones.Select(x => x.Transform));
 
