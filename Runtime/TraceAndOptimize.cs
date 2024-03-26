@@ -45,6 +45,11 @@ namespace Anatawa12.AvatarOptimizer
         [ToggleLeft]
         public bool optimizeAnimator = true;
 
+        [NotKeyable]
+        [AAOLocalized("TraceAndOptimize:prop:mergeSkinnedMesh")]
+        [ToggleLeft]
+        public bool mergeSkinnedMesh = true;
+
         // common parsing configuration
         [NotKeyable]
         [AAOLocalized("TraceAndOptimize:prop:mmdWorldCompatibility",
@@ -84,6 +89,12 @@ namespace Anatawa12.AvatarOptimizer
             public bool skipMergeDirectBlendTreeLayers;
             [ToggleLeft]
             public bool skipRemoveMeaninglessAnimatorLayer;
+            [ToggleLeft]
+            public bool skipMergeStaticSkinnedMesh;
+            [ToggleLeft]
+            public bool skipMergeAnimatingSkinnedMesh;
+            [ToggleLeft]
+            public bool skipMergeMaterials;
         }
     }
 }

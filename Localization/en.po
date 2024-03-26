@@ -476,6 +476,9 @@ msgstr "Optimize PhysBone Settings"
 msgid "TraceAndOptimize:prop:optimizeAnimator"
 msgstr "Optimize Animator"
 
+msgid "TraceAndOptimize:prop:mergeSkinnedMesh"
+msgstr "Merge Skinned Mesh"
+
 msgid "TraceAndOptimize:prop:mmdWorldCompatibility"
 msgstr "MMD World Compatibility"
 
