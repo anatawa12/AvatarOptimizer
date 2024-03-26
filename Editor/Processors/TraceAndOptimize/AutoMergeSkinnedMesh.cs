@@ -295,7 +295,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             return newSkinnedMeshRenderer;
         }
 
-        private (int[][], List<(MeshTopology, Material)>) CreateSubMeshesNoMerge(MeshInfo2[] meshInfos)
+        public static (int[][], List<(MeshTopology, Material)>) CreateSubMeshesNoMerge(MeshInfo2[] meshInfos)
         {
             var subMeshIndexMap = new int[meshInfos.Length][];
             var materials = new List<(MeshTopology topology, Material material)>();
@@ -314,10 +314,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             return (subMeshIndexMap, materials);
         }
 
-        private (int[][], List<(MeshTopology, Material)>) CreateSubMeshesMergeShuffling(MeshInfo2[] meshInfos) =>
+        public static (int[][], List<(MeshTopology, Material)>) CreateSubMeshesMergeShuffling(MeshInfo2[] meshInfos) =>
             MergeSkinnedMeshProcessor.GenerateSubMeshMapping(meshInfos, new HashSet<Material>());
 
-        private (int[][], List<(MeshTopology, Material)>) CreateSubMeshesMergePreserveOrder(MeshInfo2[] meshInfos)
+        public static (int[][], List<(MeshTopology, Material)>) CreateSubMeshesMergePreserveOrder(MeshInfo2[] meshInfos)
         {
             // merge consecutive submeshes with same material to one for simpler logic
             // note: both start and end are inclusive
