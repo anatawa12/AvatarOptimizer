@@ -224,19 +224,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             ActivenessAnimationWarning(skinnedMeshRenderers.Concat<Renderer>(staticMeshRenderers), context);
             Profiler.EndSample();
 
-            Profiler.BeginSample("Postprocess Source Renderers");
+            Profiler.BeginSample("Remove Unsupported Components");
             foreach (var renderer in skinnedMeshRenderers)
             {
-                // Avatars can have animation to hide source meshes.
-                // Such a animation often intended to hide/show some accessories but
-                // after we merge mesh, it affects to big merged mesh.
-                // This often be a unexpected behavior so we invalidate changing m_Enabled
-                // property for original mesh in animation.
-                // This invalidation doesn't affect to m_Enabled property of merged mesh.
-                context.RecordRemoveProperty(renderer, "m_Enabled");
-
-                context.RecordMergeComponent(renderer, Target);
-                var rendererGameObject = renderer.gameObject;
                 var removeZeroSizedPolygon = renderer.GetComponent<RemoveZeroSizedPolygon>();
                 if (removeZeroSizedPolygon)
                 {
@@ -247,8 +237,24 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 if (cloth)
                 {
                     BuildLog.LogError("MergeSkinnedMesh:error:clothOnSources", cloth);
-                    DestroyTracker.DestroyImmediate(removeZeroSizedPolygon);
+                    DestroyTracker.DestroyImmediate(cloth);
                 }
+            }
+            Profiler.EndSample();
+
+            Profiler.BeginSample("Postprocess Source Renderers");
+            foreach (var renderer in skinnedMeshRenderers)
+            {
+                var rendererGameObject = renderer.gameObject;
+                // Avatars can have animation to hide source meshes.
+                // Such a animation often intended to hide/show some accessories but
+                // after we merge mesh, it affects to big merged mesh.
+                // This often be a unexpected behavior so we invalidate changing m_Enabled
+                // property for original mesh in animation.
+                // This invalidation doesn't affect to m_Enabled property of merged mesh.
+                context.RecordRemoveProperty(renderer, "m_Enabled");
+
+                context.RecordMergeComponent(renderer, Target);
                 DestroyTracker.DestroyImmediate(renderer);
 
                 // process removeEmptyRendererObject
