@@ -26,6 +26,12 @@ The format is based on [Keep a Changelog].
   - If you animated all materials from same animations, your animation will not be warned.
 - API for declaring dependency relationship to the name of the component `#943`
   - You can use this API to not change the name of the GameObject.
+- Configuring `Clamp BlendShapes (Deprecated)` `#957`
+  - Since VRCSDK 3.5.1, VRCSDK sets `Clamp BlendShapes (Deprecated)` to true on assembly reload.
+  - This is not a good setting for AAO in EditMode since AAO does not support clamping BlendShapes.
+  - That's why AAO now configures `Clamp BlendShapes (Deprecated)` to false in edit mode and true in play mode.
+  - PlayMode is usually used for testing the avatar behavior so it's better to have the same setting as VRChat client.
+  - If you want not to change this setting, please disable `Tools/Avatar Optimizer/Configure Clamp BlendShape Weight`.
 
 ### Changed
 - MergePhysBone now corrects curve settings `#775`
