@@ -34,12 +34,15 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
         {
             EditorApplication.update -= Update;
             EditorApplication.update += Update;
+            EditorApplication.playModeStateChanged -= PlayModeStateChanged;
+            EditorApplication.playModeStateChanged += PlayModeStateChanged;
         }
 
         private void OnDisable()
         {
             _previewController?.Dispose();
             EditorApplication.update -= Update;
+            EditorApplication.playModeStateChanged -= PlayModeStateChanged;
         }
 
         [CanBeNull]
@@ -78,6 +81,50 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                         StartPreview(go);
                     }
                 }
+            }
+        }
+
+        private void PlayModeStateChanged(PlayModeStateChange obj)
+        {
+            switch (obj)
+            {
+                case PlayModeStateChange.EnteredEditMode:
+                    break;
+                case PlayModeStateChange.ExitingEditMode:
+                    // stop previewing when exit edit mode
+                    Debug.Log("stop previewing when exit edit mode");
+                    
+                    // Exiting Animation mode on entering play mode may leave the mesh none so we just rollback mesh to original one
+                    if (AnimationMode.InAnimationMode(DriverCached) && _previewController != null)
+                    {
+                        try
+                        {
+                            AnimationMode.BeginSampling();
+
+                            AnimationMode.AddPropertyModification(
+                                EditorCurveBinding.PPtrCurve("", typeof(SkinnedMeshRenderer), "m_Mesh"),
+                                new PropertyModification
+                                {
+                                    target = _previewController.TargetRenderer,
+                                    propertyPath = "m_Mesh",
+                                    objectReference = _previewController.OriginalMesh,
+                                }, 
+                                true);
+
+                            _previewController.TargetRenderer.sharedMesh = _previewController.OriginalMesh;
+                        }
+                        finally
+                        {
+                            AnimationMode.EndSampling();   
+                        }
+                    }
+                    break;
+                case PlayModeStateChange.EnteredPlayMode:
+                    break;
+                case PlayModeStateChange.ExitingPlayMode:
+                    break;
+                default:
+                    break;
             }
         }
 
