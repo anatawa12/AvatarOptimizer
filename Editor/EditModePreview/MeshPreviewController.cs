@@ -59,7 +59,8 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                 if (_previewController == null && targetRenderer != null)
                     _previewController = new RemoveMeshPreviewController(targetRenderer, originalMesh, previewMesh);
 
-                if (_previewController == null || targetRenderer == null || ActiveEditor() != targetRenderer.gameObject)
+                if (_previewController == null || targetRenderer == null || ActiveEditor() != targetRenderer.gameObject 
+                    || EditorApplication.isPlaying || !AnimationMode.InAnimationMode(DriverCached))
                 {
                     StopPreview();
                     return;
@@ -133,6 +134,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
             PreviewAble,
             PreviewingThat,
 
+            InPlayMode,
             NoMesh,
             PreviewingOther,
             ActiveEditorMismatch,
@@ -142,6 +144,8 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
 
         private PreviewState StateForImpl([CanBeNull] Component component)
         {
+            if (EditorApplication.isPlaying) return PreviewState.InPlayMode;
+
             var gameObject = component ? component.gameObject : null;
 
             if (previewing && targetRenderer && targetRenderer.gameObject == gameObject)
@@ -182,6 +186,11 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                         StopPreview();
                         Enabled = false;
                     }
+                    break;
+                case PreviewState.InPlayMode:
+                    EditorGUI.BeginDisabledGroup(true);
+                    GUILayout.Button("Preview (Play Mode)");
+                    EditorGUI.EndDisabledGroup();
                     break;
                 case PreviewState.NoMesh:
                     EditorGUI.BeginDisabledGroup(true);
