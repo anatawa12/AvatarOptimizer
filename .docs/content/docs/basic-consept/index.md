@@ -12,6 +12,8 @@ This page explains the basic concepts of Avatar Optimizer.
 Avatar Optimizer is a tool that helps you optimize your avatar.
 This tool is initially designed for VRChat avatars, but it might be used for other Avatars supported by [NDMF].
 
+Non-VRChat avatar support is completely community-based and may not be supported by the Avatar Optimizer team.
+
 ## What is the goal of Avatar Optimizer? {#what-is-the-goal-of-avatar-optimizer}
 
 This tool is designed to help you optimize your avatar in performance without affecting the appearance so much.\
