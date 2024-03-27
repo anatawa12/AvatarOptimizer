@@ -23,3 +23,5 @@ If some vertices in your mesh is moved more than `Tolerance` by selected BlendSh
 
 In case polygons you want to remove are not removed, increase the `Tolerance` value.
 In case polygons you do not want to remove are removed, decrease the `Tolerance` value.
+
+If you enabled `Automatically set BlendShape weight for preview when toggled`, the inspector will set BlendShape weight to 0 or 100 based on the toggle state. 
