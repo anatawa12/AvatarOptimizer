@@ -65,7 +65,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 var activenessAnimationLocations = GetAnimationLocations(context, meshInfo2.SourceRenderer);
                 if (activenessAnimationLocations == null)
                     continue; // animating activeness with non animator is not supported
-                var key = new CategorizationKey(meshInfo2, activenessAnimationLocations);
+
+                var rendererAnimationLocations =
+                    GetAnimationLocationsForRendererAnimation(context, meshInfo2.SourceRenderer);
+
+                var key = new CategorizationKey(meshInfo2, activenessAnimationLocations, rendererAnimationLocations);
                 if (!categorizedMeshes.TryGetValue(key, out var list))
                 {
                     list = new List<MeshInfo2>();
@@ -102,15 +106,22 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             foreach (var (key, meshInfos) in categorizedMeshes)
             {
+                if (key.RendererAnimationLocations.Count != 0 && state.SkipMergeMaterialAnimatingSkinnedMesh)
+                    continue;
+
                 if (key.ActivenessAnimationLocations.Count == 0)
                 {
                     if (!state.SkipMergeStaticSkinnedMesh)
+                    {
                         MergeStaticSkinnedMesh(context, gameObjectFactory, key, meshInfos, createSubMeshes);
+                    }
                 }
                 else
                 {
                     if (!state.SkipMergeAnimatingSkinnedMesh)
+                    {
                         MergeAnimatingSkinnedMesh(context, gameObjectFactory, key, meshInfos, createSubMeshes, mappingBuilder);
+                    }
                 }
             }
 
@@ -296,6 +307,26 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                         return null;
                     locations.UnionWith(AnimationLocation.CollectAnimationLocation(p));
                 }
+            }
+
+            return locations;
+        }
+
+
+        [CanBeNull]
+        private static HashSet<(string property, AnimationLocation location)> GetAnimationLocationsForRendererAnimation(
+            BuildContext context, Component component)
+        {
+            var locations = new HashSet<(string property, AnimationLocation location)>();
+            var animationComponent = context.GetAnimationComponent(component);
+
+            foreach (var (property, node) in animationComponent.GetAllFloatProperties())
+            {
+                if (property == "m_Enabled") continue; // m_Enabled is proceed separatedly
+                if (node.ComponentNodes.Any(x => !(x is AnimatorParsersV2.AnimatorPropModNode<float>)))
+                    return null;
+                locations.UnionWith(AnimationLocation.CollectAnimationLocation(node)
+                    .Select(location => (property, location)));
             }
 
             return locations;
@@ -490,6 +521,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             {
                 // m_Enabled is allowed
                 if (name == "m_Enabled") continue;
+                // blendShapes are removed so it's allowed
+                if (name.StartsWith("blendShapes.", StringComparison.Ordinal)) continue;
+                // material properties are allowed, will be merged if animated similarly
+                if (name.StartsWith("material.", StringComparison.Ordinal)) continue;
                 // other float properties are forbidden
                 return true;
             }
@@ -543,6 +578,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         {
             public bool HasNormals;
             [NotNull] public HashSet<AnimationLocation> ActivenessAnimationLocations;
+            [NotNull] public HashSet<(string property, AnimationLocation location)> RendererAnimationLocations;
 
             // renderer properties
             public Bounds Bounds;
@@ -563,13 +599,15 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             public CategorizationKey(
                 MeshInfo2 meshInfo2,
-                HashSet<AnimationLocation> activenessAnimationLocations
+                HashSet<AnimationLocation> activenessAnimationLocations,
+                HashSet<(string property, AnimationLocation location)> rendererAnimationLocations
             )
             {
                 var renderer = (SkinnedMeshRenderer)meshInfo2.SourceRenderer;
 
                 HasNormals = meshInfo2.HasNormals;
                 ActivenessAnimationLocations = activenessAnimationLocations;
+                RendererAnimationLocations = rendererAnimationLocations;
 
                 Bounds = meshInfo2.Bounds;
                 Enabled = renderer.enabled;
@@ -591,6 +629,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             {
                 return HasNormals == other.HasNormals &&
                        ActivenessAnimationLocations.SetEquals(other.ActivenessAnimationLocations) &&
+                       RendererAnimationLocations.SetEquals(other.RendererAnimationLocations) &&
                        Bounds.Equals(other.Bounds) &&
                        Enabled == other.Enabled &&
                        ShadowCastingMode == other.ShadowCastingMode &&
@@ -617,6 +656,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 {
                     var hashCode = HasNormals.GetHashCode();
                     hashCode = (hashCode * 397) ^ ActivenessAnimationLocations.GetHashCode2();
+                    hashCode = (hashCode * 397) ^ RendererAnimationLocations.GetHashCode2();
                     hashCode = (hashCode * 397) ^ Bounds.GetHashCode();
                     hashCode = (hashCode * 397) ^ Enabled.GetHashCode();
                     hashCode = (hashCode * 397) ^ (int)ShadowCastingMode;

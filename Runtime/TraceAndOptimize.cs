@@ -102,6 +102,8 @@ namespace Anatawa12.AvatarOptimizer
             [ToggleLeft]
             public bool skipMergeAnimatingSkinnedMesh;
             [ToggleLeft]
+            public bool skipMergeMaterialAnimatingSkinnedMesh;
+            [ToggleLeft]
             public bool skipMergeMaterials;
         }
     }
