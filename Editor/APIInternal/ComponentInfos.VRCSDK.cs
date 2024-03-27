@@ -363,9 +363,25 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
 
             // If parameter is not empty, the PB can be required for Animator Parameter so it's Entrypoint Component
             // https://github.com/anatawa12/AvatarOptimizer/issues/450
+            // https://github.com/anatawa12/AvatarOptimizer/issues/898
             if (!string.IsNullOrEmpty(component.parameter))
-                collector.MarkEntrypoint();
+            {
+                if (PhysBoneSuffix.Select(suffix => component.parameter + suffix)
+                    .Any(collector.IsParameterUsed))
+                {
+                    collector.MarkEntrypoint();
+                }
+            }
         }
+
+        // https://creators.vrchat.com/avatars/avatar-dynamics/physbones#options
+        private static string[] PhysBoneSuffix = {
+            "_IsGrabbed",
+            "_IsPosed",
+            "_Angle",
+            "_Stretch",
+            "_Squish",
+        };
 
         private bool IsOperatingPhysBone(VRCPhysBoneBase component)
         {
