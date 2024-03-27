@@ -64,6 +64,9 @@ The format is based on [Keep a Changelog].
   - The Cloth component is not supported by Merge Skinned Mesh component.
   - In previous versions, AAO will keep the source Skinned Mesh Renderer if it's with Cloth component by bug.
   - Since this version, AAO will make an error if the source Skinned Mesh Renderer is with Cloth component.
+- Remove Unused Objects now removes PhysBones and Contact Receivers with parameters defined but not used by Animator Controllers `#959`
+  - Previously, AAO did not remove PhysBones and Contact Receivers if they are defined in Animator Controllers whether they are used or not.
+  - I thought such a PhysBones on the base body are rare but my friend told me there is Manuka has such a PhysBone so I added this feature.
 
 ### Deprecated
 

@@ -223,6 +223,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         private void Mark(GCComponentInfoHolder componentInfos)
         {
             // first, collect usages
+            
             new ComponentDependencyCollector(_context, _preserveEndBone, componentInfos).CollectAllUsages();
 
             // then, mark and sweep.

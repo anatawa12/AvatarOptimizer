@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Anatawa12.AvatarOptimizer.APIInternal;
 using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
 using JetBrains.Annotations;
@@ -31,7 +32,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         public void CollectAllUsages()
         {
-            var collector = new Collector(this, _componentInfos);
+            var parameters = GetRootAnimatorParameters(_session.AvatarRootObject);
+
+            var collector = new Collector(this, _componentInfos, parameters);
             var unknownComponents = new Dictionary<Type, List<Object>>();
             // second iteration: process parsers
             foreach (var componentInfo in _componentInfos.AllInformation)
@@ -77,17 +80,45 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             }
         }
 
+        private static HashSet<string> GetRootAnimatorParameters(GameObject rootGameObject)
+        {
+            var parameters = new HashSet<string>();
+
+#if AAO_VRCSDK3_AVATARS
+            var descriptor = rootGameObject.GetComponent<VRC.SDK3.Avatars.Components.VRCAvatarDescriptor>();
+            if (descriptor)
+            {
+                if (descriptor.customizeAnimationLayers)
+                {
+                    foreach (var layer in descriptor.baseAnimationLayers.Concat(descriptor.specialAnimationLayers))
+                    {
+                        if (layer.isDefault) continue;
+
+                        var (controller, _) = ACUtils.GetControllerAndOverrides(layer.animatorController);
+                        foreach (var parameter in controller.parameters)
+                            parameters.Add(parameter.name);
+                    }
+                }
+            }
+#endif
+
+            return parameters;
+        }
+
         internal class Collector : API.ComponentDependencyCollector
         {
             private readonly ComponentDependencyCollector _collector;
             private readonly GCComponentInfoHolder _componentInfos;
+            private readonly HashSet<string> _parameters;
             private GCComponentInfo _info;
             [CanBeNull] private IDependencyInfo _dependencyInfo;
 
-            public Collector(ComponentDependencyCollector collector, GCComponentInfoHolder componentInfos)
+            public Collector(ComponentDependencyCollector collector, GCComponentInfoHolder componentInfos,
+                HashSet<string> parameters)
             {
                 _collector = collector;
                 _componentInfos = componentInfos;
+                _parameters = parameters;
             }
             
             public void Init(GCComponentInfo info)
@@ -130,6 +161,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             internal override bool? GetAnimatedFlag(Component component, string animationProperty, bool currentValue) =>
                 _collector._session.GetConstantValue(component, animationProperty, currentValue);
+
+            internal override bool IsParameterUsed(string parameterName) => _parameters.Contains(parameterName);
 
             public override API.PathDependencyInfo AddPathDependency(Transform dependency, Transform root)
             {
