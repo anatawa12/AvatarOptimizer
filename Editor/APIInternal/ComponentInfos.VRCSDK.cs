@@ -428,15 +428,26 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
         }
     }
 
-    [ComponentInformation(typeof(ContactBase))]
     [ComponentInformation(typeof(ContactReceiver))]
     [ComponentInformation(typeof(VRCContactReceiver))]
+    internal class ContactReceiverInformation : ComponentInformation<ContactReceiver>
+    {
+        protected override void CollectDependency(ContactReceiver component, ComponentDependencyCollector collector)
+        {
+            // the contact receiver receives contact event from the sender
+            if (collector.IsParameterUsed(component.parameter))
+                collector.MarkEntrypoint();
+            collector.AddDependency(component.rootTransform);
+        }
+    }
+
     [ComponentInformation(typeof(ContactSender))]
     [ComponentInformation(typeof(VRCContactSender))]
-    internal class ContactBaseInformation : ComponentInformation<ContactBase>
+    internal class ContactSenderInformation : ComponentInformation<ContactSender>
     {
-        protected override void CollectDependency(ContactBase component, ComponentDependencyCollector collector)
+        protected override void CollectDependency(ContactSender component, ComponentDependencyCollector collector)
         {
+            // contact sender is just exists to send contact event to the receiver
             collector.MarkEntrypoint();
             collector.AddDependency(component.rootTransform);
         }
