@@ -34,12 +34,15 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
         {
             EditorApplication.update -= Update;
             EditorApplication.update += Update;
+            EditorApplication.playModeStateChanged -= PlayModeStateChanged;
+            EditorApplication.playModeStateChanged += PlayModeStateChanged;
         }
 
         private void OnDisable()
         {
             _previewController?.Dispose();
             EditorApplication.update -= Update;
+            EditorApplication.playModeStateChanged -= PlayModeStateChanged;
         }
 
         [CanBeNull]
@@ -56,7 +59,8 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                 if (_previewController == null && targetRenderer != null)
                     _previewController = new RemoveMeshPreviewController(targetRenderer, originalMesh, previewMesh);
 
-                if (_previewController == null || targetRenderer == null || ActiveEditor() != targetRenderer.gameObject)
+                if (_previewController == null || targetRenderer == null || ActiveEditor() != targetRenderer.gameObject 
+                    || EditorApplication.isPlaying || !AnimationMode.InAnimationMode(DriverCached))
                 {
                     StopPreview();
                     return;
@@ -81,11 +85,56 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
             }
         }
 
+        private void PlayModeStateChanged(PlayModeStateChange obj)
+        {
+            switch (obj)
+            {
+                case PlayModeStateChange.EnteredEditMode:
+                    break;
+                case PlayModeStateChange.ExitingEditMode:
+                    // stop previewing when exit edit mode
+                    Debug.Log("stop previewing when exit edit mode");
+                    
+                    // Exiting Animation mode on entering play mode may leave the mesh none so we just rollback mesh to original one
+                    if (AnimationMode.InAnimationMode(DriverCached) && _previewController != null)
+                    {
+                        try
+                        {
+                            AnimationMode.BeginSampling();
+
+                            AnimationMode.AddPropertyModification(
+                                EditorCurveBinding.PPtrCurve("", typeof(SkinnedMeshRenderer), "m_Mesh"),
+                                new PropertyModification
+                                {
+                                    target = _previewController.TargetRenderer,
+                                    propertyPath = "m_Mesh",
+                                    objectReference = _previewController.OriginalMesh,
+                                }, 
+                                true);
+
+                            _previewController.TargetRenderer.sharedMesh = _previewController.OriginalMesh;
+                        }
+                        finally
+                        {
+                            AnimationMode.EndSampling();   
+                        }
+                    }
+                    break;
+                case PlayModeStateChange.EnteredPlayMode:
+                    break;
+                case PlayModeStateChange.ExitingPlayMode:
+                    break;
+                default:
+                    break;
+            }
+        }
+
         public enum PreviewState
         {
             PreviewAble,
             PreviewingThat,
 
+            InPlayMode,
             NoMesh,
             PreviewingOther,
             ActiveEditorMismatch,
@@ -95,6 +144,8 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
 
         private PreviewState StateForImpl([CanBeNull] Component component)
         {
+            if (EditorApplication.isPlaying) return PreviewState.InPlayMode;
+
             var gameObject = component ? component.gameObject : null;
 
             if (previewing && targetRenderer && targetRenderer.gameObject == gameObject)
@@ -135,6 +186,11 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                         StopPreview();
                         Enabled = false;
                     }
+                    break;
+                case PreviewState.InPlayMode:
+                    EditorGUI.BeginDisabledGroup(true);
+                    GUILayout.Button("Preview (Play Mode)");
+                    EditorGUI.EndDisabledGroup();
                     break;
                 case PreviewState.NoMesh:
                     EditorGUI.BeginDisabledGroup(true);
@@ -222,14 +278,15 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
             public static void BeginSampling() => UnityEditor.AnimationMode.BeginSampling();
             public static void EndSampling() => UnityEditor.AnimationMode.EndSampling();
             public static bool InAnimationMode() => UnityEditor.AnimationMode.InAnimationMode();
-            public static void StartAnimationMode(AnimationModeDriver o) => StartAnimationMode("StartAnimationMode", o);
-            public static void StopAnimationMode(AnimationModeDriver o) => StartAnimationMode("StopAnimationMode", o);
+            public static bool InAnimationMode(AnimationModeDriver o) => StartAnimationMode<bool>("InAnimationMode", o);
+            public static void StartAnimationMode(AnimationModeDriver o) => StartAnimationMode<object>("StartAnimationMode", o);
+            public static void StopAnimationMode(AnimationModeDriver o) => StartAnimationMode<object>("StopAnimationMode", o);
 
             public static void AddPropertyModification(EditorCurveBinding binding, PropertyModification modification,
                 bool keepPrefabOverride) =>
                 UnityEditor.AnimationMode.AddPropertyModification(binding, modification, keepPrefabOverride);
 
-            private static void StartAnimationMode(string name, AnimationModeDriver o)
+            private static R StartAnimationMode<R>(string name, AnimationModeDriver o)
             {
                 var method = typeof(UnityEditor.AnimationMode).GetMethod(name,
                     BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic,
@@ -237,7 +294,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                     new[] { typeof(AnimationModeDriver) },
                     null);
                 System.Diagnostics.Debug.Assert(method != null, nameof(method) + " != null");
-                method.Invoke(null, new object[] { o });
+                return (R)method.Invoke(null, new object[] { o });
             }
         }
 #endif

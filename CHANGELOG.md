@@ -75,6 +75,7 @@ The format is based on [Keep a Changelog].
 - Fix non-VRChat project support `#884`
 - Fix VRM support `#892`
 - ArgumentNullException in Edit-mode Remove Mesh Preview `#942`
+- Bad behavior if EditMode preview is enabled when entering play mode `#956`
 
 ### Security
 
