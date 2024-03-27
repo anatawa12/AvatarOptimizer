@@ -131,7 +131,17 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                             DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
                             if (@event.type == EventType.DragPerform)
                             {
-                                EditorUtil.GetElementOf(object2).EnsureAdded();
+                                if (object1 is GameObject gameObject && object2 is Component)
+                                {
+                                    // if object is dropped from hierarchy view, add all components of the object
+                                    foreach (var component in gameObject.GetComponents(_elementType))
+                                        if (component != null)
+                                            EditorUtil.GetElementOf(component).EnsureAdded();
+                                }
+                                else
+                                {
+                                    EditorUtil.GetElementOf(object2).EnsureAdded();
+                                }
                                 flag3 = true;
                                 DragAndDrop.activeControlID = 0;
                             }
