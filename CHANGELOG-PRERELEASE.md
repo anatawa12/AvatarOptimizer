@@ -25,6 +25,12 @@ The format is based on [Keep a Changelog].
   - If you animated all materials from same animations, your animation will not be warned.
 - API for declaring dependency relationship to the name of the component `#943`
   - You can use this API to not change the name of the GameObject.
+- Configuring `Clamp BlendShapes (Deprecated)` `#957`
+  - Since VRCSDK 3.5.1, VRCSDK sets `Clamp BlendShapes (Deprecated)` to true on assembly reload.
+  - This is not a good setting for AAO in EditMode since AAO does not support clamping BlendShapes.
+  - That's why AAO now configures `Clamp BlendShapes (Deprecated)` to false in edit mode and true in play mode.
+  - PlayMode is usually used for testing the avatar behavior so it's better to have the same setting as VRChat client.
+  - If you want not to change this setting, please disable `Tools/Avatar Optimizer/Configure Clamp BlendShape Weight`.
 - Automatic Merge Skinned Mesh `#952`
   - Trace and Optimize now automatically merges Skinned Meshes if possible.
   - Trace and Optimize will merge your mesh if the material properties of the mesh is not animated and has no BlensShapes.
@@ -61,6 +67,9 @@ The format is based on [Keep a Changelog].
   - The Cloth component is not supported by Merge Skinned Mesh component.
   - In previous versions, AAO will keep the source Skinned Mesh Renderer if it's with Cloth component by bug.
   - Since this version, AAO will make an error if the source Skinned Mesh Renderer is with Cloth component.
+- Remove Unused Objects now removes PhysBones and Contact Receivers with parameters defined but not used by Animator Controllers `#959`
+  - Previously, AAO did not remove PhysBones and Contact Receivers if they are defined in Animator Controllers whether they are used or not.
+  - I thought such a PhysBones on the base body are rare but my friend told me there is Manuka has such a PhysBone so I added this feature.
 
 ### Deprecated
 
@@ -77,8 +86,14 @@ The format is based on [Keep a Changelog].
 - Fix non-VRChat project support `#884`
 - Fix VRM support `#892`
 - ArgumentNullException in Edit-mode Remove Mesh Preview `#942`
+- Bad behavior if EditMode preview is enabled when entering play mode `#956`
 
 ### Security
+
+## [1.6.9] - 2024-03-27
+## [1.6.9-beta.3] - 2024-03-24
+### Fixed
+- ContextHolder become unknown component in NDMF 1.4.0 [`#946`](https://github.com/anatawa12/AvatarOptimizer/pull/946)
 
 ## [1.6.9-beta.2] - 2024-03-22
 ### Added
@@ -1240,7 +1255,9 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.9-beta.2...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.9...HEAD
+[1.6.9]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.9-beta.3...v1.6.9
+[1.6.9-beta.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.9-beta.2...v1.6.9-beta.3
 [1.6.9-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.9-beta.1...v1.6.9-beta.2
 [1.6.9-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.8...v1.6.9-beta.1
 [1.6.8]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.7...v1.6.8

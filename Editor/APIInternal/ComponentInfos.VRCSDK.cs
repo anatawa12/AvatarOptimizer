@@ -363,9 +363,25 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
 
             // If parameter is not empty, the PB can be required for Animator Parameter so it's Entrypoint Component
             // https://github.com/anatawa12/AvatarOptimizer/issues/450
+            // https://github.com/anatawa12/AvatarOptimizer/issues/898
             if (!string.IsNullOrEmpty(component.parameter))
-                collector.MarkEntrypoint();
+            {
+                if (PhysBoneSuffix.Select(suffix => component.parameter + suffix)
+                    .Any(collector.IsParameterUsed))
+                {
+                    collector.MarkEntrypoint();
+                }
+            }
         }
+
+        // https://creators.vrchat.com/avatars/avatar-dynamics/physbones#options
+        private static string[] PhysBoneSuffix = {
+            "_IsGrabbed",
+            "_IsPosed",
+            "_Angle",
+            "_Stretch",
+            "_Squish",
+        };
 
         private bool IsOperatingPhysBone(VRCPhysBoneBase component)
         {
@@ -412,15 +428,26 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
         }
     }
 
-    [ComponentInformation(typeof(ContactBase))]
     [ComponentInformation(typeof(ContactReceiver))]
     [ComponentInformation(typeof(VRCContactReceiver))]
+    internal class ContactReceiverInformation : ComponentInformation<ContactReceiver>
+    {
+        protected override void CollectDependency(ContactReceiver component, ComponentDependencyCollector collector)
+        {
+            // the contact receiver receives contact event from the sender
+            if (collector.IsParameterUsed(component.parameter))
+                collector.MarkEntrypoint();
+            collector.AddDependency(component.rootTransform);
+        }
+    }
+
     [ComponentInformation(typeof(ContactSender))]
     [ComponentInformation(typeof(VRCContactSender))]
-    internal class ContactBaseInformation : ComponentInformation<ContactBase>
+    internal class ContactSenderInformation : ComponentInformation<ContactSender>
     {
-        protected override void CollectDependency(ContactBase component, ComponentDependencyCollector collector)
+        protected override void CollectDependency(ContactSender component, ComponentDependencyCollector collector)
         {
+            // contact sender is just exists to send contact event to the receiver
             collector.MarkEntrypoint();
             collector.AddDependency(component.rootTransform);
         }

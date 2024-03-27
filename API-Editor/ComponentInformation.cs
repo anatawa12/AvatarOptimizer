@@ -234,6 +234,16 @@ namespace Anatawa12.AvatarOptimizer.API
         /// <param name="currentValue"></param>
         /// <returns></returns>
         internal abstract bool? GetAnimatedFlag(Component component, string animationProperty, bool currentValue);
+
+        // TODO: rename to better name and make public
+        // NOTE for external users: this is API Proposal to determine whether the parameter is
+        // used by the animator or not. For example, phys bones.
+        /// <summary>
+        /// Returns whether if <paramref name="parameterName"/> is used by the animator.
+        /// </summary>
+        /// <param name="parameterName">The animator parameter name</param>
+        /// <returns></returns>
+        internal abstract bool IsParameterUsed(string parameterName);
     }
 
     [PublicAPI]
