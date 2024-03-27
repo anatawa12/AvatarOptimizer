@@ -67,6 +67,8 @@ The format is based on [Keep a Changelog].
 - Remove Unused Objects now removes PhysBones and Contact Receivers with parameters defined but not used by Animator Controllers `#959`
   - Previously, AAO did not remove PhysBones and Contact Receivers if they are defined in Animator Controllers whether they are used or not.
   - I thought such a PhysBones on the base body are rare but my friend told me there is Manuka has such a PhysBone so I added this feature.
+- Dropping GameObject to PrefabSafeSet adds the All components on the GameObject to the PrefabSafeSet `#960`
+  - You can add all PhysBones on the GameObject by dropping the GameObject to the MergePhysBone component.
 
 ### Deprecated
 
