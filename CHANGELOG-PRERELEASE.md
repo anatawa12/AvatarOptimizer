@@ -84,6 +84,11 @@ The format is based on [Keep a Changelog].
 
 ### Security
 
+## [1.6.9] - 2024-03-27
+## [1.6.9-beta.3] - 2024-03-24
+### Fixed
+- ContextHolder become unknown component in NDMF 1.4.0 [`#946`](https://github.com/anatawa12/AvatarOptimizer/pull/946)
+
 ## [1.6.9-beta.2] - 2024-03-22
 ### Added
 - Support for VRCSDK 3.5.2-beta.2 [`#935`](https://github.com/anatawa12/AvatarOptimizer/pull/935)
@@ -1244,7 +1249,9 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.9-beta.2...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.9...HEAD
+[1.6.9]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.9-beta.3...v1.6.9
+[1.6.9-beta.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.9-beta.2...v1.6.9-beta.3
 [1.6.9-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.9-beta.1...v1.6.9-beta.2
 [1.6.9-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.8...v1.6.9-beta.1
 [1.6.8]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.7...v1.6.8
