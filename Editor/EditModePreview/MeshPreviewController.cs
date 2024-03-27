@@ -278,14 +278,15 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
             public static void BeginSampling() => UnityEditor.AnimationMode.BeginSampling();
             public static void EndSampling() => UnityEditor.AnimationMode.EndSampling();
             public static bool InAnimationMode() => UnityEditor.AnimationMode.InAnimationMode();
-            public static void StartAnimationMode(AnimationModeDriver o) => StartAnimationMode("StartAnimationMode", o);
-            public static void StopAnimationMode(AnimationModeDriver o) => StartAnimationMode("StopAnimationMode", o);
+            public static bool InAnimationMode(AnimationModeDriver o) => StartAnimationMode<bool>("InAnimationMode", o);
+            public static void StartAnimationMode(AnimationModeDriver o) => StartAnimationMode<object>("StartAnimationMode", o);
+            public static void StopAnimationMode(AnimationModeDriver o) => StartAnimationMode<object>("StopAnimationMode", o);
 
             public static void AddPropertyModification(EditorCurveBinding binding, PropertyModification modification,
                 bool keepPrefabOverride) =>
                 UnityEditor.AnimationMode.AddPropertyModification(binding, modification, keepPrefabOverride);
 
-            private static void StartAnimationMode(string name, AnimationModeDriver o)
+            private static R StartAnimationMode<R>(string name, AnimationModeDriver o)
             {
                 var method = typeof(UnityEditor.AnimationMode).GetMethod(name,
                     BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic,
@@ -293,7 +294,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                     new[] { typeof(AnimationModeDriver) },
                     null);
                 System.Diagnostics.Debug.Assert(method != null, nameof(method) + " != null");
-                method.Invoke(null, new object[] { o });
+                return (R)method.Invoke(null, new object[] { o });
             }
         }
 #endif
