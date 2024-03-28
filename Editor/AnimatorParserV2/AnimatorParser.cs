@@ -226,6 +226,11 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             foreach (var layer in descriptor.baseAnimationLayers)
                 VRCSDKUtils.CollectWeightChangesInController(controllers[layer.type],
                     playableWeightChanged, animatorLayerWeightChanged);
+            // layer control can be executed on the other animators than avatar root
+            // https://github.com/anatawa12/AvatarOptimizer/issues/824
+            foreach (var childAnimator in descriptor.transform.GetComponentsInChildren<Animator>())
+                VRCSDKUtils.CollectWeightChangesInController(childAnimator.runtimeAnimatorController,
+                    playableWeightChanged, animatorLayerWeightChanged);
 
             if (_mmdWorldCompatibility)
             {
