@@ -72,6 +72,7 @@ The format is based on [Keep a Changelog].
   - I thought such a PhysBones on the base body are rare but my friend told me there is Manuka has such a PhysBone so I added this feature.
 - Dropping GameObject to PrefabSafeSet adds the All components on the GameObject to the PrefabSafeSet `#960`
   - You can add all PhysBones on the GameObject by dropping the GameObject to the MergePhysBone component.
+- MergeSkinnedMesh now warns if Root Bone or Anchor Override are not set `#963`
 
 ### Deprecated
 

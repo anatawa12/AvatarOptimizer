@@ -336,6 +336,12 @@ msgstr "Cloth component is attached to the source SkinnedMeshRenderer, so it can
 msgid "MergeSkinnedMesh:error:clothOnSources:description"
 msgstr "Please remove Cloth component from the source SkinnedMeshRenderer or exclude the source SkinnedMeshRenderer."
 
+msgid "MergeSkinnedMesh:warning:no-root-bone"
+msgstr "Root Bone is not set. This may cause unexpected behavior."
+
+msgid "MergeSkinnedMesh:warning:no-probe-anchor"
+msgstr "Anchor Override is not set. This may cause unexpected behavior."
+
 # endregion
 
 # region MergeToonLitMaterial

@@ -5,6 +5,7 @@ using Anatawa12.AvatarOptimizer.AnimatorParsersV2;
 using nadena.dev.ndmf;
 using UnityEngine;
 using UnityEngine.Profiling;
+using UnityEngine.Rendering;
 
 namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 {
@@ -127,6 +128,16 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     select meshInfo2.SourceRenderer);
             }
 
+            Profiler.EndSample();
+
+            Profiler.BeginSample("Generate RootBone / Anchor Override Warning");
+            // we see rootBone of SkinnedMeshRenderer since MeshInfo2 have renderer as a RootBone
+            if (((SkinnedMeshRenderer)target.SourceRenderer).rootBone == null)
+                BuildLog.LogWarning("MergeSkinnedMesh:warning:no-root-bone", target.SourceRenderer);
+            if (target.SourceRenderer.probeAnchor == null &&
+                (target.SourceRenderer.lightProbeUsage != LightProbeUsage.Off ||
+                 target.SourceRenderer.reflectionProbeUsage != ReflectionProbeUsage.Off))
+                BuildLog.LogWarning("MergeSkinnedMesh:warning:no-probe-anchor", target.SourceRenderer);
             Profiler.EndSample();
 
             Profiler.BeginSample("Generate ActivenessWarning");
