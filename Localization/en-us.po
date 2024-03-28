@@ -1,6 +1,6 @@
 msgid ""
 msgstr ""
-"Language: en\n"
+"Language: en-us\n"
 
 msgid "CheckForUpdate:out-of-date"
 msgstr "Newer release of Avatar Optimizer, {0} is available! (Current: {1})"
