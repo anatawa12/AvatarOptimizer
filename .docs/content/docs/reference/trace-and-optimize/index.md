@@ -42,6 +42,7 @@ Currently the following optimizations are applied automatically.
   Merges skinned meshes which don't need to be separated.
   - `Allow Shuffling Material Slots`\
     Allow shuffling material slots.\
+    By shuffling material slots, you may reduce draw calls of the avatar.
     The order of material slots usually doesn't matter, but it may affect the drawing order in rare cases.
 
 Also, You can adjust optimization with the following settings
