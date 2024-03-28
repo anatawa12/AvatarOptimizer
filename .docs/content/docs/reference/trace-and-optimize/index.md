@@ -39,7 +39,7 @@ Currently the following optimizations are applied automatically.
 - `Optimize Animator`
   Optimizes Animator Controller.
 - `Merge Skinned Meshes`\
-  Merge skinned meshes that don't need to be separated.
+  Merges skinned meshes which don't need to be separated.
   - `Allow Shuffling Material Slots`\
     Allow shuffling material slots.\
     The order of material slots usually doesn't matter, but it may affect the drawing order in rare cases.

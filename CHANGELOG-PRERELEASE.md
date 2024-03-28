@@ -33,7 +33,7 @@ The format is based on [Keep a Changelog].
   - If you want not to change this setting, please disable `Tools/Avatar Optimizer/Configure Clamp BlendShape Weight`.
 - Automatic Merge Skinned Mesh `#952`
   - Trace and Optimize now automatically merges Skinned Meshes if possible.
-  - Trace and Optimize will merge your mesh if the material properties of the mesh is not animated and has no BlensShapes.
+  - Trace and Optimize will merge your mesh if the material properties or enablement of the mesh is animated similarly and has no BlendShapes.
 
 ### Changed
 - MergePhysBone now corrects curve settings `#775`

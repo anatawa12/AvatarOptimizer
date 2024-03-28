@@ -31,7 +31,7 @@ BlendShapeは、頂点とBlendShapeの数に比例して負荷が大きくなる
 
 {{< hint info >}}
 
-[Trace And Optimize](../trace-and-optimize)が自動で同様の処理を行える場合があるため、このコンポーネントを使用する必要がない可能性があります。
+幾つかのケースでは、[Trace And Optimize](../trace-and-optimize)が自動で同様の処理を行うため、このコンポーネントを使用する必要がないかもしれません。
 
 {{< /hint >}}
 

@@ -33,7 +33,7 @@ Also, you can use `Automatically Freeze BlendShape` of [Trace and Optimize](../t
 
 {{< hint info >}}
 
-[Trace And Optimize](../trace-and-optimize) will automatically do the same process so in some cases you do not need to use this component.
+[Trace And Optimize](../trace-and-optimize) will automatically do the same process, so in some cases you do not need to use this component.
 
 {{< /hint >}}
 
