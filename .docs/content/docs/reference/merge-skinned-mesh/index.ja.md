@@ -29,6 +29,12 @@ BlendShapeは、頂点とBlendShapeの数に比例して負荷が大きくなる
 [Freeze BlendShape](../freeze-blendshape)コンポーネントを統合対象・統合先のSkinnedMeshRendererコンポーネントのいずれか(または両方)に追加して、BlendShapeを固定・除去することが出来ます。
 [Trace and Optimize](../trace-and-optimize)コンポーネントの`BlendShapeを自動的に固定・除去する`によっても同様の効果を得ることが出来ます。
 
+{{< hint info >}}
+
+幾つかのケースでは、[Trace And Optimize](../trace-and-optimize)が自動で同様の処理を行うため、このコンポーネントを使用する必要がないかもしれません。
+
+{{< /hint >}}
+
 ## 設定 {#settings}
 
 ![component.png](component.png)

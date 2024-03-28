@@ -181,5 +181,14 @@ namespace Anatawa12.AvatarOptimizer
                 return found;
             }
         }
+
+        public static T RemoveLast<T>([NotNull] this IList<T> list)
+        {
+            if (list == null) throw new ArgumentNullException(nameof(list));
+            var lastIndex = list.Count - 1;
+            var last = list[lastIndex];
+            list.RemoveAt(lastIndex);
+            return last;
+        }
     }
 }

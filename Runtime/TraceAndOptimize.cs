@@ -45,6 +45,19 @@ namespace Anatawa12.AvatarOptimizer
         [ToggleLeft]
         public bool optimizeAnimator = true;
 
+        [NotKeyable]
+        [AAOLocalized("TraceAndOptimize:prop:mergeSkinnedMesh")]
+        [ToggleLeft]
+        public bool mergeSkinnedMesh = true;
+
+        // TODO: make true by default if it's safe
+        // see https://github.com/anatawa12/AvatarOptimizer/issues/954
+        [NotKeyable]
+        [AAOLocalized("TraceAndOptimize:prop:allowShuffleMaterialSlots",
+            "TraceAndOptimize:tooltip:allowShuffleMaterialSlots")]
+        [ToggleLeft]
+        public bool allowShuffleMaterialSlots;
+
         // common parsing configuration
         [NotKeyable]
         [AAOLocalized("TraceAndOptimize:prop:mmdWorldCompatibility",
@@ -84,6 +97,14 @@ namespace Anatawa12.AvatarOptimizer
             public bool skipMergeDirectBlendTreeLayers;
             [ToggleLeft]
             public bool skipRemoveMeaninglessAnimatorLayer;
+            [ToggleLeft]
+            public bool skipMergeStaticSkinnedMesh;
+            [ToggleLeft]
+            public bool skipMergeAnimatingSkinnedMesh;
+            [ToggleLeft]
+            public bool skipMergeMaterialAnimatingSkinnedMesh;
+            [ToggleLeft]
+            public bool skipMergeMaterials;
         }
     }
 }

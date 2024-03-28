@@ -67,6 +67,7 @@ namespace Anatawa12.AvatarOptimizer.ndmf
 #if AAO_VRCSDK3_AVATARS
                         .Then.Run(Processors.TraceAndOptimizes.OptimizePhysBone.Instance)
 #endif
+                        .Then.Run(Processors.TraceAndOptimizes.AutoMergeSkinnedMesh.Instance)
                         .Then.Run(Processors.TraceAndOptimizes.FindUnusedObjects.Instance)
                         .Then.Run(Processors.TraceAndOptimizes.ConfigureRemoveZeroSizedPolygon.Instance)
                         .Then.Run(Processors.MergeBoneProcessor.Instance)

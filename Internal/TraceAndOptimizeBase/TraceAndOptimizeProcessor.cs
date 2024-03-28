@@ -12,6 +12,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         public bool RemoveZeroSizedPolygon;
         public bool OptimizePhysBone;
         public bool OptimizeAnimator;
+        public bool MergeSkinnedMesh;
+        public bool AllowShuffleMaterialSlots;
         public bool MmdWorldCompatibility = true;
 
         public bool PreserveEndBone;
@@ -27,6 +29,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         public bool SkipRemoveUnusedAnimatingProperties;
         public bool SkipMergeDirectBlendTreeLayers;
         public bool SkipRemoveMeaninglessAnimatorLayer;
+        public bool SkipMergeStaticSkinnedMesh;
+        public bool SkipMergeAnimatingSkinnedMesh;
+        public bool SkipMergeMaterialAnimatingSkinnedMesh;
+        public bool SkipMergeMaterials;
 
         public Dictionary<SkinnedMeshRenderer, HashSet<string>> PreserveBlendShapes =
             new Dictionary<SkinnedMeshRenderer, HashSet<string>>();
@@ -38,6 +44,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             RemoveZeroSizedPolygon = config.removeZeroSizedPolygons;
             OptimizePhysBone = config.optimizePhysBone;
             OptimizeAnimator = config.optimizeAnimator;
+            MergeSkinnedMesh = config.mergeSkinnedMesh;
+            AllowShuffleMaterialSlots = config.allowShuffleMaterialSlots;
             MmdWorldCompatibility = config.mmdWorldCompatibility;
 
             PreserveEndBone = config.preserveEndBone;
@@ -54,6 +62,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             SkipRemoveUnusedAnimatingProperties = config.advancedSettings.skipRemoveUnusedAnimatingProperties;
             SkipMergeDirectBlendTreeLayers = config.advancedSettings.skipMergeDirectBlendTreeLayers;
             SkipRemoveMeaninglessAnimatorLayer = config.advancedSettings.skipRemoveMeaninglessAnimatorLayer;
+            SkipMergeStaticSkinnedMesh = config.advancedSettings.skipMergeStaticSkinnedMesh;
+            SkipMergeAnimatingSkinnedMesh = config.advancedSettings.skipMergeAnimatingSkinnedMesh;
+            SkipMergeMaterialAnimatingSkinnedMesh = config.advancedSettings.skipMergeMaterialAnimatingSkinnedMesh;
+            SkipMergeMaterials = config.advancedSettings.skipMergeMaterials;
 
             Enabled = true;
         }
