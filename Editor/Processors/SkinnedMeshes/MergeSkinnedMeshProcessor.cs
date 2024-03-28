@@ -129,6 +129,14 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             Profiler.EndSample();
 
+            Profiler.BeginSample("Generate RootBone / Anchor Override Warning");
+            // we see rootBone of SkinnedMeshRenderer since MeshInfo2 have renderer as a RootBone
+            if (((SkinnedMeshRenderer)target.SourceRenderer).rootBone == null)
+                BuildLog.LogWarning("MergeSkinnedMesh:warning:no-root-bone", target.SourceRenderer);
+            if (target.SourceRenderer.probeAnchor == null)
+                BuildLog.LogWarning("MergeSkinnedMesh:warning:no-probe-anchor", target.SourceRenderer);
+            Profiler.EndSample();
+
             Profiler.BeginSample("Generate ActivenessWarning");
             ActivenessAnimationWarning(meshInfos.Select(x => x.SourceRenderer).Where(x => x), target.SourceRenderer, context);
             Profiler.EndSample();
