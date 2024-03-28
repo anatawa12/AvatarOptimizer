@@ -36,7 +36,7 @@ Currently the following optimizations are applied automatically.
   Optimizes PhysBone settings for better performance. This performs the following optimizations.
   - Merges PhysBone Colliders with the exactly same settings into one PhysBone Collider.
   - Unchecks `Is Animated` if it's not necessary.
-- `Optimize Animator`
+- `Optimize Animator`\
   Optimizes Animator Controller.
 
 Also, You can adjust optimization with the following settings

@@ -331,10 +331,10 @@ msgstr ""
 "If the shader is well-known, I'll add logic to check if the feature is enabled for renderers other than animated.\n"
 
 msgid "MergeSkinnedMesh:error:clothOnSources"
-msgstr "Cloth component is attached to the source SkinnedMeshRenderer, so it cannot be merged."
+msgstr "Cloth component is attached to this source SkinnedMeshRenderer, so this cannot be merged."
 
 msgid "MergeSkinnedMesh:error:clothOnSources:description"
-msgstr "Please remove Cloth component from the source SkinnedMeshRenderer or exclude the source SkinnedMeshRenderer."
+msgstr "Please exclude this from the source SkinnedMeshRenderers or remove Cloth component from this."
 
 # endregion
 

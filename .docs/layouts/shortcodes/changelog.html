@@ -6,9 +6,9 @@
 {{ $changelog := "" }}
 
 {{ if $AOIsBeta }}
-  {{ $changelog = partial "changelog/CHANGELOG-PRERELEASE.md" }}
+  {{ $changelog = readFile "/CHANGELOG-PRERELEASE.md" }}
 {{ else }}
-  {{ $changelog = partial "changelog/CHANGELOG.md" }}
+  {{ $changelog = readFile "/CHANGELOG.md" }}
 {{ end }}
 
 {{ $changelog = $changelog | replaceRE `(?ms)\A.*?^##[^#].*?^(##[^#])` "$1" }}
