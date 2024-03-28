@@ -35,7 +35,7 @@ Trace and Optimizeは「**見た目に絶対に影響させてはならない**�
   PhysBoneの設定について、以下の最適化を行います。
   - 全く同じ設定のPhysBone Colliderを1つに統合します。
   - 不要な場合に`Is Animated`のチェックを外します。
-- `アニメーターの最適化`
+- `アニメーターの最適化`\
   Animator Controllerを最適化します。
 
 また、以下の設定で自動設定を調節できます。
