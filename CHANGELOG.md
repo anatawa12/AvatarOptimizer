@@ -90,6 +90,7 @@ The format is based on [Keep a Changelog].
 - Fix VRM support `#892`
 - ArgumentNullException in Edit-mode Remove Mesh Preview `#942`
 - Bad behavior if EditMode preview is enabled when entering play mode `#956`
+- PlayableLayerControl or AnimatorLayerControl on non-root animator are ignored `#964`
 
 ### Security
 

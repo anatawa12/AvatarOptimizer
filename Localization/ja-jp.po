@@ -1,6 +1,6 @@
 msgid ""
 msgstr ""
-"Language: ja\n"
+"Language: ja-jp\n"
 
 msgid "CheckForUpdate:out-of-date"
 msgstr "Avatar Optimizerの新しいバージョン、{0}が公開されています！(現在 {1})"
