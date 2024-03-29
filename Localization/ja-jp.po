@@ -246,6 +246,12 @@ msgstr "Clothコンポーネントが統合対象のメッシュについてい�
 msgid "MergeSkinnedMesh:error:clothOnSources:description"
 msgstr "統合対象のメッシュからClothコンポーネントを削除するか、統合対象のメッシュから除外してください"
 
+msgid "MergeSkinnedMesh:warning:no-root-bone"
+msgstr "統合先のメッシュにRoot Boneが設定されていないため、予期しない動作が引き起こされる場合があります。"
+
+msgid "MergeSkinnedMesh:warning:no-probe-anchor"
+msgstr "統合先のメッシュにAnchor Overrideが設定されていないため、予期しない動作が引き起こされる場合があります。"
+
 # endregion
 
 # region MergeToonLitMaterial
