@@ -479,6 +479,48 @@ namespace Anatawa12.AvatarOptimizer.Test
                 }));
         }
 
+        [Test]
+        public void CopyAndDestroyOriginal()
+        {
+            var root = new GameObject();
+            var child1 = Utils.NewGameObject("child1", root.transform);
+            var child11 = Utils.NewGameObject("child11", child1.transform);
+            var child12 = Utils.NewGameObject("child12", child1.transform);
+            var child13 = Utils.NewGameObject("child13", child1.transform);
+            var child14 = Utils.NewGameObject("child14", child1.transform);
+
+            var builder = new ObjectMappingBuilder<DummyPropInfo>(root);
+            builder.RecordCopyProperty(child11, "m_IsActive",
+                child12, "m_IsActive");
+            builder.RecordCopyProperty(child11, "m_IsActive",
+                child13, "m_IsActive");
+            builder.RecordCopyProperty(child12, "m_IsActive",
+                child14, "m_IsActive");
+
+            DestroyTracker.DestroyImmediate(child11);
+
+            var built = builder.BuildObjectMapping();
+
+            var rootMapper = built.CreateAnimationMapper(root);
+
+            Assert.That(
+                rootMapper.MapBinding("child1/child11", typeof(GameObject), "m_IsActive"),
+                Is.EquivalentTo(new[]
+                {
+                    B("child1/child12", typeof(GameObject), "m_IsActive"),
+                    B("child1/child13", typeof(GameObject), "m_IsActive"),
+                    B("child1/child14", typeof(GameObject), "m_IsActive"),
+                }));
+
+            Assert.That(
+                rootMapper.MapBinding("child1/child12", typeof(GameObject), "m_IsActive"),
+                Is.EquivalentTo(new[]
+                {
+                    B("child1/child12", typeof(GameObject), "m_IsActive"),
+                    B("child1/child14", typeof(GameObject), "m_IsActive"),
+                }));
+        }
+
         private static (string, Type, string) B(string path, Type type, string prop) => (path, type, prop);
     }
 }

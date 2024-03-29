@@ -1,6 +1,6 @@
 msgid ""
 msgstr ""
-"Language: en\n"
+"Language: en-us\n"
 
 msgid "CheckForUpdate:out-of-date"
 msgstr "Newer release of Avatar Optimizer, {0} is available! (Current: {1})"
@@ -336,6 +336,12 @@ msgstr "Cloth component is attached to this source SkinnedMeshRenderer, so this 
 msgid "MergeSkinnedMesh:error:clothOnSources:description"
 msgstr "Please exclude this from the source SkinnedMeshRenderers or remove Cloth component from this."
 
+msgid "MergeSkinnedMesh:warning:no-root-bone"
+msgstr "Root Bone of the merged mesh is not set. This may cause unexpected behavior."
+
+msgid "MergeSkinnedMesh:warning:no-probe-anchor"
+msgstr "Anchor Override of the merged mesh is not set. This may cause unexpected behavior."
+
 # endregion
 
 # region MergeToonLitMaterial
@@ -475,6 +481,15 @@ msgstr "Optimize PhysBone Settings"
 
 msgid "TraceAndOptimize:prop:optimizeAnimator"
 msgstr "Optimize Animator"
+
+msgid "TraceAndOptimize:prop:mergeSkinnedMesh"
+msgstr "Merge Skinned Mesh"
+
+msgid "TraceAndOptimize:prop:allowShuffleMaterialSlots"
+msgstr "Allow Shuffling Material Slots"
+
+msgid "TraceAndOptimize:tooltip:allowShuffleMaterialSlots"
+msgstr "Allow shuffling material slots to reduce draw calls. This may affect the rendering order."
 
 msgid "TraceAndOptimize:prop:mmdWorldCompatibility"
 msgstr "MMD World Compatibility"

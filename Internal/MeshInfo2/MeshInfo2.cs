@@ -376,9 +376,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 ((uint)value & TexCoordStatusMask) << (BitsPerTexCoordStatus * index));
         }
 
-        public void Clear()
+        public void ClearMeshData()
         {
-            Bounds = default;
             Vertices.Clear();
             _texCoordStatus = default;
             SubMeshes.Clear();
@@ -688,6 +687,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 targetRenderer.sharedMaterials = SubMeshes.SelectMany(x => x.SharedMaterials).ToArray();
             }
         }
+
+        public override string ToString() =>
+            SourceRenderer ? $"MeshInfo2({SourceRenderer})" : $"MeshInfo2(Not Belong to Renderer)";
     }
 
     public class SubMesh

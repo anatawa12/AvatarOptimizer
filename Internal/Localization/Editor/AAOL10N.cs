@@ -12,13 +12,13 @@ namespace Anatawa12.AvatarOptimizer
     /// </summary>
     public static class AAOL10N
     {
-        public static readonly Localizer Localizer = new Localizer("en", () =>
+        public static readonly Localizer Localizer = new Localizer("en-us", () =>
         {
             var localizationFolder = AssetDatabase.GUIDToAssetPath("8b53df9f2e18428bbba2165c4f2af9be") + "/";
             return new List<LocalizationAsset>
             {
-                AssetDatabase.LoadAssetAtPath<LocalizationAsset>(localizationFolder + "en.po"),
-                AssetDatabase.LoadAssetAtPath<LocalizationAsset>(localizationFolder + "ja.po"),
+                AssetDatabase.LoadAssetAtPath<LocalizationAsset>(localizationFolder + "en-us.po"),
+                AssetDatabase.LoadAssetAtPath<LocalizationAsset>(localizationFolder + "ja-jp.po"),
             };
         });
 

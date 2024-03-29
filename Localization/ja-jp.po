@@ -1,6 +1,6 @@
 msgid ""
 msgstr ""
-"Language: ja\n"
+"Language: ja-jp\n"
 
 msgid "CheckForUpdate:out-of-date"
 msgstr "Avatar Optimizerの新しいバージョン、{0}が公開されています！(現在 {1})"
@@ -246,6 +246,12 @@ msgstr "Clothコンポーネントが付いているため、このメッシュ�
 msgid "MergeSkinnedMesh:error:clothOnSources:description"
 msgstr "このメッシュを統合対象から除外するか、このメッシュからClothコンポーネントを削除してください。"
 
+msgid "MergeSkinnedMesh:warning:no-root-bone"
+msgstr "統合先のメッシュにRoot Boneが設定されていないため、予期しない動作が引き起こされる場合があります。"
+
+msgid "MergeSkinnedMesh:warning:no-probe-anchor"
+msgstr "統合先のメッシュにAnchor Overrideが設定されていないため、予期しない動作が引き起こされる場合があります。"
+
 # endregion
 
 # region MergeToonLitMaterial
@@ -384,6 +390,15 @@ msgstr "PhysBoneの設定を最適化する"
 
 msgid "TraceAndOptimize:prop:animatorOptimizer"
 msgstr "アニメーターを最適化する"
+
+msgid "TraceAndOptimize:prop:mergeSkinnedMesh"
+msgstr "スキンメッシュレンダラーを統合する"
+
+msgid "TraceAndOptimize:prop:allowShuffleMaterialSlots"
+msgstr "マテリアルスロットの前後関係を変えることを許可する"
+
+msgid "TraceAndOptimize:tooltip:allowShuffleMaterialSlots"
+msgstr "マテリアルスロットの前後関係を変えることでドローコールを減らすことを許可します。これは描画順に影響を与える可能性があります。"
 
 msgid "TraceAndOptimize:prop:mmdWorldCompatibility"
 msgstr "MMDワールドとの互換性"

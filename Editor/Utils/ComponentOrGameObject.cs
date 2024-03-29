@@ -46,5 +46,6 @@ namespace Anatawa12.AvatarOptimizer
         public bool Equals(ComponentOrGameObject other) => Equals(_object, other._object);
         public override bool Equals(object obj) => obj is ComponentOrGameObject other && Equals(other);
         public override int GetHashCode() => _object != null ? _object.GetHashCode() : 0;
+        public override string ToString() => _object != null ? _object.ToString() : string.Empty;
     }
 }

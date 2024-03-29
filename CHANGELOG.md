@@ -31,6 +31,9 @@ The format is based on [Keep a Changelog].
   - That's why AAO now configures `Clamp BlendShapes (Deprecated)` to false in edit mode and true in play mode.
   - PlayMode is usually used for testing the avatar behavior so it's better to have the same setting as VRChat client.
   - If you want not to change this setting, please disable `Tools/Avatar Optimizer/Configure Clamp BlendShape Weight`.
+- Automatic Merge Skinned Mesh `#952`
+  - Trace and Optimize now automatically merges Skinned Meshes if possible.
+  - Trace and Optimize will merge your mesh if the material properties or enablement of the mesh is animated similarly and has no BlendShapes.
 
 ### Changed
 - MergePhysBone now corrects curve settings `#775`
@@ -69,6 +72,7 @@ The format is based on [Keep a Changelog].
   - I thought such a PhysBones on the base body are rare but my friend told me there is Manuka has such a PhysBone so I added this feature.
 - Dropping GameObject to PrefabSafeSet adds the All components on the GameObject to the PrefabSafeSet `#960`
   - You can add all PhysBones on the GameObject by dropping the GameObject to the MergePhysBone component.
+- MergeSkinnedMesh now warns if Root Bone or Anchor Override are not set `#963`
 
 ### Deprecated
 
@@ -86,6 +90,7 @@ The format is based on [Keep a Changelog].
 - Fix VRM support `#892`
 - ArgumentNullException in Edit-mode Remove Mesh Preview `#942`
 - Bad behavior if EditMode preview is enabled when entering play mode `#956`
+- PlayableLayerControl or AnimatorLayerControl on non-root animator are ignored `#964`
 
 ### Security
 

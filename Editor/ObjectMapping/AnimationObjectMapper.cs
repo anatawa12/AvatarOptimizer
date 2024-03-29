@@ -129,16 +129,13 @@ namespace Anatawa12.AvatarOptimizer
                     // there are mapping for property
                     var mappedBindings = new (string path, Type type, string propertyName)[newProp.AllCopiedTo.Length];
                     var copiedToIndex = 0;
-                    for (var i = 0; i < newProp.AllCopiedTo.Length; i++)
+                    foreach (var descriptor in newProp.AllCopiedTo)
                     {
-                        var descriptor = newProp.AllCopiedTo[copiedToIndex++];
-                        var component = new ComponentOrGameObject(EditorUtility.InstanceIDToObject(descriptor.InstanceId));
+                        var component =
+                            new ComponentOrGameObject(EditorUtility.InstanceIDToObject(descriptor.InstanceId));
                         // this means removed.
                         if (!component)
-                        {
-                            copiedToIndex -= 1;
                             continue;
-                        }
 
                         var newPath = Utils.RelativePath(_rootGameObject.transform, component.transform);
 
@@ -146,7 +143,7 @@ namespace Anatawa12.AvatarOptimizer
                         // TODO: add warning
                         if (newPath == null) return Array.Empty<(string path, Type type, string propertyName)>();
 
-                        mappedBindings[i] = (newPath, descriptor.Type, descriptor.Name);
+                        mappedBindings[copiedToIndex++] = (newPath, descriptor.Type, descriptor.Name);
                     }
 
                     if (copiedToIndex != mappedBindings.Length)
