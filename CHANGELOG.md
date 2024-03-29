@@ -40,6 +40,8 @@ The format is based on [Keep a Changelog].
 - MergePhysBone now warns if chain length are not same `#775`
 - MergePhysBone with only one source is now error `#775`
   - It was not working well and not a error by a bug.
+- Animator Parser is completely rewritten `#850` `#968`
+  - New Animator Parser allow us to track animating properties animated by components removed by AAO.
 - PhysBone that swings no bones are now removed `#864`
   - I found such a PhysBone on Lime so I added this feature.
 - Switched Localization system to NDMF from CL4EE `#873`

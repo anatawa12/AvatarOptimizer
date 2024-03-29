@@ -156,13 +156,13 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                     case AnimatorWeightState.EitherZeroOrOne:
                         if (!(layer.Node.Value.PossibleValues is T[] otherValues)) return ValueInfo<T>.Variable;
 
+                        allPossibleValues.UnionWith(otherValues);
+
                         if (layer.IsAlwaysOverride())
                         {
                             // the layer is always applied at the highest property.
-                            return new ValueInfo<T>(otherValues);
+                            return new ValueInfo<T>(allPossibleValues.ToArray());
                         }
-
-                        allPossibleValues.UnionWith(otherValues);
 
                         break;
                     case AnimatorWeightState.Variable:
