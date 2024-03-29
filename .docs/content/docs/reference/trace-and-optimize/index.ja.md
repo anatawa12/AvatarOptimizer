@@ -36,7 +36,7 @@ Trace and Optimizeは「**見た目に絶対に影響させてはならない**�
   - 全く同じ設定のPhysBone Colliderを1つに統合します。
   - 不要な場合に`Is Animated`のチェックを外します。
 - `アニメーターの最適化`\
-  Animator Controllerを最適化します。
+  Animator Controllerを最適化します。詳細は[このセクション](#animator-optimizer)を参照してください。
 - `スキンメッシュレンダラーを統合する`\
   分かれている必要のないスキンメッシュレンダラーを統合します。
   - `マテリアルスロットの前後関係を変えることを許可する`\
@@ -53,3 +53,16 @@ Trace and Optimizeは「**見た目に絶対に影響させてはならない**�
 ![component.png](component.png)
 
 [^endbone]: AAOは名前が`end`(大文字小文字の区別なし)で終わるボーンをendボーンとして扱います。
+
+## アニメーターの最適化 {#animator-optimizer}
+
+この機能は、アニメーターコントローラーを最適化します。
+
+この機能は、以下の最適化を行います。
+
+- EntryExit to BlendTree\
+  アニメーターコントローラーレイヤーをBlendTreeにできる限り変換します。
+- Merge Direct BlendTree Layers\
+  複数のDirectBlendTreeレイヤーを統合します。
+- Remove Meaningless Layers\
+  StateやTransitionがないレイヤーを削除します。
