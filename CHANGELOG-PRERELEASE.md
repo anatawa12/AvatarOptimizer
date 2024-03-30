@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
+- Relax preconditions of Entry/Exit to BlendTree optimization `#970`
 
 ### Deprecated
 

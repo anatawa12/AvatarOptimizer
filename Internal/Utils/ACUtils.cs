@@ -123,5 +123,24 @@ namespace Anatawa12.AvatarOptimizer
                 controller = overrideController.runtimeAnimatorController;
             return ((AnimatorController)controller).layers.Length;
         }
+
+        public static bool? SatisfiesInt(this AnimatorCondition condition, int value)
+        {
+            switch (condition.mode)
+            {
+                case AnimatorConditionMode.Equals:
+                    return value == (int)condition.threshold;
+                case AnimatorConditionMode.NotEqual:
+                    return value != (int)condition.threshold;
+                case AnimatorConditionMode.Greater:
+                    return value > condition.threshold;
+                case AnimatorConditionMode.Less:
+                    return value < condition.threshold;
+                case AnimatorConditionMode.If:
+                case AnimatorConditionMode.IfNot:
+                default:
+                    return null;
+            }
+        }
     }
 }

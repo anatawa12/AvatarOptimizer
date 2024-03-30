@@ -195,7 +195,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                     {
                         isExit: false,
                         destinationStateMachine: null,
-                        destinationState: not null,
+                        destinationState: { } dest,
                         conditions: { Length: 1 } conditions
                     })
                     return null;
@@ -204,13 +204,20 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                     {
                         mode: AnimatorConditionMode.Equals,
                         parameter: {} parameter,
+                        threshold: var threshold,
                     }) return null;
                 if (!intParameters.Contains(parameter)) return null; // non int parameter
                 conditionParameter = parameter;
+                
+                // not finite makes casting to int undefined
+                if (!float.IsFinite(threshold)) return null;
+                var value = (int)threshold;
+                if (!AddToStateValues(dest, value)) return null; // duplicated value
             }
 
-            foreach (var entryTransition in entryTransitions)
+            for (var index = 1; index < entryTransitions.Length - 1; index++)
             {
+                var entryTransition = entryTransitions[index];
                 if (entryTransition is not
                     {
                         isExit: false,
@@ -219,10 +226,44 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                         conditions: { Length: 1 } conditions
                     }) return null;
 
-                if (conditions[0] is not
+                if (CheckIntEqualsCondition(conditions[0]) is not { } value) return null;
+                if (!AddToStateValues(dest, value)) return null; // duplicated value
+            }
+
+            // allow transition to default state without conditions for last entry transition
+            if (entryTransitions.Length >= 2) {
+                var entryTransition = entryTransitions[^1];
+
+                if (entryTransition is not
+                    {
+                        isExit: false,
+                        destinationStateMachine: null,
+                        destinationState: { } dest,
+                        conditions: { } conditions,
+                    }) return null;
+
+                switch (conditions.Length)
+                {
+                    case 1:
+                    {
+                        if (CheckIntEqualsCondition(conditions[0]) is not { } value) return null;
+                        if (!AddToStateValues(dest, value)) return null; // duplicated value
+                        break;
+                    }
+                    case 0 when dest == defaultState:
+                        // no condition for default state is allowed
+                        break;
+                    default:
+                        return null;
+                }
+            }
+
+            int? CheckIntEqualsCondition(AnimatorCondition condition)
+            {
+                if (condition is not
                     {
                         mode: AnimatorConditionMode.Equals,
-                        parameter: {} parameter,
+                        parameter: { } parameter,
                         threshold: var threshold,
                     }) return null;
 
@@ -230,13 +271,17 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 
                 // not finite makes casting to int undefined
                 if (!float.IsFinite(threshold)) return null;
-                var value = (int)threshold;
+                return (int)threshold;
+            }
 
-                if (!stateValues.TryGetValue(dest, out var values))
-                    stateValues.Add(dest, values = new HashSet<int>());
-                if (allValues.Contains(value)) return null; // duplicated value
+            bool AddToStateValues(AnimatorState state, int value)
+            {
+                if (!stateValues.TryGetValue(state, out var values))
+                    stateValues.Add(state, values = new HashSet<int>());
+                if (allValues.Contains(value)) return false; // duplicated value
                 values.Add(value);
                 allValues.Add(value);
+                return true;
             }
 
             // check there are no states without entry transition.
@@ -310,8 +355,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 // check for transitions
 
                 // basic transition check: all transitions are exit transitions without blending
-                foreach (var transition in transitions)
+                var allConditions = new AnimatorCondition[transitions.Length][];
+                for (var i = 0; i < transitions.Length; i++)
                 {
+                    var transition = transitions[i];
                     if (transition is not
                         {
                             isExit: true,
@@ -319,18 +366,21 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                             mute: false,
                             destinationState: null,
                             destinationStateMachine: null,
+                            conditions: { } conditions,
 
                             hasExitTime: false,
                             duration: 0,
                             offset: 0,
                             // since duration is zero, interruption should not be happened
                         }) return null;
+                    allConditions[i] = conditions;
                 }
 
                 // transition condition check.
                 if (defaultState == state)
                 {
-                    // for default state, 
+                    // for default state, we check if we exit the default state if the value is any other states value.
+                    // We allow too relaxed condition for exiting default state since it will re-enter the default state.
                     HashSet<int> exitValues;
                     if (stateValues.TryGetValue(state, out var values))
                     {
@@ -339,45 +389,24 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                     }
                     else
                     {
-                        exitValues = allValues;
+                        exitValues = new HashSet<int>(allValues);
                     }
 
-                    // for default states, it have to leave state if any of exit values are set
-                    // TODO: users can create condition like `< minValue` or `> maxValue` to leave state
-                    // https://github.com/anatawa12/AvatarOptimizer/issues/862
-                    if (!MultipleEqualsTransition()
-                        && !NotEqualsTransition()) return null;
-
-                    bool MultipleEqualsTransition()
+                    foreach (var conditions in allConditions)
                     {
-                        if (transitions.Length != exitValues.Count) return false;
-                        foreach (var transition in transitions)
-                        {
-                            if (transition.conditions.Length != 1) return false;
-                            var condition = transition.conditions[0];
-                            if (condition.mode != AnimatorConditionMode.Equals) return false;
-                            if (condition.parameter != conditionParameter) return false;
-                            var value = (int)condition.threshold;
-                            if (!exitValues.Remove(value)) return false;
-                        }
+                        // conditions with parameters other than conditionParameter can be false
+                        if (conditions.Any(c => c.parameter != conditionParameter)) continue;
 
-                        return false;
+                        exitValues.RemoveWhere(value => conditions.All(c => c.SatisfiesInt(value) == true));
                     }
 
-                    bool NotEqualsTransition()
-                    {
-                        if (!KnownParameterValues.GetIntValues(conditionParameter, out var possibleValues))
-                            return false;
-                        var possibleValuesSet = new HashSet<int>(possibleValues);
-                        possibleValuesSet.ExceptWith(exitValues);
-
-                        return PossibleValuesExitTransitionCheck(possibleValuesSet);
-                    }
+                    if (exitValues.Count != 0) return null;
                 }
                 else
                 {
                     // for other states, it have to leave state if value is not any of current value
                     // TODO: users can create condition like `< minValue` or `> maxValue` to leave state
+                    // TODO: users can exit state and immediately enter to same state infinitely
                     // https://github.com/anatawa12/AvatarOptimizer/issues/862
                     var values = stateValues[state];
                     if (!PossibleValuesExitTransitionCheck(values)) return null;
@@ -385,9 +414,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 
                 bool PossibleValuesExitTransitionCheck(HashSet<int> values)
                 {
-                    if (transitions.Length != 1) return false;
-                    var transition = transitions[0];
-                    var conditions = transition.conditions;
+                    if (allConditions.Length != 1) return false;
+                    var conditions = allConditions[0];
                     if (conditions.Length != values.Count) return false;
 
                     values = new HashSet<int>(values);
