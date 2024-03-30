@@ -57,13 +57,11 @@ See tooltips or implementation for more details.
 
 ## Animator Optimizer {#animator-optimizer}
 
-This feature optimizes your Animator Controller.
+This feature currently applies the following optimizations.
 
-This feature currently consists of the following optimizations.
-
-- Entry/Exit to BlendTree\
-  This tries to make your Animator Controller layers to BlendTree as possible.
+- Convert Entry-Exit to BlendTree\
+  This tries to convert Animator Controller layers to BlendTree as possible.
 - Merge Direct BlendTree Layers\
-  This merges multiple DirectBlendTree layers to single DirectBlendTree layer as possible.
+  This merges multiple Direct BlendTree layers to single Direct BlendTree layer as possible.
 - Remove Meaningless Layers\
-  This removes layers which are not have any state or transition.
+  This removes layers which have no state nor a transition.

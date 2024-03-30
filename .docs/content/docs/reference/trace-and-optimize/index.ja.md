@@ -56,13 +56,11 @@ Trace and Optimizeは「**見た目に絶対に影響させてはならない**�
 
 ## アニメーターの最適化 {#animator-optimizer}
 
-この機能は、アニメーターコントローラーを最適化します。
+この機能では、アニメーターに対して以下の最適化を行います。
 
-この機能は、以下の最適化を行います。
-
-- EntryExit to BlendTree\
-  アニメーターコントローラーレイヤーをBlendTreeにできる限り変換します。
-- Merge Direct BlendTree Layers\
-  複数のDirectBlendTreeレイヤーを統合します。
-- Remove Meaningless Layers\
+- Entry-Exit式のレイヤーをBlendTreeに変換\
+  アニメーターコントローラーのレイヤーをできる限りBlendTreeに変換します。
+- Direct BlendTreeを統合\
+  複数のDirect BlendTreeレイヤーを1つに統合します。
+- 使われていないレイヤーを削除する\
   StateやTransitionがないレイヤーを削除します。
