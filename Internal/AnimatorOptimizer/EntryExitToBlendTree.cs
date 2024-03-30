@@ -351,6 +351,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                     bool MultipleEqualsTransition()
                     {
                         if (transitions.Length != exitValues.Count) return false;
+                        var exitValuesMut = new HashSet<int>(exitValues);
                         foreach (var transition in transitions)
                         {
                             if (transition.conditions.Length != 1) return false;
@@ -358,10 +359,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                             if (condition.mode != AnimatorConditionMode.Equals) return false;
                             if (condition.parameter != conditionParameter) return false;
                             var value = (int)condition.threshold;
-                            if (!exitValues.Remove(value)) return false;
+                            if (!exitValuesMut.Remove(value)) return false;
                         }
 
-                        return false;
+                        return exitValuesMut.Count == 0;
                     }
 
                     bool NotEqualsTransition()
