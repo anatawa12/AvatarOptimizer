@@ -195,7 +195,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                     {
                         isExit: false,
                         destinationStateMachine: null,
-                        destinationState: not null,
+                        destinationState: { } dest,
                         conditions: { Length: 1 } conditions
                     })
                     return null;
@@ -204,13 +204,20 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                     {
                         mode: AnimatorConditionMode.Equals,
                         parameter: {} parameter,
+                        threshold: var threshold,
                     }) return null;
                 if (!intParameters.Contains(parameter)) return null; // non int parameter
                 conditionParameter = parameter;
+                
+                // not finite makes casting to int undefined
+                if (!float.IsFinite(threshold)) return null;
+                var value = (int)threshold;
+                if (!AddToStateValues(dest, value)) return null; // duplicated value
             }
 
-            foreach (var entryTransition in entryTransitions)
+            for (var index = 1; index < entryTransitions.Length - 1; index++)
             {
+                var entryTransition = entryTransitions[index];
                 if (entryTransition is not
                     {
                         isExit: false,
@@ -219,10 +226,44 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                         conditions: { Length: 1 } conditions
                     }) return null;
 
-                if (conditions[0] is not
+                if (CheckIntEqualsCondition(conditions[0]) is not { } value) return null;
+                if (!AddToStateValues(dest, value)) return null; // duplicated value
+            }
+
+            // allow transition to default state without conditions for last entry transition
+            if (entryTransitions.Length >= 2) {
+                var entryTransition = entryTransitions[^1];
+
+                if (entryTransition is not
+                    {
+                        isExit: false,
+                        destinationStateMachine: null,
+                        destinationState: { } dest,
+                        conditions: { } conditions,
+                    }) return null;
+
+                switch (conditions.Length)
+                {
+                    case 1:
+                    {
+                        if (CheckIntEqualsCondition(conditions[0]) is not { } value) return null;
+                        if (!AddToStateValues(dest, value)) return null; // duplicated value
+                        break;
+                    }
+                    case 0 when dest == defaultState:
+                        // no condition for default state is allowed
+                        break;
+                    default:
+                        return null;
+                }
+            }
+
+            int? CheckIntEqualsCondition(AnimatorCondition condition)
+            {
+                if (condition is not
                     {
                         mode: AnimatorConditionMode.Equals,
-                        parameter: {} parameter,
+                        parameter: { } parameter,
                         threshold: var threshold,
                     }) return null;
 
@@ -230,13 +271,17 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 
                 // not finite makes casting to int undefined
                 if (!float.IsFinite(threshold)) return null;
-                var value = (int)threshold;
+                return (int)threshold;
+            }
 
-                if (!stateValues.TryGetValue(dest, out var values))
-                    stateValues.Add(dest, values = new HashSet<int>());
-                if (allValues.Contains(value)) return null; // duplicated value
+            bool AddToStateValues(AnimatorState state, int value)
+            {
+                if (!stateValues.TryGetValue(state, out var values))
+                    stateValues.Add(state, values = new HashSet<int>());
+                if (allValues.Contains(value)) return false; // duplicated value
                 values.Add(value);
                 allValues.Add(value);
+                return true;
             }
 
             // check there are no states without entry transition.
