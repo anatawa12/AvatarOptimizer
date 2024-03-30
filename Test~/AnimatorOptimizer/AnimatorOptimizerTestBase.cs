@@ -36,7 +36,7 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
             return TestUtils.GetAssetAt<AnimatorController>($"AnimatorOptimizer/{TestName}/{name}.controller");
         }
 
-        public string TestName { get; }
+        public virtual string TestName { get; }
 
         // utility
         public static void RecursiveCheckEquals(Object except, Object actual) =>
