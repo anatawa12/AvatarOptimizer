@@ -138,7 +138,7 @@ msgid "MergePhysBone:tooltip:makeParent"
 msgstr "すべてのPhysBoneをこのGameObjectの子にする"
 
 msgid "MergePhysBone:error:makeParentWithChildren"
-msgstr "'このGameObjectの子にする'が有効であるにも関わらず、すでに子が存在します。"
+msgstr "'このGameObjectの子にする'が有効であるにも関わらず、既に子が存在します。"
 
 msgid "MergePhysBone:error:parentDiffer"
 msgstr "統合対象のPhysBoneの親が違います。同じ親の子にするか、'このGameObjectの子にする'を使用してください。"
