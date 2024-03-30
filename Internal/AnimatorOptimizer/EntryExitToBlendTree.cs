@@ -355,8 +355,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 // check for transitions
 
                 // basic transition check: all transitions are exit transitions without blending
-                foreach (var transition in transitions)
+                var allConditions = new AnimatorCondition[transitions.Length][];
+                for (var i = 0; i < transitions.Length; i++)
                 {
+                    var transition = transitions[i];
                     if (transition is not
                         {
                             isExit: true,
@@ -364,12 +366,14 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                             mute: false,
                             destinationState: null,
                             destinationStateMachine: null,
+                            conditions: { } conditions,
 
                             hasExitTime: false,
                             duration: 0,
                             offset: 0,
                             // since duration is zero, interruption should not be happened
                         }) return null;
+                    allConditions[i] = conditions;
                 }
 
                 // transition condition check.
@@ -395,12 +399,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 
                     bool MultipleEqualsTransition()
                     {
-                        if (transitions.Length != exitValues.Count) return false;
+                        if (allConditions.Length != exitValues.Count) return false;
                         var exitValuesMut = new HashSet<int>(exitValues);
-                        foreach (var transition in transitions)
+                        foreach (var conditions in allConditions)
                         {
-                            if (transition.conditions.Length != 1) return false;
-                            var condition = transition.conditions[0];
+                            if (conditions.Length != 1) return false;
+                            var condition = conditions[0];
                             if (condition.mode != AnimatorConditionMode.Equals) return false;
                             if (condition.parameter != conditionParameter) return false;
                             var value = (int)condition.threshold;
@@ -431,9 +435,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 
                 bool PossibleValuesExitTransitionCheck(HashSet<int> values)
                 {
-                    if (transitions.Length != 1) return false;
-                    var transition = transitions[0];
-                    var conditions = transition.conditions;
+                    if (allConditions.Length != 1) return false;
+                    var conditions = allConditions[0];
                     if (conditions.Length != values.Count) return false;
 
                     values = new HashSet<int>(values);
