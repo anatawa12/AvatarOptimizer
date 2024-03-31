@@ -5,13 +5,13 @@ weight: 2
 
 # Frequently Asked Questions {#faq}
 
-Here is the list of frequently asked questions about AvatarOptimizer.
+Here is the list of frequently asked questions about Avatar Optimizer.
 If you have some other questions, please feel free to ask on the [GitHub Discussions] or on [Fediverse].
 I'm usually use Japanese, but you can ask me with English.
 
 ## The behavior of the avatar is changed when using `AAO Trace and Optimize` component {#avatar-behavior-changed-when-using-aao-trace-and-optimize-component}
 
-If the behavior of the avatar is changed when using `AAO Trace and Optimize` component, it is always a bug unless you depend on bugs in other components of AvatarOptimizer.
+If the behavior of the avatar is changed when using `AAO Trace and Optimize` component, it is always a bug unless you depend on bugs in other components of Avatar Optimizer.
 
 Please report it on [GitHub Issues], [misskey][Fediverse] (mastodon), [Twitter], etc.
 
@@ -25,8 +25,7 @@ If you are using [Modular Avatar], you can add [`MA Mesh Settings`] component to
 
 ## The brightness of the meshes merged with `AAO Merge Skinned Mesh` component is different from other meshes {#the-brightness-of-the-meshes-merged-with-aao-merge-skinned-mesh-component-is-different-from-other-meshes}
 
-This problem is often due to forgetting to specify the `Anchor Override` of the merged meshes.
-
+This problem is often due to forgetting to specify the `Anchor Override` of the merged meshes.\
 [`AAO Merge Skinned Mesh`] component does not automatically set the `Anchor Override`, so you need to manually set the `Anchor Override` of the Merged Mesh[^merged-mesh].
 
 If you are using [Modular Avatar], you can add [`MA Mesh Settings`] component to the root of the avatar to set the `Anchor Override` for the whole avatar.
@@ -52,7 +51,6 @@ If you have some material slots which will be replaced differently with animatio
 This problem is a known bug and is currently expected to conflicts.
 
 When merging meshes with animated BlendShapes, be careful not to conflict.
-
 If there is a conflict, a warning will be displayed, so please check the warning.
 
 Issue of this problem: [#568](https://github.com/anatawa12/AvatarOptimizer/issues/568)

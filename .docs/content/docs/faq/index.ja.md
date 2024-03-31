@@ -5,12 +5,12 @@ weight: 2
 
 # よくある質問 {#faq}
 
-AvatarOptimizerに関するよくある質問のリストです。
+Avatar Optimizerに関するよくある質問のリストです。
 他に質問がある場合は、[GitHub Discussions]または[Fediverse]でお気軽にお尋ねください。
 
 ## `AAO Trace and Optimize`コンポーネントを使用すると、アバターの振る舞いや見た目が変わる {#avatar-behavior-changed-when-using-aao-trace-and-optimize-component}
 
-`AAO Trace and Optimize`コンポーネントを使用して、アバターの振る舞いや見た目が変わってしまった場合は、(アバターがAvatarOptimizerの他のコンポーネントのバグ挙動に依存していない限り、)全てバグです。
+`AAO Trace and Optimize`コンポーネントを使用して、アバターの振る舞いや見た目が変わってしまった場合は、(アバターがAvatar Optimizerの他のコンポーネントのバグ挙動に依存していない限り、)全てバグです。
 [GitHub Issues]や[Misskey][Fediverse] (Mastodon)、[Twitter]などから報告をお願いします。
 
 ## メッシュが視界の中にあるのに非表示になってしまう {#mesh-is-invisible-even-though-it-is-in-the-field-of-view}
@@ -23,8 +23,7 @@ AvatarOptimizerに関するよくある質問のリストです。
 
 ## `AAO Merge Skinned Mesh`コンポーネントで統合したメッシュの明るさが他のメッシュと異なる {#the-brightness-of-the-meshes-merged-with-aao-merge-skinned-mesh-component-is-different-from-other-meshes}
 
-多くの場合、この問題は統合先のメッシュの`Anchor Override`を指定し忘れていることが原因です。
-
+多くの場合、この問題は統合先のメッシュの`Anchor Override`を指定し忘れていることが原因です。\
 [`AAO Merge Skinned Mesh`]コンポーネントは`Anchor Override`の設定を自動的には行わないため、統合先のメッシュ[^merged-mesh]の`Anchor Override`を手動で設定する必要があります。
 
 [Modular Avatar]を使用している場合は、アバターのルートに[`MA Mesh Settings`]コンポーネントを追加して設定することにより、アバター全体の`Anchor Override`を設定することができます。
@@ -32,6 +31,7 @@ AvatarOptimizerに関するよくある質問のリストです。
 ## `AAO Merge Skinned Mesh`コンポーネントを使用すると、マテリアルプロパティに対するアニメーションが競合する {#material-property-animations-conflict-when-using-aao-merge-skinned-mesh-component}
 
 この問題は既知のバグであり、現時点では競合してしまう仕様です。
+
 マテリアルプロパティに対してアニメーションされるメッシュを統合する際は、競合しないようご注意ください。
 競合する場合は警告が表示されるので、そちらを確認してください。
 
@@ -47,6 +47,7 @@ AvatarOptimizerに関するよくある質問のリストです。
 ## `AAO Merge Skinned Mesh`コンポーネントを使用すると、BlendShapeに対するアニメーションが競合する {#blendshape-animations-conflict-when-using-aao-merge-skinned-mesh-component}
 
 この問題は既知のバグであり、現時点では競合してしまう仕様です。
+
 BlendShapeに対してアニメーションされるメッシュを統合する際は、競合しないようご注意ください。
 競合する場合は警告が表示されるので、そちらを確認してください。
 
