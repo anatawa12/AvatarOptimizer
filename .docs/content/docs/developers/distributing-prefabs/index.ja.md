@@ -1,36 +1,36 @@
 ---
-title: アセットの配布に関して
+title: アセットの配布について
 ---
 
-# アセットの配布に関して {#distributing-prefabs}
+# アセットの配布について {#distributing-prefabs}
 
-Avatar Optimizer はアセットを軽量化し最適化するのに役立つかもしれません。
-Avatar Optimizer に依存するアセットを配布する際のいくつかの推奨事項を以下に示します。
+Avatar Optimizerは配布したいアセットを軽量化したり最適化したりするのに役立つかもしれません。
+Avatar Optimizerに依存するアセットを配布する際の推奨事項をいくつか示します。
 
-## ユーザーを公式の Avatar Optimizer 配布先に誘導する {#guide-to-the-official-distribution}
+## ユーザーをAvatar Optimizer公式の配布場所に誘導する {#guide-to-the-official-distribution}
 
-Avatar Optimizer は MIT ライセンスの下で公開されているため、再配布することは許可されています。
-ただし、公式の Avatar Optimizer 配布先にユーザーを誘導することを強くお勧めします。
-あなたの配布する Avatar Optimizer は古い可能性があります。
-もし古いバージョンの Avatar Optimizer を使っている場合、公式版にはすでに修正されたバグが含まれているかもしれません。
-また、Avatar Optimizer は前方互換性を保証していないため、あなたの配布するものよりも新しいバージョンの Avatar Optimizer を使っているユーザーの環境で問題が発生します。
+Avatar OptimizerはMITライセンスの下で公開されているため、再配布することが認められています。
+それでも、Avatar Optimizer公式の配布先にユーザーを誘導することを強くお勧めします。\
+非公式に配布されるAvatar Optimizerはバージョンが古い可能性があります。
+古いバージョンのAvatar Optimizerを使用していると、公式版では既に修正されているバグに遭遇するかもしれません。
+また、Avatar Optimizerは前方互換性を保証していないため、新しいバージョンを使っているユーザーの環境で、非公式に配布されているものによってバージョンを下げてしまうと、問題が発生する可能性があります。
 
-ユーザーを公式の Avatar Optimizer 配布先に誘導するための推奨方法は以下の通りです。
-1. VPM であなたのアセットが配布されている場合は、VPM で Avatar Optimizer をインストールするようにユーザーに指示してください。\
-   あなたのアセットが VPM で配布されている場合は、`package.json` で Avatar Optimizer をあなたのアセットの依存関係として宣言し、
-   ユーザーに Avatar Optimizer の VPM リポジトリを VCC に追加するように誘導してください。
-   [こちら][add-repo] は Avatar Optimizer リポジトリを VCC に追加するためのリンクです。
-   あなたの VPM リポジトリで[Avatar Optimizerのリポジトリ][repo]をミラーしても構いません。
-   ミラーする際にはGitHubのReleasesからではなく、VPMのレポジトリをミラーしてください。
-2. 公式の Avatar Optimizer のドキュメントへのリンクを提供してください。\
-   [このリンク][official-installation] は公式のインストールガイドです。
-    このページはユーザーに Avatar Optimizer を推奨される方法でインストールするように誘導します。
-3. [Avatar Optimizer のブースページ][booth-aao] へのリンクを提供してください。\
-   ブースページは Avatar Optimizer の公式配布ページの一つです。
-   ブースアイテムには最新バージョンの VPAI インストーラー unitypackage が含まれています。
-4. VPAI インストーラー unitypackage を含め、ユーザーに unitypackage をインポートするように誘導してください。\
-   VPAI インストーラーは Avatar Optimizer のような VPM パッケージを unitypackage をインポートするだけでインストールするためのツールです。
-   Avatar Optimizer 1.x.x 用の VPAI インストーラー unitypackage をダウンロードするためのリンクは[こちら][vpai]です。
+ユーザーをAvatar Optimizer公式の配布先に誘導する際に推奨される方法は以下の通りです。
+1. VPMでアセットを配布する場合は、Avatar OptimizerをVPMからインストールするように指示してください。\
+   VPMで配布するアセットの`package.json` でAvatar Optimizerを依存関係として宣言し、
+   Avatar OptimizerのVPMリポジトリをVCCに追加するようにユーザーを誘導してください。
+   [こちら][add-repo]はAvatar Optimizerの公式リポジトリをVCCに追加するためのリンクです。\
+   また、配布するアセットと同じVPMリポジトリに[Avatar Optimizerの公式リポジトリ][repo]をミラーしても構いません。
+   ミラーする場合は、GitHubのReleasesからミラーするのではなく、VPMリポジトリ自体をミラーしてください。
+2. Avatar Optimizerの公式ドキュメントへのリンクを提供してください。\
+   [こちら][official-installation]はAvatar Optimizer公式のインストールガイドです。
+    このガイドは、Avatar Optimizerを推奨される方法でインストールするようにユーザーを誘導します。
+3. [Avatar OptimizerのBoothページ][booth-aao]へのリンクを提供してください。\
+   BoothページはAvatar Optimizer公式の配布先の1つです。
+   Boothでは、最新バージョンのVPAIインストーラーunitypackageが含まれています。
+4. VPAIインストーラーunitypackageを同梱し、そのunitypackageをインポートするように指示してください。\
+   VPAIインストーラーは、Avatar OptimizerのようなVPMパッケージを、unitypackageをインポートするだけでインストールするためのツールです。
+   Avatar Optimizer 1.x.x用のVPAIインストーラーunitypackageをダウンロードするためのリンクは[こちら][vpai]です。
 
 [add-repo]: https://vpm.anatawa12.com/add-repo
 [repo]: https://vpm.anatawa12.com/vpm.json
