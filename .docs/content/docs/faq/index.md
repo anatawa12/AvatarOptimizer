@@ -9,6 +9,12 @@ Here is the list of frequently asked questions about AvatarOptimizer.
 If you have some other questions, please feel free to ask on the [GitHub Discussions] or on [fediverse].
 I'm usually use Japanese, but you can ask me with English.
 
+## The behavior of the avatar is changed when using `AAO Trace and Optimize` component {#avatar-behavior-changed-when-using-aao-trace-and-optimize-component}
+
+If the behavior of the avatar is changed when using `AAO Trace and Optimize` component, it is always a bug unless you depend on bugs in other components of AvatarOptimizer.
+
+Please report it on [GitHub issues], [misskey][fediverse] (mastodon), [twitter], etc.
+
 ## Mesh is invisible even though it is in the field of view {#mesh-is-invisible-even-though-it-is-in-the-field-of-view}
 
 This problem is often due to forgetting to specify the `Root Bone` of the Skinned Mesh Renderer.
@@ -50,12 +56,6 @@ When merging meshes with animated BlendShapes, be careful not to conflict.
 If there is a conflict, a warning will be displayed, so please check the warning.
 
 Issue of this problem: [#568](https://github.com/anatawa12/AvatarOptimizer/issues/568)
-
-## The behavior of the avatar is changed when using `AAO Trace and Optimize` component {#avatar-behavior-changed-when-using-aao-trace-and-optimize-component}
-
-If the behavior of the avatar is changed when using `AAO Trace and Optimize` component, it is always a bug unless you depend on bugs in other components of AvatarOptimizer.
-
-Please report it on [GitHub issues], [misskey][fediverse] (mastodon), [twitter], etc.
 
 ## I want to support the development of Avatar Optimizer {#i-want-to-support-the-development-of-avatar-optimizer}
 

@@ -8,6 +8,11 @@ weight: 2
 AvatarOptimizerに関するよくある質問のリストです。
 他に質問がある場合は、[GitHub Discussions]または[fediverse]でお気軽にお尋ねください。
 
+## `AAO Trace and Optimize`コンポーネントを使用すると、アバターの振る舞いや見た目が変わる {#avatar-behavior-changed-when-using-aao-trace-and-optimize-component}
+
+`AAO Trace and Optimize`コンポーネントを使用して、アバターの振る舞いや見た目が変わってしまった場合は、(アバターがAvatarOptimizerの他のコンポーネントのバグ挙動に依存していない限り、)全てバグです。
+[GitHub issues]や[misskey][fediverse] (mastodon)、[twitter]などから報告をお願いします。
+
 ## メッシュが視界の中にあるのに非表示になってしまう {#mesh-is-invisible-even-though-it-is-in-the-field-of-view}
 
 多くの場合、この問題はSkinned Mesh Rendererの`Root Bone`を指定し忘れていることが原因です。
@@ -46,11 +51,6 @@ BlendShapeに対してアニメーションされるメッシュを統合する�
 競合する場合は警告が表示されるので、そちらを確認してください。
 
 この問題のissue: [#568](https://github.com/anatawa12/AvatarOptimizer/issues/568)
-
-## `AAO Trace and Optimize`コンポーネントを使用すると、アバターの振る舞いや見た目が変わる {#avatar-behavior-changed-when-using-aao-trace-and-optimize-component}
-
-`AAO Trace and Optimize`コンポーネントを使用して、アバターの振る舞いや見た目が変わってしまった場合は、(アバターがAvatarOptimizerの他のコンポーネントのバグ挙動に依存していない限り、)全てバグです。
-[GitHub issues]や[misskey][fediverse] (mastodon)、[twitter]などから報告をお願いします。
 
 ## Avatar Optimizerの開発を支援したい {#i-want-to-support-the-development-of-avatar-optimizer}
 
