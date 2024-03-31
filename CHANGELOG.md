@@ -31,7 +31,7 @@ The format is based on [Keep a Changelog].
   - That's why AAO now configures `Clamp BlendShapes (Deprecated)` to false in edit mode and true in play mode.
   - PlayMode is usually used for testing the avatar behavior so it's better to have the same setting as VRChat client.
   - If you want not to change this setting, please disable `Tools/Avatar Optimizer/Configure Clamp BlendShape Weight`.
-- Automatic Merge Skinned Mesh `#952`
+- Automatic Merge Skinned Mesh `#952` `#972`
   - Trace and Optimize now automatically merges Skinned Meshes if possible.
   - Trace and Optimize will merge your mesh if the material properties or enablement of the mesh is animated similarly and has no BlendShapes.
 
