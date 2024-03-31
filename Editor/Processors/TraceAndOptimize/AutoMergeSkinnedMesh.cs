@@ -68,6 +68,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
                 var rendererAnimationLocations =
                     GetAnimationLocationsForRendererAnimation(context, meshInfo2.SourceRenderer);
+                if (rendererAnimationLocations == null)
+                    continue; // animating renderer properties with non animator is not supported
 
                 var key = new CategorizationKey(meshInfo2, activenessAnimationLocations, rendererAnimationLocations);
                 if (!categorizedMeshes.TryGetValue(key, out var list))
@@ -287,7 +289,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         }
 
         [CanBeNull]
-        private static HashSet<AnimationLocation> GetAnimationLocations(BuildContext context, Component component)
+        private static EqualsHashSet<AnimationLocation> GetAnimationLocations(BuildContext context, Component component)
         {
             var locations = new HashSet<AnimationLocation>();
             {
@@ -309,12 +311,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 }
             }
 
-            return locations;
+            return new EqualsHashSet<AnimationLocation>(locations);
         }
 
 
         [CanBeNull]
-        private static HashSet<(string property, AnimationLocation location)> GetAnimationLocationsForRendererAnimation(
+        private static EqualsHashSet<(string property, AnimationLocation location)> GetAnimationLocationsForRendererAnimation(
             BuildContext context, Component component)
         {
             var locations = new HashSet<(string property, AnimationLocation location)>();
@@ -329,7 +331,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     .Select(location => (property, location)));
             }
 
-            return locations;
+            return new EqualsHashSet<(string property, AnimationLocation location)>(locations);
         }
 
         private SkinnedMeshRenderer CreateNewRenderer(
@@ -577,8 +579,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         private struct CategorizationKey : IEquatable<CategorizationKey>
         {
             public bool HasNormals;
-            [NotNull] public HashSet<AnimationLocation> ActivenessAnimationLocations;
-            [NotNull] public HashSet<(string property, AnimationLocation location)> RendererAnimationLocations;
+            public EqualsHashSet<AnimationLocation> ActivenessAnimationLocations;
+            public EqualsHashSet<(string property, AnimationLocation location)> RendererAnimationLocations;
 
             // renderer properties
             public Bounds Bounds;
@@ -599,8 +601,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             public CategorizationKey(
                 MeshInfo2 meshInfo2,
-                HashSet<AnimationLocation> activenessAnimationLocations,
-                HashSet<(string property, AnimationLocation location)> rendererAnimationLocations
+                EqualsHashSet<AnimationLocation> activenessAnimationLocations,
+                EqualsHashSet<(string property, AnimationLocation location)> rendererAnimationLocations
             )
             {
                 var renderer = (SkinnedMeshRenderer)meshInfo2.SourceRenderer;
@@ -628,8 +630,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             public bool Equals(CategorizationKey other)
             {
                 return HasNormals == other.HasNormals &&
-                       ActivenessAnimationLocations.SetEquals(other.ActivenessAnimationLocations) &&
-                       RendererAnimationLocations.SetEquals(other.RendererAnimationLocations) &&
+                       ActivenessAnimationLocations.Equals(other.ActivenessAnimationLocations) &&
+                       RendererAnimationLocations.Equals(other.RendererAnimationLocations) &&
                        Bounds.Equals(other.Bounds) &&
                        Enabled == other.Enabled &&
                        ShadowCastingMode == other.ShadowCastingMode &&
@@ -655,8 +657,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 unchecked
                 {
                     var hashCode = HasNormals.GetHashCode();
-                    hashCode = (hashCode * 397) ^ ActivenessAnimationLocations.GetHashCode2();
-                    hashCode = (hashCode * 397) ^ RendererAnimationLocations.GetHashCode2();
+                    hashCode = (hashCode * 397) ^ ActivenessAnimationLocations.GetHashCode();
+                    hashCode = (hashCode * 397) ^ RendererAnimationLocations.GetHashCode();
                     hashCode = (hashCode * 397) ^ Bounds.GetHashCode();
                     hashCode = (hashCode * 397) ^ Enabled.GetHashCode();
                     hashCode = (hashCode * 397) ^ (int)ShadowCastingMode;
