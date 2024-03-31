@@ -25,6 +25,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             // first, filter Renderers
             foreach (var meshRenderer in context.GetComponents<SkinnedMeshRenderer>())
             {
+                if (state.Exclusions.Contains(meshRenderer.gameObject)) continue;
+
                 var meshInfo = context.GetMeshInfoFor(meshRenderer);
                 if (
                     // MakeBoned can break the mesh in extremely rare cases with complex shader gimmicks
