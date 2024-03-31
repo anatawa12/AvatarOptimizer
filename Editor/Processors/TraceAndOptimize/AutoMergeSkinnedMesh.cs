@@ -7,7 +7,6 @@ using nadena.dev.ndmf;
 using UnityEngine;
 using UnityEngine.Profiling;
 using UnityEngine.Rendering;
-
 using Debug = System.Diagnostics.Debug;
 
 namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
@@ -62,16 +61,18 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             var categorizedMeshes = new Dictionary<CategorizationKey, List<MeshInfo2>>();
             foreach (var meshInfo2 in mergeMeshes)
             {
-                var activenessAnimationLocations = GetAnimationLocations(context, meshInfo2.SourceRenderer);
-                if (activenessAnimationLocations == null)
+                var activenessInfo = GetActivenessInformation(context, meshInfo2.SourceRenderer);
+                if (activenessInfo == null)
                     continue; // animating activeness with non animator is not supported
+                var (activeness, activenessAnimationLocations) = activenessInfo.Value;
 
                 var rendererAnimationLocations =
                     GetAnimationLocationsForRendererAnimation(context, meshInfo2.SourceRenderer);
                 if (rendererAnimationLocations == null)
                     continue; // animating renderer properties with non animator is not supported
 
-                var key = new CategorizationKey(meshInfo2, activenessAnimationLocations, rendererAnimationLocations);
+                var key = new CategorizationKey(meshInfo2, activeness, activenessAnimationLocations,
+                    rendererAnimationLocations);
                 if (!categorizedMeshes.TryGetValue(key, out var list))
                 {
                     list = new List<MeshInfo2>();
@@ -111,7 +112,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 if (key.RendererAnimationLocations.Count != 0 && state.SkipMergeMaterialAnimatingSkinnedMesh)
                     continue;
 
-                if (key.ActivenessAnimationLocations.Count == 0)
+                if (key.Activeness != Activeness.Animating)
                 {
                     if (!state.SkipMergeStaticSkinnedMesh)
                     {
@@ -122,7 +123,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 {
                     if (!state.SkipMergeAnimatingSkinnedMesh)
                     {
-                        MergeAnimatingSkinnedMesh(context, gameObjectFactory, key, meshInfos, createSubMeshes, mappingBuilder);
+                        MergeAnimatingSkinnedMesh(context, gameObjectFactory, key, meshInfos, createSubMeshes,
+                            mappingBuilder);
                     }
                 }
             }
@@ -140,6 +142,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         {
             // if there's no activeness animation, we merge them at root
             var newSkinnedMeshRenderer = CreateNewRenderer(gameObjectFactory, context.AvatarRootTransform, key);
+            newSkinnedMeshRenderer.gameObject.SetActive(key.Activeness == Activeness.AlwaysActive);
             var newMeshInfo = context.GetMeshInfoFor(newSkinnedMeshRenderer);
             var meshInfosArray = meshInfos.ToArray();
 
@@ -177,20 +180,22 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             // process rest activeness animation
             if (activenessAnimatingProperties.Count > 0)
             {
-                var (sourceComponent, property) = activenessAnimatingProperties.RemoveLast();
+                var (initial, sourceComponent, property) = activenessAnimatingProperties.RemoveLast();
 
                 mappingBuilder.RecordCopyProperty(
                     sourceComponent, property,
                     newSkinnedMeshRenderer.gameObject, "m_IsActive");
+                newSkinnedMeshRenderer.gameObject.SetActive(initial);
             }
 
             if (activenessAnimatingProperties.Count > 0)
             {
-                var (sourceComponent, property) = activenessAnimatingProperties.RemoveLast();
+                var (initial, sourceComponent, property) = activenessAnimatingProperties.RemoveLast();
 
                 mappingBuilder.RecordCopyProperty(
                     sourceComponent, property,
                     newSkinnedMeshRenderer, "m_Enabled");
+                newSkinnedMeshRenderer.enabled = initial;
             }
 
             Debug.Assert(activenessAnimatingProperties.Count == 0);
@@ -236,35 +241,34 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             return commonParent;
         }
 
-        private static List<(ComponentOrGameObject, string)> GetActivenessAnimationPropertiesNotAffectsCommonParent(
-            BuildContext context, MeshInfo2 meshInfo, Transform commonParent)
+        private static List<(bool, ComponentOrGameObject, string)>
+            GetActivenessAnimationPropertiesNotAffectsCommonParent(
+                BuildContext context, MeshInfo2 meshInfo, Transform commonParent)
         {
-            var activenessAnimationPropertiesNotAffectsCommonParent =
-                new List<(ComponentOrGameObject, string)>();
+            var properties = new List<(bool, ComponentOrGameObject, string)>();
 
             {
                 if (context.GetAnimationComponent(meshInfo.SourceRenderer).ContainsFloat("m_Enabled"))
                 {
-                    activenessAnimationPropertiesNotAffectsCommonParent.Add((meshInfo.SourceRenderer,
-                        "m_Enabled"));
+                    properties.Add((meshInfo.SourceRenderer.enabled, meshInfo.SourceRenderer, "m_Enabled"));
                 }
             }
             foreach (var transform in
                      meshInfo.SourceRenderer.transform.ParentEnumerable(commonParent, includeMe: true))
             {
-                if (context.GetAnimationComponent(transform.gameObject).ContainsFloat("m_IsActive"))
+                var gameObject = transform.gameObject;
+                if (context.GetAnimationComponent(gameObject).ContainsFloat("m_IsActive"))
                 {
-                    activenessAnimationPropertiesNotAffectsCommonParent.Add((transform.gameObject,
-                        "m_IsActive"));
+                    properties.Add((gameObject.activeSelf, gameObject, "m_IsActive"));
                 }
             }
 
-            return activenessAnimationPropertiesNotAffectsCommonParent;
+            return properties;
         }
 
         private static Transform CreateIntermediateGameObjects(
             BuildContext context,
-            IList<(ComponentOrGameObject, string)> activenessAnimatingProperties,
+            IList<(bool, ComponentOrGameObject, string)> activenessAnimatingProperties,
             Func<GameObject> gameObjectFactory,
             Transform commonParent,
             int keepPropertyCount)
@@ -277,10 +281,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 newIntermediateGameObject.transform.localRotation = Quaternion.identity;
                 newIntermediateGameObject.transform.localScale = Vector3.one;
 
-                var (sourceComponent, property) = activenessAnimatingProperties.RemoveLast();
+                var (initial, sourceComponent, property) = activenessAnimatingProperties.RemoveLast();
                 context.GetMappingBuilder().RecordCopyProperty(
                     sourceComponent, property,
                     newIntermediateGameObject, "m_IsActive");
+                newIntermediateGameObject.SetActive(initial);
 
                 commonParent = newIntermediateGameObject.transform;
             }
@@ -289,15 +294,22 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         }
 
         [CanBeNull]
-        private static EqualsHashSet<AnimationLocation> GetAnimationLocations(BuildContext context, Component component)
+        private static (Activeness, EqualsHashSet<(bool initial, EqualsHashSet<AnimationLocation> animations)>)?
+            GetActivenessInformation(BuildContext context, Renderer component)
         {
-            var locations = new HashSet<AnimationLocation>();
+            var alwaysInactive = false;
+            var locations = new HashSet<(bool initial, EqualsHashSet<AnimationLocation> animations)>();
             {
                 if (context.GetAnimationComponent(component).TryGetFloat("m_Enabled", out var p))
                 {
                     if (p.ComponentNodes.Any(x => !(x is AnimatorParsersV2.AnimatorPropModNode<float>)))
                         return null;
-                    locations.UnionWith(AnimationLocation.CollectAnimationLocation(p));
+                    locations.Add((component.enabled,
+                        new EqualsHashSet<AnimationLocation>(AnimationLocation.CollectAnimationLocation(p))));
+                }
+                else
+                {
+                    alwaysInactive |= !component.enabled;
                 }
             }
             foreach (var transform in
@@ -307,17 +319,32 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 {
                     if (p.ComponentNodes.Any(x => !(x is AnimatorParsersV2.AnimatorPropModNode<float>)))
                         return null;
-                    locations.UnionWith(AnimationLocation.CollectAnimationLocation(p));
+                    locations.Add((transform.gameObject.activeSelf,
+                        new EqualsHashSet<AnimationLocation>(AnimationLocation.CollectAnimationLocation(p))));
+                }
+                else
+                {
+                    alwaysInactive |= !transform.gameObject.activeSelf;
                 }
             }
 
-            return new EqualsHashSet<AnimationLocation>(locations);
+            Activeness activeness;
+            if (alwaysInactive)
+                activeness = Activeness.AlwaysInactive;
+            else if (locations.Count == 0)
+                activeness = Activeness.AlwaysActive;
+            else
+                activeness = Activeness.Animating;
+
+            return (activeness,
+                new EqualsHashSet<(bool initial, EqualsHashSet<AnimationLocation> animations)>(locations));
         }
 
 
         [CanBeNull]
-        private static EqualsHashSet<(string property, AnimationLocation location)> GetAnimationLocationsForRendererAnimation(
-            BuildContext context, Component component)
+        private static EqualsHashSet<(string property, AnimationLocation location)>
+            GetAnimationLocationsForRendererAnimation(
+                BuildContext context, Component component)
         {
             var locations = new HashSet<(string property, AnimationLocation location)>();
             var animationComponent = context.GetAnimationComponent(component);
@@ -348,7 +375,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             var newSkinnedMeshRenderer = newRenderer.AddComponent<SkinnedMeshRenderer>();
             newSkinnedMeshRenderer.localBounds = key.Bounds;
-            newSkinnedMeshRenderer.enabled = key.Enabled;
             newSkinnedMeshRenderer.shadowCastingMode = key.ShadowCastingMode;
             newSkinnedMeshRenderer.receiveShadows = key.ReceiveShadows;
             newSkinnedMeshRenderer.lightProbeUsage = key.LightProbeUsage;
@@ -543,6 +569,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 || component is Animator);
         }
 
+        enum Activeness
+        {
+            AlwaysActive,
+            AlwaysInactive,
+            Animating,
+        }
+
         // Here's the all list of properties in SkinnedMeshRenderer
         // Renderer:
         // - bounds (local bounds) - must be same
@@ -579,12 +612,15 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         private struct CategorizationKey : IEquatable<CategorizationKey>
         {
             public bool HasNormals;
-            public EqualsHashSet<AnimationLocation> ActivenessAnimationLocations;
+
+            public EqualsHashSet<(bool initial, EqualsHashSet<AnimationLocation> animation)>
+                ActivenessAnimationLocations;
+
             public EqualsHashSet<(string property, AnimationLocation location)> RendererAnimationLocations;
+            public Activeness Activeness;
 
             // renderer properties
             public Bounds Bounds;
-            public bool Enabled;
             public ShadowCastingMode ShadowCastingMode;
             public bool ReceiveShadows;
             public LightProbeUsage LightProbeUsage;
@@ -601,7 +637,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             public CategorizationKey(
                 MeshInfo2 meshInfo2,
-                EqualsHashSet<AnimationLocation> activenessAnimationLocations,
+                Activeness activeness,
+                EqualsHashSet<(bool initial, EqualsHashSet<AnimationLocation> animation)> activenessAnimationLocations,
                 EqualsHashSet<(string property, AnimationLocation location)> rendererAnimationLocations
             )
             {
@@ -610,9 +647,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 HasNormals = meshInfo2.HasNormals;
                 ActivenessAnimationLocations = activenessAnimationLocations;
                 RendererAnimationLocations = rendererAnimationLocations;
+                Activeness = activeness;
 
                 Bounds = meshInfo2.Bounds;
-                Enabled = renderer.enabled;
                 ShadowCastingMode = renderer.shadowCastingMode;
                 ReceiveShadows = renderer.receiveShadows;
                 LightProbeUsage = renderer.lightProbeUsage;
@@ -632,8 +669,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 return HasNormals == other.HasNormals &&
                        ActivenessAnimationLocations.Equals(other.ActivenessAnimationLocations) &&
                        RendererAnimationLocations.Equals(other.RendererAnimationLocations) &&
+                       Activeness == other.Activeness &&
                        Bounds.Equals(other.Bounds) &&
-                       Enabled == other.Enabled &&
                        ShadowCastingMode == other.ShadowCastingMode &&
                        ReceiveShadows == other.ReceiveShadows &&
                        LightProbeUsage == other.LightProbeUsage &&
@@ -659,8 +696,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     var hashCode = HasNormals.GetHashCode();
                     hashCode = (hashCode * 397) ^ ActivenessAnimationLocations.GetHashCode();
                     hashCode = (hashCode * 397) ^ RendererAnimationLocations.GetHashCode();
+                    hashCode = (hashCode * 397) ^ Activeness.GetHashCode();
                     hashCode = (hashCode * 397) ^ Bounds.GetHashCode();
-                    hashCode = (hashCode * 397) ^ Enabled.GetHashCode();
                     hashCode = (hashCode * 397) ^ (int)ShadowCastingMode;
                     hashCode = (hashCode * 397) ^ ReceiveShadows.GetHashCode();
                     hashCode = (hashCode * 397) ^ (int)LightProbeUsage;

@@ -16,6 +16,10 @@ namespace Anatawa12.AvatarOptimizer
             this.backedSet = backedSet;
         }
 
+        public EqualsHashSet(IEnumerable<T> collection) : this(new HashSet<T>(collection))
+        {
+        }
+
         public int Count => backedSet?.Count ?? 0;
 
         public override int GetHashCode()
