@@ -404,7 +404,7 @@ msgid "TraceAndOptimize:prop:mmdWorldCompatibility"
 msgstr "MMDワールドとの互換性"
 
 msgid "TraceAndOptimize:tooltip:mmdWorldCompatibility"
-msgstr "MMD用BlendShapeを固定しないなどのMMDワールドとの互換性機能を有効化します"
+msgstr "MMD用BlendShapeを固定しないなどのMMDワールドとの互換性機能を有効にします。"
 
 msgid "TraceAndOptimize:prop:advancedSettings"
 msgstr "高度な設定"
