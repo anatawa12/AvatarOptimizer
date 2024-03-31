@@ -1,2 +1,5 @@
 [*.asmdef]
 insert_final_newline=false
+
+[*.cs]
+insert_final_newline=true

@@ -190,5 +190,11 @@ namespace Anatawa12.AvatarOptimizer
             list.RemoveAt(lastIndex);
             return last;
         }
+
+        public static EqualsHashSet<T> ToEqualsHashSet<T>([NotNull] this IEnumerable<T> enumerable) =>
+            new EqualsHashSet<T>(new HashSet<T>(enumerable));
+
+        public static EqualsHashSet<T> ToEqualsHashSet<T>([NotNull] this HashSet<T> hashSet) =>
+            new EqualsHashSet<T>(hashSet);
     }
 }

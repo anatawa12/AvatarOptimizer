@@ -18,6 +18,8 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - Some animation is Falsely detected as constant `#968`
+- Activeness of renderer GameObject is not correctly considered `#972`
+- Exclusions is not working for Automatic Merge Skinned Mesh `#972`
 
 ### Security
 
