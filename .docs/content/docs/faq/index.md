@@ -36,8 +36,8 @@ Issue of this problem: [#340](https://github.com/anatawa12/AvatarOptimizer/issue
 
 ## Material slot animations conflict when using `AAO Merge Skinned Mesh` component {#material-slot-animations-conflict-when-using-aao-merge-skinned-mesh-component}
 
-`AAO Merge Skinned Mesh` component will merge material sots of the mesh with same materials by default.
-This will merge material slots which is animated.
+`AAO Merge Skinned Mesh` component will merge material slots using the same material of the merge target meshes by default.
+This will also merge animated material slots.
 
 If you have some material slots which will be replaced differently with animation, you should un-check `Merge` of `Merge Materials` of `AAO Merge Skinned Mesh` component.
 

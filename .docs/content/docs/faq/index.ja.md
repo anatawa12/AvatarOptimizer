@@ -24,7 +24,7 @@ AvatarOptimizerに関するよくある質問のリストです。
 
 [Modular Avatar]を使用している場合は、アバターのルートに[`MA Mesh Settings`]コンポーネントを追加して設定することにより、アバター全体の`Anchor Override`を設定することができます。
 
-## `AAO Merge Skinned Mesh`コンポーネントを使用すると、マテリアルプロパティに対するアニメーションが競合する {#material-animations-conflict-when-using-aao-merge-skinned-mesh-component}
+## `AAO Merge Skinned Mesh`コンポーネントを使用すると、マテリアルプロパティに対するアニメーションが競合する {#material-property-animations-conflict-when-using-aao-merge-skinned-mesh-component}
 
 この問題は既知のバグであり、現時点では競合してしまう仕様です。
 マテリアルプロパティに対してアニメーションされるメッシュを統合する際は、競合しないようご注意ください。
@@ -34,10 +34,10 @@ AvatarOptimizerに関するよくある質問のリストです。
 
 ## `AAO Merge Skinned Mesh`コンポーネントを使用すると、マテリアルスロットに対するアニメーションが競合する {#material-slot-animations-conflict-when-using-aao-merge-skinned-mesh-component}
 
-`AAO Merge Skinned Mesh`コンポーネントは、デフォルトで同じマテリアルを持つメッシュのマテリアルスロットを統合します。
-これにはアニメーションされているマテリアルスロットも含まれます。
+`AAO Merge Skinned Mesh`コンポーネントは、統合対象のメッシュで同じマテリアルを使用しているマテリアルスロットをデフォルトで統合します。
+これにはアニメーションされるマテリアルスロットも含まれます。
 
-アニメーションによってマテリアルが異なるように置き換えられる場合は、`AAO Merge Skinned Mesh`コンポーネントの`Merge Materials`の`Merge`をオフにしてください。
+アニメーションによってそれぞれのマテリアルを別のものに置き換える場合は、`AAO Merge Skinned Mesh`コンポーネントの`マテリアルの統合`の`統合する`をオフにしてください。
 
 ## `AAO Merge Skinned Mesh`コンポーネントを使用すると、BlendShapeに対するアニメーションが競合する {#blendshape-animations-conflict-when-using-aao-merge-skinned-mesh-component}
 
