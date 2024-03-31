@@ -14,9 +14,9 @@ This component should be added to a new GameObject.
 Merge target PhysBones must be children of the same GameObject.
 Alternatively, you can use `Make Children of Me` option.
 
-This component will create a new PhysBone root GameObject and make the bones swayed by merge target PhysBones into children of this GameObject.
-Since the root GameObject is treated as a PhysBone affected Transforms, the number of PhysBone Affected Transforms will be increased by one for each Merge PhysBone.
-The added PhysBone transform will not be swayed by PhysBone so this can be a bug of the VRCSDK Performance System.
+This component will create a new PhysBone root GameObject and make the bones swayed by merge target PhysBones into children of this GameObject.\
+Since the root GameObject is treated as a PhysBone affected Transforms, the number of `PhysBone Affected Transforms` will be increased by one for each Merge PhysBone.
+The added PhysBone transform will not be swayed by PhysBone so this can be a bug of the VRChat Performance Rank System.
 
 ## Settings
 
