@@ -6,14 +6,14 @@ weight: 2
 # Frequently Asked Questions {#faq}
 
 Here is the list of frequently asked questions about AvatarOptimizer.
-If you have some other questions, please feel free to ask on the [GitHub Discussions] or on [fediverse].
+If you have some other questions, please feel free to ask on the [GitHub Discussions] or on [Fediverse].
 I'm usually use Japanese, but you can ask me with English.
 
 ## The behavior of the avatar is changed when using `AAO Trace and Optimize` component {#avatar-behavior-changed-when-using-aao-trace-and-optimize-component}
 
 If the behavior of the avatar is changed when using `AAO Trace and Optimize` component, it is always a bug unless you depend on bugs in other components of AvatarOptimizer.
 
-Please report it on [GitHub issues], [misskey][fediverse] (mastodon), [twitter], etc.
+Please report it on [GitHub Issues], [misskey][Fediverse] (mastodon), [Twitter], etc.
 
 ## Mesh is invisible even though it is in the field of view {#mesh-is-invisible-even-though-it-is-in-the-field-of-view}
 
@@ -59,22 +59,22 @@ Issue of this problem: [#568](https://github.com/anatawa12/AvatarOptimizer/issue
 
 ## I want to support the development of Avatar Optimizer {#i-want-to-support-the-development-of-avatar-optimizer}
 
-If you want to support the development of Avatar Optimizer, feedback on [GitHub Discussions], bug reports, feature requests, etc. on [GitHub issues], and pull requests are welcome.
+If you want to support the development of Avatar Optimizer, feedback on [GitHub Discussions], bug reports, feature requests, etc. on [GitHub Issues], and pull requests are welcome.
 
 Issues with [good first issue] are relatively easy to implement. It is recommended for your first pull request.
 Also, issues with [help wanted] are ones that lack developers or information. Your participation in discussions and development would be appreciated.
 
-I also accept financial support on [github sponsors] and [booth].
+I also accept financial support on [GitHub Sponsors] and [Booth].
 
-[fediverse]: https://misskey.niri.la/@anatawa12
+[Fediverse]: https://misskey.niri.la/@anatawa12
 [GitHub Discussions]: https://github.com/anatawa12/AvatarOptimizer/discussions
-[GitHub issues]: https://github.com/anatawa12/AvatarOptimizer/issues/new/choose
+[GitHub Issues]: https://github.com/anatawa12/AvatarOptimizer/issues/new/choose
 [`AAO Merge Skinned Mesh`]: ../reference/merge-skinned-mesh/
 [Modular Avatar]: https://modular-avatar.nadena.dev/ja/
 [`MA Mesh Settings`]: https://modular-avatar.nadena.dev/ja/docs/reference/mesh-settings
-[twitter]: https://twitter.com/anatawa12_vrc
-[github sponsors]: https://github.com/sponsors/anatawa12
-[booth]: https://anatawa12.booth.pm/items/4885109
+[Twitter]: https://twitter.com/anatawa12_vrc
+[GitHub Sponsors]: https://github.com/sponsors/anatawa12
+[Booth]: https://anatawa12.booth.pm/items/4885109
 [good first issue]: https://github.com/anatawa12/AvatarOptimizer/labels/good%20first%20issue
 [help wanted]: https://github.com/anatawa12/AvatarOptimizer/labels/help%20wanted
 

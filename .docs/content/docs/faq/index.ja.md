@@ -6,12 +6,12 @@ weight: 2
 # よくある質問 {#faq}
 
 AvatarOptimizerに関するよくある質問のリストです。
-他に質問がある場合は、[GitHub Discussions]または[fediverse]でお気軽にお尋ねください。
+他に質問がある場合は、[GitHub Discussions]または[Fediverse]でお気軽にお尋ねください。
 
 ## `AAO Trace and Optimize`コンポーネントを使用すると、アバターの振る舞いや見た目が変わる {#avatar-behavior-changed-when-using-aao-trace-and-optimize-component}
 
 `AAO Trace and Optimize`コンポーネントを使用して、アバターの振る舞いや見た目が変わってしまった場合は、(アバターがAvatarOptimizerの他のコンポーネントのバグ挙動に依存していない限り、)全てバグです。
-[GitHub issues]や[misskey][fediverse] (mastodon)、[twitter]などから報告をお願いします。
+[GitHub Issues]や[Misskey][Fediverse] (Mastodon)、[Twitter]などから報告をお願いします。
 
 ## メッシュが視界の中にあるのに非表示になってしまう {#mesh-is-invisible-even-though-it-is-in-the-field-of-view}
 
@@ -54,22 +54,22 @@ BlendShapeに対してアニメーションされるメッシュを統合する�
 
 ## Avatar Optimizerの開発を支援したい {#i-want-to-support-the-development-of-avatar-optimizer}
 
-Avatar Optimizerの開発を支援したい場合、[GitHub Discussions]でのフィードバックや[GitHub issues]でのバグ報告、機能追加の要望、またプルリクエストなどを歓迎しています。
+Avatar Optimizerの開発を支援したい場合、[GitHub Discussions]でのフィードバックや[GitHub Issues]でのバグ報告、機能追加の要望、またプルリクエストなどを歓迎しています。
 
 [good first issue]が付いているissueは、比較的実装が簡単なissueです。初めてのプルリクエストにおすすめです。
 また、[help wanted]が付いているissueは、開発者や情報などが不足しているissueです。議論や開発に参加していただけると助かります。
 
-なお、[github sponsors]や[booth]での金銭的な支援も受け付けています。
+なお、[GitHub Sponsors]や[Booth]での金銭的な支援も受け付けています。
 
-[fediverse]: https://misskey.niri.la/@anatawa12
+[Fediverse]: https://misskey.niri.la/@anatawa12
 [GitHub Discussions]: https://github.com/anatawa12/AvatarOptimizer/discussions
-[GitHub issues]: https://github.com/anatawa12/AvatarOptimizer/issues/new/choose
+[GitHub Issues]: https://github.com/anatawa12/AvatarOptimizer/issues/new/choose
 [`AAO Merge Skinned Mesh`]: ../reference/merge-skinned-mesh/
 [Modular Avatar]: https://modular-avatar.nadena.dev/
 [`MA Mesh Settings`]: https://modular-avatar.nadena.dev/docs/reference/mesh-settings
-[twitter]: https://twitter.com/anatawa12_vrc
-[github sponsors]: https://github.com/sponsors/anatawa12
-[booth]: https://anatawa12.booth.pm/items/4885109
+[Twitter]: https://twitter.com/anatawa12_vrc
+[GitHub Sponsors]: https://github.com/sponsors/anatawa12
+[Booth]: https://anatawa12.booth.pm/items/4885109
 [good first issue]: https://github.com/anatawa12/AvatarOptimizer/labels/good%20first%20issue
 [help wanted]: https://github.com/anatawa12/AvatarOptimizer/labels/help%20wanted
 
