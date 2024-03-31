@@ -25,14 +25,21 @@ This problem is often due to forgetting to specify the `Anchor Override` of the 
 
 If you are using [Modular Avatar], you can add [`MA Mesh Settings`] component to the root of the avatar to set the `Anchor Override` for the whole avatar.
 
-## Material animations conflict when using `AAO Merge Skinned Mesh` component {#material-animations-conflict-when-using-aao-merge-skinned-mesh-component}
+## Material property animations conflict when using `AAO Merge Skinned Mesh` component {#material-property-animations-conflict-when-using-aao-merge-skinned-mesh-component}
 
 This problem is a known bug and is currently expected to conflicts.
 
-When merging meshes with animated materials, be careful not to conflict.
+When merging meshes with animated material propeeries, be careful not to conflict.
 If there is a conflict, a warning will be displayed, so please check the warning.
 
 Issue of this problem: [#340](https://github.com/anatawa12/AvatarOptimizer/issues/340)
+
+## Material slot animations conflict when using `AAO Merge Skinned Mesh` component {#material-slot-animations-conflict-when-using-aao-merge-skinned-mesh-component}
+
+`AAO Merge Skinned Mesh` component will merge material sots of the mesh with same materials by default.
+This will merge material slots which is animated.
+
+If you have some material slots which will be replaced differently with animation, you should un-check `Merge` of `Merge Materials` of `AAO Merge Skinned Mesh` component.
 
 ## BlendShape animations conflict when using `AAO Merge Skinned Mesh` component {#blendshape-animations-conflict-when-using-aao-merge-skinned-mesh-component}
 
