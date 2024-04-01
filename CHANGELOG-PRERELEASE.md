@@ -10,18 +10,23 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
-- Relax preconditions of Entry/Exit to BlendTree optimization `#970`
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
-- Some animation is Falsely detected as constant `#968`
-- Activeness of renderer GameObject is not correctly considered `#972`
-- Exclusions is not working for Automatic Merge Skinned Mesh `#972`
 
 ### Security
+
+## [1.7.0-beta.2] - 2024-04-01
+### Changed
+- Relax preconditions of Entry/Exit to BlendTree optimization [`#970`](https://github.com/anatawa12/AvatarOptimizer/pull/970)
+
+### Fixed
+- Some animation is Falsely detected as constant [`#968`](https://github.com/anatawa12/AvatarOptimizer/pull/968)
+- Activeness of renderer GameObject is not correctly considered [`#972`](https://github.com/anatawa12/AvatarOptimizer/pull/972)
+- Exclusions is not working for Automatic Merge Skinned Mesh [`#972`](https://github.com/anatawa12/AvatarOptimizer/pull/972)
 
 ## [1.7.0-beta.1] - 2024-03-29
 ### Added
@@ -1274,7 +1279,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.0-beta.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.0-beta.2...HEAD
+[1.7.0-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.0-beta.1...v1.7.0-beta.2
 [1.7.0-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.9...v1.7.0-beta.1
 [1.6.9]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.9-beta.3...v1.6.9
 [1.6.9-beta.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.9-beta.2...v1.6.9-beta.3
