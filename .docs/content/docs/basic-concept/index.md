@@ -38,7 +38,7 @@ However, we may add new features for already implemented component and the behav
 
 In some bugs, fixing them may change the behavior of the component widely.\
 To fix such bugs, we usually add new flag to enable the new behavior.\
-By making the flag disabled by default for already added components, we keep the behavior of the existing components and by making the flag enabled by default for newly added components, we fix the bug for newly added components.
+By making the flag disabled by default for already added components, we keep the behavior of already added components and by making the flag enabled by default for newly added components, we fix the bug for newly added components.
 
 There are few exceptions for component behavior stability.
 - The features only for debugging the components are not guaranteed to follow the rules above.\
