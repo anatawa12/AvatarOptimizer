@@ -9,9 +9,9 @@ Here is the list of frequently asked questions about Avatar Optimizer.
 If you have some other questions, please feel free to ask on the [GitHub Discussions] or on [Fediverse].
 I'm usually use Japanese, but you can ask me with English.
 
-## The behavior of the avatar is changed when using `AAO Trace and Optimize` component {#avatar-behavior-changed-when-using-aao-trace-and-optimize-component}
+## The behavior or appearance of the avatar is changed when using `AAO Trace and Optimize` component {#avatar-behavior-or-appearance-changed-when-using-aao-trace-and-optimize-component}
 
-If the behavior of the avatar is changed when using `AAO Trace and Optimize` component, it is always a bug unless you depend on bugs in other components of Avatar Optimizer.
+If the behavior or appearance of the avatar is changed when using `AAO Trace and Optimize` component, it is always a bug unless you depend on bugs in other components of Avatar Optimizer.
 
 Please report it on [GitHub Issues], [misskey][Fediverse] (mastodon), [Twitter], etc.
 
