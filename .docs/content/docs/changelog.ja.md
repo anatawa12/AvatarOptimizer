@@ -1,5 +1,5 @@
 ---
-weight: 1
+weight: 9
 title: "Changelog"
 ---
 

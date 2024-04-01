@@ -15,6 +15,10 @@ MultiChildTypeはIgnoreになります。
 統合対象は同じGameObjectの子である必要があります。
 代わりに`このGameObjectの子にする`オプションを使用することも出来ます。
 
+このコンポーネントは、PhysBoneのルートとなるGameObjectを新たに作成し、統合対象のPhysBoneによって揺らされるボーンを、作成したGameObjectの子にします。\
+なお、ルートとなっているGameObjectも、PhysBoneによって影響を受けるボーンの1つとみなされるため、各Merge PhysBoneごとに`PhysBone Affected Transforms`の数が1つ増えてしまいます。
+このコンポーネントによって追加されるGameObjectがPhysBoneによって揺らされることはないため、これはVRChatのPerformance Rankシステムのバグである可能性があります。 
+
 ## 設定 {#settings}
 
 ![component.png](component.png)

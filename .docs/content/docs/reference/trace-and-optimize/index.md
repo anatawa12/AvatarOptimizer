@@ -36,8 +36,8 @@ Currently the following optimizations are applied automatically.
   Optimizes PhysBone settings for better performance. This performs the following optimizations.
   - Merges PhysBone Colliders with the exactly same settings into one PhysBone Collider.
   - Unchecks `Is Animated` if it's not necessary.
-- `Optimize Animator`
-  Optimizes Animator Controller.
+- `Optimize Animator`\
+  Optimizes Animator Controller. See [this section](#animator-optimizer) for more details.
 - `Merge Skinned Meshes`\
   Merges skinned meshes which don't need to be separated.
   - `Allow Shuffling Material Slots`\
@@ -54,3 +54,14 @@ See tooltips or implementation for more details.
 ![component.png](component.png)
 
 [^endbone]: AAO currently assumes any bones whose name ends with `end` (ignoring case) are end bones.
+
+## Animator Optimizer {#animator-optimizer}
+
+This feature currently applies the following optimizations.
+
+- Convert Entry-Exit to BlendTree\
+  This tries to convert Animator Controller layers to BlendTree as possible.
+- Merge Direct BlendTree Layers\
+  This merges multiple Direct BlendTree layers to single Direct BlendTree layer as possible.
+- Remove Meaningless Layers\
+  This removes layers which have no state nor a transition.

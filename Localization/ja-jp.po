@@ -138,7 +138,7 @@ msgid "MergePhysBone:tooltip:makeParent"
 msgstr "すべてのPhysBoneをこのGameObjectの子にする"
 
 msgid "MergePhysBone:error:makeParentWithChildren"
-msgstr "'このGameObjectの子にする'が有効であるにも関わらず、すでに子が存在します。"
+msgstr "'このGameObjectの子にする'が有効であるにも関わらず、既に子が存在します。"
 
 msgid "MergePhysBone:error:parentDiffer"
 msgstr "統合対象のPhysBoneの親が違います。同じ親の子にするか、'このGameObjectの子にする'を使用してください。"
@@ -241,10 +241,10 @@ msgid "MergeSkinnedMesh:warning:removeZeroSizedPolygonOnSources"
 msgstr "Remove Zero Sized Polygonsは遅めに処理されるため、統合対象のメッシュにつけても効果がありません"
 
 msgid "MergeSkinnedMesh:error:clothOnSources"
-msgstr "Clothコンポーネントが統合対象のメッシュについているため、統合できません"
+msgstr "Clothコンポーネントが付いているため、このメッシュを統合することができません。"
 
 msgid "MergeSkinnedMesh:error:clothOnSources:description"
-msgstr "統合対象のメッシュからClothコンポーネントを削除するか、統合対象のメッシュから除外してください"
+msgstr "このメッシュを統合対象から除外するか、このメッシュからClothコンポーネントを削除してください。"
 
 msgid "MergeSkinnedMesh:warning:no-root-bone"
 msgstr "統合先のメッシュにRoot Boneが設定されていないため、予期しない動作が引き起こされる場合があります。"
@@ -404,7 +404,7 @@ msgid "TraceAndOptimize:prop:mmdWorldCompatibility"
 msgstr "MMDワールドとの互換性"
 
 msgid "TraceAndOptimize:tooltip:mmdWorldCompatibility"
-msgstr "MMD用BlendShapeを固定しないなどのMMDワールドとの互換性機能を有効化します"
+msgstr "MMD用BlendShapeを固定しないなどのMMDワールドとの互換性機能を有効にします。"
 
 msgid "TraceAndOptimize:prop:advancedSettings"
 msgstr "高度な設定"

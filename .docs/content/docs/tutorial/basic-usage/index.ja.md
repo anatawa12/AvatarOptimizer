@@ -22,7 +22,7 @@ AvatarOptimizerでは、アバターのルートに`AAO Trace And Optimize`コ�
 
 ![add-trace-and-optimize.png](add-trace-and-optimize.png)
 
-[^blend-shape]: BlendShapeはUnity上のシェイプキーの名前です。UnityやMayaではBlendShape、BlenderではShape Key、MetasequoiaやMMDではモーフと呼ばれます。
+[^blend-shape]: BlendShapeはUnity上のモーフィングの名前です。MayaではTarget Shape、BlenderではShape Key、MetasequoiaやMMDではモーフと呼ばれます。
 [^mesh]: この記事でのメッシュは、UnityのMesh assetではなく、SkinnedMeshRendererやMeshRendererを意味しています。
 
 アバターをアップロードする {#upload-avatar}

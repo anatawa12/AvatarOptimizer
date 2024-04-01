@@ -22,7 +22,7 @@ With AvatarOptimizer, these optimizations can be performed automatically by simp
 
 ![add-trace-and-optimize.png](add-trace-and-optimize.png)
 
-[^blend-shape]: BlendShape is the name of Shape Keys in Unity. Unity and Maya call them as BlendShape, Blender calls them as Shape Key, Metasequoia and MMD call them as Morph.
+[^blend-shape]: BlendShape is the name of Morphing in Unity. Maya call them as Target Shape, Blender calls them as Shape Key, Metasequoia and MMD call them as Morph.
 [^mesh]: In this document, mesh means SkinnedMeshRenderer or MeshRenderer, not the Mesh asset in Unity.
 
 Upload Avatar
