@@ -10,7 +10,8 @@ namespace Anatawa12.AvatarOptimizer
     [HelpURL("https://vpm.anatawa12.com/avatar-optimizer/ja/docs/reference/remove-mesh-in-box/")]
     internal class RemoveMeshInBox : EditSkinnedMeshComponent
     {
-        public BoundingBox[] boxes = Array.Empty<BoundingBox>();
+        [SerializeField]
+        internal BoundingBox[] boxes = Array.Empty<BoundingBox>();
 
         private void Reset()
         {
@@ -42,26 +43,6 @@ namespace Anatawa12.AvatarOptimizer
                 return (-halfSize.x <= positionInBox.x && positionInBox.x <= halfSize.x)
                        && (-halfSize.y <= positionInBox.y && positionInBox.y <= halfSize.y)
                        && (-halfSize.z <= positionInBox.z && positionInBox.z <= halfSize.z);
-            }
-        }
-
-        [Serializable]
-        public class BoundingBoxList
-        {
-            public Container[] firstLayer = Array.Empty<Container>();
-            public Layer[] prefabLayers = Array.Empty<Layer>();
-
-            [Serializable]
-            public class Layer
-            {
-                public Container[] elements = Array.Empty<Container>();
-            }
-
-            [Serializable]
-            public class Container
-            {
-                public BoundingBox value;
-                public bool removed;
             }
         }
     }
