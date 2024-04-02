@@ -1,10 +1,10 @@
 ﻿using UnityEditor;
 using UnityEditor.Callbacks;
 
-namespace DefaultNamespace
+namespace Anatawa12.AvatarOptimizer
 {
     [InitializeOnLoad]
-    public static class ClampPoC
+    internal static class ConfigureClampBlendShape
     {
         private const string MenuName = "Tools/Avatar Optimizer/Configure Clamp BlendShape Weight";
         private const string ForceMenuName = "Tools/Avatar Optimizer/Force Configure Clamp BlendShape Weight Now";
@@ -29,7 +29,7 @@ namespace DefaultNamespace
             PlayerSettings.legacyClampBlendShapeWeights = EditorApplication.isPlayingOrWillChangePlaymode;
         }
 
-        static ClampPoC()
+        static ConfigureClampBlendShape()
         {
             EditorApplication.delayCall += () => Menu.SetChecked(MenuName, Enabled);
             EditorApplication.update += Update;
