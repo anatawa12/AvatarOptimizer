@@ -230,9 +230,9 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             }
         }
 #else
-        public override void AddRange(IEnumerable<T> values) => throw new Exception("Not supported in Player build");
-        public override void RemoveRange(IEnumerable<T> values) => throw new Exception("Not supported in Player build");
-        public override void RemoveIf(Predicate<T> predicate) => throw new Exception("Not supported in Player build");
+        public override bool AddRange(IEnumerable<T> values) => throw new Exception("Not supported in Player build");
+        public override bool RemoveRange(IEnumerable<T> values) => throw new Exception("Not supported in Player build");
+        public override void RemoveIf(Func<T, bool> predicate) => throw new Exception("Not supported in Player build");
         public override void Clear() => throw new Exception("Not supported in Player build");
 #endif
 
