@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Components API for Scripting Usage `#976`
 
 ### Changed
 
