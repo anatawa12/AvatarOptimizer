@@ -9,7 +9,7 @@ namespace Anatawa12.AvatarOptimizer
     /// </summary>
     [RequireComponent(typeof(SkinnedMeshRenderer))]
     [PublicAPI]
-    public class EditSkinnedMeshComponent : AvatarTagComponent
+    public abstract class EditSkinnedMeshComponent : AvatarTagComponent
     {
         private protected EditSkinnedMeshComponent()
         {
