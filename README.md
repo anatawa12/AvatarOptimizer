@@ -1,6 +1,8 @@
 Avatar Optimizer
 ====
 
+
+
 [![GitHub release][shields-latest-release]][github-latest]
 [![GitHub deployments][shields-deployment-master]][github-latest]
 [![GitHub deployments][shields-deployment-vpm]][vpm-repository]
