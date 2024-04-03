@@ -24,7 +24,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 
             var modifiedProperties = new HashSet<EditorCurveBinding>();
 
-            var alwaysOneParameter = $"AlwaysOne_{Guid.NewGuid()}";
+            var alwaysOneParameter = $"AAO_AlwaysOne_{Guid.NewGuid()}";
 
             for (var i = controller.layers.Length - 1; i >= 0; i--)
             {
