@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Skip Merge Direct BlendTree Option is flipped [`#978`](https://github.com/anatawa12/AvatarOptimizer/pull/978)
 
 ### Security
 
