@@ -136,8 +136,19 @@ namespace Anatawa12.AvatarOptimizer
                     return value > condition.threshold;
                 case AnimatorConditionMode.Less:
                     return value < condition.threshold;
+                default:
+                    return null;
+            }
+        }
+
+        public static bool? SatisfiesBool(this AnimatorCondition condition, bool value)
+        {
+            switch (condition.mode)
+            {
                 case AnimatorConditionMode.If:
+                    return value;
                 case AnimatorConditionMode.IfNot:
+                    return !value;
                 default:
                     return null;
             }

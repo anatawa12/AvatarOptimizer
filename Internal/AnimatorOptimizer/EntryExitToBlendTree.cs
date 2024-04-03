@@ -47,8 +47,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 
         public static void Execute(AnimatorOptimizerState state, AOAnimatorController controller)
         {
-            var intParameters = new HashSet<string>(controller.parameters
-                .Where(x => x.type == AnimatorControllerParameterType.Int)
+            var intOrBoolParameters = new HashSet<string>(controller.parameters
+                .Where(x => x.type is AnimatorControllerParameterType.Int or AnimatorControllerParameterType.Bool)
                 .Select(x => x.name));
 
             // first, collect transformable layers
@@ -57,7 +57,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             var layerByParameter = new Dictionary<string, List<int>>();
             for (var i = 0; i < layers.Length; i++)
             {
-                var info = convertInfos[i] = TryParseLayer(layers[i], state, intParameters);
+                var info = convertInfos[i] = TryParseLayer(layers[i], state, intOrBoolParameters);
                 if (info != null)
                 {
                     foreach (var parameter in info.Parameters)
@@ -95,7 +95,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 {
                     if (!NeedsConversion(cursor.Value.conditions, needsConvert)) continue;
                     var conditions = cursor.Value.conditions;
-                    var newConditions = ConvertIntConditionsToFloat(conditions, needsConvert);
+                    var newConditions = ConvertIntOrBoolConditionsToFloat(conditions, needsConvert);
                     var toRemove = cursor;
                     foreach (var animatorConditions in FlattenConditions(newConditions))
                         cursor = entryTransitions.AddAfter(cursor, clone(toRemove.Value, animatorConditions));
@@ -165,7 +165,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
         }
 
         private static ConvertibleLayerInfo? TryParseLayer(AOAnimatorControllerLayer layer,
-            AnimatorOptimizerState optimizerState, HashSet<string> intParameters)
+            AnimatorOptimizerState optimizerState, HashSet<string> intOrBoolParameters)
         {
             if (layer is not
                 {
@@ -185,8 +185,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             // check for conditions of entry transitions
 
             string conditionParameter;
-            var stateValues = new Dictionary<AnimatorState, HashSet<int>>();
-            var allValues = new HashSet<int>();
+            var stateValues = new Dictionary<AnimatorState, HashSet<IntOrBool>>();
+            var allValues = new HashSet<IntOrBool>();
 
             {
                 var entryTransition = entryTransitions[0];
@@ -200,18 +200,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                     })
                     return null;
 
-                if (conditions[0] is not
-                    {
-                        mode: AnimatorConditionMode.Equals,
-                        parameter: {} parameter,
-                        threshold: var threshold,
-                    }) return null;
-                if (!intParameters.Contains(parameter)) return null; // non int parameter
-                conditionParameter = parameter;
-                
-                // not finite makes casting to int undefined
-                if (!float.IsFinite(threshold)) return null;
-                var value = (int)threshold;
+                conditionParameter = conditions[0].parameter;
+
+                if (!intOrBoolParameters.Contains(conditionParameter)) return null; // neither int nor bool parameter
+
+                if (CheckIntOrBoolCondition(conditions[0]) is not { } value) return null;
                 if (!AddToStateValues(dest, value)) return null; // duplicated value
             }
 
@@ -226,7 +219,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                         conditions: { Length: 1 } conditions
                     }) return null;
 
-                if (CheckIntEqualsCondition(conditions[0]) is not { } value) return null;
+                if (CheckIntOrBoolCondition(conditions[0]) is not { } value) return null;
                 if (!AddToStateValues(dest, value)) return null; // duplicated value
             }
 
@@ -246,7 +239,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 {
                     case 1:
                     {
-                        if (CheckIntEqualsCondition(conditions[0]) is not { } value) return null;
+                        if (CheckIntOrBoolCondition(conditions[0]) is not { } value) return null;
                         if (!AddToStateValues(dest, value)) return null; // duplicated value
                         break;
                     }
@@ -258,26 +251,31 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 }
             }
 
-            int? CheckIntEqualsCondition(AnimatorCondition condition)
+            IntOrBool? CheckIntOrBoolCondition(AnimatorCondition condition)
             {
                 if (condition is not
                     {
-                        mode: AnimatorConditionMode.Equals,
+                        mode: var mode,
                         parameter: { } parameter,
                         threshold: var threshold,
                     }) return null;
 
                 if (parameter != conditionParameter) return null;
 
-                // not finite makes casting to int undefined
-                if (!float.IsFinite(threshold)) return null;
-                return (int)threshold;
+                return mode switch
+                {
+                    // not finite makes casting to int undefined
+                    AnimatorConditionMode.Equals when float.IsFinite(threshold) => (int)threshold,
+                    AnimatorConditionMode.If => true,
+                    AnimatorConditionMode.IfNot => false,
+                    _ => null,
+                };
             }
 
-            bool AddToStateValues(AnimatorState state, int value)
+            bool AddToStateValues(AnimatorState state, IntOrBool value)
             {
                 if (!stateValues.TryGetValue(state, out var values))
-                    stateValues.Add(state, values = new HashSet<int>());
+                    stateValues.Add(state, values = new HashSet<IntOrBool>());
                 if (allValues.Contains(value)) return false; // duplicated value
                 values.Add(value);
                 allValues.Add(value);
@@ -381,15 +379,15 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 {
                     // for default state, we check if we exit the default state if the value is any other states value.
                     // We allow too relaxed condition for exiting default state since it will re-enter the default state.
-                    HashSet<int> exitValues;
+                    HashSet<IntOrBool> exitValues;
                     if (stateValues.TryGetValue(state, out var values))
                     {
-                        exitValues = new HashSet<int>(allValues);
+                        exitValues = new HashSet<IntOrBool>(allValues);
                         exitValues.ExceptWith(values);
                     }
                     else
                     {
-                        exitValues = new HashSet<int>(allValues);
+                        exitValues = new HashSet<IntOrBool>(allValues);
                     }
 
                     foreach (var conditions in allConditions)
@@ -397,7 +395,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                         // conditions with parameters other than conditionParameter can be false
                         if (conditions.Any(c => c.parameter != conditionParameter)) continue;
 
-                        exitValues.RemoveWhere(value => conditions.All(c => c.SatisfiesInt(value) == true));
+                        exitValues.RemoveWhere(value => value.IntValue.HasValue ?
+                            conditions.All(c => c.SatisfiesInt(value.IntValue.Value) == true) :
+                            conditions.All(c => c.SatisfiesBool(value.BoolValue.Value) == true));
                     }
 
                     if (exitValues.Count != 0) return null;
@@ -412,18 +412,22 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                     if (!PossibleValuesExitTransitionCheck(values)) return null;
                 }
 
-                bool PossibleValuesExitTransitionCheck(HashSet<int> values)
+                bool PossibleValuesExitTransitionCheck(HashSet<IntOrBool> values)
                 {
                     if (allConditions.Length != 1) return false;
                     var conditions = allConditions[0];
                     if (conditions.Length != values.Count) return false;
 
-                    values = new HashSet<int>(values);
+                    values = new HashSet<IntOrBool>(values);
                     foreach (var condition in conditions)
                     {
-                        if (condition.mode != AnimatorConditionMode.NotEqual) return false;
+                        if (condition.mode != AnimatorConditionMode.NotEqual &&
+                            condition.mode != AnimatorConditionMode.IfNot &&
+                            condition.mode != AnimatorConditionMode.If) return false;
                         if (condition.parameter != conditionParameter) return false;
-                        var value = (int)condition.threshold;
+                        IntOrBool value =
+                            condition.mode == AnimatorConditionMode.NotEqual ? (int)condition.threshold :
+                            condition.mode == AnimatorConditionMode.IfNot ? true : false;
                         if (!values.Remove(value)) return false;
                     }
 
@@ -434,14 +438,42 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             return new ConvertibleLayerInfo(conditionParameter, defaultState, stateValues);
         }
 
+        readonly struct IntOrBool : IEquatable<IntOrBool>
+        {
+            public readonly int? IntValue;
+            public readonly bool? BoolValue;
+
+            public IntOrBool(int value)
+            {
+                IntValue = value;
+                BoolValue = null;
+            }
+
+            public IntOrBool(bool value)
+            {
+                IntValue = null;
+                BoolValue = value;
+            }
+
+            public override int GetHashCode() => HashCode.Combine(IntValue, BoolValue);
+
+            public bool Equals(IntOrBool other) => IntValue == other.IntValue && BoolValue == other.BoolValue;
+            public override bool Equals(object obj) => obj is IntOrBool other && Equals(other);
+            public static bool operator ==(IntOrBool left, IntOrBool right) => left.Equals(right);
+            public static bool operator !=(IntOrBool left, IntOrBool right) => !left.Equals(right);
+
+            public static implicit operator IntOrBool(int value) => new(value);
+            public static implicit operator IntOrBool(bool value) => new(value);
+        }
+
         class ConvertibleLayerInfo
         {
             public readonly string ParameterName;
             public readonly AnimatorState DefaultState;
-            public readonly Dictionary<AnimatorState, HashSet<int>> ValueForStates;
+            public readonly Dictionary<AnimatorState, HashSet<IntOrBool>> ValueForStates;
 
             public ConvertibleLayerInfo(string parameterName, AnimatorState defaultState,
-                Dictionary<AnimatorState, HashSet<int>> valueForStates)
+                Dictionary<AnimatorState, HashSet<IntOrBool>> valueForStates)
             {
                 ParameterName = parameterName;
                 DefaultState = defaultState;
@@ -489,7 +521,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 
             foreach (var (state, values) in valueForStates)
             foreach (var value in values)
-                states.Add((value, state.motion));
+                states.Add((value.IntValue ?? (value.BoolValue.Value ? 1 : 0), state.motion));
 
             // sort increasing order
             states.Sort((x, y) => x.value.CompareTo(y.value));
@@ -617,20 +649,20 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
         }
 
         // AnimatorCondition[and][or]
-        public static AnimatorCondition[][] ConvertIntConditionsToFloat(AnimatorCondition[] condition,
+        public static AnimatorCondition[][] ConvertIntOrBoolConditionsToFloat(AnimatorCondition[] condition,
             Predicate<string> shouldConvert)
         {
             var result = new List<AnimatorCondition[]>();
             foreach (var cond in condition)
                 if (shouldConvert(cond.parameter))
-                    result.AddRange(ConvertIntConditionToFloat(cond));
+                    result.AddRange(ConvertIntOrBoolConditionToFloat(cond));
                 else
                     result.Add(new[] { cond });
             return result.ToArray();
         }
 
         // AnimatorCondition[and][or]
-        public static AnimatorCondition[][] ConvertIntConditionToFloat(AnimatorCondition condition)
+        public static AnimatorCondition[][] ConvertIntOrBoolConditionToFloat(AnimatorCondition condition)
         {
             switch (condition.mode)
             {
@@ -687,8 +719,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                     };
                 }
                 case AnimatorConditionMode.Equals:
+                case AnimatorConditionMode.If:
+                case AnimatorConditionMode.IfNot:
                 {
-                    var thresholdRound = Mathf.Round(condition.threshold);
+                    var thresholdRound =
+                        condition.mode == AnimatorConditionMode.Equals ? Mathf.Round(condition.threshold) :
+                        condition.mode == AnimatorConditionMode.If ? 1 : 0;
                     var lowerThreshold = thresholdRound - 0.5f;
                     var upperThreshold = thresholdRound + 0.5f;
 
@@ -773,10 +809,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                         },
                     };
                 }
-
-                // for bool
-                case AnimatorConditionMode.If:
-                case AnimatorConditionMode.IfNot:
                 default:
                     throw new ArgumentOutOfRangeException();
             }
