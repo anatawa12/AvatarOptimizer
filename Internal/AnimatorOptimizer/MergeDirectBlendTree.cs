@@ -13,7 +13,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
         private protected override void Execute(BuildContext context, AOAnimatorController controller,
             TraceAndOptimizeState settings)
         {
-            if (!settings.SkipMergeDirectBlendTreeLayers) return;
+            if (settings.SkipMergeDirectBlendTreeLayers) return;
             Execute(controller);
         }
 
