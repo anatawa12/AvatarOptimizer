@@ -70,5 +70,35 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
             EntryExitToBlendTree.Execute(_state, new AOAnimatorController(controller));
             Assert.That(controller.layers[0].stateMachine.states.Length, Is.EqualTo(1));
         }
+
+        // FX_5.controller
+        // bool version of FX_0
+        [Test]
+        public void FX5()
+        {
+            var controller = LoadCloneAnimatorController("FX_5");
+            EntryExitToBlendTree.Execute(_state, new AOAnimatorController(controller));
+            Assert.That(controller.layers[0].stateMachine.states.Length, Is.EqualTo(1));
+        }
+
+        // FX_6.controller
+        // bool version of FX_1 or FX_3
+        [Test]
+        public void FX6()
+        {
+            var controller = LoadCloneAnimatorController("FX_6");
+            EntryExitToBlendTree.Execute(_state, new AOAnimatorController(controller));
+            Assert.That(controller.layers[0].stateMachine.states.Length, Is.EqualTo(1));
+        }
+
+        // FX_7.controller
+        // bool version of FX_2 or FX_4
+        [Test]
+        public void FX7()
+        {
+            var controller = LoadCloneAnimatorController("FX_7");
+            EntryExitToBlendTree.Execute(_state, new AOAnimatorController(controller));
+            Assert.That(controller.layers[0].stateMachine.states.Length, Is.EqualTo(1));
+        }
     }
 }
