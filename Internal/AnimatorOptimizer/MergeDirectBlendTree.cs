@@ -5,6 +5,7 @@ using Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes;
 using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEditor.Animations;
+using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 {
@@ -23,11 +24,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 
             var modifiedProperties = new HashSet<EditorCurveBinding>();
 
+            var alwaysOneParameter = $"AlwaysOne_{Guid.NewGuid()}";
+
             for (var i = controller.layers.Length - 1; i >= 0; i--)
             {
                 var layer = controller.layers[i];
 
-                var blendTree = GetSingleDirectBlendTree(layer);
+                var blendTree = GetSingleDirectBlendTree(layer, alwaysOneParameter);
 
                 if (blendTree != null)
                 {
@@ -72,6 +75,18 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             newBlendTree.blendType = BlendTreeType.Direct;
             newBlendTree.children = directBlendTrees.SelectMany(x => x.tree.children).ToArray();
 
+            if (newBlendTree.children.Any(x => x.directBlendParameter == alwaysOneParameter))
+            {
+                controller.parameters = controller.parameters
+                    .Append(new AnimatorControllerParameter()
+                    {
+                        name = alwaysOneParameter,
+                        type = AnimatorControllerParameterType.Float,
+                        defaultFloat = 1,
+                    })
+                    .ToArray();
+            }
+
             // clear original layers
             foreach (var (layerIndex, _) in directBlendTrees)
             {
@@ -83,7 +98,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             }
         }
 
-        private static BlendTree? GetSingleDirectBlendTree(AOAnimatorControllerLayer layer)
+        private static BlendTree? GetSingleDirectBlendTree(AOAnimatorControllerLayer layer, string alwaysOneParameter)
         {
             if (layer is
                 {
@@ -108,10 +123,22 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                             writeDefaultValues: true,
                             behaviours: { Length: 0 },
                             timeParameterActive: false,
-                            motion: BlendTree { blendType: BlendTreeType.Direct } blendTree,
+                            motion: BlendTree { } blendTree,
                         })
                     {
-                        return blendTree;
+                        return blendTree.blendType == BlendTreeType.Direct ? blendTree :
+                            new()
+                            {
+                                blendType = BlendTreeType.Direct,
+                                children = new ChildMotion[]
+                                {
+                                    new ()
+                                    {
+                                        directBlendParameter = alwaysOneParameter,
+                                        motion = blendTree,
+                                    }
+                                },
+                            };
                     }
                 }
             }
