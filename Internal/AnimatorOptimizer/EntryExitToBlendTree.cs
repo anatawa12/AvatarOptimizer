@@ -517,14 +517,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             valueForStates.Remove(info.DefaultState); // default states are proceed always so remove from this list
             var defaultMotion = info.DefaultState.motion;
 
-            var states = new List<(int value, Motion motion)>();
+            var states = new List<(IntOrBool value, Motion motion)>();
 
             foreach (var (state, values) in valueForStates)
             foreach (var value in values)
-                states.Add((value.IntValue ?? (value.BoolValue.Value ? 1 : 0), state.motion));
-
-            // sort increasing order
-            states.Sort((x, y) => x.value.CompareTo(y.value));
+                states.Add((value, state.motion));
 
             var children = new List<ChildMotion>();
 
@@ -554,29 +551,55 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 }
             }
 
+            if (states.All(x => x.value.IntValue.HasValue))
             {
-                // first frame: add defaultMotion before first state
-                var (value, motion) = states[0];
-                AddFrames(value - 1, defaultMotion,
-                    value, motion);
+                // sort increasing order
+                states.Sort((x, y) => x.value.IntValue.Value.CompareTo(y.value.IntValue.Value));
+
+                {
+                    // first frame: add defaultMotion before first state
+                    var (value, motion) = states[0];
+                    AddFrames(value.IntValue.Value - 1, defaultMotion,
+                        value.IntValue.Value, motion);
+                }
+
+                for (var i = 1; i < states.Count; i++)
+                {
+                    // other frames: add motions if needed
+                    var (prevValue, prevMotion) = states[i - 1];
+                    var (currentValue, currentMotion) = states[i];
+
+                    if (prevMotion != currentMotion)
+                        AddFrames(prevValue.IntValue.Value, prevMotion,
+                            currentValue.IntValue.Value, currentMotion);
+                }
+
+                {
+                    // last frame: add last state to defaultMotion
+                    var (value, motion) = states[^1];
+                    AddFrames(value.IntValue.Value, motion,
+                        value.IntValue.Value + 1, defaultMotion);
+                }
             }
-
-            for (var i = 1; i < states.Count; i++)
+            else if (states.All(x => x.value.BoolValue.HasValue))
             {
-                // other frames: add motions if needed
-                var (prevValue, prevMotion) = states[i - 1];
-                var (currentValue, currentMotion) = states[i];
+                var (_, trueMotion) = states.SingleOrDefault(x => x.value.BoolValue is true);
+                if (trueMotion == null) trueMotion = defaultMotion;
+                var (_, falseMotion) = states.SingleOrDefault(x => x.value.BoolValue is false);
+                if (falseMotion == null) falseMotion = defaultMotion;
 
-                if (prevMotion != currentMotion)
-                    AddFrames(prevValue, prevMotion,
-                        currentValue, currentMotion);
+                // add true motion for negative
+                children.Add(CreateChild(Utils.PreviousFloat(0), trueMotion));
+
+                // add false motion for zero
+                children.Add(CreateChild(0, falseMotion));
+
+                // add true motion for positive
+                children.Add(CreateChild(Utils.NextFloat(0), trueMotion));
             }
-
+            else
             {
-                // last frame: add last state to defaultMotion
-                var (value, motion) = states[^1];
-                AddFrames(value, motion,
-                    value + 1, defaultMotion);
+                throw new InvalidOperationException("unexpected: mixed condition types");
             }
 
             var blendTree = new BlendTree
@@ -666,6 +689,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
         {
             switch (condition.mode)
             {
+                // for int
                 case AnimatorConditionMode.Greater:
                 {
                     var thresholdRound = Mathf.Round(condition.threshold);
@@ -719,12 +743,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                     };
                 }
                 case AnimatorConditionMode.Equals:
-                case AnimatorConditionMode.If:
-                case AnimatorConditionMode.IfNot:
                 {
-                    var thresholdRound =
-                        condition.mode == AnimatorConditionMode.Equals ? Mathf.Round(condition.threshold) :
-                        condition.mode == AnimatorConditionMode.If ? 1 : 0;
+                    var thresholdRound = Mathf.Round(condition.threshold);
                     var lowerThreshold = thresholdRound - 0.5f;
                     var upperThreshold = thresholdRound + 0.5f;
 
@@ -809,6 +829,56 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                         },
                     };
                 }
+
+                // for bool
+                case AnimatorConditionMode.If:
+                {
+                    // OR condition
+                    return new[]
+                    {
+                        new[]
+                        {
+                            new AnimatorCondition()
+                            {
+                                mode = AnimatorConditionMode.Less,
+                                parameter = condition.parameter,
+                                threshold = 0,
+                            },
+                            new AnimatorCondition()
+                            {
+                                mode = AnimatorConditionMode.Greater,
+                                parameter = condition.parameter,
+                                threshold = 0,
+                            },
+                        },
+                    };
+                }
+                case AnimatorConditionMode.IfNot:
+                {
+                    // AND condition
+                    return new[]
+                    {
+                        new[]
+                        {
+                            new AnimatorCondition()
+                            {
+                                mode = AnimatorConditionMode.Greater,
+                                parameter = condition.parameter,
+                                threshold = Utils.PreviousFloat(0),
+                            },
+                        },
+                        new[]
+                        {
+                            new AnimatorCondition()
+                            {
+                                mode = AnimatorConditionMode.Less,
+                                parameter = condition.parameter,
+                                threshold = Utils.NextFloat(0),
+                            },
+                        },
+                    };
+                }
+
                 default:
                     throw new ArgumentOutOfRangeException();
             }
