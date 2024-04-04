@@ -34,25 +34,25 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
             Assert.That(controller.layers[0].stateMachine.states.Length, Is.EqualTo(1));
         }
 
-        // FX_5.controller
-        // - Entry から全てのステートに Equals で遷移
+        // FX_1.controller
+        // - Entry からデフォルトステート以外のステートに Equals で遷移
         // - 全てのステートから Exit に NotEquals で遷移
         [Test]
         public void RelaxDefaultToExitCondition()
         {
-            var controller = LoadCloneAnimatorController("FX_0");
+            var controller = LoadCloneAnimatorController("FX_1");
             EntryExitToBlendTree.Execute(_state, new AOAnimatorController(controller));
             Assert.That(controller.layers[0].stateMachine.states.Length, Is.EqualTo(1));
         }
 
-        // FX_1.controller
-        // - Entry からデフォルトステート以外のステートに Equals で遷移
+        // FX_0.controller
+        // - Entry から全てのステートに Equals で遷移
         // - 全てのステートから Exit に NotEquals で遷移
-        // In other words, RelaxDefaultToExitCondition(FX_5) 
+        // In other words, RelaxDefaultToExitCondition(FX_1) with entry transition to default state
         [Test]
-        public void FX1()
+        public void FX0()
         {
-            var controller = LoadCloneAnimatorController("FX_1");
+            var controller = LoadCloneAnimatorController("FX_0");
             EntryExitToBlendTree.Execute(_state, new AOAnimatorController(controller));
             Assert.That(controller.layers[0].stateMachine.states.Length, Is.EqualTo(1));
         }
@@ -61,12 +61,42 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
         // - Entry からデフォルトステート以外のステートに Equals で遷移
         // - Entry からデフォルトステートに空の Conditions で遷移 (↑より優先度低)
         // - 全てのステートから Exit に NotEquals で遷移
-        // In other words, combination of RelaxDefaultToExitCondition(FX_5) and
-        //   MultipleEqualsExitFromDefaultAndNonEqualsExitFromNonDefault(FX_3)
+        // In other words, combination of NoConditionEntryToDefault(FX_4) and
+        //   RelaxDefaultToExitCondition(FX_1)
         [Test]
         public void FX2()
         {
             var controller = LoadCloneAnimatorController("FX_2");
+            EntryExitToBlendTree.Execute(_state, new AOAnimatorController(controller));
+            Assert.That(controller.layers[0].stateMachine.states.Length, Is.EqualTo(1));
+        }
+
+        // FX_5.controller
+        // bool version of FX_0
+        [Test]
+        public void FX5()
+        {
+            var controller = LoadCloneAnimatorController("FX_5");
+            EntryExitToBlendTree.Execute(_state, new AOAnimatorController(controller));
+            Assert.That(controller.layers[0].stateMachine.states.Length, Is.EqualTo(1));
+        }
+
+        // FX_6.controller
+        // bool version of FX_1 or FX_3
+        [Test]
+        public void FX6()
+        {
+            var controller = LoadCloneAnimatorController("FX_6");
+            EntryExitToBlendTree.Execute(_state, new AOAnimatorController(controller));
+            Assert.That(controller.layers[0].stateMachine.states.Length, Is.EqualTo(1));
+        }
+
+        // FX_7.controller
+        // bool version of FX_2 or FX_4
+        [Test]
+        public void FX7()
+        {
+            var controller = LoadCloneAnimatorController("FX_7");
             EntryExitToBlendTree.Execute(_state, new AOAnimatorController(controller));
             Assert.That(controller.layers[0].stateMachine.states.Length, Is.EqualTo(1));
         }

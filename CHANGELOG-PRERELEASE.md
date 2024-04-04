@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog].
 ## [Unreleased]
 ### Added
 - Merge non Direct BlendTree in MergeDirectBlendTree [`#980`](https://github.com/anatawa12/AvatarOptimizer/pull/980)
+- Support bool parameters in Entry/Exit to BlendTree optimization [`#982`](https://github.com/anatawa12/AvatarOptimizer/pull/982)
 
 ### Changed
 

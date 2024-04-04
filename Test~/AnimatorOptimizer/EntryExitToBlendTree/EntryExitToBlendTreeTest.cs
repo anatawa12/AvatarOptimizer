@@ -19,12 +19,12 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
         }
 
         [Test]
-        public void GestureConvertibleWithIntCondition()
+        public void GestureConvertibleWithIntOrBoolCondition()
         {
-            var controller = LoadCloneAnimatorController("GestureConvertibleWithIntCondition");
-            controller.name = "GestureConvertibleWithIntCondition.converted";
+            var controller = LoadCloneAnimatorController("GestureConvertibleWithIntOrBoolCondition");
+            controller.name = "GestureConvertibleWithIntOrBoolCondition.converted";
             EntryExitToBlendTree.Execute(_state, new AOAnimatorController(controller));
-            var except = LoadAnimatorController("GestureConvertibleWithIntCondition.converted");
+            var except = LoadAnimatorController("GestureConvertibleWithIntOrBoolCondition.converted");
             RecursiveCheckEquals(except, controller);
         }
 
