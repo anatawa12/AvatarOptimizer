@@ -9,12 +9,12 @@ using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 {
-    public class MergeBlendTreeLayers : AnimOptPassBase<MergeBlendTreeLayers>
+    public class MergeBlendTreeLayer : AnimOptPassBase<MergeBlendTreeLayer>
     {
         private protected override void Execute(BuildContext context, AOAnimatorController controller,
             TraceAndOptimizeState settings)
         {
-            if (settings.SkipMergeBlendTreeLayers) return;
+            if (settings.SkipMergeBlendTreeLayer) return;
             Execute(controller);
         }
 
