@@ -60,7 +60,7 @@ Trace and Optimizeは「**見た目に絶対に影響させてはならない**�
 
 - Entry-Exit式のレイヤーをBlendTreeに変換\
   アニメーターコントローラーのレイヤーをできる限りBlendTreeに変換します。
-- Direct BlendTreeを統合\
-  複数のDirect BlendTreeレイヤーを1つに統合します。
+- BlendTreeを統合\
+  複数のBlendTreeレイヤーを1つのDirect BlendTreeに統合します。
 - 使われていないレイヤーを削除する\
   StateやTransitionがないレイヤーを削除します。

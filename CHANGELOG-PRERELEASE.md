@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog].
 - Components API for Scripting Usage `#976`
 
 ### Changed
+- Renamed MergeDirectBlendTree(Layers) to MergeBlendTreeLayer `#984`
 
 ### Deprecated
 
@@ -19,6 +20,18 @@ The format is based on [Keep a Changelog].
 ### Fixed
 
 ### Security
+
+## [1.6.10] - 2024-04-05
+### Fixed
+- Missing Reference Exception with Trace and Optimize [`#986`](https://github.com/anatawa12/AvatarOptimizer/pull/986)
+
+## [1.7.0-beta.3] - 2024-04-04
+### Added
+- Merge non Direct BlendTree in MergeDirectBlendTree [`#980`](https://github.com/anatawa12/AvatarOptimizer/pull/980)
+- Support bool parameters in Entry/Exit to BlendTree optimization [`#982`](https://github.com/anatawa12/AvatarOptimizer/pull/982)
+
+### Fixed
+- Skip Merge Direct BlendTree Option is flipped [`#978`](https://github.com/anatawa12/AvatarOptimizer/pull/978)
 
 ## [1.7.0-beta.2] - 2024-04-01
 ### Changed
@@ -1280,7 +1293,9 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.0-beta.2...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.10...HEAD
+[1.6.10]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.0-beta.3...v1.6.10
+[1.7.0-beta.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.0-beta.2...v1.7.0-beta.3
 [1.7.0-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.0-beta.1...v1.7.0-beta.2
 [1.7.0-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.9...v1.7.0-beta.1
 [1.6.9]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.9-beta.3...v1.6.9

@@ -13,8 +13,8 @@ The format is based on [Keep a Changelog].
   - Animator Optimizer optimizes your Animator Controller without behaviour Changes
   - Current Optimizer includes the following optimization
     - Remove meaningless properties `#854`
-    - Converts Entry / Exit to 1D BlendTree `#854` `#867` `#927` `#970`
-    - Merges multiple Direct BlendTree to single Direct BlendTree `#870`
+    - Converts Entry / Exit to 1D BlendTree `#854` `#867` `#927` `#970` `#982`
+    - Merges multiple BlendTrees to single Direct BlendTree `#870` `#978` `#980` `#984`
     - Removes meaningless Animator Layers `#870`
 - Asset Description `#847`
   - Asset Description is the file to provide information of your assets for Avatar Optimizer.
@@ -97,6 +97,10 @@ The format is based on [Keep a Changelog].
 - PlayableLayerControl or AnimatorLayerControl on non-root animator are ignored `#964`
 
 ### Security
+
+## [1.6.10] - 2024-04-05
+### Fixed
+- Missing Reference Exception with Trace and Optimize [`#986`](https://github.com/anatawa12/AvatarOptimizer/pull/986)
 
 ## [1.6.9] - 2024-03-27
 ### Added
@@ -836,7 +840,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.9...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.10...HEAD
+[1.6.10]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.9...v1.6.10
 [1.6.9]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.8...v1.6.9
 [1.6.8]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.7...v1.6.8
 [1.6.7]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.6...v1.6.7
