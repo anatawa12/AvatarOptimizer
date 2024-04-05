@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
+- Renamed MergeDirectBlendTree(Layers) to MergeBlendTreeLayer `#984`
 
 ### Deprecated
 

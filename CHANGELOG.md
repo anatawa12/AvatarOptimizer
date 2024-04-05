@@ -14,7 +14,7 @@ The format is based on [Keep a Changelog].
   - Current Optimizer includes the following optimization
     - Remove meaningless properties `#854`
     - Converts Entry / Exit to 1D BlendTree `#854` `#867` `#927` `#970` `#982`
-    - Merges multiple Direct BlendTree to single Direct BlendTree `#870` `#978` `#980`
+    - Merges multiple BlendTrees to single Direct BlendTree `#870` `#978` `#980` `#984`
     - Removes meaningless Animator Layers `#870`
 - Asset Description `#847`
   - Asset Description is the file to provide information of your assets for Avatar Optimizer.

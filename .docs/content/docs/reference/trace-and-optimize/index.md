@@ -61,7 +61,7 @@ This feature currently applies the following optimizations.
 
 - Convert Entry-Exit to BlendTree\
   This tries to convert Animator Controller layers to BlendTree as possible.
-- Merge Direct BlendTree Layers\
-  This merges multiple Direct BlendTree layers to single Direct BlendTree layer as possible.
+- Merge BlendTree Layers\
+  This merges multiple BlendTree layers to single Direct BlendTree layer as possible.
 - Remove Meaningless Layers\
   This removes layers which have no state nor a transition.
