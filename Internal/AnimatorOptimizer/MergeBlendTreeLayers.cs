@@ -9,12 +9,12 @@ using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 {
-    public class MergeDirectBlendTree : AnimOptPassBase<MergeDirectBlendTree>
+    public class MergeBlendTreeLayers : AnimOptPassBase<MergeBlendTreeLayers>
     {
         private protected override void Execute(BuildContext context, AOAnimatorController controller,
             TraceAndOptimizeState settings)
         {
-            if (settings.SkipMergeDirectBlendTreeLayers) return;
+            if (settings.SkipMergeBlendTreeLayers) return;
             Execute(controller);
         }
 
@@ -30,7 +30,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             {
                 var layer = controller.layers[i];
 
-                var blendTree = GetSingleDirectBlendTree(layer, alwaysOneParameter);
+                var blendTree = GetSingleBlendTreeAsDirect(layer, alwaysOneParameter);
 
                 if (blendTree != null)
                 {
@@ -98,7 +98,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             }
         }
 
-        private static BlendTree? GetSingleDirectBlendTree(AOAnimatorControllerLayer layer, string alwaysOneParameter)
+        private static BlendTree? GetSingleBlendTreeAsDirect(AOAnimatorControllerLayer layer, string alwaysOneParameter)
         {
             if (layer is
                 {

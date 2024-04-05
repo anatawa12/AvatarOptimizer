@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.Animations;
+using UnityEngine.Serialization;
 
 namespace Anatawa12.AvatarOptimizer
 {
@@ -94,7 +95,7 @@ namespace Anatawa12.AvatarOptimizer
             [ToggleLeft]
             public bool skipRemoveUnusedAnimatingProperties;
             [ToggleLeft]
-            public bool skipMergeDirectBlendTreeLayers;
+            public bool skipMergeBlendTreeLayers;
             [ToggleLeft]
             public bool skipRemoveMeaninglessAnimatorLayer;
             [ToggleLeft]
