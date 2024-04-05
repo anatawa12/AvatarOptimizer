@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Missing Reference Exception with Trace and Optimize `#986`
 
 ### Security
 
