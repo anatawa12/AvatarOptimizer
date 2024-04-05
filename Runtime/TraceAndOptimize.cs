@@ -1,55 +1,69 @@
 using System;
+using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Serialization;
 
 namespace Anatawa12.AvatarOptimizer
 {
+    /// <summary>
+    /// The type of the component is the only public API of this component.
+    ///
+    /// You cannot configure this component from script.
+    /// </summary>
     // previously known as Automatic Configuration
     [AddComponentMenu("Avatar Optimizer/AAO Trace And Optimize")]
     [DisallowMultipleComponent]
     [HelpURL("https://vpm.anatawa12.com/avatar-optimizer/ja/docs/reference/trace-and-optimize/")]
-    internal class TraceAndOptimize : AvatarGlobalComponent
+    [PublicAPI]
+    public sealed class TraceAndOptimize : AvatarGlobalComponent
     {
         [NotKeyable]
         [AAOLocalized("TraceAndOptimize:prop:freezeBlendShape")]
         [ToggleLeft]
-        public bool freezeBlendShape = true;
+        [SerializeField]
+        internal bool freezeBlendShape = true;
         [NotKeyable]
         [AAOLocalized("TraceAndOptimize:prop:removeUnusedObjects")]
         [ToggleLeft]
-        public bool removeUnusedObjects = true;
+        [SerializeField]
+        internal bool removeUnusedObjects = true;
 
         // Remove Unused Objects Options
         [NotKeyable]
         [AAOLocalized("TraceAndOptimize:prop:preserveEndBone",
             "TraceAndOptimize:tooltip:preserveEndBone")]
         [ToggleLeft]
-        public bool preserveEndBone;
+        [SerializeField]
+        internal bool preserveEndBone;
 
         [NotKeyable]
         [AAOLocalized("TraceAndOptimize:prop:removeZeroSizedPolygons")]
         [ToggleLeft]
-        public bool removeZeroSizedPolygons = false;
+        [SerializeField]
+        internal bool removeZeroSizedPolygons = false;
 
         [NotKeyable]
         [AAOLocalized("TraceAndOptimize:prop:optimizePhysBone")]
         [ToggleLeft]
+        [SerializeField]
 #if !AAO_VRCSDK3_AVATARS
         // no meaning without VRCSDK
         [HideInInspector]
 #endif
-        public bool optimizePhysBone = true;
+        internal bool optimizePhysBone = true;
 
         [NotKeyable]
         [AAOLocalized("TraceAndOptimize:prop:optimizeAnimator")]
         [ToggleLeft]
-        public bool optimizeAnimator = true;
+        [SerializeField]
+        internal bool optimizeAnimator = true;
 
         [NotKeyable]
         [AAOLocalized("TraceAndOptimize:prop:mergeSkinnedMesh")]
         [ToggleLeft]
-        public bool mergeSkinnedMesh = true;
+        [SerializeField]
+        internal bool mergeSkinnedMesh = true;
 
         // TODO: make true by default if it's safe
         // see https://github.com/anatawa12/AvatarOptimizer/issues/954
@@ -57,20 +71,23 @@ namespace Anatawa12.AvatarOptimizer
         [AAOLocalized("TraceAndOptimize:prop:allowShuffleMaterialSlots",
             "TraceAndOptimize:tooltip:allowShuffleMaterialSlots")]
         [ToggleLeft]
-        public bool allowShuffleMaterialSlots;
+        [SerializeField]
+        internal bool allowShuffleMaterialSlots;
 
         // common parsing configuration
         [NotKeyable]
         [AAOLocalized("TraceAndOptimize:prop:mmdWorldCompatibility",
             "TraceAndOptimize:tooltip:mmdWorldCompatibility")]
         [ToggleLeft]
-        public bool mmdWorldCompatibility = true;
+        [SerializeField]
+        internal bool mmdWorldCompatibility = true;
 
         [NotKeyable]
-        public AdvancedSettings advancedSettings;
+        [SerializeField]
+        internal AdvancedSettings advancedSettings;
         
         [Serializable]
-        public struct AdvancedSettings
+        internal struct AdvancedSettings
         {
             [Tooltip("Exclude some GameObjects from Trace and Optimize")]
             public GameObject[] exclusions;
