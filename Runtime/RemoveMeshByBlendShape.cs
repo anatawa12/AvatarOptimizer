@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using JetBrains.Annotations;
 using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer
@@ -7,18 +9,63 @@ namespace Anatawa12.AvatarOptimizer
     [RequireComponent(typeof(SkinnedMeshRenderer))]
     [DisallowMultipleComponent]
     [HelpURL("https://vpm.anatawa12.com/avatar-optimizer/ja/docs/reference/remove-mesh-by-blendshape/")]
-    internal class RemoveMeshByBlendShape : EditSkinnedMeshComponent
+    [PublicAPI]
+    public sealed class RemoveMeshByBlendShape : EditSkinnedMeshComponent
     {
-        public PrefabSafeSet.StringSet shapeKeysSet;
+        [SerializeField]
+        internal PrefabSafeSet.StringSet shapeKeysSet;
         [AAOLocalized("RemoveMeshByBlendShape:prop:Tolerance",
             "RemoveMeshByBlendShape:tooltip:Tolerance")]
-        public double tolerance = 0.001;
-
-        public RemoveMeshByBlendShape()
+        [SerializeField]
+        internal double tolerance = 0.001;
+        internal RemoveMeshByBlendShape()
         {
             shapeKeysSet = new PrefabSafeSet.StringSet(this);
         }
 
-        public HashSet<string> RemovingShapeKeys => shapeKeysSet.GetAsSet();
+        internal HashSet<string> RemovingShapeKeys => shapeKeysSet.GetAsSet();
+        
+        /// <summary>
+        /// Initializes the RemoveMEshByBlendShape with the specified default behavior version.
+        ///
+        /// As Described in the documentation, you have to call this method after `AddComponent` to make sure
+        /// the default configuration is what you want.
+        /// Without calling this method, the default configuration might be changed in the future.
+        /// </summary>
+        /// <param name="version">
+        /// The default configuration version.
+        /// Since 1.7.0, version 1 is supported.
+        /// </param>
+        /// <exception cref="ArgumentOutOfRangeException">Unsupported configuration version</exception>
+        [PublicAPI]
+        public void Initialize(int version)
+        {
+            switch (version)
+            {
+                case 1:
+                    // nothing to do
+                    break; 
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(version), $"unsupported version: {version}");
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the tolerance for the blend shape delta
+        ///
+        /// If the delta is less than this value, the vertex is considered to be not moved.
+        /// </summary>
+        [PublicAPI]
+        public double Tolerance
+        {
+            get => tolerance;
+            set => tolerance = value;
+        }
+
+        /// <summary>
+        /// Gets the set of shape keys to remove meshes.
+        /// </summary>
+        [PublicAPI]
+        public API.PrefabSafeSetAccessor<string> ShapeKeys => new API.PrefabSafeSetAccessor<string>(shapeKeysSet);
     }
 }

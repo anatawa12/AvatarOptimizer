@@ -52,6 +52,16 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 #endif
     }
 
+    public abstract class PrefabSafeSetApi<T>
+    {
+        public abstract void SetValueNonPrefab(IEnumerable<T> values);
+        public abstract HashSet<T> GetAsSet();
+        public abstract List<T> GetAsList();
+        public abstract bool AddRange(IEnumerable<T> values);
+        public abstract bool RemoveRange(IEnumerable<T> values);
+        public abstract void RemoveIf(Func<T, bool> predicate);
+        public abstract void Clear();
+    }
 
     /// <summary>
     /// The serializable class to express hashset.
@@ -60,7 +70,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
     /// <typeparam name="T">Element Type</typeparam>
     /// <typeparam name="TLayer">Layer Type</typeparam>
     [NotKeyable, Serializable]
-    public class PrefabSafeSet<T, TLayer> : ISerializationCallbackReceiver where TLayer : PrefabLayer<T>, new()
+    public class PrefabSafeSet<T, TLayer> : PrefabSafeSetApi<T>, ISerializationCallbackReceiver where TLayer : PrefabLayer<T>, new()
     {
         [SerializeField] internal T[] mainSet = Array.Empty<T>();
         [SerializeField] internal TLayer[] prefabLayers = Array.Empty<TLayer>();
@@ -84,7 +94,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 #endif
         }
 
-        public void SetValueNonPrefab(IEnumerable<T> values)
+        public override void SetValueNonPrefab(IEnumerable<T> values)
         {
 #if UNITY_EDITOR
             if (OuterObject && UnityEditor.PrefabUtility.IsPartOfPrefabInstance(OuterObject)
@@ -96,7 +106,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             mainSet = values.ToArray();
         }
 
-        public HashSet<T> GetAsSet()
+        public override HashSet<T> GetAsSet()
         {
             var result = new HashSet<T>(mainSet.Where(x => x.IsNotNull()));
             foreach (var layer in prefabLayers)
@@ -104,7 +114,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             return result;
         }
 
-        public List<T> GetAsList()
+        public override List<T> GetAsList()
         {
             var result = new List<T>(mainSet.Where(x => x.IsNotNull()));
             var set = new HashSet<T>(result);
@@ -112,6 +122,119 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                 layer.ApplyTo(set, result);
             return result;
         }
+
+#if UNITY_EDITOR
+        private (HashSet<T>, TLayer) GetBaseSetAndLayer(int nestCount)
+        {
+            if (prefabLayers.Length < nestCount)
+                PrefabSafeSetRuntimeUtil.ResizeArray(ref prefabLayers, nestCount);
+            var baseSet = new HashSet<T>(mainSet.Where(x => x.IsNotNull()));
+            for (var i = 0; i < nestCount - 1; i++) prefabLayers[i].ApplyTo(baseSet);
+            var layer = prefabLayers[nestCount - 1];
+
+            return (baseSet, layer);
+        }
+
+        private static int PrefabNestCount(Object instance)
+        {
+            var nestCount = 0;
+            while ((bool)(instance = UnityEditor.PrefabUtility.GetCorrespondingObjectFromSource(instance)))
+                nestCount++;
+
+            return nestCount;
+        }
+
+        public override bool AddRange(IEnumerable<T> values)
+        {
+            var valueEnumerable = values.Where(x => x.IsNotNull());
+            var nestCount = PrefabNestCount(OuterObject);
+
+            if (nestCount == 0)
+            {
+                var originalSize = mainSet.Length;
+                mainSet = mainSet.Concat(valueEnumerable.Except(mainSet)).ToArray();
+                return originalSize != mainSet.Length;
+            }
+            else
+            {
+                var (baseSet, layer) = GetBaseSetAndLayer(nestCount);
+                var valuesList = new List<T>(valueEnumerable);
+
+                var originalRemoves = layer.removes.Length;
+                var originalAdditions = layer.additions.Length;
+
+                layer.removes = layer.removes.Except(valuesList).ToArray();
+                layer.additions = layer.additions.Union(valuesList.Except(baseSet)).ToArray();
+
+                return originalRemoves != layer.removes.Length || originalAdditions != layer.additions.Length;
+            }
+        }
+
+        public override bool RemoveRange(IEnumerable<T> values)
+        {
+            var valueEnumerable = values.Where(x => x.IsNotNull());
+            var nestCount = PrefabNestCount(OuterObject);
+
+            if (nestCount == 0)
+            {
+                var originalSize = mainSet.Length;
+                mainSet = mainSet.Except(valueEnumerable).ToArray();
+                return originalSize != mainSet.Length;
+            }
+            else
+            {
+                var (baseSet, layer) = GetBaseSetAndLayer(nestCount);
+                var valuesList = new List<T>(valueEnumerable);
+
+                var originalRemoves = layer.removes.Length;
+                var originalAdditions = layer.additions.Length;
+
+                layer.removes = layer.removes.Union(valuesList.Intersect(baseSet)).ToArray();
+                layer.additions = layer.additions.Except(valuesList).ToArray();
+                
+                return originalRemoves != layer.removes.Length || originalAdditions != layer.additions.Length;
+            }
+        }
+
+        public override void RemoveIf(Func<T, bool> predicate)
+        {
+            var nestCount = PrefabNestCount(OuterObject);
+
+            if (nestCount == 0)
+            {
+                mainSet = mainSet.Where(x => x.IsNull() || !predicate(x)).ToArray();
+            }
+            else
+            {
+                var (baseSet, layer) = GetBaseSetAndLayer(nestCount);
+
+                layer.removes = layer.removes.Concat(baseSet.Where(predicate)).ToArray();
+                layer.additions = layer.additions.Where(x => !predicate(x)).ToArray();
+            }
+        }
+
+        public override void Clear()
+        {
+            var nestCount = PrefabNestCount(OuterObject);
+
+            if (nestCount == 0)
+            {
+                mainSet = Array.Empty<T>();
+            }
+            else
+            {
+                var (baseSet, layer) = GetBaseSetAndLayer(nestCount);
+
+                layer.removes = layer.removes.Concat(baseSet).ToArray();
+                layer.additions = Array.Empty<T>();
+            }
+        }
+#else
+        public override bool AddRange(IEnumerable<T> values) => throw new Exception("Not supported in Player build");
+        public override bool RemoveRange(IEnumerable<T> values) => throw new Exception("Not supported in Player build");
+        public override void RemoveIf(Func<T, bool> predicate) => throw new Exception("Not supported in Player build");
+        public override void Clear() => throw new Exception("Not supported in Player build");
+#endif
 
         void ISerializationCallbackReceiver.OnBeforeSerialize()
         {

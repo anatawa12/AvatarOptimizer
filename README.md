@@ -54,6 +54,9 @@ You have to call `void Initialize(int version)` with the configuration version y
 `Initialize` will rollback the configuration to the version you specified if the current configuration version is newer than the version you specified.
 The current configuration version for the component can be retrieved with documentation of the `Initialize` method.
 
+If the component doesn't support configuring by script, the `Initialize` method will not be provided.
+What script can do is adding components with the default configuration.
+
 ### Stability for save format
 
 The Semantic Versioning will also be applied to save format of the most components.

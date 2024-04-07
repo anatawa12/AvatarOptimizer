@@ -203,6 +203,7 @@ namespace Anatawa12.AvatarOptimizer.Test
                 case TypeAttributes.NestedFamORAssem:
                     return inherit;
                 case TypeAttributes.Public:
+                case TypeAttributes.NestedPublic:
                     return true;
                 default:
                     throw new ArgumentOutOfRangeException();

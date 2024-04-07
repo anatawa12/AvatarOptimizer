@@ -34,6 +34,8 @@ The format is based on [Keep a Changelog].
 - Automatic Merge Skinned Mesh `#952` `#972`
   - Trace and Optimize now automatically merges Skinned Meshes if possible.
   - Trace and Optimize will merge your mesh if the material properties or enablement of the mesh is animated similarly and has no BlendShapes.
+- Components API for Scripting Usage `#976`
+  - You can now add AAO components from your script.
 
 ### Changed
 - MergePhysBone now corrects curve settings `#775`

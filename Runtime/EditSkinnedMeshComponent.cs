@@ -1,9 +1,18 @@
+using JetBrains.Annotations;
 using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer
 {
+    /// <summary>
+    /// The base class for Edit Skinned Mesh Components.
+    /// It's not expected to be used directly.
+    /// </summary>
     [RequireComponent(typeof(SkinnedMeshRenderer))]
-    internal abstract class EditSkinnedMeshComponent : AvatarTagComponent
+    [PublicAPI]
+    public abstract class EditSkinnedMeshComponent : AvatarTagComponent
     {
+        private protected EditSkinnedMeshComponent()
+        {
+        }
     }
 }
