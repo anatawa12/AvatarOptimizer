@@ -10,6 +10,7 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
         public override string TestName => "EntryExitToBlendTree/Issue989";
 
         // FX_Without_2.controller
+        // Parameter values 1, 3, 4 have corresponding states and motions
         [Test]
         public void FXWithout2()
         {
@@ -21,6 +22,7 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
         }
 
         // FX_Without_3.controller
+        // Parameter values 1, 2, 4 have corresponding states and motions
         [Test]
         public void FXWithout3()
         {
@@ -28,6 +30,30 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
             controller.name = "FX_Without_3.converted";
             EntryExitToBlendTree.Execute(_state, new AOAnimatorController(controller));
             var except = LoadAnimatorController("FX_Without_3.converted");
+            RecursiveCheckEquals(except, controller);
+        }
+
+        // FX_Without_2_With_Same_Motion.controller
+        // Parameter values 1, 3, 4 have corresponding states and the states 1, 3 have same motion
+        [Test]
+        public void FXWithout2WithSameMotion()
+        {
+            var controller = LoadCloneAnimatorController("FX_Without_2_With_Same_Motion");
+            controller.name = "FX_Without_2_With_Same_Motion.converted";
+            EntryExitToBlendTree.Execute(_state, new AOAnimatorController(controller));
+            var except = LoadAnimatorController("FX_Without_2_With_Same_Motion.converted");
+            RecursiveCheckEquals(except, controller);
+        }
+
+        // FX_Without_3_With_Same_Motion.controller
+        // Parameter values 1, 2, 4 have corresponding states and the states 2, 4 have same motion
+        [Test]
+        public void FXWithout3WithSameMotion()
+        {
+            var controller = LoadCloneAnimatorController("FX_Without_3_With_Same_Motion");
+            controller.name = "FX_Without_3_With_Same_Motion.converted";
+            EntryExitToBlendTree.Execute(_state, new AOAnimatorController(controller));
+            var except = LoadAnimatorController("FX_Without_3_With_Same_Motion.converted");
             RecursiveCheckEquals(except, controller);
         }
     }
