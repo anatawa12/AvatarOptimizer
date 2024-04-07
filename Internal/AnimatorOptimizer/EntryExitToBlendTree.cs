@@ -569,9 +569,18 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                     var (prevValue, prevMotion) = states[i - 1];
                     var (currentValue, currentMotion) = states[i];
 
-                    if (prevMotion != currentMotion)
+                    if (currentValue.IntValue.Value - prevValue.IntValue.Value > 1)
+                    {
+                        AddFrames(prevValue.IntValue.Value, prevMotion,
+                            prevValue.IntValue.Value + 1, defaultMotion);
+                        AddFrames(currentValue.IntValue.Value - 1, defaultMotion,
+                            currentValue.IntValue.Value, currentMotion);
+                    }
+                    else if (prevMotion != currentMotion)
+                    {
                         AddFrames(prevValue.IntValue.Value, prevMotion,
                             currentValue.IntValue.Value, currentMotion);
+                    }
                 }
 
                 {
