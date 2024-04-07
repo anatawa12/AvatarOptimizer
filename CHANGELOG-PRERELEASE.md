@@ -20,6 +20,10 @@ The format is based on [Keep a Changelog].
 
 ### Security
 
+## [1.6.11] - 2024-04-07
+### Fixed
+- Bounds become broken if Update When Offscreen is enabled [`#990`](https://github.com/anatawa12/AvatarOptimizer/pull/990)
+
 ## [1.7.0-beta.4] - 2024-04-05
 ### Changed
 - Renamed MergeDirectBlendTree(Layers) to MergeBlendTreeLayer [`#984`](https://github.com/anatawa12/AvatarOptimizer/pull/984)
@@ -1296,7 +1300,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.0-beta.4...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.11...HEAD
+[1.6.11]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.0-beta.4...v1.6.11
 [1.7.0-beta.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.10...v1.7.0-beta.4
 [1.6.10]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.0-beta.3...v1.6.10
 [1.7.0-beta.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.0-beta.2...v1.7.0-beta.3
