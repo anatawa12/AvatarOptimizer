@@ -98,6 +98,10 @@ The format is based on [Keep a Changelog].
 
 ### Security
 
+## [1.6.11] - 2024-04-07
+### Fixed
+- Bounds become broken if Update When Offscreen is enabled [`#990`](https://github.com/anatawa12/AvatarOptimizer/pull/990)
+
 ## [1.6.10] - 2024-04-05
 ### Fixed
 - Missing Reference Exception with Trace and Optimize [`#986`](https://github.com/anatawa12/AvatarOptimizer/pull/986)
@@ -840,7 +844,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.10...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.11...HEAD
+[1.6.11]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.10...v1.6.11
 [1.6.10]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.9...v1.6.10
 [1.6.9]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.8...v1.6.9
 [1.6.8]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.7...v1.6.8
