@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Bounds become broken if Update When Offscreen is enabled `#990`
 
 ### Security
 

@@ -48,7 +48,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 if (mesh)
                     ReadSkinnedMesh(mesh);
 
+                var updateWhenOffscreen = renderer.updateWhenOffscreen;
+                renderer.updateWhenOffscreen = false;
                 Bounds = renderer.localBounds;
+                // ReSharper disable once Unity.InefficientPropertyAccess
+                // updateWhenOffscreen = false before accessing localBounds
+                renderer.updateWhenOffscreen = updateWhenOffscreen;
                 RootBone = renderer.rootBone ? renderer.rootBone : renderer.transform;
 
                 if (mesh)
