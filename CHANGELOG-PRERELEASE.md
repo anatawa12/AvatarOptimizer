@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Fix skipped parameter values in Entry/Exit to BlendTree optimization [`#991`](https://github.com/anatawa12/AvatarOptimizer/pull/991)
 
 ### Security
 
