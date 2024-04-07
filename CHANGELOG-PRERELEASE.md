@@ -8,7 +8,6 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Components API for Scripting Usage `#976`
 
 ### Changed
 
@@ -17,9 +16,15 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Fix skipped parameter values in Entry/Exit to BlendTree optimization [`#991`](https://github.com/anatawa12/AvatarOptimizer/pull/991)
 
 ### Security
+
+## [1.7.0-beta.5] - 2024-04-07
+### Added
+- Components API for Scripting Usage [`#976`](https://github.com/anatawa12/AvatarOptimizer/pull/976)
+
+### Fixed
+- Fix skipped parameter values in Entry/Exit to BlendTree optimization [`#991`](https://github.com/anatawa12/AvatarOptimizer/pull/991)
 
 ## [1.6.11] - 2024-04-07
 ### Fixed
@@ -1301,7 +1306,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.11...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.0-beta.5...HEAD
+[1.7.0-beta.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.11...v1.7.0-beta.5
 [1.6.11]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.0-beta.4...v1.6.11
 [1.7.0-beta.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.10...v1.7.0-beta.4
 [1.6.10]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.0-beta.3...v1.6.10
