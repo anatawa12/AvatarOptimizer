@@ -8,6 +8,9 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Animations animating missing GameObject is removed `#994`
+  - Since this update, animations that targeting GameObjects with post-AAO paths is no longer working.
+  - Please create animations that targeting GameObjects with pre-AAO paths.
 
 ### Changed
 
