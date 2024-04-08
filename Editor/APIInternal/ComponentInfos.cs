@@ -57,6 +57,11 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
                 {
                     var boneTransform = component.GetBoneTransform(bone);
                     if (boneTransform == null) continue;
+                    // https://github.com/anatawa12/AvatarOptimizer/issues/993
+                    // If the bone is moved to out of the hierarchy, it will not be affected by the animator.
+                    // however, the Animator component will cache the boneTransform so we need to check before
+                    // declaring it as a dependency.
+                    if (!boneTransform.IsChildOf(component.transform)) continue;
 
                     collector.AddPathDependency(boneTransform, component.transform);
                 }
