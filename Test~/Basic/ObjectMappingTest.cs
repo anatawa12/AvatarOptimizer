@@ -197,6 +197,8 @@ namespace Anatawa12.AvatarOptimizer.Test
             var root = new GameObject();
             var child1 = Utils.NewGameObject("child1", root.transform);
             var child1Component = child1.AddComponent<SkinnedMeshRenderer>();
+            var child2 = Utils.NewGameObject("child2", root.transform);
+            var child2Component = child2.AddComponent<SkinnedMeshRenderer>();
 
             var builder = new ObjectMappingBuilder<DummyPropInfo>(root);
             builder.RecordMoveProperty(child1Component, "blendShapes.test", "blendShapes.changed");
@@ -270,6 +272,8 @@ namespace Anatawa12.AvatarOptimizer.Test
             var root = new GameObject();
             var child1 = Utils.NewGameObject("child1", root.transform);
             var child1Component = child1.AddComponent<SkinnedMeshRenderer>();
+            var child2 = Utils.NewGameObject("child2", root.transform);
+            var child2Component = child2.AddComponent<SkinnedMeshRenderer>();
 
             var builder = new ObjectMappingBuilder<DummyPropInfo>(root);
             builder.RecordRemoveProperty(child1Component, "blendShapes.test");

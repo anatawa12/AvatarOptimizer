@@ -36,6 +36,9 @@ The format is based on [Keep a Changelog].
   - Trace and Optimize will merge your mesh if the material properties or enablement of the mesh is animated similarly and has no BlendShapes.
 - Components API for Scripting Usage `#976`
   - You can now add AAO components from your script.
+- Animations animating missing GameObject is removed `#994`
+  - Since this update, animations that targeting GameObjects with post-AAO paths is no longer working.
+  - Please create animations that targeting GameObjects with pre-AAO paths.
 
 ### Changed
 - MergePhysBone now corrects curve settings `#775`
