@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- `dependency is not child of root` error if humanoid bone is moved to out of animator game object `#995`
 
 ### Security
 
