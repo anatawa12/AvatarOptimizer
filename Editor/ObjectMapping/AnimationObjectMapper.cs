@@ -78,7 +78,8 @@ namespace Anatawa12.AvatarOptimizer
         public string MapPath(string srcPath, Type type)
         {
             var gameObjectInfo = GetGameObjectInfo(srcPath);
-            if (gameObjectInfo == null) return srcPath;
+            if (gameObjectInfo == null)
+                return null; // this means the original GameObject does not exists
             var (instanceId, componentInfo) = gameObjectInfo.GetComponentByType(type);
 
             if (componentInfo != null)
@@ -109,7 +110,7 @@ namespace Anatawa12.AvatarOptimizer
         {
             var gameObjectInfo = GetGameObjectInfo(path);
             if (gameObjectInfo == null)
-                return null;
+                return Array.Empty<(string, Type, string)>(); // this means the original GameObject does not exists
             var (instanceId, componentInfo) = gameObjectInfo.GetComponentByType(type);
 
             if (componentInfo != null)
