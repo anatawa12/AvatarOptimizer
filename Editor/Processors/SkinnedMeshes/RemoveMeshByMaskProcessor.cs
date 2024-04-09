@@ -72,7 +72,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 }
 
                 submesh.RemovePrimitives("Remove Mesh By Mask",
-                    vertices => vertices.Any(v => isRemoved(v.TexCoord0.x, v.TexCoord0.y)));
+                    vertices => vertices.All(v => isRemoved(v.TexCoord0.x, v.TexCoord0.y)));
             }
 
             // remove submeshes that have no vertices

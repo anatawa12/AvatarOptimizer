@@ -406,14 +406,20 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                 switch (MaskMode)
                 {
                     case MaskMode.RemoveWhite:
-                        if (GetValue(UV[triangle.First]) > 127) return true;
-                        if (GetValue(UV[triangle.Second]) > 127) return true;
-                        if (GetValue(UV[triangle.Third]) > 127) return true;
+                        if (GetValue(UV[triangle.First]) > 127
+                            && GetValue(UV[triangle.Second]) > 127
+                            && GetValue(UV[triangle.Third]) > 127)
+                        {
+                            return true;
+                        }
                         break;
                     case MaskMode.RemoveBlack:
-                        if (GetValue(UV[triangle.First]) <= 127) return true;
-                        if (GetValue(UV[triangle.Second]) <= 127) return true;
-                        if (GetValue(UV[triangle.Third]) <= 127) return true;
+                        if (GetValue(UV[triangle.First]) <= 127
+                            && GetValue(UV[triangle.Second]) <= 127
+                            && GetValue(UV[triangle.Third]) <= 127)
+                        {
+                            return true;
+                        }
                         break;
                     case MaskMode.Disabled:
                     default:
