@@ -17,6 +17,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
         {
             typeof(RemoveMeshByBlendShape),
             typeof(RemoveMeshInBox),
+            typeof(RemoveMeshByMask),
         };
 
         public RemoveMeshPreviewController([NotNull] SkinnedMeshRenderer targetRenderer, Mesh originalMesh = null, Mesh previewMesh = null)
@@ -37,6 +38,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
 
             _removeMeshInBox = default;
             _removeMeshByBlendShape = default;
+            _removeMeshByMask = default;
 
             var subMeshes = new SubMeshDescriptor[OriginalMesh.subMeshCount];
             _subMeshTriangleEndIndices = new int[OriginalMesh.subMeshCount];
@@ -72,6 +74,8 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                 }
             }
 
+            _uv = new NativeArray<Vector2>(OriginalMesh.uv, Allocator.Persistent);
+
             if (previewMesh)
             {
                 PreviewMesh = previewMesh;
@@ -94,10 +98,12 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
         private ComponentHolder<Transform>[] _boneTransforms;
         private ComponentHolder<RemoveMeshInBox> _removeMeshInBox;
         private ComponentHolder<RemoveMeshByBlendShape> _removeMeshByBlendShape;
+        private ComponentHolder<RemoveMeshByMask> _removeMeshByMask;
 
         private readonly BlendShapePreviewContext _blendShapePreviewContext;
         private readonly int[] _subMeshTriangleEndIndices;
         private NativeArray<Triangle> _triangles;
+        private NativeArray<Vector2> _uv;
         [CanBeNull] private RemoveMeshWithBoxPreviewContext _removeMeshWithBoxPreviewContext;
         [CanBeNull] private RemoveMeshByBlendShapePreviewContext _removeMeshByBlendShapePreviewContext;
         private readonly string[] _blendShapeNames;
@@ -202,11 +208,31 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                     break;
             }
 
+            switch (_removeMeshByMask.Update(TargetGameObject))
+            {
+                default:
+                case Changed.Updated:
+                    modified = true;
+                    break;
+                case Changed.Removed:
+                    modified = true;
+                    break;
+                case Changed.Created:
+                    // TODO
+                    //if (_removeMeshByBlendShapePreviewContext == null)
+                    //    _removeMeshByBlendShapePreviewContext =
+                    //        new RemoveMeshByBlendShapePreviewContext(_blendShapePreviewContext, OriginalMesh);
+                    modified = true;
+                    break;
+                case Changed.Nothing:
+                    break;
+            }
+
             if (modified)
                 UpdatePreviewMesh();
 
             // modifier component not found
-            if (!(_removeMeshInBox.Value || _removeMeshByBlendShape.Value)) return false;
+            if (!(_removeMeshInBox.Value || _removeMeshByBlendShape.Value || _removeMeshByMask.Value)) return false;
 
             return false;
         }
@@ -245,23 +271,57 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                     {
                         _indexBuffer.Clear();
 
+                        var maskData = Array.Empty<Color32>();
+                        var maskMode = MaskMode.Disabled;
+                        var maskWidth = 0;
+                        var maskHeight = 0;
+                        if (_removeMeshByMask.Value)
+                        {
+                            var materials = _removeMeshByMask.Value.materials;
+                            if (subMeshIdx < materials.Length)
+                            {
+                                var submeshInfo = materials[subMeshIdx];
+                                if (submeshInfo.enabled)
+                                {
+                                    var maskTexture = submeshInfo.mask;
+                                    var mode = submeshInfo.mode;
+                                    if (maskTexture != null && maskTexture.isReadable)
+                                    {
+                                        maskData = maskTexture.GetPixels32();
+                                        maskWidth = maskTexture.width;
+                                        maskHeight = maskTexture.height;
+                                        maskMode = (MaskMode)mode;
+                                    }
+                                }
+                            }
+                        }
+
                         var triStart = triIdx;
                         var triEnd = _subMeshTriangleEndIndices[subMeshIdx];
                         var triLen = triEnd - triStart;
 
-                        new FlagTrianglesJob
+                        using (var maskDataArray = new NativeArray<Color32>(maskData, Allocator.TempJob))
                         {
-                            Triangles = _triangles.Slice(triStart, triLen),
-                            RemoveFlags = flags.Slice(triStart, triLen),
-                            VertexCount = OriginalMesh.vertexCount,
+                            new FlagTrianglesJob
+                            {
+                                Triangles = _triangles.Slice(triStart, triLen),
+                                RemoveFlags = flags.Slice(triStart, triLen),
+                                VertexCount = OriginalMesh.vertexCount,
 
-                            Boxes = boxes,
-                            BlendShapeAppliedVertices = blendShapeAppliedVertices,
+                                Boxes = boxes,
+                                BlendShapeAppliedVertices = blendShapeAppliedVertices,
 
-                            BlendShapeIndices = blendShapeIndices,
-                            ToleranceSquared = tolerance * tolerance,
-                            BlendShapeMovements = blendShapeMovements,
-                        }.Schedule(triLen, 1).Complete();
+                                BlendShapeIndices = blendShapeIndices,
+                                ToleranceSquared = tolerance * tolerance,
+                                BlendShapeMovements = blendShapeMovements,
+
+                                UV = _uv,
+                                Mask = maskDataArray,
+                                MaskWidth = maskWidth,
+                                MaskHeight = maskHeight,
+                                MaskMode = maskMode,
+                            }.Schedule(triLen, 1).Complete();
+                        }
 
                         for (; triIdx < _subMeshTriangleEndIndices[subMeshIdx]; triIdx++)
                         {
@@ -301,6 +361,15 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
             [ReadOnly]
             public NativeArray<Vector3> BlendShapeMovements;
 
+            // Remove Mesh by Mask
+            [ReadOnly]
+            public NativeArray<Vector2> UV;
+            [ReadOnly]
+            public NativeArray<Color32> Mask;
+            public int MaskWidth;
+            public int MaskHeight;
+            public MaskMode MaskMode;
+
             public float ToleranceSquared { get; set; }
 
             public void Execute(int index) => RemoveFlags[index] = TestTriangle(Triangles[index]);
@@ -334,16 +403,49 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                     }
                 }
 
+                switch (MaskMode)
+                {
+                    case MaskMode.RemoveWhite:
+                        if (GetValue(UV[triangle.First]) > 127) return true;
+                        if (GetValue(UV[triangle.Second]) > 127) return true;
+                        if (GetValue(UV[triangle.Third]) > 127) return true;
+                        break;
+                    case MaskMode.RemoveBlack:
+                        if (GetValue(UV[triangle.First]) <= 127) return true;
+                        if (GetValue(UV[triangle.Second]) <= 127) return true;
+                        if (GetValue(UV[triangle.Third]) <= 127) return true;
+                        break;
+                    case MaskMode.Disabled:
+                    default:
+                        break;
+                }
+
                 return false;
             }
 
             private bool TestBlendShape(int movementBase, int index) =>
                 BlendShapeMovements[movementBase + index].sqrMagnitude > ToleranceSquared;
+
+            private int GetValue(Vector2 uv)
+            {
+                var x = Mathf.RoundToInt(uv.x % 1 * MaskWidth);
+                var y = Mathf.RoundToInt(uv.y % 1 * MaskHeight);
+                var color = Mask[x + y * MaskWidth];
+                return Mathf.Max(Mathf.Max(color.r, color.g), color.b);
+            }
+        }
+
+        enum MaskMode
+        {
+            Disabled = -1,
+            RemoveWhite = RemoveMeshByMask.RemoveMode.RemoveWhite,
+            RemoveBlack = RemoveMeshByMask.RemoveMode.RemoveBlack,
         }
 
         public void Dispose()
         {
             _triangles.Dispose();
+            _uv.Dispose();
             _removeMeshWithBoxPreviewContext?.Dispose();
             _removeMeshByBlendShapePreviewContext?.Dispose();
             _blendShapePreviewContext?.Dispose();

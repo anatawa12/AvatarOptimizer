@@ -34,6 +34,8 @@ namespace Anatawa12.AvatarOptimizer
                 return;
             }
 
+            EditModePreview.MeshPreviewController.ShowPreviewControl((Component)target);
+
             var mesh = _renderer.sharedMesh;
             var template = AAOL10N.Tr("RemoveMeshByMask:prop:enabled");
 
