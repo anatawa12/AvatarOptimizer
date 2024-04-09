@@ -426,6 +426,15 @@ msgstr ""
 "Remove vertices that are not masked by the specified mask texture.\n"
 "Mask texture should be readable and have alpha channel."
 
+msgid "RemoveMeshByMask:prop:enabled"
+msgstr "Material Slot {0} Enabled"
+
+msgid "RemoveMeshByMask:prop:mask"
+msgstr "Mask Texture"
+
+msgid "RemoveMeshByMask:prop:mode"
+msgstr "Remove Mode"
+
 msgid "RemoveMeshByMask:error:maskIsNone"
 msgstr "Mask Texture is not set"
 
@@ -437,6 +446,9 @@ msgstr "Please set Read/Write Enabled to true in the import settings of the mask
 
 msgid "RemoveMeshByMask:error:unknownMode"
 msgstr "Unknown Mode is specified."
+
+msgid "RemoveMeshByMask:warning:NoMesh"
+msgstr "No Mesh is specified to Skinned Mesh Renderer"
 
 # endregion
 

@@ -16,10 +16,13 @@ namespace Anatawa12.AvatarOptimizer
         internal struct MaterialSlot
         {
             [SerializeField]
+            [ToggleLeft]
             public bool enabled;
             [SerializeField]
+            [AAOLocalized("RemoveMeshByMask:prop:mask")]
             public Texture2D mask;
             [SerializeField]
+            [AAOLocalized("RemoveMeshByMask:prop:mode")]
             public RemoveMode mode;
         }
 

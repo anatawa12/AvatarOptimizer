@@ -336,6 +336,15 @@ msgstr ""
 "指定されたマスクによって動かされる頂点とそのポリゴンを削除します\n"
 "すべてのポリゴンが削除される場合にはそのSubMeshが削除されます"
 
+msgid "RemoveMeshByMask:prop:enabled"
+msgstr "マテリアルスロット {0} 有効"
+
+msgid "RemoveMeshByMask:prop:mask"
+msgstr "マスクテクスチャー"
+
+msgid "RemoveMeshByMask:prop:mode"
+msgstr "削除モード"
+
 msgid "RemoveMeshByMask:error:maskIsNone"
 msgstr "マスクが設定されていません"
 
@@ -347,6 +356,9 @@ msgstr "マスクテクスチャのRead/Write Enabledが有効になっている
 
 msgid "RemoveMeshByMask:error:unknownMode"
 msgstr "未知のモードが指定されています"
+
+msgid "RemoveMeshByMask:warning:NoMesh"
+msgstr "MeshがSkinned Mesh Rendererに設定されていません"
 
 # endregion
 
