@@ -101,6 +101,11 @@ The format is based on [Keep a Changelog].
 
 ### Security
 
+## [1.6.12] - 2024-04-09
+### Removed
+- Activeness Optimization for Constraint component [`#996`](https://github.com/anatawa12/AvatarOptimizer/pull/996)
+  - The constraint component is too complex to optimize correctly and reliably
+
 ## [1.6.11] - 2024-04-07
 ### Fixed
 - Bounds become broken if Update When Offscreen is enabled [`#990`](https://github.com/anatawa12/AvatarOptimizer/pull/990)
@@ -847,7 +852,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.11...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.12...HEAD
+[1.6.12]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.11...v1.6.12
 [1.6.11]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.10...v1.6.11
 [1.6.10]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.9...v1.6.10
 [1.6.9]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.8...v1.6.9

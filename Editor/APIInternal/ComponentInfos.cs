@@ -334,7 +334,10 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
                 .EvenIfDependantDisabled();
             for (var i = 0; i < component.sourceCount; i++)
                 collector.AddDependency(component.GetSource(i).sourceTransform);
-            collector.MarkHeavyBehaviour();
+            // https://github.com/anatawa12/AvatarOptimizer/issues/856
+            // https://github.com/anatawa12/AvatarOptimizer/pull/996
+            // It's too buggy. the Constraint is too complex.
+            collector.MarkBehaviour();
         }
     }
 
