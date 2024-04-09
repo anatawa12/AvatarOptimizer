@@ -48,25 +48,23 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     continue;
                 }
 
+                int GetValue(float u, float v)
+                {
+                    var x = Mathf.RoundToInt(v % 1 * textureHeight);
+                    var y = Mathf.RoundToInt(u % 1 * textureWidth);
+                    var pixel = pixels[x * textureWidth + y];
+                    return Mathf.Max(Mathf.Max(pixel.r, pixel.g), pixel.b);
+                }
+
                 Func<float, float, bool> isRemoved;
 
                 switch (materialSetting.mode)
                 {
                     case RemoveMeshByMask.RemoveMode.RemoveWhite:
-                        isRemoved = (x, y) =>
-                        {
-                            var pixel = pixels[(int)(y * textureHeight) * textureWidth + (int)(x * textureWidth)];
-                            var v = Mathf.Max(Mathf.Max(pixel.r, pixel.g), pixel.b);
-                            return v > 127;
-                        };
+                        isRemoved = (u, v) => GetValue(u, v) > 127;
                         break;
                     case RemoveMeshByMask.RemoveMode.RemoveBlack:
-                        isRemoved = (x, y) =>
-                        {
-                            var pixel = pixels[(int)(y * textureHeight) * textureWidth + (int)(x * textureWidth)];
-                            var v = Mathf.Max(Mathf.Max(pixel.r, pixel.g), pixel.b);
-                            return v <= 127;
-                        };
+                        isRemoved = (u, v) => GetValue(u, v) <= 127;
                         break;
                     default:
                         BuildLog.LogError("RemoveMeshByMask:error:unknownMode");
