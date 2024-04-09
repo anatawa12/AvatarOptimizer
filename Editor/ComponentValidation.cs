@@ -40,6 +40,12 @@ namespace Anatawa12.AvatarOptimizer
                         break;
                     }
                 }
+
+                if (component is INoSourceEditSkinnedMeshComponent)
+                {
+                    if ((Component)component.GetComponent<ISourceSkinnedMeshComponent>())
+                        BuildLog.LogError("NoSourceEditSkinnedMeshComponent:HasSourceSkinnedMeshComponent", component);
+                }
             }
         }
     }

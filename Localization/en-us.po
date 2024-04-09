@@ -447,6 +447,13 @@ msgstr "This component must be set on root of Avatar"
 
 # endregion
 
+# region NoSourceEditSkinnedMeshComponent
+
+msgid "NoSourceEditSkinnedMeshComponent:HasSourceSkinnedMeshComponent"
+msgstr "The component does not support Merge Skinned Mesh component. Please add to source renderers of MergeS kinned Mesh."
+
+# endregion
+
 # region UnusedBonesByReferencesTool
 
 # EditorOnlyなメッシュのみから参照されているボーンをEditorOnlyにします

@@ -357,6 +357,13 @@ msgstr "このコンポーネントはアバターのルートに付ける必要
 
 # endregion
 
+# region NoSourceEditSkinnedMeshComponent
+
+msgid "NoSourceEditSkinnedMeshComponent:HasSourceSkinnedMeshComponent"
+msgstr "このコンポーネントはMerge Skinned Meshコンポーネントに対応していません。Merge Skinned Meshの統合対象に追加してください。"
+
+# endregion
+
 # region UnusedBonesByReferencesTool
 
 # EditorOnlyなメッシュのみから参照されているボーンをEditorOnlyにします

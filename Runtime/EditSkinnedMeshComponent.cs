@@ -15,4 +15,9 @@ namespace Anatawa12.AvatarOptimizer
         {
         }
     }
+
+    // marker interface for source skinned mesh components
+    internal interface ISourceSkinnedMeshComponent {}
+    // marker interface for edit skinned mesh components that does not support source skinned mesh component
+    internal interface INoSourceEditSkinnedMeshComponent {}
 }

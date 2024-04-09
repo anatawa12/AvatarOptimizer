@@ -7,7 +7,7 @@ namespace Anatawa12.AvatarOptimizer
     [RequireComponent(typeof(SkinnedMeshRenderer))]
     [DisallowMultipleComponent]
     [HelpURL("https://vpm.anatawa12.com/avatar-optimizer/ja/docs/reference/remove-mesh-by-mask/")]
-    internal sealed class RemoveMeshByMask : EditSkinnedMeshComponent
+    internal sealed class RemoveMeshByMask : EditSkinnedMeshComponent, INoSourceEditSkinnedMeshComponent
     {
         [SerializeField]
         internal MaterialSlot[] materials = Array.Empty<MaterialSlot>();
