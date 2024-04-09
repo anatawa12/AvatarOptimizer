@@ -11,6 +11,11 @@ The format is based on [Keep a Changelog].
 - Animations animating missing GameObject is removed `#994`
   - Since this update, animations that targeting GameObjects with post-AAO paths is no longer working.
   - Please create animations that targeting GameObjects with pre-AAO paths.
+- Remove Mesh by Mask `#998`
+  - With this component, you can remove polygons with mask texture.
+  - You can use use mask for [MeshDeleterWithTexture] or alpha mask to remove polygons.
+
+[MeshDeleterWithTexture]: https://github.com/gatosyocora/MeshDeleterWithTexture
 
 ### Changed
 
