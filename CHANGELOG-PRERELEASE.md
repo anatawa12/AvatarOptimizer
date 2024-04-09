@@ -14,6 +14,8 @@ The format is based on [Keep a Changelog].
 ### Deprecated
 
 ### Removed
+- Activeness Optimization for Constraint component `#996`
+  - The constraint component is too complex to optimize correctly and reliably
 
 ### Fixed
 
