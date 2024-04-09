@@ -329,6 +329,27 @@ msgstr "面積がゼロのポリゴンを削除します。"
 
 # endregion
 
+# region RemoveMeshByMask
+
+msgid "RemoveMeshByMask:description"
+msgstr ""
+"指定されたマスクによって動かされる頂点とそのポリゴンを削除します\n"
+"すべてのポリゴンが削除される場合にはそのSubMeshが削除されます"
+
+msgid "RemoveMeshByMask:error:maskIsNone"
+msgstr "マスクが設定されていません"
+
+msgid "RemoveMeshByMask:error:maskIsNotReadable"
+msgstr "マスクテクスチャが読み取り可能ではありません"
+
+msgid "RemoveMeshByMask:error:maskIsNotReadable:description"
+msgstr "マスクテクスチャのRead/Write Enabledが有効になっていることを確認してください"
+
+msgid "RemoveMeshByMask:error:unknownMode"
+msgstr "未知のモードが指定されています"
+
+# endregion
+
 # region AvatarGlobalComponent
 
 msgid "AvatarGlobalComponent:NotOnAvatarRoot"

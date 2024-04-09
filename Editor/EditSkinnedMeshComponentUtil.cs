@@ -207,6 +207,7 @@ namespace Anatawa12.AvatarOptimizer
                 [typeof(MergeToonLitMaterial)] = x => new MergeToonLitMaterialProcessor((MergeToonLitMaterial)x),
                 [typeof(RemoveMeshInBox)] = x => new RemoveMeshInBoxProcessor((RemoveMeshInBox)x),
                 [typeof(RemoveMeshByBlendShape)] = x => new RemoveMeshByBlendShapeProcessor((RemoveMeshByBlendShape)x),
+                [typeof(RemoveMeshByMask)] = x => new RemoveMeshByMaskProcessor((RemoveMeshByMask)x),
                 [typeof(InternalAutoFreezeMeaninglessBlendShape)] = x => new InternalAutoFreezeMeaninglessBlendShapeProcessor((InternalAutoFreezeMeaninglessBlendShape)x),
             };
 

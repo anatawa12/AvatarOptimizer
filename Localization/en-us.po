@@ -419,6 +419,27 @@ msgstr "Removes polygons whose area are zero"
 
 # endregion
 
+# region RemoveMeshByMask
+
+msgid "RemoveMeshByMask:description"
+msgstr ""
+"Remove vertices that are not masked by the specified mask texture.\n"
+"Mask texture should be readable and have alpha channel."
+
+msgid "RemoveMeshByMask:error:maskIsNone"
+msgstr "Mask Texture is not set"
+
+msgid "RemoveMeshByMask:error:maskIsNotReadable"
+msgstr "Mask Texture is not readable"
+
+msgid "RemoveMeshByMask:error:maskIsNotReadable:description"
+msgstr "Please set Read/Write Enabled to true in the import settings of the mask texture."
+
+msgid "RemoveMeshByMask:error:unknownMode"
+msgstr "Unknown Mode is specified."
+
+# endregion
+
 # region AvatarGlobalComponent
 
 msgid "AvatarGlobalComponent:NotOnAvatarRoot"
