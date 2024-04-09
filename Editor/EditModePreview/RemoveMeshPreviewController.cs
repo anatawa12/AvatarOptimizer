@@ -238,42 +238,45 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                     var tolerance =
                         (float)(_removeMeshByBlendShape.Value ? _removeMeshByBlendShape.Value.tolerance : 0);
 
-                    new FlagTrianglesJob
-                    {
-                        Triangles = _triangles,
-                        RemoveFlags = flags,
-                        VertexCount = OriginalMesh.vertexCount,
-
-                        Boxes = boxes,
-                        BlendShapeAppliedVertices = blendShapeAppliedVertices,
-
-                        BlendShapeIndices = blendShapeIndices,
-                        ToleranceSquared = tolerance * tolerance,
-                        BlendShapeMovements = blendShapeMovements,
-                    }.Schedule(_triangles.Length, 1).Complete();
-                }
-
-                var subMeshIdx = 0;
-
-                _indexBuffer.Clear();
-
-                for (var triIdx = 0; triIdx < _triangles.Length; triIdx++)
-                {
-                    if (!flags[triIdx])
-                    {
-                        _indexBuffer.Add(_triangles[triIdx].First);
-                        _indexBuffer.Add(_triangles[triIdx].Second);
-                        _indexBuffer.Add(_triangles[triIdx].Third);
-                    }
-
                     PreviewMesh.subMeshCount = _subMeshTriangleEndIndices.Length;
-                    while (subMeshIdx < _subMeshTriangleEndIndices.Length &&
-                           triIdx + 1 == _subMeshTriangleEndIndices[subMeshIdx])
+                    var triIdx = 0;
+
+                    for (var subMeshIdx = 0; subMeshIdx < _subMeshTriangleEndIndices.Length; subMeshIdx++)
                     {
-                        PreviewMesh.SetTriangles(_indexBuffer, subMeshIdx);
                         _indexBuffer.Clear();
-                        subMeshIdx++;
+
+                        var triStart = triIdx;
+                        var triEnd = _subMeshTriangleEndIndices[subMeshIdx];
+                        var triLen = triEnd - triStart;
+
+                        new FlagTrianglesJob
+                        {
+                            Triangles = _triangles.Slice(triStart, triLen),
+                            RemoveFlags = flags.Slice(triStart, triLen),
+                            VertexCount = OriginalMesh.vertexCount,
+
+                            Boxes = boxes,
+                            BlendShapeAppliedVertices = blendShapeAppliedVertices,
+
+                            BlendShapeIndices = blendShapeIndices,
+                            ToleranceSquared = tolerance * tolerance,
+                            BlendShapeMovements = blendShapeMovements,
+                        }.Schedule(triLen, 1).Complete();
+
+                        for (; triIdx < _subMeshTriangleEndIndices[subMeshIdx]; triIdx++)
+                        {
+                            if (!flags[triIdx])
+                            {
+                                _indexBuffer.Add(_triangles[triIdx].First);
+                                _indexBuffer.Add(_triangles[triIdx].Second);
+                                _indexBuffer.Add(_triangles[triIdx].Third);
+                            }
+                        }
+
+                        PreviewMesh.SetTriangles(_indexBuffer, subMeshIdx);
                     }
+
+                    _indexBuffer.Clear();
                 }
             }
         }
@@ -282,9 +285,9 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
         struct FlagTrianglesJob : IJobParallelFor
         {
             [ReadOnly]
-            public NativeArray<Triangle> Triangles;
+            public NativeSlice<Triangle> Triangles;
             public int VertexCount;
-            public NativeArray<bool> RemoveFlags;
+            public NativeSlice<bool> RemoveFlags;
 
             // Remove Mesh in Box
             [ReadOnly]
