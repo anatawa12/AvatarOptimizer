@@ -8,16 +8,6 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Animations animating missing GameObject is removed `#994`
-  - Since this update, animations that targeting GameObjects with post-AAO paths is no longer working.
-  - Please create animations that targeting GameObjects with pre-AAO paths.
-- Remove Mesh by Mask `#998`
-  - With this component, you can remove polygons with mask texture.
-  - You can use use mask for [MeshDeleterWithTexture] or alpha mask to remove polygons.
-- Remove Empty SubMesh in Trace and Optimize `#1007`
-  - This removes empty SubMeshes including becomes empty by optimization.
-
-[MeshDeleterWithTexture]: https://github.com/gatosyocora/MeshDeleterWithTexture
 
 ### Changed
 
@@ -26,9 +16,24 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- `dependency is not child of root` error if humanoid bone is moved to out of animator game object `#995`
 
 ### Security
+
+## [1.7.0-beta.6] - 2024-04-13
+### Added
+- Animations animating missing GameObject is removed [`#994`](https://github.com/anatawa12/AvatarOptimizer/pull/994)
+  - Since this update, animations that targeting GameObjects with post-AAO paths is no longer working.
+  - Please create animations that targeting GameObjects with pre-AAO paths.
+- Remove Mesh by Mask [`#998`](https://github.com/anatawa12/AvatarOptimizer/pull/998)
+  - With this component, you can remove polygons with mask texture.
+  - You can use use mask for [MeshDeleterWithTexture] or alpha mask to remove polygons.
+- Remove Empty SubMesh in Trace and Optimize [`#1007`](https://github.com/anatawa12/AvatarOptimizer/pull/1007)
+  - This removes empty SubMeshes including becomes empty by optimization.
+
+[MeshDeleterWithTexture]: https://github.com/gatosyocora/MeshDeleterWithTexture
+
+### Fixed
+- `dependency is not child of root` error if humanoid bone is moved to out of animator game object [`#995`](https://github.com/anatawa12/AvatarOptimizer/pull/995)
 
 ## [1.6.13] - 2024-04-13
 ### Fixed
@@ -1327,7 +1332,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.13...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.0-beta.6...HEAD
+[1.7.0-beta.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.13...v1.7.0-beta.6
 [1.6.13]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.12...v1.6.13
 [1.6.12]: https://github.com/anatawa12/AvatarOptimizer/compare/1.7.0-beta.5...v1.6.12
 [1.7.0-beta.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.11...v1.7.0-beta.5
