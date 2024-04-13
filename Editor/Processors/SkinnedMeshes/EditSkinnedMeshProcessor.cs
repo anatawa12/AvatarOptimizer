@@ -52,6 +52,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
     {
         Generation = int.MinValue,
         RemovingMesh = -20000,
+        RemoveEmpty = -15000,
         AutoConfigureFreezeBlendShape = -10000 - 1,
         AfterRemoveMesh = -10000,
     }
