@@ -332,8 +332,7 @@ msgstr "面積がゼロのポリゴンを削除します。"
 # region RemoveMeshByMask
 
 msgid "RemoveMeshByMask:description"
-msgstr ""
-"マスクテクスチャで指定した範囲のポリゴンを削除します。\n"
+msgstr "マスクテクスチャで指定した範囲のポリゴンを削除します。"
 
 msgid "RemoveMeshByMask:prop:enabled"
 msgstr "{0}番のマテリアルスロットに適用"

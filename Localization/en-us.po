@@ -422,8 +422,7 @@ msgstr "Removes polygons whose area are zero"
 # region RemoveMeshByMask
 
 msgid "RemoveMeshByMask:description"
-msgstr ""
-"Remove some polygons in any area specified by mask textures.\n"
+msgstr "Remove some polygons in any area specified by mask textures."
 
 msgid "RemoveMeshByMask:prop:enabled"
 msgstr "Apply to Material Slot {0}"
