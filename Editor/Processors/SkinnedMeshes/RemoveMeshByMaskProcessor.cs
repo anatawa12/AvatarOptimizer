@@ -75,9 +75,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     vertices => vertices.All(v => isRemoved(v.TexCoord0.x, v.TexCoord0.y)));
             }
 
-            // remove submeshes that have no vertices
-            target.SubMeshes.RemoveAll(submesh => submesh.Vertices.Count == 0);
-
             // GC vertices
             var usingVertices = new HashSet<Vertex>();
             foreach (var subMesh in target.SubMeshes)
