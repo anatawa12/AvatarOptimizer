@@ -37,6 +37,22 @@ namespace Anatawa12.AvatarOptimizer
                     if (ComponentInfoRegistry.TryGetInformation(component.GetType(), out var info))
                         info.ApplySpecialMappingInternal(component, mappingSource);
 
+                    var mapAnimatorController = false;
+
+                    switch (component)
+                    {
+                        case Animator _:
+                        case VRC.SDK3.Avatars.Components.VRCAvatarDescriptor _:
+#if AAO_VRM0
+                        case VRM.VRMBlendShapeProxy _:
+#endif
+#if AAO_VRM1
+                        case UniVRM10.Vrm10Instance _:
+#endif
+                            mapAnimatorController = true;
+                            break;
+                    }
+
                     var serialized = new SerializedObject(component);
                     AnimatorControllerMapper mapper = null;
 
@@ -45,25 +61,28 @@ namespace Anatawa12.AvatarOptimizer
                         if (mapping.MapComponentInstance(p.objectReferenceInstanceIDValue, out var mappedComponent))
                             p.objectReferenceValue = mappedComponent;
 
-                        var objectReferenceValue = p.objectReferenceValue;
-                        switch (objectReferenceValue)
+                        if (mapAnimatorController)
                         {
-                            case RuntimeAnimatorController _:
+                            var objectReferenceValue = p.objectReferenceValue;
+                            switch (objectReferenceValue)
+                            {
+                                case RuntimeAnimatorController _:
 #if AAO_VRM0
-                            case VRM.BlendShapeAvatar _:
+                                case VRM.BlendShapeAvatar _:
 #endif
 #if AAO_VRM1
-                            case UniVRM10.VRM10Object _:
+                                case UniVRM10.VRM10Object _:
 #endif
-                                if (mapper == null)
-                                    mapper = new AnimatorControllerMapper(
-                                        mapping.CreateAnimationMapper(component.gameObject));
+                                    if (mapper == null)
+                                        mapper = new AnimatorControllerMapper(
+                                            mapping.CreateAnimationMapper(component.gameObject));
 
-                                // ReSharper disable once AccessToModifiedClosure
-                                var mapped = mapper.MapObject(objectReferenceValue);
-                                if (mapped != objectReferenceValue)
-                                    p.objectReferenceValue = mapped;
-                                break;
+                                    // ReSharper disable once AccessToModifiedClosure
+                                    var mapped = mapper.MapObject(objectReferenceValue);
+                                    if (mapped != objectReferenceValue)
+                                        p.objectReferenceValue = mapped;
+                                    break;
+                            }
                         }
                     }
 
