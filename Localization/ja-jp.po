@@ -329,10 +329,49 @@ msgstr "面積がゼロのポリゴンを削除します。"
 
 # endregion
 
+# region RemoveMeshByMask
+
+msgid "RemoveMeshByMask:description"
+msgstr "マスクテクスチャで指定した範囲のポリゴンを削除します。"
+
+msgid "RemoveMeshByMask:prop:enabled"
+msgstr "{0}番のマテリアルスロットに適用"
+
+msgid "RemoveMeshByMask:prop:mask"
+msgstr "マスクテクスチャ"
+
+msgid "RemoveMeshByMask:prop:mode"
+msgstr "削除モード"
+
+msgid "RemoveMeshByMask:error:maskIsNone"
+msgstr "マスクテクスチャが設定されていません。"
+
+msgid "RemoveMeshByMask:error:maskIsNotReadable"
+msgstr "マスクテクスチャが読み取り可能ではありません。"
+
+msgid "RemoveMeshByMask:error:maskIsNotReadable:description"
+msgstr "マスクテクスチャのRead/Write Enabledが有効になっていることを確認してください。"
+
+msgid "RemoveMeshByMask:error:unknownMode"
+msgstr "未知の削除モードが指定されています。"
+
+msgid "RemoveMeshByMask:warning:NoMesh"
+msgstr "Skinned Mesh RendererにMeshが設定されていません。"
+
+# endregion
+
 # region AvatarGlobalComponent
 
 msgid "AvatarGlobalComponent:NotOnAvatarRoot"
 msgstr "このコンポーネントはアバターのルートに付ける必要があります。"
+
+# endregion
+
+# region NoSourceEditSkinnedMeshComponent
+
+msgid "NoSourceEditSkinnedMeshComponent:HasSourceSkinnedMeshComponent"
+msgstr "このコンポーネントはMerge Skinned Meshコンポーネントに対応していません。\n"
+"そのため、このコンポーネントは統合先のメッシュではなく統合対象のメッシュに追加してください。"
 
 # endregion
 
