@@ -42,6 +42,8 @@ The format is based on [Keep a Changelog].
 - Remove Mesh by Mask `#998`
   - With this component, you can remove polygons with mask texture.
   - You can use use mask for [MeshDeleterWithTexture] or alpha mask to remove polygons.
+- Remove Empty SubMesh in Trace and Optimize `#1007`
+  - This removes empty SubMeshes including becomes empty by optimization.
 
 [MeshDeleterWithTexture]: https://github.com/gatosyocora/MeshDeleterWithTexture
 
