@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Animator Controller on the VRCStation will be broken `#1002`
 
 ### Security
 
