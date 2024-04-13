@@ -333,32 +333,31 @@ msgstr "面積がゼロのポリゴンを削除します。"
 
 msgid "RemoveMeshByMask:description"
 msgstr ""
-"指定されたマスクによって動かされる頂点とそのポリゴンを削除します\n"
-"すべてのポリゴンが削除される場合にはそのSubMeshが削除されます"
+"マスクテクスチャで指定した範囲のポリゴンを削除します。\n"
 
 msgid "RemoveMeshByMask:prop:enabled"
-msgstr "マテリアルスロット {0} 有効"
+msgstr "{0}番のマテリアルスロットに適用"
 
 msgid "RemoveMeshByMask:prop:mask"
-msgstr "マスクテクスチャー"
+msgstr "マスクテクスチャ"
 
 msgid "RemoveMeshByMask:prop:mode"
 msgstr "削除モード"
 
 msgid "RemoveMeshByMask:error:maskIsNone"
-msgstr "マスクが設定されていません"
+msgstr "マスクテクスチャが設定されていません。"
 
 msgid "RemoveMeshByMask:error:maskIsNotReadable"
-msgstr "マスクテクスチャが読み取り可能ではありません"
+msgstr "マスクテクスチャが読み取り可能ではありません。"
 
 msgid "RemoveMeshByMask:error:maskIsNotReadable:description"
-msgstr "マスクテクスチャのRead/Write Enabledが有効になっていることを確認してください"
+msgstr "マスクテクスチャのRead/Write Enabledが有効になっていることを確認してください。"
 
 msgid "RemoveMeshByMask:error:unknownMode"
-msgstr "未知のモードが指定されています"
+msgstr "未知の削除モードが指定されています。"
 
 msgid "RemoveMeshByMask:warning:NoMesh"
-msgstr "MeshがSkinned Mesh Rendererに設定されていません"
+msgstr "Skinned Mesh RendererにMeshが設定されていません。"
 
 # endregion
 
@@ -372,7 +371,8 @@ msgstr "このコンポーネントはアバターのルートに付ける必要
 # region NoSourceEditSkinnedMeshComponent
 
 msgid "NoSourceEditSkinnedMeshComponent:HasSourceSkinnedMeshComponent"
-msgstr "このコンポーネントはMerge Skinned Meshコンポーネントに対応していません。Merge Skinned Meshの統合対象に追加してください。"
+msgstr "このコンポーネントはMerge Skinned Meshコンポーネントに対応していません。\n"
+"そのため、このコンポーネントは統合先のメッシュではなく統合対象のメッシュに追加してください。"
 
 # endregion
 

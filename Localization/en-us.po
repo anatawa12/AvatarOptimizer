@@ -423,11 +423,10 @@ msgstr "Removes polygons whose area are zero"
 
 msgid "RemoveMeshByMask:description"
 msgstr ""
-"Remove vertices that are not masked by the specified mask texture.\n"
-"Mask texture should be readable and have alpha channel."
+"Remove some polygons in any area specified by mask textures.\n"
 
 msgid "RemoveMeshByMask:prop:enabled"
-msgstr "Material Slot {0} Enabled"
+msgstr "Apply to Material Slot {0}"
 
 msgid "RemoveMeshByMask:prop:mask"
 msgstr "Mask Texture"
@@ -436,19 +435,19 @@ msgid "RemoveMeshByMask:prop:mode"
 msgstr "Remove Mode"
 
 msgid "RemoveMeshByMask:error:maskIsNone"
-msgstr "Mask Texture is not set"
+msgstr "Mask Texture is not set."
 
 msgid "RemoveMeshByMask:error:maskIsNotReadable"
-msgstr "Mask Texture is not readable"
+msgstr "Mask Texture is not readable."
 
 msgid "RemoveMeshByMask:error:maskIsNotReadable:description"
 msgstr "Please set Read/Write Enabled to true in the import settings of the mask texture."
 
 msgid "RemoveMeshByMask:error:unknownMode"
-msgstr "Unknown Mode is specified."
+msgstr "Unknown Remove Mode is specified."
 
 msgid "RemoveMeshByMask:warning:NoMesh"
-msgstr "No Mesh is specified to Skinned Mesh Renderer"
+msgstr "No Mesh is specified to the Skinned Mesh Renderer."
 
 # endregion
 
@@ -462,7 +461,8 @@ msgstr "This component must be set on root of Avatar"
 # region NoSourceEditSkinnedMeshComponent
 
 msgid "NoSourceEditSkinnedMeshComponent:HasSourceSkinnedMeshComponent"
-msgstr "The component does not support Merge Skinned Mesh component. Please add to source renderers of MergeS kinned Mesh."
+msgstr "This component does not support Merge Skinned Mesh component.\n"
+"So, please add this component to the source renderers of Merge Skinned Mesh."
 
 # endregion
 
