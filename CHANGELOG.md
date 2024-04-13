@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - Animator Controller on the VRCStation will be broken `#1002`
+- Remove Component can be fails with RequireComponent attribute `#1003`
 
 ### Security
 
