@@ -57,6 +57,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                         FallbackDependenciesParser(component, collector);
                     }
 
+                    foreach (var requiredComponent in RequireComponentCache.GetRequiredComponents(component.GetType()))
+                    foreach (var required in component.GetComponents(requiredComponent))
+                            collector.AddDependency(component, required)
+                                .EvenIfDependantDisabled();
+
                     collector.FinalizeForComponent();
                 }
             }

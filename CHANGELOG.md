@@ -108,6 +108,11 @@ The format is based on [Keep a Changelog].
 
 ### Security
 
+## [1.6.13] - 2024-04-13
+### Fixed
+- Animator Controller on the VRCStation will be broken [`#1002`](https://github.com/anatawa12/AvatarOptimizer/pull/1002)
+- Remove Component can be fails with RequireComponent attribute [`#1003`](https://github.com/anatawa12/AvatarOptimizer/pull/1003)
+
 ## [1.6.12] - 2024-04-09
 ### Removed
 - Activeness Optimization for Constraint component [`#996`](https://github.com/anatawa12/AvatarOptimizer/pull/996)
@@ -859,7 +864,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.12...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.13...HEAD
+[1.6.13]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.12...v1.6.13
 [1.6.12]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.11...v1.6.12
 [1.6.11]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.10...v1.6.11
 [1.6.10]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.9...v1.6.10

@@ -274,10 +274,19 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     }
                     else
                     {
-                        DestroyTracker.DestroyImmediate(componentInfo.Component);
+                        DestroyWithDependencies(componentInfo.Component);
                     }
                 }
             }
+        }
+
+        private static void DestroyWithDependencies(Component component)
+        {
+            if (component == null) return;
+            foreach (var dependantType in RequireComponentCache.GetDependantComponents(component.GetType()))
+            foreach (var child in component.GetComponents(dependantType))
+                DestroyWithDependencies(child);
+            DestroyTracker.DestroyImmediate(component);
         }
 
         private void MarkDependant(GCComponentInfoHolder componentInfos)
