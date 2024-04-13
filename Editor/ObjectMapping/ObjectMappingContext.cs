@@ -18,11 +18,17 @@ namespace Anatawa12.AvatarOptimizer
 
         public void OnActivate(BuildContext context)
         {
-            MappingBuilder = new ObjectMappingBuilder(context.AvatarRootObject);
+            var avatarTagComponent = context.AvatarRootObject.GetComponentInChildren<AvatarTagComponent>(true);
+            if (avatarTagComponent == null)
+                MappingBuilder = null;
+            else
+                MappingBuilder = new ObjectMappingBuilder(context.AvatarRootObject);
         }
 
         public void OnDeactivate(BuildContext context)
         {
+            if (MappingBuilder == null) return;
+
             var mapping = MappingBuilder.BuildObjectMapping();
             var mappingSource = new MappingSourceImpl(mapping);
 
