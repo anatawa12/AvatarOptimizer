@@ -41,7 +41,7 @@ namespace Anatawa12.AvatarOptimizer
 
             for (int i = 0; i < mesh.subMeshCount; i++)
             {
-                var slotConfig = _materials.GetArrayElementAtIndex(i);
+                var slotConfig = i < _materials.arraySize ? _materials.GetArrayElementAtIndex(i) : null;
 
                 var enabledName = string.Format(template, i);
 
