@@ -115,7 +115,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
                 var node = FloatAnimationCurveNode.Create(clip, binding);
                 if (node == null) continue;
-                nodes.Add(componentOrGameObject, binding.propertyName, node);
+                nodes.Set(componentOrGameObject, binding.propertyName, node);
             }
 
             foreach (var binding in AnimationUtility.GetObjectReferenceCurveBindings(clip))
@@ -128,7 +128,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
                 var node = ObjectAnimationCurveNode.Create(clip, binding);
                 if (node == null) continue;
-                nodes.Add(componentOrGameObject, binding.propertyName, node);
+                nodes.Set(componentOrGameObject, binding.propertyName, node);
             }
 
             return nodes;
