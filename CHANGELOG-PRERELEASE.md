@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- NRE with AutoMergeSkinnedMesh `#1010`
 
 ### Security
 

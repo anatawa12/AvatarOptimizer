@@ -505,9 +505,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
                 // then, find most-used material
                 var mostUsedMaterial = reducedMeshInfos
-                    .Where(x => x.First != null)
-                    .Select((x, meshIndex) => (x.First.Value, meshIndex))
-                    .GroupBy(x => x.Value.info)
+                    .Select((value, meshIndex) => (value, meshIndex))
+                    .Where(x => x.value.First != null)
+                    .GroupBy(x => x.value.First.Value.info)
                     .OrderByDescending(x => x.Count())
                     .First()
                     .First()
