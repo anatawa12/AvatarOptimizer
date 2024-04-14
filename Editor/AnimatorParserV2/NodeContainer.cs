@@ -113,6 +113,12 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         {
             _floatNodes[(target, prop)] = node ?? throw new ArgumentNullException(nameof(node));
         }
+
+        public void Set(ComponentOrGameObject target, string prop, [NotNull] TObjectNode node)
+        {
+            if (node == null) throw new ArgumentNullException(nameof(node));
+            _objectNodes[(target, prop)] = node;
+        }
     }
 
     internal class AnimatorLayerNodeContainer : NodeContainerBase<AnimatorLayerPropModNode<float>,

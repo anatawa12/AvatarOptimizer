@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - NRE with AutoMergeSkinnedMesh `#1010`
+- Error with some rare animation clip `#1011`
 
 ### Security
 
