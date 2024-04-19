@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog].
 
 ### Security
 
+## [1.7.0-rc.1] - 2024-04-19
 ## [1.7.0-beta.7] - 2024-04-16
 ### Fixed
 - NRE with AutoMergeSkinnedMesh [`#1010`](https://github.com/anatawa12/AvatarOptimizer/pull/1010)
@@ -1337,7 +1338,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.0-beta.7...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.0-rc.1...HEAD
+[1.7.0-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.0-beta.7...v1.7.0-rc.1
 [1.7.0-beta.7]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.0-beta.6...v1.7.0-beta.7
 [1.7.0-beta.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.13...v1.7.0-beta.6
 [1.6.13]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.12...v1.6.13
