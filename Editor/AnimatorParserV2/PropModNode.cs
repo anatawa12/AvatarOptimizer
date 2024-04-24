@@ -209,7 +209,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
     internal sealed class RootPropModNode<T> : PropModNode<T>, IErrorContext
     {
-        readonly struct ComponentInfo
+        internal readonly struct ComponentInfo
         {
             public readonly ComponentPropModNodeBase<T> Node;
             public readonly bool AlwaysApplied;
@@ -226,6 +226,8 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         }
 
         private readonly List<ComponentInfo> _children = new List<ComponentInfo>();
+
+        public IEnumerable<ComponentInfo> Children => _children;
 
         public override bool AppliedAlways => _children.All(x => x.AppliedAlways);
         public override IEnumerable<ObjectReference> ContextReferences => _children.SelectMany(x => x.ContextReferences);
@@ -354,13 +356,25 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             new ValueInfo<Object>(frames.Select(x => x.value).Distinct().ToArray());
     }
 
+    internal struct BlendTreeElement<T>
+    {
+        public int Index;
+        public ImmutablePropModNode<T> Node;
+
+        public BlendTreeElement(int index, [NotNull] ImmutablePropModNode<T> node)
+        {
+            Index = index;
+            Node = node ?? throw new ArgumentNullException(nameof(node));
+        }
+    }
+
     internal class BlendTreeNode<T> : ImmutablePropModNode<T>
     {
-        private readonly List<ImmutablePropModNode<T>> _children;
+        private readonly List<BlendTreeElement<T>> _children;
         private readonly BlendTreeType _blendTreeType;
         private readonly bool _partial;
 
-        public BlendTreeNode([NotNull] [ItemNotNull] List<ImmutablePropModNode<T>> children, BlendTreeType blendTreeType, bool partial)
+        public BlendTreeNode([NotNull] List<BlendTreeElement<T>> children, BlendTreeType blendTreeType, bool partial)
         {
             // expected to pass list or array
             // ReSharper disable once PossibleMultipleEnumeration
@@ -373,14 +387,14 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
 
         private bool WeightSumIsOne => _blendTreeType != BlendTreeType.Direct;
-        public IReadOnlyList<ImmutablePropModNode<T>> Children => _children;
-        public override bool AppliedAlways => WeightSumIsOne && !_partial && _children.All(x => x.AppliedAlways);
+        public IReadOnlyList<BlendTreeElement<T>> Children => _children;
+        public override bool AppliedAlways => WeightSumIsOne && !_partial && _children.All(x => x.Node.AppliedAlways);
         public override ValueInfo<T> Value => !WeightSumIsOne
             ? ValueInfo<T>.Variable
-            : NodeImplUtils.ConstantInfoForSideBySide(_children);
+            : NodeImplUtils.ConstantInfoForSideBySide(_children.Select(x => x.Node));
 
         public override IEnumerable<ObjectReference> ContextReferences =>
-            _children.SelectMany(x => x.ContextReferences);
+            _children.SelectMany(x => x.Node.ContextReferences);
     }
 
     abstract class ComponentPropModNodeBase<T> : PropModNode<T>
@@ -422,11 +436,11 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
     class AnimationComponentPropModNode<T> : ComponentPropModNode<T, Animation>
     {
-        private readonly ImmutablePropModNode<T> _animation;
+        public ImmutablePropModNode<T> Animation { get; }
 
         public AnimationComponentPropModNode([NotNull] Animation component, ImmutablePropModNode<T> animation) : base(component)
         {
-            _animation = animation;
+            Animation = animation;
             _constantInfo = new Lazy<ValueInfo<T>>(() => animation.Value, isThreadSafe: false);
         }
 
@@ -436,6 +450,6 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         public override ValueInfo<T> Value => _constantInfo.Value;
 
         public override IEnumerable<ObjectReference> ContextReferences =>
-            base.ContextReferences.Concat(_animation.ContextReferences);
+            base.ContextReferences.Concat(Animation.ContextReferences);
     }
 }
