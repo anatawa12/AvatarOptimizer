@@ -181,9 +181,6 @@ jobs:
           path: build/${{ env.PKG_NAME }}-${{ env.VERSION }}.zip
       # endregion vpm release
 
-      - name: Restore package.json
-        run: git restore --staged --worktree package.json
-
       # region docs
       - name: Update .docs/config.toml
         run: sed -i'.bak' -e "s/(SNAPSHOT)/($VERSION)/" .docs/config.toml && rm .docs/config.toml.bak
@@ -234,6 +231,9 @@ jobs:
             "build/$PKG_NAME-$VERSION.zip" \
             build/website.zip \
             "package.json" \
+
+      - name: Restore package.json
+        run: git restore --staged --worktree package.json
 
       - name: prepare next release & push
         if: inputs.publish && !fromJSON(env.PRERELEASE)
