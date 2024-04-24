@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using JetBrains.Annotations;
 using UnityEditor;
+using UnityEditor.IMGUI.Controls;
 using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer
@@ -11,6 +12,7 @@ namespace Anatawa12.AvatarOptimizer
     {
         private SerializedProperty _boxes;
         private string _editingBoxPropPath;
+
         private readonly Dictionary<string, (Quaternion value, Vector3 euler)> _eulerAngles =
             new Dictionary<string, (Quaternion value, Vector3 euler)>();
 
@@ -134,6 +136,8 @@ namespace Anatawa12.AvatarOptimizer
             }
         }
 
+        private readonly BoxHandle _boxBoundsHandle = new BoxHandle();
+
         private void OnSceneGUI()
         {
             if (_editingBoxPropPath == null) return;
@@ -144,43 +148,111 @@ namespace Anatawa12.AvatarOptimizer
             var rotationProp = box.FindPropertyRelative("rotation");
             var sizeProp = box.FindPropertyRelative("size");
 
-            Handles.matrix = ((Component)targets[0]).transform.localToWorldMatrix;
+            var transform = ((Component)targets[0]).transform;
+            var transformRotation = transform.rotation;
+            var transformLossyScale = transform.lossyScale;
 
-            centerProp.vector3Value = Handles.PositionHandle(centerProp.vector3Value, Quaternion.identity);
-            rotationProp.quaternionValue =
-                Handles.RotationHandle(rotationProp.quaternionValue, centerProp.vector3Value);
+            EditorGUI.BeginChangeCheck();
 
-            var size = sizeProp.vector3Value;
-            var center = centerProp.vector3Value;
-            var halfSize = size / 2;
-            var x = rotationProp.quaternionValue * new Vector3(halfSize.x, 0, 0);
-            var y = rotationProp.quaternionValue * new Vector3(0, halfSize.y, 0);
-            var z = rotationProp.quaternionValue * new Vector3(0, 0, halfSize.z);
+            var globalRotation = transformRotation * rotationProp.quaternionValue;
+            var globalRotationNew = globalRotation;
 
-            BoxFaceSlider(ref center, ref size.x, x);
-            BoxFaceSlider(ref center, ref size.x, -x);
-            BoxFaceSlider(ref center, ref size.y, y);
-            BoxFaceSlider(ref center, ref size.y, -y);
-            BoxFaceSlider(ref center, ref size.z, z);
-            BoxFaceSlider(ref center, ref size.z, -z);
+            var globalPosition = transform.TransformPoint(centerProp.vector3Value);
+            var globalPositionNew = globalPosition;
 
-            sizeProp.vector3Value = size;
-            centerProp.vector3Value = center;
+            Handles.TransformHandle(ref globalPositionNew, ref globalRotationNew);
+
+            if (EditorGUI.EndChangeCheck())
+            {
+                if (globalPosition != globalPositionNew)
+                {
+                    // something like TransformManipulator.SetPositionDelta(Vector3,Vector3)
+                    var localDelta = transform.InverseTransformPoint(globalPositionNew) - centerProp.vector3Value;
+                    //var localDelta = transform.InverseTransformDirection(delta);
+                    var expected = centerProp.vector3Value + localDelta;
+                    SetPositionWithLocalDelta(localDelta);
+                    Debug.Log($"diff: {expected}, {centerProp.vector3Value}");
+                }
+
+                var deltaRotation = Quaternion.Inverse(globalRotation) * globalRotationNew;
+                deltaRotation.ToAngleAxis(out var angle, out _);
+                if (!Mathf.Approximately(angle, 0))
+                {
+                    rotationProp.quaternionValue =
+                        Quaternion.Normalize(Quaternion.Inverse(transformRotation) * globalRotationNew);
+                }
+            }
+
+            var boxMatrix = transform.localToWorldMatrix;
+            boxMatrix *= Matrix4x4.TRS(centerProp.vector3Value, rotationProp.quaternionValue, Vector3.one);
+
+            using (new Handles.DrawingScope(Color.red, boxMatrix))
+            {
+                _boxBoundsHandle.center = Vector3.zero;
+                _boxBoundsHandle.size = sizeProp.vector3Value;
+                EditorGUI.BeginChangeCheck();
+                _boxBoundsHandle.DrawHandle();
+                if (EditorGUI.EndChangeCheck())
+                {
+                    sizeProp.vector3Value = _boxBoundsHandle.size;
+                    // _boxBoundsHandle.center is delta in rotated space.
+                    SetPositionWithLocalDelta(rotationProp.quaternionValue * _boxBoundsHandle.center, false);
+                }
+            }
 
             serializedObject.ApplyModifiedProperties();
+
+            return;
+
+            float RoundBasedOnMinimumDifference(float valueToRound, float minDifference)
+            {
+                return minDifference == 0f
+                    ? DiscardLeastSignificantDecimal(valueToRound)
+                    : (float)Math.Round(valueToRound, GetNumberOfDecimalsForMinimumDifference(minDifference),
+                        MidpointRounding.AwayFromZero);
+            }
+
+            float DiscardLeastSignificantDecimal(float v)
+            {
+                int digits = Mathf.Clamp((int)(5.0 - Mathf.Log10(Mathf.Abs(v))), 0, 15);
+                return (float)Math.Round(v, digits, MidpointRounding.AwayFromZero);
+            }
+
+            int GetNumberOfDecimalsForMinimumDifference(float minDifference)
+            {
+                return Mathf.Clamp(-Mathf.FloorToInt(Mathf.Log10(Mathf.Abs(minDifference))), 0, 15);
+            }
+
+            void SetPositionWithLocalDelta(Vector3 localDelta, bool withMinDifference = true)
+            {
+                var minDragDifference = Vector3.one * (HandleUtility.GetHandleSize(globalPosition) / 80f);
+                minDragDifference.x /= transformLossyScale.x;
+                minDragDifference.y /= transformLossyScale.y;
+                minDragDifference.z /= transformLossyScale.z;
+
+                var oldLocalPosition = centerProp.vector3Value;
+                var newLocalPosition = oldLocalPosition + localDelta;
+
+                if (withMinDifference)
+                {
+                    newLocalPosition.x = RoundBasedOnMinimumDifference(newLocalPosition.x, minDragDifference.x);
+                    newLocalPosition.y = RoundBasedOnMinimumDifference(newLocalPosition.y, minDragDifference.y);
+                    newLocalPosition.z = RoundBasedOnMinimumDifference(newLocalPosition.z, minDragDifference.z);
+                }
+
+                newLocalPosition.x = Mathf.Approximately(localDelta.x, 0) ? oldLocalPosition.x : newLocalPosition.x;
+                newLocalPosition.y = Mathf.Approximately(localDelta.y, 0) ? oldLocalPosition.y : newLocalPosition.y;
+                newLocalPosition.z = Mathf.Approximately(localDelta.z, 0) ? oldLocalPosition.z : newLocalPosition.z;
+
+                centerProp.vector3Value = newLocalPosition;
+            }
         }
 
-        private void BoxFaceSlider(ref Vector3 center, ref float size, Vector3 directionInWorld)
+        class BoxHandle : BoxBoundsHandle
         {
-            var prev = center + directionInWorld;
-            var newer = Handles.Slider(prev, directionInWorld,
-                HandleUtility.GetHandleSize(prev) / 3, Handles.CubeHandleCap, -1f);
-
-            if (prev != newer)
+            protected override void DrawWireframe()
             {
-                var opposite = center - directionInWorld;
-                size = (opposite - newer).magnitude;
-                center = (opposite + newer) / 2;
+                // no-op
             }
         }
 
