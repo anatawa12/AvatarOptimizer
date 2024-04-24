@@ -8,6 +8,7 @@ using nadena.dev.ndmf;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Profiling;
 using UnityEngine.Rendering;
@@ -42,6 +43,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         {
             SourceRenderer = renderer;
             var mesh = _originalMesh = renderer.sharedMesh;
+            if (mesh != null && !mesh.isReadable && EditorApplication.isPlaying)
+            {
+                BuildLog.LogError("MeshInfo2:error:MeshNotReadable", mesh);
+                return;
+            }
 
             using (ErrorReport.WithContextObject(renderer))
             {
@@ -80,6 +86,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             {
                 var meshFilter = renderer.GetComponent<MeshFilter>();
                 var mesh = _originalMesh = meshFilter ? meshFilter.sharedMesh : null;
+                if (mesh != null && !mesh.isReadable && EditorApplication.isPlaying)
+                {
+                    BuildLog.LogError("MeshInfo2:error:MeshNotReadable", mesh);
+                    return;
+                }
                 if (mesh)
                     ReadStaticMesh(mesh);
 

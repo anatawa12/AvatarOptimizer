@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
+- It will be error if read/write mesh is off in play mode again `#1018`
+  - I found that we may not possible to read mesh with r/w mesh off mode in play mode with the Av3Emulator.
 
 ### Deprecated
 

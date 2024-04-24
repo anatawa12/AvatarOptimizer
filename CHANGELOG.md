@@ -87,6 +87,8 @@ The format is based on [Keep a Changelog].
 - Dropping GameObject to PrefabSafeSet adds the All components on the GameObject to the PrefabSafeSet `#960`
   - You can add all PhysBones on the GameObject by dropping the GameObject to the MergePhysBone component.
 - MergeSkinnedMesh now warns if Root Bone or Anchor Override are not set `#963`
+- It will be error if read/write mesh is off in play mode again `#1018`
+  - I found that we may not possible to read mesh with r/w mesh off mode in play mode with the Av3Emulator.
 
 ### Deprecated
 
