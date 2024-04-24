@@ -74,11 +74,11 @@ namespace Anatawa12.AvatarOptimizer
             {
                 var (blendTree, location) = queue.Dequeue();
 
-                for (var i = 0; i < blendTree.Children.Count; i++)
+                foreach (var element in blendTree.Children)
                 {
                     var newLocation = location;
-                    ArrayUtility.Add(ref newLocation, i);
-                    switch (blendTree.Children[i])
+                    ArrayUtility.Add(ref newLocation, element.Index);
+                    switch (element.Node)
                     {
                         case FloatAnimationCurveNode floatNode:
                             yield return new AnimationLocation(animator, playableLayer, animatorLayer, state,
@@ -90,7 +90,7 @@ namespace Anatawa12.AvatarOptimizer
                         default:
                             throw new InvalidOperationException(
                                 "Unexpected node type: " +
-                                blendTree.Children[i].GetType().FullName);
+                                element.Node.GetType().FullName);
                     }
                 }
             }

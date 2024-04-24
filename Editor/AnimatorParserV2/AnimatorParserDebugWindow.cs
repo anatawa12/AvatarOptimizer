@@ -141,7 +141,10 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 case BlendTreeNode<float> blendTreeNode:
                     resultText.Append($"{indent}BlendTree:\n");
                     foreach (var childNode in blendTreeNode.Children)
-                        AppendNodeRecursive(childNode, resultText, indent + "  ");
+                    {
+                        resultText.Append($"{indent}  BlendTreeElement({childNode.Index}):\n");
+                        AppendNodeRecursive(childNode.Node, resultText, indent + "    ");
+                    }
                     break;
                 case FloatAnimationCurveNode curve:
                     resultText.Append($"{indent}AnimationCurve: {curve.Clip.name}\n");
