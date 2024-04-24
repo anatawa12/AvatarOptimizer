@@ -158,6 +158,18 @@ jobs:
       - name: Prepare build folder
         run: mkdir build
 
+      - name: update changelog url
+        run: |
+          STABLE_URL="https://vpm.anatawa12.com/avatar-optimizer/en/docs/changelog/"
+          BETA_URL="https://vpm.anatawa12.com/avatar-optimizer/beta/en/docs/changelog/"
+
+          if $PRERELEASE; then
+            sed -i'.bak' -e "s|${STABLE_URL}|${BETA_URL}#${VERSION}|" package.json
+          else
+            sed -i'.bak' -e "s|${STABLE_URL}|${STABLE_URL}#${VERSION}|" package.json
+          fi
+          rm package.json.bak
+
       # region vpm release
       - name: Build VPM release
         run: |
@@ -168,6 +180,9 @@ jobs:
           name: vpm-package
           path: build/${{ env.PKG_NAME }}-${{ env.VERSION }}.zip
       # endregion vpm release
+
+      - name: Restore package.json
+        run: git restore --staged --worktree package.json
 
       # region docs
       - name: Update .docs/config.toml
