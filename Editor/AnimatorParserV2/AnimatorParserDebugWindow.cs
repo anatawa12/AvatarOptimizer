@@ -33,6 +33,8 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             {
                 if (GUILayout.Button("Copy Parsed Text"))
                     GUIUtility.systemCopyBuffer = CreateText();
+                if (GUILayout.Button("Copy Detailed Parsed Text"))
+                    GUIUtility.systemCopyBuffer = CreateText(true);
             }
 
             if (Container == null) return;
@@ -63,7 +65,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             GUILayout.EndScrollView();
         }
 
-        private string CreateText()
+        private string CreateText(bool detailed = false)
         {
             var root = parsedRootObject.transform;
             var resultText = new StringBuilder();
@@ -86,7 +88,9 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                     else
                         propStateInfo += "Variable";
 
-                    resultText.Append(propName).Append(": ").Append(propStateInfo).Append('\n');
+                    resultText.Append("  ").Append(propName).Append(": ").Append(propStateInfo).Append('\n');
+                    if (detailed)
+                        AppendNodeRecursive(propState, resultText, "    ");
                 }
 
                 resultText.Append('\n');
@@ -94,6 +98,68 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
             return resultText.ToString();
         }
+
+        private void AppendNodeRecursive(PropModNode<float> propState, StringBuilder resultText, string indent)
+        {
+            switch (propState)
+            {
+                case AnimatorControllerPropModNode<float> animCont:
+                    resultText.Append($"{indent}AnimatorController: \n");
+                    foreach (var layerInfo in animCont.LayersReversed)
+                    {
+                        resultText.Append($"{indent}  Layer {layerInfo.LayerIndex}: {layerInfo.Weight}, {layerInfo.BlendingMode}\n");
+                        AppendNodeRecursive(layerInfo.Node, resultText, indent + "    ");
+                    }
+                    break;
+                case AnimationComponentPropModNode<float> animation:
+                    resultText.Append($"{indent}Animation: {animation.Component.name}\n");
+                    AppendNodeRecursive(animation.Animation, resultText, indent + "  ");
+                    break;
+                case AnimatorPropModNode<float> animator:
+                    resultText.Append($"{indent}Animator: {animator.Component.name}\n");
+                    foreach (var layerInfo in animator.LayersReversed)
+                    {
+                        resultText.Append($"{indent}  Layer {layerInfo.LayerIndex}: {layerInfo.Weight}, {layerInfo.BlendingMode}\n");
+                        AppendNodeRecursive(layerInfo.Node, resultText, indent + "    ");
+                    }
+                    break;
+                case HumanoidAnimatorPropModNode humanoid:
+                    resultText.Append($"{indent}Humanoid: {humanoid.Component.name}\n");
+                    break;
+                case VariableComponentPropModNode<float> variable:
+                    resultText.Append($"{indent}Variable({variable.Component.GetType().Name}): {variable.Component.name}\n");
+                    break;
+                case AnimatorLayerPropModNode<float> animatorLayer:
+                    resultText.Append($"{indent}AnimatorLayer:\n");
+                    foreach (var childNode in animatorLayer.Children)
+                        AppendNodeRecursive(childNode, resultText, indent + "  ");
+                    break;
+                case AnimatorStatePropModNode<float> stateNode:
+                    resultText.Append($"{indent}AnimatorState: {stateNode.State.name}\n");
+                    AppendNodeRecursive(stateNode.Node, resultText, indent + "  ");
+                    break;
+                case BlendTreeNode<float> blendTreeNode:
+                    resultText.Append($"{indent}BlendTree:\n");
+                    foreach (var childNode in blendTreeNode.Children)
+                        AppendNodeRecursive(childNode, resultText, indent + "  ");
+                    break;
+                case FloatAnimationCurveNode curve:
+                    resultText.Append($"{indent}AnimationCurve: {curve.Clip.name}\n");
+                    break;
+                case RootPropModNode<float> rootNode:
+                    resultText.Append($"{indent}Root:\n");
+                    foreach (var rootNodeChild in rootNode.Children)
+                    {
+                        resultText.Append($"{indent}  {rootNodeChild.Component.name}:\n");
+                        AppendNodeRecursive(rootNodeChild.Node, resultText, indent + "    ");
+                    }
+                    break;
+                default:
+                    resultText.Append($"{indent}Unknown: {propState.GetType().Name}\n");
+                    break;
+            }
+        }
+
 
         private static void NarrowValueLabelField(string label0, string value)
         {

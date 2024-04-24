@@ -209,7 +209,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
     internal sealed class RootPropModNode<T> : PropModNode<T>, IErrorContext
     {
-        readonly struct ComponentInfo
+        internal readonly struct ComponentInfo
         {
             public readonly ComponentPropModNodeBase<T> Node;
             public readonly bool AlwaysApplied;
@@ -226,6 +226,8 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         }
 
         private readonly List<ComponentInfo> _children = new List<ComponentInfo>();
+
+        public IEnumerable<ComponentInfo> Children => _children;
 
         public override bool AppliedAlways => _children.All(x => x.AppliedAlways);
         public override IEnumerable<ObjectReference> ContextReferences => _children.SelectMany(x => x.ContextReferences);
@@ -422,11 +424,11 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
     class AnimationComponentPropModNode<T> : ComponentPropModNode<T, Animation>
     {
-        private readonly ImmutablePropModNode<T> _animation;
+        public ImmutablePropModNode<T> Animation { get; }
 
         public AnimationComponentPropModNode([NotNull] Animation component, ImmutablePropModNode<T> animation) : base(component)
         {
-            _animation = animation;
+            Animation = animation;
             _constantInfo = new Lazy<ValueInfo<T>>(() => animation.Value, isThreadSafe: false);
         }
 
@@ -436,6 +438,6 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         public override ValueInfo<T> Value => _constantInfo.Value;
 
         public override IEnumerable<ObjectReference> ContextReferences =>
-            base.ContextReferences.Concat(_animation.ContextReferences);
+            base.ContextReferences.Concat(Animation.ContextReferences);
     }
 }
