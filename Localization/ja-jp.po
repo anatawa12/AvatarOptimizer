@@ -560,6 +560,12 @@ msgstr "アバターのルートにAnimatorコンポーネントがありませ�
 
 #region MeshInfo2
 
+msgid "MeshInfo2:error:MeshNotReadable"
+msgstr "メッシュが読み取り可能になっていないため、Play Modeでのメッシュの処理ができません。"
+
+msgid "MeshInfo2:error:MeshNotReadable:description"
+msgstr "メッシュのインポート設定でRead/Write Enabledをtrueに設定してください。"
+
 msgid "MeshInfo2:warning:multiPassRendering"
 msgstr ""
 "'{0}'コンポーネントを使用しているメッシュにおいて、複数マテリアルによるマルチパスレンダリングが使用されています。\n"
