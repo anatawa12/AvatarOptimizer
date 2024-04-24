@@ -19,6 +19,26 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         {
             if (!state.MergeSkinnedMesh) return;
 
+            Profiler.BeginSample("Collect for Dependencies to not merge dependant objects"); 
+
+            var componentInfos = new GCComponentInfoHolder(context);
+
+            new ComponentDependencyCollector(context, false, componentInfos).CollectAllUsages();
+
+            foreach (var componentInfo in componentInfos.AllInformation)
+            {
+                if (componentInfo.IsEntrypoint)
+                {
+                    var component = componentInfo.Component;
+
+                    var markContext = new MarkObjectContext(componentInfos, component, x => x.DependantEntrypoint);
+                    markContext.MarkComponent(component, GCComponentInfo.DependencyType.Normal);
+                    markContext.MarkRecursively();
+                }
+            }
+
+            Profiler.EndSample();
+
             Profiler.BeginSample("Collect Merging Targets");
             var mergeMeshes = new List<MeshInfo2>();
 
@@ -26,6 +46,19 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             foreach (var meshRenderer in context.GetComponents<SkinnedMeshRenderer>())
             {
                 if (state.Exclusions.Contains(meshRenderer.gameObject)) continue;
+
+                // if the renderer is referenced by other components, we can't merge it
+                var componentInfo = componentInfos.TryGetInfo(meshRenderer);
+                if (componentInfo != null)
+                {
+                    var dependants = componentInfo.DependantComponents.ToList();
+                    if (dependants.Count != 1 || dependants[0] != meshRenderer)
+                    {
+                        if (state.GCDebug)
+                            UnityEngine.Debug.Log($"EntryPoints of {meshRenderer}: {string.Join(", ", componentInfo.DependantComponents)}");
+                        continue;
+                    }
+                }
 
                 var meshInfo = context.GetMeshInfoFor(meshRenderer);
                 if (
