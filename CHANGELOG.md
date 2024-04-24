@@ -107,6 +107,7 @@ The format is based on [Keep a Changelog].
 - ArgumentNullException in Edit-mode Remove Mesh Preview `#942`
 - Bad behavior if EditMode preview is enabled when entering play mode `#956`
 - PlayableLayerControl or AnimatorLayerControl on non-root animator are ignored `#964`
+- Box Editor of Remove Mesh in Box can be broke with scale of Skinned Mesh Renderer `#1019`
 
 ### Security
 

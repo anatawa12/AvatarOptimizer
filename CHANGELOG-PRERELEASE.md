@@ -18,6 +18,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Box Editor of Remove Mesh in Box can be broke with scale of Skinned Mesh Renderer `#1019`
 
 ### Security
 
