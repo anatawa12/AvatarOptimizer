@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog].
 
 ### Security
 
+## [1.7.0-rc.3] - 2024-04-24
 ## [1.7.0-rc.2] - 2024-04-24
 ### Changed
 - It will be error if read/write mesh is off in play mode again [`#1018`](https://github.com/anatawa12/AvatarOptimizer/pull/1018)
@@ -1349,7 +1350,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.0-rc.2...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.0-rc.3...HEAD
+[1.7.0-rc.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.0-rc.2...v1.7.0-rc.3
 [1.7.0-rc.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.0-rc.1...v1.7.0-rc.2
 [1.7.0-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.0-beta.7...v1.7.0-rc.1
 [1.7.0-beta.7]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.0-beta.6...v1.7.0-beta.7
