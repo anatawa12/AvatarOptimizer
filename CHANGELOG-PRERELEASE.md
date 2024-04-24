@@ -10,20 +10,25 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
-- It will be error if read/write mesh is off in play mode again `#1018`
-  - I found that we may not possible to read mesh with r/w mesh off mode in play mode with the Av3Emulator.
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
-- Box Editor of Remove Mesh in Box can be broke with scale of Skinned Mesh Renderer `#1019`
-- Automatic Merge Skinned Mesh is broken with BlendTree `#1020`
-- Automatic Merge Skinned Mesh breaks mesh-shaped Particle System `#1021`
-  - In addition, reference to Skinned Meshes might be broken and this is also fixed.
 
 ### Security
+
+## [1.7.0-rc.2] - 2024-04-24
+### Changed
+- It will be error if read/write mesh is off in play mode again [`#1018`](https://github.com/anatawa12/AvatarOptimizer/pull/1018)
+  - I found that we may not possible to read mesh with r/w mesh off mode in play mode with the Av3Emulator.
+
+### Fixed
+- Box Editor of Remove Mesh in Box can be broke with scale of Skinned Mesh Renderer [`#1019`](https://github.com/anatawa12/AvatarOptimizer/pull/1019)
+- Automatic Merge Skinned Mesh is broken with BlendTree [`#1020`](https://github.com/anatawa12/AvatarOptimizer/pull/1020)
+- Automatic Merge Skinned Mesh breaks mesh-shaped Particle System [`#1021`](https://github.com/anatawa12/AvatarOptimizer/pull/1021)
+  - In addition, reference to Skinned Meshes might be broken and this is also fixed.
 
 ## [1.7.0-rc.1] - 2024-04-19
 ## [1.7.0-beta.7] - 2024-04-16
@@ -1344,7 +1349,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.0-rc.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.0-rc.2...HEAD
+[1.7.0-rc.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.0-rc.1...v1.7.0-rc.2
 [1.7.0-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.0-beta.7...v1.7.0-rc.1
 [1.7.0-beta.7]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.0-beta.6...v1.7.0-beta.7
 [1.7.0-beta.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.13...v1.7.0-beta.6
