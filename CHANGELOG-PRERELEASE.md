@@ -20,6 +20,8 @@ The format is based on [Keep a Changelog].
 ### Fixed
 - Box Editor of Remove Mesh in Box can be broke with scale of Skinned Mesh Renderer `#1019`
 - Automatic Merge Skinned Mesh is broken with BlendTree `#1020`
+- Automatic Merge Skinned Mesh breaks mesh-shaped Particle System `#1021`
+  - In addition, reference to Skinned Meshes might be broken and this is also fixed.
 
 ### Security
 
