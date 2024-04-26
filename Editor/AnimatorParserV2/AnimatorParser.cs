@@ -90,7 +90,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             Func<ComponentNodeContainer> parseComponent)
         {
             bool alwaysApplied;
-            switch (modifications.GetConstantValue(animator, Props.Enabled, animator.enabled))
+            switch (modifications.GetConstantValue(animator, Props.EnabledFor(animator), animator.enabled))
             {
                 case null:
                     alwaysApplied = false;
@@ -107,7 +107,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
             if (alwaysApplied)
             {
-                parsed.FloatNodes.TryGetValue((animator, Props.Enabled), out var node);
+                parsed.FloatNodes.TryGetValue((animator, Props.EnabledFor(animator)), out var node);
                 switch (node.AsConstantValue(animator.enabled))
                 {
                     case null:

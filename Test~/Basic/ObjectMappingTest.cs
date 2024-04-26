@@ -117,17 +117,17 @@ namespace Anatawa12.AvatarOptimizer.Test
             var built = builder.BuildObjectMapping();
 
             var rootMapper = built.CreateAnimationMapper(root);
-            Assert.That(rootMapper.MapBinding("child1/child11", typeof(GameObject), Props.Enabled),
+            Assert.That(rootMapper.MapBinding("child1/child11", typeof(GameObject), Props.IsActive),
                 Is.Empty);
 
-            Assert.That(rootMapper.MapBinding("child1", typeof(GameObject), Props.Enabled),
+            Assert.That(rootMapper.MapBinding("child1", typeof(GameObject), Props.IsActive),
                 Is.Null);
 
-            Assert.That(rootMapper.MapBinding("child1/child11/child111", typeof(GameObject), Props.Enabled),
+            Assert.That(rootMapper.MapBinding("child1/child11/child111", typeof(GameObject), Props.IsActive),
                 Is.Empty);
 
             var child1Mapper = built.CreateAnimationMapper(child1);
-            Assert.That(child1Mapper.MapBinding("child11", typeof(GameObject), Props.Enabled),
+            Assert.That(child1Mapper.MapBinding("child11", typeof(GameObject), Props.IsActive),
                 Is.Empty);
         }
 
@@ -150,7 +150,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             var rootMapper = built.CreateAnimationMapper(root);
             // should not affect to GameObject
 
-            Assert.That(rootMapper.MapBinding("child1", typeof(GameObject), Props.Enabled),
+            Assert.That(rootMapper.MapBinding("child1", typeof(GameObject), Props.IsActive),
                 Is.Null);
             
             // but should affect to component
@@ -179,7 +179,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             var rootMapper = built.CreateAnimationMapper(root);
 
             // should not affect to GameObject itself
-            Assert.That(rootMapper.MapBinding("child1", typeof(GameObject), Props.Enabled),
+            Assert.That(rootMapper.MapBinding("child1", typeof(GameObject), Props.IsActive),
                 Is.Null);
 
             // but should affect to component
@@ -374,7 +374,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             var child2Component = child2.AddComponent<SkinnedMeshRenderer>();
 
             var builder = new ObjectMappingBuilder<DummyPropInfo>(root);
-            builder.RecordRemoveProperty(child1Component, Props.Enabled);
+            builder.RecordRemoveProperty(child1Component, Props.EnabledFor(child1Component));
             builder.RecordMergeComponent(child1Component, child2Component);
             Object.DestroyImmediate(child1Component);
             var child1ComponentId = child1Component.GetInstanceID();
@@ -383,10 +383,10 @@ namespace Anatawa12.AvatarOptimizer.Test
 
             var rootMapper = built.CreateAnimationMapper(root);
 
-            Assert.That(rootMapper.MapBinding("child1", typeof(SkinnedMeshRenderer), Props.Enabled),
+            Assert.That(rootMapper.MapBinding("child1", typeof(SkinnedMeshRenderer), Props.EnabledFor(typeof(SkinnedMeshRenderer))),
                 Is.Empty);
 
-            Assert.That(rootMapper.MapBinding("child2", typeof(SkinnedMeshRenderer), Props.Enabled),
+            Assert.That(rootMapper.MapBinding("child2", typeof(SkinnedMeshRenderer), Props.EnabledFor(typeof(SkinnedMeshRenderer))),
                 Is.Null);
 
             // check for component replication

@@ -185,7 +185,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         
         private static readonly string[] PhysBoneColliderProperties =
         {
-            Props.Enabled,
+            Props.EnabledFor(typeof(VRCPhysBoneColliderBase)),
             "shapeType",
             "insideBounds",
             "radius",

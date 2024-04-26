@@ -229,7 +229,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
                 mappingBuilder.RecordCopyProperty(
                     sourceComponent, property,
-                    newSkinnedMeshRenderer, Props.Enabled);
+                    newSkinnedMeshRenderer, Props.EnabledFor(newSkinnedMeshRenderer));
                 newSkinnedMeshRenderer.enabled = initial;
             }
 
@@ -283,9 +283,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             var properties = new List<(bool, ComponentOrGameObject, string)>();
 
             {
-                if (context.GetAnimationComponent(meshInfo.SourceRenderer).ContainsFloat(Props.Enabled))
+                if (context.GetAnimationComponent(meshInfo.SourceRenderer).ContainsFloat(Props.EnabledFor(meshInfo.SourceRenderer)))
                 {
-                    properties.Add((meshInfo.SourceRenderer.enabled, meshInfo.SourceRenderer, Props.Enabled));
+                    properties.Add((meshInfo.SourceRenderer.enabled, meshInfo.SourceRenderer, Props.EnabledFor(meshInfo.SourceRenderer)));
                 }
             }
             foreach (var transform in
@@ -335,7 +335,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             var alwaysInactive = false;
             var locations = new HashSet<(bool initial, EqualsHashSet<AnimationLocation> animations)>();
             {
-                if (context.GetAnimationComponent(component).TryGetFloat(Props.Enabled, out var p))
+                if (context.GetAnimationComponent(component).TryGetFloat(Props.EnabledFor(component), out var p))
                 {
                     if (p.ComponentNodes.Any(x => !(x is AnimatorParsersV2.AnimatorPropModNode<float>)))
                         return null;
@@ -386,7 +386,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             foreach (var (property, node) in animationComponent.GetAllFloatProperties())
             {
-                if (property == Props.Enabled) continue; // m_Enabled is proceed separatedly
+                if (property == Props.EnabledFor(typeof(SkinnedMeshRenderer))) continue; // m_Enabled is proceed separatedly
                 if (node.ComponentNodes.Any(x => !(x is AnimatorParsersV2.AnimatorPropModNode<float>)))
                     return null;
                 locations.UnionWith(AnimationLocation.CollectAnimationLocation(node)
@@ -583,7 +583,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             foreach (var (name, _) in component.GetAllFloatProperties())
             {
                 // m_Enabled is allowed
-                if (name == Props.Enabled) continue;
+                if (name == Props.EnabledFor(typeof(SkinnedMeshRenderer))) continue;
                 // blendShapes are removed so it's allowed
                 if (name.StartsWith("blendShapes.", StringComparison.Ordinal)) continue;
                 // material properties are allowed, will be merged if animated similarly

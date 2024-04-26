@@ -115,7 +115,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 if (!componentInfo.Component) continue; // swept
                 if (componentInfo.IsEntrypoint) continue;
                 if (!componentInfo.HeavyBehaviourComponent) continue;
-                if (_context.GetAnimationComponent(componentInfo.Component).ContainsFloat(Props.Enabled))
+                if (_context.GetAnimationComponent(componentInfo.Component).ContainsFloat(Props.EnabledFor(componentInfo.Component)))
                     continue; // enabled is animated so we will not generate activeness animation
 
                 HashSet<Component> resultSet;
@@ -190,13 +190,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 {
                     _context.Extension<ObjectMappingContext>().MappingBuilder
                         .RecordCopyProperty(commonActiveness.gameObject, Props.IsActive,
-                            componentInfo.Component, Props.Enabled);
+                            componentInfo.Component, Props.EnabledFor(componentInfo.Component));
                 }
                 else
                 {
                     _context.Extension<ObjectMappingContext>().MappingBuilder
-                        .RecordCopyProperty(commonActiveness, Props.Enabled,
-                            componentInfo.Component, Props.Enabled);
+                        .RecordCopyProperty(commonActiveness, Props.EnabledFor(commonActiveness),
+                            componentInfo.Component, Props.EnabledFor(componentInfo.Component));
                 }
             }
 
@@ -208,7 +208,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     return found;
                 var set = new HashSet<Component>();
 
-                if (context.GetAnimationComponent(entryPoint).ContainsFloat(Props.Enabled))
+                if (context.GetAnimationComponent(entryPoint).ContainsFloat(Props.EnabledFor(entryPoint)))
                     set.Add(entryPoint);
 
                 for (var transform = entryPoint.transform;
