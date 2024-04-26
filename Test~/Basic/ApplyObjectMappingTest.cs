@@ -65,7 +65,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             };
             var state = layer.stateMachine.AddState("theState");
             var clip = new AnimationClip();
-            clip.SetCurve("child1/child11", typeof(GameObject), "m_IsActive", AnimationCurve.Constant(0, 0.3f, 1));
+            clip.SetCurve("child1/child11", typeof(GameObject), Props.IsActive, AnimationCurve.Constant(0, 0.3f, 1));
             state.motion = clip;
             animatorController.AddLayer(layer);
 
@@ -101,7 +101,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             };
             var state = layer.stateMachine.AddState("theState");
             var clip = new AnimationClip();
-            clip.SetCurve("child1/child11", typeof(GameObject), "m_IsActive", AnimationCurve.Constant(0, 0.3f, 1));
+            clip.SetCurve("child1/child11", typeof(GameObject), Props.IsActive, AnimationCurve.Constant(0, 0.3f, 1));
             state.motion = clip;
 
             var proxyMotion =

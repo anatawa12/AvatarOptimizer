@@ -144,7 +144,13 @@ namespace Anatawa12.AvatarOptimizer
                         // TODO: add warning
                         if (newPath == null) return Array.Empty<(string path, Type type, string propertyName)>();
 
-                        mappedBindings[copiedToIndex++] = (newPath, descriptor.Type, descriptor.Name);
+                        var binding = (newPath, descriptor.Type, descriptor.Name);
+
+                        // For Animator component, to toggle `m_Enabled` as a property of `Behavior`,
+                        //   we need to toggle `Behaviour.m_Enabled`.
+                        if (descriptor.Name == VProp.AnimatorEnabledAsBehavior)
+                            binding = (newPath, typeof(Behaviour), "m_Enabled");
+                        mappedBindings[copiedToIndex++] = binding;
                     }
 
                     if (copiedToIndex != mappedBindings.Length)

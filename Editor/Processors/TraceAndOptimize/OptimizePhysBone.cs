@@ -46,7 +46,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 bool IsAnimated()
                 {
                     if (TransformProperties.Any(context.GetAnimationComponent(transform).ContainsFloat)) return true;
-                    if (context.GetAnimationComponent(transform.gameObject).ContainsFloat("m_IsActive")) return true;
+                    if (context.GetAnimationComponent(transform.gameObject).ContainsFloat(Props.IsActive)) return true;
                     return false;
                 }
 
@@ -185,7 +185,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         
         private static readonly string[] PhysBoneColliderProperties =
         {
-            "m_Enabled",
+            Props.EnabledFor(typeof(VRCPhysBoneColliderBase)),
             "shapeType",
             "insideBounds",
             "radius",

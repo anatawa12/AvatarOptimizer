@@ -270,7 +270,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 // This often be a unexpected behavior so we invalidate changing m_Enabled
                 // property for original mesh in animation.
                 // This invalidation doesn't affect to m_Enabled property of merged mesh.
-                context.RecordRemoveProperty(meshInfo.SourceRenderer, "m_Enabled");
+                context.RecordRemoveProperty(meshInfo.SourceRenderer, Props.EnabledFor(meshInfo.SourceRenderer));
 
                 context.RecordMergeComponent(meshInfo.SourceRenderer, target.SourceRenderer);
 
@@ -452,11 +452,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         {
             var locations = new HashSet<AnimationLocation>();
             {
-                if (context.GetAnimationComponent(component).TryGetFloat("m_Enabled", out var p))
+                if (context.GetAnimationComponent(component).TryGetFloat(Props.EnabledFor(component), out var p))
                     locations.UnionWith(AnimationLocation.CollectAnimationLocation(p));
             }
             foreach (var transform in component.transform.ParentEnumerable(context.AvatarRootTransform, includeMe: true))
-                if (context.GetAnimationComponent(transform.gameObject).TryGetFloat("m_IsActive", out var p))
+                if (context.GetAnimationComponent(transform.gameObject).TryGetFloat(Props.IsActive, out var p))
                     locations.UnionWith(AnimationLocation.CollectAnimationLocation(p));
             return locations;
         }

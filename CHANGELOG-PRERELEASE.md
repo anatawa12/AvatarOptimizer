@@ -16,6 +16,9 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Animating `m_Enabled` of Animator as a Behavior is broken `#1028`
+  - Since `Animator.property` become animating float animation property named `property`, 
+  - AAO must keep it as `Behavior.m_Enabled` instead of `Animator.m_Enabled` but we were not.
 
 ### Security
 
