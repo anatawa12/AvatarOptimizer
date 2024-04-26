@@ -89,6 +89,9 @@ The format is based on [Keep a Changelog].
 - MergeSkinnedMesh now warns if Root Bone or Anchor Override are not set `#963`
 - It will be error if read/write mesh is off in play mode again `#1018`
   - I found that we may not possible to read mesh with r/w mesh off mode in play mode with the Av3Emulator.
+- Disabled AutoFreezeBlendShape for Skinned Mesh Renderers with Cloth component `#1029`
+  - According to the report, making some polygons zero-size by AutoFreezeBlendShape will make initializing avatar extremely heavy.
+  - After a small discussion, we decided to not automatically optimize Skinned Mesh Renderers with Cloth component.
 
 ### Deprecated
 

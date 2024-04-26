@@ -10,6 +10,9 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
+- Disabled AutoFreezeBlendShape for Skinned Mesh Renderers with Cloth component `#1029`
+  - According to the report, making some polygons zero-size by AutoFreezeBlendShape will make initializing avatar extremely heavy.
+  - After a small discussion, we decided to not automatically optimize Skinned Mesh Renderers with Cloth component.
 
 ### Deprecated
 
