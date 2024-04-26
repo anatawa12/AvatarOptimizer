@@ -50,7 +50,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             gameObject.AddComponent(type);
             var bindings = AnimationUtility.GetAnimatableBindings(gameObject, gameObject)
                 .Where(x => x.type == type)
-                .Where(x => x.propertyName != Props.IsActive)
+                .Where(x => x.propertyName != "m_Enabled")
                 .ToArray();
             Assert.That(bindings, Is.Empty);
         }
