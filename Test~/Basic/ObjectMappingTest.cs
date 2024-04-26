@@ -525,6 +525,29 @@ namespace Anatawa12.AvatarOptimizer.Test
                 }));
         }
 
+        [Test]
+        public void EnabledOfAnimatorTest()
+        {
+            var root = new GameObject();
+            var child1 = Utils.NewGameObject("child1", root.transform);
+            var child1Animator = child1.AddComponent<Animator>();
+
+            var builder = new ObjectMappingBuilder<DummyPropInfo>(root);
+            child1.name = "child2";
+
+            var built = builder.BuildObjectMapping();
+
+            var rootMapper = built.CreateAnimationMapper(root);
+            Assert.That(
+                rootMapper.MapBinding("child1", typeof(Animator), "PropertyAnimation"),
+                Is.EquivalentTo(new[]{B("child2", typeof(Animator), "PropertyAnimation")}));
+
+            Assert.That(
+                rootMapper.MapBinding("child1", typeof(Behaviour), "m_Enabled"),
+                Is.EquivalentTo(new[]{B("child2", typeof(Behaviour), "m_Enabled")}));
+
+        }
+
         private static (string, Type, string) B(string path, Type type, string prop) => (path, type, prop);
     }
 }

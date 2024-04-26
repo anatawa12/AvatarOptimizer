@@ -113,9 +113,15 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                     : obj is GameObject gameObject ? (ComponentOrGameObject)gameObject
                     : throw new InvalidOperationException($"unexpected animated object: {obj} ({obj.GetType().Name}");
 
+                var propertyName = binding.propertyName;
+                // For Animator component, to toggle `m_Enabled` as a property of `Behavior`, 
+                //  we have to use `Behavior.m_Enabled` instead if `Animator.m_Enabled` so we store as different property name.
+                if (binding.type == typeof(Behaviour) && propertyName == "m_Enabled")
+                    propertyName = Props.EnabledFor(obj);
+
                 var node = FloatAnimationCurveNode.Create(clip, binding);
                 if (node == null) continue;
-                nodes.Set(componentOrGameObject, binding.propertyName, node);
+                nodes.Set(componentOrGameObject, propertyName, node);
             }
 
             foreach (var binding in AnimationUtility.GetObjectReferenceCurveBindings(clip))

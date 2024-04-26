@@ -4,6 +4,7 @@ using System.Linq;
 using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer
 {
@@ -235,14 +236,18 @@ namespace Anatawa12.AvatarOptimizer
                 throw new ArgumentException($"The property {prop} is not BlendShapeIndex", nameof(prop));
             return index;
         }
+
+        public static string AnimatorEnabledAsBehavior = $"{ExtraProps}.AnimatorEnabledAsBehavior";
     }
 
     static class Props
     {
         private const string Enabled = "m_Enabled";
         // enabled for behaviour-like components
-        public static string EnabledFor(Component obj) => obj == null ? Enabled : EnabledFor(obj.GetType());
-        public static string EnabledFor(Type type) => Enabled;
+        public static string EnabledFor(Object obj) => obj == null ? Enabled : EnabledFor(obj.GetType());
+
+        public static string EnabledFor(Type type) =>
+            type == typeof(Animator) ? VProp.AnimatorEnabledAsBehavior : Enabled;
 
         // isActive for GameObjects
         public const string IsActive = "m_IsActive";
