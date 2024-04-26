@@ -30,6 +30,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             foreach (var skinnedMeshRenderer in context.GetComponents<SkinnedMeshRenderer>())
             {
                 if (state.Exclusions.Contains(skinnedMeshRenderer.gameObject)) continue; // manual exclusiton
+                if (skinnedMeshRenderer.GetComponent<Cloth>()) continue; // cloth is too complex https://github.com/anatawa12/AvatarOptimizer/issues/1027
 
                 var meshInfo = context.GetMeshInfoFor(skinnedMeshRenderer);
 
@@ -86,6 +87,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             foreach (var skinnedMeshRenderer in context.GetComponents<SkinnedMeshRenderer>())
             {
                 if (state.Exclusions.Contains(skinnedMeshRenderer.gameObject)) continue; // manual exclusion
+                if (skinnedMeshRenderer.GetComponent<Cloth>()) continue; // cloth is too complex https://github.com/anatawa12/AvatarOptimizer/issues/1027
                 skinnedMeshRenderer.gameObject.GetOrAddComponent<FreezeBlendShape>();
                 skinnedMeshRenderer.gameObject.GetOrAddComponent<InternalAutoFreezeMeaninglessBlendShape>();
             }
