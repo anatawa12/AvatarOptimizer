@@ -238,7 +238,7 @@ namespace Anatawa12.AvatarOptimizer
                     // if newClip has less properties than original clip (especially for no properties), 
                     // length of newClip can be changed which is bad.
                     newClip.SetCurve(
-                        "$AvatarOptimizerClipLengthDummy$", typeof(GameObject), "m_IsActive",
+                        "$AvatarOptimizerClipLengthDummy$", typeof(GameObject), Props.IsActive,
                         AnimationCurve.Constant(clip.length, clip.length, 1f));
                 }
 

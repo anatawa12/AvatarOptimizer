@@ -115,7 +115,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 if (!componentInfo.Component) continue; // swept
                 if (componentInfo.IsEntrypoint) continue;
                 if (!componentInfo.HeavyBehaviourComponent) continue;
-                if (_context.GetAnimationComponent(componentInfo.Component).ContainsFloat("m_Enabled"))
+                if (_context.GetAnimationComponent(componentInfo.Component).ContainsFloat(Props.Enabled))
                     continue; // enabled is animated so we will not generate activeness animation
 
                 HashSet<Component> resultSet;
@@ -189,14 +189,14 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 if (commonActiveness is Transform)
                 {
                     _context.Extension<ObjectMappingContext>().MappingBuilder
-                        .RecordCopyProperty(commonActiveness.gameObject, "m_IsActive",
-                            componentInfo.Component, "m_Enabled");
+                        .RecordCopyProperty(commonActiveness.gameObject, Props.IsActive,
+                            componentInfo.Component, Props.Enabled);
                 }
                 else
                 {
                     _context.Extension<ObjectMappingContext>().MappingBuilder
-                        .RecordCopyProperty(commonActiveness, "m_Enabled",
-                            componentInfo.Component, "m_Enabled");
+                        .RecordCopyProperty(commonActiveness, Props.Enabled,
+                            componentInfo.Component, Props.Enabled);
                 }
             }
 
@@ -208,13 +208,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     return found;
                 var set = new HashSet<Component>();
 
-                if (context.GetAnimationComponent(entryPoint).ContainsFloat("m_Enabled"))
+                if (context.GetAnimationComponent(entryPoint).ContainsFloat(Props.Enabled))
                     set.Add(entryPoint);
 
                 for (var transform = entryPoint.transform;
                      transform != context.AvatarRootTransform;
                      transform = transform.parent)
-                    if (context.GetAnimationComponent(transform.gameObject).ContainsFloat("m_IsActive"))
+                    if (context.GetAnimationComponent(transform.gameObject).ContainsFloat(Props.IsActive))
                         set.Add(transform);
 
                 entryPointActiveness.Add(entryPoint, set);
@@ -403,7 +403,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             {
                 var objectProperties = context.GetAnimationComponent(transform.gameObject);
 
-                if (objectProperties.ContainsFloat("m_IsActive"))
+                if (objectProperties.ContainsFloat(Props.IsActive))
                     return true;
 
                 return false;

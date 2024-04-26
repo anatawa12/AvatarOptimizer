@@ -84,22 +84,22 @@ namespace Anatawa12.AvatarOptimizer.Test
 
             var builder = new ObjectMappingBuilder<DummyPropInfo>(root);
             child11.transform.parent = child2.transform;
-            builder.RecordMoveProperty(child111, "m_IsActive", "m_IsActive");
+            builder.RecordMoveProperty(child111, Props.IsActive, Props.IsActive);
 
             var built = builder.BuildObjectMapping();
 
             var rootMapper = built.CreateAnimationMapper(root);
             Assert.That(
-                rootMapper.MapBinding("child1/child11", typeof(GameObject), "m_IsActive"),
-                Is.EquivalentTo(new[]{B("child2/child11", typeof(GameObject), "m_IsActive")}));
+                rootMapper.MapBinding("child1/child11", typeof(GameObject), Props.IsActive),
+                Is.EquivalentTo(new[]{B("child2/child11", typeof(GameObject), Props.IsActive)}));
 
             Assert.That(
-                rootMapper.MapBinding("child1/child11/child111", typeof(GameObject), "m_IsActive"),
-                Is.EquivalentTo(new[]{B("child2/child11/child111", typeof(GameObject), "m_IsActive")}));
+                rootMapper.MapBinding("child1/child11/child111", typeof(GameObject), Props.IsActive),
+                Is.EquivalentTo(new[]{B("child2/child11/child111", typeof(GameObject), Props.IsActive)}));
             
             var child1Mapper = built.CreateAnimationMapper(child1);
             Assert.That(
-                child1Mapper.MapBinding("child11", typeof(GameObject), "m_IsActive"),
+                child1Mapper.MapBinding("child11", typeof(GameObject), Props.IsActive),
                 Is.Empty);
         }
 
@@ -117,17 +117,17 @@ namespace Anatawa12.AvatarOptimizer.Test
             var built = builder.BuildObjectMapping();
 
             var rootMapper = built.CreateAnimationMapper(root);
-            Assert.That(rootMapper.MapBinding("child1/child11", typeof(GameObject), "m_Enabled"),
+            Assert.That(rootMapper.MapBinding("child1/child11", typeof(GameObject), Props.Enabled),
                 Is.Empty);
 
-            Assert.That(rootMapper.MapBinding("child1", typeof(GameObject), "m_Enabled"),
+            Assert.That(rootMapper.MapBinding("child1", typeof(GameObject), Props.Enabled),
                 Is.Null);
 
-            Assert.That(rootMapper.MapBinding("child1/child11/child111", typeof(GameObject), "m_Enabled"),
+            Assert.That(rootMapper.MapBinding("child1/child11/child111", typeof(GameObject), Props.Enabled),
                 Is.Empty);
 
             var child1Mapper = built.CreateAnimationMapper(child1);
-            Assert.That(child1Mapper.MapBinding("child11", typeof(GameObject), "m_Enabled"),
+            Assert.That(child1Mapper.MapBinding("child11", typeof(GameObject), Props.Enabled),
                 Is.Empty);
         }
 
@@ -150,7 +150,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             var rootMapper = built.CreateAnimationMapper(root);
             // should not affect to GameObject
 
-            Assert.That(rootMapper.MapBinding("child1", typeof(GameObject), "m_Enabled"),
+            Assert.That(rootMapper.MapBinding("child1", typeof(GameObject), Props.Enabled),
                 Is.Null);
             
             // but should affect to component
@@ -179,7 +179,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             var rootMapper = built.CreateAnimationMapper(root);
 
             // should not affect to GameObject itself
-            Assert.That(rootMapper.MapBinding("child1", typeof(GameObject), "m_Enabled"),
+            Assert.That(rootMapper.MapBinding("child1", typeof(GameObject), Props.Enabled),
                 Is.Null);
 
             // but should affect to component
@@ -374,7 +374,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             var child2Component = child2.AddComponent<SkinnedMeshRenderer>();
 
             var builder = new ObjectMappingBuilder<DummyPropInfo>(root);
-            builder.RecordRemoveProperty(child1Component, "m_Enabled");
+            builder.RecordRemoveProperty(child1Component, Props.Enabled);
             builder.RecordMergeComponent(child1Component, child2Component);
             Object.DestroyImmediate(child1Component);
             var child1ComponentId = child1Component.GetInstanceID();
@@ -383,10 +383,10 @@ namespace Anatawa12.AvatarOptimizer.Test
 
             var rootMapper = built.CreateAnimationMapper(root);
 
-            Assert.That(rootMapper.MapBinding("child1", typeof(SkinnedMeshRenderer), "m_Enabled"),
+            Assert.That(rootMapper.MapBinding("child1", typeof(SkinnedMeshRenderer), Props.Enabled),
                 Is.Empty);
 
-            Assert.That(rootMapper.MapBinding("child2", typeof(SkinnedMeshRenderer), "m_Enabled"),
+            Assert.That(rootMapper.MapBinding("child2", typeof(SkinnedMeshRenderer), Props.Enabled),
                 Is.Null);
 
             // check for component replication
@@ -430,15 +430,15 @@ namespace Anatawa12.AvatarOptimizer.Test
             var child11 = Utils.NewGameObject("child11", child1.transform);
 
             var builder = new ObjectMappingBuilder<DummyPropInfo>(root);
-            builder.RecordMoveProperty(child11, "m_IsActive", child1, "m_IsActive");
+            builder.RecordMoveProperty(child11, Props.IsActive, child1, Props.IsActive);
 
             var built = builder.BuildObjectMapping();
             
             var rootMapper = built.CreateAnimationMapper(root);
 
             Assert.That(
-                rootMapper.MapBinding("child1/child11", typeof(GameObject), "m_IsActive"),
-                Is.EquivalentTo(new [] {B("child1", typeof(GameObject), "m_IsActive")}));
+                rootMapper.MapBinding("child1/child11", typeof(GameObject), Props.IsActive),
+                Is.EquivalentTo(new [] {B("child1", typeof(GameObject), Props.IsActive)}));
         }
 
 
@@ -453,33 +453,33 @@ namespace Anatawa12.AvatarOptimizer.Test
             var child14 = Utils.NewGameObject("child14", child1.transform);
 
             var builder = new ObjectMappingBuilder<DummyPropInfo>(root);
-            builder.RecordCopyProperty(child11, "m_IsActive",
-                child12, "m_IsActive");
-            builder.RecordCopyProperty(child11, "m_IsActive",
-                child13, "m_IsActive");
-            builder.RecordCopyProperty(child12, "m_IsActive",
-                child14, "m_IsActive");
+            builder.RecordCopyProperty(child11, Props.IsActive,
+                child12, Props.IsActive);
+            builder.RecordCopyProperty(child11, Props.IsActive,
+                child13, Props.IsActive);
+            builder.RecordCopyProperty(child12, Props.IsActive,
+                child14, Props.IsActive);
 
             var built = builder.BuildObjectMapping();
 
             var rootMapper = built.CreateAnimationMapper(root);
 
             Assert.That(
-                rootMapper.MapBinding("child1/child11", typeof(GameObject), "m_IsActive"),
+                rootMapper.MapBinding("child1/child11", typeof(GameObject), Props.IsActive),
                 Is.EquivalentTo(new[]
                 {
-                    B("child1/child11", typeof(GameObject), "m_IsActive"),
-                    B("child1/child12", typeof(GameObject), "m_IsActive"),
-                    B("child1/child13", typeof(GameObject), "m_IsActive"),
-                    B("child1/child14", typeof(GameObject), "m_IsActive"),
+                    B("child1/child11", typeof(GameObject), Props.IsActive),
+                    B("child1/child12", typeof(GameObject), Props.IsActive),
+                    B("child1/child13", typeof(GameObject), Props.IsActive),
+                    B("child1/child14", typeof(GameObject), Props.IsActive),
                 }));
 
             Assert.That(
-                rootMapper.MapBinding("child1/child12", typeof(GameObject), "m_IsActive"),
+                rootMapper.MapBinding("child1/child12", typeof(GameObject), Props.IsActive),
                 Is.EquivalentTo(new[]
                 {
-                    B("child1/child12", typeof(GameObject), "m_IsActive"),
-                    B("child1/child14", typeof(GameObject), "m_IsActive"),
+                    B("child1/child12", typeof(GameObject), Props.IsActive),
+                    B("child1/child14", typeof(GameObject), Props.IsActive),
                 }));
         }
 
@@ -494,12 +494,12 @@ namespace Anatawa12.AvatarOptimizer.Test
             var child14 = Utils.NewGameObject("child14", child1.transform);
 
             var builder = new ObjectMappingBuilder<DummyPropInfo>(root);
-            builder.RecordCopyProperty(child11, "m_IsActive",
-                child12, "m_IsActive");
-            builder.RecordCopyProperty(child11, "m_IsActive",
-                child13, "m_IsActive");
-            builder.RecordCopyProperty(child12, "m_IsActive",
-                child14, "m_IsActive");
+            builder.RecordCopyProperty(child11, Props.IsActive,
+                child12, Props.IsActive);
+            builder.RecordCopyProperty(child11, Props.IsActive,
+                child13, Props.IsActive);
+            builder.RecordCopyProperty(child12, Props.IsActive,
+                child14, Props.IsActive);
 
             DestroyTracker.DestroyImmediate(child11);
 
@@ -508,20 +508,20 @@ namespace Anatawa12.AvatarOptimizer.Test
             var rootMapper = built.CreateAnimationMapper(root);
 
             Assert.That(
-                rootMapper.MapBinding("child1/child11", typeof(GameObject), "m_IsActive"),
+                rootMapper.MapBinding("child1/child11", typeof(GameObject), Props.IsActive),
                 Is.EquivalentTo(new[]
                 {
-                    B("child1/child12", typeof(GameObject), "m_IsActive"),
-                    B("child1/child13", typeof(GameObject), "m_IsActive"),
-                    B("child1/child14", typeof(GameObject), "m_IsActive"),
+                    B("child1/child12", typeof(GameObject), Props.IsActive),
+                    B("child1/child13", typeof(GameObject), Props.IsActive),
+                    B("child1/child14", typeof(GameObject), Props.IsActive),
                 }));
 
             Assert.That(
-                rootMapper.MapBinding("child1/child12", typeof(GameObject), "m_IsActive"),
+                rootMapper.MapBinding("child1/child12", typeof(GameObject), Props.IsActive),
                 Is.EquivalentTo(new[]
                 {
-                    B("child1/child12", typeof(GameObject), "m_IsActive"),
-                    B("child1/child14", typeof(GameObject), "m_IsActive"),
+                    B("child1/child12", typeof(GameObject), Props.IsActive),
+                    B("child1/child14", typeof(GameObject), Props.IsActive),
                 }));
         }
 

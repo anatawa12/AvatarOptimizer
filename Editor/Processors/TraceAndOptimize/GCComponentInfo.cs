@@ -140,22 +140,22 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             {
                 case Transform transform:
                     var gameObject = transform.gameObject;
-                    activeness = _context.GetConstantValue(gameObject, "m_IsActive", gameObject.activeSelf);
+                    activeness = _context.GetConstantValue(gameObject, Props.IsActive, gameObject.activeSelf);
                     break;
                 case Behaviour behaviour:
-                    activeness = _context.GetConstantValue(behaviour, "m_Enabled", behaviour.enabled);
+                    activeness = _context.GetConstantValue(behaviour, Props.Enabled, behaviour.enabled);
                     break;
                 case Cloth cloth:
-                    activeness = _context.GetConstantValue(cloth, "m_Enabled", cloth.enabled);
+                    activeness = _context.GetConstantValue(cloth, Props.Enabled, cloth.enabled);
                     break;
                 case Collider collider:
-                    activeness = _context.GetConstantValue(collider, "m_Enabled", collider.enabled);
+                    activeness = _context.GetConstantValue(collider, Props.Enabled, collider.enabled);
                     break;
                 case LODGroup lodGroup:
-                    activeness = _context.GetConstantValue(lodGroup, "m_Enabled", lodGroup.enabled);
+                    activeness = _context.GetConstantValue(lodGroup, Props.Enabled, lodGroup.enabled);
                     break;
                 case Renderer renderer:
-                    activeness = _context.GetConstantValue(renderer, "m_Enabled", renderer.enabled);
+                    activeness = _context.GetConstantValue(renderer, Props.Enabled, renderer.enabled);
                     break;
                 // components without isEnable
                 case CanvasRenderer _:

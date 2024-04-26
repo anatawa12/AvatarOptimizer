@@ -219,7 +219,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
                 mappingBuilder.RecordCopyProperty(
                     sourceComponent, property,
-                    newSkinnedMeshRenderer.gameObject, "m_IsActive");
+                    newSkinnedMeshRenderer.gameObject, Props.IsActive);
                 newSkinnedMeshRenderer.gameObject.SetActive(initial);
             }
 
@@ -229,7 +229,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
                 mappingBuilder.RecordCopyProperty(
                     sourceComponent, property,
-                    newSkinnedMeshRenderer, "m_Enabled");
+                    newSkinnedMeshRenderer, Props.Enabled);
                 newSkinnedMeshRenderer.enabled = initial;
             }
 
@@ -283,18 +283,18 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             var properties = new List<(bool, ComponentOrGameObject, string)>();
 
             {
-                if (context.GetAnimationComponent(meshInfo.SourceRenderer).ContainsFloat("m_Enabled"))
+                if (context.GetAnimationComponent(meshInfo.SourceRenderer).ContainsFloat(Props.Enabled))
                 {
-                    properties.Add((meshInfo.SourceRenderer.enabled, meshInfo.SourceRenderer, "m_Enabled"));
+                    properties.Add((meshInfo.SourceRenderer.enabled, meshInfo.SourceRenderer, Props.Enabled));
                 }
             }
             foreach (var transform in
                      meshInfo.SourceRenderer.transform.ParentEnumerable(commonParent, includeMe: true))
             {
                 var gameObject = transform.gameObject;
-                if (context.GetAnimationComponent(gameObject).ContainsFloat("m_IsActive"))
+                if (context.GetAnimationComponent(gameObject).ContainsFloat(Props.IsActive))
                 {
-                    properties.Add((gameObject.activeSelf, gameObject, "m_IsActive"));
+                    properties.Add((gameObject.activeSelf, gameObject, Props.IsActive));
                 }
             }
 
@@ -319,7 +319,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 var (initial, sourceComponent, property) = activenessAnimatingProperties.RemoveLast();
                 context.GetMappingBuilder().RecordCopyProperty(
                     sourceComponent, property,
-                    newIntermediateGameObject, "m_IsActive");
+                    newIntermediateGameObject, Props.IsActive);
                 newIntermediateGameObject.SetActive(initial);
 
                 commonParent = newIntermediateGameObject.transform;
@@ -335,7 +335,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             var alwaysInactive = false;
             var locations = new HashSet<(bool initial, EqualsHashSet<AnimationLocation> animations)>();
             {
-                if (context.GetAnimationComponent(component).TryGetFloat("m_Enabled", out var p))
+                if (context.GetAnimationComponent(component).TryGetFloat(Props.Enabled, out var p))
                 {
                     if (p.ComponentNodes.Any(x => !(x is AnimatorParsersV2.AnimatorPropModNode<float>)))
                         return null;
@@ -350,7 +350,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             foreach (var transform in
                      component.transform.ParentEnumerable(context.AvatarRootTransform, includeMe: true))
             {
-                if (context.GetAnimationComponent(transform.gameObject).TryGetFloat("m_IsActive", out var p))
+                if (context.GetAnimationComponent(transform.gameObject).TryGetFloat(Props.IsActive, out var p))
                 {
                     if (p.ComponentNodes.Any(x => !(x is AnimatorParsersV2.AnimatorPropModNode<float>)))
                         return null;
@@ -386,7 +386,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             foreach (var (property, node) in animationComponent.GetAllFloatProperties())
             {
-                if (property == "m_Enabled") continue; // m_Enabled is proceed separatedly
+                if (property == Props.Enabled) continue; // m_Enabled is proceed separatedly
                 if (node.ComponentNodes.Any(x => !(x is AnimatorParsersV2.AnimatorPropModNode<float>)))
                     return null;
                 locations.UnionWith(AnimationLocation.CollectAnimationLocation(node)
@@ -583,7 +583,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             foreach (var (name, _) in component.GetAllFloatProperties())
             {
                 // m_Enabled is allowed
-                if (name == "m_Enabled") continue;
+                if (name == Props.Enabled) continue;
                 // blendShapes are removed so it's allowed
                 if (name.StartsWith("blendShapes.", StringComparison.Ordinal)) continue;
                 // material properties are allowed, will be merged if animated similarly

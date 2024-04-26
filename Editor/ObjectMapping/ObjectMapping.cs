@@ -236,4 +236,12 @@ namespace Anatawa12.AvatarOptimizer
             return index;
         }
     }
+
+    static class Props
+    {
+        // enabled for behaviour-like components
+        public const string Enabled = "m_Enabled";
+        // isActive for GameObjects
+        public const string IsActive = "m_IsActive";
+    }
 }

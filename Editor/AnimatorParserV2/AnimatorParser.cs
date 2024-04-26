@@ -44,7 +44,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         {
             var gameObject = transform.gameObject;
             bool objectAlwaysActive;
-            switch (rootNode.GetConstantValue(gameObject, "m_IsActive", gameObject.activeSelf))
+            switch (rootNode.GetConstantValue(gameObject, Props.IsActive, gameObject.activeSelf))
             {
                 case null:
                     objectAlwaysActive = false;
@@ -90,7 +90,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             Func<ComponentNodeContainer> parseComponent)
         {
             bool alwaysApplied;
-            switch (modifications.GetConstantValue(animator, "m_Enabled", animator.enabled))
+            switch (modifications.GetConstantValue(animator, Props.Enabled, animator.enabled))
             {
                 case null:
                     alwaysApplied = false;
@@ -107,7 +107,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
             if (alwaysApplied)
             {
-                parsed.FloatNodes.TryGetValue((animator, "m_Enabled"), out var node);
+                parsed.FloatNodes.TryGetValue((animator, Props.Enabled), out var node);
                 switch (node.AsConstantValue(animator.enabled))
                 {
                     case null:
