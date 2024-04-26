@@ -10,20 +10,25 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
-- Disabled AutoFreezeBlendShape for Skinned Mesh Renderers with Cloth component `#1029`
-  - According to the report, making some polygons zero-size by AutoFreezeBlendShape will make initializing avatar extremely heavy.
-  - After a small discussion, we decided to not automatically optimize Skinned Mesh Renderers with Cloth component.
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
-- Animating `m_Enabled` of Animator as a Behavior is broken `#1028`
-  - Since `Animator.property` become animating float animation property named `property`, 
-  - AAO must keep it as `Behavior.m_Enabled` instead of `Animator.m_Enabled` but we were not.
 
 ### Security
+
+## [1.7.0-rc.4] - 2024-04-26
+### Changed
+- Disabled AutoFreezeBlendShape for Skinned Mesh Renderers with Cloth component [`#1029`](https://github.com/anatawa12/AvatarOptimizer/pull/1029)
+  - According to the report, making some polygons zero-size by AutoFreezeBlendShape will make initializing avatar extremely heavy.
+  - After a small discussion, we decided to not automatically optimize Skinned Mesh Renderers with Cloth component.
+
+### Fixed
+- Animating `m_Enabled` of Animator as a Behavior is broken [`#1028`](https://github.com/anatawa12/AvatarOptimizer/pull/1028)
+  - Since `Animator.property` become animating float animation property named `property`, 
+  - AAO must keep it as `Behavior.m_Enabled` instead of `Animator.m_Enabled` but we were not.
 
 ## [1.7.0-rc.3] - 2024-04-24
 ## [1.7.0-rc.2] - 2024-04-24
@@ -1356,7 +1361,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.0-rc.3...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.0-rc.4...HEAD
+[1.7.0-rc.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.0-rc.3...v1.7.0-rc.4
 [1.7.0-rc.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.0-rc.2...v1.7.0-rc.3
 [1.7.0-rc.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.0-rc.1...v1.7.0-rc.2
 [1.7.0-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.0-beta.7...v1.7.0-rc.1
