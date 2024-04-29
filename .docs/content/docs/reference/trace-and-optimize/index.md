@@ -40,7 +40,7 @@ Currently the following optimizations are applied automatically.
   Optimizes Animator Controller. See [this section](#animator-optimizer) for more details.
 - `Merge Skinned Meshes`\
   Merges skinned meshes which don't need to be separated.\
-  Some meshes may not be automatically merged depending on their condition, so if necessary, use [Merge Skinned Mesh](../merge-skinned-mesh).
+  Some meshes may not be automatically merged in some cases, so use [Merge Skinned Mesh](../merge-skinned-mesh) manually if necessary.
   - `Allow Shuffling Material Slots`\
     By shuffling material slots, you may reduce draw calls of the avatar.
     The order of material slots usually doesn't matter, but it may affect the drawing order in rare cases.
