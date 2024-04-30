@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog].
 
 ### Security
 
+## [1.7.0] - 2024-04-30
 ## [1.7.0-rc.4] - 2024-04-26
 ### Changed
 - Disabled AutoFreezeBlendShape for Skinned Mesh Renderers with Cloth component [`#1029`](https://github.com/anatawa12/AvatarOptimizer/pull/1029)
@@ -1361,7 +1362,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.0-rc.4...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.0...HEAD
+[1.7.0]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.0-rc.4...v1.7.0
 [1.7.0-rc.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.0-rc.3...v1.7.0-rc.4
 [1.7.0-rc.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.0-rc.2...v1.7.0-rc.3
 [1.7.0-rc.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.0-rc.1...v1.7.0-rc.2

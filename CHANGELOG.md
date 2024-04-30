@@ -8,68 +8,81 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Animator Optimizer `#854`
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [1.7.0] - 2024-04-30
+### Added
+- Animator Optimizer [`#854`](https://github.com/anatawa12/AvatarOptimizer/pull/854)
   - Most features of Animator Optimizer is not available in Unity 2019.
   - Animator Optimizer optimizes your Animator Controller without behaviour Changes
   - Current Optimizer includes the following optimization
-    - Remove meaningless properties `#854`
-    - Converts Entry / Exit to 1D BlendTree `#854` `#867` `#927` `#970` `#982` `#991`
-    - Merges multiple BlendTrees to single Direct BlendTree `#870` `#978` `#980` `#984`
-    - Removes meaningless Animator Layers `#870`
-- Asset Description `#847`
+    - Remove meaningless properties [`#854`](https://github.com/anatawa12/AvatarOptimizer/pull/854)
+    - Converts Entry / Exit to 1D BlendTree [`#854`](https://github.com/anatawa12/AvatarOptimizer/pull/854) [`#867`](https://github.com/anatawa12/AvatarOptimizer/pull/867) [`#927`](https://github.com/anatawa12/AvatarOptimizer/pull/927) [`#970`](https://github.com/anatawa12/AvatarOptimizer/pull/970) [`#982`](https://github.com/anatawa12/AvatarOptimizer/pull/982) [`#991`](https://github.com/anatawa12/AvatarOptimizer/pull/991)
+    - Merges multiple BlendTrees to single Direct BlendTree [`#870`](https://github.com/anatawa12/AvatarOptimizer/pull/870) [`#978`](https://github.com/anatawa12/AvatarOptimizer/pull/978) [`#980`](https://github.com/anatawa12/AvatarOptimizer/pull/980) [`#984`](https://github.com/anatawa12/AvatarOptimizer/pull/984)
+    - Removes meaningless Animator Layers [`#870`](https://github.com/anatawa12/AvatarOptimizer/pull/870)
+- Asset Description [`#847`](https://github.com/anatawa12/AvatarOptimizer/pull/847)
   - Asset Description is the file to provide information of your assets for Avatar Optimizer.
   - Please see documentation for more details.
-- Warning for material animation in Merge Skinned Mesh `#769`
+- Warning for material animation in Merge Skinned Mesh [`#769`](https://github.com/anatawa12/AvatarOptimizer/pull/769)
   - Merge Skinned Mesh does not support animating material properties differently. (In other words, it can be broken.)
   - Since this version, AAO will warn for such a case.
   - If you animated all materials from same animations, your animation will not be warned.
-- API for declaring dependency relationship to the name of the component `#943`
+- API for declaring dependency relationship to the name of the component [`#943`](https://github.com/anatawa12/AvatarOptimizer/pull/943)
   - You can use this API to not change the name of the GameObject.
-- Configuring `Clamp BlendShapes (Deprecated)` `#957`
+- Configuring `Clamp BlendShapes (Deprecated)` [`#957`](https://github.com/anatawa12/AvatarOptimizer/pull/957)
   - Since VRCSDK 3.5.1, VRCSDK sets `Clamp BlendShapes (Deprecated)` to true on assembly reload.
   - This is not a good setting for AAO in EditMode since AAO does not support clamping BlendShapes.
   - That's why AAO now configures `Clamp BlendShapes (Deprecated)` to false in edit mode and true in play mode.
   - PlayMode is usually used for testing the avatar behavior so it's better to have the same setting as VRChat client.
   - If you want not to change this setting, please disable `Tools/Avatar Optimizer/Configure Clamp BlendShape Weight`.
-- Automatic Merge Skinned Mesh `#952` `#972` `#1010` `#1020` `#1021`
+- Automatic Merge Skinned Mesh [`#952`](https://github.com/anatawa12/AvatarOptimizer/pull/952) [`#972`](https://github.com/anatawa12/AvatarOptimizer/pull/972) [`#1010`](https://github.com/anatawa12/AvatarOptimizer/pull/1010) [`#1020`](https://github.com/anatawa12/AvatarOptimizer/pull/1020) [`#1021`](https://github.com/anatawa12/AvatarOptimizer/pull/1021)
   - Trace and Optimize now automatically merges Skinned Meshes if possible.
   - Trace and Optimize will merge your mesh if the material properties or enablement of the mesh is animated similarly and has no BlendShapes.
-- Components API for Scripting Usage `#976`
+- Components API for Scripting Usage [`#976`](https://github.com/anatawa12/AvatarOptimizer/pull/976)
   - You can now add AAO components from your script.
-- Animations animating missing GameObject is removed `#994`
+- Animations animating missing GameObject is removed [`#994`](https://github.com/anatawa12/AvatarOptimizer/pull/994)
   - Since this update, animations that targeting GameObjects with post-AAO paths is no longer working.
   - Please create animations that targeting GameObjects with pre-AAO paths.
-- Remove Mesh by Mask `#998`
+- Remove Mesh by Mask [`#998`](https://github.com/anatawa12/AvatarOptimizer/pull/998)
   - With this component, you can remove polygons with mask texture.
   - You can use use mask for [MeshDeleterWithTexture] or alpha mask to remove polygons.
-- Remove Empty SubMesh in Trace and Optimize `#1007`
+- Remove Empty SubMesh in Trace and Optimize [`#1007`](https://github.com/anatawa12/AvatarOptimizer/pull/1007)
   - This removes empty SubMeshes including becomes empty by optimization.
 
 [MeshDeleterWithTexture]: https://github.com/gatosyocora/MeshDeleterWithTexture
 
 ### Changed
-- MergePhysBone now corrects curve settings `#775`
-- MergePhysBone now warns if chain length are not same `#775`
-- MergePhysBone with only one source is now error `#775`
+- MergePhysBone now corrects curve settings [`#775`](https://github.com/anatawa12/AvatarOptimizer/pull/775)
+- MergePhysBone now warns if chain length are not same [`#775`](https://github.com/anatawa12/AvatarOptimizer/pull/775)
+- MergePhysBone with only one source is now error [`#775`](https://github.com/anatawa12/AvatarOptimizer/pull/775)
   - It was not working well and not a error by a bug.
-- Animator Parser is completely rewritten `#850` `#968` `#1011`
+- Animator Parser is completely rewritten [`#850`](https://github.com/anatawa12/AvatarOptimizer/pull/850) [`#968`](https://github.com/anatawa12/AvatarOptimizer/pull/968) [`#1011`](https://github.com/anatawa12/AvatarOptimizer/pull/1011)
   - New Animator Parser allow us to track animating properties animated by components removed by AAO.
-- PhysBone that swings no bones are now removed `#864`
+- PhysBone that swings no bones are now removed [`#864`](https://github.com/anatawa12/AvatarOptimizer/pull/864)
   - I found such a PhysBone on Lime so I added this feature.
-- Switched Localization system to NDMF from CL4EE `#873`
+- Switched Localization system to NDMF from CL4EE [`#873`](https://github.com/anatawa12/AvatarOptimizer/pull/873)
   - Since this release, Avatar Optimizer is no longer depends on CL4EE.
   - Because VCC doesn't remove unused packages, CL4EE may still be installed on your project.
   - If you want to remove CL4EE, please remove it manually.
-- Suppressed animated BlendShape warning of FreezeBlendShape if it's animated to a few constants `#881`
+- Suppressed animated BlendShape warning of FreezeBlendShape if it's animated to a few constants [`#881`](https://github.com/anatawa12/AvatarOptimizer/pull/881)
   - Modern models have tons of BlendShapes to change their face shape but emotion animation of some of them animates such a BlendShapes to constant (default value).
   - That's unnecessary (incorrect I think) and force users to remove or change the clip when user wants to face shape.
   - I see AAO users use `FreezeBlendShapes` for overriding such a BlendShapes on twitter.
   - I think using this way is reasonable enough so I suppressed the warning if AAO detected such a usage.
-- Changed minimum VRCSDK to 3.3.0 `#882`
+- Changed minimum VRCSDK to 3.3.0 [`#882`](https://github.com/anatawa12/AvatarOptimizer/pull/882)
   - VRCSDK 3.3.0 is required for stable NDMF-VRCSDK compatibility.
-- Endpoint Position settings for newly created MergePhysBone is now Copy instead of Clear `#945`
+- Endpoint Position settings for newly created MergePhysBone is now Copy instead of Clear [`#945`](https://github.com/anatawa12/AvatarOptimizer/pull/945)
   - The Clear settings will increase the number of PhysBone Transforms so it's not better as a default settings.
-- Improved activeness animation warning in Merge Skinned Mesh `#948`
+- Improved activeness animation warning in Merge Skinned Mesh [`#948`](https://github.com/anatawa12/AvatarOptimizer/pull/948)
   - Reduced false-positive warnings
     - Previously, AAO warns if activeness warning is applied to different GameObjects.
     - However, this can be false-positive if animation is applied to different GameObjects with same timing. 
@@ -77,42 +90,38 @@ The format is based on [Keep a Changelog].
   - Combined warning per Merge Skinned Mesh component.
     - Previously, AAO warns for each source Renderers.
     - Since this version, AAO creates one warning for each Merge Skinned Mesh component.
-- Add error for Cloth component in Merge Skinned Mesh component `#949`
+- Add error for Cloth component in Merge Skinned Mesh component [`#949`](https://github.com/anatawa12/AvatarOptimizer/pull/949)
   - The Cloth component is not supported by Merge Skinned Mesh component.
   - In previous versions, AAO will keep the source Skinned Mesh Renderer if it's with Cloth component by bug.
   - Since this version, AAO will make an error if the source Skinned Mesh Renderer is with Cloth component.
-- Remove Unused Objects now removes PhysBones and Contact Receivers with parameters defined but not used by Animator Controllers `#959`
+- Remove Unused Objects now removes PhysBones and Contact Receivers with parameters defined but not used by Animator Controllers [`#959`](https://github.com/anatawa12/AvatarOptimizer/pull/959)
   - Previously, AAO did not remove PhysBones and Contact Receivers if they are defined in Animator Controllers whether they are used or not.
   - I thought such a PhysBones on the base body are rare but my friend told me there is Manuka has such a PhysBone so I added this feature.
-- Dropping GameObject to PrefabSafeSet adds the All components on the GameObject to the PrefabSafeSet `#960`
+- Dropping GameObject to PrefabSafeSet adds the All components on the GameObject to the PrefabSafeSet [`#960`](https://github.com/anatawa12/AvatarOptimizer/pull/960)
   - You can add all PhysBones on the GameObject by dropping the GameObject to the MergePhysBone component.
-- MergeSkinnedMesh now warns if Root Bone or Anchor Override are not set `#963`
-- It will be error if read/write mesh is off in play mode again `#1018`
+- MergeSkinnedMesh now warns if Root Bone or Anchor Override are not set [`#963`](https://github.com/anatawa12/AvatarOptimizer/pull/963)
+- It will be error if read/write mesh is off in play mode again [`#1018`](https://github.com/anatawa12/AvatarOptimizer/pull/1018)
   - I found that we may not possible to read mesh with r/w mesh off mode in play mode with the Av3Emulator.
-- Disabled AutoFreezeBlendShape for Skinned Mesh Renderers with Cloth component `#1029`
+- Disabled AutoFreezeBlendShape for Skinned Mesh Renderers with Cloth component [`#1029`](https://github.com/anatawa12/AvatarOptimizer/pull/1029)
   - According to the report, making some polygons zero-size by AutoFreezeBlendShape will make initializing avatar extremely heavy.
   - After a small discussion, we decided to not automatically optimize Skinned Mesh Renderers with Cloth component.
 
-### Deprecated
-
 ### Removed
-- Compatibility with VRCQuestTools v1.x `#847`
+- Compatibility with VRCQuestTools v1.x [`#847`](https://github.com/anatawa12/AvatarOptimizer/pull/847)
   - Please use VRCQuestTools v2.x, which has compatibility with AAO.
 
 ### Fixed
-- Inspector of ComponentTypePair (GCDebug) is broken `#846`
-- Bones swung by unused PhysBones (which will be removed by AAO) are not merged `#850`
+- Inspector of ComponentTypePair (GCDebug) is broken [`#846`](https://github.com/anatawa12/AvatarOptimizer/pull/846)
+- Bones swung by unused PhysBones (which will be removed by AAO) are not merged [`#850`](https://github.com/anatawa12/AvatarOptimizer/pull/850)
   - Note that To fix this problem, AnimatorParser is almost completely rewritten.
   - It's not expected to have behavior change, but if you found some, please report it.
-- Re-fix Nested Constraint can be broken with Trace and Optimize `#880`
-- Fix non-VRChat project support `#884`
-- Fix VRM support `#892`
-- ArgumentNullException in Edit-mode Remove Mesh Preview `#942`
-- Bad behavior if EditMode preview is enabled when entering play mode `#956`
-- PlayableLayerControl or AnimatorLayerControl on non-root animator are ignored `#964`
-- Box Editor of Remove Mesh in Box can be broke with scale of Skinned Mesh Renderer `#1019`
-
-### Security
+- Re-fix Nested Constraint can be broken with Trace and Optimize [`#880`](https://github.com/anatawa12/AvatarOptimizer/pull/880)
+- Fix non-VRChat project support [`#884`](https://github.com/anatawa12/AvatarOptimizer/pull/884)
+- Fix VRM support [`#892`](https://github.com/anatawa12/AvatarOptimizer/pull/892)
+- ArgumentNullException in Edit-mode Remove Mesh Preview [`#942`](https://github.com/anatawa12/AvatarOptimizer/pull/942)
+- Bad behavior if EditMode preview is enabled when entering play mode [`#956`](https://github.com/anatawa12/AvatarOptimizer/pull/956)
+- PlayableLayerControl or AnimatorLayerControl on non-root animator are ignored [`#964`](https://github.com/anatawa12/AvatarOptimizer/pull/964)
+- Box Editor of Remove Mesh in Box can be broke with scale of Skinned Mesh Renderer [`#1019`](https://github.com/anatawa12/AvatarOptimizer/pull/1019)
 
 ## [1.6.13] - 2024-04-13
 ### Fixed
@@ -870,7 +879,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.13...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.0...HEAD
+[1.7.0]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.13...v1.7.0
 [1.6.13]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.12...v1.6.13
 [1.6.12]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.11...v1.6.12
 [1.6.11]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.10...v1.6.11
