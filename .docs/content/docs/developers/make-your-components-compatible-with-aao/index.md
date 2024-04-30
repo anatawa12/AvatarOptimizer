@@ -33,12 +33,11 @@ However, the assumption can be incorrect, so Avatar Optimizer will generate the 
 Please remove your components before Avatar Optimizer processes as much as possible.
 If you cannot remove some components, please register them to Avatar Optimizer.
 
-Since Avatar Optimizer v1.7.0, [Asset Description] is added for components that doesn't work on or after build time.
+Since Avatar Optimizer v1.7.0, [Asset Description] is added for components that doesn't process on build or at runtime.
 If your tool process nothing at build time, you can use this to register your components.
 
-If your tool process something at build time, 
-you should remove components on the build time instead of registering with Asset Description.
-This prevents Avatar Optimizer from accidentally removing components and disabling your tool when the execution order is unexpected.
+If your tool process something at build time, registering with Asset Description is not recommended.
+This prevents Avatar Optimizer from accidentally removing components and causing your tool to not work properly when the processes execution order is unexpected/incorrect.
 
 [Asset Description]: ../asset-description
 
