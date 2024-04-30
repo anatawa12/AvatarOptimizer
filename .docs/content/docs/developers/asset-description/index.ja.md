@@ -11,7 +11,7 @@ Asset DescriptionはAvatar Optimizerにアセットの情報を提供するた�
 アバター上の不要な要素を削除するために、Avatar Optimizerはアバターに存在するすべてのコンポーネントのことを知る必要があります。\
 Avatar Optimizer v1.6.0で[コンポーネントにAAOとの互換性をもたせるためのドキュメント][make-component-compatible]とAPIが追加されましたが、
 非破壊ツールでなく、ビルド時に処理を行わないようなツールでは、`IVRCSDKPreprocessAvatarCallback`でコンポーネントを削除するのは少し面倒だろうと考えました。\
-そのため、Avatar Optimizerに無視してほしい、ビルド時には意味のないコンポーネントを指定するためのシンプルな仕組みとして、Asset Descriptionがv1.7.0で追加されました。
+そのため、Avatar Optimizerに無視してほしい、ビルド時やランタイムで処理を行わないコンポーネントを指定するためのシンプルな仕組みとして、Asset Descriptionがv1.7.0で追加されました。
 
 なお、非破壊ツールの場合については、正しくない実行順で処理が行われた場合に、Avatar Optimizerがコンポーネントを誤って削除してしまわないように、従来通り`IVRCSDKPreprocessAvatarCallback`でコンポーネントを削除することを推奨します。
 

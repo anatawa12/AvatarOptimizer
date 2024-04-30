@@ -30,6 +30,14 @@ Avatar Optimizerはコンポーネント等に対するガベージコレクシ�
 Avatar Optimizerが処理する前にコンポーネントを削除出来る場合は、そのようにしてください。
 削除出来ない場合はAvatar Optimizerにコンポーネントを登録してください。
 
+Avatar Optimizer v1.7.0以降では、ビルド時やランタイムで処理を行わないコンポーネント向けに[Asset Description]が追加されています。
+ビルド時に処理を行わないようなツールであれば、こちらを利用して登録することもできます。
+
+ビルド時に何らかの処理を行うツールやコンポーネントの場合は、Asset Descriptionで登録するのは非推奨です。
+これは、Asset Descriptionによる登録では、ビルド時の処理順が意図しないものになってしまった場合などにAvatar Optimizerがコンポーネントを削除してしまうことにより、ツールが正しく動作出来なくなる可能性があるためです。
+
+[Asset Description]: ../asset-description
+
 ### コンポーネントを削除する {#remove-component}
 
 コンポーネントを削除する方法はいくつかあります。
