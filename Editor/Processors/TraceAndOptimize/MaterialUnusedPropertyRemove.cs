@@ -18,15 +18,29 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 .Distinct().Where(i => i != null)
                 .ToDictionary(i => i, MaterialCleaning);
 
-            foreach (var renderer in renderers)
+            void SwapMaterialArray(Material[] matArray)
             {
-                var matArray = renderer.sharedMaterials;
                 for (var i = 0; matArray.Length > i; i += 1)
                 {
                     if (matArray[i] == null) { continue; }
                     matArray[i] = swapDict[matArray[i]];
                 }
-                renderer.sharedMaterials = matArray;
+            }
+
+            foreach (var renderer in renderers)
+            {
+                if (renderer is SkinnedMeshRenderer smr)
+                {
+                    var meshInfo = context.GetMeshInfoFor(smr);
+                    foreach (var subMesh in meshInfo.SubMeshes)
+                        SwapMaterialArray(subMesh.SharedMaterials);
+                }
+                else
+                {
+                    var matArray = renderer.sharedMaterials;
+                    SwapMaterialArray(matArray);
+                    renderer.sharedMaterials = matArray;
+                }
             }
 
             foreach (var matKv in swapDict) ObjectRegistry.RegisterReplacedObject(matKv.Key, matKv.Value);
