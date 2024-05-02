@@ -530,6 +530,12 @@ msgstr "Allow Shuffling Material Slots"
 msgid "TraceAndOptimize:tooltip:allowShuffleMaterialSlots"
 msgstr "Allow shuffling material slots to reduce draw calls. This may affect the rendering order."
 
+msgid "TraceAndOptimize:prop:materialUnusedPropertyRemove"
+msgstr "Material Unused Property Remove"
+
+msgid "TraceAndOptimize:tooltip:materialUnusedPropertyRemove"
+msgstr "Remove unused textures and other properties from shaders from materials."
+
 msgid "TraceAndOptimize:prop:mmdWorldCompatibility"
 msgstr "MMD World Compatibility"
 
