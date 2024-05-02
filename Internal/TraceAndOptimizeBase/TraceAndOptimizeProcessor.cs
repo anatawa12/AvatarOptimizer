@@ -15,7 +15,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         public bool MergeSkinnedMesh;
         public bool AllowShuffleMaterialSlots;
         public bool MmdWorldCompatibility = true;
-        public bool MaterialUnusedPropertyRemove;
 
         public bool PreserveEndBone;
         public HashSet<GameObject> Exclusions = new HashSet<GameObject>();
@@ -35,6 +34,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         public bool SkipMergeMaterialAnimatingSkinnedMesh;
         public bool SkipMergeMaterials;
         public bool SkipRemoveEmptySubMesh;
+        public bool SkipRemoveMaterialUnusedProperties;
 
         public Dictionary<SkinnedMeshRenderer, HashSet<string>> PreserveBlendShapes =
             new Dictionary<SkinnedMeshRenderer, HashSet<string>>();
@@ -49,7 +49,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             MergeSkinnedMesh = config.mergeSkinnedMesh;
             AllowShuffleMaterialSlots = config.allowShuffleMaterialSlots;
             MmdWorldCompatibility = config.mmdWorldCompatibility;
-            MaterialUnusedPropertyRemove = config.materialUnusedPropertyRemove;
 
             PreserveEndBone = config.preserveEndBone;
 
@@ -70,6 +69,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             SkipMergeMaterialAnimatingSkinnedMesh = config.advancedSettings.skipMergeMaterialAnimatingSkinnedMesh;
             SkipMergeMaterials = config.advancedSettings.skipMergeMaterials;
             SkipRemoveEmptySubMesh = config.advancedSettings.skipRemoveEmptySubMesh;
+            SkipRemoveMaterialUnusedProperties = config.advancedSettings.skipRemoveMaterialUnusedProperties;
 
             Enabled = true;
         }

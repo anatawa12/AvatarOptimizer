@@ -14,7 +14,6 @@ namespace Anatawa12.AvatarOptimizer
         private SerializedProperty _optimizeAnimator;
         private SerializedProperty _mergeSkinnedMesh;
         private SerializedProperty _allowShuffleMaterialSlots;
-        private SerializedProperty _materialUnusedPropertyRemove;
         private SerializedProperty _animatorOptimizerEnabled;
         private SerializedProperty _animatorOptimizerEnd;
         private SerializedProperty _mmdWorldCompatibility;
@@ -31,7 +30,6 @@ namespace Anatawa12.AvatarOptimizer
             _optimizeAnimator = serializedObject.FindProperty(nameof(TraceAndOptimize.optimizeAnimator));
             _mergeSkinnedMesh = serializedObject.FindProperty(nameof(TraceAndOptimize.mergeSkinnedMesh));
             _allowShuffleMaterialSlots = serializedObject.FindProperty(nameof(TraceAndOptimize.allowShuffleMaterialSlots));
-            _materialUnusedPropertyRemove = serializedObject.FindProperty(nameof(TraceAndOptimize.materialUnusedPropertyRemove));
             _mmdWorldCompatibility = serializedObject.FindProperty(nameof(TraceAndOptimize.mmdWorldCompatibility));
             _advancedSettings = serializedObject.FindProperty(nameof(TraceAndOptimize.advancedSettings));
         }
@@ -62,7 +60,6 @@ namespace Anatawa12.AvatarOptimizer
                 EditorGUILayout.PropertyField(_allowShuffleMaterialSlots);
                 EditorGUI.indentLevel--;
             }
-            EditorGUILayout.PropertyField(_materialUnusedPropertyRemove);
 
 #if !UNITY_2021_3_OR_NEWER
             if (_optimizeAnimator.boolValue)

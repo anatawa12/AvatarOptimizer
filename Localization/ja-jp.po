@@ -439,12 +439,6 @@ msgstr "マテリアルスロットの前後関係を変えることを許可す
 msgid "TraceAndOptimize:tooltip:allowShuffleMaterialSlots"
 msgstr "マテリアルスロットの前後関係を変えることでドローコールを減らすことを許可します。これは描画順に影響を与える可能性があります。"
 
-msgid "TraceAndOptimize:prop:materialUnusedPropertyRemove"
-msgstr "マテリアルの未使用プロパティを削除する"
-
-msgid "TraceAndOptimize:tooltip:materialUnusedPropertyRemove"
-msgstr "シェーダーから使用されていないテクスチャーなどのプロパティをマテリアルから削除します。"
-
 msgid "TraceAndOptimize:prop:mmdWorldCompatibility"
 msgstr "MMDワールドとの互換性"
 

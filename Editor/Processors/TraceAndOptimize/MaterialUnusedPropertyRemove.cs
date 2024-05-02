@@ -10,7 +10,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         public override string DisplayName => "T&O: MaterialUnusedPropertyRemove";
         protected override void Execute(BuildContext context, TraceAndOptimizeState state)
         {
-            if (!state.MaterialUnusedPropertyRemove) { return; }
+            if (!state.RemoveUnusedObjects) { return; }
+            if (state.SkipRemoveMaterialUnusedProperties) { return; }
 
             var renderers = context.GetComponents<Renderer>();
             var swapDict = renderers.SelectMany(i => i.sharedMaterials)
@@ -34,7 +35,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         static Material MaterialCleaning(Material i)
         {
             var mat = UnityEngine.Object.Instantiate(i);
-            mat.name = i.name +"&AAO_MATERIAL_UNUSED_PROPERTIES_REMOLDED";
+            mat.name = i.name + "&AAO_MATERIAL_UNUSED_PROPERTIES_REMOLDED";
             RemoveUnusedProperties(mat);
             return mat;
         }
