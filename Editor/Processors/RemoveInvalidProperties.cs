@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
+using System.Linq;
 using Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes;
 using nadena.dev.ndmf;
 using UnityEngine;
@@ -23,6 +23,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             {
                 var instance = component.TargetComponent;
                 if (!instance) continue; // destroyed
+                if (component.Properties.Length == 0) continue; // no properties
                 var check = AnimatablePropertyRegistry.Get(context, instance);
                 if (check == null) continue; // we don't know if it's animatable
 
@@ -57,28 +58,25 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
         {
             Register<SkinnedMeshRenderer>((ctx, x) =>
             {
-                MeshInfo2 mesh = null;
-                ctx.GetMeshInfoFor(x);
+                var mesh = ctx.GetMeshInfoFor(x);
+                var materialSlots = mesh.SubMeshes.Sum(y => y.SharedMaterials.Length);
                 return (prop) =>
                 {
                     if (prop.StartsWith("blendShape."))
                     {
                         var name = prop.Substring("blendShape.".Length);
-                        if (mesh == null) mesh = ctx.GetMeshInfoFor(x);
                         return mesh.BlendShapes.FindIndex(b => b.name == name) != -1;
                     }
 
                     if (prop.StartsWith("m_Materials.Array.data["))
                     {
                         var index = int.Parse(prop.Substring("m_Materials.Array.data[".Length).TrimEnd(']'));
-                        if (mesh == null) mesh = ctx.GetMeshInfoFor(x);
-                        return index < mesh.SubMeshes.Count;
+                        return index < materialSlots;
                     }
 
                     if (VProp.IsBlendShapeIndex(prop))
                     {
                         var index = VProp.ParseBlendShapeIndex(prop);
-                        if (mesh == null) mesh = ctx.GetMeshInfoFor(x);
                         return index < mesh.BlendShapes.Count;
                     }
 
