@@ -16,6 +16,8 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Material Slot animations for multi-material multi-pass rendering are broken `#1042`
+  - Previously we only preserves animations for the number of submeshes instead of material slots.
 
 ### Security
 
