@@ -74,6 +74,13 @@ namespace Anatawa12.AvatarOptimizer
         [SerializeField]
         internal bool allowShuffleMaterialSlots;
 
+        [NotKeyable]
+        [AAOLocalized("TraceAndOptimize:prop:materialUnusedPropertyRemove",
+            "TraceAndOptimize:tooltip:materialUnusedPropertyRemove")]
+        [ToggleLeft]
+        [SerializeField]
+        internal bool materialUnusedPropertyRemove = true;
+
         // common parsing configuration
         [NotKeyable]
         [AAOLocalized("TraceAndOptimize:prop:mmdWorldCompatibility",
