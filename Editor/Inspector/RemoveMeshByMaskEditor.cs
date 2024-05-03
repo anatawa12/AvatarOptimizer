@@ -54,9 +54,7 @@ namespace Anatawa12.AvatarOptimizer
                         EditorGUI.indentLevel++;
                         var mask = slotConfig.FindPropertyRelative(nameof(RemoveMeshByMask.MaterialSlot.mask));
                         var mode = slotConfig.FindPropertyRelative(nameof(RemoveMeshByMask.MaterialSlot.mode));
-
-                        EditorGUILayout.PropertyField(mask);
-                        EditorGUILayout.PropertyField(mode);
+                        MaskTextureEditor.Inspector.DrawFields(_renderer, i, mask, mode);
                         var texture = mask.objectReferenceValue as Texture2D;
                         if (texture == null)
                         {

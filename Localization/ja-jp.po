@@ -360,6 +360,76 @@ msgstr "Skinned Mesh RendererにMeshが設定されていません。"
 
 # endregion
 
+# region MaskTextureEditor
+
+msgid "MaskTextureEditor:create"
+msgstr "作成"
+
+msgid "MaskTextureEditor:edit"
+msgstr "編集"
+
+msgid "MaskTextureEditor:title"
+msgstr "マスクテクスチャエディター"
+
+msgid "MaskTextureEditor:renderer"
+msgstr "スキンメッシュレンダラー"
+
+msgid "MaskTextureEditor:subMesh"
+msgstr "マテリアルスロット"
+
+msgid "MaskTextureEditor:subMeshIndex"
+msgstr "{0}番"
+
+msgid "MaskTextureEditor:texture"
+msgstr "マスクテクスチャ"
+
+msgid "MaskTextureEditor:save"
+msgstr "保存する"
+
+msgid "MaskTextureEditor:viewScale"
+msgstr "表示倍率 (Scroll)"
+
+msgid "MaskTextureEditor:viewOpacity"
+msgstr "表示透明度"
+
+msgid "MaskTextureEditor:resetView"
+msgstr "表示をウィンドウに合わせる"
+
+msgid "MaskTextureEditor:brushSize"
+msgstr "ブラシサイズ (Shift + Scroll)"
+
+msgid "MaskTextureEditor:brushColor"
+msgstr "ブラシカラー"
+
+msgid "MaskTextureEditor:black"
+msgstr "黒"
+
+msgid "MaskTextureEditor:white"
+msgstr "白"
+
+msgid "MaskTextureEditor:fillBlack"
+msgstr "黒で塗りつぶす"
+
+msgid "MaskTextureEditor:fillWhite"
+msgstr "白で塗りつぶす"
+
+msgid "MaskTextureEditor:inverse"
+msgstr "反転する"
+
+msgid "MaskTextureEditor:errorTitle"
+msgstr "エラー"
+
+msgid "MaskTextureEditor:errorMessageCreateFailed"
+msgstr "テクスチャの作成に失敗しました"
+
+msgid "MaskTextureEditor:errorMessageSaveFailed"
+msgstr "テクスチャの保存に失敗しました"
+
+msgid "MaskTextureEditor:errorButton"
+msgstr "OK"
+
+# endregion
+
 # region AvatarGlobalComponent
 
 msgid "AvatarGlobalComponent:NotOnAvatarRoot"

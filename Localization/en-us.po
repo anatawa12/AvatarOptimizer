@@ -450,6 +450,76 @@ msgstr "No Mesh is specified to the Skinned Mesh Renderer."
 
 # endregion
 
+# region MaskTextureEditor
+
+msgid "MaskTextureEditor:create"
+msgstr "Create"
+
+msgid "MaskTextureEditor:edit"
+msgstr "Edit"
+
+msgid "MaskTextureEditor:title"
+msgstr "MaskTextureEditor"
+
+msgid "MaskTextureEditor:renderer"
+msgstr "Skinned Mesh Renderer"
+
+msgid "MaskTextureEditor:subMesh"
+msgstr "Material Slot"
+
+msgid "MaskTextureEditor:subMeshIndex"
+msgstr "{0}"
+
+msgid "MaskTextureEditor:texture"
+msgstr "Mask Texture"
+
+msgid "MaskTextureEditor:save"
+msgstr "Save"
+
+msgid "MaskTextureEditor:viewScale"
+msgstr "View Scale (Scroll)"
+
+msgid "MaskTextureEditor:viewOpacity"
+msgstr "View Opacity"
+
+msgid "MaskTextureEditor:resetView"
+msgstr "Fit the view to the window"
+
+msgid "MaskTextureEditor:brushSize"
+msgstr "Brush Size (Shift + Scroll)"
+
+msgid "MaskTextureEditor:brushColor"
+msgstr "Brush Color"
+
+msgid "MaskTextureEditor:black"
+msgstr "Black"
+
+msgid "MaskTextureEditor:white"
+msgstr "White"
+
+msgid "MaskTextureEditor:fillBlack"
+msgstr "Fill Black"
+
+msgid "MaskTextureEditor:fillWhite"
+msgstr "Fill White"
+
+msgid "MaskTextureEditor:inverse"
+msgstr "Inverse"
+
+msgid "MaskTextureEditor:errorTitle"
+msgstr "Error"
+
+msgid "MaskTextureEditor:errorMessageCreateFailed"
+msgstr "Failed to create the texture"
+
+msgid "MaskTextureEditor:errorMessageSaveFailed"
+msgstr "Failed to save the texture"
+
+msgid "MaskTextureEditor:errorButton"
+msgstr "OK"
+
+# endregion
+
 # region AvatarGlobalComponent
 
 msgid "AvatarGlobalComponent:NotOnAvatarRoot"
