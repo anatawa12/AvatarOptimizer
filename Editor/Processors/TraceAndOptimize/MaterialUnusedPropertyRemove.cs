@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using nadena.dev.ndmf;
 using UnityEditor;
@@ -14,17 +15,17 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             if (state.SkipRemoveMaterialUnusedProperties) { return; }
 
             var renderers = context.GetComponents<Renderer>();
-            var swapDict = renderers.SelectMany(i =>
-                i is SkinnedMeshRenderer smr ? context.GetMeshInfoFor(smr).SubMeshes.SelectMany(sm => sm.SharedMaterials) : i.sharedMaterials)
-                .Distinct().Where(i => i != null)
-                .ToDictionary(i => i, MaterialCleaning);
+            var swapDict = new Dictionary<Material, Material>();
 
             void SwapMaterialArray(Material[] matArray)
             {
                 for (var i = 0; matArray.Length > i; i += 1)
                 {
-                    if (matArray[i] == null) { continue; }
-                    matArray[i] = swapDict[matArray[i]];
+                    var sourceMaterial = matArray[i];
+                    if (sourceMaterial == null) { continue; }
+
+                    if (swapDict.TryGetValue(sourceMaterial, out var cleanMaterial)) { matArray[i] = cleanMaterial; }
+                    else { swapDict[sourceMaterial] = matArray[i] = MaterialCleaning(sourceMaterial); }
                 }
             }
 
