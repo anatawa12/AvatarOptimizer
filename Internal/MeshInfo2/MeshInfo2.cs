@@ -43,7 +43,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         {
             SourceRenderer = renderer;
             var mesh = _originalMesh = renderer.sharedMesh;
-            if (mesh != null && !mesh.isReadable && EditorApplication.isPlaying)
+            if (mesh != null && mesh.vertexCount != 0 && mesh.vertices.Length == 0)
             {
                 var originalMeshImporter = GetImporter(ObjectRegistry.GetReference(mesh).Object as Mesh);
 
