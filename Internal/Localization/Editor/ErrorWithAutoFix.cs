@@ -69,7 +69,7 @@ namespace Anatawa12.AvatarOptimizer
         public override VisualElement CreateVisualElement(ErrorReport report)
         {
             var element = base.CreateVisualElement(report);
-            element[0].Add(new Button(() => { AutoFix(); }) {text = "Auto Fix"});
+            element[0].Add(new Button(() => { AutoFix(); }) {text = AAOL10N.Tr("ErrorReporter:autoFix")});
             return element;
         }
 

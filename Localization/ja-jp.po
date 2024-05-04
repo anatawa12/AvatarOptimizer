@@ -588,6 +588,9 @@ msgstr "{0}コンポーネントはLineStripが使用されているSubMeshを�
 msgid "ErrorReporter:error.internal_error"
 msgstr "内部エラーが発生しました: {0} 以下の処理中です:"
 
+msgid "ErrorReporter:autoFix"
+msgstr "修正する"
+
 # endregion
 
 # region AssetDescription
