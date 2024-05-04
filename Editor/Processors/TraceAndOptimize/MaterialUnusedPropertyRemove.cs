@@ -47,7 +47,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             foreach (var matKv in swapDict) ObjectRegistry.RegisterReplacedObject(matKv.Key, matKv.Value);
         }
 
-        static Material MaterialCleaning(Material i)
+        public static Material MaterialCleaning(Material i)
         {
             var mat = UnityEngine.Object.Instantiate(i);
             mat.name = i.name + "&AAO_MATERIAL_UNUSED_PROPERTIES_REMOLDED";
