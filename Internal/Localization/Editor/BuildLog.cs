@@ -1,3 +1,4 @@
+using System;
 using nadena.dev.ndmf;
 
 namespace Anatawa12.AvatarOptimizer
@@ -12,5 +13,8 @@ namespace Anatawa12.AvatarOptimizer
 
         public static void LogError(string code, params object[] args) =>
             ErrorReport.ReportError(AAOL10N.Localizer, ErrorSeverity.Error, code, args);
+
+        public static void LogErrorWithAutoFix(string code, Action autoFix, params object[] args) =>
+            ErrorReport.ReportError(new ErrorWithAutoFix(ErrorSeverity.Error, code, autoFix, args));
     }
 }
