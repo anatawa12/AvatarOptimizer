@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Implement mask texture editor [`#1044`](https://github.com/anatawa12/AvatarOptimizer/pull/1044)
 
 ### Changed
 
