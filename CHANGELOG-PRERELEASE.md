@@ -10,6 +10,14 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
+- Improved behavior with Read/Write Off `#1045`
+  - Because of Unity limitation, AAO cannot process meshes with R/W off on `Start` so it will be error.
+  - However, on `Awake`, we can read them so AAO should process them.
+  - Since this version, AAO will process meshes with R/W off on `Awake`.
+  - This reduces the number of errors on the apply on play.
+  - If you're using Av3Emulator, you still see the error.
+  - In addition, in such case, we'll show `Auto Fix` button on the error message.
+  - If you press the button, AAO will fix the error by changing the mesh to read/write enabled.
 
 ### Deprecated
 

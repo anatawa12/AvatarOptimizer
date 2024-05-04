@@ -43,9 +43,33 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         {
             SourceRenderer = renderer;
             var mesh = _originalMesh = renderer.sharedMesh;
-            if (mesh != null && !mesh.isReadable && EditorApplication.isPlaying)
+            if (mesh != null && mesh.vertexCount != 0 && mesh.vertices.Length == 0)
             {
-                BuildLog.LogError("MeshInfo2:error:MeshNotReadable", mesh);
+                var originalMeshImporter = GetImporter(ObjectRegistry.GetReference(mesh).Object as Mesh);
+
+                ModelImporter GetImporter(Mesh importingMesh)
+                {
+                    if (!importingMesh) return null;
+                    var path = AssetDatabase.GetAssetPath(importingMesh);
+                    if (string.IsNullOrEmpty(path)) return null;
+                    return AssetImporter.GetAtPath(path) as ModelImporter;
+                }
+
+                if (originalMeshImporter == null)
+                {
+                    BuildLog.LogError("MeshInfo2:error:MeshNotReadable", mesh);
+                }
+                else
+                {
+                    void AutoFix()
+                    {
+                        originalMeshImporter.isReadable = true;
+                        originalMeshImporter.SaveAndReimport();
+                    }
+
+                    BuildLog.LogErrorWithAutoFix("MeshInfo2:error:MeshNotReadable", AutoFix, mesh);
+                }
+
                 return;
             }
 

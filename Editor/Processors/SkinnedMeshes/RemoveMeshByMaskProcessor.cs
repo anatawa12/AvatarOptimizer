@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using nadena.dev.ndmf;
+using UnityEditor;
 using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
@@ -44,7 +45,31 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 }
                 else
                 {
-                    BuildLog.LogError("RemoveMeshByMask:error:maskIsNotReadable", mask);
+                    var originalMeshImporter = GetImporter(ObjectRegistry.GetReference(mask).Object as Texture2D);
+
+                    TextureImporter GetImporter(Texture2D importingMesh)
+                    {
+                        if (!importingMesh) return null;
+                        var path = AssetDatabase.GetAssetPath(importingMesh);
+                        if (string.IsNullOrEmpty(path)) return null;
+                        return AssetImporter.GetAtPath(path) as TextureImporter;
+                    }
+
+                    if (originalMeshImporter == null)
+                    {
+                        BuildLog.LogError("RemoveMeshByMask:error:maskIsNotReadable", mask);
+                    }
+                    else
+                    {
+                        void AutoFix()
+                        {
+                            originalMeshImporter.isReadable = true;
+                            originalMeshImporter.SaveAndReimport();
+                        }
+
+                        BuildLog.LogErrorWithAutoFix("RemoveMeshByMask:error:maskIsNotReadable", AutoFix, mask);
+                    }
+
                     continue;
                 }
 
