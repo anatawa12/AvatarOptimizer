@@ -362,7 +362,7 @@ msgid "RemoveMeshByMask:button:makeReadable"
 msgstr "読み取り可能にする"
 
 msgid "RemoveMeshByMask:tooltip:textureIsNotImported"
-msgstr "マスクテクスチャが画像ファイルからインポートされていません。"
+msgstr "画像ファイルから読み込まれたマスクテクスチャではありません。"
 
 # endregion
 
