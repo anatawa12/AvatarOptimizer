@@ -65,15 +65,15 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
             {
                 hideFlags = HideFlags.HideAndDontSave,
             };
-            _fillMaterial = new Material(Shader.Find("Hidden/MaskTextureEditor/Fill"))
+            _fillMaterial = new Material(Shader.Find("Hidden/AvatarOptimizer/MaskTextureEditor/Fill"))
             {
                 hideFlags = HideFlags.HideAndDontSave,
             };
-            _paintMaterial = new Material(Shader.Find("Hidden/MaskTextureEditor/Paint"))
+            _paintMaterial = new Material(Shader.Find("Hidden/AvatarOptimizer/MaskTextureEditor/Paint"))
             {
                 hideFlags = HideFlags.HideAndDontSave,
             };
-            _inverseMaterial = new Material(Shader.Find("Hidden/MaskTextureEditor/Inverse"))
+            _inverseMaterial = new Material(Shader.Find("Hidden/AvatarOptimizer/MaskTextureEditor/Inverse"))
             {
                 hideFlags = HideFlags.HideAndDontSave,
             };

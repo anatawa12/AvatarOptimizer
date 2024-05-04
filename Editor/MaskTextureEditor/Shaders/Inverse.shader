@@ -1,4 +1,4 @@
-Shader "Hidden/MaskTextureEditor/Inverse"
+Shader "Hidden/AvatarOptimizer/MaskTextureEditor/Inverse"
 {
     Properties
     {

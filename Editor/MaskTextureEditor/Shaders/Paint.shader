@@ -1,4 +1,4 @@
-Shader "Hidden/MaskTextureEditor/Paint"
+Shader "Hidden/AvatarOptimizer/MaskTextureEditor/Paint"
 {
     Properties
     {
