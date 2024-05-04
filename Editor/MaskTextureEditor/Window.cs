@@ -56,6 +56,14 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
         [SerializeField]
         private TextureUndoStack _textureUndoStack = null;
 
+        [SerializeField]
+        private int _textureUndoStackStateWhenSaved = 0;
+
+#if !UNITY_2020_2_OR_NEWER
+        private bool hasUnsavedChanges = false;
+        private string saveChangesMessage = string.Empty;
+#endif
+
         public static bool IsOpen(SkinnedMeshRenderer renderer, int subMesh, Texture2D texture)
         {
             if (!HasOpenInstances<Window>())
@@ -81,12 +89,47 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
 
             _textureUndoStack = CreateInstance<TextureUndoStack>();
             _textureUndoStack.Init(_texturePainter.Texture);
+
+            _textureUndoStackStateWhenSaved = _textureUndoStack.State;
+        }
+
+        public void SafeClose()
+        {
+            if (hasUnsavedChanges)
+            {
+                switch (EditorUtility.DisplayDialogComplex(
+                    AAOL10N.Tr("MaskTextureEditor:title"),
+                    saveChangesMessage,
+                    AAOL10N.Tr("MaskTextureEditor:saveChangesButtonSave"),
+                    AAOL10N.Tr("MaskTextureEditor:saveChangesButtonCancel"),
+                    AAOL10N.Tr("MaskTextureEditor:saveChangesButtonDiscard")))
+                {
+                    case 0:
+                    {
+                        SaveChanges();
+                        Close();
+                        break;
+                    }
+                    case 2:
+                    {
+                        DiscardChanges();
+                        Close();
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                Close();
+            }
         }
 
         private void OnGUI()
         {
             wantsMouseMove = true;
             titleContent.text = AAOL10N.Tr("MaskTextureEditor:title");
+            hasUnsavedChanges = _textureUndoStack.State != _textureUndoStackStateWhenSaved;
+            saveChangesMessage = AAOL10N.Tr("MaskTextureEditor:saveChangesMessage");
 
             if (_renderer == null ||
                 _renderer.sharedMesh == null ||
@@ -150,7 +193,7 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
 
             if (GUILayout.Button(AAOL10N.Tr("MaskTextureEditor:save"), Style.Button))
             {
-                Save();
+                SaveChanges();
             }
 
             EditorGUILayout.Space();
@@ -287,6 +330,7 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
                     if (Event.current.button == 0)
                     {
                         _textureUndoStack.Record();
+                        Repaint();
                     }
                     break;
                 }
@@ -341,8 +385,14 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
             _viewPosition = Vector2.Max(_viewPosition, Vector2.zero);
         }
 
-        private void Save()
+#if UNITY_2020_2_OR_NEWER
+        public override void SaveChanges()
         {
+            base.SaveChanges();
+#else
+        private void SaveChanges()
+        {
+#endif
             var path = AssetDatabase.GetAssetPath(_texture);
 
             var texture = new Texture2D(0, 0);
@@ -357,6 +407,8 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
                 var importer = AssetImporter.GetAtPath(path) as TextureImporter;
                 importer.isReadable = true;
                 importer.SaveAndReimport();
+
+                _textureUndoStackStateWhenSaved = _textureUndoStack.State;
 
                 // Tap the renderer to update the mesh preview
                 // There might be a better way
@@ -375,6 +427,16 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
             {
                 DestroyImmediate(texture);
             }
+        }
+
+#if UNITY_2020_2_OR_NEWER
+        public override void DiscardChanges()
+        {
+            base.DiscardChanges();
+#else
+        private void DiscardChanges()
+        {
+#endif
         }
 
         private void OnDestroy()

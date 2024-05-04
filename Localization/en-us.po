@@ -506,6 +506,18 @@ msgstr "Fill White"
 msgid "MaskTextureEditor:inverse"
 msgstr "Inverse Color"
 
+msgid "MaskTextureEditor:saveChangesMessage"
+msgstr "There are unsaved changes. Would you like to save?"
+
+msgid "MaskTextureEditor:saveChangesButtonSave"
+msgstr "Save"
+
+msgid "MaskTextureEditor:saveChangesButtonDiscard"
+msgstr "Discard"
+
+msgid "MaskTextureEditor:saveChangesButtonCancel"
+msgstr "Cancel"
+
 msgid "MaskTextureEditor:errorTitle"
 msgstr "Error"
 

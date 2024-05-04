@@ -30,6 +30,7 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
 
         public bool CanUndo => _counter.Count > 1;
         public bool CanRedo => _counter.Count < _stack.Count;
+        public int State => _stack[_counter.Count - 1].GetInstanceID();
 
         private void Awake()
         {

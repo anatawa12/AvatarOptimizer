@@ -416,6 +416,18 @@ msgstr "白で塗りつぶす"
 msgid "MaskTextureEditor:inverse"
 msgstr "色を反転させる"
 
+msgid "MaskTextureEditor:saveChangesMessage"
+msgstr "保存されていない変更があります。保存しますか？"
+
+msgid "MaskTextureEditor:saveChangesButtonSave"
+msgstr "保存"
+
+msgid "MaskTextureEditor:saveChangesButtonDiscard"
+msgstr "破棄"
+
+msgid "MaskTextureEditor:saveChangesButtonCancel"
+msgstr "キャンセル"
+
 msgid "MaskTextureEditor:errorTitle"
 msgstr "エラー"
 

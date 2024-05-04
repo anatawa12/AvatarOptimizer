@@ -55,12 +55,15 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
                         {
                             if (EditorWindow.HasOpenInstances<Window>())
                             {
-                                EditorWindow.GetWindow<Window>().Close();
+                                EditorWindow.GetWindow<Window>().SafeClose();
                             }
-                            if (shouldOpen)
+                            if (shouldOpen && !EditorWindow.HasOpenInstances<Window>())
                             {
                                 EditorWindow.GetWindow<Window>().Open(renderer, subMesh, texture);
                             }
+
+                            // Exit GUI to avoid "EndLayoutGroup: BeginLayoutGroup must be called first."
+                            GUIUtility.ExitGUI();
                         }
                     }
                 }
