@@ -14,7 +14,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             if (state.SkipRemoveMaterialUnusedProperties) { return; }
 
             var renderers = context.GetComponents<Renderer>();
-            var swapDict = renderers.SelectMany(i => i.sharedMaterials)
+            var swapDict = renderers.SelectMany(i =>
+                i is SkinnedMeshRenderer smr ? context.GetMeshInfoFor(smr).SubMeshes.SelectMany(sm => sm.SharedMaterials) : i.sharedMaterials)
                 .Distinct().Where(i => i != null)
                 .ToDictionary(i => i, MaterialCleaning);
 
