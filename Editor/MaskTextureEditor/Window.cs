@@ -367,7 +367,7 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
                 EditorUtility.DisplayDialog(
                     AAOL10N.Tr("MaskTextureEditor:errorTitle"),
                     AAOL10N.Tr("MaskTextureEditor:errorMessageSaveFailed"),
-                    AAOL10N.Tr("MaskTextureEditor:errorButton"));
+                    "OK");
 
                 Debug.LogError(e);
             }

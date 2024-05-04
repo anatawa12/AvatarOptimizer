@@ -420,13 +420,10 @@ msgid "MaskTextureEditor:errorTitle"
 msgstr "エラー"
 
 msgid "MaskTextureEditor:errorMessageCreateFailed"
-msgstr "テクスチャの作成に失敗しました。"
+msgstr "テクスチャの作成に失敗しました。詳細はログを参照してください。"
 
 msgid "MaskTextureEditor:errorMessageSaveFailed"
-msgstr "テクスチャの保存に失敗しました。"
-
-msgid "MaskTextureEditor:errorButton"
-msgstr "OK"
+msgstr "テクスチャの保存に失敗しました。詳細はログを参照してください。"
 
 # endregion
 

@@ -510,13 +510,10 @@ msgid "MaskTextureEditor:errorTitle"
 msgstr "Error"
 
 msgid "MaskTextureEditor:errorMessageCreateFailed"
-msgstr "Failed to create the texture."
+msgstr "Failed to create the texture. Refer to the log for details."
 
 msgid "MaskTextureEditor:errorMessageSaveFailed"
-msgstr "Failed to save the texture."
-
-msgid "MaskTextureEditor:errorButton"
-msgstr "OK"
+msgstr "Failed to save the texture. Refer to the log for details."
 
 # endregion
 
