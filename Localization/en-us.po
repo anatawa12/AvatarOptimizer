@@ -459,7 +459,7 @@ msgid "MaskTextureEditor:edit"
 msgstr "Edit"
 
 msgid "MaskTextureEditor:title"
-msgstr "MaskTextureEditor"
+msgstr "AAO MaskTextureEditor"
 
 msgid "MaskTextureEditor:renderer"
 msgstr "Skinned Mesh Renderer"
@@ -504,16 +504,16 @@ msgid "MaskTextureEditor:fillWhite"
 msgstr "Fill White"
 
 msgid "MaskTextureEditor:inverse"
-msgstr "Inverse"
+msgstr "Inverse Color"
 
 msgid "MaskTextureEditor:errorTitle"
 msgstr "Error"
 
 msgid "MaskTextureEditor:errorMessageCreateFailed"
-msgstr "Failed to create the texture"
+msgstr "Failed to create the texture."
 
 msgid "MaskTextureEditor:errorMessageSaveFailed"
-msgstr "Failed to save the texture"
+msgstr "Failed to save the texture."
 
 msgid "MaskTextureEditor:errorButton"
 msgstr "OK"
