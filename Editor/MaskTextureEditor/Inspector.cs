@@ -8,7 +8,7 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
 {
     internal static class Inspector
     {
-        private readonly static Vector2 DefaultTextureSize = new Vector2(1024.0f, 1024.0f);
+        private readonly static Vector2Int DefaultTextureSize = new Vector2Int(1024, 1024);
 
         public static void DrawFields(
             SkinnedMeshRenderer renderer, int subMesh,
@@ -65,7 +65,7 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
             EditorGUILayout.PropertyField(mode);
         }
 
-        private static Texture2D CreateTexture(Vector2 size, Color color)
+        private static Texture2D CreateTexture(Vector2Int size, Color color)
         {
             var path = EditorUtility.SaveFilePanelInProject(
                 AAOL10N.Tr("MaskTextureEditor:create"),

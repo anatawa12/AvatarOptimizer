@@ -44,24 +44,24 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
 
         public void Init(Texture2D texture)
         {
-            Init(Vector2.zero);
+            Init();
             Load(texture);
         }
 
-        public void Init(Vector2 size, Color color)
+        public void Init(Vector2Int size, Color color)
         {
             Init(size);
             Fill(color);
         }
 
-        private void Init(Vector2 size)
+        private void Init(Vector2Int size = default)
         {
             // Set HideFlags to keep the state when reloading a scene or domain
-            _target = new RenderTexture((int)size.x, (int)size.y, 0)
+            _target = new RenderTexture(size.x, size.y, 0)
             {
                 hideFlags = HideFlags.HideAndDontSave,
             };
-            _buffer = new RenderTexture((int)size.x, (int)size.y, 0)
+            _buffer = new RenderTexture(size.x, size.y, 0)
             {
                 hideFlags = HideFlags.HideAndDontSave,
             };
