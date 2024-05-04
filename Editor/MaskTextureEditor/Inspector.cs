@@ -44,19 +44,23 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
                 }
                 else
                 {
-                    var isOpen = Window.IsOpen(renderer, subMesh, texture);
-                    var shouldOpen = GUILayout.Toggle(isOpen,
-                        AAOL10N.Tr("MaskTextureEditor:edit"),
-                        GUI.skin.button, GUILayout.ExpandWidth(false));
-                    if (isOpen != shouldOpen)
+                    var extension = Path.GetExtension(AssetDatabase.GetAssetPath(texture));
+                    using (new EditorGUI.DisabledScope(extension != ".png"))
                     {
-                        if (EditorWindow.HasOpenInstances<Window>())
+                        var isOpen = Window.IsOpen(renderer, subMesh, texture);
+                        var shouldOpen = GUILayout.Toggle(isOpen,
+                            AAOL10N.Tr("MaskTextureEditor:edit"),
+                            GUI.skin.button, GUILayout.ExpandWidth(false));
+                        if (isOpen != shouldOpen)
                         {
-                            EditorWindow.GetWindow<Window>().Close();
-                        }
-                        if (shouldOpen)
-                        {
-                            EditorWindow.GetWindow<Window>().Open(renderer, subMesh, texture);
+                            if (EditorWindow.HasOpenInstances<Window>())
+                            {
+                                EditorWindow.GetWindow<Window>().Close();
+                            }
+                            if (shouldOpen)
+                            {
+                                EditorWindow.GetWindow<Window>().Open(renderer, subMesh, texture);
+                            }
                         }
                     }
                 }
