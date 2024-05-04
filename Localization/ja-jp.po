@@ -358,6 +358,12 @@ msgstr "未知の削除モードが指定されています。"
 msgid "RemoveMeshByMask:warning:NoMesh"
 msgstr "Skinned Mesh RendererにMeshが設定されていません。"
 
+msgid "RemoveMeshByMask:button:makeReadable"
+msgstr "読み取り可能にする"
+
+msgid "RemoveMeshByMask:tooltip:textureIsNotImported"
+msgstr "マスクテクスチャが画像ファイルからインポートされていません。"
+
 # endregion
 
 # region AvatarGlobalComponent

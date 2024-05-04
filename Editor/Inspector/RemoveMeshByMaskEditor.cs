@@ -1,4 +1,5 @@
 using System.Linq;
+using JetBrains.Annotations;
 using Unity.Collections;
 using UnityEditor;
 using UnityEngine;
@@ -64,7 +65,29 @@ namespace Anatawa12.AvatarOptimizer
                         }
                         else if (texture.isReadable == false)
                         {
+                            GUILayout.BeginHorizontal();
                             EditorGUILayout.HelpBox(AAOL10N.Tr("RemoveMeshByMask:error:maskIsNotReadable"), MessageType.Error);
+
+                            var importer = GetTextureImporter(texture);
+                            if (importer == null)
+                            {
+                                var fixContent = new GUIContent(AAOL10N.Tr("RemoveMeshByMask:button:makeReadable"));
+                                fixContent.tooltip = AAOL10N.Tr("RemoveMeshByMask:tooltip:textureIsNotImported");
+                                EditorGUI.BeginDisabledGroup(true);
+                                GUILayout.Button("", GUILayout.Height(38));
+                                EditorGUI.EndDisabledGroup();
+                            }
+                            else
+                            {
+                                var fixContent = new GUIContent(AAOL10N.Tr("RemoveMeshByMask:button:makeReadable"));
+                                if (GUILayout.Button(fixContent, GUILayout.Height(38)))
+                                {
+                                    importer.isReadable = true;
+                                    importer.SaveAndReimport();
+                                }
+                            }
+
+                            GUILayout.EndHorizontal();
                         }
                         EditorGUI.indentLevel--;
                     }
@@ -84,6 +107,14 @@ namespace Anatawa12.AvatarOptimizer
             }
 
             serializedObject.ApplyModifiedProperties();
+        }
+
+        [CanBeNull] TextureImporter GetTextureImporter(Texture2D texture)
+        {
+            var path = AssetDatabase.GetAssetPath(texture);
+            if (string.IsNullOrEmpty(path))
+                return null;
+            return AssetImporter.GetAtPath(path) as TextureImporter;
         }
     }
 }

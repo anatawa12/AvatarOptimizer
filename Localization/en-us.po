@@ -448,6 +448,12 @@ msgstr "Unknown Remove Mode is specified."
 msgid "RemoveMeshByMask:warning:NoMesh"
 msgstr "No Mesh is specified to the Skinned Mesh Renderer."
 
+msgid "RemoveMeshByMask:button:makeReadable"
+msgstr "Make Readable"
+
+msgid "RemoveMeshByMask:tooltip:textureIsNotImported"
+msgstr "Mask Texture is not imported from image file."
+
 # endregion
 
 # region AvatarGlobalComponent
