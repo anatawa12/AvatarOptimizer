@@ -75,7 +75,7 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
 
             if (_counter.Count > 0)
             {
-                UnityEditor.Undo.RegisterCompleteObjectUndo(_counter, "Modify Texture");
+                UnityEditor.Undo.RecordObject(_counter, "Modify Texture");
             }
             _counter.Count++;
         }
@@ -84,10 +84,7 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
         {
             if (CanUndo)
             {
-                // Clear Undo as it will be inconsistent with the counter
-                // There might be a better way
-                UnityEditor.Undo.ClearUndo(_counter);
-
+                UnityEditor.Undo.RecordObject(_counter, "Undo Texture");
                 _counter.Count--;
 
                 Apply();
@@ -98,10 +95,7 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
         {
             if (CanRedo)
             {
-                // Clear Undo as it will be inconsistent with the counter
-                // There might be a better way
-                UnityEditor.Undo.ClearUndo(_counter);
-
+                UnityEditor.Undo.RecordObject(_counter, "Redo Texture");
                 _counter.Count++;
 
                 Apply();
