@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer
 {
-    internal struct CachedGuidLoader<T> where T : Object
+    public struct CachedGuidLoader<T> where T : Object
     {
         private readonly string _guid;
         private T _cached;
