@@ -17,11 +17,11 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
         {
             using (new EditorGUILayout.HorizontalScope())
             {
-                EditorGUILayout.PropertyField(mask);
-
                 var texture = mask.objectReferenceValue as Texture2D;
                 if (texture == null)
                 {
+                    EditorGUILayout.PropertyField(mask);
+
                     if (GUILayout.Button(AAOL10N.Tr("MaskTextureEditor:create"), GUILayout.ExpandWidth(false)))
                     {
                         mask.serializedObject.Update();
@@ -44,20 +44,25 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
                 }
                 else
                 {
+                    var isOpenWindow = Window.IsOpen(renderer, subMesh);
+                    using (new EditorGUI.DisabledScope(isOpenWindow))
+                    {
+                        EditorGUILayout.PropertyField(mask);
+                    }
+
                     var extension = Path.GetExtension(AssetDatabase.GetAssetPath(texture));
                     using (new EditorGUI.DisabledScope(extension != ".png"))
                     {
-                        var isOpen = Window.IsOpen(renderer, subMesh, texture);
-                        var shouldOpen = GUILayout.Toggle(isOpen,
+                        var shouldOpenWindow = GUILayout.Toggle(isOpenWindow,
                             AAOL10N.Tr("MaskTextureEditor:edit"),
                             GUI.skin.button, GUILayout.ExpandWidth(false));
-                        if (isOpen != shouldOpen)
+                        if (isOpenWindow != shouldOpenWindow)
                         {
                             if (EditorWindow.HasOpenInstances<Window>())
                             {
                                 EditorWindow.GetWindow<Window>().SafeClose();
                             }
-                            if (shouldOpen && !EditorWindow.HasOpenInstances<Window>())
+                            if (shouldOpenWindow && !EditorWindow.HasOpenInstances<Window>())
                             {
                                 EditorWindow.GetWindow<Window>().Open(renderer, subMesh, texture);
                             }

@@ -64,7 +64,7 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
         private string saveChangesMessage = string.Empty;
 #endif
 
-        public static bool IsOpen(SkinnedMeshRenderer renderer, int subMesh, Texture2D texture)
+        public static bool IsOpen(SkinnedMeshRenderer renderer, int subMesh)
         {
             if (!HasOpenInstances<Window>())
             {
@@ -72,7 +72,7 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
             }
 
             var window = GetWindow<Window>(string.Empty, false);
-            return window._renderer == renderer && window._subMesh == subMesh && window._texture == texture;
+            return window._renderer == renderer && window._subMesh == subMesh;
         }
 
         public void Open(SkinnedMeshRenderer renderer, int subMesh, Texture2D texture)
