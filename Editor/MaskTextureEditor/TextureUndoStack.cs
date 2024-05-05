@@ -67,7 +67,11 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
             }
             _stack.RemoveRange(_counter.Count, _stack.Count - _counter.Count);
 
-            var texture = new Texture2D(_target.width, _target.height);
+            // Set HideFlags to keep the state when reloading a scene or domain
+            var texture = new Texture2D(_target.width, _target.height)
+            {
+                hideFlags = HideFlags.HideAndDontSave,
+            };
 
             RenderTexture.active = _target;
             texture.ReadPixels(new Rect(0, 0, texture.width, texture.height), 0, 0);
