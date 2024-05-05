@@ -1,5 +1,5 @@
+using Anatawa12.AvatarOptimizer.EditModePreview;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -15,9 +15,10 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
 
         private Mesh _mesh = null;
         private int _meshDirtyCount = 0;
-        private (Vector3 PointA, Vector3 PointB)[] _lines = null;
-        private Vector3[] _points = null;
-        private int[] _indices = null;
+        private Vector2[] _points = null;
+        private Vector3[] _buffer = null;
+        private int[] _lineIndices = null;
+        private int[] _removedLineIndices = null;
 
         private void Awake()
         {
@@ -35,15 +36,15 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
         {
             if (_mesh != _renderer.sharedMesh ||
                 _meshDirtyCount != EditorUtility.GetDirtyCount(_mesh) ||
-                _lines == null ||
                 _points == null ||
-                _indices == null)
+                _buffer == null ||
+                _lineIndices == null ||
+                _removedLineIndices == null)
             {
                 _mesh = _renderer.sharedMesh;
                 _meshDirtyCount = EditorUtility.GetDirtyCount(_mesh);
-                _lines = CollectLines();
-                _points = new Vector3[_lines.Length * 2];
-                _indices = new int[_lines.Length * 2];
+
+                CollectPointsAndLineIndices();
             }
 
             // Draw the main texture if present
@@ -53,59 +54,86 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
                 EditorGUI.DrawTextureTransparent(rect, _renderer.sharedMaterials[_subMesh].mainTexture);
             }
 
-            // Draw background lines for visibility
-            for (var i = 0; i < _lines.Length; i++)
+            // Draw line shadows for visibility
+            for (var i = 0; i < _buffer.Length; i++)
             {
-                var indexA = i * 2 + 0;
-                var indexB = i * 2 + 1;
-                var pointA = new Vector2(_lines[i].PointA.x, 1.0f - _lines[i].PointA.y);
-                var pointB = new Vector2(_lines[i].PointB.x, 1.0f - _lines[i].PointB.y);
-                _indices[indexA] = indexA;
-                _indices[indexB] = indexB;
-                _points[indexA] = Rect.NormalizedToPoint(rect, pointA);
-                _points[indexB] = Rect.NormalizedToPoint(rect, pointB);
+                _buffer[i] = Rect.NormalizedToPoint(rect, new Vector2(_points[i].x, 1.0f - _points[i].y));
             }
             Handles.color = GUI.color * Color.gray;
-            Handles.DrawLines(_points, _indices);
+            Handles.DrawLines(_buffer, _lineIndices);
+            Handles.color = GUI.color * Color.gray;
+            Handles.DrawLines(_buffer, _removedLineIndices);
 
-            // Draw foreground lines with offset
-            for (var i = 0; i < _points.Length; i++)
+            // Draw lines with offset
+            for (var i = 0; i < _buffer.Length; i++)
             {
-                _points[i] -= (Vector3)Vector2.one;
+                _buffer[i] -= Vector3.one;
             }
             Handles.color = GUI.color * Color.white;
-            Handles.DrawLines(_points, _indices);
+            Handles.DrawLines(_buffer, _lineIndices);
+            Handles.color = GUI.color * Color.black;
+            Handles.DrawLines(_buffer, _removedLineIndices);
         }
 
-        private (Vector3 PointA, Vector3 PointB)[] CollectLines()
+        private void CollectPointsAndLineIndices()
         {
-            switch (_mesh.GetTopology(_subMesh))
+            if (MeshPreviewController.StateFor(_renderer) == MeshPreviewController.PreviewState.PreviewingThat)
             {
-                case MeshTopology.Lines:
-                    return CollectLines(2);
-                case MeshTopology.Triangles:
-                    return CollectLines(3);
-                case MeshTopology.Quads:
-                    return CollectLines(4);
-                default:
-                    return new (Vector3, Vector3)[0];
-            };
+                var originalLines = CollectLines(MeshPreviewController.OriginalMesh, _subMesh);
+                var previewLines = CollectLines(MeshPreviewController.PreviewMesh, _subMesh);
+                var removedLines = new HashSet<(int, int)>(originalLines);
+                removedLines.ExceptWith(previewLines);
+                _points = MeshPreviewController.OriginalMesh.uv;
+                _buffer = new Vector3[_points.Length];
+                _lineIndices = FlattenLineIndices(previewLines);
+                _removedLineIndices = FlattenLineIndices(removedLines);
+            }
+            else
+            {
+                var lines = CollectLines(_mesh, _subMesh);
+                _points = _mesh.uv;
+                _buffer = new Vector3[_points.Length];
+                _lineIndices = FlattenLineIndices(lines);
+                _removedLineIndices = new int[0];
+            }
 
-            (Vector3 PointA, Vector3 PointB)[] CollectLines(int topology)
+            HashSet<(int, int)> CollectLines(Mesh mesh, int subMesh)
             {
-                var lines = new HashSet<(Vector3, Vector3)>();
-                var points = _mesh.uv;
-                var indices = _mesh.GetIndices(_subMesh);
+                var topology = 0;
+                switch (mesh.GetTopology(subMesh))
+                {
+                    case MeshTopology.Lines:
+                        topology = 2;
+                        break;
+                    case MeshTopology.Triangles:
+                        topology = 3;
+                        break;
+                    case MeshTopology.Quads:
+                        topology = 4;
+                        break;
+                    default:
+                        return new HashSet<(int, int)>();
+                };
+                var lines = new HashSet<(int, int)>();
+                var indices = mesh.GetIndices(subMesh);
                 for (var i = 0; i < indices.Length; i++)
                 {
-                    var pointA = points[indices[i / topology * topology + (i + 0) % topology]];
-                    var pointB = points[indices[i / topology * topology + (i + 1) % topology]];
-                    if (!lines.Contains((pointA, pointB)) && !lines.Contains((pointB, pointA)))
-                    {
-                        lines.Add((pointA, pointB));
-                    }
+                    var indexA = indices[i / topology * topology + (i + 0) % topology];
+                    var indexB = indices[i / topology * topology + (i + 1) % topology];
+                    lines.Add(indexA < indexB ? (indexA, indexB) : (indexB, indexA));
                 }
-                return lines.ToArray();
+                return lines;
+            }
+
+            int[] FlattenLineIndices(HashSet<(int, int)> lines)
+            {
+                var indices = new List<int>();
+                foreach (var (a, b) in lines)
+                {
+                    indices.Add(a);
+                    indices.Add(b);
+                }
+                return indices.ToArray();
             }
         }
     }
