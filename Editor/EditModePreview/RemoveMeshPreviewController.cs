@@ -232,7 +232,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
 
             if (_removeMeshByMask.Value != null && MaskTextureEditor.Window.IsOpen(_targetRenderer.Value))
             {
-                var instanceId = EditorWindow.GetWindow<MaskTextureEditor.Window>().PreviewTexture.GetInstanceID();
+                var instanceId = MaskTextureEditor.Window.Instance.PreviewTexture.GetInstanceID();
                 if (_maskTextureEditorWindowPreviewTextureInstanceId != instanceId)
                 {
                     _maskTextureEditorWindowPreviewTextureInstanceId = instanceId;
@@ -301,7 +301,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                                 if (submeshInfo.enabled)
                                 {
                                     var maskTexture = MaskTextureEditor.Window.IsOpen(_targetRenderer.Value, subMeshIdx)
-                                        ? EditorWindow.GetWindow<MaskTextureEditor.Window>().PreviewTexture
+                                        ? MaskTextureEditor.Window.Instance.PreviewTexture
                                         : submeshInfo.mask;
                                     var mode = submeshInfo.mode;
                                     if (maskTexture != null && maskTexture.isReadable)

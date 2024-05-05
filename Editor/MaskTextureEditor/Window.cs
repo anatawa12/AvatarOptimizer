@@ -74,6 +74,19 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
         private string saveChangesMessage = string.Empty;
 #endif
 
+        public static Window Instance
+        {
+            get
+            {
+                if (!HasOpenInstances<Window>())
+                {
+                    return null;
+                }
+
+                return GetWindow<Window>(string.Empty, false);
+            }
+        }
+
         public Texture2D PreviewTexture => _textureUndoStack.Peek();
 
         public static bool IsOpen(SkinnedMeshRenderer renderer)
