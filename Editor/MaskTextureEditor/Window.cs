@@ -7,7 +7,7 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
 {
     internal class Window : EditorWindow
     {
-        private static class Style
+        private static class Styles
         {
             public readonly static GUIStyle Toolbar = new GUIStyle("Toolbar")
             {
@@ -17,6 +17,16 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
             {
                 fixedHeight = 24.0f,
             };
+        }
+
+        private static class Events
+        {
+            public static bool Paint => Event.current.button == 0
+                && !Event.current.alt
+                && !Event.current.shift
+                && !Event.current.control
+                && !Event.current.command;
+            public static bool BrushSize => Event.current.shift;
         }
 
         private const float ViewScaleMin = 0.1f;
@@ -152,7 +162,7 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
                 return;
             }
 
-            using (new EditorGUILayout.VerticalScope(Style.Toolbar))
+            using (new EditorGUILayout.VerticalScope(Styles.Toolbar))
             {
                 DrawToolbar();
             }
@@ -204,7 +214,7 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
                     _texture, typeof(Texture2D), true, GUILayout.Height(EditorGUIUtility.singleLineHeight));
             }
 
-            if (GUILayout.Button(AAOL10N.Tr("MaskTextureEditor:save"), Style.Button))
+            if (GUILayout.Button(AAOL10N.Tr("MaskTextureEditor:save"), Styles.Button))
             {
                 SaveChanges();
             }
@@ -219,7 +229,7 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
                 AAOL10N.Tr("MaskTextureEditor:viewOpacity"),
                 _viewOpacity, 0.0f, 1.0f);
 
-            if (GUILayout.Button(AAOL10N.Tr("MaskTextureEditor:resetView"), Style.Button))
+            if (GUILayout.Button(AAOL10N.Tr("MaskTextureEditor:resetView"), Styles.Button))
             {
                 _requestResetView = true;
             }
@@ -253,7 +263,7 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
                 using (new EditorGUI.DisabledScope(!_textureUndoStack.CanUndo))
                 {
                     if (GUILayout.Button(EditorGUIUtility.TrIconContent("tab_prev"),
-                        Style.Button, GUILayout.ExpandWidth(false)))
+                        Styles.Button, GUILayout.ExpandWidth(false)))
                     {
                         _textureUndoStack.Undo();
                     }
@@ -261,22 +271,22 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
                 using (new EditorGUI.DisabledScope(!_textureUndoStack.CanRedo))
                 {
                     if (GUILayout.Button(EditorGUIUtility.TrIconContent("tab_next"),
-                        Style.Button, GUILayout.ExpandWidth(false)))
+                        Styles.Button, GUILayout.ExpandWidth(false)))
                     {
                         _textureUndoStack.Redo();
                     }
                 }
-                if (GUILayout.Button(AAOL10N.Tr("MaskTextureEditor:fillBlack"), Style.Button))
+                if (GUILayout.Button(AAOL10N.Tr("MaskTextureEditor:fillBlack"), Styles.Button))
                 {
                     _texturePainter.Fill(Color.black);
                     _textureUndoStack.Record();
                 }
-                if (GUILayout.Button(AAOL10N.Tr("MaskTextureEditor:fillWhite"), Style.Button))
+                if (GUILayout.Button(AAOL10N.Tr("MaskTextureEditor:fillWhite"), Styles.Button))
                 {
                     _texturePainter.Fill(Color.white);
                     _textureUndoStack.Record();
                 }
-                if (GUILayout.Button(AAOL10N.Tr("MaskTextureEditor:inverse"), Style.Button))
+                if (GUILayout.Button(AAOL10N.Tr("MaskTextureEditor:inverse"), Styles.Button))
                 {
                     _texturePainter.Inverse();
                     _textureUndoStack.Record();
@@ -326,7 +336,7 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
                     // Set HotControl to continue dragging outside of the window
                     GUIUtility.hotControl = control;
 
-                    if (Event.current.button == 0)
+                    if (Events.Paint)
                     {
                         // Paint the texture
                         var position = Event.current.mousePosition - rect.center + _viewPosition;
@@ -340,7 +350,7 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
                     // Unset HotControl to allow other controls to respond
                     GUIUtility.hotControl = 0;
 
-                    if (Event.current.button == 0)
+                    if (Events.Paint)
                     {
                         _textureUndoStack.Record();
                         Repaint();
@@ -350,7 +360,7 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
                 case EventType.MouseDrag when GUIUtility.hotControl == control:
                 {
                     var delta = Event.current.delta;
-                    if (Event.current.button == 0)
+                    if (Events.Paint)
                     {
                         // Paint the texture
                         var position = Event.current.mousePosition - rect.center + _viewPosition;
@@ -368,7 +378,7 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
                 case EventType.ScrollWheel when rect.Contains(Event.current.mousePosition):
                 {
                     var delta = Event.current.delta.x + Event.current.delta.y;
-                    if (Event.current.shift)
+                    if (Events.BrushSize)
                     {
                         // Adjust the brush size
                         _texturePainter.BrushSize *= 1.0f - delta * BrushSizeFactor;
