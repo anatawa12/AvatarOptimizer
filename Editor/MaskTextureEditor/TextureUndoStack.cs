@@ -23,14 +23,13 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
         private RenderTexture _target = null;
 
         [SerializeField]
-        private List<RenderTexture> _stack = null;
+        private List<Texture2D> _stack = null;
 
         [SerializeField]
         private Counter _counter = null;
 
         public bool CanUndo => _counter.Count > 1;
         public bool CanRedo => _counter.Count < _stack.Count;
-        public int State => _stack[_counter.Count - 1].GetInstanceID();
 
         private void Awake()
         {
@@ -51,7 +50,7 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
         public void Init(RenderTexture texture)
         {
             _target = texture;
-            _stack = new List<RenderTexture>();
+            _stack = new List<Texture2D>();
             _counter = CreateInstance<Counter>();
 
             Record();
@@ -68,11 +67,14 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
             }
             _stack.RemoveRange(_counter.Count, _stack.Count - _counter.Count);
 
-            var copy = new RenderTexture(_target.width, _target.height, 0);
-            Graphics.Blit(_target, copy);
+            var texture = new Texture2D(_target.width, _target.height);
+
+            RenderTexture.active = _target;
+            texture.ReadPixels(new Rect(0, 0, texture.width, texture.height), 0, 0);
+            texture.Apply();
             RenderTexture.active = null;
 
-            _stack.Add(copy);
+            _stack.Add(texture);
 
             if (_counter.Count > 0)
             {
@@ -101,6 +103,11 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
 
                 Apply();
             }
+        }
+
+        public Texture2D Peek()
+        {
+            return _stack[_counter.Count - 1];
         }
 
         private void Apply()

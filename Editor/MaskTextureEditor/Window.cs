@@ -57,12 +57,25 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
         private TextureUndoStack _textureUndoStack = null;
 
         [SerializeField]
-        private int _textureUndoStackStateWhenSaved = 0;
+        private int _previewTextureInstanceIdWhenSaved = 0;
 
 #if !UNITY_2020_2_OR_NEWER
         private bool hasUnsavedChanges = false;
         private string saveChangesMessage = string.Empty;
 #endif
+
+        public Texture2D PreviewTexture => _textureUndoStack.Peek();
+
+        public static bool IsOpen(SkinnedMeshRenderer renderer)
+        {
+            if (!HasOpenInstances<Window>())
+            {
+                return false;
+            }
+
+            var window = GetWindow<Window>(string.Empty, false);
+            return window._renderer == renderer;
+        }
 
         public static bool IsOpen(SkinnedMeshRenderer renderer, int subMesh)
         {
@@ -90,7 +103,7 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
             _textureUndoStack = CreateInstance<TextureUndoStack>();
             _textureUndoStack.Init(_texturePainter.Texture);
 
-            _textureUndoStackStateWhenSaved = _textureUndoStack.State;
+            _previewTextureInstanceIdWhenSaved = PreviewTexture.GetInstanceID();
         }
 
         public void SafeClose()
@@ -128,7 +141,7 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
         {
             wantsMouseMove = true;
             titleContent.text = AAOL10N.Tr("MaskTextureEditor:title");
-            hasUnsavedChanges = _textureUndoStack.State != _textureUndoStackStateWhenSaved;
+            hasUnsavedChanges = _previewTextureInstanceIdWhenSaved != PreviewTexture.GetInstanceID();
             saveChangesMessage = AAOL10N.Tr("MaskTextureEditor:saveChangesMessage");
 
             if (_renderer == null ||
@@ -408,11 +421,7 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
                 importer.isReadable = true;
                 importer.SaveAndReimport();
 
-                _textureUndoStackStateWhenSaved = _textureUndoStack.State;
-
-                // Tap the renderer to update the mesh preview
-                // There might be a better way
-                EditorUtility.SetDirty(_renderer);
+                _previewTextureInstanceIdWhenSaved = PreviewTexture.GetInstanceID();
             }
             catch (Exception e)
             {
