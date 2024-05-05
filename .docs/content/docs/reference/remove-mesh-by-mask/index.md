@@ -27,6 +27,7 @@ Select the material slots you want to remove polygons with mask texture.
 ### Mask Texture
 
 The mask texture to remove polygons.
+Click "Edit" button to open the Mask Texture Editor.
 
 ### Remove Mode
 
@@ -34,3 +35,16 @@ Since the mask textures have different colors depending on the case, you need to
 
 When you use the mask texture which is designed to remove polygons if the color is (close to) black, select `Remove Black` mode.\
 When you use the mask texture which is designed to remove polygons if the color is (close to) white, select `Remove White` mode.
+
+## Mask Texture Editor
+
+![mask-editor.png](mask-editor.png)
+
+With this window, you can edit the mask texture.
+
+There are information about drawing texture above the drawing window.\
+At center, controls for brush size and view are shown.\
+The drawing window below shows the original texture, mask texture and UVs of the mesh.
+
+You can left-drag to paint the mask and right-drag or shift + left-drag to move the view.\
+You can scroll to zoom in/out and shift + scroll to change the brush size.
