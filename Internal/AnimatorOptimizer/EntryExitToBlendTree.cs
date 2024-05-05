@@ -36,6 +36,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
     // - all states must not have motion time. you have to use 1d blend tree for gesture weight.
     public class EntryExitToBlendTree : AnimOptPassBase<EntryExitToBlendTree>
     {
+        private static CachedGuidLoader<AnimationClip> _emptyClip = "ce6c609e7fd58444d9d59e98296eed35";
+
         private protected override void Execute(BuildContext context, AOAnimatorController controller,
             TraceAndOptimizeState settings)
         {
@@ -521,7 +523,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 
             foreach (var (state, values) in valueForStates)
             foreach (var value in values)
-                states.Add((value, state.motion));
+                states.Add((value, state.motion ? state.motion : _emptyClip.Value));
 
             var children = new List<ChildMotion>();
 
