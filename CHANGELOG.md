@@ -29,6 +29,7 @@ The format is based on [Keep a Changelog].
 - Relax Bounds condition for Automatic Merge Skinned Mesh `#1043`
   - Previously, AAO doesn't merge Skinned Meshes if bounds are different accurately.
   - Since this version, AAO will merge meshes if bounds are the same with precision to the last 6 digits of decimal point.
+- Entry/Exit to BlendTree broken with None state `1048`
 
 ### Security
 
