@@ -221,9 +221,17 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
 
             EditorGUILayout.Space();
 
-            _viewScale = EditorGUILayout.Slider(
-                AAOL10N.Tr("MaskTextureEditor:viewScale"),
-                _viewScale, ViewScaleMin, ViewScaleMax);
+            using (var check = new EditorGUI.ChangeCheckScope())
+            {
+                var prev = _viewScale;
+                _viewScale = EditorGUILayout.Slider(
+                    AAOL10N.Tr("MaskTextureEditor:viewScale"),
+                    _viewScale, ViewScaleMin, ViewScaleMax);
+                if (check.changed)
+                {
+                    _viewPosition -= _viewPosition * (1.0f - _viewScale / prev);
+                }
+            }
 
             _viewOpacity = EditorGUILayout.Slider(
                 AAOL10N.Tr("MaskTextureEditor:viewOpacity"),
