@@ -138,7 +138,7 @@ msgid "MergePhysBone:tooltip:makeParent"
 msgstr "将所有PhysBone设为此GameObject的子对象"
 
 msgid "MergePhysBone:error:makeParentWithChildren"
-msgstr "尽管已启用'设为此GameObject的子对象'，但对应Object下已存在子对象。"
+msgstr "尽管已选中'设为此GameObject的子对象'，但对应Object下已存在子对象。"
 
 msgid "MergePhysBone:error:parentDiffer"
 msgstr "合并目标的PhysBone父对象不同。请设为同一父对象的子对象，或使用'设为此GameObject的子对象'。"
@@ -297,7 +297,7 @@ msgid "RemoveMeshByBlendShape:editor:automaticallySetWeightWhenToggle"
 msgstr "切换BlendShape时自动更改其值以进行预览"
 
 msgid "RemoveMeshByBlendShape:tooltip:automaticallySetWeightWhenToggle"
-msgstr "在此选项启用时切换BlendShape的值，将会把值自动设置为100或0。"
+msgstr "在选中此选项时切换BlendShape的值，将会把值自动设置为100或0。"
 
 msgid "RemoveMeshByBlendShape:tooltip:automaticallySetWeightWhenToggle:noRenderer"
 msgstr "由于没有SkinnedMeshRenderer，无法使用此功能。"
