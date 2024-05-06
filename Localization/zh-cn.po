@@ -103,7 +103,7 @@ msgid "MakeChildren:prop:children"
 msgstr "子对象"
 
 msgid "MakeChildren:executeEarly does not support animation"
-msgstr "'提前执行'不支持动画路径修正。请使用适用于MakeChildren后层次结构的动画。"
+msgstr "'提前执行'功能并不支持动画路径修正。请使用适用于MakeChildren后的层次结构的动画。"
 
 # endregion
 
@@ -238,7 +238,7 @@ msgstr ""
 "请更改模型的导入设置以包含法线！"
 
 msgid "MergeSkinnedMesh:warning:removeZeroSizedPolygonOnSources"
-msgstr "由于"删除面积为零的多边形"功能在后期才处理，所以对合并目标的网格是无效的"
+msgstr "由于"删除面积为零的多边形"功能在后期才进行处理，所以对合并目标的网格是无效的"
 
 msgid "MergeSkinnedMesh:error:clothOnSources"
 msgstr "由于附加了Cloth组件，无法合并此网格。"
@@ -536,7 +536,7 @@ msgstr "高级设置"
 msgid "TraceAndOptimize:note:advancedOptimization"
 msgstr ""
 "这些设置可以对模型进行进一步优化，但也可能破坏模型的行为。\n"
-"如果出现问题，请禁用高级优化设置。"
+"如果出现问题，请禁用高级设置。"
 
 msgid "TraceAndOptimize:prop:debugOptions"
 msgstr "调试选项"
