@@ -456,16 +456,16 @@ msgstr "高度な最適化"
 
 msgid "TraceAndOptimize:note:advancedOptimization"
 msgstr ""
-"これらの設定はあなたのアバターをより最適化しますが、アバターを壊す可能性があります。\n"
-"問題がある場合は、高度な最適化を無効にしてください。"
+"これらの設定はアバターに更なる最適化を加えますが、アバターの動作を壊してしまう可能性もあります。\n"
+"問題が発生した場合は、高度な最適化の設定を無効にしてください。"
 
 msgid "TraceAndOptimize:prop:debugOptions"
-msgstr "デバッグオプション"
+msgstr "デバッグ用オプション"
 
 msgid "TraceAndOptimize:warn:debugOptions"
-msgstr "デバッグオプションはAvatarOptimizerのバグを回避するための設定です。\n"
-"デバッグオプションを変更すると、アバターが適切に最適化されなくなる可能性があります。\n"
-"また、一部のデバッグオプションは正しく機能しなかったり、その動作が変更される可能性があります。注意してください！"
+msgstr "デバッグ用オプションはAvatarOptimizerのバグを回避するための設定です。\n"
+"これらの設定を変更すると、アバターが適切に最適化されなくなる可能性があります。\n"
+"また、一部のデバッグ用オプションが正しく機能しなかったり、その動作が変更されたりする可能性があります。ご注意ください！"
 
 msgid "TraceAndOptimize:warn:unknown-type"
 msgstr "未知のコンポーネント'{0}'を検出しました！"

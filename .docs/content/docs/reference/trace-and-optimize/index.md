@@ -51,7 +51,7 @@ In addition, there are the following Advanced Optimizations.
 
 - `Automatically Remove Zero Sized Polygons`\
   Removes polygons whose area are zero.
-  This can break some shaders, or animated scales so use it carefully.
+  This can break some shaders or animated scales, so use it carefully.
 
 Also, there is `Debug Options` which is for workaround bugs but it's unstable & not well-tested.
 See tooltips or implementation for more details.
