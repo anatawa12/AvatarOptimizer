@@ -29,16 +29,16 @@ msgid "PrefabSafeSet:label:Element type is not supported"
 msgstr "不支持的元素类型"
 
 msgid "PrefabSafeSet:label:Add Not Supported"
-msgstr "不支持添加"
+msgstr "该元素不支持添加"
 
 msgid "PrefabSafeSet:label:Element to add"
-msgstr "要添加的元素"
+msgstr "添加元素"
 
 msgid "PrefabSafeSet:tooltip:Element to add"
 msgstr "拖放到此处以添加元素"
 
 msgid "PrefabSafeSet:tooltip:Force Add Button"
-msgstr "将此元素添加到当前的预设覆盖"
+msgstr "将此元素添加到当前的预设并覆盖"
 
 # , csharp-format
 msgid "PrefabSafeSet:label:Element {0}"
@@ -170,9 +170,9 @@ msgstr "关于版本"
 
 msgid "MergePhysBone:dialog:versionInfo:message"
 msgstr ""
-"更改VRCPhysBone的版本会改变组件的行为。\n"
-"某些值的行为可能会改变，可能需要手动重新设置。\n\n"
-"请阅读文档了解版本差异。"
+"更改VRC PhysBone的版本会改变组件的行为。\n"
+"某些值所产生的行为可能会改变，需要手动重新设置。\n\n"
+"请阅读文档以了解版本差异。"
 
 msgid "MergePhysBone:dialog:versionInfo:openDoc"
 msgstr "打开文档(英文)"
@@ -262,7 +262,7 @@ msgstr ""
 "嗯，这也是一个用于绕过Quest限制的组件。"
 
 msgid "MergeToonLitMaterial:button:Add Merged Material"
-msgstr "添加合并的材质"
+msgstr "添加合并材质"
 
 msgid "MergeToonLitMaterial:button:Add Source"
 msgstr "添加合并目标"
@@ -297,7 +297,7 @@ msgid "RemoveMeshByBlendShape:editor:automaticallySetWeightWhenToggle"
 msgstr "切换BlendShape时自动更改其值以进行预览"
 
 msgid "RemoveMeshByBlendShape:tooltip:automaticallySetWeightWhenToggle"
-msgstr "在此选项启用时切换BlendShape的指定，其值将自动设置为100或0。"
+msgstr "在此选项启用时切换BlendShape的值，将会把值自动设置为100或0。"
 
 msgid "RemoveMeshByBlendShape:tooltip:automaticallySetWeightWhenToggle:noRenderer"
 msgstr "由于没有SkinnedMeshRenderer，无法使用此功能。"
@@ -350,7 +350,7 @@ msgid "RemoveMeshByMask:error:maskIsNotReadable"
 msgstr "遮罩纹理不可读。"
 
 msgid "RemoveMeshByMask:error:maskIsNotReadable:description"
-msgstr "请确保遮罩纹理的Read/Write Enabled已启用。"
+msgstr "请确保遮罩纹理的Read/Write（读/写）已启用。"
 
 msgid "RemoveMeshByMask:error:unknownMode"
 msgstr "指定了未知的删除模式。"
@@ -435,7 +435,7 @@ msgid "MaskTextureEditor:saveChangesButtonCancel"
 msgstr "取消"
 
 msgid "MaskTextureEditor:errorTitle"
-msgstr "错误"
+msgstr "出现错误"
 
 msgid "MaskTextureEditor:errorMessageCreateFailed"
 msgstr "创建纹理失败。请查看日志以获取详细信息。"
@@ -466,26 +466,26 @@ msgstr "此组件不适用于Merge Skinned Mesh组件。\n"
 msgid "UnusedBonesByReferencesTool:description"
 msgstr ""
 "执行Narazaka的UnusedBonesByReferencesTool (https://narazaka.booth.pm/items/3831781)。\n"
-"这是一个将仅由EditorOnly的网格引用的骨骼设置为EditorOnly的工具。"
+"这是一个将仅由"EditorOnly"的网格引用的骨骼设置为"EditorOnly"的工具。"
 
 msgid "UnusedBonesByReferencesTool:prop:preserveEndBone"
 msgstr "保留end骨骼"
 
 # "親がactiveなendボーンを削除しない(ON推奨)"
 msgid "UnusedBonesByReferencesTool:tooltip:preserveEndBone"
-msgstr "如果选中，将不删除父骨骼为active的end骨骼。"
+msgstr "如果选中，将不删除父骨骼为激活状态的end骨骼。"
 
 msgid "UnusedBonesByReferencesTool:prop:detectExtraChild"
 msgstr "识别其它子对象"
 
 # "子にボーン以外を持つボーンを削除しない"
 msgid "UnusedBonesByReferencesTool:tooltip:detectExtraChild"
-msgstr "如果选中，将不删除子对象中含有非骨骼的骨骼。"
+msgstr "如果选中，将不删除子对象中含有除骨骼之外的元素的骨骼。"
 
 msgid "UnusedBonesByReferencesTool:suggestMigrate"
 msgstr ""
 "UnusedBonesByReferencesTool已被弃用！ Trace and Optimize包含了同样的功能，并且处理方式上更智能。\n"
-"是否点击下面的按钮，迁移到Trace and Optimize？（设置将被保留）"
+"点击下面的按钮，迁移到Trace and Optimize（设置将被保留）"
 
 msgid "UnusedBonesByReferencesTool:migrate"
 msgstr "迁移到Trace and Optimize"
@@ -510,10 +510,10 @@ msgid "TraceAndOptimize:prop:removeUnusedObjects"
 msgstr "自动删除未使用的对象"
 
 msgid "TraceAndOptimize:prop:optimizePhysBone"
-msgstr "优化PhysBone的设置"
+msgstr "优化PhysBone"
 
 msgid "TraceAndOptimize:prop:animatorOptimizer"
-msgstr "优化动画器"
+msgstr "优化动画控制器"
 
 msgid "TraceAndOptimize:prop:mergeSkinnedMesh"
 msgstr "合并蒙皮网格渲染器"
@@ -531,26 +531,26 @@ msgid "TraceAndOptimize:tooltip:mmdWorldCompatibility"
 msgstr "启用此选项将使模型保持对MMD世界的兼容性，某些优化将被禁用，如不冻结MMD用BlendShape等。"
 
 msgid "TraceAndOptimize:prop:advancedSettings"
-msgstr "高级设置"
+msgstr "高级优化选项"
 
 msgid "TraceAndOptimize:note:advancedOptimization"
 msgstr ""
-"这些设置可以对模型进行进一步优化，但也可能破坏模型的行为。\n"
-"如果出现问题，请禁用高级设置。"
+"这些选项可以对模型进行进一步优化，但也可能破坏模型的行为。\n"
+"如果出现问题，请禁用高级优化选项。"
 
 msgid "TraceAndOptimize:prop:debugOptions"
 msgstr "调试选项"
 
 msgid "TraceAndOptimize:warn:debugOptions"
 msgstr "调试选项是为了避免AvatarOptimizer出现错误。\n"
-"更改这些设置可能会导致模型无法正确优化。\n"
+"更改这些设置可能会导致模型无法正确被优化。\n"
 "另外，某些调试选项可能无法正常工作，或者其行为可能会发生变化。请注意！"
 
 msgid "TraceAndOptimize:warn:unknown-type"
 msgstr "检测到未知的组件'{0}'！"
 
 msgid "TraceAndOptimize:warn:unknown-type:description"
-msgstr "Avatar Optimizer发现了未知的组件。这可能会降低优化处理的质量，并可能导致处理后的模型损坏。(不会影响原始模型)"
+msgstr "Avatar Optimizer发现了未知的组件。这可能会降低优化处理的质量，并可能导致处理后的模型损坏。(不过不会影响原始模型)"
 
 msgid "TraceAndOptimize:warn:unknown-type:hint"
 msgstr ""
@@ -566,7 +566,7 @@ msgid "TraceAndOptimize:prop:preserveEndBone"
 msgstr "保留end骨骼"
 
 msgid "TraceAndOptimize:tooltip:preserveEndBone"
-msgstr "如果父骨骼没有被删除，即使是end骨骼也不会被删除。"
+msgstr "如果父骨骼没有被删除，即使是end骨骼在优化时也不会被删除。"
 
 msgid "TraceAndOptimize:prop:removeZeroSizedPolygons"
 msgstr "自动删除面积为零的多边形"
@@ -575,7 +575,7 @@ msgid "TraceAndOptimize:OptimizePhysBone:UnknownPhysBoneColliderShape"
 msgstr "指定了未知的PhysBone Collider形状'{0}'。"
 
 msgid "TraceAndOptimize:OptimizeAnimator:Unity2019"
-msgstr "在Unity 2019中，“动画器优化”的许多功能不受支持。请考虑更新到Unity 2021或更高版本。"
+msgstr "在Unity 2019中，“优化动画控制器”的许多功能不受支持。请考虑更新到Unity 2021或更高版本。"
 
 # endregion
 
@@ -603,7 +603,7 @@ msgstr ""
 msgid "MergeSkinnedMesh:warning:material-animation-differently:hint"
 msgstr ""
 "如果您打算让动画影响整个合并的网格，可以执行以下操作之一。\n"
-"- 在共同的动画剪辑中，使合并目标的网格的材质属性都以相同的方式进行动画。\n"
+"- 在共同的动画剪辑中，使合并目标的网格的材质属性都以相同的方式进行动画处理。\n"
 "- 对合并目标的网格进行动画。\n"
 "- 忽略此警告。\n"
 "\n"
@@ -676,7 +676,7 @@ msgid "ErrorReporter:error.internal_error"
 msgstr "发生内部错误：{0} 在处理以下组件时："
 
 msgid "ErrorReporter:autoFix"
-msgstr "自动修复"
+msgstr "点击修复"
 
 # endregion
 
@@ -684,7 +684,7 @@ msgstr "自动修复"
 
 msgid "AssetDescription:Description"
 msgstr ""
-"Avatar Optimizer Asset Description是一个用于向Avatar Optimizer提供您的项目资产信息的工具。\n"
+"Avatar Optimizer Asset Description是一个用于向Avatar Optimizer提供您项目资产信息的工具。\n"
 "请参阅文档以获取更多信息。"
 
 msgid "AssetDescription:OpenDocs"
