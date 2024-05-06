@@ -451,13 +451,21 @@ msgstr "MMDワールドとの互換性"
 msgid "TraceAndOptimize:tooltip:mmdWorldCompatibility"
 msgstr "MMD用BlendShapeを固定しないなどのMMDワールドとの互換性機能を有効にします。"
 
-msgid "TraceAndOptimize:prop:advancedSettings"
-msgstr "高度な設定"
+msgid "TraceAndOptimize:prop:advancedOptimization"
+msgstr "高度な最適化"
 
-msgid "TraceAndOptimize:warn:advancedSettings"
-msgstr "高度な設定はAvatarOptimizerのバグを回避するための設定です。\n"
-"高度な設定を変更すると、アバターが適切に最適化されなくなる可能性があります。\n"
-"また、一部の高度な設定の変更は正しく機能しなかったり、その動作が変更される可能性があります。注意してください！"
+msgid "TraceAndOptimize:note:advancedOptimization"
+msgstr ""
+"これらの設定はあなたのアバターをより最適化しますが、アバターを壊す可能性があります。\n"
+"問題がある場合は、高度な最適化を無効にしてください。"
+
+msgid "TraceAndOptimize:prop:debugOptions"
+msgstr "デバッグオプション"
+
+msgid "TraceAndOptimize:warn:debugOptions"
+msgstr "デバッグオプションはAvatarOptimizerのバグを回避するための設定です。\n"
+"デバッグオプションを変更すると、アバターが適切に最適化されなくなる可能性があります。\n"
+"また、一部のデバッグオプションは正しく機能しなかったり、その動作が変更される可能性があります。注意してください！"
 
 msgid "TraceAndOptimize:warn:unknown-type"
 msgstr "未知のコンポーネント'{0}'を検出しました！"

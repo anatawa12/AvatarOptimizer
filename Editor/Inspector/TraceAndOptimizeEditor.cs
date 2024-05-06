@@ -19,6 +19,7 @@ namespace Anatawa12.AvatarOptimizer
         private SerializedProperty _mmdWorldCompatibility;
         private SerializedProperty _advancedSettings;
         private GUIContent _advancedSettingsLabel = new GUIContent();
+        private GUIContent _debugOptionsLabel = new GUIContent();
 
         private void OnEnable()
         {
@@ -50,7 +51,6 @@ namespace Anatawa12.AvatarOptimizer
                 EditorGUILayout.PropertyField(_preserveEndBone);
                 EditorGUI.indentLevel--;
             }
-            EditorGUILayout.PropertyField(_removeZeroSizedPolygons);
             EditorGUILayout.PropertyField(_optimizePhysBone);
             EditorGUILayout.PropertyField(_optimizeAnimator);
             EditorGUILayout.PropertyField(_mergeSkinnedMesh);
@@ -65,12 +65,21 @@ namespace Anatawa12.AvatarOptimizer
             if (_optimizeAnimator.boolValue)
                 EditorGUILayout.HelpBox(AAOL10N.Tr("TraceAndOptimize:OptimizeAnimator:Unity2019"), MessageType.Info);
 #endif
-
-            _advancedSettingsLabel.text = AAOL10N.Tr("TraceAndOptimize:prop:advancedSettings");
-            if (EditorGUILayout.PropertyField(_advancedSettings, _advancedSettingsLabel, false))
+            _advancedSettingsLabel.text = AAOL10N.Tr("TraceAndOptimize:prop:advancedOptimization");
+            AdvancedOpened = EditorGUILayout.Foldout(AdvancedOpened, _advancedSettingsLabel);
+            if (AdvancedOpened)
             {
                 EditorGUI.indentLevel++;
-                EditorGUILayout.HelpBox(AAOL10N.Tr("TraceAndOptimize:warn:advancedSettings"), MessageType.Warning);
+                EditorGUILayout.HelpBox(AAOL10N.Tr("TraceAndOptimize:note:advancedOptimization"), MessageType.Info);
+                EditorGUILayout.PropertyField(_removeZeroSizedPolygons);
+                EditorGUI.indentLevel--;
+            }
+
+            _debugOptionsLabel.text = AAOL10N.Tr("TraceAndOptimize:prop:debugOptions");
+            if (EditorGUILayout.PropertyField(_advancedSettings, _debugOptionsLabel, false))
+            {
+                EditorGUI.indentLevel++;
+                EditorGUILayout.HelpBox(AAOL10N.Tr("TraceAndOptimize:warn:debugOptions"), MessageType.Warning);
                 var iterator = _advancedSettings.Copy();
                 var enterChildren = true;
                 while (iterator.NextVisible(enterChildren))
@@ -82,6 +91,12 @@ namespace Anatawa12.AvatarOptimizer
             }
 
             serializedObject.ApplyModifiedProperties();
+        }
+
+        private static bool AdvancedOpened
+        {
+            get => EditorPrefs.GetBool("AvatarOptimizer.TraceAndOptimizeEditor.AdvancedOpened", false);
+            set => EditorPrefs.SetBool("AvatarOptimizer.TraceAndOptimizeEditor.AdvancedOpened", value);
         }
     }
 }

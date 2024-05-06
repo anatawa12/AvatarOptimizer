@@ -41,6 +41,7 @@ namespace Anatawa12.AvatarOptimizer
         [AAOLocalized("TraceAndOptimize:prop:removeZeroSizedPolygons")]
         [ToggleLeft]
         [SerializeField]
+        // Note: this option is a part of Advanced Optimizations 
         internal bool removeZeroSizedPolygons = false;
 
         [NotKeyable]
@@ -82,6 +83,7 @@ namespace Anatawa12.AvatarOptimizer
         [SerializeField]
         internal bool mmdWorldCompatibility = true;
 
+        // TODO: rename to debugOptions in 1.8
         [NotKeyable]
         [SerializeField]
         internal AdvancedSettings advancedSettings;
