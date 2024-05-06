@@ -366,6 +366,85 @@ msgstr "画像ファイルから読み込まれたマスクテクスチャでは
 
 # endregion
 
+# region MaskTextureEditor
+
+msgid "MaskTextureEditor:create"
+msgstr "作成"
+
+msgid "MaskTextureEditor:edit"
+msgstr "編集"
+
+msgid "MaskTextureEditor:title"
+msgstr "AAO マスクテクスチャエディター"
+
+msgid "MaskTextureEditor:renderer"
+msgstr "スキンメッシュレンダラー"
+
+msgid "MaskTextureEditor:subMesh"
+msgstr "マテリアルスロット"
+
+msgid "MaskTextureEditor:subMeshIndex"
+msgstr "{0}番"
+
+msgid "MaskTextureEditor:texture"
+msgstr "マスクテクスチャ"
+
+msgid "MaskTextureEditor:save"
+msgstr "保存する"
+
+msgid "MaskTextureEditor:viewScale"
+msgstr "表示倍率 (Scroll)"
+
+msgid "MaskTextureEditor:viewOpacity"
+msgstr "表示透明度"
+
+msgid "MaskTextureEditor:resetView"
+msgstr "表示をウィンドウに合わせる"
+
+msgid "MaskTextureEditor:brushSize"
+msgstr "ブラシサイズ (Shift + Scroll)"
+
+msgid "MaskTextureEditor:brushColor"
+msgstr "ブラシカラー"
+
+msgid "MaskTextureEditor:black"
+msgstr "黒"
+
+msgid "MaskTextureEditor:white"
+msgstr "白"
+
+msgid "MaskTextureEditor:fillBlack"
+msgstr "黒で塗りつぶす"
+
+msgid "MaskTextureEditor:fillWhite"
+msgstr "白で塗りつぶす"
+
+msgid "MaskTextureEditor:inverse"
+msgstr "色を反転させる"
+
+msgid "MaskTextureEditor:saveChangesMessage"
+msgstr "保存されていない変更があります。保存しますか？"
+
+msgid "MaskTextureEditor:saveChangesButtonSave"
+msgstr "保存"
+
+msgid "MaskTextureEditor:saveChangesButtonDiscard"
+msgstr "破棄"
+
+msgid "MaskTextureEditor:saveChangesButtonCancel"
+msgstr "キャンセル"
+
+msgid "MaskTextureEditor:errorTitle"
+msgstr "エラー"
+
+msgid "MaskTextureEditor:errorMessageCreateFailed"
+msgstr "テクスチャの作成に失敗しました。詳細はログを参照してください。"
+
+msgid "MaskTextureEditor:errorMessageSaveFailed"
+msgstr "テクスチャの保存に失敗しました。詳細はログを参照してください。"
+
+# endregion
+
 # region AvatarGlobalComponent
 
 msgid "AvatarGlobalComponent:NotOnAvatarRoot"
@@ -451,13 +530,21 @@ msgstr "MMDワールドとの互換性"
 msgid "TraceAndOptimize:tooltip:mmdWorldCompatibility"
 msgstr "MMD用BlendShapeを固定しないなどのMMDワールドとの互換性機能を有効にします。"
 
-msgid "TraceAndOptimize:prop:advancedSettings"
-msgstr "高度な設定"
+msgid "TraceAndOptimize:prop:advancedOptimization"
+msgstr "高度な最適化"
 
-msgid "TraceAndOptimize:warn:advancedSettings"
-msgstr "高度な設定はAvatarOptimizerのバグを回避するための設定です。\n"
-"高度な設定を変更すると、アバターが適切に最適化されなくなる可能性があります。\n"
-"また、一部の高度な設定の変更は正しく機能しなかったり、その動作が変更される可能性があります。注意してください！"
+msgid "TraceAndOptimize:note:advancedOptimization"
+msgstr ""
+"これらの設定はアバターに更なる最適化を加えますが、アバターの動作を壊してしまう可能性もあります。\n"
+"問題が発生した場合は、高度な最適化の設定を無効にしてください。"
+
+msgid "TraceAndOptimize:prop:debugOptions"
+msgstr "デバッグ用オプション"
+
+msgid "TraceAndOptimize:warn:debugOptions"
+msgstr "デバッグ用オプションはAvatarOptimizerのバグを回避するための設定です。\n"
+"これらの設定を変更すると、アバターが適切に最適化されなくなる可能性があります。\n"
+"また、一部のデバッグ用オプションが正しく機能しなかったり、その動作が変更されたりする可能性があります。ご注意ください！"
 
 msgid "TraceAndOptimize:warn:unknown-type"
 msgstr "未知のコンポーネント'{0}'を検出しました！"

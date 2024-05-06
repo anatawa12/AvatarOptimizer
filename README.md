@@ -67,7 +67,7 @@ For major versions, the save format might not be compatible. There are no guaran
 
 There are several exceptions and important notes for stability of save format.
 - The features only for debugging the components are not guaranteed to follow the rules above.\
-  For example, Advanced Options on the Trace and Optimize might be changed in any version.
+  For example, Debug Options on the Trace and Optimize might be changed in any version.
 - The features marked as experimental are not guaranteed to follow the rules above.
 - The behavior of `Trace and Optimize` component might be changed by implementing new optimization.
   However, the default settings of `Trace and Optimize` component will never change the behavior of your avatar, so changes must not affect the avatar.

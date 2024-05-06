@@ -456,6 +456,85 @@ msgstr "Mask Texture is not imported from image file."
 
 # endregion
 
+# region MaskTextureEditor
+
+msgid "MaskTextureEditor:create"
+msgstr "Create"
+
+msgid "MaskTextureEditor:edit"
+msgstr "Edit"
+
+msgid "MaskTextureEditor:title"
+msgstr "AAO MaskTextureEditor"
+
+msgid "MaskTextureEditor:renderer"
+msgstr "Skinned Mesh Renderer"
+
+msgid "MaskTextureEditor:subMesh"
+msgstr "Material Slot"
+
+msgid "MaskTextureEditor:subMeshIndex"
+msgstr "{0}"
+
+msgid "MaskTextureEditor:texture"
+msgstr "Mask Texture"
+
+msgid "MaskTextureEditor:save"
+msgstr "Save"
+
+msgid "MaskTextureEditor:viewScale"
+msgstr "View Scale (Scroll)"
+
+msgid "MaskTextureEditor:viewOpacity"
+msgstr "View Opacity"
+
+msgid "MaskTextureEditor:resetView"
+msgstr "Fit the view to the window"
+
+msgid "MaskTextureEditor:brushSize"
+msgstr "Brush Size (Shift + Scroll)"
+
+msgid "MaskTextureEditor:brushColor"
+msgstr "Brush Color"
+
+msgid "MaskTextureEditor:black"
+msgstr "Black"
+
+msgid "MaskTextureEditor:white"
+msgstr "White"
+
+msgid "MaskTextureEditor:fillBlack"
+msgstr "Fill Black"
+
+msgid "MaskTextureEditor:fillWhite"
+msgstr "Fill White"
+
+msgid "MaskTextureEditor:inverse"
+msgstr "Inverse Color"
+
+msgid "MaskTextureEditor:saveChangesMessage"
+msgstr "There are unsaved changes. Would you like to save?"
+
+msgid "MaskTextureEditor:saveChangesButtonSave"
+msgstr "Save"
+
+msgid "MaskTextureEditor:saveChangesButtonDiscard"
+msgstr "Discard"
+
+msgid "MaskTextureEditor:saveChangesButtonCancel"
+msgstr "Cancel"
+
+msgid "MaskTextureEditor:errorTitle"
+msgstr "Error"
+
+msgid "MaskTextureEditor:errorMessageCreateFailed"
+msgstr "Failed to create the texture. Refer to the log for details."
+
+msgid "MaskTextureEditor:errorMessageSaveFailed"
+msgstr "Failed to save the texture. Refer to the log for details."
+
+# endregion
+
 # region AvatarGlobalComponent
 
 msgid "AvatarGlobalComponent:NotOnAvatarRoot"
@@ -542,13 +621,21 @@ msgstr "MMD World Compatibility"
 msgid "TraceAndOptimize:tooltip:mmdWorldCompatibility"
 msgstr "Enable MMD World Compatibility features such as keeping some BlendShapes"
 
-msgid "TraceAndOptimize:prop:advancedSettings"
-msgstr "Advanced Settings"
+msgid "TraceAndOptimize:prop:advancedOptimization"
+msgstr "Advanced Optimizations"
 
-msgid "TraceAndOptimize:warn:advancedSettings"
-msgstr "Advanced Settings is for workaround bugs in Avatar Optimizer.\n"
-"Changing Advanced Settings will make your avatar non well-optimized.\n"
-"In addition, Some modification of Advanced Settings may not well-tested or its behaviour is likely to be changed. Be careful!"
+msgid "TraceAndOptimize:note:advancedOptimization"
+msgstr ""
+"Those settings make your avatar more optimized, but may break your avatar.\n"
+"If you have any problem, please disable Advanced Optimization."
+
+msgid "TraceAndOptimize:prop:debugOptions"
+msgstr "Debug Options"
+
+msgid "TraceAndOptimize:warn:debugOptions"
+msgstr "Debug Options is for workaround bugs in Avatar Optimizer.\n"
+"Changing Debug Options will make your avatar non well-optimized.\n"
+"In addition, Some modification of Debug Options may not well-tested or its behaviour is likely to be changed. Be careful!"
 
 msgid "TraceAndOptimize:warn:unknown-type"
 msgstr "Unknown Component Type '{0}' Found."

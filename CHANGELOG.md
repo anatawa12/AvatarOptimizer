@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Implement mask texture editor [`#1044`](https://github.com/anatawa12/AvatarOptimizer/pull/1044)
 
 ### Changed
 - Improved behavior with Read/Write Off `#1045`
@@ -18,6 +19,11 @@ The format is based on [Keep a Changelog].
   - If you're using Av3Emulator, you still see the error.
   - In addition, in such case, we'll show `Auto Fix` button on the error message.
   - If you press the button, AAO will fix the error by changing the mesh to read/write enabled.
+- `Advanced Options` section has benn renamed to `Debug Options` `#1052`
+  - This express the purpose of the section more clearly.
+- Added `Advanced Optimizations` and moved `Remove Zero sized Polygons` to it `#1052`
+  - The `Remove Zero sized Polygons` can break some shaders or animations so it's not enabled by default.
+  - To make it more clear, we moved it to `Advanced Optimizations`.
 
 ### Deprecated
 
