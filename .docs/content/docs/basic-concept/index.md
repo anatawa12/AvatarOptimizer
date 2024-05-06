@@ -42,7 +42,7 @@ By making the flag disabled by default for already added components, we keep the
 
 There are few exceptions for component behavior stability.
 - The features only for debugging the components are not guaranteed to follow the rules above.\
-  For example, `Advanced Options` on `AAO Trace and Optimize` component might be changed in any version.
+  For example, `Debug Options` on `AAO Trace and Optimize` component might be changed in any version.
 - The features marked as experimental are not guaranteed to follow the rules above.
 - The behavior of `AAO Trace and Optimize` component might be changed by implementing new optimization.\
   However, the default settings of `AAO Trace and Optimize` component will never change the behavior and appearance of your avatar, so changes must not affect the avatar.

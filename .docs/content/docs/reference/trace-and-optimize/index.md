@@ -30,8 +30,6 @@ Currently the following optimizations are applied automatically.
   By scanning animation etc., automatically removes unused Objects (e.g. GameObjects, Components).
   - `Preserve EndBone`\
     Prevents removing end bones[^endbone] whose parent is not removed.
-- `Automatically Remove Zero Sized Polygons`\
-  Removes polygons whose area are zero.
 - `Optimize PhysBone Settings`\
   Optimizes PhysBone settings for better performance. This performs the following optimizations.
   - Merges PhysBone Colliders with the exactly same settings into one PhysBone Collider.
@@ -49,7 +47,13 @@ Also, You can adjust optimization with the following settings
 - `MMD World Compatibility`\
   Optimize with considering compatibility with MMD Worlds. e.g. Not freezing BlendShapes used by MMD Worlds.
 
-In addition, there is `Advanced Settings` which is for workaround bugs but it's unstable & not well-tested.
+In addition, there are the following Advanced Optimizations.
+
+- `Automatically Remove Zero Sized Polygons`\
+  Removes polygons whose area are zero.
+  This can break some shaders or animated scales, so use it carefully.
+
+Also, there is `Debug Options` which is for workaround bugs but it's unstable & not well-tested.
 See tooltips or implementation for more details.
 
 ![component.png](component.png)
