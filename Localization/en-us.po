@@ -456,6 +456,85 @@ msgstr "Mask Texture is not imported from image file."
 
 # endregion
 
+# region MaskTextureEditor
+
+msgid "MaskTextureEditor:create"
+msgstr "Create"
+
+msgid "MaskTextureEditor:edit"
+msgstr "Edit"
+
+msgid "MaskTextureEditor:title"
+msgstr "AAO MaskTextureEditor"
+
+msgid "MaskTextureEditor:renderer"
+msgstr "Skinned Mesh Renderer"
+
+msgid "MaskTextureEditor:subMesh"
+msgstr "Material Slot"
+
+msgid "MaskTextureEditor:subMeshIndex"
+msgstr "{0}"
+
+msgid "MaskTextureEditor:texture"
+msgstr "Mask Texture"
+
+msgid "MaskTextureEditor:save"
+msgstr "Save"
+
+msgid "MaskTextureEditor:viewScale"
+msgstr "View Scale (Scroll)"
+
+msgid "MaskTextureEditor:viewOpacity"
+msgstr "View Opacity"
+
+msgid "MaskTextureEditor:resetView"
+msgstr "Fit the view to the window"
+
+msgid "MaskTextureEditor:brushSize"
+msgstr "Brush Size (Shift + Scroll)"
+
+msgid "MaskTextureEditor:brushColor"
+msgstr "Brush Color"
+
+msgid "MaskTextureEditor:black"
+msgstr "Black"
+
+msgid "MaskTextureEditor:white"
+msgstr "White"
+
+msgid "MaskTextureEditor:fillBlack"
+msgstr "Fill Black"
+
+msgid "MaskTextureEditor:fillWhite"
+msgstr "Fill White"
+
+msgid "MaskTextureEditor:inverse"
+msgstr "Inverse Color"
+
+msgid "MaskTextureEditor:saveChangesMessage"
+msgstr "There are unsaved changes. Would you like to save?"
+
+msgid "MaskTextureEditor:saveChangesButtonSave"
+msgstr "Save"
+
+msgid "MaskTextureEditor:saveChangesButtonDiscard"
+msgstr "Discard"
+
+msgid "MaskTextureEditor:saveChangesButtonCancel"
+msgstr "Cancel"
+
+msgid "MaskTextureEditor:errorTitle"
+msgstr "Error"
+
+msgid "MaskTextureEditor:errorMessageCreateFailed"
+msgstr "Failed to create the texture. Refer to the log for details."
+
+msgid "MaskTextureEditor:errorMessageSaveFailed"
+msgstr "Failed to save the texture. Refer to the log for details."
+
+# endregion
+
 # region AvatarGlobalComponent
 
 msgid "AvatarGlobalComponent:NotOnAvatarRoot"

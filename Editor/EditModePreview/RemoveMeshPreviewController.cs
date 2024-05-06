@@ -39,6 +39,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
             _removeMeshInBox = default;
             _removeMeshByBlendShape = default;
             _removeMeshByMask = default;
+            _maskTextureEditorWindowPreviewTextureInstanceId = default;
 
             var subMeshes = new SubMeshDescriptor[OriginalMesh.subMeshCount];
             _subMeshTriangleEndIndices = new int[OriginalMesh.subMeshCount];
@@ -99,6 +100,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
         private ComponentHolder<RemoveMeshInBox> _removeMeshInBox;
         private ComponentHolder<RemoveMeshByBlendShape> _removeMeshByBlendShape;
         private ComponentHolder<RemoveMeshByMask> _removeMeshByMask;
+        private int _maskTextureEditorWindowPreviewTextureInstanceId = default;
 
         private readonly BlendShapePreviewContext _blendShapePreviewContext;
         private readonly int[] _subMeshTriangleEndIndices;
@@ -228,6 +230,21 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                     break;
             }
 
+            if (_removeMeshByMask.Value != null && MaskTextureEditor.Window.IsOpen(_targetRenderer.Value))
+            {
+                var instanceId = MaskTextureEditor.Window.Instance.PreviewTexture.GetInstanceID();
+                if (_maskTextureEditorWindowPreviewTextureInstanceId != instanceId)
+                {
+                    _maskTextureEditorWindowPreviewTextureInstanceId = instanceId;
+                    modified = true;
+                }
+            }
+            else if (_maskTextureEditorWindowPreviewTextureInstanceId != default)
+            {
+                _maskTextureEditorWindowPreviewTextureInstanceId = default;
+                modified = true;
+            }
+
             if (modified)
                 UpdatePreviewMesh();
 
@@ -283,7 +300,9 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                                 var submeshInfo = materials[subMeshIdx];
                                 if (submeshInfo.enabled)
                                 {
-                                    var maskTexture = submeshInfo.mask;
+                                    var maskTexture = MaskTextureEditor.Window.IsOpen(_targetRenderer.Value, subMeshIdx)
+                                        ? MaskTextureEditor.Window.Instance.PreviewTexture
+                                        : submeshInfo.mask;
                                     var mode = submeshInfo.mode;
                                     if (maskTexture != null && maskTexture.isReadable)
                                     {

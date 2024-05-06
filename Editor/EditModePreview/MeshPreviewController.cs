@@ -15,6 +15,8 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
     {
         [CanBeNull] private RemoveMeshPreviewController _previewController;
         public static bool Previewing => instance.previewing;
+        public static Mesh PreviewMesh => instance.previewMesh;
+        public static Mesh OriginalMesh => instance.originalMesh;
 
         [SerializeField] private bool previewing;
         [SerializeField] [CanBeNull] private Mesh previewMesh;
