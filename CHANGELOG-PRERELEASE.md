@@ -8,10 +8,23 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [1.7.1-rc.1] - 2024-05-06
+### Added
 - Implement mask texture editor [`#1044`](https://github.com/anatawa12/AvatarOptimizer/pull/1044)
 
 ### Changed
-- Improved behavior with Read/Write Off `#1045`
+- Improved behavior with Read/Write Off [`#1045`](https://github.com/anatawa12/AvatarOptimizer/pull/1045)
   - Because of Unity limitation, AAO cannot process meshes with R/W off on `Start` so it will be error.
   - However, on `Awake`, we can read them so AAO should process them.
   - Since this version, AAO will process meshes with R/W off on `Awake`.
@@ -19,26 +32,20 @@ The format is based on [Keep a Changelog].
   - If you're using Av3Emulator, you still see the error.
   - In addition, in such case, we'll show `Auto Fix` button on the error message.
   - If you press the button, AAO will fix the error by changing the mesh to read/write enabled.
-- `Advanced Options` section has benn renamed to `Debug Options` `#1052`
+- `Advanced Options` section has benn renamed to `Debug Options` [`#1052`](https://github.com/anatawa12/AvatarOptimizer/pull/1052)
   - This express the purpose of the section more clearly.
-- Added `Advanced Optimizations` and moved `Remove Zero sized Polygons` to it `#1052`
+- Added `Advanced Optimizations` and moved `Remove Zero sized Polygons` to it [`#1052`](https://github.com/anatawa12/AvatarOptimizer/pull/1052)
   - The `Remove Zero sized Polygons` can break some shaders or animations so it's not enabled by default.
   - To make it more clear, we moved it to `Advanced Optimizations`.
 
-### Deprecated
-
-### Removed
-
 ### Fixed
-- Material Slot animations for multi-material multi-pass rendering are broken `#1042`
+- Material Slot animations for multi-material multi-pass rendering are broken [`#1042`](https://github.com/anatawa12/AvatarOptimizer/pull/1042)
   - Previously we only preserves animations for the number of submeshes instead of material slots.
-- Relax Bounds condition for Automatic Merge Skinned Mesh `#1043`
+- Relax Bounds condition for Automatic Merge Skinned Mesh [`#1043`](https://github.com/anatawa12/AvatarOptimizer/pull/1043)
   - Previously, AAO doesn't merge Skinned Meshes if bounds are different accurately.
   - Since this version, AAO will merge meshes if bounds are the same with precision to the last 6 digits of decimal point.
 - Entry/Exit to BlendTree broken with None state `1048`
-- Particle System with bone-rigged Skinned Mesh Renderer will be broken `#1054`
-
-### Security
+- Particle System with bone-rigged Skinned Mesh Renderer will be broken [`#1054`](https://github.com/anatawa12/AvatarOptimizer/pull/1054)
 
 ## [1.7.0] - 2024-04-30
 ## [1.7.0-rc.4] - 2024-04-26
@@ -1383,7 +1390,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.0...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.1-rc.1...HEAD
+[1.7.1-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.0...v1.7.1-rc.1
 [1.7.0]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.0-rc.4...v1.7.0
 [1.7.0-rc.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.0-rc.3...v1.7.0-rc.4
 [1.7.0-rc.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.0-rc.2...v1.7.0-rc.3
