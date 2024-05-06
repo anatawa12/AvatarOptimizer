@@ -393,13 +393,13 @@ msgid "MaskTextureEditor:save"
 msgstr "保存"
 
 msgid "MaskTextureEditor:viewScale"
-msgstr "显示倍率 (滚动)"
+msgstr "显示缩放"
 
 msgid "MaskTextureEditor:viewOpacity"
 msgstr "显示透明度"
 
 msgid "MaskTextureEditor:resetView"
-msgstr "将显示调整为窗口大小"
+msgstr "将视图调整为窗口大小"
 
 msgid "MaskTextureEditor:brushSize"
 msgstr "画笔大小 (Shift + 滚动)"
