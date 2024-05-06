@@ -1,0 +1,606 @@
+msgid ""
+msgstr ""
+"Language: zh-cn\n"
+
+msgid "CheckForUpdate:out-of-date"
+msgstr "Avatar Optimizer的新版本 {0} 已经发布！(您当前使用的版本是 {1})"
+
+msgid "locale:ja"
+msgstr "日本語"
+
+msgid "LegacyModularAvatarWarning:message"
+msgstr ""
+"您似乎安装了1.7.x及更早版本的ModularAvatar。\n"
+"AvatarOptimizer与1.7.x及更早版本的ModularAvatar不兼容。\n"
+"请将ModularAvatar更新至1.8.0或更高版本！"
+
+msgid "LegacyModularAvatarWarning:readWithNextLocale"
+msgstr "Read in English"
+
+msgid "LegacyModularAvatarWarning:nextLocale"
+msgstr "en"
+
+# region PrefabSafeSet
+
+msgid "PrefabSafeSet:label:Multi editing not supported"
+msgstr "不支持多项编辑"
+
+msgid "PrefabSafeSet:label:Element type is not supported"
+msgstr "不支持的元素类型"
+
+msgid "PrefabSafeSet:label:Add Not Supported"
+msgstr "不支持添加"
+
+msgid "PrefabSafeSet:label:Element to add"
+msgstr "要添加的元素"
+
+msgid "PrefabSafeSet:tooltip:Element to add"
+msgstr "拖放到此处以添加元素"
+
+msgid "PrefabSafeSet:tooltip:Force Add Button"
+msgstr "将此元素添加到当前的预设覆盖"
+
+# , csharp-format
+msgid "PrefabSafeSet:label:Element {0}"
+msgstr "元素 {0}"
+
+# , csharp-format
+msgid "PrefabSafeSet:label:(Removed)"
+msgstr "(已删除)"
+
+# , csharp-format
+msgid "PrefabSafeSet:label:Element {0} (Added twice)"
+msgstr "元素 {0} (重复添加)"
+
+# , csharp-format
+msgid "PrefabSafeSet:label:(Removed but not found)"
+msgstr "(已删除但未找到)"
+
+# endregion
+
+# start Avatar Optimizer core modules
+
+# region ClearEndpointPosition
+
+msgid "ClearEndpointPosition:description"
+msgstr ""
+"添加_end骨骼并清除Endpoint Position。\n"
+"在使用MergeBone时非常有用。"
+
+msgid "ClearEndpointPosition:button:Apply and Remove Component"
+msgstr "应用并立即删除组件"
+
+# endregion
+
+# region FreezeBlendShape
+
+msgid "FreezeBlendShape:button:Check All"
+msgstr "选中全部"
+
+msgid "FreezeBlendShape:button:Invert All"
+msgstr "反选全部"
+
+msgid "FreezeBlendShape:warning:animation"
+msgstr ""
+"以下的BlendShape是冻结的目标，并且正在被动画修改。"
+"冻结的BlendShape将无法通过动画修改。如果这是你的预期，请忽略此警告。\n"
+"{0}"
+
+# endregion
+
+# region MakeChildren
+
+msgid "MakeChildren:description"
+msgstr "在构建时，将指定的GameObject设为子对象。"
+
+msgid "MakeChildren:tooltip:executeEarly"
+msgstr "提前执行"
+
+msgid "MakeChildren:tooltip:executeEarly"
+msgstr "在Modular Avatar等多个其他工具之前执行MakeChildren。"
+
+msgid "MakeChildren:prop:children"
+msgstr "子对象"
+
+msgid "MakeChildren:executeEarly does not support animation"
+msgstr "'提前执行'不支持动画路径修正。请使用适用于MakeChildren后层次结构的动画。"
+
+# endregion
+
+# region MergeBone
+
+msgid "MergeBone:description"
+msgstr "删除此GameObject并将其合并到父对象中。"
+
+msgid "MergeBone:prop:avoidNameConflict"
+msgstr "避免名称冲突"
+
+msgid "MergeBone:tooltip:avoidNameConflict"
+msgstr "在合并时更改子GameObject的名称，以避免名称重复"
+
+msgid "MergeBone:validation:onAvatarRoot"
+msgstr "不支持在Avatar的根上添加MergeBone。"
+
+msgid "MergeBone:validation:thereAreComponent"
+msgstr "存在除Transform以外的组件。这不被支持。"
+
+msgid "MergeBone:validation:unevenScaling"
+msgstr "如果不合并的骨骼在子代中，不支持合并非均匀缩放的骨骼。"
+
+# endregion
+
+# region
+
+msgid "MergePhysBone:prop:makeParent"
+msgstr "设为此GameObject的子对象"
+
+msgid "MergePhysBone:tooltip:makeParent"
+msgstr "将所有PhysBone设为此GameObject的子对象"
+
+msgid "MergePhysBone:error:makeParentWithChildren"
+msgstr "尽管已启用'设为此GameObject的子对象'，但已存在子对象。"
+
+msgid "MergePhysBone:error:parentDiffer"
+msgstr "合并目标的PhysBone的父对象不同。请设为同一父对象的子对象，或使用'设为此GameObject的子对象'。"
+
+msgid "MergePhysBone:error:noSources"
+msgstr "没有合并目标的PhysBone。"
+
+msgid "MergePhysBone:error:oneSource"
+msgstr "只有一个合并目标的PhysBone。请指定两个或更多的PhysBone。"
+
+msgid "MergePhysBone:error:multiChildType"
+msgstr "存在Multi Child Type不为Ignore的PhysBone。"
+
+msgid "MergePhysBone:error:unsupportedPbVersion"
+msgstr "此PhysBone版本未被Avatar Optimizer支持。\n"
+"请通过Twitter (@anatawa12_vrc)或GitHub (anatawa12/AvatarOptimizer)联系作者！"
+
+msgid "MergePhysBone:error:differValues"
+msgstr "多个合并目标之间的值存在差异。以下的值需要设为相同值或进行覆盖：{0}"
+
+msgid "MergePhysBone:error:differValueSingle"
+msgstr "多个合并目标之间的值存在差异。需要设为相同值或进行覆盖"
+
+msgid "MergePhysBone:warning:differChainLength"
+msgstr "多个合并目标之间的链长度不同。较短的链的PB可能会比原来更粗。"
+
+msgid "MergePhysBone:dialog:versionInfo:title"
+msgstr "关于版本"
+
+msgid "MergePhysBone:dialog:versionInfo:message"
+msgstr ""
+"更改VRCPhysBone的版本会改变组件的行为。\n"
+"某些值的行为可能会改变，可能需要手动重新设置。\n\n"
+"请阅读文档了解版本差异。"
+
+msgid "MergePhysBone:dialog:versionInfo:openDoc"
+msgstr "打开文档(英文)"
+
+msgid "MergePhysBone:dialog:versionInfo:revert"
+msgstr "撤销"
+
+msgid "MergePhysBone:dialog:versionInfo:continue"
+msgstr "继续"
+
+msgid "MergePhysBone:prop:merged"
+msgstr "已合并"
+
+msgid "MergePhysBone:prop:components"
+msgstr "组件"
+
+# endregion
+
+# region MergeSkinnedMesh
+
+msgid "MergeSkinnedMesh:warning:blendShapeWeightMismatch"
+msgstr ""
+"合并目标的SkinnedMeshRenderer之间的BlendShape '{0}'的值不一致。\n"
+"由于无法确定应用哪个值，所以请使同名BlendShape的值一致或固定/删除。"
+
+msgid "MergeSkinnedMesh:warning:VRM:FirstPersonFlagsMismatch"
+msgstr ""
+"由于合并目标的Renderer之间的FirstPersonFlags的值不一致，已统一为'{0}'。\n"
+"建议使MergeSkinnedMesh合并的Renderer的FirstPersonFlags的值一致。"
+
+msgid "MergeSkinnedMesh:warning:MeshIsNotNone"
+msgstr ""
+"SkinnedMeshRenderer的Mesh不是None！\n"
+"应将MergeSkinnedMesh添加到带有新SkinnedMeshRenderer的GameObject！"
+
+msgid "MergeSkinnedMesh:validation:self-recursive"
+msgstr "合并目标的SkinnedMeshRenderer包含MergeSkinnedMesh自身的SkinnedMeshRenderer！"
+
+msgid "MergeSkinnedMesh:prop:renderers"
+msgstr "SkinnedMeshRenderer"
+
+msgid "MergeSkinnedMesh:prop:staticRenderers"
+msgstr "静态Renderer"
+
+msgid "MergeSkinnedMesh:prop:removeEmptyRendererObject"
+msgstr "删除空的Renderer对象"
+
+msgid "MergeSkinnedMesh:prop:skipEnablementMismatchedRenderers"
+msgstr "不合并与合并目标状态不同的Renderer"
+
+msgid "MergeSkinnedMesh:label:Merge Materials"
+msgstr "合并材质"
+
+msgid "MergeSkinnedMesh:label:Merge"
+msgstr "合并"
+
+msgid "MergeSkinnedMesh:label:Renderers"
+msgstr "Renderer："
+
+msgid "MergeSkinnedMesh:error:mix-normal-existence"
+msgstr ""
+"不支持将有法线的网格和无法线的网格合并为一个。"
+"请更改模型的导入设置以包含法线！"
+
+msgid "MergeSkinnedMesh:warning:removeZeroSizedPolygonOnSources"
+msgstr "由于Remove Zero Sized Polygons在后期处理，所以对合并目标的网格无效"
+
+msgid "MergeSkinnedMesh:error:clothOnSources"
+msgstr "由于附加了Cloth组件，无法合并此网格。"
+
+msgid "MergeSkinnedMesh:error:clothOnSources:description"
+msgstr "请从合并目标中排除此网格，或从此网格中删除Cloth组件。"
+
+msgid "MergeSkinnedMesh:warning:no-root-bone"
+msgstr "由于合并的目标网格未设置Root Bone，可能会引发意外行为。"
+
+msgid "MergeSkinnedMesh:warning:no-probe-anchor"
+msgstr "由于合并的目标网格未设置锚点覆盖，可能会引发意外行为。"
+
+# endregion
+
+# region MergeToonLitMaterial
+
+msgid "MergeToonLitMaterial:description"
+msgstr ""
+"这是一个用于合并多个VRChat Mobile ToonLit材质的材质。\n"
+"这是一个用于绕过Quest限制的组件。"
+
+msgid "MergeToonLitMaterial:button:Add Merged Material"
+msgstr "添加合并的材质"
+
+msgid "MergeToonLitMaterial:button:Add Source"
+msgstr "添加合并目标"
+
+msgid "MergeToonLitMaterial:button:Generate Preview"
+msgstr "生成预览"
+
+msgid "MergeToonLitMaterial:label:Texture Size"
+msgstr "纹理大小"
+
+# endregion
+
+# region RemoveMeshInBox
+
+msgid "RemoveMeshInBox:BoundingBox:prop:center"
+msgstr "中心"
+
+msgid "RemoveMeshInBox:BoundingBox:prop:size"
+msgstr "大小"
+
+msgid "RemoveMeshInBox:BoundingBox:prop:rotation"
+msgstr "旋转"
+
+# endregion
+
+# region RemoveMeshByBlendShape
+
+msgid "RemoveMeshByBlendShape:description"
+msgstr "删除由指定BlendShape移动的顶点及其多边形"
+
+msgid "RemoveMeshByBlendShape:editor:automaticallySetWeightWhenToggle"
+msgstr "切换BlendShape时自动更改其值以进行预览"
+
+msgid "RemoveMeshByBlendShape:tooltip:automaticallySetWeightWhenToggle"
+msgstr "在此选项启用时切换BlendShape的指定，其值将自动设置为100或0。"
+
+msgid "RemoveMeshByBlendShape:tooltip:automaticallySetWeightWhenToggle:noRenderer"
+msgstr "由于没有SkinnedMeshRenderer，无法使用此功能。"
+
+msgid "RemoveMeshByBlendShape:tooltip:automaticallySetWeightWhenToggle:noMesh"
+msgstr "由于没有Mesh，无法使用此功能。"
+
+msgid "RemoveMeshByBlendShape:prop:Tolerance"
+msgstr "容差"
+
+msgid "RemoveMeshByBlendShape:tooltip:Tolerance"
+msgstr ""
+"如果顶点被选定的BlendShape中的任何一个移动的距离大于此值，那么该顶点将被删除。\n"
+"如果不希望删除的顶点被删除，尝试增大此值。如果顶点没有按预期被删除，尝试减小此值。\n"
+"通常，此值应为较小的数值。"
+
+msgid "RemoveMeshByBlendShape:button:Check All"
+msgstr "选中全部"
+
+msgid "RemoveMeshByBlendShape:button:Invert All"
+msgstr "反选全部"
+
+# endregion
+
+# region RemoveZeroSizedPolygon
+
+msgid "RemoveZeroSizedPolygon:description"
+msgstr "删除面积为零的多边形。"
+
+# endregion
+
+# region RemoveMeshByMask
+
+msgid "RemoveMeshByMask:description"
+msgstr "通过遮罩纹理删除指定范围的多边形。"
+
+msgid "RemoveMeshByMask:prop:enabled"
+msgstr "应用于第{0}个材质插槽"
+
+msgid "RemoveMeshByMask:prop:mask"
+msgstr "遮罩纹理"
+
+msgid "RemoveMeshByMask:prop:mode"
+msgstr "删除模式"
+
+msgid "RemoveMeshByMask:error:maskIsNone"
+msgstr "未设置遮罩纹理。"
+
+msgid "RemoveMeshByMask:error:maskIsNotReadable"
+msgstr "遮罩纹理不可读。"
+
+msgid "RemoveMeshByMask:error:maskIsNotReadable:description"
+msgstr "请确保遮罩纹理的Read/Write Enabled已启用。"
+
+msgid "RemoveMeshByMask:error:unknownMode"
+msgstr "指定了未知的删除模式。"
+
+msgid "RemoveMeshByMask:warning:NoMesh"
+msgstr "Skinned Mesh Renderer未设置Mesh。"
+
+msgid "RemoveMeshByMask:button:makeReadable"
+msgstr "使其可读"
+
+msgid "RemoveMeshByMask:tooltip:textureIsNotImported"
+msgstr "这不是从图像文件导入的遮罩纹理。"
+
+# endregion
+
+# region AvatarGlobalComponent
+
+msgid "AvatarGlobalComponent:NotOnAvatarRoot"
+msgstr "此组件需要附加到角色的根节点上。"
+
+# endregion
+
+# region NoSourceEditSkinnedMeshComponent
+
+msgid "NoSourceEditSkinnedMeshComponent:HasSourceSkinnedMeshComponent"
+msgstr "此组件不适用于Merge Skinned Mesh组件。\n"
+"因此，请将此组件添加到要合并的网格，而不是合并后的网格。"
+
+# endregion
+
+# region UnusedBonesByReferencesTool
+
+# EditorOnlyなメッシュのみから参照されているボーンをEditorOnlyにします
+msgid "UnusedBonesByReferencesTool:description"
+msgstr ""
+"执行Narazaka的UnusedBonesByReferencesTool (https://narazaka.booth.pm/items/3831781)。\n"
+"这是一个将仅由EditorOnly的网格引用的骨骼设置为EditorOnly的工具。"
+
+msgid "UnusedBonesByReferencesTool:prop:preserveEndBone"
+msgstr "保留end骨骼"
+
+# "親がactiveなendボーンを削除しない(ON推奨)"
+msgid "UnusedBonesByReferencesTool:tooltip:preserveEndBone"
+msgstr "如果选中，将不删除父骨骼为active的end骨骼。"
+
+msgid "UnusedBonesByReferencesTool:prop:detectExtraChild"
+msgstr "识别其他子对象"
+
+# "子にボーン以外を持つボーンを削除しない"
+msgid "UnusedBonesByReferencesTool:tooltip:detectExtraChild"
+msgstr "如果选中，将不删除子对象中含有非骨骼的骨骼。"
+
+msgid "UnusedBonesByReferencesTool:suggestMigrate"
+msgstr ""
+"UnusedBonesByReferencesTool已被弃用！ Trace and Optimize包含了同样的功能，并且处理方式上更智能。\n"
+"是否点击下面的按钮，迁移到Trace and Optimize？（设置将被保留）"
+
+msgid "UnusedBonesByReferencesTool:migrate"
+msgstr "迁移到Trace and Optimize"
+
+msgid "UnusedBonesByReferencesTool:migrationFinished:title"
+msgstr "迁移完成"
+
+msgid "UnusedBonesByReferencesTool:migrationFinished:description"
+msgstr "已成功迁移到Trace and Optimize！"
+
+# endregion
+
+# region TraceAndOptimize
+
+msgid "TraceAndOptimize:description"
+msgstr "将此组件添加到角色上，将自动扫描角色并进行尽可能的优化。"
+
+msgid "TraceAndOptimize:prop:freezeBlendShape"
+msgstr "自动冻结和移除BlendShape"
+
+msgid "TraceAndOptimize:prop:removeUnusedObjects"
+msgstr "自动删除未使用的对象"
+
+msgid "TraceAndOptimize:prop:optimizePhysBone"
+msgstr "优化PhysBone的设置"
+
+msgid "TraceAndOptimize:prop:animatorOptimizer"
+msgstr "优化动画器"
+
+msgid "TraceAndOptimize:prop:mergeSkinnedMesh"
+msgstr "合并蒙皮网格渲染器"
+
+msgid "TraceAndOptimize:prop:allowShuffleMaterialSlots"
+msgstr "允许改变材质插槽的前后关系"
+
+msgid "TraceAndOptimize:tooltip:allowShuffleMaterialSlots"
+msgstr "允许通过改变材质插槽的前后关系来减少绘制调用。这可能会影响绘制顺序。"
+
+msgid "TraceAndOptimize:prop:mmdWorldCompatibility"
+msgstr "保持对MMD世界的兼容性"
+
+msgid "TraceAndOptimize:tooltip:mmdWorldCompatibility"
+msgstr "启用此选项保持对MMD世界的兼容性，如不冻结MMD用BlendShape等。"
+
+msgid "TraceAndOptimize:prop:advancedSettings"
+msgstr "高级设置"
+
+msgid "TraceAndOptimize:warn:advancedSettings"
+msgstr "高级设置是为了避免AvatarOptimizer的bug。\n"
+"改变高级设置可能会导致角色无法正确优化。\n"
+"另外，一些对高级设置的更改可能不会正常工作，或者其行为可能会发生改变。请特别注意！"
+
+msgid "TraceAndOptimize:warn:unknown-type"
+msgstr "检测到未知的组件'{0}'！"
+
+msgid "TraceAndOptimize:warn:unknown-type:description"
+msgstr "Avatar Optimizer发现了未知的组件。这可能会降低优化处理的质量，并可能导致处理后的角色损坏。(不会影响原始角色)"
+
+msgid "TraceAndOptimize:warn:unknown-type:hint"
+msgstr ""
+"如果角色没有损坏，可以忽略此警告。\n"
+"\n"
+"如果这个组件是你的工具的一部分，你可以考虑将组件注册到Avatar Optimizer。"
+"详情请参见 https://vpm.anatawa12.com/avatar-optimizer/ja/docs/developers/make-your-components-compatible-with-aao/ 。\n"
+"\n"
+"如果这个组件是你正在使用的工具的一部分，你可以请求工具的作者将组件注册到Avatar Optimizer，或者如果是一个知名的工具，你可以请求Avatar Optimizer进行支持。"
+
+
+msgid "TraceAndOptimize:prop:preserveEndBone"
+msgstr "保留end骨骼"
+
+msgid "TraceAndOptimize:tooltip:preserveEndBone"
+msgstr "如果父骨骼没有被删除，将不删除end骨骼。"
+
+msgid "TraceAndOptimize:prop:removeZeroSizedPolygons"
+msgstr "自动删除面积为零的多边形"
+
+msgid "TraceAndOptimize:OptimizePhysBone:UnknownPhysBoneColliderShape"
+msgstr "指定了未知的PhysBone Collider形状'{0}'。"
+
+msgid "TraceAndOptimize:OptimizeAnimator:Unity2019"
+msgstr "在Unity 2019中，Optimize Animator的许多功能不受支持。请考虑更新到Unity 2021或更高版本。"
+
+# endregion
+
+#region ApplyObjectMapping
+
+msgid "ApplyObjectMapping:VRCAvatarDescriptor:eyelids BlendShape Removed"
+msgstr "眨眼用的BlendShape已被冻结或移除"
+
+msgid "ApplyObjectMapping:VRCAvatarDescriptor:viseme BlendShape Removed"
+msgstr "唇形同步用的BlendShape已被冻结或移除"
+
+msgid "MergeSkinnedMesh:warning:animation-mesh-hide"
+msgstr ""
+"由于包含了在动画中显示的网格与合并目标网格不同，"
+"因此，该动画的切换功能将不再起作用。如果这是有意为之，请忽略此警告。"
+
+msgid "MergeSkinnedMesh:warning:material-animation-differently"
+msgstr "合并目标的网格之间，以下的材质属性的动画不同：{0}"
+
+msgid "MergeSkinnedMesh:warning:material-animation-differently:description"
+msgstr ""
+"合并目标的网格之间，材质的动画不同。\n"
+"材质的动画会影响整个网格，因此可能会在不打算的部分应用动画。\n"
+
+msgid "MergeSkinnedMesh:warning:material-animation-differently:hint"
+msgstr ""
+"如果你打算让动画影响整个合并的网格，可以执行以下操作之一。\n"
+"- 在共同的动画剪辑中，使合并目标的网格的材质属性都以相同的方式进行动画。\n"
+"- 对合并目标的网格进行动画。\n"
+"- 忽略此警告。\n"
+"\n"
+"即使所有目标网格都以相同的方式进行动画，如果仍然显示此警告，可能是对多个网格的动画方式不佳。\n"
+"Avatar Optimizer会判断，在同一个动画剪辑中，如果有相同形状的曲线并在同一个State上进行动画，那么它们就是以相同的方式进行动画。\n"
+"也就是说，即使以相同的方式进行动画，如果从不同的层或动画剪辑进行动画，它也会被认为是不同的动画。\n"
+"\n"
+"如果动画不会影响其他网格（例如，只影响在网格上禁用的着色器功能），请向Avatar Optimizer报告此问题。\n"
+"如果着色器是知名的，我们将添加一个过程来检查该功能是否对未进行动画的网格也有效。\n"
+
+#endregion
+
+#region ComponentInfos
+
+msgid "ComponentInfos:VRCAvatarDescriptor:warning:NoVisemeSkinnedMesh"
+msgstr "没有用于唇形同步的SkinnedMeshRenderer。"
+
+msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownLipSyncStyle"
+msgstr "指定了未知的唇形同步类型'{0}'。"
+
+msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownColliderState"
+msgstr "在{1}的Standard Collider中指定了未知的设置'{0}'。"
+
+msgid "ComponentInfos:VRCAvatarDescriptor:warning:NoMeshInEyelidsSkinnedMesh"
+msgstr "眨眼用的SkinnedMeshRenderer中没有网格。"
+
+msgid "ComponentInfos:VRCAvatarDescriptor:warning:NoEyelidsSkinnedMesh"
+msgstr "没有用于眨眼的SkinnedMeshRenderer。"
+
+msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownEyelidType"
+msgstr "指定了未知的眨眼类型'{0}'。"
+
+#endregion
+
+#region AnimatorParser
+
+msgid "AnimatorParser:PlayableLayerControl:UnknownBlendablePlayableLayer"
+msgstr "在Playable Layer Control中指定了未知的层'{0}'。"
+
+msgid "AnimatorParser:AnimatorLayerControl:UnknownBlendablePlayableLayer"
+msgstr "在Animator Layer Control中指定了未知的层'{0}'。"
+
+msgid "AnimatorParser:AnimatorNotFoundOnAvatarRoot"
+msgstr "在角色的根部没有找到Animator组件。"
+
+#endregion
+
+#region MeshInfo2
+
+msgid "MeshInfo2:error:MeshNotReadable"
+msgstr "由于网格不可读，无法在Play Mode中处理网格。"
+
+msgid "MeshInfo2:error:MeshNotReadable:description"
+msgstr "请在网格的导入设置中将Read/Write Enabled设置为true。"
+
+msgid "MeshInfo2:warning:multiPassRendering"
+msgstr ""
+"在使用'{0}'组件的网格中，使用了多个材质进行多通道渲染。\n"
+"虽然对实际负载的影响不大，但可能会影响性能等级中显示的多边形数量。\n"
+"请确认是否有意使用多通道渲染。"
+
+msgid "MeshInfo2:warning:lineStrip"
+msgstr "{0}组件不处理使用LineStrip的SubMesh。"
+
+#endregion
+
+# region ErrorReporter
+
+msgid "ErrorReporter:error.internal_error"
+msgstr "内部エラーが発生しました: {0} 以下の処理中です:"
+
+msgid "ErrorReporter:autoFix"
+msgstr "修正する"
+
+# endregion
+
+# region AssetDescription
+
+msgid "AssetDescription:Description"
+msgstr ""
+"Avatar Optimizer Asset Description是一个用于向Avatar Optimizer提供您的资产信息的资产。\n"
+"请参阅文档以获取更多信息。"
+
+msgid "AssetDescription:OpenDocs"
+msgstr "打开文档"
+
+# endregion
