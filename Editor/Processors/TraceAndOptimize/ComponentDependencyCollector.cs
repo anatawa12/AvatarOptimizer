@@ -196,7 +196,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     .EvenIfDependantDisabled();
 
             public void AddBoneDependency(Transform bone) =>
-                AddDependencyInternal(_info, bone, GCComponentInfo.DependencyType.Bone);
+                AddDependencyInternal(_info, bone, GCComponentInfo.DependencyType.Bone)
+                    .EvenIfDependantDisabled();
 
             public void FinalizeForComponent()
             {
