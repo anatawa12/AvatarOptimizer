@@ -42,9 +42,9 @@ When you use the mask texture which is designed to remove polygons if the color 
 
 With this window, you can edit the mask texture.
 
-There are information about drawing texture above the drawing window.\
-At center, controls for brush size and view are shown.\
-The drawing window below shows the original texture, mask texture and UVs of the mesh.
+At the top of the window, information related to the mask texture being edited is shown.\
+At the center, there are controls for view and brush size.\
+The bottom of the window shows the original texture, mask texture and UVs of the mesh.
 
-You can left-drag to paint the mask and right-drag or shift + left-drag to move the view.\
-You can scroll to zoom in/out and shift + scroll to change the brush size.
+You can left-drag to paint the mask, and right-drag or shift + left-drag to move the view.\
+You can scroll to zoom in/out, and shift + scroll to change the brush size.
