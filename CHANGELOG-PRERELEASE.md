@@ -8,7 +8,6 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Add Simplified Chinese translation [`#1055`](https://github.com/anatawa12/AvatarOptimizer/pull/1045)
 
 ### Changed
 
@@ -19,6 +18,10 @@ The format is based on [Keep a Changelog].
 ### Fixed
 
 ### Security
+
+## [1.7.1] - 2024-05-07
+### Added
+- Add Simplified Chinese translation [`#1055`](https://github.com/anatawa12/AvatarOptimizer/pull/1045)
 
 ## [1.7.1-rc.1] - 2024-05-06
 ### Added
@@ -1391,7 +1394,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.1-rc.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.1...HEAD
+[1.7.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.1-rc.1...v1.7.1
 [1.7.1-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.0...v1.7.1-rc.1
 [1.7.0]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.0-rc.4...v1.7.0
 [1.7.0-rc.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.0-rc.3...v1.7.0-rc.4
