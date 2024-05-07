@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Add Simplified Chinese translation [`#1055`](https://github.com/anatawa12/AvatarOptimizer/pull/1045)
 
 ### Changed
 
