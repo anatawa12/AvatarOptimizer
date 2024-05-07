@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Declare VRCSDK 3.6.x compatibility `#1060`
 
 ### Changed
 
