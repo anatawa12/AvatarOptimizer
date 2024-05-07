@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog].
 ## [Unreleased]
 ### Added
 - Implement mask texture editor [`#1044`](https://github.com/anatawa12/AvatarOptimizer/pull/1044)
+- Add Simplified Chinese translation [`#1055`](https://github.com/anatawa12/AvatarOptimizer/pull/1045)
 
 ### Changed
 - Improved behavior with Read/Write Off `#1045`
