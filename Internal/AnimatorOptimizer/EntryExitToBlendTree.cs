@@ -517,7 +517,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
         {
             var valueForStates = info.ValueForStates;
             valueForStates.Remove(info.DefaultState); // default states are proceed always so remove from this list
-            var defaultMotion = info.DefaultState.motion;
+            var defaultMotion = info.DefaultState.motion ? info.DefaultState.motion : _emptyClip.Value;
 
             var states = new List<(IntOrBool value, Motion motion)>();
 

@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Entry/Exit to BlendTree broken with None motion in default state `1057`
 
 ### Security
 
