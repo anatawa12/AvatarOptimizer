@@ -238,8 +238,8 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 CurveVector3ConfigProp prop, bool forceOverride = false)
             {
                 var @override = forceOverride || prop.IsOverride;
-                _mergedPhysBone.FindProperty(prop.PhysBoneValueName).floatValue =
-                    prop.GetValueProperty(@override).floatValue;
+                _mergedPhysBone.FindProperty(prop.PhysBoneValueName).vector3Value =
+                    prop.GetValueProperty(@override).vector3Value;
                 if (@override)
                 {
                     _mergedPhysBone.FindProperty(prop.PhysBoneCurveXName).animationCurveValue =
