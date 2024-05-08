@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Animators depends on the WD=off behavior can be broken `#1062`
 
 ### Security
 
