@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - Entry/Exit to BlendTree broken with None motion in default state `1057`
+- An error with MergePhysBone `#1061`
 
 ### Security
 
