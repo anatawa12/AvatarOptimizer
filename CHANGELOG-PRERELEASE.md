@@ -16,10 +16,13 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Entry/Exit to BlendTree broken with None motion in default state `1057`
-- An error with MergePhysBone `#1061`
 
 ### Security
+
+## [1.7.2-rc.1] - 2024-05-08
+### Fixed
+- Entry/Exit to BlendTree broken with None motion in default state `1057`
+- An error with MergePhysBone [`#1061`](https://github.com/anatawa12/AvatarOptimizer/pull/1061)
 
 ## [1.7.1] - 2024-05-07
 ### Added
@@ -1396,7 +1399,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.2-rc.1...HEAD
+[1.7.2-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.1...v1.7.2-rc.1
 [1.7.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.1-rc.1...v1.7.1
 [1.7.1-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.0...v1.7.1-rc.1
 [1.7.0]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.0-rc.4...v1.7.0
