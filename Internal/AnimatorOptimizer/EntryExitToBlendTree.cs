@@ -628,7 +628,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             {
                 name = $"EntryExit to BlendTree by AAO for {layer.name}",
                 motion = blendTree,
-                writeDefaultValues = true, // WD on to avoid unexpected blendtree behaviour
+                // since it's 1d BlendTree, it's always be normalized wo WD off will not cause weird behavior.
+                // changing to WD on will cause problem with WD off-based animators
+                writeDefaultValues = info.DefaultState.writeDefaultValues,
             };
 
             layer.stateMachine!.states = new[]
