@@ -26,7 +26,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 
             var alwaysOneParameter = $"AAO_AlwaysOne_{Guid.NewGuid()}";
 
-            for (var i = controller.layers.Length - 1; i >= 0; i--)
+            for (var i = 0; i < controller.layers.Length; i++)
             {
                 var layer = controller.layers[i];
 
@@ -64,7 +64,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             directBlendTrees.Reverse();
 
             // create merged layer
-            var newLayer = controller.AddLayer("Merged Direct BlendTrees");
+            // Note: adding wd=on layer to end can break animators depends on wd=off behavior so we insert it to the first 
+            var newLayer = controller.AddLayerFirst("Merged Direct BlendTrees");
             var newState = new AnimatorState { name = "Merged Direct BlendTrees" };
             newLayer.stateMachine!.states = new[] { new ChildAnimatorState { state = newState } };
             newLayer.stateMachine.defaultState = newState;
@@ -90,7 +91,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             // clear original layers
             foreach (var (layerIndex, _) in directBlendTrees)
             {
-                var layer = controller.layers[layerIndex];
+                // one offset because we inserted new layer to first
+                var layer = controller.layers[layerIndex + 1];
                 layer.stateMachine!.states = Array.Empty<ChildAnimatorState>();
                 layer.stateMachine.defaultState = null;
                 layer.defaultWeight = 0f;

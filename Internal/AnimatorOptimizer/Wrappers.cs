@@ -50,6 +50,34 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             UpdateLayers();
         }
 
+        public AOAnimatorControllerLayer AddLayerFirst(string layerName)
+        {
+            var layer = new AnimatorControllerLayer
+            {
+                name = layerName,
+                stateMachine = new AnimatorStateMachine
+                {
+                    name = layerName,
+                    hideFlags = HideFlags.HideInHierarchy
+                }
+            };
+            var wrappedLayer = new AOAnimatorControllerLayer(this, layer);
+            wrappedLayer.IsBaseLayer = true;
+
+            // update our layers
+            var wrappedLayers = layers;
+            for (var i = 0; i < wrappedLayers.Length; i++)
+                wrappedLayers[i].OnLayerIndexUpdated(i + 1);
+            ArrayUtility.Insert(ref wrappedLayers, 0, wrappedLayer);
+            layers = wrappedLayers;
+
+            UpdateLayers();
+            layers[1].IsBaseLayer = false;
+            layers[1].defaultWeight = 1; // previous default layer
+
+            return wrappedLayer;
+        }
+
         public AOAnimatorControllerLayer AddLayer(string layerName)
         {
             var layer = new AnimatorControllerLayer
