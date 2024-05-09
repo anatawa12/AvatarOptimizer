@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog].
 
 ### Security
 
+## [1.7.2] - 2024-05-09
 ## [1.7.2-rc.2] - 2024-05-08
 ### Fixed
 - Animators depends on the WD=off behavior can be broken [`#1062`](https://github.com/anatawa12/AvatarOptimizer/pull/1062)
@@ -1403,7 +1404,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.2-rc.2...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.2...HEAD
+[1.7.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.2-rc.2...v1.7.2
 [1.7.2-rc.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.2-rc.1...v1.7.2-rc.2
 [1.7.2-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.1...v1.7.2-rc.1
 [1.7.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.1-rc.1...v1.7.1
