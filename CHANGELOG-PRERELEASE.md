@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Mesh preview may cause empty mesh on enter play mode if reload scene is disabled [`#1064`](https://github.com/anatawa12/AvatarOptimizer/pull/1064)
 
 ### Security
 
