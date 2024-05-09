@@ -27,7 +27,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         private readonly Mesh _originalMesh;
 
         // TexCoordStatus which is 3 bits x 8 = 24 bits
-        private ushort _texCoordStatus;
+        private uint _texCoordStatus;
 
         public readonly List<SubMesh> SubMeshes = new List<SubMesh>(0);
 
@@ -412,7 +412,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         public void SetTexCoordStatus(int index, TexCoordStatus value)
         {
             _texCoordStatus = (ushort)(
-                (uint)_texCoordStatus & ~(TexCoordStatusMask << (BitsPerTexCoordStatus * index)) | 
+                _texCoordStatus & ~(TexCoordStatusMask << (BitsPerTexCoordStatus * index)) | 
                 ((uint)value & TexCoordStatusMask) << (BitsPerTexCoordStatus * index));
         }
 
