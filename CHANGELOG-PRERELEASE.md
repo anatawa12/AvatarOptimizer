@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- MMD Compatibility can be broken with Merge BlendTree Layers `#1065`
 
 ### Security
 
