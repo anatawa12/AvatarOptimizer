@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog].
 
 ### Security
 
+## [1.7.3] - 2024-05-10
 ## [1.7.3-rc.1] - 2024-05-10
 ### Added
 - Declare VRCSDK 3.6.x compatibility [`#1060`](https://github.com/anatawa12/AvatarOptimizer/pull/1060)
@@ -1412,7 +1413,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.3-rc.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.3...HEAD
+[1.7.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.3-rc.1...v1.7.3
 [1.7.3-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.2...v1.7.3-rc.1
 [1.7.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.2-rc.2...v1.7.2
 [1.7.2-rc.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.2-rc.1...v1.7.2-rc.2
