@@ -26,7 +26,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 
             var alwaysOneParameter = $"AAO_AlwaysOne_{Guid.NewGuid()}";
 
-            for (var i = 0; i < controller.layers.Length; i++)
+            for (var i = controller.layers.Length - 1; i >= 0; i--)
             {
                 var layer = controller.layers[i];
 
@@ -64,12 +64,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             directBlendTrees.Reverse();
 
             // create merged layer
-            // Note: adding wd=on layer to end can break animators depends on wd=off behavior so we insert it to the first 
-            var newLayer = controller.AddLayerFirst("Merged Direct BlendTrees");
+            var theLayer = controller.layers[directBlendTrees.Last().layerIndex];
+            theLayer.name = "AAO BlendTree MergedLayer";
             var newState = new AnimatorState { name = "Merged Direct BlendTrees" };
-            newLayer.stateMachine!.states = new[] { new ChildAnimatorState { state = newState } };
-            newLayer.stateMachine.defaultState = newState;
-            newLayer.defaultWeight = 1f;
+            theLayer.stateMachine!.states = new[] { new ChildAnimatorState { state = newState } };
+            theLayer.stateMachine.defaultState = newState;
+            theLayer.defaultWeight = 1f;
 
             var newBlendTree = new BlendTree() { name = "Merged Direct BlendTrees" };
             newState.motion = newBlendTree;
@@ -89,10 +89,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             }
 
             // clear original layers
-            foreach (var (layerIndex, _) in directBlendTrees)
+            foreach (var (layerIndex, _) in directBlendTrees.SkipLast(1))
             {
-                // one offset because we inserted new layer to first
-                var layer = controller.layers[layerIndex + 1];
+                var layer = controller.layers[layerIndex];
                 layer.stateMachine!.states = Array.Empty<ChildAnimatorState>();
                 layer.stateMachine.defaultState = null;
                 layer.defaultWeight = 0f;
