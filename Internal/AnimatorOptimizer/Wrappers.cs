@@ -50,6 +50,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             UpdateLayers();
         }
 
+        // Note: Adding layer to first will break MMD compatibility.
+
         public AOAnimatorControllerLayer AddLayer(string layerName)
         {
             var layer = new AnimatorControllerLayer
@@ -109,7 +111,16 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 
         public int syncedLayerIndex => Layer.syncedLayerIndex;
         public AnimatorStateMachine? stateMachine => Layer.stateMachine ? Layer.stateMachine : null;
-        public string name => Layer.name;
+        public string name
+        {
+            get => Layer.name;
+            set
+            {
+                Layer.name = value;
+                _parent.UpdateLayers();
+            }
+        }
+
         public AvatarMask? avatarMask => Layer.avatarMask;
         // ReSharper restore InconsistentNaming
 

@@ -64,11 +64,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             directBlendTrees.Reverse();
 
             // create merged layer
-            var newLayer = controller.AddLayer("Merged Direct BlendTrees");
+            var theLayer = controller.layers[directBlendTrees.Last().layerIndex];
+            theLayer.name = "AAO BlendTree MergedLayer";
             var newState = new AnimatorState { name = "Merged Direct BlendTrees" };
-            newLayer.stateMachine!.states = new[] { new ChildAnimatorState { state = newState } };
-            newLayer.stateMachine.defaultState = newState;
-            newLayer.defaultWeight = 1f;
+            theLayer.stateMachine!.states = new[] { new ChildAnimatorState { state = newState } };
+            theLayer.stateMachine.defaultState = newState;
+            theLayer.defaultWeight = 1f;
 
             var newBlendTree = new BlendTree() { name = "Merged Direct BlendTrees" };
             newState.motion = newBlendTree;
@@ -88,7 +89,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             }
 
             // clear original layers
-            foreach (var (layerIndex, _) in directBlendTrees)
+            foreach (var (layerIndex, _) in directBlendTrees.SkipLast(1))
             {
                 var layer = controller.layers[layerIndex];
                 layer.stateMachine!.states = Array.Empty<ChildAnimatorState>();
