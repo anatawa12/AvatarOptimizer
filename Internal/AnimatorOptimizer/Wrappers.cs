@@ -117,6 +117,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             set
             {
                 Layer.name = value;
+                if (Layer.stateMachine) Layer.stateMachine.name = value;
                 _parent.UpdateLayers();
             }
         }
