@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - Some rare material swap animation can cause exception `#1067`
+- Invalid AABB error message from UnityEngine if there are no source for Merge Skinned Mesh `#1068`
 
 ### Security
 
