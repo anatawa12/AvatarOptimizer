@@ -62,27 +62,41 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 var materialSlots = mesh.SubMeshes.Sum(y => y.SharedMaterials.Length);
                 return (prop) =>
                 {
-                    if (prop.StartsWith("blendShape."))
-                    {
-                        var name = prop.Substring("blendShape.".Length);
-                        return mesh.BlendShapes.FindIndex(b => b.name == name) != -1;
-                    }
+                    int index;
 
-                    if (prop.StartsWith("m_Materials.Array.data["))
-                    {
-                        var index = int.Parse(prop.Substring("m_Materials.Array.data[".Length).TrimEnd(']'));
+                    if (TrySubProp(prop, "blendShape", out var name))
+                        return mesh.BlendShapes.FindIndex(b => b.name == name) != -1;
+
+                    if (TryArrayIndex(prop, "materials", out index))
                         return index < materialSlots;
-                    }
 
                     if (VProp.IsBlendShapeIndex(prop))
-                    {
-                        var index = VProp.ParseBlendShapeIndex(prop);
-                        return index < mesh.BlendShapes.Count;
-                    }
+                        return VProp.ParseBlendShapeIndex(prop) < mesh.BlendShapes.Count;
 
                     return true;
                 };
             });
+        }
+
+        private static bool TrySubProp(string prop, string subProp, out string sub)
+        {
+            sub = null;
+            if (!prop.StartsWith(subProp + '.')) return false;
+            sub = prop.Substring(subProp.Length + 1);
+            return true;
+        }
+
+        private static bool TryArrayIndex(string prop, string arrayPropertyName, out int index)
+        {
+            index = -1; 
+            if (!prop.StartsWith(arrayPropertyName)) return false;
+            prop = prop.Substring(arrayPropertyName.Length);
+            if (!prop.StartsWith(".Array.data[")) return false;
+            prop = prop.Substring(".Array.data[".Length);
+            var close = prop.IndexOf(']');
+            if (close == -1) return false;
+            if (!int.TryParse(prop.Substring(0, close), out index)) return false;
+            return true;
         }
     }
 }

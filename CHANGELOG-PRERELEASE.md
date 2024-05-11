@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Some rare material swap animation can cause exception `#1067`
 
 ### Security
 
