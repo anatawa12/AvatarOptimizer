@@ -16,9 +16,12 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Some rare material swap animation can cause exception `#1067`
 
 ### Security
+
+## [1.7.4-beta.1] - 2024-05-11
+### Fixed
+- Some rare material swap animation can cause exception [`#1067`](https://github.com/anatawa12/AvatarOptimizer/pull/1067)
 
 ## [1.7.3] - 2024-05-10
 ## [1.7.3-rc.1] - 2024-05-10
@@ -1414,7 +1417,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.3...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.4-beta.1...HEAD
+[1.7.4-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.3...v1.7.4-beta.1
 [1.7.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.3-rc.1...v1.7.3
 [1.7.3-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.2...v1.7.3-rc.1
 [1.7.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.2-rc.2...v1.7.2
