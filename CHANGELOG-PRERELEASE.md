@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Invalid AABB error message from UnityEngine if there are no source for Merge Skinned Mesh `#1068`
 
 ### Security
 

@@ -89,5 +89,7 @@ namespace Anatawa12.AvatarOptimizer
         public static int SingleToInt32Bits(float value) => BitConverter.ToInt32(BitConverter.GetBytes(value), 0);
         public static float Int32BitsToSingle(int value) => BitConverter.ToSingle(BitConverter.GetBytes(value), 0);
 #endif
+
+        public static bool IsFinite(float x) => !float.IsNaN(x) && !float.IsInfinity(x);
     }
 }

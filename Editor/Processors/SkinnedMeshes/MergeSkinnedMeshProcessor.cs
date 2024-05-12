@@ -317,7 +317,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     }
                 }
 
-                if (newBoundMin != Vector3.positiveInfinity && newBoundMax != Vector3.negativeInfinity)
+                if (Utils.IsFinite(newBoundMin.x)
+                    && Utils.IsFinite(newBoundMin.y)
+                    && Utils.IsFinite(newBoundMin.z)
+                    && Utils.IsFinite(newBoundMax.x)
+                    && Utils.IsFinite(newBoundMax.y)
+                    && Utils.IsFinite(newBoundMax.z))
                 {
                     target.Bounds.SetMinMax(newBoundMin, newBoundMax);
                 }
