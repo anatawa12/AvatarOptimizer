@@ -16,10 +16,13 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Some rare material swap animation can cause exception `#1067`
-- Invalid AABB error message from UnityEngine if there are no source for Merge Skinned Mesh `#1068`
 
 ### Security
+
+## [1.7.4] - 2024-05-17
+### Fixed
+- Some rare material swap animation can cause exception [`#1067`](https://github.com/anatawa12/AvatarOptimizer/pull/1067)
+- Invalid AABB error message from UnityEngine if there are no source for Merge Skinned Mesh [`#1068`](https://github.com/anatawa12/AvatarOptimizer/pull/1068)
 
 ## [1.7.3] - 2024-05-10
 ### Added
@@ -924,7 +927,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.3...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.4...HEAD
+[1.7.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.3...v1.7.4
 [1.7.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.2...v1.7.3
 [1.7.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.1...v1.7.2
 [1.7.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.0...v1.7.1

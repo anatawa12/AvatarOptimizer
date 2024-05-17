@@ -16,9 +16,12 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Invalid AABB error message from UnityEngine if there are no source for Merge Skinned Mesh `#1068`
 
 ### Security
+
+## [1.7.4] - 2024-05-17
+### Fixed
+- Invalid AABB error message from UnityEngine if there are no source for Merge Skinned Mesh [`#1068`](https://github.com/anatawa12/AvatarOptimizer/pull/1068)
 
 ## [1.7.4-beta.1] - 2024-05-11
 ### Fixed
@@ -1418,7 +1421,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.4-beta.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.4...HEAD
+[1.7.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.4-beta.1...v1.7.4
 [1.7.4-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.3...v1.7.4-beta.1
 [1.7.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.3-rc.1...v1.7.3
 [1.7.3-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.2...v1.7.3-rc.1
