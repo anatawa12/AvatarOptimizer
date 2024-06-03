@@ -24,5 +24,15 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
             var except = LoadAnimatorController("BlockedCompletely.converted");
             RecursiveCheckEquals(except, controller);
         }
+        
+        [Test]
+        public void BlockedPartially()
+        {
+            var controller = LoadCloneAnimatorController("BlockedPartially");
+            controller.name = "BlockedPartially.converted";
+            MergeBlendTreeLayer.Execute(new AOAnimatorController(controller));
+            var except = LoadAnimatorController("BlockedPartially.converted");
+            RecursiveCheckEquals(except, controller);
+        }
     }
 }
