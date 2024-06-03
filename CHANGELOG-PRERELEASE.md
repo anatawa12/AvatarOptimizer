@@ -16,9 +16,12 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Merge BlendTree Layer will break some BlendTrees that have overriden by other layers `#1084`
 
 ### Security
+
+## [1.7.5-beta.1] - 2024-06-03
+### Fixed
+- Merge BlendTree Layer will break some BlendTrees that have overriden by other layers [`#1084`](https://github.com/anatawa12/AvatarOptimizer/pull/1084)
 
 ## [1.7.4] - 2024-05-17
 ### Fixed
@@ -1422,7 +1425,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.4...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.5-beta.1...HEAD
+[1.7.5-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.4...v1.7.5-beta.1
 [1.7.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.4-beta.1...v1.7.4
 [1.7.4-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.3...v1.7.4-beta.1
 [1.7.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.3-rc.1...v1.7.3
