@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Merge BlendTree Layer will break some BlendTrees that have overriden by other layers `#1084`
 
 ### Security
 
