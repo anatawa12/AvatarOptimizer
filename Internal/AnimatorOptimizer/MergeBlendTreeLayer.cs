@@ -37,8 +37,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                     var blendTreeModified = ACUtils.AllClips(blendTree).Aggregate(new HashSet<EditorCurveBinding>(),
                         (set, clip) =>
                         {
-                            modifiedProperties.UnionWith(AnimationUtility.GetCurveBindings(clip));
-                            modifiedProperties.UnionWith(AnimationUtility.GetObjectReferenceCurveBindings(clip));
+                            set.UnionWith(AnimationUtility.GetCurveBindings(clip));
+                            set.UnionWith(AnimationUtility.GetObjectReferenceCurveBindings(clip));
                             return set;
                         });
                     // nothing is animated in higher priority layer
