@@ -684,7 +684,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 RendererAnimationLocations = rendererAnimationLocations;
                 Activeness = activeness;
 
-                Bounds = NormalizeBounds(meshInfo2.Bounds);
+                Bounds = RoundError.Bounds(meshInfo2.Bounds);
                 ShadowCastingMode = renderer.shadowCastingMode;
                 ReceiveShadows = renderer.receiveShadows;
                 LightProbeUsage = renderer.lightProbeUsage;
@@ -697,22 +697,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 UpdateWhenOffscreen = renderer.updateWhenOffscreen;
                 RootBone = renderer.rootBone;
                 SkinnedMotionVectors = renderer.skinnedMotionVectors;
-            }
-
-            private static Bounds NormalizeBounds(Bounds bounds)
-            {
-                const int digits = 6;
-
-                var center = bounds.center;
-                var size = bounds.size;
-                center.x = (float)Math.Round(center.x, digits);
-                center.y = (float)Math.Round(center.y, digits);
-                center.z = (float)Math.Round(center.z, digits);
-                size.x = (float)Math.Round(size.x, digits);
-                size.y = (float)Math.Round(size.y, digits);
-                size.z = (float)Math.Round(size.z, digits);
-
-                return new Bounds(center, size);
             }
 
             public bool Equals(CategorizationKey other)
