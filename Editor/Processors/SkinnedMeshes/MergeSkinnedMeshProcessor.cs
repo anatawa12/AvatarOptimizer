@@ -441,6 +441,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             foreach (var renderer in renderers)
             {
                 var animationLocationsForSource = GetAnimationLocations(context, renderer);
+                if (animationLocationsForSource.Count == 0) continue; // skip if no animation
                 if (animationLocationsForSource.SetEquals(animationLocationsForMerged)) continue;
 
                 // if the source has different activeness animation, warn it.
