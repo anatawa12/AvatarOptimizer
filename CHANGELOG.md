@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog].
 
 ### Changed
 - Ignore floating point precision error in Merge PhysBone `#1086`
+- Animation Warning of Merge Skinned Mesh will not generated if source Renderer is not animated `#1087`
 
 ### Deprecated
 
