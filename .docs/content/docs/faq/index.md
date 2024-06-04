@@ -55,6 +55,30 @@ If there is a conflict, a warning will be displayed, so please check the warning
 
 Issue of this problem: [#568](https://github.com/anatawa12/AvatarOptimizer/issues/568)
 
+## I cannot upload the avatar because of pre-build hard limit check {#i-cannot-upload-the-avatar-because-of-pre-build-hard-limit-check}
+
+Avatar Optimizer and some other non-destructive avatar modification tools may make your avatar not exceed the hard limit of VRChat.
+However, the upload button on the VRCSDK Control Panel will be disabled if the hard limit is exceeded with on-scene Avatar.
+But, if your avatar does not exceed the hard limit after build, you can upload the avatar with some other ways.
+You may use the following methods to skip pre-build hard limit check.
+Please note that those methods will not skip the post-build hard limit check.
+
+- Manual bake avatar before uploading the avatar.
+
+  You can use `NDM Framework/Manual bake avatar` on the context menu of the Avatar GameObject to apply non-destructive tools before uploading the avatar.
+  This will clone your avatar and apply non-destructive tools to the cloned avatar, so your original avatar will not be modified.
+- Use [Upload without pre-check] by Sayamame-beans.
+
+  [Upload without pre-check] is a tool that allows you to upload the avatar without pre-build hard limit check.
+- Use [VRChat Quest Tools] by kurotu.
+
+  [VRChat Quest Tools] is a tool to easily convert your avatar to Android / Quest compatible avatar.\
+  As a part of the tool, [VQT Avatar Builder] allows you to upload the avatar without pre-build hard limit check for Android build.
+
+[Upload without pre-check]: https://github.com/Sayamame-beans/Upload-without-preCheck?tab=readme-ov-file#upload-without-pre-check
+[VRChat Quest Tools]: https://kurotu.github.io/VRCQuestTools/
+[VQT Avatar Builder]: https://kurotu.github.io/VRCQuestTools/docs/references/main-menu/show-avatar-builder
+
 ## I want to support the development of Avatar Optimizer {#i-want-to-support-the-development-of-avatar-optimizer}
 
 If you want to support the development of Avatar Optimizer, feedback on [GitHub Discussions], bug reports, feature requests, etc. on [GitHub Issues], and pull requests are welcome.
