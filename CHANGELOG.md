@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
+- Ignore floating point precision error in Merge PhysBone `#1086`
 
 ### Deprecated
 
