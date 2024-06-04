@@ -33,12 +33,10 @@ AAO: Avatar Optimizer is a non-destructive avatar modification tool, and process
 Therefore, no special steps are required for uploading.
 Upload your avatar via VRCSDK Control Panal as usual.
 
-However, even though the hard limit will not be exceeded through Avatar Optimizer optimization, etc.,
-the upload button cannot be pressed because the limit has been exceeded at the time of the VRCSDK pre-build check, the following methods can be used.
+However, even though the hard limit will not be exceeded through Avatar Optimizer optimization, etc., the upload button cannot be pressed if the limit has been exceeded at the time of the VRCSDK pre-build check.
+You can skip pre-build checks with several ways. Please refer [faq][skip-hard-limit-faq] for more details.
 
-- Upload the avatar generated with `Manual bake avatar`.\
-(Select the GameObject of the avatar, then press `Manual bake avatar` in `NDM Framework` from Tools at the top of the Unity window)
-- Upload using [Upload without pre-check] by Sayamame-beans.
+[skip-hard-limit-faq]: ../../faq/#i-cannot-upload-the-avatar-because-of-pre-build-hard-limit-check
 
 [Upload without pre-check]: https://github.com/Sayamame-beans/Upload-without-preCheck?tab=readme-ov-file#upload-without-pre-check
 

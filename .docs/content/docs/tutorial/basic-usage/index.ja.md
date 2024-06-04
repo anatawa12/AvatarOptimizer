@@ -32,13 +32,10 @@ AvatarOptimizerでは、アバターのルートに`AAO Trace And Optimize`コ�
 AAO: Avatar Optimizerは非破壊改変ツールであり、Playモードに入るときかアバターをビルドするときに処理が行われるため、アップロードを行うのに特別な手順は必要ありません。
 通常と同じように、VRCSDKのControl Panelからアバターをアップロードしてください。
 
-ただし、Android(Quest)向けアップロードを行う場合などにおいて、Avatar Optimizerの最適化等によって制限の範囲内に収まるにも関わらず、VRCSDKのビルド前チェックの時点で制限を超過していてアップロードボタンが押せなくなっている場合には、以下の方法が使用できます。
+ただし、Android(Quest)向けアップロードを行う場合などにおいて、Avatar Optimizerの最適化等によって制限の範囲内に収まるにも関わらず、 VRCSDKのビルド前チェックの時点で制限を超過していてアップロードボタンが押せない場合があります。
+ビルド前のチェックをスキップする方法はいくつかあります。詳しくは[よくある質問][skip-hard-limit-faq]を参照してください。
 
-- `Manual bake avatar`を使用して生成したアバターをアップロードする。\
-(アバターのGameObjectを選択した後、Unityウィンドウ上部のToolsから、`NDM Framework`の中にある`Manual bake avatar`を押す)
-- Sayamame-beansによる[Upload without pre-check]を使用してアップロードする。
-
-[Upload without pre-check]: https://github.com/Sayamame-beans/Upload-without-preCheck?tab=readme-ov-file#upload-without-pre-check
+[skip-hard-limit-faq]: ../../faq/#i-cannot-upload-the-avatar-because-of-pre-build-hard-limit-check
 
 {{< hint info >}}
 
