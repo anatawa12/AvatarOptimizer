@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog].
 ### Deprecated
 
 ### Removed
+- Write to Asset on Play menu item which is no-op `#1085`
 
 ### Fixed
 - Merge BlendTree Layer will break some BlendTrees that have overriden by other layers `#1084`
