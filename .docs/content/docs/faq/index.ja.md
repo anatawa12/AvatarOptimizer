@@ -6,12 +6,12 @@ weight: 2
 # よくある質問 {#faq}
 
 Avatar Optimizerに関するよくある質問のリストです。
-他に質問がある場合は、[GitHub Discussions]または[Fediverse]でお気軽にお尋ねください。
+他に質問がある場合は、[GitHub Discussions]または[Fediverse (Misskey / Mastodon)][Fediverse]でお気軽にお尋ねください。
 
 ## `AAO Trace and Optimize`コンポーネントを使用すると、アバターの振る舞いや見た目が変わる {#avatar-behavior-or-appearance-changed-when-using-aao-trace-and-optimize-component}
 
 `AAO Trace and Optimize`コンポーネントを使用して、アバターの振る舞いや見た目が変わってしまった場合は、(アバターがAvatar Optimizerの他のコンポーネントのバグ挙動に依存していない限り、)全てバグです。
-[GitHub Issues]や[Misskey][Fediverse] (Mastodon)、[Twitter]などから報告をお願いします。
+[GitHub Issues]や[Fediverse (Misskey / Mastodon)][Fediverse]、[Twitter]などから報告をお願いします。
 
 ## メッシュが視界の中にあるのに非表示になってしまう {#mesh-is-invisible-even-though-it-is-in-the-field-of-view}
 
@@ -52,6 +52,25 @@ BlendShapeに対してアニメーションされるメッシュを統合する�
 競合する場合は警告が表示されるので、そちらを確認してください。
 
 この問題のissue: [#568](https://github.com/anatawa12/AvatarOptimizer/issues/568)
+
+## OSCギミックで使用されているPhysBone / Contact Receiverが動作していない {#physbones-contact-receivers-that-are-used-in-the-osc-based-gimmick-are-not-working}
+
+`AAO Trace and Optimize`コンポーネントは、アバターの振る舞いを慎重に変更しないように設計されています。
+しかし、技術的な理由から、`AAO Trace and Optimize`コンポーネントは、一PhysBone / Contact ReceiverコンポーネントがOSCギミックで使用されているかどうかを判断できません。
+
+最近のアバターは、PhysBone / Contact Receiverコンポーネントを使用して独自のギミックを持っていることもため、これらのコンポーネントが削除し忘れていることがあります。
+そのため、`AAO Trace and Optimize`は、そのようなコンポーネントがOSCギミックで使用されていないと仮定し、それらを削除します。
+
+しかし、これが誤りである場合があります。
+もし削除されたPhysBone / Contact ReceiverコンポーネントをOSCギミックに使用している場合は、それらが使用されていると検出されるようにアバターを設定してください。
+`AAO Trace and Optimize`は、アバター内のAnimatorで使用されているパラメータがある場合、それらを削除しません。
+そのため、OSCギミックで使用されるパラメータをAnimator ControllerやExpression Parametersのパラメータリストに追加することで、これらのコンポーネントが削除されなくなります。
+
+また、将来の修正議論の材料として、もしOSCギミックで使われているPhysBoneやContactが削除された場合にはそのパラメータ名を教えていただけると助かります。
+将来的に有名なOSCギミックによって使用されるパラメータのリストを実装し、Avatar Optimizerがそれらのパラメータに対してコンポーネントを保持するようにするかもしれませんし、他の方法で対処するかもしれません。
+以下のissueや[Fediverse (Misskey / Mastodon)][Fediverse]、[Twitter]などでお気軽にお知らせください。
+
+この問題のissue: [#1090](https://github.com/anatawa12/AvatarOptimizer/issues/1090)
 
 ## ビルド前のハードリミットチェックでアバターをアップロードできない {#i-cannot-upload-the-avatar-because-of-pre-build-hard-limit-check}
 

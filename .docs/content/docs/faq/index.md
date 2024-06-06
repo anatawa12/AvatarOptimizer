@@ -6,14 +6,14 @@ weight: 2
 # Frequently Asked Questions {#faq}
 
 Here is the list of frequently asked questions about Avatar Optimizer.
-If you have some other questions, please feel free to ask on the [GitHub Discussions] or on [Fediverse].
+If you have some other questions, please feel free to ask on the [GitHub Discussions] or on [Fediverse (Misskey / Mastodon)][Fediverse].
 I'm usually use Japanese, but you can ask me with English.
 
 ## The behavior or appearance of the avatar is changed when using `AAO Trace and Optimize` component {#avatar-behavior-or-appearance-changed-when-using-aao-trace-and-optimize-component}
 
 If the behavior or appearance of the avatar is changed when using `AAO Trace and Optimize` component, it is always a bug unless you depend on bugs in other components of Avatar Optimizer.
 
-Please report it on [GitHub Issues], [misskey][Fediverse] (mastodon), [Twitter], etc.
+Please report it on [GitHub Issues], [Fediverse (Misskey / Mastodon)][Fediverse], [Twitter], etc.
 
 ## Mesh is invisible even though it is in the field of view {#mesh-is-invisible-even-though-it-is-in-the-field-of-view}
 
@@ -54,6 +54,27 @@ When merging meshes with animated BlendShapes, be careful not to conflict.
 If there is a conflict, a warning will be displayed, so please check the warning.
 
 Issue of this problem: [#568](https://github.com/anatawa12/AvatarOptimizer/issues/568)
+
+## PhysBones / Contact Receivers that are used in the OSC-based gimmick are not working {#physbones-contact-receivers-that-are-used-in-the-osc-based-gimmick-are-not-working}
+
+The `AAO Trace and Optimie` component is designed to not change the behavior of the avatar carefully.
+However, for technical reasons, the `AAO Trace and Optimize` component cannot detect some PhysBone / Contact Receiver components are used in the OSC-based gimmick or not being used.
+
+Some modern avatars have their own gimmicks based on PhysBone / Contact Receiver components, so those components is due to forgotten to remove them in most case.
+Therefore, `AAO Trace and Optimize` will assume that such components are not for OSC-based gimmick and remove them.
+
+However, this is not always the case, so if you are using PhysBone / Contact Receiver components for the OSC-based gimmick,
+please configure your avatar to detect them as used in the avatar.
+`AAO Trace and Optimize` will not remove them if they are used in the Animator in the avatar.
+So, by adding parameters used in the OSC-based gimmick to the parameter list of Animator Controller or Expression Parameters,
+such components will not be removed.
+
+In addition, for future discussion, if your OSC-based gimmick is removed by Trace and Optimize,
+could you let us know the name of parameter used in the OSC-based gimmicks?
+I may implement list of parameters likely to be used by OSC and Avatar Optimizer may keep components for those parameters or other ways to prevent removing them in the future.
+Please feel free to contact on the GitHub issue below, [Fediverse (Misskey / Mastodon)][Fediverse] or [Twitter].
+
+Issue of this problem: [#1090](https://github.com/anatawa12/AvatarOptimizer/issues/1090)
 
 ## I cannot upload the avatar because of pre-build hard limit check {#i-cannot-upload-the-avatar-because-of-pre-build-hard-limit-check}
 
