@@ -14,6 +14,8 @@ The format is based on [Keep a Changelog].
 - Ignore floating point precision error in Merge PhysBone `#1086`
 - Animation Warning of Merge Skinned Mesh will not generated if source Renderer is not animated `#1087`
 - Expression Parameters are now considered as a part of Avatar Dynamics Parameter destination `#1089`
+- Relax condition for scaled evenly check `#1092`
+  - Trace and Optimize will merge more bones than before.
 
 ### Deprecated
 
