@@ -47,7 +47,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
         public static bool ScaledEvenly(Vector3 localScale)
         {
-            bool CheckScale(float scale) => 0.999 < scale && scale < 1.001;
+            bool CheckScale(float scale) => 0.995 < scale && scale < 1.005;
             return CheckScale(localScale.x / localScale.y) && CheckScale(localScale.x / localScale.z) &&
                    CheckScale(localScale.y / localScale.z);
         }
