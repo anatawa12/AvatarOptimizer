@@ -10,7 +10,7 @@ namespace Anatawa12.AvatarOptimizer.API
     {
         private readonly PrefabSafeSetApi<T> _set;
 
-        public PrefabSafeSetAccessor(PrefabSafeSetApi<T> set) => _set = set;
+        internal PrefabSafeSetAccessor(PrefabSafeSetApi<T> set) => _set = set;
 
         [PublicAPI]
         public Enumerator GetEnumerator() => new Enumerator(_set.GetAsList().GetEnumerator());

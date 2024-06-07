@@ -116,7 +116,21 @@ namespace Anatawa12.AvatarOptimizer.Test
                     Assert.That(IsAAOApi(methodInfo.ReturnType), Is.True,
                         $"{methodInfo} is publicly accessible but return type is not AAO api");
                     Assert.That(methodInfo.GetParameters().All(x => IsAAOApi(x.ParameterType)), Is.True,
-                        $"{methodInfo} is publicly accessible but return type is not AAO api");
+                        $"{methodInfo} is publicly accessible but parameter type is not AAO api");
+                }
+            }
+
+            // check constructors
+            foreach (var constructorInfo in type.GetConstructors(AllMembers))
+            {
+                if (IsPubliclyAccessible(constructorInfo.Attributes, allowInherit))
+                {
+                    var attribute = constructorInfo.GetCustomAttribute<PublicAPIAttribute>();
+                    Assert.That(attribute != null, Is.True,
+                        $"{constructorInfo} of {type} is publicly accessible but not marked as PublicAPIAttribute");
+
+                    Assert.That(constructorInfo.GetParameters().All(x => IsAAOApi(x.ParameterType)), Is.True,
+                        $"{constructorInfo} of {type} is publicly accessible but parameter type is not AAO api");
                 }
             }
 

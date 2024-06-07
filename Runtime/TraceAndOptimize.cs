@@ -18,6 +18,10 @@ namespace Anatawa12.AvatarOptimizer
     [PublicAPI]
     public sealed class TraceAndOptimize : AvatarGlobalComponent
     {
+        internal TraceAndOptimize()
+        {
+        }
+
         [NotKeyable]
         [AAOLocalized("TraceAndOptimize:prop:freezeBlendShape")]
         [ToggleLeft]
