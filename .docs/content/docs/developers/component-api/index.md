@@ -7,7 +7,7 @@ title: Component Scripting API
 Since Avatar Optimizer v1.7.0, Avatar Optimizer provides Component API to add Avatar Optimizer components to the Avatar.
 By using this API, you can create tools or components that adds Avatar Optimizer components.
 
-## Components that supported by Component API
+## Components that supported by Component API  {#supported-components}
 
 Currently, not all components are supported by Component API.
 Here is the list of components that are supported by Component API.
