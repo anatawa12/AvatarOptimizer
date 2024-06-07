@@ -89,6 +89,18 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         {
             var parameters = new HashSet<string>();
 
+            var animator = rootGameObject.GetComponent<Animator>();
+            if (animator)
+            {
+                var runtimeAnimatorController = animator.runtimeAnimatorController;
+                if (runtimeAnimatorController)
+                {
+                    var (controller, _) = ACUtils.GetControllerAndOverrides(runtimeAnimatorController);
+                    foreach (var parameter in controller.parameters)
+                        parameters.Add(parameter.name);
+                }
+            }
+
 #if AAO_VRCSDK3_AVATARS
             var descriptor = rootGameObject.GetComponent<VRC.SDK3.Avatars.Components.VRCAvatarDescriptor>();
             if (descriptor)
@@ -97,12 +109,20 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 {
                     foreach (var layer in descriptor.baseAnimationLayers.Concat(descriptor.specialAnimationLayers))
                     {
-                        if (layer.isDefault) continue;
+                        if (layer.isDefault || !layer.animatorController) continue;
 
                         var (controller, _) = ACUtils.GetControllerAndOverrides(layer.animatorController);
                         foreach (var parameter in controller.parameters)
                             parameters.Add(parameter.name);
                     }
+                }
+
+                if (descriptor.customExpressions)
+                {
+                    var expressionParameters = descriptor.expressionParameters;
+                    foreach (var parameter in expressionParameters.parameters)
+                        if (parameter != null)
+                            parameters.Add(parameter.name);
                 }
             }
 #endif

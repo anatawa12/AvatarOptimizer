@@ -10,14 +10,22 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
+- Ignore floating point precision error in Merge PhysBone `#1086`
+- Animation Warning of Merge Skinned Mesh will not generated if source Renderer is not animated `#1087`
+- Expression Parameters are now considered as a part of Avatar Dynamics Parameter destination `#1089`
 
 ### Deprecated
 
 ### Removed
+- Write to Asset on Play menu item which is no-op `#1085`
 
 ### Fixed
 
 ### Security
+
+## [1.7.5-beta.1] - 2024-06-03
+### Fixed
+- Merge BlendTree Layer will break some BlendTrees that have overriden by other layers [`#1084`](https://github.com/anatawa12/AvatarOptimizer/pull/1084)
 
 ## [1.7.4] - 2024-05-17
 ### Fixed
@@ -1421,7 +1429,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.4...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.5-beta.1...HEAD
+[1.7.5-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.4...v1.7.5-beta.1
 [1.7.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.4-beta.1...v1.7.4
 [1.7.4-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.3...v1.7.4-beta.1
 [1.7.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.3-rc.1...v1.7.3

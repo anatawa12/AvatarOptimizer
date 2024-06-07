@@ -72,7 +72,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                             var scale = PhysBoneScale(rootTransform);
                             var radius = scale * collider.radius;
                             var centerPosition = rootTransform.TransformPoint(collider.position);
-                            return (radius, centerPosition);
+                            return (RoundError.Float(radius), RoundError.Vector3(centerPosition));
                         });
                         break;
                     case VRCPhysBoneColliderBase.ShapeType.Capsule:
@@ -84,7 +84,14 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                             var height = scale * collider.height;
                             var rotation = rootTransform.rotation * collider.rotation;
                             var centerPosition = rootTransform.TransformPoint(collider.position);
-                            return (radius, height, rotation, centerPosition);
+
+                            // rotation is hard to round floating point error so use position instead
+                            var offset = rotation * Vector3.up * height / 2;
+                            if (offset.x < 0) offset = -offset;
+                            var headPosition = centerPosition + offset;
+                            var tailPosition = centerPosition - offset;
+
+                            return (RoundError.Float(radius), RoundError.Vector3(headPosition), RoundError.Vector3(tailPosition));
                         });
                         break;
                     case VRCPhysBoneColliderBase.ShapeType.Plane:
@@ -101,7 +108,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                                 centerPosition.x = 0;
                                 centerPosition.z = 0;
                             }
-                            return (rotation, centerPosition);
+                            return (RoundError.Quaternion(rotation), RoundError.Vector3(centerPosition));
                         });
                         break;
                     default:
