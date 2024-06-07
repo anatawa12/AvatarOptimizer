@@ -24,6 +24,8 @@ namespace Anatawa12.AvatarOptimizer
         }
 
         internal HashSet<string> RemovingShapeKeys => shapeKeysSet.GetAsSet();
+
+        APIChecker _checker;
         
         /// <summary>
         /// Initializes the RemoveMEshByBlendShape with the specified default behavior version.
@@ -48,6 +50,7 @@ namespace Anatawa12.AvatarOptimizer
                 default:
                     throw new ArgumentOutOfRangeException(nameof(version), $"unsupported version: {version}");
             }
+            _checker.OnInitialize(version, this);
         }
 
         /// <summary>
@@ -58,14 +61,15 @@ namespace Anatawa12.AvatarOptimizer
         [PublicAPI]
         public double Tolerance
         {
-            get => tolerance;
-            set => tolerance = value;
+            get => _checker.OnAPIUsage(this, tolerance);
+            set => _checker.OnAPIUsage(this, tolerance = value);
         }
 
         /// <summary>
         /// Gets the set of shape keys to remove meshes.
         /// </summary>
         [PublicAPI]
-        public API.PrefabSafeSetAccessor<string> ShapeKeys => new API.PrefabSafeSetAccessor<string>(shapeKeysSet);
+        public API.PrefabSafeSetAccessor<string> ShapeKeys =>
+            _checker.OnAPIUsage(this, new API.PrefabSafeSetAccessor<string>(shapeKeysSet));
     }
 }
