@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Warnings for bad API Usages `#1091`
 
 ### Changed
 - Ignore floating point precision error in Merge PhysBone `#1086`
