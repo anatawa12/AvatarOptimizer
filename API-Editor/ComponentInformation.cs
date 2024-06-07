@@ -43,6 +43,11 @@ namespace Anatawa12.AvatarOptimizer.API
         APIInternal.IComponentInformation<TComponent>
         where TComponent : Component
     {
+        [PublicAPI]
+        protected ComponentInformation()
+        {
+        }
+
         internal sealed override void CollectDependencyInternal(Component component,
             ComponentDependencyCollector collector) =>
             CollectDependency((TComponent)component, collector);
