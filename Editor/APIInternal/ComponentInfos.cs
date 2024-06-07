@@ -113,7 +113,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
             // Mesh renderer without Mesh does nothing
             if (!meshFilter || !meshFilter.sharedMesh) return;
             base.CollectDependency(component, collector);
-            collector.AddDependency(meshFilter);
+            collector.AddDependency(meshFilter).EvenIfDependantDisabled();
         }
     }
 
