@@ -18,8 +18,8 @@ There are several optimizations which can be performed automatically for Avatars
 - Merging bones which is not animated or swayed with PhysBones
   - If the clothes bones are nested into the body bones, there will be many bones which are never moved locally. Such bones cause extra cost.
 - Merging meshes which are toggled together or never toggled
-  - If your avatar has only one cloth, it might not be not necessary to have separated meshes for body, hair, and clothes.
-  - Even if you have multiple changing clothes, it might not be necessary to have separated meshes with body, hair, and underwear.
+  - If your avatar has only one cloth, it might not be necessary to have separated meshes for body, hair, and clothes.
+  - Even if you have multiple switchable clothes, it might not be necessary to have separated meshes with body, hair, and underwear.
 
 With AvatarOptimizer, these optimizations can be performed automatically by simply adding `AAO Trace And Optimize` component to the Avatar Root!
 
@@ -36,8 +36,8 @@ AAO: Avatar Optimizer is a non-destructive avatar modification tool, and process
 Therefore, no special steps are required for uploading.
 Upload your avatar via VRCSDK Control Panal as usual.
 
-However, even though the hard limit will not be exceeded through Avatar Optimizer optimization, etc., the upload button cannot be pressed if the limit has been exceeded at the time of the VRCSDK pre-build check.
-You can skip pre-build checks with several ways. Please refer [faq][skip-hard-limit-faq] for more details.
+However, even though the hard limit will not be exceeded through Avatar Optimizer optimization, etc., the upload button cannot be pressed if the limit has been exceeded at the time of the VRCSDK pre-build check.\
+You can skip the pre-build check with several ways. Please refer [faq][skip-hard-limit-faq] for more details.
 
 [skip-hard-limit-faq]: ../../faq/#i-cannot-upload-the-avatar-because-of-pre-build-hard-limit-check
 

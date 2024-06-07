@@ -57,10 +57,10 @@ Issue of this problem: [#568](https://github.com/anatawa12/AvatarOptimizer/issue
 
 ## PhysBones / Contact Receivers that are used in the OSC-based gimmick are not working {#physbones-contact-receivers-that-are-used-in-the-osc-based-gimmick-are-not-working}
 
-The `AAO Trace and Optimie` component is designed to not change the behavior of the avatar carefully.
-However, for technical reasons, the `AAO Trace and Optimize` component cannot detect some PhysBone / Contact Receiver components are used in the OSC-based gimmick or not being used.
+The `AAO Trace and Optimize` component is carefully designed to not change the behavior of the avatar.
+However, for technical reasons, the `AAO Trace and Optimize` component cannot detect some PhysBone / Contact Receiver components are used in the OSC-based gimmick or not.
 
-Some modern avatars have their own gimmicks based on PhysBone / Contact Receiver components, so those components is due to forgotten to remove them in most case.
+Some modern avatars have their own gimmicks based on PhysBone / Contact Receiver components, so those components will be forgotten to remove in most cases.
 Therefore, `AAO Trace and Optimize` will assume that such components are not for OSC-based gimmick and remove them.
 
 However, this is not always the case, so if you are using PhysBone / Contact Receiver components for the OSC-based gimmick,
@@ -69,7 +69,7 @@ please configure your avatar to detect them as used in the avatar.
 So, by adding parameters used in the OSC-based gimmick to the parameter list of Animator Controller or Expression Parameters,
 such components will not be removed.
 
-In addition, for future discussion, if your OSC-based gimmick is removed by Trace and Optimize,
+In addition, for future discussion, if your OSC-based gimmick is removed by `AAO Trace and Optimize`,
 could you let us know the name of parameter used in the OSC-based gimmicks?
 I may implement list of parameters likely to be used by OSC and Avatar Optimizer may keep components for those parameters or other ways to prevent removing them in the future.
 Please feel free to contact on the GitHub issue below, [Fediverse (Misskey / Mastodon)][Fediverse] or [Twitter].
@@ -91,13 +91,13 @@ Please note that those methods will not skip the post-build hard limit check.
 - Use [Upload without pre-check] by Sayamame-beans.
 
   [Upload without pre-check] is a tool that allows you to upload the avatar without pre-build hard limit check.
-- Use [VRChat Quest Tools] by kurotu.
+- Use [VRCQuestTools] by kurotu.
 
-  [VRChat Quest Tools] is a tool to easily convert your avatar to Android / Quest compatible avatar.\
+  [VRCQuestTools] is a tool to easily convert your avatar to Android / Quest compatible avatar.\
   As a part of the tool, [VQT Avatar Builder] allows you to upload the avatar without pre-build hard limit check for Android build.
 
 [Upload without pre-check]: https://github.com/Sayamame-beans/Upload-without-preCheck?tab=readme-ov-file#upload-without-pre-check
-[VRChat Quest Tools]: https://kurotu.github.io/VRCQuestTools/
+[VRCQuestTools]: https://kurotu.github.io/VRCQuestTools/
 [VQT Avatar Builder]: https://kurotu.github.io/VRCQuestTools/docs/references/main-menu/show-avatar-builder
 
 ## I want to support the development of Avatar Optimizer {#i-want-to-support-the-development-of-avatar-optimizer}

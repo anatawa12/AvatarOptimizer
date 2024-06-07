@@ -55,44 +55,43 @@ BlendShapeに対してアニメーションされるメッシュを統合する�
 
 ## OSCギミックで使用されているPhysBone / Contact Receiverが動作していない {#physbones-contact-receivers-that-are-used-in-the-osc-based-gimmick-are-not-working}
 
-`AAO Trace and Optimize`コンポーネントは、アバターの振る舞いを慎重に変更しないように設計されています。
-しかし、技術的な理由から、`AAO Trace and Optimize`コンポーネントは、一PhysBone / Contact ReceiverコンポーネントがOSCギミックで使用されているかどうかを判断できません。
+`AAO Trace and Optimize`コンポーネントは、アバターの振る舞いを変えないように慎重に設計されています。
+しかし、技術的な理由から、`AAO Trace and Optimize`コンポーネントはPhysBone / Contact ReceiverコンポーネントがOSCギミックで使用されているかどうかを判断することができません。
 
-最近のアバターは、PhysBone / Contact Receiverコンポーネントを使用して独自のギミックを持っていることもため、これらのコンポーネントが削除し忘れていることがあります。
-そのため、`AAO Trace and Optimize`は、そのようなコンポーネントがOSCギミックで使用されていないと仮定し、それらを削除します。
+最近のアバターは、PhysBone / Contact Receiverコンポーネントを使用した独自のギミックを持っていることがあるため、これらのコンポーネントを削除し忘れることがよくあります。
+そのため、`AAO Trace and Optimize`は、そのようなコンポーネントがOSCギミックで使用されていないと仮定して、それらを削除しています。
 
-しかし、これが誤りである場合があります。
-もし削除されたPhysBone / Contact ReceiverコンポーネントをOSCギミックに使用している場合は、それらが使用されていると検出されるようにアバターを設定してください。
-`AAO Trace and Optimize`は、アバター内のAnimatorで使用されているパラメータがある場合、それらを削除しません。
-そのため、OSCギミックで使用されるパラメータをAnimator ControllerやExpression Parametersのパラメータリストに追加することで、これらのコンポーネントが削除されなくなります。
+もちろん、必ずしもそうとは限らないため、PhysBone / Contact ReceiverコンポーネントをOSCギミックに使用している場合には、それらが使用されていると分かるようにアバターを調整してもらわなければならないかもしれません。\
+`AAO Trace and Optimize`は、アバター内のAnimatorにあるパラメーターと同じパラメーターが使用されているPhysBone / Contact Receiverコンポーネントを削除しないようになっています。
+そのため、OSCギミックで使用されるパラメーターを、Animator Controllerのパラメーター一覧やExpression Parameterに追加することで、これらのコンポーネントが削除されないようになります。
 
-また、将来の修正議論の材料として、もしOSCギミックで使われているPhysBoneやContactが削除された場合にはそのパラメータ名を教えていただけると助かります。
-将来的に有名なOSCギミックによって使用されるパラメータのリストを実装し、Avatar Optimizerがそれらのパラメータに対してコンポーネントを保持するようにするかもしれませんし、他の方法で対処するかもしれません。
+また、改善のための議論の材料として、OSCギミックで使われているPhysBoneやContact Receiverが削除された場合には、それらに設定されているパラメータ名を教えていただけると助かります。
+将来的に、有名なOSCギミックによって使用されるパラメーターの一覧を実装して、それらのパラメータが使用されている場合はコンポーネントを保持するような形を取るかもしれませんし、他の方法で対処するかもしれません。\
 以下のissueや[Fediverse (Misskey / Mastodon)][Fediverse]、[Twitter]などでお気軽にお知らせください。
 
 この問題のissue: [#1090](https://github.com/anatawa12/AvatarOptimizer/issues/1090)
 
-## ビルド前のハードリミットチェックでアバターをアップロードできない {#i-cannot-upload-the-avatar-because-of-pre-build-hard-limit-check}
+## ビルド前のハードリミットチェックのせいでアバターをアップロードできない {#i-cannot-upload-the-avatar-because-of-pre-build-hard-limit-check}
 
-Avatar Optimizerや他の非破壊的なアバター改変ツールは、アバターをハードリミットを超えないようにすることがあります。
-しかし、VRCSDK COntrol Panelのアップロードボタンは、シーン上のオブジェクトがハードリミットを超えているときには押せません。
-そのような場合にも、以下のような方法を使えば、ビルド前のハードリミットチェックをなしにアップロードできます。
-この方法を使用しても、ビルド後のハードリミットチェックは行われます。
+Avatar Optimizerなどの非破壊的なアバター改変ツールを使うと、元々ハードリミットを超えているようなアバターでも、ビルド後にはハードリミットを超えないようになることがあります。
+しかし、VRCSDKのコントロールパネルにあるアップロードボタンは、シーン上のアバターがハードリミットを超えている場合には押せないようになっています。\
+そのような場合でも、以下のような方法を使って、ビルド前のハードリミットチェックを飛ばしてアップロードすることができます。
+(ビルド後のハードリミットチェックも存在するため、ビルド後にハードリミットを超える場合は以下の方法でもアップロードに失敗します。)
 
 - `Manual bake avatar`で生成したアバターをアップロードする。\
 
   アバターのGameObjectのコンテクストメニューの`NDM Framework`から`Manual bake avatar`をクリックすると、アバターをアップロードする前に非破壊的なツールを適用できます。
-  これを実行すると、アバターを複製し、その複製に対して非破壊的なツールが適用されるため、元のアバターは変更されません。
+  `Manual bake avatar`は初めにアバターを複製し、その複製に対して非破壊ツールの処理を適用させるため、元のアバターは変更されないままになります。
 - Sayamame-beansの[Upload without pre-check]を使用してアップロードする。
 
   [Upload without pre-check]は、ビルド前のハードリミットチェックをスキップしてアップロードするためのツールです。
-- kurotuによる[VRChat Quest Tools]を使用する
+- kurotuの[VRCQuestTools]を使用する
 
-  [VRChat Quest Tools]は、アバターをAndroid / Quest対応アバターに変換するためのツールです。\
-  このツールには、[VQT Avatar Builder]というビルド前チェックをスキップしてアバターをAndroid向けにビルドする機能が含まれています。
+  [VRCQuestTools]は、アバターをAndroid / Quest対応アバターに変換するためのツールです。\
+  このツールには、ビルド前チェックをスキップしてアバターをAndroid向けにビルドするための[VQT Avatar Builder]という機能が含まれています。
 
 [Upload without pre-check]: https://github.com/Sayamame-beans/Upload-without-preCheck?tab=readme-ov-file#upload-without-pre-check
-[VRChat Quest Tools]: https://kurotu.github.io/VRCQuestTools/
+[VRCQuestTools]: https://kurotu.github.io/VRCQuestTools/
 [VQT Avatar Builder]: https://kurotu.github.io/VRCQuestTools/docs/references/main-menu/show-avatar-builder
 
 ## Avatar Optimizerの開発を支援したい {#i-want-to-support-the-development-of-avatar-optimizer}

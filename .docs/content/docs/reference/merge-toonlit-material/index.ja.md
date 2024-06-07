@@ -13,8 +13,8 @@ weight: 25
 他のシェーダーのサポートも追加する可能性があります。(サードパーティシェーダーでも対応します)
 もし対応して欲しいシェーダーがあれば、[issue][issue]を書いてください。
 
-このコンポーネントは新しいマテリアルを作成するため、このコンポーネントによって作成されたマテリアルは`AAO Merge Skinned Mesh`コンポーネントによって統合されません。
-複数のレンダラーからマテリアルを統合したい場合は、`AAO Merge Skinned Mesh`コンポーネントと同じGameObjectに`Merge ToonLit Material`を追加する必要があります。
+このコンポーネントは新しいマテリアルを作成するため、このコンポーネントで統合されたマテリアルを使用しているマテリアルスロットは`AAO Merge Skinned Mesh`コンポーネントで統合されません。
+別々のメッシュで使用されているマテリアルを纏めて統合したい場合は、`AAO Merge Skinned Mesh`コンポーネントのあるGameObjectと同じGameObjectに`Merge ToonLit Material`コンポーネントを追加する必要があります。
 
 ## 設定 {#settings}
 
