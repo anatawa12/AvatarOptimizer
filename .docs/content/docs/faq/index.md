@@ -61,17 +61,17 @@ The `AAO Trace and Optimize` component is carefully designed to not change the b
 However, for technical reasons, the `AAO Trace and Optimize` component cannot detect some PhysBone / Contact Receiver components are used in the OSC-based gimmick or not.
 
 Some modern avatars have their own gimmicks based on PhysBone / Contact Receiver components, so those components will be forgotten to remove in most cases.
-Therefore, `AAO Trace and Optimize` will assume that such components are not for OSC-based gimmick and remove them.
+Therefore, `AAO Trace and Optimize` will assume that such components are not for OSC-based gimmick, and remove them if they are not used for other ways.
 
-However, this is not always the case, so if you are using PhysBone / Contact Receiver components for the OSC-based gimmick,
-please configure your avatar to detect them as used in the avatar.
+Of course, this assumption is not always the case, so if you are using PhysBone / Contact Receiver components for the OSC-based gimmick without Animator or Expressions,
+please configure your avatar to detect them as used in the avatar.\
 `AAO Trace and Optimize` will not remove them if they are used in the Animator in the avatar.
 So, by adding parameters used in the OSC-based gimmick to the parameter list of Animator Controller or Expression Parameters,
 such components will not be removed.
 
 In addition, for future discussion, if your OSC-based gimmick is removed by `AAO Trace and Optimize`,
 could you let us know the name of parameter used in the OSC-based gimmicks?
-I may implement list of parameters likely to be used by OSC and Avatar Optimizer may keep components for those parameters or other ways to prevent removing them in the future.
+I may implement list of parameters likely to be used by OSC and keeping components for those parameters, or other ways to prevent removing them in the future.
 Please feel free to contact on the GitHub issue below, [Fediverse (Misskey / Mastodon)][Fediverse] or [Twitter].
 
 Issue of this problem: [#1090](https://github.com/anatawa12/AvatarOptimizer/issues/1090)
@@ -80,7 +80,6 @@ Issue of this problem: [#1090](https://github.com/anatawa12/AvatarOptimizer/issu
 
 Avatar Optimizer and some other non-destructive avatar modification tools may make your avatar not exceed the hard limit of VRChat.
 However, the upload button on the VRCSDK Control Panel will be disabled if the hard limit is exceeded with on-scene Avatar.
-But, if your avatar does not exceed the hard limit after build, you can upload the avatar with some other ways.
 You may use the following methods to skip pre-build hard limit check.
 Please note that those methods will not skip the post-build hard limit check.
 

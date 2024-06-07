@@ -59,9 +59,9 @@ BlendShapeに対してアニメーションされるメッシュを統合する�
 しかし、技術的な理由から、`AAO Trace and Optimize`コンポーネントはPhysBone / Contact ReceiverコンポーネントがOSCギミックで使用されているかどうかを判断することができません。
 
 最近のアバターは、PhysBone / Contact Receiverコンポーネントを使用した独自のギミックを持っていることがあるため、これらのコンポーネントを削除し忘れることがよくあります。
-そのため、`AAO Trace and Optimize`は、そのようなコンポーネントがOSCギミックで使用されていないと仮定して、それらを削除しています。
+そのため、`AAO Trace and Optimize`は、そのようなコンポーネントがOSCギミックで使用されていないと仮定して、それらが他の用途で使われていなければ削除します。
 
-もちろん、必ずしもそうとは限らないため、PhysBone / Contact ReceiverコンポーネントをOSCギミックに使用している場合には、それらが使用されていると分かるようにアバターを調整してもらわなければならないかもしれません。\
+もちろん、仮定が正しいとは限らないため、PhysBone / Contact ReceiverコンポーネントをOSCギミックに使用している場合には、それらが使用されていると分かるようにアバターを調整してもらわなければならないかもしれません。\
 `AAO Trace and Optimize`は、アバター内のAnimatorにあるパラメーターと同じパラメーターが使用されているPhysBone / Contact Receiverコンポーネントを削除しないようになっています。
 そのため、OSCギミックで使用されるパラメーターを、Animator Controllerのパラメーター一覧やExpression Parameterに追加することで、これらのコンポーネントが削除されないようになります。
 
@@ -80,7 +80,7 @@ Avatar Optimizerなどの非破壊的なアバター改変ツールを使うと�
 
 - `Manual bake avatar`で生成したアバターをアップロードする。\
 
-  アバターのGameObjectのコンテクストメニューの`NDM Framework`から`Manual bake avatar`をクリックすると、アバターをアップロードする前に非破壊的なツールを適用できます。
+  アバターのGameObjectを右クリックして出てくるメニューの`NDM Framework`から`Manual bake avatar`をクリックすると、非破壊ツールによる処理を手動で適用することができます。
   `Manual bake avatar`は初めにアバターを複製し、その複製に対して非破壊ツールの処理を適用させるため、元のアバターは変更されないままになります。
 - Sayamame-beansの[Upload without pre-check]を使用してアップロードする。
 
