@@ -8,24 +8,33 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Warnings for bad API Usages `#1091`
 
 ### Changed
-- Ignore floating point precision error in Merge PhysBone `#1086`
-- Animation Warning of Merge Skinned Mesh will not generated if source Renderer is not animated `#1087`
-- Expression Parameters are now considered as a part of Avatar Dynamics Parameter destination `#1089`
-- Relax condition for scaled evenly check `#1092`
-  - Trace and Optimize will merge more bones than before.
 
 ### Deprecated
 
 ### Removed
-- Write to Asset on Play menu item which is no-op `#1085`
 
 ### Fixed
-- Particle Syatem with Mesh Renderer shape will be broken `#1093`
 
 ### Security
+
+## [1.7.5-beta.2] - 2024-06-07
+### Added
+- Warnings for bad API Usages [`#1091`](https://github.com/anatawa12/AvatarOptimizer/pull/1091)
+
+### Changed
+- Ignore floating point precision error in Merge PhysBone [`#1086`](https://github.com/anatawa12/AvatarOptimizer/pull/1086)
+- Animation Warning of Merge Skinned Mesh will not generated if source Renderer is not animated [`#1087`](https://github.com/anatawa12/AvatarOptimizer/pull/1087)
+- Expression Parameters are now considered as a part of Avatar Dynamics Parameter destination [`#1089`](https://github.com/anatawa12/AvatarOptimizer/pull/1089)
+- Relax condition for scaled evenly check [`#1092`](https://github.com/anatawa12/AvatarOptimizer/pull/1092)
+  - Trace and Optimize will merge more bones than before.
+
+### Removed
+- Write to Asset on Play menu item which is no-op [`#1085`](https://github.com/anatawa12/AvatarOptimizer/pull/1085)
+
+### Fixed
+- Particle Syatem with Mesh Renderer shape will be broken [`#1093`](https://github.com/anatawa12/AvatarOptimizer/pull/1093)
 
 ## [1.7.5-beta.1] - 2024-06-03
 ### Fixed
@@ -1433,7 +1442,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.5-beta.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.5-beta.2...HEAD
+[1.7.5-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.5-beta.1...v1.7.5-beta.2
 [1.7.5-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.4...v1.7.5-beta.1
 [1.7.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.4-beta.1...v1.7.4
 [1.7.4-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.3...v1.7.4-beta.1
