@@ -21,6 +21,7 @@ The format is based on [Keep a Changelog].
 
 ### Removed
 - Write to Asset on Play menu item which is no-op `#1085`
+- Particle Syatem with Mesh Renderer shape will be broken `#1093`
 
 ### Fixed
 - Merge BlendTree Layer will break some BlendTrees that have overriden by other layers `#1084`

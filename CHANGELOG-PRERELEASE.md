@@ -23,6 +23,7 @@ The format is based on [Keep a Changelog].
 - Write to Asset on Play menu item which is no-op `#1085`
 
 ### Fixed
+- Particle Syatem with Mesh Renderer shape will be broken `#1093`
 
 ### Security
 
