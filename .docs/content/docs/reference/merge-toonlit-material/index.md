@@ -13,6 +13,9 @@ This component currently only supports `VRChat/Mobile/Toon Lit` because I believ
 but I may add support for other shaders. (also for third-party shaders)
 If you want other shader support, please write a [issue][issue]
 
+This component will create new materials thus material slots which have the materials created by this component will not be merged by `AAO Merge Skinned Mesh` component.
+You should add `Merge ToonLit Material` to the GameObject which has `AAO Merge Skinned Mesh` component if you want to merge materials from multiple renderers.
+
 ## Settings
 
 Click `Add Merged Material` to add merged material.
