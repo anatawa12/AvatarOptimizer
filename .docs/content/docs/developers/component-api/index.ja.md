@@ -22,13 +22,13 @@ Component APIが利用可能なコンポーネントの一覧は以下の通り�
 ## はじめに {#getting-started}
 
 Component APIを使用するには、assembly definitionファイルで`com.anatawa12.avatar-optimizer.runtime`を参照する必要があります。
-Avatar Optimizerはランタイムで動作しないため、ランタイムビルド向けで`com.anatawa12.avatar-optimizer.runtime`に依存してはいけません。
+Avatar Optimizerはランタイムで動作しないため、ランタイムビルド向けで`com.anatawa12.avatar-optimizer.runtime`に依存してはいけません。\
 `com.anatawa12.avatar-optimizer.runtime`にあるいくつかのクラスは、将来のバージョンでランタイム向けビルドから除外される可能性があります。
 言い換えると、ランタイム向けのアセンブリで`com.anatawa12.avatar-optimizer.runtime`を使用するのは避けることをお勧めします。エディタ向けのアセンブリでのみ使用するようにしてください。
 
 次に、コンポーネントの設定を変更する場合は、将来のバージョンで追加される機能との互換性を確保するために`void Initialize(int version)`メソッドを呼び出す必要があります。
-([動作の安定性](../../basic-concept/#behavior-stability)で説明されているように、)デフォルト設定は変更される可能性があります。
+([動作の安定性](../../basic-concept/#behavior-stability)で説明されているように、)デフォルト設定は変更される可能性があります。\
 デフォルト設定は、`GameObject.AddComponent<T>()`メソッドで追加されるコンポーネントに影響します。
 従って、Avatar Optimizerの将来のバージョンとの互換性を保つためには、使用するデフォルト設定のバージョンを指定して`Initialize`メソッドを呼び出す必要があります。
-デフォルト設定のバージョンは、`Initialize`メソッドのドキュメントに記載されているはずです。
+デフォルト設定のバージョンは、`Initialize`メソッドのドキュメントに記載されているはずです。\
 `Initialize`メソッドを呼び出さなかった場合、コンポーネントが予期しない動作をしたり、将来的にエラーが発生したりする可能性があります。
