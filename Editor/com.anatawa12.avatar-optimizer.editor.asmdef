@@ -16,6 +16,7 @@
         "Unity.Burst",
         "nadena.dev.ndmf",
         "nadena.dev.ndmf.runtime",
+        "nadena.dev.ndmf.reactive-query.core",
         "com.anatawa12.avatar-optimizer.api.editor",
         "VRC.SDKBase",
         "UniHumanoid",
@@ -37,7 +38,8 @@
         "VRCSDK3A.dll",
         "VRCSDKBase-Editor.dll",
         "VRCSDKBase.dll",
-        "System.Memory.dll"
+        "System.Memory.dll",
+        "System.Collections.Immutable.dll"
     ],
     "autoReferenced": false,
     "defineConstraints": [],
