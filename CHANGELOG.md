@@ -8,25 +8,34 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Warnings for bad API Usages `#1091`
 
 ### Changed
-- Ignore floating point precision error in Merge PhysBone `#1086`
-- Animation Warning of Merge Skinned Mesh will not generated if source Renderer is not animated `#1087`
-- Expression Parameters are now considered as a part of Avatar Dynamics Parameter destination `#1089`
-- Relax condition for scaled evenly check `#1092`
-  - Trace and Optimize will merge more bones than before.
 
 ### Deprecated
 
 ### Removed
-- Write to Asset on Play menu item which is no-op `#1085`
-- Particle Syatem with Mesh Renderer shape will be broken `#1093`
 
 ### Fixed
-- Merge BlendTree Layer will break some BlendTrees that have overriden by other layers `#1084`
 
 ### Security
+
+## [1.7.5] - 2024-06-10
+### Added
+- Warnings for bad API Usages [`#1091`](https://github.com/anatawa12/AvatarOptimizer/pull/1091)
+
+### Changed
+- Ignore floating point precision error in Merge PhysBone [`#1086`](https://github.com/anatawa12/AvatarOptimizer/pull/1086)
+- Animation Warning of Merge Skinned Mesh will not generated if source Renderer is not animated [`#1087`](https://github.com/anatawa12/AvatarOptimizer/pull/1087)
+- Expression Parameters are now considered as a part of Avatar Dynamics Parameter destination [`#1089`](https://github.com/anatawa12/AvatarOptimizer/pull/1089)
+- Relax condition for scaled evenly check [`#1092`](https://github.com/anatawa12/AvatarOptimizer/pull/1092)
+  - Trace and Optimize will merge more bones than before.
+
+### Removed
+- Write to Asset on Play menu item which is no-op [`#1085`](https://github.com/anatawa12/AvatarOptimizer/pull/1085)
+- Particle Syatem with Mesh Renderer shape will be broken [`#1093`](https://github.com/anatawa12/AvatarOptimizer/pull/1093)
+
+### Fixed
+- Merge BlendTree Layer will break some BlendTrees that have overriden by other layers [`#1084`](https://github.com/anatawa12/AvatarOptimizer/pull/1084)
 
 ## [1.7.4] - 2024-05-17
 ### Fixed
@@ -936,7 +945,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.4...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.5...HEAD
+[1.7.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.4...v1.7.5
 [1.7.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.3...v1.7.4
 [1.7.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.2...v1.7.3
 [1.7.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.1...v1.7.2

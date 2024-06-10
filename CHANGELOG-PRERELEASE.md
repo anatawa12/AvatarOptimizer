@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog].
 
 ### Security
 
+## [1.7.5] - 2024-06-10
 ## [1.7.5-beta.2] - 2024-06-07
 ### Added
 - Warnings for bad API Usages [`#1091`](https://github.com/anatawa12/AvatarOptimizer/pull/1091)
@@ -1442,7 +1443,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.5-beta.2...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.5...HEAD
+[1.7.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.5-beta.2...v1.7.5
 [1.7.5-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.5-beta.1...v1.7.5-beta.2
 [1.7.5-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.4...v1.7.5-beta.1
 [1.7.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.4-beta.1...v1.7.4
