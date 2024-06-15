@@ -34,5 +34,15 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
             var except = LoadAnimatorController("BlockedPartially.converted");
             RecursiveCheckEquals(except, controller);
         }
+        
+        [Test]
+        public void NormalizeBlendValues()
+        {
+            var controller = LoadCloneAnimatorController("NormalizeBlendValues");
+            controller.name = "NormalizeBlendValues.converted";
+            MergeBlendTreeLayer.Execute(new AOAnimatorController(controller), "AlwaysOneTestParam");
+            var except = LoadAnimatorController("NormalizeBlendValues.converted");
+            RecursiveCheckEquals(except, controller);
+        }
     }
 }
