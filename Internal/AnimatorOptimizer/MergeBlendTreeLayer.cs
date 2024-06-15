@@ -18,13 +18,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             Execute(controller);
         }
 
-        public static void Execute(AOAnimatorController controller)
+        public static void Execute(AOAnimatorController controller, string? alwaysOneParameter = null)
         {
             var directBlendTrees = new List<(int layerIndex, BlendTree tree)>();
 
             var modifiedProperties = new HashSet<EditorCurveBinding>();
 
-            var alwaysOneParameter = $"AAO_AlwaysOne_{Guid.NewGuid()}";
+            alwaysOneParameter ??= $"AAO_AlwaysOne_{Guid.NewGuid()}";
 
             for (var i = controller.layers.Length - 1; i >= 0; i--)
             {
@@ -127,19 +127,28 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                             motion: BlendTree { } blendTree,
                         })
                     {
-                        return blendTree.blendType == BlendTreeType.Direct ? blendTree :
-                            new()
+                        bool isMergeableDirectBlendTree = blendTree.blendType == BlendTreeType.Direct;
+
+                        using (var serialized = new SerializedObject(blendTree))
+                            if (serialized.FindProperty("m_NormalizedBlendValues").boolValue)
+                                isMergeableDirectBlendTree = false;
+
+                        if (isMergeableDirectBlendTree)
+                            return blendTree;
+
+                        return new()
+                        {
+                            blendType = BlendTreeType.Direct,
+                            children = new ChildMotion[]
                             {
-                                blendType = BlendTreeType.Direct,
-                                children = new ChildMotion[]
+                                new()
                                 {
-                                    new ()
-                                    {
-                                        directBlendParameter = alwaysOneParameter,
-                                        motion = blendTree,
-                                    }
-                                },
-                            };
+                                    directBlendParameter = alwaysOneParameter,
+                                    motion = blendTree,
+                                    timeScale = 1,
+                                }
+                            },
+                        };
                     }
                 }
             }
