@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- BlendTree with NormalizedBlendValues Broken with MergeBlendTree `#1096`
 
 ### Security
 
