@@ -1,3 +1,5 @@
+#region
+
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -9,6 +11,8 @@ using nadena.dev.ndmf.rq.unity.editor;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
+#endregion
+
 namespace Anatawa12.AvatarOptimizer.Processors
 {
     internal class EditSkinnedMeshComponentRendererFilter : IRenderFilter
@@ -16,16 +20,16 @@ namespace Anatawa12.AvatarOptimizer.Processors
         public static EditSkinnedMeshComponentRendererFilter Instance { get; } =
             new EditSkinnedMeshComponentRendererFilter();
 
-        public ReactiveValue<IImmutableList<IImmutableList<Renderer>>> TargetGroups { get; }
+        public ReactiveValue<ImmutableList<RenderGroup>> TargetGroups { get; }
 
         public EditSkinnedMeshComponentRendererFilter()
         {
-            TargetGroups = ReactiveValue<IImmutableList<IImmutableList<Renderer>>>.Create(
+            TargetGroups = ReactiveValue<ImmutableList<RenderGroup>>.Create(
                 "anatawa12.avatar-optimizer.EditSkinnedMeshComponentRendererFilter.TargetGroups",
                 CollectTarget);
         }
 
-        private async Task<IImmutableList<IImmutableList<Renderer>>> CollectTarget(ComputeContext ctx)
+        private async Task<ImmutableList<RenderGroup>> CollectTarget(ComputeContext ctx)
         {
             // currently remove meshes are only supported
             var rmInBoxTask = ctx.Observe(CommonQueries.GetComponentsByType<RemoveMeshInBox>());
@@ -56,10 +60,11 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 targets.Add(renderer);
             }
 
-            return targets.Select(r => (IImmutableList<Renderer>)ImmutableList.Create(r)).ToImmutableList();
+            return targets.Select(r => RenderGroup.For(r)).ToImmutableList();
         }
 
-        public async Task<IRenderFilterNode> Instantiate(IEnumerable<(Renderer, Renderer)> proxyPairs, ComputeContext context)
+        public async Task<IRenderFilterNode> Instantiate(RenderGroup group,
+            IEnumerable<(Renderer, Renderer)> proxyPairs, ComputeContext context)
         {
             var pair = proxyPairs.Single();
             if (!(pair.Item1 is SkinnedMeshRenderer original)) return null;
@@ -87,8 +92,8 @@ namespace Anatawa12.AvatarOptimizer.Processors
         {
         }
 
-        public ulong Reads => IRenderFilterNode.Mesh | IRenderFilterNode.Shapes;
-        public ulong WhatChanged => IRenderFilterNode.Mesh | IRenderFilterNode.Shapes;
+        public RenderAspects Reads => RenderAspects.Mesh | RenderAspects.Shapes;
+        public RenderAspects WhatChanged => RenderAspects.Mesh | RenderAspects.Shapes;
 
         public async Task Process(
             SkinnedMeshRenderer original,
@@ -188,7 +193,8 @@ namespace Anatawa12.AvatarOptimizer.Processors
             _duplicated = duplicated;
         }
 
-        public Task<IRenderFilterNode> Refresh(IEnumerable<(Renderer, Renderer)> proxyPairs, ComputeContext context, ulong updateFlags)
+        public Task<IRenderFilterNode> Refresh(IEnumerable<(Renderer, Renderer)> proxyPairs, ComputeContext context,
+            RenderAspects updateFlags)
         {
             return Task.FromResult<IRenderFilterNode>(null);
         }

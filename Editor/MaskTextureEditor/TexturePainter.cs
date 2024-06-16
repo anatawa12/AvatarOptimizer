@@ -1,3 +1,4 @@
+using nadena.dev.ndmf.rq.unity.editor;
 using UnityEditor;
 using UnityEngine;
 
@@ -92,6 +93,7 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
                 _brushSize * rect.size / TextureSize);
             Handles.DrawSolidDisc(Vector3.zero, Vector3.forward, 0.5f);
             Handles.matrix = Matrix4x4.identity;
+            ChangeNotifier.NotifyObjectUpdate(_target);
         }
 
         public void Load(Texture2D texture)
@@ -131,6 +133,7 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
 
             Graphics.Blit(_target, _buffer);
             Graphics.Blit(_buffer, _target, _fillMaterial);
+            ChangeNotifier.NotifyObjectUpdate(_target);
             RenderTexture.active = null;
         }
 
@@ -144,6 +147,7 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
 
             Graphics.Blit(_target, _buffer);
             Graphics.Blit(_buffer, _target, _paintMaterial);
+            ChangeNotifier.NotifyObjectUpdate(_target);
             RenderTexture.active = null;
         }
 
