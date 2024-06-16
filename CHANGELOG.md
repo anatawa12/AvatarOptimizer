@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - BlendTree with NormalizedBlendValues Broken with MergeBlendTree `#1096`
+- Remove Zero Sized Polygon may remove small polygons `#1098`
 
 ### Security
 
