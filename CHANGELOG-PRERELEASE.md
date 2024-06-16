@@ -16,9 +16,12 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Remove Zero Sized Polygon may remove small polygons `#1098`
 
 ### Security
+
+## [1.7.6-beta.2] - 2024-06-16
+### Fixed
+- Remove Zero Sized Polygon may remove small polygons [`#1098`](https://github.com/anatawa12/AvatarOptimizer/pull/1098)
 
 ## [1.7.6-beta.1] - 2024-06-15
 ### Fixed
@@ -1448,7 +1451,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.6-beta.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.6-beta.2...HEAD
+[1.7.6-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.6-beta.1...v1.7.6-beta.2
 [1.7.6-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.5...v1.7.6-beta.1
 [1.7.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.5-beta.2...v1.7.5
 [1.7.5-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.5-beta.1...v1.7.5-beta.2
