@@ -30,7 +30,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                     if (poly.Any(v => v.BlendShapes.Count != 0)) return false;
                     var first = poly[0];
                     var firstWeights = new HashSet<(Bone bone, float weight)>(first.BoneWeights);
-                    return poly.Skip(1).All(v => first.Position == v.Position && firstWeights.SetEquals(v.BoneWeights));
+                    return poly.Skip(1).All(v => first.Position.Equals(v.Position) && firstWeights.SetEquals(v.BoneWeights));
                 });
             }
         }
