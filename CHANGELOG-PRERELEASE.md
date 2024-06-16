@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Remove Zero Sized Polygon may remove small polygons `#1098`
 
 ### Security
 
