@@ -16,10 +16,13 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- BlendTree with NormalizedBlendValues Broken with MergeBlendTree `#1096`
-- Remove Zero Sized Polygon may remove small polygons `#1098`
 
 ### Security
+
+## [1.7.6] - 2024-06-17
+### Fixed
+- BlendTree with NormalizedBlendValues Broken with MergeBlendTree [`#1096`](https://github.com/anatawa12/AvatarOptimizer/pull/1096)
+- Remove Zero Sized Polygon may remove small polygons [`#1098`](https://github.com/anatawa12/AvatarOptimizer/pull/1098)
 
 ## [1.7.5] - 2024-06-10
 ### Added
@@ -947,7 +950,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.5...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.6...HEAD
+[1.7.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.5...v1.7.6
 [1.7.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.4...v1.7.5
 [1.7.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.3...v1.7.4
 [1.7.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.2...v1.7.3
