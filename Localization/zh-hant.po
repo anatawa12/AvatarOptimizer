@@ -32,7 +32,7 @@ msgid "PrefabSafeSet:label:Element to add"
 msgstr "添加元素"
 
 msgid "PrefabSafeSet:tooltip:Element to add"
-msgstr "拖放對象至此處以將元素新增至集合。"
+msgstr "拖放物件至此處以將元素新增至集合。"
 
 msgid "PrefabSafeSet:tooltip:Force Add Button"
 msgstr "將此元素添加到目前預製件修改中。"
@@ -88,7 +88,7 @@ msgstr ""
 # region MakeChildren
 
 msgid "MakeChildren:description"
-msgstr "此元件會在建置時將指定的對象設為子級"
+msgstr "此元件會在建置時將指定的物件設為子級"
 
 msgid "MakeChildren:tooltip:executeEarly"
 msgstr "提前執行"
@@ -107,13 +107,13 @@ msgstr "「提前執行」功能不支持動畫路徑重映射。請確保為 Ma
 # region MergeBone
 
 msgid "MergeBone:description"
-msgstr "你將移除此對象並將骨骼合併到父級"
+msgstr "你將移除此物件並將骨骼合併到父級"
 
 msgid "MergeBone:prop:avoidNameConflict"
 msgstr "避免名稱衝突"
 
 msgid "MergeBone:tooltip:avoidNameConflict"
-msgstr "重命名子對象以避免名稱衝突"
+msgstr "重命名子物件以避免名稱衝突"
 
 msgid "MergeBone:validation:onAvatarRoot"
 msgstr "在 Avatar 根上不支持 MergeBone"
@@ -129,16 +129,16 @@ msgstr "如果有沒合併的子骨骼，則不支持合併縮放比例不一的
 # region
 
 msgid "MergePhysBone:prop:makeParent"
-msgstr "設為當前對象的子級"
+msgstr "設為當前物件的子級"
 
 msgid "MergePhysBone:tooltip:makeParent"
-msgstr "將每個 PhysBones 設置為當前對象的子級"
+msgstr "將每個 PhysBones 設置為當前物件的子級"
 
 msgid "MergePhysBone:error:makeParentWithChildren"
-msgstr "有子物件啟用了「設為當前對象的子級」。"
+msgstr "有子物件啟用了「設為當前物件的子級」。"
 
 msgid "MergePhysBone:error:parentDiffer"
-msgstr "源 PhysBone 的父級不同。移動至相同的父級或使用「設為當前對象的子級」。"
+msgstr "源 PhysBone 的父級不同。移動至相同的父級或使用「設為當前物件的子級」。"
 
 msgid "MergePhysBone:error:noSources"
 msgstr "沒有要合併的 PhysBones"
@@ -154,10 +154,10 @@ msgstr "此 PhysBone 版本未被 Avatar Optimizer 支援。\n"
 "請通過 Twitter (@anatawa12_vrc) 或 GitHub (anatawa12/AvatarOptimizer) 聯繫作者！"
 
 msgid "MergePhysBone:error:differValues"
-msgstr "多個合併來源的值不相同。你必須設置一樣的值或進行覆蓋：{0}"
+msgstr "多個合併來源的值不相同。你必須設置一樣的值或進行覆寫：{0}"
 
 msgid "MergePhysBone:error:differValueSingle"
-msgstr "多個合併來源的值不相同。你必須設置一樣的值或進行覆蓋"
+msgstr "多個合併來源的值不相同。你必須設置一樣的值或進行覆寫"
 
 msgid "MergePhysBone:warning:differChainLength"
 msgstr "多個合併來源的鏈長度不同。較短的鏈將比原本更粗。"
@@ -203,7 +203,7 @@ msgstr ""
 msgid "MergeSkinnedMesh:warning:MeshIsNotNone"
 msgstr ""
 "SkinnedMeshRenderer 的 Mesh（網格）不是 None（無）！\n"
-"應將「AAO Merge Skinned Mesh」添加至帶有新 SkinnedMeshRenderer 的對象！"
+"應將「AAO Merge Skinned Mesh」添加至帶有新 SkinnedMeshRenderer 的物件！"
 
 msgid "MergeSkinnedMesh:validation:self-recursive"
 msgstr "SkinnedRenderer 包含有著「AAO Merge Skinned Mesh」的 SkinnedMeshRenderer！"
@@ -215,7 +215,7 @@ msgid "MergeSkinnedMesh:prop:staticRenderers"
 msgstr "Static Renderers"
 
 msgid "MergeSkinnedMesh:prop:removeEmptyRendererObject"
-msgstr "移除空的 Renderer 對象"
+msgstr "移除空的 Renderer 物件"
 
 msgid "MergeSkinnedMesh:prop:skipEnablementMismatchedRenderers"
 msgstr "略過與合併目標狀態不同的 Renderers"
@@ -289,7 +289,7 @@ msgid "MergeToonLitMaterial:button:Add Merged Material"
 msgstr "添加合併的材質"
 
 msgid "MergeToonLitMaterial:button:Add Source"
-msgstr "添加要合併的對象"
+msgstr "添加要合併的物件"
 
 msgid "MergeToonLitMaterial:button:Generate Preview"
 msgstr "生成預覽"
@@ -308,7 +308,7 @@ msgid "RemoveMeshInBox:BoundingBox:prop:size"
 msgstr "大小"
 
 msgid "RemoveMeshInBox:BoundingBox:prop:rotation"
-msgstr "選轉"
+msgstr "旋轉"
 
 # endregion
 
@@ -472,7 +472,7 @@ msgstr "無法儲存貼圖。請查看日誌以了解詳細資訊。"
 # region AvatarGlobalComponent
 
 msgid "AvatarGlobalComponent:NotOnAvatarRoot"
-msgstr "此元件必須安裝在 Avatar 的根上"
+msgstr "此元件必須安裝在 Avatar 的根物件上"
 
 # endregion
 
@@ -504,7 +504,7 @@ msgstr "檢測額外的子級"
 
 # "子にボーン以外を持つボーンを削除しない"
 msgid "UnusedBonesByReferencesTool:tooltip:detectExtraChild"
-msgstr "如果勾選，這個工具將不會移除子級中含有除骨骼之外的元素的骨骼。"
+msgstr "如果勾選，這個工具將不會移除子級中含有非骨骼元素的骨骼。"
 
 msgid "UnusedBonesByReferencesTool:suggestMigrate"
 msgstr ""
@@ -532,7 +532,7 @@ msgid "TraceAndOptimize:prop:freezeBlendShape"
 msgstr "自動凍結和移除 BlendShape"
 
 msgid "TraceAndOptimize:prop:removeUnusedObjects"
-msgstr "自動刪除未使用的對象"
+msgstr "自動刪除未使用的物件"
 
 msgid "TraceAndOptimize:prop:optimizePhysBone"
 msgstr "優化 PhysBone"
