@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using nadena.dev.ndmf.rq.unity.editor;
+using UnityEditor;
 using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
@@ -76,6 +78,8 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
             RenderTexture.active = _target;
             texture.ReadPixels(new Rect(0, 0, texture.width, texture.height), 0, 0);
             texture.Apply();
+            ChangeNotifier.NotifyObjectUpdate(texture);
+            EditorUtility.SetDirty(texture);
             RenderTexture.active = null;
 
             _stack.Add(texture);
