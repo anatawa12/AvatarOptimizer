@@ -568,7 +568,7 @@ msgstr "除錯選項"
 
 msgid "TraceAndOptimize:warn:debugOptions"
 msgstr "除錯選項用於解決 Avatar Optimizer 中的錯誤。\n"
-"更改除錯選項將使 Avatar 未經良好優化。\n"
+"更改除錯選項將使 Avatar 無法最佳化。\n"
 "此外，某些除錯選項可能未經全面測試，或其行為可能會發生變化。請小心使用！"
 
 msgid "TraceAndOptimize:warn:unknown-type"
