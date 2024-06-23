@@ -7,6 +7,15 @@ using nadena.dev.ndmf;
 using UnityEngine;
 using UnityEngine.Profiling;
 using UnityEngine.Rendering;
+
+#if AAO_VRM0
+using VRM;
+#endif
+#if AAO_VRM1
+using UniGLTF.Extensions.VRMC_vrm;
+using UniVRM10;
+#endif
+
 using Debug = System.Diagnostics.Debug;
 
 namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
@@ -106,8 +115,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 if (rendererAnimationLocations == null)
                     continue; // animating renderer properties with non animator is not supported
 
+                var vrmFirstPersonFlag = GetVrmFirstPersonFlag(context, meshInfo2.SourceRenderer);
+
                 var key = new CategorizationKey(meshInfo2, activeness, activenessAnimationLocations,
-                    rendererAnimationLocations);
+                    rendererAnimationLocations, vrmFirstPersonFlag);
                 if (!categorizedMeshes.TryGetValue(key, out var list))
                 {
                     list = new List<MeshInfo2>();
@@ -396,6 +407,48 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             return new EqualsHashSet<(string property, AnimationLocation location)>(locations);
         }
 
+        private static VrmFirstPersonFlag GetVrmFirstPersonFlag(BuildContext context, Component component)
+        {
+#if AAO_VRM0
+            if (context.AvatarRootObject.GetComponent<VRMFirstPerson>() is VRMFirstPerson vrmFirstPerson)
+            {
+                switch (vrmFirstPerson.Renderers.FirstOrDefault(c => c.Renderer == component).FirstPersonFlag)
+                {
+                    case FirstPersonFlag.Auto:
+                        return VrmFirstPersonFlag.Auto;
+                    case FirstPersonFlag.Both:
+                        return VrmFirstPersonFlag.Both;
+                    case FirstPersonFlag.ThirdPersonOnly:
+                        return VrmFirstPersonFlag.ThirdPersonOnly;
+                    case FirstPersonFlag.FirstPersonOnly:
+                        return VrmFirstPersonFlag.FirstPersonOnly;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+#endif
+#if AAO_VRM1
+            if (context.AvatarRootObject.GetComponent<Vrm10Instance>() is Vrm10Instance vrm10Object)
+            {
+                switch (vrm10Object.Vrm.FirstPerson.Renderers.FirstOrDefault(c => c.GetRenderer(context.AvatarRootTransform) == component).FirstPersonFlag)
+                {
+                    case FirstPersonType.auto:
+                        return VrmFirstPersonFlag.Auto;
+                    case FirstPersonType.both:
+                        return VrmFirstPersonFlag.Both;
+                    case FirstPersonType.thirdPersonOnly:
+                        return VrmFirstPersonFlag.ThirdPersonOnly;
+                    case FirstPersonType.firstPersonOnly:
+                        return VrmFirstPersonFlag.FirstPersonOnly;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+#endif
+            // note: unset will fallback to Auto
+            return VrmFirstPersonFlag.Auto;
+        }
+
         private SkinnedMeshRenderer CreateNewRenderer(
             Func<GameObject> gameObjectFactory,
             Transform parent,
@@ -611,6 +664,14 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             Animating,
         }
 
+        enum VrmFirstPersonFlag
+        {
+            Auto,
+            Both,
+            ThirdPersonOnly,
+            FirstPersonOnly,
+        }
+
         // Here's the all list of properties in SkinnedMeshRenderer
         // Renderer:
         // - bounds (local bounds) - must be same
@@ -653,6 +714,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             public EqualsHashSet<(string property, AnimationLocation location)> RendererAnimationLocations;
             public Activeness Activeness;
+            public VrmFirstPersonFlag VrmFirstPersonFlag;
 
             // renderer properties
             public Bounds Bounds;
@@ -674,7 +736,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 MeshInfo2 meshInfo2,
                 Activeness activeness,
                 EqualsHashSet<(bool initial, EqualsHashSet<AnimationLocation> animation)> activenessAnimationLocations,
-                EqualsHashSet<(string property, AnimationLocation location)> rendererAnimationLocations
+                EqualsHashSet<(string property, AnimationLocation location)> rendererAnimationLocations,
+                VrmFirstPersonFlag vrmFirstPersonFlag
             )
             {
                 var renderer = (SkinnedMeshRenderer)meshInfo2.SourceRenderer;
@@ -683,6 +746,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 ActivenessAnimationLocations = activenessAnimationLocations;
                 RendererAnimationLocations = rendererAnimationLocations;
                 Activeness = activeness;
+                VrmFirstPersonFlag = vrmFirstPersonFlag;
 
                 Bounds = RoundError.Bounds(meshInfo2.Bounds);
                 ShadowCastingMode = renderer.shadowCastingMode;
@@ -705,6 +769,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                        ActivenessAnimationLocations.Equals(other.ActivenessAnimationLocations) &&
                        RendererAnimationLocations.Equals(other.RendererAnimationLocations) &&
                        Activeness == other.Activeness &&
+                       VrmFirstPersonFlag == other.VrmFirstPersonFlag &&
                        Bounds.Equals(other.Bounds) &&
                        ShadowCastingMode == other.ShadowCastingMode &&
                        ReceiveShadows == other.ReceiveShadows &&
@@ -732,6 +797,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     hashCode = (hashCode * 397) ^ ActivenessAnimationLocations.GetHashCode();
                     hashCode = (hashCode * 397) ^ RendererAnimationLocations.GetHashCode();
                     hashCode = (hashCode * 397) ^ Activeness.GetHashCode();
+                    hashCode = (hashCode * 397) ^ (int)VrmFirstPersonFlag;
                     hashCode = (hashCode * 397) ^ Bounds.GetHashCode();
                     hashCode = (hashCode * 397) ^ (int)ShadowCastingMode;
                     hashCode = (hashCode * 397) ^ ReceiveShadows.GetHashCode();
