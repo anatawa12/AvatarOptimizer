@@ -1,0 +1,98 @@
+name: Create Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_name:
+        description: "The version name in the documentation"
+        required: true
+        type: string
+      prerelease:
+        description: "Is the release is prerelease or not"
+        required: false
+        default: true
+        type: boolean
+
+      publish:
+        description: "True to publish release to git, vpm. if false, this creates release asset only"
+        type: boolean
+        required: false
+
+env:
+  PKG_NAME: com.anatawa12.avatar-optimizer
+  SOMETHING_RELEASER_SEMVER: 1
+
+concurrency:
+  group: publish
+  cancel-in-progress: true
+
+permissions: write-all
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    environment:
+      name: actions-github-app
+
+    env:
+      VERSION: ${{ inputs.version }}
+      PRERELEASE: ${{ inputs.prerelease }}
+
+    steps:
+      - uses: actions/create-github-app-token@v1
+        id: app-token
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.PRIVATE_KEY }}
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          submodules: recursive
+      - name: Setup Hugo
+        uses: peaceiris/actions-hugo@v2
+        with:
+          hugo-version: '0.111.3'
+          extended: true
+
+      # remember update release.yml
+      - name: Prepare build folder
+        run: mkdir build
+
+      - name: Update .docs/config.toml
+        run: sed -i'.bak' -e "s/(SNAPSHOT)/($VERSION)/" .docs/config.toml && rm .docs/config.toml.bak
+
+      - name: Build docs as a beta docs
+        working-directory: .docs
+        run: ./build.sh 'https://vpm.anatawa12.com/avatar-optimizer/beta' "$VERSION"
+
+      - name: Copy to beta dir if it's release
+        if: ${{ !fromJSON(env.PRERELEASE) }}
+        working-directory: .docs
+        run: mkdir -p static && mv public static/beta
+      - name: Build docs as a release docs if it's release
+        if: ${{ !fromJSON(env.PRERELEASE) }}
+        working-directory: .docs
+        run: ./build.sh 'https://vpm.anatawa12.com/avatar-optimizer' "$VERSION"
+
+      - name: zip docs
+        run: cd .docs/public && zip ../../build/website.zip -r .
+      - name: Upload docs
+        uses: actions/upload-artifact@v3
+        with:
+          name: website
+          path: .docs/public
+
+      - name: Restore .docs/config.toml
+        run: git restore --staged --worktree .docs/config.toml
+
+  publish-vpm:
+    uses: anatawa12/vpm.anatawa12.com/.github/workflows/update-package.yml@master
+    needs: create-release
+    if: inputs.publish
+    with:
+      #version: No version to update package only
+      environment: vpm.anatawa12.com
+      website_zip: https://github.com/anatawa12/AvatarOptimizer/releases/download/v${{ inputs.version }}/website.zip
+      website_path: ${{ inputs.prerelease && 'beta' || '' }}
+    secrets:
+      TOKEN: ${{ secrets.VPM_GITHUB_PAT }}
