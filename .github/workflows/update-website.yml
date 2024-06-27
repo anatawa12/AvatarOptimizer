@@ -91,7 +91,7 @@ jobs:
         run: |
           WEBSITE_NAME="website-${GITHUB_RUN_ID}.zip"
           mv build/website.zip "build/$WEBSITE_NAME"
-          gh release upload "$VERSION" "build/$WEBSITE_NAME"
+          gh release upload "v$VERSION" "build/$WEBSITE_NAME"
 
   publish-vpm:
     uses: anatawa12/vpm.anatawa12.com/.github/workflows/update-package.yml@master
