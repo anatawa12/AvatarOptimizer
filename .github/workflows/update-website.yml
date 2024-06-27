@@ -86,6 +86,8 @@ jobs:
         run: git restore --staged --worktree .docs/config.toml
 
       - name: Upload zip file
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           WEBSITE_NAME="website-${GITHUB_RUN_ID}.zip"
           mv build/website.zip "build/$WEBSITE_NAME"
