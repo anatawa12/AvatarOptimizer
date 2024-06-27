@@ -158,14 +158,14 @@ Trace and Optimizeへのコンポーネント対応を追加するためのAPI�
 
 #### v1.6.3 (2023年12月初旬) {#1.6.3}
 
-VRCSDK 3.5.0の3時間betaに怒り狂ったリリース。
+VRCSDK 3.5.0の3時間betaに振り回されたリリース
 
 CHANGELOGより引用
 
 > - I was planned to release this changes while VRCSDK 3.5.0 is in beta.
 > - However, VRCSDK 3.5.0 beta was only 3 hours so I could not.
 
-このVRCSDKのやらかしが vrc-get-gui / ALCOM を作る原動力になった。
+このVRCSDKの動きが vrc-get-gui / ALCOM を作る原動力になった。
 
 ### v1.7.x (2024年4月中旬~現在) {#1.7.x}
 
