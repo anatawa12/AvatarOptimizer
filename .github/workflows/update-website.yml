@@ -1,9 +1,9 @@
-name: Create Release
+name: Update Website
 
 on:
   workflow_dispatch:
     inputs:
-      version_name:
+      version:
         description: "The version name in the documentation"
         required: true
         type: string
