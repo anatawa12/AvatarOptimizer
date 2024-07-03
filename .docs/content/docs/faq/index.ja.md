@@ -6,12 +6,12 @@ weight: 2
 # よくある質問 {#faq}
 
 Avatar Optimizerに関するよくある質問のリストです。
-他に質問がある場合は、[GitHub Discussions]または[Fediverse]でお気軽にお尋ねください。
+他に質問がある場合は、[GitHub Discussions]または[Fediverse (Misskey / Mastodon)][Fediverse]でお気軽にお尋ねください。
 
 ## `AAO Trace and Optimize`コンポーネントを使用すると、アバターの振る舞いや見た目が変わる {#avatar-behavior-or-appearance-changed-when-using-aao-trace-and-optimize-component}
 
 `AAO Trace and Optimize`コンポーネントを使用して、アバターの振る舞いや見た目が変わってしまった場合は、(アバターがAvatar Optimizerの他のコンポーネントのバグ挙動に依存していない限り、)全てバグです。
-[GitHub Issues]や[Misskey][Fediverse] (Mastodon)、[Twitter]などから報告をお願いします。
+[GitHub Issues]や[Fediverse (Misskey / Mastodon)][Fediverse]、[Twitter]などから報告をお願いします。
 
 ## メッシュが視界の中にあるのに非表示になってしまう {#mesh-is-invisible-even-though-it-is-in-the-field-of-view}
 
@@ -52,6 +52,47 @@ BlendShapeに対してアニメーションされるメッシュを統合する�
 競合する場合は警告が表示されるので、そちらを確認してください。
 
 この問題のissue: [#568](https://github.com/anatawa12/AvatarOptimizer/issues/568)
+
+## OSCギミックで使用されているPhysBone / Contact Receiverが動作していない {#physbones-contact-receivers-that-are-used-in-the-osc-based-gimmick-are-not-working}
+
+`AAO Trace and Optimize`コンポーネントは、アバターの振る舞いを変えないように慎重に設計されています。
+しかし、技術的な理由から、`AAO Trace and Optimize`コンポーネントはPhysBone / Contact ReceiverコンポーネントがOSCギミックで使用されているかどうかを判断することができません。
+
+最近のアバターは、PhysBone / Contact Receiverコンポーネントを使用した独自のギミックを持っていることがあるため、これらのコンポーネントを削除し忘れることがよくあります。
+そのため、`AAO Trace and Optimize`は、そのようなコンポーネントがOSCギミックで使用されていないと仮定して、それらが他の用途で使われていなければ削除します。
+
+もちろん、仮定が正しいとは限らないため、PhysBone / Contact ReceiverコンポーネントをOSCギミックに使用している場合には、それらが使用されていると分かるようにアバターを調整してもらわなければならないかもしれません。\
+`AAO Trace and Optimize`は、アバター内のAnimatorにあるパラメーターと同じパラメーターが使用されているPhysBone / Contact Receiverコンポーネントを削除しないようになっています。
+そのため、OSCギミックで使用されるパラメーターを、Animator Controllerのパラメーター一覧やExpression Parameterに追加することで、これらのコンポーネントが削除されないようになります。
+
+また、改善のための議論の材料として、OSCギミックで使われているPhysBoneやContact Receiverが削除された場合には、それらに設定されているパラメータ名を教えていただけると助かります。
+将来的に、有名なOSCギミックによって使用されるパラメーターの一覧を実装して、それらのパラメータが使用されている場合はコンポーネントを保持するような形を取るかもしれませんし、他の方法で対処するかもしれません。\
+以下のissueや[Fediverse (Misskey / Mastodon)][Fediverse]、[Twitter]などでお気軽にお知らせください。
+
+この問題のissue: [#1090](https://github.com/anatawa12/AvatarOptimizer/issues/1090)
+
+## ビルド前のハードリミットチェックのせいでアバターをアップロードできない {#i-cannot-upload-the-avatar-because-of-pre-build-hard-limit-check}
+
+Avatar Optimizerなどの非破壊的なアバター改変ツールを使うと、元々ハードリミットを超えているようなアバターでも、ビルド後にはハードリミットを超えないようになることがあります。
+しかし、VRCSDKのコントロールパネルにあるアップロードボタンは、シーン上のアバターがハードリミットを超えている場合には押せないようになっています。\
+そのような場合でも、以下のような方法を使って、ビルド前のハードリミットチェックを飛ばしてアップロードすることができます。
+(ビルド後のハードリミットチェックも存在するため、ビルド後にハードリミットを超える場合は以下の方法でもアップロードに失敗します。)
+
+- `Manual bake avatar`で生成したアバターをアップロードする。\
+
+  アバターのGameObjectを右クリックして出てくるメニューの`NDM Framework`から`Manual bake avatar`をクリックすると、非破壊ツールによる処理を手動で適用することができます。
+  `Manual bake avatar`は初めにアバターを複製し、その複製に対して非破壊ツールの処理を適用させるため、元のアバターは変更されないままになります。
+- Sayamame-beansの[Upload without pre-check]を使用してアップロードする。
+
+  [Upload without pre-check]は、ビルド前のハードリミットチェックをスキップしてアップロードするためのツールです。
+- kurotuの[VRCQuestTools]を使用する
+
+  [VRCQuestTools]は、アバターをAndroid / Quest対応アバターに変換するためのツールです。\
+  このツールには、ビルド前チェックをスキップしてアバターをAndroid向けにビルドするための[VQT Avatar Builder]という機能が含まれています。
+
+[Upload without pre-check]: https://github.com/Sayamame-beans/Upload-without-preCheck?tab=readme-ov-file#upload-without-pre-check
+[VRCQuestTools]: https://kurotu.github.io/VRCQuestTools/
+[VQT Avatar Builder]: https://kurotu.github.io/VRCQuestTools/docs/references/main-menu/show-avatar-builder
 
 ## Avatar Optimizerの開発を支援したい {#i-want-to-support-the-development-of-avatar-optimizer}
 

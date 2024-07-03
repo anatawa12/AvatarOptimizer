@@ -27,7 +27,8 @@ Currently the following optimizations are applied automatically.
 - `Automatically Freeze BlendShape`\
   Automatically freezes BlendShapes which are always the same value or unused in animation, etc.
 - `Remove unused Objects`\
-  By scanning animation etc., automatically removes unused Objects (e.g. GameObjects, Components).
+  By scanning animation etc., automatically removes unused Objects (e.g. GameObjects, Components).\
+  In addition, this will automatically toggle PhysBone Components if they are only used by toggled objects.
   - `Preserve EndBone`\
     Prevents removing end bones[^endbone] whose parent is not removed.
 - `Optimize PhysBone Settings`\

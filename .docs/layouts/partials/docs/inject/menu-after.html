@@ -1,0 +1,25 @@
+
+<ul>
+    <li class="book-section-flat">
+        {{ if eq "ja" $.Site.Language.Lang }}
+        <span>Blog Posts</span>
+        {{ else }}
+        <span>Blog Posts(日本語)</span>
+        {{ end }}
+        {{ with (index .Sites 1).GetPage "posts" }}
+        <ul>
+            {{ range (where .Pages "Params.bookhidden" "ne" true) }}
+            {{ $current := eq $ . }}
+            <li>
+                <a href="{{ .Page.RelPermalink }}" class="{{ if $current }}active{{ end }}">
+                    {{- partial "docs/title" .Page -}}
+                </a>
+            </li>
+            {{ end }}
+        {{ end }}
+        </ul>
+    </li>
+</ul>
+
+
+

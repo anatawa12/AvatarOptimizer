@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Add Traditional Chinese [`#1102`](https://github.com/anatawa12/AvatarOptimizer/pull/1102)
 
 ### Changed
 
@@ -19,6 +20,16 @@ The format is based on [Keep a Changelog].
 
 ### Security
 
+## [1.7.6] - 2024-06-17
+## [1.7.6-beta.2] - 2024-06-16
+### Fixed
+- Remove Zero Sized Polygon may remove small polygons [`#1098`](https://github.com/anatawa12/AvatarOptimizer/pull/1098)
+
+## [1.7.6-beta.1] - 2024-06-15
+### Fixed
+- BlendTree with NormalizedBlendValues Broken with MergeBlendTree [`#1096`](https://github.com/anatawa12/AvatarOptimizer/pull/1096)
+
+## [1.7.5] - 2024-06-10
 ## [1.7.5-beta.2] - 2024-06-07
 ### Added
 - Warnings for bad API Usages [`#1091`](https://github.com/anatawa12/AvatarOptimizer/pull/1091)
@@ -1442,7 +1453,11 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.5-beta.2...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.6...HEAD
+[1.7.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.6-beta.2...v1.7.6
+[1.7.6-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.6-beta.1...v1.7.6-beta.2
+[1.7.6-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.5...v1.7.6-beta.1
+[1.7.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.5-beta.2...v1.7.5
 [1.7.5-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.5-beta.1...v1.7.5-beta.2
 [1.7.5-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.4...v1.7.5-beta.1
 [1.7.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.4-beta.1...v1.7.4

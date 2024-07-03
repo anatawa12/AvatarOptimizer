@@ -2,7 +2,10 @@
 
 set -eu
 
+BASE_URL="$1"
+LATEST_VERSION="$2"
+
 mkdir -p static
-jq --raw-output '.version' <../package.json  >static/latest.txt
-hugo --minify --baseURL "$1"
+echo "$LATEST_VERSION" > static/latest.txt
+hugo --minify --baseURL "$BASE_URL"
 
