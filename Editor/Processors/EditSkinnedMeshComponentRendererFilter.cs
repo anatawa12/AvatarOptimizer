@@ -149,10 +149,15 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
                     for (var primitiveI = 0; primitiveI < triangles.Length; primitiveI += vertexPerPrimitive)
                     {
-                        var removed = Enumerable.Range(0, vertexPerPrimitive)
-                            .All(vertexI => isRemoved(
-                                uv[triangles[primitiveI + vertexI]].x,
-                                uv[triangles[primitiveI + vertexI]].y));
+                        var removed = true;
+                        for (var i = 0; i < vertexPerPrimitive; i++)
+                        {
+                            if (!isRemoved(uv[triangles[primitiveI + i]].x, uv[triangles[primitiveI + i]].y))
+                            {
+                                removed = false;
+                                break;
+                            }
+                        }
 
                         if (!removed)
                         {
