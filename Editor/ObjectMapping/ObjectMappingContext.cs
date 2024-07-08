@@ -250,6 +250,19 @@ namespace Anatawa12.AvatarOptimizer
 
                 return newClip;
             }
+#if AAO_VRCSDK3_AVATARS_ANIMATOR_PLAY_AUDIO
+            else if (o is VRC.SDKBase.VRC_AnimatorPlayAudio playAudio)
+            {
+                using (new MappedScope(this))
+                {
+                    var newPlayAudio = DefaultDeepClone(playAudio);
+                    newPlayAudio.name = playAudio.name + " (rebased)";
+                    if (!HasChanged()) newPlayAudio = playAudio;
+                    newPlayAudio.SourcePath = _mapping.MapPath(playAudio.SourcePath, typeof(AudioSource));
+                    return newPlayAudio;
+                }
+            }
+#endif
             else if (o is AvatarMask mask)
             {
                 var newMask = new AvatarMask();
