@@ -8,7 +8,6 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Add Traditional Chinese [`#1102`](https://github.com/anatawa12/AvatarOptimizer/pull/1102)
 
 ### Changed
 
@@ -17,9 +16,15 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- `VRCAnimatorPlayAudio` support is broken `#1114`
 
 ### Security
+
+## [1.7.7] - 2024-07-08
+### Added
+- Add Traditional Chinese [`#1102`](https://github.com/anatawa12/AvatarOptimizer/pull/1102)
+
+### Fixed
+- `VRCAnimatorPlayAudio` support is broken [`#1114`](https://github.com/anatawa12/AvatarOptimizer/pull/1114)
 
 ## [1.7.6] - 2024-06-17
 ### Fixed
@@ -952,7 +957,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.6...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.7...HEAD
+[1.7.7]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.6...v1.7.7
 [1.7.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.5...v1.7.6
 [1.7.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.4...v1.7.5
 [1.7.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.3...v1.7.4

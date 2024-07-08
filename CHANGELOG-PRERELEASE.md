@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog].
 
 ### Security
 
+## [1.7.7] - 2024-07-08
 ## [1.7.7-beta.1] - 2024-07-08
 ### Added
 - Add Traditional Chinese [`#1102`](https://github.com/anatawa12/AvatarOptimizer/pull/1102)
@@ -1459,7 +1460,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.7-beta.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.7...HEAD
+[1.7.7]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.7-beta.1...v1.7.7
 [1.7.7-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.6...v1.7.7-beta.1
 [1.7.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.6-beta.2...v1.7.6
 [1.7.6-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.6-beta.1...v1.7.6-beta.2
