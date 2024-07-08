@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- `VRCAnimatorPlayAudio` support is broken `#1114`
 
 ### Security
 
