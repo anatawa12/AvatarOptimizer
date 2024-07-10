@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 using nadena.dev.ndmf.preview;
 using nadena.dev.ndmf.rq;
 using nadena.dev.ndmf.rq.unity.editor;
@@ -71,55 +72,37 @@ namespace Anatawa12.AvatarOptimizer.Processors
         public RenderAspects Reads => RenderAspects.Mesh | RenderAspects.Shapes;
         public RenderAspects WhatChanged => RenderAspects.Mesh | RenderAspects.Shapes;
 
+        delegate bool ShouldRemovePolygon(Span<int> indices);
+
         public async Task Process(
             SkinnedMeshRenderer original,
             SkinnedMeshRenderer proxy,
-            RemoveMeshInBox rmInBox,
-            RemoveMeshByBlendShape rmByBlendShape,
-            RemoveMeshByMask rmByMask, 
+            [CanBeNull] RemoveMeshInBox rmInBox,
+            [CanBeNull] RemoveMeshByBlendShape rmByBlendShape,
+            [CanBeNull] RemoveMeshByMask rmByMask,
             ComputeContext context)
         {
             var duplicated = Object.Instantiate(proxy.sharedMesh);
             duplicated.name = proxy.sharedMesh.name + " (AAO Generated)";
 
-            if (rmByMask)
+            var materialSettings = rmByMask?.materials;
+            for (var subMeshI = 0; subMeshI < duplicated.subMeshCount; subMeshI++)
             {
-                var materialSettings = rmByMask.materials;
-                for (var subMeshI = 0; subMeshI < duplicated.subMeshCount && subMeshI < materialSettings.Length; subMeshI++)
+                List<ShouldRemovePolygon> checks = new List<ShouldRemovePolygon>();
+
+                if (materialSettings != null && subMeshI < materialSettings.Length)
                 {
                     var materialSetting = materialSettings[subMeshI];
                     if (!materialSetting.enabled) continue;
                     if (materialSetting.mask == null) continue;
                     if (!materialSetting.mask.isReadable) continue;
 
-                    var subMesh = duplicated.GetSubMesh(subMeshI);
-                    int vertexPerPrimitive;
-                    switch (subMesh.topology)
-                    {
-                        case MeshTopology.Triangles:
-                            vertexPerPrimitive = 3;
-                            break;
-                        case MeshTopology.Quads:
-                            vertexPerPrimitive = 4;
-                            break;
-                        case MeshTopology.Lines:
-                            vertexPerPrimitive = 2;
-                            break;
-                        case MeshTopology.Points:
-                            vertexPerPrimitive = 1;
-                            break;
-                        case MeshTopology.LineStrip:
-                        default:
-                            // unsupported topology
-                            continue;
-                    }
-
                     var editingTexture = MaskTextureEditor.Window.ObservePreviewTextureFor(original, subMeshI, context);
                     var mask = editingTexture ? editingTexture : context.Observe(materialSetting.mask);
                     var textureWidth = mask.width;
                     var textureHeight = mask.height;
                     var pixels = mask.GetPixels32();
-                    
+
                     int GetValue(float u, float v)
                     {
                         var x = Mathf.RoundToInt(v % 1 * textureHeight);
@@ -128,46 +111,90 @@ namespace Anatawa12.AvatarOptimizer.Processors
                         return Mathf.Max(Mathf.Max(pixel.r, pixel.g), pixel.b);
                     }
 
-                    Func<float, float, bool> isRemoved;
+                    var uv = duplicated.uv;
 
                     switch (materialSetting.mode)
                     {
                         case RemoveMeshByMask.RemoveMode.RemoveWhite:
-                            isRemoved = (u, v) => GetValue(u, v) > 127;
+                            checks.Add(indices =>
+                            {
+                                foreach (var index in indices)
+                                {
+                                    if (!(GetValue(uv[index].x, uv[index].y) > 127))
+                                    {
+                                        return false;
+                                    }
+                                }
+
+                                return true;
+                            });
                             break;
                         case RemoveMeshByMask.RemoveMode.RemoveBlack:
-                            isRemoved = (u, v) => GetValue(u, v) <= 127;
+                            checks.Add(indices =>
+                            {
+                                foreach (var index in indices)
+                                {
+                                    if (!(GetValue(uv[index].x, uv[index].y) <= 127))
+                                    {
+                                        return false;
+                                    }
+                                }
+
+                                return true;
+                            });
                             break;
                         default:
                             BuildLog.LogError("RemoveMeshByMask:error:unknownMode");
                             continue;
                     }
+                }
 
-                    var triangles = duplicated.GetTriangles(subMeshI);
-                    var modifiedTriangles = new List<int>(triangles.Length);
-                    var uv = duplicated.uv;
+                var subMesh = duplicated.GetSubMesh(subMeshI);
+                int vertexPerPrimitive;
+                switch (subMesh.topology)
+                {
+                    case MeshTopology.Triangles:
+                        vertexPerPrimitive = 3;
+                        break;
+                    case MeshTopology.Quads:
+                        vertexPerPrimitive = 4;
+                        break;
+                    case MeshTopology.Lines:
+                        vertexPerPrimitive = 2;
+                        break;
+                    case MeshTopology.Points:
+                        vertexPerPrimitive = 1;
+                        break;
+                    case MeshTopology.LineStrip:
+                    default:
+                        // unsupported topology
+                        continue;
+                }
 
-                    for (var primitiveI = 0; primitiveI < triangles.Length; primitiveI += vertexPerPrimitive)
+                var triangles = duplicated.GetTriangles(subMeshI);
+                var modifiedTriangles = new List<int>(triangles.Length);
+
+                for (var primitiveI = 0; primitiveI < triangles.Length; primitiveI += vertexPerPrimitive)
+                {
+                    if (!ShouldRemovePolygonAny(checks, triangles.AsSpan().Slice(primitiveI, vertexPerPrimitive)))
                     {
-                        var removed = true;
-                        for (var i = 0; i < vertexPerPrimitive; i++)
-                        {
-                            if (!isRemoved(uv[triangles[primitiveI + i]].x, uv[triangles[primitiveI + i]].y))
-                            {
-                                removed = false;
-                                break;
-                            }
-                        }
-
-                        if (!removed)
-                        {
-                            for (var vertexI = 0; vertexI < vertexPerPrimitive; vertexI++)
-                                modifiedTriangles.Add(triangles[primitiveI + vertexI]);
-                        }
+                        for (var vertexI = 0; vertexI < vertexPerPrimitive; vertexI++)
+                            modifiedTriangles.Add(triangles[primitiveI + vertexI]);
                     }
 
-                    duplicated.SetTriangles(modifiedTriangles, subMeshI);
+                    continue;
+
+                    bool ShouldRemovePolygonAny(List<ShouldRemovePolygon> checkList, Span<int> indices)
+                    {
+                        foreach (var shouldRemovePolygon in checkList)
+                            if (shouldRemovePolygon(indices))
+                                return true;
+
+                        return false;
+                    }
                 }
+
+                duplicated.SetTriangles(modifiedTriangles, subMeshI);
             }
 
             proxy.sharedMesh = duplicated;
