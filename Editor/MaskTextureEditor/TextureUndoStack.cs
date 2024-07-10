@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using nadena.dev.ndmf.rq;
+using nadena.dev.ndmf.rq.unity.editor;
 using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
@@ -112,6 +114,12 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
         public Texture2D Peek()
         {
             return _stack[_counter.Count - 1];
+        }
+
+        public Texture2D ObservePeek(ComputeContext context)
+        {
+            var count = context.Observe(_counter, c => c.Count);
+            return _stack[count - 1];
         }
 
         private void Apply()

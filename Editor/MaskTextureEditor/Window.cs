@@ -1,5 +1,8 @@
 using System;
 using System.IO;
+using JetBrains.Annotations;
+using nadena.dev.ndmf.rq;
+using nadena.dev.ndmf.rq.unity.editor;
 using UnityEditor;
 using UnityEngine;
 
@@ -74,6 +77,8 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
         private string saveChangesMessage = string.Empty;
 #endif
 
+        private static PublishedValue<bool> IsWindowOpen = new PublishedValue<bool>(false);
+
         public static Window Instance
         {
             get
@@ -85,6 +90,18 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
 
                 return GetWindow<Window>(string.Empty, false);
             }
+        }
+
+        [CanBeNull]
+        public static Texture2D ObservePreviewTextureFor(SkinnedMeshRenderer renderer, int subMesh, ComputeContext context)
+        {
+            if (!context.Observe(IsWindowOpen)) return null;
+
+            var window = GetWindow<Window>(string.Empty, false);
+            var targetMatches = context.Observe(window, w => w._renderer == renderer && w._subMesh == subMesh);
+            if (!targetMatches) return null;
+
+            return window._textureUndoStack.ObservePeek(context);
         }
 
         public Texture2D PreviewTexture => _textureUndoStack.Peek();
@@ -113,6 +130,7 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
 
         public void Open(SkinnedMeshRenderer renderer, int subMesh, Texture2D texture)
         {
+            Undo.RecordObject(this, "Open Mask Texture Editor");
             _renderer = renderer;
             _subMesh = subMesh;
             _texture = texture;
@@ -479,8 +497,14 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
 #endif
         }
 
+        private void Awake()
+        {
+            IsWindowOpen.Value = true;
+        }
+
         private void OnDestroy()
         {
+            IsWindowOpen.Value = false;
             if (_uvMapDrawer != null)
             {
                 DestroyImmediate(_uvMapDrawer);

@@ -114,8 +114,8 @@ namespace Anatawa12.AvatarOptimizer.Processors
                             continue;
                     }
 
-                    // TODO: use texture from Texture Editor
-                    var mask = context.Observe(materialSetting.mask);
+                    var editingTexture = MaskTextureEditor.Window.ObservePreviewTextureFor(original, subMeshI, context);
+                    var mask = editingTexture ? editingTexture : context.Observe(materialSetting.mask);
                     var textureWidth = mask.width;
                     var textureHeight = mask.height;
                     var pixels = mask.GetPixels32();
