@@ -10,7 +10,7 @@ using nadena.dev.ndmf.rq.unity.editor;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace Anatawa12.AvatarOptimizer.Processors
+namespace Anatawa12.AvatarOptimizer.EditModePreview
 {
     internal class EditSkinnedMeshComponentRendererFilter : IRenderFilter
     {
