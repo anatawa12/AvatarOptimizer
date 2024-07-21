@@ -75,9 +75,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
                 int GetValue(float u, float v)
                 {
-                    var x = Mathf.RoundToInt(v % 1 * textureHeight);
-                    var y = Mathf.RoundToInt(u % 1 * textureWidth);
-                    var pixel = pixels[x * textureWidth + y];
+                    var x = Mathf.FloorToInt(u % 1 * textureWidth);
+                    var y = Mathf.FloorToInt(v % 1 * textureHeight);
+                    var pixel = pixels[y * textureWidth + x];
                     return Mathf.Max(Mathf.Max(pixel.r, pixel.g), pixel.b);
                 }
 

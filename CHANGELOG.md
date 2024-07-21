@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Index out of bounds error with remove mesh by mask `#1119`
 
 ### Security
 
