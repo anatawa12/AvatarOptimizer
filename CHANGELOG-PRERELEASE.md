@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - Index out of bounds error with remove mesh by mask `#1119`
+- NRE with Generic Avatar `#1122`
 
 ### Security
 
