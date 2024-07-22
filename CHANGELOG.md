@@ -16,10 +16,13 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Index out of bounds error with remove mesh by mask `#1119`
-- NRE with Generic Avatar `#1122`
 
 ### Security
+
+## [1.7.8] - 2024-07-22
+### Fixed
+- Index out of bounds error with remove mesh by mask [`#1119`](https://github.com/anatawa12/AvatarOptimizer/pull/1119)
+- NRE with Generic Avatar [`#1122`](https://github.com/anatawa12/AvatarOptimizer/pull/1122)
 
 ## [1.7.7] - 2024-07-08
 ### Added
@@ -959,7 +962,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.7...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.8...HEAD
+[1.7.8]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.7...v1.7.8
 [1.7.7]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.6...v1.7.7
 [1.7.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.5...v1.7.6
 [1.7.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.4...v1.7.5
