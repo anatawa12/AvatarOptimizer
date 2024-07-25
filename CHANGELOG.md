@@ -16,9 +16,12 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Index out of bounds error with remove mesh by mask with negative UV `#1123`
 
 ### Security
+
+## [1.7.9] - 2024-07-25
+### Fixed
+- Index out of bounds error with remove mesh by mask with negative UV [`#1123`](https://github.com/anatawa12/AvatarOptimizer/pull/1123)
 
 ## [1.7.8] - 2024-07-22
 ### Fixed
@@ -963,7 +966,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.8...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.9...HEAD
+[1.7.9]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.8...v1.7.9
 [1.7.8]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.7...v1.7.8
 [1.7.7]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.6...v1.7.7
 [1.7.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.5...v1.7.6

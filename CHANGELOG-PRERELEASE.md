@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog].
 
 ### Security
 
+## [1.7.9] - 2024-07-25
 ## [1.7.9-beta.1] - 2024-07-25
 ### Fixed
 - Index out of bounds error with remove mesh by mask with negative UV [`#1123`](https://github.com/anatawa12/AvatarOptimizer/pull/1123)
@@ -1470,7 +1471,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.9-beta.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.9...HEAD
+[1.7.9]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.9-beta.1...v1.7.9
 [1.7.9-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.8...v1.7.9-beta.1
 [1.7.8]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.8-beta.1...v1.7.8
 [1.7.8-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.7...v1.7.8-beta.1
