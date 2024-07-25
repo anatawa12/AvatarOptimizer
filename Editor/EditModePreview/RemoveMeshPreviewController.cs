@@ -453,8 +453,8 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
 
             private int GetValue(Vector2 uv)
             {
-                var x = Mathf.FloorToInt(uv.x % 1 * MaskWidth);
-                var y = Mathf.FloorToInt(uv.y % 1 * MaskHeight);
+                var x = Mathf.FloorToInt(Utils.Modulo(uv.x, 1) * MaskWidth);
+                var y = Mathf.FloorToInt(Utils.Modulo(uv.y, 1) * MaskHeight);
                 var color = Mask[x + y * MaskWidth];
                 return Mathf.Max(Mathf.Max(color.r, color.g), color.b);
             }
