@@ -1,5 +1,6 @@
 
 using System;
+using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer
 {
@@ -91,5 +92,6 @@ namespace Anatawa12.AvatarOptimizer
 #endif
 
         public static bool IsFinite(float x) => !float.IsNaN(x) && !float.IsInfinity(x);
+        public static float Modulo(float x, float y) => x - y * Mathf.Floor(x / y);
     }
 }
