@@ -19,7 +19,13 @@ SkinnedMeshRendererを統合することでメッシュを変形させる処理�
 アニメーションでメッシュのオン・オフを個別に切り替えたりすることはできなくなりますが、マテリアルに関するアニメーションは統合前のものがそのまま機能します。
 
 このコンポーネントはメッシュ・マテリアル・BlendShape・Boundsを設定しますが、その他の設定については変更しません。
-AnchorOverride等の設定を行うには、MergeSkinnedMeshのあるGameObject上のSkinnedMeshRendererコンポーネントを編集してください。
+Anchor Override等の設定を行うには、MergeSkinnedMeshのあるGameObject上のSkinnedMeshRendererコンポーネントを編集してください。
+
+{{< hint info >}}
+
+[Modular Avatar]を使用している場合は、アバターのルートに[`MA Mesh Settings`]コンポーネントを追加して設定することにより、アバター全体のAnchor Override等をまとめて設定することができます。
+
+{{< /hint >}}
 
 また、このコンポーネントは、服のメッシュや体のメッシュを統合するのには適していますが、顔のメッシュを統合するのには適していません。\
 BlendShapeは、頂点とBlendShapeの数に比例して負荷が大きくなる機能です。
@@ -66,3 +72,6 @@ BlendShapeは、頂点とBlendShapeの数に比例して負荷が大きくなる
 複数の(Skinned)MeshRendererで使用されているマテリアルがある場合、ここに一覧で表示されます。
 
 `統合する`にチェックを入れることで、それらのマテリアルスロットを1つに統合します。これはDrawCallを削減します。
+
+[Modular Avatar]: https://modular-avatar.nadena.dev/
+[`MA Mesh Settings`]: https://modular-avatar.nadena.dev/docs/reference/mesh-settings
