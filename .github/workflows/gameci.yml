@@ -30,6 +30,8 @@ jobs:
         with:
           path: Packages/com.anatawa12.avatar-optimizer
           ref: ${{ github.event.pull_request.head.sha }}
+      - uses: anatawa12/sh-actions/setup-vrc-get@master
+      - run: vrc-get install -y com.vrchat.avatars
       - uses: anatawa12/sh-actions/resolve-vpm-packages@master
         with:
           repos: |
