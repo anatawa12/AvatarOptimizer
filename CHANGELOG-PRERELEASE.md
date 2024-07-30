@@ -16,9 +16,12 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- AutoMergeSkinnedMesh is broken if all merging meshes has no SubMeshes `#1127`
 
 ### Security
+
+## [1.7.10-beta.1] - 2024-07-30
+### Fixed
+- AutoMergeSkinnedMesh is broken if all merging meshes has no SubMeshes [`#1127`](https://github.com/anatawa12/AvatarOptimizer/pull/1127)
 
 ## [1.7.9] - 2024-07-25
 ## [1.7.9-beta.1] - 2024-07-25
@@ -1472,7 +1475,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.9...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.10-beta.1...HEAD
+[1.7.10-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.9...v1.7.10-beta.1
 [1.7.9]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.9-beta.1...v1.7.9
 [1.7.9-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.8...v1.7.9-beta.1
 [1.7.8]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.8-beta.1...v1.7.8
