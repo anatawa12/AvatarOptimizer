@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- AutoMergeSkinnedMesh is broken if all merging meshes has no SubMeshes `#1127`
 
 ### Security
 
