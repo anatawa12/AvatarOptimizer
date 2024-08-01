@@ -73,5 +73,5 @@ BlendShapeは、頂点とBlendShapeの数に比例して負荷が大きくなる
 
 `統合する`にチェックを入れることで、それらのマテリアルスロットを1つに統合します。これはDrawCallを削減します。
 
-[Modular Avatar]: https://modular-avatar.nadena.dev/
-[`MA Mesh Settings`]: https://modular-avatar.nadena.dev/docs/reference/mesh-settings
+[Modular Avatar]: https://modular-avatar.nadena.dev/ja
+[`MA Mesh Settings`]: https://modular-avatar.nadena.dev/ja/docs/reference/mesh-settings
