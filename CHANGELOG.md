@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Experimental VRCConstraints support `#1129`
+  - This only works for VRCSDK `3.6.2-constraints.3` and not works with other versions including future versions.
 
 ### Changed
 
@@ -16,6 +18,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- AutoMergeSkinnedMesh is broken if all merging meshes has no SubMeshes `#1127`
 
 ### Security
 

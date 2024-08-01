@@ -493,7 +493,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             var materials = new List<(MeshTopology topology, Material material)>();
 
 
-            while (true)
+            while (reducedMeshInfos.Any(x => x.First != null))
             {
                 var meshIndex = GetNextAddingMeshIndex();
 
@@ -515,8 +515,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                         reducedMeshInfo.RemoveFirst();
                     }
                 }
-
-                if (reducedMeshInfos.All(x => x.First == null)) break;
             }
 
             return (subMeshIndexMap, materials);
