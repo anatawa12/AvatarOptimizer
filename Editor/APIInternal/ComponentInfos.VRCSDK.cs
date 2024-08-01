@@ -14,6 +14,11 @@ using VRC.SDK3.Dynamics.Contact.Components;
 using VRC.SDK3.Dynamics.PhysBone.Components;
 using VRC.SDKBase;
 
+#if AAO_VRCSDK3_AVATARS_CONSTRAINTS
+using VRC.Dynamics.ManagedTypes;
+using VRC.SDK3.Dynamics.Constraint.Components;
+#endif
+
 namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
 {
     [ComponentInformation(typeof(VRCTestMarker))]
@@ -496,6 +501,54 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
             collector.MarkBehaviour();
         }
     }
+#endif
+
+#if AAO_VRCSDK3_AVATARS_CONSTRAINTS
+    [ComponentInformation(typeof(VRCConstraintBase))]
+    [ComponentInformation(typeof(VRCParentConstraintBase))]
+    [ComponentInformation(typeof(VRCParentConstraint))]
+    [ComponentInformation(typeof(VRCPositionConstraintBase))]
+    [ComponentInformation(typeof(VRCPositionConstraint))]
+    [ComponentInformation(typeof(VRCRotationConstraintBase))]
+    [ComponentInformation(typeof(VRCRotationConstraint))]
+    [ComponentInformation(typeof(VRCScaleConstraintBase))]
+    [ComponentInformation(typeof(VRCScaleConstraint))]
+    internal class VRCConstraintInformation<T> : ComponentInformation<T> where T : VRCConstraintBase
+    {
+        protected override void CollectDependency(T component, ComponentDependencyCollector collector)
+        {
+            collector.AddDependency(component.transform, component)
+                .OnlyIfTargetCanBeEnable()
+                .EvenIfDependantDisabled();
+
+            foreach (var source in component.Sources)
+                collector.AddDependency(source.SourceTransform);
+
+            // we may mark heavy behavior with complex rules but it's extremely difficult to implement
+            // so mark behavior for now
+            collector.MarkBehaviour();
+        }
+
+        protected override void CollectMutations(T component, ComponentMutationsCollector collector)
+        {
+            collector.TransformRotation(component.TargetTransform ? component.TargetTransform : component.transform);
+        }
+    }
+
+    [ComponentInformation(typeof(VRCWorldUpConstraintBase))]
+    [ComponentInformation(typeof(VRCAimConstraintBase))]
+    [ComponentInformation(typeof(VRCAimConstraint))]
+    [ComponentInformation(typeof(VRCLookAtConstraintBase))]
+    [ComponentInformation(typeof(VRCLookAtConstraint))]
+    internal class VRCWorldUpConstraintInformation : VRCConstraintInformation<VRCWorldUpConstraintBase>
+    {
+        protected override void CollectDependency(VRCWorldUpConstraintBase component, ComponentDependencyCollector collector)
+        {
+            base.CollectDependency(component, collector);
+            collector.AddDependency(component.WorldUpTransform);
+        }
+    }
+
 #endif
 }
 #endif
