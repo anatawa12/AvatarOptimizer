@@ -8,7 +8,8 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Add Traditional Chinese [`#1102`](https://github.com/anatawa12/AvatarOptimizer/pull/1102)
+- Experimental VRCConstraints support `#1129`
+  - This only works for VRCSDK `3.6.2-constraints.3` and not works with other versions including future versions.
 
 ### Changed
 
@@ -17,8 +18,25 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- AutoMergeSkinnedMesh is broken if all merging meshes has no SubMeshes `#1127`
 
 ### Security
+
+## [1.7.9] - 2024-07-25
+### Fixed
+- Index out of bounds error with remove mesh by mask with negative UV [`#1123`](https://github.com/anatawa12/AvatarOptimizer/pull/1123)
+
+## [1.7.8] - 2024-07-22
+### Fixed
+- Index out of bounds error with remove mesh by mask [`#1119`](https://github.com/anatawa12/AvatarOptimizer/pull/1119)
+- NRE with Generic Avatar [`#1122`](https://github.com/anatawa12/AvatarOptimizer/pull/1122)
+
+## [1.7.7] - 2024-07-08
+### Added
+- Add Traditional Chinese [`#1102`](https://github.com/anatawa12/AvatarOptimizer/pull/1102)
+
+### Fixed
+- `VRCAnimatorPlayAudio` support is broken [`#1114`](https://github.com/anatawa12/AvatarOptimizer/pull/1114)
 
 ## [1.7.6] - 2024-06-17
 ### Fixed
@@ -951,7 +969,10 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.6...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.9...HEAD
+[1.7.9]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.8...v1.7.9
+[1.7.8]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.7...v1.7.8
+[1.7.7]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.6...v1.7.7
 [1.7.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.5...v1.7.6
 [1.7.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.4...v1.7.5
 [1.7.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.3...v1.7.4

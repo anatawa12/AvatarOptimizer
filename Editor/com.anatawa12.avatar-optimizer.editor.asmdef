@@ -38,6 +38,7 @@
         "VRCSDK3A.dll",
         "VRCSDKBase-Editor.dll",
         "VRCSDKBase.dll",
+        "VRC.SDK3.Dynamics.Constraint.dll",
         "System.Memory.dll",
         "System.Collections.Immutable.dll"
     ],
@@ -63,6 +64,16 @@
             "name": "com.vrchat.avatars",
             "expression": "3.5.2-beta.2",
             "define": "AAO_VRCSDK3_AVATARS_HEAD_CHOP"
+        },
+        {
+            "name": "com.vrchat.avatars",
+            "expression": "3.5.2",
+            "define": "AAO_VRCSDK3_AVATARS_ANIMATOR_PLAY_AUDIO"
+        },
+        {
+            "name": "com.vrchat.avatars",
+            "expression": "[3.6.2-constraints.3]",
+            "define": "AAO_VRCSDK3_AVATARS_CONSTRAINTS"
         },
         {
             "name": "com.vrmc.univrm",

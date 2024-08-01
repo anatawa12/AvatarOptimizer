@@ -8,7 +8,8 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Add Traditional Chinese [`#1102`](https://github.com/anatawa12/AvatarOptimizer/pull/1102)
+- Experimental VRCConstraints support `#1129`
+  - This only works for VRCSDK `3.6.2-constraints.3` and not works with other versions including future versions.
 
 ### Changed
 
@@ -19,6 +20,29 @@ The format is based on [Keep a Changelog].
 ### Fixed
 
 ### Security
+
+## [1.7.10-beta.1] - 2024-07-30
+### Fixed
+- AutoMergeSkinnedMesh is broken if all merging meshes has no SubMeshes [`#1127`](https://github.com/anatawa12/AvatarOptimizer/pull/1127)
+
+## [1.7.9] - 2024-07-25
+## [1.7.9-beta.1] - 2024-07-25
+### Fixed
+- Index out of bounds error with remove mesh by mask with negative UV [`#1123`](https://github.com/anatawa12/AvatarOptimizer/pull/1123)
+
+## [1.7.8] - 2024-07-22
+## [1.7.8-beta.1] - 2024-07-21
+### Fixed
+- Index out of bounds error with remove mesh by mask [`#1119`](https://github.com/anatawa12/AvatarOptimizer/pull/1119)
+- NRE with Generic Avatar [`#1122`](https://github.com/anatawa12/AvatarOptimizer/pull/1122)
+
+## [1.7.7] - 2024-07-08
+## [1.7.7-beta.1] - 2024-07-08
+### Added
+- Add Traditional Chinese [`#1102`](https://github.com/anatawa12/AvatarOptimizer/pull/1102)
+
+### Fixed
+- `VRCAnimatorPlayAudio` support is broken [`#1114`](https://github.com/anatawa12/AvatarOptimizer/pull/1114)
 
 ## [1.7.6] - 2024-06-17
 ## [1.7.6-beta.2] - 2024-06-16
@@ -1453,7 +1477,14 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.6...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.10-beta.1...HEAD
+[1.7.10-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.9...v1.7.10-beta.1
+[1.7.9]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.9-beta.1...v1.7.9
+[1.7.9-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.8...v1.7.9-beta.1
+[1.7.8]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.8-beta.1...v1.7.8
+[1.7.8-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.7...v1.7.8-beta.1
+[1.7.7]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.7-beta.1...v1.7.7
+[1.7.7-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.6...v1.7.7-beta.1
 [1.7.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.6-beta.2...v1.7.6
 [1.7.6-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.6-beta.1...v1.7.6-beta.2
 [1.7.6-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.5...v1.7.6-beta.1

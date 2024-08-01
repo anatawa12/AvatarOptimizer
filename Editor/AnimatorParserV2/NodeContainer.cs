@@ -39,8 +39,10 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         public IReadOnlyDictionary<(ComponentOrGameObject target, string prop), RootPropModNode<Object>> ObjectNodes =>
             _objectNodes;
 
-        public void Add(ComponentNodeContainer container, bool alwaysApplied)
+        public void Add([CanBeNull] ComponentNodeContainer container, bool alwaysApplied)
         {
+            if (container == null) return;
+
             foreach (var (key, value) in container.FloatNodes)
             {
                 if (!FloatNodes.TryGetValue(key, out var node))
