@@ -105,8 +105,8 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
 
                     int GetValue(float u, float v)
                     {
-                        var x = Mathf.RoundToInt(v % 1 * textureHeight);
-                        var y = Mathf.RoundToInt(u % 1 * textureWidth);
+                        var x = Mathf.FloorToInt(Utils.Modulo(v, 1) * textureHeight);
+                        var y = Mathf.FloorToInt(Utils.Modulo(u, 1) * textureWidth);
                         var pixel = pixels[x * textureWidth + y];
                         return Mathf.Max(Mathf.Max(pixel.r, pixel.g), pixel.b);
                     }
