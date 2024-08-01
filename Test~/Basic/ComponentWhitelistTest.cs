@@ -109,6 +109,12 @@ namespace Anatawa12.AvatarOptimizer.Test
             "VRC.SDK3.Dynamics.PhysBone.Components.VRCPhysBoneCollider",
             "VRC.SDK3.Dynamics.Contact.Components.VRCContactSender",
             "VRC.SDK3.Dynamics.Contact.Components.VRCContactReceiver",
+            "VRC.SDK3.Dynamics.Constraint.Components.VRCAimConstraint",
+            "VRC.SDK3.Dynamics.Constraint.Components.VRCLookAtConstraint",
+            "VRC.SDK3.Dynamics.Constraint.Components.VRCParentConstraint",
+            "VRC.SDK3.Dynamics.Constraint.Components.VRCPositionConstraint",
+            "VRC.SDK3.Dynamics.Constraint.Components.VRCRotationConstraint",
+            "VRC.SDK3.Dynamics.Constraint.Components.VRCScaleConstraint",
         };
     }
 }
