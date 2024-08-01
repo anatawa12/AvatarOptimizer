@@ -249,15 +249,21 @@ msgstr "このメッシュを統合対象から除外するか、このメッシ
 msgid "MergeSkinnedMesh:warning:no-root-bone"
 msgstr "統合先のメッシュにRoot Boneが設定されていないため、予期しない動作が引き起こされる場合があります。"
 
+msgid "MergeSkinnedMesh:warning:no-root-bone:description"
+msgstr "MergeSkinnedMeshは統合先のメッシュのRoot Boneを自動では設定しません。"
+
 msgid "MergeSkinnedMesh:warning:no-root-bone:hint"
-msgstr "MergeSkinnedMeshは統合先のメッシュのRoot Boneを自動では設定しないため、手動で設定する必要があります。\n"
+msgstr "統合先のメッシュのRoot Boneを手動で設定する必要があります。\n"
 "Modular Avatarを使用している場合は、アバターのルートにMA Mesh Settingsコンポーネントを追加して設定することにより、アバター全体のRoot Boneをまとめて設定することもできます。"
 
 msgid "MergeSkinnedMesh:warning:no-probe-anchor"
 msgstr "統合先のメッシュにAnchor Overrideが設定されていないため、予期しない動作が引き起こされる場合があります。"
 
+msgid "MergeSkinnedMesh:warning:no-probe-anchor:description"
+msgstr "MergeSkinnedMeshは統合先のメッシュのAnchor Overrideを自動では設定しません。"
+
 msgid "MergeSkinnedMesh:warning:no-probe-anchor:hint"
-msgstr "MergeSkinnedMeshは統合先のメッシュのAnchor Overrideを自動では設定しないため、手動で設定する必要があります。\n"
+msgstr "統合先のメッシュのAnchor Overrideを手動で設定する必要があります。\n"
 "Modular Avatarを使用している場合は、アバターのルートにMA Mesh Settingsコンポーネントを追加して設定することにより、アバター全体のAnchor Overrideをまとめて設定することもできます。"
 
 # endregion

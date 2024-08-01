@@ -339,16 +339,20 @@ msgstr "Please exclude this from the source SkinnedMeshRenderers or remove Cloth
 msgid "MergeSkinnedMesh:warning:no-root-bone"
 msgstr "Root Bone of the merged mesh is not set. This may cause unexpected behavior."
 
+msgid "MergeSkinnedMesh:warning:no-root-bone:description"
+msgstr "MergeSkinnedMesh does not automatically set the Root Bone of the merged mesh."
+
 msgid "MergeSkinnedMesh:warning:no-root-bone:hint"
-msgstr "MergeSkinnedMesh does not automatically set the Root Bone of the merged mesh, so you need to set manually.\n"
-"If you are using Modular Avatar, you can also add MA Mesh Settings component to the root of the avatar to set the Root Bone for the whole avatar."
+msgstr "You need to set it manually. If you are using Modular Avatar, you can also add MA Mesh Settings component to the root of the avatar to set the Root Bone for the whole avatar."
 
 msgid "MergeSkinnedMesh:warning:no-probe-anchor"
 msgstr "Anchor Override of the merged mesh is not set. This may cause unexpected behavior."
 
+msgid "MergeSkinnedMesh:warning:no-probe-anchor:description"
+msgstr "MergeSkinnedMesh does not automatically set the Anchor Override of the merged mesh."
+
 msgid "MergeSkinnedMesh:warning:no-probe-anchor:hint"
-msgstr "MergeSkinnedMesh does not automatically set the Anchor Override of the merged mesh, so you need to set manually.\n"
-"If you are using Modular Avatar, you can also add MA Mesh Settings component to the root of the avatar to set the Anchor Override for the whole avatar."
+msgstr "You need to set it manually. If you are using Modular Avatar, you can also add MA Mesh Settings component to the root of the avatar to set the Anchor Override for the whole avatar."
 
 # endregion
 
