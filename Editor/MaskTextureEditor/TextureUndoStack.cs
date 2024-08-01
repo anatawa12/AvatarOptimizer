@@ -1,6 +1,5 @@
 using System.Collections.Generic;
-using nadena.dev.ndmf.rq;
-using nadena.dev.ndmf.rq.unity.editor;
+using nadena.dev.ndmf.preview;
 using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
