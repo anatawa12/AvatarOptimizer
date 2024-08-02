@@ -63,6 +63,7 @@ namespace Anatawa12.AvatarOptimizer.ndmf
 #endif
                         .Then.Run(Processors.EditSkinnedMeshComponentProcessor.Instance)
                         .PreviewingWith(EditModePreview.RemoveMeshByMaskRendererFilter.Instance)
+                        .PreviewingWith(EditModePreview.RemoveMeshByBlendShapeRendererFilter.Instance)
                         .Then.Run("MakeChildrenProcessor",
                             ctx => new Processors.MakeChildrenProcessor(early: false).Process(ctx)
                         )
