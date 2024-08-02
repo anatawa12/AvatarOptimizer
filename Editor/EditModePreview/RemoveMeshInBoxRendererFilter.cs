@@ -75,6 +75,9 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
             [NotNull] RemoveMeshInBox rmInBox,
             ComputeContext context)
         {
+            // Observe transform since the BakeMesh depends on the transform
+            context.Observe(original.transform);
+
             UnityEngine.Profiling.Profiler.BeginSample($"RemoveMeshInBoxRendererNode.Process({original.name})");
 
             var duplicated = Object.Instantiate(proxy.sharedMesh);
