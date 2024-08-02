@@ -8,8 +8,6 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Experimental VRCConstraints support `#1129` `#1130`
-  - This only works for VRCSDK ~~`3.6.2-constraints.3`~~ `3.6.2-constraints.4` and not works with other versions including future versions.
 
 ### Changed
 
@@ -18,9 +16,16 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- AutoMergeSkinnedMesh is broken if all merging meshes has no SubMeshes `#1127`
 
 ### Security
+
+## [1.7.10] - 2024-08-02
+### Added
+- Experimental VRCConstraints support [`#1129`](https://github.com/anatawa12/AvatarOptimizer/pull/1129) [`#1130`](https://github.com/anatawa12/AvatarOptimizer/pull/1130)
+  - This only works for VRCSDK ~~`3.6.2-constraints.3`~~ `3.6.2-constraints.4` and not works with other versions including future versions.
+
+### Fixed
+- AutoMergeSkinnedMesh is broken if all merging meshes has no SubMeshes [`#1127`](https://github.com/anatawa12/AvatarOptimizer/pull/1127)
 
 ## [1.7.9] - 2024-07-25
 ### Fixed
@@ -969,7 +974,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.9...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.10...HEAD
+[1.7.10]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.9...v1.7.10
 [1.7.9]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.8...v1.7.9
 [1.7.8]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.7...v1.7.8
 [1.7.7]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.6...v1.7.7
