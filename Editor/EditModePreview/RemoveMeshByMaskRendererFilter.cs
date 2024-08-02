@@ -2,9 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using nadena.dev.ndmf.preview;
+using Unity.Burst;
+using Unity.Collections;
+using Unity.Jobs;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -65,21 +69,24 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
         public RenderAspects Reads => RenderAspects.Mesh | RenderAspects.Shapes;
         public RenderAspects WhatChanged => RenderAspects.Mesh | RenderAspects.Shapes;
 
-        delegate bool ShouldRemovePolygon(Span<int> indices);
-
         public async Task Process(
             SkinnedMeshRenderer original,
             SkinnedMeshRenderer proxy,
-            [CanBeNull] RemoveMeshByMask rmByMask,
+            [NotNull] RemoveMeshByMask rmByMask,
             ComputeContext context)
         {
+            UnityEngine.Profiling.Profiler.BeginSample($"RemoveMeshByMaskRendererNode.Process({original.name})");
+
             var duplicated = Object.Instantiate(proxy.sharedMesh);
             duplicated.name = proxy.sharedMesh.name + " (AAO Generated)";
 
-            var materialSettings = rmByMask?.materials;
+            var uv = duplicated.uv;
+            using var uvJob = new NativeArray<Vector2>(uv, Allocator.TempJob);
+
+            var materialSettings = rmByMask.materials;
             for (var subMeshI = 0; subMeshI < duplicated.subMeshCount; subMeshI++)
             {
-                if (materialSettings != null && subMeshI < materialSettings.Length)
+                if (subMeshI < materialSettings.Length)
                 {
                     var materialSetting = materialSettings[subMeshI];
                     if (!materialSetting.enabled) continue;
@@ -91,16 +98,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                     var textureWidth = mask.width;
                     var textureHeight = mask.height;
                     var pixels = mask.GetPixels32();
-
-                    int GetValue(float u, float v)
-                    {
-                        var x = Mathf.FloorToInt(Utils.Modulo(v, 1) * textureHeight);
-                        var y = Mathf.FloorToInt(Utils.Modulo(u, 1) * textureWidth);
-                        var pixel = pixels[x * textureWidth + y];
-                        return Mathf.Max(Mathf.Max(pixel.r, pixel.g), pixel.b);
-                    }
-
-                    var uv = duplicated.uv;
+                    using var pixelsJob = new NativeArray<Color32>(pixels, Allocator.TempJob);
 
                     bool removeWhite;
                     switch (materialSetting.mode)
@@ -114,17 +112,6 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                         default:
                             BuildLog.LogError("RemoveMeshByMask:error:unknownMode");
                             continue;
-                    }
-
-                    bool ShouldRemove(Span<int> indices)
-                    {
-                        foreach (var index in indices)
-                        {
-                            var isWhite = GetValue(uv[index].x, uv[index].y) > 127;
-                            if (isWhite != removeWhite) return false;
-                        }
-
-                        return true;
                     }
 
                     var subMesh = duplicated.GetSubMesh(subMeshI);
@@ -150,16 +137,37 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                     }
 
                     var triangles = duplicated.GetTriangles(subMeshI);
+                    var primitiveCount = triangles.Length / vertexPerPrimitive;
+
+                    using var trianglesJob = new NativeArray<int>(triangles, Allocator.TempJob);
+                    using var shouldRemove = new NativeArray<bool>(primitiveCount, Allocator.TempJob);
+                    UnityEngine.Profiling.Profiler.BeginSample("JobLoop");
+                    var job = new CheckRemovePolygonJob
+                    {
+                        vertexPerPrimitive = vertexPerPrimitive,
+                        textureWidth = textureWidth,
+                        textureHeight = textureHeight,
+                        removeWhite = removeWhite,
+                        triangles = trianglesJob,
+                        uv = uvJob,
+                        pixels = pixelsJob,
+                        shouldRemove = shouldRemove,
+                    };
+                    job.Schedule(primitiveCount, 32).Complete();
+                    UnityEngine.Profiling.Profiler.EndSample();
+
                     var modifiedTriangles = new List<int>(triangles.Length);
 
+                    UnityEngine.Profiling.Profiler.BeginSample("Inner Main Loop");
                     for (var primitiveI = 0; primitiveI < triangles.Length; primitiveI += vertexPerPrimitive)
                     {
-                        if (!ShouldRemove(triangles.AsSpan().Slice(primitiveI, vertexPerPrimitive)))
+                        if (!shouldRemove[primitiveI / vertexPerPrimitive])
                         {
                             for (var vertexI = 0; vertexI < vertexPerPrimitive; vertexI++)
                                 modifiedTriangles.Add(triangles[primitiveI + vertexI]);
                         }
                     }
+                    UnityEngine.Profiling.Profiler.EndSample();
 
                     duplicated.SetTriangles(modifiedTriangles, subMeshI);
                 }
@@ -167,6 +175,55 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
 
             proxy.sharedMesh = duplicated;
             _duplicated = duplicated;
+
+            UnityEngine.Profiling.Profiler.EndSample();
+        }
+
+        [BurstCompile]
+        struct CheckRemovePolygonJob : IJobParallelFor
+        {
+            // ReSharper disable InconsistentNaming
+            public int vertexPerPrimitive;
+            public int textureWidth;
+            public int textureHeight;
+            public bool removeWhite;
+            [ReadOnly]
+            public NativeArray<int> triangles;
+            [ReadOnly]
+            public NativeArray<Vector2> uv;
+            [ReadOnly]
+            public NativeArray<Color32> pixels;
+            [WriteOnly]
+            public NativeArray<bool> shouldRemove;
+            // ReSharper restore InconsistentNaming
+
+            public void Execute(int primitiveIndex)
+            {
+                var baseIndex = primitiveIndex * vertexPerPrimitive;
+                var indices = triangles.Slice(baseIndex, vertexPerPrimitive);
+
+                var result = true;
+                foreach (var index in indices)
+                {
+                    var isWhite = GetValue(uv[index].x, uv[index].y) > 127;
+                    if (isWhite != removeWhite)
+                    {
+                        result = false;
+                        break;
+                    }
+                }
+
+                shouldRemove[primitiveIndex] = result;
+            }
+            
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            int GetValue(float u, float v)
+            {
+                var x = Mathf.FloorToInt(Utils.Modulo(v, 1) * textureHeight);
+                var y = Mathf.FloorToInt(Utils.Modulo(u, 1) * textureWidth);
+                var pixel = pixels[x * textureWidth + y];
+                return Mathf.Max(Mathf.Max(pixel.r, pixel.g), pixel.b);
+            }
         }
 
         public Task<IRenderFilterNode> Refresh(IEnumerable<(Renderer, Renderer)> proxyPairs, ComputeContext context, RenderAspects updatedAspects)
