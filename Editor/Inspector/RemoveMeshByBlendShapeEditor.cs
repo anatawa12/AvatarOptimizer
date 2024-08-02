@@ -29,8 +29,6 @@ namespace Anatawa12.AvatarOptimizer
         {
             var component = (RemoveMeshByBlendShape)target;
 
-            EditModePreview.MeshPreviewController.ShowPreviewControl(component);
-
             if (!_renderer)
             {
                 EditorGUI.BeginDisabledGroup(true);

@@ -77,18 +77,6 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
 
         private void CollectPointsAndLineIndices()
         {
-            if (MeshPreviewController.StateFor(_renderer) == MeshPreviewController.PreviewState.PreviewingThat)
-            {
-                var originalLines = CollectLines(MeshPreviewController.OriginalMesh, _subMesh);
-                var previewLines = CollectLines(MeshPreviewController.PreviewMesh, _subMesh);
-                var removedLines = new HashSet<(int, int)>(originalLines);
-                removedLines.ExceptWith(previewLines);
-                _points = MeshPreviewController.OriginalMesh.uv;
-                _buffer = new Vector3[_points.Length];
-                _lineIndices = FlattenLineIndices(previewLines);
-                _removedLineIndices = FlattenLineIndices(removedLines);
-            }
-            else
             {
                 var lines = CollectLines(_mesh, _subMesh);
                 _points = _mesh.uv;
