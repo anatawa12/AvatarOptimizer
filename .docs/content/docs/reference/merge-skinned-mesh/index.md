@@ -19,7 +19,13 @@ Also, it can reduce material slots using the same material, so we can reduce ren
 This component makes it impossible to turn meshes on and off individually on animations, but material-related animations will work without modification.
 
 This component will configure Meshes, Materials, BlendShapes, and Bounds but other settings will not be modified.
-Please edit SkinnedMeshRenderer component attached to same GameObject as MergeSkinnedMesh to set AnchorOverride or else.
+Please edit SkinnedMeshRenderer component attached to same GameObject as MergeSkinnedMesh to set Anchor Override or else.
+
+{{< hint info >}}
+
+If you are using [Modular Avatar], you can add [`MA Mesh Settings`] component to the root of the avatar to set the Anchor Override or else for the whole avatar.
+
+{{< /hint >}}
 
 This component is good for merging your cloth meshes and body meshes but not good for face meshes because BlendShape can cause performance impact.
 BlendShape is a feature became heavier in proportion to the count of vertices and BlendShapes.
@@ -69,3 +75,6 @@ If this checkbox is checked, renderers whose enablement is different than target
 If this component found some Materials used in multiple renderers, the Materials will be listed here.
 
 Check `Merge` to merge those MaterialSlots (SubMeshes) into one MaterialSlot. This reduces DrawCalls.
+
+[Modular Avatar]: https://modular-avatar.nadena.dev
+[`MA Mesh Settings`]: https://modular-avatar.nadena.dev/docs/reference/mesh-settings
