@@ -44,7 +44,8 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
             return targets.Select(RenderGroup.For).ToImmutableList();
         }
 
-        public async Task<IRenderFilterNode> Instantiate(RenderGroup group, IEnumerable<(Renderer, Renderer)> proxyPairs, ComputeContext context)
+        public async Task<IRenderFilterNode> Instantiate(RenderGroup group,
+            IEnumerable<(Renderer, Renderer)> proxyPairs, ComputeContext context)
         {
             var pair = proxyPairs.Single();
             if (!(pair.Item1 is SkinnedMeshRenderer original)) return null;
@@ -56,7 +57,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
 
             var node = new RemoveMeshByBlendShapeRendererNode();
 
-            await node.Process(original, proxy, rmByMask, context);
+            await node.Process(original, proxy, new[] { rmByMask }, context);
 
             return node;
         }
@@ -72,7 +73,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
         public async Task Process(
             SkinnedMeshRenderer original,
             SkinnedMeshRenderer proxy,
-            [NotNull] RemoveMeshByBlendShape rmByBlensShape,
+            [NotNull] RemoveMeshByBlendShape[] components,
             ComputeContext context)
         {
             UnityEngine.Profiling.Profiler.BeginSample($"RemoveMeshByBlendShapeRendererNode.Process({original.name})");
@@ -80,21 +81,35 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
             var duplicated = Object.Instantiate(proxy.sharedMesh);
             duplicated.name = proxy.sharedMesh.name + " (AAO Generated)";
 
-            var blendShapes = rmByBlensShape.shapeKeysSet.GetAsSet();
-            var toleranceSqr = rmByBlensShape.tolerance * rmByBlensShape.tolerance;
+            // we're removing vertices moving greater than tolerance, we're collecting min tolerance for each shape
+            var toleranceSqrByShape = new Dictionary<string, double>();
+            foreach (var component in components)
+            {
+                foreach (var shape in component.shapeKeysSet.GetAsSet())
+                {
+                    var toleranceSqr = component.tolerance * component.tolerance;
+                    if (toleranceSqrByShape.TryGetValue(shape, out var oldToleranceSqr))
+                        toleranceSqrByShape[shape] = Math.Min(oldToleranceSqr, toleranceSqr);
+                    else
+                        toleranceSqrByShape[shape] = toleranceSqr;
+                }
+            }
+
             using var shouldRemoveVertex = new NativeArray<bool>(duplicated.vertexCount, Allocator.TempJob);
 
             UnityEngine.Profiling.Profiler.BeginSample("CollectVertexData");
             {
                 var deltaBuffer = new Vector3[duplicated.vertexCount];
                 using var deltaBufferJob = new NativeArray<Vector3>(deltaBuffer.Length, Allocator.TempJob);
-                
+
                 for (var shapeIndex = 0; shapeIndex < original.sharedMesh.blendShapeCount; shapeIndex++)
                 {
                     var shapeName = original.sharedMesh.GetBlendShapeName(shapeIndex);
-                    if (!blendShapes.Contains(shapeName)) continue;
+                    if (!toleranceSqrByShape.TryGetValue(shapeName, out var toleranceSqr)) continue;
 
-                    for (var frameIndex = 0; frameIndex < original.sharedMesh.GetBlendShapeFrameCount(shapeIndex); frameIndex++)
+                    for (var frameIndex = 0;
+                         frameIndex < original.sharedMesh.GetBlendShapeFrameCount(shapeIndex);
+                         frameIndex++)
                     {
                         original.sharedMesh.GetBlendShapeFrameVertices(shapeIndex, frameIndex, deltaBuffer, null, null);
                         deltaBufferJob.CopyFrom(deltaBuffer);
@@ -176,14 +191,14 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
         {
             // ReSharper disable InconsistentNaming
             public double toleranceSqr;
-            [ReadOnly]
-            public NativeArray<Vector3> blendShapeDelta;
+            [ReadOnly] public NativeArray<Vector3> blendShapeDelta;
             public NativeArray<bool> shouldRemoveVertex;
             // ReSharper restore InconsistentNaming
 
             public void Execute(int vertexIndex)
             {
-                shouldRemoveVertex[vertexIndex] = shouldRemoveVertex[vertexIndex] || blendShapeDelta[vertexIndex].sqrMagnitude > toleranceSqr;
+                shouldRemoveVertex[vertexIndex] = shouldRemoveVertex[vertexIndex] ||
+                                                  blendShapeDelta[vertexIndex].sqrMagnitude > toleranceSqr;
             }
         }
 
@@ -192,12 +207,9 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
         {
             // ReSharper disable InconsistentNaming
             public int vertexPerPrimitive;
-            [ReadOnly]
-            public NativeArray<int> triangles;
-            [ReadOnly]
-            public NativeArray<bool> shouldRemoveVertex;
-            [WriteOnly]
-            public NativeArray<bool> shouldRemove;
+            [ReadOnly] public NativeArray<int> triangles;
+            [ReadOnly] public NativeArray<bool> shouldRemoveVertex;
+            [WriteOnly] public NativeArray<bool> shouldRemove;
             // ReSharper restore InconsistentNaming
 
             public void Execute(int primitiveIndex)

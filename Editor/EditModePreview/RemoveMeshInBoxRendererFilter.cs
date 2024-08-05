@@ -56,7 +56,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
 
             var node = new RemoveMeshInBoxRendererNode();
 
-            await node.Process(original, proxy, rmByMask, context);
+            await node.Process(original, proxy, new [] { rmByMask }, context);
 
             return node;
         }
@@ -72,7 +72,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
         public async Task Process(
             SkinnedMeshRenderer original,
             SkinnedMeshRenderer proxy,
-            [NotNull] RemoveMeshInBox rmInBox,
+            [NotNull] RemoveMeshInBox[] components,
             ComputeContext context)
         {
             // Observe transform since the BakeMesh depends on the transform
@@ -93,14 +93,15 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
             using var vertexIsInBox = new NativeArray<bool>(duplicated.vertexCount, Allocator.TempJob);
 
             UnityEngine.Profiling.Profiler.BeginSample("CollectVertexData");
-            {
-                using var boxes = new NativeArray<RemoveMeshInBox.BoundingBox>(rmInBox.boxes, Allocator.TempJob);
+            foreach (var component in components) {
+                using var boxes = new NativeArray<RemoveMeshInBox.BoundingBox>(component.boxes, Allocator.TempJob);
 
                 new CheckRemoveVertexJob
                 {
                     boxes = boxes,
                     vertexPosition = realPosition,
                     vertexIsInBox = vertexIsInBox,
+                    meshToBoxTransform = original.transform.localToWorldMatrix * component.transform.worldToLocalMatrix,
                 }.Schedule(duplicated.vertexCount, 32).Complete();
             }
             UnityEngine.Profiling.Profiler.EndSample();
@@ -175,13 +176,15 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
             [ReadOnly]
             public NativeArray<Vector3> vertexPosition;
             public NativeArray<bool> vertexIsInBox;
+
+            public Matrix4x4 meshToBoxTransform;
             // ReSharper restore InconsistentNaming
 
             public void Execute(int vertexIndex)
             {
                 var inBox = false;
 
-                var position = vertexPosition[vertexIndex];
+                var position = meshToBoxTransform.MultiplyPoint3x4(vertexPosition[vertexIndex]);
                 foreach (var box in boxes)
                 {
                     if (box.ContainsVertex(position))
