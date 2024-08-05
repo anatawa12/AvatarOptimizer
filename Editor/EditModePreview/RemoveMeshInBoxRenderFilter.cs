@@ -1,87 +1,28 @@
-using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using nadena.dev.ndmf.preview;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
 using UnityEngine;
-using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.EditModePreview
 {
-    internal class RemoveMeshInBoxRendererFilter : IRenderFilter
+    internal class RemoveMeshInBoxRenderFilter : AAORenderFilterBase<RemoveMeshInBox>
     {
-        public static RemoveMeshInBoxRendererFilter Instance { get; } = new();
-
-        public ImmutableList<RenderGroup> GetTargetGroups(ComputeContext ctx)
-        {
-            // currently remove meshes are only supported
-            var rmByMask = ctx.GetComponentsByType<RemoveMeshInBox>();
-
-            var targets = new HashSet<Renderer>();
-
-            foreach (var component in rmByMask)
-            {
-                if (component.GetComponent<MergeSkinnedMesh>())
-                {
-                    // the component applies to MergeSkinnedMesh, which is not supported for now
-                    // TODO: rollup the remove operation to source renderers of MergeSkinnedMesh
-                    continue;
-                }
-
-                var renderer = component.GetComponent<SkinnedMeshRenderer>();
-                if (renderer == null) continue;
-                if (renderer.sharedMesh == null) continue;
-
-                targets.Add(renderer);
-            }
-
-            return targets.Select(RenderGroup.For).ToImmutableList();
-        }
-
-        public async Task<IRenderFilterNode> Instantiate(RenderGroup group, IEnumerable<(Renderer, Renderer)> proxyPairs, ComputeContext context)
-        {
-            var pair = proxyPairs.Single();
-            if (!(pair.Item1 is SkinnedMeshRenderer original)) return null;
-            if (!(pair.Item2 is SkinnedMeshRenderer proxy)) return null;
-
-            // we modify the mesh so we need to clone the mesh
-
-            var rmByMask = context.Observe(context.GetComponent<RemoveMeshInBox>(original.gameObject));
-
-            var node = new RemoveMeshInBoxRendererNode();
-
-            await node.Process(original, proxy, new [] { rmByMask }, context);
-
-            return node;
-        }
+        public static RemoveMeshInBoxRenderFilter Instance { get; } = new();
+        protected override AAORenderFilterNodeBase<RemoveMeshInBox> CreateNode() => new RemoveMeshInBoxRendererNode();
+        protected override bool SupportsMultiple() => true;
     }
 
-    internal class RemoveMeshInBoxRendererNode : IRenderFilterNode
+    internal class RemoveMeshInBoxRendererNode : AAORenderFilterNodeBase<RemoveMeshInBox>
     {
-        private Mesh _duplicated;
-
-        public RenderAspects Reads => RenderAspects.Mesh | RenderAspects.Shapes;
-        public RenderAspects WhatChanged => RenderAspects.Mesh | RenderAspects.Shapes;
-
-        public async Task Process(
-            SkinnedMeshRenderer original,
-            SkinnedMeshRenderer proxy,
-            [NotNull] RemoveMeshInBox[] components,
-            ComputeContext context)
+        protected override ValueTask Process(SkinnedMeshRenderer original, SkinnedMeshRenderer proxy,
+            RemoveMeshInBox[] components,
+            Mesh duplicated, ComputeContext context)
         {
             // Observe transform since the BakeMesh depends on the transform
             context.Observe(original.transform);
-
-            UnityEngine.Profiling.Profiler.BeginSample($"RemoveMeshInBoxRendererNode.Process({original.name})");
-
-            var duplicated = Object.Instantiate(proxy.sharedMesh);
-            duplicated.name = proxy.sharedMesh.name + " (AAO Generated)";
 
             UnityEngine.Profiling.Profiler.BeginSample("BakeMesh");
             var tempMesh = new Mesh();
@@ -93,7 +34,8 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
             using var vertexIsInBox = new NativeArray<bool>(duplicated.vertexCount, Allocator.TempJob);
 
             UnityEngine.Profiling.Profiler.BeginSample("CollectVertexData");
-            foreach (var component in components) {
+            foreach (var component in components)
+            {
                 using var boxes = new NativeArray<RemoveMeshInBox.BoundingBox>(component.boxes, Allocator.TempJob);
 
                 new CheckRemoveVertexJob
@@ -104,6 +46,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                     meshToBoxTransform = original.transform.localToWorldMatrix * component.transform.worldToLocalMatrix,
                 }.Schedule(duplicated.vertexCount, 32).Complete();
             }
+
             UnityEngine.Profiling.Profiler.EndSample();
 
             var uv = duplicated.uv;
@@ -161,20 +104,15 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                 duplicated.SetTriangles(modifiedTriangles, subMeshI);
             }
 
-            proxy.sharedMesh = duplicated;
-            _duplicated = duplicated;
-
-            UnityEngine.Profiling.Profiler.EndSample();
+            return default;
         }
 
         [BurstCompile]
         struct CheckRemoveVertexJob : IJobParallelFor
         {
             // ReSharper disable InconsistentNaming
-            [ReadOnly]
-            public NativeArray<RemoveMeshInBox.BoundingBox> boxes;
-            [ReadOnly]
-            public NativeArray<Vector3> vertexPosition;
+            [ReadOnly] public NativeArray<RemoveMeshInBox.BoundingBox> boxes;
+            [ReadOnly] public NativeArray<Vector3> vertexPosition;
             public NativeArray<bool> vertexIsInBox;
 
             public Matrix4x4 meshToBoxTransform;
@@ -203,12 +141,9 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
         {
             // ReSharper disable InconsistentNaming
             public int vertexPerPrimitive;
-            [ReadOnly]
-            public NativeArray<int> triangles;
-            [ReadOnly]
-            public NativeArray<bool> vertexIsInBox;
-            [WriteOnly]
-            public NativeArray<bool> shouldRemove;
+            [ReadOnly] public NativeArray<int> triangles;
+            [ReadOnly] public NativeArray<bool> vertexIsInBox;
+            [WriteOnly] public NativeArray<bool> shouldRemove;
             // ReSharper restore InconsistentNaming
 
             public void Execute(int primitiveIndex)
@@ -227,22 +162,6 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                 }
 
                 shouldRemove[primitiveIndex] = result;
-            }
-        }
-
-        public void OnFrame(Renderer original, Renderer proxy)
-        {
-            if (_duplicated == null) return;
-            if (proxy is SkinnedMeshRenderer skinnedMeshProxy)
-                skinnedMeshProxy.sharedMesh = _duplicated;
-        }
-
-        public void Dispose()
-        {
-            if (_duplicated != null)
-            {
-                Object.DestroyImmediate(_duplicated);
-                _duplicated = null;
             }
         }
     }

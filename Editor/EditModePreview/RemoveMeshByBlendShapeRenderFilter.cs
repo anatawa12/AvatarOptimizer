@@ -1,86 +1,30 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using nadena.dev.ndmf.preview;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
 using UnityEngine;
-using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.EditModePreview
 {
-    internal class RemoveMeshByBlendShapeRendererFilter : IRenderFilter
+    internal class RemoveMeshByBlendShapeRenderFilter : AAORenderFilterBase<RemoveMeshByBlendShape>
     {
-        public static RemoveMeshByBlendShapeRendererFilter Instance { get; } = new();
+        public static RemoveMeshByBlendShapeRenderFilter Instance { get; } = new();
 
-        public ImmutableList<RenderGroup> GetTargetGroups(ComputeContext ctx)
-        {
-            // currently remove meshes are only supported
-            var rmByMask = ctx.GetComponentsByType<RemoveMeshByBlendShape>();
+        protected override AAORenderFilterNodeBase<RemoveMeshByBlendShape> CreateNode() =>
+            new RemoveMeshByBlendShapeRendererNode();
 
-            var targets = new HashSet<Renderer>();
-
-            foreach (var component in rmByMask)
-            {
-                if (component.GetComponent<MergeSkinnedMesh>())
-                {
-                    // the component applies to MergeSkinnedMesh, which is not supported for now
-                    // TODO: rollup the remove operation to source renderers of MergeSkinnedMesh
-                    continue;
-                }
-
-                var renderer = component.GetComponent<SkinnedMeshRenderer>();
-                if (renderer == null) continue;
-                if (renderer.sharedMesh == null) continue;
-
-                targets.Add(renderer);
-            }
-
-            return targets.Select(RenderGroup.For).ToImmutableList();
-        }
-
-        public async Task<IRenderFilterNode> Instantiate(RenderGroup group,
-            IEnumerable<(Renderer, Renderer)> proxyPairs, ComputeContext context)
-        {
-            var pair = proxyPairs.Single();
-            if (!(pair.Item1 is SkinnedMeshRenderer original)) return null;
-            if (!(pair.Item2 is SkinnedMeshRenderer proxy)) return null;
-
-            // we modify the mesh so we need to clone the mesh
-
-            var rmByMask = context.Observe(context.GetComponent<RemoveMeshByBlendShape>(original.gameObject));
-
-            var node = new RemoveMeshByBlendShapeRendererNode();
-
-            await node.Process(original, proxy, new[] { rmByMask }, context);
-
-            return node;
-        }
+        protected override bool SupportsMultiple() => false;
     }
 
-    internal class RemoveMeshByBlendShapeRendererNode : IRenderFilterNode
+    internal class RemoveMeshByBlendShapeRendererNode : AAORenderFilterNodeBase<RemoveMeshByBlendShape>
     {
-        private Mesh _duplicated;
-
-        public RenderAspects Reads => RenderAspects.Mesh | RenderAspects.Shapes;
-        public RenderAspects WhatChanged => RenderAspects.Mesh | RenderAspects.Shapes;
-
-        public async Task Process(
-            SkinnedMeshRenderer original,
-            SkinnedMeshRenderer proxy,
-            [NotNull] RemoveMeshByBlendShape[] components,
-            ComputeContext context)
+        protected override ValueTask Process(SkinnedMeshRenderer original, SkinnedMeshRenderer proxy,
+            RemoveMeshByBlendShape[] components,
+            Mesh duplicated, ComputeContext context)
         {
-            UnityEngine.Profiling.Profiler.BeginSample($"RemoveMeshByBlendShapeRendererNode.Process({original.name})");
-
-            var duplicated = Object.Instantiate(proxy.sharedMesh);
-            duplicated.name = proxy.sharedMesh.name + " (AAO Generated)";
-
             // we're removing vertices moving greater than tolerance, we're collecting min tolerance for each shape
             var toleranceSqrByShape = new Dictionary<string, double>();
             foreach (var component in components)
@@ -180,10 +124,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                 duplicated.SetTriangles(modifiedTriangles, subMeshI);
             }
 
-            proxy.sharedMesh = duplicated;
-            _duplicated = duplicated;
-
-            UnityEngine.Profiling.Profiler.EndSample();
+            return default;
         }
 
         [BurstCompile]
@@ -228,22 +169,6 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                 }
 
                 shouldRemove[primitiveIndex] = result;
-            }
-        }
-
-        public void OnFrame(Renderer original, Renderer proxy)
-        {
-            if (_duplicated == null) return;
-            if (proxy is SkinnedMeshRenderer skinnedMeshProxy)
-                skinnedMeshProxy.sharedMesh = _duplicated;
-        }
-
-        public void Dispose()
-        {
-            if (_duplicated != null)
-            {
-                Object.DestroyImmediate(_duplicated);
-                _duplicated = null;
             }
         }
     }
