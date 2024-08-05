@@ -11,6 +11,10 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
 {
     internal class RemoveMeshByBlendShapeRenderFilter : AAORenderFilterBase<RemoveMeshByBlendShape>
     {
+        public RemoveMeshByBlendShapeRenderFilter() : base("Remove Mesh by BlendShape", "remove-mesh-by-blend-shape")
+        {
+        }
+
         public static RemoveMeshByBlendShapeRenderFilter Instance { get; } = new();
 
         protected override AAORenderFilterNodeBase<RemoveMeshByBlendShape> CreateNode() =>

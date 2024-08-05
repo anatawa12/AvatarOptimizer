@@ -10,6 +10,10 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
 {
     internal class RemoveMeshInBoxRenderFilter : AAORenderFilterBase<RemoveMeshInBox>
     {
+        private RemoveMeshInBoxRenderFilter() : base("Remove Mesh in Box", "remove-mesh-in-box")
+        {
+        }
+
         public static RemoveMeshInBoxRenderFilter Instance { get; } = new();
         protected override AAORenderFilterNodeBase<RemoveMeshInBox> CreateNode() => new RemoveMeshInBoxRendererNode();
         protected override bool SupportsMultiple() => true;

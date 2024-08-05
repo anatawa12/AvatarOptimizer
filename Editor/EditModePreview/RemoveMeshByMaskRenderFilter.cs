@@ -11,6 +11,10 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
 {
     internal class RemoveMeshByMaskRenderFilter : AAORenderFilterBase<RemoveMeshByMask>
     {
+        private RemoveMeshByMaskRenderFilter() : base("Remove Mesh by Mask", "remove-mesh-by-mask")
+        {
+        }
+
         public static RemoveMeshByMaskRenderFilter Instance { get; } = new();
         protected override AAORenderFilterNodeBase<RemoveMeshByMask> CreateNode() => new RemoveMeshByMaskRendererNode();
         protected override bool SupportsMultiple() => false;

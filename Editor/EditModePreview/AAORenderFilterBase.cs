@@ -13,6 +13,15 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
     internal abstract class AAORenderFilterBase<T> : IRenderFilter
         where T : EditSkinnedMeshComponent
     {
+        private readonly TogglablePreviewNode _toggleNode;
+        public IEnumerable<TogglablePreviewNode> GetPreviewControlNodes() => new[] { _toggleNode };
+        public bool IsEnabled(ComputeContext context) => context.Observe(_toggleNode.IsEnabled);
+
+        protected AAORenderFilterBase(string name, string component)
+        {
+            _toggleNode = TogglablePreviewNode.Create(() => name, $"com.anatawa12.avatar-optimizer.{component}");
+        }
+
         public ImmutableList<RenderGroup> GetTargetGroups(ComputeContext ctx)
         {
             // currently remove meshes are only supported
