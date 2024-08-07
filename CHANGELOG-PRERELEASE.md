@@ -16,11 +16,14 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Some Humanoid Bones might be removed `#1137`
-  - Repeated `AddPathDependency` is broken.
-- Render is broken if all weighted bone is none and some other non-weight bone is not none `#1138`
 
 ### Security
+
+## [1.7.11-beta.1] - 2024-08-07
+### Fixed
+- Some Humanoid Bones might be removed [`#1137`](https://github.com/anatawa12/AvatarOptimizer/pull/1137)
+  - Repeated `AddPathDependency` is broken.
+- Render is broken if all weighted bone is none and some other non-weight bone is not none [`#1138`](https://github.com/anatawa12/AvatarOptimizer/pull/1138)
 
 ## [1.7.10] - 2024-08-02
 ### Added
@@ -1483,7 +1486,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.10...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.11-beta.1...HEAD
+[1.7.11-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.10...v1.7.11-beta.1
 [1.7.10]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.10-beta.1...v1.7.10
 [1.7.10-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.9...v1.7.10-beta.1
 [1.7.9]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.9-beta.1...v1.7.9
