@@ -443,12 +443,22 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         private void RemoveUnusedBones()
         {
+            if (Bones.Count == 0) return;
+            var hasValidBone = Bones.Any(x => x.Transform != null);
+
             // GC Bones
             var usedBones = new HashSet<Bone>();
             foreach (var meshInfo2Vertex in Vertices)
             foreach (var (bone, _) in meshInfo2Vertex.BoneWeights)
                 usedBones.Add(bone);
             Bones.RemoveAll(x => !usedBones.Contains(x));
+
+            if (hasValidBone && Bones.All(x => x.Transform == null))
+            {
+                // if all transform is null, the renderer will render nothing.
+                // so we have to some bone to render.
+                if (RootBone) Bones.Add(new Bone(Matrix4x4.identity, RootBone));
+            }
         }
 
         /// <returns>true if we flattened multi pass rendering</returns>
