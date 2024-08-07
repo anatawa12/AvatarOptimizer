@@ -689,8 +689,14 @@ msgstr "Most features of Optimize Animator is not supported on Unity 2019. Pleas
 msgid "ApplyObjectMapping:VRCAvatarDescriptor:eyelids BlendShape Removed"
 msgstr "BlendShape(s) for eyelids are removed / frozen, or not configured at first."
 
+msgid "ApplyObjectMapping:VRCAvatarDescriptor:eyelids BlendShape Removed:description"
+msgstr "If some BlendShapes is missing or unset, all eyelids BlendShapes would not work."
+
 msgid "ApplyObjectMapping:VRCAvatarDescriptor:viseme BlendShape Removed"
 msgstr "BlendShape(s) for viseme are removed / frozen, or not configured at first."
+
+msgid "ApplyObjectMapping:VRCAvatarDescriptor:viseme BlendShape Removed:description"
+msgstr "If some BlendShapes is missing or unset, all viseme BlendShapes would not work."
 
 #endregion
 
