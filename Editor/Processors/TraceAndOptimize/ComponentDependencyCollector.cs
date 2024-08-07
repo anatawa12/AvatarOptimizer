@@ -191,6 +191,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             public override API.PathDependencyInfo AddPathDependency(Transform dependency, Transform root)
             {
+                _dependencyInfo?.Finish();
+                _dependencyInfo = null;
+
                 if (dependency == null) throw new ArgumentNullException(nameof(dependency));
                 if (root == null) throw new ArgumentNullException(nameof(root));
 
