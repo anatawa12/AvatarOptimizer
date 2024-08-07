@@ -16,6 +16,8 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Some Humanoid Bones might be removed `#1137`
+  - Repeated `AddPathDependency` is broken.
 
 ### Security
 
