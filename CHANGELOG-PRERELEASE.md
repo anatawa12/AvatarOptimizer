@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- VRCSDK 3.7.0 support `#1140`
+  - This includes VRCConstraints support
 
 ### Changed
 
