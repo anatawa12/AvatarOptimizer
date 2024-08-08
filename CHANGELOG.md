@@ -8,8 +8,6 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- VRCSDK 3.7.0 support `#1140`
-  - This includes VRCConstraints support
 
 ### Changed
 
@@ -18,11 +16,18 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Some Humanoid Bones might be removed `#1137`
-  - Repeated `AddPathDependency` is broken.
-- Render is broken if all weighted bone is none and some other non-weight bone is not none `#1138`
 
 ### Security
+
+## [1.7.11] - 2024-08-08
+### Added
+- VRCSDK 3.7.0 support [`#1140`](https://github.com/anatawa12/AvatarOptimizer/pull/1140)
+  - This includes VRCConstraints support
+
+### Fixed
+- Some Humanoid Bones might be removed [`#1137`](https://github.com/anatawa12/AvatarOptimizer/pull/1137)
+  - Repeated `AddPathDependency` is broken.
+- Render is broken if all weighted bone is none and some other non-weight bone is not none [`#1138`](https://github.com/anatawa12/AvatarOptimizer/pull/1138)
 
 ## [1.7.10] - 2024-08-02
 ### Added
@@ -979,7 +984,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.10...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.11...HEAD
+[1.7.11]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.10...v1.7.11
 [1.7.10]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.9...v1.7.10
 [1.7.9]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.8...v1.7.9
 [1.7.8]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.7...v1.7.8
