@@ -598,16 +598,16 @@ msgstr "Unity 2019では、Optimize Animatorの多くの機能がサポートさ
 #region ApplyObjectMapping
 
 msgid "ApplyObjectMapping:VRCAvatarDescriptor:eyelids BlendShape Removed"
-msgstr "瞬き用のBlendShapeが固定・除去されているか、はじめから設定されていません。"
+msgstr "瞬き用のBlendShapeが固定・除去されているか、設定されていません。"
 
 msgid "ApplyObjectMapping:VRCAvatarDescriptor:eyelids BlendShape Removed:description"
-msgstr "瞬き用のBlendShapeが存在しないものや設定されていない物がある場合、すべての瞬き用のBlendShapeが機能しません。"
+msgstr "VRChatでは、瞬き用のBlendShapeとして存在しないものが指定されているか、設定されていない項目がある場合、瞬きが全く機能しなくなります。"
 
 msgid "ApplyObjectMapping:VRCAvatarDescriptor:viseme BlendShape Removed"
-msgstr "リップシンク用のBlendShapeが固定・除去されているか、はじめから設定されていません。"
+msgstr "リップシンク用のBlendShapeが固定・除去されているか、設定されていません。"
 
 msgid "ApplyObjectMapping:VRCAvatarDescriptor:viseme BlendShape Removed:description"
-msgstr "リップシンク用のBlendShapeが存在しないものや設定されていない物がある場合、すべてのリップシンク用のBlendShapeが機能しません。"
+msgstr "VRChatでは、リップシンク用のBlendShapeとして存在しないものが指定されているか、設定されていない項目がある場合、すべてのリップシンク用のBlendShapeが機能しなくなります。"
 
 msgid "MergeSkinnedMesh:warning:animation-mesh-hide"
 msgstr ""
