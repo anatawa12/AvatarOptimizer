@@ -16,57 +16,97 @@ If you have some question, please feel free to ask [`@anatawa12@misskey.niri.la`
 If your components are on the avatar and still exist when Avatar Optimizer processes it,
 your components can be incompatible with Avatar Optimizer.
 
-Since Avatar Optimizer has Garbage Collection system for Components and others, Avatar Optimizer has to
-know about all existing components in the Avatar at the optimization.
+Avatar Optimizer is designed to process at the last of the build process,
+components unknown to Avatar Optimizer is not supported.
+
+For example, Avatar Optimizer has Garbage Collection system for Components and others.
+To correctly remove unused components, and correctly keep used components,
+Avatar Optimizer has to know about all existing components in the Avatar at the optimization.
 
 To avoid problem with unknown components, Avatar Optimizer currently assumes unknown components
-- have some side-effects.
+- have to keep if the component can be enabled and active at runtime.
+  - This is because Avatar Optimizer assumes unknown components are runtime components.
 - will have dependency relationship to all components referenced in the component.
-  (They can be changed in the future.)
 
-However, the assumption can be incorrect, so Avatar Optimizer will generate the following warning.
+(Those assumption above can be changed in the future.)
+
+However, the assumption can be incorrect, so Avatar Optimizer will generate a warning like below.
 
 ![unknown-component-warning](unknown-component-warning.png)
 
 ## How to improve the compatibility? {#improve-compatibility}
 
-Please remove your components before Avatar Optimizer processes as much as possible.
-If you cannot remove some components, please register them to Avatar Optimizer.
+To improve the compatibility, you may implement one of the following methods.
 
-Since Avatar Optimizer v1.7.0, [Asset Description] is added for components that doesn't process on build or at runtime.
-If your tool process nothing at build time, you can use this to register your components.
+1. Remove your components before Avatar Optimizer processes as much as possible.
 
-If your tool process something at build time, registering with Asset Description is not recommended.
-This prevents Avatar Optimizer from accidentally removing components and causing your tool to not work properly when the processes execution order is unexpected/incorrect.
+   If your component is not working at runtime, (in other words, it's a build-time or edit mode only component),
+   it's mostly better for your tool to process avatar before Avatar Optimizer processes,
+   and remove your components before Avatar Optimizer processes.
+
+   Please refer [section below](#remove-component) for more details.
+
+   Avatar Optimizer internally uses this method for most Avatar Optimizer components, 
+   that will be processed before Trace and Optimize.
+
+2. Register your components to Avatar Optimizer with API
+
+   If your component is working at runtime, or your tool actually want to process avatar after Avatar Optimizer processes,
+   you can register your components to Avatar Optimizer to tell about your components.
+
+   Please refer [section below](#register-component) for more details.
+
+   Avatar Optimizer internally uses this method to keep some components that are processed after Trace and Optimize, 
+   and components from Unity, VRCSDK, and other avatar platform components.
+
+3. Register your components as no problems to remove with Asset Description.
+
+   Since Avatar Optimizer v1.7.0, you can use [Asset Description] to register components only for preserving data
+   for edit-mode tools, that doesn't effects on build or at runtime.
+   If your tool process nothing at build time or runtime, you can use this to register your components instead of
+   removing your components before Avatar Optimizer processes.
+   Please refer [Asset Description] for more details.
+
+   If your tool process something at build time, registering with Asset Description is not recommended.
+   Using Asset Description for components that process something at build time may unexpectedly
+   remove your components and disables your tool if the execution order is incorrect or unexpectedly changed.
+
+   This method is internally used by Avatar Optimizer to keep compatibility with well-known edit-mode tools.
 
 [Asset Description]: ../asset-description
 
 ### Removing your components {#remove-component}
 
-You can remove your components with several ways.
+You can remove your components with [`DestroyImmediate`][DestroyImmediate] to remove your components.
 
-If your tool is a non-destructive tool based on NDMF[^NDMF], removing your components before the Optimizing phase
-or before `com.anatawa12.avatar-optimizer` plugin (with [`BeforePlugin`][ndmf-BeforePlugin])
-in the Optimizing phase is recommended.
+There is several ways to process and remove your component from avatar before Avatar Optimizer processes on build.
+
+If your tool is a non-destructive tool based on NDMF[^NDMF], you can remove your components before the phases
+prior to the Optimizing phase of NDMF or before `com.anatawa12.avatar-optimizer` plugin
+(with [`BeforePlugin`][ndmf-BeforePlugin]) in the Optimizing phase.
+If your tool removes your components in Optimizing phase, it's highly recommended to specify [`BeforePlugin`][ndmf-BeforePlugin]
+even if your default callback order is before `com.anatawa12.avatar-optimizer` plugin.
 
 If your tool is a non-destructive tool not based on NDMF[^NDMF], removing your components before
 the NDMF's Optimizing phase is recommended.
 In this case, current NDMF executes Optimizing phase in order `-1025`, which is JUST before VRCSDK's `RemoveAvatarEditorOnly`
-callback, so your tool should remove components with `IVRCSDKPreprocessAvatarCallback` with smaller `callbackOrder`.
+callback, so your tool should remove components with `IVRCSDKPreprocessAvatarCallback` with `callbackOrder` smaller than `-1025`.
 
-If your components holds some information for your tool and has no meaning on the build time,
-removing your components before Avatar Optimizer processes with `IVRCSDKPreprocessAvatarCallback` is recommended.
-See above for the ordering of `IVRCSDKPreprocessAvatarCallback`.
+If your components is only for holding information for your edit mode tool and has no meaning on the build time,
+you can remove your components in `IVRCSDKPreprocessAvatarCallback` as described above, or
+you can somply use [Asset Description] to register your components to be removed.
+
+[DestroyImmediate]: https://docs.unity3d.com/2022.3/Documentation/ScriptReference/Object.DestroyImmediate.html
 
 ### Registering your components {#register-component}
 
-If your tool wants to keep your component after Avatar Optimizer processes,
+If you want to keep your component after Avatar Optimizer processes,
 you can register your components to Avatar Optimizer to tell about your components.
 
 First, to call APIs of Avatar Optimizer, please make an assembly definition file[^asmdef] if your tool doesn't have.
 
 Next, add `com.anatawa12.avatar-optimizer.api.editor` to assembly references in asmdef file.\
-If your tool doesn't want to depends on Avatar Optimizer, please use [Version Defines].
+If your tool doesn't want to depend on Avatar Optimizer, please use [Version Defines].
 Because Avatar Optimizer didn't have public API prior to 1.6.0 and will break in 2.0.0,
 it's recommended to add version range like `[1.6,2.0)`
 (or stricter like `[1.7,2.0)` when you need new APIs that can be available in the future).
@@ -96,8 +136,8 @@ internal class YourComponentInformation : ComponentInformation<YourComponent>
 ```
 
 In `CollectMutations`, you should register any mutation your component may do.\
-In `CollectDependency`, you should register build-time or run-time dependencies of your component.\
-Please refer xmldoc and method name for more datails.
+In `CollectDependency`, you should register build-time or run-time dependencies and related information of your component.\
+Please read xmldoc of each methods for more details.
 
 [fediverse]: https://misskey.niri.la/@anatawa12
 [ndmf-BeforePlugin]: https://ndmf.nadena.dev/api/nadena.dev.ndmf.fluent.Sequence.html#nadena_dev_ndmf_fluent_Sequence_BeforePlugin_System_String_System_String_System_Int32_

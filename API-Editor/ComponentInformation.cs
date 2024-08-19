@@ -60,10 +60,11 @@ namespace Anatawa12.AvatarOptimizer.API
             ApplySpecialMapping((TComponent)component, collector);
 
         /// <summary>
-        /// Collects runtime depencencies of <see cref="component"/>.
+        /// Collects runtime dependencies and runtime behavior information of <see cref="component"/>.
         ///
-        /// This information is used for Garage Collection system in Avatar Optimizer.
-        /// You have to call some methods on <see cref="ComponentDependencyCollector"/> to declare dependencies.
+        /// This information is used for Garage Collection system and automatic activeness toggle system in Avatar Optimizer.
+        /// You have to call some methods on <see cref="ComponentDependencyCollector"/> to declare dependencies
+        /// and runtime behavior of the component.
         ///
         /// Please refer <see cref="ComponentDependencyCollector"/> for more information about GC system and collecting dependencies.
         /// </summary>
