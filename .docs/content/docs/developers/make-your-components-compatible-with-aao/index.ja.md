@@ -15,44 +15,133 @@ title: コンポーネントにAvatar Optimizerとの互換性をもたせる
 
 Avatar Optimizerが処理する時点でアバターにコンポーネントが存在している場合、そのコンポーネントはAvatar Optimizerと互換性が無い可能性があります。
 
-Avatar Optimizerはコンポーネント等に対するガベージコレクションシステムを実装しているため、最適化時にアバターに存在するすべてのコンポーネントのことを知る必要があります。
+Avatar Optimizerはビルドプロセスの最後の方に処理するようにデザイされており、Avatar Optimizer にとって未知のコンポーネントはサポートされていません。
 
-未知のコンポーネントによる問題を避けるため、Avatar Optimizerは未知のコンポーネントが以下のようなものであると仮定します。(この仮定は将来的に変更される可能性があります。)
-- 副作用のあるコンポーネントである。
+例えば、Avatar Optimizerはコンポーネント等に対するガベージコレクションシステムを実装しています。
+未使用のコンポーネントを正しく削除し、使用されているコンポーネントを正しく保持するためには、
+最適化時にアバターに存在するすべてのコンポーネントのことを知る必要があります。
+
+未知のコンポーネントによる問題を避けるため、Avatar Optimizerは未知のコンポーネントが以下のようなものであると仮定します。
+- コンポーネントが実行時に有効でアクティブになる可能性がある場合は保持する必要がある。
+  - これは、Avatar Optimizerが未知のコンポーネントを実行時コンポーネントと仮定しているためです。
 - コンポーネントが参照している全てのコンポーネントに依存している。
 
-この仮定は正しくない可能性があるため、Avatar Optimizerは未知のコンポーネントを見つけた場合に以下のような警告を生成します。
+(上記の仮定は将来変更される可能性があります。)
+
+しかしながら、この仮定は正しくない可能性があるため、Avatar Optimizerは以下のような警告を生成します。
 
 ![unknown-component-warning](unknown-component-warning.png)
 
 ## どのように互換性を改善するか {#improve-compatibility}
 
-Avatar Optimizerが処理する前にコンポーネントを削除出来る場合は、そのようにしてください。
-削除出来ない場合はAvatar Optimizerにコンポーネントを登録してください。
 
-Avatar Optimizer v1.7.0以降では、ビルド時やランタイムで処理を行わないコンポーネント向けに[Asset Description]が追加されています。
-ビルド時に処理を行わないようなツールであれば、こちらを利用して登録することもできます。
+To improve the compatibility, you may implement one of the following methods.
 
-ビルド時に何らかの処理を行うツールやコンポーネントの場合は、Asset Descriptionで登録するのは非推奨です。
-これは、Asset Descriptionによる登録では、ビルド時の処理順が意図しないものになってしまった場合などにAvatar Optimizerがコンポーネントを削除してしまうことにより、ツールが正しく動作出来なくなる可能性があるためです。
+1. Remove your components before Avatar Optimizer processes as much as possible.
 
-[Asset Description]: ../asset-description
+   If your component is not working at runtime, (in other words, it's a build-time or edit mode only component),
+   it's mostly better for your tool to process avatar before Avatar Optimizer processes,
+   and remove your components before Avatar Optimizer processes.
+
+   Please refer [section below](#remove-component) for more details.
+
+   Avatar Optimizer internally uses this method for most Avatar Optimizer components,
+   that will be processed before Trace and Optimize.
+
+2. Register your components to Avatar Optimizer with API
+
+   If your component is working at runtime, or your tool actually want to process avatar after Avatar Optimizer processes,
+   you can register your components to Avatar Optimizer to tell about your components.
+
+   Please refer [section below](#register-component) for more details.
+
+   Avatar Optimizer internally uses this method to keep some components that are processed after Trace and Optimize,
+   and components from Unity, VRCSDK, and other avatar platform components.
+
+3. Register your components as no problems to remove with Asset Description.
+
+   Since Avatar Optimizer v1.7.0, you can use [Asset Description] to register components only for preserving data
+   for edit-mode tools, that doesn't effects on build or at runtime.
+   Please refer [Asset Description] for more details.
+   If your tool process nothing at build time or runtime, you can use this to register your components instead of
+   removing your components before Avatar Optimizer processes.
+
+   If your tool process something at build time, registering with Asset Description is not recommended.
+   Using Asset Description for components that process something at build time may unexpectedly
+   remove your components and disables your tool if the execution order is incorrect or unexpectedly changed.
+
+   This method is internally used by Avatar Optimizer to keep compatibility with well-known edit-mode tools.
+
+
+互換性を改善するためには、以下のいずれかの方法を実装できます。
+
+1. Avatar Optimizerが処理する前にコンポーネントを削除する
+
+   あなたのコンポーネントが実行時には動作しない場合(つまり、ビルド時や編集モードのみのコンポーネントである場合)、
+   あなたのツールがAvatar Optimizerの処理より前にアバターを処理し、コンポーネントを削除するのが殆どの場合で最善です。
+
+   詳細は[以下のセクション](#remove-component)を参照してください。
+
+   Avatar Optimizerは、TraceとOptimizeの前に処理されるAvatar Optimizerコンポーネントに対してこの方法を内部で使用しています。
+
+2. APIを使ってAvatar Optimizerにコンポーネントを登録する
+
+    コンポーネントが実行時に動作する場合、またはあなたのツールがAvatar Optimizerの処理後にアバターを処理したい場合、
+    コンポーネントをAvatar Optimizerに登録して、コンポーネントについて知らせることができます。
+    
+     詳細は[以下のセクション](#register-component)を参照してください。
+    
+     Avatar Optimizerは、TraceとOptimizeの後に処理される一部のコンポーネントや、Unity、VRCSDK、などアバターのプラットフォームのコンポーネントを保持するためにこの方法を内部で使用しています。
+
+3. Asset Descriptionで削除しても問題がないものとしてコンポーネントを登録する
+
+   Avatar Optimizer v1.7.0以降では、ビルド時やランタイムで処理を行わないコンポーネント向けに[Asset Description]が追加されています。
+   ツールがビルド時やランタイムで何も処理しない場合、Avatar Optimizerがコ��ポーネントを削除する代わりに、
+   この方法を使用してコンポーネントを登録することができます。
+   詳細は[Asset Description]を参照してください。
+
+   ツールがビルド時に何かしらの処理を行う場合、Asset Descriptionでコンポーネントを登録することは推奨されません。
+   Asset Descriptionを使用してビルド時に何かしらの処理を行うコンポーネントを登録すると、
+   実行順序が正しくないか、予期しない変更があった場合に、コンポーネントが予期せず削除され、ツールが無効になる可能性があります。
+
+   この方法は、Avatar Optimizerがよく知られた編集モードツールとの互換性を保つために内部で使用されています。
 
 ### コンポーネントを削除する {#remove-component}
 
-コンポーネントを削除する方法はいくつかあります。
+You can remove your components with [`DestroyImmediate`][DestroyImmediate] to remove your components.
 
-ツールがNDMF[^NDMF]を使用した非破壊ツールの場合は、NDMFのOptimizing phaseより前、
-またはOptimizing phaseの中で([`BeforePlugin`][ndmf-BeforePlugin]を用いて)`com.anatawa12.avatar-optimizer` plugin
+There is several ways to process and remove your component from avatar before Avatar Optimizer processes on build.
+
+If your tool is a non-destructive tool based on NDMF[^NDMF], you can remove your components before the phases
+prior to the Optimizing phase of NDMF or before `com.anatawa12.avatar-optimizer` plugin
+(with [`BeforePlugin`][ndmf-BeforePlugin]) in the Optimizing phase.
+If your tool removes your components in Optimizing phase, it's highly recommended to specify [`BeforePlugin`][ndmf-BeforePlugin]
+even if your default callback order is before `com.anatawa12.avatar-optimizer` plugin.
+
+[`DestroyImmediate`]を使用してコンポーネントを削除できます。
+
+ビルド時にAvatar Optimizerが処理する前に処理し、コンポーネントを削除する方法はいくつかあります。
+
+ツールがNDMF[^NDMF]を使用した非破壊ツールの場合は、NDMFのOptimizing phaseより前のPhaseか、
+Optimizing phaseの中で([`BeforePlugin`][ndmf-BeforePlugin]を用いて)`com.anatawa12.avatar-optimizer` plugin
 より前にコンポーネントを削除することを推奨します。
+もし、ツールがOptimizing phaseでコンポーネントを削除する場合、デフォルトのコールバック順序が`com.anatawa12.avatar-optimizer` pluginより前であっても、
+[`BeforePlugin`][ndmf-BeforePlugin]を指定することを強く推奨します。
 
 ツールがNDMF[^NDMF]を使用していない非破壊ツールの場合は、NDMFのOptimizing phaseより前にコンポーネントを削除することを推奨します。
 この場合、現在のNDMFはVRCSDKの`RemoveAvatarEditorOnly`の直前であるorder `-1025`でOptimizing phaseを実行するので、
 それより小さい`callbackOrder`を指定した`IVRCSDKPreprocessAvatarCallback`でコンポーネントを削除してください。
 
-ツールのコンポーネントがデータを保持する役割しかなく、ビルド時には意味を持っていない場合、
-`IVRCSDKPreprocessAvatarCallback`を用いてAvatar Optimizerが処理する前にコンポーネントを削除することを推奨します。
-`IVRCSDKPreprocessAvatarCallback`の順序については上記を参照してください。
+
+If your components is only for holding information for your edit mode tool and has no meaning on the build time,
+you can remove your components in `IVRCSDKPreprocessAvatarCallback` as described above, or
+you can somply use [Asset Description] to register your components to be removed.
+
+もし、ツールのコンポーネントがデータを保持する役割しかなく、ビルド時には意味を持っていない場合、
+上記のように`IVRCSDKPreprocessAvatarCallback`でコンポーネントを削除するか、
+[Asset Description]を使用してコンポーネントを削除できるコンポーネントとして登録することができます。
+
+[DestroyImmediate]: https://docs.unity3d.com/ScriptReference/Object.DestroyImmediate.html
 
 ### コンポーネントを登録する {#register-component}
 
@@ -92,7 +181,7 @@ internal class YourComponentInformation : ComponentInformation<YourComponent>
 
 `CollectMutations`では、コンポーネントの処理によって変更される可能性があるプロパティを登録します。\
 `CollectDependency`では、ビルド時や実行時でのコンポーネントの依存関係を登録します。\
-詳しくはxmldocやメソッド名を参照してください。
+詳しくはそれぞれのメソッドのxmldocを参照してください。
 
 [fediverse]: https://misskey.niri.la/@anatawa12
 [ndmf-BeforePlugin]: https://ndmf.nadena.dev/api/nadena.dev.ndmf.fluent.Sequence.html#nadena_dev_ndmf_fluent_Sequence_BeforePlugin_System_String_System_String_System_Int32_
