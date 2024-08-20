@@ -1,3 +1,5 @@
+#nullable enable
+
 #if AAO_VRM0
 
 using System.Linq;

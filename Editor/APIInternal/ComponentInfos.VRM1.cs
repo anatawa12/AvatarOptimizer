@@ -1,3 +1,5 @@
+#nullable enable
+
 #if AAO_VRM1
 
 using System.Collections.Generic;
@@ -76,14 +78,14 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
             }
         }
 
-        Transform GetBoneTransformForVrm10(Vrm10Instance component, HumanBodyBones bones)
+        Transform? GetBoneTransformForVrm10(Vrm10Instance component, HumanBodyBones bones)
         {
-            if (component.GetComponent<Humanoid>() is Humanoid avatarHumanoid)
+            if (component.GetComponent<Humanoid>() is { } avatarHumanoid)
             {
                 return avatarHumanoid.GetBoneTransform(bones);
             }
             
-            if (component.GetComponent<Animator>() is Animator avatarAnimator)
+            if (component.GetComponent<Animator>() is { } avatarAnimator)
             {
                 return avatarAnimator.GetBoneTransform(bones);
             }
