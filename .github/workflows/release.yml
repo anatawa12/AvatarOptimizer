@@ -169,6 +169,10 @@ jobs:
             sed -i'.bak' -e "s|${STABLE_URL}|${STABLE_URL}#${VERSION}|" package.json
           fi
           rm package.json.bak
+          
+      - name: update csc.rsp
+        run: |
+          sed -n '/PUBLISH DELETE MARKER/q;p' -i Editor/csc.rsp
 
       # region vpm release
       - name: Build VPM release
