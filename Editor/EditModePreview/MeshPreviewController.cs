@@ -5,9 +5,6 @@ using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
-#if !UNITY_2020_1_OR_NEWER
-using AnimationModeDriver = UnityEngine.Object;
-#endif
 
 namespace Anatawa12.AvatarOptimizer.EditModePreview
 {
@@ -242,39 +239,6 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
             _previewController = null;
         }
 
-#if !UNITY_2020_1_OR_NEWER
-        private static AnimationModeDriver CreateDriver() =>
-            ScriptableObject.CreateInstance(
-                typeof(UnityEditor.AnimationMode).Assembly.GetType("UnityEditor.AnimationModeDriver"));
-#else
         private static AnimationModeDriver CreateDriver() => ScriptableObject.CreateInstance<AnimationModeDriver>();
-#endif
-
-#if !UNITY_2020_1_OR_NEWER
-        public static class AnimationMode
-        {
-            public static void BeginSampling() => UnityEditor.AnimationMode.BeginSampling();
-            public static void EndSampling() => UnityEditor.AnimationMode.EndSampling();
-            public static bool InAnimationMode() => UnityEditor.AnimationMode.InAnimationMode();
-            public static bool InAnimationMode(AnimationModeDriver o) => StartAnimationMode<bool>("InAnimationMode", o);
-            public static void StartAnimationMode(AnimationModeDriver o) => StartAnimationMode<object>("StartAnimationMode", o);
-            public static void StopAnimationMode(AnimationModeDriver o) => StartAnimationMode<object>("StopAnimationMode", o);
-
-            public static void AddPropertyModification(EditorCurveBinding binding, PropertyModification modification,
-                bool keepPrefabOverride) =>
-                UnityEditor.AnimationMode.AddPropertyModification(binding, modification, keepPrefabOverride);
-
-            private static R StartAnimationMode<R>(string name, AnimationModeDriver o)
-            {
-                var method = typeof(UnityEditor.AnimationMode).GetMethod(name,
-                    BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic,
-                    null,
-                    new[] { typeof(AnimationModeDriver) },
-                    null);
-                System.Diagnostics.Debug.Assert(method != null, nameof(method) + " != null");
-                return (R)method.Invoke(null, new object[] { o });
-            }
-        }
-#endif
     }
 }

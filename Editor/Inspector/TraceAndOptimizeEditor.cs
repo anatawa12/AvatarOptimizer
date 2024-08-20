@@ -61,10 +61,6 @@ namespace Anatawa12.AvatarOptimizer
                 EditorGUI.indentLevel--;
             }
 
-#if !UNITY_2021_3_OR_NEWER
-            if (_optimizeAnimator.boolValue)
-                EditorGUILayout.HelpBox(AAOL10N.Tr("TraceAndOptimize:OptimizeAnimator:Unity2019"), MessageType.Info);
-#endif
             _advancedSettingsLabel.text = AAOL10N.Tr("TraceAndOptimize:prop:advancedOptimization");
             AdvancedOpened = EditorGUILayout.Foldout(AdvancedOpened, _advancedSettingsLabel);
             if (AdvancedOpened)

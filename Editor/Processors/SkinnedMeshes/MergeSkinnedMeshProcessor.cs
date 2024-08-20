@@ -34,12 +34,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             var (subMeshIndexMap, materials) =
                 GenerateSubMeshMapping(meshInfos, Component.doNotMergeMaterials.GetAsSet());
 
-#if !UNITY_2021_2_OR_NEWER
-            Profiler.BeginSample("ShiftIndex For Unity Bug");
-            ShiftIndexForUnityBugWorkaround(context, meshInfos, materials, subMeshIndexMap);
-            Profiler.EndSample();
-#endif
-
             DoMerge(context, target, meshInfos, subMeshIndexMap, materials);
             MergeBounds(target, meshInfos);
 
@@ -497,61 +491,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             return (resultIndices, resultMaterials);
         }
-
-#if !UNITY_2021_2_OR_NEWER
-        // material slot #4 should not be animated to avoid Unity bug
-        // https://issuetracker.unity3d.com/issues/material-is-applied-to-two-slots-when-applying-material-to-a-single-slot-while-recording-animation
-        private static void ShiftIndexForUnityBugWorkaround(
-            BuildContext context,
-            MeshInfo2[] meshInfos,
-            List<(MeshTopology, Material)> materials,
-            int[][] subMeshIndexMap
-        )
-        {
-            const int subMeshIndexToShiftIfAnimated = 4;
-            if (IsAnimatingTheSubMeshIndex(context, meshInfos, subMeshIndexMap, subMeshIndexToShiftIfAnimated))
-                MakeHoleSubMesh(subMeshIndexMap, materials, subMeshIndexToShiftIfAnimated);
-        }
-
-        private static bool IsAnimatingTheSubMeshIndex(BuildContext context, MeshInfo2[] meshInfos,
-            int[][] subMeshIndexMap, int targetSubMeshIndex)
-        {
-            for (var i = 0; i < subMeshIndexMap.Length; i++)
-            {
-                var indices = subMeshIndexMap[i];
-
-                for (var sourceSubMesh = 0; sourceSubMesh < indices.Length; sourceSubMesh++)
-                {
-                    var destSubMesh = indices[sourceSubMesh];
-                    if (destSubMesh == targetSubMeshIndex)
-                    {
-                        var animationComponent = context.GetAnimationComponent(meshInfos[i].SourceRenderer);
-                        if (animationComponent.ContainsObject($"m_Materials.Array.data[{sourceSubMesh}]"))
-                        {
-                            return true;
-                        }
-                    }
-                }
-            }
-
-            return false;
-        }
-
-        private static void MakeHoleSubMesh(int[][] subMeshIndexMap, List<(MeshTopology, Material)> materials,
-            int targetSubMeshIndex)
-        {
-            materials.Insert(targetSubMeshIndex, (MeshTopology.Triangles, null));
-
-            foreach (var indices in subMeshIndexMap)
-            {
-                for (var sourceSubMesh = 0; sourceSubMesh < indices.Length; sourceSubMesh++)
-                {
-                    if (indices[sourceSubMesh] >= targetSubMeshIndex)
-                        indices[sourceSubMesh]++;
-                }
-            }
-        }
-#endif
 
         public override IMeshInfoComputer GetComputer(IMeshInfoComputer upstream) => new MeshInfoComputer(this);
 

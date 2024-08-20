@@ -250,7 +250,7 @@ namespace Anatawa12.AvatarOptimizer
 
                 return newClip;
             }
-#if AAO_VRCSDK3_AVATARS_ANIMATOR_PLAY_AUDIO
+#if AAO_VRCSDK3_AVATARS
             else if (o is VRC.SDKBase.VRC_AnimatorPlayAudio playAudio)
             {
                 using (new MappedScope(this))

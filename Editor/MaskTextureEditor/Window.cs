@@ -69,11 +69,6 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
         [SerializeField]
         private int _previewTextureInstanceIdWhenSaved = 0;
 
-#if !UNITY_2020_2_OR_NEWER
-        private bool hasUnsavedChanges = false;
-        private string saveChangesMessage = string.Empty;
-#endif
-
         public static Window Instance
         {
             get
@@ -148,7 +143,6 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
                     }
                     case 2:
                     {
-                        DiscardChanges();
                         Close();
                         break;
                     }
@@ -429,14 +423,9 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
             _viewPosition = Vector2.Max(_viewPosition, Vector2.zero);
         }
 
-#if UNITY_2020_2_OR_NEWER
         public override void SaveChanges()
         {
             base.SaveChanges();
-#else
-        private void SaveChanges()
-        {
-#endif
             var path = AssetDatabase.GetAssetPath(_texture);
 
             var texture = new Texture2D(0, 0);
@@ -467,16 +456,6 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
             {
                 DestroyImmediate(texture);
             }
-        }
-
-#if UNITY_2020_2_OR_NEWER
-        public override void DiscardChanges()
-        {
-            base.DiscardChanges();
-#else
-        private void DiscardChanges()
-        {
-#endif
         }
 
         private void OnDestroy()

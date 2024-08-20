@@ -114,11 +114,7 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
         {
             RenderTexture.active = _target;
 
-#if UNITY_2021_2_OR_NEWER
             texture.Reinitialize(_target.width, _target.height);
-#else
-            texture.Resize(_target.width, _target.height);
-#endif
             texture.ReadPixels(new Rect(Vector2.zero, TextureSize), 0, 0);
             texture.Apply();
 
