@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using System.IO;
 using UnityEditor;
@@ -37,13 +39,13 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
         private const float BrushSizeFactor = 0.1f;
 
         [SerializeField]
-        private SkinnedMeshRenderer _renderer = null;
+        private SkinnedMeshRenderer _renderer = null!; // Initialized by Open
 
         [SerializeField]
         private int _subMesh = 0;
 
         [SerializeField]
-        private Texture2D _texture = null;
+        private Texture2D? _texture = null;
 
         [SerializeField]
         private Vector2 _viewPosition = Vector2.zero;
@@ -58,18 +60,18 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
         private bool _requestResetView = true;
 
         [SerializeField]
-        private UvMapDrawer _uvMapDrawer = null;
+        private UvMapDrawer _uvMapDrawer = null!; // Initialized by Open
 
         [SerializeField]
-        private TexturePainter _texturePainter = null;
+        private TexturePainter _texturePainter = null!; // Initialized by Open
 
         [SerializeField]
-        private TextureUndoStack _textureUndoStack = null;
+        private TextureUndoStack _textureUndoStack = null!; // Initialized by Open
 
         [SerializeField]
         private int _previewTextureInstanceIdWhenSaved = 0;
 
-        public static Window Instance
+        public static Window? Instance
         {
             get
             {
@@ -437,7 +439,7 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
 
                 AssetDatabase.ImportAsset(path);
 
-                var importer = AssetImporter.GetAtPath(path) as TextureImporter;
+                var importer = (TextureImporter)AssetImporter.GetAtPath(path);
                 importer.isReadable = true;
                 importer.SaveAndReimport();
 
@@ -463,17 +465,17 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
             if (_uvMapDrawer != null)
             {
                 DestroyImmediate(_uvMapDrawer);
-                _uvMapDrawer = null;
+                _uvMapDrawer = null!; // reset
             }
             if (_texturePainter != null)
             {
                 DestroyImmediate(_texturePainter);
-                _texturePainter = null;
+                _texturePainter = null!; // reset
             }
             if (_textureUndoStack != null)
             {
                 DestroyImmediate(_textureUndoStack);
-                _textureUndoStack = null;
+                _textureUndoStack = null!; // reset
             }
         }
     }

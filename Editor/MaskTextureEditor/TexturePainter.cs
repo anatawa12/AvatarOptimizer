@@ -17,19 +17,19 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
         private Color _brushColor = Color.black;
 
         [SerializeField]
-        private RenderTexture _target = null;
+        private RenderTexture _target = null!; // Initialized by Init and Load
 
         [SerializeField]
-        private RenderTexture _buffer = null;
+        private RenderTexture _buffer = null!; // Initialized by Init and Load
 
         [SerializeField]
-        private Material _fillMaterial = null;
+        private Material _fillMaterial = null!; // Initialized by Init and Load
 
         [SerializeField]
-        private Material _paintMaterial = null;
+        private Material _paintMaterial = null!; // Initialized by Init and Load
 
         [SerializeField]
-        private Material _inverseMaterial = null;
+        private Material _inverseMaterial = null!; // Initialized by Init and Load
 
         public float BrushSize { get => _brushSize; set => _brushSize = value; }
         public Color BrushColor { get => _brushColor; set => _brushColor = value; }
@@ -155,27 +155,27 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
             if (_target != null)
             {
                 DestroyImmediate(_target);
-                _target = null;
+                _target = null!; // resetting
             }
             if (_buffer != null)
             {
                 DestroyImmediate(_buffer);
-                _buffer = null;
+                _buffer = null!; // resetting
             }
             if (_fillMaterial != null)
             {
                 DestroyImmediate(_fillMaterial);
-                _fillMaterial = null;
+                _fillMaterial = null!; // resetting
             }
             if (_paintMaterial != null)
             {
                 DestroyImmediate(_paintMaterial);
-                _paintMaterial = null;
+                _paintMaterial = null!; // resetting
             }
             if (_inverseMaterial != null)
             {
                 DestroyImmediate(_inverseMaterial);
-                _inverseMaterial = null;
+                _inverseMaterial = null!; // resetting
             }
         }
     }
