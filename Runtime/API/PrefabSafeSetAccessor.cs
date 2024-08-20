@@ -6,7 +6,7 @@ using JetBrains.Annotations;
 namespace Anatawa12.AvatarOptimizer.API
 {
     [PublicAPI]
-    public readonly struct PrefabSafeSetAccessor<T> : ICollection<T>
+    public readonly struct PrefabSafeSetAccessor<T> : ICollection<T> where T : notnull
     {
         private readonly PrefabSafeSetApi<T> _set;
 
