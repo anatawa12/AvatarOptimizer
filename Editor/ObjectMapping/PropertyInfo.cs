@@ -25,6 +25,7 @@ namespace Anatawa12.AvatarOptimizer
         }
 
         private static void MergeNode<T>(ref RootPropModNode<T>? mergeTo, ref RootPropModNode<T>? merge)
+            where T : notnull
         {
             if (merge == null || merge.IsEmpty) return;
             if (mergeTo == null || merge.IsEmpty)
@@ -45,6 +46,7 @@ namespace Anatawa12.AvatarOptimizer
         }
 
         private static void CopyNode<T>(ref RootPropModNode<T>? mergeTo, RootPropModNode<T>? merge)
+            where T : notnull
         {
             if (merge == null || merge.IsEmpty) return;
             if (mergeTo == null || merge.IsEmpty)

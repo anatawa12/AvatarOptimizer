@@ -1,6 +1,7 @@
+#nullable enable
+
 using System;
 using System.Collections.Generic;
-using JetBrains.Annotations;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -39,7 +40,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         public IReadOnlyDictionary<(ComponentOrGameObject target, string prop), RootPropModNode<Object>> ObjectNodes =>
             _objectNodes;
 
-        public void Add([CanBeNull] ComponentNodeContainer container, bool alwaysApplied)
+        public void Add(ComponentNodeContainer? container, bool alwaysApplied)
         {
             if (container == null) return;
 
@@ -99,24 +100,24 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         IReadOnlyDictionary<(ComponentOrGameObject target, string prop), PropModNode<Object>> INodeContainer.
             ObjectNodes => Utils.CastDic<PropModNode<Object>>().CastedDic(_objectNodes);
 
-        public void Add(ComponentOrGameObject target, string prop, [NotNull] TFloatNode node)
+        public void Add(ComponentOrGameObject target, string prop, TFloatNode node)
         {
             if (node == null) throw new ArgumentNullException(nameof(node));
             _floatNodes.Add((target, prop), node);
         }
 
-        public void Add(ComponentOrGameObject target, string prop, [NotNull] TObjectNode node)
+        public void Add(ComponentOrGameObject target, string prop, TObjectNode node)
         {
             if (node == null) throw new ArgumentNullException(nameof(node));
             _objectNodes.Add((target, prop), node);
         }
 
-        public void Set(ComponentOrGameObject target, string prop, [NotNull] TFloatNode node)
+        public void Set(ComponentOrGameObject target, string prop, TFloatNode node)
         {
             _floatNodes[(target, prop)] = node ?? throw new ArgumentNullException(nameof(node));
         }
 
-        public void Set(ComponentOrGameObject target, string prop, [NotNull] TObjectNode node)
+        public void Set(ComponentOrGameObject target, string prop, TObjectNode node)
         {
             if (node == null) throw new ArgumentNullException(nameof(node));
             _objectNodes[(target, prop)] = node;

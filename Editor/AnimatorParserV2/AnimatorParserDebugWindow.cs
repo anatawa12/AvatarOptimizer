@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using System.Linq;
 using System.Text;
@@ -15,15 +17,15 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         private static void Open() => GetWindow<AnimatorParserDebugWindow>("AnimatorParser Debug Window V2");
 
         public ParserSource parserSource;
-        public RuntimeAnimatorController animatorController;
-        public GameObject avatar;
-        public GameObject rootGameObject;
-        public Motion motion;
+        public RuntimeAnimatorController? animatorController;
+        public GameObject? avatar;
+        public GameObject? rootGameObject;
+        public Motion? motion;
 
         public Vector2 scrollView;
 
-        public GameObject parsedRootObject;
-        public INodeContainer Container;
+        public GameObject? parsedRootObject;
+        public INodeContainer? Container;
 
         private void OnGUI()
         {
@@ -67,10 +69,10 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
         private string CreateText(bool detailed = false)
         {
-            var root = parsedRootObject.transform;
+            var root = parsedRootObject!.transform;
             var resultText = new StringBuilder();
             
-            foreach (var group in Container.FloatNodes.GroupBy(x => x.Key.target))
+            foreach (var group in Container!.FloatNodes.GroupBy(x => x.Key.target))
             {
                 var gameObject = group.Key.transform;
                 resultText.Append(Utils.RelativePath(root, gameObject)).Append(": ")
@@ -201,7 +203,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
                     using (new EditorGUI.DisabledScope(!animatorController || !rootGameObject))
                     {
-                        if (GUILayout.Button("Parse") && animatorController && rootGameObject)
+                        if (GUILayout.Button("Parse") && animatorController != null && rootGameObject != null)
                         {
                             parsedRootObject = rootGameObject;
                             Container = new AnimatorParser(true)
@@ -216,7 +218,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
                     using (new EditorGUI.DisabledScope(!motion))
                     {
-                        if (GUILayout.Button("Parse") && motion && rootGameObject)
+                        if (GUILayout.Button("Parse") && motion && rootGameObject != null)
                         {
                             parsedRootObject = rootGameObject;
                             Container = new AnimationParser()
@@ -230,7 +232,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             }
         }
 
-        private static void ObjectField<T>(ref T value, [CanBeNull] string label, bool allowScene) where T : Object
+        private static void ObjectField<T>(ref T? value, string? label, bool allowScene) where T : Object
         {
             value = EditorGUILayout.ObjectField(label, value, typeof(T), allowScene) as T;
         }
