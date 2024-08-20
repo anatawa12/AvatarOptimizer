@@ -172,7 +172,8 @@ jobs:
           
       - name: update csc.rsp
         run: |
-          sed -n '/PUBLISH DELETE MARKER/q;p' -i Editor/csc.rsp
+          sed -n '/PUBLISH DELETE MARKER/q;p' -i .csc.rsp.nullunsafe
+          sed -n '/PUBLISH DELETE MARKER/q;p' -i .csc.rsp.nullsafe
 
       # region vpm release
       - name: Build VPM release

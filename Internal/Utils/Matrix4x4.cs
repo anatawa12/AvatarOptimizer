@@ -1,5 +1,3 @@
-#nullable enable
-
 using System;
 using UnityEngine;
 using UnityMatrix4x4 = UnityEngine.Matrix4x4;
