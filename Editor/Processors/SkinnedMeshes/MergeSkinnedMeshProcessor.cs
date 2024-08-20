@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -70,7 +72,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             Profiler.BeginSample("Merge PreserveBlendShapes");
             {
                 var state = context.GetState<TraceAndOptimizes.TraceAndOptimizeState>();
-                HashSet<string> thisPreserve = null;
+                HashSet<string>? thisPreserve = null;
                 foreach (var skinnedRenderer in skinnedMeshRenderers)
                 {
                     if (!state.PreserveBlendShapes.TryGetValue(skinnedRenderer, out var preserve)) continue;
@@ -185,7 +187,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         }
 
-        public static (int[][] subMeshIndexMap, List<(MeshTopology topology, Material material)> materials)
+        public static (int[][] subMeshIndexMap, List<(MeshTopology topology, Material? material)> materials)
             GenerateSubMeshMapping(
                 MeshInfo2[] meshInfos,
                 HashSet<Material> doNotMerges)
@@ -205,7 +207,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             MeshInfo2 target,
             MeshInfo2[] meshInfos,
             int[][] subMeshIndexMap,
-            List<(MeshTopology topology, Material material)> materials
+            List<(MeshTopology topology, Material? material)> materials
         ) {
             target.ClearMeshData();
             target.SubMeshes.Capacity = Math.Max(target.SubMeshes.Capacity, materials.Count);
@@ -286,15 +288,14 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             Profiler.BeginSample("Update Bounds");
             var sourceRootBone = target.RootBone;
-            var updateBounds = sourceRootBone && target.Bounds == default;
 
-            if (updateBounds)
+            if (sourceRootBone != null && target.Bounds == default)
             {
                 var newBoundMin = Vector3.positiveInfinity;
                 var newBoundMax = Vector3.negativeInfinity;
                 foreach (var meshInfo in meshInfos)
                 {
-                    if (meshInfo.RootBone)
+                    if (meshInfo.RootBone != null)
                     {
                         foreach (var inSource in meshInfo.Bounds.Corners())
                         {
@@ -333,7 +334,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             Profiler.BeginSample("Postprocess Source Renderers");
             if (removeEmptyRendererObject)
             {
-                var boneTransforms = new HashSet<Transform>(target.Bones.Select(x => x.Transform));
+                var boneTransforms = new HashSet<Transform?>(target.Bones.Select(x => x.Transform));
 
                 foreach (var rendererGameObject in 
                          from meshInfo in meshInfos
@@ -385,8 +386,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     if (component.TryGetObject($"m_Materials.Array.data[{i}]", out var objectNode))
                         materials.AddRange(objectNode.Value.PossibleValues?.OfType<Material>().Where(x => x) ??
                                            Enumerable.Empty<Material>());
-                    if (meshInfo2.SubMeshes[i].SharedMaterial)
-                        materials.Add(meshInfo2.SubMeshes[i].SharedMaterial);
+                    if (meshInfo2.SubMeshes[i].SharedMaterial is {} newMaterial)
+                        materials.Add(newMaterial);
                 }
                 materialByMeshInfo2.Add((meshInfo2, materials));
             }
@@ -461,11 +462,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             return locations;
         }
 
-        private static (int[][] mapping, List<(MeshTopology topology, Material material)> materials)
-            CreateMergedMaterialsAndSubMeshIndexMapping((MeshTopology topology, Material material)[][] sourceMaterials,
+        private static (int[][] mapping, List<(MeshTopology topology, Material? material)> materials)
+            CreateMergedMaterialsAndSubMeshIndexMapping((MeshTopology topology, Material? material)[][] sourceMaterials,
                 HashSet<Material> doNotMerges)
         {
-            var resultMaterials = new List<(MeshTopology, Material)>();
+            var resultMaterials = new List<(MeshTopology, Material?)>();
             var resultIndices = new int[sourceMaterials.Length][];
 
             for (var i = 0; i < sourceMaterials.Length; i++)
@@ -477,7 +478,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 {
                     var material = materials[j];
                     var foundIndex = resultMaterials.IndexOf(material);
-                    if (doNotMerges.Contains(material.material) || foundIndex == -1)
+                    if (material.material != null && doNotMerges.Contains(material.material) || foundIndex == -1)
                     {
                         indices[j] = resultMaterials.Count;
                         resultMaterials.Add(material);
@@ -506,7 +507,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     .Distinct(BlendShapeNameComparator.Instance)
                     .ToArray();
 
-            public Material[] Materials(bool fast = true)
+            public Material?[] Materials(bool fast = true)
             {
                 var sourceMaterials = _processor.SkinnedMeshRenderers.Select(EditSkinnedMeshComponentUtil.GetMaterials)
                     .Concat(_processor.StaticMeshRenderers.Select(x => x.sharedMaterials))

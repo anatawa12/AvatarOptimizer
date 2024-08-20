@@ -772,8 +772,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         public SubMesh(List<Vertex> vertices) => Vertices = vertices;
         public SubMesh(List<Vertex> vertices, Material sharedMaterial) => 
             (Vertices, SharedMaterial) = (vertices, sharedMaterial);
-        public SubMesh(Material sharedMaterial) => SharedMaterial = sharedMaterial;
-        public SubMesh(Material sharedMaterial, MeshTopology topology) =>
+        public SubMesh(Material? sharedMaterial) => SharedMaterial = sharedMaterial;
+        public SubMesh(Material? sharedMaterial, MeshTopology topology) =>
             (SharedMaterial, Topology) = (sharedMaterial, topology);
 
         public SubMesh(SubMesh subMesh, Material? material)

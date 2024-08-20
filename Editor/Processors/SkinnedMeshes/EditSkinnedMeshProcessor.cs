@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -60,21 +62,21 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
     internal interface IMeshInfoComputer
     {
         (string name, float weight)[] BlendShapes();
-        Material[] Materials(bool fast = true);
+        Material?[] Materials(bool fast = true);
     }
 
     internal class AbstractMeshInfoComputer : IMeshInfoComputer
     {
-        private readonly IMeshInfoComputer _upstream;
+        private readonly IMeshInfoComputer? _upstream;
 
-        public AbstractMeshInfoComputer(IMeshInfoComputer upstream)
+        public AbstractMeshInfoComputer(IMeshInfoComputer? upstream)
         {
             _upstream = upstream;
         }
 
         public virtual (string name, float weight)[] BlendShapes() => _upstream?.BlendShapes() ?? Array.Empty<(string, float)>();
 
-        public virtual Material[] Materials(bool fast = true) => _upstream?.Materials(fast) ?? Array.Empty<Material>();
+        public virtual Material?[] Materials(bool fast = true) => _upstream?.Materials(fast) ?? Array.Empty<Material>();
     }
 
 

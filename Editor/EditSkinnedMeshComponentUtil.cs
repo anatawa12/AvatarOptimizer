@@ -35,11 +35,11 @@ namespace Anatawa12.AvatarOptimizer
         public static (string name, float weight)[] GetBlendShapes(SkinnedMeshRenderer renderer, EditSkinnedMeshComponent before) =>
             EditorShared.GetBlendShapes(renderer, before);
 
-        public static Material[] GetMaterials(SkinnedMeshRenderer renderer) => EditorShared.GetMaterials(renderer);
+        public static Material?[] GetMaterials(SkinnedMeshRenderer renderer) => EditorShared.GetMaterials(renderer);
 
         // Rider's problem, to call GetMaterials(renderer, fast: false)
         // ReSharper disable once MethodOverloadWithOptionalParameter
-        public static Material[] GetMaterials(SkinnedMeshRenderer renderer, EditSkinnedMeshComponent? before = null,
+        public static Material?[] GetMaterials(SkinnedMeshRenderer renderer, EditSkinnedMeshComponent? before = null,
             bool fast = true) => EditorShared.GetMaterials(renderer, before, fast);
 
         private static SkinnedMeshEditorSorter? _editorShared;
@@ -70,11 +70,11 @@ namespace Anatawa12.AvatarOptimizer
         public (string name, float weight)[] GetBlendShapes(SkinnedMeshRenderer renderer, EditSkinnedMeshComponent? before) =>
             GetProcessors(renderer)?.GetBlendShapes(before) ?? SourceMeshInfoComputer.BlendShapes(renderer);
 
-        public Material[] GetMaterials(SkinnedMeshRenderer renderer) => GetMaterials(renderer, null);
+        public Material?[] GetMaterials(SkinnedMeshRenderer renderer) => GetMaterials(renderer, null);
 
         // Rider's problem, to call GetMaterials(renderer, fast: false)
         // ReSharper disable once MethodOverloadWithOptionalParameter
-        public Material[] GetMaterials(SkinnedMeshRenderer renderer, EditSkinnedMeshComponent? before = null,
+        public Material?[] GetMaterials(SkinnedMeshRenderer renderer, EditSkinnedMeshComponent? before = null,
             bool fast = true) =>
             GetProcessors(renderer)?.GetMaterials(before, fast) ?? SourceMeshInfoComputer.Materials(renderer);
 
@@ -163,7 +163,7 @@ namespace Anatawa12.AvatarOptimizer
 
             public (string, float)[] GetBlendShapes(EditSkinnedMeshComponent? before = null) => GetComputer(before).BlendShapes();
 
-            public Material[] GetMaterials(EditSkinnedMeshComponent? before = null, bool fast = true) =>
+            public Material?[] GetMaterials(EditSkinnedMeshComponent? before = null, bool fast = true) =>
                 GetComputer(before).Materials(fast);
 
             private class RecursiveDetector : IMeshInfoComputer
@@ -195,7 +195,7 @@ namespace Anatawa12.AvatarOptimizer
                 }
 
                 public (string, float)[] BlendShapes() => CheckRecursive(() => _origin.BlendShapes());
-                public Material[] Materials(bool fast = true) => CheckRecursive(() => _origin.Materials(fast));
+                public Material?[] Materials(bool fast = true) => CheckRecursive(() => _origin.Materials(fast));
             }
         }
 

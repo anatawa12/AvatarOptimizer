@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -47,7 +49,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 {
                     var originalMeshImporter = GetImporter(ObjectRegistry.GetReference(mask).Object as Texture2D);
 
-                    TextureImporter GetImporter(Texture2D importingMesh)
+                    TextureImporter? GetImporter(Texture2D? importingMesh)
                     {
                         if (!importingMesh) return null;
                         var path = AssetDatabase.GetAssetPath(importingMesh);

@@ -70,7 +70,7 @@ namespace Anatawa12.AvatarOptimizer
 
         public void MergeMaterials(MergeSkinnedMesh merge)
         {
-            var materials = new HashSet<Material>();
+            var materials = new HashSet<Material?>();
             var renderersSetAsList = merge.renderersSet.GetAsList();
             var staticRenderersSetAsList = merge.staticRenderersSet.GetAsList();
             var ofRenderers = renderersSetAsList.Select(EditSkinnedMeshComponentUtil.GetMaterials);
@@ -79,6 +79,7 @@ namespace Anatawa12.AvatarOptimizer
                          .SelectMany((x, renderer) => x.Select((mat, material) => (mat, renderer, material)))
                          .GroupBy(x => x.mat))
             {
+                if (group.Key == null) continue;
                 materials.Add(group.Key);
                 if (group.Count() == 1)
                 {

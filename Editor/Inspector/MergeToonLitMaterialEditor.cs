@@ -14,7 +14,7 @@ namespace Anatawa12.AvatarOptimizer
     [CustomEditor(typeof(MergeToonLitMaterial))]
     internal class MergeToonLitMaterialEditor : AvatarTagComponentEditorBase
     {
-        private Material[] _upstreamMaterials = null!; // initialized in OnEnable
+        private Material?[] _upstreamMaterials = null!; // initialized in OnEnable
         private (Material mat, int index)[] _materials = null!; // initialized in OnEnable
         
         private (Material mat, int index)[] _candidateMaterials = null!; // initialized in OnEnable
@@ -168,8 +168,8 @@ namespace Anatawa12.AvatarOptimizer
                 .GetMaterials(component.GetComponent<SkinnedMeshRenderer>(), component);
             _materials = _upstreamMaterials
                 .Select((mat, index) => (mat, index))
-                .Where(x => x.mat.shader == Assets.ToonLitShader)
-                .ToArray();
+                .Where(x => x.mat?.shader == Assets.ToonLitShader)
+                .ToArray()!;
             OnChanged(dirty: false);
         }
     }

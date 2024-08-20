@@ -125,7 +125,7 @@ namespace Anatawa12.AvatarOptimizer
         }
 
         public static bool TryGetObject(this AnimationComponentInfo<PropertyInfo> info, string property,
-            out RootPropModNode<Object>? animation)
+            [NotNullWhen(true)] out RootPropModNode<Object>? animation)
         {
             if (info == null) throw new ArgumentNullException(nameof(info));
             animation = info.TryGetPropertyInfo(property).ObjectNode;
