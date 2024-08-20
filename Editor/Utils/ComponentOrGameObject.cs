@@ -1,3 +1,7 @@
+#nullable disable
+
+// TODO: consider nullable reference type
+// This class may and may not be null so it's hard to determine if it's nullable or not
 using System;
 using UnityEngine;
 using Object = UnityEngine.Object;
