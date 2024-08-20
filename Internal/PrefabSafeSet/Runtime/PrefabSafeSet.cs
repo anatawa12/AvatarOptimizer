@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.Animations;
 using Object = UnityEngine.Object;
@@ -42,12 +41,14 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                     assembly.GetType("Anatawa12.AvatarOptimizer.PrefabSafeSet.OnBeforeSerializeImpl`2");
                 if (OnBeforeSerializeImplType != null) return;
             }
+            if (OnBeforeSerializeImplType == null)
+                throw new InvalidOperationException("OnBeforeSerializeImpl`2 not found");
         }
 
         public static MethodInfo GetOnBeforeSerializeCallbackMethod(Type tType, Type tLayerType, Type setType)
         {
             var implType = OnBeforeSerializeImplType.MakeGenericType(tType, tLayerType);
-            return implType.GetMethod("Impl", BindingFlags.Public | BindingFlags.Static, null, new[] { setType }, null);
+            return implType.GetMethod("Impl", BindingFlags.Public | BindingFlags.Static, null, new[] { setType }, null)!;
         }
 #endif
     }
@@ -76,10 +77,10 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
         [SerializeField] internal TLayer[] prefabLayers = Array.Empty<TLayer>();
 
 #if UNITY_EDITOR
-        [SerializeField, HideInInspector] internal T fakeSlot;
+        [SerializeField, HideInInspector] internal T? fakeSlot;
         internal readonly Object OuterObject;
-        internal T[] CheckedCurrentLayerRemoves;
-        internal T[] CheckedCurrentLayerAdditions;
+        internal T[]? CheckedCurrentLayerRemoves;
+        internal T[]? CheckedCurrentLayerAdditions;
         private static MethodInfo _onBeforeSerializeCallback = PrefabSafeSetRuntimeUtil
             .GetOnBeforeSerializeCallbackMethod(typeof(T), typeof(TLayer), typeof(PrefabSafeSet<T, TLayer>));
 #endif
@@ -256,7 +257,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
         [SerializeField] internal T[] removes = Array.Empty<T>();
         [SerializeField] internal T[] additions = Array.Empty<T>();
 
-        public void ApplyTo(HashSet<T> result, [CanBeNull] List<T> list = null)
+        public void ApplyTo(HashSet<T> result, List<T>? list = null)
         {
             foreach (var remove in removes)
                 if (remove.IsNotNull() && result.Remove(remove))
@@ -269,8 +270,8 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
     
     internal readonly struct ListSet<T>
     {
-        [NotNull] private readonly List<T> _list;
-        [NotNull] private readonly HashSet<T> _set;
+        private readonly List<T> _list;
+        private readonly HashSet<T> _set;
         public ListSet(T[] initialize)
         {
             _list = new List<T>(initialize);

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -29,12 +29,12 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 
         private sealed class PrefabModification : EditorUtil<T>
         {
-            [NotNull] private readonly List<ElementImpl> _elements;
+            private readonly List<ElementImpl> _elements;
             private bool _needsUpstreamUpdate;
             private int _upstreamElementCount;
-            [NotNull] private readonly SerializedProperty _rootProperty;
-            [CanBeNull] private SerializedProperty _currentRemoves;
-            [CanBeNull] private SerializedProperty _currentAdditions;
+            private readonly SerializedProperty _rootProperty;
+            private SerializedProperty? _currentRemoves;
+            private SerializedProperty? _currentAdditions;
             private int _currentRemovesSize;
             private int _currentAdditionsSize;
 
@@ -47,7 +47,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             private readonly ArraySizeCheck[] _layerRemoves;
             private readonly ArraySizeCheck[] _layerAdditions;
 
-            public PrefabModification([NotNull] SerializedProperty property, int nestCount,
+            public PrefabModification(SerializedProperty property, int nestCount,
                 Func<SerializedProperty, T> getValue, Action<SerializedProperty, T> setValue) : base(getValue,
                 setValue)
             {
@@ -273,7 +273,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                     _currentAdditionsSize = _currentAdditions.arraySize = 0;
             }
 
-            protected override IElement<T> NewSlotElement([NotNull] T value)
+            protected override IElement<T> NewSlotElement([JetBrains.Annotations.NotNull] T value)
             {
                 if (value == null) throw new ArgumentNullException(nameof(value));
                 return ElementImpl.NewSlot(this, value);
@@ -310,10 +310,10 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                     }
                 }
 
-                public SerializedProperty ModifierProp { get; internal set; }
+                public SerializedProperty? ModifierProp { get; internal set; }
 
                 private ElementImpl(PrefabModification container, int indexInModifier, T value, ElementStatus status,
-                    int sourceNestCount, SerializedProperty modifierProp)
+                    int sourceNestCount, SerializedProperty? modifierProp)
                 {
                     if (value == null) throw new ArgumentNullException(nameof(value));
                     _container = container;
@@ -329,14 +329,14 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 
                 public static ElementImpl NewElement(PrefabModification container, T value, int i)
                 {
-                    Debug.Assert(container._currentAdditions != null, "container._currentAdditions != null");
+                    if (container._currentAdditions == null) throw new InvalidOperationException("_container._currentAdditions == null");
                     return new ElementImpl(container, i, value, ElementStatus.NewElement, -1,
                         container._currentAdditions.GetArrayElementAtIndex(i));
                 }
 
                 public static ElementImpl FakeRemoved(PrefabModification container, T value, int i)
                 {
-                    Debug.Assert(container._currentRemoves != null, "container._currentRemoves != null");
+                    if (container._currentRemoves == null) throw new InvalidOperationException("_container._currentRemoves == null");
                     return new ElementImpl(container, i, value, ElementStatus.FakeRemoved, -1,
                         container._currentRemoves.GetArrayElementAtIndex(i));
                 }
@@ -460,7 +460,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 
                 public void MarkRemovedAt(int index)
                 {
-                    Debug.Assert(_container._currentRemoves != null, "_container._currentRemoves != null");
+                    if (_container._currentRemoves == null) throw new InvalidOperationException("_container._currentRemoves == null");
                     IndexInModifier = index;
                     ModifierProp = _container._currentRemoves.GetArrayElementAtIndex(index);
                     Status = ElementStatus.Removed;
@@ -468,7 +468,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 
                 public void MarkAddedTwiceAt(int index)
                 {
-                    Debug.Assert(_container._currentAdditions != null, "_container._currentAdditions != null");
+                    if (_container._currentAdditions == null) throw new InvalidOperationException("_container._currentAdditions == null");
                     IndexInModifier = index;
                     ModifierProp = _container._currentAdditions.GetArrayElementAtIndex(index);
                     Status = ElementStatus.AddedTwice;
@@ -534,10 +534,10 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 
             private (int indexInModifier, SerializedProperty modifierProp) AddToModifications(T value,
                 ref int currentModificationSize,
-                ref SerializedProperty currentModifications)
+                ref SerializedProperty? currentModifications)
             {
                 InitCurrentLayer(true);
-                Debug.Assert(currentModifications != null, "currentModifications != null");
+                if (currentModifications == null) throw new InvalidOperationException("currentModifications is null (force init failed)");
                 var indexInModifier = currentModifications.arraySize;
                 var modifierProp = AddArrayElement(currentModifications);
                 _setValue(modifierProp, value);
@@ -546,11 +546,11 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             }
 
             private void RemoveAdditionsAt(int indexInModifier) =>
-                RemoveModificationsAt(indexInModifier, ref _currentAdditionsSize, _currentAdditions,
+                RemoveModificationsAt(indexInModifier, ref _currentAdditionsSize, _currentAdditions!,
                     ElementStatus.NewElement, ElementStatus.AddedTwice);
 
             private void RemoveRemovesAt(int indexInModifier) =>
-                RemoveModificationsAt(indexInModifier, ref _currentRemovesSize, _currentRemoves,
+                RemoveModificationsAt(indexInModifier, ref _currentRemovesSize, _currentRemoves!,
                     ElementStatus.Removed, ElementStatus.FakeRemoved);
 
             private void RemoveModificationsAt(int indexInModifier, 
@@ -750,17 +750,16 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             private static GameObject GetGameObject(Object componentOrGameObject)
             {
                 var gameObject = componentOrGameObject as GameObject;
-                if (gameObject)
+                if (gameObject != null)
                     return gameObject;
                 var component = componentOrGameObject as Component;
-                return component ? component.gameObject : null;
+                if (component != null)
+                    return component.gameObject;
+                throw new InvalidOperationException($"componentOrGameObject is not GameObject nor Component ({componentOrGameObject.name})");
             }
 
-            private static GameObject GetRootGameObject(Object componentOrGameObject)
-            {
-                var gameObject = GetGameObject(componentOrGameObject);
-                return gameObject == null ? null : gameObject.transform.root.gameObject;
-            }
+            private static GameObject GetRootGameObject(Object componentOrGameObject) =>
+                GetGameObject(componentOrGameObject).transform.root.gameObject;
 
             private static void ForceRebuildInspectors()
             {
@@ -770,11 +769,15 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                     null,
                     Type.EmptyTypes, 
                     null);
-                Debug.Assert(method != null, nameof(method) + " != null");
+                if (method == null)
+                {
+                    UnityEngine.Debug.LogError("ForceRebuildInspectors not found");
+                    return;
+                }
                 method.Invoke(null, null);
             }
 
-            private static T ObjectOrCorrespondingObject(T value)
+            private static T? ObjectOrCorrespondingObject(T? value)
             {
                 if (!(value is Object obj)) return value;
                 if (EditorUtility.IsPersistent(obj)) return value;
