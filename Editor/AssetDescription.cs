@@ -14,7 +14,10 @@ namespace Anatawa12.AvatarOptimizer
     {
         [SerializeField]
         [TextArea]
+        // only for serialization so ignore warning
+#pragma warning disable CS0414
         private string comment = "";
+#pragma warning restore CS0414
         [SerializeField]
         private ClassReference[] meaninglessComponents = Array.Empty<ClassReference>();
 

@@ -14,8 +14,6 @@ namespace Anatawa12.AvatarOptimizer
         private SerializedProperty _optimizeAnimator = null!; // Initialized in OnEnable
         private SerializedProperty _mergeSkinnedMesh = null!; // Initialized in OnEnable
         private SerializedProperty _allowShuffleMaterialSlots = null!; // Initialized in OnEnable
-        private SerializedProperty _animatorOptimizerEnabled = null!; // Initialized in OnEnable
-        private SerializedProperty _animatorOptimizerEnd = null!; // Initialized in OnEnable
         private SerializedProperty _mmdWorldCompatibility = null!; // Initialized in OnEnable
         private SerializedProperty _advancedSettings = null!; // Initialized in OnEnable
         private GUIContent _advancedSettingsLabel = new GUIContent();
