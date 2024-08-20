@@ -1,4 +1,5 @@
-using System;
+#nullable enable
+
 using System.Linq;
 using Anatawa12.AvatarOptimizer.API;
 using Anatawa12.AvatarOptimizer.APIInternal;
@@ -13,7 +14,7 @@ namespace Anatawa12.AvatarOptimizer
 {
     internal class ObjectMappingContext : IExtensionContext
     {
-        public ObjectMappingBuilder<PropertyInfo> MappingBuilder { get; private set; }
+        public ObjectMappingBuilder<PropertyInfo>? MappingBuilder { get; private set; }
 
         public void OnActivate(BuildContext context)
         {
@@ -59,7 +60,7 @@ namespace Anatawa12.AvatarOptimizer
                     }
 
                     var serialized = new SerializedObject(component);
-                    AnimatorControllerMapper mapper = null;
+                    AnimatorControllerMapper? mapper = null;
 
                     foreach (var p in serialized.ObjectReferenceProperties())
                     {
@@ -135,11 +136,11 @@ namespace Anatawa12.AvatarOptimizer
 
         private class ComponentInfo<T> : MappedComponentInfo<T> where T : Object
         {
-            [NotNull] private readonly ComponentInfo _info;
+            private readonly ComponentInfo _info;
 
-            public ComponentInfo([NotNull] ComponentInfo info) => _info = info;
+            public ComponentInfo(ComponentInfo info) => _info = info;
 
-            public override T MappedComponent => EditorUtility.InstanceIDToObject(_info.MergedInto) as T;
+            public override T MappedComponent => (T)EditorUtility.InstanceIDToObject(_info.MergedInto);
             public override bool TryMapProperty(string property, out API.MappedPropertyInfo found)
             {
                 found = default;
@@ -149,7 +150,7 @@ namespace Anatawa12.AvatarOptimizer
                     found = new API.MappedPropertyInfo(MappedComponent, property);
                     return true;
                 }
-                if (mappedProp.MappedProperty.Name == null) return false;
+                if (mappedProp.MappedProperty == default) return false;
 
                 found = new API.MappedPropertyInfo(
                     EditorUtility.InstanceIDToObject(mappedProp.MappedProperty.InstanceId),
@@ -169,7 +170,7 @@ namespace Anatawa12.AvatarOptimizer
             _mapping = mapping;
         }
 
-        protected override Object CustomClone(Object o)
+        protected override Object? CustomClone(Object o)
         {
             if (o is AnimationClip clip)
             {

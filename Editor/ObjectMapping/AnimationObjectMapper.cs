@@ -1,6 +1,7 @@
+#nullable enable
+
 using System;
 using System.Collections.Generic;
-using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
 
@@ -12,8 +13,7 @@ namespace Anatawa12.AvatarOptimizer
         readonly BeforeGameObjectTree _beforeGameObjectTree;
         readonly ObjectMapping _objectMapping;
 
-        private readonly Dictionary<string, MappedGameObjectInfo> _pathsCache =
-            new Dictionary<string, MappedGameObjectInfo>();
+        private readonly Dictionary<string, MappedGameObjectInfo?> _pathsCache = new();
 
         public AnimationObjectMapper(GameObject rootGameObject, BeforeGameObjectTree beforeGameObjectTree,
             ObjectMapping objectMapping)
@@ -24,8 +24,7 @@ namespace Anatawa12.AvatarOptimizer
         }
 
         // null means nothing to map
-        [CanBeNull]
-        private MappedGameObjectInfo GetGameObjectInfo(string path)
+        private MappedGameObjectInfo? GetGameObjectInfo(string path)
         {
             if (_pathsCache.TryGetValue(path, out var info)) return info;
 
@@ -38,7 +37,7 @@ namespace Anatawa12.AvatarOptimizer
             else
             {
                 var foundGameObject = EditorUtility.InstanceIDToObject(tree.InstanceId) as GameObject;
-                var newPath = foundGameObject
+                var newPath = foundGameObject != null
                     ? Utils.RelativePath(_rootGameObject.transform, foundGameObject.transform)
                     : null;
 
@@ -56,17 +55,16 @@ namespace Anatawa12.AvatarOptimizer
             readonly BeforeGameObjectTree _tree;
 
             // null means removed gameObject
-            [CanBeNull] public readonly string NewPath;
+            public readonly string? NewPath;
 
-            public MappedGameObjectInfo(ObjectMapping objectMapping, string newPath,
-                BeforeGameObjectTree tree)
+            public MappedGameObjectInfo(ObjectMapping objectMapping, string? newPath, BeforeGameObjectTree tree)
             {
                 _objectMapping = objectMapping;
                 NewPath = newPath;
                 _tree = tree;
             }
 
-            public (int instanceId, ComponentInfo) GetComponentByType(Type type)
+            public (int instanceId, ComponentInfo?) GetComponentByType(Type type)
             {
                 if (!_tree.ComponentInstanceIdByType.TryGetValue(type, out var instanceId))
                     return (instanceId, null); // Nothing to map
@@ -74,8 +72,7 @@ namespace Anatawa12.AvatarOptimizer
             }
         }
 
-        [CanBeNull]
-        public string MapPath(string srcPath, Type type)
+        public string? MapPath(string srcPath, Type type)
         {
             var gameObjectInfo = GetGameObjectInfo(srcPath);
             if (gameObjectInfo == null)
@@ -105,8 +102,7 @@ namespace Anatawa12.AvatarOptimizer
             }
         }
 
-        [CanBeNull]
-        public (string path, Type type, string propertyName)[] MapBinding(string path, Type type, string propertyName)
+        public (string path, Type type, string propertyName)[]? MapBinding(string path, Type type, string propertyName)
         {
             var gameObjectInfo = GetGameObjectInfo(path);
             if (gameObjectInfo == null)
@@ -159,13 +155,18 @@ namespace Anatawa12.AvatarOptimizer
                 }
                 else
                 {
-                    var component = new ComponentOrGameObject(EditorUtility.InstanceIDToObject(componentInfo.MergedInto));
-                    if (!component) return Array.Empty<(string path, Type type, string propertyName)>(); // this means removed.
+                    var component =
+                        new ComponentOrGameObject(EditorUtility.InstanceIDToObject(componentInfo.MergedInto));
+                    if (!component)
+                        return Array.Empty<(string path, Type type, string propertyName)>(); // this means removed.
 
                     var newPath = Utils.RelativePath(_rootGameObject.transform, component.transform);
-                    if (newPath == null) return Array.Empty<(string path, Type type, string propertyName)>(); // this means moved to out of the animator scope
+                    if (newPath == null)
+                        return Array
+                            .Empty<(string path, Type type, string propertyName
+                                )>(); // this means moved to out of the animator scope
                     if (path == newPath) return null;
-                    return new []{ (newPath, type, propertyName) };
+                    return new[] { (newPath, type, propertyName) };
                 }
             }
             else
@@ -173,7 +174,8 @@ namespace Anatawa12.AvatarOptimizer
                 // The component is not merged & no prop mapping so process GameObject mapping
 
                 var component = EditorUtility.InstanceIDToObject(instanceId);
-                if (!component) return Array.Empty<(string path, Type type, string propertyName)>(); // this means removed
+                if (!component)
+                    return Array.Empty<(string path, Type type, string propertyName)>(); // this means removed
 
                 if (gameObjectInfo.NewPath == null) return Array.Empty<(string path, Type type, string propertyName)>();
                 if (path == gameObjectInfo.NewPath) return null;
