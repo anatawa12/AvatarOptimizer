@@ -1,12 +1,12 @@
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes;
-using JetBrains.Annotations;
 using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
-using UnityEngine.Profiling;
 using Object = UnityEngine.Object;
 
 #if AAO_VRCSDK3_AVATARS
@@ -124,25 +124,24 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 
     class AnimatorControllerCloner : DeepCloneHelper
     {
-        [NotNull] private readonly BuildContext _context;
-        [CanBeNull] private readonly IReadOnlyDictionary<AnimationClip,AnimationClip> _mapping;
+        private readonly BuildContext _context;
+        private readonly IReadOnlyDictionary<AnimationClip,AnimationClip>? _mapping;
 
-        private AnimatorControllerCloner([NotNull] BuildContext context,
-            [CanBeNull] IReadOnlyDictionary<AnimationClip, AnimationClip> mapping)
+        private AnimatorControllerCloner(BuildContext context,
+            IReadOnlyDictionary<AnimationClip, AnimationClip>? mapping)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _mapping = mapping;
         }
 
-        public static AnimatorController Clone([NotNull] BuildContext context,
-            [NotNull] RuntimeAnimatorController runtimeController)
+        public static AnimatorController Clone(BuildContext context, RuntimeAnimatorController runtimeController)
         {
             var (controller, mapping) = ACUtils.GetControllerAndOverrides(runtimeController);
 
             return new AnimatorControllerCloner(context, mapping).MapObject(controller);
         }
 
-        protected override Object CustomClone(Object o)
+        protected override Object? CustomClone(Object o)
         {
             if (o is AnimationClip clip)
             {

@@ -1,3 +1,5 @@
+#nullable enable
+
 using System.Collections.Generic;
 using nadena.dev.ndmf;
 using UnityEngine;
@@ -14,7 +16,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
         // avatar root => transform matrix (root.worldToLocalMatrix * transform.localToWorldMatrix)
         // we can local to world by root.localToWorldMatrix * thisMatrix
         private Dictionary<Transform, Matrix4x4> _originalTransforms = new Dictionary<Transform, Matrix4x4>();
-        public Transform AvatarRoot { get; set; }
+        public Transform AvatarRoot { get; set; } = null!; // set by FetchOriginalStatePass
 
         public void Register(Transform transform)
         {

@@ -1,3 +1,5 @@
+#nullable enable
+
 using Anatawa12.AvatarOptimizer.AnimatorParsersV2;
 using Anatawa12.AvatarOptimizer.ndmf;
 using nadena.dev.ndmf;
@@ -17,7 +19,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
             var modifications = new AnimatorParser(traceAndOptimize.MmdWorldCompatibility)
                 .GatherAnimationModifications(context);
             context.Extension<ObjectMappingContext>()
-                .MappingBuilder
+                .MappingBuilder!
                 .ImportModifications(modifications);
         }
     }
