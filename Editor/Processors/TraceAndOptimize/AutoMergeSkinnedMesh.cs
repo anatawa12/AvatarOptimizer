@@ -720,28 +720,24 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             public override int GetHashCode()
             {
-                unchecked
-                {
-                    var hashCode = HasNormals.GetHashCode();
-                    hashCode = (hashCode * 397) ^ ActivenessAnimationLocations.GetHashCode();
-                    hashCode = (hashCode * 397) ^ RendererAnimationLocations.GetHashCode();
-                    hashCode = (hashCode * 397) ^ Activeness.GetHashCode();
-                    hashCode = (hashCode * 397) ^ Bounds.GetHashCode();
-                    hashCode = (hashCode * 397) ^ (int)ShadowCastingMode;
-                    hashCode = (hashCode * 397) ^ ReceiveShadows.GetHashCode();
-                    hashCode = (hashCode * 397) ^ (int)LightProbeUsage;
-                    hashCode = (hashCode * 397) ^ (int)ReflectionProbeUsage;
-                    hashCode = (hashCode * 397) ^ AllowOcclusionWhenDynamic.GetHashCode();
-                    hashCode = (hashCode * 397) ^ (LightProbeProxyVolumeOverride != null
-                        ? LightProbeProxyVolumeOverride.GetHashCode()
-                        : 0);
-                    hashCode = (hashCode * 397) ^ (ProbeAnchor != null ? ProbeAnchor.GetHashCode() : 0);
-                    hashCode = (hashCode * 397) ^ (int)Quality;
-                    hashCode = (hashCode * 397) ^ UpdateWhenOffscreen.GetHashCode();
-                    hashCode = (hashCode * 397) ^ (RootBone != null ? RootBone.GetHashCode() : 0);
-                    hashCode = (hashCode * 397) ^ SkinnedMotionVectors.GetHashCode();
-                    return hashCode;
-                }
+                var hashCode = new HashCode();
+                hashCode.Add(HasNormals);
+                hashCode.Add(ActivenessAnimationLocations);
+                hashCode.Add(RendererAnimationLocations);
+                hashCode.Add(Activeness);
+                hashCode.Add(Bounds);
+                hashCode.Add(ShadowCastingMode);
+                hashCode.Add(ReceiveShadows);
+                hashCode.Add(LightProbeUsage);
+                hashCode.Add(ReflectionProbeUsage);
+                hashCode.Add(AllowOcclusionWhenDynamic);
+                hashCode.Add(LightProbeProxyVolumeOverride);
+                hashCode.Add(ProbeAnchor);
+                hashCode.Add(Quality);
+                hashCode.Add(UpdateWhenOffscreen);
+                hashCode.Add(RootBone);
+                hashCode.Add(SkinnedMotionVectors);
+                return hashCode.ToHashCode();
             }
         }
     }

@@ -174,17 +174,7 @@ namespace Anatawa12.AvatarOptimizer
             Name = name;
         }
 
-        public override int GetHashCode()
-        {
-            unchecked
-            {
-                var hashCode = InstanceId;
-                hashCode = (hashCode * 397) ^ Type.GetHashCode();
-                hashCode = (hashCode * 397) ^ Name.GetHashCode();
-                return hashCode;
-            }
-        }
-
+        public override int GetHashCode() => HashCode.Combine(InstanceId, Type, Name);
         public bool Equals(PropertyDescriptor other) =>
             InstanceId == other.InstanceId && Type == other.Type && Name == other.Name;
         public override bool Equals(object? obj) => obj is PropertyDescriptor other && Equals(other);

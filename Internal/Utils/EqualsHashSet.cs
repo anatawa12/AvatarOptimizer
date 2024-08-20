@@ -20,14 +20,7 @@ namespace Anatawa12.AvatarOptimizer
 
         public int Count => backedSet.Count;
 
-        public override int GetHashCode()
-        {
-            // we use XOR to make the hashcode order-independent
-            var hash = backedSet.Count;
-            foreach (var item in backedSet)
-                hash ^= item == null ? 0 : item.GetHashCode();
-            return hash;
-        }
+        public override int GetHashCode() => backedSet.GetSetHashCode();
 
         public bool Equals(EqualsHashSet<T> other) =>
             !ReferenceEquals(null, other) && (ReferenceEquals(this, other) || backedSet.SetEquals(other.backedSet));

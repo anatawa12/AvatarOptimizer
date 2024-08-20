@@ -94,9 +94,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
         public override bool Equals(object obj) => obj is ValueInfo<T> other && Equals(other);
 
-        public override int GetHashCode() => _possibleValues == null
-            ? 0
-            : _possibleValues.Aggregate(0, (current, value) => current ^ value.GetHashCode());
+        public override int GetHashCode() => _possibleValues == null ? 0 : _possibleValues.GetSetHashCode();
 
         public override string ToString() =>
             _possibleValues == null

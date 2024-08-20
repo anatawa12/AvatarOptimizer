@@ -28,7 +28,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         protected bool Equals(EditSkinnedMeshProcessor<TComponent> other) => Component == other.Component;
 
-        public override bool Equals(object obj) =>
+        public override bool Equals(object? obj) =>
             obj != null &&
             (ReferenceEquals(this, obj) || 
              obj.GetType() == this.GetType() && Equals((EditSkinnedMeshProcessor<TComponent>)obj));

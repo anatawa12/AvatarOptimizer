@@ -36,12 +36,12 @@ namespace Anatawa12.AvatarOptimizer
             return code.ToHashCode();
         }
 
-        // The HashSet doesn't implement HashCode
-        public static int GetHashCode2<T>(this HashSet<T> set)
+        // Create a hashcode for a order-independent set
+        public static int GetSetHashCode<T>(this ICollection<T> collection)
         {
             // we use XOR to make the hashcode order-independent
-            var hash = set.Count;
-            foreach (var item in set)
+            var hash = collection.Count;
+            foreach (var item in collection)
                 hash ^= HashCode.Combine(item);
             return hash;
         }

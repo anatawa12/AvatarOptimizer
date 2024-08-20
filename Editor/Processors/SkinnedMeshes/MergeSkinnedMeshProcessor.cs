@@ -521,7 +521,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             private class BlendShapeNameComparator : IEqualityComparer<(string name, float weight)>
             {
-                public static readonly BlendShapeNameComparator Instance = new BlendShapeNameComparator();
+                public static readonly BlendShapeNameComparator Instance = new();
 
                 public bool Equals((string name, float weight) x, (string name, float weight) y)
                 {
@@ -530,7 +530,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
                 public int GetHashCode((string name, float weight) obj)
                 {
-                    return obj.name?.GetHashCode() ?? 0;
+                    return obj.name.GetHashCode();
                 }
             }
         }

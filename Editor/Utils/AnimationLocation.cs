@@ -105,18 +105,15 @@ namespace Anatawa12.AvatarOptimizer
 
         public override int GetHashCode()
         {
-            unchecked
-            {
-                var hashCode = Component.GetHashCode();
-                hashCode = (hashCode * 397) ^ PlayableLayerIndex;
-                hashCode = (hashCode * 397) ^ AnimationLayerIndex;
-                hashCode = (hashCode * 397) ^ AnimatorState.GetHashCode();
-                hashCode = (hashCode * 397) ^ BlendTreeLocation.Length;
-                foreach (var location in BlendTreeLocation)
-                    hashCode = (hashCode * 397) ^ location;
-                hashCode = (hashCode * 397) ^ Curve.GetHashCode2();
-                return hashCode;
-            }
+            var hashCode = new HashCode();
+            hashCode.Add(Component);
+            hashCode.Add(PlayableLayerIndex);
+            hashCode.Add(AnimationLayerIndex);
+            hashCode.Add(AnimatorState);
+            foreach (var location in BlendTreeLocation)
+                hashCode.Add(location);
+            hashCode.Add(Curve);
+            return hashCode.ToHashCode();
         }
 
         public IEnumerable<ObjectReference> ContextReferences => new[]

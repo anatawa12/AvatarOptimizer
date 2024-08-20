@@ -293,11 +293,9 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 Equals(Transform, other.Transform) && _bindPoseInfo == other._bindPoseInfo;
 
             public override bool Equals(object? obj) => obj is BoneUniqKey other && Equals(other);
-
-            public override int GetHashCode() =>
-                unchecked(_bindPoseInfo.GetHashCode() * 397) ^ (Transform != null ? Transform.GetHashCode() : 0);
+            public override int GetHashCode() => HashCode.Combine(_bindPoseInfo, Transform);
         }
-        
+
 
         public struct MergeBoneTransParentInfo
         {
