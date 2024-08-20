@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes;
-using JetBrains.Annotations;
 using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEditor.Animations;
@@ -399,7 +398,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 
                         exitValues.RemoveWhere(value => value.IntValue.HasValue ?
                             conditions.All(c => c.SatisfiesInt(value.IntValue.Value) == true) :
-                            conditions.All(c => c.SatisfiesBool(value.BoolValue.Value) == true));
+                            conditions.All(c => c.SatisfiesBool(value.BoolValue!.Value) == true));
                     }
 
                     if (exitValues.Count != 0) return null;
@@ -460,7 +459,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             public override int GetHashCode() => HashCode.Combine(IntValue, BoolValue);
 
             public bool Equals(IntOrBool other) => IntValue == other.IntValue && BoolValue == other.BoolValue;
-            public override bool Equals(object obj) => obj is IntOrBool other && Equals(other);
+            public override bool Equals(object? obj) => obj is IntOrBool other && Equals(other);
             public static bool operator ==(IntOrBool left, IntOrBool right) => left.Equals(right);
             public static bool operator !=(IntOrBool left, IntOrBool right) => !left.Equals(right);
 
@@ -556,12 +555,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             if (states.All(x => x.value.IntValue.HasValue))
             {
                 // sort increasing order
-                states.Sort((x, y) => x.value.IntValue.Value.CompareTo(y.value.IntValue.Value));
+                states.Sort((x, y) => x.value.IntValue!.Value.CompareTo(y.value.IntValue!.Value));
 
                 {
                     // first frame: add defaultMotion before first state
                     var (value, motion) = states[0];
-                    AddFrames(value.IntValue.Value - 1, defaultMotion,
+                    AddFrames(value.IntValue!.Value - 1, defaultMotion,
                         value.IntValue.Value, motion);
                 }
 
@@ -571,7 +570,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                     var (prevValue, prevMotion) = states[i - 1];
                     var (currentValue, currentMotion) = states[i];
 
-                    if (currentValue.IntValue.Value - prevValue.IntValue.Value > 1)
+                    if (currentValue.IntValue!.Value - prevValue.IntValue!.Value > 1)
                     {
                         AddFrames(prevValue.IntValue.Value, prevMotion,
                             prevValue.IntValue.Value + 1, defaultMotion);
@@ -588,7 +587,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 {
                     // last frame: add last state to defaultMotion
                     var (value, motion) = states[^1];
-                    AddFrames(value.IntValue.Value, motion,
+                    AddFrames(value.IntValue!.Value, motion,
                         value.IntValue.Value + 1, defaultMotion);
                 }
             }

@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using JetBrains.Annotations;
 using UnityEditor;
 
 namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
@@ -10,8 +9,8 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
     {
         private sealed class Root : EditorUtil<T>
         {
-            private List<ElementImpl> _list;
-            [NotNull] private readonly SerializedProperty _mainSet;
+            private List<ElementImpl>? _list;
+            private readonly SerializedProperty _mainSet;
             public override int Count => _mainSet.arraySize;
 
             public Root(SerializedProperty property, Func<SerializedProperty, T> getValue,
@@ -33,9 +32,10 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                 }
             }
 
+            // Caller's responsibility to ensure _list is not null
             private void ReIndexAll()
             {
-                for (var i = 0; i < _list.Count; i++)
+                for (var i = 0; i < _list!.Count; i++)
                     _list[i].UpdateIndex(i);
             }
 
@@ -58,7 +58,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                 public T Value { get; }
                 public ElementStatus Status => Contains ? ElementStatus.Natural : ElementStatus.NewSlot;
                 public bool Contains => _index >= 0;
-                public SerializedProperty ModifierProp { get; private set; }
+                public SerializedProperty? ModifierProp { get; private set; }
 
                 private readonly Root _container;
                 private int _index;
@@ -86,7 +86,8 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                     if (Contains) return;
                     _index = _container._mainSet.arraySize;
                     _container._setValue(ModifierProp = AddArrayElement(_container._mainSet), Value);
-                    _container._list.Add(this);
+                    // ElementImpl instance will not exist unless _list is not null
+                    _container._list!.Add(this);
                     //_container.ReIndexAll(); // appending does not change index so no reindex is required
                 }
 
@@ -98,7 +99,8 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                     _container.RemoveArrayElementAt(_container._mainSet, _index);
                     _index = -1;
                     ModifierProp = null;
-                    _container._list.Remove(this);
+                    // ElementImpl instance will not exist unless _list is not null
+                    _container._list!.Remove(this);
                     _container.ReIndexAll();
                 }
 

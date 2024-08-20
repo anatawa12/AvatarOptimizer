@@ -7,8 +7,8 @@ namespace Anatawa12.AvatarOptimizer
     [CustomPropertyDrawer(typeof(AAOLocalizedAttribute))]
     class LocalizedAttributeDrawer : InheritingDrawer<AAOLocalizedAttribute>
     {
-        private AAOLocalizedAttribute _attribute;
-        private string _localeCode;
+        private AAOLocalizedAttribute _attribute = null!; // initialized in Initialize method
+        private string? _localeCode;
         private GUIContent _label = new GUIContent();
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)

@@ -1,4 +1,3 @@
-using JetBrains.Annotations;
 using UnityEditor;
 
 namespace Anatawa12.AvatarOptimizer
@@ -16,9 +15,8 @@ namespace Anatawa12.AvatarOptimizer
             OnInspectorGUIInner();
         }
 
-        private string _descriptionKey;
-        [CanBeNull]
-        protected virtual string Description
+        private string? _descriptionKey;
+        protected virtual string? Description
         {
             get
             {

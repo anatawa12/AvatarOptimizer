@@ -1,5 +1,3 @@
-using System.Linq;
-using JetBrains.Annotations;
 using Unity.Collections;
 using UnityEditor;
 using UnityEngine;
@@ -9,8 +7,8 @@ namespace Anatawa12.AvatarOptimizer
     [CustomEditor(typeof(RemoveMeshByMask))]
     internal class RemoveMeshByMaskEditor : AvatarTagComponentEditorBase
     {
-        private SerializedProperty _materials;
-        private SkinnedMeshRenderer _renderer;
+        private SerializedProperty _materials = null!; // Initialized in OnEnable
+        private SkinnedMeshRenderer _renderer = null!; // Initialized in OnEnable
         public bool automaticallySetWeightWhenToggle;
 
         private void OnEnable()
@@ -107,7 +105,7 @@ namespace Anatawa12.AvatarOptimizer
             serializedObject.ApplyModifiedProperties();
         }
 
-        [CanBeNull] TextureImporter GetTextureImporter(Texture2D texture)
+        TextureImporter? GetTextureImporter(Texture2D texture)
         {
             var path = AssetDatabase.GetAssetPath(texture);
             if (string.IsNullOrEmpty(path))

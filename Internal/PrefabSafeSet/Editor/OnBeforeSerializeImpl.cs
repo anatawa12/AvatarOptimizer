@@ -36,7 +36,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             {
                 var context = new PrefabSafeSetUtil.NullOrMissingContext(self.OuterObject);
 
-                void ReplaceMissingWithNull(T[] array)
+                void ReplaceMissingWithNull(T?[] array)
                 {
                     for (var i = 0; i < array.Length; i++)
                         if (array[i].IsNullOrMissing(context))
@@ -52,7 +52,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                 }
             }
 
-            void DistinctCheckArray(ref T[] source, ref T[] checkedArray, Func<T, bool> filter)
+            void DistinctCheckArray(ref T[] source, ref T[]? checkedArray, Func<T, bool> filter)
             {
                 if (checkedArray == source && source.All(filter)) return;
                 var array = source.Distinct().Where(filter).ToArray();

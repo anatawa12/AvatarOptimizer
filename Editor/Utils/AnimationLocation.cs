@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.AnimatorParsersV2;
-using JetBrains.Annotations;
 using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEditor.Animations;
@@ -13,17 +12,17 @@ namespace Anatawa12.AvatarOptimizer
     // The class describes the location of the animation curve
     internal sealed class AnimationLocation : IErrorContext
     {
-        [NotNull] public Animator Component { get; }
+        public Animator Component { get; }
         public int PlayableLayerIndex { get; }
         public int AnimationLayerIndex { get; }
-        [NotNull] public AnimatorState AnimatorState { get; }
-        [NotNull] public int[] BlendTreeLocation { get; }
-        [NotNull] public AnimationCurve Curve { get; }
-        [NotNull] public AnimationClip Clip { get; set; }
+        public AnimatorState AnimatorState { get; }
+        public int[] BlendTreeLocation { get; }
+        public AnimationCurve Curve { get; }
+        public AnimationClip Clip { get; set; }
 
-        public AnimationLocation([NotNull] Animator component, int playableLayerIndex, int animationLayerIndex,
-            [NotNull] AnimatorState state, int[] blendTreeLocation, [NotNull] AnimationCurve curve,
-            [NotNull] AnimationClip clip)
+        public AnimationLocation(Animator component, int playableLayerIndex, int animationLayerIndex,
+            AnimatorState state, int[]? blendTreeLocation, AnimationCurve curve,
+            AnimationClip clip)
         {
             if (!component) throw new ArgumentNullException(nameof(component));
             if (!state) throw new ArgumentNullException(nameof(state));
@@ -101,23 +100,20 @@ namespace Anatawa12.AvatarOptimizer
             AnimationLayerIndex == other.AnimationLayerIndex && Equals(AnimatorState, other.AnimatorState) &&
             BlendTreeLocation.SequenceEqual(other.BlendTreeLocation) && Equals(Curve, other.Curve);
 
-        public override bool Equals(object obj) =>
+        public override bool Equals(object? obj) =>
             ReferenceEquals(this, obj) || obj is AnimationLocation other && Equals(other);
 
         public override int GetHashCode()
         {
-            unchecked
-            {
-                var hashCode = Component.GetHashCode();
-                hashCode = (hashCode * 397) ^ PlayableLayerIndex;
-                hashCode = (hashCode * 397) ^ AnimationLayerIndex;
-                hashCode = (hashCode * 397) ^ AnimatorState.GetHashCode();
-                hashCode = (hashCode * 397) ^ BlendTreeLocation.Length;
-                foreach (var location in BlendTreeLocation)
-                    hashCode = (hashCode * 397) ^ location;
-                hashCode = (hashCode * 397) ^ Curve.GetHashCode2();
-                return hashCode;
-            }
+            var hashCode = new HashCode();
+            hashCode.Add(Component);
+            hashCode.Add(PlayableLayerIndex);
+            hashCode.Add(AnimationLayerIndex);
+            hashCode.Add(AnimatorState);
+            foreach (var location in BlendTreeLocation)
+                hashCode.Add(location);
+            hashCode.Add(Curve);
+            return hashCode.ToHashCode();
         }
 
         public IEnumerable<ObjectReference> ContextReferences => new[]

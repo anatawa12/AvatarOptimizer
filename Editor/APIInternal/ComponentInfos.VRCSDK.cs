@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.API;
-using JetBrains.Annotations;
 using nadena.dev.ndmf.runtime;
 using UnityEngine;
 using VRC.SDK3;
@@ -14,10 +13,8 @@ using VRC.SDK3.Dynamics.Contact.Components;
 using VRC.SDK3.Dynamics.PhysBone.Components;
 using VRC.SDKBase;
 
-#if AAO_VRCSDK3_AVATARS_CONSTRAINTS
 using VRC.Dynamics.ManagedTypes;
 using VRC.SDK3.Dynamics.Constraint.Components;
-#endif
 
 namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
 {
@@ -162,7 +159,6 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
             }
         }
         
-        [NotNull]
         private static string ParseBlendShapeProperty(string prop) =>
             prop.StartsWith("blendShape.", StringComparison.Ordinal)
                 ? prop.Substring("blendShape.".Length)
@@ -472,7 +468,6 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
         }
     }
     
-#if AAO_VRCSDK3_AVATARS_IMPOSTER_SETTINGS
     // this component has no documentation so this implementation is based on assumption
     [ComponentInformation(typeof(VRCImpostorEnvironment))]
     internal class VRCImpostorEnvironmentInformation : ComponentInformation<VRCImpostorEnvironment>
@@ -483,9 +478,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
             collector.MarkEntrypoint();
         }
     }
-#endif
 
-#if AAO_VRCSDK3_AVATARS_HEAD_CHOP
     [ComponentInformation(typeof(VRCHeadChop))]
     internal class VRCHeadChopInformation : ComponentInformation<VRCHeadChop>
     {
@@ -501,9 +494,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
             collector.MarkBehaviour();
         }
     }
-#endif
 
-#if AAO_VRCSDK3_AVATARS_CONSTRAINTS
     [ComponentInformation(typeof(VRCConstraintBase))]
     [ComponentInformation(typeof(VRCParentConstraintBase))]
     [ComponentInformation(typeof(VRCParentConstraint))]
@@ -548,7 +539,5 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
             collector.AddDependency(component.WorldUpTransform);
         }
     }
-
-#endif
 }
 #endif

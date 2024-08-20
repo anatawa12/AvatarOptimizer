@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
-using JetBrains.Annotations;
 using nadena.dev.ndmf;
 using UnityEngine;
 using UnityEngine.Profiling;
@@ -128,7 +127,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             Profiler.BeginSample("Merge Meshes");
 
-            Func<MeshInfo2[], (int[][], List<(MeshTopology, Material)>)> createSubMeshes;
+            Func<MeshInfo2[], (int[][], List<(MeshTopology, Material?)>)> createSubMeshes;
 
             if (state.SkipMergeMaterials)
                 createSubMeshes = CreateSubMeshesNoMerge;
@@ -172,7 +171,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             Func<GameObject> gameObjectFactory,
             CategorizationKey key,
             List<MeshInfo2> meshInfos,
-            Func<MeshInfo2[], (int[][], List<(MeshTopology, Material)>)> createSubMeshes
+            Func<MeshInfo2[], (int[][], List<(MeshTopology, Material?)>)> createSubMeshes
         )
         {
             // if there's no activeness animation, we merge them at root
@@ -196,7 +195,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             Func<GameObject> gameObjectFactory,
             CategorizationKey key,
             List<MeshInfo2> meshInfos,
-            Func<MeshInfo2[], (int[][], List<(MeshTopology, Material)>)> createSubMeshes,
+            Func<MeshInfo2[], (int[][], List<(MeshTopology, Material?)>)> createSubMeshes,
             ObjectMappingBuilder<PropertyInfo> mappingBuilder)
         {
             // if there is activeness animation, we have to decide the parent of merged mesh
@@ -248,8 +247,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 removeEmptyRendererObject: false);
         }
 
-        [NotNull]
-        private static Transform ComputeCommonParent(IReadOnlyList<MeshInfo2> meshInfos, [NotNull] Transform avatarRoot)
+        private static Transform ComputeCommonParent(IReadOnlyList<MeshInfo2> meshInfos, Transform avatarRoot)
         {
             // if there is activeness animation, we have to decide the parent of merged mesh
             var commonParents = new HashSet<Transform>(
@@ -258,7 +256,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 commonParents.IntersectWith(
                     meshInfo.SourceRenderer.transform.ParentEnumerable(root: avatarRoot));
 
-            Transform commonParent = null;
+            Transform? commonParent = null;
             // we merge at the child-most common parent
             foreach (var someCommonParent in commonParents)
             {
@@ -328,7 +326,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             return commonParent;
         }
 
-        [CanBeNull]
         private static (Activeness, EqualsHashSet<(bool initial, EqualsHashSet<AnimationLocation> animations)>)?
             GetActivenessInformation(BuildContext context, Renderer component)
         {
@@ -376,8 +373,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         }
 
 
-        [CanBeNull]
-        private static EqualsHashSet<(string property, AnimationLocation location)>
+        private static EqualsHashSet<(string property, AnimationLocation location)>?
             GetAnimationLocationsForRendererAnimation(
                 BuildContext context, Component component)
         {
@@ -425,10 +421,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             return newSkinnedMeshRenderer;
         }
 
-        public static (int[][], List<(MeshTopology, Material)>) CreateSubMeshesNoMerge(MeshInfo2[] meshInfos)
+        public static (int[][], List<(MeshTopology, Material?)>) CreateSubMeshesNoMerge(MeshInfo2[] meshInfos)
         {
             var subMeshIndexMap = new int[meshInfos.Length][];
-            var materials = new List<(MeshTopology topology, Material material)>();
+            var materials = new List<(MeshTopology topology, Material? material)>();
             for (var i = 0; i < meshInfos.Length; i++)
             {
                 var meshInfo = meshInfos[i];
@@ -444,22 +440,22 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             return (subMeshIndexMap, materials);
         }
 
-        public static (int[][], List<(MeshTopology, Material)>) CreateSubMeshesMergeShuffling(MeshInfo2[] meshInfos) =>
+        public static (int[][], List<(MeshTopology, Material?)>) CreateSubMeshesMergeShuffling(MeshInfo2[] meshInfos) =>
             MergeSkinnedMeshProcessor.GenerateSubMeshMapping(meshInfos, new HashSet<Material>());
 
-        public static (int[][], List<(MeshTopology, Material)>) CreateSubMeshesMergePreserveOrder(MeshInfo2[] meshInfos)
+        public static (int[][], List<(MeshTopology, Material?)>) CreateSubMeshesMergePreserveOrder(MeshInfo2[] meshInfos)
         {
             // merge consecutive submeshes with same material to one for simpler logic
             // note: both start and end are inclusive
             var reducedMeshInfos =
-                new LinkedList<((MeshTopology topology, Material material) info, (int start, int end) actualIndices)>
+                new LinkedList<((MeshTopology topology, Material? material) info, (int start, int end) actualIndices)>
                     [meshInfos.Length];
 
             for (var meshI = 0; meshI < meshInfos.Length; meshI++)
             {
                 var meshInfo = meshInfos[meshI];
                 var reducedMeshInfo =
-                    new LinkedList<((MeshTopology topology, Material material) info, (int start, int end) actualIndices
+                    new LinkedList<((MeshTopology topology, Material? material) info, (int start, int end) actualIndices
                         )>();
 
                 if (meshInfo.SubMeshes.Count > 0)
@@ -490,7 +486,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             for (var i = 0; i < meshInfos.Length; i++)
                 subMeshIndexMap[i] = new int[meshInfos[i].SubMeshes.Count];
 
-            var materials = new List<(MeshTopology topology, Material material)>();
+            var materials = new List<(MeshTopology topology, Material? material)>();
 
 
             while (reducedMeshInfos.Any(x => x.First != null))
@@ -547,7 +543,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 return mostUsedMaterial;
             }
 
-            bool UsedByRest((MeshTopology topology, Material material) subMesh)
+            bool UsedByRest((MeshTopology topology, Material? material) subMesh)
             {
                 foreach (var meshInfo in reducedMeshInfos)
                 {
@@ -717,35 +713,31 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                        SkinnedMotionVectors == other.SkinnedMotionVectors;
             }
 
-            public override bool Equals(object obj)
+            public override bool Equals(object? obj)
             {
                 return obj is CategorizationKey other && Equals(other);
             }
 
             public override int GetHashCode()
             {
-                unchecked
-                {
-                    var hashCode = HasNormals.GetHashCode();
-                    hashCode = (hashCode * 397) ^ ActivenessAnimationLocations.GetHashCode();
-                    hashCode = (hashCode * 397) ^ RendererAnimationLocations.GetHashCode();
-                    hashCode = (hashCode * 397) ^ Activeness.GetHashCode();
-                    hashCode = (hashCode * 397) ^ Bounds.GetHashCode();
-                    hashCode = (hashCode * 397) ^ (int)ShadowCastingMode;
-                    hashCode = (hashCode * 397) ^ ReceiveShadows.GetHashCode();
-                    hashCode = (hashCode * 397) ^ (int)LightProbeUsage;
-                    hashCode = (hashCode * 397) ^ (int)ReflectionProbeUsage;
-                    hashCode = (hashCode * 397) ^ AllowOcclusionWhenDynamic.GetHashCode();
-                    hashCode = (hashCode * 397) ^ (LightProbeProxyVolumeOverride != null
-                        ? LightProbeProxyVolumeOverride.GetHashCode()
-                        : 0);
-                    hashCode = (hashCode * 397) ^ (ProbeAnchor != null ? ProbeAnchor.GetHashCode() : 0);
-                    hashCode = (hashCode * 397) ^ (int)Quality;
-                    hashCode = (hashCode * 397) ^ UpdateWhenOffscreen.GetHashCode();
-                    hashCode = (hashCode * 397) ^ (RootBone != null ? RootBone.GetHashCode() : 0);
-                    hashCode = (hashCode * 397) ^ SkinnedMotionVectors.GetHashCode();
-                    return hashCode;
-                }
+                var hashCode = new HashCode();
+                hashCode.Add(HasNormals);
+                hashCode.Add(ActivenessAnimationLocations);
+                hashCode.Add(RendererAnimationLocations);
+                hashCode.Add(Activeness);
+                hashCode.Add(Bounds);
+                hashCode.Add(ShadowCastingMode);
+                hashCode.Add(ReceiveShadows);
+                hashCode.Add(LightProbeUsage);
+                hashCode.Add(ReflectionProbeUsage);
+                hashCode.Add(AllowOcclusionWhenDynamic);
+                hashCode.Add(LightProbeProxyVolumeOverride);
+                hashCode.Add(ProbeAnchor);
+                hashCode.Add(Quality);
+                hashCode.Add(UpdateWhenOffscreen);
+                hashCode.Add(RootBone);
+                hashCode.Add(SkinnedMotionVectors);
+                return hashCode.ToHashCode();
             }
         }
     }

@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using JetBrains.Annotations;
 using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer
@@ -16,16 +15,16 @@ namespace Anatawa12.AvatarOptimizer
 
         // root is exclusive
         public static TransformParentEnumerable ParentEnumerable(this Transform transform,
-            Transform root, bool includeMe = false) =>
+            Transform? root, bool includeMe = false) =>
             new TransformParentEnumerable(transform, root, includeMe);
 
         public readonly struct TransformParentEnumerable : IEnumerable<Transform>
         {
             private readonly Transform _transform;
-            private readonly Transform _root;
+            private readonly Transform? _root;
             private readonly bool _includeMe;
 
-            public TransformParentEnumerable(Transform transform, Transform root, bool includeMe) => 
+            public TransformParentEnumerable(Transform transform, Transform? root, bool includeMe) => 
                 (_transform, _root, _includeMe) = (transform, root, includeMe);
 
             public Enumerator GetEnumerator() => new Enumerator(_transform, _root, _includeMe);
@@ -35,16 +34,16 @@ namespace Anatawa12.AvatarOptimizer
             public struct Enumerator : IEnumerator<Transform>
             {
                 object IEnumerator.Current => Current;
-                [NotNull] public Transform Current => _current ? _current : throw new Exception("invalid state");
+                public Transform Current => _current != null ? _current : throw new Exception("invalid state");
 
                 private readonly Transform _initial;
-                private readonly Transform _root;
+                private readonly Transform? _root;
                 private readonly bool _includeMe;
 
                 private bool _beforeFirst;
-                private Transform _current;
+                private Transform? _current;
 
-                public Enumerator(Transform transform, Transform root, bool includeMe)
+                public Enumerator(Transform transform, Transform? root, bool includeMe)
                 {
                     _current = null;
                     _initial = transform;

@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
 
@@ -21,10 +20,10 @@ namespace Anatawa12.AvatarOptimizer
         private readonly IReadOnlyDictionary<int, BeforeGameObjectTree> _beforeGameObjectInfos;
 
         // key: instanceId
-        private readonly Dictionary<int, BuildingComponentInfo> _originalComponentInfos = new Dictionary<int, BuildingComponentInfo>();
-        private readonly Dictionary<int, BuildingComponentInfo> _componentInfos = new Dictionary<int, BuildingComponentInfo>();
+        private readonly Dictionary<int, BuildingComponentInfo> _originalComponentInfos = new();
+        private readonly Dictionary<int, BuildingComponentInfo> _componentInfos = new();
 
-        public ObjectMappingBuilder([NotNull] GameObject rootObject)
+        public ObjectMappingBuilder(GameObject rootObject)
         {
             if (!rootObject) throw new ArgumentNullException(nameof(rootObject));
             var transforms = rootObject.GetComponentsInChildren<Transform>(true);
@@ -103,16 +102,16 @@ namespace Anatawa12.AvatarOptimizer
 
         class AnimationPropertyInfo
         {
-            [CanBeNull] public readonly BuildingComponentInfo Component;
-            [CanBeNull] public readonly string Name;
-            [CanBeNull] public AnimationPropertyInfo MergedTo { get; private set; }
+            public readonly BuildingComponentInfo? Component;
+            public readonly string? Name;
+            public AnimationPropertyInfo? MergedTo { get; private set; }
             private MappedPropertyInfo? _mappedPropertyInfo;
 
             public TPropInfo PropertyInfo;
 
-            [CanBeNull] public List<AnimationPropertyInfo> CopiedTo { get; private set; }
+            public List<AnimationPropertyInfo>? CopiedTo { get; private set; }
 
-            public AnimationPropertyInfo([NotNull] BuildingComponentInfo component, [NotNull] string name)
+            public AnimationPropertyInfo(BuildingComponentInfo component, string name)
             {
                 Component = component ?? throw new ArgumentNullException(nameof(component));
                 Name = name ?? throw new ArgumentNullException(nameof(name));
@@ -122,7 +121,9 @@ namespace Anatawa12.AvatarOptimizer
             {
             }
 
-            public static readonly AnimationPropertyInfo RemovedMarker = new AnimationPropertyInfo();
+            // TODO: split type for removed marker?
+            // If we do that, we can remove nullabile from Component and Name
+            public static readonly AnimationPropertyInfo RemovedMarker = new();
 
             public void MergeTo(AnimationPropertyInfo property)
             {
@@ -140,7 +141,7 @@ namespace Anatawa12.AvatarOptimizer
 
             public MappedPropertyInfo GetMappedInfo()
             {
-                if (_mappedPropertyInfo is MappedPropertyInfo property) return property;
+                if (_mappedPropertyInfo is { } property) return property;
                 property = ComputeMappedInfo();
                 _mappedPropertyInfo = property;
                 return property;
@@ -149,8 +150,8 @@ namespace Anatawa12.AvatarOptimizer
             private MappedPropertyInfo ComputeMappedInfo()
             {
                 if (this == RemovedMarker) return MappedPropertyInfo.Removed;
-                
-                System.Diagnostics.Debug.Assert(Component != null, nameof(Component) + " != null");
+
+                if (Component == null) throw new InvalidOperationException("Component is null");
 
                 if (MergedTo != null)
                 {
@@ -170,9 +171,9 @@ namespace Anatawa12.AvatarOptimizer
                 {
                     // this is edge
                     if (CopiedTo == null || CopiedTo.Count == 0)
-                        return new MappedPropertyInfo(Component.InstanceId, Component.Type, Name);
+                        return new MappedPropertyInfo(Component.InstanceId, Component.Type, Name!);
 
-                    var descriptor = new PropertyDescriptor(Component.InstanceId, Component.Type, Name);
+                    var descriptor = new PropertyDescriptor(Component.InstanceId, Component.Type, Name!);
 
                     var copied = new List<PropertyDescriptor> { descriptor };
                     foreach (var copiedTo in CopiedTo)
@@ -189,13 +190,11 @@ namespace Anatawa12.AvatarOptimizer
             internal readonly Type Type;
 
             // id in this -> id in merged
-            private BuildingComponentInfo _mergedInto;
+            private BuildingComponentInfo? _mergedInto;
 
-            private readonly Dictionary<string, AnimationPropertyInfo> _beforePropertyIds =
-                new Dictionary<string, AnimationPropertyInfo>();
+            private readonly Dictionary<string, AnimationPropertyInfo> _beforePropertyIds = new();
 
-            private readonly Dictionary<string, AnimationPropertyInfo> _afterPropertyIds =
-                new Dictionary<string, AnimationPropertyInfo>();
+            private readonly Dictionary<string, AnimationPropertyInfo> _afterPropertyIds = new();
 
             public BuildingComponentInfo(ComponentOrGameObject component)
             {
@@ -205,7 +204,6 @@ namespace Anatawa12.AvatarOptimizer
 
             internal bool IsMerged => _mergedInto != null;
 
-            [NotNull]
             private AnimationPropertyInfo GetProperty(string name, bool remove = false)
             {
                 if (_afterPropertyIds.TryGetValue(name, out var prop))
@@ -223,13 +221,13 @@ namespace Anatawa12.AvatarOptimizer
                 }
             }
 
-            public void MergedTo([NotNull] BuildingComponentInfo mergeTo)
+            public void MergedTo(BuildingComponentInfo mergeTo)
             {
                 if (Type == typeof(Transform)) throw new Exception("Merging Transform is not supported!");
                 if (_mergedInto != null) throw new InvalidOperationException("Already merged");
                 _mergedInto = mergeTo ?? throw new ArgumentNullException(nameof(mergeTo));
                 foreach (var property in _afterPropertyIds.Values)
-                    property.MergeTo(mergeTo.GetProperty(property.Name));
+                    property.MergeTo(mergeTo.GetProperty(property.Name!));
                 _afterPropertyIds.Clear();
             }
 
