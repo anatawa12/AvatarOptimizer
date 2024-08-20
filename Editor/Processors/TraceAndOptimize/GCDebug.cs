@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -52,6 +54,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     var collect = new StringBuilder();
                     foreach (var gcData in root.GetComponentsInChildren<GCDebugInfo>(true))
                     {
+                        if (gcData.component is null) continue; // use is instead of null to get type information of missing component
                         collect.Append(RuntimeUtil.RelativePath(root, gcData.gameObject))
                             .Append("(").Append(gcData.component.GetType().Name).Append("):\n");
                         collect.Append("  IsEntryPoint: ").Append(gcData.isEntryPoint).Append('\n');
@@ -81,11 +84,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         class GCDebugInfo : MonoBehaviour
         {
-            public Component component;
+            public Component? component;
             public Activeness activeness;
             public bool isEntryPoint;
-            public ComponentTypePair[] dependencies;
-            public ComponentTypePair[] entryPoints;
+            public ComponentTypePair[] dependencies = Array.Empty<ComponentTypePair>();
+            public ComponentTypePair[] entryPoints = Array.Empty<ComponentTypePair>();
 
             public static Activeness ActivenessFromBool(bool? activeness)
             {

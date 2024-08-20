@@ -1,3 +1,5 @@
+#nullable enable
+
 using nadena.dev.ndmf;
 using UnityEngine;
 

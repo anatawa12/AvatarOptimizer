@@ -1,7 +1,8 @@
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using JetBrains.Annotations;
 using nadena.dev.ndmf;
 using UnityEngine;
 
@@ -43,11 +44,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         public IEnumerable<GCComponentInfo> AllInformation => _dependencies.Values;
 
-        [CanBeNull]
-        public GCComponentInfo TryGetInfo(Component dependent) =>
-            _dependencies.TryGetValue(dependent, out var dependencies) ? dependencies : null;
+        public GCComponentInfo? TryGetInfo(Component? dependent) =>
+            dependent != null && _dependencies.TryGetValue(dependent, out var dependencies) ? dependencies : null;
 
-        [NotNull]
         public GCComponentInfo GetInfo(Component dependent) => _dependencies[dependent];
     }
 
@@ -71,19 +70,19 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         /// <summary>
         /// Dependencies of this component
         /// </summary>
-        [NotNull] internal readonly Dictionary<Component, DependencyType> Dependencies =
+        internal readonly Dictionary<Component, DependencyType> Dependencies =
             new Dictionary<Component, DependencyType>();
 
         /// <summary>
         /// Dependants entrypoint components 
         /// </summary>
-        [NotNull] internal readonly Dictionary<Component, DependencyType> DependantEntrypoint =
+        internal readonly Dictionary<Component, DependencyType> DependantEntrypoint =
             new Dictionary<Component, DependencyType>();
 
         /// <summary>
         /// Dependants entrypoint components 
         /// </summary>
-        [NotNull] internal readonly Dictionary<Component, DependencyType> DependantBehaviours =
+        internal readonly Dictionary<Component, DependencyType> DependantBehaviours =
             new Dictionary<Component, DependencyType>();
 
         internal IEnumerable<Component> DependantComponents =>

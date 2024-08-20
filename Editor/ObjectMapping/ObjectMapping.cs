@@ -243,7 +243,7 @@ namespace Anatawa12.AvatarOptimizer
     {
         private const string Enabled = "m_Enabled";
         // enabled for behaviour-like components
-        public static string EnabledFor(Object obj) => obj == null ? Enabled : EnabledFor(obj.GetType());
+        public static string EnabledFor(Object? obj) => obj == null ? Enabled : EnabledFor(obj.GetType());
 
         public static string EnabledFor(Type type) =>
             type == typeof(Animator) ? VProp.AnimatorEnabledAsBehavior : Enabled;

@@ -1,7 +1,8 @@
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using JetBrains.Annotations;
 using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
@@ -11,9 +12,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         private static Dictionary<Type, HashSet<Type>> _requireComponentCache = new Dictionary<Type, HashSet<Type>>();
         private static Dictionary<Type, HashSet<Type>> _dependantComponentCache = new Dictionary<Type, HashSet<Type>>();
 
-        [NotNull]
-        [ItemNotNull]
-        public static HashSet<Type> GetRequiredComponents([NotNull] Type type)
+        public static HashSet<Type> GetRequiredComponents(Type type)
         {
             if (type == null) throw new ArgumentNullException(nameof(type));
             if (_requireComponentCache.TryGetValue(type, out var result)) return result;
@@ -39,9 +38,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             return result;
         }
 
-        [NotNull]
-        [ItemNotNull]
-        public static HashSet<Type> GetDependantComponents([NotNull] Type type)
+        public static HashSet<Type> GetDependantComponents(Type type)
         {
             if (type == null) throw new ArgumentNullException(nameof(type));
             if (!_dependantComponentCache.TryGetValue(type, out var result))

@@ -35,7 +35,7 @@ namespace Anatawa12.AvatarOptimizer
         public override bool Equals(object? obj) =>
             ReferenceEquals(this, obj) || obj is EqualsHashSet<T> other && Equals(other);
 
-        public static bool operator ==(EqualsHashSet<T> left, EqualsHashSet<T> right) => Equals(left, right);
-        public static bool operator !=(EqualsHashSet<T> left, EqualsHashSet<T> right) => !Equals(left, right);
+        public static bool operator ==(EqualsHashSet<T>? left, EqualsHashSet<T>? right) => Equals(left, right);
+        public static bool operator !=(EqualsHashSet<T>? left, EqualsHashSet<T>? right) => !Equals(left, right);
     }
 }

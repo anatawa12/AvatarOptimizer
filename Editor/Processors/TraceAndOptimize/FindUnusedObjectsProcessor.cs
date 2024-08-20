@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -145,7 +147,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 resultSet.Remove(componentInfo.Component.transform);
                 resultSet.ExceptWith(componentInfo.Component.transform.ParentEnumerable());
 
-                Component commonActiveness;
+                Component? commonActiveness;
                 // TODO: we may use all activeness with nested identity transform
                 // if activeness animation is not changed
                 if (resultSet.Count == 0)
@@ -188,13 +190,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
                 if (commonActiveness is Transform)
                 {
-                    _context.Extension<ObjectMappingContext>().MappingBuilder
+                    _context.Extension<ObjectMappingContext>().MappingBuilder!
                         .RecordCopyProperty(commonActiveness.gameObject, Props.IsActive,
                             componentInfo.Component, Props.EnabledFor(componentInfo.Component));
                 }
                 else
                 {
-                    _context.Extension<ObjectMappingContext>().MappingBuilder
+                    _context.Extension<ObjectMappingContext>().MappingBuilder!
                         .RecordCopyProperty(commonActiveness, Props.EnabledFor(commonActiveness),
                             componentInfo.Component, Props.EnabledFor(componentInfo.Component));
                 }
@@ -323,8 +325,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             ConfigureRecursive(_context.AvatarRootTransform, _context);
 
             // returns (original mergedChildren, list of merged children if merged, and null if not merged)
-            //[CanBeNull]
-            (bool, List<Transform>) ConfigureRecursive(Transform transform, BuildContext context)
+            (bool, List<Transform>?) ConfigureRecursive(Transform transform, BuildContext context)
             {
                 var mergedChildren = true;
                 var afterChildren = new List<Transform>();
@@ -349,8 +350,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     | GCComponentInfo.DependencyType.ComponentToTransform;
 
                 // functions for make it easier to know meaning of result
-                (bool, List<Transform>) YesMerge() => (mergedChildren, afterChildren);
-                (bool, List<Transform>) NotMerged() => (mergedChildren, null);
+                (bool, List<Transform>?) YesMerge() => (mergedChildren, afterChildren);
+                (bool, List<Transform>?) NotMerged() => (mergedChildren, null);
 
                 // Already Merged
                 if (transform.GetComponent<MergeBone>()) return YesMerge();
