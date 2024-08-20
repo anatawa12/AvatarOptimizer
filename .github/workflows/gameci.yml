@@ -16,7 +16,6 @@ jobs:
           - unity: 2022
             projectRef: de0b2dde7824e33986730c40866d74cfe526942b # project-for-test-2022
         unity:
-          - 2019
           - 2022
     permissions:
       checks: write
