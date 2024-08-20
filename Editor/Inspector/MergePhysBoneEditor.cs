@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
 using VRC.Dynamics;
@@ -359,10 +358,10 @@ namespace Anatawa12.AvatarOptimizer
 
         private static readonly string[] CopyOverride = { "C:Copy", "O:Override" };
 
-        private void PbPropImpl([NotNull] string label, 
-            [NotNull] OverridePropBase prop, 
+        private void PbPropImpl(string label, 
+            OverridePropBase prop, 
             bool forceOverride, 
-            [NotNull] Func<Rect, bool, GUIContent, bool> renderer)
+            Func<Rect, bool, GUIContent, bool> renderer)
         {
             var labelContent = new GUIContent(label);
 

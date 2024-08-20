@@ -273,7 +273,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                     _currentAdditionsSize = _currentAdditions.arraySize = 0;
             }
 
-            protected override IElement<T> NewSlotElement([JetBrains.Annotations.NotNull] T value)
+            protected override IElement<T> NewSlotElement(T value)
             {
                 if (value == null) throw new ArgumentNullException(nameof(value));
                 return ElementImpl.NewSlot(this, value);

@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using JetBrains.Annotations;
 using nadena.dev.ndmf;
 using UnityEngine;
 
@@ -45,7 +44,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         EditSkinnedMeshComponent Component { get; }
         void Process(BuildContext context, MeshInfo2 target);
 
-        [NotNull] IMeshInfoComputer GetComputer([NotNull] IMeshInfoComputer upstream);
+        IMeshInfoComputer GetComputer(IMeshInfoComputer upstream);
     }
 
     enum EditSkinnedMeshProcessorOrder : int

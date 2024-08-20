@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using JetBrains.Annotations;
 using UnityEditor;
 using VRC.Dynamics;
 using Object = UnityEngine.Object;
@@ -18,52 +17,52 @@ namespace Anatawa12.AvatarOptimizer
         protected readonly SerializedProperty MakeParent;
         private readonly List<PropBase> _props = new List<PropBase>();
             
-        [NotNull] protected readonly ValueConfigProp Version;
+        protected readonly ValueConfigProp Version;
 
         #region == Transform ==
         // rootTransform
         // ignoreTransforms
-        [NotNull] protected readonly EndpointPositionConfigProp EndpointPosition;
+        protected readonly EndpointPositionConfigProp EndpointPosition;
         // multiChildType
         #endregion
 
         #region == Forces ==
-        [NotNull] protected readonly ValueConfigProp IntegrationType;
-        [NotNull] protected readonly CurveConfigProp Pull;
+        protected readonly ValueConfigProp IntegrationType;
+        protected readonly CurveConfigProp Pull;
         // spring a.k.a. Momentum
-        [NotNull] protected readonly CurveConfigProp Spring;
-        [NotNull] protected readonly CurveConfigProp Stiffness;
-        [NotNull] protected readonly CurveConfigProp Gravity;
-        [NotNull] protected readonly CurveConfigProp GravityFalloff;
-        [NotNull] protected readonly ValueConfigProp ImmobileType;
-        [NotNull] protected readonly CurveConfigProp Immobile;
+        protected readonly CurveConfigProp Spring;
+        protected readonly CurveConfigProp Stiffness;
+        protected readonly CurveConfigProp Gravity;
+        protected readonly CurveConfigProp GravityFalloff;
+        protected readonly ValueConfigProp ImmobileType;
+        protected readonly CurveConfigProp Immobile;
         #endregion
         #region == Limits ==
-        [NotNull] protected readonly ValueConfigProp LimitType;
-        [NotNull] protected readonly CurveConfigProp MaxAngleX;
-        [NotNull] protected readonly CurveConfigProp MaxAngleZ;
-        [NotNull] protected readonly CurveVector3ConfigProp LimitRotation;
+        protected readonly ValueConfigProp LimitType;
+        protected readonly CurveConfigProp MaxAngleX;
+        protected readonly CurveConfigProp MaxAngleZ;
+        protected readonly CurveVector3ConfigProp LimitRotation;
         #endregion
         #region == Collision ==
-        [NotNull] protected readonly CurveConfigProp Radius;
-        [NotNull] protected readonly PermissionConfigProp AllowCollision;
-        [NotNull] protected readonly CollidersConfigProp Colliders;
+        protected readonly CurveConfigProp Radius;
+        protected readonly PermissionConfigProp AllowCollision;
+        protected readonly CollidersConfigProp Colliders;
         #endregion
         #region == Stretch & Squish ==
-        [NotNull] protected readonly CurveConfigProp StretchMotion;
-        [NotNull] protected readonly CurveConfigProp MaxStretch;
-        [NotNull] protected readonly CurveConfigProp MaxSquish;
+        protected readonly CurveConfigProp StretchMotion;
+        protected readonly CurveConfigProp MaxStretch;
+        protected readonly CurveConfigProp MaxSquish;
         #endregion
         #region == Grab & Pose ==
-        [NotNull] protected readonly PermissionConfigProp AllowGrabbing;
-        [NotNull] protected readonly PermissionConfigProp AllowPosing;
-        [NotNull] protected readonly ValueConfigProp GrabMovement;
-        [NotNull] protected readonly ValueConfigProp SnapToHand;
+        protected readonly PermissionConfigProp AllowGrabbing;
+        protected readonly PermissionConfigProp AllowPosing;
+        protected readonly ValueConfigProp GrabMovement;
+        protected readonly ValueConfigProp SnapToHand;
         #endregion
         #region == Options ==
-        [NotNull] protected readonly NoOverrideValueConfigProp Parameter;
-        [NotNull] protected readonly NoOverrideValueConfigProp IsAnimated;
-        [NotNull] protected readonly ValueConfigProp ResetWhenDisabled;
+        protected readonly NoOverrideValueConfigProp Parameter;
+        protected readonly NoOverrideValueConfigProp IsAnimated;
+        protected readonly ValueConfigProp ResetWhenDisabled;
         #endregion
 
         protected readonly PrefabSafeSet.EditorUtil<VRCPhysBoneBase> ComponentsSetEditorUtil;

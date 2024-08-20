@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using JetBrains.Annotations;
 using UnityEditor.Animations;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -143,9 +142,8 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             return animatorNodeContainer;
         }
 
-        [JetBrains.Annotations.NotNull]
-        public static ComponentNodeContainer AnimationComponentFromAnimationClip([JetBrains.Annotations.NotNull] Animation animation,
-            [JetBrains.Annotations.NotNull] ImmutableNodeContainer animationClip)
+        public static ComponentNodeContainer AnimationComponentFromAnimationClip(Animation animation,
+            ImmutableNodeContainer animationClip)
         {
             if (animationClip == null) throw new ArgumentNullException(nameof(animationClip));
             var animatorNodeContainer = new ComponentNodeContainer();

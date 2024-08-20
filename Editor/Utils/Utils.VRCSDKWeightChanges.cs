@@ -1,9 +1,7 @@
 #if AAO_VRCSDK3_AVATARS
 
-using JetBrains.Annotations;
 using nadena.dev.ndmf;
 using UnityEngine;
-using VRC.SDK3.Avatars.Components;
 using VRC.SDKBase;
 
 namespace Anatawa12.AvatarOptimizer

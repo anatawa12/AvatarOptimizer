@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
 
@@ -42,8 +41,6 @@ namespace Anatawa12.AvatarOptimizer
             }
         }
 
-        [ContractAnnotation("root:null => notnull")]
-        [ContractAnnotation("root:notnull => canbenull")]
         [return:NotNullIfNotNull("root")]
         public static string? RelativePath(Transform? root, Transform child)
         {

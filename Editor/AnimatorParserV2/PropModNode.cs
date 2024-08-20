@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using JetBrains.Annotations;
 using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEditor.Animations;
@@ -254,7 +253,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             DestroyTracker.Track(node.Component, OnDestroy);
         }
 
-        public void Add([JetBrains.Annotations.NotNull] RootPropModNode<T> toAdd)
+        public void Add(RootPropModNode<T> toAdd)
         {
             if (toAdd == null) throw new ArgumentNullException(nameof(toAdd));
             foreach (var child in toAdd._children)

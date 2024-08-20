@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.AnimatorParsersV2;
-using JetBrains.Annotations;
 using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer
@@ -99,8 +98,7 @@ namespace Anatawa12.AvatarOptimizer
             return info.TryGetPropertyInfo(property).FloatNode != null;
         }
 
-        [Pure]
-        [ContractAnnotation("=> true, animation: notnull; => false, animation: null")]
+        [JetBrains.Annotations.Pure]
         public static bool TryGetFloat(this AnimationComponentInfo<PropertyInfo> info, string property, 
             [NotNullWhen(true)] out RootPropModNode<float>? animation)
         {

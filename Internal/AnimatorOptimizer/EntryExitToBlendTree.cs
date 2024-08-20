@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes;
-using JetBrains.Annotations;
 using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEditor.Animations;

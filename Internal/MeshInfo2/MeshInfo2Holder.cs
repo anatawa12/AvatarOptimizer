@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
-using JetBrains.Annotations;
 using nadena.dev.ndmf;
 using UnityEngine;
 using UnityEngine.Profiling;

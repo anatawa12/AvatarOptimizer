@@ -1,7 +1,6 @@
 using System;
 using Anatawa12.AvatarOptimizer.Processors;
 using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
-using JetBrains.Annotations;
 using nadena.dev.ndmf;
 using UnityEngine;
 

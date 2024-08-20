@@ -1,7 +1,6 @@
 using System.Linq;
 using Anatawa12.AvatarOptimizer.API;
 using Anatawa12.AvatarOptimizer.APIInternal;
-using JetBrains.Annotations;
 using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEditor.Animations;

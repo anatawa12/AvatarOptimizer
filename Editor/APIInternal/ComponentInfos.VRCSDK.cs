@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.API;
-using JetBrains.Annotations;
 using nadena.dev.ndmf.runtime;
 using UnityEngine;
 using VRC.SDK3;
@@ -160,7 +159,6 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
             }
         }
         
-        [NotNull]
         private static string ParseBlendShapeProperty(string prop) =>
             prop.StartsWith("blendShape.", StringComparison.Ordinal)
                 ? prop.Substring("blendShape.".Length)

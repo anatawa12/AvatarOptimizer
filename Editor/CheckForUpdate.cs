@@ -4,7 +4,6 @@ using System.Net;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
 
