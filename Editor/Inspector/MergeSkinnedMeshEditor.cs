@@ -1,3 +1,5 @@
+#nullable enable
+
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
@@ -23,11 +25,11 @@ namespace Anatawa12.AvatarOptimizer
             };
         }
 
-        SerializedProperty _renderersSetProp;
-        SerializedProperty _staticRenderersSetProp;
-        SerializedProperty _removeEmptyRendererObjectProp;
-        SerializedProperty _skipEnablementMismatchedRenderers;
-        PrefabSafeSet.EditorUtil<Material> _doNotMergeMaterials;
+        SerializedProperty _renderersSetProp = null!; // initialized in OnEnable
+        SerializedProperty _staticRenderersSetProp = null!; // initialized in OnEnable
+        SerializedProperty _removeEmptyRendererObjectProp = null!; // initialized in OnEnable
+        SerializedProperty _skipEnablementMismatchedRenderers = null!; // initialized in OnEnable
+        PrefabSafeSet.EditorUtil<Material> _doNotMergeMaterials = null!; // initialized in OnEnable
 
         private void OnEnable()
         {
@@ -40,7 +42,7 @@ namespace Anatawa12.AvatarOptimizer
             _doNotMergeMaterials = PrefabSafeSet.EditorUtil<Material>.Create(
                 serializedObject.FindProperty("doNotMergeMaterials"),
                 nestCount,
-                x => x.objectReferenceValue as Material,
+                x => (Material)x.objectReferenceValue,
                 (x, v) => x.objectReferenceValue = v);
         }
 

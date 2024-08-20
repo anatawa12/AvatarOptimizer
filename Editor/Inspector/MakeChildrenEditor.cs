@@ -1,3 +1,5 @@
+#nullable enable
+
 using UnityEditor;
 
 namespace Anatawa12.AvatarOptimizer
@@ -6,8 +8,8 @@ namespace Anatawa12.AvatarOptimizer
     [CanEditMultipleObjects]
     internal class MakeChildrenEditor : AvatarTagComponentEditorBase
     {
-        private SerializedProperty _executeEarly;
-        private SerializedProperty _children;
+        private SerializedProperty _executeEarly = null!; // initialized in OnEnable
+        private SerializedProperty _children = null!; // initialized in OnEnable
 
         private void OnEnable()
         {

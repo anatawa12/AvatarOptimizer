@@ -1,3 +1,5 @@
+#nullable enable
+
 #if AAO_VRCSDK3_AVATARS
 
 using System;
@@ -13,9 +15,9 @@ namespace Anatawa12.AvatarOptimizer
     [CustomEditor(typeof(MergePhysBone))]
     internal class MergePhysBoneEditor : AvatarTagComponentEditorBase
     {
-        private MergePhysBoneEditorRenderer _renderer;
-        private SerializedProperty _makeParent;
-        private SerializedProperty _componentsSetProp;
+        private MergePhysBoneEditorRenderer _renderer = null!; // initialized in OnEnable
+        private SerializedProperty _makeParent = null!; // initialized in OnEnable
+        private SerializedProperty _componentsSetProp = null!; // initialized in OnEnable
 
         private void OnEnable()
         {

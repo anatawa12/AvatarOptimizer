@@ -1,5 +1,8 @@
+#nullable enable
+
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
 using UnityEditor;
@@ -11,20 +14,19 @@ namespace Anatawa12.AvatarOptimizer
     [CustomEditor(typeof(MergeToonLitMaterial))]
     internal class MergeToonLitMaterialEditor : AvatarTagComponentEditorBase
     {
-        private Material[] _upstreamMaterials;
-        private (Material mat, int index)[] _materials;
+        private Material[] _upstreamMaterials = null!; // initialized in OnEnable
+        private (Material mat, int index)[] _materials = null!; // initialized in OnEnable
         
-        private (Material mat, int index)[] _candidateMaterials;
-        private string[] _candidateNames;
+        private (Material mat, int index)[] _candidateMaterials = null!; // initialized in OnEnable
+        private string[] _candidateNames = null!; // initialized in OnEnable
 
-        private Texture[] _generatedPreviews;
+        private Texture[]? _generatedPreviews;
 
         private readonly Func<MergeToonLitMaterial.MergeSource> _createNewSource;
         private readonly Func<MergeToonLitMaterial.MergeInfo> _createNewMergeInfo;
 
         public MergeToonLitMaterialEditor()
         {
-            // ReSharper disable once PossibleNullReferenceException
             _createNewSource = () => new MergeToonLitMaterial.MergeSource
                 { materialIndex = _candidateMaterials[0].index };
             _createNewMergeInfo = () => new MergeToonLitMaterial.MergeInfo 
@@ -32,15 +34,15 @@ namespace Anatawa12.AvatarOptimizer
         }
 
         private static void DrawList<T>(
-            ref T[] array,
+            [AllowNull] ref T[] array,
             string addButton,
             Action<T, int> drawer,
-            Func<T> newElement,
+            Func<T>? newElement,
             bool noEmpty = false,
-            Action postButtons = null,
-            Action onMoved = null,
-            Action<T> onRemoved = null,
-            Action<T> onAdded = null
+            Action? postButtons = null,
+            Action? onMoved = null,
+            Action<T>? onRemoved = null,
+            Action<T>? onAdded = null
         )
         {
             if (array == null) array = Array.Empty<T>();
@@ -85,10 +87,10 @@ namespace Anatawa12.AvatarOptimizer
             using (new EditorGUI.DisabledScope(newElement == null))
                 if (GUILayout.Button(addButton))
                 {
-                    Debug.Assert(newElement != null, nameof(newElement) + " != null");
+                    if (newElement == null) throw new InvalidOperationException();
                     T element;
                     ArrayUtility.Add(ref array, element = newElement());
-                    onAdded(element);
+                    onAdded?.Invoke(element);
                 }
 
         }
@@ -101,7 +103,7 @@ namespace Anatawa12.AvatarOptimizer
 
             DrawList(ref component.merges, AAOL10N.Tr("MergeToonLitMaterial:button:Add Merged Material"), (componentMerge, i) =>
                 {
-                    DrawList(ref componentMerge.source, AAOL10N.Tr("MergeToonLitMaterial:button:Add Source"), (mergeSource, _2) =>
+                    DrawList(ref componentMerge.source, AAOL10N.Tr("MergeToonLitMaterial:button:Add Source"), (mergeSource, _) =>
                         {
                             var found = _materials.FirstOrDefault(x => x.index == mergeSource.materialIndex);
                             _candidateNames[0] = found.mat != null ? found.mat.name : "(invalid)";
