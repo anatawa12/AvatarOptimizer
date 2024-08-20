@@ -1,6 +1,8 @@
+#nullable enable
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using JetBrains.Annotations;
 using UnityEditor.Animations;
 using UnityEngine;
 
@@ -9,8 +11,9 @@ namespace Anatawa12.AvatarOptimizer
     static partial class ACUtils
     {
         public static (AnimatorController, IReadOnlyDictionary<AnimationClip, AnimationClip>) GetControllerAndOverrides(
-            [NotNull] RuntimeAnimatorController runtimeController)
+            RuntimeAnimatorController runtimeController)
         {
+            if (runtimeController == null) throw new ArgumentNullException(nameof(runtimeController));
             if (runtimeController is AnimatorController originalController)
                 return (originalController, Utils.EmptyDictionary<AnimationClip, AnimationClip>());
 

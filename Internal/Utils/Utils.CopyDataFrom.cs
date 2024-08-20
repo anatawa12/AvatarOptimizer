@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using UnityEditor;
 using UnityEngine.Assertions;

@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 
 namespace Anatawa12.AvatarOptimizer

@@ -1,6 +1,7 @@
+#nullable enable
+
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer
@@ -14,24 +15,27 @@ namespace Anatawa12.AvatarOptimizer
             // according to https://docs.unity3d.com/2022.3/Documentation/ScriptReference/AnimationCurve.GetHashCode.html,
             // hashcode is calculated by KeyFrames
             var array = curve.keys;
-            return array.Aggregate(array.Length, (current, val) => unchecked(current * 314159 + val.GetHashCode2()));
+            HashCode code = default;
+            foreach (var keyframe in array)
+                code.Add(keyframe.GetHashCode2());
+            return code.ToHashCode();
         }
 
         // KeyFrame doesn't implement GetHashCode so it will be extremely slow so provide our implementation
         public static int GetHashCode2(this Keyframe curve)
         {
-            var hash = 0;
-            hash = unchecked(hash * 314159 + curve.time.GetHashCode());
-            hash = unchecked(hash * 314159 + curve.value.GetHashCode());
-            hash = unchecked(hash * 314159 + curve.inTangent.GetHashCode());
-            hash = unchecked(hash * 314159 + curve.outTangent.GetHashCode());
+            HashCode code = default;
+            code.Add(curve.time);
+            code.Add(curve.value);
+            code.Add(curve.inTangent);
+            code.Add(curve.outTangent);
 #pragma warning disable CS0618 // Type or member is obsolete
-            hash = unchecked(hash * 314159 + curve.tangentMode.GetHashCode());
+            code.Add(curve.tangentMode);
 #pragma warning restore CS0618 // Type or member is obsolete
-            hash = unchecked(hash * 314159 + curve.weightedMode.GetHashCode());
-            hash = unchecked(hash * 314159 + curve.inWeight.GetHashCode());
-            hash = unchecked(hash * 314159 + curve.outWeight.GetHashCode());
-            return hash;
+            code.Add(curve.weightedMode);
+            code.Add(curve.inWeight);
+            code.Add(curve.outWeight);
+            return code.ToHashCode();
         }
 
         // The HashSet doesn't implement HashCode
@@ -40,7 +44,7 @@ namespace Anatawa12.AvatarOptimizer
             // we use XOR to make the hashcode order-independent
             var hash = set.Count;
             foreach (var item in set)
-                hash ^= item.GetHashCode();
+                hash ^= HashCode.Combine(item);
             return hash;
         }
     }

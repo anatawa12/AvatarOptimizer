@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using JetBrains.Annotations;
@@ -11,9 +13,9 @@ namespace Anatawa12.AvatarOptimizer
     /// </summary>
     public class DestroyTracker
     {
-        [CanBeNull] private static DestroyTracker _tracker;
+        private static DestroyTracker? _tracker;
 
-        private readonly Dictionary<int, Action<int>> _handlers = new Dictionary<int, Action<int>>();
+        private readonly Dictionary<int, Action<int>?> _handlers = new ();
 
         public static void Track(Object obj, Action<int> handler)
         {
@@ -47,7 +49,7 @@ namespace Anatawa12.AvatarOptimizer
             {
                 if (tracker._handlers.TryGetValue(instanceId, out var handler))
                 {
-                    handler.Invoke(instanceId);
+                    handler?.Invoke(instanceId);
                     tracker._handlers.Remove(instanceId);
                 }
             }

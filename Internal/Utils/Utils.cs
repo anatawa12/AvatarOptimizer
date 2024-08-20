@@ -1,6 +1,9 @@
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using JetBrains.Annotations;
 using UnityEditor;
@@ -43,7 +46,8 @@ namespace Anatawa12.AvatarOptimizer
 
         [ContractAnnotation("root:null => notnull")]
         [ContractAnnotation("root:notnull => canbenull")]
-        public static string RelativePath(Transform root, Transform child)
+        [return:NotNullIfNotNull("root")]
+        public static string? RelativePath(Transform? root, Transform child)
         {
             if (root == child) return "";
 
@@ -143,27 +147,26 @@ namespace Anatawa12.AvatarOptimizer
             value = keyValuePair.Value;
         }
 
-        public static IEnumerable<KeyValuePair<TKey, (TValue1, TValue2)>> ZipByKey<TKey, TValue1, TValue2>(
+        public static IEnumerable<KeyValuePair<TKey, (TValue1?, TValue2?)>> ZipByKey<TKey, TValue1, TValue2>(
             this IReadOnlyDictionary<TKey, TValue1> first, IReadOnlyDictionary<TKey, TValue2> second)
         {
             foreach (var key in first.Keys.ToArray())
             {
                 if (!second.TryGetValue(key, out var secondValue)) secondValue = default;
 
-                yield return new KeyValuePair<TKey, (TValue1, TValue2)>(key, (first[key], secondValue));
+                yield return new KeyValuePair<TKey, (TValue1?, TValue2?)>(key, (first[key], secondValue));
             }
 
             foreach (var key in second.Keys.ToArray())
                 if (!first.ContainsKey(key))
-                    yield return new KeyValuePair<TKey, (TValue1, TValue2)>(key, (default, second[key]));
+                    yield return new KeyValuePair<TKey, (TValue1?, TValue2?)>(key, (default, second[key]));
         }
 
-        [CanBeNull]
-        public static Type GetTypeFromName(string name) =>
+        public static Type? GetTypeFromName(string name) =>
             AppDomain.CurrentDomain.GetAssemblies().Select(assembly => assembly.GetType(name))
                 .FirstOrDefault(type => !(type == null));
 
-        public static T DistinctSingleOrDefaultIfNoneOrMultiple<T>(this IEnumerable<T> enumerable)
+        public static T? DistinctSingleOrDefaultIfNoneOrMultiple<T>(this IEnumerable<T> enumerable)
         {
             using (var enumerator = enumerable.GetEnumerator())
             {
@@ -182,7 +185,7 @@ namespace Anatawa12.AvatarOptimizer
             }
         }
 
-        public static T RemoveLast<T>([NotNull] this IList<T> list)
+        public static T RemoveLast<T>(this IList<T> list)
         {
             if (list == null) throw new ArgumentNullException(nameof(list));
             var lastIndex = list.Count - 1;
@@ -191,10 +194,10 @@ namespace Anatawa12.AvatarOptimizer
             return last;
         }
 
-        public static EqualsHashSet<T> ToEqualsHashSet<T>([NotNull] this IEnumerable<T> enumerable) =>
+        public static EqualsHashSet<T> ToEqualsHashSet<T>(this IEnumerable<T> enumerable) =>
             new EqualsHashSet<T>(new HashSet<T>(enumerable));
 
-        public static EqualsHashSet<T> ToEqualsHashSet<T>([NotNull] this HashSet<T> hashSet) =>
+        public static EqualsHashSet<T> ToEqualsHashSet<T>(this HashSet<T> hashSet) =>
             new EqualsHashSet<T>(hashSet);
     }
 }

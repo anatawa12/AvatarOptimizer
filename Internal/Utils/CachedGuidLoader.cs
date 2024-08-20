@@ -1,3 +1,5 @@
+#nullable enable
+
 using UnityEditor;
 using UnityEngine;
 
@@ -6,7 +8,7 @@ namespace Anatawa12.AvatarOptimizer
     public struct CachedGuidLoader<T> where T : Object
     {
         private readonly string _guid;
-        private T _cached;
+        private T? _cached;
 
         public CachedGuidLoader(string guid)
         {
@@ -15,7 +17,7 @@ namespace Anatawa12.AvatarOptimizer
         }
 
         public T Value =>
-            _cached
+            _cached != null
                 ? _cached
                 : _cached =
                     AssetDatabase.LoadAssetAtPath<T>(
@@ -23,7 +25,6 @@ namespace Anatawa12.AvatarOptimizer
 
         public bool IsValid => _guid != null;
 
-        public static implicit operator CachedGuidLoader<T>(string guid) =>
-            new CachedGuidLoader<T>(guid);
+        public static implicit operator CachedGuidLoader<T>(string guid) => new(guid);
     }
 }

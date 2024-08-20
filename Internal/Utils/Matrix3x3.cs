@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using UnityEngine;
 
@@ -207,6 +209,6 @@ namespace Anatawa12.AvatarOptimizer
             m01.Equals(other.m01) && m11.Equals(other.m11) && m21.Equals(other.m21) &&
             m02.Equals(other.m02) && m12.Equals(other.m12) && m22.Equals(other.m22);
 
-        public override bool Equals(object obj) => obj is Matrix3x3 other && Equals(other);
+        public override bool Equals(object? obj) => obj is Matrix3x3 other && Equals(other);
     }
 }
