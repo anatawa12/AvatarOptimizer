@@ -1,5 +1,3 @@
-#nullable enable
-
 using System.Linq;
 using Anatawa12.AvatarOptimizer.API;
 using Anatawa12.AvatarOptimizer.APIInternal;

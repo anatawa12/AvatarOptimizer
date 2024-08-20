@@ -1,6 +1,4 @@
-﻿#nullable enable
-
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEditor.Callbacks;
 
 namespace Anatawa12.AvatarOptimizer

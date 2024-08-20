@@ -1,5 +1,3 @@
-#nullable enable
-
 using System;
 using Anatawa12.AvatarOptimizer.Processors;
 using UnityEditor;

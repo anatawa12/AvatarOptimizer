@@ -1,5 +1,3 @@
-#nullable enable
-
 using UnityEditor;
 
 namespace Anatawa12.AvatarOptimizer

@@ -1,5 +1,3 @@
-#nullable enable
-
 using System.Collections.Generic;
 using Anatawa12.AvatarOptimizer.API;
 using UnityEngine;

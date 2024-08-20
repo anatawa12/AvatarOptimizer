@@ -1,7 +1,5 @@
 #if AAO_VRCSDK3_AVATARS
 
-#nullable enable
-
 using JetBrains.Annotations;
 using nadena.dev.ndmf;
 using UnityEngine;

@@ -1,5 +1,3 @@
-#nullable enable
-
 using Anatawa12.AvatarOptimizer.API;
 using UnityEditor;
 using UnityEngine;

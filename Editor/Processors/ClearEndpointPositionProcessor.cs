@@ -1,5 +1,3 @@
-#nullable enable
-
 #if AAO_VRCSDK3_AVATARS
 
 using System;

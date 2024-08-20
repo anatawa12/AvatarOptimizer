@@ -1,5 +1,3 @@
-#nullable enable
-
 using Anatawa12.AvatarOptimizer.EditModePreview;
 using System.Collections.Generic;
 using UnityEditor;

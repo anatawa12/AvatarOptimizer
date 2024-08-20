@@ -1,5 +1,3 @@
-#nullable enable
-
 #if AAO_VRM1
 
 using System.Collections.Generic;

@@ -1,5 +1,3 @@
-#nullable enable
-
 using Unity.Collections;
 using UnityEditor;
 using UnityEngine;

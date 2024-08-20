@@ -1,7 +1,5 @@
 #if AAO_VRCSDK3_AVATARS
 
-#nullable enable
-
 using System;
 using System.Collections.Generic;
 using UnityEngine;

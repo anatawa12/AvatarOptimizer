@@ -1,5 +1,3 @@
-#nullable enable
-
 using System;
 using Anatawa12.AvatarOptimizer.AnimatorParsersV2;
 using nadena.dev.ndmf;

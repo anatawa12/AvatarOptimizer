@@ -1,6 +1,4 @@
-﻿#nullable enable
-
-using System;
+﻿using System;
 using Anatawa12.AvatarOptimizer.ndmf;
 using nadena.dev.ndmf;
 using nadena.dev.ndmf.builtin;

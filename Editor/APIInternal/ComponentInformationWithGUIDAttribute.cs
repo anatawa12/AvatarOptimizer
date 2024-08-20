@@ -1,5 +1,3 @@
-#nullable enable
-
 using System;
 using Anatawa12.AvatarOptimizer.API;
 using JetBrains.Annotations;

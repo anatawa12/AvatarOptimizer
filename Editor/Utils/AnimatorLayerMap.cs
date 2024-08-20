@@ -1,7 +1,5 @@
 #if AAO_VRCSDK3_AVATARS
 
-#nullable enable
-
 using System;
 using VRC.SDK3.Avatars.Components;
 
