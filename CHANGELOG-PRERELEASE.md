@@ -14,6 +14,8 @@ The format is based on [Keep a Changelog].
 ### Deprecated
 
 ### Removed
+- Unity 2019 Support `#1146`
+  - For 2019 users, please use 1.7.x.
 
 ### Fixed
 
