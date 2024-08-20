@@ -1,4 +1,6 @@
-﻿using System;
+﻿#nullable enable
+
+using System;
 using Anatawa12.AvatarOptimizer.ndmf;
 using nadena.dev.ndmf;
 using nadena.dev.ndmf.builtin;
@@ -23,7 +25,7 @@ namespace Anatawa12.AvatarOptimizer.ndmf
                     var components = ctx.AvatarRootObject.GetComponentInChildren<AvatarTagComponent>(true);
                     if (components && CheckForUpdate.OutOfDate)
                         BuildLog.LogInfo("CheckForUpdate:out-of-date",
-                            CheckForUpdate.LatestVersionName, CheckForUpdate.CurrentVersionName);
+                            CheckForUpdate.LatestVersionName!, CheckForUpdate.CurrentVersionName);
                 })
                 .Then.Run(Processors.UnusedBonesByReferencesToolEarlyProcessor.Instance)
                 .Then.Run("Early: MakeChildren",

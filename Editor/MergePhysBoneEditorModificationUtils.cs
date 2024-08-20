@@ -1,3 +1,5 @@
+#nullable enable
+
 #if AAO_VRCSDK3_AVATARS
 
 using System;
@@ -14,7 +16,7 @@ namespace Anatawa12.AvatarOptimizer
     {
         // ReSharper disable MemberCanBePrivate.Global
         private readonly SerializedObject _serializedObject;
-        private SerializedObject _sourcePhysBone;
+        private SerializedObject? _sourcePhysBone;
         protected readonly SerializedProperty MakeParent;
         private readonly List<PropBase> _props = new List<PropBase>();
             
@@ -268,9 +270,9 @@ namespace Anatawa12.AvatarOptimizer
             }
         }
 
-        protected SerializedProperty GetSourceProperty(string name) => _sourcePhysBone.FindProperty(name);
+        protected SerializedProperty GetSourceProperty(string name) => _sourcePhysBone!.FindProperty(name);
 
-        protected IEnumerable<VRCPhysBoneBase> SourcePhysBones => _sourcePhysBone.targetObjects.Cast<VRCPhysBoneBase>();
+        protected IEnumerable<VRCPhysBoneBase> SourcePhysBones => _sourcePhysBone!.targetObjects.Cast<VRCPhysBoneBase>();
 
         protected abstract void BeginPbConfig();
 
@@ -293,29 +295,28 @@ namespace Anatawa12.AvatarOptimizer
 
         protected abstract void UnsupportedPbVersion();
 
-        protected abstract void PbVersionProp([NotNull] string label, [NotNull] ValueConfigProp prop, bool forceOverride = false);
+        protected abstract void PbVersionProp(string label, ValueConfigProp prop, bool forceOverride = false);
 
-        protected abstract void PbProp([NotNull] string label, [NotNull] ValueConfigProp prop, bool forceOverride = false);
+        protected abstract void PbProp(string label, ValueConfigProp prop, bool forceOverride = false);
 
-        protected abstract void PbCurveProp([NotNull] string label, [NotNull] CurveConfigProp prop, bool forceOverride = false);
+        protected abstract void PbCurveProp(string label, CurveConfigProp prop, bool forceOverride = false);
 
-        protected abstract void PbPermissionProp([NotNull] string label, [NotNull] PermissionConfigProp prop, bool forceOverride = false);
+        protected abstract void PbPermissionProp(string label, PermissionConfigProp prop, bool forceOverride = false);
 
-        protected abstract void Pb3DCurveProp([NotNull] string label,
-            [NotNull] string pbXCurveLabel,
-            [NotNull] string pbYCurveLabel,
-            [NotNull] string pbZCurveLabel,
-            [NotNull] CurveVector3ConfigProp prop,
+        protected abstract void Pb3DCurveProp(string label,
+            string pbXCurveLabel,
+            string pbYCurveLabel,
+            string pbZCurveLabel,
+            CurveVector3ConfigProp prop,
             bool forceOverride = false);
 
-        protected abstract void CollidersProp([NotNull] string label,
-            [NotNull] CollidersConfigProp prop);
+        protected abstract void CollidersProp(string label, CollidersConfigProp prop);
         
         protected abstract class PropBase
         {
             public readonly SerializedProperty RootProperty;
 
-            public PropBase([NotNull] SerializedProperty rootProperty)
+            public PropBase(SerializedProperty rootProperty)
             {
                 RootProperty = rootProperty ?? throw new ArgumentNullException(nameof(rootProperty));
             }
@@ -329,7 +330,7 @@ namespace Anatawa12.AvatarOptimizer
 
             public bool IsOverride => IsOverrideProperty.boolValue;
 
-            public OverridePropBase([NotNull] SerializedProperty rootProperty) : base(rootProperty)
+            public OverridePropBase(SerializedProperty rootProperty) : base(rootProperty)
             {
                 IsOverrideProperty = rootProperty.FindPropertyRelative("override");
             }
@@ -340,12 +341,12 @@ namespace Anatawa12.AvatarOptimizer
         {
             public readonly SerializedProperty OverrideProperty;
             public readonly SerializedProperty ValueProperty;
-            public SerializedProperty PhysBoneValue { get; private set; } 
+            public SerializedProperty? PhysBoneValue { get; private set; } 
             public readonly string PhysBoneValueName;
 
             public CollidersConfigProp(
-                [NotNull] SerializedProperty rootProperty, 
-                [NotNull] string physBoneValueName) : base(rootProperty)
+                SerializedProperty rootProperty, 
+                string physBoneValueName) : base(rootProperty)
             {
                 OverrideProperty = rootProperty.FindPropertyRelative("override");
                 ValueProperty = rootProperty.FindPropertyRelative("value");
@@ -363,12 +364,12 @@ namespace Anatawa12.AvatarOptimizer
         {
             public readonly SerializedProperty OverrideProperty;
             public readonly SerializedProperty ValueProperty;
-            public SerializedProperty PhysBoneValue { get; private set; } 
+            public SerializedProperty? PhysBoneValue { get; private set; } 
             public readonly string PhysBoneValueName;
 
             public EndpointPositionConfigProp(
-                [NotNull] SerializedProperty rootProperty, 
-                [NotNull] string physBoneValueName) : base(rootProperty)
+                SerializedProperty rootProperty, 
+                string physBoneValueName) : base(rootProperty)
             {
                 OverrideProperty = rootProperty.FindPropertyRelative("override");
                 ValueProperty = rootProperty.FindPropertyRelative("value");

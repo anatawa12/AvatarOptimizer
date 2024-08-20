@@ -1,3 +1,5 @@
+#nullable enable
+
 using UnityEditor;
 using UnityEngine;
 
@@ -5,7 +7,7 @@ namespace Anatawa12.AvatarOptimizer
 {
     internal class MergeSkinnedMeshWindow : EditorWindow
     {
-        private Mesh _mesh;
+        private Mesh? _mesh;
 
         private void OnGUI()
         {
@@ -51,7 +53,7 @@ namespace Anatawa12.AvatarOptimizer
             }
         }
 
-        private void SelectableLabelField<T>(string label, T value)
+        private void SelectableLabelField<T>(string label, T value) where T : notnull
         {
             var fullRect = EditorGUILayout.GetControlRect(true);
             var elementRect = EditorGUI.PrefixLabel(fullRect, new GUIContent(label));

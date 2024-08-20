@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -36,7 +38,7 @@ namespace Anatawa12.AvatarOptimizer
                 .SelectMany(description => description.meaninglessComponents)
                 .Select(component => GetMonoScriptFromGuid(component.guid, component.fileID) as MonoScript)
                 .Where(monoScript => monoScript != null)
-                .Select(monoScript => monoScript.GetClass());
+                .Select(monoScript => monoScript!.GetClass());
         }
 
         private static Object GetMonoScriptFromGuid(string guid, ulong fileid)
@@ -49,8 +51,8 @@ namespace Anatawa12.AvatarOptimizer
         [CustomEditor(typeof(AssetDescription))]
         internal class AssetDescriptionEditor : Editor
         {
-            private SerializedProperty _comment;
-            private SerializedProperty _meaninglessComponents;
+            private SerializedProperty _comment = null!; // Initialized by OnEnable
+            private SerializedProperty _meaninglessComponents = null!; // Initialized by OnEnable
 
             private void OnEnable()
             {

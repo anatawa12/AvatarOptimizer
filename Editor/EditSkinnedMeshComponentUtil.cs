@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -37,14 +39,13 @@ namespace Anatawa12.AvatarOptimizer
 
         // Rider's problem, to call GetMaterials(renderer, fast: false)
         // ReSharper disable once MethodOverloadWithOptionalParameter
-        public static Material[] GetMaterials(SkinnedMeshRenderer renderer, EditSkinnedMeshComponent before = null,
+        public static Material[] GetMaterials(SkinnedMeshRenderer renderer, EditSkinnedMeshComponent? before = null,
             bool fast = true) => EditorShared.GetMaterials(renderer, before, fast);
 
-        [CanBeNull] private static SkinnedMeshEditorSorter _editorShared;
+        private static SkinnedMeshEditorSorter? _editorShared;
 
-        [NotNull]
         private static SkinnedMeshEditorSorter EditorShared =>
-            _editorShared ?? (_editorShared = CreateSharedSorterWithScene());
+            _editorShared ??= CreateSharedSorterWithScene();
     }
 
     internal class SkinnedMeshEditorSorter
@@ -66,19 +67,18 @@ namespace Anatawa12.AvatarOptimizer
 
         public (string name, float weight)[] GetBlendShapes(SkinnedMeshRenderer renderer) => GetBlendShapes(renderer, null);
 
-        public (string name, float weight)[] GetBlendShapes(SkinnedMeshRenderer renderer, EditSkinnedMeshComponent before) =>
+        public (string name, float weight)[] GetBlendShapes(SkinnedMeshRenderer renderer, EditSkinnedMeshComponent? before) =>
             GetProcessors(renderer)?.GetBlendShapes(before) ?? SourceMeshInfoComputer.BlendShapes(renderer);
 
         public Material[] GetMaterials(SkinnedMeshRenderer renderer) => GetMaterials(renderer, null);
 
         // Rider's problem, to call GetMaterials(renderer, fast: false)
         // ReSharper disable once MethodOverloadWithOptionalParameter
-        public Material[] GetMaterials(SkinnedMeshRenderer renderer, EditSkinnedMeshComponent before = null,
+        public Material[] GetMaterials(SkinnedMeshRenderer renderer, EditSkinnedMeshComponent? before = null,
             bool fast = true) =>
             GetProcessors(renderer)?.GetMaterials(before, fast) ?? SourceMeshInfoComputer.Materials(renderer);
 
-        [CanBeNull]
-        private SkinnedMeshProcessors GetProcessors(SkinnedMeshRenderer target)
+        private SkinnedMeshProcessors? GetProcessors(SkinnedMeshRenderer target)
         {
             ProcessorsByRenderer.TryGetValue(target, out var processors);
             return processors;
@@ -87,7 +87,7 @@ namespace Anatawa12.AvatarOptimizer
         public IEnumerable<SkinnedMeshProcessors> GetSortedProcessors(
             IEnumerable<SkinnedMeshRenderer> targets)
         {
-            var processors = new LinkedList<SkinnedMeshProcessors>(targets.Select(GetProcessors).Where(x => x != null));
+            var processors = new LinkedList<SkinnedMeshProcessors>(targets.Select(GetProcessors).Where(x => x != null)!);
 
             var proceed = new HashSet<SkinnedMeshRenderer>();
             foreach (var renderer in processors
@@ -114,8 +114,8 @@ namespace Anatawa12.AvatarOptimizer
         {
             internal readonly SkinnedMeshRenderer Target;
             private readonly HashSet<IEditSkinnedMeshProcessor> _processors = new HashSet<IEditSkinnedMeshProcessor>();
-            private List<IEditSkinnedMeshProcessor> _sorted = new List<IEditSkinnedMeshProcessor>();
-            private IMeshInfoComputer[] _computers;
+            private List<IEditSkinnedMeshProcessor>? _sorted = new List<IEditSkinnedMeshProcessor>();
+            private IMeshInfoComputer[]? _computers;
 
             public SkinnedMeshProcessors(SkinnedMeshRenderer target)
             {
@@ -157,13 +157,13 @@ namespace Anatawa12.AvatarOptimizer
                 return _computers;
             }
 
-            private IMeshInfoComputer GetComputer(EditSkinnedMeshComponent before = null) => !before
+            private IMeshInfoComputer GetComputer(EditSkinnedMeshComponent? before = null) => !before
                 ? GetComputers().Last()
-                : GetComputers()[_sorted.FindIndex(x => x.Component == before)];
+                : GetComputers()[_sorted!.FindIndex(x => x.Component == before)];
 
-            public (string, float)[] GetBlendShapes(EditSkinnedMeshComponent before = null) => GetComputer(before).BlendShapes();
+            public (string, float)[] GetBlendShapes(EditSkinnedMeshComponent? before = null) => GetComputer(before).BlendShapes();
 
-            public Material[] GetMaterials(EditSkinnedMeshComponent before = null, bool fast = true) =>
+            public Material[] GetMaterials(EditSkinnedMeshComponent? before = null, bool fast = true) =>
                 GetComputer(before).Materials(fast);
 
             private class RecursiveDetector : IMeshInfoComputer
@@ -176,7 +176,7 @@ namespace Anatawa12.AvatarOptimizer
                 }
 
                 [ThreadStatic]
-                private static HashSet<RecursiveDetector> _currentThreadDetectors;
+                private static HashSet<RecursiveDetector>? _currentThreadDetectors;
 
                 private T CheckRecursive<T>(Func<T> compute)
                 {
