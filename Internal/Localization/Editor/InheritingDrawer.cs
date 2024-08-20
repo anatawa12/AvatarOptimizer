@@ -12,7 +12,7 @@ namespace Anatawa12.AvatarOptimizer
     // originally at https://github.com/anatawa12/CustomLocalization4EditorExtension/blob/b4f4447e0169fed3bee47fff596fbc1ea7c582df/Editor/CustomLocalization4EditorExtension.Editor.cs#L409
     abstract class InheritingDrawer<TAttr> : PropertyDrawer where TAttr : PropertyAttribute
     {
-        private PropertyDrawer _upstreamDrawer;
+        private PropertyDrawer? _upstreamDrawer;
         private bool _initialized;
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
@@ -65,9 +65,9 @@ namespace Anatawa12.AvatarOptimizer
             _initialized = true;
         }
 
-        private void HandleDrawnType(SerializedProperty property, Type drawnType, PropertyAttribute attr)
+        private void HandleDrawnType(SerializedProperty property, Type drawnType, PropertyAttribute? attr)
         {
-            Type forPropertyAndType = Reflections.GetDrawerTypeForPropertyAndType(property, drawnType);
+            Type? forPropertyAndType = Reflections.GetDrawerTypeForPropertyAndType(property, drawnType);
             if (forPropertyAndType == null)
                 return;
             if (typeof(PropertyDrawer).IsAssignableFrom(forPropertyAndType))
@@ -154,10 +154,10 @@ namespace Anatawa12.AvatarOptimizer
         
         static class Reflections
         {
-            [NotNull] private static readonly MethodInfo GetDrawerTypeForPropertyAndTypeInfo;
-            [NotNull] private static readonly FieldInfo FieldInfoInfo;
-            [NotNull] private static readonly FieldInfo AttributeInfo;
-            [NotNull] private static readonly MethodInfo DefaultPropertyFieldInfo;
+            private static readonly MethodInfo GetDrawerTypeForPropertyAndTypeInfo;
+            private static readonly FieldInfo FieldInfoInfo;
+            private static readonly FieldInfo AttributeInfo;
+            private static readonly MethodInfo DefaultPropertyFieldInfo;
 
             static Reflections()
             {
@@ -183,10 +183,10 @@ namespace Anatawa12.AvatarOptimizer
                         null) ?? throw new InvalidOperationException();
             }
 
-            public static Type GetDrawerTypeForPropertyAndType(SerializedProperty property, Type type) => 
-                (Type)GetDrawerTypeForPropertyAndTypeInfo.Invoke(null, new object[] { property, type });
+            public static Type? GetDrawerTypeForPropertyAndType(SerializedProperty property, Type type) => 
+                (Type?)GetDrawerTypeForPropertyAndTypeInfo.Invoke(null, new object[] { property, type });
 
-            public static void SetFieldAndAttribute(PropertyDrawer drawer, FieldInfo fieldInfo, PropertyAttribute attribute)
+            public static void SetFieldAndAttribute(PropertyDrawer drawer, FieldInfo fieldInfo, PropertyAttribute? attribute)
             {
                 FieldInfoInfo.SetValue(drawer, fieldInfo);
                 AttributeInfo.SetValue(drawer, attribute);

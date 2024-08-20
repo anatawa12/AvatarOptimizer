@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using JetBrains.Annotations;
 using nadena.dev.ndmf.localization;
 using nadena.dev.ndmf.ui;
 using UnityEditor;
@@ -25,10 +24,9 @@ namespace Anatawa12.AvatarOptimizer
         });
 
 
-        [NotNull] public static string Tr(string key) => Localizer.GetLocalizedString(key);
+        public static string Tr(string key) => Localizer.GetLocalizedString(key);
 
-        [CanBeNull]
-        public static string TryTr(string descriptionKey)
+        public static string? TryTr(string descriptionKey)
         {
             if (Localizer.TryGetLocalizedString(descriptionKey, out var result))
                 return result;
