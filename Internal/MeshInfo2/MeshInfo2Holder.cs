@@ -12,7 +12,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
 {
     public class MeshInfo2Context : IExtensionContext
     {
-        internal MeshInfo2Holder Holder { get; private set; }
+        internal MeshInfo2Holder? Holder { get; private set; }
         public void OnActivate(BuildContext context)
         {
             Holder = new MeshInfo2Holder(context.AvatarRootObject);
@@ -20,7 +20,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
         public void OnDeactivate(BuildContext context)
         {
-            Debug.Assert(Holder != null, nameof(Holder) + " != null");
+            if (Holder == null) throw new InvalidOperationException("Not activated");
             // avoid Array index (n) is out of bounds (size=m) error
             // by assigning null to AnimatorController before changing blendShapes count
             // and assigning back after changing blendShapes count.

@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using JetBrains.Annotations;
 using nadena.dev.ndmf;
 using Unity.Burst;
 using Unity.Collections;
@@ -19,12 +18,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 {
     public class MeshInfo2
     {
-        [NotNull] public readonly Renderer SourceRenderer;
-        [NotNull] public Transform RootBone;
+        public readonly Renderer SourceRenderer;
+        public Transform? RootBone;
         public Bounds Bounds;
         public readonly List<Vertex> Vertices = new List<Vertex>(0);
 
-        private readonly Mesh _originalMesh;
+        private readonly Mesh? _originalMesh;
 
         // TexCoordStatus which is 3 bits x 8 = 24 bits
         private uint _texCoordStatus;
@@ -47,7 +46,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             {
                 var originalMeshImporter = GetImporter(ObjectRegistry.GetReference(mesh).Object as Mesh);
 
-                ModelImporter GetImporter(Mesh importingMesh)
+                ModelImporter? GetImporter(Mesh? importingMesh)
                 {
                     if (!importingMesh) return null;
                     var path = AssetDatabase.GetAssetPath(importingMesh);
@@ -75,7 +74,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             using (ErrorReport.WithContextObject(renderer))
             {
-                if (mesh)
+                if (mesh != null)
                     ReadSkinnedMesh(mesh);
 
                 var updateWhenOffscreen = renderer.updateWhenOffscreen;
@@ -86,7 +85,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 renderer.updateWhenOffscreen = updateWhenOffscreen;
                 RootBone = renderer.rootBone ? renderer.rootBone : renderer.transform;
 
-                if (mesh)
+                if (mesh != null)
                 {
                     for (var i = 0; i < mesh.blendShapeCount; i++)
                         BlendShapes[i] = (BlendShapes[i].name, renderer.GetBlendShapeWeight(i));
@@ -109,16 +108,16 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             using (ErrorReport.WithContextObject(renderer))
             {
                 var meshFilter = renderer.GetComponent<MeshFilter>();
-                var mesh = _originalMesh = meshFilter ? meshFilter.sharedMesh : null;
+                var mesh = _originalMesh = meshFilter != null ? meshFilter.sharedMesh : null;
                 if (mesh != null && !mesh.isReadable && EditorApplication.isPlaying)
                 {
                     BuildLog.LogError("MeshInfo2:error:MeshNotReadable", mesh);
                     return;
                 }
-                if (mesh)
+                if (mesh != null)
                     ReadStaticMesh(mesh);
 
-                if (mesh)
+                if (mesh != null)
                     Bounds = mesh.bounds;
                 RootBone = renderer.transform;
 
@@ -152,7 +151,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 
                 for (int i = SubMeshes.Count - 1, j = 0; i < sourceMaterials.Length; i++, j++)
                     lastMeshMaterials[j] = sourceMaterials[i];
-                SubMeshes[SubMeshes.Count - 1].SharedMaterials = lastMeshMaterials;
+                SubMeshes[^1].SharedMaterials = lastMeshMaterials;
             }
         }
 
@@ -180,7 +179,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 vertex.BoneWeights.Add((Bones[0], 1f));
         }
 
-        public void ReadSkinnedMesh([NotNull] Mesh mesh)
+        public void ReadSkinnedMesh(Mesh mesh)
         {
             ReadStaticMesh(mesh);
 
@@ -193,7 +192,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             Profiler.EndSample();
         }
 
-        private void ReadBones([NotNull] Mesh mesh)
+        private void ReadBones(Mesh mesh)
         {
             Bones.Clear();
             Bones.Capacity = Math.Max(Bones.Capacity, mesh.bindposes.Length);
@@ -212,7 +211,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             }
         }
 
-        private void ReadBlendShapes([NotNull] Mesh mesh)
+        private void ReadBlendShapes(Mesh mesh)
         {
             BlendShapes.Clear();
             Profiler.BeginSample("Prepare shared buffers");
@@ -325,7 +324,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             }
         }
 
-        public void ReadStaticMesh([NotNull] Mesh mesh)
+        public void ReadStaticMesh(Mesh mesh)
         {
             Profiler.BeginSample($"Read Static Mesh Part");
             Vertices.Capacity = Math.Max(Vertices.Capacity, mesh.vertexCount);
@@ -758,13 +757,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         public List<Vertex> Vertices { get; } = new List<Vertex>();
 
-        public Material SharedMaterial
+        public Material? SharedMaterial
         {
             get => SharedMaterials[0];
             set => SharedMaterials[0] = value;
         }
 
-        public Material[] SharedMaterials = { null };
+        public Material?[] SharedMaterials = { null };
 
         public SubMesh()
         {
@@ -777,11 +776,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         public SubMesh(Material sharedMaterial, MeshTopology topology) =>
             (SharedMaterial, Topology) = (sharedMaterial, topology);
 
-        public SubMesh(SubMesh subMesh, Material triangles)
+        public SubMesh(SubMesh subMesh, Material? material)
         {
             Topology = subMesh.Topology;
             Vertices = new List<Vertex>(subMesh.Vertices);
-            SharedMaterial = triangles;
+            SharedMaterial = material;
         }
 
         public SubMesh(List<Vertex> vertices, List<int> triangles, SubMeshDescriptor descriptor)
@@ -1053,7 +1052,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             var matrix = Matrix4x4.zero;
             foreach (var (bone, weight) in BoneWeights)
             {
-                var transformMat = bone.Transform
+                var transformMat = bone.Transform != null
                     ? getLocalToWorld(bone.Transform)
                     : Matrix4x4.identity;
                 var boneMat = transformMat * bone.Bindpose;
@@ -1068,10 +1067,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
     public class Bone
     {
         public Matrix4x4 Bindpose;
-        public Transform Transform;
+        public Transform? Transform;
 
         public Bone(Matrix4x4 bindPose) : this(bindPose, null) {}
-        public Bone(Matrix4x4 bindPose, Transform transform) => (Bindpose, Transform) = (bindPose, transform);
+        public Bone(Matrix4x4 bindPose, Transform? transform) => (Bindpose, Transform) = (bindPose, transform);
     }
 
     public enum TexCoordStatus
