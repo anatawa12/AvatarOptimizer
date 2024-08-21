@@ -83,11 +83,6 @@ Optimizing phaseの中で([`BeforePlugin`][ndmf-BeforePlugin]を用いて)`com.a
 この場合、現在のNDMFはVRCSDKの`RemoveAvatarEditorOnly`の直前であるorder `-1025`でOptimizing phaseを実行するので、
 それより小さい`callbackOrder`を指定した`IVRCSDKPreprocessAvatarCallback`でコンポーネントを削除してください。
 
-
-If your components is only for holding information for your edit mode tool and has no meaning on the build time,
-you can remove your components in `IVRCSDKPreprocessAvatarCallback` as described above, or
-you can somply use [Asset Description] to register your components to be removed.
-
 もし、ツールのコンポーネントがデータを保持する役割しかなく、ビルド時には意味を持っていない場合、
 上記のように`IVRCSDKPreprocessAvatarCallback`でコンポーネントを削除するか、
 [Asset Description]を使用してコンポーネントを削除できるコンポーネントとして登録することができます。
