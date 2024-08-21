@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- VRCConstraints with Target might be removed unexpectedly `#1150`
 
 ### Security
 

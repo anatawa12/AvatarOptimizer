@@ -517,7 +517,8 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
     {
         protected override void CollectDependency(T component, ComponentDependencyCollector collector)
         {
-            collector.AddDependency(component.transform, component)
+            var target = component.TargetTransform != null ? component.TargetTransform : component.transform;
+            collector.AddDependency(target, component)
                 .OnlyIfTargetCanBeEnable()
                 .EvenIfDependantDisabled();
 
