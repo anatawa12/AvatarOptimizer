@@ -34,45 +34,6 @@ Avatar Optimizerはビルドプロセスの最後の方に処理するように�
 
 ## どのように互換性を改善するか {#improve-compatibility}
 
-
-To improve the compatibility, you may implement one of the following methods.
-
-1. Remove your components before Avatar Optimizer processes as much as possible.
-
-   If your component is not working at runtime, (in other words, it's a build-time or edit mode only component),
-   it's mostly better for your tool to process avatar before Avatar Optimizer processes,
-   and remove your components before Avatar Optimizer processes.
-
-   Please refer [section below](#remove-component) for more details.
-
-   Avatar Optimizer internally uses this method for most Avatar Optimizer components,
-   that will be processed before Trace and Optimize.
-
-2. Register your components to Avatar Optimizer with API
-
-   If your component is working at runtime, or your tool actually want to process avatar after Avatar Optimizer processes,
-   you can register your components to Avatar Optimizer to tell about your components.
-
-   Please refer [section below](#register-component) for more details.
-
-   Avatar Optimizer internally uses this method to keep some components that are processed after Trace and Optimize,
-   and components from Unity, VRCSDK, and other avatar platform components.
-
-3. Register your components as no problems to remove with Asset Description.
-
-   Since Avatar Optimizer v1.7.0, you can use [Asset Description] to register components only for preserving data
-   for edit-mode tools, that doesn't effects on build or at runtime.
-   Please refer [Asset Description] for more details.
-   If your tool process nothing at build time or runtime, you can use this to register your components instead of
-   removing your components before Avatar Optimizer processes.
-
-   If your tool process something at build time, registering with Asset Description is not recommended.
-   Using Asset Description for components that process something at build time may unexpectedly
-   remove your components and disables your tool if the execution order is incorrect or unexpectedly changed.
-
-   This method is internally used by Avatar Optimizer to keep compatibility with well-known edit-mode tools.
-
-
 互換性を改善するためには、以下のいずれかの方法を実装できます。
 
 1. Avatar Optimizerが処理する前にコンポーネントを削除する
@@ -107,16 +68,6 @@ To improve the compatibility, you may implement one of the following methods.
    この方法は、Avatar Optimizerがよく知られた編集モードツールとの互換性を保つために内部で使用されています。
 
 ### コンポーネントを削除する {#remove-component}
-
-You can remove your components with [`DestroyImmediate`][DestroyImmediate] to remove your components.
-
-There is several ways to process and remove your component from avatar before Avatar Optimizer processes on build.
-
-If your tool is a non-destructive tool based on NDMF[^NDMF], you can remove your components before the phases
-prior to the Optimizing phase of NDMF or before `com.anatawa12.avatar-optimizer` plugin
-(with [`BeforePlugin`][ndmf-BeforePlugin]) in the Optimizing phase.
-If your tool removes your components in Optimizing phase, it's highly recommended to specify [`BeforePlugin`][ndmf-BeforePlugin]
-even if your default callback order is before `com.anatawa12.avatar-optimizer` plugin.
 
 [`DestroyImmediate`]を使用してコンポーネントを削除できます。
 
