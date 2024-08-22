@@ -21,9 +21,9 @@ namespace Anatawa12.AvatarOptimizer.ndmf
                 {
                     // we skip check for update 
                     var components = ctx.AvatarRootObject.GetComponentInChildren<AvatarTagComponent>(true);
-                    if (components && CheckForUpdateOld.OutOfDate)
+                    if (components && CheckForUpdate.Checker.OutOfDate && CheckForUpdate.MenuItems.CheckForUpdateEnabled)
                         BuildLog.LogInfo("CheckForUpdate:out-of-date",
-                            CheckForUpdateOld.LatestVersionName, CheckForUpdateOld.CurrentVersionName);
+                            CheckForUpdate.Checker.LatestVersionName, CheckForUpdate.Checker.CurrentVersionName);
                 })
                 .Then.Run(Processors.UnusedBonesByReferencesToolEarlyProcessor.Instance)
                 .Then.Run("Early: MakeChildren",
