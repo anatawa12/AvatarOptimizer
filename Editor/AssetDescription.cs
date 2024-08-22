@@ -64,7 +64,7 @@ namespace Anatawa12.AvatarOptimizer
                 EditorGUILayout.LabelField(AAOL10N.Tr("AssetDescription:Description"), EditorStyles.wordWrappedLabel);
                 if (GUILayout.Button(AAOL10N.Tr("AssetDescription:OpenDocs")))
                 {
-                    var baseUrl = CheckForUpdate.IsBeta ? "https://vpm.anatawa12.com/avatar-optimizer/beta/" : "https://vpm.anatawa12.com/avatar-optimizer/";
+                    var baseUrl = CheckForUpdate.Checker.IsBeta ? "https://vpm.anatawa12.com/avatar-optimizer/beta/" : "https://vpm.anatawa12.com/avatar-optimizer/";
                     var isJapanese = LanguagePrefs.Language == "ja";
                     baseUrl += isJapanese ? "ja/" : "en/";
                     baseUrl += "developers/asset-description/";
