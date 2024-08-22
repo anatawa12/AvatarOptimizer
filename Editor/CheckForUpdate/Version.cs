@@ -91,7 +91,19 @@ namespace Anatawa12.AvatarOptimizer.CheckForUpdate
             Major == other.Major && Minor == other.Minor && Patch == other.Patch && Pre == other.Pre;
 
         public override bool Equals(object obj) => obj is Version other && Equals(other);
-        public override int GetHashCode() => HashCode.Combine(Major, Minor, Patch);
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = Major;
+                hashCode = (hashCode * 397) ^ Minor;
+                hashCode = (hashCode * 397) ^ Patch;
+                hashCode = (hashCode * 397) ^ Pre.GetHashCode();
+                return hashCode;
+            }
+        }
+
         public static bool operator ==(Version left, Version right) => left.Equals(right);
         public static bool operator !=(Version left, Version right) => !left.Equals(right);
         public static bool operator <(Version left, Version right) => left.CompareTo(right) < 0;

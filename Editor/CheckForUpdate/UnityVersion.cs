@@ -13,7 +13,7 @@ namespace Anatawa12.AvatarOptimizer.CheckForUpdate
 
         public bool Equals(UnityVersion other) => Major == other.Major && Minor == other.Minor;
         public override bool Equals(object obj) => obj is UnityVersion other && Equals(other);
-        public override int GetHashCode() => HashCode.Combine(Major, Minor);
+        public override int GetHashCode() => unchecked((Major * 397) ^ Minor);
         public static bool operator ==(UnityVersion left, UnityVersion right) => left.Equals(right);
         public static bool operator !=(UnityVersion left, UnityVersion right) => !left.Equals(right);
 
