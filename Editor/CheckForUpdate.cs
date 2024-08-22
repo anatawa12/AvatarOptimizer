@@ -11,9 +11,9 @@ using UnityEngine;
 namespace Anatawa12.AvatarOptimizer
 {
     [InitializeOnLoad]
-    internal static class CheckForUpdate
+    internal static class CheckForUpdateOld
     {
-        static CheckForUpdate()
+        static CheckForUpdateOld()
         {
             EditorApplication.delayCall += DoCheckForUpdate;
         }
@@ -137,7 +137,6 @@ namespace Anatawa12.AvatarOptimizer
             {
                 // we successfully fetched latest version!
                 EditorPrefs.SetString(latestVersionKey, fetchedLatestVersion);
-                EditorPrefs.SetString(checkedWithKey, CurrentVersionName);
                 EditorPrefs.SetString(updatedAtKey, DateTime.UtcNow.ToString("O"));
                 return fetchedLatestVersion;
             }
