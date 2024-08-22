@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
+- Rewritten Check for Update system `#1151`
 
 ### Deprecated
 
