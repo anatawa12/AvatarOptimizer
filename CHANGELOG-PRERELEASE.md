@@ -16,9 +16,12 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- FinalIK Gimmicks with IKExecutionOrder is broken `#1153`
 
 ### Security
+
+## [1.7.12-beta.2] - 2024-08-23
+### Fixed
+- FinalIK Gimmicks with IKExecutionOrder is broken [`#1153`](https://github.com/anatawa12/AvatarOptimizer/pull/1153)
 
 ## [1.7.12-beta.1] - 2024-08-22
 ### Changed
@@ -1499,7 +1502,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.12-beta.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.12-beta.2...HEAD
+[1.7.12-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.12-beta.1...v1.7.12-beta.2
 [1.7.12-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.11...v1.7.12-beta.1
 [1.7.11]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.11-beta.1...v1.7.11
 [1.7.11-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.10...v1.7.11-beta.1
