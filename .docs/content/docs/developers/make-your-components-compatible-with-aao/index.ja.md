@@ -41,7 +41,7 @@ Avatar Optimizerはビルド処理の最後の方で動作するように設計�
    コンポーネントが実行時では動作しないものである場合、(すなわち、ビルド時や編集モードでのみ動作するコンポーネントである場合、)
    Avatar Optimizerより前にアバターを処理し、コンポーネントを削除することが殆どの場合で最善です。
 
-   詳細は[以下のセクション](#remove-component)を参照してください。
+   詳細は[下のセクション](#remove-component)を参照してください。
 
    Avatar Optimizerは、Trace and Optimizeの前に処理を行う殆どのAvatar Optimizerコンポーネントにおいて、内部的にこの方法を使用しています。
 
@@ -50,7 +50,7 @@ Avatar Optimizerはビルド処理の最後の方で動作するように設計�
     実行時に動作するコンポーネントや、Avatar Optimizerより後にアバターを処理するために残しておく必要があるコンポーネントの場合、
     そのコンポーネントの情報をAvatar Optimizerに登録することができます。
     
-     詳細は[以下のセクション](#register-component)を参照してください。
+     詳細は[下のセクション](#register-component)を参照してください。
     
      Avatar Optimizerは、Trace and Optimizeの後に処理を行う一部のコンポーネントや、Unity純正のコンポーネント、VRCSDKのコンポーネントなどを保持するために、内部的にこの方法を使用しています。
 
