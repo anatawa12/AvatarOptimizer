@@ -17,6 +17,9 @@ There are several optimizations which can be performed automatically for Avatars
   - If there are enabled PhysBones which do not need to be swayed (e.g., the swaying target mesh[^mesh] is always disabled), extra computational cost is caused.
 - Merging bones which is not animated or swayed with PhysBones
   - If the clothes bones are nested into the body bones, there will be many bones which are never moved locally. Such bones cause extra cost.
+- Merging meshes which are toggled together or never toggled
+  - If your avatar has only one cloth, it might not be necessary to have separated meshes for body, hair, and clothes.
+  - Even if you have multiple switchable clothes, it might not be necessary to have separated meshes with body, hair, and underwear.
 
 With AvatarOptimizer, these optimizations can be performed automatically by simply adding `AAO Trace And Optimize` component to the Avatar Root!
 
@@ -33,12 +36,10 @@ AAO: Avatar Optimizer is a non-destructive avatar modification tool, and process
 Therefore, no special steps are required for uploading.
 Upload your avatar via VRCSDK Control Panal as usual.
 
-However, even though the hard limit will not be exceeded through Avatar Optimizer optimization, etc.,
-the upload button cannot be pressed because the limit has been exceeded at the time of the VRCSDK pre-build check, the following methods can be used.
+However, even though the hard limit will not be exceeded through Avatar Optimizer optimization, etc., the upload button cannot be pressed if the limit has been exceeded at the time of the VRCSDK pre-build check.\
+You can skip the pre-build check with several ways. Please refer [faq][skip-hard-limit-faq] for more details.
 
-- Upload the avatar generated with `Manual bake avatar`.\
-(Select the GameObject of the avatar, then press `Manual bake avatar` in `NDM Framework` from Tools at the top of the Unity window)
-- Upload using [Upload without pre-check] by Sayamame-beans.
+[skip-hard-limit-faq]: ../../faq/#i-cannot-upload-the-avatar-because-of-pre-build-hard-limit-check
 
 [Upload without pre-check]: https://github.com/Sayamame-beans/Upload-without-preCheck?tab=readme-ov-file#upload-without-pre-check
 
@@ -72,6 +73,9 @@ In case polygons you want to remove are not removed, or you do not want to remov
 In the first case, increase the value a little, in the second case, decrease it a little!
 
 ![remove mesh by BlendShape](./remove-mesh-by-blendshape.png)
+
+<!--
+TODO: add advanced usage for tutorial
 
 Merge Meshes to reduce # of Skinned Renderers {#merge-skinned-mesh}
 ---
@@ -131,3 +135,4 @@ I think specifying what is configured in your avatar's body as Anchor Override, 
 
 [^tip-lock-inspector]: It is useful to keep in mind that it can be used in many other places such as specifying multiple colliders for PhysBone.
 [^merge-skinned-mesh]: Root Bone and Anchor Override are impossible to merge automatically I think. If you know any good algorithm, please tel me that.
+-->

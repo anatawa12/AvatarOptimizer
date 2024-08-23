@@ -8,8 +8,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
 {
     internal static class ComponentInfoRegistry
     {
-        private static readonly Dictionary<Type, ComponentInformation> InformationByType =
-            new Dictionary<Type, ComponentInformation>();
+        private static readonly Dictionary<Type, ComponentInformation> InformationByType = new();
 
         [InitializeOnLoadMethod]
         static void FindAllInfoImplements()
@@ -107,7 +106,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
             return false;
         }
 
-        private static HashSet<Type> _meaninglessTypes;
+        private static HashSet<Type>? _meaninglessTypes;
 
         public static void InvalidateCache() => _meaninglessTypes = null;
 
@@ -128,7 +127,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
 
         class MeaninglessComponentInformation : ComponentInformation
         {
-            public static MeaninglessComponentInformation Instance { get; } = new MeaninglessComponentInformation();
+            public static MeaninglessComponentInformation Instance { get; } = new();
 
             private MeaninglessComponentInformation()
             {

@@ -4,7 +4,6 @@ using System.Net;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
 
@@ -24,7 +23,7 @@ namespace Anatawa12.AvatarOptimizer
             private set => SessionState.SetBool("com.anatawa12.avatar-optimizer.out-of-date", value);
         }
 
-        public static string LatestVersionName
+        public static string? LatestVersionName
         {
             get => SessionState.GetString("com.anatawa12.avatar-optimizer.latest", "");
             private set => SessionState.SetString("com.anatawa12.avatar-optimizer.latest", value);
@@ -61,8 +60,7 @@ namespace Anatawa12.AvatarOptimizer
             }
         }
 
-        [CanBeNull]
-        static string GetCurrentVersion()
+        static string? GetCurrentVersion()
         {
             try
             {
@@ -80,8 +78,7 @@ namespace Anatawa12.AvatarOptimizer
             }
         }
 
-        [ItemCanBeNull]
-        static async Task<string> GetLatestVersion(bool beta, string version)
+        static async Task<string?> GetLatestVersion(bool beta, string version)
         {
             var latestVersionUrl =
                 beta
@@ -112,7 +109,7 @@ namespace Anatawa12.AvatarOptimizer
 
             // out of date or invalid cached version
 
-            string fetchedLatestVersion = null;
+            string? fetchedLatestVersion = null;
             try
             {
                 using (var client = new HttpClient())
@@ -158,7 +155,7 @@ namespace Anatawa12.AvatarOptimizer
         [Serializable]
         class PackageJson
         {
-            public string version;
+            public string? version;
         }
     }
 }

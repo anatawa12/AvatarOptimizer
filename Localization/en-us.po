@@ -339,8 +339,20 @@ msgstr "Please exclude this from the source SkinnedMeshRenderers or remove Cloth
 msgid "MergeSkinnedMesh:warning:no-root-bone"
 msgstr "Root Bone of the merged mesh is not set. This may cause unexpected behavior."
 
+msgid "MergeSkinnedMesh:warning:no-root-bone:description"
+msgstr "MergeSkinnedMesh does not automatically set the Root Bone of the merged mesh."
+
+msgid "MergeSkinnedMesh:warning:no-root-bone:hint"
+msgstr "You need to set it manually. If you are using Modular Avatar, you can also add MA Mesh Settings component to the root of the avatar to set the Root Bone for the whole avatar."
+
 msgid "MergeSkinnedMesh:warning:no-probe-anchor"
 msgstr "Anchor Override of the merged mesh is not set. This may cause unexpected behavior."
+
+msgid "MergeSkinnedMesh:warning:no-probe-anchor:description"
+msgstr "MergeSkinnedMesh does not automatically set the Anchor Override of the merged mesh."
+
+msgid "MergeSkinnedMesh:warning:no-probe-anchor:hint"
+msgstr "You need to set it manually. If you are using Modular Avatar, you can also add MA Mesh Settings component to the root of the avatar to set the Anchor Override for the whole avatar."
 
 # endregion
 
@@ -448,6 +460,91 @@ msgstr "Unknown Remove Mode is specified."
 msgid "RemoveMeshByMask:warning:NoMesh"
 msgstr "No Mesh is specified to the Skinned Mesh Renderer."
 
+msgid "RemoveMeshByMask:button:makeReadable"
+msgstr "Make Readable"
+
+msgid "RemoveMeshByMask:tooltip:textureIsNotImported"
+msgstr "Mask Texture is not imported from image file."
+
+# endregion
+
+# region MaskTextureEditor
+
+msgid "MaskTextureEditor:create"
+msgstr "Create"
+
+msgid "MaskTextureEditor:edit"
+msgstr "Edit"
+
+msgid "MaskTextureEditor:title"
+msgstr "AAO MaskTextureEditor"
+
+msgid "MaskTextureEditor:renderer"
+msgstr "Skinned Mesh Renderer"
+
+msgid "MaskTextureEditor:subMesh"
+msgstr "Material Slot"
+
+msgid "MaskTextureEditor:subMeshIndex"
+msgstr "{0}"
+
+msgid "MaskTextureEditor:texture"
+msgstr "Mask Texture"
+
+msgid "MaskTextureEditor:save"
+msgstr "Save"
+
+msgid "MaskTextureEditor:viewScale"
+msgstr "View Scale (Scroll)"
+
+msgid "MaskTextureEditor:viewOpacity"
+msgstr "View Opacity"
+
+msgid "MaskTextureEditor:resetView"
+msgstr "Fit the view to the window"
+
+msgid "MaskTextureEditor:brushSize"
+msgstr "Brush Size (Shift + Scroll)"
+
+msgid "MaskTextureEditor:brushColor"
+msgstr "Brush Color"
+
+msgid "MaskTextureEditor:black"
+msgstr "Black"
+
+msgid "MaskTextureEditor:white"
+msgstr "White"
+
+msgid "MaskTextureEditor:fillBlack"
+msgstr "Fill Black"
+
+msgid "MaskTextureEditor:fillWhite"
+msgstr "Fill White"
+
+msgid "MaskTextureEditor:inverse"
+msgstr "Inverse Color"
+
+msgid "MaskTextureEditor:saveChangesMessage"
+msgstr "There are unsaved changes. Would you like to save?"
+
+msgid "MaskTextureEditor:saveChangesButtonSave"
+msgstr "Save"
+
+msgid "MaskTextureEditor:saveChangesButtonDiscard"
+msgstr "Discard"
+
+msgid "MaskTextureEditor:saveChangesButtonCancel"
+msgstr "Cancel"
+
+msgid "MaskTextureEditor:errorTitle"
+msgstr "Error"
+
+msgid "MaskTextureEditor:errorMessageCreateFailed"
+msgstr "Failed to create the texture. Refer to the log for details."
+
+msgid "MaskTextureEditor:errorMessageSaveFailed"
+msgstr "Failed to save the texture. Refer to the log for details."
+
 # endregion
 
 # region AvatarGlobalComponent
@@ -536,13 +633,21 @@ msgstr "MMD World Compatibility"
 msgid "TraceAndOptimize:tooltip:mmdWorldCompatibility"
 msgstr "Enable MMD World Compatibility features such as keeping some BlendShapes"
 
-msgid "TraceAndOptimize:prop:advancedSettings"
-msgstr "Advanced Settings"
+msgid "TraceAndOptimize:prop:advancedOptimization"
+msgstr "Advanced Optimizations"
 
-msgid "TraceAndOptimize:warn:advancedSettings"
-msgstr "Advanced Settings is for workaround bugs in Avatar Optimizer.\n"
-"Changing Advanced Settings will make your avatar non well-optimized.\n"
-"In addition, Some modification of Advanced Settings may not well-tested or its behaviour is likely to be changed. Be careful!"
+msgid "TraceAndOptimize:note:advancedOptimization"
+msgstr ""
+"Those settings make your avatar more optimized, but may break your avatar.\n"
+"If you have any problem, please disable Advanced Optimization."
+
+msgid "TraceAndOptimize:prop:debugOptions"
+msgstr "Debug Options"
+
+msgid "TraceAndOptimize:warn:debugOptions"
+msgstr "Debug Options is for workaround bugs in Avatar Optimizer.\n"
+"Changing Debug Options will make your avatar non well-optimized.\n"
+"In addition, Some modification of Debug Options may not well-tested or its behaviour is likely to be changed. Be careful!"
 
 msgid "TraceAndOptimize:warn:unknown-type"
 msgstr "Unknown Component Type '{0}' Found."
@@ -558,7 +663,9 @@ msgstr ""
 "See https://vpm.anatawa12.com/avatar-optimizer/en/docs/developers/make-your-components-compatible-with-aao/ for more details.\n"
 "\n"
 "If it is a component of a tool you are using, please ask tool author to register the component to Avatar Optimizer\n"
-"or ask Avatar Optimizer to support the component if the tool is a well-known one."
+"or ask Avatar Optimizer to support the component if the tool is a well-known one.\n"
+"\n"
+"If you ask tool author to register the component, please share the link to the documentation for developer ( https://vpm.anatawa12.com/avatar-optimizer/en/docs/developers/make-your-components-compatible-with-aao/ )."
 
 msgid "TraceAndOptimize:prop:preserveEndBone"
 msgstr "Preserve EndBone"
@@ -572,18 +679,21 @@ msgstr "Automatically Remove Zero Sized Polygons"
 msgid "TraceAndOptimize:OptimizePhysBone:UnknownPhysBoneColliderShape"
 msgstr "Unknown PhysBone Collider Shape '{0}' is specified."
 
-msgid "TraceAndOptimize:OptimizeAnimator:Unity2019"
-msgstr "Most features of Optimize Animator is not supported on Unity 2019. Please consider use Unity 2021 or later."
-
 # endregion
 
 #region ApplyObjectMapping
 
 msgid "ApplyObjectMapping:VRCAvatarDescriptor:eyelids BlendShape Removed"
-msgstr "BlendShape(s) for eyelids are Removed / frozen."
+msgstr "BlendShape(s) for eyelids are removed / frozen, or not configured."
+
+msgid "ApplyObjectMapping:VRCAvatarDescriptor:eyelids BlendShape Removed:description"
+msgstr "If some BlendShapes are missing or unset, all eyelids BlendShapes would not work."
 
 msgid "ApplyObjectMapping:VRCAvatarDescriptor:viseme BlendShape Removed"
-msgstr "BlendShape(s) for viseme are Removed / frozen."
+msgstr "BlendShape(s) for viseme are removed / frozen, or not configured."
+
+msgid "ApplyObjectMapping:VRCAvatarDescriptor:viseme BlendShape Removed:description"
+msgstr "If some BlendShapes are missing or unset, all viseme BlendShapes would not work."
 
 #endregion
 
@@ -645,6 +755,9 @@ msgstr "{0} Component does not process SubMeshes with LineStrip."
 
 msgid "ErrorReporter:error.internal_error"
 msgstr "An internal error has occurred: {0} when processing:"
+
+msgid "ErrorReporter:autoFix"
+msgstr "Auto Fix"
 
 # endregion
 

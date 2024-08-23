@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
+using System.Linq;
 using Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes;
 using nadena.dev.ndmf;
 using UnityEngine;
@@ -23,6 +23,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             {
                 var instance = component.TargetComponent;
                 if (!instance) continue; // destroyed
+                if (component.Properties.Length == 0) continue; // no properties
                 var check = AnimatablePropertyRegistry.Get(context, instance);
                 if (check == null) continue; // we don't know if it's animatable
 
@@ -42,7 +43,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
         private static readonly Dictionary<Type, TypeInfo<Object>> _properties =
             new Dictionary<Type, TypeInfo<Object>>();
 
-        public static Func<string, bool> Get(BuildContext context, Object component)
+        public static Func<string, bool>? Get(BuildContext context, Object component)
         {
             if (!_properties.TryGetValue(component.GetType(), out var func))
                 return null;
@@ -57,34 +58,45 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
         {
             Register<SkinnedMeshRenderer>((ctx, x) =>
             {
-                MeshInfo2 mesh = null;
-                ctx.GetMeshInfoFor(x);
+                var mesh = ctx.GetMeshInfoFor(x);
+                var materialSlots = mesh.SubMeshes.Sum(y => y.SharedMaterials.Length);
                 return (prop) =>
                 {
-                    if (prop.StartsWith("blendShape."))
-                    {
-                        var name = prop.Substring("blendShape.".Length);
-                        if (mesh == null) mesh = ctx.GetMeshInfoFor(x);
-                        return mesh.BlendShapes.FindIndex(b => b.name == name) != -1;
-                    }
+                    int index;
 
-                    if (prop.StartsWith("m_Materials.Array.data["))
-                    {
-                        var index = int.Parse(prop.Substring("m_Materials.Array.data[".Length).TrimEnd(']'));
-                        if (mesh == null) mesh = ctx.GetMeshInfoFor(x);
-                        return index < mesh.SubMeshes.Count;
-                    }
+                    if (TrySubProp(prop, "blendShape", out var name))
+                        return mesh.BlendShapes.FindIndex(b => b.name == name) != -1;
+
+                    if (TryArrayIndex(prop, "materials", out index))
+                        return index < materialSlots;
 
                     if (VProp.IsBlendShapeIndex(prop))
-                    {
-                        var index = VProp.ParseBlendShapeIndex(prop);
-                        if (mesh == null) mesh = ctx.GetMeshInfoFor(x);
-                        return index < mesh.BlendShapes.Count;
-                    }
+                        return VProp.ParseBlendShapeIndex(prop) < mesh.BlendShapes.Count;
 
                     return true;
                 };
             });
+        }
+
+        private static bool TrySubProp(string prop, string subProp, out string? sub)
+        {
+            sub = null;
+            if (!prop.StartsWith(subProp + '.')) return false;
+            sub = prop.Substring(subProp.Length + 1);
+            return true;
+        }
+
+        private static bool TryArrayIndex(string prop, string arrayPropertyName, out int index)
+        {
+            index = -1; 
+            if (!prop.StartsWith(arrayPropertyName)) return false;
+            prop = prop.Substring(arrayPropertyName.Length);
+            if (!prop.StartsWith(".Array.data[")) return false;
+            prop = prop.Substring(".Array.data[".Length);
+            var close = prop.IndexOf(']');
+            if (close == -1) return false;
+            if (!int.TryParse(prop.Substring(0, close), out index)) return false;
+            return true;
         }
     }
 }

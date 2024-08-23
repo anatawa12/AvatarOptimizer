@@ -35,6 +35,8 @@ namespace Anatawa12.AvatarOptimizer
         [SerializeField]
         internal bool skipEnablementMismatchedRenderers;
 
+        APIChecker _checker;
+
         private void Reset()
         {
             skipEnablementMismatchedRenderers = true;
@@ -70,6 +72,7 @@ namespace Anatawa12.AvatarOptimizer
                 default:
                     throw new ArgumentOutOfRangeException(nameof(version), $"unsupported version: {version}");
             }
+            _checker.OnInitialize(version, this);
         }
 
         /// <summary>
@@ -81,8 +84,8 @@ namespace Anatawa12.AvatarOptimizer
         [PublicAPI]
         public bool RemoveEmptyRendererObject
         {
-            get => removeEmptyRendererObject;
-            set => removeEmptyRendererObject = value;
+            get => _checker.OnAPIUsage(this, removeEmptyRendererObject);
+            set => _checker.OnAPIUsage(this, removeEmptyRendererObject = value);
         }
 
         /// <summary>
@@ -100,8 +103,8 @@ namespace Anatawa12.AvatarOptimizer
         [PublicAPI]
         public bool SkipEnablementMismatchedRenderers
         {
-            get => skipEnablementMismatchedRenderers;
-            set => skipEnablementMismatchedRenderers = value;
+            get => _checker.OnAPIUsage(this, skipEnablementMismatchedRenderers);
+            set => _checker.OnAPIUsage(this, skipEnablementMismatchedRenderers = value);
         }
 
         /// <summary>
@@ -109,13 +112,13 @@ namespace Anatawa12.AvatarOptimizer
         /// </summary>
         [PublicAPI]
         public API.PrefabSafeSetAccessor<SkinnedMeshRenderer> SourceSkinnedMeshRenderers =>
-            new API.PrefabSafeSetAccessor<SkinnedMeshRenderer>(renderersSet);
+            _checker.OnAPIUsage(this, new API.PrefabSafeSetAccessor<SkinnedMeshRenderer>(renderersSet));
 
         /// <summary>
         /// Gets the set of source MeshRenderers.
         /// </summary>
         [PublicAPI]
         public API.PrefabSafeSetAccessor<MeshRenderer> SourceStaticMeshRenderers =>
-            new API.PrefabSafeSetAccessor<MeshRenderer>(staticRenderersSet);
+            _checker.OnAPIUsage(this, new API.PrefabSafeSetAccessor<MeshRenderer>(staticRenderersSet));
     }
 }

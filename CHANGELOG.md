@@ -14,10 +14,117 @@ The format is based on [Keep a Changelog].
 ### Deprecated
 
 ### Removed
+- Unity 2019 Support `#1146`
+  - For 2019 users, please use 1.7.x.
 
 ### Fixed
 
 ### Security
+
+## [1.7.11] - 2024-08-08
+### Added
+- VRCSDK 3.7.0 support [`#1140`](https://github.com/anatawa12/AvatarOptimizer/pull/1140)
+  - This includes VRCConstraints support
+
+### Fixed
+- Some Humanoid Bones might be removed [`#1137`](https://github.com/anatawa12/AvatarOptimizer/pull/1137)
+  - Repeated `AddPathDependency` is broken.
+- Render is broken if all weighted bone is none and some other non-weight bone is not none [`#1138`](https://github.com/anatawa12/AvatarOptimizer/pull/1138)
+
+## [1.7.10] - 2024-08-02
+### Added
+- Experimental VRCConstraints support [`#1129`](https://github.com/anatawa12/AvatarOptimizer/pull/1129) [`#1130`](https://github.com/anatawa12/AvatarOptimizer/pull/1130)
+  - This only works for VRCSDK ~~`3.6.2-constraints.3`~~ `3.6.2-constraints.4` and not works with other versions including future versions.
+
+### Fixed
+- AutoMergeSkinnedMesh is broken if all merging meshes has no SubMeshes [`#1127`](https://github.com/anatawa12/AvatarOptimizer/pull/1127)
+
+## [1.7.9] - 2024-07-25
+### Fixed
+- Index out of bounds error with remove mesh by mask with negative UV [`#1123`](https://github.com/anatawa12/AvatarOptimizer/pull/1123)
+
+## [1.7.8] - 2024-07-22
+### Fixed
+- Index out of bounds error with remove mesh by mask [`#1119`](https://github.com/anatawa12/AvatarOptimizer/pull/1119)
+- NRE with Generic Avatar [`#1122`](https://github.com/anatawa12/AvatarOptimizer/pull/1122)
+
+## [1.7.7] - 2024-07-08
+### Added
+- Add Traditional Chinese [`#1102`](https://github.com/anatawa12/AvatarOptimizer/pull/1102)
+
+### Fixed
+- `VRCAnimatorPlayAudio` support is broken [`#1114`](https://github.com/anatawa12/AvatarOptimizer/pull/1114)
+
+## [1.7.6] - 2024-06-17
+### Fixed
+- BlendTree with NormalizedBlendValues Broken with MergeBlendTree [`#1096`](https://github.com/anatawa12/AvatarOptimizer/pull/1096)
+- Remove Zero Sized Polygon may remove small polygons [`#1098`](https://github.com/anatawa12/AvatarOptimizer/pull/1098)
+
+## [1.7.5] - 2024-06-10
+### Added
+- Warnings for bad API Usages [`#1091`](https://github.com/anatawa12/AvatarOptimizer/pull/1091)
+
+### Changed
+- Ignore floating point precision error in Merge PhysBone [`#1086`](https://github.com/anatawa12/AvatarOptimizer/pull/1086)
+- Animation Warning of Merge Skinned Mesh will not generated if source Renderer is not animated [`#1087`](https://github.com/anatawa12/AvatarOptimizer/pull/1087)
+- Expression Parameters are now considered as a part of Avatar Dynamics Parameter destination [`#1089`](https://github.com/anatawa12/AvatarOptimizer/pull/1089)
+- Relax condition for scaled evenly check [`#1092`](https://github.com/anatawa12/AvatarOptimizer/pull/1092)
+  - Trace and Optimize will merge more bones than before.
+
+### Removed
+- Write to Asset on Play menu item which is no-op [`#1085`](https://github.com/anatawa12/AvatarOptimizer/pull/1085)
+- Particle Syatem with Mesh Renderer shape will be broken [`#1093`](https://github.com/anatawa12/AvatarOptimizer/pull/1093)
+
+### Fixed
+- Merge BlendTree Layer will break some BlendTrees that have overriden by other layers [`#1084`](https://github.com/anatawa12/AvatarOptimizer/pull/1084)
+
+## [1.7.4] - 2024-05-17
+### Fixed
+- Some rare material swap animation can cause exception [`#1067`](https://github.com/anatawa12/AvatarOptimizer/pull/1067)
+- Invalid AABB error message from UnityEngine if there are no source for Merge Skinned Mesh [`#1068`](https://github.com/anatawa12/AvatarOptimizer/pull/1068)
+
+## [1.7.3] - 2024-05-10
+### Added
+- Declare VRCSDK 3.6.x compatibility [`#1060`](https://github.com/anatawa12/AvatarOptimizer/pull/1060)
+
+### Fixed
+- Mesh preview may cause empty mesh on enter play mode if reload scene is disabled [`#1064`](https://github.com/anatawa12/AvatarOptimizer/pull/1064)
+- MMD Compatibility can be broken with Merge BlendTree Layers [`#1065`](https://github.com/anatawa12/AvatarOptimizer/pull/1065)
+
+## [1.7.2] - 2024-05-09
+### Fixed
+- Entry/Exit to BlendTree broken with None motion in default state `1057`
+- An error with MergePhysBone [`#1061`](https://github.com/anatawa12/AvatarOptimizer/pull/1061)
+- Animators depends on the WD=off behavior can be broken [`#1062`](https://github.com/anatawa12/AvatarOptimizer/pull/1062)
+
+## [1.7.1] - 2024-05-07
+### Added
+- Implement mask texture editor [`#1044`](https://github.com/anatawa12/AvatarOptimizer/pull/1044)
+- Add Simplified Chinese translation [`#1055`](https://github.com/anatawa12/AvatarOptimizer/pull/1045)
+
+### Changed
+- Improved behavior with Read/Write Off [`#1045`](https://github.com/anatawa12/AvatarOptimizer/pull/1045)
+  - Because of Unity limitation, AAO cannot process meshes with R/W off on `Start` so it will be error.
+  - However, on `Awake`, we can read them so AAO should process them.
+  - Since this version, AAO will process meshes with R/W off on `Awake`.
+  - This reduces the number of errors on the apply on play.
+  - If you're using Av3Emulator, you still see the error.
+  - In addition, in such case, we'll show `Auto Fix` button on the error message.
+  - If you press the button, AAO will fix the error by changing the mesh to read/write enabled.
+- `Advanced Options` section has benn renamed to `Debug Options` [`#1052`](https://github.com/anatawa12/AvatarOptimizer/pull/1052)
+  - This express the purpose of the section more clearly.
+- Added `Advanced Optimizations` and moved `Remove Zero sized Polygons` to it [`#1052`](https://github.com/anatawa12/AvatarOptimizer/pull/1052)
+  - The `Remove Zero sized Polygons` can break some shaders or animations so it's not enabled by default.
+  - To make it more clear, we moved it to `Advanced Optimizations`.
+
+### Fixed
+- Material Slot animations for multi-material multi-pass rendering are broken [`#1042`](https://github.com/anatawa12/AvatarOptimizer/pull/1042)
+  - Previously we only preserves animations for the number of submeshes instead of material slots.
+- Relax Bounds condition for Automatic Merge Skinned Mesh [`#1043`](https://github.com/anatawa12/AvatarOptimizer/pull/1043)
+  - Previously, AAO doesn't merge Skinned Meshes if bounds are different accurately.
+  - Since this version, AAO will merge meshes if bounds are the same with precision to the last 6 digits of decimal point.
+- Entry/Exit to BlendTree broken with None state `1048`
+- Particle System with bone-rigged Skinned Mesh Renderer will be broken [`#1054`](https://github.com/anatawa12/AvatarOptimizer/pull/1054)
 
 ## [1.7.0] - 2024-04-30
 ### Added
@@ -879,7 +986,18 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.0...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.11...HEAD
+[1.7.11]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.10...v1.7.11
+[1.7.10]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.9...v1.7.10
+[1.7.9]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.8...v1.7.9
+[1.7.8]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.7...v1.7.8
+[1.7.7]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.6...v1.7.7
+[1.7.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.5...v1.7.6
+[1.7.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.4...v1.7.5
+[1.7.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.3...v1.7.4
+[1.7.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.2...v1.7.3
+[1.7.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.1...v1.7.2
+[1.7.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.0...v1.7.1
 [1.7.0]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.13...v1.7.0
 [1.6.13]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.12...v1.6.13
 [1.6.12]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.6.11...v1.6.12

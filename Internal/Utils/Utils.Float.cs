@@ -1,5 +1,5 @@
-
 using System;
+using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer
 {
@@ -61,9 +61,9 @@ namespace Anatawa12.AvatarOptimizer
             if (x == 0) return float.Epsilon;
 
             // rest is normal or subnormal number
-            var asInt = SingleToInt32Bits(x);
+            var asInt = BitConverter.SingleToInt32Bits(x);
             asInt += asInt < 0 ? -1 : 1;
-            return Int32BitsToSingle(asInt);
+            return BitConverter.Int32BitsToSingle(asInt);
         }
 
         public static float PreviousFloat(float x)
@@ -75,19 +75,12 @@ namespace Anatawa12.AvatarOptimizer
             if (x == 0) return -float.Epsilon;
 
             // rest is normal or subnormal number
-            var asInt = SingleToInt32Bits(x);
+            var asInt = BitConverter.SingleToInt32Bits(x);
             asInt -= asInt < 0 ? -1 : 1;
-            return Int32BitsToSingle(asInt);
+            return BitConverter.Int32BitsToSingle(asInt);
         }
 
-        // Int32BitsToSingle / SingleToInt32Bits is not available in .NET Framework 4.x
-        // so I implemented it.
-#if UNITY_2022_3_OR_NEWER
-        public static int SingleToInt32Bits(float value) => BitConverter.SingleToInt32Bits(value);
-        public static float Int32BitsToSingle(int value) => BitConverter.Int32BitsToSingle(value);
-#else
-        public static int SingleToInt32Bits(float value) => BitConverter.ToInt32(BitConverter.GetBytes(value), 0);
-        public static float Int32BitsToSingle(int value) => BitConverter.ToSingle(BitConverter.GetBytes(value), 0);
-#endif
+        public static bool IsFinite(float x) => !float.IsNaN(x) && !float.IsInfinity(x);
+        public static float Modulo(float x, float y) => x - y * Mathf.Floor(x / y);
     }
 }

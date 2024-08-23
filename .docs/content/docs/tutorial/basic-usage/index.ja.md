@@ -17,6 +17,9 @@ title: 基本的な使い方
   - 揺らす対象として存在するメッシュ[^mesh]が常に無効になっているPhysBoneなどのように、揺らす必要のないPhysBoneが有効になっている場合は計算負荷が余分に発生してしまいます。
 - アニメーションしたりPhysBoneで揺らしたりすることのないボーンの統合
   - 服のボーンを素体のボーンに入れ子状にして着せるような場合には、それ自身を動かすことがないボーンが多く発生します。そのようなボーンは余分な負荷を発生させてしまいます。
+- 一緒に切り替えていたり、切り替えることがなかったりするメッシュ同士の統合
+  - アバターに服が1着しかない場合、体、髪、服などを別々のメッシュにしておく必要はないかもしれません。
+  - 切り替え可能な複数の服がある場合でも、体、髪、下着などを別々のメッシュにしておく必要はないかもしれません。
 
 AvatarOptimizerでは、アバターのルートに`AAO Trace And Optimize`コンポーネントを追加するだけで、これらの最適化を自動で行うことができます！
 
@@ -32,13 +35,10 @@ AvatarOptimizerでは、アバターのルートに`AAO Trace And Optimize`コ�
 AAO: Avatar Optimizerは非破壊改変ツールであり、Playモードに入るときかアバターをビルドするときに処理が行われるため、アップロードを行うのに特別な手順は必要ありません。
 通常と同じように、VRCSDKのControl Panelからアバターをアップロードしてください。
 
-ただし、Android(Quest)向けアップロードを行う場合などにおいて、Avatar Optimizerの最適化等によって制限の範囲内に収まるにも関わらず、VRCSDKのビルド前チェックの時点で制限を超過していてアップロードボタンが押せなくなっている場合には、以下の方法が使用できます。
+ただし、Android(Quest)向けアップロードを行う場合などにおいて、Avatar Optimizerの最適化等によって制限の範囲内に収まるにも関わらず、 VRCSDKのビルド前チェックの時点で制限を超過していてアップロードボタンが押せない場合があります。\
+ビルド前チェックをスキップする方法はいくつかあります。詳しくは[よくある質問][skip-hard-limit-faq]を参照してください。
 
-- `Manual bake avatar`を使用して生成したアバターをアップロードする。\
-(アバターのGameObjectを選択した後、Unityウィンドウ上部のToolsから、`NDM Framework`の中にある`Manual bake avatar`を押す)
-- Sayamame-beansによる[Upload without pre-check]を使用してアップロードする。
-
-[Upload without pre-check]: https://github.com/Sayamame-beans/Upload-without-preCheck?tab=readme-ov-file#upload-without-pre-check
+[skip-hard-limit-faq]: ../../faq/#i-cannot-upload-the-avatar-because-of-pre-build-hard-limit-check
 
 {{< hint info >}}
 
@@ -70,6 +70,8 @@ AAO: Avatar Optimizerは非破壊改変ツールであり、Playモードに入�
 前者の場合は値を少し大きく、後者の場合は値を少し小さくしましょう！
 
 ![remove mesh by BlendShape](./remove-mesh-by-blendshape.png)
+
+<!--
 
 メッシュを統合してMesh Renderersを減らす {#merge-skinned-mesh}
 ---
@@ -129,3 +131,5 @@ BlendShape(シェイプキー)は頂点数とBlendShape数の積に比例して�
 
 [^tip-lock-inspector]: PhysBoneに複数のコライダーを指定したりするのにも使えます。色んなところで使えるので覚えておくと便利だと思います。
 [^merge-skinned-mesh]: Root Bone/Anchor Overrideは等しくないと統合できないため対応予定がありません。もし良いアルゴリズムがあれば教えてください。
+
+-->

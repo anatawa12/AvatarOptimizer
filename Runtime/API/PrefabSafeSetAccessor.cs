@@ -6,11 +6,11 @@ using JetBrains.Annotations;
 namespace Anatawa12.AvatarOptimizer.API
 {
     [PublicAPI]
-    public readonly struct PrefabSafeSetAccessor<T> : ICollection<T>
+    public readonly struct PrefabSafeSetAccessor<T> : ICollection<T> where T : notnull
     {
         private readonly PrefabSafeSetApi<T> _set;
 
-        public PrefabSafeSetAccessor(PrefabSafeSetApi<T> set) => _set = set;
+        internal PrefabSafeSetAccessor(PrefabSafeSetApi<T> set) => _set = set;
 
         [PublicAPI]
         public Enumerator GetEnumerator() => new Enumerator(_set.GetAsList().GetEnumerator());

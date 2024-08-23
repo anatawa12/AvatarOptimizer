@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using JetBrains.Annotations;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
@@ -49,6 +48,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             this.layers = layers;
             UpdateLayers();
         }
+
+        // Note: Adding layer to first will break MMD compatibility.
 
         public AOAnimatorControllerLayer AddLayer(string layerName)
         {
@@ -109,7 +110,17 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 
         public int syncedLayerIndex => Layer.syncedLayerIndex;
         public AnimatorStateMachine? stateMachine => Layer.stateMachine ? Layer.stateMachine : null;
-        public string name => Layer.name;
+        public string name
+        {
+            get => Layer.name;
+            set
+            {
+                Layer.name = value;
+                if (Layer.stateMachine) Layer.stateMachine.name = value;
+                _parent.UpdateLayers();
+            }
+        }
+
         public AvatarMask? avatarMask => Layer.avatarMask;
         // ReSharper restore InconsistentNaming
 

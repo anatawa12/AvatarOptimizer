@@ -13,12 +13,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - unity: 2019
-            projectRef: b552a002fa121b0d7c233b49241f5f6279d0fa90 # project-for-test-2019
           - unity: 2022
             projectRef: de0b2dde7824e33986730c40866d74cfe526942b # project-for-test-2022
         unity:
-          - 2019
           - 2022
     permissions:
       checks: write
@@ -30,6 +27,8 @@ jobs:
         with:
           path: Packages/com.anatawa12.avatar-optimizer
           ref: ${{ github.event.pull_request.head.sha }}
+      - uses: anatawa12/sh-actions/setup-vrc-get@master
+      - run: vrc-get install -y com.vrchat.avatars
       - uses: anatawa12/sh-actions/resolve-vpm-packages@master
         with:
           repos: |

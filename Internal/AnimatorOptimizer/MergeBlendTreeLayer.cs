@@ -18,13 +18,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             Execute(controller);
         }
 
-        public static void Execute(AOAnimatorController controller)
+        public static void Execute(AOAnimatorController controller, string? alwaysOneParameter = null)
         {
             var directBlendTrees = new List<(int layerIndex, BlendTree tree)>();
 
             var modifiedProperties = new HashSet<EditorCurveBinding>();
 
-            var alwaysOneParameter = $"AAO_AlwaysOne_{Guid.NewGuid()}";
+            alwaysOneParameter ??= $"AAO_AlwaysOne_{Guid.NewGuid()}";
 
             for (var i = controller.layers.Length - 1; i >= 0; i--)
             {
@@ -37,8 +37,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                     var blendTreeModified = ACUtils.AllClips(blendTree).Aggregate(new HashSet<EditorCurveBinding>(),
                         (set, clip) =>
                         {
-                            modifiedProperties.UnionWith(AnimationUtility.GetCurveBindings(clip));
-                            modifiedProperties.UnionWith(AnimationUtility.GetObjectReferenceCurveBindings(clip));
+                            set.UnionWith(AnimationUtility.GetCurveBindings(clip));
+                            set.UnionWith(AnimationUtility.GetObjectReferenceCurveBindings(clip));
                             return set;
                         });
                     // nothing is animated in higher priority layer
@@ -64,11 +64,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             directBlendTrees.Reverse();
 
             // create merged layer
-            var newLayer = controller.AddLayer("Merged Direct BlendTrees");
+            var theLayer = controller.layers[directBlendTrees.Last().layerIndex];
+            theLayer.name = "AAO BlendTree MergedLayer";
             var newState = new AnimatorState { name = "Merged Direct BlendTrees" };
-            newLayer.stateMachine!.states = new[] { new ChildAnimatorState { state = newState } };
-            newLayer.stateMachine.defaultState = newState;
-            newLayer.defaultWeight = 1f;
+            theLayer.stateMachine!.states = new[] { new ChildAnimatorState { state = newState } };
+            theLayer.stateMachine.defaultState = newState;
+            theLayer.defaultWeight = 1f;
 
             var newBlendTree = new BlendTree() { name = "Merged Direct BlendTrees" };
             newState.motion = newBlendTree;
@@ -88,7 +89,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             }
 
             // clear original layers
-            foreach (var (layerIndex, _) in directBlendTrees)
+            foreach (var (layerIndex, _) in directBlendTrees.SkipLast(1))
             {
                 var layer = controller.layers[layerIndex];
                 layer.stateMachine!.states = Array.Empty<ChildAnimatorState>();
@@ -126,19 +127,28 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                             motion: BlendTree { } blendTree,
                         })
                     {
-                        return blendTree.blendType == BlendTreeType.Direct ? blendTree :
-                            new()
+                        bool isMergeableDirectBlendTree = blendTree.blendType == BlendTreeType.Direct;
+
+                        using (var serialized = new SerializedObject(blendTree))
+                            if (serialized.FindProperty("m_NormalizedBlendValues").boolValue)
+                                isMergeableDirectBlendTree = false;
+
+                        if (isMergeableDirectBlendTree)
+                            return blendTree;
+
+                        return new()
+                        {
+                            blendType = BlendTreeType.Direct,
+                            children = new ChildMotion[]
                             {
-                                blendType = BlendTreeType.Direct,
-                                children = new ChildMotion[]
+                                new()
                                 {
-                                    new ()
-                                    {
-                                        directBlendParameter = alwaysOneParameter,
-                                        motion = blendTree,
-                                    }
-                                },
-                            };
+                                    directBlendParameter = alwaysOneParameter,
+                                    motion = blendTree,
+                                    timeScale = 1,
+                                }
+                            },
+                        };
                     }
                 }
             }

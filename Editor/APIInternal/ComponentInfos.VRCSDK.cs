@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.API;
-using JetBrains.Annotations;
 using nadena.dev.ndmf.runtime;
 using UnityEngine;
 using VRC.SDK3;
@@ -13,6 +12,9 @@ using VRC.SDK3.Avatars.Components;
 using VRC.SDK3.Dynamics.Contact.Components;
 using VRC.SDK3.Dynamics.PhysBone.Components;
 using VRC.SDKBase;
+
+using VRC.Dynamics.ManagedTypes;
+using VRC.SDK3.Dynamics.Constraint.Components;
 
 namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
 {
@@ -157,7 +159,6 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
             }
         }
         
-        [NotNull]
         private static string ParseBlendShapeProperty(string prop) =>
             prop.StartsWith("blendShape.", StringComparison.Ordinal)
                 ? prop.Substring("blendShape.".Length)
@@ -467,7 +468,6 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
         }
     }
     
-#if AAO_VRCSDK3_AVATARS_IMPOSTER_SETTINGS
     // this component has no documentation so this implementation is based on assumption
     [ComponentInformation(typeof(VRCImpostorEnvironment))]
     internal class VRCImpostorEnvironmentInformation : ComponentInformation<VRCImpostorEnvironment>
@@ -478,9 +478,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
             collector.MarkEntrypoint();
         }
     }
-#endif
 
-#if AAO_VRCSDK3_AVATARS_HEAD_CHOP
     [ComponentInformation(typeof(VRCHeadChop))]
     internal class VRCHeadChopInformation : ComponentInformation<VRCHeadChop>
     {
@@ -496,6 +494,50 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
             collector.MarkBehaviour();
         }
     }
-#endif
+
+    [ComponentInformation(typeof(VRCConstraintBase))]
+    [ComponentInformation(typeof(VRCParentConstraintBase))]
+    [ComponentInformation(typeof(VRCParentConstraint))]
+    [ComponentInformation(typeof(VRCPositionConstraintBase))]
+    [ComponentInformation(typeof(VRCPositionConstraint))]
+    [ComponentInformation(typeof(VRCRotationConstraintBase))]
+    [ComponentInformation(typeof(VRCRotationConstraint))]
+    [ComponentInformation(typeof(VRCScaleConstraintBase))]
+    [ComponentInformation(typeof(VRCScaleConstraint))]
+    internal class VRCConstraintInformation<T> : ComponentInformation<T> where T : VRCConstraintBase
+    {
+        protected override void CollectDependency(T component, ComponentDependencyCollector collector)
+        {
+            collector.AddDependency(component.transform, component)
+                .OnlyIfTargetCanBeEnable()
+                .EvenIfDependantDisabled();
+
+            foreach (var source in component.Sources)
+                collector.AddDependency(source.SourceTransform);
+
+            // we may mark heavy behavior with complex rules but it's extremely difficult to implement
+            // so mark behavior for now
+            collector.MarkBehaviour();
+        }
+
+        protected override void CollectMutations(T component, ComponentMutationsCollector collector)
+        {
+            collector.TransformRotation(component.TargetTransform ? component.TargetTransform : component.transform);
+        }
+    }
+
+    [ComponentInformation(typeof(VRCWorldUpConstraintBase))]
+    [ComponentInformation(typeof(VRCAimConstraintBase))]
+    [ComponentInformation(typeof(VRCAimConstraint))]
+    [ComponentInformation(typeof(VRCLookAtConstraintBase))]
+    [ComponentInformation(typeof(VRCLookAtConstraint))]
+    internal class VRCWorldUpConstraintInformation : VRCConstraintInformation<VRCWorldUpConstraintBase>
+    {
+        protected override void CollectDependency(VRCWorldUpConstraintBase component, ComponentDependencyCollector collector)
+        {
+            base.CollectDependency(component, collector);
+            collector.AddDependency(component.WorldUpTransform);
+        }
+    }
 }
 #endif

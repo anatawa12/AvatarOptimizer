@@ -169,6 +169,11 @@ jobs:
             sed -i'.bak' -e "s|${STABLE_URL}|${STABLE_URL}#${VERSION}|" package.json
           fi
           rm package.json.bak
+          
+      - name: update csc.rsp
+        run: |
+          sed -n '/PUBLISH DELETE MARKER/q;p' -i .csc.rsp.nullunsafe
+          sed -n '/PUBLISH DELETE MARKER/q;p' -i .csc.rsp.nullsafe
 
       # region vpm release
       - name: Build VPM release
@@ -182,12 +187,13 @@ jobs:
       # endregion vpm release
 
       # region docs
+      # remember update update-website.yml
       - name: Update .docs/config.toml
         run: sed -i'.bak' -e "s/(SNAPSHOT)/($VERSION)/" .docs/config.toml && rm .docs/config.toml.bak
 
       - name: Build docs as a beta docs
         working-directory: .docs
-        run: ./build.sh 'https://vpm.anatawa12.com/avatar-optimizer/beta'
+        run: ./build.sh 'https://vpm.anatawa12.com/avatar-optimizer/beta' "$VERSION"
 
       - name: Copy to beta dir if it's release
         if: ${{ !fromJSON(env.PRERELEASE) }}
@@ -196,7 +202,7 @@ jobs:
       - name: Build docs as a release docs if it's release
         if: ${{ !fromJSON(env.PRERELEASE) }}
         working-directory: .docs
-        run: ./build.sh 'https://vpm.anatawa12.com/avatar-optimizer'
+        run: ./build.sh 'https://vpm.anatawa12.com/avatar-optimizer' "$VERSION"
 
       - name: zip docs
         run: cd .docs/public && zip ../../build/website.zip -r .

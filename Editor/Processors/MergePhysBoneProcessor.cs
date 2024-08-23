@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.AnimatorParsersV2;
-using JetBrains.Annotations;
 using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEngine;
@@ -33,7 +32,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
         private static bool SetEq<T>(IEnumerable<T> a, IEnumerable<T> b) => 
             new HashSet<T>(a).SetEquals(b);
 
-        internal static void DoMerge(MergePhysBone merge, [CanBeNull] BuildContext context)
+        internal static void DoMerge(MergePhysBone merge, BuildContext? context)
         {
             var sourceComponents = merge.componentsSet.GetAsList();
             if (sourceComponents.Count == 0) return;
@@ -238,8 +237,8 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 CurveVector3ConfigProp prop, bool forceOverride = false)
             {
                 var @override = forceOverride || prop.IsOverride;
-                _mergedPhysBone.FindProperty(prop.PhysBoneValueName).floatValue =
-                    prop.GetValueProperty(@override).floatValue;
+                _mergedPhysBone.FindProperty(prop.PhysBoneValueName).vector3Value =
+                    prop.GetValueProperty(@override).vector3Value;
                 if (@override)
                 {
                     _mergedPhysBone.FindProperty(prop.PhysBoneCurveXName).animationCurveValue =

@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
-using JetBrains.Annotations;
 using nadena.dev.ndmf;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -47,7 +46,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
         public static bool ScaledEvenly(Vector3 localScale)
         {
-            bool CheckScale(float scale) => 0.999 < scale && scale < 1.001;
+            bool CheckScale(float scale) => 0.995 < scale && scale < 1.005;
             return CheckScale(localScale.x / localScale.y) && CheckScale(localScale.x / localScale.z) &&
                    CheckScale(localScale.y / localScale.z);
         }
@@ -79,7 +78,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 using (ErrorReport.WithContextObject(renderer))
                 {
                     var meshInfo2 = context.GetMeshInfoFor(renderer);
-                    if (meshInfo2.Bones.Any(x => x.Transform && mergeMapping.ContainsKey(x.Transform)))
+                    if (meshInfo2.Bones.Any(x => x.Transform != null && mergeMapping.ContainsKey(x.Transform)))
                         DoBoneMap2(meshInfo2, mergeMapping);
                 }
             }
@@ -150,7 +149,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
             // first, simply update bone weights by updating BindPose
             foreach (var bone in meshInfo2.Bones)
             {
-                if (!bone.Transform) continue;
+                if (bone.Transform == null) continue;
                 if (mergeMapping.TryGetValue(bone.Transform, out var mapped))
                 {
                     bone.Bindpose = mapped.worldToLocalMatrix * bone.Transform.localToWorldMatrix * bone.Bindpose;
@@ -221,7 +220,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
             var boneMapping = new Dictionary<Bone, Bone>();
             foreach (var grouping in meshInfo2.Bones.GroupBy(x => new BoneUniqKey(x)))
             {
-                if (!grouping.Key.Transform) continue;
+                if (grouping.Key.Transform == null) continue;
                 primaryBones.TryGetValue(grouping.Key.Transform, out var primaryBone);
                 var group = grouping.ToArray();
                 if (group.All(x => x != primaryBone))
@@ -267,7 +266,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
         private readonly struct BoneUniqKey : IEquatable<BoneUniqKey>
         {
             private readonly Matrix4x4 _bindPoseInfo;
-            public readonly Transform Transform;
+            public readonly Transform? Transform;
 
             public BoneUniqKey(Bone bone)
             {
@@ -293,12 +292,10 @@ namespace Anatawa12.AvatarOptimizer.Processors
             public bool Equals(BoneUniqKey other) =>
                 Equals(Transform, other.Transform) && _bindPoseInfo == other._bindPoseInfo;
 
-            public override bool Equals(object obj) => obj is BoneUniqKey other && Equals(other);
-
-            public override int GetHashCode() =>
-                unchecked(_bindPoseInfo.GetHashCode() * 397) ^ (Transform != null ? Transform.GetHashCode() : 0);
+            public override bool Equals(object? obj) => obj is BoneUniqKey other && Equals(other);
+            public override int GetHashCode() => HashCode.Combine(_bindPoseInfo, Transform);
         }
-        
+
 
         public struct MergeBoneTransParentInfo
         {
@@ -307,7 +304,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
             public bool ActiveSelf;
             public string NamePrefix;
 
-            public (Vector3 position, Quaternion rotation, Vector3 scale) ComputeInfoFor([NotNull] Transform child)
+            public (Vector3 position, Quaternion rotation, Vector3 scale) ComputeInfoFor(Transform child)
             {
                 if (child == null) throw new ArgumentNullException(nameof(child));
 
@@ -324,7 +321,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 return (matrix.offset, rotation, scale);
             }
 
-            public static MergeBoneTransParentInfo Compute([NotNull] Transform parent, [CanBeNull] Transform root)
+            public static MergeBoneTransParentInfo Compute(Transform parent, Transform? root)
             {
                 var parentRotation = Quaternion.identity;
                 var parentMatrix = Matrix4x4.identity;

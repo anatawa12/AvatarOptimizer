@@ -113,7 +113,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
             // Mesh renderer without Mesh does nothing
             if (!meshFilter || !meshFilter.sharedMesh) return;
             base.CollectDependency(component, collector);
-            collector.AddDependency(meshFilter);
+            collector.AddDependency(meshFilter).EvenIfDependantDisabled();
         }
     }
 
@@ -178,11 +178,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
                 switch (component.collision.type) // not animated
                 {
                     case ParticleSystemCollisionType.Planes:
-#if UNITY_2020_2_OR_NEWER
                         for (var i = 0; i < component.collision.planeCount; i++)
-#else
-                        for (var i = 0; i < component.collision.maxPlaneCount; i++)
-#endif
                             collector.AddDependency(component.collision.GetPlane(i));
                         break;
                     case ParticleSystemCollisionType.World:
@@ -193,11 +189,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
 
             if (collector.GetAnimatedFlag(component, "TriggerModule.enabled", component.trigger.enabled) != false)
             {
-#if UNITY_2020_2_OR_NEWER
                 for (var i = 0; i < component.trigger.colliderCount; i++)
-#else
-                for (var i = 0; i < component.trigger.maxColliderCount; i++)
-#endif
                 {
                     var collider = component.trigger.GetCollider(i);
                     if (!collider) continue;

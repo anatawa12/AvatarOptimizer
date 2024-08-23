@@ -9,8 +9,8 @@ namespace Anatawa12.AvatarOptimizer
     [CustomEditor(typeof(UnusedBonesByReferencesTool))]
     class UnusedBonesByReferencesToolEditor : AvatarGlobalComponentEditorBase
     {
-        private SerializedProperty _preserveEndBone;
-        private SerializedProperty _detectExtraChild;
+        private SerializedProperty _preserveEndBone = null!; // Initialized in OnEnable
+        private SerializedProperty _detectExtraChild = null!; // Initialized in OnEnable
 
         private void OnEnable()
         {

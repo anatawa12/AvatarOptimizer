@@ -50,8 +50,8 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 
         public readonly struct NullOrMissingContext
         {
-            internal Transform RootTransform { get; }
-            internal bool IsPartOfPrefabAsset => (object)RootTransform != null;
+            internal Transform? RootTransform { get; }
+            internal bool IsPartOfPrefabAsset => (object?)RootTransform != null;
 
             public NullOrMissingContext(Object context)
             {

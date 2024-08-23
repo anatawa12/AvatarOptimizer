@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using JetBrains.Annotations;
@@ -30,7 +32,7 @@ namespace Anatawa12.AvatarOptimizer.API
         [PublicAPI]
         public ComponentInformationAttribute(Type targetType)
         {
-            TargetType = targetType;
+            TargetType = targetType ?? throw new ArgumentNullException(nameof(targetType));
         }
 
         internal override Type GetTargetType() => TargetType;
@@ -43,6 +45,11 @@ namespace Anatawa12.AvatarOptimizer.API
         APIInternal.IComponentInformation<TComponent>
         where TComponent : Component
     {
+        [PublicAPI]
+        protected ComponentInformation()
+        {
+        }
+
         internal sealed override void CollectDependencyInternal(Component component,
             ComponentDependencyCollector collector) =>
             CollectDependency((TComponent)component, collector);
@@ -162,7 +169,7 @@ namespace Anatawa12.AvatarOptimizer.API
         /// <param name="dependency">The dependency</param>
         /// <returns>The object to configure the dependency</returns>
         [PublicAPI]
-        public abstract ComponentDependencyInfo AddDependency(Component dependant, Component dependency);
+        public abstract ComponentDependencyInfo AddDependency(Component? dependant, Component? dependency);
 
         /// <summary>
         /// Adds <see cref="dependency"/> as dependencies of current component.
@@ -173,7 +180,7 @@ namespace Anatawa12.AvatarOptimizer.API
         /// <param name="dependency">The dependency</param>
         /// <returns>The object to configure the dependency</returns>
         [PublicAPI]
-        public abstract ComponentDependencyInfo AddDependency(Component dependency);
+        public abstract ComponentDependencyInfo AddDependency(Component? dependency);
 
         /// <summary>
         /// Adds relative path from <see cref="root"/> to <see cref="dependency"/> as dependencies of current component.
@@ -218,7 +225,7 @@ namespace Anatawa12.AvatarOptimizer.API
         /// <param name="root">The GameObject the relative path starts from</param>
         /// <exception cref="ArgumentException">If the <see cref="dependency"/> is not child of <see cref="root"/>.</exception>
         [PublicAPI]
-        public abstract PathDependencyInfo AddPathDependency([NotNull] Transform dependency, [NotNull] Transform root);
+        public abstract PathDependencyInfo AddPathDependency(Transform dependency, Transform root);
 
         // TODO: rename to better name and make public
         // NOTE for external users: this is API Proposal to compute value of animatable bool property 
@@ -304,13 +311,11 @@ namespace Anatawa12.AvatarOptimizer.API
         /// <param name="component">The component current component will modifies</param>
         /// <param name="properties">The list of properties current component will modifies</param>
         [PublicAPI]
-        public abstract void ModifyProperties([NotNull] Component component,
-            [NotNull] [ItemNotNull] IEnumerable<string> properties);
+        public abstract void ModifyProperties(Component component, IEnumerable<string> properties);
 
         /// <inheritdoc cref="ModifyProperties(UnityEngine.Component,System.Collections.Generic.IEnumerable{string})"/>
         [PublicAPI]
-        public void ModifyProperties([NotNull] Component component,
-            [NotNull] [ItemNotNull] params string[] properties) =>
+        public void ModifyProperties(Component component, params string[] properties) =>
             ModifyProperties(component, (IEnumerable<string>)properties);
     }
 
@@ -365,7 +370,7 @@ namespace Anatawa12.AvatarOptimizer.API
         /// to animation property, for example, blendShape related SkinnedMeshRenderer.
         /// </summary>
         [PublicAPI]
-        public abstract T MappedComponent { get; }
+        public abstract T? MappedComponent { get; }
 
         /// <summary>
         /// Maps animation property name to component and MappedPropertyInfo.

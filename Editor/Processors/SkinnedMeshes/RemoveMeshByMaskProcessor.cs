@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using nadena.dev.ndmf;
+using UnityEditor;
 using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
@@ -44,15 +45,40 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 }
                 else
                 {
-                    BuildLog.LogError("RemoveMeshByMask:error:maskIsNotReadable", mask);
+                    var originalMeshImporter = GetImporter(ObjectRegistry.GetReference(mask).Object as Texture2D);
+
+                    TextureImporter? GetImporter(Texture2D? importingMesh)
+                    {
+                        if (!importingMesh) return null;
+                        var path = AssetDatabase.GetAssetPath(importingMesh);
+                        if (string.IsNullOrEmpty(path)) return null;
+                        return AssetImporter.GetAtPath(path) as TextureImporter;
+                    }
+
+                    if (originalMeshImporter == null)
+                    {
+                        BuildLog.LogError("RemoveMeshByMask:error:maskIsNotReadable", mask);
+                    }
+                    else
+                    {
+                        void AutoFix()
+                        {
+                            originalMeshImporter.isReadable = true;
+                            originalMeshImporter.SaveAndReimport();
+                        }
+
+                        BuildLog.LogErrorWithAutoFix("RemoveMeshByMask:error:maskIsNotReadable", AutoFix, mask);
+                    }
+
                     continue;
                 }
 
                 int GetValue(float u, float v)
                 {
-                    var x = Mathf.RoundToInt(v % 1 * textureHeight);
-                    var y = Mathf.RoundToInt(u % 1 * textureWidth);
-                    var pixel = pixels[x * textureWidth + y];
+                    var x = Mathf.FloorToInt(Utils.Modulo(u, 1) * textureWidth);
+                    var y = Mathf.FloorToInt(Utils.Modulo(v, 1) * textureHeight);
+                    if (y * textureWidth + x < 0 || y * textureWidth + x >= pixels.Length) throw new IndexOutOfRangeException($"x: {x}, y: {y}, u: {u}, v: {v}, w: {textureWidth}, h: {textureHeight}, l: {pixels.Length}");
+                    var pixel = pixels[y * textureWidth + x];
                     return Mathf.Max(Mathf.Max(pixel.r, pixel.g), pixel.b);
                 }
 

@@ -6,19 +6,18 @@ namespace Anatawa12.AvatarOptimizer
     [CustomEditor(typeof(TraceAndOptimize))]
     internal class TraceAndOptimizeEditor : AvatarGlobalComponentEditorBase
     {
-        private SerializedProperty _freezeBlendShape;
-        private SerializedProperty _removeUnusedObjects;
-        private SerializedProperty _preserveEndBone;
-        private SerializedProperty _removeZeroSizedPolygons;
-        private SerializedProperty _optimizePhysBone;
-        private SerializedProperty _optimizeAnimator;
-        private SerializedProperty _mergeSkinnedMesh;
-        private SerializedProperty _allowShuffleMaterialSlots;
-        private SerializedProperty _animatorOptimizerEnabled;
-        private SerializedProperty _animatorOptimizerEnd;
-        private SerializedProperty _mmdWorldCompatibility;
-        private SerializedProperty _advancedSettings;
+        private SerializedProperty _freezeBlendShape = null!; // Initialized in OnEnable
+        private SerializedProperty _removeUnusedObjects = null!; // Initialized in OnEnable
+        private SerializedProperty _preserveEndBone = null!; // Initialized in OnEnable
+        private SerializedProperty _removeZeroSizedPolygons = null!; // Initialized in OnEnable
+        private SerializedProperty _optimizePhysBone = null!; // Initialized in OnEnable
+        private SerializedProperty _optimizeAnimator = null!; // Initialized in OnEnable
+        private SerializedProperty _mergeSkinnedMesh = null!; // Initialized in OnEnable
+        private SerializedProperty _allowShuffleMaterialSlots = null!; // Initialized in OnEnable
+        private SerializedProperty _mmdWorldCompatibility = null!; // Initialized in OnEnable
+        private SerializedProperty _advancedSettings = null!; // Initialized in OnEnable
         private GUIContent _advancedSettingsLabel = new GUIContent();
+        private GUIContent _debugOptionsLabel = new GUIContent();
 
         private void OnEnable()
         {
@@ -50,7 +49,6 @@ namespace Anatawa12.AvatarOptimizer
                 EditorGUILayout.PropertyField(_preserveEndBone);
                 EditorGUI.indentLevel--;
             }
-            EditorGUILayout.PropertyField(_removeZeroSizedPolygons);
             EditorGUILayout.PropertyField(_optimizePhysBone);
             EditorGUILayout.PropertyField(_optimizeAnimator);
             EditorGUILayout.PropertyField(_mergeSkinnedMesh);
@@ -61,16 +59,21 @@ namespace Anatawa12.AvatarOptimizer
                 EditorGUI.indentLevel--;
             }
 
-#if !UNITY_2021_3_OR_NEWER
-            if (_optimizeAnimator.boolValue)
-                EditorGUILayout.HelpBox(AAOL10N.Tr("TraceAndOptimize:OptimizeAnimator:Unity2019"), MessageType.Info);
-#endif
-
-            _advancedSettingsLabel.text = AAOL10N.Tr("TraceAndOptimize:prop:advancedSettings");
-            if (EditorGUILayout.PropertyField(_advancedSettings, _advancedSettingsLabel, false))
+            _advancedSettingsLabel.text = AAOL10N.Tr("TraceAndOptimize:prop:advancedOptimization");
+            AdvancedOpened = EditorGUILayout.Foldout(AdvancedOpened, _advancedSettingsLabel);
+            if (AdvancedOpened)
             {
                 EditorGUI.indentLevel++;
-                EditorGUILayout.HelpBox(AAOL10N.Tr("TraceAndOptimize:warn:advancedSettings"), MessageType.Warning);
+                EditorGUILayout.HelpBox(AAOL10N.Tr("TraceAndOptimize:note:advancedOptimization"), MessageType.Info);
+                EditorGUILayout.PropertyField(_removeZeroSizedPolygons);
+                EditorGUI.indentLevel--;
+            }
+
+            _debugOptionsLabel.text = AAOL10N.Tr("TraceAndOptimize:prop:debugOptions");
+            if (EditorGUILayout.PropertyField(_advancedSettings, _debugOptionsLabel, false))
+            {
+                EditorGUI.indentLevel++;
+                EditorGUILayout.HelpBox(AAOL10N.Tr("TraceAndOptimize:warn:debugOptions"), MessageType.Warning);
                 var iterator = _advancedSettings.Copy();
                 var enterChildren = true;
                 while (iterator.NextVisible(enterChildren))
@@ -82,6 +85,12 @@ namespace Anatawa12.AvatarOptimizer
             }
 
             serializedObject.ApplyModifiedProperties();
+        }
+
+        private static bool AdvancedOpened
+        {
+            get => EditorPrefs.GetBool("AvatarOptimizer.TraceAndOptimizeEditor.AdvancedOpened", false);
+            set => EditorPrefs.SetBool("AvatarOptimizer.TraceAndOptimizeEditor.AdvancedOpened", value);
         }
     }
 }

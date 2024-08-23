@@ -249,8 +249,22 @@ msgstr "このメッシュを統合対象から除外するか、このメッシ
 msgid "MergeSkinnedMesh:warning:no-root-bone"
 msgstr "統合先のメッシュにRoot Boneが設定されていないため、予期しない動作が引き起こされる場合があります。"
 
+msgid "MergeSkinnedMesh:warning:no-root-bone:description"
+msgstr "MergeSkinnedMeshは統合先のメッシュのRoot Boneを自動では設定しません。"
+
+msgid "MergeSkinnedMesh:warning:no-root-bone:hint"
+msgstr "統合先のメッシュのRoot Boneを手動で設定する必要があります。\n"
+"Modular Avatarを使用している場合は、アバターのルートにMA Mesh Settingsコンポーネントを追加して設定することにより、アバター全体のRoot Boneをまとめて設定することもできます。"
+
 msgid "MergeSkinnedMesh:warning:no-probe-anchor"
 msgstr "統合先のメッシュにAnchor Overrideが設定されていないため、予期しない動作が引き起こされる場合があります。"
+
+msgid "MergeSkinnedMesh:warning:no-probe-anchor:description"
+msgstr "MergeSkinnedMeshは統合先のメッシュのAnchor Overrideを自動では設定しません。"
+
+msgid "MergeSkinnedMesh:warning:no-probe-anchor:hint"
+msgstr "統合先のメッシュのAnchor Overrideを手動で設定する必要があります。\n"
+"Modular Avatarを使用している場合は、アバターのルートにMA Mesh Settingsコンポーネントを追加して設定することにより、アバター全体のAnchor Overrideをまとめて設定することもできます。"
 
 # endregion
 
@@ -358,6 +372,91 @@ msgstr "未知の削除モードが指定されています。"
 msgid "RemoveMeshByMask:warning:NoMesh"
 msgstr "Skinned Mesh RendererにMeshが設定されていません。"
 
+msgid "RemoveMeshByMask:button:makeReadable"
+msgstr "読み取り可能にする"
+
+msgid "RemoveMeshByMask:tooltip:textureIsNotImported"
+msgstr "画像ファイルから読み込まれたマスクテクスチャではありません。"
+
+# endregion
+
+# region MaskTextureEditor
+
+msgid "MaskTextureEditor:create"
+msgstr "作成"
+
+msgid "MaskTextureEditor:edit"
+msgstr "編集"
+
+msgid "MaskTextureEditor:title"
+msgstr "AAO マスクテクスチャエディター"
+
+msgid "MaskTextureEditor:renderer"
+msgstr "スキンメッシュレンダラー"
+
+msgid "MaskTextureEditor:subMesh"
+msgstr "マテリアルスロット"
+
+msgid "MaskTextureEditor:subMeshIndex"
+msgstr "{0}番"
+
+msgid "MaskTextureEditor:texture"
+msgstr "マスクテクスチャ"
+
+msgid "MaskTextureEditor:save"
+msgstr "保存する"
+
+msgid "MaskTextureEditor:viewScale"
+msgstr "表示倍率 (Scroll)"
+
+msgid "MaskTextureEditor:viewOpacity"
+msgstr "表示透明度"
+
+msgid "MaskTextureEditor:resetView"
+msgstr "表示をウィンドウに合わせる"
+
+msgid "MaskTextureEditor:brushSize"
+msgstr "ブラシサイズ (Shift + Scroll)"
+
+msgid "MaskTextureEditor:brushColor"
+msgstr "ブラシカラー"
+
+msgid "MaskTextureEditor:black"
+msgstr "黒"
+
+msgid "MaskTextureEditor:white"
+msgstr "白"
+
+msgid "MaskTextureEditor:fillBlack"
+msgstr "黒で塗りつぶす"
+
+msgid "MaskTextureEditor:fillWhite"
+msgstr "白で塗りつぶす"
+
+msgid "MaskTextureEditor:inverse"
+msgstr "色を反転させる"
+
+msgid "MaskTextureEditor:saveChangesMessage"
+msgstr "保存されていない変更があります。保存しますか？"
+
+msgid "MaskTextureEditor:saveChangesButtonSave"
+msgstr "保存"
+
+msgid "MaskTextureEditor:saveChangesButtonDiscard"
+msgstr "破棄"
+
+msgid "MaskTextureEditor:saveChangesButtonCancel"
+msgstr "キャンセル"
+
+msgid "MaskTextureEditor:errorTitle"
+msgstr "エラー"
+
+msgid "MaskTextureEditor:errorMessageCreateFailed"
+msgstr "テクスチャの作成に失敗しました。詳細はログを参照してください。"
+
+msgid "MaskTextureEditor:errorMessageSaveFailed"
+msgstr "テクスチャの保存に失敗しました。詳細はログを参照してください。"
+
 # endregion
 
 # region AvatarGlobalComponent
@@ -445,13 +544,21 @@ msgstr "MMDワールドとの互換性"
 msgid "TraceAndOptimize:tooltip:mmdWorldCompatibility"
 msgstr "MMD用BlendShapeを固定しないなどのMMDワールドとの互換性機能を有効にします。"
 
-msgid "TraceAndOptimize:prop:advancedSettings"
-msgstr "高度な設定"
+msgid "TraceAndOptimize:prop:advancedOptimization"
+msgstr "高度な最適化"
 
-msgid "TraceAndOptimize:warn:advancedSettings"
-msgstr "高度な設定はAvatarOptimizerのバグを回避するための設定です。\n"
-"高度な設定を変更すると、アバターが適切に最適化されなくなる可能性があります。\n"
-"また、一部の高度な設定の変更は正しく機能しなかったり、その動作が変更される可能性があります。注意してください！"
+msgid "TraceAndOptimize:note:advancedOptimization"
+msgstr ""
+"これらの設定はアバターに更なる最適化を加えますが、アバターの動作を壊してしまう可能性もあります。\n"
+"問題が発生した場合は、高度な最適化の設定を無効にしてください。"
+
+msgid "TraceAndOptimize:prop:debugOptions"
+msgstr "デバッグ用オプション"
+
+msgid "TraceAndOptimize:warn:debugOptions"
+msgstr "デバッグ用オプションはAvatarOptimizerのバグを回避するための設定です。\n"
+"これらの設定を変更すると、アバターが適切に最適化されなくなる可能性があります。\n"
+"また、一部のデバッグ用オプションが正しく機能しなかったり、その動作が変更されたりする可能性があります。ご注意ください！"
 
 msgid "TraceAndOptimize:warn:unknown-type"
 msgstr "未知のコンポーネント'{0}'を検出しました！"
@@ -467,7 +574,9 @@ msgstr ""
 "詳しくは https://vpm.anatawa12.com/avatar-optimizer/ja/docs/developers/make-your-components-compatible-with-aao/ をご覧ください。\n"
 "\n"
 "このコンポーネントがあなたの使っているツールのものである場合は、ツール作者にAvatar Optimizerへのコンポーネント登録を依頼するか、"
-"有名なツールであればAvatar Optimizerに対応を依頼してください。"
+"有名なツールであればAvatar Optimizerに対応を依頼してください。\n"
+"\n"
+"ツール作者に依頼する場合は、開発者向けドキュメントへのリンク( https://vpm.anatawa12.com/avatar-optimizer/ja/docs/developers/make-your-components-compatible-with-aao/ )を共有してください。"
 
 msgid "TraceAndOptimize:prop:preserveEndBone"
 msgstr "endボーンを残す"
@@ -481,18 +590,21 @@ msgstr "面積がゼロのポリゴンを自動的に削除する"
 msgid "TraceAndOptimize:OptimizePhysBone:UnknownPhysBoneColliderShape"
 msgstr "未知のPhysBone Collider形状'{0}'が指定されています。"
 
-msgid "TraceAndOptimize:OptimizeAnimator:Unity2019"
-msgstr "Unity 2019では、Optimize Animatorの多くの機能がサポートされていません。Unity 2021以降に更新するのをご検討ください。"
-
 # endregion
 
 #region ApplyObjectMapping
 
 msgid "ApplyObjectMapping:VRCAvatarDescriptor:eyelids BlendShape Removed"
-msgstr "瞬き用のBlendShapeが固定・除去されています"
+msgstr "瞬き用のBlendShapeが固定・除去されているか、設定されていません。"
+
+msgid "ApplyObjectMapping:VRCAvatarDescriptor:eyelids BlendShape Removed:description"
+msgstr "VRChatでは、瞬き用のBlendShapeとして存在しないものが指定されているか、設定されていない項目がある場合、瞬きが全く機能しなくなります。"
 
 msgid "ApplyObjectMapping:VRCAvatarDescriptor:viseme BlendShape Removed"
-msgstr "リップシンク用のBlendShapeが固定・除去されています"
+msgstr "リップシンク用のBlendShapeが固定・除去されているか、設定されていません。"
+
+msgid "ApplyObjectMapping:VRCAvatarDescriptor:viseme BlendShape Removed:description"
+msgstr "VRChatでは、リップシンク用のBlendShapeとして存在しないものが指定されているか、設定されていない項目がある場合、すべてのリップシンク用のBlendShapeが機能しなくなります。"
 
 msgid "MergeSkinnedMesh:warning:animation-mesh-hide"
 msgstr ""
@@ -581,6 +693,9 @@ msgstr "{0}コンポーネントはLineStripが使用されているSubMeshを�
 
 msgid "ErrorReporter:error.internal_error"
 msgstr "内部エラーが発生しました: {0} 以下の処理中です:"
+
+msgid "ErrorReporter:autoFix"
+msgstr "修正する"
 
 # endregion
 

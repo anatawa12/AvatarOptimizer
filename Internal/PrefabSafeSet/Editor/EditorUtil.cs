@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using JetBrains.Annotations;
 using UnityEditor;
 
 namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
@@ -10,11 +10,11 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
     /// Utility to edit PrefabSafeSet in CustomEditor with SerializedProperty
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public abstract partial class EditorUtil<T>
+    public abstract partial class EditorUtil<T> where T : notnull
     {
         // common property;
-        [NotNull] private readonly Func<SerializedProperty, T> _getValue;
-        [NotNull] private readonly Action<SerializedProperty, T> _setValue;
+        private readonly Func<SerializedProperty, T> _getValue;
+        private readonly Action<SerializedProperty, T> _setValue;
 
         public abstract IReadOnlyList<IElement<T>> Elements { get; }
         public abstract int ElementsCount { get; }
@@ -66,7 +66,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             array.arraySize -= 1;
         }
 
-        private T[] ToArray([CanBeNull] SerializedProperty array)
+        private T[] ToArray(SerializedProperty? array)
         {
             if (array == null) return Array.Empty<T>();
             var result = new T[array.arraySize];
@@ -76,13 +76,13 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
         }
     }
 
-    public interface IElement<T>
+    public interface IElement<T> where T : notnull
     {
         EditorUtil<T> Container { get; }
         T Value { get; }
         ElementStatus Status { get; }
         bool Contains { get; }
-        SerializedProperty ModifierProp { get; }
+        SerializedProperty? ModifierProp { get; }
         void EnsureAdded();
         void Add();
         void EnsureRemoved();

@@ -16,6 +16,8 @@ namespace Anatawa12.AvatarOptimizer
         [SerializeField]
         internal BoundingBox[] boxes = Array.Empty<BoundingBox>();
 
+        APIChecker _checker;
+
         internal RemoveMeshInBox()
         {
         }
@@ -110,6 +112,7 @@ namespace Anatawa12.AvatarOptimizer
                 default:
                     throw new ArgumentOutOfRangeException(nameof(version), $"unsupported version: {version}");
             }
+            _checker.OnInitialize(version, this);
         }
 
         /// <summary>
@@ -121,8 +124,8 @@ namespace Anatawa12.AvatarOptimizer
         public BoundingBox[] Boxes
         {
             // clone them for future API changes
-            get => boxes.ToArray();
-            set => boxes = value.ToArray();
+            get => _checker.OnAPIUsage(this, boxes.ToArray());
+            set => _checker.OnAPIUsage(this, boxes = value.ToArray());
         }
     }
 }

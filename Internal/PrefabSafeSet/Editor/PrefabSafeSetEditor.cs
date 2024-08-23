@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -10,7 +9,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 {
     internal static class EditorStatics
     {
-        private static GUIContent WithLocalization(GUIContent content, string key, string tooltip = null)
+        private static GUIContent WithLocalization(GUIContent content, string key, string? tooltip = null)
         {
             content.text = AAOL10N.Tr(key);
             if (tooltip != null)
@@ -48,11 +47,9 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
         private int GetNestCount(Object obj) =>
             _nestCountCache != -1 ? _nestCountCache : _nestCountCache = PrefabSafeSetUtil.PrefabNestCount(obj);
 
-        private readonly Dictionary<string, EditorBase> _caches =
-            new Dictionary<string, EditorBase>();
+        private readonly Dictionary<string, EditorBase?> _caches = new ();
 
-        [CanBeNull]
-        private EditorBase GetCache(SerializedProperty property)
+        private EditorBase? GetCache(SerializedProperty property)
         {
             if (!_caches.TryGetValue(property.propertyPath, out var cached))
             {
@@ -65,7 +62,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             return cached;
         }
 
-        private static EditorBase GetEditorImpl(SerializedPropertyType type, SerializedProperty property,
+        private static EditorBase? GetEditorImpl(SerializedPropertyType type, SerializedProperty property,
             Type fieldType, int nestCount)
         {
             switch (type)
@@ -198,9 +195,9 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
         public abstract bool HasPrefabOverride();
     }
 
-    internal abstract class EditorBase<T> : EditorBase
+    internal abstract class EditorBase<T> : EditorBase where T : notnull
     {
-        [NotNull] protected readonly SerializedProperty FakeSlot;
+        protected readonly SerializedProperty FakeSlot;
         internal readonly EditorUtil<T> EditorUtil;
 
         public EditorBase(SerializedProperty property, int nestCount)
@@ -232,7 +229,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             var newLabel = new GUIContent("");
 
             // to avoid changes in for loop
-            Action action = null;
+            Action? action = null;
 
             foreach (var element in EditorUtil.Elements)
             {

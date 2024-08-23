@@ -1,3 +1,5 @@
+#nullable disable
+
 using System;
 using System.Linq;
 using System.Reflection;
@@ -5,9 +7,6 @@ using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
-#if !UNITY_2020_1_OR_NEWER
-using AnimationModeDriver = UnityEngine.Object;
-#endif
 
 namespace Anatawa12.AvatarOptimizer.EditModePreview
 {
@@ -15,6 +14,8 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
     {
         [CanBeNull] private RemoveMeshPreviewController _previewController;
         public static bool Previewing => instance.previewing;
+        public static Mesh PreviewMesh => instance.previewMesh;
+        public static Mesh OriginalMesh => instance.originalMesh;
 
         [SerializeField] private bool previewing;
         [SerializeField] [CanBeNull] private Mesh previewMesh;
@@ -60,7 +61,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                     _previewController = new RemoveMeshPreviewController(targetRenderer, originalMesh, previewMesh);
 
                 if (_previewController == null || targetRenderer == null || ActiveEditor() != targetRenderer.gameObject 
-                    || EditorApplication.isPlaying || !AnimationMode.InAnimationMode(DriverCached))
+                    || EditorApplication.isPlayingOrWillChangePlaymode || !AnimationMode.InAnimationMode(DriverCached))
                 {
                     StopPreview();
                     return;
@@ -94,31 +95,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                 case PlayModeStateChange.ExitingEditMode:
                     // stop previewing when exit edit mode
                     Debug.Log("stop previewing when exit edit mode");
-                    
-                    // Exiting Animation mode on entering play mode may leave the mesh none so we just rollback mesh to original one
-                    if (AnimationMode.InAnimationMode(DriverCached) && _previewController != null)
-                    {
-                        try
-                        {
-                            AnimationMode.BeginSampling();
-
-                            AnimationMode.AddPropertyModification(
-                                EditorCurveBinding.PPtrCurve("", typeof(SkinnedMeshRenderer), "m_Mesh"),
-                                new PropertyModification
-                                {
-                                    target = _previewController.TargetRenderer,
-                                    propertyPath = "m_Mesh",
-                                    objectReference = _previewController.OriginalMesh,
-                                }, 
-                                true);
-
-                            _previewController.TargetRenderer.sharedMesh = _previewController.OriginalMesh;
-                        }
-                        finally
-                        {
-                            AnimationMode.EndSampling();   
-                        }
-                    }
+                    StopPreview();
                     break;
                 case PlayModeStateChange.EnteredPlayMode:
                     break;
@@ -144,7 +121,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
 
         private PreviewState StateForImpl([CanBeNull] Component component)
         {
-            if (EditorApplication.isPlaying) return PreviewState.InPlayMode;
+            if (EditorApplication.isPlayingOrWillChangePlaymode) return PreviewState.InPlayMode;
 
             var gameObject = component ? component.gameObject : null;
 
@@ -264,39 +241,6 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
             _previewController = null;
         }
 
-#if !UNITY_2020_1_OR_NEWER
-        private static AnimationModeDriver CreateDriver() =>
-            ScriptableObject.CreateInstance(
-                typeof(UnityEditor.AnimationMode).Assembly.GetType("UnityEditor.AnimationModeDriver"));
-#else
         private static AnimationModeDriver CreateDriver() => ScriptableObject.CreateInstance<AnimationModeDriver>();
-#endif
-
-#if !UNITY_2020_1_OR_NEWER
-        public static class AnimationMode
-        {
-            public static void BeginSampling() => UnityEditor.AnimationMode.BeginSampling();
-            public static void EndSampling() => UnityEditor.AnimationMode.EndSampling();
-            public static bool InAnimationMode() => UnityEditor.AnimationMode.InAnimationMode();
-            public static bool InAnimationMode(AnimationModeDriver o) => StartAnimationMode<bool>("InAnimationMode", o);
-            public static void StartAnimationMode(AnimationModeDriver o) => StartAnimationMode<object>("StartAnimationMode", o);
-            public static void StopAnimationMode(AnimationModeDriver o) => StartAnimationMode<object>("StopAnimationMode", o);
-
-            public static void AddPropertyModification(EditorCurveBinding binding, PropertyModification modification,
-                bool keepPrefabOverride) =>
-                UnityEditor.AnimationMode.AddPropertyModification(binding, modification, keepPrefabOverride);
-
-            private static R StartAnimationMode<R>(string name, AnimationModeDriver o)
-            {
-                var method = typeof(UnityEditor.AnimationMode).GetMethod(name,
-                    BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic,
-                    null,
-                    new[] { typeof(AnimationModeDriver) },
-                    null);
-                System.Diagnostics.Debug.Assert(method != null, nameof(method) + " != null");
-                return (R)method.Invoke(null, new object[] { o });
-            }
-        }
-#endif
     }
 }

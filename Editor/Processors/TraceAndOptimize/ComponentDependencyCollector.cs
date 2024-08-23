@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.APIInternal;
 using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
-using JetBrains.Annotations;
 using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEngine;
@@ -89,6 +88,18 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         {
             var parameters = new HashSet<string>();
 
+            var animator = rootGameObject.GetComponent<Animator>();
+            if (animator)
+            {
+                var runtimeAnimatorController = animator.runtimeAnimatorController;
+                if (runtimeAnimatorController)
+                {
+                    var (controller, _) = ACUtils.GetControllerAndOverrides(runtimeAnimatorController);
+                    foreach (var parameter in controller.parameters)
+                        parameters.Add(parameter.name);
+                }
+            }
+
 #if AAO_VRCSDK3_AVATARS
             var descriptor = rootGameObject.GetComponent<VRC.SDK3.Avatars.Components.VRCAvatarDescriptor>();
             if (descriptor)
@@ -97,12 +108,20 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 {
                     foreach (var layer in descriptor.baseAnimationLayers.Concat(descriptor.specialAnimationLayers))
                     {
-                        if (layer.isDefault) continue;
+                        if (layer.isDefault || !layer.animatorController) continue;
 
                         var (controller, _) = ACUtils.GetControllerAndOverrides(layer.animatorController);
                         foreach (var parameter in controller.parameters)
                             parameters.Add(parameter.name);
                     }
+                }
+
+                if (descriptor.customExpressions)
+                {
+                    var expressionParameters = descriptor.expressionParameters;
+                    foreach (var parameter in expressionParameters.parameters)
+                        if (parameter != null)
+                            parameters.Add(parameter.name);
                 }
             }
 #endif
@@ -115,8 +134,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             private readonly ComponentDependencyCollector _collector;
             private readonly GCComponentInfoHolder _componentInfos;
             private readonly HashSet<string> _parameters;
-            private GCComponentInfo _info;
-            [CanBeNull] private IDependencyInfo _dependencyInfo;
+            private GCComponentInfo? _info;
+            private IDependencyInfo? _dependencyInfo;
 
             public Collector(ComponentDependencyCollector collector, GCComponentInfoHolder componentInfos,
                 HashSet<string> parameters)
@@ -137,13 +156,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             public MeshInfo2 GetMeshInfoFor(SkinnedMeshRenderer renderer) =>
                 _collector._session.GetMeshInfoFor(renderer);
 
-            public override void MarkEntrypoint() => _info.MarkEntrypoint();
-            public override void MarkHeavyBehaviour() => _info.MarkHeavyBehaviour();
-            public override void MarkBehaviour() => _info.MarkBehaviour();
+            public override void MarkEntrypoint() => _info!.MarkEntrypoint();
+            public override void MarkHeavyBehaviour() => _info!.MarkHeavyBehaviour();
+            public override void MarkBehaviour() => _info!.MarkBehaviour();
 
             private API.ComponentDependencyInfo AddDependencyInternal(
-                [CanBeNull] GCComponentInfo info,
-                [CanBeNull] Component dependency,
+                GCComponentInfo? info,
+                Component? dependency,
                 GCComponentInfo.DependencyType type = GCComponentInfo.DependencyType.Normal)
             {
                 _dependencyInfo?.Finish();
@@ -158,10 +177,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 return dependencyInfo;
             }
 
-            public override API.ComponentDependencyInfo AddDependency(Component dependant, Component dependency) =>
+            public override API.ComponentDependencyInfo AddDependency(Component? dependant, Component? dependency) =>
                 AddDependencyInternal(_collector._componentInfos.TryGetInfo(dependant), dependency);
 
-            public override API.ComponentDependencyInfo AddDependency(Component dependency) =>
+            public override API.ComponentDependencyInfo AddDependency(Component? dependency) =>
                 AddDependencyInternal(_info, dependency);
 
             internal override bool? GetAnimatedFlag(Component component, string animationProperty, bool currentValue) =>
@@ -171,6 +190,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             public override API.PathDependencyInfo AddPathDependency(Transform dependency, Transform root)
             {
+                _dependencyInfo?.Finish();
+                _dependencyInfo = null;
+
                 if (dependency == null) throw new ArgumentNullException(nameof(dependency));
                 if (root == null) throw new ArgumentNullException(nameof(root));
 
@@ -180,13 +202,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
                 if (transforms.Count == 0)
                     throw new ArgumentException("dependency is not child of root");
-                if (transforms[transforms.Count - 1].parent != root)
+                if (transforms[^1].parent != root)
                     throw new ArgumentException("dependency is not child of root");
 
                 if (!dependency.transform.IsChildOf(_collector._session.AvatarRootTransform))
                     return DummyPathDependencyInfo.Instance;
 
-                var dependencyInfo = new PathDependencyInfo(_info, transforms.ToArray());
+                var dependencyInfo = new PathDependencyInfo(_info!, transforms.ToArray());
                 _dependencyInfo = dependencyInfo;
                 return dependencyInfo;
             }
@@ -195,8 +217,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 AddDependencyInternal(_info, component.parent, GCComponentInfo.DependencyType.Parent)
                     .EvenIfDependantDisabled();
 
-            public void AddBoneDependency(Transform bone) =>
-                AddDependencyInternal(_info, bone, GCComponentInfo.DependencyType.Bone);
+            public void AddBoneDependency(Transform? bone) =>
+                AddDependencyInternal(_info, bone, GCComponentInfo.DependencyType.Bone)
+                    .EvenIfDependantDisabled();
 
             public void FinalizeForComponent()
             {
@@ -212,7 +235,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             private class DummyComponentDependencyInfo : API.ComponentDependencyInfo
             {
-                public static DummyComponentDependencyInfo Instance { get; } = new DummyComponentDependencyInfo();
+                public static DummyComponentDependencyInfo Instance { get; } = new();
 
                 public override API.ComponentDependencyInfo EvenIfDependantDisabled() => this;
                 public override API.ComponentDependencyInfo OnlyIfTargetCanBeEnable() => this;
@@ -222,8 +245,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             {
                 private readonly GCComponentInfoHolder _componentInfos;
 
-                [CanBeNull] private Component _dependency;
-                [NotNull] private readonly GCComponentInfo _dependantInformation;
+                private Component? _dependency;
+                private readonly GCComponentInfo _dependantInformation;
                 private readonly GCComponentInfo.DependencyType _type;
 
                 private bool _evenIfTargetIsDisabled = true;
@@ -232,8 +255,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 // ReSharper disable once NotNullOrRequiredMemberIsNotInitialized
                 public ComponentDependencyInfo(
                     GCComponentInfoHolder componentInfos,
-                    [NotNull] GCComponentInfo dependantInformation,
-                    [NotNull] Component component,
+                    GCComponentInfo dependantInformation,
+                    Component component,
                     GCComponentInfo.DependencyType type = GCComponentInfo.DependencyType.Normal)
                 {
                     _componentInfos = componentInfos;
@@ -251,7 +274,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
                 private void SetToDictionary()
                 {
-                    Debug.Assert(_dependency != null, nameof(_dependency) + " != null");
+                    if (_dependency == null) throw new InvalidOperationException("Called after another call");
 
                     if (!_evenIfThisIsDisabled)
                     {
@@ -293,15 +316,15 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             private class PathDependencyInfo : API.PathDependencyInfo, IDependencyInfo
             {
-                [CanBeNull] [ItemNotNull] private Transform[] _dependencies;
-                [NotNull] private readonly GCComponentInfo _dependantInformation;
+                private Transform[]? _dependencies;
+                private readonly GCComponentInfo _dependantInformation;
 
                 private bool _evenIfThisIsDisabled;
 
                 // ReSharper disable once NotNullOrRequiredMemberIsNotInitialized
                 public PathDependencyInfo(
-                    [NotNull] GCComponentInfo dependantInformation,
-                    [NotNull] [ItemCanBeNull] Transform[] component)
+                    GCComponentInfo dependantInformation,
+                    Transform[] component)
                 {
                     _dependencies = component;
                     _dependantInformation = dependantInformation;
@@ -317,7 +340,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
                 private void SetToDictionary()
                 {
-                    Debug.Assert(_dependencies != null, nameof(_dependencies) + " != null");
+                    if (_dependencies == null) throw new InvalidOperationException("Called after another call");
 
                     if (!_evenIfThisIsDisabled)
                     {
