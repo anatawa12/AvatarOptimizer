@@ -17,7 +17,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             var renderers = context.GetComponents<Renderer>();
             var swapDict = new Dictionary<Material, Material>();
 
-            void SwapMaterialArray(Material[] matArray)
+            void SwapMaterialArray(Material?[] matArray)
             {
                 for (var i = 0; matArray.Length > i; i += 1)
                 {
