@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- FinalIK Gimmicks with IKExecutionOrder is broken `#1153`
 
 ### Security
 
