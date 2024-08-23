@@ -18,6 +18,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - VRCConstraints with Target might be removed unexpectedly `#1150`
+- FinalIK Gimmicks with IKExecutionOrder is broken `#1153`
 
 ### Security
 
