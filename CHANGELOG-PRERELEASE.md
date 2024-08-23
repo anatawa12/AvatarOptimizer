@@ -8,6 +8,10 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Automatically remove unnecessary material properties based on shader `#1041`
+  - This feature is added to `Remove Unused Objects` in `Trace and Optimize`.
+  - When you changed shader for an material, properties for previously used shaders might be remain
+  - This may increase your avatar size by unexpectedly including unused textures
 
 ### Changed
 
