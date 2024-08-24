@@ -311,13 +311,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                         }
                     }
                 }
-                else
+                else // int
                 {
                     var targetParameter = anyStateTransitions[0].conditions[0].parameter;
                     if (!KnownParameterValues.GetIntValues(targetParameter, out var allValues))
                         throw new InvalidOperationException("unknown parameter");
 
-                    var valuePerState = states.ToDictionary(x => x.state, _ => new HashSet<int>(allValues));
+                    var valuePerState = states.ToDictionary(x => x.state, _ => new HashSet<int>());
 
                     {
                         var entryValues = new HashSet<int>(allValues);
