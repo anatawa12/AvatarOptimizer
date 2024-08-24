@@ -68,7 +68,6 @@ Avatar Optimizerはビルド処理の最後の方で動作するように設計�
 
 ### コンポーネントを削除する {#remove-component}
 
-[`DestroyImmediate`]を使用してコンポーネントを削除できます。
 
 ビルド時において、Avatar Optimizerより前にアバターを処理し、コンポーネントを削除するための方法はいくつかあります。削除には[`DestroyImmediate`]を用います。
 
