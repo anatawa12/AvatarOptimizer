@@ -51,6 +51,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             UpdateLayers();
         }
 
+        public bool HasKnownRootGameObject => _rootGameObject != null;
+        public GameObject RootGameObject => _rootGameObject ?? throw new InvalidOperationException("RootGameObject is not set");
+
         // Note: Adding layer to first will break MMD compatibility.
 
         public AOAnimatorControllerLayer AddLayer(string layerName)
