@@ -23,7 +23,7 @@ Avatar Optimizerはビルド処理の最後の方で動作するように設計�
 
 未知のコンポーネントによる問題を避けるため、Avatar Optimizerは未知のコンポーネントが以下のようなものであると仮定します。
 - コンポーネントが有効かつアクティブになる可能性がある場合は保持される必要がある。
-  - これは、未知のコンポーネントを実行時(VRC上など)に動作するコンポーネントであると仮定しているためです。
+  - これは、未知のコンポーネントを実行時(VRChat上など)に動作するコンポーネントであると仮定しているためです。
 - コンポーネントが参照している全てのコンポーネントに依存している。
 
 (上記の仮定は将来的に変更される可能性があります。)
@@ -56,7 +56,7 @@ Avatar Optimizerはビルド処理の最後の方で動作するように設計�
 
 3. Asset Descriptionを使用して、削除しても問題のないコンポーネントとしてAvatar Optimizerに登録する
 
-   Avatar Optimizer v1.7.0以降では、ビルド時やランタイムで処理を行わないコンポーネント向けに[Asset Description]が追加されています。
+   Avatar Optimizer v1.7.0以降では、実行時やビルド時で処理を行わないコンポーネント向けに[Asset Description]が追加されています。
    ツールが実行時やビルド時に何も行わない場合は、「Avatar Optimizerが処理する前にコンポーネントを削除する」代わりにこの方法を使用してコンポーネントを登録することができます。
    詳細は[Asset Description]を参照してください。
 
@@ -70,21 +70,21 @@ Avatar Optimizerはビルド処理の最後の方で動作するように設計�
 
 [`DestroyImmediate`]を使用してコンポーネントを削除できます。
 
-ビルド時にAvatar Optimizerが処理する前に処理し、コンポーネントを削除する方法はいくつかあります。
+ビルド時において、Avatar Optimizerより前にアバターを処理し、コンポーネントを削除するための方法はいくつかあります。削除には[`DestroyImmediate`]を用います。
 
 ツールがNDMF[^NDMF]を使用した非破壊ツールの場合は、NDMFのOptimizing phaseより前のPhaseか、
 Optimizing phaseの中で([`BeforePlugin`][ndmf-BeforePlugin]を用いて)`com.anatawa12.avatar-optimizer` plugin
 より前にコンポーネントを削除することを推奨します。
-もし、ツールがOptimizing phaseでコンポーネントを削除する場合、デフォルトのコールバック順序が`com.anatawa12.avatar-optimizer` pluginより前であっても、
-[`BeforePlugin`][ndmf-BeforePlugin]を指定することを強く推奨します。
+Optimizing phaseの中でコンポーネントを削除する場合は、デフォルトのコールバック順序が`com.anatawa12.avatar-optimizer` pluginより前であっても、
+[`BeforePlugin`][ndmf-BeforePlugin]を指定しておくことを強く推奨します。
 
 ツールがNDMF[^NDMF]を使用していない非破壊ツールの場合は、NDMFのOptimizing phaseより前にコンポーネントを削除することを推奨します。
 この場合、現在のNDMFはVRCSDKの`RemoveAvatarEditorOnly`の直前であるorder `-1025`でOptimizing phaseを実行するので、
 それより小さい`callbackOrder`を指定した`IVRCSDKPreprocessAvatarCallback`でコンポーネントを削除してください。
 
-もし、ツールのコンポーネントがデータを保持する役割しかなく、ビルド時には意味を持っていない場合、
+ツールのコンポーネントにデータを保持する役割しかなく、ビルド時には意味を持っていない場合、
 上記のように`IVRCSDKPreprocessAvatarCallback`でコンポーネントを削除するか、
-[Asset Description]を使用してコンポーネントを削除できるコンポーネントとして登録することができます。
+[Asset Description]を使用し、削除しても問題のないコンポーネントとして登録することができます。
 
 [DestroyImmediate]: https://docs.unity3d.com/ScriptReference/Object.DestroyImmediate.html
 
