@@ -91,6 +91,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             // check for transitions
             var foundStates = new HashSet<AnimatorState>();
 
+            var hasExitTime = anyStateTransitions[0].hasExitTime;
+            var exitTime = anyStateTransitions[0].exitTime;
+            var fixedDuration = anyStateTransitions[0].hasFixedDuration;
+            var duration = anyStateTransitions[0].duration;
+            var offset = anyStateTransitions[0].offset;
+
             foreach (var anyStateTransition in anyStateTransitions)
             {
                 if (anyStateTransition is not
@@ -103,13 +109,15 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                         conditions.Length: >= 1,
 
                         canTransitionToSelf: false, // TODO: we may remove this limitation with infinity loop entry-exit
-
-                        // TODO: we can support exit time, duration, or offset if their settings are same in all transitions
-                        hasExitTime: false,
-                        duration: 0,
-                        offset: 0,
                     })
                     return false;
+
+                if (anyStateTransition.hasExitTime != hasExitTime) return false;
+                if (hasExitTime)
+                    if (!Mathf.Approximately(anyStateTransition.exitTime, exitTime)) return false;
+                if (anyStateTransition.hasFixedDuration != fixedDuration) return false;
+                if (!Mathf.Approximately(anyStateTransition.duration, duration)) return false;
+                if (!Mathf.Approximately(anyStateTransition.offset, offset)) return false;
 
                 foundStates.Add(dest);
             }
@@ -230,24 +238,28 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             // however, entry conditions are (!any(priorTransitionConditions) && entryConditions)
             // therefore, actual exit condition !any(!any(priorTransitionConditions) && entryConditions)
 
+            var baseTransition = anyStateTransitions[0];
+            AnimatorStateTransition MakeExitTransition(AnimatorCondition[] conditions) =>
+                new()
+                {
+                    isExit = true,
+                    mute = false,
+                    solo = false,
+
+                    canTransitionToSelf = false,
+
+                    hasExitTime = baseTransition.hasExitTime,
+                    exitTime = baseTransition.exitTime,
+                    hasFixedDuration = baseTransition.hasFixedDuration,
+                    duration = baseTransition.duration,
+                    offset = baseTransition.offset,
+                    conditions = conditions
+                };
+
+
             {
                 var isBoolean = anyStateTransitions.Any(x =>
                     x.conditions.Any(y => y.mode is AnimatorConditionMode.If or AnimatorConditionMode.IfNot));
-
-                AnimatorStateTransition MakeExitTransition(AnimatorCondition[] conditions) =>
-                    new()
-                    {
-                        isExit = true,
-                        mute = false,
-                        solo = false,
-
-                        canTransitionToSelf = false,
-
-                        hasExitTime = false,
-                        duration = 0,
-                        offset = 0,
-                        conditions = conditions
-                    };
 
                 if (isBoolean)
                 {
