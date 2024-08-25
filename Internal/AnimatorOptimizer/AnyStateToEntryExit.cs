@@ -34,7 +34,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
     // - default state has no-op to the current state of avatar
     // (motion / state)
     // - all states have same write defaults value
-    // - if write defaults is off, all states have same animating properties
     public class AnyStateToEntryExit : AnimOptPassBase<AnyStateToEntryExit>
     {
         private protected override void Execute(BuildContext context, AOAnimatorController controller,
@@ -49,9 +48,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 
         public static void Execute(AnimatorOptimizerState state, AOAnimatorController controller)
         {
-            // This optimization only works if root game object is known
-            if (!controller.HasKnownRootGameObject) return;
-
             var boolParameters = new HashSet<string>(controller.parameters
                 .Where(x => x.type is AnimatorControllerParameterType.Bool)
                 .Select(x => x.name));
@@ -60,7 +56,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             var layers = controller.layers;
             foreach (var layer in layers)
             {
-                if (CanConvert(layer, state, controller.RootGameObject, boolParameters))
+                if (CanConvert(layer, state, controller.RootGameObjectOrNull, boolParameters))
                 {
                     DoConvert(layer);
                 }
@@ -69,7 +65,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 
         private static bool CanConvert(AOAnimatorControllerLayer layer,
             AnimatorOptimizerState optimizerState,
-            GameObject rootGameObject,
+            GameObject? rootGameObject,
             HashSet<string> boolParameters)
         {
             // basic check
@@ -146,21 +142,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             }
             else
             {
-                if (states[0].state.motion == null) return false; // with WD=off, motion=None will cause broken animator
-                var expectAnimatingProperties = CollectAnimatingProperties(states[0].state.motion);
-                if (expectAnimatingProperties == null) return false; // we found unsupported motion
-
                 for (var index = 1; index < states.Length; index++)
                 {
-                    // check WD and animating properties
-                    var childStateInfo = states[index];
-                    if (childStateInfo is not { state: { motion: var motion, writeDefaultValues: false } })
+                    // check WD
+                    if (states[index] is not { state.writeDefaultValues: false })
                         return false;
-
-                    if (motion == null) return false; // with WD=off, motion=None will cause broken animator
-                    var newAnimatingProperties = CollectAnimatingProperties(motion);
-                    if (newAnimatingProperties == null) return false; // we found unsupported motion
-                    if (!newAnimatingProperties.SetEquals(expectAnimatingProperties)) return false;
                 }
             }
 
@@ -175,24 +161,86 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                     }) return false;
             }
 
-            // default state must be no-op to current avatar
+            // First one tick of default state should not change the behavior of layers
+            if (defaultState.writeDefaultValues)
             {
-                var defaultMotion = defaultState.motion;
-                if (defaultMotion == null)
-                {
-                    // this means default state is WD-on and no motion
-                    // therefore, this is no-op
-                }
-                else
-                {
-                    // in other cases, we have to check if it's no-op
-                    var defaultClip = defaultMotion as AnimationClip;
-                    if (defaultClip == null)
-                        return false; // blendTree is unlikely to be no-op so we reject it // TODO: support blendTree
-                    if (optimizerState.IsTimeDependentClip(defaultClip))
-                        return false; // time dependent clip is not no-op
+                // if WD=on, all states will affects same set of properties thanks to WD
+                // so we can skip this check
+            }
+            else
+            {
+                // in WD=off, we have to check non-nop properties of default animation are animated by all states
+                var defaultClip = defaultState.motion as AnimationClip;
+                if (defaultClip == null) return false; // WD=off and no motion is weird so we reject it
 
-                    if (!IsNoop(defaultClip, rootGameObject)) return false;
+                static bool IsMeaningfulBinding(AnimationClip clip, EditorCurveBinding binding, GameObject? rootGameObject)
+                {
+                    if (rootGameObject == null) return false; // we can't check no-op without rootGameObject
+                    var component = AnimationUtility.GetAnimatedObject(rootGameObject, binding);
+                    if (component == null) return true; // target is not exist: no-op
+
+                    if (binding.isPPtrCurve)
+                    {
+                        var curve = AnimationUtility.GetObjectReferenceCurve(clip, binding);
+                        if (curve.Length < 1) return false; // invalid curve
+                        var value = curve[0].value; // we check the first frame
+
+                        var currentValue = GetCurrentValue(rootGameObject, binding);
+
+                        switch (currentValue, value)
+                        {
+                            case (null, null):
+                                return true; // same value; no-op
+
+                            case (null, not null): // either is null
+                            case (not null, null): // either is null
+                            case (not Object, _): // different type
+                                return false;
+
+                            case (Object obj, var obj2):
+                                return obj.GetInstanceID() == obj2.GetInstanceID();
+                        }
+                    }
+                    else
+                    {
+                        var curve = AnimationUtility.GetEditorCurve(clip, binding);
+                        var value = curve.Evaluate(0);
+                        var currentValue = GetCurrentValue(rootGameObject, binding);
+                        return value.Equals(currentValue);
+                    }
+
+                }
+
+                var meaningfulDefaultStateCurveBindings = AnimationUtility.GetCurveBindings(defaultClip)
+                    .Where(x => !IsMeaningfulBinding(defaultClip, x, rootGameObject))
+                    .ToArray();
+                var meaningfulDefaultStateObjectReferenceCurveBindings = AnimationUtility.GetObjectReferenceCurveBindings(defaultClip)
+                    .Where(x => !IsMeaningfulBinding(defaultClip, x, rootGameObject))
+                    .ToArray();
+
+                if (meaningfulDefaultStateCurveBindings.Length != 0
+                    || meaningfulDefaultStateObjectReferenceCurveBindings.Length != 0)
+                {
+                    foreach (var childStateInfo in states)
+                    {
+                        if (childStateInfo.state == defaultState) continue; // default state is always ok
+                        foreach (var animationClip in ACUtils.AllClipsMayNull(childStateInfo.state.motion))
+                        {
+                            if (animationClip == null) return false; // null clip with WD=off
+
+                            foreach (var binding in meaningfulDefaultStateCurveBindings)
+                            {
+                                if (AnimationUtility.GetEditorCurve(animationClip, binding) == null)
+                                    return false; // meaningful curve is not animated
+                            }
+
+                            foreach (var binding in meaningfulDefaultStateObjectReferenceCurveBindings)
+                            {
+                                if (AnimationUtility.GetObjectReferenceCurve(animationClip, binding) == null)
+                                    return false; // meaningful curve is not animated
+                            }
+                        }
+                    }
                 }
             }
 
@@ -464,54 +512,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             }
         }
 
-        // requirement: clip is not time dependent
-        private static bool IsNoop(AnimationClip defaultClip, GameObject rootGameObject)
-        {
-            foreach (var binding in AnimationUtility.GetCurveBindings(defaultClip))
-            {
-                var curve = AnimationUtility.GetEditorCurve(defaultClip, binding);
-                if (curve.length < 1) return false; // invalid curve
-                var value = curve[0].value;
-                var component = AnimationUtility.GetAnimatedObject(rootGameObject, binding);
-                if (component == null) continue; // target is not exist: no-op
-
-                var currentValue = GetCurrentValue(rootGameObject, binding);
-
-                if (!value.Equals(currentValue)) return false; // not no-op
-            }
-
-            foreach (var binding in AnimationUtility.GetObjectReferenceCurveBindings(defaultClip))
-            {
-                var curve = AnimationUtility.GetObjectReferenceCurve(defaultClip, binding);
-                if (curve.Length < 1) return false; // invalid curve
-                var value = curve[0].value;
-                var component = AnimationUtility.GetAnimatedObject(rootGameObject, binding);
-                if (component == null) continue; // target is not exist: no-op
-
-                var currentValue = GetCurrentValue(rootGameObject, binding);
-
-                switch (currentValue, value)
-                {
-                    case (null, null):
-                        break; // same value; no-op
-
-                    case (null, not null): // either is null
-                    case (not null, null): // either is null
-                    case (not Object, _): // different type
-                        return false;
-                    case (Object obj, var obj2):
-                        if (obj.GetInstanceID() != obj2.GetInstanceID()) return false;
-                        break;
-                }
-            }
-
-            return true;
-        }
-
-        private static object? GetCurrentValue(GameObject rootGameObject, EditorCurveBinding curveBinding)
+        private static object? GetCurrentValue(GameObject? rootGameObject, EditorCurveBinding curveBinding)
         {
             // for some types, we can't get current value
             if (curveBinding.type == typeof(Animator)) return null;
+            if (rootGameObject == null) return null;
 
             var method = typeof(Editor).Assembly.GetType("UnityEditorInternal.CurveBindingUtility")
                 .GetMethod("GetCurrentValue",
@@ -520,35 +525,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                     , null, new[] { typeof(GameObject), typeof(EditorCurveBinding) }, null);
             if (method == null) throw new InvalidOperationException("method not found");
             return method.Invoke(null, new object[] { rootGameObject, curveBinding });
-        }
-
-
-        private static HashSet<EditorCurveBinding>? CollectAnimatingProperties(Motion? motion)
-        {
-            switch (motion)
-            {
-                case AnimationClip clip:
-                    var result = new HashSet<EditorCurveBinding>();
-                    result.UnionWith(AnimationUtility.GetCurveBindings(clip));
-                    result.UnionWith(AnimationUtility.GetObjectReferenceCurveBindings(clip));
-                    return result;
-                case BlendTree tree:
-                    if (tree.blendType == BlendTreeType.Direct) return null;
-                    if (tree.children.Length == 0) return null; // unknown
-                    var props = CollectAnimatingProperties(tree.children[0].motion);
-                    if (props == null) return null;
-
-                    for (var i = 1; i < tree.children.Length; i++)
-                    {
-                        var childProps = CollectAnimatingProperties(tree.children[i].motion);
-                        if (childProps == null) return null;
-                        if (!props.SetEquals(childProps)) return null;
-                    }
-
-                    return props;
-                default:
-                    return null;
-            }
         }
     }
 }
