@@ -56,7 +56,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
             else
             {
                 var parentDiffer = sourceComponents
-                    .Select(x => x.transform.parent)
+                    .Select(x => x.GetTarget().parent)
                     .ZipWithNext()
                     .Any(x => x.Item1 != x.Item2);
                 
