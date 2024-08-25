@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Broken validation for MergePhysBone merging PhysBones with specified target `#1160`
 
 ### Security
 
