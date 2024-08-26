@@ -138,6 +138,10 @@ In `CollectMutations`, you should register any mutation your component may do.\
 In `CollectDependency`, you should register build-time or run-time dependencies and related information of your component.\
 Please read xmldoc of each methods for more details.
 
+### Use Asset Description {#asset-description}
+
+Please refer [Asset Description] for more details.
+
 [fediverse]: https://misskey.niri.la/@anatawa12
 [ndmf-BeforePlugin]: https://ndmf.nadena.dev/api/nadena.dev.ndmf.fluent.Sequence.html#nadena_dev_ndmf_fluent_Sequence_BeforePlugin_System_String_System_String_System_Int32_
 [register-component]: #register-component

@@ -128,6 +128,10 @@ internal class YourComponentInformation : ComponentInformation<YourComponent>
 `CollectDependency`では、ビルド時や実行時でのコンポーネントの依存関係を登録します。\
 詳しくはそれぞれのメソッドのxmldocを参照してください。
 
+### Asset Descriptionを作成する {#asset-description}
+
+別ページにある[Asset Description]を参照してください
+
 [fediverse]: https://misskey.niri.la/@anatawa12
 [ndmf-BeforePlugin]: https://ndmf.nadena.dev/api/nadena.dev.ndmf.fluent.Sequence.html#nadena_dev_ndmf_fluent_Sequence_BeforePlugin_System_String_System_String_System_Int32_
 [register-component]: #register-component
