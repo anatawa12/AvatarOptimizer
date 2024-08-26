@@ -9,15 +9,22 @@ This page describes the basic concepts of Avatar Optimizer.
 
 ## What is Avatar Optimizer? {#what-is-avatar-optimizer}
 
-Avatar Optimizer is a tool that helps you optimize your avatar.
+Avatar Optimizer is a non-destructive tool that helps you optimize your avatar.
 This tool is initially designed for VRChat avatars, but it might be usable for other Avatars supported by [NDMF].
 
-Non-VRChat avatar support is completely community-based and may not be supported by the Avatar Optimizer dev team.
+Non-destructive means (in Avatar Optimizer):
+- You don't have to unpack your prefab to apply Avatar Optimizer.
+  - What you have to do is adding component.
+- Avatar Optimizer doesn't affects to avatar saved in your project, only affects to temporal copy of avatar for building.
+
+Please note that non-VRChat avatar support is generally community-based and may not be supported by the Avatar Optimizer dev team.
+
+[^non-destructive]: Non-destructive means that this tool doesn't modify original avatar and assets saved in the project and only affects to the temporal copy of avatar data generated during build.
 
 ## What is the goal of Avatar Optimizer? {#what-is-the-goal-of-avatar-optimizer}
 
-This tool is designed to help you optimize your avatar in performance without affecting the appearance so much.\
-Therefore, it is not intended to make changes of the avatar behavior.
+The main goal of this tool is to help you optimize your avatar in performance without affecting the appearance so much, in non-destructive way.\
+This tool is not designed to make changes of the avatar behavior.
 
 All non-configured changes in the avatar behavior is treated as a bug, even if it might be useful in some use cases.\
 In some cases, we may put off the bug since it does not affect so much for most use cases.\
