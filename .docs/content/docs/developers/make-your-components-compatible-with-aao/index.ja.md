@@ -58,6 +58,7 @@ Avatar Optimizerはビルド処理の最後の方で動作するように設計�
 
    Avatar Optimizer v1.7.0以降では、実行時やビルド時で処理を行わないコンポーネント向けに[Asset Description]が追加されています。
    ツールが実行時やビルド時に何も行わない場合は、「Avatar Optimizerが処理する前にコンポーネントを削除する」代わりにこの方法を使用してコンポーネントを登録することができます。
+
    詳細は[Asset Description]を参照してください。
 
    なお、ツールが実行時やビルド時に何らかの処理を行う場合は、そのコンポーネントをAsset Descriptionで登録することは非推奨です。
@@ -79,7 +80,7 @@ Optimizing phaseの中でコンポーネントを削除する場合は、デフ�
 
 ツールがNDMF[^NDMF]を使用していない非破壊ツールの場合は、NDMFのOptimizing phaseより前にコンポーネントを削除することを推奨します。
 この場合、現在のNDMFはVRCSDKの`RemoveAvatarEditorOnly`の直前であるorder `-1025`でOptimizing phaseを実行するので、
-それより小さい`callbackOrder`を指定した`IVRCSDKPreprocessAvatarCallback`でコンポーネントを削除してください。
+`-1025`より小さい`callbackOrder`を指定した`IVRCSDKPreprocessAvatarCallback`でコンポーネントを削除してください。
 
 ツールのコンポーネントにデータを保持する役割しかなく、ビルド時には意味を持っていない場合、
 上記のように`IVRCSDKPreprocessAvatarCallback`でコンポーネントを削除するか、

@@ -24,13 +24,13 @@ To correctly remove unused components, and correctly keep used components,
 Avatar Optimizer has to know about all existing components in the Avatar at the optimization.
 
 To avoid problem with unknown components, Avatar Optimizer currently assumes unknown components
-- have to keep if the component can be enabled and active at runtime.
+- have to be kept if the component can be enabled and active at runtime.
   - This is because Avatar Optimizer assumes unknown components are runtime components.
 - will have dependency relationship to all components referenced in the component.
 
-(Those assumption above can be changed in the future.)
+(Those assumptions above can be changed in the future.)
 
-However, the assumption can be incorrect, so Avatar Optimizer will generate a warning like below.
+However, those assumptions can be incorrect, so Avatar Optimizer will generate a warning like below.
 
 ![unknown-component-warning](unknown-component-warning.png)
 
@@ -51,7 +51,7 @@ To improve the compatibility, you may implement one of the following methods.
 
 2. Register your components to Avatar Optimizer with API
 
-   If your component is working at runtime, or your tool actually want to process avatar after Avatar Optimizer processes,
+   If your component is working at runtime, or your tool actually wants to keep your components for processing avatar after Avatar Optimizer processes,
    you can register your components to Avatar Optimizer to tell about your components.
 
    Please refer [section below](#register-component) for more details.
@@ -61,25 +61,24 @@ To improve the compatibility, you may implement one of the following methods.
 
 3. Register your components as no problems to remove with Asset Description.
 
-   Since Avatar Optimizer v1.7.0, you can use [Asset Description] to register components only for preserving data
-   for edit-mode tools, that doesn't effects on build or at runtime.
+   Since Avatar Optimizer v1.7.0, you can use [Asset Description] to register components only for holding data
+   for edit-mode tools, that doesn't affects on build or at runtime.
    If your tool process nothing at build time or runtime, you can use this to register your components instead of
    removing your components before Avatar Optimizer processes.
+
    Please refer [Asset Description] for more details.
 
-   If your tool process something at build time, registering with Asset Description is not recommended.
-   Using Asset Description for components that process something at build time may unexpectedly
-   remove your components and disables your tool if the execution order is incorrect or unexpectedly changed.
+   If your tool process something at build time or runtime, registering with Asset Description is not recommended.
+   If you use Asset Description for components that process something at build time or runtime, it may cause unexpectedly
+   removing your components and your tool not working properly when the execution order is incorrect or unexpectedly changed.
 
-   This method is internally used by Avatar Optimizer to keep compatibility with well-known edit-mode tools.
+   Avatar Optimizer internally uses this method to keep compatibility with well-known edit-mode tools.
 
 [Asset Description]: ../asset-description
 
 ### Removing your components {#remove-component}
 
-You can remove your components with [`DestroyImmediate`][DestroyImmediate] to remove your components.
-
-There is several ways to process and remove your component from avatar before Avatar Optimizer processes on build.
+There are several ways to process and remove your components from avatar before Avatar Optimizer processes on build. You can use [`DestroyImmediate`][DestroyImmediate] method for removing your components.
 
 If your tool is a non-destructive tool based on NDMF[^NDMF], you can remove your components before the phases
 prior to the Optimizing phase of NDMF or before `com.anatawa12.avatar-optimizer` plugin
@@ -92,9 +91,9 @@ the NDMF's Optimizing phase is recommended.
 In this case, current NDMF executes Optimizing phase in order `-1025`, which is JUST before VRCSDK's `RemoveAvatarEditorOnly`
 callback, so your tool should remove components with `IVRCSDKPreprocessAvatarCallback` with `callbackOrder` smaller than `-1025`.
 
-If your components is only for holding information for your edit mode tool and has no meaning on the build time,
+If your components is only for holding data for your edit-mode tool and doesn't affects on build or at runtime,
 you can remove your components in `IVRCSDKPreprocessAvatarCallback` as described above, or
-you can somply use [Asset Description] to register your components to be removed.
+you can simply use [Asset Description] to register your components as safe-to-remove components
 
 [DestroyImmediate]: https://docs.unity3d.com/2022.3/Documentation/ScriptReference/Object.DestroyImmediate.html
 
