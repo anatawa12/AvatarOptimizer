@@ -187,19 +187,17 @@ namespace Anatawa12.AvatarOptimizer
 
         public override int GetHashCode()
         {
-            unchecked
-            {
-                var hashCode = m00.GetHashCode();
-                hashCode = (hashCode * 397) ^ m10.GetHashCode();
-                hashCode = (hashCode * 397) ^ m20.GetHashCode();
-                hashCode = (hashCode * 397) ^ m01.GetHashCode();
-                hashCode = (hashCode * 397) ^ m11.GetHashCode();
-                hashCode = (hashCode * 397) ^ m21.GetHashCode();
-                hashCode = (hashCode * 397) ^ m02.GetHashCode();
-                hashCode = (hashCode * 397) ^ m12.GetHashCode();
-                hashCode = (hashCode * 397) ^ m22.GetHashCode();
-                return hashCode;
-            }
+            var hashCode = new HashCode();
+            hashCode.Add(m00);
+            hashCode.Add(m10);
+            hashCode.Add(m20);
+            hashCode.Add(m01);
+            hashCode.Add(m11);
+            hashCode.Add(m21);
+            hashCode.Add(m02);
+            hashCode.Add(m12);
+            hashCode.Add(m22);
+            return hashCode.ToHashCode();
         }
 
         public bool Equals(Matrix3x3 other) =>
@@ -207,6 +205,6 @@ namespace Anatawa12.AvatarOptimizer
             m01.Equals(other.m01) && m11.Equals(other.m11) && m21.Equals(other.m21) &&
             m02.Equals(other.m02) && m12.Equals(other.m12) && m22.Equals(other.m22);
 
-        public override bool Equals(object obj) => obj is Matrix3x3 other && Equals(other);
+        public override bool Equals(object? obj) => obj is Matrix3x3 other && Equals(other);
     }
 }

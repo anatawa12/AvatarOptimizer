@@ -4,9 +4,9 @@ using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 {
-    public readonly struct PropertyScope<T> : IDisposable
+    public readonly struct PropertyScope<T> : IDisposable where T : notnull
     {
-        private readonly SerializedProperty _property;
+        private readonly SerializedProperty? _property;
         private readonly Rect _totalPosition;
         public readonly IElement<T> Element;
         public readonly GUIContent Label;

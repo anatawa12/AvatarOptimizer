@@ -56,26 +56,6 @@
             "define": "AAO_VRCSDK3_AVATARS"
         },
         {
-            "name": "com.vrchat.avatars",
-            "expression": "3.5.1",
-            "define": "AAO_VRCSDK3_AVATARS_IMPOSTER_SETTINGS"
-        },
-        {
-            "name": "com.vrchat.avatars",
-            "expression": "3.5.2-beta.2",
-            "define": "AAO_VRCSDK3_AVATARS_HEAD_CHOP"
-        },
-        {
-            "name": "com.vrchat.avatars",
-            "expression": "3.5.2",
-            "define": "AAO_VRCSDK3_AVATARS_ANIMATOR_PLAY_AUDIO"
-        },
-        {
-            "name": "com.vrchat.avatars",
-            "expression": "[3.6.2-constraints.4]",
-            "define": "AAO_VRCSDK3_AVATARS_CONSTRAINTS"
-        },
-        {
             "name": "com.vrmc.univrm",
             "expression": "",
             "define": "AAO_VRM0"

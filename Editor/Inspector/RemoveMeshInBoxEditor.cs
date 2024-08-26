@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using JetBrains.Annotations;
 using UnityEditor;
 using UnityEditor.IMGUI.Controls;
 using UnityEngine;
@@ -10,8 +9,8 @@ namespace Anatawa12.AvatarOptimizer
     [CustomEditor(typeof(RemoveMeshInBox))]
     internal class RemoveMeshInBoxEditor : AvatarTagComponentEditorBase
     {
-        private SerializedProperty _boxes;
-        private string _editingBoxPropPath;
+        private SerializedProperty _boxes = null!; // Initialized in OnEnable
+        private string? _editingBoxPropPath;
 
         private readonly Dictionary<string, (Quaternion value, Vector3 euler)> _eulerAngles =
             new Dictionary<string, (Quaternion value, Vector3 euler)>();
@@ -34,11 +33,11 @@ namespace Anatawa12.AvatarOptimizer
         [CustomPropertyDrawer(typeof(RemoveMeshInBox.BoundingBox))]
         class BoundingBoxEditor : PropertyDrawer
         {
-            [CanBeNull] private static RemoveMeshInBoxEditor _upstreamEditor;
+            private static RemoveMeshInBoxEditor? _upstreamEditor;
 
             public readonly struct EditorScope : IDisposable
             {
-                private readonly RemoveMeshInBoxEditor _oldEditor;
+                private readonly RemoveMeshInBoxEditor? _oldEditor;
 
                 public EditorScope(RemoveMeshInBoxEditor editor)
                 {
@@ -82,7 +81,7 @@ namespace Anatawa12.AvatarOptimizer
 
                     using (new GUILayout.HorizontalScope())
                     {
-                        if (_upstreamEditor)
+                        if (_upstreamEditor != null)
                         {
                             var editingCurrent = _upstreamEditor._editingBoxPropPath == property.propertyPath;
                             if (GUI.Button(position, editingCurrent ? "Finish Editing Box" : "Edit This Box"))
@@ -105,7 +104,7 @@ namespace Anatawa12.AvatarOptimizer
                     EditorGUI.PropertyField(position, sizeProp);
                     position.y += EditorGUIUtility.standardVerticalSpacing + vector3Height;
 
-                    if (!_upstreamEditor ||
+                    if (_upstreamEditor == null ||
                         !_upstreamEditor._eulerAngles.TryGetValue(property.propertyPath, out var eulerCache) ||
                         eulerCache.value != rotationProp.quaternionValue)
                     {
@@ -125,7 +124,7 @@ namespace Anatawa12.AvatarOptimizer
                         eulerCache = (quot, euler);
                     }
 
-                    if (_upstreamEditor)
+                    if (_upstreamEditor != null)
                         _upstreamEditor._eulerAngles[property.propertyPath] = eulerCache;
 
                     EditorGUI.EndProperty();

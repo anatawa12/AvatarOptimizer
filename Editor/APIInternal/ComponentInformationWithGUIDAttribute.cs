@@ -19,11 +19,11 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
             FileID = fileID;
         }
 
-        internal override Type GetTargetType()
+        internal override Type? GetTargetType()
         {
             if (!GlobalObjectId.TryParse($"GlobalObjectId_V1-{1}-{Guid}-{(uint)FileID}-{0}", out var id)) return null;
             var script = GlobalObjectId.GlobalObjectIdentifierToObjectSlow(id) as MonoScript;
-            if (!script) return null;
+            if (script == null) return null;
             return script.GetClass();
         }
     }

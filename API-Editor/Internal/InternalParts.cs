@@ -1,6 +1,7 @@
+#nullable enable
+
 using System;
 using Anatawa12.AvatarOptimizer.API;
-using JetBrains.Annotations;
 using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer.APIInternal
@@ -8,7 +9,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
     public abstract class ComponentInformationAttributeBase : Attribute
     {
         internal ComponentInformationAttributeBase() { }
-        [CanBeNull] internal abstract Type GetTargetType();
+        internal abstract Type? GetTargetType();
     }
 
     /// <summary>

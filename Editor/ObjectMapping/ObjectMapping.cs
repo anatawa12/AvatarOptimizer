@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -21,7 +20,7 @@ namespace Anatawa12.AvatarOptimizer
             _componentMapping = componentMapping;
         }
 
-        public bool MapComponentInstance(int instanceId, out Component component)
+        public bool MapComponentInstance(int instanceId, out Component? component)
         {
             if (instanceId == 0)
             {
@@ -47,18 +46,17 @@ namespace Anatawa12.AvatarOptimizer
             return false;
         }
 
-        internal BeforeGameObjectTree GetBeforeGameObjectTree(GameObject rootGameObject) =>
+        internal BeforeGameObjectTree? GetBeforeGameObjectTree(GameObject rootGameObject) =>
             _beforeTree.TryGetValue(rootGameObject.GetInstanceID(), out var tree) ? tree : null;
 
         // null means nothing to map
-        [CanBeNull]
-        public ComponentInfo GetComponentMapping(int instanceId) =>
+        public ComponentInfo? GetComponentMapping(int instanceId) =>
             _componentMapping.TryGetValue(instanceId, out var info) ? info : null;
 
-        [CanBeNull]
         public AnimationObjectMapper CreateAnimationMapper(GameObject rootGameObject)
         {
-            if (!_beforeTree.TryGetValue(rootGameObject.GetInstanceID(), out var beforeTree)) return null;
+            if (!_beforeTree.TryGetValue(rootGameObject.GetInstanceID(), out var beforeTree))
+                throw new InvalidOperationException($"rootGameObject {rootGameObject} is not in the mapping");
             return new AnimationObjectMapper(rootGameObject, beforeTree, this);
         }
     }
@@ -66,10 +64,10 @@ namespace Anatawa12.AvatarOptimizer
     {
         public readonly int InstanceId;
         public readonly int ParentInstanceId;
-        [NotNull] public readonly string Name;
-        [NotNull] public readonly IReadOnlyDictionary<Type, int> ComponentInstanceIdByType;
-        [NotNull] public readonly int[] ComponentInstanceIds;
-        [NotNull] public readonly BeforeGameObjectTree[] Children;
+        public readonly string Name;
+        public readonly IReadOnlyDictionary<Type, int> ComponentInstanceIdByType;
+        public readonly int[] ComponentInstanceIds;
+        public readonly BeforeGameObjectTree[] Children;
         public bool HasSlashInNameInDirectChildren { get; private set; }
         public bool HasSlashInNameInChildren { get; private set; }
 
@@ -114,8 +112,7 @@ namespace Anatawa12.AvatarOptimizer
             HasSlashInNameInChildren = Children.Any(x => x.HasSlashInNameInChildren || x.Name.Contains('/'));
         }
 
-        [CanBeNull]
-        public BeforeGameObjectTree ResolvePath(string relative) =>
+        public BeforeGameObjectTree? ResolvePath(string relative) =>
             relative == "" ? this : ResolvePathAll(relative).FirstOrDefault();
 
         private IEnumerable<BeforeGameObjectTree> ResolvePathAll(string relative)
@@ -167,8 +164,8 @@ namespace Anatawa12.AvatarOptimizer
     {
         public static readonly PropertyDescriptor Removed = default;
         public readonly int InstanceId;
-        [NotNull] public readonly Type Type;
-        [NotNull] public readonly string Name;
+        public readonly Type Type;
+        public readonly string Name;
 
         public PropertyDescriptor(int instanceId, Type type, string name)
         {
@@ -177,20 +174,10 @@ namespace Anatawa12.AvatarOptimizer
             Name = name;
         }
 
-        public override int GetHashCode()
-        {
-            unchecked
-            {
-                var hashCode = InstanceId;
-                hashCode = (hashCode * 397) ^ Type.GetHashCode();
-                hashCode = (hashCode * 397) ^ Name.GetHashCode();
-                return hashCode;
-            }
-        }
-
+        public override int GetHashCode() => HashCode.Combine(InstanceId, Type, Name);
         public bool Equals(PropertyDescriptor other) =>
             InstanceId == other.InstanceId && Type == other.Type && Name == other.Name;
-        public override bool Equals(object obj) => obj is PropertyDescriptor other && Equals(other);
+        public override bool Equals(object? obj) => obj is PropertyDescriptor other && Equals(other);
         public static bool operator ==(PropertyDescriptor left, PropertyDescriptor right) => left.Equals(right);
         public static bool operator !=(PropertyDescriptor left, PropertyDescriptor right) => !left.Equals(right);
     }
@@ -244,7 +231,7 @@ namespace Anatawa12.AvatarOptimizer
     {
         private const string Enabled = "m_Enabled";
         // enabled for behaviour-like components
-        public static string EnabledFor(Object obj) => obj == null ? Enabled : EnabledFor(obj.GetType());
+        public static string EnabledFor(Object? obj) => obj == null ? Enabled : EnabledFor(obj.GetType());
 
         public static string EnabledFor(Type type) =>
             type == typeof(Animator) ? VProp.AnimatorEnabledAsBehavior : Enabled;
