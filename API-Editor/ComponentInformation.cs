@@ -60,9 +60,13 @@ namespace Anatawa12.AvatarOptimizer.API
             ApplySpecialMapping((TComponent)component, collector);
 
         /// <summary>
-        /// Collects runtime mutations by <see cref="component"/>.
-        /// You have to call <see cref="collector"/>.<see cref="ComponentMutationsCollector.ModifyProperties"/>
-        /// for all property mutations by the component.
+        /// Collects runtime dependencies and runtime behavior information of <see cref="component"/>.
+        ///
+        /// This information is used for Garage Collection system and automatic activeness toggle system in Avatar Optimizer.
+        /// You have to call some methods on <see cref="ComponentDependencyCollector"/> to declare dependencies
+        /// and runtime behavior of the component.
+        ///
+        /// Please refer <see cref="ComponentDependencyCollector"/> for more information about GC system and collecting dependencies.
         /// </summary>
         /// <param name="component">The component.</param>
         /// <param name="collector">The callback.</param>
@@ -100,6 +104,41 @@ namespace Anatawa12.AvatarOptimizer.API
         //    and do fallback process in that method.
     }
 
+    /// <summary>
+    /// Callback for collecting dependencies information of the component.
+    /// This information is currently used by Garbage Collection system and automatic component disable.
+    ///
+    /// # Components Garbage Collection
+    /// Avatar Optimizer has a Garbage Collection system for components (GC components).
+    /// `AddDependency` and `MarkEntryPoint` methods are used to declare the dependency relationship used by the GC system.
+    ///
+    /// The GC system is based on tracing garbage collection or mark-and-sweep algorithm.
+    ///
+    /// In Avatar Optimizer, root objects are the components that are enabled, gameObject is active,
+    /// and the component is marked as EntryPoint with `MarkEntryPoint`.
+    /// The dependency relationship is declared by `AddDependency` methods on this callback.
+    /// There is option to declare condition of the dependency relationship based on the enabled / active state
+    /// of the dependant and / or dependency.
+    /// Please refer <see cref="ComponentDependencyInfo"/> and `AddDependency` methods for more information.
+    ///
+    /// # Automatic Component Disable
+    /// Avatar Optimizer has runtime-load optimization feature that disables components that are not needed.
+    /// In addition to the information provided for GC Components,
+    /// `HeavyBehaviour` and `Behaviour` methods are used to declare the activeness of the component.
+    ///
+    /// Avatar Optimizer tries to disable `HeavyBehaviour` as long as possible and enable it when needed.
+    /// Avatar Optimizer thinks a component is needed when any of the EntryPoint component that
+    /// depends on the component is active and enabled.
+    ///
+    /// In current Avatar Optimizer, the optimization does animate enabled of the HeavyBehavior component,
+    /// and does not change the enabled / active state of any other components.
+    /// In the future, to reduce animation property count, Avatar Optimizer may change the active state of game object
+    /// and this may affects to other components.
+    /// However, some components are not heavy but enabled state is important.
+    /// Please mark such components as Behavior with `MarkBehaviour`.
+    /// Active / Enabled of components marked as Behaviour will not be changed by Avatar Optimizer.
+    /// Please note that this does not prevent Avatar Optimizer to remove the component.
+    /// </summary>
     [PublicAPI]
     public abstract class ComponentDependencyCollector
     {
@@ -108,21 +147,28 @@ namespace Anatawa12.AvatarOptimizer.API
         }
 
         /// <summary>
-        /// Marks this component as EntryPoint component, which means has some effects to non-avatar components.
-        /// For example, Renderer components have side-effects because it renders something.
-        /// VRC Contacts have some effects to other avatars in the instance so they have side-effects.
+        /// Marks this component as EntryPoint component.
+        ///
+        /// Avatar Optimizer will recognize EntryPoint compponents as components that have side effects to outside the avatar. 
+        /// Therefore, Avatar Optimizer will not remove such a components if the component can be active and enabled.
+        /// Please note that Avatar Optimizer may remove the component if the component is not active or enabled.
         /// 
-        /// If your component has some effects only for some specific component(s), you should not mark your component
-        /// as EntryPoint. You should make dependency relationship from affecting component to your component instead.
+        /// For example, Renderer components have side effects because it renders something.
+        /// VRC Contacts have some effects to other avatars in the instance, so they have side effects.
         /// 
-        /// One of such components is VRCPhysBone without animating parameters.
-        /// VRCPhysBone has effects if and only if some other EntryPoint components are attached to PB-affected
-        /// transforms or their children, or PB-affected transforms are dependencies of some EntryPoint components.
-        /// So, for VRCPhysBone, There are bidirectional dependency relationship between PB and PB-affected transforms
-        /// and VRCPhysBone is not a EntryPoint component.
+        /// If your component has some effects only for some specific component(s) in the avatar,
+        /// you should not mark your component as EntryPoint.
+        /// You should declare dependency relationship from affecting component to your component instead.
+        /// This allows Avatar Optimizer to remove your component if the affecting component is removed.
+        /// 
+        /// One of components that is not EntryPoint is VRCPhysBone without animating parameters.
+        /// VRCPhysBone only affects a specific subset of the transforms in the avatar.
+        /// Therefore, VRCPhysBone has no effects if the affected transforms are not used by any Renderers or some other EntryPoint components.
+        /// So, VRCPhysBone are not marked as EntryPoint and they declare bidirectional dependency relationship between
+        /// PhysBone and PhysBone-affected transforms.
         ///
         /// With same reasons, Constraints are not treated as EntryPoint, they have bidirectional
-        /// dependency relationship between Constraintas and transform instead.
+        /// dependency relationship between Constraints and transform instead.
         /// </summary>
         [PublicAPI]
         public abstract void MarkEntrypoint();
@@ -130,35 +176,37 @@ namespace Anatawa12.AvatarOptimizer.API
         /// <summary>
         /// Marks this component as HeavyBehaviour component, which means the component uses some resources while
         /// enabled but doesn't eat if not enabled and AAO can (almost) freely change enablement of the component.
-        /// When you mark some components Behaviour component, Avatar Optimizer will generate animation that disables
-        /// the component when entrypoint is not active / enabled.
+        /// When you mark some components HeavyBehaviour component, Avatar Optimizer will generate animation that disables
+        /// the component when all entrypoints that using this component is not active / enabled.
         ///
         /// If your component have some runtime load and can be skipped if your component is not needed by all
         /// enabled EntryPoint components, you should mark your component as Behaviour for runtime-load optimization.
         ///
-        /// For example, VRCPhysBone and Constraints are marked as HeavyBehaviour.
+        /// For example, VRCPhysBone is marked as HeavyBehaviour.
         /// </summary>
         [PublicAPI]
         public abstract void MarkHeavyBehaviour();
 
         /// <summary>
         /// Marks this component as Behaviour component, which means the activeness of the component has meaning.
-        /// When you mark your some components Behaviour component, Avatar Optimizer will never change activeness of
-        /// the component.
+        /// When you mark your some components Behaviour component, Avatar Optimizer will never change
+        /// `isActive` and `enabled` of the component, but this doesn't prevent AAO to remove the component.
         ///
         /// If your component is not a Behaviour component, AAO may change enablement of the component.
         ///
         /// NOTE: In AAO 1.6.0, AAO will not change enablement of non-Behaviour components but in the feature releases,
         /// AAO may change enablement of non-Behaviour components to change enablement of HeavyBehaviour components
         /// effectively.
+        ///
+        /// For example Constraints are marked as Behaviour.
         /// </summary>
         [PublicAPI]
         public abstract void MarkBehaviour();
 
         /// <summary>
         /// Adds <see cref="dependency"/> as dependencies of <see cref="dependant"/>.
-        /// The dependency will be assumed as the dependant will have dependency if dependant is enabled and
-        /// even if dependency is disabled. You can change the settings by <see cref="ComponentDependencyInfo"/>.
+        /// The dependency will be assumed as the dependant will have dependency if dependant can be enabled and
+        /// even if dependency can be disabled. You can change the settings by <see cref="ComponentDependencyInfo"/>.
         ///
         /// WARNING: the <see cref="ComponentDependencyInfo"/> instance can be shared between multiple AddDependency
         /// invocation so you MUST NOT call methods on IComponentDependencyInfo after calling AddDependency other time.
