@@ -67,7 +67,7 @@ namespace Anatawa12.AvatarOptimizer
                     var baseUrl = CheckForUpdate.Checker.IsBeta ? "https://vpm.anatawa12.com/avatar-optimizer/beta/" : "https://vpm.anatawa12.com/avatar-optimizer/";
                     var isJapanese = LanguagePrefs.Language == "ja";
                     baseUrl += isJapanese ? "ja/" : "en/";
-                    baseUrl += "developers/asset-description/";
+                    baseUrl += "docs/developers/asset-description/";
                     Application.OpenURL(baseUrl);
                 }
 
