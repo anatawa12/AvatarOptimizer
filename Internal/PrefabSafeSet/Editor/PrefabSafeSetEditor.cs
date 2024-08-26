@@ -39,7 +39,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             "+", "PrefabSafeSet:tooltip:Force Add Button");
     }
 
-    [CustomPropertyDrawer(typeof(PrefabSafeSet<,>), true)]
+    [CustomPropertyDrawer(typeof(PrefabSafeSet<>), true)]
     internal class ObjectsEditor : PropertyDrawer
     {
         private int _nestCountCache = -1;
@@ -181,9 +181,9 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
     /// </summary>
     internal static class Names
     {
-        public const string FakeSlot = nameof(PrefabSafeSet<object, PrefabLayer<object>>.fakeSlot);
-        public const string MainSet = nameof(PrefabSafeSet<object, PrefabLayer<object>>.mainSet);
-        public const string PrefabLayers = nameof(PrefabSafeSet<object, PrefabLayer<object>>.prefabLayers);
+        public const string FakeSlot = nameof(PrefabSafeSet<object>.fakeSlot);
+        public const string MainSet = nameof(PrefabSafeSet<object>.mainSet);
+        public const string PrefabLayers = nameof(PrefabSafeSet<object>.prefabLayers);
         public const string Additions = nameof(PrefabLayer<object>.additions);
         public const string Removes = nameof(PrefabLayer<object>.removes);
     }
