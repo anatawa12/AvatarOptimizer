@@ -42,7 +42,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                     if (!materialSetting.mask.isReadable) continue;
 
                     var editingTexture = MaskTextureEditor.Window.ObservePreviewTextureFor(original, subMeshI, context);
-                    var mask = editingTexture ? editingTexture : context.Observe(materialSetting.mask);
+                    var mask = editingTexture != null ? editingTexture : context.Observe(materialSetting.mask);
                     var textureWidth = mask.width;
                     var textureHeight = mask.height;
                     var pixels = mask.GetPixels32();

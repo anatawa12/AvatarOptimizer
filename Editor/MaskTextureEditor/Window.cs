@@ -86,8 +86,7 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
             }
         }
 
-        [CanBeNull]
-        public static Texture2D ObservePreviewTextureFor(SkinnedMeshRenderer renderer, int subMesh, ComputeContext context)
+        public static Texture2D? ObservePreviewTextureFor(SkinnedMeshRenderer renderer, int subMesh, ComputeContext context)
         {
             if (!context.Observe(IsWindowOpen)) return null;
 

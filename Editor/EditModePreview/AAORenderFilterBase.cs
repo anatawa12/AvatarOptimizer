@@ -48,7 +48,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
             return groups.ToImmutableList();
         }
 
-        public async Task<IRenderFilterNode> Instantiate(RenderGroup group,
+        public async Task<IRenderFilterNode?> Instantiate(RenderGroup group,
             IEnumerable<(Renderer, Renderer)> proxyPairs, ComputeContext context)
         {
             var pair = proxyPairs.Single();
@@ -76,7 +76,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
     internal abstract class AAORenderFilterNodeBase<T> : IRenderFilterNode
         where T : EditSkinnedMeshComponent
     {
-        private Mesh _duplicated;
+        private Mesh? _duplicated;
 
         RenderAspects IRenderFilterNode.WhatChanged => RenderAspects.Mesh | RenderAspects.Shapes;
 
