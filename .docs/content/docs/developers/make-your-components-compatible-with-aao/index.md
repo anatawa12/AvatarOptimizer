@@ -93,7 +93,7 @@ callback, so your tool should remove components with `IVRCSDKPreprocessAvatarCal
 
 If your components is only for holding data for your edit-mode tool and doesn't affects on build or at runtime,
 you can remove your components in `IVRCSDKPreprocessAvatarCallback` as described above, or
-you can simply use [Asset Description] to register your components as safe-to-remove components
+you can simply use [Asset Description] to register your components as safe-to-remove components.
 
 [DestroyImmediate]: https://docs.unity3d.com/2022.3/Documentation/ScriptReference/Object.DestroyImmediate.html
 
