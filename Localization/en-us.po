@@ -727,7 +727,7 @@ msgstr "No Mesh is specified for Eyelids SkinnedMesh."
 
 msgid "ComponentInfos:VRCAvatarDescriptor:warning:NoMeshInEyelidsSkinnedMesh:hint"
 msgstr ""
-"If you want to animate eyelids with BlendShapes, you should specify SkinnedMeshRenderer with Mesh specified to Avatar Descriptor.\n"
+"If you want to animate eyelids with BlendShapes, you should specify SkinnedMeshRenderer having Mesh to Avatar Descriptor.\n"
 "If it's intended to not animate eyelids with BlendShapes, you should change eyelids type to other type like None."
 
 msgid "ComponentInfos:VRCAvatarDescriptor:warning:NoEyelidsSkinnedMesh"
