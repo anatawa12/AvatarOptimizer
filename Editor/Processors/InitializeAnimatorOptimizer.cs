@@ -1,14 +1,10 @@
-#if UNITY_2021_3_OR_NEWER
-
 using System;
 using System.Collections.Generic;
 using Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes;
-using JetBrains.Annotations;
 using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
-using UnityEngine.Profiling;
 using Object = UnityEngine.Object;
 
 #if AAO_VRCSDK3_AVATARS
@@ -48,6 +44,18 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 
             foreach (var component in context.AvatarRootObject.GetComponents<Component>())
             {
+                GameObject? animatorControllerRoot = null;
+
+                switch (component)
+                {
+                    case Animator:
+#if AAO_VRCSDK3_AVATARS
+                    case VRCAvatarDescriptor:
+#endif
+                        animatorControllerRoot = component.gameObject;
+                        break;
+                }
+
                 using (var serializedObject = new SerializedObject(component))
                 {
                     foreach (var property in serializedObject.ObjectReferenceProperties())
@@ -55,7 +63,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                         if (property.objectReferenceValue is RuntimeAnimatorController runtimeController)
                         {
                             var cloned = AnimatorControllerCloner.Clone(context, runtimeController);
-                            var wrapper = new AOAnimatorController(cloned);
+                            var wrapper = new AOAnimatorController(cloned, animatorControllerRoot);
                             animatorState.Add(wrapper);
                             property.objectReferenceValue = cloned;
                             clonedToController.Add(cloned, wrapper);
@@ -126,25 +134,24 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 
     class AnimatorControllerCloner : DeepCloneHelper
     {
-        [NotNull] private readonly BuildContext _context;
-        [CanBeNull] private readonly IReadOnlyDictionary<AnimationClip,AnimationClip> _mapping;
+        private readonly BuildContext _context;
+        private readonly IReadOnlyDictionary<AnimationClip,AnimationClip>? _mapping;
 
-        private AnimatorControllerCloner([NotNull] BuildContext context,
-            [CanBeNull] IReadOnlyDictionary<AnimationClip, AnimationClip> mapping)
+        private AnimatorControllerCloner(BuildContext context,
+            IReadOnlyDictionary<AnimationClip, AnimationClip>? mapping)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _mapping = mapping;
         }
 
-        public static AnimatorController Clone([NotNull] BuildContext context,
-            [NotNull] RuntimeAnimatorController runtimeController)
+        public static AnimatorController Clone(BuildContext context, RuntimeAnimatorController runtimeController)
         {
             var (controller, mapping) = ACUtils.GetControllerAndOverrides(runtimeController);
 
             return new AnimatorControllerCloner(context, mapping).MapObject(controller);
         }
 
-        protected override Object CustomClone(Object o)
+        protected override Object? CustomClone(Object o)
         {
             if (o is AnimationClip clip)
             {
@@ -178,5 +185,3 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
         }
     }
 }
-
-#endif

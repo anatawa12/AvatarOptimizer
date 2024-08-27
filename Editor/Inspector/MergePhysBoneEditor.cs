@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
 using VRC.Dynamics;
@@ -13,9 +12,9 @@ namespace Anatawa12.AvatarOptimizer
     [CustomEditor(typeof(MergePhysBone))]
     internal class MergePhysBoneEditor : AvatarTagComponentEditorBase
     {
-        private MergePhysBoneEditorRenderer _renderer;
-        private SerializedProperty _makeParent;
-        private SerializedProperty _componentsSetProp;
+        private MergePhysBoneEditorRenderer _renderer = null!; // initialized in OnEnable
+        private SerializedProperty _makeParent = null!; // initialized in OnEnable
+        private SerializedProperty _componentsSetProp = null!; // initialized in OnEnable
 
         private void OnEnable()
         {
@@ -170,7 +169,7 @@ namespace Anatawa12.AvatarOptimizer
             {
                 // Copy mode
                 EditorGUI.BeginDisabledGroup(true);
-                var differ = renderer(prop.SourceValue);
+                var differ = renderer(prop.SourceValue!);
                 EditorGUI.EndDisabledGroup();
 
                 EditorGUI.BeginProperty(overrideRect, null, prop.IsOverrideProperty);
@@ -359,10 +358,10 @@ namespace Anatawa12.AvatarOptimizer
 
         private static readonly string[] CopyOverride = { "C:Copy", "O:Override" };
 
-        private void PbPropImpl([NotNull] string label, 
-            [NotNull] OverridePropBase prop, 
+        private void PbPropImpl(string label, 
+            OverridePropBase prop, 
             bool forceOverride, 
-            [NotNull] Func<Rect, bool, GUIContent, bool> renderer)
+            Func<Rect, bool, GUIContent, bool> renderer)
         {
             var labelContent = new GUIContent(label);
 
@@ -420,7 +419,7 @@ namespace Anatawa12.AvatarOptimizer
             {
                 case MergePhysBone.CollidersConfig.CollidersOverride.Copy:
                 {
-                    var colliders = prop.PhysBoneValue;
+                    var colliders = prop.PhysBoneValue!;
 
                     var height = EditorGUI.GetPropertyHeight(colliders, null, true);
 
@@ -496,7 +495,7 @@ namespace Anatawa12.AvatarOptimizer
                     break;
                 case MergePhysBone.EndPointPositionConfig.Override.Copy:
                 {
-                    var valueProperty = prop.PhysBoneValue;
+                    var valueProperty = prop.PhysBoneValue!;
 
                     var height = EditorGUI.GetPropertyHeight(valueProperty, null, true);
 
@@ -607,7 +606,7 @@ namespace Anatawa12.AvatarOptimizer
             if (EndpointPosition.OverrideProperty.enumValueIndex ==
                 (int)MergePhysBone.EndPointPositionConfig.Override.Copy)
             {
-                if (EndpointPosition.PhysBoneValue.hasMultipleDifferentValues)
+                if (EndpointPosition.PhysBoneValue!.hasMultipleDifferentValues)
                     _differProps.Add("Endpoint Position");
             }
 
@@ -649,10 +648,10 @@ namespace Anatawa12.AvatarOptimizer
         {
             if (forceOverride || prop.IsOverride) return;
 
-            if (prop.SourceValue.hasMultipleDifferentValues
-                || prop.SourceCurveX.hasMultipleDifferentValues
-                || prop.SourceCurveY.hasMultipleDifferentValues
-                || prop.SourceCurveZ.hasMultipleDifferentValues)
+            if (prop.SourceValue!.hasMultipleDifferentValues
+                || prop.SourceCurveX!.hasMultipleDifferentValues
+                || prop.SourceCurveY!.hasMultipleDifferentValues
+                || prop.SourceCurveZ!.hasMultipleDifferentValues)
                 _differProps.Add(label);
 
             _usingCopyCurve |= prop.GetCurveXProperty(false).animationCurveValue.length > 0;
@@ -664,10 +663,10 @@ namespace Anatawa12.AvatarOptimizer
         {
             if (forceOverride || prop.IsOverride) return;
 
-            if (prop.SourceValue.enumValueIndex == 2)
+            if (prop.SourceValue!.enumValueIndex == 2)
             {
                 if (prop.SourceValue.hasMultipleDifferentValues
-                    || prop.SourceFilter.hasMultipleDifferentValues)
+                    || prop.SourceFilter!.hasMultipleDifferentValues)
                     _differProps.Add(label);
             }
             else
@@ -682,7 +681,7 @@ namespace Anatawa12.AvatarOptimizer
             // 0: copy
             if (prop.OverrideProperty.enumValueIndex == 0)
             {
-                if (prop.PhysBoneValue.hasMultipleDifferentValues)
+                if (prop.PhysBoneValue!.hasMultipleDifferentValues)
                     _differProps.Add(label);
             }
         }

@@ -131,6 +131,8 @@ namespace Anatawa12.AvatarOptimizer
             public bool skipMergeMaterials;
             [ToggleLeft]
             public bool skipRemoveEmptySubMesh;
+            [ToggleLeft]
+            public bool skipAnyStateToEntryExit;
         }
     }
 }

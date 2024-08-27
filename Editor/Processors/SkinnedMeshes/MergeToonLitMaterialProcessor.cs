@@ -16,10 +16,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         private static readonly int MainTexStProp = Shader.PropertyToID("_MainTex_ST");
         private static readonly int RectProp = Shader.PropertyToID("_Rect");
 
-        private static Material _helperMaterial;
+        private static Material? _helperMaterial;
 
         private static Material HelperMaterial =>
-            _helperMaterial ? _helperMaterial : _helperMaterial = new Material(Assets.MergeTextureHelper);
+            _helperMaterial != null ? _helperMaterial : _helperMaterial = new Material(Assets.MergeTextureHelper);
 
         public MergeToonLitMaterialProcessor(MergeToonLitMaterial component) : base(component)
         {
@@ -114,7 +114,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             return mergingIndices;
         }
 
-        private Material[] CreateMaterials(BitArray mergingIndices, Material[] upstream, bool fast)
+        private Material?[] CreateMaterials(BitArray mergingIndices, Material?[] upstream, bool fast)
         {
             var copied = upstream.Where((_, i) => !mergingIndices[i]);
             if (fast)
@@ -135,7 +135,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             return mat;
         }
 
-        public static Texture[] GenerateTextures(MergeToonLitMaterial config, Material[] materials, bool compress)
+        public static Texture[] GenerateTextures(MergeToonLitMaterial config, Material?[] materials, bool compress)
         {
             return config.merges.Select(x => GenerateTexture(x, materials, compress)).ToArray();
         }
@@ -254,7 +254,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         private static Texture GenerateTexture(
             MergeToonLitMaterial.MergeInfo mergeInfo,
-            Material[] materials,
+            Material?[] materials,
             bool compress
         )
         {
@@ -275,7 +275,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             foreach (var source in mergeInfo.source)
             {
-                var sourceMat = materials[source.materialIndex];
+                var sourceMat = materials[source.materialIndex]!; // selected material should not be null
                 var sourceTex = sourceMat.GetTexture(MainTexProp);
                 var sourceTexSt = sourceMat.GetVector(MainTexStProp);
                 HelperMaterial.SetTexture(MainTexProp, sourceTex);
@@ -327,7 +327,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             public MeshInfoComputer(MergeToonLitMaterialProcessor processor, IMeshInfoComputer upstream) : base(upstream)
                 => _processor = processor;
 
-            public override Material[] Materials(bool fast = true)
+            public override Material?[] Materials(bool fast = true)
             {
                 var upstream = base.Materials(fast);
                 return _processor.CreateMaterials(_processor.ComputeMergingIndices(upstream.Length), upstream, fast);

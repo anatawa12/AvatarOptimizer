@@ -249,8 +249,22 @@ msgstr "このメッシュを統合対象から除外するか、このメッシ
 msgid "MergeSkinnedMesh:warning:no-root-bone"
 msgstr "統合先のメッシュにRoot Boneが設定されていないため、予期しない動作が引き起こされる場合があります。"
 
+msgid "MergeSkinnedMesh:warning:no-root-bone:description"
+msgstr "MergeSkinnedMeshは統合先のメッシュのRoot Boneを自動では設定しません。"
+
+msgid "MergeSkinnedMesh:warning:no-root-bone:hint"
+msgstr "統合先のメッシュのRoot Boneを手動で設定する必要があります。\n"
+"Modular Avatarを使用している場合は、アバターのルートにMA Mesh Settingsコンポーネントを追加して設定することにより、アバター全体のRoot Boneをまとめて設定することもできます。"
+
 msgid "MergeSkinnedMesh:warning:no-probe-anchor"
 msgstr "統合先のメッシュにAnchor Overrideが設定されていないため、予期しない動作が引き起こされる場合があります。"
+
+msgid "MergeSkinnedMesh:warning:no-probe-anchor:description"
+msgstr "MergeSkinnedMeshは統合先のメッシュのAnchor Overrideを自動では設定しません。"
+
+msgid "MergeSkinnedMesh:warning:no-probe-anchor:hint"
+msgstr "統合先のメッシュのAnchor Overrideを手動で設定する必要があります。\n"
+"Modular Avatarを使用している場合は、アバターのルートにMA Mesh Settingsコンポーネントを追加して設定することにより、アバター全体のAnchor Overrideをまとめて設定することもできます。"
 
 # endregion
 
@@ -576,18 +590,21 @@ msgstr "面積がゼロのポリゴンを自動的に削除する"
 msgid "TraceAndOptimize:OptimizePhysBone:UnknownPhysBoneColliderShape"
 msgstr "未知のPhysBone Collider形状'{0}'が指定されています。"
 
-msgid "TraceAndOptimize:OptimizeAnimator:Unity2019"
-msgstr "Unity 2019では、Optimize Animatorの多くの機能がサポートされていません。Unity 2021以降に更新するのをご検討ください。"
-
 # endregion
 
 #region ApplyObjectMapping
 
 msgid "ApplyObjectMapping:VRCAvatarDescriptor:eyelids BlendShape Removed"
-msgstr "瞬き用のBlendShapeが固定・除去されています"
+msgstr "瞬き用のBlendShapeが固定・除去されているか、設定されていません。"
+
+msgid "ApplyObjectMapping:VRCAvatarDescriptor:eyelids BlendShape Removed:description"
+msgstr "VRChatでは、瞬き用のBlendShapeとして存在しないものが指定されているか、設定されていない項目がある場合、瞬きが全く機能しなくなります。"
 
 msgid "ApplyObjectMapping:VRCAvatarDescriptor:viseme BlendShape Removed"
-msgstr "リップシンク用のBlendShapeが固定・除去されています"
+msgstr "リップシンク用のBlendShapeが固定・除去されているか、設定されていません。"
+
+msgid "ApplyObjectMapping:VRCAvatarDescriptor:viseme BlendShape Removed:description"
+msgstr "VRChatでは、リップシンク用のBlendShapeとして存在しないものが指定されているか、設定されていない項目がある場合、すべてのリップシンク用のBlendShapeが機能しなくなります。"
 
 msgid "MergeSkinnedMesh:warning:animation-mesh-hide"
 msgstr ""

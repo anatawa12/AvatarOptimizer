@@ -118,6 +118,7 @@ namespace Anatawa12.AvatarOptimizer
             public Curve0To180Config(float value) : this()
             {
                 this.value = value;
+                curve = new AnimationCurve();
             }
         }
 
@@ -132,6 +133,7 @@ namespace Anatawa12.AvatarOptimizer
             public Curve0To90Config(float value) : this()
             {
                 this.value = value;
+                curve = new AnimationCurve();
             }
         }
 

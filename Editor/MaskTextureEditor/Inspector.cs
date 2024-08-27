@@ -77,7 +77,7 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
             EditorGUILayout.PropertyField(mode);
         }
 
-        private static Texture2D CreateTexture(Vector2Int size, Color color)
+        private static Texture2D? CreateTexture(Vector2Int size, Color color)
         {
             var path = EditorUtility.SaveFilePanelInProject(
                 AAOL10N.Tr("MaskTextureEditor:create"),
@@ -100,7 +100,7 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
 
                 AssetDatabase.ImportAsset(path);
 
-                var importer = AssetImporter.GetAtPath(path) as TextureImporter;
+                var importer = (TextureImporter)AssetImporter.GetAtPath(path);
                 importer.isReadable = true;
                 importer.SaveAndReimport();
 

@@ -8,16 +8,42 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- AnyState to Entry/Exit optimization in Optimize Animator `#1157`
+  - If AAO found animator layer only with AnyState, AAO tries to convert them to Entry / Exit pattern.
+    - Currently due to implementation there are some patterns that can be convert but but not converted.
+    - We may relax some restriction in the future.
+  - Because we have to check for each condition if we use AnyState but we can check for only one (in best case) with entry/exit, this generally reduces cost for checking an parameter in a state.
+  - Combined with Entry / Exit to 1D BlendTree optimization, which is implemented in previous release, your AnyState layer may be optimized to 1D BlendTree.
 
 ### Changed
 
 ### Deprecated
 
 ### Removed
+- Unity 2019 Support `#1146`
+  - For 2019 users, please use 1.7.x.
 
 ### Fixed
 
 ### Security
+
+## [1.7.11] - 2024-08-08
+### Added
+- VRCSDK 3.7.0 support [`#1140`](https://github.com/anatawa12/AvatarOptimizer/pull/1140)
+  - This includes VRCConstraints support
+
+### Fixed
+- Some Humanoid Bones might be removed [`#1137`](https://github.com/anatawa12/AvatarOptimizer/pull/1137)
+  - Repeated `AddPathDependency` is broken.
+- Render is broken if all weighted bone is none and some other non-weight bone is not none [`#1138`](https://github.com/anatawa12/AvatarOptimizer/pull/1138)
+
+## [1.7.10] - 2024-08-02
+### Added
+- Experimental VRCConstraints support [`#1129`](https://github.com/anatawa12/AvatarOptimizer/pull/1129) [`#1130`](https://github.com/anatawa12/AvatarOptimizer/pull/1130)
+  - This only works for VRCSDK ~~`3.6.2-constraints.3`~~ `3.6.2-constraints.4` and not works with other versions including future versions.
+
+### Fixed
+- AutoMergeSkinnedMesh is broken if all merging meshes has no SubMeshes [`#1127`](https://github.com/anatawa12/AvatarOptimizer/pull/1127)
 
 ## [1.7.9] - 2024-07-25
 ### Fixed
@@ -966,7 +992,9 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.9...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.11...HEAD
+[1.7.11]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.10...v1.7.11
+[1.7.10]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.9...v1.7.10
 [1.7.9]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.8...v1.7.9
 [1.7.8]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.7...v1.7.8
 [1.7.7]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.6...v1.7.7

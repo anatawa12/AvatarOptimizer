@@ -8,17 +8,17 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
     internal class UvMapDrawer : ScriptableObject
     {
         [SerializeField]
-        private SkinnedMeshRenderer _renderer = null;
+        private SkinnedMeshRenderer _renderer = null!; // Initialized by Init
 
         [SerializeField]
         private int _subMesh = 0;
 
-        private Mesh _mesh = null;
+        private Mesh? _mesh = null;
         private int _meshDirtyCount = 0;
-        private Vector2[] _points = null;
-        private Vector3[] _buffer = null;
-        private int[] _lineIndices = null;
-        private int[] _removedLineIndices = null;
+        private Vector2[]? _points = null;
+        private Vector3[]? _buffer = null;
+        private int[]? _lineIndices = null;
+        private int[]? _removedLineIndices = null;
 
         private void Awake()
         {
@@ -45,6 +45,8 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
                 _meshDirtyCount = EditorUtility.GetDirtyCount(_mesh);
 
                 CollectPointsAndLineIndices();
+                _ = _buffer![0]; // initialized by CollectPointsAndLineIndices
+                _ = _points![0]; // initialized by CollectPointsAndLineIndices
             }
 
             // Draw the main texture if present
@@ -90,8 +92,8 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
             }
             else
             {
-                var lines = CollectLines(_mesh, _subMesh);
-                _points = _mesh.uv;
+                var lines = CollectLines(_mesh!, _subMesh);
+                _points = _mesh!.uv;
                 _buffer = new Vector3[_points.Length];
                 _lineIndices = FlattenLineIndices(lines);
                 _removedLineIndices = new int[0];

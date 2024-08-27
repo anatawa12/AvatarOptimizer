@@ -12,5 +12,10 @@ namespace Anatawa12.AvatarOptimizer
         public bool executeEarly;
         [NotKeyable, AAOLocalized("MakeChildren:prop:children")]
         public PrefabSafeSet.TransformSet children;
+
+        internal MakeChildren()
+        {
+            children = new PrefabSafeSet.TransformSet(this);
+        }
     }
 }
