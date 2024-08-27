@@ -15,11 +15,10 @@ This tool is initially designed for VRChat avatars, but it might be usable for o
 Non-destructive means (in Avatar Optimizer):
 - You don't have to unpack your prefab to apply Avatar Optimizer.
   - What you have to do is adding component.
-- Avatar Optimizer doesn't affects to avatar saved in your project, only affects to temporal copy of avatar for building.
+- Avatar Optimizer doesn't affects avatar saved in your project, only affects temporal copy of avatar for building.
 
 Please note that non-VRChat avatar support is generally community-based and may not be supported by the Avatar Optimizer dev team.
 
-[^non-destructive]: Non-destructive means that this tool doesn't modify original avatar and assets saved in the project and only affects to the temporal copy of avatar data generated during build.
 
 ## What is the goal of Avatar Optimizer? {#what-is-the-goal-of-avatar-optimizer}
 
