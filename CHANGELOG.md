@@ -16,6 +16,9 @@ The format is based on [Keep a Changelog].
   - Combined with Entry / Exit to 1D BlendTree optimization, which is implemented in previous release, your AnyState layer may be optimized to 1D BlendTree.
 
 ### Changed
+- Skip Enablement Mismatched Renderers is now disabled by default `#1169`
+  - You still can enable it in the Inspector.
+  - This change does not affect the behavior of previously added components.
 
 ### Deprecated
 
