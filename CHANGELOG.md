@@ -27,6 +27,15 @@ The format is based on [Keep a Changelog].
 
 ### Security
 
+## [1.7.12] - 2024-08-27
+### Changed
+- Rewritten Check for Update system [`#1151`](https://github.com/anatawa12/AvatarOptimizer/pull/1151)
+
+### Fixed
+- VRCConstraints with Target might be removed unexpectedly [`#1150`](https://github.com/anatawa12/AvatarOptimizer/pull/1150)
+- FinalIK Gimmicks with IKExecutionOrder is broken [`#1153`](https://github.com/anatawa12/AvatarOptimizer/pull/1153)
+- Broken validation for MergePhysBone merging PhysBones with specified target [`#1160`](https://github.com/anatawa12/AvatarOptimizer/pull/1160)
+
 ## [1.7.11] - 2024-08-08
 ### Added
 - VRCSDK 3.7.0 support [`#1140`](https://github.com/anatawa12/AvatarOptimizer/pull/1140)
@@ -992,7 +1001,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.11...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.12...HEAD
+[1.7.12]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.11...v1.7.12
 [1.7.11]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.10...v1.7.11
 [1.7.10]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.9...v1.7.10
 [1.7.9]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.8...v1.7.9
