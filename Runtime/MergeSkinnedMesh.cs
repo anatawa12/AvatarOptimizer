@@ -37,11 +37,6 @@ namespace Anatawa12.AvatarOptimizer
 
         APIChecker _checker;
 
-        private void Reset()
-        {
-            skipEnablementMismatchedRenderers = true;
-        }
-
         internal MergeSkinnedMesh()
         {
             renderersSet = new PrefabSafeSet.PrefabSafeSet<SkinnedMeshRenderer>(this);
@@ -59,6 +54,10 @@ namespace Anatawa12.AvatarOptimizer
         /// <param name="version">
         /// The default configuration version.
         /// Since 1.7.0, version 1 is supported.
+        ///
+        /// Since 1.8.0, version 2 is supported.
+        /// Changes:
+        /// - Default value for skipEnablementMismatchedRenderers is changed. Before 1.8.0: true, 1.8.0 and later: false
         /// </param>
         /// <exception cref="ArgumentOutOfRangeException">Unsupported configuration version</exception>
         [PublicAPI]
@@ -67,6 +66,9 @@ namespace Anatawa12.AvatarOptimizer
             switch (version)
             {
                 case 1:
+                    skipEnablementMismatchedRenderers = true;
+                    goto case 2;
+                case 2:
                     // nothing to do
                     break; 
                 default:
