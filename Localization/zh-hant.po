@@ -3,7 +3,7 @@ msgstr ""
 "Language: zh-hant\n"
 
 msgid "CheckForUpdate:out-of-date"
-msgstr "Avatar Optimizer 的新版本 {0} 已發布!（你正在使用的版本為 {1}）"
+msgstr "Avatar Optimizer 的新版本 {0} 已發布！（你正在使用的版本為 {1}）"
 
 msgid "LegacyModularAvatarWarning:message"
 msgstr ""
@@ -20,7 +20,7 @@ msgstr "en"
 # region PrefabSafeSet
 
 msgid "PrefabSafeSet:label:Multi editing not supported"
-msgstr "不支援多項編輯"
+msgstr "不支援多重編輯"
 
 msgid "PrefabSafeSet:label:Element type is not supported"
 msgstr "不支援的元素類型"
@@ -65,7 +65,7 @@ msgstr ""
 "對於「AAO Merge Bone」元件非常有用。"
 
 msgid "ClearEndpointPosition:button:Apply and Remove Component"
-msgstr "應用並移除元件"
+msgstr "套用並移除元件"
 
 # endregion
 
@@ -132,7 +132,7 @@ msgid "MergePhysBone:prop:makeParent"
 msgstr "設為當前物件的子級"
 
 msgid "MergePhysBone:tooltip:makeParent"
-msgstr "將每個 PhysBones 設置為當前物件的子級"
+msgstr "將每個 PhysBones 設定為當前物件的子級"
 
 msgid "MergePhysBone:error:makeParentWithChildren"
 msgstr "有子物件啟用了「設為當前物件的子級」。"
@@ -154,10 +154,10 @@ msgstr "此 PhysBone 版本未被 Avatar Optimizer 支援。\n"
 "請通過 Twitter (@anatawa12_vrc) 或 GitHub (anatawa12/AvatarOptimizer) 聯繫作者！"
 
 msgid "MergePhysBone:error:differValues"
-msgstr "多個合併來源的值不相同。你必須設置一樣的值或進行覆寫：{0}"
+msgstr "多個合併來源的值不相同。你必須設定一樣的值或進行覆寫：{0}"
 
 msgid "MergePhysBone:error:differValueSingle"
-msgstr "多個合併來源的值不相同。你必須設置一樣的值或進行覆寫"
+msgstr "多個合併來源的值不相同。你必須設定一樣的值或進行覆寫"
 
 msgid "MergePhysBone:warning:differChainLength"
 msgstr "多個合併來源的鏈長度不同。較短的鏈將比原本更粗。"
@@ -206,7 +206,7 @@ msgstr ""
 "應將「AAO Merge Skinned Mesh」添加至帶有新 SkinnedMeshRenderer 的物件！"
 
 msgid "MergeSkinnedMesh:validation:self-recursive"
-msgstr "SkinnedRenderer 包含有著「AAO Merge Skinned Mesh」的 SkinnedMeshRenderer！"
+msgstr "SkinnedRenderer 包含著具有「AAO Merge Skinned Mesh」的 SkinnedMeshRenderer！"
 
 msgid "MergeSkinnedMesh:prop:renderers"
 msgstr "Skinned Renderers"
@@ -232,7 +232,7 @@ msgstr "Renderers:"
 msgid "MergeSkinnedMesh:error:mix-normal-existence"
 msgstr ""
 "不支援同時合併有法線和無法線的網格。"
-"請更改模型的匯入設置以包含法線！"
+"請更改模型的匯入設定以包含法線！"
 
 msgid "MergeSkinnedMesh:warning:removeZeroSizedPolygonOnSources"
 msgstr "由於「刪除面積為零的多邊形」功能是後期才進行的，所以對合併後的網格是無效的"
@@ -248,7 +248,7 @@ msgstr "發現以下不同動畫的材質屬性：{0}"
 msgid "MergeSkinnedMesh:warning:material-animation-differently:description"
 msgstr ""
 "合併目標的網格之間，材質的動畫不同。\n"
-"材質的動畫會影響整個網格，因此可能會在非預期的部分應用動畫。\n"
+"材質的動畫會影響整個網格，因此可能會在非預期的部分套用動畫。\n"
 
 msgid "MergeSkinnedMesh:warning:material-animation-differently:hint"
 msgstr ""
@@ -271,10 +271,22 @@ msgid "MergeSkinnedMesh:error:clothOnSources:description"
 msgstr "請移除此 SkinnedMeshRenderers 或移除其 Cloth 元件。"
 
 msgid "MergeSkinnedMesh:warning:no-root-bone"
-msgstr "合併後的網格未設置根骨骼（Root Bone）。這可能導致意外行為。"
+msgstr "合併後的網格未設定根骨骼（Root Bone）。這可能導致意外行為。"
+
+msgid "MergeSkinnedMesh:warning:no-root-bone:description"
+msgstr "MergeSkinnedMesh 不會自動設定合併後網格的 Root Bone。"
+
+msgid "MergeSkinnedMesh:warning:no-root-bone:hint"
+msgstr "你需要手動設定它。如果你有使用 Modular Avatar，可以將 MA Mesh Settings 元件添加到 Avatar 的根部，以設定整個 Avatar 的 Root Bone。"
 
 msgid "MergeSkinnedMesh:warning:no-probe-anchor"
-msgstr "合併後的網格未設置錨點覆蓋（Anchor Override）。這可能導致意外行為。"
+msgstr "合併後的網格未設定錨點覆蓋（Anchor Override）。這可能導致意外行為。"
+
+msgid "MergeSkinnedMesh:warning:no-probe-anchor:description"
+msgstr "MergeSkinnedMesh 不會自動設定合併後網格的 Anchor Override。"
+
+msgid "MergeSkinnedMesh:warning:no-probe-anchor:hint"
+msgstr "你需要手動設定它。如果你有使用 Modular Avatar，可以將 MA Mesh Settings 元件添加到 Avatar 的根部，以設定整個 Avatar 的 Anchor Override。"
 
 # endregion
 
@@ -318,10 +330,10 @@ msgid "RemoveMeshByBlendShape:description"
 msgstr "移除由指定的 BlendShape 移動的頂點及多邊形。"
 
 msgid "RemoveMeshByBlendShape:editor:automaticallySetWeightWhenToggle"
-msgstr "切換 BlendShape 時，自動設置權重值以進行預覽。"
+msgstr "切換 BlendShape 時，自動設定權重值以進行預覽。"
 
 msgid "RemoveMeshByBlendShape:tooltip:automaticallySetWeightWhenToggle"
-msgstr "啟用此選項時，對於切換的 BlendShapes 自動設置權重為 100 或 0。"
+msgstr "啟用此選項時，對於切換的 BlendShapes 自動設定權重為 100 或 0。"
 
 msgid "RemoveMeshByBlendShape:tooltip:automaticallySetWeightWhenToggle:noRenderer"
 msgstr "無法使用此選項，因為找不到 SkinnedMeshRenderer。"
@@ -335,7 +347,7 @@ msgstr "容差"
 msgid "RemoveMeshByBlendShape:tooltip:Tolerance"
 msgstr ""
 "任何選定的 BlendShape 對某個頂點的變形如果超過此值，該頂點將被刪除。\n"
-"如果不希望刪除的頂點被刪除，嘗試增加此值；如果頂點未按照預期刪除，嘗試減少此值。\n"
+"如果有不希望刪除的頂點被刪除，嘗試增加此值；如果頂點未按照預期刪除，嘗試減少此值。\n"
 "此值通常是較小的值。"
 
 msgid "RemoveMeshByBlendShape:button:Check All"
@@ -359,7 +371,7 @@ msgid "RemoveMeshByMask:description"
 msgstr "根據遮罩貼圖刪除指定範圍的多邊形。"
 
 msgid "RemoveMeshByMask:prop:enabled"
-msgstr "應用於第 {0} 個材質槽"
+msgstr "套用於第 {0} 個材質槽"
 
 msgid "RemoveMeshByMask:prop:mask"
 msgstr "遮罩貼圖"
@@ -399,7 +411,7 @@ msgid "MaskTextureEditor:edit"
 msgstr "編輯"
 
 msgid "MaskTextureEditor:title"
-msgstr "AAO MaskTextureEditor"
+msgstr "AAO 遮罩貼圖編輯器"
 
 msgid "MaskTextureEditor:renderer"
 msgstr "Skinned Mesh Renderer"
@@ -489,7 +501,7 @@ msgstr "此元件不適用於「Merge Skinned Mesh」元件。\n"
 # EditorOnlyなメッシュのみから参照されているボーンをEditorOnlyにします
 msgid "UnusedBonesByReferencesTool:description"
 msgstr ""
-"應用 UnusedBonesByReferencesTool (https://narazaka.booth.pm/items/3831781)，作者為 Narazaka\n"
+"套用 UnusedBonesByReferencesTool (https://narazaka.booth.pm/items/3831781)，作者為 Narazaka\n"
 "這個工具將標記引用 EditorOnly 的網格的骨骼為 EditorOnly。"
 
 msgid "UnusedBonesByReferencesTool:prop:preserveEndBone"
@@ -611,8 +623,14 @@ msgstr "「優化 Animator」的大部分功能已不支援 Unity 2019。請考�
 msgid "ApplyObjectMapping:VRCAvatarDescriptor:eyelids BlendShape Removed"
 msgstr "已移除或凍結用於 Eyelids 的 blendShape。"
 
+msgid "ApplyObjectMapping:VRCAvatarDescriptor:eyelids BlendShape Removed:description"
+msgstr "若有 BlendShapes 丟失或未設定，所有 eyelids BlendShapes 將無法運作。"
+
 msgid "ApplyObjectMapping:VRCAvatarDescriptor:viseme BlendShape Removed"
 msgstr "已移除或凍結用於 Viseme 的 blendShape。"
+
+msgid "ApplyObjectMapping:VRCAvatarDescriptor:viseme BlendShape Removed:description"
+msgstr "若有 BlendShapes 丟失或未設定，所有 viseme BlendShapes 將無法運作。"
 
 #endregion
 
@@ -621,20 +639,44 @@ msgstr "已移除或凍結用於 Viseme 的 blendShape。"
 msgid "ComponentInfos:VRCAvatarDescriptor:warning:NoVisemeSkinnedMesh"
 msgstr "未指定用於 LipSync 的 Skinned Mesh Renderer。"
 
+msgid "ComponentInfos:VRCAvatarDescriptor:warning:NoVisemeSkinnedMesh:hint"
+msgstr ""
+"如果你想透過 BlendShapes 啟用 viseme lip sync，應在 Avatar Descriptor 中指定 SkinnedMeshRenderer。\n"
+"如果你不打算透過 BlendShapes 動畫嘴唇，應將 LipSync 更改為其他類型，如 Viseme Parameter Only。"
+
 msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownLipSyncStyle"
 msgstr "指定了未知的 LipSync 類型「{0}」。"
 
+msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownLipSyncStyle:hint"
+msgstr "這通常是一個 Avatar Optimizer 的錯誤。請附上上面的訊息來回報此問題。"
+
 msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownColliderState"
-msgstr "在 {1} 的 Standard Collider 中指定了未知的設置「{0}」。"
+msgstr "在 {1} 的 Standard Collider 中指定了未知的設定「{0}」。"
+
+msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownColliderState:hint"
+msgstr "這通常是一個 Avatar Optimizer 的錯誤。請附上上面的訊息來回報此問題。"
 
 msgid "ComponentInfos:VRCAvatarDescriptor:warning:NoMeshInEyelidsSkinnedMesh"
 msgstr "未指定用於 Eyelids 的 Skinned Mesh Renderer 中的網格（Mesh）。"
 
+msgid "ComponentInfos:VRCAvatarDescriptor:warning:NoMeshInEyelidsSkinnedMesh:hint"
+msgstr ""
+"如果你想用 BlendShapes 來設定 Eyelids，應在 Avatar Descriptor 中指定擁有 Mesh 的 SkinnedMeshRenderer。\n"
+"如果你不打算用 BlendShapes 來設定 Eyelids，應把 Eyelids 更改為其他類型，如 None。"
+
 msgid "ComponentInfos:VRCAvatarDescriptor:warning:NoEyelidsSkinnedMesh"
 msgstr "未指定用於 Eyelids 的 Skinned Mesh Renderer。"
 
+msgid "ComponentInfos:VRCAvatarDescriptor:warning:NoEyelidsSkinnedMesh:hint"
+msgstr ""
+"如果你想用 BlendShapes 來設定 Eyelids，應在 Avatar Descriptor 中指定 SkinnedMeshRenderer 。\n"
+"如果你不打算用 BlendShapes 來設定 Eyelids，應把 Eyelids 更改為其他類型，如 None。"
+
 msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownEyelidType"
 msgstr "指定了未知的 Eyelid 類型：「{0}」。"
+
+msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownEyelidType:description"
+msgstr "這通常是一個 Avatar Optimizer 的錯誤。請附上上面的訊息來回報此問題。"
 
 #endregion
 
@@ -684,7 +726,7 @@ msgstr "自動修復"
 
 msgid "AssetDescription:Description"
 msgstr ""
-"Avatar Optimizer Asset Description is an asset that describe your assets to Avatar Optimizer.\n"
+"Avatar Optimizer Asset Description 是一個向 Avatar Optimizer 解釋你資源的元件。\n"
 "請查看手冊以了解更多詳細資訊。"
 
 msgid "AssetDescription:OpenDocs"
