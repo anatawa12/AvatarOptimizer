@@ -8,12 +8,20 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- AnyState to Entry/Exit optimization in Optimize Animator `#1157`
+  - If AAO found animator layer only with AnyState, AAO tries to convert them to Entry / Exit pattern.
+    - Currently due to implementation there are some patterns that can be convert but but not converted.
+    - We may relax some restriction in the future.
+  - Because we have to check for each condition if we use AnyState but we can check for only one (in best case) with entry/exit, this generally reduces cost for checking an parameter in a state.
+  - Combined with Entry / Exit to 1D BlendTree optimization, which is implemented in previous release, your AnyState layer may be optimized to 1D BlendTree.
 
 ### Changed
 
 ### Deprecated
 
 ### Removed
+- Unity 2019 Support `#1146`
+  - For 2019 users, please use 1.7.x.
 
 ### Fixed
 

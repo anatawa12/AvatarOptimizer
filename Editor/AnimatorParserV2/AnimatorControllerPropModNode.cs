@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using JetBrains.Annotations;
 using nadena.dev.ndmf;
 using UnityEditor.Animations;
 using UnityEngine;
@@ -10,7 +9,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 {
     class HumanoidAnimatorPropModNode : ComponentPropModNode<float, Animator>
     {
-        public HumanoidAnimatorPropModNode([NotNull] Animator component) : base(component)
+        public HumanoidAnimatorPropModNode(Animator component) : base(component)
         {
         }
 
@@ -19,6 +18,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
     }
 
     internal readonly struct PlayableLayerNodeInfo<T> : ILayer<T>
+        where T : notnull
     {
         public AnimatorWeightState Weight { get; }
         public AnimatorLayerBlendingMode BlendingMode { get; }
@@ -28,7 +28,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         IPropModNode ILayer.Node => Node;
 
         public PlayableLayerNodeInfo(AnimatorWeightState weight, AnimatorLayerBlendingMode blendingMode,
-            [NotNull] AnimatorControllerPropModNode<T> node, int layerIndex)
+            AnimatorControllerPropModNode<T> node, int layerIndex)
         {
             Weight = weight;
             BlendingMode = blendingMode;
@@ -36,7 +36,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             Node = node;
         }
         
-        public PlayableLayerNodeInfo([NotNull] AnimatorControllerPropModNode<T> node, int layerIndex)
+        public PlayableLayerNodeInfo(AnimatorControllerPropModNode<T> node, int layerIndex)
         {
             Weight = AnimatorWeightState.AlwaysOne;
             BlendingMode = AnimatorLayerBlendingMode.Override;
@@ -46,13 +46,12 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
     }
 
     class AnimatorPropModNode<T> : ComponentPropModNode<T, Animator>
+        where T : notnull
     {
         private readonly IEnumerable<PlayableLayerNodeInfo<T>> _layersReversed;
 
-        public AnimatorPropModNode(
-            [NotNull] Animator component,
-            [NotNull] IEnumerable<PlayableLayerNodeInfo<T>> layersReversed
-        ) : base(component)
+        public AnimatorPropModNode(Animator component,IEnumerable<PlayableLayerNodeInfo<T>> layersReversed)
+            : base(component)
         {
             _layersReversed = layersReversed;
 
@@ -77,6 +76,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
     }
 
     internal readonly struct AnimatorLayerNodeInfo<T> : ILayer<T>
+        where T : notnull
     {
         public AnimatorWeightState Weight { get; }
         public AnimatorLayerBlendingMode BlendingMode { get; }
@@ -86,7 +86,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         IPropModNode ILayer.Node => Node;
 
         public AnimatorLayerNodeInfo(AnimatorWeightState weight, AnimatorLayerBlendingMode blendingMode,
-            [NotNull] AnimatorLayerPropModNode<T> node, int layerIndex)
+            AnimatorLayerPropModNode<T> node, int layerIndex)
         {
             Weight = weight;
             BlendingMode = blendingMode;
@@ -96,11 +96,11 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
     }
 
     class AnimatorControllerPropModNode<T> : PropModNode<T>
+        where T : notnull
     {
         private readonly IEnumerable<AnimatorLayerNodeInfo<T>> _layersReversed;
 
-        [CanBeNull]
-        public static AnimatorControllerPropModNode<T> Create([NotNull] List<AnimatorLayerNodeInfo<T>> value)
+        public static AnimatorControllerPropModNode<T>? Create(List<AnimatorLayerNodeInfo<T>> value)
         {
             if (value.Count == 0) return null;
             if (value.All(x => x.BlendingMode == AnimatorLayerBlendingMode.Additive && x.Node.Value.IsConstant))
@@ -134,6 +134,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
     }
 
     internal class AnimatorLayerPropModNode<T> : ImmutablePropModNode<T>
+        where T : notnull
     {
         private readonly IEnumerable<AnimatorStatePropModNode<T>> _children;
         private readonly bool _partial;
@@ -155,6 +156,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
     }
 
     internal class AnimatorStatePropModNode<T> : ImmutablePropModNode<T>
+        where T : notnull
     {
         private readonly ImmutablePropModNode<T> _node;
         private readonly AnimatorState _state;

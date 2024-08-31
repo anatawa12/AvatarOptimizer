@@ -679,9 +679,6 @@ msgstr "Automatically Remove Zero Sized Polygons"
 msgid "TraceAndOptimize:OptimizePhysBone:UnknownPhysBoneColliderShape"
 msgstr "Unknown PhysBone Collider Shape '{0}' is specified."
 
-msgid "TraceAndOptimize:OptimizeAnimator:Unity2019"
-msgstr "Most features of Optimize Animator is not supported on Unity 2019. Please consider use Unity 2021 or later."
-
 # endregion
 
 #region ApplyObjectMapping

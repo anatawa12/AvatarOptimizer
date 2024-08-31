@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using JetBrains.Annotations;
 using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEditor.Animations;
@@ -11,7 +11,7 @@ using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 {
-     interface IPropModNode
+    interface IPropModNode
     {
         bool AppliedAlways { get; }
     }
@@ -27,11 +27,13 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
     /// Most nodes are immutable but some nodes are mutable.
     /// </summary>
     internal abstract class PropModNode<T> : IErrorContext, IPropModNode
+        where T : notnull
     {
         /// <summary>
         /// Returns true if this node is always applied. For inactive nodes, this returns false.
         /// </summary>
         public abstract bool AppliedAlways { get; }
+
         public abstract ValueInfo<T> Value { get; }
         public abstract IEnumerable<ObjectReference> ContextReferences { get; }
     }
@@ -41,27 +43,27 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
     /// </summary>
     // by design, this struct doesn't handle blending between two states.
     internal readonly struct ValueInfo<T>
+        where T : notnull
     {
         public bool IsConstant => _possibleValues != null && _possibleValues.Length == 1;
-        [CanBeNull] private readonly T[] _possibleValues;
+        private readonly T[]? _possibleValues;
 
         public T ConstantValue
         {
             get
             {
                 if (!IsConstant) throw new InvalidOperationException("Not Constant");
-                Debug.Assert(_possibleValues != null, nameof(_possibleValues) + " != null");
-                return _possibleValues[0];
+                return _possibleValues![0]; // non constant => there is value
             }
         }
 
-        [CanBeNull] public T[] PossibleValues => _possibleValues;
+        public T[]? PossibleValues => _possibleValues;
 
         public static ValueInfo<T> Variable => default;
 
         public ValueInfo(T value) => _possibleValues = new[] { value };
 
-        public ValueInfo([NotNull] T[] possibleValues)
+        public ValueInfo(T[] possibleValues)
         {
             if (possibleValues == null) throw new ArgumentNullException(nameof(possibleValues));
             if (possibleValues.Length == 0)
@@ -71,7 +73,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             _possibleValues = possibleValues;
         }
 
-        public bool TryGetConstantValue(out T o)
+        public bool TryGetConstantValue([NotNullWhen(true)] out T? o)
         {
             if (IsConstant)
             {
@@ -92,9 +94,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
         public override bool Equals(object obj) => obj is ValueInfo<T> other && Equals(other);
 
-        public override int GetHashCode() => _possibleValues == null
-            ? 0
-            : _possibleValues.Aggregate(0, (current, value) => current ^ value.GetHashCode());
+        public override int GetHashCode() => _possibleValues == null ? 0 : _possibleValues.GetSetHashCode();
 
         public override string ToString() =>
             _possibleValues == null
@@ -104,7 +104,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
     internal static class NodeImplUtils
     {
-        public static bool SetEquals<T>(T[] a, T[] b)
+        public static bool SetEquals<T>(T[]? a, T[]? b)
         {
             if (a == null && b == null) return true;
             if (a == null || b == null) return false;
@@ -112,7 +112,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             return new HashSet<T>(a).SetEquals(b);
         }
 
-        public static ValueInfo<T> ConstantInfoForSideBySide<T>(IEnumerable<PropModNode<T>> nodes)
+        public static ValueInfo<T> ConstantInfoForSideBySide<T>(IEnumerable<PropModNode<T>> nodes) where T : notnull
         {
             using (var enumerator = nodes.GetEnumerator())
             {
@@ -136,6 +136,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         }
 
         public static bool AlwaysAppliedForOverriding<T, TLayer>(IEnumerable<TLayer> layersReversed)
+            where T : notnull
             where TLayer : ILayer<T>
         {
             return layersReversed.Any(x =>
@@ -144,6 +145,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         }
 
         public static ValueInfo<T> ConstantInfoForOverriding<T, TLayer>(IEnumerable<TLayer> layersReversed)
+            where T : notnull
             where TLayer : ILayer<T>
         {
             var allPossibleValues = new HashSet<T>();
@@ -183,7 +185,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         }
 
         public static IEnumerable<TLayer> WhileApplied<TLayer>(this IEnumerable<TLayer> layer)
-        where TLayer : ILayer
+            where TLayer : ILayer
         {
             foreach (var layerInfo in layer)
             {
@@ -201,6 +203,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
     }
 
     internal interface ILayer<T> : ILayer
+        where T : notnull
     {
         new AnimatorWeightState Weight { get; }
         new AnimatorLayerBlendingMode BlendingMode { get; }
@@ -208,6 +211,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
     }
 
     internal sealed class RootPropModNode<T> : PropModNode<T>, IErrorContext
+        where T : notnull
     {
         internal readonly struct ComponentInfo
         {
@@ -230,7 +234,10 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         public IEnumerable<ComponentInfo> Children => _children;
 
         public override bool AppliedAlways => _children.All(x => x.AppliedAlways);
-        public override IEnumerable<ObjectReference> ContextReferences => _children.SelectMany(x => x.ContextReferences);
+
+        public override IEnumerable<ObjectReference> ContextReferences =>
+            _children.SelectMany(x => x.ContextReferences);
+
         public override ValueInfo<T> Value => NodeImplUtils.ConstantInfoForSideBySide(_children.Select(x => x.Node));
 
         public bool IsEmpty => _children.Count == 0;
@@ -243,8 +250,8 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             _children.Add(new ComponentInfo(node, alwaysApplied));
             DestroyTracker.Track(node.Component, OnDestroy);
         }
-        
-        public void Add([NotNull] RootPropModNode<T> toAdd)
+
+        public void Add(RootPropModNode<T> toAdd)
         {
             if (toAdd == null) throw new ArgumentNullException(nameof(toAdd));
             foreach (var child in toAdd._children)
@@ -263,20 +270,20 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             _children.Clear();
         }
 
-        [CanBeNull] public RootPropModNode<T> Normalize() => IsEmpty ? null : this;
+        public RootPropModNode<T>? Normalize() => IsEmpty ? null : this;
     }
 
     internal abstract class ImmutablePropModNode<T> : PropModNode<T>
+        where T : notnull
     {
     }
 
     internal class FloatAnimationCurveNode : ImmutablePropModNode<float>
     {
-        [NotNull] public AnimationCurve Curve { get; }
-        [NotNull] public AnimationClip Clip { get; }
+        public AnimationCurve Curve { get; }
+        public AnimationClip Clip { get; }
 
-        [CanBeNull]
-        public static FloatAnimationCurveNode Create([NotNull] AnimationClip clip, EditorCurveBinding binding)
+        public static FloatAnimationCurveNode? Create(AnimationClip clip, EditorCurveBinding binding)
         {
             var curve = AnimationUtility.GetEditorCurve(clip, binding);
             if (curve == null) return null;
@@ -284,7 +291,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             return new FloatAnimationCurveNode(clip, curve);
         }
 
-        private FloatAnimationCurveNode([NotNull] AnimationClip clip, [NotNull] AnimationCurve curve)
+        private FloatAnimationCurveNode(AnimationClip clip, AnimationCurve curve)
         {
             if (!clip) throw new ArgumentNullException(nameof(clip));
             if (curve == null) throw new ArgumentNullException(nameof(curve));
@@ -298,7 +305,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
         public override bool AppliedAlways => true;
         public override ValueInfo<float> Value => _constantInfo.Value;
-        public override IEnumerable<ObjectReference> ContextReferences => new []{ ObjectRegistry.GetReference(Clip) };
+        public override IEnumerable<ObjectReference> ContextReferences => new[] { ObjectRegistry.GetReference(Clip) };
 
         private static ValueInfo<float> ParseProperty(AnimationCurve curve)
         {
@@ -328,8 +335,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         public ObjectReferenceKeyframe[] Frames { get; set; }
         public AnimationClip Clip { get; }
 
-        [CanBeNull]
-        public static ObjectAnimationCurveNode Create([NotNull] AnimationClip clip, EditorCurveBinding binding)
+        public static ObjectAnimationCurveNode? Create(AnimationClip clip, EditorCurveBinding binding)
         {
             var curve = AnimationUtility.GetObjectReferenceCurve(clip, binding);
             if (curve == null) return null;
@@ -350,18 +356,19 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
         public override bool AppliedAlways => true;
         public override ValueInfo<Object> Value => _constantInfo.Value;
-        public override IEnumerable<ObjectReference> ContextReferences => new []{ ObjectRegistry.GetReference(Clip) };
+        public override IEnumerable<ObjectReference> ContextReferences => new[] { ObjectRegistry.GetReference(Clip) };
 
         private static ValueInfo<Object> ParseProperty(ObjectReferenceKeyframe[] frames) =>
             new ValueInfo<Object>(frames.Select(x => x.value).Distinct().ToArray());
     }
 
     internal struct BlendTreeElement<T>
+        where T : notnull
     {
         public int Index;
         public ImmutablePropModNode<T> Node;
 
-        public BlendTreeElement(int index, [NotNull] ImmutablePropModNode<T> node)
+        public BlendTreeElement(int index, ImmutablePropModNode<T> node)
         {
             Index = index;
             Node = node ?? throw new ArgumentNullException(nameof(node));
@@ -369,12 +376,14 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
     }
 
     internal class BlendTreeNode<T> : ImmutablePropModNode<T>
+        where T : notnull
     {
         private readonly List<BlendTreeElement<T>> _children;
         private readonly BlendTreeType _blendTreeType;
         private readonly bool _partial;
 
-        public BlendTreeNode([NotNull] List<BlendTreeElement<T>> children, BlendTreeType blendTreeType, bool partial)
+        public BlendTreeNode(List<BlendTreeElement<T>> children,
+            BlendTreeType blendTreeType, bool partial)
         {
             // expected to pass list or array
             // ReSharper disable once PossibleMultipleEnumeration
@@ -389,6 +398,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         private bool WeightSumIsOne => _blendTreeType != BlendTreeType.Direct;
         public IReadOnlyList<BlendTreeElement<T>> Children => _children;
         public override bool AppliedAlways => WeightSumIsOne && !_partial && _children.All(x => x.Node.AppliedAlways);
+
         public override ValueInfo<T> Value => !WeightSumIsOne
             ? ValueInfo<T>.Variable
             : NodeImplUtils.ConstantInfoForSideBySide(_children.Select(x => x.Node));
@@ -398,8 +408,9 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
     }
 
     abstract class ComponentPropModNodeBase<T> : PropModNode<T>
+        where T : notnull
     {
-        protected ComponentPropModNodeBase([NotNull] Component component)
+        protected ComponentPropModNodeBase(Component component)
         {
             if (!component) throw new ArgumentNullException(nameof(component));
             Component = component;
@@ -407,13 +418,15 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
         public Component Component { get; }
 
-        public override IEnumerable<ObjectReference> ContextReferences => new [] { ObjectRegistry.GetReference(Component) };
+        public override IEnumerable<ObjectReference> ContextReferences =>
+            new[] { ObjectRegistry.GetReference(Component) };
     }
 
     abstract class ComponentPropModNode<T, TComponent> : ComponentPropModNodeBase<T>
+        where T : notnull
         where TComponent : Component
     {
-        protected ComponentPropModNode([NotNull] TComponent component) : base(component)
+        protected ComponentPropModNode(TComponent component) : base(component)
         {
             if (!component) throw new ArgumentNullException(nameof(component));
             Component = component;
@@ -421,12 +434,14 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
         public new TComponent Component { get; }
 
-        public override IEnumerable<ObjectReference> ContextReferences => new [] { ObjectRegistry.GetReference(Component) };
+        public override IEnumerable<ObjectReference> ContextReferences =>
+            new[] { ObjectRegistry.GetReference(Component) };
     }
 
     class VariableComponentPropModNode<T> : ComponentPropModNode<T, Component>
+        where T : notnull
     {
-        public VariableComponentPropModNode([NotNull] Component component) : base(component)
+        public VariableComponentPropModNode(Component component) : base(component)
         {
         }
 
@@ -435,10 +450,11 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
     }
 
     class AnimationComponentPropModNode<T> : ComponentPropModNode<T, Animation>
+        where T : notnull
     {
         public ImmutablePropModNode<T> Animation { get; }
 
-        public AnimationComponentPropModNode([NotNull] Animation component, ImmutablePropModNode<T> animation) : base(component)
+        public AnimationComponentPropModNode(Animation component, ImmutablePropModNode<T> animation) : base(component)
         {
             Animation = animation;
             _constantInfo = new Lazy<ValueInfo<T>>(() => animation.Value, isThreadSafe: false);

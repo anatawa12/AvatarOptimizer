@@ -1,13 +1,8 @@
 using UnityEditor;
 using UnityEngine;
 
-#if AAO_VRCSDK3_AVATARS
-using VRC.SDK3.Avatars.Components;
-#endif
-
 namespace Anatawa12.AvatarOptimizer
 {
-    [InitializeOnLoad]
     abstract class AvatarGlobalComponentEditorBase : AvatarTagComponentEditorBase
     {
         protected override void OnInspectorGUIInner()

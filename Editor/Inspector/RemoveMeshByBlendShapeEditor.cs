@@ -7,9 +7,9 @@ namespace Anatawa12.AvatarOptimizer
     [CustomEditor(typeof(RemoveMeshByBlendShape))]
     internal class RemoveMeshByBlendShapeEditor : AvatarTagComponentEditorBase
     {
-        private PrefabSafeSet.EditorUtil<string> _shapeKeysSet;
-        private SerializedProperty _toleranceProp;
-        private SkinnedMeshRenderer _renderer;
+        private PrefabSafeSet.EditorUtil<string> _shapeKeysSet = null!; // initialized in OnEnable
+        private SerializedProperty _toleranceProp = null!; // initialized in OnEnable
+        private SkinnedMeshRenderer? _renderer;
         public bool automaticallySetWeightWhenToggle;
 
         private void OnEnable()
@@ -31,7 +31,7 @@ namespace Anatawa12.AvatarOptimizer
 
             EditModePreview.MeshPreviewController.ShowPreviewControl(component);
 
-            if (!_renderer)
+            if (_renderer == null)
             {
                 EditorGUI.BeginDisabledGroup(true);
                 EditorGUILayout.ToggleLeft(
@@ -86,7 +86,7 @@ namespace Anatawa12.AvatarOptimizer
                     if (existence != element.Contains)
                     {
                         element.SetExistence(existence);
-                        if (automaticallySetWeightWhenToggle)
+                        if (automaticallySetWeightWhenToggle && _renderer != null)
                         {
                             var shapeIndex = _renderer.sharedMesh.GetBlendShapeIndex(shapeKeyName);
                             if (shapeIndex != -1)

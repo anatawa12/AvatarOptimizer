@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.Animations;
 using Object = UnityEngine.Object;
@@ -39,15 +38,17 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
                 OnBeforeSerializeImplType =
-                    assembly.GetType("Anatawa12.AvatarOptimizer.PrefabSafeSet.OnBeforeSerializeImpl`2");
+                    assembly.GetType("Anatawa12.AvatarOptimizer.PrefabSafeSet.OnBeforeSerializeImpl`1");
                 if (OnBeforeSerializeImplType != null) return;
             }
+            if (OnBeforeSerializeImplType == null)
+                throw new InvalidOperationException("OnBeforeSerializeImpl`1 not found");
         }
 
-        public static MethodInfo GetOnBeforeSerializeCallbackMethod(Type tType, Type tLayerType, Type setType)
+        public static MethodInfo GetOnBeforeSerializeCallbackMethod(Type tType, Type setType)
         {
-            var implType = OnBeforeSerializeImplType.MakeGenericType(tType, tLayerType);
-            return implType.GetMethod("Impl", BindingFlags.Public | BindingFlags.Static, null, new[] { setType }, null);
+            var implType = OnBeforeSerializeImplType.MakeGenericType(tType);
+            return implType.GetMethod("Impl", BindingFlags.Public | BindingFlags.Static, null, new[] { setType }, null)!;
         }
 #endif
     }
@@ -68,23 +69,22 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
     /// using array will make prefab modifications too big so I made this class
     /// </summary>
     /// <typeparam name="T">Element Type</typeparam>
-    /// <typeparam name="TLayer">Layer Type</typeparam>
     [NotKeyable, Serializable]
-    public class PrefabSafeSet<T, TLayer> : PrefabSafeSetApi<T>, ISerializationCallbackReceiver where TLayer : PrefabLayer<T>, new()
+    public class PrefabSafeSet<T> : PrefabSafeSetApi<T>, ISerializationCallbackReceiver
     {
         [SerializeField] internal T[] mainSet = Array.Empty<T>();
-        [SerializeField] internal TLayer[] prefabLayers = Array.Empty<TLayer>();
+        [SerializeField] internal PrefabLayer<T>[] prefabLayers = Array.Empty<PrefabLayer<T>>();
 
 #if UNITY_EDITOR
-        [SerializeField, HideInInspector] internal T fakeSlot;
+        [SerializeField, HideInInspector] internal T? fakeSlot;
         internal readonly Object OuterObject;
-        internal T[] CheckedCurrentLayerRemoves;
-        internal T[] CheckedCurrentLayerAdditions;
+        internal T[]? CheckedCurrentLayerRemoves;
+        internal T[]? CheckedCurrentLayerAdditions;
         private static MethodInfo _onBeforeSerializeCallback = PrefabSafeSetRuntimeUtil
-            .GetOnBeforeSerializeCallbackMethod(typeof(T), typeof(TLayer), typeof(PrefabSafeSet<T, TLayer>));
+            .GetOnBeforeSerializeCallbackMethod(typeof(T), typeof(PrefabSafeSet<T>));
 #endif
 
-        protected PrefabSafeSet(Object outerObject)
+        public PrefabSafeSet(Object outerObject)
         {
 #if UNITY_EDITOR
             // I don't know why but Unity 2022 reports `this == null` in constructor of MonoBehaviour may be false
@@ -102,7 +102,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                 throw new InvalidOperationException("You cannot set value to Prefab Instance or Prefab");
 #endif
             // in some (rare) cases, unpacked prefab may have prefabLayers so we need to clear it. 
-            prefabLayers = Array.Empty<TLayer>();
+            prefabLayers = Array.Empty<PrefabLayer<T>>();
             mainSet = values.ToArray();
         }
 
@@ -124,7 +124,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
         }
 
 #if UNITY_EDITOR
-        private (HashSet<T>, TLayer) GetBaseSetAndLayer(int nestCount)
+        private (HashSet<T>, PrefabLayer<T>) GetBaseSetAndLayer(int nestCount)
         {
             if (prefabLayers.Length < nestCount)
                 PrefabSafeSetRuntimeUtil.ResizeArray(ref prefabLayers, nestCount);
@@ -256,7 +256,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
         [SerializeField] internal T[] removes = Array.Empty<T>();
         [SerializeField] internal T[] additions = Array.Empty<T>();
 
-        public void ApplyTo(HashSet<T> result, [CanBeNull] List<T> list = null)
+        public void ApplyTo(HashSet<T> result, List<T>? list = null)
         {
             foreach (var remove in removes)
                 if (remove.IsNotNull() && result.Remove(remove))
@@ -269,8 +269,8 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
     
     internal readonly struct ListSet<T>
     {
-        [NotNull] private readonly List<T> _list;
-        [NotNull] private readonly HashSet<T> _set;
+        private readonly List<T> _list;
+        private readonly HashSet<T> _set;
         public ListSet(T[] initialize)
         {
             _list = new List<T>(initialize);

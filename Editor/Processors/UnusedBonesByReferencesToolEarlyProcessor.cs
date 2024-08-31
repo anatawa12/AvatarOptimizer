@@ -74,8 +74,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                         else
                         {
                             boneHierarchy.Add(bone,
-                                new BoneReference
-                                    { Bone = bone, References = new HashSet<Transform> { renderer.transform } });
+                                new BoneReference(bone) { References = new HashSet<Transform> { renderer.transform } });
                         }
                     }
                 }
@@ -114,6 +113,11 @@ namespace Anatawa12.AvatarOptimizer.Processors
             public HashSet<Transform> References = new HashSet<Transform>();
             public bool HasExtraChild = false;
 
+            public BoneReference(Transform bone)
+            {
+                Bone = bone;
+            }
+
             public bool ReferencesAllEditorOnly
             {
                 get => References.All(t => t.CompareTag(EditorOnlyTag));
@@ -137,12 +141,12 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
         public class UnusedBonesByReferences
         {
-            public IList<BoneReference> BoneReferences { get; set; }
+            public IList<BoneReference> BoneReferences { get; set; } = null!; // Initialized later
             public bool PreserveEndBone { get; set; }
 
-            public HashSet<Transform> UnusedBones { get; private set; }
-            public HashSet<Transform> DisabledBones { get; private set; }
-            public HashSet<Transform> ForceEnabledBones { get; private set; }
+            public HashSet<Transform> UnusedBones { get; private set; } = null!; // Initialized later
+            public HashSet<Transform> DisabledBones { get; private set; } = null!; // Initialized later
+            public HashSet<Transform> ForceEnabledBones { get; private set; } = null!; // Initialized later
 
             public static UnusedBonesByReferences Make(IList<BoneReference> boneReferences,
                 bool preserveEndBone = false)

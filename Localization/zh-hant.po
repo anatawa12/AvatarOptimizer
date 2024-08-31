@@ -613,9 +613,6 @@ msgstr "自動移除面積為零的多邊形"
 msgid "TraceAndOptimize:OptimizePhysBone:UnknownPhysBoneColliderShape"
 msgstr "指定了未知的 PhysBone Collider 形狀：「{0}」。"
 
-msgid "TraceAndOptimize:OptimizeAnimator:Unity2019"
-msgstr "「優化 Animator」的大部分功能已不支援 Unity 2019。請考慮使用 Unity 2021 或更高版本。"
-
 # endregion
 
 #region ApplyObjectMapping

@@ -77,9 +77,9 @@ namespace Anatawa12.AvatarOptimizer.ndmf
                         ;
                 });
 
-#if UNITY_2021_3_OR_NEWER
             // animator optimizer is written in newer C# so requires 2021.3 or newer 
             mainSequence.Run(Processors.AnimatorOptimizer.InitializeAnimatorOptimizer.Instance)
+                .Then.Run(Processors.AnimatorOptimizer.AnyStateToEntryExit.Instance)
 #if AAO_VRCSDK3_AVATARS
                 // EntryExit to BlendTree optimization heavily depends on VRChat's behavior
                 .Then.Run(Processors.AnimatorOptimizer.EntryExitToBlendTree.Instance)
@@ -87,7 +87,6 @@ namespace Anatawa12.AvatarOptimizer.ndmf
                 .Then.Run(Processors.AnimatorOptimizer.MergeBlendTreeLayer.Instance)
                 .Then.Run(Processors.AnimatorOptimizer.RemoveMeaninglessLayer.Instance)
                 ;
-#endif
         }
 
         protected override void OnUnhandledException(Exception e)

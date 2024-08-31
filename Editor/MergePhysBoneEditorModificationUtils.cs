@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using JetBrains.Annotations;
 using UnityEditor;
 using VRC.Dynamics;
 using Object = UnityEngine.Object;
@@ -14,56 +13,56 @@ namespace Anatawa12.AvatarOptimizer
     {
         // ReSharper disable MemberCanBePrivate.Global
         private readonly SerializedObject _serializedObject;
-        private SerializedObject _sourcePhysBone;
+        private SerializedObject? _sourcePhysBone;
         protected readonly SerializedProperty MakeParent;
         private readonly List<PropBase> _props = new List<PropBase>();
             
-        [NotNull] protected readonly ValueConfigProp Version;
+        protected readonly ValueConfigProp Version;
 
         #region == Transform ==
         // rootTransform
         // ignoreTransforms
-        [NotNull] protected readonly EndpointPositionConfigProp EndpointPosition;
+        protected readonly EndpointPositionConfigProp EndpointPosition;
         // multiChildType
         #endregion
 
         #region == Forces ==
-        [NotNull] protected readonly ValueConfigProp IntegrationType;
-        [NotNull] protected readonly CurveConfigProp Pull;
+        protected readonly ValueConfigProp IntegrationType;
+        protected readonly CurveConfigProp Pull;
         // spring a.k.a. Momentum
-        [NotNull] protected readonly CurveConfigProp Spring;
-        [NotNull] protected readonly CurveConfigProp Stiffness;
-        [NotNull] protected readonly CurveConfigProp Gravity;
-        [NotNull] protected readonly CurveConfigProp GravityFalloff;
-        [NotNull] protected readonly ValueConfigProp ImmobileType;
-        [NotNull] protected readonly CurveConfigProp Immobile;
+        protected readonly CurveConfigProp Spring;
+        protected readonly CurveConfigProp Stiffness;
+        protected readonly CurveConfigProp Gravity;
+        protected readonly CurveConfigProp GravityFalloff;
+        protected readonly ValueConfigProp ImmobileType;
+        protected readonly CurveConfigProp Immobile;
         #endregion
         #region == Limits ==
-        [NotNull] protected readonly ValueConfigProp LimitType;
-        [NotNull] protected readonly CurveConfigProp MaxAngleX;
-        [NotNull] protected readonly CurveConfigProp MaxAngleZ;
-        [NotNull] protected readonly CurveVector3ConfigProp LimitRotation;
+        protected readonly ValueConfigProp LimitType;
+        protected readonly CurveConfigProp MaxAngleX;
+        protected readonly CurveConfigProp MaxAngleZ;
+        protected readonly CurveVector3ConfigProp LimitRotation;
         #endregion
         #region == Collision ==
-        [NotNull] protected readonly CurveConfigProp Radius;
-        [NotNull] protected readonly PermissionConfigProp AllowCollision;
-        [NotNull] protected readonly CollidersConfigProp Colliders;
+        protected readonly CurveConfigProp Radius;
+        protected readonly PermissionConfigProp AllowCollision;
+        protected readonly CollidersConfigProp Colliders;
         #endregion
         #region == Stretch & Squish ==
-        [NotNull] protected readonly CurveConfigProp StretchMotion;
-        [NotNull] protected readonly CurveConfigProp MaxStretch;
-        [NotNull] protected readonly CurveConfigProp MaxSquish;
+        protected readonly CurveConfigProp StretchMotion;
+        protected readonly CurveConfigProp MaxStretch;
+        protected readonly CurveConfigProp MaxSquish;
         #endregion
         #region == Grab & Pose ==
-        [NotNull] protected readonly PermissionConfigProp AllowGrabbing;
-        [NotNull] protected readonly PermissionConfigProp AllowPosing;
-        [NotNull] protected readonly ValueConfigProp GrabMovement;
-        [NotNull] protected readonly ValueConfigProp SnapToHand;
+        protected readonly PermissionConfigProp AllowGrabbing;
+        protected readonly PermissionConfigProp AllowPosing;
+        protected readonly ValueConfigProp GrabMovement;
+        protected readonly ValueConfigProp SnapToHand;
         #endregion
         #region == Options ==
-        [NotNull] protected readonly NoOverrideValueConfigProp Parameter;
-        [NotNull] protected readonly NoOverrideValueConfigProp IsAnimated;
-        [NotNull] protected readonly ValueConfigProp ResetWhenDisabled;
+        protected readonly NoOverrideValueConfigProp Parameter;
+        protected readonly NoOverrideValueConfigProp IsAnimated;
+        protected readonly ValueConfigProp ResetWhenDisabled;
         #endregion
 
         protected readonly PrefabSafeSet.EditorUtil<VRCPhysBoneBase> ComponentsSetEditorUtil;
@@ -268,9 +267,9 @@ namespace Anatawa12.AvatarOptimizer
             }
         }
 
-        protected SerializedProperty GetSourceProperty(string name) => _sourcePhysBone.FindProperty(name);
+        protected SerializedProperty GetSourceProperty(string name) => _sourcePhysBone!.FindProperty(name);
 
-        protected IEnumerable<VRCPhysBoneBase> SourcePhysBones => _sourcePhysBone.targetObjects.Cast<VRCPhysBoneBase>();
+        protected IEnumerable<VRCPhysBoneBase> SourcePhysBones => _sourcePhysBone!.targetObjects.Cast<VRCPhysBoneBase>();
 
         protected abstract void BeginPbConfig();
 
@@ -293,29 +292,28 @@ namespace Anatawa12.AvatarOptimizer
 
         protected abstract void UnsupportedPbVersion();
 
-        protected abstract void PbVersionProp([NotNull] string label, [NotNull] ValueConfigProp prop, bool forceOverride = false);
+        protected abstract void PbVersionProp(string label, ValueConfigProp prop, bool forceOverride = false);
 
-        protected abstract void PbProp([NotNull] string label, [NotNull] ValueConfigProp prop, bool forceOverride = false);
+        protected abstract void PbProp(string label, ValueConfigProp prop, bool forceOverride = false);
 
-        protected abstract void PbCurveProp([NotNull] string label, [NotNull] CurveConfigProp prop, bool forceOverride = false);
+        protected abstract void PbCurveProp(string label, CurveConfigProp prop, bool forceOverride = false);
 
-        protected abstract void PbPermissionProp([NotNull] string label, [NotNull] PermissionConfigProp prop, bool forceOverride = false);
+        protected abstract void PbPermissionProp(string label, PermissionConfigProp prop, bool forceOverride = false);
 
-        protected abstract void Pb3DCurveProp([NotNull] string label,
-            [NotNull] string pbXCurveLabel,
-            [NotNull] string pbYCurveLabel,
-            [NotNull] string pbZCurveLabel,
-            [NotNull] CurveVector3ConfigProp prop,
+        protected abstract void Pb3DCurveProp(string label,
+            string pbXCurveLabel,
+            string pbYCurveLabel,
+            string pbZCurveLabel,
+            CurveVector3ConfigProp prop,
             bool forceOverride = false);
 
-        protected abstract void CollidersProp([NotNull] string label,
-            [NotNull] CollidersConfigProp prop);
+        protected abstract void CollidersProp(string label, CollidersConfigProp prop);
         
         protected abstract class PropBase
         {
             public readonly SerializedProperty RootProperty;
 
-            public PropBase([NotNull] SerializedProperty rootProperty)
+            public PropBase(SerializedProperty rootProperty)
             {
                 RootProperty = rootProperty ?? throw new ArgumentNullException(nameof(rootProperty));
             }
@@ -329,7 +327,7 @@ namespace Anatawa12.AvatarOptimizer
 
             public bool IsOverride => IsOverrideProperty.boolValue;
 
-            public OverridePropBase([NotNull] SerializedProperty rootProperty) : base(rootProperty)
+            public OverridePropBase(SerializedProperty rootProperty) : base(rootProperty)
             {
                 IsOverrideProperty = rootProperty.FindPropertyRelative("override");
             }
@@ -340,12 +338,12 @@ namespace Anatawa12.AvatarOptimizer
         {
             public readonly SerializedProperty OverrideProperty;
             public readonly SerializedProperty ValueProperty;
-            public SerializedProperty PhysBoneValue { get; private set; } 
+            public SerializedProperty? PhysBoneValue { get; private set; } 
             public readonly string PhysBoneValueName;
 
             public CollidersConfigProp(
-                [NotNull] SerializedProperty rootProperty, 
-                [NotNull] string physBoneValueName) : base(rootProperty)
+                SerializedProperty rootProperty, 
+                string physBoneValueName) : base(rootProperty)
             {
                 OverrideProperty = rootProperty.FindPropertyRelative("override");
                 ValueProperty = rootProperty.FindPropertyRelative("value");
@@ -363,12 +361,12 @@ namespace Anatawa12.AvatarOptimizer
         {
             public readonly SerializedProperty OverrideProperty;
             public readonly SerializedProperty ValueProperty;
-            public SerializedProperty PhysBoneValue { get; private set; } 
+            public SerializedProperty? PhysBoneValue { get; private set; } 
             public readonly string PhysBoneValueName;
 
             public EndpointPositionConfigProp(
-                [NotNull] SerializedProperty rootProperty, 
-                [NotNull] string physBoneValueName) : base(rootProperty)
+                SerializedProperty rootProperty, 
+                string physBoneValueName) : base(rootProperty)
             {
                 OverrideProperty = rootProperty.FindPropertyRelative("override");
                 ValueProperty = rootProperty.FindPropertyRelative("value");
