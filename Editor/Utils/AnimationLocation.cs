@@ -112,7 +112,7 @@ namespace Anatawa12.AvatarOptimizer
             hashCode.Add(AnimatorState);
             foreach (var location in BlendTreeLocation)
                 hashCode.Add(location);
-            hashCode.Add(Curve);
+            hashCode.Add(Curve.GetHashCode2());
             return hashCode.ToHashCode();
         }
 
