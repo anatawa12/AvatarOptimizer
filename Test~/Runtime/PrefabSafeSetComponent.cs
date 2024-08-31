@@ -4,11 +4,11 @@ namespace Anatawa12.AvatarOptimizer.Test.Runtime
 {
     public class PrefabSafeSetComponent : MonoBehaviour
     {
-        public PrefabSafeSet.StringSet stringSet;
+        public PrefabSafeSet.PrefabSafeSet<string> stringSet;
 
         public PrefabSafeSetComponent()
         {
-            stringSet = new PrefabSafeSet.StringSet(this);
+            stringSet = new PrefabSafeSet.PrefabSafeSet<string>(this);
         }
     }
 }

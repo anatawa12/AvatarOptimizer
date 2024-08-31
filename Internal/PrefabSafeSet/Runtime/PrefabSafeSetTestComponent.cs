@@ -14,7 +14,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
         }
 
         [Serializable]
-        internal class MaterialsSet : PrefabSafeSet.PrefabSafeSet<Material, MaterialsLayer>
+        internal class MaterialsSet : PrefabSafeSet.PrefabSafeSet<Material>
         {
             public MaterialsSet(Object outerObject) : base(outerObject)
             {

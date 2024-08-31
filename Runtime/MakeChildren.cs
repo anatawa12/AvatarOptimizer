@@ -11,11 +11,11 @@ namespace Anatawa12.AvatarOptimizer
         [NotKeyable, AAOLocalized("MakeChildren:prop:executeEarly", "MakeChildren:tooltip:executeEarly")]
         public bool executeEarly;
         [NotKeyable, AAOLocalized("MakeChildren:prop:children")]
-        public PrefabSafeSet.TransformSet children;
+        public PrefabSafeSet.PrefabSafeSet<Transform> children;
 
         internal MakeChildren()
         {
-            children = new PrefabSafeSet.TransformSet(this);
+            children = new PrefabSafeSet.PrefabSafeSet<Transform>(this);
         }
     }
 }
