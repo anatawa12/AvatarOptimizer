@@ -27,7 +27,7 @@ public class MergeSkinnedMeshTest
         var merged = mergedGameObject.AddComponent<MergeSkinnedMesh>();
 
         merged.copyEnablementAnimation = true;
-        merged.renderersSet.AddRange(new[] {renderer0, renderer1});
+        merged.renderersSet.AddRange(new[] { renderer0, renderer1 });
 
         mergedRenderer.rootBone = mergedRenderer.transform;
         mergedRenderer.probeAnchor = mergedRenderer.transform;
@@ -55,7 +55,10 @@ public class MergeSkinnedMeshTest
         context.GetMappingBuilder()
             .ImportModifications(new AnimatorParser(true).GatherAnimationModifications(context));
 
-        new MergeSkinnedMeshProcessor(merged).Process(context, context.GetMeshInfoFor(mergedRenderer));
+        LogTestUtility.Test(_ =>
+        {
+            new MergeSkinnedMeshProcessor(merged).Process(context, context.GetMeshInfoFor(mergedRenderer));
+        });
 
         var mapping = context.GetMappingBuilder().BuildObjectMapping();
         var animatorMapper = mapping.CreateAnimationMapper(avatar);
@@ -63,7 +66,7 @@ public class MergeSkinnedMeshTest
 
         Assert.That(mapped, Is.Not.Null.And.Contains((merged.name, typeof(SkinnedMeshRenderer), "m_Enabled")));
     }
-    
+
     [Test]
     public void CopySourceAnimationErrorMergedEnablementAnimated()
     {
@@ -80,7 +83,7 @@ public class MergeSkinnedMeshTest
         var merged = mergedGameObject.AddComponent<MergeSkinnedMesh>();
 
         merged.copyEnablementAnimation = true;
-        merged.renderersSet.AddRange(new[] {renderer0, renderer1});
+        merged.renderersSet.AddRange(new[] { renderer0, renderer1 });
 
         mergedRenderer.rootBone = mergedRenderer.transform;
         mergedRenderer.probeAnchor = mergedRenderer.transform;
@@ -113,14 +116,15 @@ public class MergeSkinnedMeshTest
         context.GetMappingBuilder()
             .ImportModifications(new AnimatorParser(true).GatherAnimationModifications(context));
 
-        using (var scope = BuildLogTestSupport.CaptureLog())
+        LogTestUtility.Test(scope =>
         {
-            scope.ExpectError(ErrorSeverity.Error, "MergeSinnedMesh:copy-enablement-animation:error:enablement-of-merged-mesh-is-animated");
+            scope.ExpectError(ErrorSeverity.Error,
+                "MergeSinnedMesh:copy-enablement-animation:error:enablement-of-merged-mesh-is-animated");
 
             new MergeSkinnedMeshProcessor(merged).Process(context, context.GetMeshInfoFor(mergedRenderer));
-        }
+        });
     }
-    
+
     [Test]
     public void CopySourceAnimationErrorTooManyActiveness()
     {
@@ -137,7 +141,7 @@ public class MergeSkinnedMeshTest
         var merged = mergedGameObject.AddComponent<MergeSkinnedMesh>();
 
         merged.copyEnablementAnimation = true;
-        merged.renderersSet.AddRange(new[] {renderer0, renderer1});
+        merged.renderersSet.AddRange(new[] { renderer0, renderer1 });
 
         mergedRenderer.rootBone = mergedRenderer.transform;
         mergedRenderer.probeAnchor = mergedRenderer.transform;
@@ -170,14 +174,15 @@ public class MergeSkinnedMeshTest
         context.GetMappingBuilder()
             .ImportModifications(new AnimatorParser(true).GatherAnimationModifications(context));
 
-        using (var scope = BuildLogTestSupport.CaptureLog())
+        LogTestUtility.Test(scope =>
         {
-            scope.ExpectError(ErrorSeverity.Error, "MergeSkinnedMesh:copy-enablement-animation:error:too-many-activeness-animation");
+            scope.ExpectError(ErrorSeverity.Error,
+                "MergeSkinnedMesh:copy-enablement-animation:error:too-many-activeness-animation");
 
             new MergeSkinnedMeshProcessor(merged).Process(context, context.GetMeshInfoFor(mergedRenderer));
-        }
+        });
     }
-    
+
     [Test]
     public void CopySourceAnimationErrorActivenessAnimationOfSourceMismatch()
     {
@@ -194,7 +199,7 @@ public class MergeSkinnedMeshTest
         var merged = mergedGameObject.AddComponent<MergeSkinnedMesh>();
 
         merged.copyEnablementAnimation = true;
-        merged.renderersSet.AddRange(new[] {renderer0, renderer1});
+        merged.renderersSet.AddRange(new[] { renderer0, renderer1 });
 
         mergedRenderer.rootBone = mergedRenderer.transform;
         mergedRenderer.probeAnchor = mergedRenderer.transform;
@@ -224,11 +229,12 @@ public class MergeSkinnedMeshTest
         context.GetMappingBuilder()
             .ImportModifications(new AnimatorParser(true).GatherAnimationModifications(context));
 
-        using (var scope = BuildLogTestSupport.CaptureLog())
+        LogTestUtility.Test(scope =>
         {
-            scope.ExpectError(ErrorSeverity.Error, "MergeSkinnedMesh:copy-enablement-animation:error:activeness-animation-of-source-mismatch");
+            scope.ExpectError(ErrorSeverity.Error,
+                "MergeSkinnedMesh:copy-enablement-animation:error:activeness-animation-of-source-mismatch");
 
             new MergeSkinnedMeshProcessor(merged).Process(context, context.GetMeshInfoFor(mergedRenderer));
-        }
+        });
     }
 }
