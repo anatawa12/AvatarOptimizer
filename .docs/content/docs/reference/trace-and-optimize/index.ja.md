@@ -66,7 +66,7 @@ Trace and Optimizeは「**見た目に絶対に影響させてはならない**�
 
 - AnyState式のレイヤーをEntry-Exit式に変換\
   アニメーターコントローラーのレイヤーをできる限りEntry-Exit式に変換します。
-  また、以下の最適化により、AnyState式のレイヤーがEntry-Exit式に変換されることがあります。
+  また、以下の最適化により、AnyState式のレイヤーがBlendTreeに変換されることがあります。
 - Entry-Exit式のレイヤーをBlendTreeに変換\
   アニメーターコントローラーのレイヤーをできる限りBlendTreeに変換します。
 - BlendTreeを統合\

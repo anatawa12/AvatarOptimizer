@@ -66,10 +66,10 @@ See tooltips or implementation for more details.
 This feature currently applies the following optimizations.
 
 - Convert AnyState to Entry-Exit\
-  This tries to convert AnyState layers to Entry-Exit as possible.
-  With other optimizations, AnyState layers may be converted to Entry-Exit layers.
+  This tries to convert Animator Controller layers of AnyState type to of Entry-Exit type as possible.
+  With other optimizations, AnyState type layers may be converted to BlendTree.
 - Convert Entry-Exit to BlendTree\
-  This tries to convert Animator Controller layers to BlendTree as possible.
+  This tries to convert Animator Controller layers of Entry-Exit type to BlendTree as possible.
 - Merge BlendTree Layers\
   This merges multiple BlendTree layers to single Direct BlendTree layer as possible.
 - Remove Meaningless Layers\
