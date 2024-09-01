@@ -123,6 +123,12 @@ public class MergeSkinnedMeshTest
 
             new MergeSkinnedMeshProcessor(merged).Process(context, context.GetMeshInfoFor(mergedRenderer));
         });
+
+        var mapping = context.GetMappingBuilder().BuildObjectMapping();
+        var animatorMapper = mapping.CreateAnimationMapper(avatar);
+        var mapped = animatorMapper.MapBinding("Merged", typeof(SkinnedMeshRenderer), "m_Enabled");
+
+        Assert.That(mapped, Is.Not.Null.And.Empty);
     }
 
     [Test]

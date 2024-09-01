@@ -210,16 +210,19 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             var locations = GetActivenessAnimationLocations(context, meshInfos[0].SourceRenderer, commonRoot).FirstOrDefault();
             if (locations.Item2 == null) return; // this means no activeness animation
 
+            var builder = context.GetMappingBuilder();
+            builder.RecordRemoveProperty(target.SourceRenderer, Props.EnabledFor(target.SourceRenderer));
+
             if (locations.Item1.Value is Renderer c)
             {
-                context.GetMappingBuilder().RecordCopyProperty(
+                builder.RecordCopyProperty(
                     c, Props.EnabledFor(c),
                     target.SourceRenderer, Props.EnabledFor(target.SourceRenderer));
                 target.SourceRenderer.enabled = c.enabled;
             }
             else if (locations.Item1.Value is GameObject go)
             {
-                context.GetMappingBuilder().RecordCopyProperty(
+                builder.RecordCopyProperty(
                     go, Props.IsActive, 
                     target.SourceRenderer, Props.EnabledFor(target.SourceRenderer));
                 target.SourceRenderer.enabled = go.activeSelf;
@@ -512,7 +515,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             }
         }
 
-        private static IEnumerable<(ComponentOrGameObject, HashSet<AnimationLocation>)> GetActivenessAnimationLocations(
+        private static IEnumerable<(ComponentOrGameObject target, HashSet<AnimationLocation> animaions)> GetActivenessAnimationLocations(
             BuildContext context, Renderer component, Transform root)
         {
             {
