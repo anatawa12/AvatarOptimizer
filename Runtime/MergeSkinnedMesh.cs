@@ -35,6 +35,12 @@ namespace Anatawa12.AvatarOptimizer
         [SerializeField]
         internal bool skipEnablementMismatchedRenderers;
 
+        [AAOLocalized("MergeSkinnedMesh:prop:copyEnablementAnimation")]
+        [NotKeyable]
+        [ToggleLeft]
+        [SerializeField]
+        internal bool copyEnablementAnimation;
+
         APIChecker _checker;
 
         internal MergeSkinnedMesh()

@@ -6,6 +6,7 @@ using nadena.dev.ndmf;
 using UnityEngine;
 using UnityEngine.Profiling;
 using UnityEngine.Rendering;
+using Debug = System.Diagnostics.Debug;
 
 namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 {
@@ -29,10 +30,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         {
             var meshInfos = CollectMeshInfos(context);
 
-            GenerateWarningsOrErrors(context, target, meshInfos);
+            GenerateWarningsOrErrors(context, Component.copyEnablementAnimation, target, meshInfos);
 
             var (subMeshIndexMap, materials) =
                 GenerateSubMeshMapping(meshInfos, Component.doNotMergeMaterials.GetAsSet());
+
+            if (Component.copyEnablementAnimation)
+                CopyEnablementAnimation(context, target, meshInfos);
 
             DoMerge(context, target, meshInfos, subMeshIndexMap, materials);
             MergeBounds(target, meshInfos);
@@ -96,6 +100,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         public static void GenerateWarningsOrErrors(
             BuildContext context, 
+            bool copyEnablementAnimation,
             MeshInfo2 target,
             MeshInfo2[] meshInfos
         ) {
@@ -135,7 +140,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             Profiler.EndSample();
 
             Profiler.BeginSample("Generate ActivenessWarning");
-            ActivenessAnimationWarning(meshInfos.Select(x => x.SourceRenderer).Where(x => x), target.SourceRenderer, context);
+            if (copyEnablementAnimation)
+                CheckForCopyEnablementAnimation(context, target, meshInfos);
+            else
+                ActivenessAnimationWarning(meshInfos.Select(x => x.SourceRenderer).Where(x => x), target.SourceRenderer, context);
             Profiler.EndSample();
 
             Profiler.BeginSample("Warn / Error Unsupported Components");
@@ -183,6 +191,39 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             Profiler.EndSample();
 
+        }
+
+        public static void CopyEnablementAnimation(
+            BuildContext context,
+            MeshInfo2 target,
+            MeshInfo2[] meshInfos)
+        {
+            // This implementation assumes that no errors in previous checks.
+            // if there is errors, this might create unexpected behavior.
+
+            if (meshInfos.Length == 0) return;
+
+            var commonRoot = Utils.CommonRoot(meshInfos.Select(x => x.SourceRenderer.transform).Append(target.SourceRenderer.transform));
+
+            if (commonRoot == null) return;
+
+            var locations = GetActivenessAnimationLocations(context, meshInfos[0].SourceRenderer, commonRoot).FirstOrDefault();
+            if (locations.Item2 == null) return; // this means no activeness animation
+
+            if (locations.Item1.Value is Renderer c)
+            {
+                context.GetMappingBuilder().RecordCopyProperty(
+                    c, Props.EnabledFor(c),
+                    target.SourceRenderer, Props.EnabledFor(target.SourceRenderer));
+                target.SourceRenderer.enabled = c.enabled;
+            }
+            else if (locations.Item1.Value is GameObject go)
+            {
+                context.GetMappingBuilder().RecordCopyProperty(
+                    go, Props.IsActive, 
+                    target.SourceRenderer, Props.EnabledFor(target.SourceRenderer));
+                target.SourceRenderer.enabled = go.activeSelf;
+            }
         }
 
         public static (int[][] subMeshIndexMap, List<(MeshTopology topology, Material? material)> materials)
@@ -421,6 +462,68 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             if (animatedProperties.Count != 0)
                 BuildLog.LogWarning("MergeSkinnedMesh:warning:material-animation-differently",
                     string.Join(",", animatedProperties));
+        }
+
+        private static void CheckForCopyEnablementAnimation(BuildContext context, MeshInfo2 target, MeshInfo2[] meshInfos)
+        {
+            var commonRoot = Utils.CommonRoot(meshInfos.Select(x => x.SourceRenderer.transform).Append(target.SourceRenderer.transform));
+
+            if (commonRoot == null || !commonRoot.IsChildOf(context.AvatarRootTransform))
+            {
+                BuildLog.LogError("MergeSkinnedMesh:error:some-source-is-out-of-avatar",
+                    meshInfos
+                        .Select(x => x.SourceRenderer.transform)
+                        .Where(x => !x.IsChildOf(context.AvatarRootTransform))
+                );
+                return;
+            }
+
+            if (context.GetAnimationComponent(target.SourceRenderer)
+                .TryGetFloat(Props.EnabledFor(target.SourceRenderer), out var p))
+            {
+                BuildLog.LogError("MergeSinnedMesh:copy-enablement-animation:error:enablement-of-merged-mesh-is-animated",
+                    target.SourceRenderer, p);
+            }
+
+            if (meshInfos.Length == 0) return;
+
+            var locations = meshInfos
+                .Select(m => (mesh: m, locations: GetActivenessAnimationLocations(context, m.SourceRenderer, commonRoot).ToArray())).ToList();
+
+            // check if single
+            var problematicMeshes = locations.Where(x => x.locations.Length > 2).Select(x => x.mesh).ToList();
+
+            if (problematicMeshes.Count != 0)
+            {
+                BuildLog.LogError("MergeSkinnedMesh:copy-enablement-animation:error:too-many-activeness-animation", problematicMeshes);
+            }
+            else
+            {
+                // check for count mismatch
+                var difference = locations
+                    .Select(x => x.locations.FirstOrDefault().Item2 ?? new HashSet<AnimationLocation>())
+                    .ZipWithNext()
+                    .Any(p => !p.Item1.SetEquals(p.Item2));
+
+                if (difference)
+                {
+                    BuildLog.LogError("MergeSkinnedMesh:copy-enablement-animation:error:activeness-animation-of-source-mismatch");
+                }
+            }
+        }
+
+        private static IEnumerable<(ComponentOrGameObject, HashSet<AnimationLocation>)> GetActivenessAnimationLocations(
+            BuildContext context, Renderer component, Transform root)
+        {
+            {
+                if (context.GetAnimationComponent(component).TryGetFloat(Props.EnabledFor(component), out var p))
+                    if (AnimationLocation.CollectAnimationLocation(p).ToHashSet() is { Count: > 0 } locations)
+                        yield return (component, locations);
+            }
+            foreach (var transform in component.transform.ParentEnumerable(root, includeMe: true))
+                if (context.GetAnimationComponent(transform.gameObject).TryGetFloat(Props.IsActive, out var p))
+                    if (AnimationLocation.CollectAnimationLocation(p).ToHashSet() is { Count: > 0 } locations)
+                        yield return (transform.gameObject, locations);
         }
 
         private static void ActivenessAnimationWarning(IEnumerable<Renderer> renderers, Renderer target,
