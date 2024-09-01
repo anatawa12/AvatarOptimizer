@@ -491,7 +491,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 .Select(m => (mesh: m, locations: GetActivenessAnimationLocations(context, m.SourceRenderer, commonRoot).ToArray())).ToList();
 
             // check if single
-            var problematicMeshes = locations.Where(x => x.locations.Length > 2).Select(x => x.mesh).ToList();
+            var problematicMeshes = locations.Where(x => x.locations.Length >= 2).Select(x => x.mesh).ToList();
 
             if (problematicMeshes.Count != 0)
             {
