@@ -75,6 +75,11 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 }
             }
 
+            // yaw / pitch fix
+            if (merge.limitRotationConfig.@override == MergePhysBone.CurveVector3Config.CurveOverride.Fix)
+                foreach (var physBone in sourceComponents)
+                    FixYawPitch(physBone, context);
+
             // clear endpoint position
             if (merge.endpointPositionConfig.@override == MergePhysBone.EndPointPositionConfig.Override.Clear)
                 foreach (var physBone in sourceComponents)
@@ -143,7 +148,21 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 }
             }
         }
-        
+
+        // To preserve bone reference, we keep original bone and create new GameObject for it.
+        // and later Trace and Object remove unused objects will merge original bones
+        public static void FixYawPitch(VRCPhysBoneBase physBone, BuildContext? context)
+        {
+            // Already fixed; nothing to do!
+            if (physBone.limitRotation.Equals(Vector3.zero)) return;
+
+            
+            physBone.InitTransforms(true);
+            var maxChainLength = physBone.BoneChainLength();
+
+            throw new NotImplementedException();
+        }
+
         private static readonly string[] TransformRotationAndPositionAnimationKeys =
         {
             "m_LocalRotation.x", "m_LocalRotation.y", "m_LocalRotation.z", "m_LocalRotation.w", 
@@ -236,26 +255,38 @@ namespace Anatawa12.AvatarOptimizer.Processors
             protected override void Pb3DCurveProp(string label, string pbXCurveLabel, string pbYCurveLabel, string pbZCurveLabel,
                 CurveVector3ConfigProp prop, bool forceOverride = false)
             {
-                var @override = forceOverride || prop.IsOverride;
-                _mergedPhysBone.FindProperty(prop.PhysBoneValueName).vector3Value =
-                    prop.GetValueProperty(@override).vector3Value;
-                if (@override)
+                switch (prop.GetOverride(forceOverride))
                 {
-                    _mergedPhysBone.FindProperty(prop.PhysBoneCurveXName).animationCurveValue =
-                        prop.GetCurveXProperty(@override).animationCurveValue;
-                    _mergedPhysBone.FindProperty(prop.PhysBoneCurveYName).animationCurveValue =
-                        prop.GetCurveYProperty(@override).animationCurveValue;
-                    _mergedPhysBone.FindProperty(prop.PhysBoneCurveZName).animationCurveValue =
-                        prop.GetCurveZProperty(@override).animationCurveValue;
-                }
-                else
-                {
-                    _mergedPhysBone.FindProperty(prop.PhysBoneCurveXName).animationCurveValue =
-                        FixCurve(prop.GetCurveXProperty(@override).animationCurveValue);
-                    _mergedPhysBone.FindProperty(prop.PhysBoneCurveYName).animationCurveValue =
-                        FixCurve(prop.GetCurveYProperty(@override).animationCurveValue);
-                    _mergedPhysBone.FindProperty(prop.PhysBoneCurveZName).animationCurveValue =
-                        FixCurve(prop.GetCurveZProperty(@override).animationCurveValue);
+                    case MergePhysBone.CurveVector3Config.CurveOverride.Copy:
+                        _mergedPhysBone.FindProperty(prop.PhysBoneValueName).vector3Value =
+                            prop.SourceValue!.vector3Value;
+                        _mergedPhysBone.FindProperty(prop.PhysBoneCurveXName).animationCurveValue =
+                            FixCurve(prop.SourceCurveX!.animationCurveValue);
+                        _mergedPhysBone.FindProperty(prop.PhysBoneCurveYName).animationCurveValue =
+                            FixCurve(prop.SourceCurveY!.animationCurveValue);
+                        _mergedPhysBone.FindProperty(prop.PhysBoneCurveZName).animationCurveValue =
+                            FixCurve(prop.SourceCurveZ!.animationCurveValue);
+                        break;
+                    case MergePhysBone.CurveVector3Config.CurveOverride.Override:
+                        _mergedPhysBone.FindProperty(prop.PhysBoneValueName).vector3Value =
+                            prop.OverrideValue.vector3Value;
+                        _mergedPhysBone.FindProperty(prop.PhysBoneCurveXName).animationCurveValue =
+                            prop.OverrideCurveX.animationCurveValue;
+                        _mergedPhysBone.FindProperty(prop.PhysBoneCurveYName).animationCurveValue =
+                            prop.OverrideCurveY.animationCurveValue;
+                        _mergedPhysBone.FindProperty(prop.PhysBoneCurveZName).animationCurveValue =
+                            prop.OverrideCurveZ.animationCurveValue;
+                        break;
+                    case MergePhysBone.CurveVector3Config.CurveOverride.Fix:
+                        // Fixing rotation is proceeded before.
+                        // We just reset the value and curve.
+                        _mergedPhysBone.FindProperty(prop.PhysBoneValueName).vector3Value = Vector3.zero;
+                        _mergedPhysBone.FindProperty(prop.PhysBoneCurveXName).animationCurveValue = new AnimationCurve();
+                        _mergedPhysBone.FindProperty(prop.PhysBoneCurveYName).animationCurveValue = new AnimationCurve();
+                        _mergedPhysBone.FindProperty(prop.PhysBoneCurveZName).animationCurveValue = new AnimationCurve();
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
                 }
             }
 

@@ -14,15 +14,6 @@ const config: Config = {
             ['Curve', 'curve'],
         ],
     },
-    CurveVector3ConfigProp: {
-        base: "OverridePropBase",
-        values: [
-            ['Value', 'value'],
-            ['CurveX', 'curveX'],
-            ['CurveY', 'curveY'],
-            ['CurveZ', "curveZ"]
-        ],
-    },
     PermissionConfigProp: {
         base: "OverridePropBase",
         values: [
