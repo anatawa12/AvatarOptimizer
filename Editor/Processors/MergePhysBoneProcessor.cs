@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.AnimatorParsersV2;
 using nadena.dev.ndmf;
+using Unity.Mathematics;
 using UnityEditor;
 using UnityEngine;
 using VRC.Dynamics;
@@ -160,7 +161,50 @@ namespace Anatawa12.AvatarOptimizer.Processors
             physBone.InitTransforms(true);
             var maxChainLength = physBone.BoneChainLength();
 
-            throw new NotImplementedException();
+            var additionalIgnoreTransforms = new List<Transform>();
+            var ignoreTransforms = new HashSet<Transform>(physBone.ignoreTransforms);
+            var processQueue = new Queue<(Transform bone, int depth)>();
+
+            processQueue.Enqueue((physBone.GetTarget(), 0));
+
+            while (processQueue.Count != 0)
+            {
+                var (bone, depth) = processQueue.Dequeue();
+
+                var children = bone.DirectChildrenEnumerable()
+                    .Where(child => !ignoreTransforms.Contains(child))
+                    .ToList();
+
+                // TODO: this fixing is broken: I thought the roll yaw pitch is based on bone rotation, but actually based on phys bone direction
+                // We have to do linear algebra to implement better fix.
+                // Reminder: according to we only can fix roll, and cannot fix pitch / yaw basically. (we have to more investigation)
+                var newBone = new GameObject(bone.name + "_AAO_FixYawPitch").transform;
+
+                newBone.parent = bone.parent;
+                newBone.SetSiblingIndex(bone.GetSiblingIndex() + 1);
+                newBone.localPosition = bone.localPosition;
+                newBone.localRotation = bone.localRotation;
+                newBone.localScale = bone.localScale;
+
+                var x = maxChainLength <= 1 ? 0.0f : Mathf.Clamp01(depth / (float) (maxChainLength - 1));
+                var rotationOffsetEuler = physBone.CalcLimitRotation(x);
+                var rotationOffset = quaternion.EulerXYZ(rotationOffsetEuler * Mathf.Deg2Rad);
+
+                newBone.localRotation *= rotationOffset;
+
+                bone.parent = newBone;
+                additionalIgnoreTransforms.Add(bone);
+
+                foreach (var child in children)
+                    child.parent = newBone;
+
+                foreach (var child in children)
+                    processQueue.Enqueue((child, depth + 1));
+            }
+
+            // TODO: process endpoint position
+
+            physBone.ignoreTransforms.AddRange(additionalIgnoreTransforms);
         }
 
         private static readonly string[] TransformRotationAndPositionAnimationKeys =
