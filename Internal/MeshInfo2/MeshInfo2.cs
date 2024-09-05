@@ -572,50 +572,78 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 for (var i = 0; i < Vertices.Count; i++)
                     vertexIndices.Add(Vertices[i], i);
 
-                var maxIndices = 0;
-                var totalSubMeshes = 0;
-                for (var i = 0; i < SubMeshes.Count - 1; i++)
-                {
-                    maxIndices = Mathf.Max(maxIndices, SubMeshes[i].Vertices.Count);
-                    // for non-last submesh, we have to duplicate submesh for multi pass rendering
-                    for (var j = 0; j < SubMeshes[i].SharedMaterials.Length; j++)
-                        totalSubMeshes++;
-                }
-                {
-                    maxIndices = Mathf.Max(maxIndices, SubMeshes[SubMeshes.Count - 1].Vertices.Count);
-                    // for last submesh, we can use single submesh for multi pass reendering
-                    totalSubMeshes++;
-                }
-
-                var indices = new int[maxIndices];
-                var submeshIndex = 0;
-
-                destMesh.indexFormat = Vertices.Count <= ushort.MaxValue ? IndexFormat.UInt16 : IndexFormat.UInt32;
-                destMesh.subMeshCount = totalSubMeshes;
+                var submeshWithMoreThan65536Verts = false;
+                var submeshIndexBuffersList = new List<(SubMesh subMesh, int baseVertex, int[] indices)>();
 
                 for (var i = 0; i < SubMeshes.Count - 1; i++)
                 {
                     var subMesh = SubMeshes[i];
 
-                    for (var index = 0; index < subMesh.Vertices.Count; index++)
-                        indices[index] = vertexIndices[subMesh.Vertices[index]];
-
-                    // general case: for non-last submesh, we have to duplicate submesh for multi pass rendering
-                    for (var j = 0; j < subMesh.SharedMaterials.Length; j++)
-                        destMesh.SetIndices(indices, 0, subMesh.Vertices.Count, subMesh.Topology, submeshIndex++);
+                    // for non-last submesh, we have to duplicate submesh for multi pass rendering
+                    AddSubmesh(subMesh, vertexIndices, submeshIndexBuffersList, ref submeshWithMoreThan65536Verts, subMesh.SharedMaterials.Length);
                 }
 
                 {
-                    var subMesh = SubMeshes[SubMeshes.Count - 1];
+                    var subMesh = SubMeshes[^1];
+                    // for last submesh, we can use single submesh for multi pass rendering
+                    AddSubmesh(subMesh, vertexIndices, submeshIndexBuffersList, ref submeshWithMoreThan65536Verts, 1);
+                }
 
+                static void AddSubmesh(SubMesh subMesh, Dictionary<Vertex, int> vertexIndices, List<(SubMesh subMesh, int baseVertex, int[] indices)> submeshIndexBuffers, ref bool submeshWithMoreThan65536Verts, int count)
+                {
+                    var indices = new int[subMesh.Vertices.Count];
                     for (var index = 0; index < subMesh.Vertices.Count; index++)
                         indices[index] = vertexIndices[subMesh.Vertices[index]];
 
-                    // for last submesh, we can use single submesh for multi pass reendering
-                    destMesh.SetIndices(indices, 0, subMesh.Vertices.Count, subMesh.Topology, submeshIndex++);
+                    var min = indices.Min();
+                    var max = indices.Max();
+                    submeshWithMoreThan65536Verts |= max - min >= ushort.MaxValue;
+
+                    for (var j = 0; j < count; j++)
+                        submeshIndexBuffers.Add((subMesh, 0, indices));
                 }
 
-                Debug.Assert(totalSubMeshes == submeshIndex);
+                var submeshIndexBuffers = submeshIndexBuffersList.ToArray();
+
+                // determine index format
+                // if all vertices has less than 65536 vertices, we can use UInt16
+                // if all vertices has more than 65536 vertices but each submesh has less than 65536 vertices, we can use UInt16 with vaseVertex
+                // otherwise, we have to use UInt32
+                //
+                // Please note currently there is no optimization for index buffer to apply this optimization perfectly.
+                // You may need to reorder meshes in Merge Skinned Mesh. I will implement this optimization in future if I can.
+
+                if (Vertices.Count <= ushort.MaxValue)
+                {
+                    destMesh.indexFormat = IndexFormat.UInt16;
+                }
+                else if (!submeshWithMoreThan65536Verts)
+                {
+                    destMesh.indexFormat = IndexFormat.UInt16;
+                    foreach (ref var submeshIndexBuffer in submeshIndexBuffers.AsSpan())
+                    {
+                        submeshIndexBuffer.baseVertex = submeshIndexBuffer.indices.Min();
+                        for (var i = 0; i < submeshIndexBuffer.indices.Length; i++)
+                            submeshIndexBuffer.indices[i] -= submeshIndexBuffer.baseVertex;
+                    }
+                }
+                else
+                {
+                    destMesh.indexFormat = IndexFormat.UInt32;
+                }
+
+                var submeshIndex = 0;
+
+                destMesh.subMeshCount = submeshIndexBuffers.Length;
+
+                for (var i = 0; i < submeshIndexBuffers.Length; i++)
+                {
+                    var (subMesh, baseVertex, indices) = submeshIndexBuffers[i];
+                    destMesh.SetIndices(indices, 0, subMesh.Vertices.Count, subMesh.Topology, i,
+                        baseVertex: baseVertex);
+                }
+
+                Debug.Assert(submeshIndexBuffers.Length == submeshIndex);
             }
             Profiler.EndSample();
 

@@ -19,6 +19,9 @@ The format is based on [Keep a Changelog].
 - Skip Enablement Mismatched Renderers is now disabled by default `#1169`
   - You still can enable it in the Inspector.
   - This change does not affect the behavior of previously added components.
+- Use UInt16 index buffer if possible even when total vertex count is more than 2^16 `#1178`
+  - With baseVertex in index buffer, we can use UInt16 index buffer even if total vertex count is more than 2^16.
+  - Of course, if one submeh references wide range of vertices, we cannot use UInt16 index buffer so we still use UInt32 index buffer in such a case.
 
 ### Deprecated
 
