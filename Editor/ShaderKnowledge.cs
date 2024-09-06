@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
+using UnityEditor;
 using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer
@@ -96,6 +98,125 @@ namespace Anatawa12.AvatarOptimizer
                 var y = (int)Mathf.Floor(uv.y);
                 return x == column && y == row;
             });
+        }
+
+        public interface IMaterialPropertyAnimationProvider
+        {
+            bool IsAnimated(string propertyName);
+        }
+
+        public enum UVChannel
+        {
+            UV0 = 0,
+            UV1 = 1,
+            UV2 = 2,
+            UV3 = 3,
+            UV4 = 4,
+            UV5 = 5,
+            UV6 = 6,
+            UV7 = 7,
+            // For example, ScreenSpace (dither) or MatCap
+            NonMeshRelated = 0x100 + 0,
+            Unknown = -1,
+        }
+
+        public class TextureUsageInformation
+        {
+            public string MaterialPropertyName { get; }
+            public UVChannel UVChannel { get; }
+
+            public TextureUsageInformation(string materialPropertyName, UVChannel uvChannel)
+            {
+                MaterialPropertyName = materialPropertyName;
+                UVChannel = uvChannel;
+            }
+        }
+
+        // TODO: define return type
+        /// <summary>
+        /// Returns texture usage information for the material.
+        /// </summary>
+        /// <param name="material"></param>
+        /// <returns>null if the shader is not supported</returns>
+        public static TextureUsageInformation[]? GetTextureUsageInformationForMaterial(Material material, IMaterialPropertyAnimationProvider animation)
+        {
+            if (AssetDatabase.GetAssetPath(material.shader).StartsWith("Packages/jp.lilxyzw.liltoon"))
+            {
+                // it looks liltoon!
+                return GetTextureUsageInformationForMaterialLiltoon(material, animation);
+            }
+
+            return null;
+        }
+
+        private static TextureUsageInformation[]? GetTextureUsageInformationForMaterialLiltoon(Material material, IMaterialPropertyAnimationProvider animation)
+        {
+            // This implementation is made for my Anon + Wahuku for testing this feature.
+            // TODO: version check
+            var information = new List<TextureUsageInformation>();
+
+            var uvMain = UVChannel.UV0;
+
+            // TODO: UV Animation, angle (_MainTex_ScrollRotate) , Tilting, Offsets (_ST) for MainTex
+            information.Add(new TextureUsageInformation("_DitherTex", UVChannel.NonMeshRelated));
+            information.Add(new TextureUsageInformation("_MainTex", uvMain));
+            information.Add(new TextureUsageInformation("_MainColorAdjustMask", uvMain));
+            information.Add(new TextureUsageInformation("_MainGradationTex", uvMain));
+
+            if (material.GetInt("_UseMain2ndTex") != 0 || animation.IsAnimated("_UseMain2ndTex"))
+            {
+                UVChannel main2ndUV;
+                if (animation.IsAnimated("_Main2ndTex_UVMode"))
+                {
+                    main2ndUV = UVChannel.Unknown;
+                }
+                else 
+                {
+                    switch (material.GetInt("_Main2ndTex_UVMode"))
+                    {
+                        case 0: main2ndUV = UVChannel.UV0; break;
+                        case 1: main2ndUV = UVChannel.UV1; break;
+                        case 2: main2ndUV = UVChannel.UV2; break;
+                        case 3: main2ndUV = UVChannel.UV3; break;
+                        case 4: main2ndUV = UVChannel.NonMeshRelated; break;
+                        default: main2ndUV = UVChannel.Unknown; break;
+                    }
+                }
+                information.Add(new TextureUsageInformation("_Main2ndTex", main2ndUV));
+                // TODO: UV Animation, angle (_MainTex2_ScrollRotate) , Tilting, Offsets (_ST) for MainTex2
+                information.Add(new TextureUsageInformation("_Main2ndBlendMask", main2ndUV)); // NO ScaleOffset
+                information.Add(new TextureUsageInformation("_Main2ndDissolveMask", main2ndUV));
+                information.Add(new TextureUsageInformation("_Main2ndDissolveNoiseMask", main2ndUV));
+                // TODO: isDecurl for MainTex2?
+            }
+
+            // TODO: Main3rd
+
+            // Matcap
+            if (material.GetInt("_UseMatCap") != 0 || animation.IsAnimated("_UseMatCap"))
+            {
+                information.Add(new TextureUsageInformation("_MatCapTex", UVChannel.NonMeshRelated));
+                information.Add(new TextureUsageInformation("_MatCapBlendMask", UVChannel.UV0)); // No ScaleOffset
+                // TODO: more properties like: _MatCapBumpMap
+            }
+
+            // TODO: Matcap2nd
+
+            // rim light
+            if (material.GetInt("_UseRim") != 0 || animation.IsAnimated("_UseRim"))
+            {
+                information.Add(new TextureUsageInformation("_RimColorTex", uvMain));
+            }
+
+            // outline
+            if (material.GetInt("_UseOutline") != 0 || animation.IsAnimated("_UseOutline"))
+            {
+                information.Add(new TextureUsageInformation("_OutlineColorTex", uvMain));
+                information.Add(new TextureUsageInformation("_OutlineWidthMask", uvMain)); // ??
+            }
+
+            // TODO: Many Properties
+            return information.ToArray();
         }
     }
 }
