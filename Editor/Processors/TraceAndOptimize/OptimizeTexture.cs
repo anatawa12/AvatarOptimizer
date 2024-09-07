@@ -14,6 +14,56 @@ internal class OptimizeTexture : TraceAndOptimizePass<OptimizeTexture>
 {
     public override string DisplayName => "T&O: OptimizeTexture";
 
+    readonly struct UVID: IEquatable<UVID>
+    {
+        public readonly MeshInfo2? MeshInfo2;
+        public readonly int SubMeshIndex;
+        public readonly ShaderKnowledge.UVChannel UVChannel;
+
+        public SubMeshId SubMeshId => MeshInfo2 != null ? new SubMeshId(MeshInfo2!, SubMeshIndex) : throw new InvalidOperationException();
+
+        public UVID(SubMeshId subMeshId, ShaderKnowledge.UVChannel uvChannel)
+            : this(subMeshId.MeshInfo2, subMeshId.SubMeshIndex, uvChannel)
+        {
+        }
+
+        public UVID(MeshInfo2 meshInfo2, int subMeshIndex, ShaderKnowledge.UVChannel uvChannel)
+        {
+            MeshInfo2 = meshInfo2;
+            SubMeshIndex = subMeshIndex;
+            UVChannel = uvChannel;
+            switch (uvChannel)
+            {
+                case ShaderKnowledge.UVChannel.UV0:
+                case ShaderKnowledge.UVChannel.UV1:
+                case ShaderKnowledge.UVChannel.UV2:
+                case ShaderKnowledge.UVChannel.UV3:
+                case ShaderKnowledge.UVChannel.UV4:
+                case ShaderKnowledge.UVChannel.UV5:
+                case ShaderKnowledge.UVChannel.UV6:
+                case ShaderKnowledge.UVChannel.UV7:
+                    break;
+                case ShaderKnowledge.UVChannel.NonMeshRelated:
+                    MeshInfo2 = null;
+                    SubMeshIndex = -1;
+                    break;
+                case ShaderKnowledge.UVChannel.Unknown:
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(uvChannel), uvChannel, null);
+            }
+        }
+
+        public bool Equals(UVID other) => MeshInfo2 == other.MeshInfo2 && SubMeshIndex == other.SubMeshIndex && UVChannel == other.UVChannel;
+        public override bool Equals(object? obj) => obj is UVID other && Equals(other);
+        public override int GetHashCode() => HashCode.Combine(MeshInfo2, SubMeshIndex, UVChannel);
+
+        public override string ToString()
+        {
+            if (MeshInfo2 == null) return UVChannel.ToString();
+            return $"{MeshInfo2.SourceRenderer.name} {SubMeshIndex} {UVChannel}";
+        }
+    }
+
     readonly struct SubMeshId : IEquatable<SubMeshId>
     {
         public readonly MeshInfo2 MeshInfo2;
@@ -28,6 +78,8 @@ internal class OptimizeTexture : TraceAndOptimizePass<OptimizeTexture>
         public bool Equals(SubMeshId other) => MeshInfo2 == other.MeshInfo2 && SubMeshIndex == other.SubMeshIndex;
         public override bool Equals(object? obj) => obj is SubMeshId other && Equals(other);
         public override int GetHashCode() => HashCode.Combine(MeshInfo2, SubMeshIndex);
+
+        public override string ToString() => $"{MeshInfo2.SourceRenderer.name} {SubMeshIndex}";
     }
 
     protected override void Execute(BuildContext context, TraceAndOptimizeState state)
@@ -94,8 +146,8 @@ internal class OptimizeTexture : TraceAndOptimizePass<OptimizeTexture>
         }
 
         // collect usageInformation for each material, and add to unmergeableMaterials if it's impossible
+        var usageInformations = new Dictionary<Material, ShaderKnowledge.TextureUsageInformation[]>();
         {
-            var usageInformations = new Dictionary<Material, ShaderKnowledge.TextureUsageInformation[]>();
 
             foreach (var (material, _) in materialUsers)
             {
@@ -107,6 +159,41 @@ internal class OptimizeTexture : TraceAndOptimizePass<OptimizeTexture>
                 else
                     usageInformations.Add(material, textureUsageInformations);
             }
+        }
+
+        // for implementation simplicity, we don't support texture(s) that are not used by multiple set of UV
+        {
+            var materialsByUSerSubmeshId = new Dictionary<EqualsHashSet<SubMeshId>, HashSet<Material>>();
+            foreach (var (material, users) in materialUsers)
+            {
+                var set = new EqualsHashSet<SubMeshId>(users);
+                if (!materialsByUSerSubmeshId.TryGetValue(set, out var materials))
+                    materialsByUSerSubmeshId.Add(set, materials = new HashSet<Material>());
+                materials.Add(material);
+            }
+
+            var textureUserSets = new Dictionary<Texture2D, HashSet<EqualsHashSet<UVID>>>();
+            var textureUserMaterials = new Dictionary<Texture2D, HashSet<Material>>();
+            foreach (var (key, materials) in materialsByUSerSubmeshId)
+            {
+                foreach (var material in materials)
+                {
+                    foreach (var information in usageInformations[material])
+                    {
+                        var texture = (Texture2D)material.GetTexture(information.MaterialPropertyName);
+                        if (texture == null) continue;
+                        if (!textureUserSets.TryGetValue(texture, out var users))
+                            textureUserSets.Add(texture, users = new HashSet<EqualsHashSet<UVID>>());
+                        users.Add(key.backedSet.Select(x => new UVID(x, information.UVChannel)).ToEqualsHashSet());
+                        if (!textureUserMaterials.TryGetValue(texture, out var materialsSet))
+                            textureUserMaterials.Add(texture, materialsSet = new HashSet<Material>());
+                        materialsSet.Add(material);
+                    }
+                }
+            }
+
+            foreach (var (texture, users) in textureUserSets.Where(x => x.Value.Count >= 2))
+                unmergeableMaterials.UnionWith(textureUserMaterials[texture]);
         }
 
         // remove unmergeable materials and submeshes that have unmergeable materials
@@ -138,10 +225,31 @@ internal class OptimizeTexture : TraceAndOptimizePass<OptimizeTexture>
         }
 
         // TODO: implement merging
-
-        foreach (var (material, value) in materialUsers)
         {
-            Debug.Log($"material: {material.name} users: {string.Join(", ", value.Select(x => x.MeshInfo2.SourceRenderer.name))}", material);
+            var textureUserMaterials = new Dictionary<Texture2D, HashSet<(Material, string)>>();
+            var textureByUVs = new Dictionary<EqualsHashSet<UVID>, HashSet<Texture2D>>();
+            foreach (var (material, value) in materialUsers)
+            {
+                foreach (var information in usageInformations[material])
+                {
+                    var texture = (Texture2D)material.GetTexture(information.MaterialPropertyName);
+                    if (texture == null) continue;
+
+                    var uvSet = new EqualsHashSet<UVID>(value.Select(x => new UVID(x, information.UVChannel)));
+                    if (!textureByUVs.TryGetValue(uvSet, out var textures))
+                        textureByUVs.Add(uvSet, textures = new HashSet<Texture2D>());
+                    textures.Add(texture);
+
+                    if (!textureUserMaterials.TryGetValue(texture, out var materials))
+                        textureUserMaterials.Add(texture, materials = new HashSet<(Material, string)>());
+                    materials.Add((material, information.MaterialPropertyName));
+                }
+            }
+
+            foreach (var (uvSet, textures) in textureByUVs)
+            {
+                Debug.Log($"UVs: {string.Join(", ", uvSet.backedSet)} Textures: {string.Join(", ", textures)}");
+            }
         }
     }
 
