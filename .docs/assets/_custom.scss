@@ -13,6 +13,15 @@ body {
   color: var(--custom-color-font);
 }
 
+@media (prefers-color-scheme: dark) {
+  body {
+    --custom-color-font: #fffffd;
+    --custom-color-pale: #2e2e32;
+    --custom-color-background: #161618;
+    --custom-color-background-md: #1b1b1f;
+  }
+}
+
 code {
   font-family: var(--custom-font-family-code);
 }
