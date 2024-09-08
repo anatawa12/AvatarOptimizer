@@ -194,5 +194,7 @@ namespace Anatawa12.AvatarOptimizer
 
         public static EqualsHashSet<T> ToEqualsHashSet<T>(this HashSet<T> hashSet) =>
             new EqualsHashSet<T>(hashSet);
+
+        public static bool IsPowerOfTwo(this int x) => x != 0 && (x & (x - 1)) == 0;
     }
 }

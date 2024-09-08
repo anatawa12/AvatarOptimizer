@@ -1,11 +1,14 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.AnimatorParsersV2;
 using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
 using nadena.dev.ndmf;
 using UnityEngine;
+using UnityEngine.Profiling;
+using Debug = UnityEngine.Debug;
 using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes;
@@ -248,7 +251,7 @@ internal class OptimizeTexture : TraceAndOptimizePass<OptimizeTexture>
 
             foreach (var (uvSet, textures) in textureByUVs)
             {
-                Debug.Log($"UVs: {string.Join(", ", uvSet.backedSet)} Textures: {string.Join(", ", textures)}");
+                MayAtlasTexture(textures, uvSet.backedSet);
             }
         }
     }
@@ -332,5 +335,400 @@ internal class OptimizeTexture : TraceAndOptimizePass<OptimizeTexture>
 
         public bool IsAnimated(string propertyName) => 
             _infos.Any(x => x.TryGetFloat($"material.{propertyName}", out _));
+    }
+
+    // TODO: uncomment before release
+    // [Conditional("NEVER_TRUE_VALUE_IS_EXPECTED")]
+    private static void TraceLog(string message)
+    {
+        Debug.Log(message);
+    }
+
+    struct AtlasResult
+    {
+        public Dictionary<Texture2D, Texture2D> TextureMapping;
+        public Dictionary<(Vertex, int uvChannel), Vector2> NewUVs;
+
+        public AtlasResult(Dictionary<Texture2D, Texture2D> textureMapping, Dictionary<(Vertex, int uvChannel), Vector2> newUVs)
+        {
+            TextureMapping = textureMapping;
+            NewUVs = newUVs;
+        }
+
+        public static AtlasResult Empty = new(new Dictionary<Texture2D, Texture2D>(),
+            new Dictionary<(Vertex, int uvChannel), Vector2>());
+    }
+
+    static AtlasResult MayAtlasTexture(ICollection<Texture2D> textures, ICollection<UVID> users)
+    {
+        if (users.Any(uvid => uvid.UVChannel == ShaderKnowledge.UVChannel.NonMeshRelated))
+            return AtlasResult.Empty;
+
+        foreach (var user in users)
+        {
+            var submesh = user.MeshInfo2!.SubMeshes[user.SubMeshIndex];
+            // currently non triangle topology is not supported
+            if (submesh.Topology != MeshTopology.Triangles)
+                return AtlasResult.Empty;
+            foreach (var vertex in submesh.Vertices)
+            {
+                var coord = vertex.GetTexCoord((int)user.UVChannel);
+
+                // UV Tiling is currently not supported
+                // TODO: if entire island is in n.0<=x<n+1, y.0<=y<n+1, then it might be safe to atlas (if TextureWrapMode is repeat)
+                if (coord.x is not (>= 0 and < 1) || coord.y is not (>= 0 and < 1))
+                    return AtlasResult.Empty;
+            }
+        }
+
+        static IEnumerable<IslandUtility.Triangle> TrianglesByUVID(UVID uvid)
+        {
+            var submesh = uvid.MeshInfo2!.SubMeshes[uvid.SubMeshIndex];
+            for (var index = 0; index < submesh.Vertices.Count; index += 3)
+            {
+                var vertex0 = submesh.Vertices[index + 0];
+                var vertex1 = submesh.Vertices[index + 1];
+                var vertex2 = submesh.Vertices[index + 2];
+                yield return new IslandUtility.Triangle((int)uvid.UVChannel, vertex0, vertex1, vertex2);
+            }
+        }
+
+        var triangles = users.SelectMany(TrianglesByUVID).ToList();
+        var islands = IslandUtility.UVtoIsland(triangles);
+
+        // TODO: merge too over wrapped islands
+        // We should: merge islands completely inside other island
+        // We may: merge islands >N% wrapped (heuristic)
+
+        // fit Island bounds to pixel bounds
+        var maxResolution = -1;
+        var minResolution = int.MaxValue;
+        {
+            foreach (var texture2D in textures)
+            {
+                var width = texture2D.width;
+                var height = texture2D.height;
+
+                if (!width.IsPowerOfTwo() || !height.IsPowerOfTwo())
+                {
+                    TraceLog($"{string.Join(", ", textures)} will not merged because {texture2D} is not power of two");
+                    return AtlasResult.Empty;
+                }
+
+                maxResolution = Mathf.Max(maxResolution, width, height);
+                minResolution = Mathf.Min(minResolution, width, height);
+            }
+
+            // padding is at least 4px with max resolution, 1px in min resolution
+            const int paddingSize = 4;
+
+            if (minResolution <= paddingSize || maxResolution <= paddingSize)
+            {
+                TraceLog(
+                    $"{string.Join(", ", textures)} will not merged because min resolution is less than 4 ({minResolution})");
+                return AtlasResult.Empty;
+            }
+
+            if (maxResolution / paddingSize < minResolution)
+                minResolution = maxResolution / paddingSize;
+
+            foreach (var island in islands)
+            {
+                ref var min = ref island.MinPos;
+                ref var max = ref island.MaxPos;
+
+                // floor/ceil to pixel bounds and add padding
+                
+                min.x = Mathf.Max(Mathf.Floor(min.x * minResolution - 1) / minResolution, 0);
+                min.y = Mathf.Max(Mathf.Floor(min.y * minResolution - 1) / minResolution, 0);
+                max.x = Mathf.Min(Mathf.Ceil(max.x * minResolution + 1) / minResolution, 1);
+                max.y = Mathf.Min(Mathf.Ceil(max.y * minResolution + 1) / minResolution, 1);
+            }
+        }
+
+        // Check for island size before trying to atlas
+        var totalIslandSize = islands.Sum(x => x.Size.x * x.Size.y);
+        if (totalIslandSize >= 0.5)
+        {
+            TraceLog($"{string.Join(", ", textures)} will not merged because more than half ({totalIslandSize}) are used");
+
+            return AtlasResult.Empty;
+        }
+
+        var maxIslandLength = islands.Max(x => Mathf.Max(x.Size.x, x.Size.y));
+        if (maxIslandLength >= 0.5)
+        {
+            TraceLog($"{string.Join(", ", textures)} will not merged because max island length is more than 0.5 ({maxIslandLength})");
+
+            return AtlasResult.Empty;
+        }
+
+        TraceLog($"{string.Join(", ", textures)} will go to atlas texture (using {totalIslandSize} of texture)");
+        return AtlasResult.Empty;
+    }
+
+    // Copied from TexTransTool
+    // https://github.com/ReinaS-64892/TexTransTool/blob/48c608c816c718acc5be607b5c1232870bafc674/TexTransCore/Island/IslandUtility.cs
+    // Licensed under MIT
+    // Copyright (c) 2023 Reina_Sakiria
+    internal static class IslandUtility
+    {
+        /// <summary>
+        /// Union-FindアルゴリズムのためのNode Structureです。細かいアロケーションの負荷を避けるために、配列で管理する想定で、
+        /// ポインターではなくインデックスで親ノードを指定します。
+        ///
+        /// グループの代表でない限り、parentIndex以外の値は無視されます（古いデータが入る場合があります）
+        /// </summary>
+        internal struct VertNode
+        {
+            public int parentIndex;
+
+            public (Vector2, Vector2) boundingBox;
+
+            public int depth;
+            public int triCount;
+
+            public Island? island;
+
+            public VertNode(int i, Vector2 uv)
+            {
+                parentIndex = i;
+                boundingBox = (uv, uv);
+                depth = 0;
+                island = null;
+                triCount = 0;
+            }
+
+            /// <summary>
+            /// 指定したインデックスのノードのグループの代表ノードを調べる
+            /// </summary>
+            /// <param name="arr"></param>
+            /// <param name="index"></param>
+            /// <returns></returns>
+            public static int Find(VertNode[] arr, int index)
+            {
+                if (arr[index].parentIndex == index) return index;
+
+                return arr[index].parentIndex = Find(arr, arr[index].parentIndex);
+            }
+
+            /// <summary>
+            /// 指定したふたつのノードを結合する
+            /// </summary>
+            /// <param name="arr"></param>
+            /// <param name="a"></param>
+            /// <param name="b"></param>
+            public static void Merge(VertNode[] arr, int a, int b)
+            {
+                a = Find(arr, a);
+                b = Find(arr, b);
+
+                if (a == b) return;
+
+                if (arr[a].depth < arr[b].depth)
+                {
+                    (a, b) = (b, a);
+                }
+
+                if (arr[a].depth == arr[b].depth) arr[a].depth++;
+                arr[b].parentIndex = a;
+
+                arr[a].boundingBox = (Vector2.Min(arr[a].boundingBox.Item1, arr[b].boundingBox.Item1),
+                    Vector2.Max(arr[a].boundingBox.Item2, arr[b].boundingBox.Item2));
+                arr[a].triCount += arr[b].triCount;
+            }
+
+            /// <summary>
+            /// このグループに該当するIslandに三角面を追加します。Islandが存在しない場合は作成しislandListに追加します。
+            /// </summary>
+            /// <param name="idx"></param>
+            /// <param name="islandList"></param>
+            public void AddTriangle(Triangle idx, List<Island> islandList)
+            {
+                if (island == null)
+                {
+                    islandList.Add(island = new Island());
+                    island.triangles.Capacity = triCount;
+
+                    var min = boundingBox.Item1;
+                    var max = boundingBox.Item2;
+
+                    island.MinPos = min;
+                    island.MaxPos = max;
+                }
+
+                island.triangles.Add(idx);
+            }
+        }
+
+        public readonly struct Triangle : IEnumerable<Vertex>
+        {
+            public readonly int UVIndex;
+            public readonly Vertex zero;
+            public readonly Vertex one;
+            public readonly Vertex two;
+
+            public Triangle(int uvIndex, Vertex zero, Vertex one, Vertex two)
+            {
+                UVIndex = uvIndex;
+                this.zero = zero;
+                this.one = one;
+                this.two = two;
+            }
+
+            Enumerator GetEnumerator() => new(this);
+            IEnumerator<Vertex> IEnumerable<Vertex>.GetEnumerator() => GetEnumerator();
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+            struct Enumerator : IEnumerator<Vertex>
+            {
+                private readonly Triangle triangle;
+                private int index;
+
+                public Enumerator(Triangle triangle)
+                {
+                    this.triangle = triangle;
+                    index = -1;
+                }
+
+                public bool MoveNext()
+                {
+                    index++;
+                    return index < 3;
+                }
+
+                public void Reset() => index = -1;
+
+                public Vertex Current => index switch
+                {
+                    0 => triangle.zero,
+                    1 => triangle.one,
+                    2 => triangle.two,
+                    _ => throw new InvalidOperationException(),
+                };
+
+                object IEnumerator.Current => Current;
+
+                public void Dispose()
+                {
+                }
+            }
+        }
+
+        public static List<Island> UVtoIsland(ICollection<Triangle> triangles)
+        {
+            Profiler.BeginSample("UVtoIsland");
+            var islands = UVToIslandImpl(triangles);
+            Profiler.EndSample();
+
+            return islands;
+        }
+
+        private static List<Island> UVToIslandImpl(ICollection<Triangle> triangles)
+        {
+            // 同一の位置にある頂点をまず調べて、共通のインデックスを割り当てます
+            Profiler.BeginSample("Preprocess vertices");
+            var indexToUv = new List<Vector2>();
+            var uvToIndex = new Dictionary<Vector2, int>();
+            var inputVertToUniqueIndex = new List<int>();
+            var vertexToUniqueIndex = new Dictionary<Vertex, int>();
+            {
+                var uniqueUv = 0;
+                foreach (var triangle in triangles)
+                {
+                    foreach (var vertex in triangle)
+                    {
+                        var uv = (Vector2)vertex.GetTexCoord(triangle.UVIndex);
+                        if (!uvToIndex.TryGetValue(uv, out var uvVert))
+                        {
+                            uvToIndex.Add(uv, uvVert = uniqueUv++);
+                            indexToUv.Add(uv);
+                        }
+
+                        inputVertToUniqueIndex.Add(uvVert);
+                        vertexToUniqueIndex[vertex] = uvVert;
+                    }
+                }
+            }
+            System.Diagnostics.Debug.Assert(indexToUv.Count == uvToIndex.Count);
+            System.Diagnostics.Debug.Assert(indexToUv.Count == inputVertToUniqueIndex.Count);
+            Profiler.EndSample();
+
+            // Union-Find用のデータストラクチャーを初期化
+            Profiler.BeginSample("Init vertNodes");
+            var nodes = new VertNode[uvToIndex.Count];
+            for (var i = 0; i < nodes.Length; i++)
+                nodes[i] = new VertNode(i, indexToUv[i]);
+            Profiler.EndSample();
+
+            Profiler.BeginSample("Merge vertices");
+            foreach (var tri in triangles)
+            {
+                int idx_a = vertexToUniqueIndex[tri.zero];
+                int idx_b = vertexToUniqueIndex[tri.one];
+                int idx_c = vertexToUniqueIndex[tri.two];
+
+                // 三角面に該当するノードを併合
+                VertNode.Merge(nodes, idx_a, idx_b);
+                VertNode.Merge(nodes, idx_b, idx_c);
+
+                // 際アロケーションを避けるために三角面を数える
+                nodes[VertNode.Find(nodes, idx_a)].triCount++;
+            }
+
+            Profiler.EndSample();
+
+            var islands = new List<Island>();
+
+            // この時点で代表が決まっているので、三角を追加していきます。
+            Profiler.BeginSample("Add triangles to islands");
+            foreach (var tri in triangles)
+            {
+                int idx = vertexToUniqueIndex[tri.zero];
+
+                nodes[VertNode.Find(nodes, idx)].AddTriangle(tri, islands);
+            }
+
+            Profiler.EndSample();
+
+            return islands;
+        }
+
+
+        [Serializable]
+        public class Island
+        {
+            public List<Triangle> triangles;
+            public Vector2 MinPos;
+            public Vector2 MaxPos;
+
+            public Vector2 Pivot;
+            public bool Is90Rotation;
+
+            public Vector2 Size => MaxPos - MinPos;
+
+            public Island(Island source)
+            {
+                triangles = new List<Triangle>(source.triangles);
+                MinPos = source.MinPos;
+                MaxPos = source.MaxPos;
+                Is90Rotation = source.Is90Rotation;
+            }
+
+            public Island(Triangle triangle)
+            {
+                triangles = new List<Triangle> { triangle };
+            }
+
+            public Island()
+            {
+                triangles = new List<Triangle>();
+            }
+
+            public Island(List<Triangle> trianglesOfIsland)
+            {
+                triangles = trianglesOfIsland;
+            }
+        }
     }
 }
