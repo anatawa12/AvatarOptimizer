@@ -69,12 +69,12 @@ BlendShapeは、頂点とBlendShapeの数に比例して負荷が大きくなる
 
 ### "有効無効状態に関するアニメーションをコピーする" {#copy-enablement-animation}
 
-このチェックボックスがオンの場合、統合対象のSkinnedMeshRendererの有効無効状態に関するアニメーションが統合先のSkinnedMeshRendererにコピーされます。
+統合対象の(Skinned)MeshRendererの有効無効状態に関するアニメーションを統合先のSkinnedMeshRendererにコピーするオプションです。
 
 この機能は、統合先のSkinnedMeshRendererの`enabled`プロパティや、そのGameObjectや祖先のGameObjectの`activeSelf`プロパティのアニメーションをコピーします。
-この機能は、アニメーションされているプロパティを1つのみコピーする事が可能であるため、複数のプロパティがアニメーションされている場合には(つまり、`enabled`と`activeSelf`の両方、または複数の`activeSelf`がアニメーションされている場合)エラーになります。
+ただし、アニメーションされているプロパティは1種類しかコピーできないため、複数種類/階層のプロパティがアニメーションされている場合(`enabled`と`activeSelf`の両方がアニメーションされている場合や、自身と親の両方の`activeSelf`がアニメーションされている場合など)はエラーになります。
 
-また、統合先のSkinnedMeshRendererの`enabled`のアニメーションはこの機能によって上書きされるため、統合先のSkinnedMeshRendererの`enabled`のアニメーションをしてはいけません。
+なお、統合先のSkinnedMeshRendererの`enabled`に対するアニメーションはこの機能によって上書きされるため、統合先のSkinnedMeshRendererの`enabled`をアニメーションしてはいけません。
 
 ### マテリアルの統合 {#merge-materials}
 

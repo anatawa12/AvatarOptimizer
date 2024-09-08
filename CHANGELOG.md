@@ -17,9 +17,9 @@ The format is based on [Keep a Changelog].
 - `Copy Enablement Animation` to Merge Skinned Mesh `#1173`
   - This feature copies activeness / enablement animation from source renderers to the merged renderer.
   - This feature is not enabled by default. You have to enable it in the inspector.
-  - This feature supports copying activeness animation of `isActive` of the GameObject or ancestors of the GameObject,
+  - This feature supports copying activeness animation of `activeSelf` of the GameObject or ancestors of the GameObject,
     However, this feature does not work if multiple GameObjects (or both GameObject and Renderer itself) are animated.
-  - In addition, this feature will be animate the `enabled` of the merged Renderer, so you must not animate the Enabled of the merged Renderer.
+  - In addition, this feature will be animate the `enabled` of the merged renderer, so you must not animate the `enabled` of the merged renderer.
     - If animations are unsupported, AAO will show a error message and abort the build.
 
 ### Changed
