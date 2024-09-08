@@ -196,5 +196,23 @@ namespace Anatawa12.AvatarOptimizer
             new EqualsHashSet<T>(hashSet);
 
         public static bool IsPowerOfTwo(this int x) => x != 0 && (x & (x - 1)) == 0;
+
+        public static float MinPowerOfTwoGreaterThan(float x)
+        {
+            if (x <= 0) throw new ArgumentOutOfRangeException(nameof(x), x, "x must be positive");
+
+            if (x < 1)
+            {
+                var r = 1f;
+                while (r / 2 > x) r /= 2;
+                return r;
+            }
+            else
+            {
+                var r = 1f;
+                while (r < x) r *= 2;
+                return r;
+            }
+        }
     }
 }

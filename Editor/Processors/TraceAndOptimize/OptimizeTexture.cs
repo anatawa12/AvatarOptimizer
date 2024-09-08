@@ -397,6 +397,7 @@ internal class OptimizeTexture : TraceAndOptimizePass<OptimizeTexture>
         var islands = IslandUtility.UVtoIsland(triangles);
 
         // TODO: merge too over wrapped islands
+        // https://misskey.niri.la/notes/9xwx6acfid ?
         // We should: merge islands completely inside other island
         // We may: merge islands >N% wrapped (heuristic)
 
@@ -464,7 +465,124 @@ internal class OptimizeTexture : TraceAndOptimizePass<OptimizeTexture>
         }
 
         TraceLog($"{string.Join(", ", textures)} will go to atlas texture (using {totalIslandSize} of texture)");
+
+        var atlasIslands = islands.Select(x => new AtlasIsland(x)).ToArray();
+        Array.Sort(atlasIslands, (a, b) => b.Size.y.CompareTo(a.Size.y));
+
+        var maxIslandSizeX = atlasIslands.Max(x => x.Size.x);
+        var maxIslandSizeY = atlasIslands.Max(x => x.Size.y);
+
+        TraceLog($"Starting Atlas with maxX: {maxIslandSizeX}, maxY: {maxIslandSizeY}");
+
+        foreach (var atlasSize in AfterAtlasSizesSmallToBig(totalIslandSize, new Vector2(maxIslandSizeX, maxIslandSizeY)))
+        {
+            if (TryAtlasTexture(atlasIslands, atlasSize))
+            {
+                // Good News! We did it!
+                TraceLog($"Good News! We did it!: {atlasSize}");
+                return AtlasResult.Empty;                    
+            }
+            else
+            {
+                TraceLog($"Failed to atlas with {atlasSize}");
+            }
+        }
+
+
         return AtlasResult.Empty;
+    }
+
+    static IEnumerable<Vector2> AfterAtlasSizesSmallToBig(float useRatio, Vector2 maxIslandSize)
+    {
+        var maxHalfCount = 0;
+        {
+            var currentSize = 1f;
+            while (currentSize > useRatio)
+            {
+                maxHalfCount++;
+                currentSize /= 2;
+            }
+        }
+
+        var minXSize = Utils.MinPowerOfTwoGreaterThan(maxIslandSize.x);
+        var minYSize = Utils.MinPowerOfTwoGreaterThan(maxIslandSize.y);
+
+        for (var halfCount = maxHalfCount; halfCount >= 0; halfCount--)
+        {
+            var size = 1f / (1 << halfCount);
+
+            for (var xSize = minXSize; xSize <= 1; xSize *= 2)
+            {
+                var ySize = size / xSize;
+                if (ySize < minYSize) break;
+                if (ySize > 1) break;
+                if (ySize >= 1 && xSize >= 1) break;
+
+                yield return new Vector2(xSize, ySize);
+            }
+        }
+    }
+
+    // expecting y size sorted
+    static bool TryAtlasTexture(AtlasIsland[] islands, Vector2 size)
+    {
+        var done = new bool[islands.Length];
+        var doneCount = 0;
+
+        var yCursor = 0f;
+
+        while (true)
+        {
+            var firstNotFinished = Array.FindIndex(done, x => !x);
+
+            // this means all islands are finished
+            if (firstNotFinished == -1) break;
+
+            var firstNotFinishedIsland = islands[firstNotFinished];
+
+            if (yCursor + firstNotFinishedIsland.Size.y > size.y)
+                return false; // failed to atlas
+
+
+            var xCursor = 0f;
+
+            firstNotFinishedIsland.Pivot = new Vector2(xCursor, yCursor);
+            xCursor += firstNotFinishedIsland.Size.x;
+            done[firstNotFinished] = true;
+            doneCount++;
+
+            for (var i = firstNotFinished + 1; i < islands.Length; i++)
+            {
+                if (done[i]) continue;
+
+                var island = islands[i];
+                if (xCursor + island.Size.x > size.x) continue;
+
+                island.Pivot = new Vector2(xCursor, yCursor);
+                xCursor += island.Size.x;
+                done[i] = true;
+                doneCount++;
+            }
+
+            yCursor += firstNotFinishedIsland.Size.y;
+        }
+
+        // all islands are placed
+        return true;
+    }
+
+    class AtlasIsland
+    {
+        //TODO: rotate
+        public IslandUtility.Island OriginalIsland;
+        public Vector2 Pivot;
+
+        public Vector2 Size => OriginalIsland.Size;
+
+        public AtlasIsland(IslandUtility.Island originalIsland)
+        {
+            OriginalIsland = originalIsland;
+        }
     }
 
     // Copied from TexTransTool
@@ -702,9 +820,6 @@ internal class OptimizeTexture : TraceAndOptimizePass<OptimizeTexture>
             public Vector2 MinPos;
             public Vector2 MaxPos;
 
-            public Vector2 Pivot;
-            public bool Is90Rotation;
-
             public Vector2 Size => MaxPos - MinPos;
 
             public Island(Island source)
@@ -712,7 +827,6 @@ internal class OptimizeTexture : TraceAndOptimizePass<OptimizeTexture>
                 triangles = new List<Triangle>(source.triangles);
                 MinPos = source.MinPos;
                 MaxPos = source.MaxPos;
-                Is90Rotation = source.Is90Rotation;
             }
 
             public Island(Triangle triangle)
