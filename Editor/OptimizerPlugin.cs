@@ -54,6 +54,7 @@ namespace Anatawa12.AvatarOptimizer.ndmf
                             })
                         .Then.Run("Validation", (ctx) => ComponentValidation.ValidateAll(ctx.AvatarRootObject))
                         .Then.Run(Processors.TraceAndOptimizes.LoadTraceAndOptimizeConfiguration.Instance)
+                        .Then.Run(Processors.DupliacteAssets.Instance)
                         .Then.Run(Processors.ParseAnimator.Instance)
                         .Then.Run(Processors.TraceAndOptimizes.AddRemoveEmptySubMesh.Instance)
                         .Then.Run(Processors.TraceAndOptimizes.AutoFreezeBlendShape.Instance)
