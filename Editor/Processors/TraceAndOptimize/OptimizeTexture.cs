@@ -264,13 +264,58 @@ internal class OptimizeTexture : TraceAndOptimizePass<OptimizeTexture>
                     textureMapping.Add(key, value);
             }
 
-            // TODO: duplicate vertex if used by multiple UVs
+            var used = new HashSet<Vertex>();
 
-            foreach (var (_, result) in atlasResults)
+            // collect vertices used by non-atlas submeshes
             {
-                foreach (var ((vertex, uvChannel), newUV) in result.NewUVs)
+                var uvids = atlasResults.Keys.SelectMany(x => x.backedSet);
+                var mergingSubMeshes = uvids.Select(x => x.MeshInfo2!.SubMeshes[x.SubMeshIndex]).ToHashSet();
+                var meshes = uvids.Select(x => x.MeshInfo2!).Distinct();
+
+                foreach (var mesh in meshes)
+                foreach (var subMesh in mesh.SubMeshes)
+                    if (!mergingSubMeshes.Contains(subMesh))
+                        used.UnionWith(subMesh.Vertices);
+            }
+
+            foreach (var (uvids, result) in atlasResults)
+            {
+                var newVertexMap = new Dictionary<Vertex, Vertex>();
+
+                foreach (var uvid in uvids.backedSet)
                 {
-                    vertex.SetTexCoord(uvChannel, newUV);
+                    var meshInfo2 = uvid.MeshInfo2!;
+                    var submesh = meshInfo2.SubMeshes[uvid.SubMeshIndex];
+                    for (var i = 0; i < submesh.Vertices.Count; i++)
+                    {
+                        var originalVertex = submesh.Vertices[i];
+                        var newUVList = result.NewUVs[originalVertex];
+                        
+                        Vertex vertex;
+                        if (newVertexMap.TryGetValue(originalVertex, out vertex))
+                        {
+                            // use cloned vertex
+                        }
+                        else
+                        {
+                            if (used.Add(originalVertex))
+                            {
+                                vertex = originalVertex;
+                                newVertexMap.Add(originalVertex, vertex);
+                            }
+                            else
+                            {
+                                vertex = originalVertex.Clone();
+                                newVertexMap.Add(originalVertex, vertex);
+                                meshInfo2.Vertices.Add(vertex);
+                                TraceLog("Duplicating vertex");
+                            }
+
+                            foreach (var (uvChannel, newUV) in newUVList)
+                                vertex.SetTexCoord(uvChannel, newUV);
+                        }
+                        submesh.Vertices[i] = vertex;
+                    }
                 }
             }
 
@@ -375,16 +420,16 @@ internal class OptimizeTexture : TraceAndOptimizePass<OptimizeTexture>
     struct AtlasResult
     {
         public Dictionary<Texture2D, Texture2D> TextureMapping;
-        public Dictionary<(Vertex, int uvChannel), Vector2> NewUVs;
+        public Dictionary<Vertex, List<(int uvChannel, Vector2 newUV)>> NewUVs;
 
-        public AtlasResult(Dictionary<Texture2D, Texture2D> textureMapping, Dictionary<(Vertex, int uvChannel), Vector2> newUVs)
+        public AtlasResult(Dictionary<Texture2D, Texture2D> textureMapping, Dictionary<Vertex, List<(int uvChannel, Vector2 newUV)>> newUVs)
         {
             TextureMapping = textureMapping;
             NewUVs = newUVs;
         }
 
         public static AtlasResult Empty = new(new Dictionary<Texture2D, Texture2D>(),
-            new Dictionary<(Vertex, int uvChannel), Vector2>());
+            new Dictionary<Vertex, List<(int uvChannel, Vector2 newUV)>>());
 
         public bool IsEmpty() =>
             (TextureMapping == null || TextureMapping.Count == 0) &&
@@ -536,7 +581,6 @@ internal class OptimizeTexture : TraceAndOptimizePass<OptimizeTexture>
     private static AtlasResult BuildAtlasResult(AtlasIsland[] atlasIslands, Vector2 atlasSize, ICollection<Texture2D> textures)
     {
         var textureMapping = new Dictionary<Texture2D, Texture2D>();
-        var newUVs = new Dictionary<(Vertex, int uvChannel), Vector2>();
 
         foreach (var texture2D in textures)
         {
@@ -574,6 +618,8 @@ internal class OptimizeTexture : TraceAndOptimizePass<OptimizeTexture>
             textureMapping.Add(texture2D, newTexture);
         }
 
+        var newUVs = new Dictionary<Vertex, List<(int uvChannel, Vector2 newUV)>>();
+
         foreach (var atlasIsland in atlasIslands)
         foreach (var triangle in atlasIsland.OriginalIsland.triangles)
         foreach (var vertex in triangle)
@@ -584,7 +630,9 @@ internal class OptimizeTexture : TraceAndOptimizePass<OptimizeTexture>
             uv += atlasIsland.Pivot;
             uv /= atlasSize;
 
-            newUVs.TryAdd((vertex, triangle.UVIndex), uv);
+            if (!newUVs.TryGetValue(vertex, out var newUVList))
+                newUVs.Add(vertex, newUVList = new List<(int uvChannel, Vector2 newUV)>());
+            newUVList.Add((triangle.UVIndex, uv));
         }
 
         return new AtlasResult(textureMapping, newUVs);
