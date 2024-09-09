@@ -6,7 +6,9 @@ using System.Linq;
 using Anatawa12.AvatarOptimizer.AnimatorParsersV2;
 using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
 using nadena.dev.ndmf;
+using UnityEditor;
 using UnityEngine;
+using UnityEngine.Experimental.Rendering;
 using UnityEngine.Profiling;
 using Debug = UnityEngine.Debug;
 using Object = UnityEngine.Object;
@@ -227,7 +229,6 @@ internal class OptimizeTexture : TraceAndOptimizePass<OptimizeTexture>
             }
         }
 
-        // TODO: implement merging
         {
             var textureUserMaterials = new Dictionary<Texture2D, HashSet<(Material, string)>>();
             var textureByUVs = new Dictionary<EqualsHashSet<UVID>, HashSet<Texture2D>>();
@@ -249,9 +250,36 @@ internal class OptimizeTexture : TraceAndOptimizePass<OptimizeTexture>
                 }
             }
 
+            var textureMapping = new Dictionary<Texture2D, Texture2D>();
+            var atlasResults = new Dictionary<EqualsHashSet<UVID>, AtlasResult>();
+
             foreach (var (uvSet, textures) in textureByUVs)
             {
-                MayAtlasTexture(textures, uvSet.backedSet);
+                var atlasResult = MayAtlasTexture(textures, uvSet.backedSet);
+
+                if (atlasResult.IsEmpty()) continue;
+
+                atlasResults.Add(uvSet, atlasResult);
+                foreach (var (key, value) in atlasResult.TextureMapping)
+                    textureMapping.Add(key, value);
+            }
+
+            // TODO: duplicate vertex if used by multiple UVs
+
+            foreach (var (_, result) in atlasResults)
+            {
+                foreach (var ((vertex, uvChannel), newUV) in result.NewUVs)
+                {
+                    vertex.SetTexCoord(uvChannel, newUV);
+                }
+            }
+
+            foreach (var (original, users) in textureUserMaterials)
+            {
+                if (!textureMapping.TryGetValue(original, out var newTexture)) continue;
+
+                foreach (var (material, propertyName) in users)
+                    material.SetTexture(propertyName, newTexture);
             }
         }
     }
@@ -357,6 +385,10 @@ internal class OptimizeTexture : TraceAndOptimizePass<OptimizeTexture>
 
         public static AtlasResult Empty = new(new Dictionary<Texture2D, Texture2D>(),
             new Dictionary<(Vertex, int uvChannel), Vector2>());
+
+        public bool IsEmpty() =>
+            (TextureMapping == null || TextureMapping.Count == 0) &&
+            (NewUVs == null || NewUVs.Count == 0);
     }
 
     static AtlasResult MayAtlasTexture(ICollection<Texture2D> textures, ICollection<UVID> users)
@@ -480,7 +512,7 @@ internal class OptimizeTexture : TraceAndOptimizePass<OptimizeTexture>
             {
                 // Good News! We did it!
                 TraceLog($"Good News! We did it!: {atlasSize}");
-                return AtlasResult.Empty;                    
+                return BuildAtlasResult(atlasIslands, atlasSize, textures);                    
             }
             else
             {
@@ -490,6 +522,91 @@ internal class OptimizeTexture : TraceAndOptimizePass<OptimizeTexture>
 
 
         return AtlasResult.Empty;
+    }
+
+    private static Material? _helperMaterial;
+
+    private static Material HelperMaterial =>
+        _helperMaterial != null ? _helperMaterial : _helperMaterial = new Material(Assets.MergeTextureHelper);
+    private static readonly int MainTexProp = Shader.PropertyToID("_MainTex");
+    private static readonly int MainTexStProp = Shader.PropertyToID("_MainTex_ST");
+    private static readonly int RectProp = Shader.PropertyToID("_Rect");
+    private static readonly int SrcRectProp = Shader.PropertyToID("_SrcRect");
+
+    private static AtlasResult BuildAtlasResult(AtlasIsland[] atlasIslands, Vector2 atlasSize, ICollection<Texture2D> textures)
+    {
+        var textureMapping = new Dictionary<Texture2D, Texture2D>();
+        var newUVs = new Dictionary<(Vertex, int uvChannel), Vector2>();
+
+        foreach (var texture2D in textures)
+        {
+            var newWidth = Mathf.CeilToInt(atlasSize.x * texture2D.width);
+            var newHeight = Mathf.CeilToInt(atlasSize.y * texture2D.height);
+            var target = new RenderTexture(newWidth, newHeight, 0, GraphicsFormat.R8G8B8A8_SRGB);
+            HelperMaterial.SetTexture(MainTexProp, texture2D);
+
+            // TODO: block copying texture
+
+            foreach (var atlasIsland in atlasIslands)
+            {
+                //HelperMaterial.SetVector(MainTexStProp,
+                //    new Vector4(atlasIsland.OriginalIsland.Size.x, atlasIsland.OriginalIsland.Size.y,
+                //        atlasIsland.OriginalIsland.MinPos.x, atlasIsland.OriginalIsland.MinPos.y));
+                
+                HelperMaterial.SetVector(SrcRectProp,
+                    new Vector4(atlasIsland.OriginalIsland.MinPos.x, atlasIsland.OriginalIsland.MinPos.y,
+                        atlasIsland.OriginalIsland.Size.x, atlasIsland.OriginalIsland.Size.y));
+
+                var pivot = atlasIsland.Pivot / atlasSize;
+                var size = atlasIsland.Size / atlasSize;
+
+                HelperMaterial.SetVector(RectProp, new Vector4(pivot.x, pivot.y, size.x, size.y));
+
+                Graphics.Blit(texture2D, target, HelperMaterial);
+            }
+
+            var newTexture = CopyFromRenderTarget(target);
+
+            if (GraphicsFormatUtility.IsCompressedFormat(texture2D.format))
+                EditorUtility.CompressTexture(newTexture, texture2D.format, TextureCompressionQuality.Normal);
+            newTexture.name = texture2D.name + " (AAO UV Packed)";
+            newTexture.Apply(true);
+            textureMapping.Add(texture2D, newTexture);
+        }
+
+        foreach (var atlasIsland in atlasIslands)
+        foreach (var triangle in atlasIsland.OriginalIsland.triangles)
+        foreach (var vertex in triangle)
+        {
+            var uv = (Vector2)vertex.GetTexCoord(triangle.UVIndex);
+
+            uv -= atlasIsland.OriginalIsland.MinPos;
+            uv += atlasIsland.Pivot;
+            uv /= atlasSize;
+
+            newUVs.TryAdd((vertex, triangle.UVIndex), uv);
+        }
+
+        return new AtlasResult(textureMapping, newUVs);
+    }
+
+    private static Texture2D CopyFromRenderTarget(RenderTexture source)
+    {
+        var prev = RenderTexture.active;
+        var texture = new Texture2D(source.width, source.height, TextureFormat.RGBA32, true);
+            
+        try
+        {
+            RenderTexture.active = source;
+            texture.ReadPixels(new Rect(0, 0, texture.width, texture.height), 0, 0);
+            texture.Apply();
+        }
+        finally
+        {
+            RenderTexture.active = prev;
+        }
+
+        return texture;
     }
 
     static IEnumerable<Vector2> AfterAtlasSizesSmallToBig(float useRatio, Vector2 maxIslandSize)

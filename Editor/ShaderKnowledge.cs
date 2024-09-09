@@ -215,6 +215,13 @@ namespace Anatawa12.AvatarOptimizer
                 information.Add(new TextureUsageInformation("_OutlineWidthMask", uvMain)); // ??
             }
 
+            // emission
+            if (material.GetInt("_UseEmission") != 0 || animation.IsAnimated("_UseEmission"))
+            {
+                information.Add(new TextureUsageInformation("_EmissionMap", uvMain));
+                information.Add(new TextureUsageInformation("_EmissionBlendMask", uvMain)); // ??
+            }
+
             // TODO: Many Properties
             return information.ToArray();
         }

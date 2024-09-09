@@ -5,6 +5,7 @@ Shader "Hidden/merge_texture_helper"
 		_MainTex ("Texture", 2D) = "white" {}
 		// x, y, w, h
 		_Rect ("Rectangle", Vector) = (0, 0, 1, 1)
+		_SrcRect ("SourceRectangle", Vector) = (0, 0, 1, 1)
 	}
 	SubShader
 	{
@@ -35,6 +36,7 @@ Shader "Hidden/merge_texture_helper"
 			sampler2D _MainTex;
 			float4 _MainTex_ST;
 			float4 _Rect;
+			float4 _SrcRect;
 
 			v2f vert (appdata v)
 			{
@@ -47,7 +49,8 @@ Shader "Hidden/merge_texture_helper"
 
 			fixed4 frag (v2f i) : SV_Target
 			{
-				fixed4 c = tex2D(_MainTex, TRANSFORM_TEX(i.uv, _MainTex));
+				float2 uv = i.uv * _SrcRect.zw + _SrcRect.xy;
+				fixed4 c = tex2D(_MainTex, uv);
 				clip(c.a - 0.0001);
 				return c;
 			}
