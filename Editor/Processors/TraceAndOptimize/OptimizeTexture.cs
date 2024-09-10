@@ -591,9 +591,9 @@ internal class OptimizeTexture : TraceAndOptimizePass<OptimizeTexture>
     private static Material HelperMaterial =>
         _helperMaterial != null ? _helperMaterial : _helperMaterial = new Material(Assets.MergeTextureHelper);
     private static readonly int MainTexProp = Shader.PropertyToID("_MainTex");
-    private static readonly int MainTexStProp = Shader.PropertyToID("_MainTex_ST");
     private static readonly int RectProp = Shader.PropertyToID("_Rect");
     private static readonly int SrcRectProp = Shader.PropertyToID("_SrcRect");
+    private static readonly int NoClipProp = Shader.PropertyToID("_NoClip");
 
     private static AtlasResult BuildAtlasResult(AtlasIsland[] atlasIslands, Vector2 atlasSize, ICollection<Texture2D> textures, bool useBlockCopying = false)
     {
@@ -678,6 +678,7 @@ internal class OptimizeTexture : TraceAndOptimizePass<OptimizeTexture>
             {
                 var target = new RenderTexture(newWidth, newHeight, 0, GraphicsFormat.R8G8B8A8_SRGB);
                 HelperMaterial.SetTexture(MainTexProp, texture2D);
+                HelperMaterial.SetInt(NoClipProp, 1);
 
                 foreach (var atlasIsland in atlasIslands)
                 {
