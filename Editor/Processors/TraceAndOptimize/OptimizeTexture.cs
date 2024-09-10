@@ -497,30 +497,47 @@ internal class OptimizeTexture : TraceAndOptimizePass<OptimizeTexture>
                 minResolution = Mathf.Min(minResolution, width, height);
             }
 
+            var xBlockSizeInMaxResolutionLCM = 1;
+            var yBlockSizeInMaxResolutionLCM = 1;
+
+            foreach (var texture2D in textures)
+            {
+                var width = texture2D.width;
+                var height = texture2D.height;
+
+                var xBlockSizeInMaxResolution = (int)(GraphicsFormatUtility.GetBlockWidth(texture2D.format) * (maxResolution / width));
+                var yBlockSizeInMaxResolution = (int)(GraphicsFormatUtility.GetBlockHeight(texture2D.format) * (maxResolution / height));
+
+                xBlockSizeInMaxResolutionLCM = Utils.LeastCommonMultiple(xBlockSizeInMaxResolutionLCM, xBlockSizeInMaxResolution);
+                yBlockSizeInMaxResolutionLCM = Utils.LeastCommonMultiple(yBlockSizeInMaxResolutionLCM, yBlockSizeInMaxResolution);
+            }
+
             // padding is at least 4px with max resolution, 1px in min resolution
-            const int paddingSize = 4;
+            var minResolutionPixelSizeInMaxResolution = maxResolution / minResolution;
+            var paddingSize = Mathf.Max(minResolutionPixelSizeInMaxResolution, maxResolution / 100);
 
             if (minResolution <= paddingSize || maxResolution <= paddingSize)
             {
                 TraceLog(
-                    $"{string.Join(", ", textures)} will not merged because min resolution is less than 4 ({minResolution})");
+                    $"{string.Join(", ", textures)} will not merged because min resolution is less than {paddingSize} ({minResolution})");
                 return AtlasResult.Empty;
             }
 
-            if (maxResolution / paddingSize < minResolution)
-                minResolution = maxResolution / paddingSize;
+            var blockSizeX = Utils.LeastCommonMultiple(xBlockSizeInMaxResolutionLCM, minResolutionPixelSizeInMaxResolution);
+            var blockSizeY = Utils.LeastCommonMultiple(yBlockSizeInMaxResolutionLCM, minResolutionPixelSizeInMaxResolution);
+            
+            TraceLog($"blockSizeX: {blockSizeX}, blockSizeY: {blockSizeY}");
 
             foreach (var island in islands)
             {
                 ref var min = ref island.MinPos;
                 ref var max = ref island.MaxPos;
 
-                // floor/ceil to pixel bounds and add padding
-                
-                min.x = Mathf.Max(Mathf.Floor(min.x * minResolution - 1) / minResolution, 0);
-                min.y = Mathf.Max(Mathf.Floor(min.y * minResolution - 1) / minResolution, 0);
-                max.x = Mathf.Min(Mathf.Ceil(max.x * minResolution + 1) / minResolution, 1);
-                max.y = Mathf.Min(Mathf.Ceil(max.y * minResolution + 1) / minResolution, 1);
+                // fit to block size
+                min.x = Mathf.Floor((min.x * maxResolution - paddingSize) / blockSizeX) * blockSizeX / maxResolution;
+                min.y = Mathf.Floor((min.y * maxResolution - paddingSize) / blockSizeY) * blockSizeY / maxResolution;
+                max.x = Mathf.Ceil((max.x * maxResolution + paddingSize) / blockSizeX) * blockSizeX / maxResolution;
+                max.y = Mathf.Ceil((max.y * maxResolution + paddingSize) / blockSizeY) * blockSizeY / maxResolution;
             }
         }
 
@@ -557,7 +574,7 @@ internal class OptimizeTexture : TraceAndOptimizePass<OptimizeTexture>
             {
                 // Good News! We did it!
                 TraceLog($"Good News! We did it!: {atlasSize}");
-                return BuildAtlasResult(atlasIslands, atlasSize, textures);                    
+                return BuildAtlasResult(atlasIslands, atlasSize, textures, useBlockCopying: true);                    
             }
             else
             {
@@ -578,43 +595,112 @@ internal class OptimizeTexture : TraceAndOptimizePass<OptimizeTexture>
     private static readonly int RectProp = Shader.PropertyToID("_Rect");
     private static readonly int SrcRectProp = Shader.PropertyToID("_SrcRect");
 
-    private static AtlasResult BuildAtlasResult(AtlasIsland[] atlasIslands, Vector2 atlasSize, ICollection<Texture2D> textures)
+    private static AtlasResult BuildAtlasResult(AtlasIsland[] atlasIslands, Vector2 atlasSize, ICollection<Texture2D> textures, bool useBlockCopying = false)
     {
         var textureMapping = new Dictionary<Texture2D, Texture2D>();
 
         foreach (var texture2D in textures)
         {
-            var newWidth = Mathf.CeilToInt(atlasSize.x * texture2D.width);
-            var newHeight = Mathf.CeilToInt(atlasSize.y * texture2D.height);
-            var target = new RenderTexture(newWidth, newHeight, 0, GraphicsFormat.R8G8B8A8_SRGB);
-            HelperMaterial.SetTexture(MainTexProp, texture2D);
+            var newWidth = (int)(atlasSize.x * texture2D.width);
+            var newHeight = (int)(atlasSize.y * texture2D.height);
+            Texture2D newTexture;
 
-            // TODO: block copying texture
-
-            foreach (var atlasIsland in atlasIslands)
+            if (useBlockCopying)
             {
-                //HelperMaterial.SetVector(MainTexStProp,
-                //    new Vector4(atlasIsland.OriginalIsland.Size.x, atlasIsland.OriginalIsland.Size.y,
-                //        atlasIsland.OriginalIsland.MinPos.x, atlasIsland.OriginalIsland.MinPos.y));
-                
-                HelperMaterial.SetVector(SrcRectProp,
-                    new Vector4(atlasIsland.OriginalIsland.MinPos.x, atlasIsland.OriginalIsland.MinPos.y,
-                        atlasIsland.OriginalIsland.Size.x, atlasIsland.OriginalIsland.Size.y));
+                var mipmapCount = Mathf.Min(Utils.MostSignificantBit(Mathf.Min(newWidth, newHeight)), texture2D.mipmapCount);
 
-                var pivot = atlasIsland.Pivot / atlasSize;
-                var size = atlasIsland.Size / atlasSize;
+                var destMipmapSize = GraphicsFormatUtility.ComputeMipmapSize(newWidth, newHeight, texture2D.format);
+                var sourceMipmapSize = GraphicsFormatUtility.ComputeMipmapSize(texture2D.width, texture2D.height, texture2D.format);
 
-                HelperMaterial.SetVector(RectProp, new Vector4(pivot.x, pivot.y, size.x, size.y));
+                Texture2D readableVersion;
+                if (texture2D.isReadable)
+                {
+                    readableVersion = texture2D;
+                }
+                else
+                {
+                    readableVersion = new Texture2D(texture2D.width, texture2D.height, texture2D.format, texture2D.mipmapCount, !texture2D.isDataSRGB);
+                    Graphics.CopyTexture(texture2D, readableVersion);
+                    readableVersion.Apply(false);
+                }
+                var sourceTextureData = readableVersion.GetRawTextureData<byte>(); // TODO: this does not work if texture is not readable
+                var sourceTextureDataSpan = sourceTextureData.AsSpan().Slice(0, (int)sourceMipmapSize);
 
-                Graphics.Blit(texture2D, target, HelperMaterial);
+                var destTextureData = new byte[(int)destMipmapSize];
+                var destTextureDataSpan = destTextureData.AsSpan();
+
+                TraceLog($"MipmapSize for {newWidth}x{newHeight} is {destMipmapSize} and data is {sourceTextureData.Length}");
+
+                var blockWidth = (int)GraphicsFormatUtility.GetBlockWidth(texture2D.format);
+                var blockHeight = (int)GraphicsFormatUtility.GetBlockHeight(texture2D.format);
+                var blockSize = (int)GraphicsFormatUtility.GetBlockSize(texture2D.format);
+
+                var destTextureBlockStride = (newWidth + blockWidth - 1) / blockWidth * blockSize;
+                var sourceTextureBlockStride = (texture2D.width + blockWidth - 1) / blockWidth * blockSize;
+
+                foreach (var atlasIsland in atlasIslands)
+                {
+                    var xPixelCount = (int)(atlasIsland.Size.x * texture2D.width);
+                    var yPixelCount = (int)(atlasIsland.Size.y * texture2D.height);
+                    // in most cases same as xPixelCount / blockWidth but if block size is not 2^n, it may be different
+                    var xBlockCount = (xPixelCount + blockWidth - 1) / blockWidth;
+                    var yBlockCount = (yPixelCount + blockHeight - 1) / blockHeight;
+
+                    var sourceXPixelPosition = (int)(atlasIsland.OriginalIsland.MinPos.x * texture2D.width);
+                    var sourceYPixelPosition = (int)(atlasIsland.OriginalIsland.MinPos.y * texture2D.height);
+                    var sourceXBlockPosition = sourceXPixelPosition / blockWidth;
+                    var sourceYBlockPosition = sourceYPixelPosition / blockHeight;
+
+                    var destXPixelPosition = (int)(atlasIsland.Pivot.x * texture2D.width);
+                    var destYPixelPosition = (int)(atlasIsland.Pivot.y * texture2D.height);
+                    var destXBlockPosition = destXPixelPosition / blockWidth;
+                    var destYBlockPosition = destYPixelPosition / blockHeight;
+
+                    var xBlockByteCount = xBlockCount * blockSize;
+                    for (var y = 0; y < yBlockCount; y++)
+                    {
+                        var sourceY = sourceYBlockPosition + y;
+                        var destY = destYBlockPosition + y;
+
+                        var sourceSpan = sourceTextureDataSpan.Slice(sourceY * sourceTextureBlockStride + sourceXBlockPosition * blockSize, xBlockByteCount);
+                        var destSpan = destTextureDataSpan.Slice(destY * destTextureBlockStride + destXBlockPosition * blockSize, xBlockByteCount);
+
+                        sourceSpan.CopyTo(destSpan);
+                    }
+                }
+
+                newTexture = new Texture2D(newWidth, newHeight, texture2D.format, mipmapCount, !texture2D.isDataSRGB);
+                newTexture.SetPixelData(destTextureData, 0);
+                newTexture.Apply(true, !texture2D.isReadable);
+                // TODO: fix broken mipmaps
+            }
+            else
+            {
+                var target = new RenderTexture(newWidth, newHeight, 0, GraphicsFormat.R8G8B8A8_SRGB);
+                HelperMaterial.SetTexture(MainTexProp, texture2D);
+
+                foreach (var atlasIsland in atlasIslands)
+                {
+                    HelperMaterial.SetVector(SrcRectProp,
+                        new Vector4(atlasIsland.OriginalIsland.MinPos.x, atlasIsland.OriginalIsland.MinPos.y,
+                            atlasIsland.OriginalIsland.Size.x, atlasIsland.OriginalIsland.Size.y));
+
+                    var pivot = atlasIsland.Pivot / atlasSize;
+                    var size = atlasIsland.Size / atlasSize;
+
+                    HelperMaterial.SetVector(RectProp, new Vector4(pivot.x, pivot.y, size.x, size.y));
+
+                    Graphics.Blit(texture2D, target, HelperMaterial);
+                }
+
+                newTexture = CopyFromRenderTarget(target);
+
+                if (GraphicsFormatUtility.IsCompressedFormat(texture2D.format))
+                    EditorUtility.CompressTexture(newTexture, texture2D.format, TextureCompressionQuality.Normal);
+                newTexture.name = texture2D.name + " (AAO UV Packed)";
+                newTexture.Apply(true, !texture2D.isReadable);
             }
 
-            var newTexture = CopyFromRenderTarget(target);
-
-            if (GraphicsFormatUtility.IsCompressedFormat(texture2D.format))
-                EditorUtility.CompressTexture(newTexture, texture2D.format, TextureCompressionQuality.Normal);
-            newTexture.name = texture2D.name + " (AAO UV Packed)";
-            newTexture.Apply(true);
             textureMapping.Add(texture2D, newTexture);
         }
 
