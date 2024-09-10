@@ -13,7 +13,7 @@ namespace Anatawa12.AvatarOptimizer.Processors;
 /// 
 /// Currently this class is intended to clone
 /// </summary>
-public class DupliacteAssets : Pass<DupliacteAssets>
+internal class DupliacteAssets : Pass<DupliacteAssets>
 {
     protected override void Execute(BuildContext context)
     {
