@@ -605,9 +605,9 @@ internal class OptimizeTexture : TraceAndOptimizePass<OptimizeTexture>
             var newHeight = (int)(atlasSize.y * texture2D.height);
             Texture2D newTexture;
 
-            if (useBlockCopying)
+            var mipmapCount = Mathf.Min(Utils.MostSignificantBit(Mathf.Min(newWidth, newHeight)), texture2D.mipmapCount);
+            if (useBlockCopying && GraphicsFormatUtility.IsCompressedFormat(texture2D.format) && mipmapCount == 1)
             {
-                var mipmapCount = Mathf.Min(Utils.MostSignificantBit(Mathf.Min(newWidth, newHeight)), texture2D.mipmapCount);
 
                 var destMipmapSize = GraphicsFormatUtility.ComputeMipmapSize(newWidth, newHeight, texture2D.format);
                 var sourceMipmapSize = GraphicsFormatUtility.ComputeMipmapSize(texture2D.width, texture2D.height, texture2D.format);
@@ -672,7 +672,6 @@ internal class OptimizeTexture : TraceAndOptimizePass<OptimizeTexture>
                 newTexture = new Texture2D(newWidth, newHeight, texture2D.format, mipmapCount, !texture2D.isDataSRGB);
                 newTexture.SetPixelData(destTextureData, 0);
                 newTexture.Apply(true, !texture2D.isReadable);
-                // TODO: fix broken mipmaps
             }
             else
             {
