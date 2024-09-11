@@ -421,8 +421,7 @@ internal struct OptimizeTextureImpl {
             _infos.Any(x => x.TryGetFloat($"material.{propertyName}", out _));
     }
 
-    // TODO: uncomment before release
-    // [Conditional("NEVER_TRUE_VALUE_IS_EXPECTED")]
+    [Conditional("AAO_OPTIMIZE_TEXTURE_TRACE_LOG")]
     private static void TraceLog(string message)
     {
         Debug.Log(message);
@@ -653,7 +652,7 @@ internal struct OptimizeTextureImpl {
                     Graphics.CopyTexture(texture2D, readableVersion);
                     readableVersion.Apply(false);
                 }
-                var sourceTextureData = readableVersion.GetRawTextureData<byte>(); // TODO: this does not work if texture is not readable
+                var sourceTextureData = readableVersion.GetRawTextureData<byte>();
                 var sourceTextureDataSpan = sourceTextureData.AsSpan().Slice(0, (int)sourceMipmapSize);
 
                 var destTextureData = new byte[(int)destMipmapSize];
