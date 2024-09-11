@@ -686,7 +686,11 @@ internal struct OptimizeTextureImpl {
             }
             else
             {
-                var target = new RenderTexture(newWidth, newHeight, 0, GraphicsFormat.R8G8B8A8_SRGB);
+                var format = SystemInfo.GetCompatibleFormat(
+                    GraphicsFormatUtility.GetGraphicsFormat(texture2D.format, isSRGB: texture2D.isDataSRGB),
+                    FormatUsage.Render);
+                TraceLog($"Using format {format} ({texture2D.format})");
+                using var tempTexture = Utils.TemporaryRenderTexture(newWidth, newHeight, depthBuffer: 0, format: format);
                 HelperMaterial.SetTexture(MainTexProp, texture2D);
                 HelperMaterial.SetInt(NoClipProp, 1);
 
@@ -703,10 +707,10 @@ internal struct OptimizeTextureImpl {
 
                     HelperMaterial.SetVector(RectProp, new Vector4(pivot.x, pivot.y, size.x, size.y));
 
-                    Graphics.Blit(texture2D, target, HelperMaterial);
+                    Graphics.Blit(texture2D, tempTexture.RenderTexture, HelperMaterial);
                 }
 
-                newTexture = CopyFromRenderTarget(target);
+                newTexture = CopyFromRenderTarget(tempTexture.RenderTexture, texture2D);
 
                 if (IsSingleColor(newTexture, atlasIslands, atlasSize, out var color))
                 {
@@ -800,11 +804,13 @@ internal struct OptimizeTextureImpl {
         return true;
     }
 
-    private static Texture2D CopyFromRenderTarget(RenderTexture source)
+    private static Texture2D CopyFromRenderTarget(RenderTexture source, Texture2D original)
     {
         var prev = RenderTexture.active;
-        var texture = new Texture2D(source.width, source.height, TextureFormat.RGBA32, true);
-            
+        var format = SystemInfo.GetCompatibleFormat(original.graphicsFormat, FormatUsage.ReadPixels);
+        var textureFormat = GraphicsFormatUtility.GetTextureFormat(format);
+        var texture = new Texture2D(source.width, source.height, textureFormat, true, linear: !source.isDataSRGB);
+
         try
         {
             RenderTexture.active = source;
