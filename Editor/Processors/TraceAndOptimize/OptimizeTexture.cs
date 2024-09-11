@@ -484,10 +484,29 @@ internal struct OptimizeTextureImpl {
         var triangles = users.SelectMany(TrianglesByUVID).ToList();
         var islands = IslandUtility.UVtoIsland(triangles);
 
-        // TODO: merge too over wrapped islands
-        // https://misskey.niri.la/notes/9xwx6acfid ?
-        // We should: merge islands completely inside other island
-        // We may: merge islands >N% wrapped (heuristic)
+        for (var i = 0; i < islands.Count; i++)
+        {
+            var islandI = islands[i];
+            for (var j = 0; j < islands.Count; j++)
+            {
+                if (i == j) continue;
+
+                var islandJ = islands[j];
+
+                // if islandJ is completely inside islandI, merge islandJ to islandI
+                if (islandI.MinPos.x <= islandJ.MinPos.x && islandJ.MaxPos.x <= islandI.MaxPos.x &&
+                    islandI.MinPos.y <= islandJ.MinPos.y && islandJ.MaxPos.y <= islandI.MaxPos.y)
+                {
+                    islandI.triangles.AddRange(islandJ.triangles);
+                    islands.RemoveAt(j);
+                    j--;
+                    if (j < i) i--;
+                }
+            }
+        }
+
+        // TODO: We may merge islands >N% wrapped (heuristic merge islands)
+        // This mage can be after fitting to block size
 
         // fit Island bounds to pixel bounds
         var maxResolution = -1;
