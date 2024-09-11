@@ -451,12 +451,51 @@ internal struct OptimizeTextureImpl {
         if (users.Any(uvid => uvid.UVChannel == ShaderKnowledge.UVChannel.NonMeshRelated))
             return AtlasResult.Empty;
 
+        if (CreateIslands(users) is not {} islands)
+            return AtlasResult.Empty;
+
+        MergeIslands(islands);
+
+        if (ComputeBlockSize(textures) is not var (blockSizeRatioX, blockSizeRatioY, paddingRatio))
+            return AtlasResult.Empty;
+
+        FitToBlockSizeAndAddPadding(islands, blockSizeRatioX, blockSizeRatioY, paddingRatio);
+
+        var atlasIslands = islands.Select(x => new AtlasIsland(x)).ToArray();
+        Array.Sort(atlasIslands, (a, b) => b.Size.y.CompareTo(a.Size.y));
+
+        if (AfterAtlasSizesSmallToBig(atlasIslands) is not {} atlasSizes)
+        {
+            TraceLog($"{string.Join(", ", textures)} will not merged because island size does not fit criteria");
+            return AtlasResult.Empty;
+        }
+
+        foreach (var atlasSize in atlasSizes)
+        {
+            if (TryAtlasTexture(atlasIslands, atlasSize))
+            {
+                // Good News! We did it!
+                TraceLog($"Good News! We did it!: {atlasSize}");
+                return BuildAtlasResult(atlasIslands, atlasSize, textures, useBlockCopying: true);
+            }
+            else
+            {
+                TraceLog($"Failed to atlas with {atlasSize}");
+            }
+        }
+
+
+        return AtlasResult.Empty;
+    }
+
+    private List<IslandUtility.Island>? CreateIslands(ICollection<UVID> users)
+    {
         foreach (var user in users)
         {
             var submesh = user.MeshInfo2!.SubMeshes[user.SubMeshIndex];
             // currently non triangle topology is not supported
             if (submesh.Topology != MeshTopology.Triangles)
-                return AtlasResult.Empty;
+                return null;
             foreach (var vertex in submesh.Vertices)
             {
                 var coord = vertex.GetTexCoord((int)user.UVChannel);
@@ -464,7 +503,7 @@ internal struct OptimizeTextureImpl {
                 // UV Tiling is currently not supported
                 // TODO: if entire island is in n.0<=x<n+1, y.0<=y<n+1, then it might be safe to atlas (if TextureWrapMode is repeat)
                 if (coord.x is not (>= 0 and < 1) || coord.y is not (>= 0 and < 1))
-                    return AtlasResult.Empty;
+                    return null;
             }
         }
 
@@ -482,6 +521,14 @@ internal struct OptimizeTextureImpl {
 
         var triangles = users.SelectMany(TrianglesByUVID).ToList();
         var islands = IslandUtility.UVtoIsland(triangles);
+
+        return islands;
+    }
+
+    private void MergeIslands(List<IslandUtility.Island> islands)
+    {
+        // TODO: We may merge islands >N% wrapped (heuristic merge islands)
+        // This mage can be after fitting to block size
 
         for (var i = 0; i < islands.Count; i++)
         {
@@ -503,116 +550,83 @@ internal struct OptimizeTextureImpl {
                 }
             }
         }
+    }
 
-        // TODO: We may merge islands >N% wrapped (heuristic merge islands)
-        // This mage can be after fitting to block size
-
-        // fit Island bounds to pixel bounds
+    private (float blockSizeRatioX, float blockSizeRatioY, float paddingRatio)? ComputeBlockSize(ICollection<Texture2D> textures)
+    {
         var maxResolution = -1;
         var minResolution = int.MaxValue;
+
+        foreach (var texture2D in textures)
         {
-            foreach (var texture2D in textures)
+            var width = texture2D.width;
+            var height = texture2D.height;
+
+            if (!width.IsPowerOfTwo() || !height.IsPowerOfTwo())
             {
-                var width = texture2D.width;
-                var height = texture2D.height;
-
-                if (!width.IsPowerOfTwo() || !height.IsPowerOfTwo())
-                {
-                    TraceLog($"{string.Join(", ", textures)} will not merged because {texture2D} is not power of two");
-                    return AtlasResult.Empty;
-                }
-
-                maxResolution = Mathf.Max(maxResolution, width, height);
-                minResolution = Mathf.Min(minResolution, width, height);
+                TraceLog($"{string.Join(", ", textures)} will not merged because {texture2D} is not power of two");
+                return null;
             }
 
-            var xBlockSizeInMaxResolutionLCM = 1;
-            var yBlockSizeInMaxResolutionLCM = 1;
-
-            foreach (var texture2D in textures)
-            {
-                var width = texture2D.width;
-                var height = texture2D.height;
-
-                var xBlockSizeInMaxResolution = (int)(GraphicsFormatUtility.GetBlockWidth(texture2D.format) * (maxResolution / width));
-                var yBlockSizeInMaxResolution = (int)(GraphicsFormatUtility.GetBlockHeight(texture2D.format) * (maxResolution / height));
-
-                xBlockSizeInMaxResolutionLCM = Utils.LeastCommonMultiple(xBlockSizeInMaxResolutionLCM, xBlockSizeInMaxResolution);
-                yBlockSizeInMaxResolutionLCM = Utils.LeastCommonMultiple(yBlockSizeInMaxResolutionLCM, yBlockSizeInMaxResolution);
-            }
-
-            // padding is at least 4px with max resolution, 1px in min resolution
-            var minResolutionPixelSizeInMaxResolution = maxResolution / minResolution;
-            var paddingSize = Mathf.Max(minResolutionPixelSizeInMaxResolution, maxResolution / 100);
-
-            if (minResolution <= paddingSize || maxResolution <= paddingSize)
-            {
-                TraceLog(
-                    $"{string.Join(", ", textures)} will not merged because min resolution is less than {paddingSize} ({minResolution})");
-                return AtlasResult.Empty;
-            }
-
-            var blockSizeX = Utils.LeastCommonMultiple(xBlockSizeInMaxResolutionLCM, minResolutionPixelSizeInMaxResolution);
-            var blockSizeY = Utils.LeastCommonMultiple(yBlockSizeInMaxResolutionLCM, minResolutionPixelSizeInMaxResolution);
-            
-            TraceLog($"blockSizeX: {blockSizeX}, blockSizeY: {blockSizeY}");
-
-            foreach (var island in islands)
-            {
-                ref var min = ref island.MinPos;
-                ref var max = ref island.MaxPos;
-
-                // fit to block size
-                min.x = Mathf.Floor((min.x * maxResolution - paddingSize) / blockSizeX) * blockSizeX / maxResolution;
-                min.y = Mathf.Floor((min.y * maxResolution - paddingSize) / blockSizeY) * blockSizeY / maxResolution;
-                max.x = Mathf.Ceil((max.x * maxResolution + paddingSize) / blockSizeX) * blockSizeX / maxResolution;
-                max.y = Mathf.Ceil((max.y * maxResolution + paddingSize) / blockSizeY) * blockSizeY / maxResolution;
-            }
+            maxResolution = Mathf.Max(maxResolution, width, height);
+            minResolution = Mathf.Min(minResolution, width, height);
         }
 
-        // Check for island size before trying to atlas
-        var totalIslandSize = islands.Sum(x => x.Size.x * x.Size.y);
-        if (totalIslandSize >= 0.5)
-        {
-            TraceLog($"{string.Join(", ", textures)} will not merged because more than half ({totalIslandSize}) are used");
+        var xBlockSizeInMaxResolutionLCM = 1;
+        var yBlockSizeInMaxResolutionLCM = 1;
 
-            return AtlasResult.Empty;
+        foreach (var texture2D in textures)
+        {
+            var width = texture2D.width;
+            var height = texture2D.height;
+
+            var xBlockSizeInMaxResolution =
+                (int)(GraphicsFormatUtility.GetBlockWidth(texture2D.format) * (maxResolution / width));
+            var yBlockSizeInMaxResolution =
+                (int)(GraphicsFormatUtility.GetBlockHeight(texture2D.format) * (maxResolution / height));
+
+            xBlockSizeInMaxResolutionLCM =
+                Utils.LeastCommonMultiple(xBlockSizeInMaxResolutionLCM, xBlockSizeInMaxResolution);
+            yBlockSizeInMaxResolutionLCM =
+                Utils.LeastCommonMultiple(yBlockSizeInMaxResolutionLCM, yBlockSizeInMaxResolution);
         }
 
-        var maxIslandLength = islands.Max(x => Mathf.Max(x.Size.x, x.Size.y));
-        if (maxIslandLength >= 0.5)
-        {
-            TraceLog($"{string.Join(", ", textures)} will not merged because max island length is more than 0.5 ({maxIslandLength})");
+        // padding is at least 4px with max resolution, 1px in min resolution
+        var minResolutionPixelSizeInMaxResolution = maxResolution / minResolution;
+        var paddingSize = Mathf.Max(minResolutionPixelSizeInMaxResolution, maxResolution / 100);
 
-            return AtlasResult.Empty;
+        if (minResolution <= paddingSize || maxResolution <= paddingSize)
+        {
+            TraceLog(
+                $"{string.Join(", ", textures)} will not merged because min resolution is less than {paddingSize} ({minResolution})");
+            return null;
         }
 
-        TraceLog($"{string.Join(", ", textures)} will go to atlas texture (using {totalIslandSize} of texture)");
+        var blockSizeX = Utils.LeastCommonMultiple(xBlockSizeInMaxResolutionLCM, minResolutionPixelSizeInMaxResolution);
+        var blockSizeY = Utils.LeastCommonMultiple(yBlockSizeInMaxResolutionLCM, minResolutionPixelSizeInMaxResolution);
 
-        var atlasIslands = islands.Select(x => new AtlasIsland(x)).ToArray();
-        Array.Sort(atlasIslands, (a, b) => b.Size.y.CompareTo(a.Size.y));
+        var blockSizeRatioX = (float)blockSizeX / maxResolution;
+        var blockSizeRatioY = (float)blockSizeY / maxResolution;
+        var paddingRatio = (float)paddingSize / maxResolution;
 
-        var maxIslandSizeX = atlasIslands.Max(x => x.Size.x);
-        var maxIslandSizeY = atlasIslands.Max(x => x.Size.y);
+        TraceLog($"blockSizeX: {blockSizeX}, blockSizeY: {blockSizeY}");
 
-        TraceLog($"Starting Atlas with maxX: {maxIslandSizeX}, maxY: {maxIslandSizeY}");
+        return (blockSizeRatioX, blockSizeRatioY, paddingRatio);
+    }
 
-        foreach (var atlasSize in AfterAtlasSizesSmallToBig(totalIslandSize, new Vector2(maxIslandSizeX, maxIslandSizeY)))
+    private void FitToBlockSizeAndAddPadding(List<IslandUtility.Island> islands, float blockSizeRatioX, float blockSizeRatioY, float paddingRatio)
+    {
+        foreach (var island in islands)
         {
-            if (TryAtlasTexture(atlasIslands, atlasSize))
-            {
-                // Good News! We did it!
-                TraceLog($"Good News! We did it!: {atlasSize}");
-                return BuildAtlasResult(atlasIslands, atlasSize, textures, useBlockCopying: true);                    
-            }
-            else
-            {
-                TraceLog($"Failed to atlas with {atlasSize}");
-            }
+            ref var min = ref island.MinPos;
+            ref var max = ref island.MaxPos;
+
+            // fit to block size
+            min.x = Mathf.Floor(min.x / blockSizeRatioX - paddingRatio) * blockSizeRatioX;
+            min.y = Mathf.Floor(min.y / blockSizeRatioY - paddingRatio) * blockSizeRatioY;
+            max.x = Mathf.Ceil(max.x / blockSizeRatioX + paddingRatio) * blockSizeRatioX;
+            max.y = Mathf.Ceil(max.y / blockSizeRatioY + paddingRatio) * blockSizeRatioY;
         }
-
-
-        return AtlasResult.Empty;
     }
 
     private static Material? _helperMaterial;
@@ -843,7 +857,24 @@ internal struct OptimizeTextureImpl {
         return texture;
     }
 
-    static IEnumerable<Vector2> AfterAtlasSizesSmallToBig(float useRatio, Vector2 maxIslandSize)
+    static IEnumerable<Vector2>? AfterAtlasSizesSmallToBig(AtlasIsland[] islands)
+    {
+        // Check for island size before trying to atlas
+        var totalIslandSize = islands.Sum(x => x.Size.x * x.Size.y);
+        if (totalIslandSize >= 0.5) return null;
+
+        var maxIslandLength = islands.Max(x => Mathf.Max(x.Size.x, x.Size.y));
+        if (maxIslandLength >= 0.5) return null;
+
+        var maxIslandSizeX = islands.Max(x => x.Size.x);
+        var maxIslandSizeY = islands.Max(x => x.Size.y);
+
+        TraceLog($"Starting Atlas with maxX: {maxIslandSizeX}, maxY: {maxIslandSizeY}");
+
+        return AfterAtlasSizesSmallToBigGenerator(totalIslandSize, new Vector2(maxIslandSizeX, maxIslandSizeY));
+    }
+
+    static IEnumerable<Vector2> AfterAtlasSizesSmallToBigGenerator(float useRatio, Vector2 maxIslandSize)
     {
         var maxHalfCount = 0;
         {
