@@ -19,6 +19,17 @@ internal class OptimizeTexture : TraceAndOptimizePass<OptimizeTexture>
 {
     public override string DisplayName => "T&O: OptimizeTexture";
 
+    protected override void Execute(BuildContext context, TraceAndOptimizeState state)
+    {
+        if (!state.OptimizeTexture) return;
+        new OptimizeTextureImpl().Execute(context, state);
+    }
+}
+
+internal struct OptimizeTextureImpl {
+    private Dictionary<(Color c, bool isSrgb), Texture2D>? _colorTextures;
+    private Dictionary<(Color c, bool isSrgb), Texture2D> ColorTextures => _colorTextures ??= new Dictionary<(Color c, bool isSrgb), Texture2D>();
+
     readonly struct UVID: IEquatable<UVID>
     {
         public readonly MeshInfo2? MeshInfo2;
@@ -87,7 +98,7 @@ internal class OptimizeTexture : TraceAndOptimizePass<OptimizeTexture>
         public override string ToString() => $"{MeshInfo2.SourceRenderer.name} {SubMeshIndex}";
     }
 
-    protected override void Execute(BuildContext context, TraceAndOptimizeState state)
+    internal void Execute(BuildContext context, TraceAndOptimizeState state)
     {
         if (!state.OptimizeTexture) return;
 
@@ -436,7 +447,7 @@ internal class OptimizeTexture : TraceAndOptimizePass<OptimizeTexture>
             (NewUVs == null || NewUVs.Count == 0);
     }
 
-    static AtlasResult MayAtlasTexture(ICollection<Texture2D> textures, ICollection<UVID> users)
+    AtlasResult MayAtlasTexture(ICollection<Texture2D> textures, ICollection<UVID> users)
     {
         if (users.Any(uvid => uvid.UVChannel == ShaderKnowledge.UVChannel.NonMeshRelated))
             return AtlasResult.Empty;
@@ -595,7 +606,7 @@ internal class OptimizeTexture : TraceAndOptimizePass<OptimizeTexture>
     private static readonly int SrcRectProp = Shader.PropertyToID("_SrcRect");
     private static readonly int NoClipProp = Shader.PropertyToID("_NoClip");
 
-    private static AtlasResult BuildAtlasResult(AtlasIsland[] atlasIslands, Vector2 atlasSize, ICollection<Texture2D> textures, bool useBlockCopying = false)
+    private AtlasResult BuildAtlasResult(AtlasIsland[] atlasIslands, Vector2 atlasSize, ICollection<Texture2D> textures, bool useBlockCopying = false)
     {
         var textureMapping = new Dictionary<Texture2D, Texture2D>();
 
@@ -679,6 +690,8 @@ internal class OptimizeTexture : TraceAndOptimizePass<OptimizeTexture>
                 HelperMaterial.SetTexture(MainTexProp, texture2D);
                 HelperMaterial.SetInt(NoClipProp, 1);
 
+                bool isBlack = true;
+
                 foreach (var atlasIsland in atlasIslands)
                 {
                     HelperMaterial.SetVector(SrcRectProp,
@@ -695,10 +708,35 @@ internal class OptimizeTexture : TraceAndOptimizePass<OptimizeTexture>
 
                 newTexture = CopyFromRenderTarget(target);
 
-                if (GraphicsFormatUtility.IsCompressedFormat(texture2D.format))
-                    EditorUtility.CompressTexture(newTexture, texture2D.format, TextureCompressionQuality.Normal);
-                newTexture.name = texture2D.name + " (AAO UV Packed)";
-                newTexture.Apply(true, !texture2D.isReadable);
+                if (IsSingleColor(newTexture, atlasIslands, atlasSize, out var color))
+                {
+                    // if color is consist of 0 or 1, isSrgb not matters so assume it's linear
+                    var isSrgb = texture2D.isDataSRGB && color is not { r: 0 or 1, g: 0 or 1, b: 0 or 1 };
+
+                    if (color is { r: 0, g: 0, b: 0, a: 0 })
+                        newTexture = Texture2D.blackTexture;
+                    else if (color is { r: 1, g: 1, b: 1, a: 1 })
+                        newTexture = Texture2D.whiteTexture;
+                    else if (color is { r: 1, g: 0, b: 0, a: 0 })
+                        newTexture = Texture2D.redTexture;
+                    else if (ColorTextures.TryGetValue((color, isSrgb), out var cachedTexture))
+                        newTexture = cachedTexture;
+                    else
+                    {
+                        newTexture = new Texture2D(1, 1, TextureFormat.RGBA32, false, !isSrgb);
+                        newTexture.SetPixel(0, 0, color);
+                        newTexture.Apply(false, true);
+                        newTexture.name = $"AAO Monotone {color} {(isSrgb ? "sRGB" : "Linear")}";
+                        ColorTextures.Add((color, isSrgb), newTexture);
+                    }
+                }
+                else
+                {
+                    if (GraphicsFormatUtility.IsCompressedFormat(texture2D.format))
+                        EditorUtility.CompressTexture(newTexture, texture2D.format, TextureCompressionQuality.Normal);
+                    newTexture.name = texture2D.name + " (AAO UV Packed)";
+                    newTexture.Apply(true, !texture2D.isReadable);
+                }
             }
 
             textureMapping.Add(texture2D, newTexture);
@@ -722,6 +760,44 @@ internal class OptimizeTexture : TraceAndOptimizePass<OptimizeTexture>
         }
 
         return new AtlasResult(textureMapping, newUVs);
+    }
+
+    private static bool IsSingleColor(Texture2D texture, AtlasIsland[] islands, Vector2 atlasSize, out Color color)
+    {
+        Color? commonColor = null;
+
+        var texSize = new Vector2(texture.width, texture.height);
+
+        var colors = texture.GetPixels();
+
+        foreach (var atlasIsland in islands)
+        {
+            var pivot = atlasIsland.Pivot / atlasSize * texSize;
+            var pivotInt = new Vector2Int(Mathf.FloorToInt(pivot.x), Mathf.FloorToInt(pivot.y));
+            var size = atlasIsland.Size / atlasSize * texSize;
+            var sizeInt = new Vector2Int(Mathf.CeilToInt(size.x), Mathf.CeilToInt(size.y));
+
+            for (var dy = 0; dy < sizeInt.y; dy++)
+            for (var dx = 0; dx < sizeInt.x; dx++)
+            {
+                var y = pivotInt.y + dy;
+                var x = pivotInt.x + dx;
+                var colorAt = colors[y * texture.width + x];
+
+                if (commonColor is not { } c)
+                {
+                    commonColor = colorAt;
+                }
+                else if (c != colorAt)
+                {
+                    color = default;
+                    return false;
+                }
+            }
+        }
+
+        color = commonColor ?? default;
+        return true;
     }
 
     private static Texture2D CopyFromRenderTarget(RenderTexture source)
