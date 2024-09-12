@@ -167,10 +167,11 @@ internal struct OptimizeTextureImpl {
 
             foreach (var (material, _) in materialUsers)
             {
-                var provider = new MaterialPropertyAnimationProvider(
+                var provider = new TextureUsageInformationCallback(
+                    material,
                     materialUsers[material].Select(x => context.GetAnimationComponent(x.MeshInfo2.SourceRenderer))
                         .ToList());
-                if (GetTextureUsageInformations(material, provider) is not { } textureUsageInformations)
+                if (GetTextureUsageInformations(provider) is not { } textureUsageInformations)
                     unmergeableMaterials.Add(material);
                 else
                     usageInformations.Add(material, textureUsageInformations);
@@ -377,10 +378,9 @@ internal struct OptimizeTextureImpl {
     }
 
     static ShaderKnowledge.TextureUsageInformation[]?
-        GetTextureUsageInformations(Material material,
-            ShaderKnowledge.IMaterialPropertyAnimationProvider animationProvider)
+        GetTextureUsageInformations(ShaderKnowledge.TextureUsageInformationCallback callback)
     {
-        if (ShaderKnowledge.GetTextureUsageInformationForMaterial(material, animationProvider)
+        if (ShaderKnowledge.GetTextureUsageInformationForMaterial(callback)
             is not { } textureInformations)
             return null;
 
@@ -408,17 +408,30 @@ internal struct OptimizeTextureImpl {
         return textureInformations;
     }
 
-    class MaterialPropertyAnimationProvider : ShaderKnowledge.IMaterialPropertyAnimationProvider
+    class TextureUsageInformationCallback : ShaderKnowledge.TextureUsageInformationCallback
     {
+        private readonly Material _material;
         private readonly List<AnimationComponentInfo<PropertyInfo>> _infos;
 
-        public MaterialPropertyAnimationProvider(List<AnimationComponentInfo<PropertyInfo>> infos)
+        public TextureUsageInformationCallback(Material material, List<AnimationComponentInfo<PropertyInfo>> infos)
         {
+            _material = material;
             _infos = infos;
         }
 
-        public bool IsAnimated(string propertyName) => 
-            _infos.Any(x => x.TryGetFloat($"material.{propertyName}", out _));
+        public override Shader Shader => _material.shader;
+
+        private T? GetValue<T>(string propertyName, Func<string, T> computer, bool considerAnimation) where T : struct
+        {
+            // animated; return null
+            if (considerAnimation && _infos.Any(x => x.TryGetFloat($"material.{propertyName}", out _)))
+                return null;
+            return computer(propertyName);
+        }
+
+        public override int? GetInteger(string propertyName, bool considerAnimation = true) => GetValue(propertyName, _material.GetInt, considerAnimation);
+
+        public override float? GetFloat(string propertyName, bool considerAnimation = true) => GetValue(propertyName, _material.GetFloat, considerAnimation);
     }
 
     [Conditional("AAO_OPTIMIZE_TEXTURE_TRACE_LOG")]

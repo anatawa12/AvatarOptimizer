@@ -100,9 +100,36 @@ namespace Anatawa12.AvatarOptimizer
             });
         }
 
-        public interface IMaterialPropertyAnimationProvider
+        public abstract class TextureUsageInformationCallback
         {
-            bool IsAnimated(string propertyName);
+            internal TextureUsageInformationCallback() { }
+
+            public abstract Shader Shader { get; }
+
+            /// <summary>
+            /// Returns the integer value for the property in the material, or null if the property is not set or not found.
+            /// </summary>
+            /// <param name="propertyName">The name of the property in the material.</param>
+            /// <param name="considerAnimation">Whether to consider the animation of the property. If this is true, this function will never </param>
+            /// <returns>The integer value for the property in the material, which is same as <see cref="Material.GetInteger(string)"/>, or null if the property is not set or not found.</returns>
+            public abstract int? GetInteger(string propertyName, bool considerAnimation = true);
+
+            /// <summary>
+            /// Returns the float value for the property in the material, or null if the property is not set or not found.
+            /// </summary>
+            /// <param name="propertyName">The name of the property in the material.</param>
+            /// <param name="considerAnimation">Whether to consider the animation of the property. If this is true, this function will never </param>
+            /// <returns>The integer value for the property in the material, which is same as <see cref="Material.GetFloat(string)"/>, or null if the property is not set or not found.</returns>
+            public abstract float? GetFloat(string propertyName, bool considerAnimation = true);
+
+            /// <summary>
+            /// Creates a new <see cref="TextureUsageInformation"/> instance.
+            /// </summary>
+            /// <param name="materialPropertyName">The name of the texture property in the material.</param>
+            /// <param name="uvChannel">The UV channel for the texture.</param>
+            /// <returns>A new <see cref="TextureUsageInformation"/> instance.</returns>
+            public TextureUsageInformation CreateTextureUsageInformation(string materialPropertyName,
+                UVChannel uvChannel) => new(materialPropertyName, uvChannel);
         }
 
         public enum UVChannel
@@ -125,7 +152,7 @@ namespace Anatawa12.AvatarOptimizer
             public string MaterialPropertyName { get; }
             public UVChannel UVChannel { get; }
 
-            public TextureUsageInformation(string materialPropertyName, UVChannel uvChannel)
+            internal TextureUsageInformation(string materialPropertyName, UVChannel uvChannel)
             {
                 MaterialPropertyName = materialPropertyName;
                 UVChannel = uvChannel;
@@ -136,20 +163,19 @@ namespace Anatawa12.AvatarOptimizer
         /// <summary>
         /// Returns texture usage information for the material.
         /// </summary>
-        /// <param name="material"></param>
         /// <returns>null if the shader is not supported</returns>
-        public static TextureUsageInformation[]? GetTextureUsageInformationForMaterial(Material material, IMaterialPropertyAnimationProvider animation)
+        public static TextureUsageInformation[]? GetTextureUsageInformationForMaterial(TextureUsageInformationCallback information)
         {
-            if (AssetDatabase.GetAssetPath(material.shader).StartsWith("Packages/jp.lilxyzw.liltoon"))
+            if (AssetDatabase.GetAssetPath(information.Shader).StartsWith("Packages/jp.lilxyzw.liltoon"))
             {
                 // it looks liltoon!
-                return GetTextureUsageInformationForMaterialLiltoon(material, animation);
+                return GetTextureUsageInformationForMaterialLiltoon(information);
             }
 
             return null;
         }
 
-        private static TextureUsageInformation[]? GetTextureUsageInformationForMaterialLiltoon(Material material, IMaterialPropertyAnimationProvider animation)
+        private static TextureUsageInformation[]? GetTextureUsageInformationForMaterialLiltoon(TextureUsageInformationCallback matInfo)
         {
             // This implementation is made for my Anon + Wahuku for testing this feature.
             // TODO: version check
@@ -158,68 +184,61 @@ namespace Anatawa12.AvatarOptimizer
             var uvMain = UVChannel.UV0;
 
             // TODO: UV Animation, angle (_MainTex_ScrollRotate) , Tilting, Offsets (_ST) for MainTex
-            information.Add(new TextureUsageInformation("_DitherTex", UVChannel.NonMeshRelated));
-            information.Add(new TextureUsageInformation("_MainTex", uvMain));
-            information.Add(new TextureUsageInformation("_MainColorAdjustMask", uvMain));
-            information.Add(new TextureUsageInformation("_MainGradationTex", uvMain));
+            information.Add(matInfo.CreateTextureUsageInformation("_DitherTex", UVChannel.NonMeshRelated));
+            information.Add(matInfo.CreateTextureUsageInformation("_MainTex", uvMain));
+            information.Add(matInfo.CreateTextureUsageInformation("_MainColorAdjustMask", uvMain));
+            information.Add(matInfo.CreateTextureUsageInformation("_MainGradationTex", uvMain));
 
-            if (material.GetInt("_UseMain2ndTex") != 0 || animation.IsAnimated("_UseMain2ndTex"))
+            if (matInfo.GetInteger("_UseMain2ndTex") != 0)
             {
                 UVChannel main2ndUV;
-                if (animation.IsAnimated("_Main2ndTex_UVMode"))
+                switch (matInfo.GetInteger("_Main2ndTex_UVMode"))
                 {
-                    main2ndUV = UVChannel.Unknown;
+                    case 0: main2ndUV = UVChannel.UV0; break;
+                    case 1: main2ndUV = UVChannel.UV1; break;
+                    case 2: main2ndUV = UVChannel.UV2; break;
+                    case 3: main2ndUV = UVChannel.UV3; break;
+                    case 4: main2ndUV = UVChannel.NonMeshRelated; break; // MatCap (normal-based UV)
+                    default: main2ndUV = UVChannel.Unknown; break;
                 }
-                else 
-                {
-                    switch (material.GetInt("_Main2ndTex_UVMode"))
-                    {
-                        case 0: main2ndUV = UVChannel.UV0; break;
-                        case 1: main2ndUV = UVChannel.UV1; break;
-                        case 2: main2ndUV = UVChannel.UV2; break;
-                        case 3: main2ndUV = UVChannel.UV3; break;
-                        case 4: main2ndUV = UVChannel.NonMeshRelated; break;
-                        default: main2ndUV = UVChannel.Unknown; break;
-                    }
-                }
-                information.Add(new TextureUsageInformation("_Main2ndTex", main2ndUV));
+                information.Add(matInfo.CreateTextureUsageInformation("_Main2ndTex", main2ndUV));
                 // TODO: UV Animation, angle (_MainTex2_ScrollRotate) , Tilting, Offsets (_ST) for MainTex2
-                information.Add(new TextureUsageInformation("_Main2ndBlendMask", main2ndUV)); // NO ScaleOffset
-                information.Add(new TextureUsageInformation("_Main2ndDissolveMask", main2ndUV));
-                information.Add(new TextureUsageInformation("_Main2ndDissolveNoiseMask", main2ndUV));
+                information.Add(matInfo.CreateTextureUsageInformation("_Main2ndBlendMask", main2ndUV)); // NO ScaleOffset
+                information.Add(matInfo.CreateTextureUsageInformation("_Main2ndDissolveMask", main2ndUV));
+                information.Add(matInfo.CreateTextureUsageInformation("_Main2ndDissolveNoiseMask", main2ndUV));
                 // TODO: isDecurl for MainTex2?
             }
 
             // TODO: Main3rd
 
             // Matcap
-            if (material.GetInt("_UseMatCap") != 0 || animation.IsAnimated("_UseMatCap"))
+            if (matInfo.GetInteger("_UseMatCap") != 0)
             {
-                information.Add(new TextureUsageInformation("_MatCapTex", UVChannel.NonMeshRelated));
-                information.Add(new TextureUsageInformation("_MatCapBlendMask", UVChannel.UV0)); // No ScaleOffset
+                information.Add(matInfo.CreateTextureUsageInformation("_MatCapTex", UVChannel.NonMeshRelated));
+                information.Add(matInfo.CreateTextureUsageInformation("_MatCapBlendMask", UVChannel.UV0)); // No ScaleOffset
                 // TODO: more properties like: _MatCapBumpMap
             }
 
             // TODO: Matcap2nd
 
             // rim light
-            if (material.GetInt("_UseRim") != 0 || animation.IsAnimated("_UseRim"))
+            if (matInfo.GetInteger("_UseRim") != 0)
             {
-                information.Add(new TextureUsageInformation("_RimColorTex", uvMain));
+                information.Add(matInfo.CreateTextureUsageInformation("_RimColorTex", uvMain));
             }
 
             // outline
-            if (material.GetInt("_UseOutline") != 0 || animation.IsAnimated("_UseOutline"))
+            if (matInfo.GetInteger("_UseOutline") != 0)
             {
-                information.Add(new TextureUsageInformation("_OutlineColorTex", uvMain));
-                information.Add(new TextureUsageInformation("_OutlineWidthMask", uvMain)); // ??
+                information.Add(matInfo.CreateTextureUsageInformation("_OutlineColorTex", uvMain));
+                information.Add(matInfo.CreateTextureUsageInformation("_OutlineWidthMask", uvMain)); // ??
             }
 
             // emission
-            if (material.GetInt("_UseEmission") != 0 || animation.IsAnimated("_UseEmission"))
+            if (matInfo.GetInteger("_UseEmission") != 0)
             {
-                information.Add(new TextureUsageInformation("_EmissionMap", uvMain));
-                information.Add(new TextureUsageInformation("_EmissionBlendMask", uvMain)); // ??
+                information.Add(matInfo.CreateTextureUsageInformation("_EmissionMap", uvMain));
+                information.Add(matInfo.CreateTextureUsageInformation("_EmissionBlendMask", uvMain)); // ??
             }
 
             // TODO: Many Properties
