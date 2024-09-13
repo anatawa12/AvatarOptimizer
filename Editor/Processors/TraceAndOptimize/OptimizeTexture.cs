@@ -432,6 +432,8 @@ internal struct OptimizeTextureImpl {
         public override int? GetInteger(string propertyName, bool considerAnimation = true) => GetValue(propertyName, _material.GetInt, considerAnimation);
 
         public override float? GetFloat(string propertyName, bool considerAnimation = true) => GetValue(propertyName, _material.GetFloat, considerAnimation);
+
+        public override Vector4? GetVector(string propertyName, bool considerAnimation = true) => GetValue(propertyName, _material.GetVector, considerAnimation);
     }
 
     [Conditional("AAO_OPTIMIZE_TEXTURE_TRACE_LOG")]
