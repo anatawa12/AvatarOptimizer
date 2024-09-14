@@ -34,36 +34,35 @@ internal struct OptimizeTextureImpl {
     {
         public readonly MeshInfo2? MeshInfo2;
         public readonly int SubMeshIndex;
-        public readonly ShaderKnowledge.UVChannel UVChannel;
+        public readonly UVChannel UVChannel;
 
         public SubMeshId SubMeshId => MeshInfo2 != null ? new SubMeshId(MeshInfo2!, SubMeshIndex) : throw new InvalidOperationException();
 
-        public UVID(SubMeshId subMeshId, ShaderKnowledge.UVChannel uvChannel)
+        public UVID(SubMeshId subMeshId, UVChannel uvChannel)
             : this(subMeshId.MeshInfo2, subMeshId.SubMeshIndex, uvChannel)
         {
         }
 
-        public UVID(MeshInfo2 meshInfo2, int subMeshIndex, ShaderKnowledge.UVChannel uvChannel)
+        public UVID(MeshInfo2 meshInfo2, int subMeshIndex, UVChannel uvChannel)
         {
             MeshInfo2 = meshInfo2;
             SubMeshIndex = subMeshIndex;
             UVChannel = uvChannel;
             switch (uvChannel)
             {
-                case ShaderKnowledge.UVChannel.UV0:
-                case ShaderKnowledge.UVChannel.UV1:
-                case ShaderKnowledge.UVChannel.UV2:
-                case ShaderKnowledge.UVChannel.UV3:
-                case ShaderKnowledge.UVChannel.UV4:
-                case ShaderKnowledge.UVChannel.UV5:
-                case ShaderKnowledge.UVChannel.UV6:
-                case ShaderKnowledge.UVChannel.UV7:
+                case UVChannel.UV0:
+                case UVChannel.UV1:
+                case UVChannel.UV2:
+                case UVChannel.UV3:
+                case UVChannel.UV4:
+                case UVChannel.UV5:
+                case UVChannel.UV6:
+                case UVChannel.UV7:
                     break;
-                case ShaderKnowledge.UVChannel.NonMeshRelated:
+                case UVChannel.NonMeshRelated:
                     MeshInfo2 = null;
                     SubMeshIndex = -1;
                     break;
-                case ShaderKnowledge.UVChannel.Unknown:
                 default:
                     throw new ArgumentOutOfRangeException(nameof(uvChannel), uvChannel, null);
             }
@@ -162,7 +161,7 @@ internal struct OptimizeTextureImpl {
         }
 
         // collect usageInformation for each material, and add to unmergeableMaterials if it's impossible
-        var usageInformations = new Dictionary<Material, ShaderKnowledge.TextureUsageInformation[]>();
+        var usageInformations = new Dictionary<Material, TextureUsageInformation[]>();
         {
 
             foreach (var (material, _) in materialUsers)
@@ -171,10 +170,10 @@ internal struct OptimizeTextureImpl {
                     material,
                     materialUsers[material].Select(x => context.GetAnimationComponent(x.MeshInfo2.SourceRenderer))
                         .ToList());
-                if (GetTextureUsageInformations(provider) is not { } textureUsageInformations)
-                    unmergeableMaterials.Add(material);
+                if (ShaderKnowledge.GetTextureUsageInformationForMaterial(provider) && provider.TextureUsageInformations is {} informations)
+                    usageInformations.Add(material, informations.ToArray());
                 else
-                    usageInformations.Add(material, textureUsageInformations);
+                    unmergeableMaterials.Add(material);
             }
         }
 
@@ -377,41 +376,13 @@ internal struct OptimizeTextureImpl {
         return (safeToMerge: true, Array.Empty<Material>());
     }
 
-    static ShaderKnowledge.TextureUsageInformation[]?
-        GetTextureUsageInformations(ShaderKnowledge.TextureUsageInformationCallback callback)
-    {
-        if (ShaderKnowledge.GetTextureUsageInformationForMaterial(callback)
-            is not { } textureInformations)
-            return null;
-
-        foreach (var textureInformation in textureInformations)
-        {
-            switch (textureInformation.UVChannel)
-            {
-                case ShaderKnowledge.UVChannel.UV0:
-                case ShaderKnowledge.UVChannel.UV1:
-                case ShaderKnowledge.UVChannel.UV2:
-                case ShaderKnowledge.UVChannel.UV3:
-                case ShaderKnowledge.UVChannel.UV4:
-                case ShaderKnowledge.UVChannel.UV5:
-                case ShaderKnowledge.UVChannel.UV6:
-                case ShaderKnowledge.UVChannel.UV7:
-                case ShaderKnowledge.UVChannel.NonMeshRelated:
-                    break;
-                case ShaderKnowledge.UVChannel.Unknown:
-                    return null;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-        }
-
-        return textureInformations;
-    }
-
     class TextureUsageInformationCallback : ShaderKnowledge.TextureUsageInformationCallback
     {
         private readonly Material _material;
         private readonly List<AnimationComponentInfo<PropertyInfo>> _infos;
+        private List<TextureUsageInformation>? _textureUsageInformations = new();
+
+        public List<TextureUsageInformation>? TextureUsageInformations => _textureUsageInformations;
 
         public TextureUsageInformationCallback(Material material, List<AnimationComponentInfo<PropertyInfo>> infos)
         {
@@ -434,6 +405,88 @@ internal struct OptimizeTextureImpl {
         public override float? GetFloat(string propertyName, bool considerAnimation = true) => GetValue(propertyName, _material.GetFloat, considerAnimation);
 
         public override Vector4? GetVector(string propertyName, bool considerAnimation = true) => GetValue(propertyName, _material.GetVector, considerAnimation);
+
+        public override void RegisterOtherUVUsage(ShaderKnowledge.UsingUVChannels uvChannel)
+        {
+            // no longer atlasing is not supported
+            _textureUsageInformations = null;
+        }
+
+        public override void RegisterTextureUVUsage(
+            string textureMaterialPropertyName, 
+            ShaderKnowledge.SamplerStateInformation samplerState,
+            ShaderKnowledge.UsingUVChannels uvChannels, 
+            UnityEngine.Matrix4x4? uvMatrix)
+        {
+            if (_textureUsageInformations == null) return;
+            if (uvMatrix != Matrix4x4.identity) {
+                _textureUsageInformations = null;
+                return;
+            }
+
+            UVChannel uvChannel;
+            switch (uvChannels)
+            {
+                case ShaderKnowledge.UsingUVChannels.NonMesh:
+                    uvChannel = UVChannel.NonMeshRelated;
+                    break;
+                case ShaderKnowledge.UsingUVChannels.UV0:
+                    uvChannel = UVChannel.UV0;
+                    break;
+                case ShaderKnowledge.UsingUVChannels.UV1:
+                    uvChannel = UVChannel.UV1;
+                    break;
+                case ShaderKnowledge.UsingUVChannels.UV2:
+                    uvChannel = UVChannel.UV2;
+                    break;
+                case ShaderKnowledge.UsingUVChannels.UV3:
+                    uvChannel = UVChannel.UV3;
+                    break;
+                case ShaderKnowledge.UsingUVChannels.UV4:
+                    uvChannel = UVChannel.UV4;
+                    break;
+                case ShaderKnowledge.UsingUVChannels.UV5:
+                    uvChannel = UVChannel.UV5;
+                    break;
+                case ShaderKnowledge.UsingUVChannels.UV6:
+                    uvChannel = UVChannel.UV6;
+                    break;
+                case ShaderKnowledge.UsingUVChannels.UV7:
+                    uvChannel = UVChannel.UV7;
+                    break;
+                default:
+                    _textureUsageInformations = null;
+                    return;
+            }
+
+            _textureUsageInformations?.Add(new TextureUsageInformation(textureMaterialPropertyName, uvChannel));
+        }
+    }
+
+    private class TextureUsageInformation
+    {
+        public string MaterialPropertyName { get; }
+        public UVChannel UVChannel { get; }
+
+        internal TextureUsageInformation(string materialPropertyName, UVChannel uvChannel)
+        {
+            MaterialPropertyName = materialPropertyName;
+            UVChannel = uvChannel;
+        }
+    }
+    
+    public enum UVChannel
+    {
+        UV0 = 0,
+        UV1 = 1,
+        UV2 = 2,
+        UV3 = 3,
+        UV4 = 4,
+        UV5 = 5,
+        UV6 = 6,
+        UV7 = 7,
+        // For example, ScreenSpace (dither) or MatCap
+        NonMeshRelated = 0x100 + 0,
     }
 
     [Conditional("AAO_OPTIMIZE_TEXTURE_TRACE_LOG")]
@@ -463,7 +516,7 @@ internal struct OptimizeTextureImpl {
 
     AtlasResult MayAtlasTexture(ICollection<Texture2D> textures, ICollection<UVID> users)
     {
-        if (users.Any(uvid => uvid.UVChannel == ShaderKnowledge.UVChannel.NonMeshRelated))
+        if (users.Any(uvid => uvid.UVChannel == UVChannel.NonMeshRelated))
             return AtlasResult.Empty;
 
         if (CreateIslands(users) is not {} islands)

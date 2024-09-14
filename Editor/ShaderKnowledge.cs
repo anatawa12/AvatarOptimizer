@@ -157,6 +157,124 @@ namespace Anatawa12.AvatarOptimizer
             /// <returns>A new <see cref="TextureUsageInformation"/> instance.</returns>
             public TextureUsageInformation CreateTextureUsageInformation(string materialPropertyName,
                 UVChannel uvChannel, string scaleOffsetProperty) => new(materialPropertyName, uvChannel);
+
+            /// <summary>
+            /// Registers UV Usage that are not considered by Avatar Optimizer.
+            ///
+            /// This will the UV Channel not affected by optimizations of Avatar Optimizer.
+            /// </summary>
+            /// <param name="uvChannel">The UVChannels that are used in the shader.</param>
+            public abstract void RegisterOtherUVUsage(UsingUVChannels uvChannel);
+
+            /// <summary>
+            /// Registers Texture Usage and UV Usage that are considered by Avatar Optimizer.
+            /// 
+            /// The texture might go to the atlas / UV Packing if the UsingUVChannels is set and the UV Matrix is known
+            /// </summary>
+            /// <param name="textureMaterialPropertyName">The name of the texture property in the material.</param>
+            /// <param name="samplerState">The information about the sampler state used for the specified texture.</param>
+            /// <param name="uvChannels">The UVChannels that are used in the shader to determine the UV for the texture.</param>
+            /// <param name="uvMatrix">The UV Transform Matrix for the texture. This includes textureName_ST scale offset. Null if the UV transfrom is not known.</param>
+            /// <remarks>
+            /// This section describes the current and planned implementation of UV Packing in the Avatar Optimizer about this function.
+            /// 
+            /// Currently, Avatar Optimizer does UV Packing if (non-exclusive):
+            /// - Texture is reasonably used by small set of materials
+            /// - UsingUVChannels is set to only one of UV Channels (per material)
+            /// - UV Matrix is known and identity matrix
+            /// 
+            /// However, Avatar Optimizer will support more complex UV Packing in the future:
+            /// - Support UV Matrix with scale is smaller and rotation is multiple of 90 degrees
+            /// - multiple UV Channel texture
+            /// </remarks>
+            public abstract void RegisterTextureUVUsage(
+                string textureMaterialPropertyName,
+                SamplerStateInformation samplerState,
+                UsingUVChannels uvChannels,
+                UnityEngine.Matrix4x4? uvMatrix);
+        }
+
+        /// <summary>
+        /// The information about the sampler state for the specified texture.
+        ///
+        /// You can combine multiple SamplerStateInformation for the texture with `|` operator.
+        ///
+        /// You can cast string to <c>SamplerStateInformation</c> to use the sampler state for
+        /// the specified texture like <c>sampler_MainTex</c> by <c>(SamplerStateInformation)"_MainTex"</c>.
+        ///
+        /// If your shader is using hardcoded sampler state, you can use the predefined sampler state like
+        /// <see cref="SamplerStateInformation.PointClampSampler"/> or <see cref="SamplerStateInformation.LinearRepeatSampler"/>.
+        /// </summary>
+        internal readonly struct SamplerStateInformation
+        {
+            private readonly string _textureName;
+            private readonly bool _materialProperty;
+
+            public SamplerStateInformation(string textureName)
+            {
+                _textureName = textureName;
+                _materialProperty = true;
+            }
+
+            // construct builtin non-material property sampler state
+            private SamplerStateInformation(string textureName, bool dummy)
+            {
+                _textureName = textureName;
+                _materialProperty = false;
+            }
+
+            // I don't want to expose equals to public API so I made this internal function instead of overriding Equals
+            internal static bool EQ(SamplerStateInformation left, SamplerStateInformation right)
+            {
+                if (left._materialProperty != right._materialProperty) return false;
+                if (left._textureName != right._textureName) return false;
+                return true;
+            }
+
+            public static readonly SamplerStateInformation Unknown = new("Unknown", false);
+            public static readonly SamplerStateInformation PointClampSampler = new("PointClamp", false);
+            public static readonly SamplerStateInformation PointRepeatSampler = new("PointRepeat", false);
+            public static readonly SamplerStateInformation PointMirrorSampler = new("PointMirror", false);
+            public static readonly SamplerStateInformation PointMirrorOnceSampler = new("PointMirrorOnce", false);
+            public static readonly SamplerStateInformation LinearClampSampler = new("LinearClamp", false);
+            public static readonly SamplerStateInformation LinearRepeatSampler = new("LinearRepeat", false);
+            public static readonly SamplerStateInformation LinearMirrorSampler = new("LinearMirror", false);
+            public static readonly SamplerStateInformation LinearMirrorOnceSampler = new("LinearMirrorOnce", false);
+            public static readonly SamplerStateInformation TrilinearClampSampler = new("TrilinearClamp", false);
+            public static readonly SamplerStateInformation TrilinearRepeatSampler = new("TrilinearRepeat", false);
+            public static readonly SamplerStateInformation TrilinearMirrorSampler = new("TrilinearMirror", false);
+            public static readonly SamplerStateInformation TrilinearMirrorOnceSampler = new("TrilinearMirrorOnce", false);
+
+            public static implicit operator SamplerStateInformation(string textureName) => new(textureName);
+            public static SamplerStateInformation operator|(SamplerStateInformation left, SamplerStateInformation right) =>
+                Combine(left, right);
+
+            private static SamplerStateInformation Combine(SamplerStateInformation left, SamplerStateInformation right)
+            {
+                // we may implement better logic in the future
+                if (EQ(left, right)) return left;
+                return Unknown;
+            }
+        }
+
+        /// <summary>
+        /// The flags to express which UV Channels might be used in the shader.
+        ///
+        /// Usage of the UV channels might be specified with some other APIs.
+        /// </summary>
+        [Flags]
+        public enum UsingUVChannels
+        {
+            NonMesh = 0,
+            UV0 = 1,
+            UV1 = 2,
+            UV2 = 4,
+            UV3 = 8,
+            UV4 = 16,
+            UV5 = 32,
+            UV6 = 64,
+            UV7 = 128,
+            Unknown = 0x7FFFFFFF,
         }
 
         public enum UVChannel
@@ -191,7 +309,7 @@ namespace Anatawa12.AvatarOptimizer
         /// Returns texture usage information for the material.
         /// </summary>
         /// <returns>null if the shader is not supported</returns>
-        public static TextureUsageInformation[]? GetTextureUsageInformationForMaterial(TextureUsageInformationCallback information)
+        public static bool GetTextureUsageInformationForMaterial(TextureUsageInformationCallback information)
         {
             if (AssetDatabase.GetAssetPath(information.Shader).StartsWith("Packages/jp.lilxyzw.liltoon"))
             {
@@ -199,10 +317,10 @@ namespace Anatawa12.AvatarOptimizer
                 return GetTextureUsageInformationForMaterialLiltoon(information);
             }
 
-            return null;
+            return false;
         }
 
-        private static TextureUsageInformation[]? GetTextureUsageInformationForMaterialLiltoon(TextureUsageInformationCallback matInfo)
+        private static bool GetTextureUsageInformationForMaterialLiltoon(TextureUsageInformationCallback matInfo)
         {
             /*
              *
@@ -742,7 +860,7 @@ namespace Anatawa12.AvatarOptimizer
 
             // _BaseMap and _BaseColorMap are unused
 
-            return information.ToArray();
+            return true;
         }
     }
 }
