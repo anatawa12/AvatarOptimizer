@@ -265,7 +265,6 @@ namespace Anatawa12.AvatarOptimizer
         [Flags]
         public enum UsingUVChannels
         {
-            NonMesh = 0,
             UV0 = 1,
             UV1 = 2,
             UV2 = 4,
@@ -274,6 +273,7 @@ namespace Anatawa12.AvatarOptimizer
             UV5 = 32,
             UV6 = 64,
             UV7 = 128,
+            NonMesh = 256,
             Unknown = 0x7FFFFFFF,
         }
 
@@ -322,213 +322,46 @@ namespace Anatawa12.AvatarOptimizer
 
         private static bool GetTextureUsageInformationForMaterialLiltoon(TextureUsageInformationCallback matInfo)
         {
-            /*
-             *
-               * [NoScaleOffset] _DitherTex                  ("Dither", 2D) = "white" {}
-               * [MainTexture]   _MainTex                    ("Texture", 2D) = "white" {}
-               * [NoScaleOffset] _MainGradationTex           ("Gradation Map", 2D) = "white" {}
-               * [NoScaleOffset] _MainColorAdjustMask        ("Adjust Mask", 2D) = "white" {}
-               *                 _Main2ndTex                 ("Texture", 2D) = "white" {}
-               * [NoScaleOffset] _Main2ndBlendMask           ("Mask", 2D) = "white" {}
-               *                 _Main2ndDissolveMask        ("Dissolve Mask", 2D) = "white" {}
-               *                 _Main2ndDissolveNoiseMask   ("Dissolve Noise Mask", 2D) = "gray" {}
-               *                 _Main3rdTex                 ("Texture", 2D) = "white" {}
-               * [NoScaleOffset] _Main3rdBlendMask           ("Mask", 2D) = "white" {}
-               *                 _Main3rdDissolveMask        ("Dissolve Mask", 2D) = "white" {}
-               *                 _Main3rdDissolveNoiseMask   ("Dissolve Noise Mask", 2D) = "gray" {}
-               *                 _AlphaMask                  ("AlphaMask", 2D) = "white" {}
-               * [Normal]        _BumpMap                    ("Normal Map", 2D) = "bump" {}
-               * [Normal]        _Bump2ndMap                 ("Normal Map", 2D) = "bump" {}
-               * [NoScaleOffset] _Bump2ndScaleMask           ("Mask", 2D) = "white" {}
-               * [Normal]        _AnisotropyTangentMap       ("Tangent Map", 2D) = "bump" {}
-               * [NoScaleOffset] _AnisotropyScaleMask        ("Scale Mask", 2D) = "white" {}
-               *                 _AnisotropyShiftNoiseMask   ("sNoise", 2D) = "white" {}
-               * [NoScaleOffset] _BacklightColorTex          ("Texture", 2D) = "white" {}
-               * [NoScaleOffset] _ShadowStrengthMask         ("sStrength", 2D) = "white" {}
-               * [NoScaleOffset] _ShadowBorderMask           ("sBorder", 2D) = "white" {}
-               * [NoScaleOffset] _ShadowBlurMask             ("sBlur", 2D) = "white" {}
-               * [NoScaleOffset] _ShadowColorTex             ("Shadow Color", 2D) = "black" {}
-               * [NoScaleOffset] _Shadow2ndColorTex          ("2nd Color", 2D) = "black" {}
-               * [NoScaleOffset] _Shadow3rdColorTex          ("3rd Color", 2D) = "black" {}
-               * [NoScaleOffset] _RimShadeMask               ("Mask", 2D) = "white" {}
-               * [NoScaleOffset] _SmoothnessTex              ("Smoothness", 2D) = "white" {}
-               * [NoScaleOffset] _MetallicGlossMap           ("Metallic", 2D) = "white" {}
-               * [NoScaleOffset] _ReflectionColorTex         ("sColor", 2D) = "white" {}
-               *                 _MatCapTex                  ("Texture", 2D) = "white" {}
-               * [NoScaleOffset] _MatCapBlendMask            ("Mask", 2D) = "white" {}
-               * [Normal]        _MatCapBumpMap              ("Normal Map", 2D) = "bump" {}
-               *                 _MatCap2ndTex               ("Texture", 2D) = "white" {}
-               * [NoScaleOffset] _MatCap2ndBlendMask         ("Mask", 2D) = "white" {}
-               * [Normal]        _MatCap2ndBumpMap           ("Normal Map", 2D) = "bump" {}
-               * [NoScaleOffset] _RimColorTex                ("Texture", 2D) = "white" {}
-               *                 _GlitterColorTex            ("Texture", 2D) = "white" {}
-               *                 _GlitterShapeTex            ("Texture", 2D) = "white" {}
-               *                 _EmissionMap                ("Texture", 2D) = "white" {}
-               *                 _EmissionBlendMask          ("Mask", 2D) = "white" {}
-               * [NoScaleOffset] _EmissionGradTex            ("Gradation Texture", 2D) = "white" {}
-               *                 _Emission2ndMap             ("Texture", 2D) = "white" {}
-               *                 _Emission2ndBlendMask       ("Mask", 2D) = "white" {}
-               * [NoScaleOffset] _Emission2ndGradTex         ("Gradation Texture", 2D) = "white" {}
-               * [NoScaleOffset] _ParallaxMap                ("Parallax Map", 2D) = "gray" {}
-               *                 _AudioLinkMask              ("Mask", 2D) = "blue" {}
-               * [NoScaleOffset] _AudioLinkLocalMap          ("Local Map", 2D) = "black" {}
-               *                 _DissolveMask               ("Dissolve Mask", 2D) = "white" {}
-               *                 _DissolveNoiseMask          ("Dissolve Noise Mask", 2D) = "gray" {}
-               *                 _OutlineTex                 ("Texture", 2D) = "white" {}
-               * [NoScaleOffset] _OutlineWidthMask           ("Width", 2D) = "white" {}
-               * [NoScaleOffset][Normal] _OutlineVectorTex   ("Vector", 2D) = "bump" {}
-               [HideInInspector]                               _BaseMap            ("Texture", 2D) = "white" {}
-               [HideInInspector]                               _BaseColorMap       ("Texture", 2D) = "white" {}
-             */
-
-            // memo:
-            // LIL_SAMPLE_2D just samples from specified texture, sampler and uv
-
-            const string lil_sampler_linear_repeat = "builtin-sampler-Linear-Repeat";
-
-            TextureUsageInformation LIL_SAMPLE_1D(string textureName, string samplerName, UVChannel uvChannel)
-            {
-                return matInfo.CreateTextureUsageInformationNoScaleOffset(textureName, uvChannel);
-            }
-
-            TextureUsageInformation LIL_SAMPLE_2D(string textureName, string samplerName, UVChannel uvChannel)
-            {
-                // might be _LOD: using SampleLevel
-                return matInfo.CreateTextureUsageInformationNoScaleOffset(textureName, uvChannel);
-            }
-
-            TextureUsageInformation LIL_SAMPLE_2D_ST(string textureName, string samplerName, UVChannel uvChannel)
-            {
-                return matInfo.CreateTextureUsageInformation(textureName, uvChannel, $"{textureName}_ST");
-            }
-
-            TextureUsageInformation LIL_SAMPLE_2D_WithST(string textureName, string samplerName, UVChannel uvChannel, string st)
-            {
-                return matInfo.CreateTextureUsageInformation(textureName, uvChannel, st);
-            }
-
             // This implementation is made for my Anon + Wahuku for testing this feature.
             // TODO: version check
-            var information = new List<TextureUsageInformation>();
 
-            var uvMain = UVChannel.UV0;
+            var uvMain = UsingUVChannels.UV0;
             var uvMainScaleOffset = "_MainTex_ST";
+            UnityEngine.Matrix4x4? uvMainMatrix = ComputeUVMainMatrix();
 
-            TextureUsageInformation UVMain_LIL_SAMPLE_2D_ST(string textureName, string sampler)
+            UnityEngine.Matrix4x4? ComputeUVMainMatrix()
             {
-                // TODO: double ST support
-                // TODO: recheck mainUV settings. includes (not limited to) ScrollRotate, Angle, Tilting
-                return matInfo.CreateTextureUsageInformation(textureName, uvMain, uvMainScaleOffset);
+                // _ShiftBackfaceUV
+                if (matInfo.GetFloat("_ShiftBackfaceUV") != 0) return null; // changed depends on face
+                return STAndScrollRotateToMatrix("_MainTex_ST", "_MainTex_ScrollRotate");
             }
 
-            TextureUsageInformation UVMain_LIL_SAMPLE_2D(string textureName, string sampler)
-            {
-                // TODO: recheck mainUV settings. includes (not limited to) ScrollRotate, Angle, Tilting
-                return matInfo.CreateTextureUsageInformation(textureName, uvMain, uvMainScaleOffset);
-            }
-
-            TextureUsageInformation LIL_GET_SUBTEX(string textureName, UVChannel uvChannel)
-            {
-                var st = $"{textureName}_ST";
-
-                // TODO: consider the following properties
-                var scrollRotate = $"{textureName}_ScrollRotate";
-                var angle = $"{textureName}Angle";
-                var isDecal = $"{textureName}IsDecal";
-                var isLeftOnly = $"{textureName}IsLeftOnly";
-                var isRightOnly = $"{textureName}IsRightOnly";
-                var shouldCopy = $"{textureName}ShouldCopy";
-                var shouldFlipMirror = $"{textureName}ShouldFlipMirror";
-                var shouldFlipCopy = $"{textureName}ShouldFlipCopy";
-                var isMSDF = $"{textureName}IsMSDF";
-                var decalAnimation = $"{textureName}DecalAnimation";
-                var decalSubParam = $"{textureName}DecalSubParam";
-                // fd.nv?
-                // fd.isRightHand?
-
-                return matInfo.CreateTextureUsageInformation(textureName, uvChannel, st);
-            }
-
-            TextureUsageInformation LIL_GET_EMITEX(string textureName, UVChannel uvChannel)
-            {
-                var st = $"{textureName}_ST";
-
-                // TODO: consider the following properties
-                var scrollRotate = $"{textureName}_ScrollRotate";
-
-                return matInfo.CreateTextureUsageInformation(textureName, uvChannel, st);
-            }
-
-            TextureUsageInformation LIL_GET_EMIMASK(string textureName, UVChannel uvChannel)
-            {
-                var st = $"{textureName}_ST";
-
-                // sampler is sampler_MainTex
-                // TODO: consider the following properties
-                var scrollRotate = $"{textureName}_ScrollRotate";
-
-                return matInfo.CreateTextureUsageInformation(textureName, uvChannel, st);
-            }
-
-            TextureUsageInformation UVMain_LIL_GET_EMIMASK(string textureName)
-            {
-                var st = $"{textureName}_ST";
-
-                // sampler is sampler_MainTex
-                // TODO: consider the following properties
-                var scrollRotate = $"{textureName}_ScrollRotate";
-
-                return matInfo.CreateTextureUsageInformation(textureName, uvMain, st);
-            }
-
-            void lilCalcDissolveWithOrWithoutNoise(
-                // alpha,
-                // dissolveAlpha,
-                UVChannel uv, // ?
-                // positionOS,
-                // dissolveParams,
-                // dissolvePos,
-                string dissolveMask,
-                string dissolveMaskST,
-                //  dissolveMaskEnabled
-                string dissolveNoiseMask,
-                string dissolveNoiseMaskST,
-                string dissolveNoiseMaskScrollRotate,
-                // dissolveNoiseStrength,
-                string samp
-            )
-            {
-                information.Add(LIL_SAMPLE_2D_WithST(dissolveMask, samp, uv, dissolveMaskST));
-                information.Add(LIL_SAMPLE_2D_WithST(dissolveNoiseMask, samp, uv, dissolveNoiseMaskST));
-                // TODO: dissolveNoiseMaskScrollRotate
-            }
-
-            information.Add(matInfo.CreateTextureUsageInformationNoScaleOffset("_DitherTex", UVChannel.NonMeshRelated)); // dither UV is based on screen space
+            matInfo.RegisterTextureUVUsage("_DitherTex", SamplerStateInformation.LinearRepeatSampler, UsingUVChannels.NonMesh, null); // dither UV is based on screen space
 
             // TODO: _MainTex with POM / PARALLAX (using LIL_SAMPLE_2D_POM)
-            information.Add(UVMain_LIL_SAMPLE_2D("_MainTex", "_MainTex")); // main texture
-            information.Add(matInfo.CreateTextureUsageInformation("_MainGradationTex", UVChannel.NonMeshRelated)); // GradationMap UV is based on color
-            information.Add(UVMain_LIL_SAMPLE_2D("_MainColorAdjustMask", "_MainTex")); // simple LIL_SAMPLE_2D
+            LIL_SAMPLE_2D_WithMat("_MainTex", "_MainTex", uvMain, uvMainMatrix); // main texture
+            matInfo.RegisterTextureUVUsage("_MainGradationTex", SamplerStateInformation.LinearClampSampler, UsingUVChannels.NonMesh, null); // GradationMap UV is based on color
+            LIL_SAMPLE_2D_WithMat("_MainColorAdjustMask", "_MainTex", uvMain, uvMainMatrix); // simple LIL_SAMPLE_2D
 
             if (matInfo.GetInteger("_UseMain2ndTex") != 0)
             {
                 // caller of lilGetMain2nd will pass sampler for _MainTex as samp
-                var samp = "_MainTex";
+                SamplerStateInformation samp = "_MainTex";
 
-                UVChannel uv2nd;
+                UsingUVChannels uv2nd;
                 switch (matInfo.GetInteger("_Main2ndTex_UVMode"))
                 {
-                    case 0: uv2nd = UVChannel.UV0; break;
-                    case 1: uv2nd = UVChannel.UV1; break;
-                    case 2: uv2nd = UVChannel.UV2; break;
-                    case 3: uv2nd = UVChannel.UV3; break;
-                    case 4: uv2nd = UVChannel.NonMeshRelated; break; // MatCap (normal-based UV)
-                    default: uv2nd = UVChannel.Unknown; break;
+                    case 0: uv2nd = UsingUVChannels.UV0; break;
+                    case 1: uv2nd = UsingUVChannels.UV1; break;
+                    case 2: uv2nd = UsingUVChannels.UV2; break;
+                    case 3: uv2nd = UsingUVChannels.UV3; break;
+                    case 4: uv2nd = UsingUVChannels.NonMesh; break; // MatCap (normal-based UV)
+                    default: uv2nd = UsingUVChannels.UV0 | UsingUVChannels.UV1 | UsingUVChannels.UV2 | UsingUVChannels.UV3; break;
                 }
-                information.Add(LIL_GET_SUBTEX("_Main2ndTex", uv2nd));
-                information.Add(UVMain_LIL_SAMPLE_2D("_Main2ndBlendMask", samp));
+                LIL_GET_SUBTEX("_Main2ndTex", uv2nd);
+                LIL_SAMPLE_2D_WithMat("_Main2ndBlendMask", samp, uvMain, uvMainMatrix);
                 lilCalcDissolveWithOrWithoutNoise(
-                    UVChannel.UV0,
+                    UsingUVChannels.UV0,
                     "_Main2ndDissolveMask",
                     "_Main2ndDissolveMask_ST",
                     "_Main2ndDissolveNoiseMask",
@@ -543,21 +376,21 @@ namespace Anatawa12.AvatarOptimizer
                 // caller of lilGetMain3rd will pass sampler for _MainTex as samp
                 var samp = "_MainTex";
 
-                UVChannel uv3rd;
+                UsingUVChannels uv3rd;
                 switch (matInfo.GetInteger("_Main2ndTex_UVMode"))
                 {
-                    case 0: uv3rd = UVChannel.UV0; break;
-                    case 1: uv3rd = UVChannel.UV1; break;
-                    case 2: uv3rd = UVChannel.UV2; break;
-                    case 3: uv3rd = UVChannel.UV3; break;
-                    case 4: uv3rd = UVChannel.NonMeshRelated; break; // MatCap (normal-based UV)
-                    default: uv3rd = UVChannel.Unknown; break;
+                    case 0: uv3rd = UsingUVChannels.UV0; break;
+                    case 1: uv3rd = UsingUVChannels.UV1; break;
+                    case 2: uv3rd = UsingUVChannels.UV2; break;
+                    case 3: uv3rd = UsingUVChannels.UV3; break;
+                    case 4: uv3rd = UsingUVChannels.NonMesh; break; // MatCap (normal-based UV)
+                    default: uv3rd = UsingUVChannels.UV0 | UsingUVChannels.UV1 | UsingUVChannels.UV2 | UsingUVChannels.UV3; break;
                 }
 
-                information.Add(LIL_GET_SUBTEX("_Main3rdTex", uv3rd));
-                information.Add(UVMain_LIL_SAMPLE_2D("_Main3rdBlendMask", samp));
+                LIL_GET_SUBTEX("_Main3rdTex", uv3rd);
+                LIL_SAMPLE_2D_WithMat("_Main3rdBlendMask", samp, uvMain, uvMainMatrix);
                 lilCalcDissolveWithOrWithoutNoise(
-                    UVChannel.UV0,
+                    UsingUVChannels.UV0,
                     "_Main3rdDissolveMask",
                     "_Main3rdDissolveMask_ST",
                     "_Main3rdDissolveNoiseMask",
@@ -567,68 +400,70 @@ namespace Anatawa12.AvatarOptimizer
                 );
             }
 
-            information.Add(UVMain_LIL_SAMPLE_2D_ST("_AlphaMask", "_MainTex"));
+            LIL_SAMPLE_2D_ST_WithMat("_AlphaMask", "_MainTex", uvMain, uvMainMatrix);
             if (matInfo.GetInteger("_UseBumpMap") != 0)
             {
-                information.Add(UVMain_LIL_SAMPLE_2D_ST("_BumpMap", "_MainTex"));
+                LIL_SAMPLE_2D_ST_WithMat("_BumpMap", "_MainTex", uvMain, uvMainMatrix);
             }
 
             if (matInfo.GetInteger("_UseBump2ndMap") != 0)
             {
-                var uvBump2nd = UVChannel.UV0;
+                var uvBump2nd = UsingUVChannels.UV0;
 
                 switch (matInfo.GetInteger("_Bump2ndMap_UVMode"))
                 {
-                    case 0: uvBump2nd = UVChannel.UV0; break;
-                    case 1: uvBump2nd = UVChannel.UV1; break;
-                    case 2: uvBump2nd = UVChannel.UV2; break;
-                    case 3: uvBump2nd = UVChannel.UV3; break;
-                    case null: uvBump2nd = UVChannel.Unknown; break;
+                    case 0: uvBump2nd = UsingUVChannels.UV0; break;
+                    case 1: uvBump2nd = UsingUVChannels.UV1; break;
+                    case 2: uvBump2nd = UsingUVChannels.UV2; break;
+                    case 3: uvBump2nd = UsingUVChannels.UV3; break;
+                    case null: uvBump2nd = UsingUVChannels.UV0 | UsingUVChannels.UV1 | UsingUVChannels.UV2 | UsingUVChannels.UV3; break;
                 }
 
-                information.Add(LIL_SAMPLE_2D_ST("_Bump2ndMap", lil_sampler_linear_repeat, uvBump2nd));
-                information.Add(UVMain_LIL_SAMPLE_2D_ST("_Bump2ndScaleMask", "_MainTex")); // _Bump2ndScaleMask is defined as NoScaleOffset but sampled with LIL_SAMPLE_2D_ST?
+                LIL_SAMPLE_2D_ST("_Bump2ndMap", SamplerStateInformation.LinearRepeatSampler, uvBump2nd);
+                LIL_SAMPLE_2D_ST_WithMat("_Bump2ndScaleMask", "_MainTex", uvMain, uvMainMatrix);
+
+                // Note: _Bump2ndScaleMask is defined as NoScaleOffset but sampled with LIL_SAMPLE_2D_ST?
             }
 
             if (matInfo.GetInteger("_UseAnisotropy") != 0)
             {
-                information.Add(UVMain_LIL_SAMPLE_2D_ST("_AnisotropyTangentMap", "_MainTex"));
-                information.Add(UVMain_LIL_SAMPLE_2D_ST("_AnisotropyScaleMask", "_MainTex"));
+                LIL_SAMPLE_2D_ST_WithMat("_AnisotropyTangentMap", "_MainTex", uvMain, uvMainMatrix);
+                LIL_SAMPLE_2D_ST_WithMat("_AnisotropyScaleMask", "_MainTex", uvMain, uvMainMatrix);
 
                 // _AnisotropyShiftNoiseMask is used in another place but under _UseAnisotropy condition
-                information.Add(UVMain_LIL_SAMPLE_2D_ST("_AnisotropyShiftNoiseMask", "_MainTex"));
+                LIL_SAMPLE_2D_ST_WithMat("_AnisotropyShiftNoiseMask", "_MainTex", uvMain, uvMainMatrix);
             }
 
             if (matInfo.GetInteger("_UseBacklight") != 0)
             {
                 var samp = "_MainTex";
-                information.Add(UVMain_LIL_SAMPLE_2D_ST("_BacklightColorTex", samp));
+                LIL_SAMPLE_2D_ST_WithMat("_BacklightColorTex", samp, uvMain, uvMainMatrix);
             }
 
             if (matInfo.GetInteger("_UseShadow") != 0)
             {
-                // TODO: Those sampling are GRAD 
-                var samp = "_MainTex";
-                information.Add(UVMain_LIL_SAMPLE_2D("_ShadowStrengthMask", lil_sampler_linear_repeat));
-                information.Add(UVMain_LIL_SAMPLE_2D("_ShadowBorderMask", lil_sampler_linear_repeat));
-                information.Add(UVMain_LIL_SAMPLE_2D("_ShadowBlurMask", lil_sampler_linear_repeat));
+                SamplerStateInformation samp = "_MainTex";
+                LIL_SAMPLE_2D_GRAD_WithMat("_ShadowStrengthMask", SamplerStateInformation.LinearRepeatSampler, uvMain, uvMainMatrix);
+                LIL_SAMPLE_2D_GRAD_WithMat("_ShadowBorderMask", SamplerStateInformation.LinearRepeatSampler, uvMain, uvMainMatrix);
+                LIL_SAMPLE_2D_GRAD_WithMat("_ShadowBlurMask", SamplerStateInformation.LinearRepeatSampler, uvMain, uvMainMatrix);
                 // lilSampleLUT
                 switch (matInfo.GetInteger("_ShadowColorType"))
                 {
                     case 1:
-                        information.Add(matInfo.CreateTextureUsageInformation("_ShadowColorTex", UVChannel.NonMeshRelated));
-                        information.Add(matInfo.CreateTextureUsageInformation("_Shadow2ndColorTex", UVChannel.NonMeshRelated));
-                        information.Add(matInfo.CreateTextureUsageInformation("_Shadow3rdColorTex", UVChannel.NonMeshRelated));
+                        LIL_SAMPLE_2D_WithMat("_ShadowColorTex", SamplerStateInformation.LinearClampSampler, UsingUVChannels.NonMesh, null);
+                        LIL_SAMPLE_2D_WithMat("_Shadow2ndColorTex", SamplerStateInformation.LinearClampSampler, UsingUVChannels.NonMesh, null);
+                        LIL_SAMPLE_2D_WithMat("_Shadow3rdColorTex", SamplerStateInformation.LinearClampSampler, UsingUVChannels.NonMesh, null);
                         break;
                     case null:
-                        information.Add(matInfo.CreateTextureUsageInformation("_ShadowColorTex", UVChannel.Unknown));
-                        information.Add(matInfo.CreateTextureUsageInformation("_Shadow2ndColorTex", UVChannel.Unknown));
-                        information.Add(matInfo.CreateTextureUsageInformation("_Shadow3rdColorTex", UVChannel.Unknown));
+                        var sampler = samp | SamplerStateInformation.LinearClampSampler;
+                        LIL_SAMPLE_2D_WithMat("_ShadowColorTex", sampler, UsingUVChannels.NonMesh | uvMain, null);
+                        LIL_SAMPLE_2D_WithMat("_Shadow2ndColorTex", sampler, UsingUVChannels.NonMesh | uvMain, null);
+                        LIL_SAMPLE_2D_WithMat("_Shadow3rdColorTex", sampler, UsingUVChannels.NonMesh | uvMain, null);
                         break;
                     default:
-                        information.Add(UVMain_LIL_SAMPLE_2D("_ShadowColorTex", samp));
-                        information.Add(UVMain_LIL_SAMPLE_2D("_Shadow2ndColorTex", samp));
-                        information.Add(UVMain_LIL_SAMPLE_2D("_Shadow3rdColorTex", samp));
+                        LIL_SAMPLE_2D_WithMat("_ShadowColorTex", samp, uvMain, uvMainMatrix);
+                        LIL_SAMPLE_2D_WithMat("_Shadow2ndColorTex", samp, uvMain, uvMainMatrix);
+                        LIL_SAMPLE_2D_WithMat("_Shadow3rdColorTex", samp, uvMain, uvMainMatrix);
                         break;
                 }
             }
@@ -637,17 +472,17 @@ namespace Anatawa12.AvatarOptimizer
             {
                 var samp = "_MainTex";
 
-                information.Add(UVMain_LIL_SAMPLE_2D("_RimShadeMask", samp));
+                LIL_SAMPLE_2D_WithMat("_RimShadeMask", samp, uvMain, uvMainMatrix);
             }
 
             if (matInfo.GetInteger("_UseReflection") != 0)
             {
                 // TODO: research
-                var samp = "_MainTex"; // or lil_sampler_linear_repeat in lil_pass_foreward_reblur.hlsl
+                var samp = "_MainTex"; // or SamplerStateInformation.LinearRepeatSampler in lil_pass_foreward_reblur.hlsl
 
-                information.Add(UVMain_LIL_SAMPLE_2D_ST("_SmoothnessTex", samp));
-                information.Add(UVMain_LIL_SAMPLE_2D_ST("_MetallicGlossMap", samp));
-                information.Add(UVMain_LIL_SAMPLE_2D_ST("_ReflectionColorTex", samp));
+                LIL_SAMPLE_2D_ST_WithMat("_SmoothnessTex", samp, uvMain, uvMainMatrix);
+                LIL_SAMPLE_2D_ST_WithMat("_MetallicGlossMap", samp, uvMain, uvMainMatrix);
+                LIL_SAMPLE_2D_ST_WithMat("_ReflectionColorTex", samp, uvMain, uvMainMatrix);
             }
 
             // Matcap
@@ -655,12 +490,12 @@ namespace Anatawa12.AvatarOptimizer
             {
                 var samp = "_MainTex"; // caller of lilGetMatCap
 
-                information.Add(LIL_SAMPLE_2D("_MatCapTex", lil_sampler_linear_repeat, UVChannel.NonMeshRelated));
-                information.Add(UVMain_LIL_SAMPLE_2D_ST("_MatCapBlendMask", samp));
+                LIL_SAMPLE_2D("_MatCapTex", SamplerStateInformation.LinearRepeatSampler, UsingUVChannels.NonMesh);
+                LIL_SAMPLE_2D_ST_WithMat("_MatCapBlendMask", samp, uvMain, uvMainMatrix);
 
                 if (matInfo.GetInteger("_MatCapCustomNormal") != 0)
                 {
-                    information.Add(UVMain_LIL_SAMPLE_2D_ST("_MatCapBumpMap", samp));
+                    LIL_SAMPLE_2D_ST_WithMat("_MatCapBumpMap", samp, uvMain, uvMainMatrix);
                 }
             }
             
@@ -668,12 +503,12 @@ namespace Anatawa12.AvatarOptimizer
             {
                 var samp = "_MainTex"; // caller of lilGetMatCap
 
-                information.Add(LIL_SAMPLE_2D("_MatCap2ndTex", lil_sampler_linear_repeat, UVChannel.NonMeshRelated));
-                information.Add(UVMain_LIL_SAMPLE_2D_ST("_MatCap2ndBlendMask", samp));
+                LIL_SAMPLE_2D("_MatCap2ndTex", SamplerStateInformation.LinearRepeatSampler, UsingUVChannels.NonMesh);
+                LIL_SAMPLE_2D_ST_WithMat("_MatCap2ndBlendMask", samp, uvMain, uvMainMatrix);
 
                 if (matInfo.GetInteger("_MatCap2ndCustomNormal") != 0)
                 {
-                    information.Add(UVMain_LIL_SAMPLE_2D_ST("_MatCap2ndBumpMap", samp));
+                    LIL_SAMPLE_2D_ST_WithMat("_MatCap2ndBumpMap", samp, uvMain, uvMainMatrix);
                 }
             }
 
@@ -681,79 +516,74 @@ namespace Anatawa12.AvatarOptimizer
             if (matInfo.GetInteger("_UseRim") != 0)
             {
                 var samp = "_MainTex"; // caller of lilGetRim
-                information.Add(UVMain_LIL_SAMPLE_2D_ST("_RimColorTex", samp));
+                LIL_SAMPLE_2D_ST_WithMat("_RimColorTex", samp, uvMain, uvMainMatrix);
             }
 
             if (matInfo.GetInteger("_UseGlitter") != 0)
             {
                 var samp = "_MainTex"; // caller of lilGetGlitter
 
-                information.Add(UVMain_LIL_SAMPLE_2D_ST("_GlitterColorTex", samp));
-                // complex uv
-                information.Add(matInfo.CreateTextureUsageInformation("_GlitterShapeTex", UVChannel.Unknown));
+                LIL_SAMPLE_2D_ST_WithMat("_GlitterColorTex", samp, uvMain, uvMainMatrix);
+                if (matInfo.GetInteger("_GlitterApplyShape") != 0)
+                {
+                    // complex uv
+                    LIL_SAMPLE_2D_GRAD("_GlitterShapeTex", SamplerStateInformation.LinearClampSampler,
+                        UsingUVChannels.NonMesh);
+                }
             }
             
             if (matInfo.GetInteger("_UseEmission") != 0)
             {
-                var emissionUV = UVChannel.UV0;
+                UsingUVChannels emissionUV = UsingUVChannels.UV0;
 
                 switch (matInfo.GetInteger("_EmissionMap_UVMode"))
                 {
-                    case 1: emissionUV = UVChannel.UV1; break;
-                    case 2: emissionUV = UVChannel.UV2; break;
-                    case 3: emissionUV = UVChannel.UV3; break;
-                    case 4: emissionUV = UVChannel.NonMeshRelated; break; // uvRim; TODO: check
-                    case null: emissionUV = UVChannel.Unknown; break;
+                    case 1: emissionUV = UsingUVChannels.UV1; break;
+                    case 2: emissionUV = UsingUVChannels.UV2; break;
+                    case 3: emissionUV = UsingUVChannels.UV3; break;
+                    case 4: emissionUV = UsingUVChannels.NonMesh; break; // uvRim; TODO: check
+                    case null: emissionUV = UsingUVChannels.UV0 | UsingUVChannels.UV1 | UsingUVChannels.UV2 | UsingUVChannels.UV3 | UsingUVChannels.NonMesh; break;
                 }
 
-                UVChannel _EmissionMapParaTex;
-                if (matInfo.GetFloat("_EmissionParallaxDepth") == 0)
-                    _EmissionMapParaTex = emissionUV;
-                else
-                    _EmissionMapParaTex = UVChannel.Unknown; // hard to determine
+                var parallaxEnabled = matInfo.GetFloat("_EmissionParallaxDepth") != 0;
 
-                // actually LIL_GET_EMITEX is used but same as LIL_SAMPLE_2D_ST
-                information.Add(LIL_GET_EMITEX("_EmissionMap", _EmissionMapParaTex));
+                LIL_GET_EMITEX("_EmissionMap", emissionUV, parallaxEnabled);
 
                 // if LIL_FEATURE_ANIMATE_EMISSION_MASK_UV is enabled, UV0 is used and if not UVMain is used.
                 var LIL_FEATURE_ANIMATE_EMISSION_MASK_UV = matInfo.GetVector("_EmissionBlendMask_ScrollRotate") != new Vector4(0, 0, 0, 0) || matInfo.GetVector("_Emission2ndBlendMask_ScrollRotate") != new Vector4(0, 0, 0, 0);
 
                 if (LIL_FEATURE_ANIMATE_EMISSION_MASK_UV)
                 {
-                    information.Add(LIL_GET_EMIMASK("_EmissionBlendMask", UVChannel.UV0));
+                    LIL_GET_EMIMASK("_EmissionBlendMask", UsingUVChannels.UV0);
                 }
                 else
                 {
-                    information.Add(UVMain_LIL_GET_EMIMASK("_EmissionBlendMask"));
+                    LIL_GET_EMIMASK_WithMat("_EmissionBlendMask", uvMain, uvMainMatrix);
                 }
 
                 if (matInfo.GetInteger("_EmissionUseGrad") != 0)
                 {
-                    information.Add(LIL_SAMPLE_1D("_EmissionGradTex", lil_sampler_linear_repeat, UVChannel.NonMeshRelated));
+                    LIL_SAMPLE_1D("_EmissionGradTex", SamplerStateInformation.LinearRepeatSampler, UsingUVChannels.NonMesh);
                 }
             }
 
             if (matInfo.GetInteger("_Emission2ndMap") != 0)
             {
-                var emission2ndUV = UVChannel.UV0;
+                UsingUVChannels emission2ndUV = UsingUVChannels.UV0;
 
                 switch (matInfo.GetInteger("_Emission2ndMap_UVMode"))
                 {
-                    case 1: emission2ndUV = UVChannel.UV1; break;
-                    case 2: emission2ndUV = UVChannel.UV2; break;
-                    case 3: emission2ndUV = UVChannel.UV3; break;
-                    case 4: emission2ndUV = UVChannel.NonMeshRelated; break; // uvRim; TODO: check
-                    case null: emission2ndUV = UVChannel.Unknown; break;
+                    case 1: emission2ndUV = UsingUVChannels.UV1; break;
+                    case 2: emission2ndUV = UsingUVChannels.UV2; break;
+                    case 3: emission2ndUV = UsingUVChannels.UV3; break;
+                    case 4: emission2ndUV = UsingUVChannels.NonMesh; break; // uvRim; TODO: check
+                    case null: emission2ndUV = UsingUVChannels.UV0 | UsingUVChannels.UV1 | UsingUVChannels.UV2 | UsingUVChannels.UV3 | UsingUVChannels.NonMesh; break;
                 }
 
-                UVChannel _Emission2ndMapParaTex;
-                if (matInfo.GetFloat("_Emission2ndParallaxDepth") == 0)
-                    _Emission2ndMapParaTex = emission2ndUV;
-                else
-                    _Emission2ndMapParaTex = UVChannel.Unknown; // hard to determine
+                var parallaxEnabled = matInfo.GetFloat("_Emission2ndParallaxDepth") != 0;
 
                 // actually LIL_GET_EMITEX is used but same as LIL_SAMPLE_2D_ST
-                information.Add(LIL_GET_EMITEX("_Emission2ndMap", _Emission2ndMapParaTex));
+                LIL_GET_EMITEX("_Emission2ndMap", emission2ndUV, parallaxEnabled);
 
                 // if LIL_FEATURE_ANIMATE_EMISSION_MASK_UV is enabled, UV0 is used and if not UVMain is used. (weird)
                 // https://github.com/lilxyzw/lilToon/blob/b96470d3dd9092b840052578048b2307fe6d8786/Assets/lilToon/Shader/Includes/lil_common_frag.hlsl#L1819-L1821
@@ -761,22 +591,22 @@ namespace Anatawa12.AvatarOptimizer
 
                 if (LIL_FEATURE_ANIMATE_EMISSION_MASK_UV)
                 {
-                    information.Add(LIL_GET_EMIMASK("_Emission2ndBlendMask", UVChannel.UV0));
+                    LIL_GET_EMIMASK("_Emission2ndBlendMask", UsingUVChannels.UV0);
                 }
                 else
                 {
-                    information.Add(UVMain_LIL_GET_EMIMASK("_Emission2ndBlendMask"));
+                    LIL_GET_EMIMASK_WithMat("_Emission2ndBlendMask", uvMain, uvMainMatrix);
                 }
 
                 if (matInfo.GetInteger("_Emission2ndUseGrad") != 0)
                 {
-                    information.Add(LIL_SAMPLE_1D("_Emission2ndGradTex", lil_sampler_linear_repeat, UVChannel.NonMeshRelated));
+                    LIL_SAMPLE_1D("_Emission2ndGradTex", SamplerStateInformation.LinearRepeatSampler, UsingUVChannels.NonMesh);
                 }
             }
 
             if (matInfo.GetInteger("_UseParallax") != 0)
             {
-                information.Add(matInfo.CreateTextureUsageInformation("_ParallaxMap", UVChannel.Unknown));
+                matInfo.RegisterTextureUVUsage("_ParallaxMap", SamplerStateInformation.LinearRepeatSampler, UsingUVChannels.UV0, null);
             }
 
             if (matInfo.GetInteger("_UseAudioLink") != 0 && matInfo.GetInteger("_AudioLink2Vertex") != 0)
@@ -786,28 +616,28 @@ namespace Anatawa12.AvatarOptimizer
                 if (_AudioLinkUVMode is 3 or 4 or null)
                 {
                     // TODO: _AudioLinkMask_ScrollRotate
+                    var sampler = "_AudioLinkMask" | SamplerStateInformation.LinearRepeatSampler;
                     switch (matInfo.GetInteger("_AudioLinkMask_UVMode"))
                     {
                         case 0:
                         default:
-                            information.Add(UVMain_LIL_SAMPLE_2D_ST("_AudioLinkMask", "_AudioLinkMask"));
-                            information.Add(UVMain_LIL_SAMPLE_2D_ST("_AudioLinkMask", lil_sampler_linear_repeat));
+                            LIL_SAMPLE_2D_ST_WithMat("_AudioLinkMask", sampler, uvMain, uvMainMatrix);
                             break;
                         case 1:
-                            information.Add(LIL_SAMPLE_2D_ST("_AudioLinkMask", "_AudioLinkMask", UVChannel.UV1));
+                            LIL_SAMPLE_2D_ST("_AudioLinkMask", sampler, UsingUVChannels.UV1);
                             break;
                         case 2:
-                            information.Add(LIL_SAMPLE_2D_ST("_AudioLinkMask", "_AudioLinkMask", UVChannel.UV2));
+                            LIL_SAMPLE_2D_ST("_AudioLinkMask", sampler, UsingUVChannels.UV2);
                             break;
                         case 3:
-                            information.Add(LIL_SAMPLE_2D_ST("_AudioLinkMask", "_AudioLinkMask", UVChannel.UV3));
+                            LIL_SAMPLE_2D_ST("_AudioLinkMask", sampler, UsingUVChannels.UV3);
                             break;
                         case null:
-                            information.Add(LIL_SAMPLE_2D_ST("_AudioLinkMask", "_AudioLinkMask", UVChannel.Unknown));
+                            LIL_SAMPLE_2D_ST_WithMat("_AudioLinkMask", sampler, 
+                                uvMain | UsingUVChannels.UV1 | UsingUVChannels.UV2 | UsingUVChannels.UV3,
+                                Combine(uvMainMatrix, Matrix4x4.identity));
                             break;
                     }
-
-                    information.Add(LIL_SAMPLE_2D("_AudioLinkMask", lil_sampler_linear_repeat, UVChannel.Unknown));
                 }
             }
 
@@ -816,7 +646,7 @@ namespace Anatawa12.AvatarOptimizer
                 lilCalcDissolveWithOrWithoutNoise(
                     //fd.col.a,
                     //dissolveAlpha,
-                    UVChannel.UV0,
+                    UsingUVChannels.UV0,
                     //fd.positionOS,
                     //_DissolveParams,
                     //_DissolvePos,
@@ -832,28 +662,33 @@ namespace Anatawa12.AvatarOptimizer
             }
 
             if (matInfo.GetInteger("_UseOutline") != 0) { // not on material side, on editor side toggle
-                information.Add(UVMain_LIL_SAMPLE_2D("_OutlineTex", "_OutlineTex"));
-                information.Add(UVMain_LIL_SAMPLE_2D("_OutlineWidthMask", lil_sampler_linear_repeat));
-                // _OutlineVectorTex lil_sampler_linear_repeat
+                LIL_SAMPLE_2D_WithMat("_OutlineTex", "_OutlineTex", uvMain, uvMainMatrix);
+                LIL_SAMPLE_2D_WithMat("_OutlineWidthMask", SamplerStateInformation.LinearRepeatSampler, uvMain, uvMainMatrix);
+                // _OutlineVectorTex SamplerStateInformation.LinearRepeatSampler
                 // UVs _OutlineVectorUVMode main,1,2,3
                 
                 switch (matInfo.GetInteger("_AudioLinkMask_UVMode"))
                 {
                     case 0:
-                        information.Add(UVMain_LIL_SAMPLE_2D("_OutlineVectorTex", lil_sampler_linear_repeat));
+                        LIL_SAMPLE_2D_WithMat("_OutlineVectorTex", SamplerStateInformation.LinearRepeatSampler, uvMain, uvMainMatrix);
                         break;
                     case 1:
-                        information.Add(LIL_SAMPLE_2D("_OutlineVectorTex", lil_sampler_linear_repeat, UVChannel.UV1));
+                        LIL_SAMPLE_2D("_OutlineVectorTex", SamplerStateInformation.LinearRepeatSampler, UsingUVChannels.UV1);
                         break;
                     case 2:
-                        information.Add(LIL_SAMPLE_2D("_OutlineVectorTex", lil_sampler_linear_repeat, UVChannel.UV2));
+                        LIL_SAMPLE_2D("_OutlineVectorTex", SamplerStateInformation.LinearRepeatSampler, UsingUVChannels.UV2);
                         break;
                     case 3:
-                        information.Add(LIL_SAMPLE_2D("_OutlineVectorTex", lil_sampler_linear_repeat, UVChannel.UV3));
+                        LIL_SAMPLE_2D("_OutlineVectorTex", SamplerStateInformation.LinearRepeatSampler, UsingUVChannels.UV3);
                         break;
                     default:
                     case null:
-                        information.Add(LIL_SAMPLE_2D("_OutlineVectorTex", lil_sampler_linear_repeat, UVChannel.Unknown));
+                        matInfo.RegisterTextureUVUsage(
+                            "_OutlineVectorTex",
+                            SamplerStateInformation.LinearRepeatSampler,
+                            UsingUVChannels.UV0 | UsingUVChannels.UV1 | UsingUVChannels.UV2 | UsingUVChannels.UV3,
+                            Combine(uvMainMatrix, UnityEngine.Matrix4x4.identity)
+                            );
                         break;
                 }
             }
@@ -861,6 +696,230 @@ namespace Anatawa12.AvatarOptimizer
             // _BaseMap and _BaseColorMap are unused
 
             return true;
+
+            void LIL_SAMPLE_1D(string textureName, SamplerStateInformation samplerName, UsingUVChannels uvChannel)
+            {
+                matInfo.RegisterTextureUVUsage(
+                    textureName,
+                    samplerName,
+                    uvChannel,
+                    UnityEngine.Matrix4x4.identity
+                );
+            }
+
+            void LIL_SAMPLE_2D(string textureName, SamplerStateInformation samplerName, UsingUVChannels uvChannel)
+            {
+                // might be _LOD: using SampleLevel
+                matInfo.RegisterTextureUVUsage(
+                    textureName,
+                    samplerName,
+                    uvChannel,
+                    UnityEngine.Matrix4x4.identity
+                );
+            }
+
+            void LIL_SAMPLE_2D_WithMat(string textureName, SamplerStateInformation samplerName, UsingUVChannels uvChannel, UnityEngine.Matrix4x4? matrix)
+            {
+                // might be _LOD: using SampleLevel
+                matInfo.RegisterTextureUVUsage(
+                    textureName,
+                    samplerName,
+                    uvChannel,
+                    matrix
+                );
+            }
+
+            void LIL_SAMPLE_2D_GRAD(string textureName, SamplerStateInformation samplerName, UsingUVChannels uvChannel)
+            {
+                // additional parameter for SampleGrad does not affect UV location much
+                LIL_SAMPLE_2D(textureName, samplerName, uvChannel);
+            }
+
+            void LIL_SAMPLE_2D_GRAD_WithMat(string textureName, SamplerStateInformation samplerName, UsingUVChannels uvChannel, UnityEngine.Matrix4x4? matrix)
+            {
+                // additional parameter for SampleGrad does not affect UV location much
+                LIL_SAMPLE_2D_WithMat(textureName, samplerName, uvChannel, matrix);
+            }
+
+            void LIL_SAMPLE_2D_ST(string textureName, SamplerStateInformation samplerName, UsingUVChannels uvChannel)
+            {
+                matInfo.RegisterTextureUVUsage(
+                    textureName,
+                    samplerName,
+                    uvChannel,
+                    STToMatrix($"{textureName}_ST")
+                );
+            }
+
+            void LIL_SAMPLE_2D_ST_WithMat(string textureName, SamplerStateInformation samplerName, UsingUVChannels uvChannel, UnityEngine.Matrix4x4? matrix)
+            {
+                matInfo.RegisterTextureUVUsage(
+                    textureName,
+                    samplerName,
+                    uvChannel,
+                    Multiply(STToMatrix($"{textureName}_ST"), matrix)
+                );
+            }
+
+            void LIL_GET_SUBTEX(string textureName, UsingUVChannels uvChannel)
+            {
+                // lilGetSubTex
+
+                // TODO: consider the following properties
+                var st = $"{textureName}_ST";
+                var scrollRotate = $"{textureName}_ScrollRotate";
+                var angle = $"{textureName}Angle";
+                var isDecal = $"{textureName}IsDecal";
+                var isLeftOnly = $"{textureName}IsLeftOnly";
+                var isRightOnly = $"{textureName}IsRightOnly";
+                var shouldCopy = $"{textureName}ShouldCopy";
+                var shouldFlipMirror = $"{textureName}ShouldFlipMirror";
+                var shouldFlipCopy = $"{textureName}ShouldFlipCopy";
+                var isMSDF = $"{textureName}IsMSDF";
+                var decalAnimation = $"{textureName}DecalAnimation";
+                var decalSubParam = $"{textureName}DecalSubParam";
+                // fd.nv?
+                // fd.isRightHand?
+
+
+                Matrix4x4? ComputeMatrix()
+                {
+                    var stValueOpt = matInfo.GetVector(st);
+                    var rotateValueOpt = matInfo.GetVector(scrollRotate);
+                    var angleValueOpt = matInfo.GetFloat(angle);
+                    //var isDecalValueOpt = matInfo.GetFloat(isDecal);
+                    var isLeftOnlyValueOpt = matInfo.GetFloat(isLeftOnly);
+                    var isRightOnlyValueOpt = matInfo.GetFloat(isRightOnly);
+                    var shouldCopyValueOpt = matInfo.GetFloat(shouldCopy);
+                    var shouldFlipMirrorValueOpt = matInfo.GetFloat(shouldFlipMirror);
+                    var shouldFlipCopyValueOpt = matInfo.GetFloat(shouldFlipCopy);
+                    //var isMSDFValueOpt = matInfo.GetFloat(isMSDF);
+                    var decalAnimationValueOpt = matInfo.GetVector(decalAnimation);
+                    // var decalSubParamValueOpt = matInfo.GetVector(decalSubParam);
+
+                    if (stValueOpt is not { } stValue) return null;
+                    if (rotateValueOpt is not { } rotateValue) return null;
+                    if (angleValueOpt is not { } angleValue) return null;
+
+                    rotateValue.z = angleValue;
+
+                    if (STAndScrollRotateValueToMatrix(stValue, rotateValue) is not { } matrix) return null;
+
+                    // shouldCopy is true => x = abs(x - 0.5) + 0.5
+                    if (shouldCopyValueOpt != 0) return null;
+                    // shouldFlipCopy is true => flips
+                    if (shouldFlipCopyValueOpt != 0) return null;
+                    // shouldFlipMirror is true => flips
+                    if (shouldFlipMirrorValueOpt != 0) return null;
+
+                    // isDecal is true => decal
+                    if (isLeftOnlyValueOpt != 0) return null;
+                    if (isRightOnlyValueOpt != 0) return null;
+
+                    // rotation is performed in STAndScrollRotateValueToMatrix
+
+                    if (decalAnimationValueOpt != new Vector4(1.0f, 1.0f, 1.0f, 30.0f)) return null;
+
+                    return matrix;
+                }
+
+                matInfo.RegisterTextureUVUsage(textureName, textureName, uvChannel, ComputeMatrix());
+            }
+
+            void LIL_GET_EMITEX(string textureName, UsingUVChannels uvChannel, bool parallaxEnabled)
+            {
+                LIL_SAMPLE_2D_WithMat(textureName, textureName, uvChannel, 
+                    parallaxEnabled ? null : STAndScrollRotateToMatrix($"{textureName}_ST", $"{textureName}_ScrollRotate"));
+            }
+
+            void LIL_GET_EMIMASK_WithMat(string textureName, UsingUVChannels uvChannel, UnityEngine.Matrix4x4? matrix)
+            {
+                LIL_SAMPLE_2D_WithMat(textureName, "_MainTex", uvChannel,
+                    Multiply(matrix, STAndScrollRotateToMatrix($"{textureName}_ST", $"{textureName}_ScrollRotate")));
+            }
+
+            void LIL_GET_EMIMASK(string textureName, UsingUVChannels uvChannel)
+            {
+                LIL_SAMPLE_2D_WithMat(textureName, "_MainTex", uvChannel,
+                    STAndScrollRotateToMatrix($"{textureName}_ST", $"{textureName}_ScrollRotate"));
+            }
+
+            void lilCalcDissolveWithOrWithoutNoise(
+                // alpha,
+                // dissolveAlpha,
+                UsingUVChannels uv, // ?
+                // positionOS,
+                // dissolveParams,
+                // dissolvePos,
+                string dissolveMask,
+                string dissolveMaskST,
+                //  dissolveMaskEnabled
+                string dissolveNoiseMask,
+                string dissolveNoiseMaskST,
+                string dissolveNoiseMaskScrollRotate,
+                // dissolveNoiseStrength,
+                SamplerStateInformation samp
+            )
+            {
+                LIL_SAMPLE_2D_WithMat(dissolveMask, samp, uv, STToMatrix(dissolveMaskST));
+                LIL_SAMPLE_2D_WithMat(dissolveNoiseMask, samp, uv, STAndScrollRotateToMatrix(dissolveNoiseMaskST, dissolveNoiseMaskScrollRotate));
+            }
+
+            // lilCalcUV
+            Matrix4x4? STToMatrix(string stPropertyName) => STValueToMatrix(matInfo.GetVector(stPropertyName));
+
+            Matrix4x4? STValueToMatrix(Vector4? stIn)
+            {
+                if (stIn is not { } st) return null;
+
+                var matrix = Matrix4x4.identity;
+                matrix.m00 = st.x;
+                matrix.m11 = st.y;
+                matrix.m03 = st.z;
+                matrix.m13 = st.w;
+
+                return matrix;
+            }
+
+            // lilCalcUV
+            Matrix4x4? STAndScrollRotateToMatrix(string stPropertyName, string scrollRotatePropertyName) => 
+                STAndScrollRotateValueToMatrix(matInfo.GetVector(stPropertyName), matInfo.GetVector(scrollRotatePropertyName));
+
+            Matrix4x4? STAndScrollRotateValueToMatrix(Vector4? stValueIn, Vector4? scrollRotateIn)
+            {
+                if (STValueToMatrix(stValueIn) is not { } stMatrix) return null;
+                if (scrollRotateIn is not { } scrollRotate) return stMatrix;
+
+                float staticAngle = scrollRotate.z;
+                float scrollAngleSpeed = scrollRotate.w;
+                Vector2 scrollSpeed = new(scrollRotate.x, scrollRotate.y);
+
+                if (scrollSpeed != Vector2.zero || scrollAngleSpeed != 0) return null;
+
+                if (staticAngle == 0) return stMatrix;
+
+                var result = stMatrix;
+
+                result *= Matrix4x4.TRS(new Vector3(-0.5f, -0.5f), Quaternion.identity, Vector3.one);
+                result *= Matrix4x4.TRS(Vector3.zero, Quaternion.Euler(0, 0, staticAngle), Vector3.one);
+                result *= Matrix4x4.TRS(new Vector3(0.5f, 0.5f), Quaternion.identity, Vector3.one);
+
+                return result;
+            }
+
+            static Matrix4x4? Combine(Matrix4x4? a, Matrix4x4? b)
+            {
+                if (a == null) return b;
+                if (b == null) return a;
+                if (a == b) return a;
+                return null;
+            }
+
+            Matrix4x4? Multiply(Matrix4x4? a, Matrix4x4? b)
+            {
+                if (a == null || b == null) return null;
+                return a.Value * b.Value;
+            }
         }
     }
 }
