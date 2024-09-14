@@ -182,6 +182,7 @@ internal struct OptimizeTextureImpl {
             var materialsByUSerSubmeshId = new Dictionary<EqualsHashSet<SubMeshId>, HashSet<Material>>();
             foreach (var (material, users) in materialUsers)
             {
+                if (unmergeableMaterials.Contains(material)) continue;
                 var set = new EqualsHashSet<SubMeshId>(users);
                 if (!materialsByUSerSubmeshId.TryGetValue(set, out var materials))
                     materialsByUSerSubmeshId.Add(set, materials = new HashSet<Material>());
@@ -419,11 +420,6 @@ internal struct OptimizeTextureImpl {
             UnityEngine.Matrix4x4? uvMatrix)
         {
             if (_textureUsageInformations == null) return;
-            if (uvMatrix != Matrix4x4.identity) {
-                _textureUsageInformations = null;
-                return;
-            }
-
             UVChannel uvChannel;
             switch (uvChannels)
             {
@@ -457,6 +453,11 @@ internal struct OptimizeTextureImpl {
                 default:
                     _textureUsageInformations = null;
                     return;
+            }
+
+            if (uvMatrix != Matrix4x4.identity && uvChannel != UVChannel.NonMeshRelated) {
+                _textureUsageInformations = null;
+                return;
             }
 
             _textureUsageInformations?.Add(new TextureUsageInformation(textureMaterialPropertyName, uvChannel));
