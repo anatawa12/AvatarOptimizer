@@ -131,34 +131,6 @@ namespace Anatawa12.AvatarOptimizer
             public abstract Vector4? GetVector(string propertyName, bool considerAnimation = true);
 
             /// <summary>
-            /// Creates a new <see cref="TextureUsageInformation"/> instance.
-            /// </summary>
-            /// <param name="materialPropertyName">The name of the texture property in the material.</param>
-            /// <param name="uvChannel">The UV channel for the texture.</param>
-            /// <returns>A new <see cref="TextureUsageInformation"/> instance.</returns>
-            public TextureUsageInformation CreateTextureUsageInformation(string materialPropertyName,
-                UVChannel uvChannel) => new(materialPropertyName, uvChannel);
-
-            /// <summary>
-            /// Creates a new <see cref="TextureUsageInformation"/> instance for texture without ScaleOffset (_ST).
-            /// </summary>
-            /// <param name="materialPropertyName">The name of the texture property in the material.</param>
-            /// <param name="uvChannel">The UV channel for the texture.</param>
-            /// <returns>A new <see cref="TextureUsageInformation"/> instance.</returns>
-            public TextureUsageInformation CreateTextureUsageInformationNoScaleOffset(string materialPropertyName,
-                UVChannel uvChannel) => new(materialPropertyName, uvChannel);
-
-            /// <summary>
-            /// Creates a new <see cref="TextureUsageInformation"/> instance.
-            /// </summary>
-            /// <param name="materialPropertyName">The name of the texture property in the material.</param>
-            /// <param name="uvChannel">The UV channel for the texture.</param>
-            /// <param name="scaleOffsetProperty">The name of vector4 property for UV Scale and Offset</param>
-            /// <returns>A new <see cref="TextureUsageInformation"/> instance.</returns>
-            public TextureUsageInformation CreateTextureUsageInformation(string materialPropertyName,
-                UVChannel uvChannel, string scaleOffsetProperty) => new(materialPropertyName, uvChannel);
-
-            /// <summary>
             /// Registers UV Usage that are not considered by Avatar Optimizer.
             ///
             /// This will the UV Channel not affected by optimizations of Avatar Optimizer.
@@ -277,34 +249,6 @@ namespace Anatawa12.AvatarOptimizer
             Unknown = 0x7FFFFFFF,
         }
 
-        public enum UVChannel
-        {
-            UV0 = 0,
-            UV1 = 1,
-            UV2 = 2,
-            UV3 = 3,
-            UV4 = 4,
-            UV5 = 5,
-            UV6 = 6,
-            UV7 = 7,
-            // For example, ScreenSpace (dither) or MatCap
-            NonMeshRelated = 0x100 + 0,
-            Unknown = -1,
-        }
-
-        public class TextureUsageInformation
-        {
-            public string MaterialPropertyName { get; }
-            public UVChannel UVChannel { get; }
-
-            internal TextureUsageInformation(string materialPropertyName, UVChannel uvChannel)
-            {
-                MaterialPropertyName = materialPropertyName;
-                UVChannel = uvChannel;
-            }
-        }
-
-        // TODO: define return type
         /// <summary>
         /// Returns texture usage information for the material.
         /// </summary>
