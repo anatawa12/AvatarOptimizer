@@ -79,7 +79,7 @@ internal struct OptimizeTextureImpl {
         }
     }
 
-    readonly struct SubMeshId : IEquatable<SubMeshId>
+    internal readonly struct SubMeshId : IEquatable<SubMeshId>
     {
         public readonly MeshInfo2 MeshInfo2;
         public readonly int SubMeshIndex;
@@ -101,6 +101,15 @@ internal struct OptimizeTextureImpl {
     {
         if (!state.OptimizeTexture) return;
 
+        var materialInformation = CollectMaterials(context);
+
+        DoAtlas(materialInformation);
+    }
+
+    internal IEnumerable<(Material, TextureUsageInformation[], HashSet<SubMeshId>)> CollectMaterials(
+        BuildContext context
+        )
+    {
         // those two maps should only hold mergeable materials and submeshes
         var materialUsers = new Dictionary<Material, HashSet<SubMeshId>>();
         var materialsBySubMesh = new Dictionary<SubMeshId, HashSet<Material>>();
@@ -241,12 +250,17 @@ internal struct OptimizeTextureImpl {
             }
         }
 
+        return materialUsers.Select(x => (x.Key, usageInformations[x.Key], x.Value));
+    }
+
+    internal void DoAtlas(IEnumerable<(Material, TextureUsageInformation[], HashSet<SubMeshId>)> materialInformation)
+    {
         {
             var textureUserMaterials = new Dictionary<Texture2D, HashSet<(Material, string)>>();
             var textureByUVs = new Dictionary<EqualsHashSet<UVID>, HashSet<Texture2D>>();
-            foreach (var (material, value) in materialUsers)
+            foreach (var (material, usageInformations, value) in materialInformation)
             {
-                foreach (var information in usageInformations[material])
+                foreach (var information in usageInformations)
                 {
                     var texture = (Texture2D)material.GetTexture(information.MaterialPropertyName);
                     if (texture == null) continue;
@@ -464,7 +478,7 @@ internal struct OptimizeTextureImpl {
         }
     }
 
-    private class TextureUsageInformation
+    internal class TextureUsageInformation
     {
         public string MaterialPropertyName { get; }
         public UVChannel UVChannel { get; }
