@@ -957,7 +957,7 @@ internal struct OptimizeTextureImpl {
         return AfterAtlasSizesSmallToBigGenerator(totalIslandSize, new Vector2(maxIslandSizeX, maxIslandSizeY));
     }
 
-    static IEnumerable<Vector2> AfterAtlasSizesSmallToBigGenerator(float useRatio, Vector2 maxIslandSize)
+    internal static IEnumerable<Vector2> AfterAtlasSizesSmallToBigGenerator(float useRatio, Vector2 maxIslandSize)
     {
         var maxHalfCount = 0;
         {
@@ -980,7 +980,7 @@ internal struct OptimizeTextureImpl {
             {
                 var ySize = size / xSize;
                 if (ySize < minYSize) break;
-                if (ySize > 1) break;
+                if (ySize > 1) continue;
                 if (ySize >= 1 && xSize >= 1) break;
 
                 yield return new Vector2(xSize, ySize);
@@ -1036,7 +1036,7 @@ internal struct OptimizeTextureImpl {
         return true;
     }
 
-    class AtlasIsland
+    internal class AtlasIsland
     {
         //TODO: rotate
         public IslandUtility.Island OriginalIsland;
