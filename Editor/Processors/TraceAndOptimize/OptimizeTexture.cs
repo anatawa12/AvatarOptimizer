@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.AnimatorParsersV2;
+using Anatawa12.AvatarOptimizer.API;
 using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
 using nadena.dev.ndmf;
 using UnityEditor;
@@ -175,11 +176,13 @@ internal struct OptimizeTextureImpl {
 
             foreach (var (material, _) in materialUsers)
             {
-                var provider = new TextureUsageInformationCallback(
+                var provider = new TextureUsageInformationCallbackImpl(
                     material,
                     materialUsers[material].Select(x => context.GetAnimationComponent(x.MeshInfo2.SourceRenderer))
                         .ToList());
-                if (ShaderKnowledge.GetTextureUsageInformationForMaterial(provider) && provider.TextureUsageInformations is {} informations)
+                if (ShaderInformationRegistry.GetShaderInformation(material.shader) is {} information
+                    && information.GetTextureUsageInformationForMaterial(provider)
+                    && provider.TextureUsageInformations is {} informations)
                     usageInformations.Add(material, informations.ToArray());
                 else
                     unmergeableMaterials.Add(material);
@@ -391,7 +394,7 @@ internal struct OptimizeTextureImpl {
         return (safeToMerge: true, Array.Empty<Material>());
     }
 
-    class TextureUsageInformationCallback : ShaderKnowledge.TextureUsageInformationCallback
+    class TextureUsageInformationCallbackImpl : TextureUsageInformationCallback
     {
         private readonly Material _material;
         private readonly List<AnimationComponentInfo<PropertyInfo>> _infos;
@@ -399,13 +402,13 @@ internal struct OptimizeTextureImpl {
 
         public List<TextureUsageInformation>? TextureUsageInformations => _textureUsageInformations;
 
-        public TextureUsageInformationCallback(Material material, List<AnimationComponentInfo<PropertyInfo>> infos)
+        public TextureUsageInformationCallbackImpl(Material material, List<AnimationComponentInfo<PropertyInfo>> infos)
         {
             _material = material;
             _infos = infos;
         }
 
-        public override Shader Shader => _material.shader;
+        public Shader Shader => _material.shader;
 
         private T? GetValue<T>(string propertyName, Func<string, T> computer, bool considerAnimation) where T : struct
         {
@@ -421,7 +424,7 @@ internal struct OptimizeTextureImpl {
 
         public override Vector4? GetVector(string propertyName, bool considerAnimation = true) => GetValue(propertyName, _material.GetVector, considerAnimation);
 
-        public override void RegisterOtherUVUsage(ShaderKnowledge.UsingUVChannels uvChannel)
+        public override void RegisterOtherUVUsage(UsingUVChannels uvChannel)
         {
             // no longer atlasing is not supported
             _textureUsageInformations = null;
@@ -429,39 +432,39 @@ internal struct OptimizeTextureImpl {
 
         public override void RegisterTextureUVUsage(
             string textureMaterialPropertyName, 
-            ShaderKnowledge.SamplerStateInformation samplerState,
-            ShaderKnowledge.UsingUVChannels uvChannels, 
+            SamplerStateInformation samplerState,
+            UsingUVChannels uvChannels, 
             UnityEngine.Matrix4x4? uvMatrix)
         {
             if (_textureUsageInformations == null) return;
             UVChannel uvChannel;
             switch (uvChannels)
             {
-                case ShaderKnowledge.UsingUVChannels.NonMesh:
+                case UsingUVChannels.NonMesh:
                     uvChannel = UVChannel.NonMeshRelated;
                     break;
-                case ShaderKnowledge.UsingUVChannels.UV0:
+                case UsingUVChannels.UV0:
                     uvChannel = UVChannel.UV0;
                     break;
-                case ShaderKnowledge.UsingUVChannels.UV1:
+                case UsingUVChannels.UV1:
                     uvChannel = UVChannel.UV1;
                     break;
-                case ShaderKnowledge.UsingUVChannels.UV2:
+                case UsingUVChannels.UV2:
                     uvChannel = UVChannel.UV2;
                     break;
-                case ShaderKnowledge.UsingUVChannels.UV3:
+                case UsingUVChannels.UV3:
                     uvChannel = UVChannel.UV3;
                     break;
-                case ShaderKnowledge.UsingUVChannels.UV4:
+                case UsingUVChannels.UV4:
                     uvChannel = UVChannel.UV4;
                     break;
-                case ShaderKnowledge.UsingUVChannels.UV5:
+                case UsingUVChannels.UV5:
                     uvChannel = UVChannel.UV5;
                     break;
-                case ShaderKnowledge.UsingUVChannels.UV6:
+                case UsingUVChannels.UV6:
                     uvChannel = UVChannel.UV6;
                     break;
-                case ShaderKnowledge.UsingUVChannels.UV7:
+                case UsingUVChannels.UV7:
                     uvChannel = UVChannel.UV7;
                     break;
                 default:

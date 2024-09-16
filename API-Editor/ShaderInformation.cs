@@ -112,6 +112,14 @@ namespace Anatawa12.AvatarOptimizer.API
             {
             }
         }
+
+        internal static ShaderInformation? GetShaderInformation(Shader shader)
+        {
+            if (shaderInformation.TryGetValue(shader, out var info)) return info;
+            var guid = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(shader));
+            if (shaderInformationWithGUID.TryGetValue(guid, out var infoWithGUID)) return infoWithGUID;
+            return null;
+        }
     }
 
     /// <summary>
