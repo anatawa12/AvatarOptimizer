@@ -405,7 +405,7 @@ internal class LiltoonShaderInformation : ShaderInformation
             }
         }
 
-        if (matInfo.GetInteger("_Emission2ndMap") != 0)
+        if (matInfo.GetInteger("_UseEmission2nd") != 0)
         {
             UsingUVChannels emission2ndUV = UsingUVChannels.UV0;
 
