@@ -14,6 +14,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         public bool OptimizeAnimator;
         public bool MergeSkinnedMesh;
         public bool AllowShuffleMaterialSlots;
+        public bool OptimizeTexture;
         public bool MmdWorldCompatibility = true;
 
         public bool PreserveEndBone;
@@ -48,6 +49,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             OptimizeAnimator = config.optimizeAnimator;
             MergeSkinnedMesh = config.mergeSkinnedMesh;
             AllowShuffleMaterialSlots = config.allowShuffleMaterialSlots;
+            OptimizeTexture = config.optimizeTexture;
             MmdWorldCompatibility = config.mmdWorldCompatibility;
 
             PreserveEndBone = config.preserveEndBone;

@@ -624,6 +624,9 @@ msgstr "Optimize Animator"
 msgid "TraceAndOptimize:prop:mergeSkinnedMesh"
 msgstr "Merge Skinned Mesh"
 
+msgid "TraceAndOptimize:prop:optimizeTexture"
+msgstr "Optimize Texture"
+
 msgid "TraceAndOptimize:prop:allowShuffleMaterialSlots"
 msgstr "Allow Shuffling Material Slots"
 
