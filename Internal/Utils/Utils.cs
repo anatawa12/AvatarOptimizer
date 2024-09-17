@@ -233,6 +233,7 @@ namespace Anatawa12.AvatarOptimizer
                 Array.Reverse(ancestors);
                 return ancestors.AsSpan();
             }
+        }
   
         public static bool IsPowerOfTwo(this int x) => x != 0 && (x & (x - 1)) == 0;
 
