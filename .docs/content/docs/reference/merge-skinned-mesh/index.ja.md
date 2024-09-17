@@ -74,7 +74,7 @@ BlendShapeは、頂点とBlendShapeの数に比例して負荷が大きくなる
 この機能は、統合先のSkinnedMeshRendererの`enabled`プロパティや、そのGameObjectや祖先のGameObjectの`activeSelf`プロパティのアニメーションをコピーします。
 ただし、アニメーションされているプロパティは1種類しかコピーできないため、複数種類/階層のプロパティがアニメーションされている場合(`enabled`と`activeSelf`の両方がアニメーションされている場合や、自身と親の両方の`activeSelf`がアニメーションされている場合など)はエラーになります。
 
-なお、統合先のSkinnedMeshRendererの`enabled`に対するアニメーションはこの機能によって上書きされるため、統合先のSkinnedMeshRendererの`enabled`をアニメーションしてはいけません。
+なお、統合先のSkinnedMeshRendererの`enabled`に対するアニメーションはこの機能によって上書きされるため、この機能を使用する時は統合先のSkinnedMeshRendererの`enabled`をアニメーションしてはいけません。
 
 ### マテリアルの統合 {#merge-materials}
 

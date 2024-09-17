@@ -15,7 +15,7 @@ The format is based on [Keep a Changelog].
   - Because we have to check for each condition if we use AnyState but we can check for only one (in best case) with entry/exit, this generally reduces cost for checking an parameter in a state.
   - Combined with Entry / Exit to 1D BlendTree optimization, which is implemented in previous release, your AnyState layer may be optimized to 1D BlendTree.
 - `Copy Enablement Animation` to Merge Skinned Mesh `#1173`
-  - This feature copies activeness / enablement animation from source renderers to the merged renderer.
+  - This feature copies activeness / enablement animation from merge target renderers to the merged renderer.
   - This feature is not enabled by default. You have to enable it in the inspector.
   - This feature supports copying activeness animation of `activeSelf` of the GameObjects or ancestors of the GameObjects.
     However, this feature does not work if multiple GameObjects (or both GameObject and Renderer itself) are animated.
