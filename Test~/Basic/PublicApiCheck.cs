@@ -135,10 +135,14 @@ namespace Anatawa12.AvatarOptimizer.Test
             }
 
             // fields are not allowed to be public
-            foreach (var fieldInfo in type.GetFields(AllMembers))
+            // for enum, we do not check PublicAPIAttribute
+            if (!type.IsEnum)
             {
-                Assert.That(IsPubliclyAccessible(fieldInfo.Attributes, allowInherit), Is.False,
-                    $"{fieldInfo} is publicly accessible but not marked as PublicAPIAttribute");
+                foreach (var fieldInfo in type.GetFields(AllMembers))
+                {
+                    Assert.That(IsPubliclyAccessible(fieldInfo.Attributes, allowInherit), Is.False,
+                        $"{fieldInfo} is fields are publicly accessible");
+                }
             }
         }
 

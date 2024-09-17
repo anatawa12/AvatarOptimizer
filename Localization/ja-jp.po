@@ -535,6 +535,9 @@ msgstr "スキンメッシュレンダラーを統合する"
 msgid "TraceAndOptimize:prop:allowShuffleMaterialSlots"
 msgstr "マテリアルスロットの前後関係を変えることを許可する"
 
+msgid "TraceAndOptimize:prop:optimizeTexture"
+msgstr "テクスチャを最適化する"
+
 msgid "TraceAndOptimize:tooltip:allowShuffleMaterialSlots"
 msgstr "マテリアルスロットの前後関係を変えることでドローコールを減らすことを許可します。これは描画順に影響を与える可能性があります。"
 
