@@ -127,7 +127,7 @@ internal class LiltoonShaderInformation : ShaderInformation
             UsingUVChannels.NonMesh, null); // GradationMap UV is based on color
         LIL_SAMPLE_2D_WithMat("_MainColorAdjustMask", "_MainTex", uvMain, uvMainMatrix); // simple LIL_SAMPLE_2D
 
-        if (matInfo.GetInteger("_UseEmission2nd") != 0)
+        if (matInfo.GetInteger("_UseMain2ndTex") != 0)
         {
             // caller of lilGetMain2nd will pass sampler for _MainTex as samp
             SamplerStateInformation samp = "_MainTex";
@@ -405,7 +405,7 @@ internal class LiltoonShaderInformation : ShaderInformation
             }
         }
 
-        if (matInfo.GetInteger("_Emission2ndMap") != 0)
+        if (matInfo.GetInteger("_UseEmission2nd") != 0)
         {
             UsingUVChannels emission2ndUV = UsingUVChannels.UV0;
 
