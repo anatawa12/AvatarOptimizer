@@ -692,12 +692,6 @@ msgstr "在 Avatar 的根上找不到 Animator 元件"
 
 #region MeshInfo2
 
-msgid "MeshInfo2:error:MeshNotReadable"
-msgstr "這個網格是不可讀的，因此無法在播放模式中處理網格。"
-
-msgid "MeshInfo2:error:MeshNotReadable:description"
-msgstr "請在網格的匯入設定中啟用「讀取/寫入」或「Read/Write」。"
-
 msgid "MeshInfo2:warning:multiPassRendering"
 msgstr ""
 "在帶有「{0}」元件的網格中使用了多材質的多通道渲染。\n"
