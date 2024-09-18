@@ -195,6 +195,46 @@ namespace Anatawa12.AvatarOptimizer
         public static EqualsHashSet<T> ToEqualsHashSet<T>(this HashSet<T> hashSet) =>
             new EqualsHashSet<T>(hashSet);
 
+        public static Transform? CommonRoot(IEnumerable<Transform> transforms)
+        {
+            using var enumerator = transforms.GetEnumerator();
+
+            if (!enumerator.MoveNext()) return null;
+            var commonRoot = enumerator.Current!;
+            if (!enumerator.MoveNext()) return commonRoot;
+
+            // child => parent
+            var commonParents = Ancestors(commonRoot).ToArray();
+
+            while (enumerator.MoveNext())
+            {
+                var gameObject = enumerator.Current!;
+
+                var span = Ancestors(gameObject);
+
+                var minLength = Math.Min(commonParents.Length, span.Length);
+
+                for (var i = 0; i < minLength; i++)
+                {
+                    if (commonParents[i] != span[i])
+                    {
+                        commonParents = commonParents[..i];
+                        break;
+                    }
+                }
+            }
+
+            if (commonParents.Length == 0) return null;
+            return commonParents[^1];
+            
+            ReadOnlySpan<Transform> Ancestors(Transform transform)
+            {
+                var ancestors = transform.ParentEnumerable(includeMe: true).ToArray();
+                Array.Reverse(ancestors);
+                return ancestors.AsSpan();
+            }
+        }
+  
         public static bool IsPowerOfTwo(this int x) => x != 0 && (x & (x - 1)) == 0;
 
         public static float MinPowerOfTwoGreaterThan(float x)

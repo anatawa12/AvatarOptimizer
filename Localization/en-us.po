@@ -286,6 +286,9 @@ msgstr "Remove Empty Renderer Object"
 msgid "MergeSkinnedMesh:prop:skipEnablementMismatchedRenderers"
 msgstr "Skip Enablement Mismatched Renderers"
 
+msgid "MergeSkinnedMesh:prop:copyEnablementAnimation"
+msgstr "Copy Enablement Animation"
+
 msgid "MergeSkinnedMesh:label:Merge Materials"
 msgstr "Merge Materials"
 
