@@ -364,6 +364,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             Action<int>? setHasAttribute,
             Action<Vertex, T> assign)
         {
+            if (Vertices.Count == 0) return;
+
             var dimension = mesh.GetVertexAttributeDimension(attribute);
 
             if (dimension == 0)
