@@ -48,7 +48,7 @@ jobs:
           testMode: EditMode
           githubToken: ${{ github.token }}
           coverageOptions: generateAdditionalMetrics;generateHtmlReport;generateBadgeReport;assemblyFilters:+com.anatawa12.avatar-optimizer.*
-          customParameters: -nographics
+          customParameters: 
           checkName: Test results ${{ matrix.unity }}
 
       - uses: actions/upload-artifact@v4
