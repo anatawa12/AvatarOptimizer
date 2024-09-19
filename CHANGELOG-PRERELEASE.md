@@ -31,6 +31,8 @@ The format is based on [Keep a Changelog].
     - We still use Float32 internally so Int32 data might lose precision a little.
     - However, AFAIK there is no real-world problem with this so we implemented this way.
     - If you found such a case, please report it.
+  - This change make AAO incompatible with Unity without Graphics.
+    - If you're building your avatar with batchmode with -nographics, please remove -nographics.
 
 ### Changed
 - Skip Enablement Mismatched Renderers is now disabled by default `#1169`
