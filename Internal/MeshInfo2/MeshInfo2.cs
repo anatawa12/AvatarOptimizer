@@ -339,6 +339,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         private static (byte[] buffer, int stride)[] GetVertexBuffers(Mesh mesh)
         {
+            if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null)
+                throw new InvalidOperationException("MeshInfo2 does not support -nographics environment");
+
             var vertexBufferCount = mesh.vertexBufferCount;
             var vertexBuffers = new (byte[] buffer, int stride)[vertexBufferCount];
             for (var i = 0; i < vertexBufferCount; i++)
