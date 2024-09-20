@@ -2,7 +2,7 @@
   "name": "com.anatawa12.avatar-optimizer",
   "version": "1.8.0-beta.0",
   "private": true,
-  "private-beta": true,
+  "private-beta": false,
   "unity": "2022.3",
   "description": "Set of Anatawa12's Small Avatar Optimization Utilities",
   "displayName": "AAO: Avatar Optimizer",
