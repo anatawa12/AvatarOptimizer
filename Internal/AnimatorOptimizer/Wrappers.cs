@@ -12,11 +12,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
     public class AOAnimatorController
     {
         private readonly AnimatorController _animatorController;
+        private readonly GameObject? _rootGameObject;
 
-        public AOAnimatorController(AnimatorController animatorController)
+        public AOAnimatorController(AnimatorController animatorController, GameObject? rootGameObject = null)
         {
             if (!animatorController) throw new ArgumentNullException(nameof(animatorController));
             _animatorController = animatorController;
+            _rootGameObject = rootGameObject;
             layers = _animatorController.layers.Select(x => new AOAnimatorControllerLayer(this, x)).ToArray();
             if (layers.Length != 0)
                 layers[0].IsBaseLayer = true;
@@ -48,6 +50,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             this.layers = layers;
             UpdateLayers();
         }
+
+        public bool HasKnownRootGameObject => _rootGameObject != null;
+        public GameObject RootGameObject => _rootGameObject ?? throw new InvalidOperationException("RootGameObject is not set");
+        public GameObject? RootGameObjectOrNull => _rootGameObject;
 
         // Note: Adding layer to first will break MMD compatibility.
 

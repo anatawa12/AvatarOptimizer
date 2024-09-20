@@ -42,35 +42,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         {
             SourceRenderer = renderer;
             var mesh = _originalMesh = renderer.sharedMesh;
-            if (mesh != null && mesh.vertexCount != 0 && mesh.vertices.Length == 0)
-            {
-                var originalMeshImporter = GetImporter(ObjectRegistry.GetReference(mesh).Object as Mesh);
-
-                ModelImporter? GetImporter(Mesh? importingMesh)
-                {
-                    if (!importingMesh) return null;
-                    var path = AssetDatabase.GetAssetPath(importingMesh);
-                    if (string.IsNullOrEmpty(path)) return null;
-                    return AssetImporter.GetAtPath(path) as ModelImporter;
-                }
-
-                if (originalMeshImporter == null)
-                {
-                    BuildLog.LogError("MeshInfo2:error:MeshNotReadable", mesh);
-                }
-                else
-                {
-                    void AutoFix()
-                    {
-                        originalMeshImporter.isReadable = true;
-                        originalMeshImporter.SaveAndReimport();
-                    }
-
-                    BuildLog.LogErrorWithAutoFix("MeshInfo2:error:MeshNotReadable", AutoFix, mesh);
-                }
-
-                return;
-            }
 
             using (ErrorReport.WithContextObject(renderer))
             {
@@ -109,11 +80,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             {
                 var meshFilter = renderer.GetComponent<MeshFilter>();
                 var mesh = _originalMesh = meshFilter != null ? meshFilter.sharedMesh : null;
-                if (mesh != null && !mesh.isReadable && EditorApplication.isPlaying)
-                {
-                    BuildLog.LogError("MeshInfo2:error:MeshNotReadable", mesh);
-                    return;
-                }
                 if (mesh != null)
                     ReadStaticMesh(mesh);
 
@@ -331,48 +297,31 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             Vertices.Clear();
             for (var i = 0; i < mesh.vertexCount; i++) Vertices.Add(new Vertex());
 
-            CopyVertexAttr(mesh.vertices, (x, v) => x.Position = v);
-            if (mesh.GetVertexAttributeDimension(VertexAttribute.Normal) != 0)
-            {
-                HasNormals = true;
-                CopyVertexAttr(mesh.normals, (x, v) => x.Normal = v);
-            }
-            if (mesh.GetVertexAttributeDimension(VertexAttribute.Tangent) != 0)
-            {
-                HasTangent = true;
-                CopyVertexAttr(mesh.tangents, (x, v) => x.Tangent = v);
-            }
-            if (mesh.GetVertexAttributeDimension(VertexAttribute.Color) != 0)
-            {
-                HasColor = true;
-                CopyVertexAttr(mesh.colors32, (x, v) => x.Color = v);
-            }
+            var vertexBuffers = GetVertexBuffers(mesh);
 
-            var uv2 = new List<Vector2>(0);
-            var uv3 = new List<Vector3>(0);
-            var uv4 = new List<Vector4>(0);
-            for (var index = 0; index <= 7; index++)
+            CopyVertexAttr(mesh, VertexAttribute.Position, vertexBuffers, DataParsers.Vector3Provider,
+                setHasAttribute: null,
+                assign: (x, v) => x.Position = v);
+
+            CopyVertexAttr(mesh, VertexAttribute.Normal, vertexBuffers, DataParsers.Vector3Provider,
+                setHasAttribute: _ => HasNormals = true,
+                assign: (x, v) => x.Normal = v);
+
+            CopyVertexAttr(mesh, VertexAttribute.Tangent, vertexBuffers, DataParsers.Vector4Provider,
+                setHasAttribute: _ => HasTangent = true,
+                assign: (x, v) => x.Tangent = v);
+
+            // TODO: this may lost precision or HDR color
+            CopyVertexAttr(mesh, VertexAttribute.Color, vertexBuffers, DataParsers.Color32Provider,
+                setHasAttribute: _ => HasColor = true,
+                assign: (x, v) => x.Color = v);
+
+            for (var uvChannel = 0; uvChannel <= 7; uvChannel++)
             {
                 // ReSharper disable AccessToModifiedClosure
-                switch (mesh.GetVertexAttributeDimension(VertexAttribute.TexCoord0 + index))
-                {
-                    case 2:
-                        SetTexCoordStatus(index, TexCoordStatus.Vector2);
-                        mesh.GetUVs(index, uv2);
-                        CopyVertexAttr(uv2, (x, v) => x.SetTexCoord(index, v));
-                        break;
-                    case 3:
-                        SetTexCoordStatus(index, TexCoordStatus.Vector3);
-                        mesh.GetUVs(index, uv3);
-                        CopyVertexAttr(uv3, (x, v) => x.SetTexCoord(index, v));
-                        break;
-                    case 4:
-                        SetTexCoordStatus(index, TexCoordStatus.Vector4);
-                        mesh.GetUVs(index, uv4);
-                        CopyVertexAttr(uv4, (x, v) => x.SetTexCoord(index, v));
-                        break;
-                }
-
+                CopyVertexAttr(mesh, VertexAttribute.TexCoord0 + uvChannel, vertexBuffers, DataParsers.Vector4Provider,
+                    setHasAttribute: dims => SetTexCoordStatus(uvChannel, TexCoordStatus.Vector2 + (dims - 2)),
+                    assign: (x, v) => x.SetTexCoord(uvChannel, v));
                 // ReSharper restore AccessToModifiedClosure
             }
 
@@ -388,16 +337,181 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             Profiler.EndSample();
         }
 
-        void CopyVertexAttr<T>(T[] attributes, Action<Vertex, T> assign)
+        private static (byte[] buffer, int stride)[] GetVertexBuffers(Mesh mesh)
         {
-            for (var i = 0; i < attributes.Length; i++)
-                assign(Vertices[i], attributes[i]);
+            if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null)
+                throw new InvalidOperationException("MeshInfo2 does not support -nographics environment");
+
+            var vertexBufferCount = mesh.vertexBufferCount;
+            var vertexBuffers = new (byte[] buffer, int stride)[vertexBufferCount];
+            for (var i = 0; i < vertexBufferCount; i++)
+            {
+                var vertexBuffer = mesh.GetVertexBuffer(i);
+                var stride = vertexBuffer.stride;
+                var data = new byte[vertexBuffer.count * vertexBuffer.stride];
+                vertexBuffer.GetData(data);
+                vertexBuffers[i] = (data, stride);
+            }
+
+            return vertexBuffers;
         }
 
-        void CopyVertexAttr<T>(List<T> attributes, Action<Vertex, T> assign)
+        delegate T DataParser<T>(byte[] data, int offset);
+        delegate DataParser<T> ReadDataProvider<T>(VertexAttributeFormat format, int dimension);
+
+        void CopyVertexAttr<T>(
+            Mesh mesh, 
+            VertexAttribute attribute, 
+            (byte[] buffer, int stride)[] vertexDataList,
+            ReadDataProvider<T> readProvider,
+            Action<int>? setHasAttribute,
+            Action<Vertex, T> assign)
         {
-            for (var i = 0; i < attributes.Count; i++)
-                assign(Vertices[i], attributes[i]);
+            if (Vertices.Count == 0) return;
+
+            var dimension = mesh.GetVertexAttributeDimension(attribute);
+
+            if (dimension == 0)
+            {
+                if (setHasAttribute == null)
+                    throw new InvalidOperationException($"required attribute {attribute} does not exist");
+                return;
+            }
+
+            setHasAttribute?.Invoke(dimension);
+
+            var format = mesh.GetVertexAttributeFormat(attribute);
+            var stream = mesh.GetVertexAttributeStream(attribute);
+            var offset = mesh.GetVertexAttributeOffset(attribute);
+
+            var reader = readProvider(format, dimension);
+
+            var stride = vertexDataList[stream].stride;
+            var buffer = vertexDataList[stream].buffer;
+ 
+            for (var i = 0; i < Vertices.Count; i++)
+            {
+                var data = reader(buffer, stride * i + offset);
+                assign(Vertices[i], data);
+            }
+        }
+
+        static class DataParsers
+        {
+            public static DataParser<Vector3> Vector3Provider(VertexAttributeFormat format, int dimension)
+            {
+                switch (dimension)
+                {
+                    case 1:
+                        var floatParser = FloatParser(format);
+                        return (data, offset) => new Vector3(floatParser(data, offset), 0, 0);
+                    case 2:
+                        var vector2Parser = Vector2Parser(format);
+                        return (data, offset) => vector2Parser(data, offset);
+                    case 3:
+                        return Vector3Parser(format);
+                    case 4:
+                        var vector4Parser = Vector4Parser(format);
+                        return (data, offset) => vector4Parser(data, offset);
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(dimension), dimension, null);
+                }
+            }
+
+            public static DataParser<Vector4> Vector4Provider(VertexAttributeFormat format, int dimension)
+            {
+                switch (dimension)
+                {
+                    case 1:
+                        var floatParser = FloatParser(format);
+                        return (data, offset) => new Vector4(floatParser(data, offset), 0, 0);
+                    case 2:
+                        var vector2Parser = Vector2Parser(format);
+                        return (data, offset) => vector2Parser(data, offset);
+                    case 3:
+                        var vector3Parser = Vector3Parser(format);
+                        return (data, offset) => vector3Parser(data, offset);
+                    case 4:
+                        return Vector4Parser(format);
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(dimension), dimension, null);
+                }
+            }
+
+            public static DataParser<Color32> Color32Provider(VertexAttributeFormat format, int dimension)
+            {
+                var vector4Parser = Vector4Provider(format, dimension);
+                return (data, offset) =>
+                {
+                    var color = vector4Parser(data, offset);
+                    color *= byte.MaxValue;
+                    return new Color32((byte)color.x, (byte)color.y, (byte)color.z, (byte)color.w);
+                };
+            }
+
+            private static DataParser<Vector4> Vector4Parser(VertexAttributeFormat format)
+            {
+                var size = ValueSize(format);
+                var floatParser = FloatParser(format);
+                return (data, offset) => new Vector4(
+                    floatParser(data, offset),
+                    floatParser(data, offset + size),
+                    floatParser(data, offset + size * 2),
+                    floatParser(data, offset + size * 3));
+            }
+
+            private static DataParser<Vector3> Vector3Parser(VertexAttributeFormat format)
+            {
+                var size = ValueSize(format);
+                var floatParser = FloatParser(format);
+                return (data, offset) => new Vector3(
+                    floatParser(data, offset),
+                    floatParser(data, offset + size),
+                    floatParser(data, offset + size * 2));
+            }
+
+            private static DataParser<Vector2> Vector2Parser(VertexAttributeFormat format)
+            {
+                var size = ValueSize(format);
+                var floatParser = FloatParser(format);
+                return (data, offset) => new Vector2(
+                    floatParser(data, offset),
+                    floatParser(data, offset + size));
+            }
+
+            private static int ValueSize(VertexAttributeFormat format) =>
+                format switch
+                {
+                    VertexAttributeFormat.Float32 or VertexAttributeFormat.UInt32 or VertexAttributeFormat.SInt32 => 4,
+                    VertexAttributeFormat.Float16 or VertexAttributeFormat.UNorm16 or VertexAttributeFormat.SNorm16
+                        or VertexAttributeFormat.UInt16 or VertexAttributeFormat.SInt16 => 2,
+                    VertexAttributeFormat.UNorm8 or VertexAttributeFormat.SNorm8 or VertexAttributeFormat.UInt8
+                        or VertexAttributeFormat.SInt8 => 1,
+                    _ => throw new ArgumentOutOfRangeException(nameof(format), format, null)
+                };
+
+            // those casts are checked with this gist
+            // https://gist.github.com/anatawa12/e27775280a273f7f433c8b427aeb3108
+            private static DataParser<float> FloatParser(VertexAttributeFormat format) =>
+                format switch
+                {
+                    VertexAttributeFormat.Float32 => (data, offset) => BitConverter.ToSingle(data, offset),
+                    VertexAttributeFormat.Float16 => (data, offset) =>
+                        Mathf.HalfToFloat(BitConverter.ToUInt16(data, offset)),
+                    VertexAttributeFormat.UNorm8 => (data, offset) => data[offset] / (float)byte.MaxValue,
+                    // -128 become -1.007874015748 is correct behaior
+                    VertexAttributeFormat.SNorm8 => (data, offset) => (sbyte)data[offset] / (float)sbyte.MaxValue,
+                    VertexAttributeFormat.UNorm16 => (data, offset) => BitConverter.ToUInt16(data, offset) / (float)ushort.MaxValue,
+                    VertexAttributeFormat.SNorm16 => (data, offset) => BitConverter.ToInt16(data, offset) / (float)short.MaxValue,
+                    VertexAttributeFormat.UInt8 => (data, offset) => data[offset],
+                    VertexAttributeFormat.SInt8 => (data, offset) => (sbyte)data[offset],
+                    VertexAttributeFormat.UInt16 => (data, offset) => BitConverter.ToUInt16(data, offset),
+                    VertexAttributeFormat.SInt16 => (data, offset) => BitConverter.ToInt16(data, offset),
+                    // TODO: Those can be loose precision
+                    VertexAttributeFormat.UInt32 => (data, offset) => BitConverter.ToUInt32(data, offset),
+                    VertexAttributeFormat.SInt32 => (data, offset) => BitConverter.ToInt32(data, offset),
+                    _ => throw new ArgumentOutOfRangeException(nameof(format), format, null)
+                };
         }
 
         private const int BitsPerTexCoordStatus = 2;
@@ -572,50 +686,78 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 for (var i = 0; i < Vertices.Count; i++)
                     vertexIndices.Add(Vertices[i], i);
 
-                var maxIndices = 0;
-                var totalSubMeshes = 0;
-                for (var i = 0; i < SubMeshes.Count - 1; i++)
-                {
-                    maxIndices = Mathf.Max(maxIndices, SubMeshes[i].Vertices.Count);
-                    // for non-last submesh, we have to duplicate submesh for multi pass rendering
-                    for (var j = 0; j < SubMeshes[i].SharedMaterials.Length; j++)
-                        totalSubMeshes++;
-                }
-                {
-                    maxIndices = Mathf.Max(maxIndices, SubMeshes[SubMeshes.Count - 1].Vertices.Count);
-                    // for last submesh, we can use single submesh for multi pass reendering
-                    totalSubMeshes++;
-                }
-
-                var indices = new int[maxIndices];
-                var submeshIndex = 0;
-
-                destMesh.indexFormat = Vertices.Count <= ushort.MaxValue ? IndexFormat.UInt16 : IndexFormat.UInt32;
-                destMesh.subMeshCount = totalSubMeshes;
+                var submeshWithMoreThan65536Verts = false;
+                var submeshIndexBuffersList = new List<(SubMesh subMesh, int baseVertex, int[] indices)>();
 
                 for (var i = 0; i < SubMeshes.Count - 1; i++)
                 {
                     var subMesh = SubMeshes[i];
 
-                    for (var index = 0; index < subMesh.Vertices.Count; index++)
-                        indices[index] = vertexIndices[subMesh.Vertices[index]];
-
-                    // general case: for non-last submesh, we have to duplicate submesh for multi pass rendering
-                    for (var j = 0; j < subMesh.SharedMaterials.Length; j++)
-                        destMesh.SetIndices(indices, 0, subMesh.Vertices.Count, subMesh.Topology, submeshIndex++);
+                    // for non-last submesh, we have to duplicate submesh for multi pass rendering
+                    AddSubmesh(subMesh, vertexIndices, submeshIndexBuffersList, ref submeshWithMoreThan65536Verts, subMesh.SharedMaterials.Length);
                 }
 
                 {
-                    var subMesh = SubMeshes[SubMeshes.Count - 1];
+                    var subMesh = SubMeshes[^1];
+                    // for last submesh, we can use single submesh for multi pass rendering
+                    AddSubmesh(subMesh, vertexIndices, submeshIndexBuffersList, ref submeshWithMoreThan65536Verts, 1);
+                }
 
+                static void AddSubmesh(SubMesh subMesh, Dictionary<Vertex, int> vertexIndices, List<(SubMesh subMesh, int baseVertex, int[] indices)> submeshIndexBuffers, ref bool submeshWithMoreThan65536Verts, int count)
+                {
+                    var indices = new int[subMesh.Vertices.Count];
                     for (var index = 0; index < subMesh.Vertices.Count; index++)
                         indices[index] = vertexIndices[subMesh.Vertices[index]];
 
-                    // for last submesh, we can use single submesh for multi pass reendering
-                    destMesh.SetIndices(indices, 0, subMesh.Vertices.Count, subMesh.Topology, submeshIndex++);
+                    var min = indices.Min();
+                    var max = indices.Max();
+                    submeshWithMoreThan65536Verts |= max - min >= ushort.MaxValue;
+
+                    for (var j = 0; j < count; j++)
+                        submeshIndexBuffers.Add((subMesh, 0, indices));
                 }
 
-                Debug.Assert(totalSubMeshes == submeshIndex);
+                var submeshIndexBuffers = submeshIndexBuffersList.ToArray();
+
+                // determine index format
+                // if all vertices has less than 65536 vertices, we can use UInt16
+                // if all vertices has more than 65536 vertices but each submesh has less than 65536 vertices, we can use UInt16 with vaseVertex
+                // otherwise, we have to use UInt32
+                //
+                // Please note currently there is no optimization for index buffer to apply this optimization perfectly.
+                // You may need to reorder meshes in Merge Skinned Mesh. I will implement this optimization in future if I can.
+
+                if (Vertices.Count <= ushort.MaxValue)
+                {
+                    destMesh.indexFormat = IndexFormat.UInt16;
+                }
+                else if (!submeshWithMoreThan65536Verts)
+                {
+                    destMesh.indexFormat = IndexFormat.UInt16;
+                    foreach (ref var submeshIndexBuffer in submeshIndexBuffers.AsSpan())
+                    {
+                        submeshIndexBuffer.baseVertex = submeshIndexBuffer.indices.Min();
+                        for (var i = 0; i < submeshIndexBuffer.indices.Length; i++)
+                            submeshIndexBuffer.indices[i] -= submeshIndexBuffer.baseVertex;
+                    }
+                }
+                else
+                {
+                    destMesh.indexFormat = IndexFormat.UInt32;
+                }
+
+                var submeshIndex = 0;
+
+                destMesh.subMeshCount = submeshIndexBuffers.Length;
+
+                for (var i = 0; i < submeshIndexBuffers.Length; i++)
+                {
+                    var (subMesh, baseVertex, indices) = submeshIndexBuffers[i];
+                    destMesh.SetIndices(indices, 0, subMesh.Vertices.Count, subMesh.Topology, i,
+                        baseVertex: baseVertex);
+                }
+
+                Debug.Assert(submeshIndexBuffers.Length == submeshIndex);
             }
             Profiler.EndSample();
 

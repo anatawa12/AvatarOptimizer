@@ -79,6 +79,12 @@ namespace Anatawa12.AvatarOptimizer
         [SerializeField]
         internal bool allowShuffleMaterialSlots;
 
+        [NotKeyable]
+        [AAOLocalized("TraceAndOptimize:prop:optimizeTexture")]
+        [ToggleLeft]
+        [SerializeField]
+        internal bool optimizeTexture = true;
+
         // common parsing configuration
         [NotKeyable]
         [AAOLocalized("TraceAndOptimize:prop:mmdWorldCompatibility",
@@ -131,6 +137,8 @@ namespace Anatawa12.AvatarOptimizer
             public bool skipMergeMaterials;
             [ToggleLeft]
             public bool skipRemoveEmptySubMesh;
+            [ToggleLeft]
+            public bool skipAnyStateToEntryExit;
         }
     }
 }

@@ -237,11 +237,11 @@ namespace Anatawa12.AvatarOptimizer
         #endregion
 
         [AAOLocalized("MergePhysBone:prop:components")]
-        public PrefabSafeSet.VRCPhysBoneBaseSet componentsSet;
+        public PrefabSafeSet.PrefabSafeSet<VRCPhysBoneBase> componentsSet;
 
         public MergePhysBone()
         {
-            componentsSet = new PrefabSafeSet.VRCPhysBoneBaseSet(this);
+            componentsSet = new PrefabSafeSet.PrefabSafeSet<VRCPhysBoneBase>(this);
         }
     }
 

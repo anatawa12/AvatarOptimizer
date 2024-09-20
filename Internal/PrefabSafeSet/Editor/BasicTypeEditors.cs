@@ -58,7 +58,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
         {
             while (fieldType != null)
             {
-                if (fieldType.IsGenericType && fieldType.GetGenericTypeDefinition() == typeof(PrefabSafeSet<,>))
+                if (fieldType.IsGenericType && fieldType.GetGenericTypeDefinition() == typeof(PrefabSafeSet<>))
                     break;
                 fieldType = fieldType.BaseType;
             }

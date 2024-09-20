@@ -512,7 +512,7 @@ msgstr "自动删除未使用的对象"
 msgid "TraceAndOptimize:prop:optimizePhysBone"
 msgstr "优化PhysBone"
 
-msgid "TraceAndOptimize:prop:animatorOptimizer"
+msgid "TraceAndOptimize:prop:optimizeAnimator"
 msgstr "优化动画控制器"
 
 msgid "TraceAndOptimize:prop:mergeSkinnedMesh"
@@ -649,12 +649,6 @@ msgstr "在模型的根对象下没有找到Animator组件。"
 #endregion
 
 #region MeshInfo2
-
-msgid "MeshInfo2:error:MeshNotReadable"
-msgstr "由于网格不可读，无法在播放模式中处理网格。"
-
-msgid "MeshInfo2:error:MeshNotReadable:description"
-msgstr "请在网格的导入设置中将 Read/Write (读取/写入) 设置为true。"
 
 msgid "MeshInfo2:warning:multiPassRendering"
 msgstr ""
