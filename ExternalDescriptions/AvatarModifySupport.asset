@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 672cf279ebc041f5b87addc7c6c980bb, type: 3}
   m_Name: AvatarModifySupport
   m_EditorClassIdentifier: 
-  comment: "2024/09/21\u73FE\u5728\u3000https://booth.pm/ja/items/6106863 \u306B\u540C\u68B1\u3055\u308C\u3066\u3044\u308B\u6539\u5909\u30C4\u30FC\u30EB"
+  comment: 2024/09/21 Modification tools currently shipped with Shinano (https://booth.pm/ja/items/6106863)
   meaninglessComponents:
   - className: AvatarModifySupportBehaviour
     guid: 2efed2fd1a16dec49b4612e16363e973
