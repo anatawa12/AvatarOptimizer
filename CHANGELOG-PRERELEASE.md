@@ -10,6 +10,9 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
+- Reimplement Preview system with NDMF Preview System `#1131`
+  - This will prevent issues relates to Animation Mode bug.
+  - This allows you to preview Remove Mesh components without selecting Mesh OR while in Animation Mode.
 
 ### Deprecated
 
