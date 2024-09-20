@@ -764,12 +764,6 @@ msgstr "Animator component not found on Avatar Root"
 
 #region MeshInfo2
 
-msgid "MeshInfo2:error:MeshNotReadable"
-msgstr "The Mesh is not readable so unable to process mesh in Play Mode."
-
-msgid "MeshInfo2:error:MeshNotReadable:description"
-msgstr "Please set Read/Write Enabled to true in the import settings of the mesh."
-
 msgid "MeshInfo2:warning:multiPassRendering"
 msgstr ""
 "Multi pass rendering with multiple materials is used in mesh with '{0}' Component.\n"

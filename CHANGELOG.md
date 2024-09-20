@@ -24,6 +24,15 @@ The format is based on [Keep a Changelog].
     However, this feature does not work if multiple GameObjects (or both GameObject and Renderer itself) are animated.
   - In addition, this feature will be animate the `enabled` of the merged renderer, so you must not animate the `enabled` of the merged renderer.
     - If animations are unsupported, AAO will show an error message and abort the build.
+- Support Read/Write disabled Meshes with Av3Emulator Enabled `#1185`
+  - Previously, AAO cannot process meshes with Read/Write disabled if AAO is triggered by Av3Emulator.
+  - Since this release, AAO can process meshes with Read/Write disabled if AAO is triggered by Av3Emulator.
+  - In addition, AAO now supports non-Float32 vertex buffers.
+    - We still use Float32 internally so Int32 data might lose precision a little.
+    - However, AFAIK there is no real-world problem with this so we implemented this way.
+    - If you found such a case, please report it.
+  - This change make AAO incompatible with Unity without Graphics.
+    - If you're building your avatar with batchmode with -nographics, please remove -nographics.
 
 ### Changed
 - Skip Enablement Mismatched Renderers is now disabled by default `#1169`
