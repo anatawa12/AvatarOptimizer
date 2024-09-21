@@ -835,13 +835,7 @@ internal struct OptimizeTextureImpl {
                     // if color is consist of 0 or 1, isSrgb not matters so assume it's linear
                     var isSrgb = texture2D.isDataSRGB && color is not { r: 0 or 1, g: 0 or 1, b: 0 or 1 };
 
-                    if (color is { r: 0, g: 0, b: 0, a: 0 })
-                        newTexture = Texture2D.blackTexture;
-                    else if (color is { r: 1, g: 1, b: 1, a: 1 })
-                        newTexture = Texture2D.whiteTexture;
-                    else if (color is { r: 1, g: 0, b: 0, a: 0 })
-                        newTexture = Texture2D.redTexture;
-                    else if (ColorTextures.TryGetValue((color, isSrgb), out var cachedTexture))
+                    if (ColorTextures.TryGetValue((color, isSrgb), out var cachedTexture))
                         newTexture = cachedTexture;
                     else
                     {
