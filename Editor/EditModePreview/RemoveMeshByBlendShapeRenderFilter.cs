@@ -33,9 +33,10 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
             var toleranceSqrByShape = new Dictionary<string, double>();
             foreach (var component in components)
             {
-                foreach (var shape in component.shapeKeysSet.GetAsSet())
+                var toleranceSqr = context.Observe(component, shape => shape.tolerance * shape.tolerance);
+                var shapeKeys = context.Observe(component, shape => shape.shapeKeysSet.GetAsSet(), (a, b) => a.SetEquals(b));
+                foreach (var shape in shapeKeys)
                 {
-                    var toleranceSqr = component.tolerance * component.tolerance;
                     if (toleranceSqrByShape.TryGetValue(shape, out var oldToleranceSqr))
                         toleranceSqrByShape[shape] = Math.Min(oldToleranceSqr, toleranceSqr);
                     else

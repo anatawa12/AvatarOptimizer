@@ -13,17 +13,23 @@ namespace Anatawa12.AvatarOptimizer
         internal MaterialSlot[] materials = Array.Empty<MaterialSlot>();
 
         [Serializable]
-        internal struct MaterialSlot
+        internal struct MaterialSlot : IEquatable<MaterialSlot>
         {
-            [SerializeField]
-            [ToggleLeft]
-            public bool enabled;
-            [SerializeField]
-            [AAOLocalized("RemoveMeshByMask:prop:mask")]
-            public Texture2D mask;
-            [SerializeField]
-            [AAOLocalized("RemoveMeshByMask:prop:mode")]
+            [SerializeField] [ToggleLeft] public bool enabled;
+
+            [SerializeField] [AAOLocalized("RemoveMeshByMask:prop:mask")]
+            public Texture2D? mask;
+
+            [SerializeField] [AAOLocalized("RemoveMeshByMask:prop:mode")]
             public RemoveMode mode;
+
+            public bool Equals(MaterialSlot other) =>
+                enabled == other.enabled && Equals(mask, other.mask) && mode == other.mode;
+
+            public override bool Equals(object? obj) => obj is MaterialSlot other && Equals(other);
+            public override int GetHashCode() => HashCode.Combine(enabled, mask, (int)mode);
+            public static bool operator ==(MaterialSlot left, MaterialSlot right) => left.Equals(right);
+            public static bool operator !=(MaterialSlot left, MaterialSlot right) => !left.Equals(right);
         }
 
         internal enum RemoveMode

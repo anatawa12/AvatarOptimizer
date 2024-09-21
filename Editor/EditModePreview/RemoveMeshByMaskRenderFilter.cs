@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using nadena.dev.ndmf.preview;
@@ -31,7 +32,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
             var uv = duplicated.uv;
             using var uvJob = new NativeArray<Vector2>(uv, Allocator.TempJob);
 
-            var materialSettings = component.materials;
+            var materialSettings = context.Observe(component, c => c.materials.ToArray(), (a, b) => a.SequenceEqual(b));
             for (var subMeshI = 0; subMeshI < duplicated.subMeshCount; subMeshI++)
             {
                 if (subMeshI < materialSettings.Length)
@@ -42,10 +43,22 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                     if (!materialSetting.mask.isReadable) continue;
 
                     var editingTexture = MaskTextureEditor.Window.ObservePreviewTextureFor(original, subMeshI, context);
-                    var mask = editingTexture != null ? editingTexture : context.Observe(materialSetting.mask);
-                    var textureWidth = mask.width;
-                    var textureHeight = mask.height;
-                    var pixels = mask.GetPixels32();
+                    int textureWidth;
+                    int textureHeight;
+                    Color32[] pixels;
+                    if (editingTexture != null)
+                    {
+                        textureWidth = editingTexture.width;
+                        textureHeight = editingTexture.height;
+                        pixels = editingTexture.GetPixels32();
+                    }
+                    else
+                    {
+                        textureWidth = context.Observe(materialSetting.mask, m => m.width);
+                        textureHeight = context.Observe(materialSetting.mask, m => m.height);
+                        // TODO: GetPixels32 might be slow?
+                        pixels = context.Observe(materialSetting.mask, m => m.GetPixels32());
+                    }
                     using var pixelsJob = new NativeArray<Color32>(pixels, Allocator.TempJob);
 
                     bool removeWhite;

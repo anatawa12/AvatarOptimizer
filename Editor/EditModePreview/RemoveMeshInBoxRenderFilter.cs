@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using nadena.dev.ndmf.preview;
 using Unity.Burst;
@@ -26,7 +27,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
             Mesh duplicated, ComputeContext context)
         {
             // Observe transform since the BakeMesh depends on the transform
-            context.Observe(original.transform);
+            context.Observe(original.transform, t => t.localToWorldMatrix);
 
             UnityEngine.Profiling.Profiler.BeginSample("BakeMesh");
             var tempMesh = new Mesh();
@@ -40,14 +41,16 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
             UnityEngine.Profiling.Profiler.BeginSample("CollectVertexData");
             foreach (var component in components)
             {
-                using var boxes = new NativeArray<RemoveMeshInBox.BoundingBox>(component.boxes, Allocator.TempJob);
+                var boxesArray = context.Observe(component, c => c.boxes.ToArray(), (a, b) => a.SequenceEqual(b));
+                var componentWorldToLocalMatrix = context.Observe(component.transform, c => c.worldToLocalMatrix);
+                using var boxes = new NativeArray<RemoveMeshInBox.BoundingBox>(boxesArray, Allocator.TempJob);
 
                 new CheckRemoveVertexJob
                 {
                     boxes = boxes,
                     vertexPosition = realPosition,
                     vertexIsInBox = vertexIsInBox,
-                    meshToBoxTransform = original.transform.localToWorldMatrix * component.transform.worldToLocalMatrix,
+                    meshToBoxTransform = original.transform.localToWorldMatrix * componentWorldToLocalMatrix,
                 }.Schedule(duplicated.vertexCount, 32).Complete();
             }
 

@@ -59,9 +59,6 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
 
             var components = group.GetData<T[]>();
 
-            foreach (var component in components)
-                context.Observe(component);
-
             var node = CreateNode();
 
             await node.Process(original, proxy, components, context);
