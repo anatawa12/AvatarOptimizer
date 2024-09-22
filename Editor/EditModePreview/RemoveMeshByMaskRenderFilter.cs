@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using nadena.dev.ndmf.preview;
 using Unity.Burst;
@@ -56,8 +58,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                     {
                         textureWidth = context.Observe(materialSetting.mask, m => m.width);
                         textureHeight = context.Observe(materialSetting.mask, m => m.height);
-                        // TODO: GetPixels32 might be slow?
-                        pixels = context.Observe(materialSetting.mask, m => m.GetPixels32());
+                        pixels = context.Observe(materialSetting.mask, m => m.GetPixels32(), Utils.Color32ArrayEquals);
                     }
                     using var pixelsJob = new NativeArray<Color32>(pixels, Allocator.TempJob);
 
@@ -136,6 +137,13 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
             }
 
             return default;
+        }
+
+        private class Color32Comparator : IEqualityComparer<Color32>
+        {
+            public static Color32Comparator Instance = new();
+            public bool Equals(Color32 x, Color32 y) => x.r == y.r && x.g == y.g && x.b == y.b && x.a == y.a;
+            public int GetHashCode(Color32 obj) => HashCode.Combine(obj.r, obj.g, obj.b, obj.a);
         }
 
         [BurstCompile]
