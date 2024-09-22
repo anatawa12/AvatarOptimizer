@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.InteropServices;
+using Unity.Collections.LowLevel.Unsafe;
 using UnityEditor;
 using UnityEngine;
 
@@ -297,5 +300,70 @@ namespace Anatawa12.AvatarOptimizer
             x++;
             return debruijn[(int)((x * 0x076be629) >> 27)];
         }
+
+        /// <summary>
+        /// Fast compare of <see cref="Color32"/> array.
+        ///
+        /// This is semantically equivalent to <c>a.SequenceEqual(b)</c> but much faster (about 80x faster).
+        ///
+        /// Compared to <c>a.SequenceEqual(b, new Color32Comparator())</c>, this is about 10x faster.
+        /// </summary>
+        /// <param name="a">first array</param>
+        /// <param name="b">second array</param>
+        /// <returns>whether two arrays are equal</returns>
+        public static bool Color32ArrayEquals(ReadOnlySpan<Color32> a, ReadOnlySpan<Color32> b)
+        {
+            if (Color32ArrayEqualsDataHolder.SafeToUseFastImplementation)
+            {
+                var aSlice = MemoryMarshal.Cast<Color32, int>(a);
+                var bSlice = MemoryMarshal.Cast<Color32, int>(b);
+                if (aSlice.Length != bSlice.Length) return false;
+                for (var i = 0; i < aSlice.Length; i++)
+                    if (aSlice[i] != bSlice[i])
+                        return false;
+                return true;
+            }
+            else
+            {
+                for (var i = 0; i < a.Length; i++)
+                    if (!Color32Equals(a[i], b[i]))
+                        return false;
+                return true;
+
+                bool Color32Equals(Color32 x, Color32 y) => x.r == y.r && x.g == y.g && x.b == y.b && x.a == y.a;
+            }
+        }
+
+        private static class Color32ArrayEqualsDataHolder
+        {
+            public static readonly bool SafeToUseFastImplementation;
+
+            static Color32ArrayEqualsDataHolder()
+            {
+                SafeToUseFastImplementation = ComputeSafeToUseFastImplementation();
+
+                bool ComputeSafeToUseFastImplementation()
+                {
+                    if (UnsafeUtility.SizeOf<Color32>() != sizeof(int)) return false;
+                    if ((typeof(Color32).Attributes & TypeAttributes.ExplicitLayout) == 0) return false;
+                    var field = typeof(Color32).GetField("rgba", BindingFlags.NonPublic | BindingFlags.Instance);
+                    if (field == null) return false;
+                    if (field.GetCustomAttribute<FieldOffsetAttribute>()?.Value != 0) return false;
+                    return true;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Fast compare of <see cref="Color32"/> array.
+        ///
+        /// This is semantically equivalent to <c>a.SequenceEqual(b)</c> but much faster (about 80x faster).
+        ///
+        /// Compared to <c>a.SequenceEqual(b, new Color32Comparator())</c>, this is about 10x faster.
+        /// </summary>
+        /// <param name="a">first array</param>
+        /// <param name="b">second array</param>
+        /// <returns>whether two arrays are equal</returns>
+        public static bool Color32ArrayEquals(Color32[] a, Color32[] b) => Color32ArrayEquals(a.AsSpan(), b.AsSpan());
     }
 }
