@@ -22,39 +22,71 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
 
     internal class RemoveMeshInBoxRendererNode : AAORenderFilterNodeBase<RemoveMeshInBox>
     {
+        public static NativeArray<bool> ComputeShouldRemoveVertex(
+            SkinnedMeshRenderer renderer,
+            RemoveMeshInBox[] components
+        )
+        {
+            UnityEngine.Profiling.Profiler.BeginSample("BakeMesh");
+            var tempMesh = new Mesh();
+            renderer.BakeMesh(tempMesh);
+            UnityEngine.Profiling.Profiler.EndSample();
+
+            var mesh = renderer.sharedMesh;
+
+            var vertexIsInBox = new NativeArray<bool>(mesh.vertexCount, Allocator.TempJob);
+
+            try
+            {
+
+                using var realPosition = new NativeArray<Vector3>(tempMesh.vertices, Allocator.TempJob);
+
+                UnityEngine.Profiling.Profiler.BeginSample("CollectVertexData");
+                foreach (var component in components)
+                {
+                    var boxesArray = component.boxes.ToArray();
+                    var componentWorldToLocalMatrix = component.transform.worldToLocalMatrix;
+                    using var boxes = new NativeArray<RemoveMeshInBox.BoundingBox>(boxesArray, Allocator.TempJob);
+
+                    new CheckRemoveVertexJob
+                    {
+                        boxes = boxes,
+                        vertexPosition = realPosition,
+                        vertexIsInBox = vertexIsInBox,
+                        meshToBoxTransform = renderer.transform.localToWorldMatrix * componentWorldToLocalMatrix,
+                    }.Schedule(mesh.vertexCount, 32).Complete();
+                }
+
+                UnityEngine.Profiling.Profiler.EndSample();
+            }
+            catch
+            {
+                vertexIsInBox.Dispose();
+                throw;
+            }
+
+            return vertexIsInBox;
+        }
+
         protected override ValueTask Process(SkinnedMeshRenderer original, SkinnedMeshRenderer proxy,
             RemoveMeshInBox[] components,
             Mesh duplicated, ComputeContext context)
         {
             // Observe transform since the BakeMesh depends on the transform
-            context.Observe(original.transform, t => t.localToWorldMatrix);
+            context.Observe(proxy.transform, t => t.localToWorldMatrix);
 
             UnityEngine.Profiling.Profiler.BeginSample("BakeMesh");
             var tempMesh = new Mesh();
             proxy.BakeMesh(tempMesh);
             UnityEngine.Profiling.Profiler.EndSample();
 
-            using var realPosition = new NativeArray<Vector3>(tempMesh.vertices, Allocator.TempJob);
-
-            using var vertexIsInBox = new NativeArray<bool>(duplicated.vertexCount, Allocator.TempJob);
-
-            UnityEngine.Profiling.Profiler.BeginSample("CollectVertexData");
             foreach (var component in components)
             {
-                var boxesArray = context.Observe(component, c => c.boxes.ToArray(), (a, b) => a.SequenceEqual(b));
-                var componentWorldToLocalMatrix = context.Observe(component.transform, c => c.worldToLocalMatrix);
-                using var boxes = new NativeArray<RemoveMeshInBox.BoundingBox>(boxesArray, Allocator.TempJob);
-
-                new CheckRemoveVertexJob
-                {
-                    boxes = boxes,
-                    vertexPosition = realPosition,
-                    vertexIsInBox = vertexIsInBox,
-                    meshToBoxTransform = original.transform.localToWorldMatrix * componentWorldToLocalMatrix,
-                }.Schedule(duplicated.vertexCount, 32).Complete();
+                context.Observe(component, c => c.boxes.ToArray(), Enumerable.SequenceEqual);
+                context.Observe(component.transform, c => c.worldToLocalMatrix);
             }
 
-            UnityEngine.Profiling.Profiler.EndSample();
+            using var vertexIsInBox = ComputeShouldRemoveVertex(proxy, components);
 
             var uv = duplicated.uv;
             using var uvJob = new NativeArray<Vector2>(uv, Allocator.TempJob);

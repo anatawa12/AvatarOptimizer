@@ -1,19 +1,20 @@
 using System;
 using Anatawa12.AvatarOptimizer.API;
+using Unity.Collections;
 using UnityEditor;
 using UnityEngine;
 
-namespace Anatawa12.AvatarOptimizer.Editor.APIInternal;
+namespace Anatawa12.AvatarOptimizer.APIInternal;
 
 public class MeshRemovalProviderImpl : MeshRemovalProvider
 {
     [InitializeOnLoadMethod]
     private static void Register()
     {
-        MeshRemovalProvider.GetForRendererImpl = GetForRendererImpl;
+        GetForRendererImpl = GetForRendererImplImpl;
     }
 
-    private static MeshRemovalProvider? GetForRendererImpl(SkinnedMeshRenderer renderer)
+    private static MeshRemovalProvider? GetForRendererImplImpl(SkinnedMeshRenderer renderer)
     {
         var removeMeshByMask = renderer.GetComponent<RemoveMeshByMask>();
         var removeMeshByBlendShape = renderer.GetComponent<RemoveMeshByBlendShape>();
@@ -22,7 +23,29 @@ public class MeshRemovalProviderImpl : MeshRemovalProvider
         if (removeMeshByMask == null && removeMeshByBlendShape == null && removeMeshInBox == null)
             return null;
 
+        if (!renderer.sharedMesh.isReadable)
+            return null;
+
         return new MeshRemovalProviderImpl(renderer, removeMeshByMask, removeMeshByBlendShape, removeMeshInBox);
+    }
+
+    private NativeArray<bool> _removedByBlendShape;
+    private NativeArray<bool> _removedByBox;
+    private readonly Vector2[]? _uv;
+    private readonly MaterialSlotInformation[]? _removedByMask;
+
+    private readonly struct MaterialSlotInformation
+    {
+        public readonly bool[]? shouldRemove;
+        public readonly int width;
+        public readonly int height;
+
+        public MaterialSlotInformation(bool[] shouldRemove, int width, int height)
+        {
+            this.shouldRemove = shouldRemove;
+            this.width = width;
+            this.height = height;
+        }
     }
 
     private MeshRemovalProviderImpl(
@@ -31,11 +54,70 @@ public class MeshRemovalProviderImpl : MeshRemovalProvider
         RemoveMeshByBlendShape? removeMeshByBlendShape, 
         RemoveMeshInBox? removeMeshInBox)
     {
-        // TODO: this implementation should be based on NDMF Mesh Preview I think
-        throw new NotImplementedException();
+        if (removeMeshByBlendShape != null)
+        {
+            var toleranceSqrByShape = new System.Collections.Generic.Dictionary<string, double>();
+            foreach (var shapeKey in removeMeshByBlendShape.ShapeKeys)
+                toleranceSqrByShape[shapeKey] = removeMeshByBlendShape.tolerance * removeMeshByBlendShape.tolerance;
+
+            _removedByBlendShape = EditModePreview.RemoveMeshByBlendShapeRendererNode.ComputeShouldRemoveVertex(renderer.sharedMesh, toleranceSqrByShape);
+        }
+
+        if (removeMeshInBox != null)
+        {
+            _removedByBox = EditModePreview.RemoveMeshInBoxRendererNode.ComputeShouldRemoveVertex(renderer, new[] { removeMeshInBox });
+        }
+
+        if (removeMeshByMask != null)
+        {
+            _removedByMask = new MaterialSlotInformation[renderer.sharedMesh.subMeshCount];
+            _uv = renderer.sharedMesh.uv;
+
+            for (var index = 0; index < removeMeshByMask.materials.Length && index < _removedByMask.Length; index++)
+            {
+                var materialSetting = removeMeshByMask.materials[index];
+                if (!materialSetting.enabled) continue;
+                var maskTexture = materialSetting.mask;
+                if (maskTexture == null) continue;
+                if (!maskTexture.isReadable) continue;
+                
+                bool removeWhite;
+                switch (materialSetting.mode)
+                {
+                    case RemoveMeshByMask.RemoveMode.RemoveWhite:
+                        removeWhite = true;
+                        break;
+                    case RemoveMeshByMask.RemoveMode.RemoveBlack:
+                        removeWhite = false;
+                        break;
+                    default:
+                        BuildLog.LogError("RemoveMeshByMask:error:unknownMode");
+                        continue;
+                }
+
+                var shouldRemoves = new bool[maskTexture.width * maskTexture.height];
+                var pixels = maskTexture.GetPixels32();
+                for (var y = 0; y < maskTexture.height; y++)
+                {
+                    for (var x = 0; x < maskTexture.width; x++)
+                    {
+                        var pixel = pixels[y * maskTexture.width + x];
+
+                        var isWhite = Mathf.Max(pixel.r, pixel.g, pixel.b) > 127;
+
+                        bool shouldRemove = removeWhite ? isWhite : !isWhite;
+                        shouldRemoves[y * maskTexture.width + x] = shouldRemove;
+                    }
+                }
+                _removedByMask[index] = new MaterialSlotInformation(
+                    shouldRemoves,
+                    maskTexture.width,
+                    maskTexture.height);
+            }
+        }
     }
 
-    public override bool WillRemovePrimitive(MeshTopology topology, Span<int> vertexIndices)
+    public override bool WillRemovePrimitive(MeshTopology topology, int subMesh, Span<int> vertexIndices)
     {
         switch (topology)
         {
@@ -60,6 +142,51 @@ public class MeshRemovalProviderImpl : MeshRemovalProvider
                 return false; // unsupported
         }
 
-        throw new NotImplementedException();
+        if (_removedByBlendShape.Length > 0)
+        {
+            foreach (var vertexIndex in vertexIndices)
+                if (_removedByBlendShape[vertexIndex])
+                    return true;
+        }
+
+        if (_removedByBox.Length > 0)
+        {
+            foreach (var vertexIndex in vertexIndices)
+                if (_removedByBox[vertexIndex])
+                    return true;
+        }
+
+        if (_uv != null && _removedByMask != null)
+        {
+            var uv = _uv;
+            var mask = _removedByMask[subMesh];
+            if (mask.shouldRemove == null) return false;
+
+            var removePrimitive = true;
+            foreach (var vertexIndex in vertexIndices)
+            {
+                var uvIndex = vertexIndex;
+                if (uvIndex >= uv.Length) return false;
+                var uvValue = uv[uvIndex];
+                var x = Mathf.FloorToInt(Utils.Modulo(uvValue.x, 1) * mask.width);
+                var y = Mathf.FloorToInt(Utils.Modulo(uvValue.y, 1) * mask.height);
+                var shouldRemove = mask.shouldRemove[y * mask.width + x];
+                if (!shouldRemove)
+                {
+                    removePrimitive = false;
+                    break;
+                }
+            }
+
+            if (removePrimitive) return true;
+        }
+
+        return false;
+    }
+
+    public override void Dispose()
+    {
+        if (_removedByBlendShape != default) _removedByBlendShape.Dispose();
+        if (_removedByBox != default) _removedByBox.Dispose();
     }
 }
