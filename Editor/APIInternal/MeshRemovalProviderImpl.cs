@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer.APIInternal;
 
-public class MeshRemovalProviderImpl : MeshRemovalProvider
+internal class MeshRemovalProviderImpl : MeshRemovalProvider
 {
     [InitializeOnLoadMethod]
     private static void Register()

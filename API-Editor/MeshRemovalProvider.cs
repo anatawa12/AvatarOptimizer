@@ -24,6 +24,10 @@ namespace Anatawa12.AvatarOptimizer.API
     [PublicAPI]
     public abstract class MeshRemovalProvider : IDisposable
     {
+        private protected MeshRemovalProvider()
+        {
+        }
+
         /// <summary>
         /// Create MeshRemovalProvider for the renderer.
         ///
@@ -51,10 +55,17 @@ namespace Anatawa12.AvatarOptimizer.API
         /// <param name="subMesh">The submesh index of the primitive.</param>
         /// <param name="vertexIndices">The vertex indices of the primitive.</param>
         /// <returns>Returns true if the primitive will be removed, false if might not.</returns>
+        [PublicAPI]
         public abstract bool WillRemovePrimitive(MeshTopology topology, int subMesh, Span<int> vertexIndices);
 
         internal static Func<SkinnedMeshRenderer, MeshRemovalProvider?>? GetForRendererImpl { get; set; } = null;
 
+        /// <summary>
+        /// Dispose the MeshRemovalProvider.
+        ///
+        /// You should call this method when you don't need the MeshRemovalProvider anymore.
+        /// </summary>
+        [PublicAPI]
         public abstract void Dispose();
     }
 }
