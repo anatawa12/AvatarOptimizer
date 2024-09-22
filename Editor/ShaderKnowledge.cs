@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
 using UnityEngine;

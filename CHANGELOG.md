@@ -14,11 +14,37 @@ The format is based on [Keep a Changelog].
     - We may relax some restriction in the future.
   - Because we have to check for each condition if we use AnyState but we can check for only one (in best case) with entry/exit, this generally reduces cost for checking an parameter in a state.
   - Combined with Entry / Exit to 1D BlendTree optimization, which is implemented in previous release, your AnyState layer may be optimized to 1D BlendTree.
+- Optimize Texture in Trace nad Optimize `#1181` `#1184` `#1193`
+  - Avatar Optimizer will pack texture and tries to reduce the VRAM usage.
+  - Currently liltoon is only supported.
+- `Copy Enablement Animation` to Merge Skinned Mesh `#1173`
+  - This feature copies activeness / enablement animation from merge target renderers to the merged renderer.
+  - This feature is not enabled by default. You have to enable it in the inspector.
+  - This feature supports copying activeness animation of `activeSelf` of the GameObjects or ancestors of the GameObjects.
+    However, this feature does not work if multiple GameObjects (or both GameObject and Renderer itself) are animated.
+  - In addition, this feature will be animate the `enabled` of the merged renderer, so you must not animate the `enabled` of the merged renderer.
+    - If animations are unsupported, AAO will show an error message and abort the build.
+- Support Read/Write disabled Meshes with Av3Emulator Enabled `#1185`
+  - Previously, AAO cannot process meshes with Read/Write disabled if AAO is triggered by Av3Emulator.
+  - Since this release, AAO can process meshes with Read/Write disabled if AAO is triggered by Av3Emulator.
+  - In addition, AAO now supports non-Float32 vertex buffers.
+    - We still use Float32 internally so Int32 data might lose precision a little.
+    - However, AFAIK there is no real-world problem with this so we implemented this way.
+    - If you found such a case, please report it.
+  - This change make AAO incompatible with Unity without Graphics.
+    - If you're building your avatar with batchmode with -nographics, please remove -nographics.
+- Asset Description for Avatar Modify Support bundled in an avatar, Shinano `#1189`
 
 ### Changed
 - Skip Enablement Mismatched Renderers is now disabled by default `#1169`
   - You still can enable it in the Inspector.
   - This change does not affect the behavior of previously added components.
+- Use UInt16 index buffer if possible even when total vertex count is more than 2^16 `#1178`
+  - With baseVertex in index buffer, we can use UInt16 index buffer even if total vertex count is more than 2^16.
+  - Of course, if one submeh references wide range of vertices, we cannot use UInt16 index buffer so we still use UInt32 index buffer in such a case.
+- Reimplement Preview system with NDMF Preview System `#1131` `#1195`
+  - This will prevent issues relates to Animation Mode bug.
+  - This allows you to preview Remove Mesh components without selecting Mesh OR while in Animation Mode.
 
 ### Deprecated
 

@@ -8,27 +8,62 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- AnyState to Entry/Exit optimization in Optimize Animator `#1157`
+
+### Changed
+- Reimplement Preview system with NDMF Preview System `#1131`
+  - This will prevent issues relates to Animation Mode bug.
+  - This allows you to preview Remove Mesh components without selecting Mesh OR while in Animation Mode.
+
+### Deprecated
+
+### Removed
+
+### Fixed
+- Texture Packing which resolves to the white texture would break the Unity Editor `#1193`
+- Performance issues with preview system `#1195`
+
+### Security
+
+## [1.8.0-beta.1] - 2024-09-20
+### Added
+- AnyState to Entry/Exit optimization in Optimize Animator [`#1157`](https://github.com/anatawa12/AvatarOptimizer/pull/1157)
   - If AAO found animator layer only with AnyState, AAO tries to convert them to Entry / Exit pattern.
     - Currently due to implementation there are some patterns that can be convert but but not converted.
     - We may relax some restriction in the future.
   - Because we have to check for each condition if we use AnyState but we can check for only one (in best case) with entry/exit, this generally reduces cost for checking an parameter in a state.
   - Combined with Entry / Exit to 1D BlendTree optimization, which is implemented in previous release, your AnyState layer may be optimized to 1D BlendTree.
+- Optimize Texture in Trace nad Optimize [`#1181`](https://github.com/anatawa12/AvatarOptimizer/pull/1181) [`#1184`](https://github.com/anatawa12/AvatarOptimizer/pull/1184)
+  - Avatar Optimizer will pack texture and tries to reduce the VRAM usage.
+  - Currently liltoon is only supported.
+- `Copy Enablement Animation` to Merge Skinned Mesh [`#1173`](https://github.com/anatawa12/AvatarOptimizer/pull/1173)
+  - This feature copies activeness / enablement animation from merge target renderers to the merged renderer.
+  - This feature is not enabled by default. You have to enable it in the inspector.
+  - This feature supports copying activeness animation of `activeSelf` of the GameObjects or ancestors of the GameObjects.
+    However, this feature does not work if multiple GameObjects (or both GameObject and Renderer itself) are animated.
+  - In addition, this feature will be animate the `enabled` of the merged renderer, so you must not animate the `enabled` of the merged renderer.
+    - If animations are unsupported, AAO will show an error message and abort the build.
+- Support Read/Write disabled Meshes with Av3Emulator Enabled [`#1185`](https://github.com/anatawa12/AvatarOptimizer/pull/1185)
+  - Previously, AAO cannot process meshes with Read/Write disabled if AAO is triggered by Av3Emulator.
+  - Since this release, AAO can process meshes with Read/Write disabled if AAO is triggered by Av3Emulator.
+  - In addition, AAO now supports non-Float32 vertex buffers. 
+    - We still use Float32 internally so Int32 data might lose precision a little.
+    - However, AFAIK there is no real-world problem with this so we implemented this way.
+    - If you found such a case, please report it.
+  - This change make AAO incompatible with Unity without Graphics.
+    - If you're building your avatar with batchmode with -nographics, please remove -nographics.
+- Asset Description for Avatar Modify Support bundled in an avatar, Shinano [`#1189`](https://github.com/anatawa12/AvatarOptimizer/pull/1189)
 
 ### Changed
-- Skip Enablement Mismatched Renderers is now disabled by default `#1169`
+- Skip Enablement Mismatched Renderers is now disabled by default [`#1169`](https://github.com/anatawa12/AvatarOptimizer/pull/1169)
   - You still can enable it in the Inspector.
   - This change does not affect the behavior of previously added components.
-
-### Deprecated
+- Use UInt16 index buffer if possible even when total vertex count is more than 2^16 [`#1178`](https://github.com/anatawa12/AvatarOptimizer/pull/1178)
+  - With baseVertex in index buffer, we can use UInt16 index buffer even if total vertex count is more than 2^16.
+  - Of course, if one submeh references wide range of vertices, we cannot use UInt16 index buffer so we still use UInt32 index buffer in such a case.
 
 ### Removed
-- Unity 2019 Support `#1146`
+- Unity 2019 Support [`#1146`](https://github.com/anatawa12/AvatarOptimizer/pull/1146)
   - For 2019 users, please use 1.7.x.
-
-### Fixed
-
-### Security
 
 ## [1.7.12] - 2024-08-27
 ## [1.7.12-beta.3] - 2024-08-25
@@ -1518,7 +1553,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.12...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-beta.1...HEAD
+[1.8.0-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.12...v1.8.0-beta.1
 [1.7.12]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.12-beta.3...v1.7.12
 [1.7.12-beta.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.12-beta.2...v1.7.12-beta.3
 [1.7.12-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.12-beta.1...v1.7.12-beta.2

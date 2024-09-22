@@ -14,6 +14,7 @@
         "com.anatawa12.avatar-optimizer.internal.meshinfo2",
         "com.anatawa12.avatar-optimizer.internal.trace-and-optimize-base",
         "com.anatawa12.avatar-optimizer.internal.utils",
+        "com.anatawa12.avatar-optimizer.internal.localization.editor",
         "com.anatawa12.avatar-optimizer.api.editor",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",

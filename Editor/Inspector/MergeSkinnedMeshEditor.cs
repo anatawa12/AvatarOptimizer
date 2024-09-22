@@ -27,6 +27,7 @@ namespace Anatawa12.AvatarOptimizer
         SerializedProperty _staticRenderersSetProp = null!; // initialized in OnEnable
         SerializedProperty _removeEmptyRendererObjectProp = null!; // initialized in OnEnable
         SerializedProperty _skipEnablementMismatchedRenderers = null!; // initialized in OnEnable
+        SerializedProperty _copyEnablementAnimation = null!; // initialized in OnEnable
         PrefabSafeSet.EditorUtil<Material> _doNotMergeMaterials = null!; // initialized in OnEnable
 
         private void OnEnable()
@@ -36,6 +37,7 @@ namespace Anatawa12.AvatarOptimizer
             _removeEmptyRendererObjectProp = serializedObject.FindProperty("removeEmptyRendererObject");
             _skipEnablementMismatchedRenderers =
                 serializedObject.FindProperty(nameof(MergeSkinnedMesh.skipEnablementMismatchedRenderers));
+            _copyEnablementAnimation = serializedObject.FindProperty(nameof(MergeSkinnedMesh.copyEnablementAnimation));
             var nestCount = PrefabSafeSet.PrefabSafeSetUtil.PrefabNestCount(serializedObject.targetObject);
             _doNotMergeMaterials = PrefabSafeSet.EditorUtil<Material>.Create(
                 serializedObject.FindProperty("doNotMergeMaterials"),
@@ -56,6 +58,7 @@ namespace Anatawa12.AvatarOptimizer
             EditorGUILayout.PropertyField(_staticRenderersSetProp);
             EditorGUILayout.PropertyField(_removeEmptyRendererObjectProp);
             EditorGUILayout.PropertyField(_skipEnablementMismatchedRenderers);
+            EditorGUILayout.PropertyField(_copyEnablementAnimation);
 
             serializedObject.ApplyModifiedProperties();
 
