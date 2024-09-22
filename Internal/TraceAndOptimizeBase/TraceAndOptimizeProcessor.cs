@@ -14,6 +14,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         public bool OptimizeAnimator;
         public bool MergeSkinnedMesh;
         public bool AllowShuffleMaterialSlots;
+        public bool OptimizeTexture;
         public bool MmdWorldCompatibility = true;
 
         public bool PreserveEndBone;
@@ -34,6 +35,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         public bool SkipMergeMaterialAnimatingSkinnedMesh;
         public bool SkipMergeMaterials;
         public bool SkipRemoveEmptySubMesh;
+        public bool SkipAnyStateToEntryExit;
         public bool SkipRemoveMaterialUnusedProperties;
 
         public Dictionary<SkinnedMeshRenderer, HashSet<string>> PreserveBlendShapes =
@@ -48,6 +50,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             OptimizeAnimator = config.optimizeAnimator;
             MergeSkinnedMesh = config.mergeSkinnedMesh;
             AllowShuffleMaterialSlots = config.allowShuffleMaterialSlots;
+            OptimizeTexture = config.optimizeTexture;
             MmdWorldCompatibility = config.mmdWorldCompatibility;
 
             PreserveEndBone = config.preserveEndBone;
@@ -69,6 +72,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             SkipMergeMaterialAnimatingSkinnedMesh = config.advancedSettings.skipMergeMaterialAnimatingSkinnedMesh;
             SkipMergeMaterials = config.advancedSettings.skipMergeMaterials;
             SkipRemoveEmptySubMesh = config.advancedSettings.skipRemoveEmptySubMesh;
+            SkipAnyStateToEntryExit = config.advancedSettings.skipAnyStateToEntryExit;
             SkipRemoveMaterialUnusedProperties = config.advancedSettings.skipRemoveMaterialUnusedProperties;
 
             Enabled = true;

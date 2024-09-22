@@ -13,14 +13,14 @@ namespace Anatawa12.AvatarOptimizer
     public sealed class RemoveMeshByBlendShape : EditSkinnedMeshComponent
     {
         [SerializeField]
-        internal PrefabSafeSet.StringSet shapeKeysSet;
+        internal PrefabSafeSet.PrefabSafeSet<string> shapeKeysSet;
         [AAOLocalized("RemoveMeshByBlendShape:prop:Tolerance",
             "RemoveMeshByBlendShape:tooltip:Tolerance")]
         [SerializeField]
         internal double tolerance = 0.001;
         internal RemoveMeshByBlendShape()
         {
-            shapeKeysSet = new PrefabSafeSet.StringSet(this);
+            shapeKeysSet = new PrefabSafeSet.PrefabSafeSet<string>(this);
         }
 
         internal HashSet<string> RemovingShapeKeys => shapeKeysSet.GetAsSet();

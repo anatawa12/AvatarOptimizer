@@ -223,6 +223,9 @@ msgstr "空のレンダラーオブジェクトを削除する"
 msgid "MergeSkinnedMesh:prop:skipEnablementMismatchedRenderers"
 msgstr "有効無効状態が統合先と異なるレンダラーを統合しない"
 
+msgid "MergeSkinnedMesh:prop:copyEnablementAnimation"
+msgstr "有効無効状態に関するアニメーションをコピーする"
+
 msgid "MergeSkinnedMesh:label:Merge Materials"
 msgstr "マテリアルの統合"
 
@@ -526,7 +529,7 @@ msgstr "使われていないObjectを自動的に削除する"
 msgid "TraceAndOptimize:prop:optimizePhysBone"
 msgstr "PhysBoneの設定を最適化する"
 
-msgid "TraceAndOptimize:prop:animatorOptimizer"
+msgid "TraceAndOptimize:prop:optimizeAnimator"
 msgstr "アニメーターを最適化する"
 
 msgid "TraceAndOptimize:prop:mergeSkinnedMesh"
@@ -534,6 +537,9 @@ msgstr "スキンメッシュレンダラーを統合する"
 
 msgid "TraceAndOptimize:prop:allowShuffleMaterialSlots"
 msgstr "マテリアルスロットの前後関係を変えることを許可する"
+
+msgid "TraceAndOptimize:prop:optimizeTexture"
+msgstr "テクスチャを最適化する"
 
 msgid "TraceAndOptimize:tooltip:allowShuffleMaterialSlots"
 msgstr "マテリアルスロットの前後関係を変えることでドローコールを減らすことを許可します。これは描画順に影響を与える可能性があります。"
@@ -640,20 +646,44 @@ msgstr ""
 msgid "ComponentInfos:VRCAvatarDescriptor:warning:NoVisemeSkinnedMesh"
 msgstr "リップシンク用のSkinnedMeshRendererがありません。"
 
+msgid "ComponentInfos:VRCAvatarDescriptor:warning:NoVisemeSkinnedMesh:hint"
+msgstr ""
+"リップシンクをBlendShapeで行う場合は、Avatar DescriptorにSkinnedMeshRendererを指定してください。\n"
+"リップシンクをBlendShapeで行わない場合は、Viseme TypeをBlendShape以外(Viseme Parameter Onlyなど)に変更してください。"
+
 msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownLipSyncStyle"
 msgstr "リップシンクの種類として未知の種類'{0}'が指定されています。"
+
+msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownLipSyncStyle:hint"
+msgstr "多くの場合、これはAvatar Optimizerのバグです。この警告が表示された場合は、上記のメッセージとともにこの問題を報告してください。"
 
 msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownColliderState"
 msgstr "{1}のStandard Colliderに未知の設定'{0}'が指定されています。"
 
+msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownColliderState:hint"
+msgstr "多くの場合、これはAvatar Optimizerのバグです。この警告が表示された場合は、上記のメッセージとともにこの問題を報告してください。"
+
 msgid "ComponentInfos:VRCAvatarDescriptor:warning:NoMeshInEyelidsSkinnedMesh"
 msgstr "瞬き用のSkinnedMeshRendererにメッシュがありません。"
+
+msgid "ComponentInfos:VRCAvatarDescriptor:warning:NoMeshInEyelidsSkinnedMesh:hint"
+msgstr ""
+"瞬きをBlendShapeで行う場合は、Avatar DescriptorにMeshが指定されたSkinnedMeshRendererを指定してください。\n"
+"瞬きをBlendShapeで行わない場合は、Eyelids TypeをBlendShape以外(Noneなど)に変更してください。"
 
 msgid "ComponentInfos:VRCAvatarDescriptor:warning:NoEyelidsSkinnedMesh"
 msgstr "瞬き用のSkinnedMeshRendererがありません。"
 
+msgid "ComponentInfos:VRCAvatarDescriptor:warning:NoEyelidsSkinnedMesh:hint"
+msgstr ""
+"瞬きをBlendShapeで行う場合は、Avatar DescriptorにSkinnedMeshRendererを指定してください。\n"
+"瞬きをBlendShapeで行わない場合は、Eyelids TypeをBlendShape以外(Noneなど)に変更してください。"
+
 msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownEyelidType"
 msgstr "瞬きの種類として未知の種類'{0}'が指定されています。"
+
+msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownEyelidType:description"
+msgstr "多くの場合、これはAvatar Optimizerのバグです。この警告が表示された場合は、上記のメッセージとともにこの問題を報告してください。"
 
 #endregion
 
@@ -671,12 +701,6 @@ msgstr "アバターのルートにAnimatorコンポーネントがありませ�
 #endregion
 
 #region MeshInfo2
-
-msgid "MeshInfo2:error:MeshNotReadable"
-msgstr "メッシュが読み取り可能になっていないため、Play Modeでのメッシュの処理ができません。"
-
-msgid "MeshInfo2:error:MeshNotReadable:description"
-msgstr "メッシュのインポート設定でRead/Write Enabledをtrueに設定してください。"
 
 msgid "MeshInfo2:warning:multiPassRendering"
 msgstr ""

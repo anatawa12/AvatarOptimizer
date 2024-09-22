@@ -44,6 +44,18 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 
             foreach (var component in context.AvatarRootObject.GetComponents<Component>())
             {
+                GameObject? animatorControllerRoot = null;
+
+                switch (component)
+                {
+                    case Animator:
+#if AAO_VRCSDK3_AVATARS
+                    case VRCAvatarDescriptor:
+#endif
+                        animatorControllerRoot = component.gameObject;
+                        break;
+                }
+
                 using (var serializedObject = new SerializedObject(component))
                 {
                     foreach (var property in serializedObject.ObjectReferenceProperties())
@@ -51,7 +63,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                         if (property.objectReferenceValue is RuntimeAnimatorController runtimeController)
                         {
                             var cloned = AnimatorControllerCloner.Clone(context, runtimeController);
-                            var wrapper = new AOAnimatorController(cloned);
+                            var wrapper = new AOAnimatorController(cloned, animatorControllerRoot);
                             animatorState.Add(wrapper);
                             property.objectReferenceValue = cloned;
                             clonedToController.Add(cloned, wrapper);

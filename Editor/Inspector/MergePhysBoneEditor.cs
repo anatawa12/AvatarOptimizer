@@ -88,8 +88,8 @@ namespace Anatawa12.AvatarOptimizer
             EditorGUILayout.LabelField("Root Transform", "Auto Generated");
             if (!MakeParent.boolValue)
             {
-                var differ = SourcePhysBones.Cast<Component>()
-                    .Select(x => x.transform.parent)
+                var differ = SourcePhysBones
+                    .Select(x => x.GetTarget().parent)
                     .ZipWithNext()
                     .Any(x => x.Item1 != x.Item2);
                 if (differ)
@@ -596,7 +596,7 @@ namespace Anatawa12.AvatarOptimizer
             if (!_mergePhysBone.makeParent)
             {
                 var differ = SourcePhysBones
-                    .Select(x => x.transform.parent)
+                    .Select(x => x.GetTarget().parent)
                     .ZipWithNext()
                     .Any(x => x.Item1 != x.Item2);
                 if (differ)

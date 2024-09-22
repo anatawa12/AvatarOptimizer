@@ -13,7 +13,8 @@ namespace Anatawa12.AvatarOptimizer
         private readonly Dictionary<Object, Object> _cache = new Dictionary<Object, Object>();
         private bool _mapped = false;
 
-        public T MapObject<T>(T obj) where T : Object
+        [return:NotNullIfNotNull("obj")]
+        public T? MapObject<T>(T? obj) where T : Object
         {
             using (ErrorReport.WithContextObject(obj))
                 return DeepClone(obj);

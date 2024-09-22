@@ -8,12 +8,47 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- AnyState to Entry/Exit optimization in Optimize Animator `#1157`
+  - If AAO found animator layer only with AnyState, AAO tries to convert them to Entry / Exit pattern.
+    - Currently due to implementation there are some patterns that can be convert but but not converted.
+    - We may relax some restriction in the future.
+  - Because we have to check for each condition if we use AnyState but we can check for only one (in best case) with entry/exit, this generally reduces cost for checking an parameter in a state.
+  - Combined with Entry / Exit to 1D BlendTree optimization, which is implemented in previous release, your AnyState layer may be optimized to 1D BlendTree.
+- Optimize Texture in Trace nad Optimize `#1181` `#1184` `#1193`
+  - Avatar Optimizer will pack texture and tries to reduce the VRAM usage.
+  - Currently liltoon is only supported.
+- `Copy Enablement Animation` to Merge Skinned Mesh `#1173`
+  - This feature copies activeness / enablement animation from merge target renderers to the merged renderer.
+  - This feature is not enabled by default. You have to enable it in the inspector.
+  - This feature supports copying activeness animation of `activeSelf` of the GameObjects or ancestors of the GameObjects.
+    However, this feature does not work if multiple GameObjects (or both GameObject and Renderer itself) are animated.
+  - In addition, this feature will be animate the `enabled` of the merged renderer, so you must not animate the `enabled` of the merged renderer.
+    - If animations are unsupported, AAO will show an error message and abort the build.
+- Support Read/Write disabled Meshes with Av3Emulator Enabled `#1185`
+  - Previously, AAO cannot process meshes with Read/Write disabled if AAO is triggered by Av3Emulator.
+  - Since this release, AAO can process meshes with Read/Write disabled if AAO is triggered by Av3Emulator.
+  - In addition, AAO now supports non-Float32 vertex buffers.
+    - We still use Float32 internally so Int32 data might lose precision a little.
+    - However, AFAIK there is no real-world problem with this so we implemented this way.
+    - If you found such a case, please report it.
+  - This change make AAO incompatible with Unity without Graphics.
+    - If you're building your avatar with batchmode with -nographics, please remove -nographics.
+- Asset Description for Avatar Modify Support bundled in an avatar, Shinano `#1189`
 - Automatically remove unnecessary material properties based on shader `#1041`
   - This feature is added to `Remove Unused Objects` in `Trace and Optimize`.
   - When you changed shader for an material, properties for previously used shaders might be remain
   - This may increase your avatar size by unexpectedly including unused textures
 
 ### Changed
+- Skip Enablement Mismatched Renderers is now disabled by default `#1169`
+  - You still can enable it in the Inspector.
+  - This change does not affect the behavior of previously added components.
+- Use UInt16 index buffer if possible even when total vertex count is more than 2^16 `#1178`
+  - With baseVertex in index buffer, we can use UInt16 index buffer even if total vertex count is more than 2^16.
+  - Of course, if one submeh references wide range of vertices, we cannot use UInt16 index buffer so we still use UInt32 index buffer in such a case.
+- Reimplement Preview system with NDMF Preview System `#1131` `#1195`
+  - This will prevent issues relates to Animation Mode bug.
+  - This allows you to preview Remove Mesh components without selecting Mesh OR while in Animation Mode.
 
 ### Deprecated
 
@@ -24,6 +59,15 @@ The format is based on [Keep a Changelog].
 ### Fixed
 
 ### Security
+
+## [1.7.12] - 2024-08-27
+### Changed
+- Rewritten Check for Update system [`#1151`](https://github.com/anatawa12/AvatarOptimizer/pull/1151)
+
+### Fixed
+- VRCConstraints with Target might be removed unexpectedly [`#1150`](https://github.com/anatawa12/AvatarOptimizer/pull/1150)
+- FinalIK Gimmicks with IKExecutionOrder is broken [`#1153`](https://github.com/anatawa12/AvatarOptimizer/pull/1153)
+- Broken validation for MergePhysBone merging PhysBones with specified target [`#1160`](https://github.com/anatawa12/AvatarOptimizer/pull/1160)
 
 ## [1.7.11] - 2024-08-08
 ### Added
@@ -990,7 +1034,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.11...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.12...HEAD
+[1.7.12]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.11...v1.7.12
 [1.7.11]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.10...v1.7.11
 [1.7.10]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.9...v1.7.10
 [1.7.9]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.8...v1.7.9

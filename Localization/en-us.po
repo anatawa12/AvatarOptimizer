@@ -286,6 +286,9 @@ msgstr "Remove Empty Renderer Object"
 msgid "MergeSkinnedMesh:prop:skipEnablementMismatchedRenderers"
 msgstr "Skip Enablement Mismatched Renderers"
 
+msgid "MergeSkinnedMesh:prop:copyEnablementAnimation"
+msgstr "Copy Enablement Animation"
+
 msgid "MergeSkinnedMesh:label:Merge Materials"
 msgstr "Merge Materials"
 
@@ -621,6 +624,9 @@ msgstr "Optimize Animator"
 msgid "TraceAndOptimize:prop:mergeSkinnedMesh"
 msgstr "Merge Skinned Mesh"
 
+msgid "TraceAndOptimize:prop:optimizeTexture"
+msgstr "Optimize Texture"
+
 msgid "TraceAndOptimize:prop:allowShuffleMaterialSlots"
 msgstr "Allow Shuffling Material Slots"
 
@@ -702,20 +708,44 @@ msgstr "If some BlendShapes are missing or unset, all viseme BlendShapes would n
 msgid "ComponentInfos:VRCAvatarDescriptor:warning:NoVisemeSkinnedMesh"
 msgstr "No Skinned Mesh Renderer is specified for LipSync."
 
+msgid "ComponentInfos:VRCAvatarDescriptor:warning:NoVisemeSkinnedMesh:hint"
+msgstr ""
+"If you want to enable viseme lip sync with BlendShapes, you should specify SkinnedMeshRenderer to Avatar Descriptor.\n"
+"If it's intended to not animate lips with BlendShapes, you should change LipSync type to other type like Viseme Parameter Only."
+
 msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownLipSyncStyle"
 msgstr "Unknown LipSync Mode '{0}' is specified."
+
+msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownLipSyncStyle:hint"
+msgstr "This is typically a bug of Avatar Optimizer. Please report this issue with the message above."
 
 msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownColliderState"
 msgstr "Unknown Standard Collider State '{0}' is specified for {1}."
 
+msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownColliderState:hint"
+msgstr "This is typically a bug of Avatar Optimizer. Please report this issue with the message above."
+
 msgid "ComponentInfos:VRCAvatarDescriptor:warning:NoMeshInEyelidsSkinnedMesh"
 msgstr "No Mesh is specified for Eyelids SkinnedMesh."
+
+msgid "ComponentInfos:VRCAvatarDescriptor:warning:NoMeshInEyelidsSkinnedMesh:hint"
+msgstr ""
+"If you want to animate eyelids with BlendShapes, you should specify SkinnedMeshRenderer having Mesh to Avatar Descriptor.\n"
+"If it's intended to not animate eyelids with BlendShapes, you should change eyelids type to other type like None."
 
 msgid "ComponentInfos:VRCAvatarDescriptor:warning:NoEyelidsSkinnedMesh"
 msgstr "No Skinned Mesh Renderer is specified for Eyelids."
 
+msgid "ComponentInfos:VRCAvatarDescriptor:warning:NoEyelidsSkinnedMesh:hint"
+msgstr ""
+"If you want to animate eyelids with BlendShapes, you should specify SkinnedMeshRenderer to Avatar Descriptor.\n"
+"If it's intended to not animate eyelids with BlendShapes, you should change eyelids type to other type like None."
+
 msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownEyelidType"
 msgstr "Unknown Eyelid Type '{0}' is specified."
+
+msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownEyelidType:description"
+msgstr "This is typically a bug of Avatar Optimizer. Please report this issue with the message above."
 
 #endregion
 
@@ -733,12 +763,6 @@ msgstr "Animator component not found on Avatar Root"
 #endregion
 
 #region MeshInfo2
-
-msgid "MeshInfo2:error:MeshNotReadable"
-msgstr "The Mesh is not readable so unable to process mesh in Play Mode."
-
-msgid "MeshInfo2:error:MeshNotReadable:description"
-msgstr "Please set Read/Write Enabled to true in the import settings of the mesh."
 
 msgid "MeshInfo2:warning:multiPassRendering"
 msgstr ""

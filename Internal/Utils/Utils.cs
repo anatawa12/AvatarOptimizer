@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.InteropServices;
+using Unity.Collections.LowLevel.Unsafe;
 using UnityEditor;
 using UnityEngine;
 
@@ -194,5 +197,173 @@ namespace Anatawa12.AvatarOptimizer
 
         public static EqualsHashSet<T> ToEqualsHashSet<T>(this HashSet<T> hashSet) =>
             new EqualsHashSet<T>(hashSet);
+
+        public static Transform? CommonRoot(IEnumerable<Transform> transforms)
+        {
+            using var enumerator = transforms.GetEnumerator();
+
+            if (!enumerator.MoveNext()) return null;
+            var commonRoot = enumerator.Current!;
+            if (!enumerator.MoveNext()) return commonRoot;
+
+            // child => parent
+            var commonParents = Ancestors(commonRoot).ToArray();
+
+            while (enumerator.MoveNext())
+            {
+                var gameObject = enumerator.Current!;
+
+                var span = Ancestors(gameObject);
+
+                var minLength = Math.Min(commonParents.Length, span.Length);
+
+                for (var i = 0; i < minLength; i++)
+                {
+                    if (commonParents[i] != span[i])
+                    {
+                        commonParents = commonParents[..i];
+                        break;
+                    }
+                }
+            }
+
+            if (commonParents.Length == 0) return null;
+            return commonParents[^1];
+            
+            ReadOnlySpan<Transform> Ancestors(Transform transform)
+            {
+                var ancestors = transform.ParentEnumerable(includeMe: true).ToArray();
+                Array.Reverse(ancestors);
+                return ancestors.AsSpan();
+            }
+        }
+  
+        public static bool IsPowerOfTwo(this int x) => x != 0 && (x & (x - 1)) == 0;
+
+        public static float MinPowerOfTwoGreaterThan(float x)
+        {
+            if (x <= 0) throw new ArgumentOutOfRangeException(nameof(x), x, "x must be positive");
+
+            if (x < 1)
+            {
+                var r = 1f;
+                while (r / 2 > x) r /= 2;
+                return r;
+            }
+            else
+            {
+                var r = 1f;
+                while (r < x) r *= 2;
+                return r;
+            }
+        }
+
+        public static int LeastCommonMultiple(params int[] numbers) => numbers.Length == 0 ? 0 : numbers.Aggregate(LeastCommonMultiple);
+
+        public static int LeastCommonMultiple(int a, int b)
+        {
+            if (a == 0 || b == 0) return 0;
+            return Math.Abs(a * b) / GreatestCommonDivisor(a, b);
+        }
+
+        public static int GreatestCommonDivisor(int a, int b)
+        {
+            if (a == 0) return b;
+            if (b == 0) return a;
+            while (b != 0)
+            {
+                var t = b;
+                b = a % b;
+                a = t;
+            }
+
+            return a;
+        }
+
+        public static int MostSignificantBit(int x) => MostSignificantBit((uint)x);
+
+        public static int MostSignificantBit(uint x)
+        {
+            // https://github.com/microsoft/mimalloc/blob/fab7329c7a3eee64e455e0a7aea7566eb2038cf3/src/page-queue.c#L67-L80
+            
+            // de Bruijn multiplication, see <http://supertech.csail.mit.edu/papers/debruijn.pdf>
+            ReadOnlySpan<byte> debruijn = new byte[]{
+                31,  0, 22,  1, 28, 23, 18,  2, 29, 26, 24, 10, 19,  7,  3, 12,
+                30, 21, 27, 17, 25,  9,  6, 11, 20, 16,  8,  5, 15,  4, 14, 13,
+            };
+            
+            x |= x >> 1;
+            x |= x >> 2;
+            x |= x >> 4;
+            x |= x >> 8;
+            x |= x >> 16;
+            x++;
+            return debruijn[(int)((x * 0x076be629) >> 27)];
+        }
+
+        /// <summary>
+        /// Fast compare of <see cref="Color32"/> array.
+        ///
+        /// This is semantically equivalent to <c>a.SequenceEqual(b)</c> but much faster (about 80x faster).
+        ///
+        /// Compared to <c>a.SequenceEqual(b, new Color32Comparator())</c>, this is about 10x faster.
+        /// </summary>
+        /// <param name="a">first array</param>
+        /// <param name="b">second array</param>
+        /// <returns>whether two arrays are equal</returns>
+        public static bool Color32ArrayEquals(ReadOnlySpan<Color32> a, ReadOnlySpan<Color32> b)
+        {
+            if (Color32ArrayEqualsDataHolder.SafeToUseFastImplementation)
+            {
+                var aSlice = MemoryMarshal.Cast<Color32, int>(a);
+                var bSlice = MemoryMarshal.Cast<Color32, int>(b);
+                if (aSlice.Length != bSlice.Length) return false;
+                for (var i = 0; i < aSlice.Length; i++)
+                    if (aSlice[i] != bSlice[i])
+                        return false;
+                return true;
+            }
+            else
+            {
+                for (var i = 0; i < a.Length; i++)
+                    if (!Color32Equals(a[i], b[i]))
+                        return false;
+                return true;
+
+                bool Color32Equals(Color32 x, Color32 y) => x.r == y.r && x.g == y.g && x.b == y.b && x.a == y.a;
+            }
+        }
+
+        private static class Color32ArrayEqualsDataHolder
+        {
+            public static readonly bool SafeToUseFastImplementation;
+
+            static Color32ArrayEqualsDataHolder()
+            {
+                SafeToUseFastImplementation = ComputeSafeToUseFastImplementation();
+
+                bool ComputeSafeToUseFastImplementation()
+                {
+                    if (UnsafeUtility.SizeOf<Color32>() != sizeof(int)) return false;
+                    if ((typeof(Color32).Attributes & TypeAttributes.ExplicitLayout) == 0) return false;
+                    var field = typeof(Color32).GetField("rgba", BindingFlags.NonPublic | BindingFlags.Instance);
+                    if (field == null) return false;
+                    if (field.GetCustomAttribute<FieldOffsetAttribute>()?.Value != 0) return false;
+                    return true;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Fast compare of <see cref="Color32"/> array.
+        ///
+        /// This is semantically equivalent to <c>a.SequenceEqual(b)</c> but much faster (about 80x faster).
+        ///
+        /// Compared to <c>a.SequenceEqual(b, new Color32Comparator())</c>, this is about 10x faster.
+        /// </summary>
+        /// <param name="a">first array</param>
+        /// <param name="b">second array</param>
+        /// <returns>whether two arrays are equal</returns>
+        public static bool Color32ArrayEquals(Color32[] a, Color32[] b) => Color32ArrayEquals(a.AsSpan(), b.AsSpan());
     }
 }

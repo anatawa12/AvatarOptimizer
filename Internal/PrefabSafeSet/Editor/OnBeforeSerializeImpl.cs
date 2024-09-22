@@ -6,10 +6,10 @@ using Object = UnityEngine.Object;
 namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 {
     [UsedImplicitly] // used by reflection
-    internal static class OnBeforeSerializeImpl<T, TLayer> where TLayer : PrefabLayer<T>, new()
+    internal static class OnBeforeSerializeImpl<T>
     {
         [UsedImplicitly] // used by reflection
-        public static void Impl(PrefabSafeSet<T, TLayer> self)
+        public static void Impl(PrefabSafeSet<T> self)
         {
             // fakeSlot must not be modified,
             self.fakeSlot = default;
@@ -29,7 +29,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             GeneralCheck(self, nestCount);
         }
 
-        private static void GeneralCheck(PrefabSafeSet<T, TLayer> self, int nestCount)
+        private static void GeneralCheck(PrefabSafeSet<T> self, int nestCount)
         {
             // first, replace missing with null
             if (typeof(Object).IsAssignableFrom(typeof(T)))
@@ -71,7 +71,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                 if (nestCount < self.prefabLayers.Length)
                 {
                     var currentLayer = self.prefabLayers[nestCount - 1] ??
-                                       (self.prefabLayers[nestCount - 1] = new TLayer());
+                                       (self.prefabLayers[nestCount - 1] = new PrefabLayer<T>());
                     DistinctCheckArray(ref currentLayer.additions, ref self.CheckedCurrentLayerAdditions,
                         PrefabSafeSetRuntimeUtil.IsNotNull);
                     DistinctCheckArray(ref currentLayer.removes, ref self.CheckedCurrentLayerRemoves,
@@ -80,7 +80,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             }
         }
 
-        private static void ApplyModificationsToLatestLayer(PrefabSafeSet<T,TLayer> self, int nestCount)
+        private static void ApplyModificationsToLatestLayer(PrefabSafeSet<T> self, int nestCount)
         {
             // after apply modifications?: apply to latest layer
             if (nestCount == 0)
@@ -94,7 +94,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                 }
 
                 self.mainSet = result.ToArray();
-                self.prefabLayers = Array.Empty<TLayer>();
+                self.prefabLayers = Array.Empty<PrefabLayer<T>>();
             }
             else
             {

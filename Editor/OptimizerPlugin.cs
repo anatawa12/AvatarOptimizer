@@ -21,9 +21,9 @@ namespace Anatawa12.AvatarOptimizer.ndmf
                 {
                     // we skip check for update 
                     var components = ctx.AvatarRootObject.GetComponentInChildren<AvatarTagComponent>(true);
-                    if (components && CheckForUpdate.OutOfDate)
+                    if (components && CheckForUpdate.Checker.OutOfDate && CheckForUpdate.MenuItems.CheckForUpdateEnabled)
                         BuildLog.LogInfo("CheckForUpdate:out-of-date",
-                            CheckForUpdate.LatestVersionName!, CheckForUpdate.CurrentVersionName);
+                            CheckForUpdate.Checker.LatestVersionName, CheckForUpdate.Checker.CurrentVersionName);
                 })
                 .Then.Run(Processors.UnusedBonesByReferencesToolEarlyProcessor.Instance)
                 .Then.Run("Early: MakeChildren",
@@ -54,6 +54,7 @@ namespace Anatawa12.AvatarOptimizer.ndmf
                             })
                         .Then.Run("Validation", (ctx) => ComponentValidation.ValidateAll(ctx.AvatarRootObject))
                         .Then.Run(Processors.TraceAndOptimizes.LoadTraceAndOptimizeConfiguration.Instance)
+                        .Then.Run(Processors.DupliacteAssets.Instance)
                         .Then.Run(Processors.ParseAnimator.Instance)
                         .Then.Run(Processors.TraceAndOptimizes.AddRemoveEmptySubMesh.Instance)
                         .Then.Run(Processors.TraceAndOptimizes.AutoFreezeBlendShape.Instance)
@@ -62,6 +63,9 @@ namespace Anatawa12.AvatarOptimizer.ndmf
                         .Then.Run(Processors.MergePhysBoneProcessor.Instance)
 #endif
                         .Then.Run(Processors.EditSkinnedMeshComponentProcessor.Instance)
+                        .PreviewingWith(EditModePreview.RemoveMeshByMaskRenderFilter.Instance)
+                        .PreviewingWith(EditModePreview.RemoveMeshByBlendShapeRenderFilter.Instance)
+                        .PreviewingWith(EditModePreview.RemoveMeshInBoxRenderFilter.Instance)
                         .Then.Run("MakeChildrenProcessor",
                             ctx => new Processors.MakeChildrenProcessor(early: false).Process(ctx)
                         )
@@ -74,12 +78,14 @@ namespace Anatawa12.AvatarOptimizer.ndmf
                         .Then.Run(Processors.TraceAndOptimizes.MaterialUnusedPropertyRemove.Instance)
                         .Then.Run(Processors.MergeBoneProcessor.Instance)
                         .Then.Run(Processors.RemoveZeroSizedPolygonProcessor.Instance)
+                        .Then.Run(Processors.TraceAndOptimizes.OptimizeTexture.Instance)
                         .Then.Run(Processors.AnimatorOptimizer.RemoveInvalidProperties.Instance)
                         ;
                 });
 
             // animator optimizer is written in newer C# so requires 2021.3 or newer 
             mainSequence.Run(Processors.AnimatorOptimizer.InitializeAnimatorOptimizer.Instance)
+                .Then.Run(Processors.AnimatorOptimizer.AnyStateToEntryExit.Instance)
 #if AAO_VRCSDK3_AVATARS
                 // EntryExit to BlendTree optimization heavily depends on VRChat's behavior
                 .Then.Run(Processors.AnimatorOptimizer.EntryExitToBlendTree.Instance)
