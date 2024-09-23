@@ -258,7 +258,8 @@ namespace Anatawa12.AvatarOptimizer
                     var newPlayAudio = DefaultDeepClone(playAudio);
                     newPlayAudio.name = playAudio.name + " (rebased)";
                     if (!HasChanged()) newPlayAudio = playAudio;
-                    newPlayAudio.SourcePath = _mapping.MapPath(playAudio.SourcePath, typeof(AudioSource));
+                    if (playAudio.SourcePath != null)
+                        newPlayAudio.SourcePath = _mapping.MapPath(playAudio.SourcePath, typeof(AudioSource));
                     return newPlayAudio;
                 }
             }

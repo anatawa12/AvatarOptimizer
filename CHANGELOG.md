@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Null Reference Exception with newly created VRCAnimatorPlayAudio `#1199`
 
 ### Security
 
