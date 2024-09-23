@@ -132,6 +132,12 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
         {
             collector.MarkEntrypoint();
 
+            // Some particle system module refers local scale instead of hierarchy / global scale
+            // so we need to keep parent transform.
+            // TODO: it might be better to check if the particle system is in local space or not.
+            // TODO: it might be better to provide API to keep local scale.
+            collector.AddDependency(component.transform.parent);
+
             if (component.main.simulationSpace == ParticleSystemSimulationSpace.Custom) // not animated
                 collector.AddDependency(component.main.customSimulationSpace);
 
