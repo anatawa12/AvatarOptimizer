@@ -16,11 +16,14 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Null Reference Exception with newly created VRCAnimatorPlayAudio `#1199`
-- Particle System that uses local scale will be broken `#1197`
-- Avatars with Visame Skinned Mesh disabled will not able to upload `#1202`
 
 ### Security
+
+## [1.7.13-beta.1] - 2024-09-23
+### Fixed
+- Null Reference Exception with newly created VRCAnimatorPlayAudio [`#1199`](https://github.com/anatawa12/AvatarOptimizer/pull/1199)
+- Particle System that uses local scale will be broken [`#1197`](https://github.com/anatawa12/AvatarOptimizer/pull/1197)
+- Avatars with Visame Skinned Mesh disabled will not able to upload [`#1202`](https://github.com/anatawa12/AvatarOptimizer/pull/1202)
 
 ## [1.7.12] - 2024-08-27
 ## [1.7.12-beta.3] - 2024-08-25
@@ -1510,7 +1513,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.12...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.13-beta.1...HEAD
+[1.7.13-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.12...v1.7.13-beta.1
 [1.7.12]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.12-beta.3...v1.7.12
 [1.7.12-beta.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.12-beta.2...v1.7.12-beta.3
 [1.7.12-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.12-beta.1...v1.7.12-beta.2
