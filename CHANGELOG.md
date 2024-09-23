@@ -53,6 +53,9 @@ The format is based on [Keep a Changelog].
   - For 2019 users, please use 1.7.x.
 
 ### Fixed
+- Null Reference Exception with newly created VRCAnimatorPlayAudio `#1199`
+- Particle System that uses local scale will be broken `#1197`
+- Avatars with Visame Skinned Mesh disabled will not able to upload `#1202`
 
 ### Security
 
