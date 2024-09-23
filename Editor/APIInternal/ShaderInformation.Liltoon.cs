@@ -698,7 +698,7 @@ internal class LiltoonShaderInformation : ShaderInformation
         void LIL_GET_EMIMASK_WithMat(string textureName, UsingUVChannels uvChannel, Matrix2x3? matrix)
         {
             LIL_SAMPLE_2D_WithMat(textureName, "_MainTex", uvChannel,
-                Multiply(matrix, STAndScrollRotateToMatrix($"{textureName}_ST", $"{textureName}_ScrollRotate")));
+                Multiply(STAndScrollRotateToMatrix($"{textureName}_ST", $"{textureName}_ScrollRotate"), matrix));
         }
 
         void LIL_GET_EMIMASK(string textureName, UsingUVChannels uvChannel)
@@ -758,9 +758,9 @@ internal class LiltoonShaderInformation : ShaderInformation
 
             var result = stMatrix;
 
-            result *= Matrix2x3.Translate(-0.5f, -0.5f);
-            result *= Matrix2x3.Rotate(staticAngle);
-            result *= Matrix2x3.Translate(0.5f, 0.5f);
+            result = Matrix2x3.Translate(-0.5f, -0.5f) * result;
+            result = Matrix2x3.Rotate(staticAngle) * result;
+            result = Matrix2x3.Translate(0.5f, 0.5f) * result;
 
             return result;
         }
