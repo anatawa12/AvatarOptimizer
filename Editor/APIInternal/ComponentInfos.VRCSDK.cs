@@ -136,18 +136,29 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
                 case VRC_AvatarDescriptor.LipSyncStyle.VisemeBlendShape:
                 {
                     var info = mappingSource.GetMappedComponent(component.VisemeSkinnedMesh);
-                    component.VisemeSkinnedMesh = info.MappedComponent;
-                    var removed = false;
-                    foreach (ref var shapeName in component.VisemeBlendShapes.AsSpan())
+
+                    if (info.MappedComponent == null)
                     {
-                        if (info.TryMapProperty($"blendShape.{shapeName}", out var mapped)
-                            && mapped.Component == info.MappedComponent)
-                            shapeName = ParseBlendShapeProperty(mapped.Property);
-                        else
-                            removed = true;
+                        component.VisemeSkinnedMesh = null;
+                        component.lipSync = VRC_AvatarDescriptor.LipSyncStyle.VisemeParameterOnly;
                     }
-                    if (removed)
-                        BuildLog.LogError("ApplyObjectMapping:VRCAvatarDescriptor:viseme BlendShape Removed");
+                    else
+                    {
+                        component.VisemeSkinnedMesh = info.MappedComponent;
+                        var removed = false;
+                        foreach (ref var shapeName in component.VisemeBlendShapes.AsSpan())
+                        {
+                            if (info.TryMapProperty($"blendShape.{shapeName}", out var mapped)
+                                && mapped.Component == info.MappedComponent)
+                                shapeName = ParseBlendShapeProperty(mapped.Property);
+                            else
+                                removed = true;
+                        }
+
+                        if (removed)
+                            BuildLog.LogError("ApplyObjectMapping:VRCAvatarDescriptor:viseme BlendShape Removed");
+                    }
+
                     break;
                 }
                 case VRC_AvatarDescriptor.LipSyncStyle.VisemeParameterOnly:
@@ -286,19 +297,28 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
                     case VRCAvatarDescriptor.EyelidType.Blendshapes:
                     {
                         var info = mappingSource.GetMappedComponent(component.customEyeLookSettings.eyelidsSkinnedMesh);
-                        component.customEyeLookSettings.eyelidsSkinnedMesh = info.MappedComponent;
-                        var removed = false;
-                        foreach (ref var eyelidsBlendshape in component.customEyeLookSettings.eyelidsBlendshapes.AsSpan())
+                        if (info.MappedComponent == null)
                         {
-                            if (info.TryMapProperty(VProp.BlendShapeIndex(eyelidsBlendshape), out var mapped)
-                                && mapped.Component == info.MappedComponent)
-                                eyelidsBlendshape = VProp.ParseBlendShapeIndex(mapped.Property);
-                            else
-                                removed = true;
+                            component.customEyeLookSettings.eyelidsSkinnedMesh = null;
+                            component.customEyeLookSettings.eyelidType = VRCAvatarDescriptor.EyelidType.None;
                         }
-                        
-                        if (removed)
-                            BuildLog.LogError("ApplyObjectMapping:VRCAvatarDescriptor:eyelids BlendShape Removed");
+                        else
+                        {
+                            component.customEyeLookSettings.eyelidsSkinnedMesh = info.MappedComponent;
+                            var removed = false;
+                            foreach (ref var eyelidsBlendshape in component.customEyeLookSettings.eyelidsBlendshapes
+                                         .AsSpan())
+                            {
+                                if (info.TryMapProperty(VProp.BlendShapeIndex(eyelidsBlendshape), out var mapped)
+                                    && mapped.Component == info.MappedComponent)
+                                    eyelidsBlendshape = VProp.ParseBlendShapeIndex(mapped.Property);
+                                else
+                                    removed = true;
+                            }
+
+                            if (removed)
+                                BuildLog.LogError("ApplyObjectMapping:VRCAvatarDescriptor:eyelids BlendShape Removed");
+                        }
                     }
                         break;
                     default:
