@@ -225,7 +225,7 @@ namespace Anatawa12.AvatarOptimizer.API
             string textureMaterialPropertyName,
             SamplerStateInformation samplerState,
             UsingUVChannels uvChannels,
-            Matrix4x4? uvMatrix);
+            Matrix2x3? uvMatrix);
     }
 
     /// <summary>
@@ -363,5 +363,104 @@ namespace Anatawa12.AvatarOptimizer.API
             if (EQ(left, right)) return left;
             return Unknown;
         }
+    }
+
+    [PublicAPI]
+    public readonly struct Matrix2x3 : IEquatable<Matrix2x3>
+    {
+        private readonly float m00;
+        private readonly float m01;
+        private readonly float m02;
+        private readonly float m10;
+        private readonly float m11;
+        private readonly float m12;
+
+        [PublicAPI] public float M00 => m00;
+        [PublicAPI] public float M01 => m01;
+        [PublicAPI] public float M02 => m02;
+        [PublicAPI] public float M10 => m10;
+        [PublicAPI] public float M11 => m11;
+        [PublicAPI] public float M12 => m12;
+
+        [PublicAPI] public static Matrix2x3 Identity { get; } = new(1, 0, 0, 0, 1, 0);
+
+        [PublicAPI]
+        public Matrix2x3(float m00, float m01, float m02, float m10, float m11, float m12)
+        {
+            this.m00 = m00;
+            this.m01 = m01;
+            this.m02 = m02;
+            this.m10 = m10;
+            this.m11 = m11;
+            this.m12 = m12;
+        }
+
+        [PublicAPI]
+        public static Matrix2x3 operator *(Matrix2x3 a, Matrix2x3 b)
+        {
+            var m00 = a.m00 * b.m00 + a.m01 * b.m10;
+            var m01 = a.m00 * b.m01 + a.m01 * b.m11;
+            var m02 = a.m00 * b.m02 + a.m01 * b.m12 + a.m02;
+            var m10 = a.m10 * b.m00 + a.m11 * b.m10;
+            var m11 = a.m10 * b.m01 + a.m11 * b.m11;
+            var m12 = a.m10 * b.m02 + a.m11 * b.m12 + a.m12;
+
+            return new Matrix2x3(m00, m01, m02, m10, m11, m12);
+        }
+
+        [PublicAPI]
+        public Vector2 TransformPoint(Vector2 point) =>
+            new(m00 * point.x + m01 * point.y + m02, m10 * point.x + m11 * point.y + m12);
+
+        [PublicAPI]
+        public static Matrix2x3 NewScaleOffset(Vector4 scaleOffset)
+        {
+            var scaleX = scaleOffset.x;
+            var scaleY = scaleOffset.y;
+            var offsetX = scaleOffset.z;
+            var offsetY = scaleOffset.w;
+            return new Matrix2x3(scaleX, 0, offsetX, 0, scaleY, offsetY);
+        }
+
+        [PublicAPI]
+        public static Matrix2x3 Scale(float scaleX, float scaleY) => new(scaleX, 0, 0, 0, scaleY, 0);
+
+        [PublicAPI]
+        public static Matrix2x3 Scale(Vector2 scale) => Scale(scale.x, scale.y);
+
+        [PublicAPI]
+        public static Matrix2x3 Translate(float offsetX, float offsetY) => new(1, 0, offsetX, 0, 1, offsetY);
+
+        [PublicAPI]
+        public static Matrix2x3 Translate(Vector2 offset) => Translate(offset.x, offset.y);
+
+        [PublicAPI]
+        public static Matrix2x3 Rotate(float angle)
+        {
+            var cos = Mathf.Cos(angle);
+            var sin = Mathf.Sin(angle);
+            return new Matrix2x3(cos, -sin, 0, sin, cos, 0);
+        }
+
+        [PublicAPI]
+        public bool Equals(Matrix2x3 other) =>
+            m00.Equals(other.m00) && m01.Equals(other.m01) && m02.Equals(other.m02) &&
+            m10.Equals(other.m10) && m11.Equals(other.m11) && m12.Equals(other.m12);
+
+        [PublicAPI]
+        public override bool Equals(object? obj) => obj is Matrix2x3 other && Equals(other);
+
+        [PublicAPI]
+        public override int GetHashCode() => HashCode.Combine(m00, m01, m02, m10, m11, m12);
+
+        [PublicAPI]
+        public static bool operator ==(Matrix2x3 left, Matrix2x3 right) => left.Equals(right);
+
+        [PublicAPI]
+        public static bool operator !=(Matrix2x3 left, Matrix2x3 right) => !left.Equals(right);
+
+        [PublicAPI]
+        public override string ToString() =>
+            $"Matrix2x3({m00}, {m01}, {m02}, {m10}, {m11}, {m12})";
     }
 }
