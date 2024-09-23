@@ -434,7 +434,7 @@ internal struct OptimizeTextureImpl {
             string textureMaterialPropertyName, 
             SamplerStateInformation samplerState,
             UsingUVChannels uvChannels, 
-            UnityEngine.Matrix4x4? uvMatrix)
+            Matrix2x3? uvMatrix)
         {
             if (_textureUsageInformations == null) return;
             UVChannel uvChannel;
@@ -472,7 +472,7 @@ internal struct OptimizeTextureImpl {
                     return;
             }
 
-            if (uvMatrix != Matrix4x4.identity && uvChannel != UVChannel.NonMeshRelated) {
+            if (uvMatrix != Matrix2x3.Identity && uvChannel != UVChannel.NonMeshRelated) {
                 _textureUsageInformations = null;
                 return;
             }
