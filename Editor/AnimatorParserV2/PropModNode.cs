@@ -148,6 +148,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             where T : notnull
             where TLayer : ILayer<T>
         {
+            var canAdditive = typeof(T) == typeof(float);
             var allPossibleValues = new HashSet<T>();
 
             foreach (var layer in layersReversed)
@@ -158,12 +159,27 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                     case AnimatorWeightState.EitherZeroOrOne:
                         if (!(layer.Node.Value.PossibleValues is T[] otherValues)) return ValueInfo<T>.Variable;
 
-                        allPossibleValues.UnionWith(otherValues);
-
-                        if (layer.IsAlwaysOverride())
+                        switch (layer.BlendingMode)
                         {
-                            // the layer is always applied at the highest property.
-                            return new ValueInfo<T>(allPossibleValues.ToArray());
+                            case AnimatorLayerBlendingMode.Additive:
+                                // ObjectReference will work as override even with additive mode.
+                                if (!canAdditive) goto case AnimatorLayerBlendingMode.Override;
+
+                                // additive with changing value: value cannot be determined 
+                                if (otherValues.Length != 1) return ValueInfo<T>.Variable;
+                                break;
+                            case AnimatorLayerBlendingMode.Override:
+                                allPossibleValues.UnionWith(otherValues);
+
+                                if (layer.IsAlwaysOverride())
+                                {
+                                    // the layer is always applied at the highest property.
+                                    return new ValueInfo<T>(allPossibleValues.ToArray());
+                                }
+
+                                break;
+                            default:
+                                throw new ArgumentOutOfRangeException();
                         }
 
                         break;
