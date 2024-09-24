@@ -103,6 +103,26 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         {
             var nodes = new ImmutableNodeContainer();
 
+            AnimationClip? additiveReferenceClip;
+            // in seconds
+            float additiveReferenceFrame;
+
+            using (var serialized = new SerializedObject(clip))
+            {
+                if (serialized.FindProperty("m_AnimationClipSettings.m_HasAdditiveReferencePose").boolValue)
+                {
+                    additiveReferenceClip = (AnimationClip?)serialized
+                        .FindProperty("m_AnimationClipSettings.m_AdditiveReferencePoseClip").objectReferenceValue;
+                    additiveReferenceFrame = serialized
+                        .FindProperty("m_AnimationClipSettings.m_AdditiveReferencePoseTime").floatValue;
+                }
+                else
+                {
+                    additiveReferenceClip = null;
+                    additiveReferenceFrame = 0;
+                }
+            }
+
             foreach (var binding in AnimationUtility.GetCurveBindings(clip))
             {
                 var obj = AnimationUtility.GetAnimatedObject(root, binding);
@@ -117,7 +137,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 if (binding.type == typeof(Behaviour) && propertyName == "m_Enabled")
                     propertyName = Props.EnabledFor(obj);
 
-                var node = FloatAnimationCurveNode.Create(clip, binding);
+                var node = FloatAnimationCurveNode.Create(clip, binding, additiveReferenceClip, additiveReferenceFrame);
                 if (node == null) continue;
                 nodes.Set(componentOrGameObject, propertyName, node);
             }
