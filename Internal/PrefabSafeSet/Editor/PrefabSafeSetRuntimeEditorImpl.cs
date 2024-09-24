@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using JetBrains.Annotations;
+using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
@@ -118,6 +119,12 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                 // resize array.               
                 PrefabSafeSetRuntimeUtil.ResizeArray(ref self.prefabLayers, nestCount);
             }
+        }
+
+        [UsedImplicitly] // used by reflection
+        public static void OnValidate(PrefabSafeSet<T> self, Component component)
+        {
+            var nestCount = PrefabSafeSetUtil.PrefabNestCount(component);
         }
     }
 }

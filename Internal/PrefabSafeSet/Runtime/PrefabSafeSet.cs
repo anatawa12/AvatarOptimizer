@@ -50,6 +50,12 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             var implType = OnBeforeSerializeImplType.MakeGenericType(tType);
             return implType.GetMethod("OnBeforeSerialize", BindingFlags.Public | BindingFlags.Static, null, new[] { setType }, null)!;
         }
+
+        public static MethodInfo GetOnValidateCallbackMethod(Type tType, Type setType)
+        {
+            var implType = OnBeforeSerializeImplType.MakeGenericType(tType);
+            return implType.GetMethod("OnValidate", BindingFlags.Public | BindingFlags.Static, null, new[] { setType, typeof(Component) }, null)!;
+        } 
 #endif
     }
 
@@ -82,6 +88,8 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
         internal T[]? CheckedCurrentLayerAdditions;
         private static MethodInfo _onBeforeSerializeCallback = PrefabSafeSetRuntimeUtil
             .GetOnBeforeSerializeCallbackMethod(typeof(T), typeof(PrefabSafeSet<T>));
+        private static MethodInfo _onValidateCallbackMethod = PrefabSafeSetRuntimeUtil
+            .GetOnValidateCallbackMethod(typeof(T), typeof(PrefabSafeSet<T>));
 #endif
 
         public PrefabSafeSet(Object outerObject)
@@ -246,6 +254,13 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
         void ISerializationCallbackReceiver.OnAfterDeserialize()
         {
             // there's nothing to do after deserialization.
+        }
+
+        public void OnValidate(Component component)
+        {
+#if UNITY_EDITOR
+            _onValidateCallbackMethod.Invoke(null, new object[] {this, component});
+#endif
         }
     }
 
