@@ -21,6 +21,7 @@ The format is based on [Keep a Changelog].
 ### Fixed
 - Texture Packing which resolves to the white texture would break the Unity Editor `#1193`
 - Performance issues with preview system `#1195`
+- Avatar Optimizer does not support `Additive Reference Pose` `#1208`
 
 ### Security
 
