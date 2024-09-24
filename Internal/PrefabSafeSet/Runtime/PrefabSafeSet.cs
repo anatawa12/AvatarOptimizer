@@ -38,7 +38,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
                 OnBeforeSerializeImplType =
-                    assembly.GetType("Anatawa12.AvatarOptimizer.PrefabSafeSet.OnBeforeSerializeImpl`1");
+                    assembly.GetType("Anatawa12.AvatarOptimizer.PrefabSafeSet.PrefabSafeSetRuntimeEditorImpl`1");
                 if (OnBeforeSerializeImplType != null) return;
             }
             if (OnBeforeSerializeImplType == null)
@@ -48,7 +48,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
         public static MethodInfo GetOnBeforeSerializeCallbackMethod(Type tType, Type setType)
         {
             var implType = OnBeforeSerializeImplType.MakeGenericType(tType);
-            return implType.GetMethod("Impl", BindingFlags.Public | BindingFlags.Static, null, new[] { setType }, null)!;
+            return implType.GetMethod("OnBeforeSerialize", BindingFlags.Public | BindingFlags.Static, null, new[] { setType }, null)!;
         }
 #endif
     }

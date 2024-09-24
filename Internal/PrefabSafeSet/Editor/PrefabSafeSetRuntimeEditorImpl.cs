@@ -6,10 +6,10 @@ using Object = UnityEngine.Object;
 namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 {
     [UsedImplicitly] // used by reflection
-    internal static class OnBeforeSerializeImpl<T>
+    internal static class PrefabSafeSetRuntimeEditorImpl<T>
     {
         [UsedImplicitly] // used by reflection
-        public static void Impl(PrefabSafeSet<T> self)
+        public static void OnBeforeSerialize(PrefabSafeSet<T> self)
         {
             // fakeSlot must not be modified,
             self.fakeSlot = default;
