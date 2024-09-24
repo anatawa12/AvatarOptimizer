@@ -35,7 +35,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             LayerIndex = layerIndex;
             Node = node;
         }
-        
+
         public PlayableLayerNodeInfo(AnimatorControllerPropModNode<T> node, int layerIndex)
         {
             Weight = AnimatorWeightState.AlwaysOne;
