@@ -25,6 +25,10 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             var nestCount = PrefabNestCount(component, getPrefabSafeSet);
             prefabSafeSet.NestCount = nestCount;
 
+            var isInstance = PrefabUtility.IsPartOfPrefabInstance(component);
+            var isAsset = PrefabUtility.IsPartOfPrefabAsset(component);
+            Debug.Log($"OnValidate: {nestCount} '{component.name}' {isInstance} {isAsset}");
+
             // https://github.com/anatawa12/AvatarOptimizer/issues/52
             // to avoid unnecessary modifications, do not resize array.
 
@@ -71,19 +75,16 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                 }
             }
 
-            void DistinctCheckArray(ref T[] source, ref T[]? checkedArray, Func<T, bool> filter)
+            void DistinctCheckArray(ref T[] source, Func<T, bool> filter)
             {
-                if (checkedArray == source && source.All(filter)) return;
                 var array = source.Distinct().Where(filter).ToArray();
                 if (array.Length != source.Length)
                     source = array;
-                checkedArray = source;
             }
 
             if (nestCount == 0)
             {
-                DistinctCheckArray(ref self.mainSet, ref self.CheckedCurrentLayerAdditions, 
-                    PrefabSafeSetRuntimeUtil.IsNotNull);
+                DistinctCheckArray(ref self.mainSet, PrefabSafeSetRuntimeUtil.IsNotNull);
             }
             else
             {
@@ -91,9 +92,8 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                 {
                     var currentLayer = self.prefabLayers[nestCount - 1] ??
                                        (self.prefabLayers[nestCount - 1] = new PrefabLayer<T>());
-                    DistinctCheckArray(ref currentLayer.additions, ref self.CheckedCurrentLayerAdditions,
-                        PrefabSafeSetRuntimeUtil.IsNotNull);
-                    DistinctCheckArray(ref currentLayer.removes, ref self.CheckedCurrentLayerRemoves,
+                    DistinctCheckArray(ref currentLayer.additions, PrefabSafeSetRuntimeUtil.IsNotNull);
+                    DistinctCheckArray(ref currentLayer.removes,
                         x => x.IsNotNull() && !currentLayer.additions.Contains(x));
                 }
             }

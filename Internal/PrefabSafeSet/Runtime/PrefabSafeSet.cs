@@ -86,9 +86,6 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
         [SerializeField, HideInInspector] internal T? fakeSlot;
         internal Object OuterObject;
         internal int? NestCount;
-
-        internal T[]? CheckedCurrentLayerRemoves;
-        internal T[]? CheckedCurrentLayerAdditions;
 #endif
 
         public PrefabSafeSet(Object outerObject)
