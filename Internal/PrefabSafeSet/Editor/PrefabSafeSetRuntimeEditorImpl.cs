@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using JetBrains.Annotations;
+using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -28,6 +29,44 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                 ApplyModificationsToLatestLayer(self, nestCount);
 
             GeneralCheck(self, nestCount);
+        }
+
+        [UsedImplicitly] // used by reflection
+        public static void OnValidate<TComponent>(TComponent component, Func<TComponent, PrefabSafeSet<T>> getPrefabSafeSet) where TComponent : Component
+        {
+            // Notes for implementation
+            // This implementation is based on the following assumptions:
+            // - OnValidate will be called when the component is added
+            // - OnValidate will be called when the component is maked prefab
+            //   - Both for New Prefab Asset and Prefab Instance on Scene
+            // - OnValidate will be called for prefab instance when the base prefab is changed
+
+            var prefabSafeSet = getPrefabSafeSet(component);
+            prefabSafeSet.OuterObject = component;
+            var nestCount = PrefabNestCount(component, getPrefabSafeSet);
+            prefabSafeSet.NestCount = nestCount;
+
+            // https://github.com/anatawa12/AvatarOptimizer/issues/52
+            // to avoid unnecessary modifications, do not resize array.
+
+            if (prefabSafeSet.prefabLayers.Length > nestCount)
+                ApplyModificationsToLatestLayer(prefabSafeSet, nestCount);
+
+            GeneralCheck(prefabSafeSet, nestCount);
+        }
+
+        private static int PrefabNestCount<TComponent>(TComponent component,
+            Func<TComponent, PrefabSafeSet<T>> getPrefabSafeSet) where TComponent : Component
+        {
+            var correspondingObject = PrefabUtility.GetCorrespondingObjectFromSource(component);
+            if (correspondingObject == null)
+                return 0;
+            var correspondingPrefabSafeSet = getPrefabSafeSet(correspondingObject);
+            correspondingPrefabSafeSet.OuterObject = correspondingObject;
+            if (correspondingPrefabSafeSet.NestCount is not { } nestCount)
+                correspondingPrefabSafeSet.NestCount =
+                    nestCount = PrefabNestCount(correspondingObject, getPrefabSafeSet);
+            return nestCount + 1;
         }
 
         private static void GeneralCheck(PrefabSafeSet<T> self, int nestCount)
@@ -119,12 +158,6 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                 // resize array.               
                 PrefabSafeSetRuntimeUtil.ResizeArray(ref self.prefabLayers, nestCount);
             }
-        }
-
-        [UsedImplicitly] // used by reflection
-        public static void OnValidate(PrefabSafeSet<T> self, Component component)
-        {
-            var nestCount = PrefabSafeSetUtil.PrefabNestCount(component);
         }
     }
 }

@@ -25,6 +25,11 @@ namespace Anatawa12.AvatarOptimizer
 
         internal HashSet<string> RemovingShapeKeys => shapeKeysSet.GetAsSet();
 
+        private void OnValidate()
+        {
+            PrefabSafeSet.PrefabSafeSet.OnValidate(this, x => x.shapeKeysSet);
+        }
+
         APIChecker _checker;
         
         /// <summary>

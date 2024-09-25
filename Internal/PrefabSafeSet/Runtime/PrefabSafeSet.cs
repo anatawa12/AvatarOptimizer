@@ -51,11 +51,12 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             return implType.GetMethod("OnBeforeSerialize", BindingFlags.Public | BindingFlags.Static, null, new[] { setType }, null)!;
         }
 
-        public static MethodInfo GetOnValidateCallbackMethod(Type tType, Type setType)
+        public static MethodInfo GetOnValidateCallbackMethod(Type tType, Type tComponentType)
         {
             var implType = OnBeforeSerializeImplType.MakeGenericType(tType);
-            return implType.GetMethod("OnValidate", BindingFlags.Public | BindingFlags.Static, null, new[] { setType, typeof(Component) }, null)!;
-        } 
+            return implType.GetMethod("OnValidate", BindingFlags.Public | BindingFlags.Static)!
+                .MakeGenericMethod(tComponentType);
+        }
 #endif
     }
 
@@ -83,13 +84,13 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 
 #if UNITY_EDITOR
         [SerializeField, HideInInspector] internal T? fakeSlot;
-        internal readonly Object OuterObject;
+        internal Object OuterObject;
+        internal int? NestCount;
+
         internal T[]? CheckedCurrentLayerRemoves;
         internal T[]? CheckedCurrentLayerAdditions;
         private static MethodInfo _onBeforeSerializeCallback = PrefabSafeSetRuntimeUtil
             .GetOnBeforeSerializeCallbackMethod(typeof(T), typeof(PrefabSafeSet<T>));
-        private static MethodInfo _onValidateCallbackMethod = PrefabSafeSetRuntimeUtil
-            .GetOnValidateCallbackMethod(typeof(T), typeof(PrefabSafeSet<T>));
 #endif
 
         public PrefabSafeSet(Object outerObject)
@@ -255,13 +256,23 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
         {
             // there's nothing to do after deserialization.
         }
+    }
 
-        public void OnValidate(Component component)
+    public static class PrefabSafeSet {
+        public static void OnValidate<T, TComponent>(TComponent component, Func<TComponent, PrefabSafeSet<T>> getPrefabSafeSet) where TComponent : Component
         {
 #if UNITY_EDITOR
-            _onValidateCallbackMethod.Invoke(null, new object[] {this, component});
+            ValidateMethodHolder<T, TComponent>.OnValidateCallbackMethodGeneric.Invoke(null,
+                new object[] { component, getPrefabSafeSet });
 #endif
         }
+#if UNITY_EDITOR
+        private static class ValidateMethodHolder<T, TComponent>
+        {
+            public static MethodInfo OnValidateCallbackMethodGeneric =
+                PrefabSafeSetRuntimeUtil.GetOnValidateCallbackMethod(typeof(T), typeof(TComponent));
+        }
+#endif
     }
 
     [Serializable]
