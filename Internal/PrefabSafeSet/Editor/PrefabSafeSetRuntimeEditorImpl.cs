@@ -34,6 +34,16 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             // https://github.com/anatawa12/AvatarOptimizer/issues/52
             // to avoid unnecessary modifications, do not resize array if layer count is smaller than expected
 
+            if (!shouldUsePrefabOnSceneLayer && prefabSafeSet.usingOnSceneLayer)
+            {
+                PrefabSafeSetRuntimeUtil.ResizeArray(ref prefabSafeSet.prefabLayers, maxLayerCount);
+                var currentLayer = prefabSafeSet.prefabLayers[maxLayerCount - 1];
+                currentLayer.additions = currentLayer.additions.Concat(prefabSafeSet.onSceneLayer.additions).ToArray();
+                currentLayer.removes = currentLayer.removes.Concat(prefabSafeSet.onSceneLayer.removes).ToArray();
+                prefabSafeSet.onSceneLayer = new PrefabLayer<T>();
+                prefabSafeSet.usingOnSceneLayer = false;
+            }
+
             if (prefabSafeSet.prefabLayers.Length > maxLayerCount)
                 ApplyModificationsToLatestLayer(prefabSafeSet, maxLayerCount, shouldUsePrefabOnSceneLayer);
 
