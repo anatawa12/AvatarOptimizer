@@ -25,10 +25,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             var nestCount = PrefabNestCount(component, getPrefabSafeSet);
             prefabSafeSet.NestCount = nestCount;
 
-            var isInstance = PrefabUtility.IsPartOfPrefabInstance(component);
-            var isAsset = PrefabUtility.IsPartOfPrefabAsset(component);
-
-            var shouldUsePrefabOnSceneLayer = isInstance && !isAsset;
+            var shouldUsePrefabOnSceneLayer = PrefabSafeSetUtil.ShouldUsePrefabOnSceneLayer(component);
             var maxLayerCount = shouldUsePrefabOnSceneLayer ? nestCount - 1 : nestCount;
 
             // https://github.com/anatawa12/AvatarOptimizer/issues/52

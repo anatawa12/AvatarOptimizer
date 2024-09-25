@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.Assertions;
 using Object = UnityEngine.Object;
@@ -17,6 +18,21 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                 nestCount++;
 
             return nestCount;
+        }
+
+        public static bool ShouldUsePrefabOnSceneLayer(Object instance)
+        {
+            var isInstance = PrefabUtility.IsPartOfPrefabInstance(instance);
+            var isAsset = PrefabUtility.IsPartOfPrefabAsset(instance);
+
+            var currentPrefabStage = PrefabStageUtility.GetCurrentPrefabStage();
+            if (currentPrefabStage != null)
+            {
+                var instanceGameObject = instance as GameObject ?? (instance as Component)?.gameObject;
+                isAsset |= currentPrefabStage.IsPartOfPrefabContents(instanceGameObject);
+            }
+
+            return isInstance && !isAsset;
         }
 
         public static bool IsNullOrMissing<T>(this T self, Object context) =>
