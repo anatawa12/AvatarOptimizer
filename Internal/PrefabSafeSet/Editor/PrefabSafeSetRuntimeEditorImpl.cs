@@ -11,27 +11,6 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
     internal static class PrefabSafeSetRuntimeEditorImpl<T>
     {
         [UsedImplicitly] // used by reflection
-        public static void OnBeforeSerialize(PrefabSafeSet<T> self)
-        {
-            // fakeSlot must not be modified,
-            self.fakeSlot = default;
-            if (!self.OuterObject) return;
-
-            // match prefabLayers count.
-            var nestCount = PrefabSafeSetUtil.PrefabNestCount(self.OuterObject);
-
-            if (self.prefabLayers.Length < nestCount)
-            {
-                // https://github.com/anatawa12/AvatarOptimizer/issues/52
-                // to avoid unnecessary modifications, resize is not performed later.
-            }
-            else if (self.prefabLayers.Length > nestCount)
-                ApplyModificationsToLatestLayer(self, nestCount);
-
-            GeneralCheck(self, nestCount);
-        }
-
-        [UsedImplicitly] // used by reflection
         public static void OnValidate<TComponent>(TComponent component, Func<TComponent, PrefabSafeSet<T>> getPrefabSafeSet) where TComponent : Component
         {
             // Notes for implementation

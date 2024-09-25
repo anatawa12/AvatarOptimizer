@@ -77,7 +77,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
     /// </summary>
     /// <typeparam name="T">Element Type</typeparam>
     [NotKeyable, Serializable]
-    public class PrefabSafeSet<T> : PrefabSafeSetApi<T>, ISerializationCallbackReceiver
+    public class PrefabSafeSet<T> : PrefabSafeSetApi<T>
     {
         [SerializeField] internal T[] mainSet = Array.Empty<T>();
         [SerializeField] internal PrefabLayer<T>[] prefabLayers = Array.Empty<PrefabLayer<T>>();
@@ -89,8 +89,6 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 
         internal T[]? CheckedCurrentLayerRemoves;
         internal T[]? CheckedCurrentLayerAdditions;
-        private static MethodInfo _onBeforeSerializeCallback = PrefabSafeSetRuntimeUtil
-            .GetOnBeforeSerializeCallbackMethod(typeof(T), typeof(PrefabSafeSet<T>));
 #endif
 
         public PrefabSafeSet(Object outerObject)
@@ -244,18 +242,6 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
         public override void RemoveIf(Func<T, bool> predicate) => throw new Exception("Not supported in Player build");
         public override void Clear() => throw new Exception("Not supported in Player build");
 #endif
-
-        void ISerializationCallbackReceiver.OnBeforeSerialize()
-        {
-#if UNITY_EDITOR
-            _onBeforeSerializeCallback.Invoke(null, new object[] {this});
-#endif
-        }
-
-        void ISerializationCallbackReceiver.OnAfterDeserialize()
-        {
-            // there's nothing to do after deserialization.
-        }
     }
 
     public static class PrefabSafeSet {
