@@ -81,6 +81,10 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
     {
         [SerializeField] internal T[] mainSet = Array.Empty<T>();
         [SerializeField] internal PrefabLayer<T>[] prefabLayers = Array.Empty<PrefabLayer<T>>();
+        // If the PrefabSafeSet is on scene and prefab instance, this will be used
+        // This is added AAO 1.8.0 to support replacing base prefab on the scene, since Unity 2022
+        [SerializeField] internal bool usingOnSceneLayer;
+        [SerializeField] internal PrefabLayer<T> onSceneLayer = new();
 
 #if UNITY_EDITOR
         [SerializeField, HideInInspector] internal T? fakeSlot;

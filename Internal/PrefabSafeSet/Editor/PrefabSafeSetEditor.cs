@@ -184,6 +184,8 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
         public const string FakeSlot = nameof(PrefabSafeSet<object>.fakeSlot);
         public const string MainSet = nameof(PrefabSafeSet<object>.mainSet);
         public const string PrefabLayers = nameof(PrefabSafeSet<object>.prefabLayers);
+        public const string UsingOnSceneLayer = nameof(PrefabSafeSet<object>.usingOnSceneLayer);
+        public const string OnSceneLayer = nameof(PrefabSafeSet<object>.onSceneLayer);
         public const string Additions = nameof(PrefabLayer<object>.additions);
         public const string Removes = nameof(PrefabLayer<object>.removes);
     }
@@ -231,7 +233,8 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             // to avoid changes in for loop
             Action? action = null;
 
-            foreach (var element in EditorUtil.Elements)
+            foreach (var element in 
+                     EditorUtil.Elements)
             {
                 ModificationKind fieldModKind;
 

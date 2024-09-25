@@ -27,15 +27,17 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 
             var isInstance = PrefabUtility.IsPartOfPrefabInstance(component);
             var isAsset = PrefabUtility.IsPartOfPrefabAsset(component);
-            Debug.Log($"OnValidate: {nestCount} '{component.name}' {isInstance} {isAsset}");
+
+            var shouldUsePrefabOnSceneLayer = isInstance && !isAsset;
+            var maxLayerCount = shouldUsePrefabOnSceneLayer ? nestCount - 1 : nestCount;
 
             // https://github.com/anatawa12/AvatarOptimizer/issues/52
-            // to avoid unnecessary modifications, do not resize array.
+            // to avoid unnecessary modifications, do not resize array if layer count is smaller than expected
 
-            if (prefabSafeSet.prefabLayers.Length > nestCount)
-                ApplyModificationsToLatestLayer(prefabSafeSet, nestCount);
+            if (prefabSafeSet.prefabLayers.Length > maxLayerCount)
+                ApplyModificationsToLatestLayer(prefabSafeSet, maxLayerCount, shouldUsePrefabOnSceneLayer);
 
-            GeneralCheck(prefabSafeSet, nestCount);
+            GeneralCheck(prefabSafeSet, maxLayerCount, shouldUsePrefabOnSceneLayer);
         }
 
         private static int PrefabNestCount<TComponent>(TComponent component,
@@ -52,7 +54,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             return nestCount + 1;
         }
 
-        private static void GeneralCheck(PrefabSafeSet<T> self, int nestCount)
+        private static void GeneralCheck(PrefabSafeSet<T> self, int maxLayerCount, bool shouldUsePrefabOnSceneLayer)
         {
             // first, replace missing with null
             if (typeof(Object).IsAssignableFrom(typeof(T)))
@@ -82,16 +84,24 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                     source = array;
             }
 
-            if (nestCount == 0)
+            if (maxLayerCount == 0)
             {
                 DistinctCheckArray(ref self.mainSet, PrefabSafeSetRuntimeUtil.IsNotNull);
             }
             else
             {
-                if (nestCount < self.prefabLayers.Length)
+                if (shouldUsePrefabOnSceneLayer)
                 {
-                    var currentLayer = self.prefabLayers[nestCount - 1] ??
-                                       (self.prefabLayers[nestCount - 1] = new PrefabLayer<T>());
+                    var currentLayer = self.onSceneLayer;
+                    self.usingOnSceneLayer = true;
+                    DistinctCheckArray(ref currentLayer.additions, PrefabSafeSetRuntimeUtil.IsNotNull);
+                    DistinctCheckArray(ref currentLayer.removes,
+                        x => x.IsNotNull() && !currentLayer.additions.Contains(x));
+                }
+                else if (maxLayerCount < self.prefabLayers.Length)
+                {
+                    var currentLayer = self.prefabLayers[maxLayerCount - 1] ??
+                                       (self.prefabLayers[maxLayerCount - 1] = new PrefabLayer<T>());
                     DistinctCheckArray(ref currentLayer.additions, PrefabSafeSetRuntimeUtil.IsNotNull);
                     DistinctCheckArray(ref currentLayer.removes,
                         x => x.IsNotNull() && !currentLayer.additions.Contains(x));
@@ -99,10 +109,10 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             }
         }
 
-        private static void ApplyModificationsToLatestLayer(PrefabSafeSet<T> self, int nestCount)
+        private static void ApplyModificationsToLatestLayer(PrefabSafeSet<T> self, int maxLayerCount, bool shouldUsePrefabOnSceneLayer)
         {
             // after apply modifications?: apply to latest layer
-            if (nestCount == 0)
+            if (maxLayerCount == 0)
             {
                 // nestCount is 0: apply everything to mainSet
                 var result = new ListSet<T>(self.mainSet);
@@ -118,11 +128,11 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             else
             {
                 // nestCount is not zero: apply to current layer
-                var targetLayer = self.prefabLayers[nestCount - 1];
+                var targetLayer = shouldUsePrefabOnSceneLayer ? self.onSceneLayer : self.prefabLayers[maxLayerCount - 1];
                 var additions = new ListSet<T>(targetLayer.additions);
                 var removes = new ListSet<T>(targetLayer.removes);
 
-                foreach (var layer in self.prefabLayers.Skip(nestCount))
+                foreach (var layer in self.prefabLayers.Skip(maxLayerCount))
                 {
                     additions.RemoveRange(layer.removes);
                     removes.AddRange(layer.removes);
@@ -135,7 +145,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                 targetLayer.removes = removes.ToArray();
 
                 // resize array.               
-                PrefabSafeSetRuntimeUtil.ResizeArray(ref self.prefabLayers, nestCount);
+                PrefabSafeSetRuntimeUtil.ResizeArray(ref self.prefabLayers, maxLayerCount);
             }
         }
     }

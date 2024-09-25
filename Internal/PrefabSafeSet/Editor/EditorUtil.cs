@@ -27,7 +27,10 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
         {
             if (nestCount == 0)
                 return new Root(property, getValue, setValue);
-            return new PrefabModification(property, nestCount, getValue, setValue);
+            var isPrefabAsset = PrefabUtility.IsPartOfPrefabAsset(property.serializedObject.targetObject);
+            if (isPrefabAsset)
+                return new PrefabModification(property, nestCount, getValue, setValue);
+            return new PrefabModificationOnScene(property, nestCount, getValue, setValue);
         }
 
         private EditorUtil(Func<SerializedProperty, T> getValue, Action<SerializedProperty, T> setValue)
