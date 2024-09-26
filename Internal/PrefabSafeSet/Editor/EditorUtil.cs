@@ -30,7 +30,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             var useOnSceneLayer = PrefabSafeSetUtil.ShouldUsePrefabOnSceneLayer(property.serializedObject.targetObject);
             if (useOnSceneLayer)
                 return new PrefabModificationOnScene(property, nestCount, getValue, setValue);
-            return new PrefabModification(property, nestCount, getValue, setValue);
+            return new PrefabModificationOnAsset(property, nestCount, getValue, setValue);
         }
 
         private EditorUtil(Func<SerializedProperty, T> getValue, Action<SerializedProperty, T> setValue)
