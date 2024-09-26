@@ -15,8 +15,8 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             private bool _needsUpstreamUpdate;
             private int _upstreamElementCount;
             private readonly SerializedProperty _rootProperty;
-            private readonly SerializedProperty _currentRemoves;
-            private readonly SerializedProperty _currentAdditions;
+            private SerializedProperty? _currentRemoves;
+            private SerializedProperty? _currentAdditions;
             private int _currentRemovesSize;
             private int _currentAdditionsSize;
 
@@ -27,7 +27,8 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             private readonly SerializedProperty _onSceneLayer;
 
             // upstream change check
-            private readonly ArraySizeCheck _mainSet;
+            private ArraySizeCheck _mainSet;
+            private ArraySizeCheck _prefabLayersSize;
             private readonly ArraySizeCheck[] _layerRemoves;
             private readonly ArraySizeCheck[] _layerAdditions;
 
@@ -40,7 +41,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                 if (nestCount <= 0) throw new ArgumentException("nestCount is zero or negative", nameof(nestCount));
                 _nestCount = nestCount;
 
-                ClearNonLayerModifications(property);
+                ClearNonLayerModifications(property, nestCount);
 
                 var mainSet = property.FindPropertyRelative(Names.MainSet);
                 _mainSet = new ArraySizeCheck(mainSet.FindPropertyRelative("Array.size"));
@@ -54,10 +55,18 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 
                 // apply modifications until previous one
                 _prefabLayers = property.FindPropertyRelative(Names.PrefabLayers);
+                _prefabLayersSize = new ArraySizeCheck(_prefabLayers.FindPropertyRelative("Array.size"));
 
                 Normalize();
+                InitCurrentLayer();
                 DoInitializeUpstream();
                 DoInitialize();
+            }
+
+            private void InitCurrentLayer(bool force = false)
+            {
+                // noop
+                _prefabLayersSize.Updated();
             }
 
             private void Normalize()
@@ -126,7 +135,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                 _mainSet.Updated();
             }
 
-            private void ClearNonLayerModifications(SerializedProperty property)
+            private void ClearNonLayerModifications(SerializedProperty property, int nestCount)
             {
                 try
                 {
@@ -178,14 +187,17 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             /// </summary>
             public void Initialize()
             {
+                if (_prefabLayersSize.Changed)
+                    InitCurrentLayer();
+
                 if (_mainSet.Changed || _layerRemoves.Any(x => x.Changed) || _layerAdditions.Any(x => x.Changed))
                 {
                     DoInitializeUpstream();
                     DoInitialize();
                 }
 
-                if (_currentRemovesSize != _currentRemoves.arraySize ||
-                    _currentAdditionsSize != _currentAdditions.arraySize)
+                if (_currentRemovesSize != (_currentRemoves?.arraySize ?? 0) ||
+                    _currentAdditionsSize != (_currentAdditions?.arraySize ?? 0))
                 {
                     DoInitialize();
                 }
@@ -246,8 +258,8 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                     _elements.Add(ElementImpl.FakeRemoved(this, value, i));
                 }
 
-                _currentRemovesSize = _currentRemoves.arraySize;
-                _currentAdditionsSize = _currentAdditions.arraySize;
+                _currentRemovesSize = _currentRemoves?.arraySize ?? 0;
+                _currentAdditionsSize = _currentAdditions?.arraySize ?? 0;
             }
 
             public override void Clear()
@@ -255,7 +267,8 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                 Initialize();
                 for (var i = _elements.Count - 1; i >= 0; i--)
                     _elements[i].EnsureRemoved();
-                _currentAdditionsSize = _currentAdditions.arraySize = 0;
+                if (_currentAdditions != null)
+                    _currentAdditionsSize = _currentAdditions.arraySize = 0;
             }
 
             protected override IElement<T> NewSlotElement(T value)
@@ -520,8 +533,9 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 
             private (int indexInModifier, SerializedProperty modifierProp) AddToModifications(T value,
                 ref int currentModificationSize,
-                SerializedProperty currentModifications)
+                SerializedProperty? currentModifications)
             {
+                InitCurrentLayer(true);
                 if (currentModifications == null) throw new InvalidOperationException("currentModifications is null (force init failed)");
                 var indexInModifier = currentModifications.arraySize;
                 var modifierProp = AddArrayElement(currentModifications);

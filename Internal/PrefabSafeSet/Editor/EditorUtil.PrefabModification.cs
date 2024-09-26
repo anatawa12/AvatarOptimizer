@@ -39,7 +39,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             private int _currentAdditionsSize;
 
             private int _nestCount;
-            private SerializedProperty _prefabLayers;
+            private readonly SerializedProperty _prefabLayers;
 
             // upstream change check
             private ArraySizeCheck _mainSet;
@@ -66,6 +66,8 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                 // apply modifications until previous one
                 _prefabLayers = property.FindPropertyRelative(Names.PrefabLayers);
                 _prefabLayersSize = new ArraySizeCheck(_prefabLayers.FindPropertyRelative("Array.size"));
+
+                Normalize();
                 InitCurrentLayer();
                 DoInitializeUpstream();
                 DoInitialize();
@@ -92,6 +94,11 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                 _prefabLayersSize.Updated();
             }
 
+            private void Normalize()
+            {
+                // TODO
+            }
+
             private void DoInitializeUpstream()
             {
                 _elements.Clear();
@@ -107,8 +114,6 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                     upstreamValues.Add(value);
                     _elements.Add(ElementImpl.Natural(this, value, 0));
                 }
-
-                _prefabLayers = _rootProperty.FindPropertyRelative(Names.PrefabLayers);
 
                 for (var i = 0; i < _nestCount - 1 && i < _prefabLayers.arraySize; i++)
                 {
@@ -477,6 +482,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                 public void MarkNatural()
                 {
                     Status = ElementStatus.Natural;
+                    ModifierProp = null;
                 }
 
                 public void SetExistence(bool existence)
@@ -527,14 +533,14 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             }
 
             private (int indexInModifier, SerializedProperty modifierProp) AddToAdditions(T value) => 
-                AddToModifications(value, ref _currentAdditionsSize, ref _currentAdditions);
+                AddToModifications(value, ref _currentAdditionsSize, _currentAdditions);
             
             private (int indexInModifier, SerializedProperty modifierProp) AddToRemoves(T value) => 
-                AddToModifications(value, ref _currentRemovesSize, ref _currentRemoves);
+                AddToModifications(value, ref _currentRemovesSize, _currentRemoves);
 
             private (int indexInModifier, SerializedProperty modifierProp) AddToModifications(T value,
                 ref int currentModificationSize,
-                ref SerializedProperty? currentModifications)
+                SerializedProperty? currentModifications)
             {
                 InitCurrentLayer(true);
                 if (currentModifications == null) throw new InvalidOperationException("currentModifications is null (force init failed)");
