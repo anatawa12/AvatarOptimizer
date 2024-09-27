@@ -91,35 +91,33 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                     source = array;
             }
 
-            if (maxLayerCount == 0)
+
+            if (shouldUsePrefabOnSceneLayer)
+            {
+                var currentLayer = self.onSceneLayer;
+                self.usingOnSceneLayer = true;
+                DistinctCheckArray(ref currentLayer.additions, PrefabSafeSetRuntimeUtil.IsNotNull);
+                DistinctCheckArray(ref currentLayer.removes,
+                    x => x.IsNotNull() && !currentLayer.additions.Contains(x));
+            }
+            else if (maxLayerCount == 0)
             {
                 DistinctCheckArray(ref self.mainSet, PrefabSafeSetRuntimeUtil.IsNotNull);
             }
-            else
+            else if (maxLayerCount < self.prefabLayers.Length)
             {
-                if (shouldUsePrefabOnSceneLayer)
-                {
-                    var currentLayer = self.onSceneLayer;
-                    self.usingOnSceneLayer = true;
-                    DistinctCheckArray(ref currentLayer.additions, PrefabSafeSetRuntimeUtil.IsNotNull);
-                    DistinctCheckArray(ref currentLayer.removes,
-                        x => x.IsNotNull() && !currentLayer.additions.Contains(x));
-                }
-                else if (maxLayerCount < self.prefabLayers.Length)
-                {
-                    var currentLayer = self.prefabLayers[maxLayerCount - 1] ??
-                                       (self.prefabLayers[maxLayerCount - 1] = new PrefabLayer<T>());
-                    DistinctCheckArray(ref currentLayer.additions, PrefabSafeSetRuntimeUtil.IsNotNull);
-                    DistinctCheckArray(ref currentLayer.removes,
-                        x => x.IsNotNull() && !currentLayer.additions.Contains(x));
-                }
+                var currentLayer = self.prefabLayers[maxLayerCount - 1] ??
+                                   (self.prefabLayers[maxLayerCount - 1] = new PrefabLayer<T>());
+                DistinctCheckArray(ref currentLayer.additions, PrefabSafeSetRuntimeUtil.IsNotNull);
+                DistinctCheckArray(ref currentLayer.removes,
+                    x => x.IsNotNull() && !currentLayer.additions.Contains(x));
             }
         }
 
         private static void ApplyModificationsToLatestLayer(PrefabSafeSet<T> self, int maxLayerCount, bool shouldUsePrefabOnSceneLayer)
         {
             // after apply modifications?: apply to latest layer
-            if (maxLayerCount == 0)
+            if (maxLayerCount == 0 && !shouldUsePrefabOnSceneLayer)
             {
                 // nestCount is 0: apply everything to mainSet
                 var result = new ListSet<T>(self.mainSet);

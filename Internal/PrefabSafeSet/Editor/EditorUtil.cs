@@ -21,7 +21,12 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
         public virtual int Count => Elements.Count(x => x.Contains);
         public virtual IEnumerable<T> Values => Elements.Where(x => x.Contains).Select(x => x.Value);
 
-        public static EditorUtil<T> Create(SerializedProperty property, int nestCount,
+        public static EditorUtil<T> Create(SerializedProperty property,
+            Func<SerializedProperty, T> getValue,
+            Action<SerializedProperty, T> setValue) 
+            => new Wrapper(property, getValue, setValue);
+
+        static EditorUtil<T> CreateImpl(SerializedProperty property, int nestCount,
             Func<SerializedProperty, T> getValue,
             Action<SerializedProperty, T> setValue)
         {
@@ -76,6 +81,13 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             for (var i = 0; i < result.Length; i++)
                 result[i] = _getValue(array.GetArrayElementAtIndex(i));
             return result;
+        }
+
+        private void SetArray(SerializedProperty array, T[] values)
+        {
+            array.arraySize = values.Length;
+            for (var i = 0; i < values.Length; i++)
+                _setValue(array.GetArrayElementAtIndex(i), values[i]);
         }
     }
 

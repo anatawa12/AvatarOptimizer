@@ -63,8 +63,8 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                 PrefabLayers = property.FindPropertyRelative(Names.PrefabLayers);
                 _prefabLayersSize = new ArraySizeCheck(PrefabLayers.FindPropertyRelative("Array.size"));
 
-                Normalize();
                 ClearNonLayerModifications(property, nestCount);
+                Normalize();
 
                 InitCurrentLayer();
                 DoInitializeUpstream();

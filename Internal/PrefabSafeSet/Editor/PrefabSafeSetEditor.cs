@@ -208,7 +208,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                 throw new ArgumentException("multi editing not supported", nameof(property));
             FakeSlot = property.FindPropertyRelative(Names.FakeSlot)
                         ?? throw new ArgumentException("fakeSlot not found");
-            EditorUtil = EditorUtil<T>.Create(property, nestCount, GetValue, SetValue);
+            EditorUtil = EditorUtil<T>.Create(property, GetValue, SetValue);
         }
 
         private protected abstract T GetValue(SerializedProperty prop);

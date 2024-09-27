@@ -38,10 +38,8 @@ namespace Anatawa12.AvatarOptimizer
             _skipEnablementMismatchedRenderers =
                 serializedObject.FindProperty(nameof(MergeSkinnedMesh.skipEnablementMismatchedRenderers));
             _copyEnablementAnimation = serializedObject.FindProperty(nameof(MergeSkinnedMesh.copyEnablementAnimation));
-            var nestCount = PrefabSafeSet.PrefabSafeSetUtil.PrefabNestCount(serializedObject.targetObject);
             _doNotMergeMaterials = PrefabSafeSet.EditorUtil<Material>.Create(
                 serializedObject.FindProperty("doNotMergeMaterials"),
-                nestCount,
                 x => (Material)x.objectReferenceValue,
                 (x, v) => x.objectReferenceValue = v);
         }

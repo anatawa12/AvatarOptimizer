@@ -27,7 +27,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 
             protected override void InitCurrentLayer(bool force = false)
             {
-                // noop
+                _usingOnSceneLayer.boolValue = true;
                 CurrentRemoves = _onSceneLayer.FindPropertyRelative(Names.Removes);
                 CurrentAdditions = _onSceneLayer.FindPropertyRelative(Names.Additions);
                 _prefabLayersSize.Updated();
@@ -39,18 +39,46 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                 {
                     // no problem
                 }
-                else if (PrefabLayers.arraySize == NestCount)
-                {
-                    // we should normalize to onSceneLayer
-                    var currentLayer = PrefabLayers.GetArrayElementAtIndex(NestCount - 1);
-                    _onSceneLayer.CopyDataFrom(currentLayer);
-                    _usingOnSceneLayer.boolValue = true;
-                    PrefabLayers.arraySize = NestCount - 1;
-                }
                 else
                 {
                     // this should not happen; OnValidate will fix this
-                    // TODO: normalize on this 
+                    // but unpacking prefab may cause this case
+
+                    var additions = new ListSet<T>(Array.Empty<T>());
+                    var removes = new ListSet<T>(Array.Empty<T>());
+
+                    for (var i = NestCount - 1; i < PrefabLayers.arraySize; i++)
+                    {
+                        var currentLayer = PrefabLayers.GetArrayElementAtIndex(i);
+
+                        var additionsArray = ToArray(currentLayer.FindPropertyRelative(Names.Additions));
+                        var removesArray = ToArray(currentLayer.FindPropertyRelative(Names.Removes));
+
+                        additions.RemoveRange(removesArray);
+                        removes.AddRange(removesArray);
+
+                        additions.AddRange(additionsArray);
+                        removes.RemoveRange(additionsArray);
+                    }
+
+                    if (_usingOnSceneLayer.boolValue) {
+                        var currentLayer = _onSceneLayer;
+                        
+                        var additionsArray = ToArray(currentLayer.FindPropertyRelative(Names.Additions));
+                        var removesArray = ToArray(currentLayer.FindPropertyRelative(Names.Removes));
+
+                        additions.RemoveRange(removesArray);
+                        removes.AddRange(removesArray);
+
+                        additions.AddRange(additionsArray);
+                        removes.RemoveRange(additionsArray);
+                    }
+
+                    InitCurrentLayer(true);
+
+                    PrefabLayers.arraySize = NestCount - 1;
+                    SetArray(CurrentAdditions!, additions.ToArray());
+                    SetArray(CurrentRemoves!, removes.ToArray());
                 }
             }
 
