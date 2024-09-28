@@ -34,6 +34,10 @@ The format is based on [Keep a Changelog].
   - This change make AAO incompatible with Unity without Graphics.
     - If you're building your avatar with batchmode with -nographics, please remove -nographics.
 - Asset Description for Avatar Modify Support bundled in an avatar, Shinano `#1189`
+- Automatically remove unnecessary material properties based on shader `#1041`
+  - This feature is added to `Remove Unused Objects` in `Trace and Optimize`.
+  - When you changed shader for an material, properties for previously used shaders might be remain
+  - This may increase your avatar size by unexpectedly including unused textures
 
 ### Changed
 - Skip Enablement Mismatched Renderers is now disabled by default `#1169`
