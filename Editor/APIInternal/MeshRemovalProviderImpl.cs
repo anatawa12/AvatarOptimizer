@@ -151,9 +151,17 @@ internal class MeshRemovalProviderImpl : MeshRemovalProvider
 
         if (_removedByBox.Length > 0)
         {
+            var removePrimitive = true;
             foreach (var vertexIndex in vertexIndices)
+            {
                 if (_removedByBox[vertexIndex])
-                    return true;
+                {
+                    removePrimitive = false;
+                    break;
+                }
+            }
+
+            if (removePrimitive) return true;
         }
 
         if (_uv != null && _removedByMask != null)
