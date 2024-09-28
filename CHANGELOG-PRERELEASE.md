@@ -10,9 +10,6 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
-- Reimplement Preview system with NDMF Preview System `#1131`
-  - This will prevent issues relates to Animation Mode bug.
-  - This allows you to preview Remove Mesh components without selecting Mesh OR while in Animation Mode.
 - Improved Prefab Safe Set, which are used in MergePhysBone, MergeSkinnedMesh, FreezeBlendShape and more components `#1212`
   - This should improve compatibility with replacing base prefab, which is added in Unity 2022.
 
@@ -21,10 +18,20 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Texture Packing which resolves to the white texture would break the Unity Editor `#1193`
-- Performance issues with preview system `#1195`
+- Typo in menu for creating Asset Description `#1213`
 
 ### Security
+
+## [1.8.0-beta.2] - 2024-09-25
+### Changed
+- Reimplement Preview system with NDMF Preview System [`#1131`](https://github.com/anatawa12/AvatarOptimizer/pull/1131)
+  - This will prevent issues relates to Animation Mode bug.
+  - This allows you to preview Remove Mesh components without selecting Mesh OR while in Animation Mode.
+
+### Fixed
+- Texture Packing which resolves to the white texture would break the Unity Editor [`#1193`](https://github.com/anatawa12/AvatarOptimizer/pull/1193)
+- Performance issues with preview system [`#1195`](https://github.com/anatawa12/AvatarOptimizer/pull/1195)
+- Avatar Optimizer does not support `Additive Reference Pose` [`#1208`](https://github.com/anatawa12/AvatarOptimizer/pull/1208)
 
 ## [1.7.13-beta.1] - 2024-09-23
 ### Fixed
@@ -1561,7 +1568,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.13-beta.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-beta.2...HEAD
+[1.8.0-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.13-beta.1...v1.8.0-beta.2
 [1.7.13-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-beta.1...v1.7.13-beta.1
 [1.8.0-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.12...v1.8.0-beta.1
 [1.7.12]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.12-beta.3...v1.7.12
