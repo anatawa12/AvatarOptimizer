@@ -45,6 +45,8 @@ The format is based on [Keep a Changelog].
 - Reimplement Preview system with NDMF Preview System `#1131` `#1195`
   - This will prevent issues relates to Animation Mode bug.
   - This allows you to preview Remove Mesh components without selecting Mesh OR while in Animation Mode.
+- Improved Prefab Safe Set, which are used in MergePhysBone, MergeSkinnedMesh, FreezeBlendShape and more components `#1212`
+  - This should improve compatibility with replacing base prefab, which is added in Unity 2022.
 
 ### Deprecated
 

@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
+- Improved Prefab Safe Set, which are used in MergePhysBone, MergeSkinnedMesh, FreezeBlendShape and more components `#1212`
+  - This should improve compatibility with replacing base prefab, which is added in Unity 2022.
 
 ### Deprecated
 

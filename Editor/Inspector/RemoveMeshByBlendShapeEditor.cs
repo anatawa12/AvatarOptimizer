@@ -16,10 +16,8 @@ namespace Anatawa12.AvatarOptimizer
         {
             NativeLeakDetection.Mode = NativeLeakDetectionMode.EnabledWithStackTrace;
             _renderer = targets.Length == 1 ? ((Component)target).GetComponent<SkinnedMeshRenderer>() : null;
-            var nestCount = PrefabSafeSet.PrefabSafeSetUtil.PrefabNestCount(serializedObject.targetObject);
             _shapeKeysSet = PrefabSafeSet.EditorUtil<string>.Create(
                 serializedObject.FindProperty("shapeKeysSet"),
-                nestCount,
                 x => x.stringValue,
                 (x, v) => x.stringValue = v);
             _toleranceProp = serializedObject.FindProperty(nameof(RemoveMeshByBlendShape.tolerance));

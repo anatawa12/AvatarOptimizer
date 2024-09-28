@@ -10,10 +10,8 @@ namespace Anatawa12.AvatarOptimizer
 
         private void OnEnable()
         {
-            var nestCount = PrefabSafeSet.PrefabSafeSetUtil.PrefabNestCount(serializedObject.targetObject);
             _shapeKeysSet = PrefabSafeSet.EditorUtil<string>.Create(
                 serializedObject.FindProperty("shapeKeysSet"),
-                nestCount,
                 x => x.stringValue,
                 (x, v) => x.stringValue = v);
         }

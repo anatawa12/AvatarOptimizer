@@ -71,7 +71,6 @@ namespace Anatawa12.AvatarOptimizer
         public MergePhysBoneEditorModificationUtils(SerializedObject serializedObject)
         {
             this._serializedObject = serializedObject;
-            var nestCount = PrefabSafeSet.PrefabSafeSetUtil.PrefabNestCount(serializedObject.targetObject);
             MakeParent = serializedObject.FindProperty(nameof(MergePhysBone.makeParent));
 
             Version = ValueProp(nameof(MergePhysBone.versionConfig), nameof(VRCPhysBoneBase.version));
@@ -112,7 +111,7 @@ namespace Anatawa12.AvatarOptimizer
 
             var componentsSetProp = serializedObject.FindProperty(nameof(MergePhysBone.componentsSet));
             ComponentsSetEditorUtil = PrefabSafeSet.EditorUtil<VRCPhysBoneBase>.Create(
-                componentsSetProp, nestCount, x => (VRCPhysBoneBase)x.objectReferenceValue,
+                componentsSetProp, x => (VRCPhysBoneBase)x.objectReferenceValue,
                 (x, v) => x.objectReferenceValue = v);
         }
 
