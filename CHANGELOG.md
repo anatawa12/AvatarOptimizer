@@ -34,6 +34,7 @@ The format is based on [Keep a Changelog].
   - This change make AAO incompatible with Unity without Graphics.
     - If you're building your avatar with batchmode with -nographics, please remove -nographics.
 - Asset Description for Avatar Modify Support bundled in an avatar, Shinano `#1189`
+- API to get in advance whether a polygon will be removed `#1177`
 
 ### Changed
 - Skip Enablement Mismatched Renderers is now disabled by default `#1169`
