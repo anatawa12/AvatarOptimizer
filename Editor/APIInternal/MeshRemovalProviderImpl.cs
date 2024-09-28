@@ -154,7 +154,7 @@ internal class MeshRemovalProviderImpl : MeshRemovalProvider
             var removePrimitive = true;
             foreach (var vertexIndex in vertexIndices)
             {
-                if (_removedByBox[vertexIndex])
+                if (!_removedByBox[vertexIndex])
                 {
                     removePrimitive = false;
                     break;
