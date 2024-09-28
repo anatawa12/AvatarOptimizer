@@ -19,9 +19,24 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             // - OnValidate will be called when the component is maked prefab
             //   - Both for New Prefab Asset and Prefab Instance on Scene
             // - OnValidate will be called for prefab instance when the base prefab is changed
-
             var prefabSafeSet = getPrefabSafeSet(component);
+
+            // detect creating new prefab
+            var newCorrespondingObject = PrefabUtility.GetCorrespondingObjectFromSource(component);
+            if (newCorrespondingObject != null && PrefabUtility.GetCorrespondingObjectFromSource(newCorrespondingObject) ==  prefabSafeSet.CorrespondingObject)
+            {
+                // this might be creating prefab. we do more checks
+                var newCorrespondingPrefabSafeSet = getPrefabSafeSet(newCorrespondingObject);
+                // if the corresponding object is not new, this likely mean the prefab is replaced
+                if (newCorrespondingPrefabSafeSet.IsNew)
+                {
+                    // if the prefab is created, we clear onSceneLayer to avoid unnecessary modifications
+                    prefabSafeSet.onSceneLayer = new PrefabLayer<T>();
+                }
+            }
+
             prefabSafeSet.OuterObject = component;
+            prefabSafeSet.CorrespondingObject = newCorrespondingObject;
             var nestCount = PrefabNestCount(component, getPrefabSafeSet);
             prefabSafeSet.NestCount = nestCount;
 

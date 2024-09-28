@@ -89,7 +89,9 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 #if UNITY_EDITOR
         [SerializeField, HideInInspector] internal T? fakeSlot;
         internal Object OuterObject;
+        internal Object? CorrespondingObject;
         internal int? NestCount;
+        internal bool IsNew;
 #endif
 
         public PrefabSafeSet(Object outerObject)
@@ -99,6 +101,8 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             // so use actual null check instead of destroy check
             // ReSharper disable once Unity.NoNullCoalescing
             OuterObject = outerObject ?? throw new ArgumentNullException(nameof(outerObject));
+            IsNew = true;
+            UnityEditor.EditorApplication.delayCall += () => IsNew = false;
 #endif
         }
 
