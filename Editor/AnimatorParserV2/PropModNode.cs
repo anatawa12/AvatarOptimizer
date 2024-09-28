@@ -148,6 +148,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             where T : notnull
             where TLayer : ILayer<T>
         {
+            var canAdditive = typeof(T) == typeof(float);
             var allPossibleValues = new HashSet<T>();
 
             foreach (var layer in layersReversed)
@@ -158,12 +159,27 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                     case AnimatorWeightState.EitherZeroOrOne:
                         if (!(layer.Node.Value.PossibleValues is T[] otherValues)) return ValueInfo<T>.Variable;
 
-                        allPossibleValues.UnionWith(otherValues);
-
-                        if (layer.IsAlwaysOverride())
+                        switch (layer.BlendingMode)
                         {
-                            // the layer is always applied at the highest property.
-                            return new ValueInfo<T>(allPossibleValues.ToArray());
+                            case AnimatorLayerBlendingMode.Additive:
+                                // ObjectReference will work as override even with additive mode.
+                                if (!canAdditive) goto case AnimatorLayerBlendingMode.Override;
+
+                                // additive with changing value: value cannot be determined 
+                                if (otherValues.Length != 1) return ValueInfo<T>.Variable;
+                                break;
+                            case AnimatorLayerBlendingMode.Override:
+                                allPossibleValues.UnionWith(otherValues);
+
+                                if (layer.IsAlwaysOverride())
+                                {
+                                    // the layer is always applied at the highest property.
+                                    return new ValueInfo<T>(allPossibleValues.ToArray());
+                                }
+
+                                break;
+                            default:
+                                throw new ArgumentOutOfRangeException();
                         }
 
                         break;
@@ -283,22 +299,31 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         public AnimationCurve Curve { get; }
         public AnimationClip Clip { get; }
 
-        public static FloatAnimationCurveNode? Create(AnimationClip clip, EditorCurveBinding binding)
+        public static FloatAnimationCurveNode? Create(AnimationClip clip, EditorCurveBinding binding,
+            AnimationClip? additiveReferenceClip, float additiveReferenceFrame)
         {
             var curve = AnimationUtility.GetEditorCurve(clip, binding);
             if (curve == null) return null;
             if (curve.keys.Length == 0) return null;
-            return new FloatAnimationCurveNode(clip, curve);
+            
+            float referenceValue = 0;
+            if (additiveReferenceClip != null 
+                && AnimationUtility.GetEditorCurve(additiveReferenceClip, binding) is { } referenceCurve)
+                referenceValue = referenceCurve.Evaluate(additiveReferenceFrame);
+            else
+                referenceValue = curve.Evaluate(0);
+
+            return new FloatAnimationCurveNode(clip, curve, referenceValue);
         }
 
-        private FloatAnimationCurveNode(AnimationClip clip, AnimationCurve curve)
+        private FloatAnimationCurveNode(AnimationClip clip, AnimationCurve curve, float referenceValue)
         {
             if (!clip) throw new ArgumentNullException(nameof(clip));
             if (curve == null) throw new ArgumentNullException(nameof(curve));
             Debug.Assert(curve.keys.Length > 0);
             Clip = clip;
             Curve = curve;
-            _constantInfo = new Lazy<ValueInfo<float>>(() => ParseProperty(curve), isThreadSafe: false);
+            _constantInfo = new Lazy<ValueInfo<float>>(() => ParseProperty(curve, referenceValue), isThreadSafe: false);
         }
 
         private readonly Lazy<ValueInfo<float>> _constantInfo;
@@ -307,7 +332,15 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         public override ValueInfo<float> Value => _constantInfo.Value;
         public override IEnumerable<ObjectReference> ContextReferences => new[] { ObjectRegistry.GetReference(Clip) };
 
-        private static ValueInfo<float> ParseProperty(AnimationCurve curve)
+        private static ValueInfo<float> ParseProperty(AnimationCurve curve, float referenceValue)
+        {
+            var curveValue = ParseCurve(curve);
+            if (curveValue.PossibleValues == null) return ValueInfo<float>.Variable;
+            return new ValueInfo<float>(curveValue.PossibleValues.Concat(new[] { referenceValue }).Distinct()
+                .ToArray());
+        }
+
+        private static ValueInfo<float> ParseCurve(AnimationCurve curve)
         {
             if (curve.keys.Length == 1) return new ValueInfo<float>(curve.keys[0].value);
 

@@ -185,6 +185,29 @@ namespace Anatawa12.AvatarOptimizer
                 {
                     serializedNewClip.FindProperty("m_UseHighQualityCurve")
                         .boolValue = serializedClip.FindProperty("m_UseHighQualityCurve").boolValue;
+
+                    const string mHasAdditiveReferencePose = "m_AnimationClipSettings.m_HasAdditiveReferencePose";
+                    const string mAdditiveReferenceClip = "m_AnimationClipSettings.m_AdditiveReferencePoseClip";
+                    const string mAdditiveReferenceTime = "m_AnimationClipSettings.m_AdditiveReferencePoseTime";
+
+                    if (serializedClip.FindProperty(mHasAdditiveReferencePose).boolValue)
+                    {
+                        // create new clip to avoid unncecessary recursion
+                        var additiveReferenceClip =
+                            (AnimationClip?)serializedClip.FindProperty(mAdditiveReferenceClip).objectReferenceValue;
+                        var additiveReferenceFrame = serializedClip.FindProperty(mAdditiveReferenceTime).floatValue;
+
+                        if (additiveReferenceClip != null)
+                        {
+                            serializedNewClip.FindProperty(mHasAdditiveReferencePose).boolValue = true;
+                            serializedNewClip.FindProperty(mAdditiveReferenceClip).objectReferenceValue =
+                                MapObject(additiveReferenceClip);
+                            serializedNewClip.FindProperty(mAdditiveReferenceTime).floatValue = additiveReferenceFrame;
+
+                            Changed();
+                        }
+                    }
+
                     serializedNewClip.ApplyModifiedPropertiesWithoutUndo();
                 }
 
@@ -256,7 +279,8 @@ namespace Anatawa12.AvatarOptimizer
                     var newPlayAudio = DefaultDeepClone(playAudio);
                     newPlayAudio.name = playAudio.name + " (rebased)";
                     if (!HasChanged()) newPlayAudio = playAudio;
-                    newPlayAudio.SourcePath = _mapping.MapPath(playAudio.SourcePath, typeof(AudioSource));
+                    if (playAudio.SourcePath != null)
+                        newPlayAudio.SourcePath = _mapping.MapPath(playAudio.SourcePath, typeof(AudioSource));
                     return newPlayAudio;
                 }
             }
