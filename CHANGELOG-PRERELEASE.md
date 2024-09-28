@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Typo in menu for creating Asset Description `#1213`
 
 ### Security
 
