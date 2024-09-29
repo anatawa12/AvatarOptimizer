@@ -16,10 +16,13 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Default value for RemoveMeshInBox is not correct in Play mode `#1217`
-  - This fix will make `Initialize` method set default value for `boxes`.
 
 ### Security
+
+## [1.7.13-beta.2] - 2024-09-29
+### Fixed
+- Default value for RemoveMeshInBox is not correct in Play mode [`#1217`](https://github.com/anatawa12/AvatarOptimizer/pull/1217)
+  - This fix will make `Initialize` method set default value for `boxes`.
 
 ## [1.7.13-beta.1] - 2024-09-23
 ### Fixed
@@ -1515,7 +1518,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.13-beta.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.13-beta.2...HEAD
+[1.7.13-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.13-beta.1...v1.7.13-beta.2
 [1.7.13-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.12...v1.7.13-beta.1
 [1.7.12]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.12-beta.3...v1.7.12
 [1.7.12-beta.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.12-beta.2...v1.7.12-beta.3
