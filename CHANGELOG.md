@@ -14,7 +14,7 @@ The format is based on [Keep a Changelog].
     - We may relax some restriction in the future.
   - Because we have to check for each condition if we use AnyState but we can check for only one (in best case) with entry/exit, this generally reduces cost for checking an parameter in a state.
   - Combined with Entry / Exit to 1D BlendTree optimization, which is implemented in previous release, your AnyState layer may be optimized to 1D BlendTree.
-- Optimize Texture in Trace nad Optimize `#1181` `#1184` `#1193`
+- Optimize Texture in Trace nad Optimize `#1181` `#1184` `#1193` `#1215`
   - Avatar Optimizer will pack texture and tries to reduce the VRAM usage.
   - Currently liltoon is only supported.
 - `Copy Enablement Animation` to Merge Skinned Mesh `#1173`
