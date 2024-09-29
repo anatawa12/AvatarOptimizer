@@ -48,6 +48,8 @@ The format is based on [Keep a Changelog].
   - This allows you to preview Remove Mesh components without selecting Mesh OR while in Animation Mode.
 - Improved Prefab Safe Set, which are used in MergePhysBone, MergeSkinnedMesh, FreezeBlendShape and more components `#1212`
   - This should improve compatibility with replacing base prefab, which is added in Unity 2022.
+- Allow multiple component for Remove Mesh components with API `#1216`
+  - This allows non-destructive tools to add Remove Mesh components even if Remove Mesh component are added before.
 
 ### Deprecated
 
