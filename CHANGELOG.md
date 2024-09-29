@@ -19,6 +19,8 @@ The format is based on [Keep a Changelog].
 - Null Reference Exception with newly created VRCAnimatorPlayAudio `#1199`
 - Particle System that uses local scale will be broken `#1197`
 - Avatars with Visame Skinned Mesh disabled will not able to upload `#1202`
+- Default value for RemoveMeshInBox is not correct in Play mode `#1217`
+  - This fix will make `Initialize` method set default value for `boxes`.
 
 ### Security
 
