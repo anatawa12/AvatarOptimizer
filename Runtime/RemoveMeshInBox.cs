@@ -104,6 +104,8 @@ namespace Anatawa12.AvatarOptimizer
         [PublicAPI]
         public void Initialize(int version)
         {
+            // In Play Mode, the Reset() is not called so we have to call it manually here.
+            Reset();
             switch (version)
             {
                 case 1:
