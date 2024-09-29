@@ -16,6 +16,8 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Default value for RemoveMeshInBox is not correct in Play mode `#1217`
+  - This fix will make `Initialize` method set default value for `boxes`.
 
 ### Security
 
