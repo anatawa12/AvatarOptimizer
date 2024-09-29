@@ -20,7 +20,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
         protected override AAORenderFilterNodeBase<RemoveMeshByBlendShape> CreateNode() =>
             new RemoveMeshByBlendShapeRendererNode();
 
-        protected override bool SupportsMultiple() => false;
+        protected override bool SupportsMultiple() => true;
     }
 
     internal class RemoveMeshByBlendShapeRendererNode : AAORenderFilterNodeBase<RemoveMeshByBlendShape>
@@ -66,11 +66,11 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
             return shouldRemoveVertex;
         }
 
-        protected override ValueTask Process(SkinnedMeshRenderer original, SkinnedMeshRenderer proxy,
-            RemoveMeshByBlendShape[] components,
-            Mesh duplicated, ComputeContext context)
+        public static Dictionary<string, double> CalculateToleranceSqrByShape(RemoveMeshByBlendShape[] components, ComputeContext? context = null)
         {
+            context ??= ComputeContext.NullContext;
             // we're removing vertices moving greater than tolerance, we're collecting min tolerance for each shape
+
             var toleranceSqrByShape = new Dictionary<string, double>();
             foreach (var component in components)
             {
@@ -85,6 +85,14 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                 }
             }
 
+            return toleranceSqrByShape;
+        }
+
+        protected override ValueTask Process(SkinnedMeshRenderer original, SkinnedMeshRenderer proxy,
+            RemoveMeshByBlendShape[] components,
+            Mesh duplicated, ComputeContext context)
+        {
+            var toleranceSqrByShape = CalculateToleranceSqrByShape(components, context);
             using var shouldRemoveVertex = ComputeShouldRemoveVertex(duplicated, toleranceSqrByShape);
 
             for (var subMeshI = 0; subMeshI < duplicated.subMeshCount; subMeshI++)

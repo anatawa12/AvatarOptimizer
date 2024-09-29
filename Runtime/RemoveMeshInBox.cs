@@ -8,7 +8,6 @@ namespace Anatawa12.AvatarOptimizer
 {
     [AddComponentMenu("Avatar Optimizer/AAO Remove Mesh in Box")]
     [RequireComponent(typeof(SkinnedMeshRenderer))]
-    [DisallowMultipleComponent]
     [HelpURL("https://vpm.anatawa12.com/avatar-optimizer/ja/docs/reference/remove-mesh-in-box/")]
     [PublicAPI]
     public sealed class RemoveMeshInBox : EditSkinnedMeshComponent

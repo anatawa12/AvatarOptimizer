@@ -7,7 +7,6 @@ namespace Anatawa12.AvatarOptimizer
 {
     [AddComponentMenu("Avatar Optimizer/AAO Remove Mesh By BlendShape")]
     [RequireComponent(typeof(SkinnedMeshRenderer))]
-    [DisallowMultipleComponent]
     [HelpURL("https://vpm.anatawa12.com/avatar-optimizer/ja/docs/reference/remove-mesh-by-blendshape/")]
     [PublicAPI]
     public sealed class RemoveMeshByBlendShape : EditSkinnedMeshComponent
