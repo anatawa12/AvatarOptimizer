@@ -17,10 +17,10 @@ internal class MeshRemovalProviderImpl : MeshRemovalProvider
     private static MeshRemovalProvider? GetForRendererImplImpl(SkinnedMeshRenderer renderer)
     {
         var removeMeshByMask = renderer.GetComponent<RemoveMeshByMask>();
-        var removeMeshByBlendShape = renderer.GetComponent<RemoveMeshByBlendShape>();
-        var removeMeshInBox = renderer.GetComponent<RemoveMeshInBox>();
+        var removeMeshByBlendShape = renderer.GetComponents<RemoveMeshByBlendShape>();
+        var removeMeshInBox = renderer.GetComponents<RemoveMeshInBox>();
 
-        if (removeMeshByMask == null && removeMeshByBlendShape == null && removeMeshInBox == null)
+        if (removeMeshByMask == null && removeMeshByBlendShape.Length == 0 && removeMeshInBox.Length == 0)
             return null;
 
         if (!renderer.sharedMesh.isReadable)
@@ -51,21 +51,18 @@ internal class MeshRemovalProviderImpl : MeshRemovalProvider
     private MeshRemovalProviderImpl(
         SkinnedMeshRenderer renderer, 
         RemoveMeshByMask? removeMeshByMask, 
-        RemoveMeshByBlendShape? removeMeshByBlendShape, 
-        RemoveMeshInBox? removeMeshInBox)
+        RemoveMeshByBlendShape[] removeMeshByBlendShape, 
+        RemoveMeshInBox[] removeMeshInBox)
     {
-        if (removeMeshByBlendShape != null)
+        if (removeMeshByBlendShape.Length != 0)
         {
-            var toleranceSqrByShape = new System.Collections.Generic.Dictionary<string, double>();
-            foreach (var shapeKey in removeMeshByBlendShape.ShapeKeys)
-                toleranceSqrByShape[shapeKey] = removeMeshByBlendShape.tolerance * removeMeshByBlendShape.tolerance;
-
+            var toleranceSqrByShape = EditModePreview.RemoveMeshByBlendShapeRendererNode.CalculateToleranceSqrByShape(removeMeshByBlendShape);
             _removedByBlendShape = EditModePreview.RemoveMeshByBlendShapeRendererNode.ComputeShouldRemoveVertex(renderer.sharedMesh, toleranceSqrByShape);
         }
 
-        if (removeMeshInBox != null)
+        if (removeMeshInBox.Length != 0)
         {
-            _removedByBox = EditModePreview.RemoveMeshInBoxRendererNode.ComputeShouldRemoveVertex(renderer, new[] { removeMeshInBox });
+            _removedByBox = EditModePreview.RemoveMeshInBoxRendererNode.ComputeShouldRemoveVertex(renderer, removeMeshInBox);
         }
 
         if (removeMeshByMask != null)
