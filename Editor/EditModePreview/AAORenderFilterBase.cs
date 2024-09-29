@@ -48,7 +48,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
             }
 
             return componentsByRenderer
-                .Where(x => SupportsMultiple() ? x.Value.Count > 1 : x.Value.Count == 1)
+                .Where(x => SupportsMultiple() ? x.Value.Count >= 1 : x.Value.Count == 1)
                 .Select(pair => RenderGroup.For(pair.Key).WithData(pair.Value.ToArray()))
                 .ToImmutableList();
         }

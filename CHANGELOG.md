@@ -63,6 +63,7 @@ The format is based on [Keep a Changelog].
 - Avatars with Visame Skinned Mesh disabled will not able to upload `#1202`
 - Avatar Optimizer does not support `Additive Reference Pose` `#1208`
 - Typo in menu for creating Asset Description `#1213`
+- `SupportsMultiple()` render filters ignore renderers with only one component attached `#1218`
 
 ### Security
 
