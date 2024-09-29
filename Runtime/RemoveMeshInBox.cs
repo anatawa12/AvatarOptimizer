@@ -6,6 +6,8 @@ using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer
 {
+    // Since AAO 1.8.0, this component can be added multiple times.
+    // In AAO 1.7.0 or earlier, this component was marked as [DisallowMultipleComponent].
     [AddComponentMenu("Avatar Optimizer/AAO Remove Mesh in Box")]
     [RequireComponent(typeof(SkinnedMeshRenderer))]
     [AllowMultipleComponent]
