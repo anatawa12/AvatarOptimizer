@@ -735,9 +735,9 @@ internal struct OptimizeTextureImpl {
             Texture2D newTexture;
 
             var mipmapCount = Mathf.Min(Utils.MostSignificantBit(Mathf.Min(newWidth, newHeight)), texture2D.mipmapCount);
-            if (useBlockCopying && GraphicsFormatUtility.IsCompressedFormat(texture2D.format) && mipmapCount == 1)
+            // Crunch compressed texture will return empty array for `GetRawTextureData`
+            if (useBlockCopying && GraphicsFormatUtility.IsCompressedFormat(texture2D.format) && !GraphicsFormatUtility.IsCrunchFormat(texture2D.format) && mipmapCount == 1)
             {
-
                 var destMipmapSize = GraphicsFormatUtility.ComputeMipmapSize(newWidth, newHeight, texture2D.format);
                 var sourceMipmapSize = GraphicsFormatUtility.ComputeMipmapSize(texture2D.width, texture2D.height, texture2D.format);
 

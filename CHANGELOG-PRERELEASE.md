@@ -20,6 +20,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - Typo in menu for creating Asset Description `#1213`
+- Optimize Texture broken with Crunch Compression `#1215`
 
 ### Security
 
