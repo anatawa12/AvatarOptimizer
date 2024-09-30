@@ -8,23 +8,30 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- API to get in advance whether a polygon will be removed `#1177`
 
 ### Changed
-- Improved Prefab Safe Set, which are used in MergePhysBone, MergeSkinnedMesh, FreezeBlendShape and more components `#1212`
-  - This should improve compatibility with replacing base prefab, which is added in Unity 2022.
-- Allow multiple component for Remove Mesh components with API `#1216` `#1218`
-  - This allows non-destructive tools to add Remove Mesh components even if Remove Mesh component are added before.
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
-- Typo in menu for creating Asset Description `#1213`
-- Optimize Texture broken with Crunch Compression `#1215`
 
 ### Security
+
+## [1.8.0-beta.3] - 2024-09-30
+### Added
+- API to get in advance whether a polygon will be removed [`#1177`](https://github.com/anatawa12/AvatarOptimizer/pull/1177)
+
+### Changed
+- Improved Prefab Safe Set, which are used in MergePhysBone, MergeSkinnedMesh, FreezeBlendShape and more components [`#1212`](https://github.com/anatawa12/AvatarOptimizer/pull/1212)
+  - This should improve compatibility with replacing base prefab, which is added in Unity 2022.
+- Allow multiple component for Remove Mesh components with API [`#1216`](https://github.com/anatawa12/AvatarOptimizer/pull/1216) [`#1218`](https://github.com/anatawa12/AvatarOptimizer/pull/1218)
+  - This allows non-destructive tools to add Remove Mesh components even if Remove Mesh component are added before.
+
+### Fixed
+- Typo in menu for creating Asset Description [`#1213`](https://github.com/anatawa12/AvatarOptimizer/pull/1213)
+- Optimize Texture broken with Crunch Compression [`#1215`](https://github.com/anatawa12/AvatarOptimizer/pull/1215)
 
 ## [1.8.0-beta.2] - 2024-09-25
 ### Changed
@@ -1572,7 +1579,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-beta.2...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-beta.3...HEAD
+[1.8.0-beta.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-beta.2...v1.8.0-beta.3
 [1.8.0-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.13-beta.1...v1.8.0-beta.2
 [1.7.13-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-beta.1...v1.7.13-beta.1
 [1.8.0-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.12...v1.8.0-beta.1
