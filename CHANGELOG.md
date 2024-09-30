@@ -43,12 +43,12 @@ The format is based on [Keep a Changelog].
 - Use UInt16 index buffer if possible even when total vertex count is more than 2^16 `#1178`
   - With baseVertex in index buffer, we can use UInt16 index buffer even if total vertex count is more than 2^16.
   - Of course, if one submeh references wide range of vertices, we cannot use UInt16 index buffer so we still use UInt32 index buffer in such a case.
-- Reimplement Preview system with NDMF Preview System `#1131` `#1195`
+- Reimplement Preview system with NDMF Preview System `#1131` `#1195` `#1218`
   - This will prevent issues relates to Animation Mode bug.
   - This allows you to preview Remove Mesh components without selecting Mesh OR while in Animation Mode.
 - Improved Prefab Safe Set, which are used in MergePhysBone, MergeSkinnedMesh, FreezeBlendShape and more components `#1212`
   - This should improve compatibility with replacing base prefab, which is added in Unity 2022.
-- Allow multiple component for Remove Mesh components with API `#1216`
+- Allow multiple component for Remove Mesh components with API `#1216` `#1218`
   - This allows non-destructive tools to add Remove Mesh components even if Remove Mesh component are added before.
 
 ### Deprecated
