@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- API about Prefab Safe Set are broken with prefab instance `#1219`
 
 ### Security
 
