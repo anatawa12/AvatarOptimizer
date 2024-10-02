@@ -20,20 +20,8 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             return nestCount;
         }
 
-        public static bool ShouldUsePrefabOnSceneLayer(Object instance)
-        {
-            var isInstance = PrefabUtility.IsPartOfPrefabInstance(instance);
-            var isAsset = PrefabUtility.IsPartOfPrefabAsset(instance);
-
-            var currentPrefabStage = PrefabStageUtility.GetCurrentPrefabStage();
-            if (currentPrefabStage != null)
-            {
-                var instanceGameObject = instance as GameObject ?? (instance as Component)?.gameObject;
-                isAsset |= currentPrefabStage.IsPartOfPrefabContents(instanceGameObject);
-            }
-
-            return isInstance && !isAsset;
-        }
+        public static bool ShouldUsePrefabOnSceneLayer(Object instance) =>
+            PrefabSafeSetRuntimeUtil.ShouldUsePrefabOnSceneLayer(instance);
 
         public static bool IsNullOrMissing<T>(this T self, Object context) =>
             self.IsNullOrMissing(new NullOrMissingContext(context));
