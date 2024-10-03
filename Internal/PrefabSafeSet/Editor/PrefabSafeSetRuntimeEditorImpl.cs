@@ -48,10 +48,31 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 
             if (!shouldUsePrefabOnSceneLayer && prefabSafeSet.usingOnSceneLayer)
             {
-                PrefabSafeSetRuntimeUtil.ResizeArray(ref prefabSafeSet.prefabLayers, maxLayerCount);
-                var currentLayer = prefabSafeSet.prefabLayers[maxLayerCount - 1];
-                currentLayer.additions = currentLayer.additions.Concat(prefabSafeSet.onSceneLayer.additions).ToArray();
-                currentLayer.removes = currentLayer.removes.Concat(prefabSafeSet.onSceneLayer.removes).ToArray();
+                var onSceneLayer = prefabSafeSet.onSceneLayer;
+
+                if (maxLayerCount == 0)
+                {
+                    var result = new ListSet<T>(prefabSafeSet.mainSet);
+                    foreach (var layer in prefabSafeSet.prefabLayers)
+                    {
+                        result.RemoveRange(layer.removes);
+                        result.AddRange(layer.additions);
+                    }
+
+                    result.RemoveRange(onSceneLayer.removes);
+                    result.AddRange(onSceneLayer.additions);
+
+                    prefabSafeSet.mainSet = result.ToArray();
+                    prefabSafeSet.prefabLayers = Array.Empty<PrefabLayer<T>>();
+                }
+                else
+                {
+                    PrefabSafeSetRuntimeUtil.ResizeArray(ref prefabSafeSet.prefabLayers, maxLayerCount);
+                    var currentLayer = prefabSafeSet.prefabLayers[maxLayerCount - 1];
+                    currentLayer.additions = currentLayer.additions.Concat(onSceneLayer.additions).ToArray();
+                    currentLayer.removes = currentLayer.removes.Concat(onSceneLayer.removes).ToArray();
+                }
+
                 prefabSafeSet.onSceneLayer = new PrefabLayer<T>();
                 prefabSafeSet.usingOnSceneLayer = false;
             }
