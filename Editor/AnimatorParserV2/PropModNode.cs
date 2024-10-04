@@ -88,22 +88,12 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
         public FloatValueInfo ConstantInfoForSideBySide(IEnumerable<PropModNode<FloatValueInfo>> nodes)
         {
-            using var enumerator = nodes.GetEnumerator();
-            Debug.Assert(enumerator.MoveNext());
-
-            if (enumerator.Current!.Value.PossibleValues is not { } possibleValues)
-                return Variable;
-
-            var allPossibleValues = new HashSet<float>(possibleValues);
-
-            while (enumerator.MoveNext())
+            var allPossibleValues = new HashSet<float>();
+            foreach (var propModNode in nodes)
             {
-                if (enumerator.Current.Value.PossibleValues is not { } otherValues)
-                    return Variable;
-
-                allPossibleValues.UnionWith(otherValues);
+                if (propModNode.Value.PossibleValues is not { } values) return Variable;
+                allPossibleValues.UnionWith(values);
             }
-
             return new FloatValueInfo(allPossibleValues.ToArray());
         }
 
@@ -128,8 +118,11 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                         switch (layer.BlendingMode)
                         {
                             case AnimatorLayerBlendingMode.Additive:
-                                // ObjectReference will work as override even with additive mode.
-                                // additive with changing value: value cannot be determined 
+                                // having multiple possible value means animated, and this means variable.
+                                // if only one value is exists with additive layer, noting is added so skip this layer.
+                                // for additive reference pose, length of otherValues will be two or more with 
+                                // reference post value.
+                                // see implementation of FloatAnimationCurveNode.ParseProperty
                                 if (otherValues.Length != 1) return Variable;
                                 break;
                             case AnimatorLayerBlendingMode.Override:
@@ -148,10 +141,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                     }
                         break;
                     case AnimatorWeightState.Variable:
-                    {
-                        return Variable; // float: variable
-                    }
-                        break;
+                        return Variable;
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
@@ -179,22 +169,8 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
         public Object[] PossibleValues => _possibleValues ?? Array.Empty<Object>();
 
-        public ObjectValueInfo ConstantInfoForSideBySide(IEnumerable<PropModNode<ObjectValueInfo>> nodes)
-        {
-            using var enumerator = nodes.GetEnumerator();
-            Debug.Assert(enumerator.MoveNext());
-
-            var possibleValues = enumerator.Current.Value.PossibleValues;
-
-            var allPossibleValues = new HashSet<Object>(possibleValues);
-
-            while (enumerator.MoveNext())
-            {
-                allPossibleValues.UnionWith(enumerator.Current.Value.PossibleValues);
-            }
-
-            return new ObjectValueInfo(allPossibleValues.ToArray());
-        }
+        public ObjectValueInfo ConstantInfoForSideBySide(IEnumerable<PropModNode<ObjectValueInfo>> nodes) =>
+            new(nodes.SelectMany(node => node.Value.PossibleValues).Distinct().ToArray());
 
         public ObjectValueInfo ConstantInfoForBlendTree(IEnumerable<PropModNode<ObjectValueInfo>> nodes,
             BlendTreeType blendTreeType) => ConstantInfoForSideBySide(nodes);
@@ -202,44 +178,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         public ObjectValueInfo ConstantInfoForOverriding<TLayer>(IEnumerable<TLayer> layersReversed)
             where TLayer : ILayer<ObjectValueInfo>
         {
-            var allPossibleValues = new HashSet<Object>();
-
-            foreach (var layer in layersReversed)
-            {
-                switch (layer.Weight)
-                {
-                    case AnimatorWeightState.AlwaysOne:
-                    case AnimatorWeightState.EitherZeroOrOne:
-                    {
-                        var otherValues = layer.Node.Value.PossibleValues;
-
-                        switch (layer.BlendingMode)
-                        {
-                            case AnimatorLayerBlendingMode.Additive:
-                            case AnimatorLayerBlendingMode.Override:
-                                allPossibleValues.UnionWith(otherValues);
-
-                                if (layer.IsAlwaysOverride())
-                                {
-                                    // the layer is always applied at the highest property.
-                                    return new ObjectValueInfo(allPossibleValues.ToArray());
-                                }
-
-                                break;
-                            default:
-                                throw new ArgumentOutOfRangeException();
-                        }
-                    }
-                        break;
-                    case AnimatorWeightState.Variable:
-                        allPossibleValues.UnionWith(layer.Node.Value.PossibleValues);
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-            }
-
-            return new ObjectValueInfo(allPossibleValues.ToArray());
+            return new ObjectValueInfo(layersReversed.WhileApplied().SelectMany(layer => layer.Node.Value.PossibleValues).Distinct().ToArray());
         }
 
         public bool Equals(ObjectValueInfo other) => NodeImplUtils.SetEquals(PossibleValues, PossibleValues);
