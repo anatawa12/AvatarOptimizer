@@ -59,7 +59,14 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
         public T[]? PossibleValues => _possibleValues;
 
-        public static ValueInfo<T> Variable => default;
+        public static ValueInfo<T> Variable
+        {
+            get
+            {
+                if (default(T) == null) throw new InvalidOperationException("Variable type is not allowed with Object");
+                return default;
+            }
+        }
 
         public ValueInfo(T value) => _possibleValues = new[] { value };
 
@@ -148,7 +155,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             where T : notnull
             where TLayer : ILayer<T>
         {
-            var canAdditive = typeof(T) == typeof(float);
+            var canAdditive = default(T) != null;
             var allPossibleValues = new HashSet<T>();
 
             foreach (var layer in layersReversed)
@@ -157,6 +164,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 {
                     case AnimatorWeightState.AlwaysOne:
                     case AnimatorWeightState.EitherZeroOrOne:
+                    {
                         if (!(layer.Node.Value.PossibleValues is T[] otherValues)) return ValueInfo<T>.Variable;
 
                         switch (layer.BlendingMode)
@@ -181,10 +189,16 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                             default:
                                 throw new ArgumentOutOfRangeException();
                         }
-
+                    }
                         break;
                     case AnimatorWeightState.Variable:
-                        return ValueInfo<T>.Variable;
+                    {
+                        if (default(T) != null) return ValueInfo<T>.Variable; // float: variable
+                        if (!(layer.Node.Value.PossibleValues is T[] otherValues))
+                            throw new InvalidOperationException();
+                        allPossibleValues.UnionWith(otherValues);
+                    }
+                        break;
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
@@ -432,9 +446,17 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         public IReadOnlyList<BlendTreeElement<T>> Children => _children;
         public override bool AppliedAlways => WeightSumIsOne && !_partial && _children.All(x => x.Node.AppliedAlways);
 
-        public override ValueInfo<T> Value => !WeightSumIsOne
-            ? ValueInfo<T>.Variable
-            : NodeImplUtils.ConstantInfoForSideBySide(_children.Select(x => x.Node));
+        public override ValueInfo<T> Value
+        {
+            get
+            {
+                if (default(T) == null)
+                    return NodeImplUtils.ConstantInfoForSideBySide(_children.Select(x => x.Node));
+                return !WeightSumIsOne
+                    ? ValueInfo<T>.Variable
+                    : NodeImplUtils.ConstantInfoForSideBySide(_children.Select(x => x.Node));
+            }
+        }
 
         public override IEnumerable<ObjectReference> ContextReferences =>
             _children.SelectMany(x => x.Node.ContextReferences);

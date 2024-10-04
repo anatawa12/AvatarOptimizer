@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
+- Animator Parser Debug Window now supports ObjectReference animation support `#1222`
 
 ### Deprecated
 
@@ -17,6 +18,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - API about Prefab Safe Set are broken with prefab instance `#1219`
+- Optimize Texture may cause false positive optimization with blendtree `#1225`
 
 ### Security
 
