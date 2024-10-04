@@ -50,6 +50,7 @@ The format is based on [Keep a Changelog].
   - This should improve compatibility with replacing base prefab, which is added in Unity 2022.
 - Allow multiple component for Remove Mesh components with API `#1216` `#1218`
   - This allows non-destructive tools to add Remove Mesh components even if Remove Mesh component are added before.
+- Animator Parser Debug Window now supports ObjectReference animation support `#1222`
 
 ### Deprecated
 
