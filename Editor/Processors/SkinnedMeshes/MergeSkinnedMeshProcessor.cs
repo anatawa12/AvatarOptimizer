@@ -426,8 +426,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 for (var i = 0; i < meshInfo2.SubMeshes.Count; i++)
                 {
                     if (component.TryGetObject($"m_Materials.Array.data[{i}]", out var objectNode))
-                        materials.AddRange(objectNode.Value.PossibleValues?.OfType<Material>().Where(x => x) ??
-                                           Enumerable.Empty<Material>());
+                        materials.AddRange(objectNode.Value.PossibleValues.OfType<Material>().Where(x => x));
                     if (meshInfo2.SubMeshes[i].SharedMaterial is {} newMaterial)
                         materials.Add(newMaterial);
                 }

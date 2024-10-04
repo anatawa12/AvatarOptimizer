@@ -138,7 +138,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
         public bool IsConstant => _value.IsConstant;
         public Object ConstantValue => _value.ConstantValue;
-        public Object[]? PossibleValues => _value.PossibleValues;
+        public Object[] PossibleValues => _value.PossibleValues ?? throw new InvalidOperationException("Variable type is not allowed with Object");
 
         private PropModNode<ValueInfo<Object>> Wrap(PropModNode<ObjectValueInfo> node) =>
             new PropModNodeWrapper<ObjectValueInfo, ValueInfo<Object>>(node, x => x._value);

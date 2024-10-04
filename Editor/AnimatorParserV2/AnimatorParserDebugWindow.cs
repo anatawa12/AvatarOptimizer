@@ -72,10 +72,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                     if (!propState.AppliedAlways)
                         propStateInfo += "Partial:";
 
-                    if (propState.Value.PossibleValues is { } values)
-                        propStateInfo += $"Const:{string.Join(",", values.Select(x => x.name))}";
-                    else
-                        propStateInfo += "Variable";
+                    propStateInfo += $"Const:{string.Join(",", propState.Value.PossibleValues.Select(x => x.name))}";
 
                     NarrowValueLabelField(propName, propStateInfo);
                 }
@@ -129,10 +126,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                     if (!propState.AppliedAlways)
                         propStateInfo += "Partial:";
 
-                    if (propState.Value.PossibleValues is { } values)
-                        propStateInfo += $"Const:{string.Join(",", values.Select(x => x.name))}";
-                    else
-                        propStateInfo += "Variable";
+                    propStateInfo += $"Const:{string.Join(",", propState.Value.PossibleValues.Select(x => x.name))}";
 
                     resultText.Append("  ").Append(propName).Append(": ").Append(propStateInfo).Append('\n');
                     if (detailed)
