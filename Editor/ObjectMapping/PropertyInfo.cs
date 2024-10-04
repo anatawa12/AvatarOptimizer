@@ -67,13 +67,13 @@ namespace Anatawa12.AvatarOptimizer
             _objectNode = node;
         }
 
-        public void AddModification(ComponentPropModNodeBase<float> node, bool alwaysApplied)
+        public void AddModification(ComponentPropModNodeBase<ValueInfo<float>> node, bool alwaysApplied)
         {
             if (_floatNode == null) _floatNode = new RootPropModNode<float>();
             _floatNode.Add(node, alwaysApplied);
         }
 
-        public void AddModification(ComponentPropModNodeBase<Object> node, bool alwaysApplied)
+        public void AddModification(ComponentPropModNodeBase<ValueInfo<Object>> node, bool alwaysApplied)
         {
             if (_objectNode == null) _objectNode = new RootPropModNode<Object>();
             _objectNode.Add(node, alwaysApplied);
@@ -108,7 +108,7 @@ namespace Anatawa12.AvatarOptimizer
         }
 
         public static void AddModification(this AnimationComponentInfo<PropertyInfo> info, string property,
-            ComponentPropModNodeBase<float> node, bool alwaysApplied)
+            ComponentPropModNodeBase<ValueInfo<float>> node, bool alwaysApplied)
         {
             if (info == null) throw new ArgumentNullException(nameof(info));
             info.GetPropertyInfo(property).AddModification(node, alwaysApplied);
@@ -129,7 +129,7 @@ namespace Anatawa12.AvatarOptimizer
         }
 
         public static void AddModification(this AnimationComponentInfo<PropertyInfo> info, string property,
-            ComponentPropModNodeBase<Object> node, bool alwaysApplied)
+            ComponentPropModNodeBase<ValueInfo<Object>> node, bool alwaysApplied)
         {
             if (info == null) throw new ArgumentNullException(nameof(info));
             info.GetPropertyInfo(property).AddModification(node, alwaysApplied);

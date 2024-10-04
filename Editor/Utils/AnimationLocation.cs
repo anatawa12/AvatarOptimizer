@@ -50,7 +50,7 @@ namespace Anatawa12.AvatarOptimizer
 
         public static IEnumerable<AnimationLocation> CollectAnimationLocation(Animator animator, int playableLayer,
             int animatorLayer,
-            AnimatorState state, ImmutablePropModNode<float> node)
+            AnimatorState state, ImmutablePropModNode<ValueInfo<float>> node)
         {
             // fast path
             if (node is FloatAnimationCurveNode floatNode)
@@ -63,7 +63,7 @@ namespace Anatawa12.AvatarOptimizer
         }
 
         private static IEnumerable<AnimationLocation> CollectAnimationLocationSlow(Animator animator,
-            int playableLayer, int animatorLayer, AnimatorState state, ImmutablePropModNode<float> node)
+            int playableLayer, int animatorLayer, AnimatorState state, ImmutablePropModNode<ValueInfo<float>> node)
         {
             // slow path: recursively collect blend tree
             var queue = new Queue<(BlendTreeNode<float>, int[])>();

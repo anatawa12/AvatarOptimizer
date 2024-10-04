@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 {
-    class HumanoidAnimatorPropModNode : ComponentPropModNode<float, Animator>
+    class HumanoidAnimatorPropModNode : ComponentPropModNode<ValueInfo<float>, Animator>
     {
         public HumanoidAnimatorPropModNode(Animator component) : base(component)
         {
@@ -17,14 +17,14 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         public override bool AppliedAlways => true;
     }
 
-    internal readonly struct PlayableLayerNodeInfo<T> : ILayer<T>
+    internal readonly struct PlayableLayerNodeInfo<T> : ILayer<ValueInfo<T>>
         where T : notnull
     {
         public AnimatorWeightState Weight { get; }
         public AnimatorLayerBlendingMode BlendingMode { get; }
         public int LayerIndex { get; }
         public readonly AnimatorControllerPropModNode<T> Node;
-        PropModNode<T> ILayer<T>.Node => Node;
+        PropModNode<ValueInfo<T>> ILayer<ValueInfo<T>>.Node => Node;
         IPropModNode ILayer.Node => Node;
 
         public PlayableLayerNodeInfo(AnimatorWeightState weight, AnimatorLayerBlendingMode blendingMode,
@@ -45,7 +45,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         }
     }
 
-    class AnimatorPropModNode<T> : ComponentPropModNode<T, Animator>
+    class AnimatorPropModNode<T> : ComponentPropModNode<ValueInfo<T>, Animator>
         where T : notnull
     {
         private readonly IEnumerable<PlayableLayerNodeInfo<T>> _layersReversed;
@@ -75,14 +75,14 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             _layersReversed.SelectMany(x => x.Node.ContextReferences));
     }
 
-    internal readonly struct AnimatorLayerNodeInfo<T> : ILayer<T>
+    internal readonly struct AnimatorLayerNodeInfo<T> : ILayer<ValueInfo<T>>
         where T : notnull
     {
         public AnimatorWeightState Weight { get; }
         public AnimatorLayerBlendingMode BlendingMode { get; }
         public int LayerIndex { get; }
         public readonly AnimatorLayerPropModNode<T> Node;
-        PropModNode<T> ILayer<T>.Node => Node;
+        PropModNode<ValueInfo<T>> ILayer<ValueInfo<T>>.Node => Node;
         IPropModNode ILayer.Node => Node;
 
         public AnimatorLayerNodeInfo(AnimatorWeightState weight, AnimatorLayerBlendingMode blendingMode,
@@ -95,7 +95,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         }
     }
 
-    class AnimatorControllerPropModNode<T> : PropModNode<T>
+    class AnimatorControllerPropModNode<T> : PropModNode<ValueInfo<T>>
         where T : notnull
     {
         private readonly IEnumerable<AnimatorLayerNodeInfo<T>> _layersReversed;
@@ -133,13 +133,13 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         Variable
     }
 
-    internal class AnimatorLayerPropModNode<T> : ImmutablePropModNode<T>
+    internal class AnimatorLayerPropModNode<T> : ImmutablePropModNode<ValueInfo<T>>
         where T : notnull
     {
-        private readonly IEnumerable<AnimatorStatePropModNode<T>> _children;
+        private readonly IEnumerable<AnimatorStatePropModNode<ValueInfo<T>>> _children;
         private readonly bool _partial;
 
-        public AnimatorLayerPropModNode(IEnumerable<AnimatorStatePropModNode<T>> children, bool partial)
+        public AnimatorLayerPropModNode(ICollection<AnimatorStatePropModNode<ValueInfo<T>>> children, bool partial)
         {
             // expected to pass list or array
             // ReSharper disable once PossibleMultipleEnumeration
@@ -152,25 +152,25 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         public override bool AppliedAlways => !_partial && _children.All(x => x.AppliedAlways);
         public override ValueInfo<T> Value => NodeImplUtils.ConstantInfoForSideBySide(_children);
         public override IEnumerable<ObjectReference> ContextReferences => _children.SelectMany(x => x.ContextReferences);
-        public IEnumerable<AnimatorStatePropModNode<T>> Children => _children;
+        public IEnumerable<AnimatorStatePropModNode<ValueInfo<T>>> Children => _children;
     }
 
-    internal class AnimatorStatePropModNode<T> : ImmutablePropModNode<T>
-        where T : notnull
+    internal class AnimatorStatePropModNode<TValueInfo> : ImmutablePropModNode<TValueInfo>
+        where TValueInfo : struct, IValueInfo<TValueInfo>
     {
-        private readonly ImmutablePropModNode<T> _node;
+        private readonly ImmutablePropModNode<TValueInfo> _node;
         private readonly AnimatorState _state;
 
-        public AnimatorStatePropModNode(ImmutablePropModNode<T> node, AnimatorState state)
+        public AnimatorStatePropModNode(ImmutablePropModNode<TValueInfo> node, AnimatorState state)
         {
             _node = node;
             _state = state;
         }
 
-        public ImmutablePropModNode<T> Node => _node;
+        public ImmutablePropModNode<TValueInfo> Node => _node;
         public AnimatorState State => _state;
         public override bool AppliedAlways => _node.AppliedAlways;
-        public override ValueInfo<T> Value => _node.Value;
+        public override TValueInfo Value => _node.Value;
         public override IEnumerable<ObjectReference> ContextReferences => _node.ContextReferences;
     }
 }

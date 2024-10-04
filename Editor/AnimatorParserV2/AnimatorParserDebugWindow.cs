@@ -144,7 +144,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             return resultText.ToString();
         }
 
-        private void AppendNodeRecursive<T>(PropModNode<T> propState, StringBuilder resultText, string indent)
+        private void AppendNodeRecursive<T>(PropModNode<ValueInfo<T>> propState, StringBuilder resultText, string indent)
             where T : notnull
         {
             switch (propState)
@@ -172,7 +172,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 case HumanoidAnimatorPropModNode humanoid:
                     resultText.Append($"{indent}Humanoid: {humanoid.Component.name}\n");
                     break;
-                case VariableComponentPropModNode<T> variable:
+                case VariableComponentPropModNode variable:
                     resultText.Append($"{indent}Variable({variable.Component.GetType().Name}): {variable.Component.name}\n");
                     break;
                 case AnimatorLayerPropModNode<T> animatorLayer:
@@ -180,7 +180,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                     foreach (var childNode in animatorLayer.Children)
                         AppendNodeRecursive(childNode, resultText, indent + "  ");
                     break;
-                case AnimatorStatePropModNode<T> stateNode:
+                case AnimatorStatePropModNode<ValueInfo<T>> stateNode:
                     resultText.Append($"{indent}AnimatorState: {stateNode.State.name}\n");
                     AppendNodeRecursive(stateNode.Node, resultText, indent + "  ");
                     break;

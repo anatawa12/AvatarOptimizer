@@ -7,8 +7,8 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 {
     internal interface INodeContainer
     {
-        IReadOnlyDictionary<(ComponentOrGameObject target, string prop), PropModNode<float>> FloatNodes { get; }
-        IReadOnlyDictionary<(ComponentOrGameObject target, string prop), PropModNode<Object>> ObjectNodes { get; }
+        IReadOnlyDictionary<(ComponentOrGameObject target, string prop), PropModNode<ValueInfo<float>>> FloatNodes { get; }
+        IReadOnlyDictionary<(ComponentOrGameObject target, string prop), PropModNode<ValueInfo<Object>>> ObjectNodes { get; }
     }
 
     internal interface INodeContainer<TFloatNode, TObjectNode>
@@ -24,13 +24,13 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         private readonly Dictionary<(ComponentOrGameObject target, string prop), RootPropModNode<Object>> _objectNodes =
             new Dictionary<(ComponentOrGameObject, string), RootPropModNode<Object>>();
 
-        IReadOnlyDictionary<(ComponentOrGameObject target, string prop), PropModNode<float>> INodeContainer.
+        IReadOnlyDictionary<(ComponentOrGameObject target, string prop), PropModNode<ValueInfo<float>>> INodeContainer.
             FloatNodes =>
-            Utils.CastDic<PropModNode<float>>().CastedDic(FloatNodes);
+            Utils.CastDic<PropModNode<ValueInfo<float>>>().CastedDic(FloatNodes);
 
-        IReadOnlyDictionary<(ComponentOrGameObject target, string prop), PropModNode<Object>> INodeContainer.
+        IReadOnlyDictionary<(ComponentOrGameObject target, string prop), PropModNode<ValueInfo<Object>>> INodeContainer.
             ObjectNodes =>
-            Utils.CastDic<PropModNode<Object>>().CastedDic(ObjectNodes);
+            Utils.CastDic<PropModNode<ValueInfo<Object>>>().CastedDic(ObjectNodes);
 
         public IReadOnlyDictionary<(ComponentOrGameObject target, string prop), RootPropModNode<float>> FloatNodes =>
             _floatNodes;
@@ -57,7 +57,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             }
         }
 
-        public void Add(Component component, string prop, ComponentPropModNodeBase<float> node, bool alwaysApplied)
+        public void Add(Component component, string prop, ComponentPropModNodeBase<ValueInfo<float>> node, bool alwaysApplied)
         {
             var key = (component, prop);
             if (!FloatNodes.TryGetValue(key, out var root))
@@ -65,7 +65,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             root.Add(node, alwaysApplied);
         }
 
-        public void Add(Component component, string prop, ComponentPropModNodeBase<Object> node, bool alwaysApplied)
+        public void Add(Component component, string prop, ComponentPropModNodeBase<ValueInfo<Object>> node, bool alwaysApplied)
         {
             var key = (component, prop);
             if (!_objectNodes.TryGetValue(key, out var root))
@@ -80,8 +80,8 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
     }
 
     internal class NodeContainerBase<TFloatNode, TObjectNode> : INodeContainer<TFloatNode, TObjectNode>, INodeContainer
-        where TFloatNode : PropModNode<float>
-        where TObjectNode : PropModNode<Object>
+        where TFloatNode : PropModNode<ValueInfo<float>>
+        where TObjectNode : PropModNode<ValueInfo<Object>>
     {
         private readonly Dictionary<(ComponentOrGameObject target, string prop), TFloatNode> _floatNodes =
             new Dictionary<(ComponentOrGameObject, string), TFloatNode>();
@@ -92,11 +92,11 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         public IReadOnlyDictionary<(ComponentOrGameObject target, string prop), TObjectNode> ObjectNodes =>
             _objectNodes;
 
-        IReadOnlyDictionary<(ComponentOrGameObject target, string prop), PropModNode<float>> INodeContainer.
-            FloatNodes => Utils.CastDic<PropModNode<float>>().CastedDic(_floatNodes);
+        IReadOnlyDictionary<(ComponentOrGameObject target, string prop), PropModNode<ValueInfo<float>>> INodeContainer.
+            FloatNodes => Utils.CastDic<PropModNode<ValueInfo<float>>>().CastedDic(_floatNodes);
 
-        IReadOnlyDictionary<(ComponentOrGameObject target, string prop), PropModNode<Object>> INodeContainer.
-            ObjectNodes => Utils.CastDic<PropModNode<Object>>().CastedDic(_objectNodes);
+        IReadOnlyDictionary<(ComponentOrGameObject target, string prop), PropModNode<ValueInfo<Object>>> INodeContainer.
+            ObjectNodes => Utils.CastDic<PropModNode<ValueInfo<Object>>>().CastedDic(_objectNodes);
 
         public void Add(ComponentOrGameObject target, string prop, TFloatNode node)
         {
@@ -133,11 +133,11 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
     }
 
     internal class ComponentNodeContainer
-        : NodeContainerBase<ComponentPropModNodeBase<float>, ComponentPropModNodeBase<Object>>
+        : NodeContainerBase<ComponentPropModNodeBase<ValueInfo<float>>, ComponentPropModNodeBase<ValueInfo<Object>>>
     {
     }
 
-    internal class ImmutableNodeContainer : NodeContainerBase<ImmutablePropModNode<float>, ImmutablePropModNode<Object>>
+    internal class ImmutableNodeContainer : NodeContainerBase<ImmutablePropModNode<ValueInfo<float>>, ImmutablePropModNode<ValueInfo<Object>>>
     {
     }
 }

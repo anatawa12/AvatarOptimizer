@@ -49,10 +49,10 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             var children = blendTree.children;
 
             return NodesMerger.Merge<
-                ImmutableNodeContainer, ImmutablePropModNode<float>, ImmutablePropModNode<Object>,
+                ImmutableNodeContainer, ImmutablePropModNode<ValueInfo<float>>, ImmutablePropModNode<ValueInfo<Object>>,
                 BlendTreeElement<float>, BlendTreeElement<Object>,
-                ImmutableNodeContainer, ImmutableNodeContainer, ImmutablePropModNode<float>, 
-                ImmutablePropModNode<Object>,
+                ImmutableNodeContainer, ImmutableNodeContainer, ImmutablePropModNode<ValueInfo<float>>, 
+                ImmutablePropModNode<ValueInfo<Object>>,
                 BlendTreeMergeProperty
             >(children.Select(x => ParseMotionInner(root, x.motion, mapping)),
                 new BlendTreeMergeProperty(blendTree.blendType));
@@ -60,10 +60,10 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
         internal readonly struct BlendTreeMergeProperty : 
             IMergeProperty1<
-                ImmutableNodeContainer, ImmutablePropModNode<float>, ImmutablePropModNode<Object>,
+                ImmutableNodeContainer, ImmutablePropModNode<ValueInfo<float>>, ImmutablePropModNode<ValueInfo<Object>>,
                 BlendTreeElement<float>, BlendTreeElement<Object>,
-                ImmutableNodeContainer, ImmutableNodeContainer, ImmutablePropModNode<float>,
-                ImmutablePropModNode<Object>
+                ImmutableNodeContainer, ImmutableNodeContainer, ImmutablePropModNode<ValueInfo<float>>,
+                ImmutablePropModNode<ValueInfo<Object>>
             >
         {
             private readonly BlendTreeType _blendType;
@@ -77,15 +77,15 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             public ImmutableNodeContainer GetContainer(ImmutableNodeContainer source) => source;
 
             public BlendTreeElement<float> GetIntermediate(ImmutableNodeContainer source,
-                ImmutablePropModNode<float> node, int index) => new BlendTreeElement<float>(index, node);
+                ImmutablePropModNode<ValueInfo<float>> node, int index) => new BlendTreeElement<float>(index, node);
 
             public BlendTreeElement<Object> GetIntermediate(ImmutableNodeContainer source,
-                ImmutablePropModNode<Object> node, int index) => new BlendTreeElement<Object>(index, node);
+                ImmutablePropModNode<ValueInfo<Object>> node, int index) => new BlendTreeElement<Object>(index, node);
 
-            public ImmutablePropModNode<float> MergeNode(List<BlendTreeElement<float>> nodes, int sourceCount) =>
+            public ImmutablePropModNode<ValueInfo<float>> MergeNode(List<BlendTreeElement<float>> nodes, int sourceCount) =>
                 new BlendTreeNode<float>(nodes, _blendType, partial: nodes.Count != sourceCount);
 
-            public ImmutablePropModNode<Object> MergeNode(List<BlendTreeElement<Object>> nodes, int sourceCount) =>
+            public ImmutablePropModNode<ValueInfo<Object>> MergeNode(List<BlendTreeElement<Object>> nodes, int sourceCount) =>
                 new BlendTreeNode<Object>(nodes, _blendType, partial: nodes.Count != sourceCount);
         }
 

@@ -31,8 +31,8 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             where TSourceObjectNode : notnull
 
             where TResultContainer : NodeContainerBase<TResultFloatNode, TResultObjectNode>
-            where TResultFloatNode : PropModNode<float>
-            where TResultObjectNode : PropModNode<Object>
+            where TResultFloatNode : PropModNode<ValueInfo<float>>
+            where TResultObjectNode : PropModNode<ValueInfo<Object>>
 
             where TSourceContainer : INodeContainer<TSourceFloatNode, TSourceObjectNode>
 
@@ -96,8 +96,8 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         TSourceObjectNode
     >
         where TResultContainer : NodeContainerBase<TResultFloatNode, TResultObjectNode>
-        where TResultFloatNode : PropModNode<float>
-        where TResultObjectNode : PropModNode<Object>
+        where TResultFloatNode : PropModNode<ValueInfo<float>>
+        where TResultObjectNode : PropModNode<ValueInfo<Object>>
         where TSourceContainer : INodeContainer<TSourceFloatNode, TSourceObjectNode>
 
         where TSource : notnull
@@ -165,7 +165,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             IEnumerable<(AnimatorWeightState, AnimatorLayerBlendingMode, AnimatorControllerNodeContainer?)>
                 playableLayers) =>
             Merge<
-                ComponentNodeContainer, ComponentPropModNodeBase<float>, ComponentPropModNodeBase<Object>,
+                ComponentNodeContainer, ComponentPropModNodeBase<ValueInfo<float>>, ComponentPropModNodeBase<ValueInfo<Object>>,
                 PlayableLayerNodeInfo<float>, PlayableLayerNodeInfo<Object>,
                 (AnimatorWeightState, AnimatorLayerBlendingMode, AnimatorControllerNodeContainer?),
                 AnimatorControllerNodeContainer, AnimatorControllerPropModNode<float>,
@@ -174,7 +174,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             >(playableLayers, new PlayableLayerMerger(animator));
 
         readonly struct PlayableLayerMerger : IMergeProperty1<
-            ComponentNodeContainer, ComponentPropModNodeBase<float>, ComponentPropModNodeBase<Object>,
+            ComponentNodeContainer, ComponentPropModNodeBase<ValueInfo<float>>, ComponentPropModNodeBase<ValueInfo<Object>>,
             PlayableLayerNodeInfo<float>, PlayableLayerNodeInfo<Object>,
             (AnimatorWeightState, AnimatorLayerBlendingMode, AnimatorControllerNodeContainer?),
             AnimatorControllerNodeContainer, AnimatorControllerPropModNode<float>, AnimatorControllerPropModNode<Object>
@@ -200,10 +200,10 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 AnimatorControllerPropModNode<Object> node, int index) =>
                 new PlayableLayerNodeInfo<Object>(source.Item1, source.Item2, node, index);
 
-            public ComponentPropModNodeBase<float> MergeNode(List<PlayableLayerNodeInfo<float>> nodes, int sourceCount) =>
+            public ComponentPropModNodeBase<ValueInfo<float>> MergeNode(List<PlayableLayerNodeInfo<float>> nodes, int sourceCount) =>
                 new AnimatorPropModNode<float>(_animator, nodes);
 
-            public ComponentPropModNodeBase<Object> MergeNode(List<PlayableLayerNodeInfo<Object>> nodes, int sourceCount) =>
+            public ComponentPropModNodeBase<ValueInfo<Object>> MergeNode(List<PlayableLayerNodeInfo<Object>> nodes, int sourceCount) =>
                 new AnimatorPropModNode<Object>(_animator, nodes);
         }
 

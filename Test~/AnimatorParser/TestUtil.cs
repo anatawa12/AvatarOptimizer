@@ -25,7 +25,7 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
         public static Expected MultipleAlways(params float[] values) =>
             new Expected(true, new ValueInfo<float>(values));
 
-        public static void AssertPropertyNode(PropModNode<float> propertyNode, Expected property)
+        public static void AssertPropertyNode(PropModNode<ValueInfo<float>> propertyNode, Expected property)
         {
             Assert.That(propertyNode.AppliedAlways, Is.EqualTo(property.Always));
             Assert.That(propertyNode.Value, Is.EqualTo(property.Value));
