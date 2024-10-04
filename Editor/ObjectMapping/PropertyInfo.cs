@@ -9,11 +9,11 @@ namespace Anatawa12.AvatarOptimizer
 {
     internal struct PropertyInfo : IPropertyInfo<PropertyInfo>
     {
-        private RootPropModNode<float>? _floatNode;
-        private RootPropModNode<Object>? _objectNode;
+        private RootPropModNode<ValueInfo<float>>? _floatNode;
+        private RootPropModNode<ValueInfo<Object>>? _objectNode;
 
-        public RootPropModNode<float>? FloatNode => _floatNode?.Normalize();
-        public RootPropModNode<Object>? ObjectNode => _objectNode?.Normalize();
+        public RootPropModNode<ValueInfo<float>>? FloatNode => _floatNode?.Normalize();
+        public RootPropModNode<ValueInfo<Object>>? ObjectNode => _objectNode?.Normalize();
 
         public void MergeTo(ref PropertyInfo property)
         {
@@ -21,7 +21,7 @@ namespace Anatawa12.AvatarOptimizer
             MergeNode(ref property._objectNode, ref _objectNode);
         }
 
-        private static void MergeNode<T>(ref RootPropModNode<T>? mergeTo, ref RootPropModNode<T>? merge)
+        private static void MergeNode<T>(ref RootPropModNode<ValueInfo<T>>? mergeTo, ref RootPropModNode<ValueInfo<T>>? merge)
             where T : notnull
         {
             if (merge == null || merge.IsEmpty) return;
@@ -42,7 +42,7 @@ namespace Anatawa12.AvatarOptimizer
             CopyNode(ref property._objectNode, _objectNode);
         }
 
-        private static void CopyNode<T>(ref RootPropModNode<T>? mergeTo, RootPropModNode<T>? merge)
+        private static void CopyNode<T>(ref RootPropModNode<ValueInfo<T>>? mergeTo, RootPropModNode<ValueInfo<T>>? merge)
             where T : notnull
         {
             if (merge == null || merge.IsEmpty) return;
@@ -55,13 +55,13 @@ namespace Anatawa12.AvatarOptimizer
             mergeTo.Add(merge);
         }
 
-        public void ImportProperty(RootPropModNode<float> node)
+        public void ImportProperty(RootPropModNode<ValueInfo<float>> node)
         {
             if (FloatNode != null) throw new InvalidOperationException();
             _floatNode = node;
         }
 
-        public void ImportProperty(RootPropModNode<Object> node)
+        public void ImportProperty(RootPropModNode<ValueInfo<Object>> node)
         {
             if (ObjectNode != null) throw new InvalidOperationException();
             _objectNode = node;
@@ -69,13 +69,13 @@ namespace Anatawa12.AvatarOptimizer
 
         public void AddModification(ComponentPropModNodeBase<ValueInfo<float>> node, bool alwaysApplied)
         {
-            if (_floatNode == null) _floatNode = new RootPropModNode<float>();
+            if (_floatNode == null) _floatNode = new RootPropModNode<ValueInfo<float>>();
             _floatNode.Add(node, alwaysApplied);
         }
 
         public void AddModification(ComponentPropModNodeBase<ValueInfo<Object>> node, bool alwaysApplied)
         {
-            if (_objectNode == null) _objectNode = new RootPropModNode<Object>();
+            if (_objectNode == null) _objectNode = new RootPropModNode<ValueInfo<Object>>();
             _objectNode.Add(node, alwaysApplied);
         }
     }
@@ -100,7 +100,7 @@ namespace Anatawa12.AvatarOptimizer
 
         [JetBrains.Annotations.Pure]
         public static bool TryGetFloat(this AnimationComponentInfo<PropertyInfo> info, string property, 
-            [NotNullWhen(true)] out RootPropModNode<float>? animation)
+            [NotNullWhen(true)] out RootPropModNode<ValueInfo<float>>? animation)
         {
             if (info == null) throw new ArgumentNullException(nameof(info));
             animation = info.TryGetPropertyInfo(property).FloatNode;
@@ -121,7 +121,7 @@ namespace Anatawa12.AvatarOptimizer
         }
 
         public static bool TryGetObject(this AnimationComponentInfo<PropertyInfo> info, string property,
-            [NotNullWhen(true)] out RootPropModNode<Object>? animation)
+            [NotNullWhen(true)] out RootPropModNode<ValueInfo<Object>>? animation)
         {
             if (info == null) throw new ArgumentNullException(nameof(info));
             animation = info.TryGetPropertyInfo(property).ObjectNode;
@@ -135,14 +135,14 @@ namespace Anatawa12.AvatarOptimizer
             info.GetPropertyInfo(property).AddModification(node, alwaysApplied);
         }
 
-        public static IEnumerable<(string, RootPropModNode<float>)> GetAllFloatProperties(
+        public static IEnumerable<(string, RootPropModNode<ValueInfo<float>>)> GetAllFloatProperties(
             this AnimationComponentInfo<PropertyInfo> info)
         {
             return info.GetAllPropertyInfo.Where(x => x.info.FloatNode != null)
                 .Select(x => (x.name, x.info.FloatNode!));
         }
 
-        public static IEnumerable<(string, RootPropModNode<Object>)> GetAllObjectProperties(
+        public static IEnumerable<(string, RootPropModNode<ValueInfo<Object>>)> GetAllObjectProperties(
             this AnimationComponentInfo<PropertyInfo> info)
         {
             return info.GetAllPropertyInfo.Where(x => x.info.ObjectNode != null)

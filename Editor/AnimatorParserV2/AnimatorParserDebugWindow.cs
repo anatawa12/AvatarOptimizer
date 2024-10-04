@@ -149,7 +149,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         {
             switch (propState)
             {
-                case AnimatorControllerPropModNode<T> animCont:
+                case AnimatorControllerPropModNode<ValueInfo<T>> animCont:
                     resultText.Append($"{indent}AnimatorController: \n");
                     foreach (var layerInfo in animCont.LayersReversed)
                     {
@@ -157,11 +157,11 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                         AppendNodeRecursive(layerInfo.Node, resultText, indent + "    ");
                     }
                     break;
-                case AnimationComponentPropModNode<T> animation:
+                case AnimationComponentPropModNode<ValueInfo<T>> animation:
                     resultText.Append($"{indent}Animation: {animation.Component.name}\n");
                     AppendNodeRecursive(animation.Animation, resultText, indent + "  ");
                     break;
-                case AnimatorPropModNode<T> animator:
+                case AnimatorPropModNode<ValueInfo<T>> animator:
                     resultText.Append($"{indent}Animator: {animator.Component.name}\n");
                     foreach (var layerInfo in animator.LayersReversed)
                     {
@@ -175,7 +175,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 case VariableComponentPropModNode variable:
                     resultText.Append($"{indent}Variable({variable.Component.GetType().Name}): {variable.Component.name}\n");
                     break;
-                case AnimatorLayerPropModNode<T> animatorLayer:
+                case AnimatorLayerPropModNode<ValueInfo<T>> animatorLayer:
                     resultText.Append($"{indent}AnimatorLayer:\n");
                     foreach (var childNode in animatorLayer.Children)
                         AppendNodeRecursive(childNode, resultText, indent + "  ");
@@ -184,7 +184,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                     resultText.Append($"{indent}AnimatorState: {stateNode.State.name}\n");
                     AppendNodeRecursive(stateNode.Node, resultText, indent + "  ");
                     break;
-                case BlendTreeNode<T> blendTreeNode:
+                case BlendTreeNode<ValueInfo<T>> blendTreeNode:
                     resultText.Append($"{indent}BlendTree:\n");
                     foreach (var childNode in blendTreeNode.Children)
                     {
@@ -198,7 +198,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 case ObjectAnimationCurveNode curve:
                     resultText.Append($"{indent}ObjectAnimationCurve: {curve.Clip.name}\n");
                     break;
-                case RootPropModNode<T> rootNode:
+                case RootPropModNode<ValueInfo<T>> rootNode:
                     resultText.Append($"{indent}Root:\n");
                     foreach (var rootNodeChild in rootNode.Children)
                     {

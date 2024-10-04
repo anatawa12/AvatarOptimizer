@@ -17,12 +17,12 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         IReadOnlyDictionary<(ComponentOrGameObject target, string prop), TObjectNode> ObjectNodes { get; }
     }
 
-    internal class RootPropModNodeContainer : INodeContainer<RootPropModNode<float>, RootPropModNode<Object>>, INodeContainer
+    internal class RootPropModNodeContainer : INodeContainer<RootPropModNode<ValueInfo<float>>, RootPropModNode<ValueInfo<Object>>>, INodeContainer
     {
-        private readonly Dictionary<(ComponentOrGameObject target, string prop), RootPropModNode<float>> _floatNodes =
-            new Dictionary<(ComponentOrGameObject, string), RootPropModNode<float>>();
-        private readonly Dictionary<(ComponentOrGameObject target, string prop), RootPropModNode<Object>> _objectNodes =
-            new Dictionary<(ComponentOrGameObject, string), RootPropModNode<Object>>();
+        private readonly Dictionary<(ComponentOrGameObject target, string prop), RootPropModNode<ValueInfo<float>>> _floatNodes =
+            new Dictionary<(ComponentOrGameObject, string), RootPropModNode<ValueInfo<float>>>();
+        private readonly Dictionary<(ComponentOrGameObject target, string prop), RootPropModNode<ValueInfo<Object>>> _objectNodes =
+            new Dictionary<(ComponentOrGameObject, string), RootPropModNode<ValueInfo<Object>>>();
 
         IReadOnlyDictionary<(ComponentOrGameObject target, string prop), PropModNode<ValueInfo<float>>> INodeContainer.
             FloatNodes =>
@@ -32,10 +32,10 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             ObjectNodes =>
             Utils.CastDic<PropModNode<ValueInfo<Object>>>().CastedDic(ObjectNodes);
 
-        public IReadOnlyDictionary<(ComponentOrGameObject target, string prop), RootPropModNode<float>> FloatNodes =>
+        public IReadOnlyDictionary<(ComponentOrGameObject target, string prop), RootPropModNode<ValueInfo<float>>> FloatNodes =>
             _floatNodes;
         
-        public IReadOnlyDictionary<(ComponentOrGameObject target, string prop), RootPropModNode<Object>> ObjectNodes =>
+        public IReadOnlyDictionary<(ComponentOrGameObject target, string prop), RootPropModNode<ValueInfo<Object>>> ObjectNodes =>
             _objectNodes;
 
         public void Add(ComponentNodeContainer? container, bool alwaysApplied)
@@ -45,14 +45,14 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             foreach (var (key, value) in container.FloatNodes)
             {
                 if (!FloatNodes.TryGetValue(key, out var node))
-                    _floatNodes.Add(key, node = new RootPropModNode<float>());
+                    _floatNodes.Add(key, node = new RootPropModNode<ValueInfo<float>>());
                 node.Add(value, alwaysApplied);
             }
             
             foreach (var (key, value) in container.ObjectNodes)
             {
                 if (!ObjectNodes.TryGetValue(key, out var node))
-                    _objectNodes.Add(key, node = new RootPropModNode<Object>());
+                    _objectNodes.Add(key, node = new RootPropModNode<ValueInfo<Object>>());
                 node.Add(value, alwaysApplied);
             }
         }
@@ -61,7 +61,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         {
             var key = (component, prop);
             if (!FloatNodes.TryGetValue(key, out var root))
-                _floatNodes.Add(key, root = new RootPropModNode<float>());
+                _floatNodes.Add(key, root = new RootPropModNode<ValueInfo<float>>());
             root.Add(node, alwaysApplied);
         }
 
@@ -69,7 +69,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         {
             var key = (component, prop);
             if (!_objectNodes.TryGetValue(key, out var root))
-                _objectNodes.Add(key, root = new RootPropModNode<Object>());
+                _objectNodes.Add(key, root = new RootPropModNode<ValueInfo<Object>>());
             root.Add(node, alwaysApplied);
         }
 
@@ -122,13 +122,13 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         }
     }
 
-    internal class AnimatorLayerNodeContainer : NodeContainerBase<AnimatorLayerPropModNode<float>,
-        AnimatorLayerPropModNode<Object>>
+    internal class AnimatorLayerNodeContainer : NodeContainerBase<AnimatorLayerPropModNode<ValueInfo<float>>,
+        AnimatorLayerPropModNode<ValueInfo<Object>>>
     {
     }
 
-    internal class AnimatorControllerNodeContainer : NodeContainerBase<AnimatorControllerPropModNode<float>,
-        AnimatorControllerPropModNode<Object>>
+    internal class AnimatorControllerNodeContainer : NodeContainerBase<AnimatorControllerPropModNode<ValueInfo<float>>,
+        AnimatorControllerPropModNode<ValueInfo<Object>>>
     {
     }
 
