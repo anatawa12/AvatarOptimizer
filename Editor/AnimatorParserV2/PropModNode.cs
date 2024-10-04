@@ -96,35 +96,118 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
     internal readonly struct FloatValueInfo : IValueInfo<FloatValueInfo>
     {
-        private readonly ValueInfo<float> _value;
+        public bool IsConstant => _possibleValues is { Length: 1 };
+        private readonly float[]? _possibleValues;
 
-        public FloatValueInfo(float value) => this = new FloatValueInfo(new ValueInfo<float>(value));
-        public FloatValueInfo(float[] values) => this = new FloatValueInfo(new ValueInfo<float>(values));
-        private FloatValueInfo(ValueInfo<float> value) => _value = value;
+        public FloatValueInfo(float value) => _possibleValues = new[] { value };
+        public FloatValueInfo(float[] values) => _possibleValues = values;
 
-        public bool IsConstant => _value.IsConstant;
-        public float ConstantValue => _value.ConstantValue;
-        public float[]? PossibleValues => _value.PossibleValues;
-        public static FloatValueInfo Variable => new(ValueInfo<float>.Variable);
+        public float ConstantValue 
+        {
+            get
+            {
+                if (!IsConstant) throw new InvalidOperationException("Not Constant");
+                return _possibleValues![0]; // non constant => there is value
+            }
+        }
 
-        private PropModNode<ValueInfo<float>> Wrap(PropModNode<FloatValueInfo> node) =>
-            new PropModNodeWrapper<FloatValueInfo, ValueInfo<float>>(node, x => x._value);
-        private LayerWrapper<FloatValueInfo, ValueInfo<float>> Wrap<TLayer>(TLayer layer) where TLayer : ILayer<FloatValueInfo> =>
-            new(layer, x => x._value);
+        public float[]? PossibleValues => _possibleValues;
+        public static FloatValueInfo Variable => default;
 
-        public bool TryGetConstantValue(out float o) => _value.TryGetConstantValue(out o);
+        public bool TryGetConstantValue(out float o) {
+            if (IsConstant)
+            {
+                o = ConstantValue;
+                return true;
+            }
+            else
+            {
+                o = default;
+                return false;
+            }
+        }
 
-        public FloatValueInfo ConstantInfoForSideBySide(IEnumerable<PropModNode<FloatValueInfo>> nodes) =>
-            new(_value.ConstantInfoForSideBySide(nodes.Select(Wrap)));
+        public FloatValueInfo ConstantInfoForSideBySide(IEnumerable<PropModNode<FloatValueInfo>> nodes)
+        {
+            using var enumerator = nodes.GetEnumerator();
+            Debug.Assert(enumerator.MoveNext());
+
+            if (enumerator.Current!.Value.PossibleValues is not { } possibleValues)
+                return Variable;
+
+            var allPossibleValues = new HashSet<float>(possibleValues);
+
+            while (enumerator.MoveNext())
+            {
+                if (enumerator.Current.Value.PossibleValues is not { } otherValues)
+                    return Variable;
+
+                allPossibleValues.UnionWith(otherValues);
+            }
+
+            return new FloatValueInfo(allPossibleValues.ToArray());
+        }
 
         public FloatValueInfo ConstantInfoForBlendTree(IEnumerable<PropModNode<FloatValueInfo>> nodes,
-            BlendTreeType blendTreeType) => new(_value.ConstantInfoForBlendTree(nodes.Select(Wrap), blendTreeType));
+            BlendTreeType blendTreeType) =>
+            blendTreeType == BlendTreeType.Direct ? Variable : ConstantInfoForSideBySide(nodes);
 
         public FloatValueInfo ConstantInfoForOverriding<TLayer>(IEnumerable<TLayer> layersReversed)
-            where TLayer : ILayer<FloatValueInfo> => new(_value.ConstantInfoForOverriding(layersReversed.Select(Wrap)));
+            where TLayer : ILayer<FloatValueInfo>
+        {
+            var allPossibleValues = new HashSet<float>();
+
+            foreach (var layer in layersReversed)
+            {
+                switch (layer.Weight)
+                {
+                    case AnimatorWeightState.AlwaysOne:
+                    case AnimatorWeightState.EitherZeroOrOne:
+                    {
+                        if (layer.Node.Value.PossibleValues is not { } otherValues) return Variable;
+
+                        switch (layer.BlendingMode)
+                        {
+                            case AnimatorLayerBlendingMode.Additive:
+                                // ObjectReference will work as override even with additive mode.
+                                // additive with changing value: value cannot be determined 
+                                if (otherValues.Length != 1) return Variable;
+                                break;
+                            case AnimatorLayerBlendingMode.Override:
+                                allPossibleValues.UnionWith(otherValues);
+
+                                if (layer.IsAlwaysOverride())
+                                {
+                                    // the layer is always applied at the highest property.
+                                    return new FloatValueInfo(allPossibleValues.ToArray());
+                                }
+
+                                break;
+                            default:
+                                throw new ArgumentOutOfRangeException();
+                        }
+                    }
+                        break;
+                    case AnimatorWeightState.Variable:
+                    {
+                        return Variable; // float: variable
+                    }
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+
+            return new FloatValueInfo(allPossibleValues.ToArray());
+        }
 
         public bool AlwaysAppliedForOverriding<TLayer>(IEnumerable<TLayer> layersReversed)
-            where TLayer : ILayer<FloatValueInfo> => _value.AlwaysAppliedForOverriding(layersReversed.Select(Wrap));
+            where TLayer : ILayer<FloatValueInfo>
+        {
+            return layersReversed.Any(x =>
+                x.Weight == AnimatorWeightState.AlwaysOne && x.BlendingMode == AnimatorLayerBlendingMode.Override &&
+                x.Node.AppliedAlways);
+        }
     }
 
 
