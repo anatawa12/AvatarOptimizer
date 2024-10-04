@@ -210,35 +210,87 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         }
     }
 
-
+    // note: no default is allowed
     internal readonly struct ObjectValueInfo : IValueInfo<ObjectValueInfo>
     {
-        private readonly ValueInfo<Object> _value;
+        private readonly Object[] _possibleValues;
 
-        public ObjectValueInfo(Object value) => this = new ObjectValueInfo(new ValueInfo<Object>(value));
-        public ObjectValueInfo(Object[] values) => this = new ObjectValueInfo(new ValueInfo<Object>(values));
-        private ObjectValueInfo(ValueInfo<Object> value) => _value = value;
+        public ObjectValueInfo(Object value) => _possibleValues = new[] { value };
+        public ObjectValueInfo(Object[] values) => _possibleValues = values;
 
-        public bool IsConstant => _value.IsConstant;
-        public Object ConstantValue => _value.ConstantValue;
-        public Object[] PossibleValues => _value.PossibleValues ?? throw new InvalidOperationException("Variable type is not allowed with Object");
+        public bool IsConstant => _possibleValues is { Length: 1 };
 
-        private PropModNode<ValueInfo<Object>> Wrap(PropModNode<ObjectValueInfo> node) =>
-            new PropModNodeWrapper<ObjectValueInfo, ValueInfo<Object>>(node, x => x._value);
-        private LayerWrapper<ObjectValueInfo, ValueInfo<Object>> Wrap<TLayer>(TLayer layer) where TLayer : ILayer<ObjectValueInfo> =>
-            new(layer, x => x._value);
+        public Object[] PossibleValues =>
+            _possibleValues ?? throw new InvalidOperationException("default is not allowd");
 
-        public ObjectValueInfo ConstantInfoForSideBySide(IEnumerable<PropModNode<ObjectValueInfo>> nodes) =>
-            new(_value.ConstantInfoForSideBySide(nodes.Select(Wrap)));
+        public ObjectValueInfo ConstantInfoForSideBySide(IEnumerable<PropModNode<ObjectValueInfo>> nodes)
+        {
+            using var enumerator = nodes.GetEnumerator();
+            Debug.Assert(enumerator.MoveNext());
+
+            var possibleValues = enumerator.Current.Value.PossibleValues;
+
+            var allPossibleValues = new HashSet<Object>(possibleValues);
+
+            while (enumerator.MoveNext())
+            {
+                allPossibleValues.UnionWith(enumerator.Current.Value.PossibleValues);
+            }
+
+            return new ObjectValueInfo(allPossibleValues.ToArray());
+        }
 
         public ObjectValueInfo ConstantInfoForBlendTree(IEnumerable<PropModNode<ObjectValueInfo>> nodes,
-            BlendTreeType blendTreeType) => new(_value.ConstantInfoForBlendTree(nodes.Select(Wrap), blendTreeType));
+            BlendTreeType blendTreeType) => ConstantInfoForSideBySide(nodes);
 
         public ObjectValueInfo ConstantInfoForOverriding<TLayer>(IEnumerable<TLayer> layersReversed)
-            where TLayer : ILayer<ObjectValueInfo> => new(_value.ConstantInfoForOverriding(layersReversed.Select(Wrap)));
+            where TLayer : ILayer<ObjectValueInfo>
+        {
+            var allPossibleValues = new HashSet<Object>();
+
+            foreach (var layer in layersReversed)
+            {
+                switch (layer.Weight)
+                {
+                    case AnimatorWeightState.AlwaysOne:
+                    case AnimatorWeightState.EitherZeroOrOne:
+                    {
+                        var otherValues = layer.Node.Value.PossibleValues;
+
+                        switch (layer.BlendingMode)
+                        {
+                            case AnimatorLayerBlendingMode.Additive:
+                            case AnimatorLayerBlendingMode.Override:
+                                allPossibleValues.UnionWith(otherValues);
+
+                                if (layer.IsAlwaysOverride())
+                                {
+                                    // the layer is always applied at the highest property.
+                                    return new ObjectValueInfo(allPossibleValues.ToArray());
+                                }
+
+                                break;
+                            default:
+                                throw new ArgumentOutOfRangeException();
+                        }
+                    }
+                        break;
+                    case AnimatorWeightState.Variable:
+                        allPossibleValues.UnionWith(layer.Node.Value.PossibleValues);
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+
+            return new ObjectValueInfo(allPossibleValues.ToArray());
+        }
 
         public bool AlwaysAppliedForOverriding<TLayer>(IEnumerable<TLayer> layersReversed)
-            where TLayer : ILayer<ObjectValueInfo> => _value.AlwaysAppliedForOverriding(layersReversed.Select(Wrap));
+            where TLayer : ILayer<ObjectValueInfo> =>
+            layersReversed.Any(x =>
+                x.Weight == AnimatorWeightState.AlwaysOne && x.BlendingMode == AnimatorLayerBlendingMode.Override &&
+                x.Node.AppliedAlways);
     }
     /// <summary>
     /// The abstract information about actual value of PropModNode.
