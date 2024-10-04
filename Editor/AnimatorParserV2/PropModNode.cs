@@ -19,6 +19,19 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
     interface IValueInfo<TValueInfo>
         where TValueInfo : struct, IValueInfo<TValueInfo>
     {
+        public bool IsConstant { get; }
+
+        // following functions are intended to be called on default(TValueInfo) and "this" will not be affected
+        // Those functions should be static abstract but Unity doesn't support static abstract functions.
+
+        TValueInfo ConstantInfoForSideBySide(IEnumerable<PropModNode<TValueInfo>> nodes);
+        TValueInfo ConstantInfoForBlendTree(IEnumerable<PropModNode<TValueInfo>> nodes, BlendTreeType blendTreeType);
+
+        TValueInfo ConstantInfoForOverriding<TLayer>(IEnumerable<TLayer> layersReversed)
+            where TLayer : ILayer<TValueInfo>;
+
+        bool AlwaysAppliedForOverriding<TLayer>(IEnumerable<TLayer> layersReversed)
+            where TLayer : ILayer<TValueInfo>;
     }
     
     /// <summary>
@@ -103,6 +116,21 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         {
             return NodeImplUtils.SetEquals(_possibleValues, other._possibleValues);
         }
+
+        public ValueInfo<T> ConstantInfoForSideBySide(IEnumerable<PropModNode<ValueInfo<T>>> nodes) =>
+            NodeImplUtils.ConstantInfoForSideBySide(nodes);
+
+        public ValueInfo<T> ConstantInfoForBlendTree(IEnumerable<PropModNode<ValueInfo<T>>> nodes, BlendTreeType blendTreeType)
+        {
+            if (default(T) == null) return ConstantInfoForSideBySide(nodes);
+            return blendTreeType == BlendTreeType.Direct ? Variable : ConstantInfoForSideBySide(nodes);
+        }
+
+        public ValueInfo<T> ConstantInfoForOverriding<TLayer>(IEnumerable<TLayer> layersReversed)
+            where TLayer : ILayer<ValueInfo<T>> => NodeImplUtils.ConstantInfoForOverriding<T, TLayer>(layersReversed);
+
+        public bool AlwaysAppliedForOverriding<TLayer>(IEnumerable<TLayer> layersReversed)
+            where TLayer : ILayer<ValueInfo<T>> => NodeImplUtils.AlwaysAppliedForOverriding<T, TLayer>(layersReversed);
 
         public override bool Equals(object obj) => obj is ValueInfo<T> other && Equals(other);
 
@@ -273,7 +301,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         public override IEnumerable<ObjectReference> ContextReferences =>
             _children.SelectMany(x => x.ContextReferences);
 
-        public override ValueInfo<T> Value => NodeImplUtils.ConstantInfoForSideBySide(_children.Select(x => x.Node));
+        public override ValueInfo<T> Value => default(ValueInfo<T>).ConstantInfoForSideBySide(_children.Select(x => x.Node));
 
         public bool IsEmpty => _children.Count == 0;
 
@@ -456,10 +484,10 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             get
             {
                 if (default(T) == null)
-                    return NodeImplUtils.ConstantInfoForSideBySide(_children.Select(x => x.Node));
+                    return default(ValueInfo<T>).ConstantInfoForBlendTree(_children.Select(x => x.Node), _blendTreeType);
                 return !WeightSumIsOne
                     ? ValueInfo<T>.Variable
-                    : NodeImplUtils.ConstantInfoForSideBySide(_children.Select(x => x.Node));
+                    : default(ValueInfo<T>).ConstantInfoForSideBySide(_children.Select(x => x.Node));
             }
         }
 

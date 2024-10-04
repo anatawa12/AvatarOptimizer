@@ -56,11 +56,11 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             _layersReversed = layersReversed;
 
             _appliedAlways = new Lazy<bool>(
-                () => NodeImplUtils.AlwaysAppliedForOverriding<T, PlayableLayerNodeInfo<T>>(_layersReversed),
+                () => default(ValueInfo<T>).AlwaysAppliedForOverriding(_layersReversed),
                 isThreadSafe: false);
 
             _constantInfo = new Lazy<ValueInfo<T>>(
-                () => NodeImplUtils.ConstantInfoForOverriding<T, PlayableLayerNodeInfo<T>>(_layersReversed),
+                () => default(ValueInfo<T>).ConstantInfoForOverriding(_layersReversed),
                 isThreadSafe: false);
         }
 
@@ -115,12 +115,10 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
         public IEnumerable<AnimatorLayerNodeInfo<T>> LayersReversed => _layersReversed;
 
-        public override ValueInfo<T> Value =>
-            NodeImplUtils.ConstantInfoForOverriding<T, AnimatorLayerNodeInfo<T>>(_layersReversed);
+        public override ValueInfo<T> Value => default(ValueInfo<T>).ConstantInfoForOverriding(_layersReversed);
 
         // we may possible to implement complex logic which simulates state machine but not for now.
-        public override bool AppliedAlways =>
-            NodeImplUtils.AlwaysAppliedForOverriding<T, AnimatorLayerNodeInfo<T>>(_layersReversed);
+        public override bool AppliedAlways => default(ValueInfo<T>).AlwaysAppliedForOverriding(_layersReversed);
 
         public override IEnumerable<ObjectReference> ContextReferences =>
             _layersReversed.SelectMany(x => x.Node.ContextReferences);
@@ -150,7 +148,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         }
 
         public override bool AppliedAlways => !_partial && _children.All(x => x.AppliedAlways);
-        public override ValueInfo<T> Value => NodeImplUtils.ConstantInfoForSideBySide(_children);
+        public override ValueInfo<T> Value => default(ValueInfo<T>).ConstantInfoForSideBySide(_children);
         public override IEnumerable<ObjectReference> ContextReferences => _children.SelectMany(x => x.ContextReferences);
         public IEnumerable<AnimatorStatePropModNode<ValueInfo<T>>> Children => _children;
     }
