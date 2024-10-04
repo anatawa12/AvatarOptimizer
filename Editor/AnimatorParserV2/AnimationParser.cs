@@ -49,10 +49,10 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             var children = blendTree.children;
 
             return NodesMerger.Merge<
-                ImmutableNodeContainer, ImmutablePropModNode<ValueInfo<float>>, ImmutablePropModNode<ValueInfo<Object>>,
-                BlendTreeElement<ValueInfo<float>>, BlendTreeElement<ValueInfo<Object>>,
-                ImmutableNodeContainer, ImmutableNodeContainer, ImmutablePropModNode<ValueInfo<float>>, 
-                ImmutablePropModNode<ValueInfo<Object>>,
+                ImmutableNodeContainer, ImmutablePropModNode<FloatValueInfo>, ImmutablePropModNode<ObjectValueInfo>,
+                BlendTreeElement<FloatValueInfo>, BlendTreeElement<ObjectValueInfo>,
+                ImmutableNodeContainer, ImmutableNodeContainer, ImmutablePropModNode<FloatValueInfo>, 
+                ImmutablePropModNode<ObjectValueInfo>,
                 BlendTreeMergeProperty
             >(children.Select(x => ParseMotionInner(root, x.motion, mapping)),
                 new BlendTreeMergeProperty(blendTree.blendType));
@@ -60,10 +60,10 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
         internal readonly struct BlendTreeMergeProperty : 
             IMergeProperty1<
-                ImmutableNodeContainer, ImmutablePropModNode<ValueInfo<float>>, ImmutablePropModNode<ValueInfo<Object>>,
-                BlendTreeElement<ValueInfo<float>>, BlendTreeElement<ValueInfo<Object>>,
-                ImmutableNodeContainer, ImmutableNodeContainer, ImmutablePropModNode<ValueInfo<float>>,
-                ImmutablePropModNode<ValueInfo<Object>>
+                ImmutableNodeContainer, ImmutablePropModNode<FloatValueInfo>, ImmutablePropModNode<ObjectValueInfo>,
+                BlendTreeElement<FloatValueInfo>, BlendTreeElement<ObjectValueInfo>,
+                ImmutableNodeContainer, ImmutableNodeContainer, ImmutablePropModNode<FloatValueInfo>,
+                ImmutablePropModNode<ObjectValueInfo>
             >
         {
             private readonly BlendTreeType _blendType;
@@ -76,17 +76,17 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             public ImmutableNodeContainer CreateContainer() => new();
             public ImmutableNodeContainer GetContainer(ImmutableNodeContainer source) => source;
 
-            public BlendTreeElement<ValueInfo<float>> GetIntermediate(ImmutableNodeContainer source,
-                ImmutablePropModNode<ValueInfo<float>> node, int index) => new BlendTreeElement<ValueInfo<float>>(index, node);
+            public BlendTreeElement<FloatValueInfo> GetIntermediate(ImmutableNodeContainer source,
+                ImmutablePropModNode<FloatValueInfo> node, int index) => new BlendTreeElement<FloatValueInfo>(index, node);
 
-            public BlendTreeElement<ValueInfo<Object>> GetIntermediate(ImmutableNodeContainer source,
-                ImmutablePropModNode<ValueInfo<Object>> node, int index) => new BlendTreeElement<ValueInfo<Object>>(index, node);
+            public BlendTreeElement<ObjectValueInfo> GetIntermediate(ImmutableNodeContainer source,
+                ImmutablePropModNode<ObjectValueInfo> node, int index) => new BlendTreeElement<ObjectValueInfo>(index, node);
 
-            public ImmutablePropModNode<ValueInfo<float>> MergeNode(List<BlendTreeElement<ValueInfo<float>>> nodes, int sourceCount) =>
-                new BlendTreeNode<ValueInfo<float>>(nodes, _blendType, partial: nodes.Count != sourceCount);
+            public ImmutablePropModNode<FloatValueInfo> MergeNode(List<BlendTreeElement<FloatValueInfo>> nodes, int sourceCount) =>
+                new BlendTreeNode<FloatValueInfo>(nodes, _blendType, partial: nodes.Count != sourceCount);
 
-            public ImmutablePropModNode<ValueInfo<Object>> MergeNode(List<BlendTreeElement<ValueInfo<Object>>> nodes, int sourceCount) =>
-                new BlendTreeNode<ValueInfo<Object>>(nodes, _blendType, partial: nodes.Count != sourceCount);
+            public ImmutablePropModNode<ObjectValueInfo> MergeNode(List<BlendTreeElement<ObjectValueInfo>> nodes, int sourceCount) =>
+                new BlendTreeNode<ObjectValueInfo>(nodes, _blendType, partial: nodes.Count != sourceCount);
         }
 
         private readonly Dictionary<(GameObject, AnimationClip), ImmutableNodeContainer> _parsedAnimationCache = new();

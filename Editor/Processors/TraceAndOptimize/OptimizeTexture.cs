@@ -458,7 +458,7 @@ internal struct OptimizeTextureImpl {
         if (!component.TryGetObject($"m_Materials.Array.data[{materialSlotIndex}]", out var animation))
             return (safeToMerge: true, Array.Empty<Material>());
 
-        if (animation.ComponentNodes.SingleOrDefault() is AnimatorPropModNode<ValueInfo<Object>> componentNode)
+        if (animation.ComponentNodes.SingleOrDefault() is AnimatorPropModNode<ObjectValueInfo> componentNode)
         {
             if (componentNode.Value.PossibleValues is not {} possibleValues)
                 throw new InvalidOperationException("PossibleValues is null");

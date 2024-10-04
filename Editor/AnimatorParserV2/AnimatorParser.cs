@@ -448,39 +448,39 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             }
 
             return NodesMerger.Merge<
-                AnimatorLayerNodeContainer, AnimatorLayerPropModNode<ValueInfo<float>>, AnimatorLayerPropModNode<ValueInfo<Object>>,
-                AnimatorStatePropModNode<ValueInfo<float>>, AnimatorStatePropModNode<ValueInfo<Object>>,
+                AnimatorLayerNodeContainer, AnimatorLayerPropModNode<FloatValueInfo>, AnimatorLayerPropModNode<ObjectValueInfo>,
+                AnimatorStatePropModNode<FloatValueInfo>, AnimatorStatePropModNode<ObjectValueInfo>,
                 (AnimatorState, ImmutableNodeContainer),
-                ImmutableNodeContainer, ImmutablePropModNode<ValueInfo<float>>, ImmutablePropModNode<ValueInfo<Object>>,
+                ImmutableNodeContainer, ImmutablePropModNode<FloatValueInfo>, ImmutablePropModNode<ObjectValueInfo>,
                 LayerMerger
             >(parsedMotions, default);
         }
 
         struct LayerMerger : IMergeProperty1<
-            AnimatorLayerNodeContainer, AnimatorLayerPropModNode<ValueInfo<float>>, AnimatorLayerPropModNode<ValueInfo<Object>>,
-            AnimatorStatePropModNode<ValueInfo<float>>, AnimatorStatePropModNode<ValueInfo<Object>>,
+            AnimatorLayerNodeContainer, AnimatorLayerPropModNode<FloatValueInfo>, AnimatorLayerPropModNode<ObjectValueInfo>,
+            AnimatorStatePropModNode<FloatValueInfo>, AnimatorStatePropModNode<ObjectValueInfo>,
             (AnimatorState, ImmutableNodeContainer),
-            ImmutableNodeContainer, ImmutablePropModNode<ValueInfo<float>>, ImmutablePropModNode<ValueInfo<Object>>
+            ImmutableNodeContainer, ImmutablePropModNode<FloatValueInfo>, ImmutablePropModNode<ObjectValueInfo>
         >
         {
             public AnimatorLayerNodeContainer CreateContainer() => new AnimatorLayerNodeContainer();
             public ImmutableNodeContainer GetContainer((AnimatorState, ImmutableNodeContainer) source) => source.Item2;
 
-            public AnimatorStatePropModNode<ValueInfo<float>> GetIntermediate((AnimatorState, ImmutableNodeContainer) source,
-                ImmutablePropModNode<ValueInfo<float>> node, int index) =>
-                new AnimatorStatePropModNode<ValueInfo<float>>(node, source.Item1);
+            public AnimatorStatePropModNode<FloatValueInfo> GetIntermediate((AnimatorState, ImmutableNodeContainer) source,
+                ImmutablePropModNode<FloatValueInfo> node, int index) =>
+                new AnimatorStatePropModNode<FloatValueInfo>(node, source.Item1);
 
-            public AnimatorStatePropModNode<ValueInfo<Object>> GetIntermediate((AnimatorState, ImmutableNodeContainer) source,
-                ImmutablePropModNode<ValueInfo<Object>> node, int index) =>
-                new AnimatorStatePropModNode<ValueInfo<Object>>(node, source.Item1);
+            public AnimatorStatePropModNode<ObjectValueInfo> GetIntermediate((AnimatorState, ImmutableNodeContainer) source,
+                ImmutablePropModNode<ObjectValueInfo> node, int index) =>
+                new AnimatorStatePropModNode<ObjectValueInfo>(node, source.Item1);
 
-            public AnimatorLayerPropModNode<ValueInfo<float>>
-                MergeNode(List<AnimatorStatePropModNode<ValueInfo<float>>> nodes, int sourceCount) =>
-                new AnimatorLayerPropModNode<ValueInfo<float>>(nodes, nodes.Count != sourceCount);
+            public AnimatorLayerPropModNode<FloatValueInfo>
+                MergeNode(List<AnimatorStatePropModNode<FloatValueInfo>> nodes, int sourceCount) =>
+                new AnimatorLayerPropModNode<FloatValueInfo>(nodes, nodes.Count != sourceCount);
 
-            public AnimatorLayerPropModNode<ValueInfo<Object>>
-                MergeNode(List<AnimatorStatePropModNode<ValueInfo<Object>>> nodes, int sourceCount) =>
-                new AnimatorLayerPropModNode<ValueInfo<Object>>(nodes, nodes.Count != sourceCount);
+            public AnimatorLayerPropModNode<ObjectValueInfo>
+                MergeNode(List<AnimatorStatePropModNode<ObjectValueInfo>> nodes, int sourceCount) =>
+                new AnimatorLayerPropModNode<ObjectValueInfo>(nodes, nodes.Count != sourceCount);
         }
 
         AnimatorWeightState? GetWeightState(float weight, AnimatorWeightChange external)

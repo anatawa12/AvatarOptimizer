@@ -334,7 +334,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             {
                 if (context.GetAnimationComponent(component).TryGetFloat(Props.EnabledFor(component), out var p))
                 {
-                    if (p.ComponentNodes.Any(x => !(x is AnimatorParsersV2.AnimatorPropModNode<AnimatorParsersV2.ValueInfo<float>>)))
+                    if (p.ComponentNodes.Any(x => !(x is AnimatorParsersV2.AnimatorPropModNode<AnimatorParsersV2.FloatValueInfo>)))
                         return null;
                     locations.Add((component.enabled,
                         new EqualsHashSet<AnimationLocation>(AnimationLocation.CollectAnimationLocation(p))));
@@ -349,7 +349,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             {
                 if (context.GetAnimationComponent(transform.gameObject).TryGetFloat(Props.IsActive, out var p))
                 {
-                    if (p.ComponentNodes.Any(x => x is not AnimatorParsersV2.AnimatorPropModNode<AnimatorParsersV2.ValueInfo<float>>))
+                    if (p.ComponentNodes.Any(x => x is not AnimatorParsersV2.AnimatorPropModNode<AnimatorParsersV2.FloatValueInfo>))
                         return null;
                     locations.Add((transform.gameObject.activeSelf,
                         new EqualsHashSet<AnimationLocation>(AnimationLocation.CollectAnimationLocation(p))));
@@ -383,7 +383,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             foreach (var (property, node) in animationComponent.GetAllFloatProperties())
             {
                 if (property == Props.EnabledFor(typeof(SkinnedMeshRenderer))) continue; // m_Enabled is proceed separatedly
-                if (node.ComponentNodes.Any(x => !(x is AnimatorParsersV2.AnimatorPropModNode<AnimatorParsersV2.ValueInfo<float>>)))
+                if (node.ComponentNodes.Any(x => !(x is AnimatorParsersV2.AnimatorPropModNode<AnimatorParsersV2.FloatValueInfo>)))
                     return null;
                 locations.UnionWith(AnimationLocation.CollectAnimationLocation(node)
                     .Select(location => (property, location)));

@@ -7,13 +7,13 @@ using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 {
-    class HumanoidAnimatorPropModNode : ComponentPropModNode<ValueInfo<float>, Animator>
+    class HumanoidAnimatorPropModNode : ComponentPropModNode<FloatValueInfo, Animator>
     {
         public HumanoidAnimatorPropModNode(Animator component) : base(component)
         {
         }
 
-        public override ValueInfo<float> Value => ValueInfo<float>.Variable;
+        public override FloatValueInfo Value => FloatValueInfo.Variable;
         public override bool AppliedAlways => true;
     }
 

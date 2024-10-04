@@ -56,6 +56,107 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         public abstract IEnumerable<ObjectReference> ContextReferences { get; }
     }
 
+    class PropModNodeWrapper<TValueInfoInner, TValueInfoOut> : PropModNode<TValueInfoOut>
+        where TValueInfoOut: struct, IValueInfo<TValueInfoOut>
+        where TValueInfoInner: struct, IValueInfo<TValueInfoInner>
+    {
+        private PropModNode<TValueInfoInner> _innerNode;
+        private Func<TValueInfoInner, TValueInfoOut> _converter;
+
+        public PropModNodeWrapper(PropModNode<TValueInfoInner> innerNode, Func<TValueInfoInner, TValueInfoOut> converter)
+        {
+            _innerNode = innerNode;
+            _converter = converter;
+        }
+
+        public override bool AppliedAlways => _innerNode.AppliedAlways;
+        public override TValueInfoOut Value => _converter(_innerNode.Value);
+        public override IEnumerable<ObjectReference> ContextReferences => _innerNode.ContextReferences;
+    }
+
+    struct LayerWrapper<TValueInfoInner, TValueInfoOut> : ILayer<TValueInfoOut>
+        where TValueInfoOut : struct, IValueInfo<TValueInfoOut>
+        where TValueInfoInner : struct, IValueInfo<TValueInfoInner>
+    {
+        private ILayer<TValueInfoInner> _innerLayer;
+        private Func<TValueInfoInner, TValueInfoOut> _converter;
+
+        public LayerWrapper(ILayer<TValueInfoInner> innerLayer, Func<TValueInfoInner, TValueInfoOut> converter)
+        {
+            _innerLayer = innerLayer;
+            _converter = converter;
+        }
+
+        public AnimatorWeightState Weight => _innerLayer.Weight;
+        public AnimatorLayerBlendingMode BlendingMode => _innerLayer.BlendingMode;
+        IPropModNode ILayer.Node => Node;
+
+        public PropModNode<TValueInfoOut> Node => new PropModNodeWrapper<TValueInfoInner, TValueInfoOut>(_innerLayer.Node, _converter);
+    }
+
+    internal readonly struct FloatValueInfo : IValueInfo<FloatValueInfo>
+    {
+        private readonly ValueInfo<float> _value;
+
+        public FloatValueInfo(float value) => this = new FloatValueInfo(new ValueInfo<float>(value));
+        public FloatValueInfo(float[] values) => this = new FloatValueInfo(new ValueInfo<float>(values));
+        private FloatValueInfo(ValueInfo<float> value) => _value = value;
+
+        public bool IsConstant => _value.IsConstant;
+        public float ConstantValue => _value.ConstantValue;
+        public float[]? PossibleValues => _value.PossibleValues;
+        public static FloatValueInfo Variable => new(ValueInfo<float>.Variable);
+
+        private PropModNode<ValueInfo<float>> Wrap(PropModNode<FloatValueInfo> node) =>
+            new PropModNodeWrapper<FloatValueInfo, ValueInfo<float>>(node, x => x._value);
+        private LayerWrapper<FloatValueInfo, ValueInfo<float>> Wrap<TLayer>(TLayer layer) where TLayer : ILayer<FloatValueInfo> =>
+            new(layer, x => x._value);
+
+        public bool TryGetConstantValue(out float o) => _value.TryGetConstantValue(out o);
+
+        public FloatValueInfo ConstantInfoForSideBySide(IEnumerable<PropModNode<FloatValueInfo>> nodes) =>
+            new(_value.ConstantInfoForSideBySide(nodes.Select(Wrap)));
+
+        public FloatValueInfo ConstantInfoForBlendTree(IEnumerable<PropModNode<FloatValueInfo>> nodes,
+            BlendTreeType blendTreeType) => new(_value.ConstantInfoForBlendTree(nodes.Select(Wrap), blendTreeType));
+
+        public FloatValueInfo ConstantInfoForOverriding<TLayer>(IEnumerable<TLayer> layersReversed)
+            where TLayer : ILayer<FloatValueInfo> => new(_value.ConstantInfoForOverriding(layersReversed.Select(Wrap)));
+
+        public bool AlwaysAppliedForOverriding<TLayer>(IEnumerable<TLayer> layersReversed)
+            where TLayer : ILayer<FloatValueInfo> => _value.AlwaysAppliedForOverriding(layersReversed.Select(Wrap));
+    }
+
+
+    internal readonly struct ObjectValueInfo : IValueInfo<ObjectValueInfo>
+    {
+        private readonly ValueInfo<Object> _value;
+
+        public ObjectValueInfo(Object value) => this = new ObjectValueInfo(new ValueInfo<Object>(value));
+        public ObjectValueInfo(Object[] values) => this = new ObjectValueInfo(new ValueInfo<Object>(values));
+        private ObjectValueInfo(ValueInfo<Object> value) => _value = value;
+
+        public bool IsConstant => _value.IsConstant;
+        public Object ConstantValue => _value.ConstantValue;
+        public Object[]? PossibleValues => _value.PossibleValues;
+
+        private PropModNode<ValueInfo<Object>> Wrap(PropModNode<ObjectValueInfo> node) =>
+            new PropModNodeWrapper<ObjectValueInfo, ValueInfo<Object>>(node, x => x._value);
+        private LayerWrapper<ObjectValueInfo, ValueInfo<Object>> Wrap<TLayer>(TLayer layer) where TLayer : ILayer<ObjectValueInfo> =>
+            new(layer, x => x._value);
+
+        public ObjectValueInfo ConstantInfoForSideBySide(IEnumerable<PropModNode<ObjectValueInfo>> nodes) =>
+            new(_value.ConstantInfoForSideBySide(nodes.Select(Wrap)));
+
+        public ObjectValueInfo ConstantInfoForBlendTree(IEnumerable<PropModNode<ObjectValueInfo>> nodes,
+            BlendTreeType blendTreeType) => new(_value.ConstantInfoForBlendTree(nodes.Select(Wrap), blendTreeType));
+
+        public ObjectValueInfo ConstantInfoForOverriding<TLayer>(IEnumerable<TLayer> layersReversed)
+            where TLayer : ILayer<ObjectValueInfo> => new(_value.ConstantInfoForOverriding(layersReversed.Select(Wrap)));
+
+        public bool AlwaysAppliedForOverriding<TLayer>(IEnumerable<TLayer> layersReversed)
+            where TLayer : ILayer<ObjectValueInfo> => _value.AlwaysAppliedForOverriding(layersReversed.Select(Wrap));
+    }
     /// <summary>
     /// The abstract information about actual value of PropModNode.
     /// </summary>
@@ -341,7 +442,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
     {
     }
 
-    internal class FloatAnimationCurveNode : ImmutablePropModNode<ValueInfo<float>>
+    internal class FloatAnimationCurveNode : ImmutablePropModNode<FloatValueInfo>
     {
         public AnimationCurve Curve { get; }
         public AnimationClip Clip { get; }
@@ -370,26 +471,26 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             Debug.Assert(curve.keys.Length > 0);
             Clip = clip;
             Curve = curve;
-            _constantInfo = new Lazy<ValueInfo<float>>(() => ParseProperty(curve, referenceValue), isThreadSafe: false);
+            _constantInfo = new Lazy<FloatValueInfo>(() => ParseProperty(curve, referenceValue), isThreadSafe: false);
         }
 
-        private readonly Lazy<ValueInfo<float>> _constantInfo;
+        private readonly Lazy<FloatValueInfo> _constantInfo;
 
         public override bool AppliedAlways => true;
-        public override ValueInfo<float> Value => _constantInfo.Value;
+        public override FloatValueInfo Value => _constantInfo.Value;
         public override IEnumerable<ObjectReference> ContextReferences => new[] { ObjectRegistry.GetReference(Clip) };
 
-        private static ValueInfo<float> ParseProperty(AnimationCurve curve, float referenceValue)
+        private static FloatValueInfo ParseProperty(AnimationCurve curve, float referenceValue)
         {
             var curveValue = ParseCurve(curve);
-            if (curveValue.PossibleValues == null) return ValueInfo<float>.Variable;
-            return new ValueInfo<float>(curveValue.PossibleValues.Concat(new[] { referenceValue }).Distinct()
+            if (curveValue.PossibleValues == null) return FloatValueInfo.Variable;
+            return new FloatValueInfo(curveValue.PossibleValues.Concat(new[] { referenceValue }).Distinct()
                 .ToArray());
         }
 
-        private static ValueInfo<float> ParseCurve(AnimationCurve curve)
+        private static FloatValueInfo ParseCurve(AnimationCurve curve)
         {
-            if (curve.keys.Length == 1) return new ValueInfo<float>(curve.keys[0].value);
+            if (curve.keys.Length == 1) return new FloatValueInfo(curve.keys[0].value);
 
             float constValue = 0;
             foreach (var (preKey, postKey) in curve.keys.ZipWithNext())
@@ -397,20 +498,20 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 var preWeighted = preKey.weightedMode == WeightedMode.Out || preKey.weightedMode == WeightedMode.Both;
                 var postWeighted = postKey.weightedMode == WeightedMode.In || postKey.weightedMode == WeightedMode.Both;
 
-                if (preKey.value.CompareTo(postKey.value) != 0) return ValueInfo<float>.Variable;
+                if (preKey.value.CompareTo(postKey.value) != 0) return FloatValueInfo.Variable;
                 constValue = preKey.value;
                 // it's constant
                 if (float.IsInfinity(preKey.outWeight) || float.IsInfinity(postKey.inTangent)) continue;
                 if (preKey.outTangent == 0 && postKey.inTangent == 0) continue;
                 if (preWeighted && postWeighted && preKey.outWeight == 0 && postKey.inWeight == 0) continue;
-                return ValueInfo<float>.Variable;
+                return FloatValueInfo.Variable;
             }
 
-            return new ValueInfo<float>(constValue);
+            return new FloatValueInfo(constValue);
         }
     }
 
-    internal class ObjectAnimationCurveNode : ImmutablePropModNode<ValueInfo<Object>>
+    internal class ObjectAnimationCurveNode : ImmutablePropModNode<ObjectValueInfo>
     {
         public ObjectReferenceKeyframe[] Frames { get; set; }
         public AnimationClip Clip { get; }
@@ -428,18 +529,18 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             Debug.Assert(frames.Length > 0);
             Clip = clip;
             Frames = frames;
-            _constantInfo = new Lazy<ValueInfo<Object>>(() => ParseProperty(frames), isThreadSafe: false);
+            _constantInfo = new Lazy<ObjectValueInfo>(() => ParseProperty(frames), isThreadSafe: false);
         }
 
 
-        private readonly Lazy<ValueInfo<Object>> _constantInfo;
+        private readonly Lazy<ObjectValueInfo> _constantInfo;
 
         public override bool AppliedAlways => true;
-        public override ValueInfo<Object> Value => _constantInfo.Value;
+        public override ObjectValueInfo Value => _constantInfo.Value;
         public override IEnumerable<ObjectReference> ContextReferences => new[] { ObjectRegistry.GetReference(Clip) };
 
-        private static ValueInfo<Object> ParseProperty(ObjectReferenceKeyframe[] frames) =>
-            new ValueInfo<Object>(frames.Select(x => x.value).Distinct().ToArray());
+        private static ObjectValueInfo ParseProperty(ObjectReferenceKeyframe[] frames) =>
+            new(frames.Select(x => x.value).Distinct().ToArray());
     }
 
     internal struct BlendTreeElement<TValueInfo>
@@ -519,14 +620,14 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             new[] { ObjectRegistry.GetReference(Component) };
     }
 
-    class VariableComponentPropModNode : ComponentPropModNode<ValueInfo<float>, Component>
+    class VariableComponentPropModNode : ComponentPropModNode<FloatValueInfo, Component>
     {
         public VariableComponentPropModNode(Component component) : base(component)
         {
         }
 
         public override bool AppliedAlways => false;
-        public override ValueInfo<float> Value => ValueInfo<float>.Variable;
+        public override FloatValueInfo Value => FloatValueInfo.Variable;
     }
 
     class AnimationComponentPropModNode<TValueInfo> : ComponentPropModNode<TValueInfo, Animation>

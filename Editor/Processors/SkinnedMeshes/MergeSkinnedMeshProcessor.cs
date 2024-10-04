@@ -407,7 +407,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         private static void MaterialParameterAnimationWarnings(MeshInfo2[] sourceRenderers, BuildContext context)
         {
-            var properties = new Dictionary<string, List<(RootPropModNode<ValueInfo<float>>, MeshInfo2)>>();
+            var properties = new Dictionary<string, List<(RootPropModNode<FloatValueInfo>, MeshInfo2)>>();
             var materialByMeshInfo2 = new List<(MeshInfo2 meshInfo2, List<Material> materials)>();
             foreach (var meshInfo2 in sourceRenderers)
             {
@@ -418,7 +418,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     var materialPropertyName = name.Substring("material.".Length);
 
                     if (!properties.TryGetValue(materialPropertyName, out var list))
-                        properties.Add(materialPropertyName, list = new List<(RootPropModNode<ValueInfo<float>>, MeshInfo2)>());
+                        properties.Add(materialPropertyName, list = new List<(RootPropModNode<FloatValueInfo>, MeshInfo2)>());
 
                     list.Add((property, meshInfo2));
                 }
