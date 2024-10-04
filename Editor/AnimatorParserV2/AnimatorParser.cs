@@ -137,7 +137,6 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 foreach (var prop in properties)
                 {
                     _modifications.Add(component, prop, new VariableComponentPropModNode<float>(Modifier!), true);
-                    _modifications.Add(component, prop, new VariableComponentPropModNode<Object>(Modifier!), true);
                 }
             }
         }
