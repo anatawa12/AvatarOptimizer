@@ -460,30 +460,21 @@ internal struct OptimizeTextureImpl {
 
         if (animation.ComponentNodes.SingleOrDefault() is AnimatorPropModNode<Object> componentNode)
         {
-            if (componentNode.Value.PossibleValues is { } possibleValues)
-            {
-                if (possibleValues.All(x => x is Material))
-                    return (safeToMerge: true, materials: possibleValues.Cast<Material>());
+            if (componentNode.Value.PossibleValues is not {} possibleValues)
+                throw new InvalidOperationException("PossibleValues is null");
 
-                return (safeToMerge: false, materials: possibleValues.OfType<Material>());
-            }
-            else
-            {
-                return (safeToMerge: false, materials: Array.Empty<Material>());
-            }
-        }
-        else if (animation.Value.PossibleValues is { } possibleValues)
-        {
+            if (possibleValues.All(x => x is Material))
+                return (safeToMerge: true, materials: possibleValues.Cast<Material>());
+
             return (safeToMerge: false, materials: possibleValues.OfType<Material>());
         }
-        else if (animation.ComponentNodes.OfType<AnimatorPropModNode<Object>>().FirstOrDefault() is
-                 { } fallbackAnimatorNode)
+        else
         {
-            var materials = fallbackAnimatorNode.Value.PossibleValues?.OfType<Material>() ?? Array.Empty<Material>();
-            return (safeToMerge: false, materials);
-        }
+            if (animation.Value.PossibleValues is not { } possibleValues)
+                throw new InvalidOperationException("PossibleValues is null");
 
-        return (safeToMerge: true, Array.Empty<Material>());
+            return (safeToMerge: false, materials: possibleValues.OfType<Material>());
+        }
     }
 
     class TextureUsageInformationCallbackImpl : TextureUsageInformationCallback
