@@ -56,7 +56,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             _layersReversed = layersReversed;
 
             _appliedAlways = new Lazy<bool>(
-                () => default(TValueInfo).AlwaysAppliedForOverriding(_layersReversed),
+                () => NodeImplUtils.AlwaysAppliedForOverriding(_layersReversed),
                 isThreadSafe: false);
 
             _constantInfo = new Lazy<TValueInfo>(
@@ -118,7 +118,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         public override TValueInfo Value => default(TValueInfo).ConstantInfoForOverriding(_layersReversed);
 
         // we may possible to implement complex logic which simulates state machine but not for now.
-        public override bool AppliedAlways => default(TValueInfo).AlwaysAppliedForOverriding(_layersReversed);
+        public override bool AppliedAlways => NodeImplUtils.AlwaysAppliedForOverriding(_layersReversed);
 
         public override IEnumerable<ObjectReference> ContextReferences =>
             _layersReversed.SelectMany(x => x.Node.ContextReferences);

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using nadena.dev.ndmf;
 using UnityEditor;
@@ -29,9 +28,6 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
         TValueInfo ConstantInfoForOverriding<TLayer>(IEnumerable<TLayer> layersReversed)
             where TLayer : ILayer<TValueInfo>;
-
-        bool AlwaysAppliedForOverriding<TLayer>(IEnumerable<TLayer> layersReversed)
-            where TLayer : ILayer<TValueInfo>;
     }
     
     /// <summary>
@@ -54,44 +50,6 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
         public abstract TValueInfo Value { get; }
         public abstract IEnumerable<ObjectReference> ContextReferences { get; }
-    }
-
-    class PropModNodeWrapper<TValueInfoInner, TValueInfoOut> : PropModNode<TValueInfoOut>
-        where TValueInfoOut: struct, IValueInfo<TValueInfoOut>
-        where TValueInfoInner: struct, IValueInfo<TValueInfoInner>
-    {
-        private PropModNode<TValueInfoInner> _innerNode;
-        private Func<TValueInfoInner, TValueInfoOut> _converter;
-
-        public PropModNodeWrapper(PropModNode<TValueInfoInner> innerNode, Func<TValueInfoInner, TValueInfoOut> converter)
-        {
-            _innerNode = innerNode;
-            _converter = converter;
-        }
-
-        public override bool AppliedAlways => _innerNode.AppliedAlways;
-        public override TValueInfoOut Value => _converter(_innerNode.Value);
-        public override IEnumerable<ObjectReference> ContextReferences => _innerNode.ContextReferences;
-    }
-
-    struct LayerWrapper<TValueInfoInner, TValueInfoOut> : ILayer<TValueInfoOut>
-        where TValueInfoOut : struct, IValueInfo<TValueInfoOut>
-        where TValueInfoInner : struct, IValueInfo<TValueInfoInner>
-    {
-        private ILayer<TValueInfoInner> _innerLayer;
-        private Func<TValueInfoInner, TValueInfoOut> _converter;
-
-        public LayerWrapper(ILayer<TValueInfoInner> innerLayer, Func<TValueInfoInner, TValueInfoOut> converter)
-        {
-            _innerLayer = innerLayer;
-            _converter = converter;
-        }
-
-        public AnimatorWeightState Weight => _innerLayer.Weight;
-        public AnimatorLayerBlendingMode BlendingMode => _innerLayer.BlendingMode;
-        IPropModNode ILayer.Node => Node;
-
-        public PropModNode<TValueInfoOut> Node => new PropModNodeWrapper<TValueInfoInner, TValueInfoOut>(_innerLayer.Node, _converter);
     }
 
     internal readonly struct FloatValueInfo : IValueInfo<FloatValueInfo>
@@ -200,14 +158,6 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
             return new FloatValueInfo(allPossibleValues.ToArray());
         }
-
-        public bool AlwaysAppliedForOverriding<TLayer>(IEnumerable<TLayer> layersReversed)
-            where TLayer : ILayer<FloatValueInfo>
-        {
-            return layersReversed.Any(x =>
-                x.Weight == AnimatorWeightState.AlwaysOne && x.BlendingMode == AnimatorLayerBlendingMode.Override &&
-                x.Node.AppliedAlways);
-        }
     }
 
     // note: no default is allowed
@@ -220,8 +170,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
         public bool IsConstant => _possibleValues is { Length: 1 };
 
-        public Object[] PossibleValues =>
-            _possibleValues ?? throw new InvalidOperationException("default is not allowd");
+        public Object[] PossibleValues => _possibleValues ?? Array.Empty<Object>();
 
         public ObjectValueInfo ConstantInfoForSideBySide(IEnumerable<PropModNode<ObjectValueInfo>> nodes)
         {
@@ -285,97 +234,6 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
             return new ObjectValueInfo(allPossibleValues.ToArray());
         }
-
-        public bool AlwaysAppliedForOverriding<TLayer>(IEnumerable<TLayer> layersReversed)
-            where TLayer : ILayer<ObjectValueInfo> =>
-            layersReversed.Any(x =>
-                x.Weight == AnimatorWeightState.AlwaysOne && x.BlendingMode == AnimatorLayerBlendingMode.Override &&
-                x.Node.AppliedAlways);
-    }
-    /// <summary>
-    /// The abstract information about actual value of PropModNode.
-    /// </summary>
-    // by design, this struct doesn't handle blending between two states.
-    internal readonly struct ValueInfo<T> : IValueInfo<ValueInfo<T>>
-        where T : notnull
-    {
-        public bool IsConstant => _possibleValues != null && _possibleValues.Length == 1;
-        private readonly T[]? _possibleValues;
-
-        public T ConstantValue
-        {
-            get
-            {
-                if (!IsConstant) throw new InvalidOperationException("Not Constant");
-                return _possibleValues![0]; // non constant => there is value
-            }
-        }
-
-        public T[]? PossibleValues => _possibleValues;
-
-        public static ValueInfo<T> Variable
-        {
-            get
-            {
-                if (default(T) == null) throw new InvalidOperationException("Variable type is not allowed with Object");
-                return default;
-            }
-        }
-
-        public ValueInfo(T value) => _possibleValues = new[] { value };
-
-        public ValueInfo(T[] possibleValues)
-        {
-            if (possibleValues == null) throw new ArgumentNullException(nameof(possibleValues));
-            if (possibleValues.Length == 0)
-                throw new ArgumentException("Value cannot be an empty array.", nameof(possibleValues));
-            if (possibleValues.Distinct().Count() != possibleValues.Length)
-                throw new ArgumentException("Value cannot contain duplicate values.", nameof(possibleValues));
-            _possibleValues = possibleValues;
-        }
-
-        public bool TryGetConstantValue([NotNullWhen(true)] out T? o)
-        {
-            if (IsConstant)
-            {
-                o = ConstantValue;
-                return true;
-            }
-            else
-            {
-                o = default;
-                return false;
-            }
-        }
-
-        public bool Equals(ValueInfo<T> other)
-        {
-            return NodeImplUtils.SetEquals(_possibleValues, other._possibleValues);
-        }
-
-        public ValueInfo<T> ConstantInfoForSideBySide(IEnumerable<PropModNode<ValueInfo<T>>> nodes) =>
-            NodeImplUtils.ConstantInfoForSideBySide(nodes);
-
-        public ValueInfo<T> ConstantInfoForBlendTree(IEnumerable<PropModNode<ValueInfo<T>>> nodes, BlendTreeType blendTreeType)
-        {
-            if (default(T) == null) return ConstantInfoForSideBySide(nodes);
-            return blendTreeType == BlendTreeType.Direct ? Variable : ConstantInfoForSideBySide(nodes);
-        }
-
-        public ValueInfo<T> ConstantInfoForOverriding<TLayer>(IEnumerable<TLayer> layersReversed)
-            where TLayer : ILayer<ValueInfo<T>> => NodeImplUtils.ConstantInfoForOverriding<T, TLayer>(layersReversed);
-
-        public bool AlwaysAppliedForOverriding<TLayer>(IEnumerable<TLayer> layersReversed)
-            where TLayer : ILayer<ValueInfo<T>> => NodeImplUtils.AlwaysAppliedForOverriding<T, TLayer>(layersReversed);
-
-        public override bool Equals(object obj) => obj is ValueInfo<T> other && Equals(other);
-
-        public override int GetHashCode() => _possibleValues == null ? 0 : _possibleValues.GetSetHashCode();
-
-        public override string ToString() =>
-            _possibleValues == null
-                ? $"ValueInfo<{typeof(T).Name}>{{Variable}}"
-                : $"ValueInfo<{typeof(T).Name}>{{PossibleValues={string.Join(",", _possibleValues)}}}";
     }
 
     internal static class NodeImplUtils
@@ -388,92 +246,12 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             return new HashSet<T>(a).SetEquals(b);
         }
 
-        public static ValueInfo<T> ConstantInfoForSideBySide<T>(IEnumerable<PropModNode<ValueInfo<T>>> nodes) where T : notnull
-        {
-            using (var enumerator = nodes.GetEnumerator())
-            {
-                Debug.Assert(enumerator.MoveNext());
-
-                if (!(enumerator.Current.Value.PossibleValues is T[] possibleValues))
-                    return ValueInfo<T>.Variable;
-
-                var allPossibleValues = new HashSet<T>(possibleValues);
-
-                while (enumerator.MoveNext())
-                {
-                    if (!(enumerator.Current.Value.PossibleValues is T[] otherValues))
-                        return ValueInfo<T>.Variable;
-
-                    allPossibleValues.UnionWith(otherValues);
-                }
-
-                return new ValueInfo<T>(allPossibleValues.ToArray());
-            }
-        }
-
-        public static bool AlwaysAppliedForOverriding<T, TLayer>(IEnumerable<TLayer> layersReversed)
-            where T : notnull
-            where TLayer : ILayer<ValueInfo<T>>
+        public static bool AlwaysAppliedForOverriding<TLayer>(IEnumerable<TLayer> layersReversed)
+            where TLayer : ILayer
         {
             return layersReversed.Any(x =>
                 x.Weight == AnimatorWeightState.AlwaysOne && x.BlendingMode == AnimatorLayerBlendingMode.Override &&
                 x.Node.AppliedAlways);
-        }
-
-        public static ValueInfo<T> ConstantInfoForOverriding<T, TLayer>(IEnumerable<TLayer> layersReversed)
-            where T : notnull
-            where TLayer : ILayer<ValueInfo<T>>
-        {
-            var canAdditive = default(T) != null;
-            var allPossibleValues = new HashSet<T>();
-
-            foreach (var layer in layersReversed)
-            {
-                switch (layer.Weight)
-                {
-                    case AnimatorWeightState.AlwaysOne:
-                    case AnimatorWeightState.EitherZeroOrOne:
-                    {
-                        if (!(layer.Node.Value.PossibleValues is T[] otherValues)) return ValueInfo<T>.Variable;
-
-                        switch (layer.BlendingMode)
-                        {
-                            case AnimatorLayerBlendingMode.Additive:
-                                // ObjectReference will work as override even with additive mode.
-                                if (!canAdditive) goto case AnimatorLayerBlendingMode.Override;
-
-                                // additive with changing value: value cannot be determined 
-                                if (otherValues.Length != 1) return ValueInfo<T>.Variable;
-                                break;
-                            case AnimatorLayerBlendingMode.Override:
-                                allPossibleValues.UnionWith(otherValues);
-
-                                if (layer.IsAlwaysOverride())
-                                {
-                                    // the layer is always applied at the highest property.
-                                    return new ValueInfo<T>(allPossibleValues.ToArray());
-                                }
-
-                                break;
-                            default:
-                                throw new ArgumentOutOfRangeException();
-                        }
-                    }
-                        break;
-                    case AnimatorWeightState.Variable:
-                    {
-                        if (default(T) != null) return ValueInfo<T>.Variable; // float: variable
-                        if (!(layer.Node.Value.PossibleValues is T[] otherValues))
-                            throw new InvalidOperationException();
-                        allPossibleValues.UnionWith(otherValues);
-                    }
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-            }
-
-            return new ValueInfo<T>(allPossibleValues.ToArray());
         }
 
         public static bool IsAlwaysOverride<TLayer>(this TLayer layer)
