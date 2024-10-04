@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
+- Animator Parser Debug Window now supports ObjectReference animation support `#1222`
 
 ### Deprecated
 
