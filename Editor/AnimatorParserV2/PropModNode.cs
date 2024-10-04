@@ -52,7 +52,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         public abstract IEnumerable<ObjectReference> ContextReferences { get; }
     }
 
-    internal readonly struct FloatValueInfo : IValueInfo<FloatValueInfo>
+    internal readonly struct FloatValueInfo : IValueInfo<FloatValueInfo>, IEquatable<FloatValueInfo>
     {
         public bool IsConstant => _possibleValues is { Length: 1 };
         private readonly float[]? _possibleValues;
@@ -60,7 +60,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         public FloatValueInfo(float value) => _possibleValues = new[] { value };
         public FloatValueInfo(float[] values) => _possibleValues = values;
 
-        public float ConstantValue 
+        public float ConstantValue
         {
             get
             {
@@ -72,7 +72,8 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         public float[]? PossibleValues => _possibleValues;
         public static FloatValueInfo Variable => default;
 
-        public bool TryGetConstantValue(out float o) {
+        public bool TryGetConstantValue(out float o)
+        {
             if (IsConstant)
             {
                 o = ConstantValue;
@@ -158,10 +159,16 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
             return new FloatValueInfo(allPossibleValues.ToArray());
         }
+
+        public bool Equals(FloatValueInfo other) => NodeImplUtils.SetEquals(_possibleValues, other._possibleValues);
+        public override bool Equals(object? obj) => obj is FloatValueInfo other && Equals(other);
+        public override int GetHashCode() => _possibleValues != null ? _possibleValues.GetSetHashCode() : 0;
+        public static bool operator ==(FloatValueInfo left, FloatValueInfo right) => left.Equals(right);
+        public static bool operator !=(FloatValueInfo left, FloatValueInfo right) => !left.Equals(right);
     }
 
     // note: no default is allowed
-    internal readonly struct ObjectValueInfo : IValueInfo<ObjectValueInfo>
+    internal readonly struct ObjectValueInfo : IValueInfo<ObjectValueInfo>, IEquatable<ObjectValueInfo>
     {
         private readonly Object[] _possibleValues;
 
@@ -234,6 +241,12 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
             return new ObjectValueInfo(allPossibleValues.ToArray());
         }
+
+        public bool Equals(ObjectValueInfo other) => NodeImplUtils.SetEquals(PossibleValues, PossibleValues);
+        public override bool Equals(object? obj) => obj is ObjectValueInfo other && Equals(other);
+        public override int GetHashCode() => _possibleValues.GetHashCode();
+        public static bool operator ==(ObjectValueInfo left, ObjectValueInfo right) => left.Equals(right);
+        public static bool operator !=(ObjectValueInfo left, ObjectValueInfo right) => !left.Equals(right);
     }
 
     internal static class NodeImplUtils
