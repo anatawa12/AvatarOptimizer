@@ -12,6 +12,9 @@ The format is based on [Keep a Changelog].
 ### Changed
 - Animator Parser Debug Window now supports ObjectReference animation support `#1222`
 - Reimplemented Animator Parser node system `#1227`
+- Renamed debug options internally `#1228`
+  - This will lose previously configured debug options.
+  - However, debug options are not considered as Public API as stated in documents so this is not backward incompatible changes in semver 2.0.0 section 8.
 
 ### Deprecated
 
