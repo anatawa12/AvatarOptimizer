@@ -65,6 +65,7 @@ The format is based on [Keep a Changelog].
 ### Fixed
 - Avatar Optimizer does not support `Additive Reference Pose` `#1208`
 - Typo in menu for creating Asset Description `#1213`
+- maxSquish cannot be configured for mergePB`#1231`
 
 ### Security
 
