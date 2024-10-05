@@ -458,21 +458,18 @@ internal struct OptimizeTextureImpl {
         if (!component.TryGetObject($"m_Materials.Array.data[{materialSlotIndex}]", out var animation))
             return (safeToMerge: true, Array.Empty<Material>());
 
-        if (animation.ComponentNodes.SingleOrDefault() is AnimatorPropModNode<Object> componentNode)
+        if (animation.ComponentNodes.SingleOrDefault() is AnimatorPropModNode<ObjectValueInfo> componentNode)
         {
-            if (componentNode.Value.PossibleValues is not {} possibleValues)
-                throw new InvalidOperationException("PossibleValues is null");
+            var possibleValues = componentNode.Value.PossibleValues;
 
-            if (possibleValues.All(x => x is Material))
+            if (componentNode.Value.PossibleValues.All(x => x is Material))
                 return (safeToMerge: true, materials: possibleValues.Cast<Material>());
 
             return (safeToMerge: false, materials: possibleValues.OfType<Material>());
         }
         else
         {
-            if (animation.Value.PossibleValues is not { } possibleValues)
-                throw new InvalidOperationException("PossibleValues is null");
-
+            var possibleValues = animation.Value.PossibleValues;
             return (safeToMerge: false, materials: possibleValues.OfType<Material>());
         }
     }

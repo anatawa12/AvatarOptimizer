@@ -31,8 +31,8 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             where TSourceObjectNode : notnull
 
             where TResultContainer : NodeContainerBase<TResultFloatNode, TResultObjectNode>
-            where TResultFloatNode : PropModNode<float>
-            where TResultObjectNode : PropModNode<Object>
+            where TResultFloatNode : PropModNode<FloatValueInfo>
+            where TResultObjectNode : PropModNode<ObjectValueInfo>
 
             where TSourceContainer : INodeContainer<TSourceFloatNode, TSourceObjectNode>
 
@@ -96,8 +96,8 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         TSourceObjectNode
     >
         where TResultContainer : NodeContainerBase<TResultFloatNode, TResultObjectNode>
-        where TResultFloatNode : PropModNode<float>
-        where TResultObjectNode : PropModNode<Object>
+        where TResultFloatNode : PropModNode<FloatValueInfo>
+        where TResultObjectNode : PropModNode<ObjectValueInfo>
         where TSourceContainer : INodeContainer<TSourceFloatNode, TSourceObjectNode>
 
         where TSource : notnull
@@ -130,13 +130,13 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             foreach (var ((target, prop), value) in controller.FloatNodes)
             {
                 animatorNodeContainer.Add(target, prop,
-                    new AnimatorPropModNode<float>(animator, new[] { new PlayableLayerNodeInfo<float>(value, 0) }));
+                    new AnimatorPropModNode<FloatValueInfo>(animator, new[] { new PlayableLayerNodeInfo<FloatValueInfo>(value, 0) }));
             }
 
             foreach (var ((target, prop), value) in controller.ObjectNodes)
             {
                 animatorNodeContainer.Add(target, prop,
-                    new AnimatorPropModNode<Object>(animator, new[] { new PlayableLayerNodeInfo<Object>(value, 0) }));
+                    new AnimatorPropModNode<ObjectValueInfo>(animator, new[] { new PlayableLayerNodeInfo<ObjectValueInfo>(value, 0) }));
             }
 
             return animatorNodeContainer;
@@ -150,12 +150,12 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
             foreach (var ((target, prop), node) in animationClip.FloatNodes)
             {
-                animatorNodeContainer.Add(target, prop, new AnimationComponentPropModNode<float>(animation, node));
+                animatorNodeContainer.Add(target, prop, new AnimationComponentPropModNode<FloatValueInfo>(animation, node));
             }
 
             foreach (var ((target, prop), value) in animationClip.ObjectNodes)
             {
-                animatorNodeContainer.Add(target, prop, new AnimationComponentPropModNode<Object>(animation, value));
+                animatorNodeContainer.Add(target, prop, new AnimationComponentPropModNode<ObjectValueInfo>(animation, value));
             }
 
             return animatorNodeContainer;
@@ -165,19 +165,19 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             IEnumerable<(AnimatorWeightState, AnimatorLayerBlendingMode, AnimatorControllerNodeContainer?)>
                 playableLayers) =>
             Merge<
-                ComponentNodeContainer, ComponentPropModNodeBase<float>, ComponentPropModNodeBase<Object>,
-                PlayableLayerNodeInfo<float>, PlayableLayerNodeInfo<Object>,
+                ComponentNodeContainer, ComponentPropModNodeBase<FloatValueInfo>, ComponentPropModNodeBase<ObjectValueInfo>,
+                PlayableLayerNodeInfo<FloatValueInfo>, PlayableLayerNodeInfo<ObjectValueInfo>,
                 (AnimatorWeightState, AnimatorLayerBlendingMode, AnimatorControllerNodeContainer?),
-                AnimatorControllerNodeContainer, AnimatorControllerPropModNode<float>,
-                AnimatorControllerPropModNode<Object>,
+                AnimatorControllerNodeContainer, AnimatorControllerPropModNode<FloatValueInfo>,
+                AnimatorControllerPropModNode<ObjectValueInfo>,
                 PlayableLayerMerger
             >(playableLayers, new PlayableLayerMerger(animator));
 
         readonly struct PlayableLayerMerger : IMergeProperty1<
-            ComponentNodeContainer, ComponentPropModNodeBase<float>, ComponentPropModNodeBase<Object>,
-            PlayableLayerNodeInfo<float>, PlayableLayerNodeInfo<Object>,
+            ComponentNodeContainer, ComponentPropModNodeBase<FloatValueInfo>, ComponentPropModNodeBase<ObjectValueInfo>,
+            PlayableLayerNodeInfo<FloatValueInfo>, PlayableLayerNodeInfo<ObjectValueInfo>,
             (AnimatorWeightState, AnimatorLayerBlendingMode, AnimatorControllerNodeContainer?),
-            AnimatorControllerNodeContainer, AnimatorControllerPropModNode<float>, AnimatorControllerPropModNode<Object>
+            AnimatorControllerNodeContainer, AnimatorControllerPropModNode<FloatValueInfo>, AnimatorControllerPropModNode<ObjectValueInfo>
         >
         {
             private readonly Animator _animator;
@@ -190,39 +190,39 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 (AnimatorWeightState, AnimatorLayerBlendingMode, AnimatorControllerNodeContainer?) source) =>
                 source.Item3;
 
-            public PlayableLayerNodeInfo<float> GetIntermediate(
+            public PlayableLayerNodeInfo<FloatValueInfo> GetIntermediate(
                 (AnimatorWeightState, AnimatorLayerBlendingMode, AnimatorControllerNodeContainer?) source,
-                AnimatorControllerPropModNode<float> node, int index) =>
-                new PlayableLayerNodeInfo<float>(source.Item1, source.Item2, node, index);
+                AnimatorControllerPropModNode<FloatValueInfo> node, int index) =>
+                new(source.Item1, source.Item2, node, index);
 
-            public PlayableLayerNodeInfo<Object> GetIntermediate(
+            public PlayableLayerNodeInfo<ObjectValueInfo> GetIntermediate(
                 (AnimatorWeightState, AnimatorLayerBlendingMode, AnimatorControllerNodeContainer?) source,
-                AnimatorControllerPropModNode<Object> node, int index) =>
-                new PlayableLayerNodeInfo<Object>(source.Item1, source.Item2, node, index);
+                AnimatorControllerPropModNode<ObjectValueInfo> node, int index) =>
+                new(source.Item1, source.Item2, node, index);
 
-            public ComponentPropModNodeBase<float> MergeNode(List<PlayableLayerNodeInfo<float>> nodes, int sourceCount) =>
-                new AnimatorPropModNode<float>(_animator, nodes);
+            public ComponentPropModNodeBase<FloatValueInfo> MergeNode(List<PlayableLayerNodeInfo<FloatValueInfo>> nodes, int sourceCount) =>
+                new AnimatorPropModNode<FloatValueInfo>(_animator, nodes);
 
-            public ComponentPropModNodeBase<Object> MergeNode(List<PlayableLayerNodeInfo<Object>> nodes, int sourceCount) =>
-                new AnimatorPropModNode<Object>(_animator, nodes);
+            public ComponentPropModNodeBase<ObjectValueInfo> MergeNode(List<PlayableLayerNodeInfo<ObjectValueInfo>> nodes, int sourceCount) =>
+                new AnimatorPropModNode<ObjectValueInfo>(_animator, nodes);
         }
 
         internal static AnimatorControllerNodeContainer AnimatorControllerFromAnimatorLayers(
             IEnumerable<(AnimatorWeightState, AnimatorLayerBlendingMode, AnimatorLayerNodeContainer?)> layers) =>
             Merge<
-                AnimatorControllerNodeContainer, AnimatorControllerPropModNode<float>, AnimatorControllerPropModNode<Object>,
-                AnimatorLayerNodeInfo<float>, AnimatorLayerNodeInfo<Object>,
+                AnimatorControllerNodeContainer, AnimatorControllerPropModNode<FloatValueInfo>, AnimatorControllerPropModNode<ObjectValueInfo>,
+                AnimatorLayerNodeInfo<FloatValueInfo>, AnimatorLayerNodeInfo<ObjectValueInfo>,
                 (AnimatorWeightState, AnimatorLayerBlendingMode, AnimatorLayerNodeContainer?),
-                AnimatorLayerNodeContainer, AnimatorLayerPropModNode<float>, AnimatorLayerPropModNode<Object>,
+                AnimatorLayerNodeContainer, AnimatorLayerPropModNode<FloatValueInfo>, AnimatorLayerPropModNode<ObjectValueInfo>,
                 AnimatorLayerMerger
             >(layers, default);
 
         private struct AnimatorLayerMerger : IMergeProperty1<
-            AnimatorControllerNodeContainer, AnimatorControllerPropModNode<float>, AnimatorControllerPropModNode<Object>
+            AnimatorControllerNodeContainer, AnimatorControllerPropModNode<FloatValueInfo>, AnimatorControllerPropModNode<ObjectValueInfo>
             ,
-            AnimatorLayerNodeInfo<float>, AnimatorLayerNodeInfo<Object>,
+            AnimatorLayerNodeInfo<FloatValueInfo>, AnimatorLayerNodeInfo<ObjectValueInfo>,
             (AnimatorWeightState, AnimatorLayerBlendingMode, AnimatorLayerNodeContainer?),
-            AnimatorLayerNodeContainer, AnimatorLayerPropModNode<float>, AnimatorLayerPropModNode<Object>
+            AnimatorLayerNodeContainer, AnimatorLayerPropModNode<FloatValueInfo>, AnimatorLayerPropModNode<ObjectValueInfo>
         >
         {
             public AnimatorControllerNodeContainer CreateContainer() => new AnimatorControllerNodeContainer();
@@ -231,23 +231,23 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 (AnimatorWeightState, AnimatorLayerBlendingMode, AnimatorLayerNodeContainer?) source) =>
                 source.Item3;
 
-            public AnimatorLayerNodeInfo<float> GetIntermediate(
+            public AnimatorLayerNodeInfo<FloatValueInfo> GetIntermediate(
                 (AnimatorWeightState, AnimatorLayerBlendingMode, AnimatorLayerNodeContainer?) source,
-                AnimatorLayerPropModNode<float> node, int index) =>
-                new AnimatorLayerNodeInfo<float>(source.Item1, source.Item2, node, index);
+                AnimatorLayerPropModNode<FloatValueInfo> node, int index) =>
+                new AnimatorLayerNodeInfo<FloatValueInfo>(source.Item1, source.Item2, node, index);
 
-            public AnimatorLayerNodeInfo<Object> GetIntermediate(
+            public AnimatorLayerNodeInfo<ObjectValueInfo> GetIntermediate(
                 (AnimatorWeightState, AnimatorLayerBlendingMode, AnimatorLayerNodeContainer?) source,
-                AnimatorLayerPropModNode<Object> node, int index) =>
-                new AnimatorLayerNodeInfo<Object>(source.Item1, source.Item2, node, index);
+                AnimatorLayerPropModNode<ObjectValueInfo> node, int index) =>
+                new AnimatorLayerNodeInfo<ObjectValueInfo>(source.Item1, source.Item2, node, index);
 
-            public AnimatorControllerPropModNode<float>? MergeNode(List<AnimatorLayerNodeInfo<float>> nodes,
+            public AnimatorControllerPropModNode<FloatValueInfo>? MergeNode(List<AnimatorLayerNodeInfo<FloatValueInfo>> nodes,
                 int sourceCount) =>
-                AnimatorControllerPropModNode<float>.Create(nodes);
+                AnimatorControllerPropModNode<FloatValueInfo>.Create(nodes);
 
-            public AnimatorControllerPropModNode<Object>? MergeNode(List<AnimatorLayerNodeInfo<Object>> nodes,
+            public AnimatorControllerPropModNode<ObjectValueInfo>? MergeNode(List<AnimatorLayerNodeInfo<ObjectValueInfo>> nodes,
                 int sourceCount) =>
-                AnimatorControllerPropModNode<Object>.Create(nodes);
+                AnimatorControllerPropModNode<ObjectValueInfo>.Create(nodes);
         }
     }
 }

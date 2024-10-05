@@ -72,10 +72,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                     if (!propState.AppliedAlways)
                         propStateInfo += "Partial:";
 
-                    if (propState.Value.PossibleValues is { } values)
-                        propStateInfo += $"Const:{string.Join(",", values.Select(x => x.name))}";
-                    else
-                        propStateInfo += "Variable";
+                    propStateInfo += $"Const:{string.Join(",", propState.Value.PossibleValues.Select(x => x.name))}";
 
                     NarrowValueLabelField(propName, propStateInfo);
                 }
@@ -129,10 +126,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                     if (!propState.AppliedAlways)
                         propStateInfo += "Partial:";
 
-                    if (propState.Value.PossibleValues is { } values)
-                        propStateInfo += $"Const:{string.Join(",", values.Select(x => x.name))}";
-                    else
-                        propStateInfo += "Variable";
+                    propStateInfo += $"Const:{string.Join(",", propState.Value.PossibleValues.Select(x => x.name))}";
 
                     resultText.Append("  ").Append(propName).Append(": ").Append(propStateInfo).Append('\n');
                     if (detailed)
@@ -144,12 +138,12 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             return resultText.ToString();
         }
 
-        private void AppendNodeRecursive<T>(PropModNode<T> propState, StringBuilder resultText, string indent)
-            where T : notnull
+        private void AppendNodeRecursive<TValueInfo>(PropModNode<TValueInfo> propState, StringBuilder resultText, string indent)
+            where TValueInfo : struct, IValueInfo<TValueInfo>
         {
             switch (propState)
             {
-                case AnimatorControllerPropModNode<T> animCont:
+                case AnimatorControllerPropModNode<TValueInfo> animCont:
                     resultText.Append($"{indent}AnimatorController: \n");
                     foreach (var layerInfo in animCont.LayersReversed)
                     {
@@ -157,11 +151,11 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                         AppendNodeRecursive(layerInfo.Node, resultText, indent + "    ");
                     }
                     break;
-                case AnimationComponentPropModNode<T> animation:
+                case AnimationComponentPropModNode<TValueInfo> animation:
                     resultText.Append($"{indent}Animation: {animation.Component.name}\n");
                     AppendNodeRecursive(animation.Animation, resultText, indent + "  ");
                     break;
-                case AnimatorPropModNode<T> animator:
+                case AnimatorPropModNode<TValueInfo> animator:
                     resultText.Append($"{indent}Animator: {animator.Component.name}\n");
                     foreach (var layerInfo in animator.LayersReversed)
                     {
@@ -172,19 +166,19 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 case HumanoidAnimatorPropModNode humanoid:
                     resultText.Append($"{indent}Humanoid: {humanoid.Component.name}\n");
                     break;
-                case VariableComponentPropModNode<T> variable:
+                case VariableComponentPropModNode variable:
                     resultText.Append($"{indent}Variable({variable.Component.GetType().Name}): {variable.Component.name}\n");
                     break;
-                case AnimatorLayerPropModNode<T> animatorLayer:
+                case AnimatorLayerPropModNode<TValueInfo> animatorLayer:
                     resultText.Append($"{indent}AnimatorLayer:\n");
                     foreach (var childNode in animatorLayer.Children)
                         AppendNodeRecursive(childNode, resultText, indent + "  ");
                     break;
-                case AnimatorStatePropModNode<T> stateNode:
+                case AnimatorStatePropModNode<TValueInfo> stateNode:
                     resultText.Append($"{indent}AnimatorState: {stateNode.State.name}\n");
                     AppendNodeRecursive(stateNode.Node, resultText, indent + "  ");
                     break;
-                case BlendTreeNode<T> blendTreeNode:
+                case BlendTreeNode<TValueInfo> blendTreeNode:
                     resultText.Append($"{indent}BlendTree:\n");
                     foreach (var childNode in blendTreeNode.Children)
                     {
@@ -198,7 +192,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 case ObjectAnimationCurveNode curve:
                     resultText.Append($"{indent}ObjectAnimationCurve: {curve.Clip.name}\n");
                     break;
-                case RootPropModNode<T> rootNode:
+                case RootPropModNode<TValueInfo> rootNode:
                     resultText.Append($"{indent}Root:\n");
                     foreach (var rootNodeChild in rootNode.Children)
                     {

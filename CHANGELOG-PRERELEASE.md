@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog].
 
 ### Changed
 - Animator Parser Debug Window now supports ObjectReference animation support `#1222`
+- Reimplemented Animator Parser node system `#1227`
 
 ### Deprecated
 

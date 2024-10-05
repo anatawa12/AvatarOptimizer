@@ -138,7 +138,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                     var component = context.GetAnimationComponent(transform);
                     foreach (var property in TransformRotationAndPositionAnimationKeys)
                     {
-                        component.AddModification(property, new VariableComponentPropModNode<float>(merged), true);
+                        component.AddModification(property, new VariableComponentPropModNode(merged), true);
                     }
                 }
             }
