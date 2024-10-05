@@ -32,6 +32,7 @@ The format is based on [Keep a Changelog].
 - Optimize Texture may cause false positive optimization with blendtree [`#1225`](https://github.com/anatawa12/AvatarOptimizer/pull/1225)
 - Error with PrefabSafeSet [`#1221`](https://github.com/anatawa12/AvatarOptimizer/pull/1221)
 
+## [1.7.13] - 2024-10-01
 ## [1.8.0-beta.3] - 2024-09-30
 ### Added
 - API to get in advance whether a polygon will be removed [`#1177`](https://github.com/anatawa12/AvatarOptimizer/pull/1177)
@@ -45,6 +46,11 @@ The format is based on [Keep a Changelog].
 ### Fixed
 - Typo in menu for creating Asset Description [`#1213`](https://github.com/anatawa12/AvatarOptimizer/pull/1213)
 - Optimize Texture broken with Crunch Compression [`#1215`](https://github.com/anatawa12/AvatarOptimizer/pull/1215)
+
+## [1.7.13-beta.2] - 2024-09-29
+### Fixed
+- Default value for RemoveMeshInBox is not correct in Play mode [`#1217`](https://github.com/anatawa12/AvatarOptimizer/pull/1217)
+    - This fix will make `Initialize` method set default value for `boxes`.
 
 ## [1.8.0-beta.2] - 2024-09-25
 ### Changed
@@ -1592,11 +1598,13 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-beta.4...HEAD
-[1.8.0-beta.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-beta.3...v1.8.0-beta.4
-[1.8.0-beta.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-beta.2...v1.8.0-beta.3
-[1.8.0-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.13-beta.1...v1.8.0-beta.2
-[1.7.13-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-beta.1...v1.7.13-beta.1
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/1.8.0-beta.4...HEAD
+[1.8.0-beta.4]: https://github.com/anatawa12/AvatarOptimizer/compare/1.7.13...v1.8.0-beta.4
+[1.7.13]: https://github.com/anatawa12/AvatarOptimizer/compare/1.8.0-beta.3...v1.7.13
+[1.8.0-beta.3]: https://github.com/anatawa12/AvatarOptimizer/compare/1.7.13-beta.2...v1.8.0-beta.3
+[1.7.13-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/1.8.0-beta.2...v1.7.13-beta.2
+[1.8.0-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/1.7.13-beta.1...v1.8.0-beta.2
+[1.7.13-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/1.8.0-beta.1...v1.7.13-beta.1
 [1.8.0-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.12...v1.8.0-beta.1
 [1.7.12]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.12-beta.3...v1.7.12
 [1.7.12-beta.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.12-beta.2...v1.7.12-beta.3
