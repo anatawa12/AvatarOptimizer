@@ -54,24 +54,24 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             PreserveEndBone = config.preserveEndBone;
 
-            Exclusions = new HashSet<GameObject>(config.advancedSettings.exclusions);
-            GCDebug = config.advancedSettings.gcDebug;
-            NoConfigureMergeBone = config.advancedSettings.noConfigureMergeBone;
-            NoActivenessAnimation = config.advancedSettings.noActivenessAnimation;
-            SkipFreezingNonAnimatedBlendShape = config.advancedSettings.skipFreezingNonAnimatedBlendShape;
-            SkipFreezingMeaninglessBlendShape = config.advancedSettings.skipFreezingMeaninglessBlendShape;
-            SkipIsAnimatedOptimization = config.advancedSettings.skipIsAnimatedOptimization;
-            SkipMergePhysBoneCollider = config.advancedSettings.skipMergePhysBoneCollider;
-            SkipEntryExitToBlendTree = config.advancedSettings.skipEntryExitToBlendTree;
-            SkipRemoveUnusedAnimatingProperties = config.advancedSettings.skipRemoveUnusedAnimatingProperties;
-            SkipMergeBlendTreeLayer = config.advancedSettings.skipMergeBlendTreeLayer;
-            SkipRemoveMeaninglessAnimatorLayer = config.advancedSettings.skipRemoveMeaninglessAnimatorLayer;
-            SkipMergeStaticSkinnedMesh = config.advancedSettings.skipMergeStaticSkinnedMesh;
-            SkipMergeAnimatingSkinnedMesh = config.advancedSettings.skipMergeAnimatingSkinnedMesh;
-            SkipMergeMaterialAnimatingSkinnedMesh = config.advancedSettings.skipMergeMaterialAnimatingSkinnedMesh;
-            SkipMergeMaterials = config.advancedSettings.skipMergeMaterials;
-            SkipRemoveEmptySubMesh = config.advancedSettings.skipRemoveEmptySubMesh;
-            SkipAnyStateToEntryExit = config.advancedSettings.skipAnyStateToEntryExit;
+            Exclusions = new HashSet<GameObject>(config.debugOptions.exclusions);
+            GCDebug = config.debugOptions.gcDebug;
+            NoConfigureMergeBone = config.debugOptions.noConfigureMergeBone;
+            NoActivenessAnimation = config.debugOptions.noActivenessAnimation;
+            SkipFreezingNonAnimatedBlendShape = config.debugOptions.skipFreezingNonAnimatedBlendShape;
+            SkipFreezingMeaninglessBlendShape = config.debugOptions.skipFreezingMeaninglessBlendShape;
+            SkipIsAnimatedOptimization = config.debugOptions.skipIsAnimatedOptimization;
+            SkipMergePhysBoneCollider = config.debugOptions.skipMergePhysBoneCollider;
+            SkipEntryExitToBlendTree = config.debugOptions.skipEntryExitToBlendTree;
+            SkipRemoveUnusedAnimatingProperties = config.debugOptions.skipRemoveUnusedAnimatingProperties;
+            SkipMergeBlendTreeLayer = config.debugOptions.skipMergeBlendTreeLayer;
+            SkipRemoveMeaninglessAnimatorLayer = config.debugOptions.skipRemoveMeaninglessAnimatorLayer;
+            SkipMergeStaticSkinnedMesh = config.debugOptions.skipMergeStaticSkinnedMesh;
+            SkipMergeAnimatingSkinnedMesh = config.debugOptions.skipMergeAnimatingSkinnedMesh;
+            SkipMergeMaterialAnimatingSkinnedMesh = config.debugOptions.skipMergeMaterialAnimatingSkinnedMesh;
+            SkipMergeMaterials = config.debugOptions.skipMergeMaterials;
+            SkipRemoveEmptySubMesh = config.debugOptions.skipRemoveEmptySubMesh;
+            SkipAnyStateToEntryExit = config.debugOptions.skipAnyStateToEntryExit;
 
             Enabled = true;
         }
