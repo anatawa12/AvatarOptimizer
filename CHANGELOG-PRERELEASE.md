@@ -10,22 +10,27 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
-- Animator Parser Debug Window now supports ObjectReference animation support `#1222`
-- Reimplemented Animator Parser node system `#1227`
-- Renamed debug options internally `#1228`
-  - This will lose previously configured debug options.
-  - However, debug options are not considered as Public API as stated in documents so this is not backward incompatible changes in semver 2.0.0 section 8.
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
-- API about Prefab Safe Set are broken with prefab instance `#1219`
-- Optimize Texture may cause false positive optimization with blendtree `#1225`
-- Error with PrefabSafeSet `#1221`
 
 ### Security
+
+## [1.8.0-beta.4] - 2024-10-05
+### Changed
+- Animator Parser Debug Window now supports ObjectReference animation support [`#1222`](https://github.com/anatawa12/AvatarOptimizer/pull/1222)
+- Reimplemented Animator Parser node system [`#1227`](https://github.com/anatawa12/AvatarOptimizer/pull/1227)
+- Renamed debug options internally [`#1228`](https://github.com/anatawa12/AvatarOptimizer/pull/1228)
+  - This will lose previously configured debug options.
+  - However, debug options are not considered as Public API as stated in documents so this is not backward incompatible changes in semver 2.0.0 section 8.
+
+### Fixed
+- API about Prefab Safe Set are broken with prefab instance [`#1219`](https://github.com/anatawa12/AvatarOptimizer/pull/1219)
+- Optimize Texture may cause false positive optimization with blendtree [`#1225`](https://github.com/anatawa12/AvatarOptimizer/pull/1225)
+- Error with PrefabSafeSet [`#1221`](https://github.com/anatawa12/AvatarOptimizer/pull/1221)
 
 ## [1.8.0-beta.3] - 2024-09-30
 ### Added
@@ -1587,7 +1592,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-beta.3...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-beta.4...HEAD
+[1.8.0-beta.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-beta.3...v1.8.0-beta.4
 [1.8.0-beta.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-beta.2...v1.8.0-beta.3
 [1.8.0-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.13-beta.1...v1.8.0-beta.2
 [1.7.13-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-beta.1...v1.7.13-beta.1
