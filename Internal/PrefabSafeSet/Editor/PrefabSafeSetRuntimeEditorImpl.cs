@@ -32,6 +32,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                 {
                     // if the prefab is created, we clear onSceneLayer to avoid unnecessary modifications
                     prefabSafeSet.onSceneLayer = new PrefabLayer<T>();
+                    prefabSafeSet.usingOnSceneLayer = false; // this should avoid creating prefab overrides
                 }
             }
 
@@ -48,6 +49,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 
             if (!shouldUsePrefabOnSceneLayer && prefabSafeSet.usingOnSceneLayer)
             {
+                // migrate onSceneLayer to latest layer
                 var onSceneLayer = prefabSafeSet.onSceneLayer;
 
                 if (maxLayerCount == 0)
@@ -131,7 +133,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             if (shouldUsePrefabOnSceneLayer)
             {
                 var currentLayer = self.onSceneLayer;
-                self.usingOnSceneLayer = true;
+                //self.usingOnSceneLayer = true; // this will create prefab overrides, which is not good.
                 DistinctCheckArray(ref currentLayer.additions, PrefabSafeSetRuntimeUtil.IsNotNull);
                 DistinctCheckArray(ref currentLayer.removes,
                     x => x.IsNotNull() && !currentLayer.additions.Contains(x));
@@ -169,6 +171,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             else
             {
                 // nestCount is not zero: apply to current layer
+                if (shouldUsePrefabOnSceneLayer) self.usingOnSceneLayer = true;
                 var targetLayer = shouldUsePrefabOnSceneLayer ? self.onSceneLayer : self.prefabLayers[maxLayerCount - 1];
                 var additions = new ListSet<T>(targetLayer.additions);
                 var removes = new ListSet<T>(targetLayer.removes);
