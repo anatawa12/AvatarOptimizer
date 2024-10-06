@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
 using nadena.dev.ndmf;
 using UnityEngine;
+using UnityEngine.Profiling;
 using Object = UnityEngine.Object;
 
 #if AAO_VRCSDK3_AVATARS
@@ -54,6 +56,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
         protected override void Execute(BuildContext context)
         {
             // merge from -> merge into
+            Profiler.BeginSample("Create Merge Mapping");
             var mergeMapping = new Dictionary<Transform, Transform>();
             foreach (var component in context.GetComponents<MergeBone>())
             {
@@ -66,25 +69,34 @@ namespace Anatawa12.AvatarOptimizer.Processors
             // normalize map
             mergeMapping.FlattenMapping();
 
+            Profiler.EndSample();
+
             if (mergeMapping.Count == 0) return;
 
 #if AAO_VRCSDK3_AVATARS
             foreach (var physBone in context.GetComponents<VRCPhysBoneBase>())
+            {
+                Profiler.BeginSample("MapIgnoreTransforms");
                 using (ErrorReport.WithContextObject(physBone))
                     MapIgnoreTransforms(physBone);
+                Profiler.EndSample();
+            }
 #endif
             foreach (var renderer in context.GetComponents<SkinnedMeshRenderer>())
             {
                 using (ErrorReport.WithContextObject(renderer))
                 {
+                    Profiler.BeginSample("DoBoneMap");
                     var meshInfo2 = context.GetMeshInfoFor(renderer);
                     if (meshInfo2.Bones.Any(x => x.Transform != null && mergeMapping.ContainsKey(x.Transform)))
                         DoBoneMap2(meshInfo2, mergeMapping);
+                    Profiler.EndSample();
                 }
             }
 
-            var counter = 0;
+            Profiler.BeginSample("Flatten Bone Tree");
 
+            var counter = 0;
             foreach (var pair in mergeMapping)
             {
                 var mapping = pair.Key;
@@ -110,9 +122,13 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 }
             }
 
+            Profiler.EndSample();
+
+            Profiler.BeginSample("Destroy Unnecessary Objects");
             foreach (var pair in mergeMapping.Keys)
                 if (pair)
                     DestroyTracker.DestroyImmediate(pair.gameObject);
+            Profiler.EndSample();
         }
 
 #if AAO_VRCSDK3_AVATARS
@@ -146,6 +162,8 @@ namespace Anatawa12.AvatarOptimizer.Processors
             var primaryBones = new Dictionary<Transform, Bone>();
             var boneReplaced = false;
 
+            Profiler.BeginSample("Map Bone");
+
             // first, simply update bone weights by updating BindPose
             foreach (var bone in meshInfo2.Bones)
             {
@@ -164,14 +182,18 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 }
             }
 
+            Profiler.EndSample();
+
             if (!boneReplaced) return;
 
+            Profiler.BeginSample("Optimize Bindpose Phase 1");
+
             // Optimization 1: if vertex is affected by only one bone, we can merge to one weight
-            foreach (var vertex in meshInfo2.Vertices)
+            Parallel.ForEach(meshInfo2.Vertices, vertex =>
             {
                 var singleBoneTransform = vertex.BoneWeights.Select(x => x.bone.Transform)
                     .DistinctSingleOrDefaultIfNoneOrMultiple();
-                if (singleBoneTransform == null) continue;
+                if (singleBoneTransform == null) return;
                 if (!primaryBones.TryGetValue(singleBoneTransform, out var finalBone))
                     primaryBones.Add(singleBoneTransform, finalBone = vertex.BoneWeights[0].bone);
 
@@ -213,8 +235,11 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 // I want weightSum to be 1.0 but it may not.
                 vertex.BoneWeights.Clear();
                 vertex.BoneWeights.Add((finalBone, weightSum));
-            }
+            });
 
+            Profiler.EndSample();
+
+            Profiler.BeginSample("Optimize Bindpose Phase 2");
             // Optimization2: If there are same (BindPose, Transform) pair, merge
             // This is optimization for RestPose bone merging
             var boneMapping = new Dictionary<Bone, Bone>();
@@ -238,6 +263,8 @@ namespace Anatawa12.AvatarOptimizer.Processors
                     .Select(g => (g.Key, g.Sum(x => x.weight)))
                     .ToList();
             }
+
+            Profiler.EndSample();
         }
 
         private bool ValidBindPose(Matrix4x4 matrix)
