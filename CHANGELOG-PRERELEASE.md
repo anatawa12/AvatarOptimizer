@@ -20,6 +20,7 @@ The format is based on [Keep a Changelog].
 - maxSquish cannot be configured for mergePB`#1231`
 - Error from Optimize Texture if there is Merge Skinned Mesh with material slot animation `#1235`
 - Unncecessary Prefab Overrides are Generated with Prefab Safe Set `#1236`
+- CS8632 warning for released version `#1237`
 
 ### Security
 
