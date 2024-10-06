@@ -18,6 +18,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - maxSquish cannot be configured for mergePB`#1231`
+- Error from Optimize Texture if there is Merge Skinned Mesh with material slot animation `#1235`
 
 ### Security
 
