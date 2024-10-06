@@ -27,7 +27,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 
             protected override void InitCurrentLayer(bool force = false)
             {
-                _usingOnSceneLayer.boolValue = true;
+                if (force) _usingOnSceneLayer.boolValue = true;
                 CurrentRemoves = _onSceneLayer.FindPropertyRelative(Names.Removes);
                 CurrentAdditions = _onSceneLayer.FindPropertyRelative(Names.Additions);
                 _prefabLayersSize.Updated();
