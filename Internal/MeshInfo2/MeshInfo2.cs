@@ -697,14 +697,32 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             {
                 Profiler.BeginSample("BlendShapes");
 
-                var buffers = Vertices.Select(x => x.BlendShapeBuffer).Distinct().ToArray();
+                Profiler.BeginSample("Collect by buffer");
+                var buffers = new List<BlendShapeBuffer>();
+                var verticesByBuffer = new List<List<(Vertex, int)>>();
 
-                // TODO: if buffers.Length == 1, we can optimize this.
+                foreach (var vertex in Vertices)
+                {
+                    var buffer = vertex.BlendShapeBuffer;
+                    var bufferIndex = buffers.IndexOf(buffer);
+                    if (bufferIndex == -1)
+                    {
+                        bufferIndex = buffers.Count;
+                        buffers.Add(buffer);
+                        verticesByBuffer.Add(new List<(Vertex, int)>());
+                    }
+
+                    verticesByBuffer[bufferIndex].Add((vertex, vertex.BlendShapeBufferVertexIndex));
+                }
+                Profiler.EndSample();
 
                 for (var i = 0; i < BlendShapes.Count; i++)
                 {
+                    Profiler.BeginSample("Process Shape");
                     Debug.Assert(destMesh.blendShapeCount == i, "Unexpected state: BlendShape count");
                     var (shapeName, _) = BlendShapes[i];
+
+                    Profiler.BeginSample("Collect Weights");
                     var weightsSet = new HashSet<float>();
 
                     foreach (var blendShapeBuffer in buffers)
@@ -718,26 +736,74 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     var weights = weightsSet.ToArray();
                     Array.Sort(weights);
 
+                    Profiler.EndSample();
+
+                    Profiler.BeginSample("Make Frames Recipies");
+                    var weightRecipes = buffers.Select(buffer =>
+                    {
+                        var frames = new ApplyFrame2Array[weights.Length];
+
+                        for (var weightI = 0; weightI < weights.Length; weightI++)
+                        {
+                            var weight = weights[weightI];
+                            frames[weightI] = buffer.GetApplyFramesInfo(shapeName, weight);
+                        }
+
+                        return frames;
+                    }).ToArray();
+                    Profiler.EndSample();
+
+                    Profiler.BeginSample("Copy and Apply Frames");
                     var positions = new Vector3[Vertices.Count];
                     var normals = new Vector3[Vertices.Count];
                     var tangents = new Vector3[Vertices.Count];
 
-                    foreach (var weight in weights)
+                    for (var weightI = 0; weightI < weights.Length; weightI++)
                     {
-                        for (var vertexI = 0; vertexI < Vertices.Count; vertexI++)
-                        {
-                            var vertex = Vertices[vertexI];
+                        var weight = weights[weightI];
 
-                            vertex.TryGetBlendShape(shapeName, weight, 
-                                out var position, out var normal, out var tangent,
-                                getDefined: true);
-                            positions[vertexI] = position;
-                            normals[vertexI] = normal;
-                            tangents[vertexI] = tangent;
+                        for (var bufferIndex = 0; bufferIndex < verticesByBuffer.Count; bufferIndex++)
+                        {
+                            var vertices = verticesByBuffer[bufferIndex];
+                            var recipe = weightRecipes[bufferIndex][weightI];
+                            var buffer = buffers[bufferIndex];
+
+                            if (recipe.FrameCount == 1 && recipe.FirstFrameApplyWeight == 1)
+                            {
+                                // likely fast path: just copy
+                                Profiler.BeginSample("FastCopyPath");
+                                var deltaVertices = buffer.DeltaVertices[recipe.FirstFrameIndex];
+                                var deltaNormals = buffer.DeltaNormals[recipe.FirstFrameIndex];
+                                var deltaTangents = buffer.DeltaTangents[recipe.FirstFrameIndex];
+
+                                foreach (var (vertex, vertexI) in vertices)
+                                {
+                                    positions[vertexI] = deltaVertices[vertex.BlendShapeBufferVertexIndex];
+                                    normals[vertexI] = deltaNormals[vertex.BlendShapeBufferVertexIndex];
+                                    tangents[vertexI] = deltaTangents[vertex.BlendShapeBufferVertexIndex];
+                                }
+                                Profiler.EndSample();
+                            }
+                            else
+                            {
+                                Profiler.BeginSample("ApplyRecipe");
+                                foreach (var (vertex, vertexI) in vertices)
+                                {
+                                    positions[vertexI] = recipe.Apply(buffer.DeltaVertices,
+                                        vertex.BlendShapeBufferVertexIndex);
+                                    normals[vertexI] = recipe.Apply(buffer.DeltaNormals,
+                                        vertex.BlendShapeBufferVertexIndex);
+                                    tangents[vertexI] = recipe.Apply(buffer.DeltaTangents,
+                                        vertex.BlendShapeBufferVertexIndex);
+                                }
+                                Profiler.EndSample();
+                            }
                         }
 
                         destMesh.AddBlendShapeFrame(shapeName, weight, positions, normals, tangents);
                     }
+                    Profiler.EndSample();
+                    Profiler.EndSample();
                 }
                 Profiler.EndSample();
             }
@@ -978,17 +1044,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             out Vector3 tangent, bool getDefined = false)
         {
             var frames = BlendShapeBuffer.GetApplyFramesInfo(name, weight, getDefined);
-            position = Vector3.zero;
-            normal = Vector3.zero;
-            tangent = Vector3.zero;
 
             var bufferIndex = BlendShapeBufferVertexIndex;
-            foreach (var (frameIndex, applyWeight) in frames)
-            {
-                position += BlendShapeBuffer.DeltaVertices[frameIndex][bufferIndex] * applyWeight;
-                normal += BlendShapeBuffer.DeltaNormals[frameIndex][bufferIndex] * applyWeight;
-                tangent += BlendShapeBuffer.DeltaTangents[frameIndex][bufferIndex] * applyWeight;
-            }
+
+            position = frames.Apply(BlendShapeBuffer.DeltaVertices, bufferIndex);
+            normal = frames.Apply(BlendShapeBuffer.DeltaNormals, bufferIndex);
+            tangent = frames.Apply(BlendShapeBuffer.DeltaTangents, bufferIndex);
 
             return frames.FrameCount != 0;
         }
@@ -1272,7 +1333,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         {
             _firstFrameIndexInverted = ~firstFrameIndex;
             _firstFrameApplyWeight = firstFrameApplyWeight;
-            _secondFrameIndexInverted = -1;
+            _secondFrameIndexInverted = ~-1;
             _secondFrameApplyWeight = 0;
         }
 
@@ -1308,6 +1369,16 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             void IDisposable.Dispose()
             {
             }
+        }
+
+        public Vector3 Apply(Vector3[][] deltas, int bufferIndex)
+        {
+            var delta = Vector3.zero;
+            if (FirstFrameIndex == -1) return delta;
+            delta += deltas[FirstFrameIndex][bufferIndex] * FirstFrameApplyWeight;
+            if (SecondFrameIndex == -1) return delta;
+            delta += deltas[SecondFrameIndex][bufferIndex] * SecondFrameApplyWeight;
+            return delta;
         }
     }
     
