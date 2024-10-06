@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using nadena.dev.ndmf;
 using UnityEditor;
+using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 {
@@ -20,8 +21,20 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             if (state.PreserveBlendShapes.TryGetValue(Target, out var preserve))
                 meaninglessBlendShapes.ExceptWith(preserve);
 
-            foreach (var vertex in target.Vertices)
-                meaninglessBlendShapes.ExceptWith(vertex.BlendShapes.Keys);
+            var buffers = target.Vertices.Select(x => x.BlendShapeBuffer).Distinct();
+            foreach (var shapeBuffer in buffers)
+            {
+                foreach (var (shapeName, shapeShape) in shapeBuffer.Shapes)
+                {
+                    var meaningfull = shapeShape.FramesBufferIndices.Any(bufferIndex => 
+                        shapeBuffer.DeltaVertices[bufferIndex].Any(x => x != Vector3.zero) 
+                        || shapeBuffer.DeltaNormals[bufferIndex].Any(x => x != Vector3.zero) 
+                        || shapeBuffer.DeltaNormals[bufferIndex].Any(x => x != Vector3.zero));
+
+                    if (meaningfull)
+                        meaninglessBlendShapes.Remove(shapeName);
+                }
+            }
 
             foreach (var meaninglessBlendShape in meaninglessBlendShapes)
                 context.RecordRemoveProperty(Target, $"blendShape.{meaninglessBlendShape}");
