@@ -195,19 +195,19 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 vertex.Normal = transBindPose.MultiplyPoint3x3(vertex.Normal);
                 var tangentVec3 = transBindPose.MultiplyPoint3x3(vertex.Tangent);
                 vertex.Tangent = new Vector4(tangentVec3.x, tangentVec3.y, tangentVec3.z, vertex.Tangent.w);
-                foreach (var frames in vertex.BlendShapes.Values)
+
+                var buffer = vertex.BlendShapeBuffer;
+                var bufferVertexIndex = vertex.BlendShapeBufferVertexIndex;
+
+                static void ApplyMatrixToArray(Matrix4x4 matrix, Vector3[][] arrayArray, int index)
                 {
-                    for (var i = 0; i < frames.Length; i++)
-                    {
-                        var frame = frames[i];
-                        frames[i] = new Vertex.BlendShapeFrame(
-                            weight: frame.Weight,
-                            position: transBindPose.MultiplyPoint3x3(frame.Position),
-                            normal: transBindPose.MultiplyPoint3x3(frame.Normal),
-                            tangent: transBindPose.MultiplyPoint3x3(frame.Tangent)
-                        );
-                    }
+                    foreach (var array in arrayArray)
+                        array[index] = matrix.MultiplyPoint3x3(array[index]);
                 }
+
+                ApplyMatrixToArray(transBindPose, buffer.DeltaVertices, bufferVertexIndex);
+                ApplyMatrixToArray(transBindPose, buffer.DeltaNormals, bufferVertexIndex);
+                ApplyMatrixToArray(transBindPose, buffer.DeltaTangents, bufferVertexIndex);
 
                 var weightSum = vertex.BoneWeights.Select(x => x.weight).Sum();
                 // I want weightSum to be 1.0 but it may not.

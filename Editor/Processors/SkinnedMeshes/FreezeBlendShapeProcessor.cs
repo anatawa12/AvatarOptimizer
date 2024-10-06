@@ -90,10 +90,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     vertex.Normal += normal;
                     tangent += (Vector3)vertex.Tangent;
                     vertex.Tangent = new Vector4(tangent.x, tangent.y, tangent.z, vertex.Tangent.w);
-                    vertex.BlendShapes.Remove(name);
                     Profiler.EndSample();
                 }
             }
+            foreach (var vertex in target.Vertices)
+            foreach (var freezeName in freezeNames)
+                vertex.BlendShapeBuffer.RemoveBlendShape(freezeName);
             Profiler.EndSample();
 
             Profiler.BeginSample("MoveProperties");
@@ -101,7 +103,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 int srcI = 0, dstI = 0;
                 for (; srcI < target.BlendShapes.Count; srcI++)
                 {
-                    if (!freezes[srcI])
+                    if (!freezeNames.Contains(target.BlendShapes[srcI].name))
                     {
                         // for keep prop: move the BlendShape index. name is not changed.
                         context.RecordMoveProperty(targetSMR, VProp.BlendShapeIndex(srcI), VProp.BlendShapeIndex(dstI));

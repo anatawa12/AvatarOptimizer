@@ -118,12 +118,15 @@ namespace Anatawa12.AvatarOptimizer.Test
 
             foreach (var vertex in meshInfo2.Vertices)
             {
-                var frames = vertex.BlendShapes["shape"];
-                Assert.That(frames.Length, Is.EqualTo(5));
-                for (var i = 0; i < frames.Length; i++)
+                var buffer = vertex.BlendShapeBuffer;
+                var shapeShape = buffer.Shapes["shape"];
+                Assert.That(shapeShape.Frames.Length, Is.EqualTo(5));
+                for (var i = 0; i < shapeShape.Frames.Length; i++)
                 {
-                    Assert.That(frames[i].Weight, Is.EqualTo((float)i));
-                    Assert.That(frames[i].Position, Is.EqualTo(i == 3 ? new Vector3(1, 2, 3) : new Vector3()));
+                    var frameInfo = shapeShape.Frames[i];
+                    Assert.That(frameInfo.Weight, Is.EqualTo((float)i));
+                    var position = buffer.DeltaVertices[frameInfo.BufferIndex][vertex.BlendShapeBufferVertexIndex];
+                    Assert.That(position, Is.EqualTo(i == 3 ? new Vector3(1, 2, 3) : new Vector3()));
                 }
             }
         }
@@ -145,7 +148,7 @@ namespace Anatawa12.AvatarOptimizer.Test
 
             Vector3 position;
             var vertex = meshInfo2.Vertices[0];
-            Assert.That(vertex.TryGetBlendShape("shape", 0, out position, out _, out _), Is.True);
+            Assert.That(vertex.TryGetBlendShape("shape", 0, out position, out _, out _), Is.False);
             Assert.That(position, Is.EqualTo(new Vector3(0, 0, 0)));
 
             Assert.That(vertex.TryGetBlendShape("shape", 0, out position, out _, out _, getDefined: true), Is.True);
