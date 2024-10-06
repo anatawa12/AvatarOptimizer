@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- maxSquish cannot be configured for mergePB`#1231`
 
 ### Security
 
