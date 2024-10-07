@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Avatar Descriptor can be removed by Avatar Optimizer in extreamely rare case `#1242`
 
 ### Security
 
