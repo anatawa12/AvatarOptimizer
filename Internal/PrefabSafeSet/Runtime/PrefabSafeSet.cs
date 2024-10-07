@@ -8,24 +8,13 @@ using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 {
-    public interface IPrefabSafeSetApi<T>
-    {
-        public void SetValueNonPrefab(IEnumerable<T> values);
-        public HashSet<T> GetAsSet();
-        public List<T> GetAsList();
-        public bool AddRange(IEnumerable<T> values);
-        public bool RemoveRange(IEnumerable<T> values);
-        public void RemoveIf(Func<T, bool> predicate);
-        public void Clear();
-    }
-
     /// <summary>
     /// The serializable class to express hashset.
     /// using array will make prefab modifications too big so I made this class
     /// </summary>
     /// <typeparam name="T">Element Type</typeparam>
     [NotKeyable, Serializable]
-    public class PrefabSafeSet<T> : PrefabSafeUniqueCollection<T, T, IdentityManipulator<T>>, IPrefabSafeSetApi<T> 
+    public class PrefabSafeSet<T> : PrefabSafeUniqueCollection<T, T, IdentityManipulator<T>> 
         where T : notnull
     {
 #if UNITY_EDITOR
