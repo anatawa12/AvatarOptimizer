@@ -20,19 +20,14 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
         public void Clear();
     }
 
-    public struct PrefabSafeSetManipulator<T> : IManipulator<T?, T>
-    {
-        public ref T? GetKey(ref T? value) => ref value;
-        public T? GetKey(T? value) => value;
-    }
-
     /// <summary>
     /// The serializable class to express hashset.
     /// using array will make prefab modifications too big so I made this class
     /// </summary>
     /// <typeparam name="T">Element Type</typeparam>
     [NotKeyable, Serializable]
-    public class PrefabSafeSet<T> : PrefabSafeUniqueCollection<T?, T, PrefabSafeSetManipulator<T>>, IPrefabSafeSetApi<T>
+    public class PrefabSafeSet<T> : PrefabSafeUniqueCollection<T, T, IdentityManipulator<T>>, IPrefabSafeSetApi<T> 
+        where T : notnull
     {
 #if UNITY_EDITOR
         [SerializeField, HideInInspector] internal T? fakeSlot;
@@ -52,7 +47,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                 throw new InvalidOperationException("You cannot set value to Prefab Instance or Prefab");
 #endif
             // in some (rare) cases, unpacked prefab may have prefabLayers so we need to clear it. 
-            prefabLayers = Array.Empty<PrefabLayer<T?, T>>();
+            prefabLayers = Array.Empty<PrefabLayer<T, T>>();
             mainSet = values.ToArray();
         }
 
@@ -62,12 +57,14 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 
         public new bool AddRange(IEnumerable<T> values) => base.AddRange(values);
         public new bool RemoveRange(IEnumerable<T> values) => base.RemoveRange(values);
-        public new void RemoveIf(Func<T, bool> predicate) => base.RemoveIf(v => v != null && predicate(v));
+        public new void RemoveIf(Func<T, bool> predicate) => base.RemoveIf(v => v.IsNotNull() && predicate(v));
         public new void Clear() => base.Clear();
     }
 
     public static class PrefabSafeSet {
-        public static void OnValidate<T, TComponent>(TComponent component, Func<TComponent, PrefabSafeSet<T>> getPrefabSafeSet) where TComponent : Component
+        public static void OnValidate<T, TComponent>(TComponent component, Func<TComponent, PrefabSafeSet<T>> getPrefabSafeSet)
+            where T : notnull
+            where TComponent : Component
         {
             PrefabSafeUniqueCollection.PrefabSafeUniqueCollection.OnValidate(component, getPrefabSafeSet);
         }
@@ -86,14 +83,14 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
         public void AddRange(IEnumerable<T> values)
         {
             foreach (var value in values)
-                if (value != null && _set.Add(value))
+                if (value.IsNotNull() && _set.Add(value))
                     _list?.Add(value);
         }
 
         public void RemoveRange(IEnumerable<T> values)
         {
             foreach (var value in values)
-                if (value != null && _set.Remove(value))
+                if (value.IsNotNull() && _set.Remove(value))
                     _list?.Remove(value);
         }
 

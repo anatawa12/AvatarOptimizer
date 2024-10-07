@@ -15,10 +15,14 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
         TRemoveKey,
         TManipulator
     >
+        where TRemoveKey : notnull
+        where TAdditionValue : notnull
         where TManipulator : struct, IManipulator<TAdditionValue, TRemoveKey>
     {
         [UsedImplicitly] // used by reflection
-        public static void OnValidate<TComponent>(TComponent component, Func<TComponent, PrefabSafeUniqueCollection<TAdditionValue, TRemoveKey, TManipulator>> getPrefabSafeUniqueCollection) where TComponent : Component
+        public static void OnValidate<TComponent>(TComponent component,
+            Func<TComponent, PrefabSafeUniqueCollection<TAdditionValue, TRemoveKey, TManipulator>>
+                getPrefabSafeUniqueCollection) where TComponent : Component
         {
             // Notes for implementation
             // This implementation is based on the following assumptions:
@@ -30,7 +34,9 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
 
             // detect creating new prefab
             var newCorrespondingObject = PrefabUtility.GetCorrespondingObjectFromSource(component);
-            if (newCorrespondingObject != null && PrefabUtility.GetCorrespondingObjectFromSource(newCorrespondingObject) ==  PrefabSafeUniqueCollection.CorrespondingObject)
+            if (newCorrespondingObject != null &&
+                PrefabUtility.GetCorrespondingObjectFromSource(newCorrespondingObject) ==
+                PrefabSafeUniqueCollection.CorrespondingObject)
             {
                 // this might be creating prefab. we do more checks
                 var newCorrespondingPrefabSafeUniqueCollection = getPrefabSafeUniqueCollection(newCorrespondingObject);
@@ -48,7 +54,8 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
             var nestCount = PrefabNestCount(component, getPrefabSafeUniqueCollection);
             PrefabSafeUniqueCollection.NestCount = nestCount;
 
-            var shouldUsePrefabOnSceneLayer = PrefabSafeUniqueCollectionRuntimeUtil.ShouldUsePrefabOnSceneLayer(component);
+            var shouldUsePrefabOnSceneLayer =
+                PrefabSafeUniqueCollectionRuntimeUtil.ShouldUsePrefabOnSceneLayer(component);
             var maxLayerCount = shouldUsePrefabOnSceneLayer ? nestCount - 1 : nestCount;
 
             // https://github.com/anatawa12/AvatarOptimizer/issues/52
@@ -61,7 +68,8 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
 
                 if (maxLayerCount == 0)
                 {
-                    var result = new ListMap<TAdditionValue, TRemoveKey, TManipulator>(PrefabSafeUniqueCollection.mainSet);
+                    var result =
+                        new ListMap<TAdditionValue, TRemoveKey, TManipulator>(PrefabSafeUniqueCollection.mainSet);
                     foreach (var layer in PrefabSafeUniqueCollection.prefabLayers)
                     {
                         result.RemoveRange(layer.removes);
@@ -76,7 +84,8 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
                 }
                 else
                 {
-                    PrefabSafeUniqueCollectionRuntimeUtil.ResizeArray(ref PrefabSafeUniqueCollection.prefabLayers, maxLayerCount);
+                    PrefabSafeUniqueCollectionRuntimeUtil.ResizeArray(ref PrefabSafeUniqueCollection.prefabLayers,
+                        maxLayerCount);
                     var currentLayer = PrefabSafeUniqueCollection.prefabLayers[maxLayerCount - 1];
                     currentLayer.additions = currentLayer.additions.Concat(onSceneLayer.additions).ToArray();
                     currentLayer.removes = currentLayer.removes.Concat(onSceneLayer.removes).ToArray();
@@ -93,7 +102,8 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
         }
 
         private static int PrefabNestCount<TComponent>(TComponent component,
-            Func<TComponent, PrefabSafeUniqueCollection<TAdditionValue, TRemoveKey, TManipulator>> getPrefabSafeUniqueCollection) where TComponent : Component
+            Func<TComponent, PrefabSafeUniqueCollection<TAdditionValue, TRemoveKey, TManipulator>>
+                getPrefabSafeUniqueCollection) where TComponent : Component
         {
             var correspondingObject = PrefabUtility.GetCorrespondingObjectFromSource(component);
             if (correspondingObject == null)
@@ -106,14 +116,15 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
             return nestCount + 1;
         }
 
-        private static void GeneralCheck(PrefabSafeUniqueCollection<TAdditionValue, TRemoveKey, TManipulator> self, int maxLayerCount, bool shouldUsePrefabOnSceneLayer)
+        private static void GeneralCheck(PrefabSafeUniqueCollection<TAdditionValue, TRemoveKey, TManipulator> self,
+            int maxLayerCount, bool shouldUsePrefabOnSceneLayer)
         {
             // first, replace missing with null
             if (typeof(Object).IsAssignableFrom(typeof(TRemoveKey)))
             {
                 var context = new PrefabSafeSetUtil.NullOrMissingContext(self.OuterObject);
 
-                void ReplaceMissingWithNullEntries(TAdditionValue[] array)
+                void ReplaceMissingWithNullEntries(TAdditionValue?[] array)
                 {
                     foreach (ref var e in array.AsSpan())
                     {
@@ -141,17 +152,17 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
                 }
             }
 
-            void DistinctCheckArrayKey(ref TRemoveKey[] source, Func<TRemoveKey, bool> filter)
+            void DistinctCheckArrayKey(ref TRemoveKey?[] source, Func<TRemoveKey, bool> filter)
             {
-                var array = source.Distinct().Where(filter).ToArray();
+                var array = source.Distinct().Where(v => v.IsNotNull() && filter(v)).ToArray();
                 if (array.Length != source.Length)
                     source = array;
             }
 
-            void DistinctCheckArrayEntry(ref TAdditionValue[] source, Func<TRemoveKey?, bool> filter)
+            void DistinctCheckArrayEntry(ref TAdditionValue?[] source, Func<TRemoveKey?, bool> filter)
             {
                 var indexIndex = new Dictionary<TRemoveKey, int>();
-                var list = new List<TAdditionValue>();
+                var list = new List<TAdditionValue?>();
                 foreach (ref var entry in source.AsSpan())
                 {
                     var key = default(TManipulator).GetKey(entry);
@@ -189,14 +200,17 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
             else if (maxLayerCount < self.prefabLayers.Length)
             {
                 var currentLayer = self.prefabLayers[maxLayerCount - 1] ??
-                                   (self.prefabLayers[maxLayerCount - 1] = new PrefabLayer<TAdditionValue, TRemoveKey>());
+                                   (self.prefabLayers[maxLayerCount - 1] =
+                                       new PrefabLayer<TAdditionValue, TRemoveKey>());
                 DistinctCheckArrayEntry(ref currentLayer.additions, PrefabSafeUniqueCollectionRuntimeUtil.IsNotNull);
                 DistinctCheckArrayKey(ref currentLayer.removes,
                     x => x.IsNotNull() && !currentLayer.additions.Any(e => Equals(default(TManipulator).GetKey(e), x)));
             }
         }
 
-        private static void ApplyModificationsToLatestLayer(PrefabSafeUniqueCollection<TAdditionValue, TRemoveKey, TManipulator> self, int maxLayerCount, bool shouldUsePrefabOnSceneLayer)
+        private static void ApplyModificationsToLatestLayer(
+            PrefabSafeUniqueCollection<TAdditionValue, TRemoveKey, TManipulator> self, int maxLayerCount,
+            bool shouldUsePrefabOnSceneLayer)
         {
             // after apply modifications?: apply to latest layer
             if (maxLayerCount == 0 && !shouldUsePrefabOnSceneLayer)
@@ -216,9 +230,11 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
             {
                 // nestCount is not zero: apply to current layer
                 if (shouldUsePrefabOnSceneLayer) self.usingOnSceneLayer = true;
-                var targetLayer = shouldUsePrefabOnSceneLayer ? self.onSceneLayer : self.prefabLayers[maxLayerCount - 1];
+                var targetLayer = shouldUsePrefabOnSceneLayer
+                    ? self.onSceneLayer
+                    : self.prefabLayers[maxLayerCount - 1];
                 var additions = new ListMap<TAdditionValue, TRemoveKey, TManipulator>(targetLayer.additions);
-                var removes = new ListSet<TRemoveKey>(targetLayer.removes);
+                var removes = new ListMap<TRemoveKey, TRemoveKey, IdentityManipulator<TRemoveKey>>(targetLayer.removes);
 
                 foreach (var layer in self.prefabLayers.Skip(maxLayerCount))
                 {
@@ -226,7 +242,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
                     removes.AddRange(layer.removes);
 
                     additions.AddRange(layer.additions);
-                    removes.RemoveRange(layer.additions.Select(e => default(TManipulator).GetKey(e)!));
+                    removes.RemoveRange(layer.additions.Select(e => default(TManipulator).GetKey(e)).NonNulls());
                 }
 
                 targetLayer.additions = additions.ToArray();

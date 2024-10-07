@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection;
 using UnityEditor;
 
 namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
@@ -44,7 +45,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                     // this should not happen; OnValidate will fix this
                     // but unpacking prefab may cause this case
 
-                    var additions = new ListSet<T>(Array.Empty<T>());
+                    var additions = new ListMap<T, T, IdentityManipulator<T>>(Array.Empty<T>());
                     var removes = new ListSet<T>(Array.Empty<T>());
 
                     for (var i = NestCount - 1; i < PrefabLayers.arraySize; i++)

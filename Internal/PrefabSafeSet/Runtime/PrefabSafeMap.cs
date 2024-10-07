@@ -23,6 +23,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeMap
     /// <typeparam name="TValue">Value Type</typeparam>
     [NotKeyable, Serializable]
     public class PrefabSafeMap<TKey, TValue> : PrefabSafeUniqueCollection<MapEntry<TKey, TValue>, TKey, PrefabSafeMapManipulator<TKey, TValue>>
+        where TKey : notnull
     {
 #if UNITY_EDITOR
         [SerializeField, HideInInspector] internal TKey? fakeSlot;
@@ -45,6 +46,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeMap
 
     public static class PrefabSafeMap {
         public static void OnValidate<TKey, TValue, TComponent>(TComponent component, Func<TComponent, PrefabSafeMap<TKey, TValue>> getPrefabSafeMap) where TComponent : Component
+            where TKey : notnull
         {
             PrefabSafeUniqueCollection.PrefabSafeUniqueCollection.OnValidate(component, getPrefabSafeMap);
         }
