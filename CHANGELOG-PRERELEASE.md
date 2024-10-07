@@ -21,6 +21,7 @@ The format is based on [Keep a Changelog].
 - Error from Optimize Texture if there is Merge Skinned Mesh with material slot animation `#1235`
 - Unncecessary Prefab Overrides are Generated with Prefab Safe Set `#1236`
 - CS8632 warning for released version `#1237`
+- Avatar Descriptor can be removed by Avatar Optimizer in extreamely rare case `#1242`
 
 ### Security
 
