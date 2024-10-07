@@ -101,8 +101,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                         Profiler.EndSample();
                     }
                     
-                    vertex.Position += position;
-                    vertex.Normal += normal;
+                    vertex.Position = position;
+                    vertex.Normal = normal;
                     vertex.Tangent = new Vector4(tangent.x, tangent.y, tangent.z, vertex.Tangent.w);
                     Profiler.EndSample();
                 }
