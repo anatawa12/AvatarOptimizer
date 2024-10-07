@@ -10,7 +10,7 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
-- Performance Improvements with Mesh Manipulation, especially with blendshape-heavy meshes `#1234`
+- Performance Improvements with Mesh Manipulation, especially with blendshape-heavy meshes `#1234` `#1243`
 
 ### Deprecated
 
