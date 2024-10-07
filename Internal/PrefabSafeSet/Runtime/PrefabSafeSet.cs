@@ -1,7 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Reflection;
+using Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection;
 using UnityEngine;
 using UnityEngine.Animations;
 using Object = UnityEngine.Object;
@@ -37,7 +38,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             array = result;
         }
 
-        internal static bool IsNull<T>(this T arg)
+        internal static bool IsNull<T>([NotNullWhen(false)] this T arg)
         {
             if (arg == null) return true;
             if (typeof(Object).IsAssignableFrom(typeof(T)))
@@ -45,47 +46,24 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             return false;
         }
 
-        internal static bool IsNotNull<T>(this T arg) => !arg.IsNull();
-
-#if UNITY_EDITOR
-        private static readonly Type OnBeforeSerializeImplType;
-
-        static PrefabSafeSetRuntimeUtil()
-        {
-            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
-            {
-                OnBeforeSerializeImplType =
-                    assembly.GetType("Anatawa12.AvatarOptimizer.PrefabSafeSet.PrefabSafeSetRuntimeEditorImpl`1");
-                if (OnBeforeSerializeImplType != null) return;
-            }
-            if (OnBeforeSerializeImplType == null)
-                throw new InvalidOperationException("OnBeforeSerializeImpl`1 not found");
-        }
-
-        public static MethodInfo GetOnBeforeSerializeCallbackMethod(Type tType, Type setType)
-        {
-            var implType = OnBeforeSerializeImplType.MakeGenericType(tType);
-            return implType.GetMethod("OnBeforeSerialize", BindingFlags.Public | BindingFlags.Static, null, new[] { setType }, null)!;
-        }
-
-        public static MethodInfo GetOnValidateCallbackMethod(Type tType, Type tComponentType)
-        {
-            var implType = OnBeforeSerializeImplType.MakeGenericType(tType);
-            return implType.GetMethod("OnValidate", BindingFlags.Public | BindingFlags.Static)!
-                .MakeGenericMethod(tComponentType);
-        }
-#endif
+        internal static bool IsNotNull<T>([NotNullWhen(true)] this T arg) => !arg.IsNull();
     }
 
-    public abstract class PrefabSafeSetApi<T>
+    public interface IPrefabSafeSetApi<T>
     {
-        public abstract void SetValueNonPrefab(IEnumerable<T> values);
-        public abstract HashSet<T> GetAsSet();
-        public abstract List<T> GetAsList();
-        public abstract bool AddRange(IEnumerable<T> values);
-        public abstract bool RemoveRange(IEnumerable<T> values);
-        public abstract void RemoveIf(Func<T, bool> predicate);
-        public abstract void Clear();
+        public void SetValueNonPrefab(IEnumerable<T> values);
+        public HashSet<T> GetAsSet();
+        public List<T> GetAsList();
+        public bool AddRange(IEnumerable<T> values);
+        public bool RemoveRange(IEnumerable<T> values);
+        public void RemoveIf(Func<T, bool> predicate);
+        public void Clear();
+    }
+
+    public struct PrefabSafeSetManipulator<T> : IManipulator<T?, T>
+    {
+        public ref T? GetKey(ref T? value) => ref value;
+        public T? GetKey(T? value) => value;
     }
 
     /// <summary>
@@ -94,36 +72,19 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
     /// </summary>
     /// <typeparam name="T">Element Type</typeparam>
     [NotKeyable, Serializable]
-    public class PrefabSafeSet<T> : PrefabSafeSetApi<T>
+    public class PrefabSafeSet<T> : PrefabSafeUniqueCollection<T?, T, PrefabSafeSetManipulator<T>>, IPrefabSafeSetApi<T>
     {
-        [SerializeField] internal T[] mainSet = Array.Empty<T>();
-        [SerializeField] internal PrefabLayer<T>[] prefabLayers = Array.Empty<PrefabLayer<T>>();
-        // If the PrefabSafeSet is on scene and prefab instance, this will be used
-        // This is added AAO 1.8.0 to support replacing base prefab on the scene, since Unity 2022
-        [SerializeField] internal bool usingOnSceneLayer;
-        [SerializeField] internal PrefabLayer<T> onSceneLayer = new();
-
 #if UNITY_EDITOR
         [SerializeField, HideInInspector] internal T? fakeSlot;
-        internal Object OuterObject;
-        internal Object? CorrespondingObject;
-        internal int? NestCount;
-        internal bool IsNew;
 #endif
 
-        public PrefabSafeSet(Object outerObject)
+        public PrefabSafeSet(Object outerObject) : base(outerObject)
         {
 #if UNITY_EDITOR
-            // I don't know why but Unity 2022 reports `this == null` in constructor of MonoBehaviour may be false
-            // so use actual null check instead of destroy check
-            // ReSharper disable once Unity.NoNullCoalescing
-            OuterObject = outerObject ?? throw new ArgumentNullException(nameof(outerObject));
-            IsNew = true;
-            UnityEditor.EditorApplication.delayCall += () => IsNew = false;
 #endif
         }
 
-        public override void SetValueNonPrefab(IEnumerable<T> values)
+        public void SetValueNonPrefab(IEnumerable<T> values)
         {
 #if UNITY_EDITOR
             if (OuterObject && UnityEditor.PrefabUtility.IsPartOfPrefabInstance(OuterObject)
@@ -131,53 +92,15 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                 throw new InvalidOperationException("You cannot set value to Prefab Instance or Prefab");
 #endif
             // in some (rare) cases, unpacked prefab may have prefabLayers so we need to clear it. 
-            prefabLayers = Array.Empty<PrefabLayer<T>>();
+            prefabLayers = Array.Empty<PrefabLayer<T?, T>>();
             mainSet = values.ToArray();
         }
 
-        public override HashSet<T> GetAsSet()
-        {
-            var result = new HashSet<T>(mainSet.Where(x => x.IsNotNull()));
-            foreach (var layer in prefabLayers)
-                layer.ApplyTo(result);
-            onSceneLayer.ApplyTo(result);
-            return result;
-        }
+        public HashSet<T> GetAsSet() => new(GetCollection());
 
-        public override List<T> GetAsList()
-        {
-            var result = new List<T>(mainSet.Where(x => x.IsNotNull()));
-            var set = new HashSet<T>(result);
-            foreach (var layer in prefabLayers)
-                layer.ApplyTo(set, result);
-            onSceneLayer.ApplyTo(set, result);
-            return result;
-        }
+        public List<T> GetAsList() => new(GetCollection());
 
 #if UNITY_EDITOR
-        private (HashSet<T>, PrefabLayer<T>) GetBaseSetAndLayer(int nestCount, bool useOnSceneLayer)
-        {
-            if (useOnSceneLayer)
-            {
-                if (!usingOnSceneLayer)
-                    usingOnSceneLayer = true;
-                var baseSet = new HashSet<T>(mainSet.Where(x => x.IsNotNull()));
-                for (var i = 0; i < prefabLayers.Length && i < nestCount - 1; i++) prefabLayers[i].ApplyTo(baseSet);
-
-                return (baseSet, onSceneLayer);
-            }
-            else
-            {
-                if (prefabLayers.Length < nestCount)
-                    PrefabSafeSetRuntimeUtil.ResizeArray(ref prefabLayers, nestCount);
-                var baseSet = new HashSet<T>(mainSet.Where(x => x.IsNotNull()));
-                for (var i = 0; i < nestCount - 1; i++) prefabLayers[i].ApplyTo(baseSet);
-                var layer = prefabLayers[nestCount - 1];
-
-                return (baseSet, layer);
-            }
-        }
-
         private static int PrefabNestCount(Object instance)
         {
             var nestCount = 0;
@@ -187,7 +110,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             return nestCount;
         }
 
-        public override bool AddRange(IEnumerable<T> values)
+        public  bool AddRange(IEnumerable<T> values)
         {
             var valueEnumerable = values.Where(x => x.IsNotNull());
             var nestCount = PrefabNestCount(OuterObject);
@@ -196,25 +119,25 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             if (nestCount == 0)
             {
                 var originalSize = mainSet.Length;
-                mainSet = mainSet.Concat(valueEnumerable.Except(mainSet)).ToArray();
+                mainSet = mainSet.Concat(valueEnumerable.Except<T?>(mainSet)).ToArray();
                 return originalSize != mainSet.Length;
             }
             else
             {
-                var (baseSet, layer) = GetBaseSetAndLayer(nestCount, useOnSceneLayer);
+                var (baseSet, layer) = GetBaseAndLayer(nestCount, useOnSceneLayer);
                 var valuesList = new List<T>(valueEnumerable);
 
                 var originalRemoves = layer.removes.Length;
                 var originalAdditions = layer.additions.Length;
 
                 layer.removes = layer.removes.Except(valuesList).ToArray();
-                layer.additions = layer.additions.Union(valuesList.Except(baseSet)).ToArray();
+                layer.additions = layer.additions.Union(valuesList.Except<T?>(baseSet)).ToArray();
 
                 return originalRemoves != layer.removes.Length || originalAdditions != layer.additions.Length;
             }
         }
 
-        public override bool RemoveRange(IEnumerable<T> values)
+        public bool RemoveRange(IEnumerable<T> values)
         {
             var valueEnumerable = values.Where(x => x.IsNotNull());
             var nestCount = PrefabNestCount(OuterObject);
@@ -223,25 +146,25 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             if (nestCount == 0)
             {
                 var originalSize = mainSet.Length;
-                mainSet = mainSet.Except(valueEnumerable).ToArray();
+                mainSet = mainSet.Except<T?>(valueEnumerable).ToArray();
                 return originalSize != mainSet.Length;
             }
             else
             {
-                var (baseSet, layer) = GetBaseSetAndLayer(nestCount, useOnSceneLayer);
+                var (baseSet, layer) = GetBaseAndLayer(nestCount, useOnSceneLayer);
                 var valuesList = new List<T>(valueEnumerable);
 
                 var originalRemoves = layer.removes.Length;
                 var originalAdditions = layer.additions.Length;
 
                 layer.removes = layer.removes.Union(valuesList.Intersect(baseSet)).ToArray();
-                layer.additions = layer.additions.Except(valuesList).ToArray();
+                layer.additions = layer.additions.Except<T?>(valuesList).ToArray();
                 
                 return originalRemoves != layer.removes.Length || originalAdditions != layer.additions.Length;
             }
         }
 
-        public override void RemoveIf(Func<T, bool> predicate)
+        public void RemoveIf(Func<T, bool> predicate)
         {
             var nestCount = PrefabNestCount(OuterObject);
             var useOnSceneLayer = PrefabSafeSetRuntimeUtil.ShouldUsePrefabOnSceneLayer(OuterObject);
@@ -252,14 +175,14 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             }
             else
             {
-                var (baseSet, layer) = GetBaseSetAndLayer(nestCount, useOnSceneLayer);
+                var (baseSet, layer) = GetBaseAndLayer(nestCount, useOnSceneLayer);
 
                 layer.removes = layer.removes.Concat(baseSet.Where(predicate)).ToArray();
-                layer.additions = layer.additions.Where(x => !predicate(x)).ToArray();
+                layer.additions = layer.additions.Where(x => x != null && !predicate(x)).ToArray();
             }
         }
 
-        public override void Clear()
+        public void Clear()
         {
             var nestCount = PrefabNestCount(OuterObject);
             var useSceneLayer = PrefabSafeSetRuntimeUtil.ShouldUsePrefabOnSceneLayer(OuterObject);
@@ -270,9 +193,9 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             }
             else
             {
-                var (baseSet, layer) = GetBaseSetAndLayer(nestCount, useSceneLayer);
+                var (baseSet, layer) = GetBaseAndLayer(nestCount, useSceneLayer);
 
-                layer.removes = layer.removes.Concat(baseSet).ToArray();
+                layer.removes = layer.removes.Concat(baseSet).Where(x => x != null).ToArray()!;
                 layer.additions = Array.Empty<T>();
             }
         }
@@ -287,38 +210,10 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
     public static class PrefabSafeSet {
         public static void OnValidate<T, TComponent>(TComponent component, Func<TComponent, PrefabSafeSet<T>> getPrefabSafeSet) where TComponent : Component
         {
-#if UNITY_EDITOR
-            ValidateMethodHolder<T, TComponent>.OnValidateCallbackMethodGeneric.Invoke(null,
-                new object[] { component, getPrefabSafeSet });
-#endif
-        }
-#if UNITY_EDITOR
-        private static class ValidateMethodHolder<T, TComponent>
-        {
-            public static MethodInfo OnValidateCallbackMethodGeneric =
-                PrefabSafeSetRuntimeUtil.GetOnValidateCallbackMethod(typeof(T), typeof(TComponent));
-        }
-#endif
-    }
-
-    [Serializable]
-    public class PrefabLayer<T>
-    {
-        // if some value is in both removes and additions, the values should be added
-        [SerializeField] internal T[] removes = Array.Empty<T>();
-        [SerializeField] internal T[] additions = Array.Empty<T>();
-
-        public void ApplyTo(HashSet<T> result, List<T>? list = null)
-        {
-            foreach (var remove in removes)
-                if (remove.IsNotNull() && result.Remove(remove))
-                    list?.Remove(remove);
-            foreach (var addition in additions)
-                if (addition.IsNotNull() && result.Add(addition))
-                    list?.Add(addition);
+            PrefabSafeUniqueCollection.PrefabSafeUniqueCollection.OnValidate(component, getPrefabSafeSet);
         }
     }
-    
+
     internal readonly struct ListSet<T>
     {
         private readonly List<T> _list;

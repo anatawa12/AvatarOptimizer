@@ -4,6 +4,7 @@ using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
+using Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection;
 
 namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 {
@@ -186,8 +187,8 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
         public const string PrefabLayers = nameof(PrefabSafeSet<object>.prefabLayers);
         public const string UsingOnSceneLayer = nameof(PrefabSafeSet<object>.usingOnSceneLayer);
         public const string OnSceneLayer = nameof(PrefabSafeSet<object>.onSceneLayer);
-        public const string Additions = nameof(PrefabLayer<object>.additions);
-        public const string Removes = nameof(PrefabLayer<object>.removes);
+        public const string Additions = nameof(PrefabLayer<object, object>.additions);
+        public const string Removes = nameof(PrefabLayer<object, object>.removes);
     }
 
     internal abstract class EditorBase

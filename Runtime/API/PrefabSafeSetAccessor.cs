@@ -8,9 +8,9 @@ namespace Anatawa12.AvatarOptimizer.API
     [PublicAPI]
     public readonly struct PrefabSafeSetAccessor<T> : ICollection<T> where T : notnull
     {
-        private readonly PrefabSafeSetApi<T> _set;
+        private readonly IPrefabSafeSetApi<T> _set;
 
-        internal PrefabSafeSetAccessor(PrefabSafeSetApi<T> set) => _set = set;
+        internal PrefabSafeSetAccessor(IPrefabSafeSetApi<T> set) => _set = set;
 
         [PublicAPI]
         public Enumerator GetEnumerator() => new Enumerator(_set.GetAsList().GetEnumerator());
