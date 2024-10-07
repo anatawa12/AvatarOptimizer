@@ -1,9 +1,9 @@
 #if true
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using JetBrains.Annotations;
 using nadena.dev.ndmf;
 using Unity.Burst;
 using Unity.Collections;
@@ -19,12 +19,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 {
     public class MeshInfo2
     {
-        [NotNull] public readonly Renderer SourceRenderer;
-        [NotNull] public Transform RootBone;
+        public readonly Renderer SourceRenderer;
+        public Transform? RootBone;
         public Bounds Bounds;
         public readonly List<Vertex> Vertices = new List<Vertex>(0);
 
-        private readonly Mesh _originalMesh;
+        private readonly Mesh? _originalMesh;
 
         // TexCoordStatus which is 3 bits x 8 = 24 bits
         private uint _texCoordStatus;
@@ -43,39 +43,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         {
             SourceRenderer = renderer;
             var mesh = _originalMesh = renderer.sharedMesh;
-            if (mesh != null && mesh.vertexCount != 0 && mesh.vertices.Length == 0)
-            {
-                var originalMeshImporter = GetImporter(ObjectRegistry.GetReference(mesh).Object as Mesh);
-
-                ModelImporter GetImporter(Mesh importingMesh)
-                {
-                    if (!importingMesh) return null;
-                    var path = AssetDatabase.GetAssetPath(importingMesh);
-                    if (string.IsNullOrEmpty(path)) return null;
-                    return AssetImporter.GetAtPath(path) as ModelImporter;
-                }
-
-                if (originalMeshImporter == null)
-                {
-                    BuildLog.LogError("MeshInfo2:error:MeshNotReadable", mesh);
-                }
-                else
-                {
-                    void AutoFix()
-                    {
-                        originalMeshImporter.isReadable = true;
-                        originalMeshImporter.SaveAndReimport();
-                    }
-
-                    BuildLog.LogErrorWithAutoFix("MeshInfo2:error:MeshNotReadable", AutoFix, mesh);
-                }
-
-                return;
-            }
 
             using (ErrorReport.WithContextObject(renderer))
             {
-                if (mesh)
+                if (mesh != null)
                     ReadSkinnedMesh(mesh);
 
                 var updateWhenOffscreen = renderer.updateWhenOffscreen;
@@ -86,7 +57,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 renderer.updateWhenOffscreen = updateWhenOffscreen;
                 RootBone = renderer.rootBone ? renderer.rootBone : renderer.transform;
 
-                if (mesh)
+                if (mesh != null)
                 {
                     for (var i = 0; i < mesh.blendShapeCount; i++)
                         BlendShapes[i] = (BlendShapes[i].name, renderer.GetBlendShapeWeight(i));
@@ -109,16 +80,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             using (ErrorReport.WithContextObject(renderer))
             {
                 var meshFilter = renderer.GetComponent<MeshFilter>();
-                var mesh = _originalMesh = meshFilter ? meshFilter.sharedMesh : null;
-                if (mesh != null && !mesh.isReadable && EditorApplication.isPlaying)
-                {
-                    BuildLog.LogError("MeshInfo2:error:MeshNotReadable", mesh);
-                    return;
-                }
-                if (mesh)
+                var mesh = _originalMesh = meshFilter != null ? meshFilter.sharedMesh : null;
+                if (mesh != null)
                     ReadStaticMesh(mesh);
 
-                if (mesh)
+                if (mesh != null)
                     Bounds = mesh.bounds;
                 RootBone = renderer.transform;
 
@@ -152,7 +118,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 
                 for (int i = SubMeshes.Count - 1, j = 0; i < sourceMaterials.Length; i++, j++)
                     lastMeshMaterials[j] = sourceMaterials[i];
-                SubMeshes[SubMeshes.Count - 1].SharedMaterials = lastMeshMaterials;
+                SubMeshes[^1].SharedMaterials = lastMeshMaterials;
             }
         }
 
@@ -180,7 +146,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 vertex.BoneWeights.Add((Bones[0], 1f));
         }
 
-        public void ReadSkinnedMesh([NotNull] Mesh mesh)
+        public void ReadSkinnedMesh(Mesh mesh)
         {
             ReadStaticMesh(mesh);
 
@@ -191,9 +157,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             Profiler.BeginSample("Read BlendShapes");
             ReadBlendShapes(mesh);
             Profiler.EndSample();
+            Profiler.EndSample();
         }
 
-        private void ReadBones([NotNull] Mesh mesh)
+        private void ReadBones(Mesh mesh)
         {
             Bones.Clear();
             Bones.Capacity = Math.Max(Bones.Capacity, mesh.bindposes.Length);
@@ -212,168 +179,56 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             }
         }
 
-        private void ReadBlendShapes([NotNull] Mesh mesh)
+        private void ReadBlendShapes(Mesh mesh)
         {
             BlendShapes.Clear();
-            Profiler.BeginSample("Prepare shared buffers");
-            var maxFrames = 0;
-            var frameCounts = new NativeArray<int>(mesh.blendShapeCount, Allocator.TempJob);
-            var shapeNames = new string[mesh.blendShapeCount];
-            for (var i = 0; i < mesh.blendShapeCount; i++)
-            {
-                var frames = mesh.GetBlendShapeFrameCount(i);
-                shapeNames[i] = mesh.GetBlendShapeName(i);
-                maxFrames = Math.Max(frames, maxFrames);
-                frameCounts[i] = frames;
-            }
-
-            var deltaVertices = new Vector3[Vertices.Count];
-            var deltaNormals = new Vector3[Vertices.Count];
-            var deltaTangents = new Vector3[Vertices.Count];
-            var allFramesBuffer = new NativeArray3<Vertex.BlendShapeFrame>(mesh.blendShapeCount, Vertices.Count,
-                maxFrames, Allocator.TempJob);
-            var meaningfuls = new NativeArray2<bool>(mesh.blendShapeCount, Vertices.Count, Allocator.TempJob);
-            Profiler.EndSample();
-
+            Profiler.BeginSample("Save Applied Weights");
             for (var blendShape = 0; blendShape < mesh.blendShapeCount; blendShape++)
-            {
-                BlendShapes.Add((shapeNames[blendShape], 0.0f));
-
-                for (var frame = 0; frame < frameCounts[blendShape]; frame++)
-                {
-                    Profiler.BeginSample("GetFrameInfo");
-                    mesh.GetBlendShapeFrameVertices(blendShape, frame, deltaVertices, deltaNormals, deltaTangents);
-                    var weight = mesh.GetBlendShapeFrameWeight(blendShape, frame);
-                    Profiler.EndSample();
-
-                    Profiler.BeginSample("Copy to buffer");
-                    for (var vertex = 0; vertex < deltaNormals.Length; vertex++)
-                    {
-                        var deltaVertex = deltaVertices[vertex];
-                        var deltaNormal = deltaNormals[vertex];
-                        var deltaTangent = deltaTangents[vertex];
-                        allFramesBuffer[blendShape, vertex, frame] = new Vertex.BlendShapeFrame(weight, deltaVertex, deltaNormal, deltaTangent);
-                    }
-                    Profiler.EndSample();
-                }
-            }
-
-            Profiler.BeginSample("Compute Meaningful with Job");
-            new ComputeMeaningfulJob
-            {
-                vertexCount = Vertices.Count,
-                allFramesBuffer = allFramesBuffer,
-                frameCounts = frameCounts,
-                meaningfuls = meaningfuls,
-            }.Schedule(Vertices.Count * mesh.blendShapeCount, 1).Complete();
+                BlendShapes.Add((mesh.GetBlendShapeName(blendShape), 0.0f));
             Profiler.EndSample();
-
-            for (var blendShape = 0; blendShape < mesh.blendShapeCount; blendShape++)
-            {
-                Profiler.BeginSample("Save to Vertices");
-                for (var vertex = 0; vertex < Vertices.Count; vertex++)
-                {
-                    if (meaningfuls[blendShape, vertex])
-                    {
-                        Profiler.BeginSample("Clone BlendShapes");
-                        var slice = allFramesBuffer[blendShape, vertex].Slice(0, frameCounts[blendShape]);
-                        Vertices[vertex].BlendShapes[shapeNames[blendShape]] = slice.ToArray();
-                        Profiler.EndSample();
-                    }
-                }
-                Profiler.EndSample();
-            }
-
-            meaningfuls.Dispose();
-            frameCounts.Dispose();
-            allFramesBuffer.Dispose();
-            Profiler.EndSample();
-        }
-
-        [BurstCompile]
-        struct ComputeMeaningfulJob : IJobParallelFor
-        {
-            public int vertexCount;
-
-            // allFramesBuffer[blendShape][vertex][frame]
-            [ReadOnly]
-            public NativeArray3<Vertex.BlendShapeFrame> allFramesBuffer;
-            [ReadOnly]
-            public NativeArray<int> frameCounts;
-            // allFramesBuffer[blendShape][vertex]
-            [WriteOnly]
-            public NativeArray2<bool> meaningfuls;
-
-            public void Execute(int index)
-            {
-                var blendShape = index / vertexCount;
-                var vertex = index % vertexCount;
-                var slice = allFramesBuffer[blendShape, vertex].Slice(0, frameCounts[blendShape]);
-                meaningfuls[blendShape, vertex] = IsMeaningful(slice);
-            }
             
-            bool IsMeaningful(NativeSlice<Vertex.BlendShapeFrame> frames)
+            Profiler.BeginSample("New Reading Method");
+            var buffer = new BlendShapeBuffer(mesh);
+            for (var vertex = 0; vertex < Vertices.Count; vertex++)
             {
-                foreach (var (_, position, normal, tangent) in frames)
-                {
-                    if (position != Vector3.zero) return true;
-                    if (normal != Vector3.zero) return true;
-                    if (tangent != Vector3.zero) return true;
-                }
-
-                return false;
+                Vertices[vertex].BlendShapeBuffer = buffer;
+                Vertices[vertex].BlendShapeBufferVertexIndex = vertex;
             }
+            Profiler.EndSample();
         }
 
-        public void ReadStaticMesh([NotNull] Mesh mesh)
+        public void ReadStaticMesh(Mesh mesh)
         {
             Profiler.BeginSample($"Read Static Mesh Part");
             Vertices.Capacity = Math.Max(Vertices.Capacity, mesh.vertexCount);
             Vertices.Clear();
             for (var i = 0; i < mesh.vertexCount; i++) Vertices.Add(new Vertex());
 
-            CopyVertexAttr(mesh.vertices, (x, v) => x.Position = v);
-            if (mesh.GetVertexAttributeDimension(VertexAttribute.Normal) != 0)
-            {
-                HasNormals = true;
-                CopyVertexAttr(mesh.normals, (x, v) => x.Normal = v);
-            }
-            if (mesh.GetVertexAttributeDimension(VertexAttribute.Tangent) != 0)
-            {
-                HasTangent = true;
-                CopyVertexAttr(mesh.tangents, (x, v) => x.Tangent = v);
-            }
-            if (mesh.GetVertexAttributeDimension(VertexAttribute.Color) != 0)
-            {
-                HasColor = true;
-                CopyVertexAttr(mesh.colors32, (x, v) => x.Color = v);
-            }
+            var vertexBuffers = GetVertexBuffers(mesh);
 
-            var uv2 = new List<Vector2>(0);
-            var uv3 = new List<Vector3>(0);
-            var uv4 = new List<Vector4>(0);
-            for (var index = 0; index <= 7; index++)
+            CopyVertexAttr(mesh, VertexAttribute.Position, vertexBuffers, DataParsers.Vector3Provider,
+                setHasAttribute: null,
+                assign: (x, v) => x.Position = v);
+
+            CopyVertexAttr(mesh, VertexAttribute.Normal, vertexBuffers, DataParsers.Vector3Provider,
+                setHasAttribute: _ => HasNormals = true,
+                assign: (x, v) => x.Normal = v);
+
+            CopyVertexAttr(mesh, VertexAttribute.Tangent, vertexBuffers, DataParsers.Vector4Provider,
+                setHasAttribute: _ => HasTangent = true,
+                assign: (x, v) => x.Tangent = v);
+
+            // TODO: this may lost precision or HDR color
+            CopyVertexAttr(mesh, VertexAttribute.Color, vertexBuffers, DataParsers.Color32Provider,
+                setHasAttribute: _ => HasColor = true,
+                assign: (x, v) => x.Color = v);
+
+            for (var uvChannel = 0; uvChannel <= 7; uvChannel++)
             {
                 // ReSharper disable AccessToModifiedClosure
-                switch (mesh.GetVertexAttributeDimension(VertexAttribute.TexCoord0 + index))
-                {
-                    case 2:
-                        SetTexCoordStatus(index, TexCoordStatus.Vector2);
-                        mesh.GetUVs(index, uv2);
-                        CopyVertexAttr(uv2, (x, v) => x.SetTexCoord(index, v));
-                        break;
-                    case 3:
-                        SetTexCoordStatus(index, TexCoordStatus.Vector3);
-                        mesh.GetUVs(index, uv3);
-                        CopyVertexAttr(uv3, (x, v) => x.SetTexCoord(index, v));
-                        break;
-                    case 4:
-                        SetTexCoordStatus(index, TexCoordStatus.Vector4);
-                        mesh.GetUVs(index, uv4);
-                        CopyVertexAttr(uv4, (x, v) => x.SetTexCoord(index, v));
-                        break;
-                }
-
+                CopyVertexAttr(mesh, VertexAttribute.TexCoord0 + uvChannel, vertexBuffers, DataParsers.Vector4Provider,
+                    setHasAttribute: dims => SetTexCoordStatus(uvChannel, TexCoordStatus.Vector2 + (dims - 2)),
+                    assign: (x, v) => x.SetTexCoord(uvChannel, v));
                 // ReSharper restore AccessToModifiedClosure
             }
 
@@ -389,16 +244,181 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             Profiler.EndSample();
         }
 
-        void CopyVertexAttr<T>(T[] attributes, Action<Vertex, T> assign)
+        private static (byte[] buffer, int stride)[] GetVertexBuffers(Mesh mesh)
         {
-            for (var i = 0; i < attributes.Length; i++)
-                assign(Vertices[i], attributes[i]);
+            if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null)
+                throw new InvalidOperationException("MeshInfo2 does not support -nographics environment");
+
+            var vertexBufferCount = mesh.vertexBufferCount;
+            var vertexBuffers = new (byte[] buffer, int stride)[vertexBufferCount];
+            for (var i = 0; i < vertexBufferCount; i++)
+            {
+                var vertexBuffer = mesh.GetVertexBuffer(i);
+                var stride = vertexBuffer.stride;
+                var data = new byte[vertexBuffer.count * vertexBuffer.stride];
+                vertexBuffer.GetData(data);
+                vertexBuffers[i] = (data, stride);
+            }
+
+            return vertexBuffers;
         }
 
-        void CopyVertexAttr<T>(List<T> attributes, Action<Vertex, T> assign)
+        delegate T DataParser<T>(byte[] data, int offset);
+        delegate DataParser<T> ReadDataProvider<T>(VertexAttributeFormat format, int dimension);
+
+        void CopyVertexAttr<T>(
+            Mesh mesh, 
+            VertexAttribute attribute, 
+            (byte[] buffer, int stride)[] vertexDataList,
+            ReadDataProvider<T> readProvider,
+            Action<int>? setHasAttribute,
+            Action<Vertex, T> assign)
         {
-            for (var i = 0; i < attributes.Count; i++)
-                assign(Vertices[i], attributes[i]);
+            if (Vertices.Count == 0) return;
+
+            var dimension = mesh.GetVertexAttributeDimension(attribute);
+
+            if (dimension == 0)
+            {
+                if (setHasAttribute == null)
+                    throw new InvalidOperationException($"required attribute {attribute} does not exist");
+                return;
+            }
+
+            setHasAttribute?.Invoke(dimension);
+
+            var format = mesh.GetVertexAttributeFormat(attribute);
+            var stream = mesh.GetVertexAttributeStream(attribute);
+            var offset = mesh.GetVertexAttributeOffset(attribute);
+
+            var reader = readProvider(format, dimension);
+
+            var stride = vertexDataList[stream].stride;
+            var buffer = vertexDataList[stream].buffer;
+ 
+            for (var i = 0; i < Vertices.Count; i++)
+            {
+                var data = reader(buffer, stride * i + offset);
+                assign(Vertices[i], data);
+            }
+        }
+
+        static class DataParsers
+        {
+            public static DataParser<Vector3> Vector3Provider(VertexAttributeFormat format, int dimension)
+            {
+                switch (dimension)
+                {
+                    case 1:
+                        var floatParser = FloatParser(format);
+                        return (data, offset) => new Vector3(floatParser(data, offset), 0, 0);
+                    case 2:
+                        var vector2Parser = Vector2Parser(format);
+                        return (data, offset) => vector2Parser(data, offset);
+                    case 3:
+                        return Vector3Parser(format);
+                    case 4:
+                        var vector4Parser = Vector4Parser(format);
+                        return (data, offset) => vector4Parser(data, offset);
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(dimension), dimension, null);
+                }
+            }
+
+            public static DataParser<Vector4> Vector4Provider(VertexAttributeFormat format, int dimension)
+            {
+                switch (dimension)
+                {
+                    case 1:
+                        var floatParser = FloatParser(format);
+                        return (data, offset) => new Vector4(floatParser(data, offset), 0, 0);
+                    case 2:
+                        var vector2Parser = Vector2Parser(format);
+                        return (data, offset) => vector2Parser(data, offset);
+                    case 3:
+                        var vector3Parser = Vector3Parser(format);
+                        return (data, offset) => vector3Parser(data, offset);
+                    case 4:
+                        return Vector4Parser(format);
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(dimension), dimension, null);
+                }
+            }
+
+            public static DataParser<Color32> Color32Provider(VertexAttributeFormat format, int dimension)
+            {
+                var vector4Parser = Vector4Provider(format, dimension);
+                return (data, offset) =>
+                {
+                    var color = vector4Parser(data, offset);
+                    color *= byte.MaxValue;
+                    return new Color32((byte)color.x, (byte)color.y, (byte)color.z, (byte)color.w);
+                };
+            }
+
+            private static DataParser<Vector4> Vector4Parser(VertexAttributeFormat format)
+            {
+                var size = ValueSize(format);
+                var floatParser = FloatParser(format);
+                return (data, offset) => new Vector4(
+                    floatParser(data, offset),
+                    floatParser(data, offset + size),
+                    floatParser(data, offset + size * 2),
+                    floatParser(data, offset + size * 3));
+            }
+
+            private static DataParser<Vector3> Vector3Parser(VertexAttributeFormat format)
+            {
+                var size = ValueSize(format);
+                var floatParser = FloatParser(format);
+                return (data, offset) => new Vector3(
+                    floatParser(data, offset),
+                    floatParser(data, offset + size),
+                    floatParser(data, offset + size * 2));
+            }
+
+            private static DataParser<Vector2> Vector2Parser(VertexAttributeFormat format)
+            {
+                var size = ValueSize(format);
+                var floatParser = FloatParser(format);
+                return (data, offset) => new Vector2(
+                    floatParser(data, offset),
+                    floatParser(data, offset + size));
+            }
+
+            private static int ValueSize(VertexAttributeFormat format) =>
+                format switch
+                {
+                    VertexAttributeFormat.Float32 or VertexAttributeFormat.UInt32 or VertexAttributeFormat.SInt32 => 4,
+                    VertexAttributeFormat.Float16 or VertexAttributeFormat.UNorm16 or VertexAttributeFormat.SNorm16
+                        or VertexAttributeFormat.UInt16 or VertexAttributeFormat.SInt16 => 2,
+                    VertexAttributeFormat.UNorm8 or VertexAttributeFormat.SNorm8 or VertexAttributeFormat.UInt8
+                        or VertexAttributeFormat.SInt8 => 1,
+                    _ => throw new ArgumentOutOfRangeException(nameof(format), format, null)
+                };
+
+            // those casts are checked with this gist
+            // https://gist.github.com/anatawa12/e27775280a273f7f433c8b427aeb3108
+            private static DataParser<float> FloatParser(VertexAttributeFormat format) =>
+                format switch
+                {
+                    VertexAttributeFormat.Float32 => (data, offset) => BitConverter.ToSingle(data, offset),
+                    VertexAttributeFormat.Float16 => (data, offset) =>
+                        Mathf.HalfToFloat(BitConverter.ToUInt16(data, offset)),
+                    VertexAttributeFormat.UNorm8 => (data, offset) => data[offset] / (float)byte.MaxValue,
+                    // -128 become -1.007874015748 is correct behaior
+                    VertexAttributeFormat.SNorm8 => (data, offset) => (sbyte)data[offset] / (float)sbyte.MaxValue,
+                    VertexAttributeFormat.UNorm16 => (data, offset) => BitConverter.ToUInt16(data, offset) / (float)ushort.MaxValue,
+                    VertexAttributeFormat.SNorm16 => (data, offset) => BitConverter.ToInt16(data, offset) / (float)short.MaxValue,
+                    VertexAttributeFormat.UInt8 => (data, offset) => data[offset],
+                    VertexAttributeFormat.SInt8 => (data, offset) => (sbyte)data[offset],
+                    VertexAttributeFormat.UInt16 => (data, offset) => BitConverter.ToUInt16(data, offset),
+                    VertexAttributeFormat.SInt16 => (data, offset) => BitConverter.ToInt16(data, offset),
+                    // TODO: Those can be loose precision
+                    VertexAttributeFormat.UInt32 => (data, offset) => BitConverter.ToUInt32(data, offset),
+                    VertexAttributeFormat.SInt32 => (data, offset) => BitConverter.ToInt32(data, offset),
+                    _ => throw new ArgumentOutOfRangeException(nameof(format), format, null)
+                };
         }
 
         private const int BitsPerTexCoordStatus = 2;
@@ -573,50 +593,78 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 for (var i = 0; i < Vertices.Count; i++)
                     vertexIndices.Add(Vertices[i], i);
 
-                var maxIndices = 0;
-                var totalSubMeshes = 0;
-                for (var i = 0; i < SubMeshes.Count - 1; i++)
-                {
-                    maxIndices = Mathf.Max(maxIndices, SubMeshes[i].Vertices.Count);
-                    // for non-last submesh, we have to duplicate submesh for multi pass rendering
-                    for (var j = 0; j < SubMeshes[i].SharedMaterials.Length; j++)
-                        totalSubMeshes++;
-                }
-                {
-                    maxIndices = Mathf.Max(maxIndices, SubMeshes[SubMeshes.Count - 1].Vertices.Count);
-                    // for last submesh, we can use single submesh for multi pass reendering
-                    totalSubMeshes++;
-                }
-
-                var indices = new int[maxIndices];
-                var submeshIndex = 0;
-
-                destMesh.indexFormat = Vertices.Count <= ushort.MaxValue ? IndexFormat.UInt16 : IndexFormat.UInt32;
-                destMesh.subMeshCount = totalSubMeshes;
+                var submeshWithMoreThan65536Verts = false;
+                var submeshIndexBuffersList = new List<(SubMesh subMesh, int baseVertex, int[] indices)>();
 
                 for (var i = 0; i < SubMeshes.Count - 1; i++)
                 {
                     var subMesh = SubMeshes[i];
 
-                    for (var index = 0; index < subMesh.Vertices.Count; index++)
-                        indices[index] = vertexIndices[subMesh.Vertices[index]];
-
-                    // general case: for non-last submesh, we have to duplicate submesh for multi pass rendering
-                    for (var j = 0; j < subMesh.SharedMaterials.Length; j++)
-                        destMesh.SetIndices(indices, 0, subMesh.Vertices.Count, subMesh.Topology, submeshIndex++);
+                    // for non-last submesh, we have to duplicate submesh for multi pass rendering
+                    AddSubmesh(subMesh, vertexIndices, submeshIndexBuffersList, ref submeshWithMoreThan65536Verts, subMesh.SharedMaterials.Length);
                 }
 
                 {
-                    var subMesh = SubMeshes[SubMeshes.Count - 1];
+                    var subMesh = SubMeshes[^1];
+                    // for last submesh, we can use single submesh for multi pass rendering
+                    AddSubmesh(subMesh, vertexIndices, submeshIndexBuffersList, ref submeshWithMoreThan65536Verts, 1);
+                }
 
+                static void AddSubmesh(SubMesh subMesh, Dictionary<Vertex, int> vertexIndices, List<(SubMesh subMesh, int baseVertex, int[] indices)> submeshIndexBuffers, ref bool submeshWithMoreThan65536Verts, int count)
+                {
+                    var indices = new int[subMesh.Vertices.Count];
                     for (var index = 0; index < subMesh.Vertices.Count; index++)
                         indices[index] = vertexIndices[subMesh.Vertices[index]];
 
-                    // for last submesh, we can use single submesh for multi pass reendering
-                    destMesh.SetIndices(indices, 0, subMesh.Vertices.Count, subMesh.Topology, submeshIndex++);
+                    var min = indices.Min();
+                    var max = indices.Max();
+                    submeshWithMoreThan65536Verts |= max - min >= ushort.MaxValue;
+
+                    for (var j = 0; j < count; j++)
+                        submeshIndexBuffers.Add((subMesh, 0, indices));
                 }
 
-                Debug.Assert(totalSubMeshes == submeshIndex);
+                var submeshIndexBuffers = submeshIndexBuffersList.ToArray();
+
+                // determine index format
+                // if all vertices has less than 65536 vertices, we can use UInt16
+                // if all vertices has more than 65536 vertices but each submesh has less than 65536 vertices, we can use UInt16 with vaseVertex
+                // otherwise, we have to use UInt32
+                //
+                // Please note currently there is no optimization for index buffer to apply this optimization perfectly.
+                // You may need to reorder meshes in Merge Skinned Mesh. I will implement this optimization in future if I can.
+
+                if (Vertices.Count <= ushort.MaxValue)
+                {
+                    destMesh.indexFormat = IndexFormat.UInt16;
+                }
+                else if (!submeshWithMoreThan65536Verts)
+                {
+                    destMesh.indexFormat = IndexFormat.UInt16;
+                    foreach (ref var submeshIndexBuffer in submeshIndexBuffers.AsSpan())
+                    {
+                        submeshIndexBuffer.baseVertex = submeshIndexBuffer.indices.Min();
+                        for (var i = 0; i < submeshIndexBuffer.indices.Length; i++)
+                            submeshIndexBuffer.indices[i] -= submeshIndexBuffer.baseVertex;
+                    }
+                }
+                else
+                {
+                    destMesh.indexFormat = IndexFormat.UInt32;
+                }
+
+                var submeshIndex = 0;
+
+                destMesh.subMeshCount = submeshIndexBuffers.Length;
+
+                for (var i = 0; i < submeshIndexBuffers.Length; i++)
+                {
+                    var (subMesh, baseVertex, indices) = submeshIndexBuffers[i];
+                    destMesh.SetIndices(indices, 0, subMesh.Vertices.Count, subMesh.Topology, i,
+                        baseVertex: baseVertex);
+                }
+
+                Debug.Assert(submeshIndexBuffers.Length == submeshIndex);
             }
             Profiler.EndSample();
 
@@ -648,16 +696,38 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             if (BlendShapes.Count != 0)
             {
                 Profiler.BeginSample("BlendShapes");
+
+                Profiler.BeginSample("Collect by buffer");
+                var buffers = new List<BlendShapeBuffer>();
+                var verticesByBuffer = new List<List<(Vertex, int)>>();
+
+                foreach (var vertex in Vertices)
+                {
+                    var buffer = vertex.BlendShapeBuffer;
+                    var bufferIndex = buffers.IndexOf(buffer);
+                    if (bufferIndex == -1)
+                    {
+                        bufferIndex = buffers.Count;
+                        buffers.Add(buffer);
+                        verticesByBuffer.Add(new List<(Vertex, int)>());
+                    }
+
+                    verticesByBuffer[bufferIndex].Add((vertex, vertex.BlendShapeBufferVertexIndex));
+                }
+                Profiler.EndSample();
+
                 for (var i = 0; i < BlendShapes.Count; i++)
                 {
+                    Profiler.BeginSample("Process Shape");
                     Debug.Assert(destMesh.blendShapeCount == i, "Unexpected state: BlendShape count");
                     var (shapeName, _) = BlendShapes[i];
+
+                    Profiler.BeginSample("Collect Weights");
                     var weightsSet = new HashSet<float>();
 
-                    foreach (var vertex in Vertices)
-                        if (vertex.BlendShapes.TryGetValue(shapeName, out var frames))
-                            foreach (var frame in frames)
-                                weightsSet.Add(frame.Weight);
+                    foreach (var blendShapeBuffer in buffers)
+                        if (blendShapeBuffer.Shapes.TryGetValue(shapeName, out var shapeShape))
+                            weightsSet.UnionWith(shapeShape.Frames.Select(x => x.Weight));
 
                     // blendShape with no weights is not allowed.
                     if (weightsSet.Count == 0)
@@ -666,26 +736,74 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     var weights = weightsSet.ToArray();
                     Array.Sort(weights);
 
+                    Profiler.EndSample();
+
+                    Profiler.BeginSample("Make Frames Recipies");
+                    var weightRecipes = buffers.Select(buffer =>
+                    {
+                        var frames = new ApplyFrame2Array[weights.Length];
+
+                        for (var weightI = 0; weightI < weights.Length; weightI++)
+                        {
+                            var weight = weights[weightI];
+                            frames[weightI] = buffer.GetApplyFramesInfo(shapeName, weight);
+                        }
+
+                        return frames;
+                    }).ToArray();
+                    Profiler.EndSample();
+
+                    Profiler.BeginSample("Copy and Apply Frames");
                     var positions = new Vector3[Vertices.Count];
                     var normals = new Vector3[Vertices.Count];
                     var tangents = new Vector3[Vertices.Count];
 
-                    foreach (var weight in weights)
+                    for (var weightI = 0; weightI < weights.Length; weightI++)
                     {
-                        for (var vertexI = 0; vertexI < Vertices.Count; vertexI++)
-                        {
-                            var vertex = Vertices[vertexI];
+                        var weight = weights[weightI];
 
-                            vertex.TryGetBlendShape(shapeName, weight, 
-                                out var position, out var normal, out var tangent,
-                                getDefined: true);
-                            positions[vertexI] = position;
-                            normals[vertexI] = normal;
-                            tangents[vertexI] = tangent;
+                        for (var bufferIndex = 0; bufferIndex < verticesByBuffer.Count; bufferIndex++)
+                        {
+                            var vertices = verticesByBuffer[bufferIndex];
+                            var recipe = weightRecipes[bufferIndex][weightI];
+                            var buffer = buffers[bufferIndex];
+
+                            if (recipe.FrameCount == 1 && recipe.FirstFrameApplyWeight == 1)
+                            {
+                                // likely fast path: just copy
+                                Profiler.BeginSample("FastCopyPath");
+                                var deltaVertices = buffer.DeltaVertices[recipe.FirstFrameIndex];
+                                var deltaNormals = buffer.DeltaNormals[recipe.FirstFrameIndex];
+                                var deltaTangents = buffer.DeltaTangents[recipe.FirstFrameIndex];
+
+                                foreach (var (vertex, vertexI) in vertices)
+                                {
+                                    positions[vertexI] = deltaVertices[vertex.BlendShapeBufferVertexIndex];
+                                    normals[vertexI] = deltaNormals[vertex.BlendShapeBufferVertexIndex];
+                                    tangents[vertexI] = deltaTangents[vertex.BlendShapeBufferVertexIndex];
+                                }
+                                Profiler.EndSample();
+                            }
+                            else
+                            {
+                                Profiler.BeginSample("ApplyRecipe");
+                                foreach (var (vertex, vertexI) in vertices)
+                                {
+                                    positions[vertexI] = recipe.Apply(buffer.DeltaVertices,
+                                        vertex.BlendShapeBufferVertexIndex);
+                                    normals[vertexI] = recipe.Apply(buffer.DeltaNormals,
+                                        vertex.BlendShapeBufferVertexIndex);
+                                    tangents[vertexI] = recipe.Apply(buffer.DeltaTangents,
+                                        vertex.BlendShapeBufferVertexIndex);
+                                }
+                                Profiler.EndSample();
+                            }
                         }
 
                         destMesh.AddBlendShapeFrame(shapeName, weight, positions, normals, tangents);
                     }
+                    Profiler.EndSample();
+                    Profiler.EndSample();
                 }
                 Profiler.EndSample();
             }
@@ -758,13 +876,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         public List<Vertex> Vertices { get; } = new List<Vertex>();
 
-        public Material SharedMaterial
+        public Material? SharedMaterial
         {
             get => SharedMaterials[0];
             set => SharedMaterials[0] = value;
         }
 
-        public Material[] SharedMaterials = { null };
+        public Material?[] SharedMaterials = { null };
 
         public SubMesh()
         {
@@ -773,15 +891,15 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         public SubMesh(List<Vertex> vertices) => Vertices = vertices;
         public SubMesh(List<Vertex> vertices, Material sharedMaterial) => 
             (Vertices, SharedMaterial) = (vertices, sharedMaterial);
-        public SubMesh(Material sharedMaterial) => SharedMaterial = sharedMaterial;
-        public SubMesh(Material sharedMaterial, MeshTopology topology) =>
+        public SubMesh(Material? sharedMaterial) => SharedMaterial = sharedMaterial;
+        public SubMesh(Material? sharedMaterial, MeshTopology topology) =>
             (SharedMaterial, Topology) = (sharedMaterial, topology);
 
-        public SubMesh(SubMesh subMesh, Material triangles)
+        public SubMesh(SubMesh subMesh, Material? material)
         {
             Topology = subMesh.Topology;
             Vertices = new List<Vertex>(subMesh.Vertices);
-            SharedMaterial = triangles;
+            SharedMaterial = material;
         }
 
         public SubMesh(List<Vertex> vertices, List<int> triangles, SubMeshDescriptor descriptor)
@@ -859,9 +977,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         // SkinnedMesh related
         public List<(Bone bone, float weight)> BoneWeights = new List<(Bone, float)>();
 
-        // Each frame must sorted increasingly
-        public readonly Dictionary<string, BlendShapeFrame[]> BlendShapes = 
-            new Dictionary<string, BlendShapeFrame[]>();
+        public BlendShapeBuffer BlendShapeBuffer = BlendShapeBuffer.Empty;
+        public int BlendShapeBufferVertexIndex;
 
         public readonly struct BlendShapeFrame
         {
@@ -926,94 +1043,15 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         public bool TryGetBlendShape(string name, float weight, out Vector3 position, out Vector3 normal,
             out Vector3 tangent, bool getDefined = false)
         {
-            if (!BlendShapes.TryGetValue(name, out var frames))
-            {
-                position = default;
-                normal = default;
-                tangent = default;
-                return false;
-            }
+            var frames = BlendShapeBuffer.GetApplyFramesInfo(name, weight, getDefined);
 
-            if (frames.Length == 0)
-            {
-                position = default;
-                normal = default;
-                tangent = default;
-                return false;
-            }
+            var bufferIndex = BlendShapeBufferVertexIndex;
 
-            if (!getDefined && Mathf.Abs(weight) <= 0.0001f && ZeroForWeightZero())
-            {
-                position = Vector3.zero;
-                normal = Vector3.zero;
-                tangent = Vector3.zero;
-                return true;
-            }
+            position = frames.Apply(BlendShapeBuffer.DeltaVertices, bufferIndex);
+            normal = frames.Apply(BlendShapeBuffer.DeltaNormals, bufferIndex);
+            tangent = frames.Apply(BlendShapeBuffer.DeltaTangents, bufferIndex);
 
-            bool ZeroForWeightZero()
-            {
-                if (frames.Length == 1) return true;
-                var first = frames.First();
-                var end = frames.Last();
-
-                // both weight are same sign, zero for 0 weight
-                if (first.Weight <= 0 && end.Weight <= 0) return true;
-                if (first.Weight >= 0 && end.Weight >= 0) return true;
-
-                return false;
-            }
-
-            if (frames.Length == 1)
-            {
-                // simplest and likely
-                var frame = frames[0];
-                var ratio = weight / frame.Weight;
-                position = frame.Position * ratio;
-                normal = frame.Normal * ratio;
-                tangent = frame.Tangent * ratio;
-                return true;
-            }
-            else
-            {
-                // multi frame
-                var (lessFrame, greaterFrame) = FindFrame();
-                var ratio = InverseLerpUnclamped(lessFrame.Weight, greaterFrame.Weight, weight);
-
-                position = Vector3.LerpUnclamped(lessFrame.Position, greaterFrame.Position, ratio);
-                normal = Vector3.LerpUnclamped(lessFrame.Normal, greaterFrame.Normal, ratio);
-                tangent = Vector3.LerpUnclamped(lessFrame.Tangent, greaterFrame.Tangent, ratio);
-                return true;
-            }
-
-            (BlendShapeFrame, BlendShapeFrame) FindFrame()
-            {
-                var firstFrame = frames[0];
-                var lastFrame = frames.Last();
-
-                if (firstFrame.Weight > 0 && weight < firstFrame.Weight)
-                {
-                    // if all weights are positive and the weight is less than first weight: lerp 0..first
-                    return (default, firstFrame);
-                }
-
-                if (lastFrame.Weight < 0 && weight > lastFrame.Weight)
-                {
-                    // if all weights are negative and the weight is more than last weight: lerp last..0
-                    return (lastFrame, default);
-                }
-
-                // otherwise, lerp between two surrounding frames OR nearest two frames
-
-                for (var i = 1; i < frames.Length; i++)
-                {
-                    if (weight <= frames[i].Weight)
-                        return (frames[i - 1], frames[i]);
-                }
-
-                return (frames[frames.Length - 2], frames[frames.Length - 1]);
-            }
-
-            float InverseLerpUnclamped(float a, float b, float value) => (value - a) / (b - a);
+            return frames.FrameCount != 0;
         }
 
         public Vertex()
@@ -1035,7 +1073,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             TexCoord7 = vertex.TexCoord7;
             Color = vertex.Color;
             BoneWeights = vertex.BoneWeights.ToList();
-            BlendShapes = new Dictionary<string, BlendShapeFrame[]>(vertex.BlendShapes);
+            BlendShapeBuffer = vertex.BlendShapeBuffer;
+            BlendShapeBufferVertexIndex = vertex.BlendShapeBufferVertexIndex;
         }
 
         public Vertex Clone() => new Vertex(this);
@@ -1053,7 +1092,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             var matrix = Matrix4x4.zero;
             foreach (var (bone, weight) in BoneWeights)
             {
-                var transformMat = bone.Transform
+                var transformMat = bone.Transform != null
                     ? getLocalToWorld(bone.Transform)
                     : Matrix4x4.identity;
                 var boneMat = transformMat * bone.Bindpose;
@@ -1068,10 +1107,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
     public class Bone
     {
         public Matrix4x4 Bindpose;
-        public Transform Transform;
+        public Transform? Transform;
 
         public Bone(Matrix4x4 bindPose) : this(bindPose, null) {}
-        public Bone(Matrix4x4 bindPose, Transform transform) => (Bindpose, Transform) = (bindPose, transform);
+        public Bone(Matrix4x4 bindPose, Transform? transform) => (Bindpose, Transform) = (bindPose, transform);
     }
 
     public enum TexCoordStatus
@@ -1080,6 +1119,279 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         Vector2 = 1,
         Vector3 = 2,
         Vector4 = 3,
+    }
+    
+    /// <summary>
+    /// The class to make blendshape manipulation faster
+    ///
+    /// In general, MeshInfo2 will store data with reference / name form instead of index form for easy manipulation.
+    ///
+    /// However, for blendshape-heavy meash, this is too slow so this class will store data with index form.
+    ///
+    /// This class is generally immutable except for removing blendShapes because adding data would require creating new array.
+    /// </summary>
+    public class BlendShapeBuffer
+    {
+        private readonly Dictionary<string, BlendShapeShape> _shapes = new();
+        public IReadOnlyDictionary<string, BlendShapeShape> Shapes => _shapes;
+        public readonly Vector3[][] DeltaVertices;
+        public readonly Vector3[][] DeltaNormals;
+        public readonly Vector3[][] DeltaTangents;
+
+        public BlendShapeBuffer(Mesh sourceMesh)
+        {
+            Profiler.BeginSample("BlendShapeBuffer:Create");
+            var totalFrames = 0;
+            for (var i = 0; i < sourceMesh.blendShapeCount; i++)
+                totalFrames += sourceMesh.GetBlendShapeFrameCount(i);
+
+            var vertexCount = sourceMesh.vertexCount;
+
+            DeltaVertices = new Vector3[totalFrames][];
+            DeltaNormals = new Vector3[totalFrames][];
+            DeltaTangents = new Vector3[totalFrames][];
+
+            var frameIndex = 0;
+            for (var blendShapeIndex = 0; blendShapeIndex < sourceMesh.blendShapeCount; blendShapeIndex++)
+            {
+                var name = sourceMesh.GetBlendShapeName(blendShapeIndex);
+                var frameCount = sourceMesh.GetBlendShapeFrameCount(blendShapeIndex);
+
+                var frameInfos = new BlendShapeFrameInfo[frameCount];
+
+                for (var blendShapeFrameIndex = 0; blendShapeFrameIndex < frameCount; blendShapeFrameIndex++)
+                {
+                    var deltaVertices = DeltaVertices[frameIndex] = new Vector3[vertexCount];
+                    var deltaNormals = DeltaNormals[frameIndex] = new Vector3[vertexCount];
+                    var deltaTangents = DeltaTangents[frameIndex] = new Vector3[vertexCount];
+
+                    sourceMesh.GetBlendShapeFrameVertices(blendShapeIndex, blendShapeFrameIndex, 
+                        deltaVertices, deltaNormals, deltaTangents);
+
+                    var weight = sourceMesh.GetBlendShapeFrameWeight(blendShapeIndex, blendShapeFrameIndex);
+                    frameInfos[blendShapeFrameIndex] = new BlendShapeFrameInfo(weight, frameIndex);
+
+                    frameIndex++;
+                }
+
+                _shapes.Add(name, new BlendShapeShape(frameInfos));
+            }
+            Profiler.EndSample();
+        }
+
+        // create empty
+        private BlendShapeBuffer()
+        {
+            DeltaVertices = Array.Empty<Vector3[]>();
+            DeltaNormals = Array.Empty<Vector3[]>();
+            DeltaTangents = Array.Empty<Vector3[]>();
+        }
+
+        public ApplyFrame2Array GetApplyFramesInfo(string shapeName, float weight, bool getDefined = false) =>
+            _shapes.TryGetValue(shapeName, out var shape) ? shape.GetApplyFramesInfo(weight, getDefined) : default;
+
+        public static BlendShapeBuffer Empty { get; } = new();
+
+        public void RemoveBlendShape(string name) => _shapes.Remove(name);
+    }
+
+    public class BlendShapeShape
+    {
+        internal readonly BlendShapeFrameInfo[] Frames;
+
+        internal BlendShapeShape(BlendShapeFrameInfo[] frames)
+        {
+            if (frames.Length == 0) throw new ArgumentException("frames must not be empty", nameof(frames));
+            // Frames must be sorted by weight
+            Frames = frames;
+        }
+
+        public IEnumerable<int> FramesBufferIndices => Frames.Select(x => x.BufferIndex);
+        
+        public ApplyFrame2Array GetApplyFramesInfo(
+            float weight,
+            bool getDefined = false)
+        {
+            if (!getDefined && Mathf.Abs(weight) <= 0.0001f && DoNotApplyIfWeightIsZero())
+            {
+                return new ApplyFrame2Array();
+            }
+
+            if (Frames.Length == 1)
+            {
+                // likely: single frame blendshape
+                var frame = Frames[0];
+                var ratio = weight / frame.Weight;
+
+                return new ApplyFrame2Array(frame.BufferIndex, ratio);
+            }
+            else
+            {
+                // multi frame blendshape
+
+                var firstFrame = Frames[0];
+                var lastFrame = Frames[^1];
+
+                // if all weights are positive and the weight is less than first weight: lerp 0..first (similar to single frame)
+                if (firstFrame.Weight > 0 && weight < firstFrame.Weight)
+                {
+                    return new ApplyFrame2Array(firstFrame.BufferIndex, weight / firstFrame.Weight);
+                }
+
+                // if all weights are negative and the weight is more than last weight: lerp last..0 (similar to single frame)
+                if (lastFrame.Weight < 0 && weight > lastFrame.Weight)
+                {
+                    return new ApplyFrame2Array(lastFrame.BufferIndex, weight / lastFrame.Weight);
+                }
+
+                
+
+                // otherwise, lerp between two surrounding frames OR nearest two frames
+
+                for (var i = 1; i < Frames.Length; i++)
+                {
+                    if (weight <= Frames[i].Weight)
+                        return BuildInfoWithTwoFrames(Frames[i - 1], Frames[i], weight);
+                }
+
+                return BuildInfoWithTwoFrames(Frames[^2], Frames[^1], weight);
+
+            }
+        }
+
+        ApplyFrame2Array BuildInfoWithTwoFrames(BlendShapeFrameInfo first, BlendShapeFrameInfo second, float weight)
+        {
+            var ratio = InverseLerpUnclamped(first.Weight, second.Weight, weight);
+
+            return new ApplyFrame2Array(
+                first.BufferIndex, 1 - ratio,
+                second.BufferIndex, ratio);
+
+            static float InverseLerpUnclamped(float a, float b, float value) => (value - a) / (b - a);
+        }
+
+        bool DoNotApplyIfWeightIsZero()
+        {
+            if (Frames.Length == 1) return true;
+
+            var first = Frames[0];
+            var end = Frames[^1];
+
+            // both weight are same sign, zero for 0 weight
+            if (first.Weight <= 0 && end.Weight <= 0) return true;
+            if (first.Weight >= 0 && end.Weight >= 0) return true;
+
+            return false;
+        }
+    }
+
+    internal readonly struct BlendShapeFrameInfo
+    {
+        public readonly float Weight;
+        public readonly int BufferIndex;
+
+        public BlendShapeFrameInfo(float weight, int bufferIndex)
+        {
+            Weight = weight;
+            BufferIndex = bufferIndex;
+        }
+    }
+
+    public readonly struct ApplyFrame2Array : IEnumerable<ApplyFrameInfo>
+    {
+        // To make default(ApplyFramesInfo) as nothing to apply, those indices are bit-inverted.
+        private readonly int _firstFrameIndexInverted;
+        private readonly float _firstFrameApplyWeight;
+        private readonly int _secondFrameIndexInverted;
+        private readonly float _secondFrameApplyWeight;
+
+        // -1 means first frame is not to be applied
+        public int FirstFrameIndex => ~_firstFrameIndexInverted;
+        public float FirstFrameApplyWeight => _firstFrameApplyWeight;
+        // -1 means second frame is not to be applied
+        public int SecondFrameIndex => ~_secondFrameIndexInverted;
+        public float SecondFrameApplyWeight => _secondFrameApplyWeight;
+
+        public int FrameCount => FirstFrameIndex == -1 ? 0 : SecondFrameIndex == -1 ? 1 : 2;
+
+
+        public ApplyFrameInfo this[int index]
+        {
+            get
+            {
+                if (index < 0 || index >= FrameCount) throw new IndexOutOfRangeException();
+                return index switch
+                {
+                    0 => new ApplyFrameInfo(FirstFrameIndex, FirstFrameApplyWeight),
+                    1 => new ApplyFrameInfo(SecondFrameIndex, SecondFrameApplyWeight),
+                    _ => throw new IndexOutOfRangeException()
+                };
+            }
+        }
+
+        public ApplyFrame2Array(int firstFrameIndex, float firstFrameApplyWeight)
+        {
+            _firstFrameIndexInverted = ~firstFrameIndex;
+            _firstFrameApplyWeight = firstFrameApplyWeight;
+            _secondFrameIndexInverted = ~-1;
+            _secondFrameApplyWeight = 0;
+        }
+
+        public ApplyFrame2Array(int firstFrameIndex, float firstFrameApplyWeight, int secondFrameIndex, float secondFrameApplyWeight)
+        {
+            _firstFrameIndexInverted = ~firstFrameIndex;
+            _firstFrameApplyWeight = firstFrameApplyWeight;
+            _secondFrameIndexInverted = ~secondFrameIndex;
+            _secondFrameApplyWeight = secondFrameApplyWeight;
+        }
+
+        public Enumerator GetEnumerator() => new(this);
+        IEnumerator<ApplyFrameInfo> IEnumerable<ApplyFrameInfo>.GetEnumerator() => GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        public struct Enumerator : IEnumerator<ApplyFrameInfo>
+        {
+            private ApplyFrame2Array _frames;
+            private int _index;
+
+            public Enumerator(ApplyFrame2Array frames)
+            {
+                _frames = frames;
+                _index = -1;
+            }
+
+            public ApplyFrameInfo Current => _frames[_index];
+            object IEnumerator.Current => Current;
+
+            public bool MoveNext() => ++_index < _frames.FrameCount;
+            public void Reset() => _index = -1;
+
+            void IDisposable.Dispose()
+            {
+            }
+        }
+
+        public Vector3 Apply(Vector3[][] deltas, int bufferIndex)
+        {
+            var delta = Vector3.zero;
+            if (FirstFrameIndex == -1) return delta;
+            delta += deltas[FirstFrameIndex][bufferIndex] * FirstFrameApplyWeight;
+            if (SecondFrameIndex == -1) return delta;
+            delta += deltas[SecondFrameIndex][bufferIndex] * SecondFrameApplyWeight;
+            return delta;
+        }
+    }
+    
+    public readonly struct ApplyFrameInfo
+    {
+        public readonly int FrameIndex;
+        public readonly float ApplyWeight;
+
+        public ApplyFrameInfo(int frameIndex, float applyWeight) =>
+            (FrameIndex, ApplyWeight) = (frameIndex, applyWeight);
+
+        public void Deconstruct(out int frameIndex, out float applyWeight) =>
+            (frameIndex, applyWeight) = (FrameIndex, ApplyWeight);
     }
 }
 #endif

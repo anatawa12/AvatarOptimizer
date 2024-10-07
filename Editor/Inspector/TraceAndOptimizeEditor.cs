@@ -6,18 +6,17 @@ namespace Anatawa12.AvatarOptimizer
     [CustomEditor(typeof(TraceAndOptimize))]
     internal class TraceAndOptimizeEditor : AvatarGlobalComponentEditorBase
     {
-        private SerializedProperty _freezeBlendShape;
-        private SerializedProperty _removeUnusedObjects;
-        private SerializedProperty _preserveEndBone;
-        private SerializedProperty _removeZeroSizedPolygons;
-        private SerializedProperty _optimizePhysBone;
-        private SerializedProperty _optimizeAnimator;
-        private SerializedProperty _mergeSkinnedMesh;
-        private SerializedProperty _allowShuffleMaterialSlots;
-        private SerializedProperty _animatorOptimizerEnabled;
-        private SerializedProperty _animatorOptimizerEnd;
-        private SerializedProperty _mmdWorldCompatibility;
-        private SerializedProperty _advancedSettings;
+        private SerializedProperty _freezeBlendShape = null!; // Initialized in OnEnable
+        private SerializedProperty _removeUnusedObjects = null!; // Initialized in OnEnable
+        private SerializedProperty _preserveEndBone = null!; // Initialized in OnEnable
+        private SerializedProperty _removeZeroSizedPolygons = null!; // Initialized in OnEnable
+        private SerializedProperty _optimizePhysBone = null!; // Initialized in OnEnable
+        private SerializedProperty _optimizeAnimator = null!; // Initialized in OnEnable
+        private SerializedProperty _mergeSkinnedMesh = null!; // Initialized in OnEnable
+        private SerializedProperty _allowShuffleMaterialSlots = null!; // Initialized in OnEnable
+        private SerializedProperty _optimizeTexture = null!; // Initialized in OnEnable
+        private SerializedProperty _mmdWorldCompatibility = null!; // Initialized in OnEnable
+        private SerializedProperty _debugOptions = null!; // Initialized in OnEnable
         private GUIContent _advancedSettingsLabel = new GUIContent();
         private GUIContent _debugOptionsLabel = new GUIContent();
 
@@ -31,8 +30,9 @@ namespace Anatawa12.AvatarOptimizer
             _optimizeAnimator = serializedObject.FindProperty(nameof(TraceAndOptimize.optimizeAnimator));
             _mergeSkinnedMesh = serializedObject.FindProperty(nameof(TraceAndOptimize.mergeSkinnedMesh));
             _allowShuffleMaterialSlots = serializedObject.FindProperty(nameof(TraceAndOptimize.allowShuffleMaterialSlots));
+            _optimizeTexture = serializedObject.FindProperty(nameof(TraceAndOptimize.optimizeTexture));
             _mmdWorldCompatibility = serializedObject.FindProperty(nameof(TraceAndOptimize.mmdWorldCompatibility));
-            _advancedSettings = serializedObject.FindProperty(nameof(TraceAndOptimize.advancedSettings));
+            _debugOptions = serializedObject.FindProperty(nameof(TraceAndOptimize.debugOptions));
         }
 
         protected override void OnInspectorGUIInner()
@@ -60,11 +60,8 @@ namespace Anatawa12.AvatarOptimizer
                 EditorGUILayout.PropertyField(_allowShuffleMaterialSlots);
                 EditorGUI.indentLevel--;
             }
+            EditorGUILayout.PropertyField(_optimizeTexture);
 
-#if !UNITY_2021_3_OR_NEWER
-            if (_optimizeAnimator.boolValue)
-                EditorGUILayout.HelpBox(AAOL10N.Tr("TraceAndOptimize:OptimizeAnimator:Unity2019"), MessageType.Info);
-#endif
             _advancedSettingsLabel.text = AAOL10N.Tr("TraceAndOptimize:prop:advancedOptimization");
             AdvancedOpened = EditorGUILayout.Foldout(AdvancedOpened, _advancedSettingsLabel);
             if (AdvancedOpened)
@@ -76,11 +73,11 @@ namespace Anatawa12.AvatarOptimizer
             }
 
             _debugOptionsLabel.text = AAOL10N.Tr("TraceAndOptimize:prop:debugOptions");
-            if (EditorGUILayout.PropertyField(_advancedSettings, _debugOptionsLabel, false))
+            if (EditorGUILayout.PropertyField(_debugOptions, _debugOptionsLabel, false))
             {
                 EditorGUI.indentLevel++;
                 EditorGUILayout.HelpBox(AAOL10N.Tr("TraceAndOptimize:warn:debugOptions"), MessageType.Warning);
-                var iterator = _advancedSettings.Copy();
+                var iterator = _debugOptions.Copy();
                 var enterChildren = true;
                 while (iterator.NextVisible(enterChildren))
                 {

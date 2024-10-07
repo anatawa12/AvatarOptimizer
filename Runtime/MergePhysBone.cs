@@ -118,6 +118,7 @@ namespace Anatawa12.AvatarOptimizer
             public Curve0To180Config(float value) : this()
             {
                 this.value = value;
+                curve = new AnimationCurve();
             }
         }
 
@@ -132,6 +133,7 @@ namespace Anatawa12.AvatarOptimizer
             public Curve0To90Config(float value) : this()
             {
                 this.value = value;
+                curve = new AnimationCurve();
             }
         }
 
@@ -235,11 +237,16 @@ namespace Anatawa12.AvatarOptimizer
         #endregion
 
         [AAOLocalized("MergePhysBone:prop:components")]
-        public PrefabSafeSet.VRCPhysBoneBaseSet componentsSet;
+        public PrefabSafeSet.PrefabSafeSet<VRCPhysBoneBase> componentsSet;
 
         public MergePhysBone()
         {
-            componentsSet = new PrefabSafeSet.VRCPhysBoneBaseSet(this);
+            componentsSet = new PrefabSafeSet.PrefabSafeSet<VRCPhysBoneBase>(this);
+        }
+
+        private void OnValidate()
+        {
+            PrefabSafeSet.PrefabSafeSet.OnValidate(this, x => x.componentsSet);
         }
     }
 

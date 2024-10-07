@@ -102,7 +102,7 @@ namespace Anatawa12.AvatarOptimizer.CheckForUpdate
         [Serializable]
         class PackageJson
         {
-            public string version;
+            public string? version;
         }
     }
 }

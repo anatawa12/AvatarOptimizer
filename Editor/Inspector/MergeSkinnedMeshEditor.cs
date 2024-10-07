@@ -23,11 +23,12 @@ namespace Anatawa12.AvatarOptimizer
             };
         }
 
-        SerializedProperty _renderersSetProp;
-        SerializedProperty _staticRenderersSetProp;
-        SerializedProperty _removeEmptyRendererObjectProp;
-        SerializedProperty _skipEnablementMismatchedRenderers;
-        PrefabSafeSet.EditorUtil<Material> _doNotMergeMaterials;
+        SerializedProperty _renderersSetProp = null!; // initialized in OnEnable
+        SerializedProperty _staticRenderersSetProp = null!; // initialized in OnEnable
+        SerializedProperty _removeEmptyRendererObjectProp = null!; // initialized in OnEnable
+        SerializedProperty _skipEnablementMismatchedRenderers = null!; // initialized in OnEnable
+        SerializedProperty _copyEnablementAnimation = null!; // initialized in OnEnable
+        PrefabSafeSet.EditorUtil<Material> _doNotMergeMaterials = null!; // initialized in OnEnable
 
         private void OnEnable()
         {
@@ -36,11 +37,10 @@ namespace Anatawa12.AvatarOptimizer
             _removeEmptyRendererObjectProp = serializedObject.FindProperty("removeEmptyRendererObject");
             _skipEnablementMismatchedRenderers =
                 serializedObject.FindProperty(nameof(MergeSkinnedMesh.skipEnablementMismatchedRenderers));
-            var nestCount = PrefabSafeSet.PrefabSafeSetUtil.PrefabNestCount(serializedObject.targetObject);
+            _copyEnablementAnimation = serializedObject.FindProperty(nameof(MergeSkinnedMesh.copyEnablementAnimation));
             _doNotMergeMaterials = PrefabSafeSet.EditorUtil<Material>.Create(
                 serializedObject.FindProperty("doNotMergeMaterials"),
-                nestCount,
-                x => x.objectReferenceValue as Material,
+                x => (Material)x.objectReferenceValue,
                 (x, v) => x.objectReferenceValue = v);
         }
 
@@ -56,6 +56,7 @@ namespace Anatawa12.AvatarOptimizer
             EditorGUILayout.PropertyField(_staticRenderersSetProp);
             EditorGUILayout.PropertyField(_removeEmptyRendererObjectProp);
             EditorGUILayout.PropertyField(_skipEnablementMismatchedRenderers);
+            EditorGUILayout.PropertyField(_copyEnablementAnimation);
 
             serializedObject.ApplyModifiedProperties();
 
@@ -68,7 +69,7 @@ namespace Anatawa12.AvatarOptimizer
 
         public void MergeMaterials(MergeSkinnedMesh merge)
         {
-            var materials = new HashSet<Material>();
+            var materials = new HashSet<Material?>();
             var renderersSetAsList = merge.renderersSet.GetAsList();
             var staticRenderersSetAsList = merge.staticRenderersSet.GetAsList();
             var ofRenderers = renderersSetAsList.Select(EditSkinnedMeshComponentUtil.GetMaterials);
@@ -77,6 +78,7 @@ namespace Anatawa12.AvatarOptimizer
                          .SelectMany((x, renderer) => x.Select((mat, material) => (mat, renderer, material)))
                          .GroupBy(x => x.mat))
             {
+                if (group.Key == null) continue;
                 materials.Add(group.Key);
                 if (group.Count() == 1)
                 {

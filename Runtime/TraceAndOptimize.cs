@@ -79,6 +79,12 @@ namespace Anatawa12.AvatarOptimizer
         [SerializeField]
         internal bool allowShuffleMaterialSlots;
 
+        [NotKeyable]
+        [AAOLocalized("TraceAndOptimize:prop:optimizeTexture")]
+        [ToggleLeft]
+        [SerializeField]
+        internal bool optimizeTexture = true;
+
         // common parsing configuration
         [NotKeyable]
         [AAOLocalized("TraceAndOptimize:prop:mmdWorldCompatibility",
@@ -87,13 +93,12 @@ namespace Anatawa12.AvatarOptimizer
         [SerializeField]
         internal bool mmdWorldCompatibility = true;
 
-        // TODO: rename to debugOptions in 1.8
         [NotKeyable]
         [SerializeField]
-        internal AdvancedSettings advancedSettings;
+        internal DebugOptions debugOptions;
         
         [Serializable]
-        internal struct AdvancedSettings
+        internal struct DebugOptions
         {
             [Tooltip("Exclude some GameObjects from Trace and Optimize")]
             public GameObject[] exclusions;
@@ -131,6 +136,8 @@ namespace Anatawa12.AvatarOptimizer
             public bool skipMergeMaterials;
             [ToggleLeft]
             public bool skipRemoveEmptySubMesh;
+            [ToggleLeft]
+            public bool skipAnyStateToEntryExit;
         }
     }
 }

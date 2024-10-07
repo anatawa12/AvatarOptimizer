@@ -1,5 +1,5 @@
+using System;
 using System.Collections.Generic;
-using JetBrains.Annotations;
 using UnityEditor.Animations;
 using UnityEngine;
 
@@ -7,9 +7,7 @@ namespace Anatawa12.AvatarOptimizer
 {
     public static partial class ACUtils
     {
-        [ItemNotNull]
-        [NotNull]
-        public static IEnumerable<AnimatorStateMachine> AllStateMachines([CanBeNull] AnimatorStateMachine stateMachine)
+        public static IEnumerable<AnimatorStateMachine> AllStateMachines(AnimatorStateMachine? stateMachine)
         {
             if (stateMachine == null) yield break;
             yield return stateMachine;
@@ -19,9 +17,7 @@ namespace Anatawa12.AvatarOptimizer
                 yield return machine;
         }
 
-        [ItemNotNull]
-        [NotNull]
-        public static IEnumerable<AnimatorState> AllStates([CanBeNull] AnimatorStateMachine stateMachine)
+        public static IEnumerable<AnimatorState> AllStates(AnimatorStateMachine? stateMachine)
         {
             if (stateMachine == null) yield break;
             foreach (var state in stateMachine.states)
@@ -32,9 +28,7 @@ namespace Anatawa12.AvatarOptimizer
                 yield return state;
         }
 
-        [ItemNotNull]
-        [NotNull]
-        public static IEnumerable<AnimatorTransitionBase> AllTransitions([CanBeNull] AnimatorStateMachine stateMachine)
+        public static IEnumerable<AnimatorTransitionBase> AllTransitions(AnimatorStateMachine? stateMachine)
         {
             if (stateMachine == null) yield break;
 
@@ -56,9 +50,7 @@ namespace Anatawa12.AvatarOptimizer
             }
         }
 
-        [NotNull]
-        [ItemNotNull]
-        public static IEnumerable<AnimationClip> AllClips([CanBeNull] Motion motion)
+        public static IEnumerable<AnimationClip> AllClips(Motion? motion)
         {
             switch (motion)
             {
@@ -75,11 +67,28 @@ namespace Anatawa12.AvatarOptimizer
             }
         }
 
-        [NotNull]
-        [ItemNotNull]
-        public static IEnumerable<StateMachineBehaviour> StateMachineBehaviours(
-            [NotNull] RuntimeAnimatorController runtimeController)
+        public static IEnumerable<AnimationClip?> AllClipsMayNull(Motion? motion)
         {
+            switch (motion)
+            {
+                case null:
+                    yield return null;
+                    break;
+                case AnimationClip clip:
+                    yield return clip;
+                    break;
+                case BlendTree blendTree:
+                    foreach (var child in blendTree.children)
+                    foreach (var clip in AllClips(child.motion))
+                        yield return clip;
+                    break;
+            }
+        }
+
+        public static IEnumerable<StateMachineBehaviour> StateMachineBehaviours(
+            RuntimeAnimatorController runtimeController)
+        {
+            if (runtimeController == null) throw new ArgumentNullException(nameof(runtimeController));
             var (controller, _) = GetControllerAndOverrides(runtimeController);
 
             foreach (var layer in controller.layers)
@@ -94,10 +103,10 @@ namespace Anatawa12.AvatarOptimizer
             }
         }
 
-        [NotNull]
-        [ItemNotNull]
-        public static IEnumerable<StateMachineBehaviour> StateMachineBehaviours([NotNull] AnimatorStateMachine stateMachineIn)
+        public static IEnumerable<StateMachineBehaviour> StateMachineBehaviours(
+            AnimatorStateMachine stateMachineIn)
         {
+            if (stateMachineIn == null) throw new ArgumentNullException(nameof(stateMachineIn));
             var queue = new Queue<AnimatorStateMachine>();
             queue.Enqueue(stateMachineIn);
 
@@ -117,41 +126,30 @@ namespace Anatawa12.AvatarOptimizer
             }
         }
 
-        public static int ComputeLayerCount([NotNull] this RuntimeAnimatorController controller)
+        public static int ComputeLayerCount(this RuntimeAnimatorController controller)
         {
+            if (controller == null) throw new ArgumentNullException(nameof(controller));
             while (controller is AnimatorOverrideController overrideController)
                 controller = overrideController.runtimeAnimatorController;
             return ((AnimatorController)controller).layers.Length;
         }
 
-        public static bool? SatisfiesInt(this AnimatorCondition condition, int value)
-        {
-            switch (condition.mode)
+        public static bool? SatisfiesInt(this AnimatorCondition condition, int value) =>
+            condition.mode switch
             {
-                case AnimatorConditionMode.Equals:
-                    return value == (int)condition.threshold;
-                case AnimatorConditionMode.NotEqual:
-                    return value != (int)condition.threshold;
-                case AnimatorConditionMode.Greater:
-                    return value > condition.threshold;
-                case AnimatorConditionMode.Less:
-                    return value < condition.threshold;
-                default:
-                    return null;
-            }
-        }
+                AnimatorConditionMode.Equals => value == (int)condition.threshold,
+                AnimatorConditionMode.NotEqual => value != (int)condition.threshold,
+                AnimatorConditionMode.Greater => value > condition.threshold,
+                AnimatorConditionMode.Less => value < condition.threshold,
+                _ => null
+            };
 
-        public static bool? SatisfiesBool(this AnimatorCondition condition, bool value)
-        {
-            switch (condition.mode)
+        public static bool? SatisfiesBool(this AnimatorCondition condition, bool value) =>
+            condition.mode switch
             {
-                case AnimatorConditionMode.If:
-                    return value;
-                case AnimatorConditionMode.IfNot:
-                    return !value;
-                default:
-                    return null;
-            }
-        }
+                AnimatorConditionMode.If => value,
+                AnimatorConditionMode.IfNot => !value,
+                _ => null
+            };
     }
 }

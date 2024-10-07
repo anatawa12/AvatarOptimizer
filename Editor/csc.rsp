@@ -1,2 +1,1 @@
-#"Shared csc.rsp file. origin is at Editor/csc.rsp. symlinked to Runtime/csc.rsp and other assemblies of AAO"
--langversion:7.3
+../.csc.rsp.nullsafe

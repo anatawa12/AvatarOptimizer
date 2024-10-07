@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using JetBrains.Annotations;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -8,8 +7,8 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 {
     internal interface INodeContainer
     {
-        IReadOnlyDictionary<(ComponentOrGameObject target, string prop), PropModNode<float>> FloatNodes { get; }
-        IReadOnlyDictionary<(ComponentOrGameObject target, string prop), PropModNode<Object>> ObjectNodes { get; }
+        IReadOnlyDictionary<(ComponentOrGameObject target, string prop), PropModNode<FloatValueInfo>> FloatNodes { get; }
+        IReadOnlyDictionary<(ComponentOrGameObject target, string prop), PropModNode<ObjectValueInfo>> ObjectNodes { get; }
     }
 
     internal interface INodeContainer<TFloatNode, TObjectNode>
@@ -18,59 +17,59 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         IReadOnlyDictionary<(ComponentOrGameObject target, string prop), TObjectNode> ObjectNodes { get; }
     }
 
-    internal class RootPropModNodeContainer : INodeContainer<RootPropModNode<float>, RootPropModNode<Object>>, INodeContainer
+    internal class RootPropModNodeContainer : INodeContainer<RootPropModNode<FloatValueInfo>, RootPropModNode<ObjectValueInfo>>, INodeContainer
     {
-        private readonly Dictionary<(ComponentOrGameObject target, string prop), RootPropModNode<float>> _floatNodes =
-            new Dictionary<(ComponentOrGameObject, string), RootPropModNode<float>>();
-        private readonly Dictionary<(ComponentOrGameObject target, string prop), RootPropModNode<Object>> _objectNodes =
-            new Dictionary<(ComponentOrGameObject, string), RootPropModNode<Object>>();
+        private readonly Dictionary<(ComponentOrGameObject target, string prop), RootPropModNode<FloatValueInfo>> _floatNodes =
+            new Dictionary<(ComponentOrGameObject, string), RootPropModNode<FloatValueInfo>>();
+        private readonly Dictionary<(ComponentOrGameObject target, string prop), RootPropModNode<ObjectValueInfo>> _objectNodes =
+            new Dictionary<(ComponentOrGameObject, string), RootPropModNode<ObjectValueInfo>>();
 
-        IReadOnlyDictionary<(ComponentOrGameObject target, string prop), PropModNode<float>> INodeContainer.
+        IReadOnlyDictionary<(ComponentOrGameObject target, string prop), PropModNode<FloatValueInfo>> INodeContainer.
             FloatNodes =>
-            Utils.CastDic<PropModNode<float>>().CastedDic(FloatNodes);
+            Utils.CastDic<PropModNode<FloatValueInfo>>().CastedDic(FloatNodes);
 
-        IReadOnlyDictionary<(ComponentOrGameObject target, string prop), PropModNode<Object>> INodeContainer.
+        IReadOnlyDictionary<(ComponentOrGameObject target, string prop), PropModNode<ObjectValueInfo>> INodeContainer.
             ObjectNodes =>
-            Utils.CastDic<PropModNode<Object>>().CastedDic(ObjectNodes);
+            Utils.CastDic<PropModNode<ObjectValueInfo>>().CastedDic(ObjectNodes);
 
-        public IReadOnlyDictionary<(ComponentOrGameObject target, string prop), RootPropModNode<float>> FloatNodes =>
+        public IReadOnlyDictionary<(ComponentOrGameObject target, string prop), RootPropModNode<FloatValueInfo>> FloatNodes =>
             _floatNodes;
         
-        public IReadOnlyDictionary<(ComponentOrGameObject target, string prop), RootPropModNode<Object>> ObjectNodes =>
+        public IReadOnlyDictionary<(ComponentOrGameObject target, string prop), RootPropModNode<ObjectValueInfo>> ObjectNodes =>
             _objectNodes;
 
-        public void Add([CanBeNull] ComponentNodeContainer container, bool alwaysApplied)
+        public void Add(ComponentNodeContainer? container, bool alwaysApplied)
         {
             if (container == null) return;
 
             foreach (var (key, value) in container.FloatNodes)
             {
                 if (!FloatNodes.TryGetValue(key, out var node))
-                    _floatNodes.Add(key, node = new RootPropModNode<float>());
+                    _floatNodes.Add(key, node = new RootPropModNode<FloatValueInfo>());
                 node.Add(value, alwaysApplied);
             }
             
             foreach (var (key, value) in container.ObjectNodes)
             {
                 if (!ObjectNodes.TryGetValue(key, out var node))
-                    _objectNodes.Add(key, node = new RootPropModNode<Object>());
+                    _objectNodes.Add(key, node = new RootPropModNode<ObjectValueInfo>());
                 node.Add(value, alwaysApplied);
             }
         }
 
-        public void Add(Component component, string prop, ComponentPropModNodeBase<float> node, bool alwaysApplied)
+        public void Add(Component component, string prop, ComponentPropModNodeBase<FloatValueInfo> node, bool alwaysApplied)
         {
             var key = (component, prop);
             if (!FloatNodes.TryGetValue(key, out var root))
-                _floatNodes.Add(key, root = new RootPropModNode<float>());
+                _floatNodes.Add(key, root = new RootPropModNode<FloatValueInfo>());
             root.Add(node, alwaysApplied);
         }
 
-        public void Add(Component component, string prop, ComponentPropModNodeBase<Object> node, bool alwaysApplied)
+        public void Add(Component component, string prop, ComponentPropModNodeBase<ObjectValueInfo> node, bool alwaysApplied)
         {
             var key = (component, prop);
             if (!_objectNodes.TryGetValue(key, out var root))
-                _objectNodes.Add(key, root = new RootPropModNode<Object>());
+                _objectNodes.Add(key, root = new RootPropModNode<ObjectValueInfo>());
             root.Add(node, alwaysApplied);
         }
 
@@ -81,8 +80,8 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
     }
 
     internal class NodeContainerBase<TFloatNode, TObjectNode> : INodeContainer<TFloatNode, TObjectNode>, INodeContainer
-        where TFloatNode : PropModNode<float>
-        where TObjectNode : PropModNode<Object>
+        where TFloatNode : PropModNode<FloatValueInfo>
+        where TObjectNode : PropModNode<ObjectValueInfo>
     {
         private readonly Dictionary<(ComponentOrGameObject target, string prop), TFloatNode> _floatNodes =
             new Dictionary<(ComponentOrGameObject, string), TFloatNode>();
@@ -93,52 +92,52 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         public IReadOnlyDictionary<(ComponentOrGameObject target, string prop), TObjectNode> ObjectNodes =>
             _objectNodes;
 
-        IReadOnlyDictionary<(ComponentOrGameObject target, string prop), PropModNode<float>> INodeContainer.
-            FloatNodes => Utils.CastDic<PropModNode<float>>().CastedDic(_floatNodes);
+        IReadOnlyDictionary<(ComponentOrGameObject target, string prop), PropModNode<FloatValueInfo>> INodeContainer.
+            FloatNodes => Utils.CastDic<PropModNode<FloatValueInfo>>().CastedDic(_floatNodes);
 
-        IReadOnlyDictionary<(ComponentOrGameObject target, string prop), PropModNode<Object>> INodeContainer.
-            ObjectNodes => Utils.CastDic<PropModNode<Object>>().CastedDic(_objectNodes);
+        IReadOnlyDictionary<(ComponentOrGameObject target, string prop), PropModNode<ObjectValueInfo>> INodeContainer.
+            ObjectNodes => Utils.CastDic<PropModNode<ObjectValueInfo>>().CastedDic(_objectNodes);
 
-        public void Add(ComponentOrGameObject target, string prop, [NotNull] TFloatNode node)
+        public void Add(ComponentOrGameObject target, string prop, TFloatNode node)
         {
             if (node == null) throw new ArgumentNullException(nameof(node));
             _floatNodes.Add((target, prop), node);
         }
 
-        public void Add(ComponentOrGameObject target, string prop, [NotNull] TObjectNode node)
+        public void Add(ComponentOrGameObject target, string prop, TObjectNode node)
         {
             if (node == null) throw new ArgumentNullException(nameof(node));
             _objectNodes.Add((target, prop), node);
         }
 
-        public void Set(ComponentOrGameObject target, string prop, [NotNull] TFloatNode node)
+        public void Set(ComponentOrGameObject target, string prop, TFloatNode node)
         {
             _floatNodes[(target, prop)] = node ?? throw new ArgumentNullException(nameof(node));
         }
 
-        public void Set(ComponentOrGameObject target, string prop, [NotNull] TObjectNode node)
+        public void Set(ComponentOrGameObject target, string prop, TObjectNode node)
         {
             if (node == null) throw new ArgumentNullException(nameof(node));
             _objectNodes[(target, prop)] = node;
         }
     }
 
-    internal class AnimatorLayerNodeContainer : NodeContainerBase<AnimatorLayerPropModNode<float>,
-        AnimatorLayerPropModNode<Object>>
+    internal class AnimatorLayerNodeContainer : NodeContainerBase<AnimatorLayerPropModNode<FloatValueInfo>,
+        AnimatorLayerPropModNode<ObjectValueInfo>>
     {
     }
 
-    internal class AnimatorControllerNodeContainer : NodeContainerBase<AnimatorControllerPropModNode<float>,
-        AnimatorControllerPropModNode<Object>>
+    internal class AnimatorControllerNodeContainer : NodeContainerBase<AnimatorControllerPropModNode<FloatValueInfo>,
+        AnimatorControllerPropModNode<ObjectValueInfo>>
     {
     }
 
     internal class ComponentNodeContainer
-        : NodeContainerBase<ComponentPropModNodeBase<float>, ComponentPropModNodeBase<Object>>
+        : NodeContainerBase<ComponentPropModNodeBase<FloatValueInfo>, ComponentPropModNodeBase<ObjectValueInfo>>
     {
     }
 
-    internal class ImmutableNodeContainer : NodeContainerBase<ImmutablePropModNode<float>, ImmutablePropModNode<Object>>
+    internal class ImmutableNodeContainer : NodeContainerBase<ImmutablePropModNode<FloatValueInfo>, ImmutablePropModNode<ObjectValueInfo>>
     {
     }
 }

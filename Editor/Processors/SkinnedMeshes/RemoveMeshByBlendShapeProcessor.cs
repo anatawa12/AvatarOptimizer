@@ -20,11 +20,23 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             var sqrTolerance = Component.tolerance * Component.tolerance;
 
             foreach (var vertex in target.Vertices)
-            foreach (var shapeName in Component.RemovingShapeKeys)
             {
-                if (!vertex.BlendShapes.TryGetValue(shapeName, out var value)) continue;
-                if (value.Any(f => f.Position.sqrMagnitude > sqrTolerance))
-                    byBlendShapeVertices.Add(vertex);
+                var buffer = vertex.BlendShapeBuffer;
+                var blendShapeVertexIndex = vertex.BlendShapeBufferVertexIndex;
+
+                foreach (var shapeName in Component.RemovingShapeKeys)
+                {
+                    if (!buffer.Shapes.TryGetValue(shapeName, out var shapeShape)) continue;
+                    foreach (var bufferIndex in shapeShape.FramesBufferIndices)
+                    {
+                        if (buffer.DeltaVertices[bufferIndex][blendShapeVertexIndex].sqrMagnitude > sqrTolerance)
+                        {
+                            byBlendShapeVertices.Add(vertex);
+                            goto endOfVertexProcessing;
+                        }
+                    }
+                }
+                endOfVertexProcessing: ;
             }
 
             Func<Vertex[], bool> condition = primitive => primitive.Any(byBlendShapeVertices.Contains);

@@ -43,7 +43,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
         private static readonly Dictionary<Type, TypeInfo<Object>> _properties =
             new Dictionary<Type, TypeInfo<Object>>();
 
-        public static Func<string, bool> Get(BuildContext context, Object component)
+        public static Func<string, bool>? Get(BuildContext context, Object component)
         {
             if (!_properties.TryGetValue(component.GetType(), out var func))
                 return null;
@@ -78,7 +78,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             });
         }
 
-        private static bool TrySubProp(string prop, string subProp, out string sub)
+        private static bool TrySubProp(string prop, string subProp, out string? sub)
         {
             sub = null;
             if (!prop.StartsWith(subProp + '.')) return false;

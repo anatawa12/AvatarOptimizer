@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using nadena.dev.ndmf.preview;
 using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
@@ -20,13 +21,13 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
         }
 
         [SerializeField]
-        private RenderTexture _target = null;
+        private RenderTexture _target = null!; // initialized by Init
 
         [SerializeField]
-        private List<Texture2D> _stack = null;
+        private List<Texture2D> _stack = null!; // initialized by Init
 
         [SerializeField]
-        private Counter _counter = null;
+        private Counter _counter = null!; // initialized by Init
 
         public bool CanUndo => _counter.Count > 1;
         public bool CanRedo => _counter.Count < _stack.Count;
@@ -114,6 +115,12 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
             return _stack[_counter.Count - 1];
         }
 
+        public Texture2D ObservePeek(ComputeContext context)
+        {
+            var count = context.Observe(_counter, c => c.Count);
+            return _stack[count - 1];
+        }
+
         private void Apply()
         {
             Graphics.Blit(_stack[_counter.Count - 1], _target);
@@ -131,12 +138,12 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
                         DestroyImmediate(texture);
                     }
                 }
-                _stack = null;
+                _stack = null!; // resetting
             }
             if (_counter != null)
             {
                 DestroyImmediate(_counter);
-                _counter = null;
+                _counter = null!; // resetting
             }
         }
     }

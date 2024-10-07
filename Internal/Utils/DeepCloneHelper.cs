@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEngine;
@@ -12,7 +13,8 @@ namespace Anatawa12.AvatarOptimizer
         private readonly Dictionary<Object, Object> _cache = new Dictionary<Object, Object>();
         private bool _mapped = false;
 
-        public T MapObject<T>(T obj) where T : Object
+        [return:NotNullIfNotNull("obj")]
+        public T? MapObject<T>(T? obj) where T : Object
         {
             using (ErrorReport.WithContextObject(obj))
                 return DeepClone(obj);
@@ -21,7 +23,7 @@ namespace Anatawa12.AvatarOptimizer
         // https://github.com/bdunderscore/modular-avatar/blob/db49e2e210bc070671af963ff89df853ae4514a5/Packages/nadena.dev.modular-avatar/Editor/AnimatorMerger.cs#L199-L241
         // Originally under MIT License
         // Copyright (c) 2022 bd_
-        protected abstract Object CustomClone(Object o);
+        protected abstract Object? CustomClone(Object o);
 
         protected enum ComponentSupport
         {
@@ -58,7 +60,8 @@ namespace Anatawa12.AvatarOptimizer
         // https://github.com/bdunderscore/modular-avatar/blob/db49e2e210bc070671af963ff89df853ae4514a5/Packages/nadena.dev.modular-avatar/Editor/AnimatorMerger.cs#LL242-L340C10
         // Originally under MIT License
         // Copyright (c) 2022 bd_
-        protected T DeepClone<T>(T original) where T : Object
+        [return:NotNullIfNotNull("original")]
+        protected T? DeepClone<T>(T? original) where T : Object
         {
             if (original == null) return null;
 

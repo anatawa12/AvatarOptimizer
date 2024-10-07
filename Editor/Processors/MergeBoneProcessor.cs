@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
-using JetBrains.Annotations;
 using nadena.dev.ndmf;
 using UnityEngine;
+using UnityEngine.Profiling;
 using Object = UnityEngine.Object;
 
 #if AAO_VRCSDK3_AVATARS
@@ -55,6 +56,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
         protected override void Execute(BuildContext context)
         {
             // merge from -> merge into
+            Profiler.BeginSample("Create Merge Mapping");
             var mergeMapping = new Dictionary<Transform, Transform>();
             foreach (var component in context.GetComponents<MergeBone>())
             {
@@ -67,25 +69,34 @@ namespace Anatawa12.AvatarOptimizer.Processors
             // normalize map
             mergeMapping.FlattenMapping();
 
+            Profiler.EndSample();
+
             if (mergeMapping.Count == 0) return;
 
 #if AAO_VRCSDK3_AVATARS
             foreach (var physBone in context.GetComponents<VRCPhysBoneBase>())
+            {
+                Profiler.BeginSample("MapIgnoreTransforms");
                 using (ErrorReport.WithContextObject(physBone))
                     MapIgnoreTransforms(physBone);
+                Profiler.EndSample();
+            }
 #endif
             foreach (var renderer in context.GetComponents<SkinnedMeshRenderer>())
             {
                 using (ErrorReport.WithContextObject(renderer))
                 {
+                    Profiler.BeginSample("DoBoneMap");
                     var meshInfo2 = context.GetMeshInfoFor(renderer);
-                    if (meshInfo2.Bones.Any(x => x.Transform && mergeMapping.ContainsKey(x.Transform)))
+                    if (meshInfo2.Bones.Any(x => x.Transform != null && mergeMapping.ContainsKey(x.Transform)))
                         DoBoneMap2(meshInfo2, mergeMapping);
+                    Profiler.EndSample();
                 }
             }
 
-            var counter = 0;
+            Profiler.BeginSample("Flatten Bone Tree");
 
+            var counter = 0;
             foreach (var pair in mergeMapping)
             {
                 var mapping = pair.Key;
@@ -111,9 +122,13 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 }
             }
 
+            Profiler.EndSample();
+
+            Profiler.BeginSample("Destroy Unnecessary Objects");
             foreach (var pair in mergeMapping.Keys)
                 if (pair)
                     DestroyTracker.DestroyImmediate(pair.gameObject);
+            Profiler.EndSample();
         }
 
 #if AAO_VRCSDK3_AVATARS
@@ -147,10 +162,12 @@ namespace Anatawa12.AvatarOptimizer.Processors
             var primaryBones = new Dictionary<Transform, Bone>();
             var boneReplaced = false;
 
+            Profiler.BeginSample("Map Bone");
+
             // first, simply update bone weights by updating BindPose
             foreach (var bone in meshInfo2.Bones)
             {
-                if (!bone.Transform) continue;
+                if (bone.Transform == null) continue;
                 if (mergeMapping.TryGetValue(bone.Transform, out var mapped))
                 {
                     bone.Bindpose = mapped.worldToLocalMatrix * bone.Transform.localToWorldMatrix * bone.Bindpose;
@@ -165,14 +182,18 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 }
             }
 
+            Profiler.EndSample();
+
             if (!boneReplaced) return;
 
+            Profiler.BeginSample("Optimize Bindpose Phase 1");
+
             // Optimization 1: if vertex is affected by only one bone, we can merge to one weight
-            foreach (var vertex in meshInfo2.Vertices)
+            Parallel.ForEach(meshInfo2.Vertices, vertex =>
             {
                 var singleBoneTransform = vertex.BoneWeights.Select(x => x.bone.Transform)
                     .DistinctSingleOrDefaultIfNoneOrMultiple();
-                if (singleBoneTransform == null) continue;
+                if (singleBoneTransform == null) return;
                 if (!primaryBones.TryGetValue(singleBoneTransform, out var finalBone))
                     primaryBones.Add(singleBoneTransform, finalBone = vertex.BoneWeights[0].bone);
 
@@ -196,32 +217,35 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 vertex.Normal = transBindPose.MultiplyPoint3x3(vertex.Normal);
                 var tangentVec3 = transBindPose.MultiplyPoint3x3(vertex.Tangent);
                 vertex.Tangent = new Vector4(tangentVec3.x, tangentVec3.y, tangentVec3.z, vertex.Tangent.w);
-                foreach (var frames in vertex.BlendShapes.Values)
+
+                var buffer = vertex.BlendShapeBuffer;
+                var bufferVertexIndex = vertex.BlendShapeBufferVertexIndex;
+
+                static void ApplyMatrixToArray(Matrix4x4 matrix, Vector3[][] arrayArray, int index)
                 {
-                    for (var i = 0; i < frames.Length; i++)
-                    {
-                        var frame = frames[i];
-                        frames[i] = new Vertex.BlendShapeFrame(
-                            weight: frame.Weight,
-                            position: transBindPose.MultiplyPoint3x3(frame.Position),
-                            normal: transBindPose.MultiplyPoint3x3(frame.Normal),
-                            tangent: transBindPose.MultiplyPoint3x3(frame.Tangent)
-                        );
-                    }
+                    foreach (var array in arrayArray)
+                        array[index] = matrix.MultiplyPoint3x3(array[index]);
                 }
+
+                ApplyMatrixToArray(transBindPose, buffer.DeltaVertices, bufferVertexIndex);
+                ApplyMatrixToArray(transBindPose, buffer.DeltaNormals, bufferVertexIndex);
+                ApplyMatrixToArray(transBindPose, buffer.DeltaTangents, bufferVertexIndex);
 
                 var weightSum = vertex.BoneWeights.Select(x => x.weight).Sum();
                 // I want weightSum to be 1.0 but it may not.
                 vertex.BoneWeights.Clear();
                 vertex.BoneWeights.Add((finalBone, weightSum));
-            }
+            });
 
+            Profiler.EndSample();
+
+            Profiler.BeginSample("Optimize Bindpose Phase 2");
             // Optimization2: If there are same (BindPose, Transform) pair, merge
             // This is optimization for RestPose bone merging
             var boneMapping = new Dictionary<Bone, Bone>();
             foreach (var grouping in meshInfo2.Bones.GroupBy(x => new BoneUniqKey(x)))
             {
-                if (!grouping.Key.Transform) continue;
+                if (grouping.Key.Transform == null) continue;
                 primaryBones.TryGetValue(grouping.Key.Transform, out var primaryBone);
                 var group = grouping.ToArray();
                 if (group.All(x => x != primaryBone))
@@ -239,6 +263,8 @@ namespace Anatawa12.AvatarOptimizer.Processors
                     .Select(g => (g.Key, g.Sum(x => x.weight)))
                     .ToList();
             }
+
+            Profiler.EndSample();
         }
 
         private bool ValidBindPose(Matrix4x4 matrix)
@@ -267,7 +293,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
         private readonly struct BoneUniqKey : IEquatable<BoneUniqKey>
         {
             private readonly Matrix4x4 _bindPoseInfo;
-            public readonly Transform Transform;
+            public readonly Transform? Transform;
 
             public BoneUniqKey(Bone bone)
             {
@@ -293,12 +319,10 @@ namespace Anatawa12.AvatarOptimizer.Processors
             public bool Equals(BoneUniqKey other) =>
                 Equals(Transform, other.Transform) && _bindPoseInfo == other._bindPoseInfo;
 
-            public override bool Equals(object obj) => obj is BoneUniqKey other && Equals(other);
-
-            public override int GetHashCode() =>
-                unchecked(_bindPoseInfo.GetHashCode() * 397) ^ (Transform != null ? Transform.GetHashCode() : 0);
+            public override bool Equals(object? obj) => obj is BoneUniqKey other && Equals(other);
+            public override int GetHashCode() => HashCode.Combine(_bindPoseInfo, Transform);
         }
-        
+
 
         public struct MergeBoneTransParentInfo
         {
@@ -307,7 +331,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
             public bool ActiveSelf;
             public string NamePrefix;
 
-            public (Vector3 position, Quaternion rotation, Vector3 scale) ComputeInfoFor([NotNull] Transform child)
+            public (Vector3 position, Quaternion rotation, Vector3 scale) ComputeInfoFor(Transform child)
             {
                 if (child == null) throw new ArgumentNullException(nameof(child));
 
@@ -324,7 +348,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 return (matrix.offset, rotation, scale);
             }
 
-            public static MergeBoneTransParentInfo Compute([NotNull] Transform parent, [CanBeNull] Transform root)
+            public static MergeBoneTransParentInfo Compute(Transform parent, Transform? root)
             {
                 var parentRotation = Quaternion.identity;
                 var parentMatrix = Matrix4x4.identity;

@@ -13,12 +13,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - unity: 2019
-            projectRef: b552a002fa121b0d7c233b49241f5f6279d0fa90 # project-for-test-2019
           - unity: 2022
             projectRef: de0b2dde7824e33986730c40866d74cfe526942b # project-for-test-2022
         unity:
-          - 2019
           - 2022
     permissions:
       checks: write
@@ -36,6 +33,7 @@ jobs:
         with:
           repos: |
             https://vpm.anatawa12.com/vpm.json
+            https://vpm.nadena.dev/vpm-prerelease.json
 
       - uses: actions/cache@v4
         with:
@@ -51,7 +49,7 @@ jobs:
           testMode: EditMode
           githubToken: ${{ github.token }}
           coverageOptions: generateAdditionalMetrics;generateHtmlReport;generateBadgeReport;assemblyFilters:+com.anatawa12.avatar-optimizer.*
-          customParameters: -nographics
+          customParameters: 
           checkName: Test results ${{ matrix.unity }}
 
       - uses: actions/upload-artifact@v4

@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using System.Text;
-using JetBrains.Annotations;
 using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEngine;
@@ -15,15 +14,15 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         private static void Open() => GetWindow<AnimatorParserDebugWindow>("AnimatorParser Debug Window V2");
 
         public ParserSource parserSource;
-        public RuntimeAnimatorController animatorController;
-        public GameObject avatar;
-        public GameObject rootGameObject;
-        public Motion motion;
+        public RuntimeAnimatorController? animatorController;
+        public GameObject? avatar;
+        public GameObject? rootGameObject;
+        public Motion? motion;
 
         public Vector2 scrollView;
 
-        public GameObject parsedRootObject;
-        public INodeContainer Container;
+        public GameObject? parsedRootObject;
+        public INodeContainer? Container;
 
         private void OnGUI()
         {
@@ -62,15 +61,33 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 EditorGUI.indentLevel--;
             }
 
+            foreach (var group in Container.ObjectNodes.GroupBy(x => x.Key.target))
+            {
+                EditorGUILayout.ObjectField(group.Key, typeof(Object), true);
+                EditorGUI.indentLevel++;
+                foreach (var ((_, propName), propState) in group)
+                {
+                    string propStateInfo = "";
+
+                    if (!propState.AppliedAlways)
+                        propStateInfo += "Partial:";
+
+                    propStateInfo += $"Const:{string.Join(",", propState.Value.PossibleValues.Select(x => x.name))}";
+
+                    NarrowValueLabelField(propName, propStateInfo);
+                }
+                EditorGUI.indentLevel--;
+            }
+
             GUILayout.EndScrollView();
         }
 
         private string CreateText(bool detailed = false)
         {
-            var root = parsedRootObject.transform;
+            var root = parsedRootObject!.transform;
             var resultText = new StringBuilder();
             
-            foreach (var group in Container.FloatNodes.GroupBy(x => x.Key.target))
+            foreach (var group in Container!.FloatNodes.GroupBy(x => x.Key.target))
             {
                 var gameObject = group.Key.transform;
                 resultText.Append(Utils.RelativePath(root, gameObject)).Append(": ")
@@ -96,14 +113,37 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 resultText.Append('\n');
             }
 
+            foreach (var group in Container.ObjectNodes.GroupBy(x => x.Key.target))
+            {
+                var gameObject = group.Key.transform;
+                resultText.Append(Utils.RelativePath(root, gameObject)).Append(": ")
+                    .Append(((Object)group.Key).GetType().FullName).Append('\n');
+
+                foreach (var ((_, propName), propState) in group)
+                {
+                    string propStateInfo = "";
+
+                    if (!propState.AppliedAlways)
+                        propStateInfo += "Partial:";
+
+                    propStateInfo += $"Const:{string.Join(",", propState.Value.PossibleValues.Select(x => x.name))}";
+
+                    resultText.Append("  ").Append(propName).Append(": ").Append(propStateInfo).Append('\n');
+                    if (detailed)
+                        AppendNodeRecursive(propState, resultText, "    ");
+                }
+                resultText.Append('\n');
+            }
+
             return resultText.ToString();
         }
 
-        private void AppendNodeRecursive(PropModNode<float> propState, StringBuilder resultText, string indent)
+        private void AppendNodeRecursive<TValueInfo>(PropModNode<TValueInfo> propState, StringBuilder resultText, string indent)
+            where TValueInfo : struct, IValueInfo<TValueInfo>
         {
             switch (propState)
             {
-                case AnimatorControllerPropModNode<float> animCont:
+                case AnimatorControllerPropModNode<TValueInfo> animCont:
                     resultText.Append($"{indent}AnimatorController: \n");
                     foreach (var layerInfo in animCont.LayersReversed)
                     {
@@ -111,11 +151,11 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                         AppendNodeRecursive(layerInfo.Node, resultText, indent + "    ");
                     }
                     break;
-                case AnimationComponentPropModNode<float> animation:
+                case AnimationComponentPropModNode<TValueInfo> animation:
                     resultText.Append($"{indent}Animation: {animation.Component.name}\n");
                     AppendNodeRecursive(animation.Animation, resultText, indent + "  ");
                     break;
-                case AnimatorPropModNode<float> animator:
+                case AnimatorPropModNode<TValueInfo> animator:
                     resultText.Append($"{indent}Animator: {animator.Component.name}\n");
                     foreach (var layerInfo in animator.LayersReversed)
                     {
@@ -126,19 +166,19 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 case HumanoidAnimatorPropModNode humanoid:
                     resultText.Append($"{indent}Humanoid: {humanoid.Component.name}\n");
                     break;
-                case VariableComponentPropModNode<float> variable:
+                case VariableComponentPropModNode variable:
                     resultText.Append($"{indent}Variable({variable.Component.GetType().Name}): {variable.Component.name}\n");
                     break;
-                case AnimatorLayerPropModNode<float> animatorLayer:
+                case AnimatorLayerPropModNode<TValueInfo> animatorLayer:
                     resultText.Append($"{indent}AnimatorLayer:\n");
                     foreach (var childNode in animatorLayer.Children)
                         AppendNodeRecursive(childNode, resultText, indent + "  ");
                     break;
-                case AnimatorStatePropModNode<float> stateNode:
+                case AnimatorStatePropModNode<TValueInfo> stateNode:
                     resultText.Append($"{indent}AnimatorState: {stateNode.State.name}\n");
                     AppendNodeRecursive(stateNode.Node, resultText, indent + "  ");
                     break;
-                case BlendTreeNode<float> blendTreeNode:
+                case BlendTreeNode<TValueInfo> blendTreeNode:
                     resultText.Append($"{indent}BlendTree:\n");
                     foreach (var childNode in blendTreeNode.Children)
                     {
@@ -147,9 +187,12 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                     }
                     break;
                 case FloatAnimationCurveNode curve:
-                    resultText.Append($"{indent}AnimationCurve: {curve.Clip.name}\n");
+                    resultText.Append($"{indent}FloatAnimationCurve: {curve.Clip.name}\n");
                     break;
-                case RootPropModNode<float> rootNode:
+                case ObjectAnimationCurveNode curve:
+                    resultText.Append($"{indent}ObjectAnimationCurve: {curve.Clip.name}\n");
+                    break;
+                case RootPropModNode<TValueInfo> rootNode:
                     resultText.Append($"{indent}Root:\n");
                     foreach (var rootNodeChild in rootNode.Children)
                     {
@@ -201,7 +244,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
                     using (new EditorGUI.DisabledScope(!animatorController || !rootGameObject))
                     {
-                        if (GUILayout.Button("Parse") && animatorController && rootGameObject)
+                        if (GUILayout.Button("Parse") && animatorController != null && rootGameObject != null)
                         {
                             parsedRootObject = rootGameObject;
                             Container = new AnimatorParser(true)
@@ -216,7 +259,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
                     using (new EditorGUI.DisabledScope(!motion))
                     {
-                        if (GUILayout.Button("Parse") && motion && rootGameObject)
+                        if (GUILayout.Button("Parse") && motion && rootGameObject != null)
                         {
                             parsedRootObject = rootGameObject;
                             Container = new AnimationParser()
@@ -230,7 +273,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             }
         }
 
-        private static void ObjectField<T>(ref T value, [CanBeNull] string label, bool allowScene) where T : Object
+        private static void ObjectField<T>(ref T? value, string? label, bool allowScene) where T : Object
         {
             value = EditorGUILayout.ObjectField(label, value, typeof(T), allowScene) as T;
         }

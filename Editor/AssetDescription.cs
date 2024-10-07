@@ -9,12 +9,15 @@ using Debug = System.Diagnostics.Debug;
 
 namespace Anatawa12.AvatarOptimizer
 {
-    [CreateAssetMenu(fileName = "New Avatar Optimizer Asset Description", menuName = "Avatar Optimizer/Asset Descriotion")]
+    [CreateAssetMenu(fileName = "New Avatar Optimizer Asset Description", menuName = "Avatar Optimizer/Asset Description")]
     internal class AssetDescription : ScriptableObject
     {
         [SerializeField]
         [TextArea]
+        // only for serialization so ignore warning
+#pragma warning disable CS0414
         private string comment = "";
+#pragma warning restore CS0414
         [SerializeField]
         private ClassReference[] meaninglessComponents = Array.Empty<ClassReference>();
 
@@ -36,7 +39,7 @@ namespace Anatawa12.AvatarOptimizer
                 .SelectMany(description => description.meaninglessComponents)
                 .Select(component => GetMonoScriptFromGuid(component.guid, component.fileID) as MonoScript)
                 .Where(monoScript => monoScript != null)
-                .Select(monoScript => monoScript.GetClass());
+                .Select(monoScript => monoScript!.GetClass());
         }
 
         private static Object GetMonoScriptFromGuid(string guid, ulong fileid)
@@ -49,8 +52,8 @@ namespace Anatawa12.AvatarOptimizer
         [CustomEditor(typeof(AssetDescription))]
         internal class AssetDescriptionEditor : Editor
         {
-            private SerializedProperty _comment;
-            private SerializedProperty _meaninglessComponents;
+            private SerializedProperty _comment = null!; // Initialized by OnEnable
+            private SerializedProperty _meaninglessComponents = null!; // Initialized by OnEnable
 
             private void OnEnable()
             {

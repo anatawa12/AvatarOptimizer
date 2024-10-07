@@ -70,6 +70,15 @@ any other components than SkinnedMeshRenderer, the GameObject will be removed fr
 
 If this checkbox is checked, renderers whose enablement is different than target renderer on the build time will not be merged.
 
+### Copy Enablement Animation
+
+If this checkbox is checked, the activeness / enablement animation of merge target renderers will be copied to the merged renderer.
+
+This feature may copy animation animating `enabled` of the merge target renderers or `activeSelf` of the GameObjects or ancestor GameObjects.
+This feature supports copying only one animated property so if there are multiple animated properties (e.g., both `enabled` and `activeSelf` are animated, or both one `activeSelf` and parents' `activeSelf` are), it will be error.
+
+In addition, if this is enabled, you must not animate `enabled` of the merged renderer since it will be overwritten by the copied animation.
+
 ### Merge Materials
 
 If this component found some Materials used in multiple renderers, the Materials will be listed here.

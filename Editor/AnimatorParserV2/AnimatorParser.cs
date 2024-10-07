@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.API;
 using Anatawa12.AvatarOptimizer.APIInternal;
-using JetBrains.Annotations;
 using nadena.dev.ndmf;
 using UnityEditor.Animations;
 using UnityEngine;
@@ -25,7 +25,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             _mmdWorldCompatibility = mmdWorldCompatibility;
         }
 
-        public RootPropModNodeContainer GatherAnimationModifications([NotNull] BuildContext context)
+        public RootPropModNodeContainer GatherAnimationModifications(BuildContext context)
         {
             var rootNode = new RootPropModNodeContainer();
 
@@ -129,15 +129,14 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             private readonly RootPropModNodeContainer _modifications;
 
             public Collector(RootPropModNodeContainer modifications) => _modifications = modifications;
-            public Component Modifier { get; set; }
+            public Component? Modifier { get; set; }
 
 
             public override void ModifyProperties(Component component, IEnumerable<string> properties)
             {
                 foreach (var prop in properties)
                 {
-                    _modifications.Add(component, prop, new VariableComponentPropModNode<float>(Modifier), true);
-                    _modifications.Add(component, prop, new VariableComponentPropModNode<Object>(Modifier), true);
+                    _modifications.Add(component, prop, new VariableComponentPropModNode(Modifier!), true);
                 }
             }
         }
@@ -163,8 +162,8 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
         #region Avatar Root Animator
 
-        private void CollectAvatarRootAnimatorModifications([NotNull] BuildContext session,
-            [NotNull] RootPropModNodeContainer modifications)
+        private void CollectAvatarRootAnimatorModifications(BuildContext session,
+            RootPropModNodeContainer modifications)
         {
             var animator = session.AvatarRootObject.GetComponent<Animator>();
             if (animator)
@@ -190,8 +189,8 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         }
 
 #if AAO_VRCSDK3_AVATARS
-        private void CollectAvatarDescriptorModifications([NotNull] RootPropModNodeContainer modifications,
-            [NotNull] VRCAvatarDescriptor descriptor)
+        private void CollectAvatarDescriptorModifications(RootPropModNodeContainer modifications,
+            VRCAvatarDescriptor descriptor)
         {
             // process playable layers
             // see https://misskey.niri.la/notes/9ioemawdit
@@ -209,7 +208,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             // load controllers
             var controllers = new AnimatorLayerMap<RuntimeAnimatorController>();
             foreach (var layer in descriptor.specialAnimationLayers.Concat(descriptor.baseAnimationLayers))
-                controllers[layer.type] = GetPlayableLayerController(layer, useDefaultLayers);
+                controllers[layer.type] = GetPlayableLayerController(layer, useDefaultLayers)!;
 
             // parse weight changes
             var animatorLayerWeightChanged = new AnimatorLayerMap<AnimatorWeightChangesList>();
@@ -240,7 +239,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             }
 
             var playableLayers =
-                new List<(AnimatorWeightState, AnimatorLayerBlendingMode, AnimatorControllerNodeContainer)>();
+                new List<(AnimatorWeightState, AnimatorLayerBlendingMode, AnimatorControllerNodeContainer?)>();
 
             void MergeLayer(
                 VRCAvatarDescriptor.AnimLayerType type,
@@ -274,22 +273,22 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             MergeLayer(VRCAvatarDescriptor.AnimLayerType.Action, false, 0);
             MergeLayer(VRCAvatarDescriptor.AnimLayerType.FX, false, 1);
 
-            modifications.Add(NodesMerger.ComponentFromPlayableLayers(animator, playableLayers), true);
+            if (animator != null)
+                modifications.Add(NodesMerger.ComponentFromPlayableLayers(animator, playableLayers), true);
 
             // TPose and IKPose should only affect to Humanoid so skip here~
 
             var bodySkinnedMesh = descriptor.transform.Find("Body")?.GetComponent<SkinnedMeshRenderer>();
 
-            if (_mmdWorldCompatibility && bodySkinnedMesh)
+            if (_mmdWorldCompatibility && bodySkinnedMesh != null)
             {
                 foreach (var shape in MmdBlendShapeNames)
                     modifications.Add(bodySkinnedMesh, $"blendShape.{shape}",
-                        new VariableComponentPropModNode<float>(descriptor), true);
+                        new VariableComponentPropModNode(descriptor), true);
             }
         }
 
-        [CanBeNull]
-        private static RuntimeAnimatorController GetPlayableLayerController(VRCAvatarDescriptor.CustomAnimLayer layer,
+        private static RuntimeAnimatorController? GetPlayableLayerController(VRCAvatarDescriptor.CustomAnimLayer layer,
             bool useDefault = false)
         {
             if (!useDefault && !layer.isDefault && layer.animatorController)
@@ -307,9 +306,8 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 #endif
 
 #if AAO_VRM0
-        [NotNull]
-        private static ComponentNodeContainer CollectBlendShapeProxyModifications([NotNull] BuildContext context,
-            [NotNull] VRM.VRMBlendShapeProxy vrmBlendShapeProxy)
+        private static ComponentNodeContainer CollectBlendShapeProxyModifications(BuildContext context,
+            VRM.VRMBlendShapeProxy vrmBlendShapeProxy)
         {
             var nodes = new ComponentNodeContainer();
 
@@ -321,7 +319,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 var blendShapePropName =
                     $"blendShape.{skinnedMeshRenderer.sharedMesh.GetBlendShapeName(binding.Index)}";
                 nodes.Add(skinnedMeshRenderer, blendShapePropName,
-                    new VariableComponentPropModNode<float>(vrmBlendShapeProxy));
+                    new VariableComponentPropModNode(vrmBlendShapeProxy));
             }
 
             // Currently, MaterialValueBindings are guaranteed to not change (MaterialName, in particular)
@@ -333,9 +331,8 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 #endif
 
 #if AAO_VRM1
-        [NotNull]
-        private static ComponentNodeContainer CollectVrm10InstanceModifications([NotNull] BuildContext context,
-            [NotNull] UniVRM10.Vrm10Instance vrm10Instance)
+        private static ComponentNodeContainer CollectVrm10InstanceModifications( BuildContext context,
+            UniVRM10.Vrm10Instance vrm10Instance)
         {
             var nodes = new ComponentNodeContainer();
 
@@ -347,7 +344,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 var blendShapePropName =
                     $"blendShape.{skinnedMeshRenderer.sharedMesh.GetBlendShapeName(binding.Index)}";
                 nodes.Add(skinnedMeshRenderer, blendShapePropName,
-                    new VariableComponentPropModNode<float>(vrm10Instance));
+                    new VariableComponentPropModNode(vrm10Instance));
             }
 
             // Currently, MaterialValueBindings are guaranteed to not change (MaterialName, in particular)
@@ -363,9 +360,8 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         #region Animator
 
         /// Mark rotations of humanoid bones as changeable variables
-        [CanBeNull]
-        private ComponentNodeContainer AddHumanoidModifications([CanBeNull] ComponentNodeContainer container,
-            [NotNull] Animator animator)
+        [return:NotNullIfNotNull("container")]
+        private ComponentNodeContainer? AddHumanoidModifications(ComponentNodeContainer? container, Animator animator)
         {
             // if it's not humanoid, this pass doesn't matter
             if (!animator.isHuman) return container;
@@ -385,11 +381,10 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             return container;
         }
 
-        [CanBeNull]
         public AnimatorControllerNodeContainer ParseAnimatorController(
-            [NotNull] GameObject root,
-            [NotNull] RuntimeAnimatorController controller,
-            [CanBeNull] AnimatorWeightChangesList externallyWeightChanged = null)
+            GameObject root,
+            RuntimeAnimatorController controller,
+            AnimatorWeightChangesList? externallyWeightChanged = null)
         {
             using (ErrorReport.WithContextObject(controller))
             {
@@ -398,12 +393,11 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             }
         }
 
-        [CanBeNull]
         internal AnimatorControllerNodeContainer AdvancedParseAnimatorController(
-            [NotNull] GameObject root,
-            [NotNull] AnimatorController controller,
-            [NotNull] IReadOnlyDictionary<AnimationClip, AnimationClip> mapping,
-            [CanBeNull] AnimatorWeightChangesList externallyWeightChanged)
+            GameObject root,
+            AnimatorController controller,
+            IReadOnlyDictionary<AnimationClip, AnimationClip> mapping,
+            AnimatorWeightChangesList? externallyWeightChanged)
         {
             var layers = controller.layers;
             return NodesMerger.AnimatorControllerFromAnimatorLayers(controller.layers.Select((layer, i) =>
@@ -417,7 +411,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 {
                     var external = externallyWeightChanged?.Get(i) ?? AnimatorWeightChange.NotChanged;
 
-                    if (!(GetWeightState(layers[i].defaultWeight, external) is AnimatorWeightState parsed))
+                    if (GetWeightState(layers[i].defaultWeight, external) is not { } parsed)
                         return (default, default, null); // skip weight zero layer
 
                     weightState = parsed;
@@ -425,15 +419,14 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
                 var parsedLayer = ParseAnimatorControllerLayer(root, controller, mapping, i);
 
-                return (weightState, layer.blendingMode, parsedLayer);
+                return (weightState, layer.blendingMode, (AnimatorLayerNodeContainer?)parsedLayer);
             }));
         }
 
-        [NotNull]
         public AnimatorLayerNodeContainer ParseAnimatorControllerLayer(
-            [NotNull] GameObject root,
-            [NotNull] AnimatorController controller,
-            [NotNull] IReadOnlyDictionary<AnimationClip, AnimationClip> mapping,
+            GameObject root,
+            AnimatorController controller,
+            IReadOnlyDictionary<AnimationClip, AnimationClip> mapping,
             int layerIndex)
         {
             var layer = controller.layers[layerIndex];
@@ -455,39 +448,39 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             }
 
             return NodesMerger.Merge<
-                AnimatorLayerNodeContainer, AnimatorLayerPropModNode<float>, AnimatorLayerPropModNode<Object>,
-                AnimatorStatePropModNode<float>, AnimatorStatePropModNode<Object>,
+                AnimatorLayerNodeContainer, AnimatorLayerPropModNode<FloatValueInfo>, AnimatorLayerPropModNode<ObjectValueInfo>,
+                AnimatorStatePropModNode<FloatValueInfo>, AnimatorStatePropModNode<ObjectValueInfo>,
                 (AnimatorState, ImmutableNodeContainer),
-                ImmutableNodeContainer, ImmutablePropModNode<float>, ImmutablePropModNode<Object>,
+                ImmutableNodeContainer, ImmutablePropModNode<FloatValueInfo>, ImmutablePropModNode<ObjectValueInfo>,
                 LayerMerger
             >(parsedMotions, default);
         }
 
         struct LayerMerger : IMergeProperty1<
-            AnimatorLayerNodeContainer, AnimatorLayerPropModNode<float>, AnimatorLayerPropModNode<Object>,
-            AnimatorStatePropModNode<float>, AnimatorStatePropModNode<Object>,
+            AnimatorLayerNodeContainer, AnimatorLayerPropModNode<FloatValueInfo>, AnimatorLayerPropModNode<ObjectValueInfo>,
+            AnimatorStatePropModNode<FloatValueInfo>, AnimatorStatePropModNode<ObjectValueInfo>,
             (AnimatorState, ImmutableNodeContainer),
-            ImmutableNodeContainer, ImmutablePropModNode<float>, ImmutablePropModNode<Object>
+            ImmutableNodeContainer, ImmutablePropModNode<FloatValueInfo>, ImmutablePropModNode<ObjectValueInfo>
         >
         {
             public AnimatorLayerNodeContainer CreateContainer() => new AnimatorLayerNodeContainer();
             public ImmutableNodeContainer GetContainer((AnimatorState, ImmutableNodeContainer) source) => source.Item2;
 
-            public AnimatorStatePropModNode<float> GetIntermediate((AnimatorState, ImmutableNodeContainer) source,
-                ImmutablePropModNode<float> node, int index) =>
-                new AnimatorStatePropModNode<float>(node, source.Item1);
+            public AnimatorStatePropModNode<FloatValueInfo> GetIntermediate((AnimatorState, ImmutableNodeContainer) source,
+                ImmutablePropModNode<FloatValueInfo> node, int index) =>
+                new AnimatorStatePropModNode<FloatValueInfo>(node, source.Item1);
 
-            public AnimatorStatePropModNode<Object> GetIntermediate((AnimatorState, ImmutableNodeContainer) source,
-                ImmutablePropModNode<Object> node, int index) =>
-                new AnimatorStatePropModNode<Object>(node, source.Item1);
+            public AnimatorStatePropModNode<ObjectValueInfo> GetIntermediate((AnimatorState, ImmutableNodeContainer) source,
+                ImmutablePropModNode<ObjectValueInfo> node, int index) =>
+                new AnimatorStatePropModNode<ObjectValueInfo>(node, source.Item1);
 
-            public AnimatorLayerPropModNode<float>
-                MergeNode(List<AnimatorStatePropModNode<float>> nodes, int sourceCount) =>
-                new AnimatorLayerPropModNode<float>(nodes, nodes.Count != sourceCount);
+            public AnimatorLayerPropModNode<FloatValueInfo>
+                MergeNode(List<AnimatorStatePropModNode<FloatValueInfo>> nodes, int sourceCount) =>
+                new AnimatorLayerPropModNode<FloatValueInfo>(nodes, nodes.Count != sourceCount);
 
-            public AnimatorLayerPropModNode<Object>
-                MergeNode(List<AnimatorStatePropModNode<Object>> nodes, int sourceCount) =>
-                new AnimatorLayerPropModNode<Object>(nodes, nodes.Count != sourceCount);
+            public AnimatorLayerPropModNode<ObjectValueInfo>
+                MergeNode(List<AnimatorStatePropModNode<ObjectValueInfo>> nodes, int sourceCount) =>
+                new AnimatorLayerPropModNode<ObjectValueInfo>(nodes, nodes.Count != sourceCount);
         }
 
         AnimatorWeightState? GetWeightState(float weight, AnimatorWeightChange external)
@@ -655,7 +648,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             "瞳大",
             "頬染め",
             "青ざめ",
-        }.Where(x => x != null).Distinct().ToArray();
+        }.Where(x => x != null).Distinct().ToArray()!; // removed null with Where
         // @formatter:on
 
         #endregion

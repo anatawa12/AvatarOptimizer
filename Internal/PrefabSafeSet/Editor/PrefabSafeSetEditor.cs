@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -10,7 +9,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 {
     internal static class EditorStatics
     {
-        private static GUIContent WithLocalization(GUIContent content, string key, string tooltip = null)
+        private static GUIContent WithLocalization(GUIContent content, string key, string? tooltip = null)
         {
             content.text = AAOL10N.Tr(key);
             if (tooltip != null)
@@ -40,7 +39,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             "+", "PrefabSafeSet:tooltip:Force Add Button");
     }
 
-    [CustomPropertyDrawer(typeof(PrefabSafeSet<,>), true)]
+    [CustomPropertyDrawer(typeof(PrefabSafeSet<>), true)]
     internal class ObjectsEditor : PropertyDrawer
     {
         private int _nestCountCache = -1;
@@ -48,11 +47,9 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
         private int GetNestCount(Object obj) =>
             _nestCountCache != -1 ? _nestCountCache : _nestCountCache = PrefabSafeSetUtil.PrefabNestCount(obj);
 
-        private readonly Dictionary<string, EditorBase> _caches =
-            new Dictionary<string, EditorBase>();
+        private readonly Dictionary<string, EditorBase?> _caches = new ();
 
-        [CanBeNull]
-        private EditorBase GetCache(SerializedProperty property)
+        private EditorBase? GetCache(SerializedProperty property)
         {
             if (!_caches.TryGetValue(property.propertyPath, out var cached))
             {
@@ -65,7 +62,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             return cached;
         }
 
-        private static EditorBase GetEditorImpl(SerializedPropertyType type, SerializedProperty property,
+        private static EditorBase? GetEditorImpl(SerializedPropertyType type, SerializedProperty property,
             Type fieldType, int nestCount)
         {
             switch (type)
@@ -184,9 +181,11 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
     /// </summary>
     internal static class Names
     {
-        public const string FakeSlot = nameof(PrefabSafeSet<object, PrefabLayer<object>>.fakeSlot);
-        public const string MainSet = nameof(PrefabSafeSet<object, PrefabLayer<object>>.mainSet);
-        public const string PrefabLayers = nameof(PrefabSafeSet<object, PrefabLayer<object>>.prefabLayers);
+        public const string FakeSlot = nameof(PrefabSafeSet<object>.fakeSlot);
+        public const string MainSet = nameof(PrefabSafeSet<object>.mainSet);
+        public const string PrefabLayers = nameof(PrefabSafeSet<object>.prefabLayers);
+        public const string UsingOnSceneLayer = nameof(PrefabSafeSet<object>.usingOnSceneLayer);
+        public const string OnSceneLayer = nameof(PrefabSafeSet<object>.onSceneLayer);
         public const string Additions = nameof(PrefabLayer<object>.additions);
         public const string Removes = nameof(PrefabLayer<object>.removes);
     }
@@ -198,9 +197,9 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
         public abstract bool HasPrefabOverride();
     }
 
-    internal abstract class EditorBase<T> : EditorBase
+    internal abstract class EditorBase<T> : EditorBase where T : notnull
     {
-        [NotNull] protected readonly SerializedProperty FakeSlot;
+        protected readonly SerializedProperty FakeSlot;
         internal readonly EditorUtil<T> EditorUtil;
 
         public EditorBase(SerializedProperty property, int nestCount)
@@ -209,7 +208,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                 throw new ArgumentException("multi editing not supported", nameof(property));
             FakeSlot = property.FindPropertyRelative(Names.FakeSlot)
                         ?? throw new ArgumentException("fakeSlot not found");
-            EditorUtil = EditorUtil<T>.Create(property, nestCount, GetValue, SetValue);
+            EditorUtil = EditorUtil<T>.Create(property, GetValue, SetValue);
         }
 
         private protected abstract T GetValue(SerializedProperty prop);
@@ -232,9 +231,10 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             var newLabel = new GUIContent("");
 
             // to avoid changes in for loop
-            Action action = null;
+            Action? action = null;
 
-            foreach (var element in EditorUtil.Elements)
+            foreach (var element in 
+                     EditorUtil.Elements)
             {
                 ModificationKind fieldModKind;
 

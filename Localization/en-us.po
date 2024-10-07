@@ -286,6 +286,9 @@ msgstr "Remove Empty Renderer Object"
 msgid "MergeSkinnedMesh:prop:skipEnablementMismatchedRenderers"
 msgstr "Skip Enablement Mismatched Renderers"
 
+msgid "MergeSkinnedMesh:prop:copyEnablementAnimation"
+msgstr "Copy Enablement Animation"
+
 msgid "MergeSkinnedMesh:label:Merge Materials"
 msgstr "Merge Materials"
 
@@ -621,6 +624,9 @@ msgstr "Optimize Animator"
 msgid "TraceAndOptimize:prop:mergeSkinnedMesh"
 msgstr "Merge Skinned Mesh"
 
+msgid "TraceAndOptimize:prop:optimizeTexture"
+msgstr "Optimize Texture"
+
 msgid "TraceAndOptimize:prop:allowShuffleMaterialSlots"
 msgstr "Allow Shuffling Material Slots"
 
@@ -678,9 +684,6 @@ msgstr "Automatically Remove Zero Sized Polygons"
 
 msgid "TraceAndOptimize:OptimizePhysBone:UnknownPhysBoneColliderShape"
 msgstr "Unknown PhysBone Collider Shape '{0}' is specified."
-
-msgid "TraceAndOptimize:OptimizeAnimator:Unity2019"
-msgstr "Most features of Optimize Animator is not supported on Unity 2019. Please consider use Unity 2021 or later."
 
 # endregion
 
@@ -760,12 +763,6 @@ msgstr "Animator component not found on Avatar Root"
 #endregion
 
 #region MeshInfo2
-
-msgid "MeshInfo2:error:MeshNotReadable"
-msgstr "The Mesh is not readable so unable to process mesh in Play Mode."
-
-msgid "MeshInfo2:error:MeshNotReadable:description"
-msgstr "Please set Read/Write Enabled to true in the import settings of the mesh."
 
 msgid "MeshInfo2:warning:multiPassRendering"
 msgstr ""

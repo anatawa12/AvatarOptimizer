@@ -16,6 +16,7 @@
         "Unity.Burst",
         "nadena.dev.ndmf",
         "nadena.dev.ndmf.runtime",
+        "nadena.dev.ndmf.reactive-query.core",
         "com.anatawa12.avatar-optimizer.api.editor",
         "VRC.SDKBase",
         "UniHumanoid",
@@ -38,7 +39,8 @@
         "VRCSDKBase-Editor.dll",
         "VRCSDKBase.dll",
         "VRC.SDK3.Dynamics.Constraint.dll",
-        "System.Memory.dll"
+        "System.Memory.dll",
+        "System.Collections.Immutable.dll"
     ],
     "autoReferenced": false,
     "defineConstraints": [],
@@ -52,26 +54,6 @@
             "name": "com.vrchat.avatars",
             "expression": "",
             "define": "AAO_VRCSDK3_AVATARS"
-        },
-        {
-            "name": "com.vrchat.avatars",
-            "expression": "3.5.1",
-            "define": "AAO_VRCSDK3_AVATARS_IMPOSTER_SETTINGS"
-        },
-        {
-            "name": "com.vrchat.avatars",
-            "expression": "3.5.2-beta.2",
-            "define": "AAO_VRCSDK3_AVATARS_HEAD_CHOP"
-        },
-        {
-            "name": "com.vrchat.avatars",
-            "expression": "3.5.2",
-            "define": "AAO_VRCSDK3_AVATARS_ANIMATOR_PLAY_AUDIO"
-        },
-        {
-            "name": "com.vrchat.avatars",
-            "expression": "3.6.2-constraints.4",
-            "define": "AAO_VRCSDK3_AVATARS_CONSTRAINTS"
         },
         {
             "name": "com.vrmc.univrm",

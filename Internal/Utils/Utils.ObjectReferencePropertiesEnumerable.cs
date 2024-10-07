@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
@@ -13,7 +14,7 @@ namespace Anatawa12.AvatarOptimizer
         {
             private readonly SerializedObject _obj;
 
-            public ObjectReferencePropertiesEnumerable(SerializedObject obj) => _obj = obj;
+            public ObjectReferencePropertiesEnumerable(SerializedObject obj) => _obj = obj ?? throw new ArgumentNullException(nameof(obj));
 
             public Enumerator GetEnumerator() => new Enumerator(_obj);
             IEnumerator<SerializedProperty> IEnumerable<SerializedProperty>.GetEnumerator() => GetEnumerator();

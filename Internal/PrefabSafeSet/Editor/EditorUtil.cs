@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using JetBrains.Annotations;
 using UnityEditor;
 
 namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
@@ -10,24 +10,32 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
     /// Utility to edit PrefabSafeSet in CustomEditor with SerializedProperty
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public abstract partial class EditorUtil<T>
+    public abstract partial class EditorUtil<T> where T : notnull
     {
         // common property;
-        [NotNull] private readonly Func<SerializedProperty, T> _getValue;
-        [NotNull] private readonly Action<SerializedProperty, T> _setValue;
+        private readonly Func<SerializedProperty, T> _getValue;
+        private readonly Action<SerializedProperty, T> _setValue;
 
         public abstract IReadOnlyList<IElement<T>> Elements { get; }
         public abstract int ElementsCount { get; }
         public virtual int Count => Elements.Count(x => x.Contains);
         public virtual IEnumerable<T> Values => Elements.Where(x => x.Contains).Select(x => x.Value);
 
-        public static EditorUtil<T> Create(SerializedProperty property, int nestCount,
+        public static EditorUtil<T> Create(SerializedProperty property,
+            Func<SerializedProperty, T> getValue,
+            Action<SerializedProperty, T> setValue) 
+            => new Wrapper(property, getValue, setValue);
+
+        static EditorUtil<T> CreateImpl(SerializedProperty property, int nestCount,
             Func<SerializedProperty, T> getValue,
             Action<SerializedProperty, T> setValue)
         {
             if (nestCount == 0)
                 return new Root(property, getValue, setValue);
-            return new PrefabModification(property, nestCount, getValue, setValue);
+            var useOnSceneLayer = PrefabSafeSetUtil.ShouldUsePrefabOnSceneLayer(property.serializedObject.targetObject);
+            if (useOnSceneLayer)
+                return new PrefabModificationOnScene(property, nestCount, getValue, setValue);
+            return new PrefabModificationOnAsset(property, nestCount, getValue, setValue);
         }
 
         private EditorUtil(Func<SerializedProperty, T> getValue, Action<SerializedProperty, T> setValue)
@@ -66,7 +74,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             array.arraySize -= 1;
         }
 
-        private T[] ToArray([CanBeNull] SerializedProperty array)
+        private T[] ToArray(SerializedProperty? array)
         {
             if (array == null) return Array.Empty<T>();
             var result = new T[array.arraySize];
@@ -74,15 +82,22 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                 result[i] = _getValue(array.GetArrayElementAtIndex(i));
             return result;
         }
+
+        private void SetArray(SerializedProperty array, T[] values)
+        {
+            array.arraySize = values.Length;
+            for (var i = 0; i < values.Length; i++)
+                _setValue(array.GetArrayElementAtIndex(i), values[i]);
+        }
     }
 
-    public interface IElement<T>
+    public interface IElement<T> where T : notnull
     {
         EditorUtil<T> Container { get; }
         T Value { get; }
         ElementStatus Status { get; }
         bool Contains { get; }
-        SerializedProperty ModifierProp { get; }
+        SerializedProperty? ModifierProp { get; }
         void EnsureAdded();
         void Add();
         void EnsureRemoved();

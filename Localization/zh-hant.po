@@ -613,9 +613,6 @@ msgstr "自動移除面積為零的多邊形"
 msgid "TraceAndOptimize:OptimizePhysBone:UnknownPhysBoneColliderShape"
 msgstr "指定了未知的 PhysBone Collider 形狀：「{0}」。"
 
-msgid "TraceAndOptimize:OptimizeAnimator:Unity2019"
-msgstr "「優化 Animator」的大部分功能已不支援 Unity 2019。請考慮使用 Unity 2021 或更高版本。"
-
 # endregion
 
 #region ApplyObjectMapping
@@ -694,12 +691,6 @@ msgstr "在 Avatar 的根上找不到 Animator 元件"
 #endregion
 
 #region MeshInfo2
-
-msgid "MeshInfo2:error:MeshNotReadable"
-msgstr "這個網格是不可讀的，因此無法在播放模式中處理網格。"
-
-msgid "MeshInfo2:error:MeshNotReadable:description"
-msgstr "請在網格的匯入設定中啟用「讀取/寫入」或「Read/Write」。"
 
 msgid "MeshInfo2:warning:multiPassRendering"
 msgstr ""

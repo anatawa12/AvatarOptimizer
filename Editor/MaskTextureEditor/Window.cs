@@ -1,5 +1,7 @@
 using System;
 using System.IO;
+using JetBrains.Annotations;
+using nadena.dev.ndmf.preview;
 using UnityEditor;
 using UnityEngine;
 
@@ -37,13 +39,13 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
         private const float BrushSizeFactor = 0.1f;
 
         [SerializeField]
-        private SkinnedMeshRenderer _renderer = null;
+        private SkinnedMeshRenderer _renderer = null!; // Initialized by Open
 
         [SerializeField]
         private int _subMesh = 0;
 
         [SerializeField]
-        private Texture2D _texture = null;
+        private Texture2D? _texture = null;
 
         [SerializeField]
         private Vector2 _viewPosition = Vector2.zero;
@@ -58,23 +60,20 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
         private bool _requestResetView = true;
 
         [SerializeField]
-        private UvMapDrawer _uvMapDrawer = null;
+        private UvMapDrawer _uvMapDrawer = null!; // Initialized by Open
 
         [SerializeField]
-        private TexturePainter _texturePainter = null;
+        private TexturePainter _texturePainter = null!; // Initialized by Open
 
         [SerializeField]
-        private TextureUndoStack _textureUndoStack = null;
+        private TextureUndoStack _textureUndoStack = null!; // Initialized by Open
 
         [SerializeField]
         private int _previewTextureInstanceIdWhenSaved = 0;
 
-#if !UNITY_2020_2_OR_NEWER
-        private bool hasUnsavedChanges = false;
-        private string saveChangesMessage = string.Empty;
-#endif
+        private static PublishedValue<bool> IsWindowOpen = new PublishedValue<bool>(false);
 
-        public static Window Instance
+        public static Window? Instance
         {
             get
             {
@@ -85,6 +84,17 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
 
                 return GetWindow<Window>(string.Empty, false);
             }
+        }
+
+        public static Texture2D? ObservePreviewTextureFor(SkinnedMeshRenderer renderer, int subMesh, ComputeContext context)
+        {
+            if (!context.Observe(IsWindowOpen)) return null;
+
+            var window = GetWindow<Window>(string.Empty, false);
+            var targetMatches = context.Observe(window, w => w._renderer == renderer && w._subMesh == subMesh);
+            if (!targetMatches) return null;
+
+            return window._textureUndoStack.ObservePeek(context);
         }
 
         public Texture2D PreviewTexture => _textureUndoStack.Peek();
@@ -113,6 +123,7 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
 
         public void Open(SkinnedMeshRenderer renderer, int subMesh, Texture2D texture)
         {
+            Undo.RecordObject(this, "Open Mask Texture Editor");
             _renderer = renderer;
             _subMesh = subMesh;
             _texture = texture;
@@ -148,7 +159,6 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
                     }
                     case 2:
                     {
-                        DiscardChanges();
                         Close();
                         break;
                     }
@@ -429,14 +439,9 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
             _viewPosition = Vector2.Max(_viewPosition, Vector2.zero);
         }
 
-#if UNITY_2020_2_OR_NEWER
         public override void SaveChanges()
         {
             base.SaveChanges();
-#else
-        private void SaveChanges()
-        {
-#endif
             var path = AssetDatabase.GetAssetPath(_texture);
 
             var texture = new Texture2D(0, 0);
@@ -448,7 +453,7 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
 
                 AssetDatabase.ImportAsset(path);
 
-                var importer = AssetImporter.GetAtPath(path) as TextureImporter;
+                var importer = (TextureImporter)AssetImporter.GetAtPath(path);
                 importer.isReadable = true;
                 importer.SaveAndReimport();
 
@@ -469,32 +474,28 @@ namespace Anatawa12.AvatarOptimizer.MaskTextureEditor
             }
         }
 
-#if UNITY_2020_2_OR_NEWER
-        public override void DiscardChanges()
+        private void Awake()
         {
-            base.DiscardChanges();
-#else
-        private void DiscardChanges()
-        {
-#endif
+            IsWindowOpen.Value = true;
         }
 
         private void OnDestroy()
         {
+            IsWindowOpen.Value = false;
             if (_uvMapDrawer != null)
             {
                 DestroyImmediate(_uvMapDrawer);
-                _uvMapDrawer = null;
+                _uvMapDrawer = null!; // reset
             }
             if (_texturePainter != null)
             {
                 DestroyImmediate(_texturePainter);
-                _texturePainter = null;
+                _texturePainter = null!; // reset
             }
             if (_textureUndoStack != null)
             {
                 DestroyImmediate(_textureUndoStack);
-                _textureUndoStack = null;
+                _textureUndoStack = null!; // reset
             }
         }
     }

@@ -19,6 +19,14 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
             TestName = name;
         }
 
+        public GameObject LoadPrefab(string name)
+        {
+            var path = TestUtils.GetAssetPath($"AnimatorOptimizer/{TestName}/{name}.prefab");
+            var loaded = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+            var instance = Object.Instantiate(loaded);
+            return instance;
+        }
+
         public AnimatorController LoadCloneAnimatorController(string name)
         {
             var path = TestUtils.GetAssetPath($"AnimatorOptimizer/{TestName}/{name}.controller");

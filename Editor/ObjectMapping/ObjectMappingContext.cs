@@ -1,8 +1,6 @@
-using System;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.API;
 using Anatawa12.AvatarOptimizer.APIInternal;
-using JetBrains.Annotations;
 using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEditor.Animations;
@@ -13,7 +11,7 @@ namespace Anatawa12.AvatarOptimizer
 {
     internal class ObjectMappingContext : IExtensionContext
     {
-        public ObjectMappingBuilder<PropertyInfo> MappingBuilder { get; private set; }
+        public ObjectMappingBuilder<PropertyInfo>? MappingBuilder { get; private set; }
 
         public void OnActivate(BuildContext context)
         {
@@ -59,7 +57,7 @@ namespace Anatawa12.AvatarOptimizer
                     }
 
                     var serialized = new SerializedObject(component);
-                    AnimatorControllerMapper mapper = null;
+                    AnimatorControllerMapper? mapper = null;
 
                     foreach (var p in serialized.ObjectReferenceProperties())
                     {
@@ -135,11 +133,11 @@ namespace Anatawa12.AvatarOptimizer
 
         private class ComponentInfo<T> : MappedComponentInfo<T> where T : Object
         {
-            [NotNull] private readonly ComponentInfo _info;
+            private readonly ComponentInfo _info;
 
-            public ComponentInfo([NotNull] ComponentInfo info) => _info = info;
+            public ComponentInfo(ComponentInfo info) => _info = info;
 
-            public override T MappedComponent => EditorUtility.InstanceIDToObject(_info.MergedInto) as T;
+            public override T MappedComponent => (T)EditorUtility.InstanceIDToObject(_info.MergedInto);
             public override bool TryMapProperty(string property, out API.MappedPropertyInfo found)
             {
                 found = default;
@@ -149,7 +147,7 @@ namespace Anatawa12.AvatarOptimizer
                     found = new API.MappedPropertyInfo(MappedComponent, property);
                     return true;
                 }
-                if (mappedProp.MappedProperty.Name == null) return false;
+                if (mappedProp.MappedProperty == default) return false;
 
                 found = new API.MappedPropertyInfo(
                     EditorUtility.InstanceIDToObject(mappedProp.MappedProperty.InstanceId),
@@ -169,7 +167,7 @@ namespace Anatawa12.AvatarOptimizer
             _mapping = mapping;
         }
 
-        protected override Object CustomClone(Object o)
+        protected override Object? CustomClone(Object o)
         {
             if (o is AnimationClip clip)
             {
@@ -187,6 +185,29 @@ namespace Anatawa12.AvatarOptimizer
                 {
                     serializedNewClip.FindProperty("m_UseHighQualityCurve")
                         .boolValue = serializedClip.FindProperty("m_UseHighQualityCurve").boolValue;
+
+                    const string mHasAdditiveReferencePose = "m_AnimationClipSettings.m_HasAdditiveReferencePose";
+                    const string mAdditiveReferenceClip = "m_AnimationClipSettings.m_AdditiveReferencePoseClip";
+                    const string mAdditiveReferenceTime = "m_AnimationClipSettings.m_AdditiveReferencePoseTime";
+
+                    if (serializedClip.FindProperty(mHasAdditiveReferencePose).boolValue)
+                    {
+                        // create new clip to avoid unncecessary recursion
+                        var additiveReferenceClip =
+                            (AnimationClip?)serializedClip.FindProperty(mAdditiveReferenceClip).objectReferenceValue;
+                        var additiveReferenceFrame = serializedClip.FindProperty(mAdditiveReferenceTime).floatValue;
+
+                        if (additiveReferenceClip != null)
+                        {
+                            serializedNewClip.FindProperty(mHasAdditiveReferencePose).boolValue = true;
+                            serializedNewClip.FindProperty(mAdditiveReferenceClip).objectReferenceValue =
+                                MapObject(additiveReferenceClip);
+                            serializedNewClip.FindProperty(mAdditiveReferenceTime).floatValue = additiveReferenceFrame;
+
+                            Changed();
+                        }
+                    }
+
                     serializedNewClip.ApplyModifiedPropertiesWithoutUndo();
                 }
 
@@ -250,7 +271,7 @@ namespace Anatawa12.AvatarOptimizer
 
                 return newClip;
             }
-#if AAO_VRCSDK3_AVATARS_ANIMATOR_PLAY_AUDIO
+#if AAO_VRCSDK3_AVATARS
             else if (o is VRC.SDKBase.VRC_AnimatorPlayAudio playAudio)
             {
                 using (new MappedScope(this))

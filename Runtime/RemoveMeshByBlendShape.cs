@@ -5,25 +5,32 @@ using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer
 {
+    // Since AAO 1.8.0, this component can be added multiple times.
+    // In AAO 1.7.0 or earlier, this component was marked as [DisallowMultipleComponent].
     [AddComponentMenu("Avatar Optimizer/AAO Remove Mesh By BlendShape")]
     [RequireComponent(typeof(SkinnedMeshRenderer))]
-    [DisallowMultipleComponent]
+    [AllowMultipleComponent]
     [HelpURL("https://vpm.anatawa12.com/avatar-optimizer/ja/docs/reference/remove-mesh-by-blendshape/")]
     [PublicAPI]
     public sealed class RemoveMeshByBlendShape : EditSkinnedMeshComponent
     {
         [SerializeField]
-        internal PrefabSafeSet.StringSet shapeKeysSet;
+        internal PrefabSafeSet.PrefabSafeSet<string> shapeKeysSet;
         [AAOLocalized("RemoveMeshByBlendShape:prop:Tolerance",
             "RemoveMeshByBlendShape:tooltip:Tolerance")]
         [SerializeField]
         internal double tolerance = 0.001;
         internal RemoveMeshByBlendShape()
         {
-            shapeKeysSet = new PrefabSafeSet.StringSet(this);
+            shapeKeysSet = new PrefabSafeSet.PrefabSafeSet<string>(this);
         }
 
         internal HashSet<string> RemovingShapeKeys => shapeKeysSet.GetAsSet();
+
+        private void OnValidate()
+        {
+            PrefabSafeSet.PrefabSafeSet.OnValidate(this, x => x.shapeKeysSet);
+        }
 
         APIChecker _checker;
         

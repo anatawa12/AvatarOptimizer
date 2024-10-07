@@ -1,13 +1,12 @@
 using System;
 using System.Reflection;
-using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 {
-    abstract class BasicEditorBase<T> : EditorBase<T>
+    abstract class BasicEditorBase<T> : EditorBase<T> where T : notnull
     {
         private protected override float GetAddRegionSize() => EditorGUIUtility.singleLineHeight;
 
@@ -53,13 +52,13 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 
     class ObjectEditorImpl : EditorBase<Object>
     {
-        [CanBeNull] private readonly Type _elementType;
+        private readonly Type? _elementType;
 
         public ObjectEditorImpl(SerializedProperty property, Type fieldType, int nestCount) : base(property, nestCount)
         {
             while (fieldType != null)
             {
-                if (fieldType.IsGenericType && fieldType.GetGenericTypeDefinition() == typeof(PrefabSafeSet<,>))
+                if (fieldType.IsGenericType && fieldType.GetGenericTypeDefinition() == typeof(PrefabSafeSet<>))
                     break;
                 fieldType = fieldType.BaseType;
             }
@@ -103,7 +102,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
         protected override float FieldHeight(GUIContent label) =>
             EditorGUI.GetPropertyHeight(SerializedPropertyType.ObjectReference, label);
 
-        protected override Object Field(Rect position, GUIContent label, Object value)
+        protected override Object Field(Rect position, GUIContent label, Object? value)
         {
             bool allowSceneObjects = false;
             var targetObject = FakeSlot.serializedObject.targetObject;
@@ -164,14 +163,14 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             }
         }
         
-        private static readonly MethodInfo ValidateObjectFieldAssignmentMethod =
+        private static readonly MethodInfo? ValidateObjectFieldAssignmentMethod =
             typeof(EditorGUI).GetMethod("ValidateObjectFieldAssignment", BindingFlags.Static | BindingFlags.NonPublic);
 
-        private static readonly Type ObjectFieldValidatorOptionsType =
+        private static readonly Type? ObjectFieldValidatorOptionsType =
             typeof(EditorGUI).Assembly.GetType("UnityEditor.EditorGUI+ObjectFieldValidatorOptions");
 
-        private static Object ValidateObjectFieldAssignment(Object[] references,
-            Type elementType,
+        private static Object? ValidateObjectFieldAssignment(Object[] references,
+            Type? elementType,
             SerializedProperty property)
         {
             if (ValidateObjectFieldAssignmentMethod == null)

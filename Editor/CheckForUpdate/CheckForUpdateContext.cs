@@ -2,9 +2,7 @@ using System;
 using System.Globalization;
 using System.Net;
 using System.Net.Http;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
 
@@ -73,8 +71,7 @@ namespace Anatawa12.AvatarOptimizer.CheckForUpdate
 
         }
 
-        [ItemCanBeNull]
-        private async Task<Latest2TextFile> FetchLatest2()
+        private async Task<Latest2TextFile?> FetchLatest2()
         {
             // latest version:unity version
             string responseText;

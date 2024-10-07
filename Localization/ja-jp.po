@@ -223,6 +223,9 @@ msgstr "空のレンダラーオブジェクトを削除する"
 msgid "MergeSkinnedMesh:prop:skipEnablementMismatchedRenderers"
 msgstr "有効無効状態が統合先と異なるレンダラーを統合しない"
 
+msgid "MergeSkinnedMesh:prop:copyEnablementAnimation"
+msgstr "有効無効状態に関するアニメーションをコピーする"
+
 msgid "MergeSkinnedMesh:label:Merge Materials"
 msgstr "マテリアルの統合"
 
@@ -535,6 +538,9 @@ msgstr "スキンメッシュレンダラーを統合する"
 msgid "TraceAndOptimize:prop:allowShuffleMaterialSlots"
 msgstr "マテリアルスロットの前後関係を変えることを許可する"
 
+msgid "TraceAndOptimize:prop:optimizeTexture"
+msgstr "テクスチャを最適化する"
+
 msgid "TraceAndOptimize:tooltip:allowShuffleMaterialSlots"
 msgstr "マテリアルスロットの前後関係を変えることでドローコールを減らすことを許可します。これは描画順に影響を与える可能性があります。"
 
@@ -589,9 +595,6 @@ msgstr "面積がゼロのポリゴンを自動的に削除する"
 
 msgid "TraceAndOptimize:OptimizePhysBone:UnknownPhysBoneColliderShape"
 msgstr "未知のPhysBone Collider形状'{0}'が指定されています。"
-
-msgid "TraceAndOptimize:OptimizeAnimator:Unity2019"
-msgstr "Unity 2019では、Optimize Animatorの多くの機能がサポートされていません。Unity 2021以降に更新するのをご検討ください。"
 
 # endregion
 
@@ -698,12 +701,6 @@ msgstr "アバターのルートにAnimatorコンポーネントがありませ�
 #endregion
 
 #region MeshInfo2
-
-msgid "MeshInfo2:error:MeshNotReadable"
-msgstr "メッシュが読み取り可能になっていないため、Play Modeでのメッシュの処理ができません。"
-
-msgid "MeshInfo2:error:MeshNotReadable:description"
-msgstr "メッシュのインポート設定でRead/Write Enabledをtrueに設定してください。"
 
 msgid "MeshInfo2:warning:multiPassRendering"
 msgstr ""

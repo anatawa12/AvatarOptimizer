@@ -6,6 +6,7 @@ using nadena.dev.ndmf;
 using UnityEngine;
 using UnityEngine.Profiling;
 using UnityEngine.Rendering;
+using Debug = System.Diagnostics.Debug;
 
 namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 {
@@ -29,16 +30,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         {
             var meshInfos = CollectMeshInfos(context);
 
-            GenerateWarningsOrErrors(context, target, meshInfos);
+            GenerateWarningsOrErrors(context, Component.copyEnablementAnimation, target, meshInfos);
 
             var (subMeshIndexMap, materials) =
                 GenerateSubMeshMapping(meshInfos, Component.doNotMergeMaterials.GetAsSet());
 
-#if !UNITY_2021_2_OR_NEWER
-            Profiler.BeginSample("ShiftIndex For Unity Bug");
-            ShiftIndexForUnityBugWorkaround(context, meshInfos, materials, subMeshIndexMap);
-            Profiler.EndSample();
-#endif
+            if (Component.copyEnablementAnimation)
+                CopyEnablementAnimation(context, target, meshInfos);
 
             DoMerge(context, target, meshInfos, subMeshIndexMap, materials);
             MergeBounds(target, meshInfos);
@@ -76,7 +74,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             Profiler.BeginSample("Merge PreserveBlendShapes");
             {
                 var state = context.GetState<TraceAndOptimizes.TraceAndOptimizeState>();
-                HashSet<string> thisPreserve = null;
+                HashSet<string>? thisPreserve = null;
                 foreach (var skinnedRenderer in skinnedMeshRenderers)
                 {
                     if (!state.PreserveBlendShapes.TryGetValue(skinnedRenderer, out var preserve)) continue;
@@ -102,6 +100,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         public static void GenerateWarningsOrErrors(
             BuildContext context, 
+            bool copyEnablementAnimation,
             MeshInfo2 target,
             MeshInfo2[] meshInfos
         ) {
@@ -141,7 +140,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             Profiler.EndSample();
 
             Profiler.BeginSample("Generate ActivenessWarning");
-            ActivenessAnimationWarning(meshInfos.Select(x => x.SourceRenderer).Where(x => x), target.SourceRenderer, context);
+            if (copyEnablementAnimation)
+                CheckForCopyEnablementAnimation(context, target, meshInfos);
+            else
+                ActivenessAnimationWarning(meshInfos.Select(x => x.SourceRenderer).Where(x => x), target.SourceRenderer, context);
             Profiler.EndSample();
 
             Profiler.BeginSample("Warn / Error Unsupported Components");
@@ -191,7 +193,43 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         }
 
-        public static (int[][] subMeshIndexMap, List<(MeshTopology topology, Material material)> materials)
+        public static void CopyEnablementAnimation(
+            BuildContext context,
+            MeshInfo2 target,
+            MeshInfo2[] meshInfos)
+        {
+            // This implementation assumes that no errors in previous checks.
+            // if there is errors, this might create unexpected behavior.
+
+            if (meshInfos.Length == 0) return;
+
+            var commonRoot = Utils.CommonRoot(meshInfos.Select(x => x.SourceRenderer.transform).Append(target.SourceRenderer.transform));
+
+            if (commonRoot == null) return;
+
+            var locations = GetActivenessAnimationLocations(context, meshInfos[0].SourceRenderer, commonRoot).FirstOrDefault();
+            if (locations.Item2 == null) return; // this means no activeness animation
+
+            var builder = context.GetMappingBuilder();
+            builder.RecordRemoveProperty(target.SourceRenderer, Props.EnabledFor(target.SourceRenderer));
+
+            if (locations.Item1.Value is Renderer c)
+            {
+                builder.RecordCopyProperty(
+                    c, Props.EnabledFor(c),
+                    target.SourceRenderer, Props.EnabledFor(target.SourceRenderer));
+                target.SourceRenderer.enabled = c.enabled;
+            }
+            else if (locations.Item1.Value is GameObject go)
+            {
+                builder.RecordCopyProperty(
+                    go, Props.IsActive, 
+                    target.SourceRenderer, Props.EnabledFor(target.SourceRenderer));
+                target.SourceRenderer.enabled = go.activeSelf;
+            }
+        }
+
+        public static (int[][] subMeshIndexMap, List<(MeshTopology topology, Material? material)> materials)
             GenerateSubMeshMapping(
                 MeshInfo2[] meshInfos,
                 HashSet<Material> doNotMerges)
@@ -211,7 +249,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             MeshInfo2 target,
             MeshInfo2[] meshInfos,
             int[][] subMeshIndexMap,
-            List<(MeshTopology topology, Material material)> materials
+            List<(MeshTopology topology, Material? material)> materials
         ) {
             target.ClearMeshData();
             target.SubMeshes.Capacity = Math.Max(target.SubMeshes.Capacity, materials.Count);
@@ -292,15 +330,14 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             Profiler.BeginSample("Update Bounds");
             var sourceRootBone = target.RootBone;
-            var updateBounds = sourceRootBone && target.Bounds == default;
 
-            if (updateBounds)
+            if (sourceRootBone != null && target.Bounds == default)
             {
                 var newBoundMin = Vector3.positiveInfinity;
                 var newBoundMax = Vector3.negativeInfinity;
                 foreach (var meshInfo in meshInfos)
                 {
-                    if (meshInfo.RootBone)
+                    if (meshInfo.RootBone != null)
                     {
                         foreach (var inSource in meshInfo.Bounds.Corners())
                         {
@@ -339,7 +376,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             Profiler.BeginSample("Postprocess Source Renderers");
             if (removeEmptyRendererObject)
             {
-                var boneTransforms = new HashSet<Transform>(target.Bones.Select(x => x.Transform));
+                var boneTransforms = new HashSet<Transform?>(target.Bones.Select(x => x.Transform));
 
                 foreach (var rendererGameObject in 
                          from meshInfo in meshInfos
@@ -370,7 +407,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         private static void MaterialParameterAnimationWarnings(MeshInfo2[] sourceRenderers, BuildContext context)
         {
-            var properties = new Dictionary<string, List<(RootPropModNode<float>, MeshInfo2)>>();
+            var properties = new Dictionary<string, List<(RootPropModNode<FloatValueInfo>, MeshInfo2)>>();
             var materialByMeshInfo2 = new List<(MeshInfo2 meshInfo2, List<Material> materials)>();
             foreach (var meshInfo2 in sourceRenderers)
             {
@@ -381,7 +418,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     var materialPropertyName = name.Substring("material.".Length);
 
                     if (!properties.TryGetValue(materialPropertyName, out var list))
-                        properties.Add(materialPropertyName, list = new List<(RootPropModNode<float>, MeshInfo2)>());
+                        properties.Add(materialPropertyName, list = new List<(RootPropModNode<FloatValueInfo>, MeshInfo2)>());
 
                     list.Add((property, meshInfo2));
                 }
@@ -389,10 +426,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 for (var i = 0; i < meshInfo2.SubMeshes.Count; i++)
                 {
                     if (component.TryGetObject($"m_Materials.Array.data[{i}]", out var objectNode))
-                        materials.AddRange(objectNode.Value.PossibleValues?.OfType<Material>().Where(x => x) ??
-                                           Enumerable.Empty<Material>());
-                    if (meshInfo2.SubMeshes[i].SharedMaterial)
-                        materials.Add(meshInfo2.SubMeshes[i].SharedMaterial);
+                        materials.AddRange(objectNode.Value.PossibleValues.OfType<Material>().Where(x => x));
+                    if (meshInfo2.SubMeshes[i].SharedMaterial is {} newMaterial)
+                        materials.Add(newMaterial);
                 }
                 materialByMeshInfo2.Add((meshInfo2, materials));
             }
@@ -428,6 +464,68 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             if (animatedProperties.Count != 0)
                 BuildLog.LogWarning("MergeSkinnedMesh:warning:material-animation-differently",
                     string.Join(",", animatedProperties));
+        }
+
+        private static void CheckForCopyEnablementAnimation(BuildContext context, MeshInfo2 target, MeshInfo2[] meshInfos)
+        {
+            var commonRoot = Utils.CommonRoot(meshInfos.Select(x => x.SourceRenderer.transform).Append(target.SourceRenderer.transform));
+
+            if (commonRoot == null || !commonRoot.IsChildOf(context.AvatarRootTransform))
+            {
+                BuildLog.LogError("MergeSkinnedMesh:error:some-source-is-out-of-avatar",
+                    meshInfos
+                        .Select(x => x.SourceRenderer.transform)
+                        .Where(x => !x.IsChildOf(context.AvatarRootTransform))
+                );
+                return;
+            }
+
+            if (context.GetAnimationComponent(target.SourceRenderer)
+                .TryGetFloat(Props.EnabledFor(target.SourceRenderer), out var p))
+            {
+                BuildLog.LogError("MergeSinnedMesh:copy-enablement-animation:error:enablement-of-merged-mesh-is-animated",
+                    target.SourceRenderer, p);
+            }
+
+            if (meshInfos.Length == 0) return;
+
+            var locations = meshInfos
+                .Select(m => (mesh: m, locations: GetActivenessAnimationLocations(context, m.SourceRenderer, commonRoot).ToArray())).ToList();
+
+            // check if single
+            var problematicMeshes = locations.Where(x => x.locations.Length >= 2).Select(x => x.mesh).ToList();
+
+            if (problematicMeshes.Count != 0)
+            {
+                BuildLog.LogError("MergeSkinnedMesh:copy-enablement-animation:error:too-many-activeness-animation", problematicMeshes);
+            }
+            else
+            {
+                // check for count mismatch
+                var difference = locations
+                    .Select(x => x.locations.FirstOrDefault().Item2 ?? new HashSet<AnimationLocation>())
+                    .ZipWithNext()
+                    .Any(p => !p.Item1.SetEquals(p.Item2));
+
+                if (difference)
+                {
+                    BuildLog.LogError("MergeSkinnedMesh:copy-enablement-animation:error:activeness-animation-of-source-mismatch");
+                }
+            }
+        }
+
+        private static IEnumerable<(ComponentOrGameObject target, HashSet<AnimationLocation> animaions)> GetActivenessAnimationLocations(
+            BuildContext context, Renderer component, Transform root)
+        {
+            {
+                if (context.GetAnimationComponent(component).TryGetFloat(Props.EnabledFor(component), out var p))
+                    if (AnimationLocation.CollectAnimationLocation(p).ToHashSet() is { Count: > 0 } locations)
+                        yield return (component, locations);
+            }
+            foreach (var transform in component.transform.ParentEnumerable(root, includeMe: true))
+                if (context.GetAnimationComponent(transform.gameObject).TryGetFloat(Props.IsActive, out var p))
+                    if (AnimationLocation.CollectAnimationLocation(p).ToHashSet() is { Count: > 0 } locations)
+                        yield return (transform.gameObject, locations);
         }
 
         private static void ActivenessAnimationWarning(IEnumerable<Renderer> renderers, Renderer target,
@@ -467,11 +565,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             return locations;
         }
 
-        private static (int[][] mapping, List<(MeshTopology topology, Material material)> materials)
-            CreateMergedMaterialsAndSubMeshIndexMapping((MeshTopology topology, Material material)[][] sourceMaterials,
+        private static (int[][] mapping, List<(MeshTopology topology, Material? material)> materials)
+            CreateMergedMaterialsAndSubMeshIndexMapping((MeshTopology topology, Material? material)[][] sourceMaterials,
                 HashSet<Material> doNotMerges)
         {
-            var resultMaterials = new List<(MeshTopology, Material)>();
+            var resultMaterials = new List<(MeshTopology, Material?)>();
             var resultIndices = new int[sourceMaterials.Length][];
 
             for (var i = 0; i < sourceMaterials.Length; i++)
@@ -483,7 +581,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 {
                     var material = materials[j];
                     var foundIndex = resultMaterials.IndexOf(material);
-                    if (doNotMerges.Contains(material.material) || foundIndex == -1)
+                    if (material.material != null && doNotMerges.Contains(material.material) || foundIndex == -1)
                     {
                         indices[j] = resultMaterials.Count;
                         resultMaterials.Add(material);
@@ -497,61 +595,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             return (resultIndices, resultMaterials);
         }
-
-#if !UNITY_2021_2_OR_NEWER
-        // material slot #4 should not be animated to avoid Unity bug
-        // https://issuetracker.unity3d.com/issues/material-is-applied-to-two-slots-when-applying-material-to-a-single-slot-while-recording-animation
-        private static void ShiftIndexForUnityBugWorkaround(
-            BuildContext context,
-            MeshInfo2[] meshInfos,
-            List<(MeshTopology, Material)> materials,
-            int[][] subMeshIndexMap
-        )
-        {
-            const int subMeshIndexToShiftIfAnimated = 4;
-            if (IsAnimatingTheSubMeshIndex(context, meshInfos, subMeshIndexMap, subMeshIndexToShiftIfAnimated))
-                MakeHoleSubMesh(subMeshIndexMap, materials, subMeshIndexToShiftIfAnimated);
-        }
-
-        private static bool IsAnimatingTheSubMeshIndex(BuildContext context, MeshInfo2[] meshInfos,
-            int[][] subMeshIndexMap, int targetSubMeshIndex)
-        {
-            for (var i = 0; i < subMeshIndexMap.Length; i++)
-            {
-                var indices = subMeshIndexMap[i];
-
-                for (var sourceSubMesh = 0; sourceSubMesh < indices.Length; sourceSubMesh++)
-                {
-                    var destSubMesh = indices[sourceSubMesh];
-                    if (destSubMesh == targetSubMeshIndex)
-                    {
-                        var animationComponent = context.GetAnimationComponent(meshInfos[i].SourceRenderer);
-                        if (animationComponent.ContainsObject($"m_Materials.Array.data[{sourceSubMesh}]"))
-                        {
-                            return true;
-                        }
-                    }
-                }
-            }
-
-            return false;
-        }
-
-        private static void MakeHoleSubMesh(int[][] subMeshIndexMap, List<(MeshTopology, Material)> materials,
-            int targetSubMeshIndex)
-        {
-            materials.Insert(targetSubMeshIndex, (MeshTopology.Triangles, null));
-
-            foreach (var indices in subMeshIndexMap)
-            {
-                for (var sourceSubMesh = 0; sourceSubMesh < indices.Length; sourceSubMesh++)
-                {
-                    if (indices[sourceSubMesh] >= targetSubMeshIndex)
-                        indices[sourceSubMesh]++;
-                }
-            }
-        }
-#endif
 
         public override IMeshInfoComputer GetComputer(IMeshInfoComputer upstream) => new MeshInfoComputer(this);
 
@@ -567,7 +610,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     .Distinct(BlendShapeNameComparator.Instance)
                     .ToArray();
 
-            public Material[] Materials(bool fast = true)
+            public Material?[] Materials(bool fast = true)
             {
                 var sourceMaterials = _processor.SkinnedMeshRenderers.Select(EditSkinnedMeshComponentUtil.GetMaterials)
                     .Concat(_processor.StaticMeshRenderers.Select(x => x.sharedMaterials))
@@ -583,7 +626,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             private class BlendShapeNameComparator : IEqualityComparer<(string name, float weight)>
             {
-                public static readonly BlendShapeNameComparator Instance = new BlendShapeNameComparator();
+                public static readonly BlendShapeNameComparator Instance = new();
 
                 public bool Equals((string name, float weight) x, (string name, float weight) y)
                 {
@@ -592,7 +635,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
                 public int GetHashCode((string name, float weight) obj)
                 {
-                    return obj.name?.GetHashCode() ?? 0;
+                    return obj.name.GetHashCode();
                 }
             }
         }

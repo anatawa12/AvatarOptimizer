@@ -574,9 +574,6 @@ msgstr "自动删除面积为零的多边形"
 msgid "TraceAndOptimize:OptimizePhysBone:UnknownPhysBoneColliderShape"
 msgstr "指定了未知的PhysBone Collider形状'{0}'。"
 
-msgid "TraceAndOptimize:OptimizeAnimator:Unity2019"
-msgstr "在Unity 2019中，“优化动画控制器”的许多功能不受支持。请考虑更新到Unity 2021或更高版本。"
-
 # endregion
 
 #region ApplyObjectMapping
@@ -652,12 +649,6 @@ msgstr "在模型的根对象下没有找到Animator组件。"
 #endregion
 
 #region MeshInfo2
-
-msgid "MeshInfo2:error:MeshNotReadable"
-msgstr "由于网格不可读，无法在播放模式中处理网格。"
-
-msgid "MeshInfo2:error:MeshNotReadable:description"
-msgstr "请在网格的导入设置中将 Read/Write (读取/写入) 设置为true。"
 
 msgid "MeshInfo2:warning:multiPassRendering"
 msgstr ""

@@ -17,7 +17,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
             var modifications = new AnimatorParser(traceAndOptimize.MmdWorldCompatibility)
                 .GatherAnimationModifications(context);
             context.Extension<ObjectMappingContext>()
-                .MappingBuilder
+                .MappingBuilder!
                 .ImportModifications(modifications);
         }
     }

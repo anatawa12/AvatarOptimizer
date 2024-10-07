@@ -38,8 +38,12 @@ namespace Anatawa12.AvatarOptimizer.Test
         [TestCaseSource(nameof(ComponentTypes))]
         public void CheckDisallowMultipleComponentIsSpecified(Type type)
         {
-            var addComponentMenu = type.GetCustomAttribute<DisallowMultipleComponent>();
-            Assert.That(addComponentMenu, Is.Not.Null);
+            var disallowMultipleComponent = type.GetCustomAttribute<DisallowMultipleComponent>();
+            var allowMultipleComponent = type.GetCustomAttribute<AllowMultipleComponent>();
+            Assert.That(disallowMultipleComponent != null || allowMultipleComponent != null,
+                "Either DisallowMultipleComponent or AllowMultipleComponent must be specified");
+            Assert.That(disallowMultipleComponent == null || allowMultipleComponent == null,
+                "Either DisallowMultipleComponent or AllowMultipleComponent must be specified");
         }
 
         [Test]
