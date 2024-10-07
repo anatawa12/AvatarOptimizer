@@ -83,7 +83,9 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
     /// The serializable class to express hashset.
     /// using array will make prefab modifications too big so I made this class
     /// </summary>
-    /// <typeparam name="T">Element Type</typeparam>
+    /// <typeparam name="TAdditionValue">The value used to represent addition. this value must also hod remove key internally</typeparam>
+    /// <typeparam name="TRemoveKey">The value used to represent removal.</typeparam>
+    /// <typeparam name="TManipulator">The manipulator to get key from value</typeparam>
     [NotKeyable, Serializable]
     public abstract class PrefabSafeUniqueCollection<
         TAdditionValue,
@@ -128,7 +130,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
         }
 
 #if UNITY_EDITOR
-        private protected (ListMap<TAdditionValue, TRemoveKey, TManipulator>, PrefabLayer<TAdditionValue, TRemoveKey>) GetBaseAndLayer(int nestCount, bool useOnSceneLayer)
+        private (ListMap<TAdditionValue, TRemoveKey, TManipulator>, PrefabLayer<TAdditionValue, TRemoveKey>) GetBaseAndLayer(int nestCount, bool useOnSceneLayer)
         {
             if (useOnSceneLayer)
             {
@@ -159,7 +161,113 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
 
             return nestCount;
         }
+        
+        private protected bool AddRange(IEnumerable<TAdditionValue> values)
+        {
+            var valueEnumerable = values.Where(x => x.IsNotNull());
+            var nestCount = PrefabNestCount(OuterObject);
+            var useOnSceneLayer = PrefabSafeUniqueCollectionRuntimeUtil.ShouldUsePrefabOnSceneLayer(OuterObject);
+
+            if (nestCount == 0)
+            {
+                var originalSize = mainSet.Length;
+                var list = new ListMap<TAdditionValue, TRemoveKey, TManipulator>(mainSet);
+                list.AddRange(valueEnumerable);
+                mainSet = list.ToArray();
+                return originalSize != mainSet.Length;
+            }
+            else
+            {
+                var (baseSet, layer) = GetBaseAndLayer(nestCount, useOnSceneLayer);
+                var valuesList = new List<TAdditionValue>(valueEnumerable);
+                var addingKeys = valuesList.Select(x => default(TManipulator).GetKey(x)).Where(x => x != null)!.ToHashSet<TRemoveKey>();
+
+                var originalRemoves = layer.removes.Length;
+                var originalAdditions = layer.additions.Length;
+
+                layer.removes = layer.removes.Where(x => !addingKeys.Contains(x)).ToArray();
+
+                var additions = new ListMap<TAdditionValue, TRemoveKey, TManipulator>(layer.additions);
+                additions.AddRange(valuesList.Where(x => !baseSet.ContainsKey(x)));
+                layer.additions = additions.ToArray();
+
+                return originalRemoves != layer.removes.Length || originalAdditions != layer.additions.Length;
+            }
+        }
+
+        private protected bool RemoveRange(IEnumerable<TRemoveKey> values)
+        {
+            var valueEnumerable = values.Where(x => x.IsNotNull());
+            var nestCount = PrefabNestCount(OuterObject);
+            var useOnSceneLayer = PrefabSafeUniqueCollectionRuntimeUtil.ShouldUsePrefabOnSceneLayer(OuterObject);
+
+            if (nestCount == 0)
+            {
+                var originalSize = mainSet.Length;
+                var removeSet = new HashSet<TRemoveKey?>(valueEnumerable);
+                mainSet = mainSet.Where(v => removeSet.Contains(default(TManipulator).GetKey(v))).ToArray();
+                return originalSize != mainSet.Length;
+            }
+            else
+            {
+                var (baseSet, layer) = GetBaseAndLayer(nestCount, useOnSceneLayer);
+                var valuesList = new List<TRemoveKey>(valueEnumerable);
+
+                var originalRemoves = layer.removes.Length;
+                var originalAdditions = layer.additions.Length;
+
+                layer.removes = layer.removes.Union(valuesList.Where(x => baseSet.ContainsKey(x))).ToArray();
+                layer.additions = layer.additions.Where(x =>
+                {
+                    var key = default(TManipulator).GetKey(x);
+                    return key != null && !valuesList.Contains(key);
+                }).ToArray();
+
+                return originalRemoves != layer.removes.Length || originalAdditions != layer.additions.Length;
+            }
+        }
+
+        private protected void RemoveIf(Func<TAdditionValue, bool> predicate)
+        {
+            var nestCount = PrefabNestCount(OuterObject);
+            var useOnSceneLayer = PrefabSafeUniqueCollectionRuntimeUtil.ShouldUsePrefabOnSceneLayer(OuterObject);
+
+            if (nestCount == 0)
+            {
+                mainSet = mainSet.Where(x => x.IsNull() || !predicate(x)).ToArray();
+            }
+            else
+            {
+                var (baseSet, layer) = GetBaseAndLayer(nestCount, useOnSceneLayer);
+
+                layer.removes = layer.removes.Concat<TRemoveKey>(baseSet.Where(predicate)
+                    .Select(x => default(TManipulator).GetKey(x)).Where(k => k != null)!).ToArray();
+                layer.additions = layer.additions.Where(x => x != null && !predicate(x)).ToArray();
+            }
+        }
+        
+        private protected void Clear()
+        {
+            var nestCount = PrefabNestCount(OuterObject);
+            var useSceneLayer = PrefabSafeUniqueCollectionRuntimeUtil.ShouldUsePrefabOnSceneLayer(OuterObject);
+
+            if (nestCount == 0)
+            {
+                mainSet = Array.Empty<TAdditionValue>();
+            }
+            else
+            {
+                var (baseSet, layer) = GetBaseAndLayer(nestCount, useSceneLayer);
+
+                layer.removes = layer.removes.Concat<TRemoveKey?>(baseSet.Select(k => default(TManipulator).GetKey(k))).Where(x => x != null).ToArray()!;
+                layer.additions = Array.Empty<TAdditionValue>();
+            }
+        }
 #else
+        private protected bool AddRange(IEnumerable<TAdditionValue> values) => throw new NotSupportedException();
+        private protected bool RemoveRange(IEnumerable<TRemoveKey> values) => throw new NotSupportedException();
+        private protected void RemoveIf(Func<TAdditionValue, bool> predicate) => throw new NotSupportedException();
+        private protected void Clear() => throw new NotSupportedException();
 #endif
     }
 
@@ -244,6 +352,9 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
         }
 
         public TAdditionValue[] ToArray() => _list.ToArray();
+
+        public bool ContainsKey(TAdditionValue additionValue) => ContainsKey(default(TManipulator).GetKey(additionValue));
+        public bool ContainsKey(TRemoveKey? removeKey) => removeKey != null && _index.ContainsKey(removeKey);
 
         public LinkedList<TAdditionValue>.Enumerator GetEnumerator() => _list.GetEnumerator();
         IEnumerator<TAdditionValue> IEnumerable<TAdditionValue>.GetEnumerator() => GetEnumerator();
