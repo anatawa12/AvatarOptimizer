@@ -27,8 +27,6 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
 
         TRemoveKey? ReadRemoveKey(SerializedProperty property);
         void WriteRemoveKey(SerializedProperty property, TRemoveKey value);
-
-        TRemoveKey ReadRemoveKeyFromAdditionValue(SerializedProperty property);
         TRemoveKey GetRemoveKey(TAdditionValue value);
     }
 
@@ -68,15 +66,15 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
 
         public abstract void Clear();
 
-        protected abstract IElement<TAdditionValue, TRemoveKey> NewSlotElement(TAdditionValue value);
-
         public abstract bool HasPrefabOverride();
 
-        public IElement<TAdditionValue, TRemoveKey> GetElementOf(TAdditionValue value)
-        {
-            var key = _helper.GetRemoveKey(value);
-            return Elements.FirstOrDefault(x => x.RemoveKey.Equals(key)) ?? NewSlotElement(value);
-        }
+        public IElement<TAdditionValue, TRemoveKey>? GetElementOf(TRemoveKey key) =>
+            Elements.FirstOrDefault(x => x.RemoveKey.Equals(key));
+
+        // do not create overrides if the value is already in the set / map
+        public abstract void Set(TAdditionValue value);
+        // tries to add modification to the element.
+        public abstract void Add(TAdditionValue value);
 
         public abstract void HandleApplyRevertMenuItems(IElement<TAdditionValue, TRemoveKey> element, GenericMenu genericMenu);
 
@@ -131,11 +129,8 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
         ElementStatus Status { get; }
         bool Contains { get; }
         SerializedProperty? ModifierProp { get; }
-        void EnsureAdded();
-        void Add();
         void EnsureRemoved();
         void Remove();
-        void SetExistence(bool existence);
     }
     
     public enum ElementStatus
@@ -145,6 +140,6 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
         NewElement,
         Overriden,
         FakeRemoved,
-        NewSlot,
+        Invalid,
     }
 }

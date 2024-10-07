@@ -20,7 +20,8 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
                            ?? throw new ArgumentException("mainSet not found", nameof(property));
             }
 
-            public override IReadOnlyList<IElement<TAdditionValue, TRemoveKey>> Elements
+            public override IReadOnlyList<IElement<TAdditionValue, TRemoveKey>> Elements => List;
+            private List<ElementImpl> List
             {
                 get
                 {
@@ -43,9 +44,30 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
 
             public override void Clear() => _mainSet.arraySize = 0;
 
-            protected override IElement<TAdditionValue, TRemoveKey> NewSlotElement(TAdditionValue value) => new ElementImpl(this, value);
-
             public override bool HasPrefabOverride() => false;
+
+            public override void Add(TAdditionValue value) => Set(value);
+            public override void Set(TAdditionValue value)
+            {
+                var key = _helper.GetRemoveKey(value);
+
+                var elementIndex = List.FindIndex(e => Equals(e.RemoveKey, key));
+
+                if (elementIndex == -1)
+                {
+                    // new element
+                    var index = _mainSet.arraySize;
+                    var newElementProperty = AddArrayElement(_mainSet);
+                    _helper.WriteAdditionValue(newElementProperty, value);
+                    List.Add(new ElementImpl(this, newElementProperty, index));
+                }
+                else
+                {
+                    var element = List[elementIndex];
+                    element.Value = value;
+                    _helper.WriteAdditionValue(element.ModifierProp!, value);
+                }
+            }
 
             public override void HandleApplyRevertMenuItems(IElement<TAdditionValue, TRemoveKey> element, GenericMenu genericMenu)
             {
@@ -55,10 +77,10 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
             private class ElementImpl : IElement<TAdditionValue, TRemoveKey>
             {
                 public EditorUtil<TAdditionValue, TRemoveKey> Container => _container;
-                public TAdditionValue Value { get; }
-                public TRemoveKey RemoveKey => _container._helper.GetRemoveKey(Value);
-                public ElementStatus Status => Contains ? ElementStatus.Natural : ElementStatus.NewSlot;
-                public bool Contains => _index >= 0;
+                public TAdditionValue Value { get; internal set; }
+                public TRemoveKey RemoveKey { get; }
+                public ElementStatus Status => Contains ? ElementStatus.Natural : ElementStatus.Invalid;
+                public bool Contains => true;
                 public SerializedProperty? ModifierProp { get; private set; }
 
                 private readonly Root _container;
@@ -67,30 +89,10 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
                 public ElementImpl(Root container, SerializedProperty prop, int index)
                 {
                     Value = container._helper.ReadAdditionValue(prop)!; // TODO: null check
+                    RemoveKey = container._helper.GetRemoveKey(Value);
                     _container = container;
                     _index = index;
                     ModifierProp = prop;
-                }
-
-                public ElementImpl(Root container, TAdditionValue value)
-                {
-                    Value = value;
-                    _container = container;
-                    _index = -1;
-                    ModifierProp = null;
-                }
-
-                public void EnsureAdded() => Add();
-
-                public void Add()
-                {
-                    if (Contains) return;
-                    _index = _container._mainSet.arraySize;
-                    ModifierProp = AddArrayElement(_container._mainSet);
-                    _container._helper.WriteAdditionValue(ModifierProp, Value);
-                    // ElementImpl instance will not exist unless _list is not null
-                    _container._list!.Add(this);
-                    //_container.ReIndexAll(); // appending does not change index so no reindex is required
                 }
 
                 public void EnsureRemoved() => Remove();
@@ -104,12 +106,6 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
                     // ElementImpl instance will not exist unless _list is not null
                     _container._list!.Remove(this);
                     _container.ReIndexAll();
-                }
-
-                public void SetExistence(bool existence)
-                {
-                    if (existence) Add();
-                    else Remove();
                 }
 
                 public void UpdateIndex(int index)

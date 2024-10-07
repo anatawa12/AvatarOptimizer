@@ -159,7 +159,9 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
                 }
             }
 
-            public sealed override IReadOnlyList<IElement<TAdditionValue, TRemoveKey>> Elements
+
+            public sealed override IReadOnlyList<IElement<TAdditionValue, TRemoveKey>> Elements => ElementImpls;
+            private List<ElementImpl> ElementImpls
             {
                 get
                 {
@@ -261,10 +263,63 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
                     _currentAdditionsSize = CurrentAdditions.arraySize = 0;
             }
 
-            protected sealed override IElement<TAdditionValue, TRemoveKey> NewSlotElement(TAdditionValue value)
+            public override void Set(TAdditionValue value) => Set(value, false);
+            public override void Add(TAdditionValue value) => Set(value, false);
+
+            public void Set(TAdditionValue value, bool forceAdd)
             {
                 if (value == null) throw new ArgumentNullException(nameof(value));
-                return ElementImpl.NewSlot(this, value);
+                var key = _helper.GetRemoveKey(value);
+                var element = ElementImpls.FirstOrDefault(x => Equals(x.RemoveKey, key));
+
+                if (element == null)
+                {
+                    // there is no element with the same key; add new element
+                    var (indexInModifier, _) = AddToAdditions(value);
+                    ElementImpls.Add(ElementImpl.NewElement(this, value, indexInModifier));
+                }
+                else
+                {
+                    if (element.Status is ElementStatus.NewElement or ElementStatus.Overriden)
+                    {
+                        // if there already is an addition, just update it if not force
+                        _helper.WriteAdditionValue(element.ModifierProp!, value);
+                        element.Value = value;
+                    }
+                    else
+                    {
+                        if (element.Status is ElementStatus.Removed or ElementStatus.FakeRemoved)
+                        {
+                            // if it's removed, remove "remove" entry
+                            RemoveRemovesAt(element.IndexInModifier);
+                            element.ModifierProp = null;
+                        }
+
+                        if (element.Status is ElementStatus.Removed or ElementStatus.Natural)
+                        {
+                            // if there is entry from upstream, check if it's the same value
+                            // if different, add new addition, if same, do nothing
+                            var existing = element.Value!;
+                            if (!forceAdd && Equals(existing, value))
+                            {
+                                element.Status = ElementStatus.Natural;
+                            }
+                            else
+                            {
+                                (element.IndexInModifier, element.ModifierProp) = AddToAdditions(value);
+                                element.Status = ElementStatus.Overriden;
+                                element.Value = value;
+                            }
+                        }
+                        else
+                        {
+                            // there is no upstream entry, add new addition
+                            (element.IndexInModifier, element.ModifierProp) = AddToAdditions(value);
+                            element.Status = ElementStatus.NewElement;
+                            element.Value = value;
+                        }
+                    }
+                }
             }
 
             public sealed override bool HasPrefabOverride() => _elements.Any(x => x.IsPrefabOverride());
@@ -275,9 +330,9 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
                 private readonly PrefabModificationBase _container;
                 internal int IndexInModifier;
                 internal readonly int SourceNestCount;
-                public TAdditionValue? Value { get; }
+                public TAdditionValue? Value { get; internal set; }
                 public TRemoveKey RemoveKey { get; }
-                public ElementStatus Status { get; private set; }
+                public ElementStatus Status { get; internal set; }
 
                 public bool Contains
                 {
@@ -291,7 +346,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
                                 return true;
                             case ElementStatus.FakeRemoved:
                             case ElementStatus.Removed:
-                            case ElementStatus.NewSlot:
+                            case ElementStatus.Invalid:
                                 return false;
                             default:
                                 throw new ArgumentOutOfRangeException();
@@ -344,51 +399,9 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
                         container.CurrentRemoves.GetArrayElementAtIndex(i));
                 }
 
-                public static ElementImpl NewSlot(PrefabModificationBase container, TAdditionValue value) =>
-                    new ElementImpl(container, -1, value, ElementStatus.NewSlot, -1, null);
-
-                public void EnsureAdded() => DoAdd(false);
-                public void Add() => DoAdd(true);
                 public void EnsureRemoved() => DoRemove(false);
                 public void Remove() => DoRemove(true);
 
-                private void DoAdd(bool forceAdd)
-                {
-                    switch (Status)
-                    {
-                        case ElementStatus.Natural:
-                            if (forceAdd)
-                            {
-                                (IndexInModifier, ModifierProp) = _container.AddToAdditions(Value!);
-                                Status = ElementStatus.Overriden;
-                            }
-                            break;
-                        case ElementStatus.Removed:
-                            _container.RemoveRemovesAt(IndexInModifier);
-                            Status = ElementStatus.Natural;
-                            ModifierProp = null;
-                            break;
-                        case ElementStatus.NewElement:
-                        case ElementStatus.Overriden:
-                            // already added
-                            break;
-                        case ElementStatus.FakeRemoved:
-                            // TODO: consider support for forceAdd
-                            throw new InvalidOperationException("FakeRemoved element cannot be added");
-                            _container.RemoveRemovesAt(IndexInModifier);
-                            (IndexInModifier, ModifierProp) = _container.AddToAdditions(Value);
-                            Status = ElementStatus.NewElement;
-                            break;
-                        case ElementStatus.NewSlot:
-                            (IndexInModifier, ModifierProp) = _container.AddToAdditions(Value!); 
-                            Status = ElementStatus.NewElement;
-                            _container._elements.Add(this);
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException();
-                    }
-                }
-                
 
                 private void DoRemove(bool forceRemove)
                 {
@@ -404,7 +417,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
                             break;
                         case ElementStatus.NewElement:
                             _container.RemoveAdditionsAt(IndexInModifier);
-                            Status = ElementStatus.NewSlot;
+                            Status = ElementStatus.Invalid;
                             _container._elements.Remove(this);
                             ModifierProp = null;
                             break;
@@ -413,7 +426,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
                             (IndexInModifier, ModifierProp) = _container.AddToRemoves(RemoveKey);
                             Status = ElementStatus.Removed;
                             break;
-                        case ElementStatus.NewSlot:
+                        case ElementStatus.Invalid:
                             if (forceRemove)
                             {
                                 (IndexInModifier, ModifierProp) = _container.AddToRemoves(RemoveKey);
@@ -439,7 +452,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
                             break;
                         case ElementStatus.NewElement:
                             _container.RemoveAdditionsAt(IndexInModifier);
-                            Status = ElementStatus.NewSlot;
+                            Status = ElementStatus.Invalid;
                             _container._elements.Remove(this);
                             ModifierProp = null;
                             break;
@@ -450,11 +463,11 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
                             break;
                         case ElementStatus.FakeRemoved:
                             _container.RemoveRemovesAt(IndexInModifier);
-                            Status = ElementStatus.NewSlot;
+                            Status = ElementStatus.Invalid;
                             _container._elements.Remove(this);
                             ModifierProp = null;
                             break;
-                        case ElementStatus.NewSlot:
+                        case ElementStatus.Invalid:
                             break;
                         default:
                             throw new ArgumentOutOfRangeException();
@@ -474,6 +487,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
                 public void MarkOverridenAt(int index, TAdditionValue value)
                 {
                     if (_container.CurrentAdditions == null) throw new InvalidOperationException("_container._currentAdditions == null");
+                    Value = value;
                     IndexInModifier = index;
                     ModifierProp = _container.CurrentAdditions.GetArrayElementAtIndex(index);
                     Status = ElementStatus.Overriden;
@@ -485,41 +499,12 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
                     ModifierProp = null;
                 }
 
-                public void SetExistence(bool existence)
-                {
-                    if (existence != Contains)
-                    {
-                        switch (Status)
-                        {
-                            case ElementStatus.NewElement:
-                                Remove();
-                                Remove();
-                                break;
-                            case ElementStatus.Natural:
-                            case ElementStatus.Overriden:
-                                Remove();
-                                break;
-
-                            case ElementStatus.Removed:
-                                Add();
-                                Add();
-                                break;
-                            case ElementStatus.FakeRemoved:
-                            case ElementStatus.NewSlot:
-                                Add();
-                                break;
-                            default:
-                                throw new ArgumentOutOfRangeException();
-                        }
-                    }
-                }
-
                 public bool IsPrefabOverride()
                 {
                     switch (Status)
                     {
                         case ElementStatus.Natural:
-                        case ElementStatus.NewSlot:
+                        case ElementStatus.Invalid:
                             return false;
                         case ElementStatus.Removed:
                         case ElementStatus.NewElement:
@@ -712,7 +697,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
                             case ElementStatus.FakeRemoved:
                                 genericMenu.AddDisabledItem(guiContent);
                                 break;
-                            case ElementStatus.NewSlot:
+                            case ElementStatus.Invalid:
                                 // logic faliure
                                 genericMenu.AddDisabledItem(guiContent);
                                 break;
