@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -21,7 +22,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
         }
 
         public static bool ShouldUsePrefabOnSceneLayer(Object instance) =>
-            PrefabSafeSetRuntimeUtil.ShouldUsePrefabOnSceneLayer(instance);
+            PrefabSafeUniqueCollectionRuntimeUtil.ShouldUsePrefabOnSceneLayer(instance);
 
         public static bool IsNullOrMissing<T>(this T self, Object context) =>
             self.IsNullOrMissing(new NullOrMissingContext(context));

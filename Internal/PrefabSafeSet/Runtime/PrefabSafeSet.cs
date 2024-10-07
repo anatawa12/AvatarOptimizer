@@ -9,46 +9,6 @@ using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 {
-    internal static class PrefabSafeSetRuntimeUtil
-    {
-#if UNITY_EDITOR
-        public static bool ShouldUsePrefabOnSceneLayer(Object instance)
-        {
-            var isInstance = UnityEditor.PrefabUtility.IsPartOfPrefabInstance(instance);
-            var isAsset = UnityEditor.PrefabUtility.IsPartOfPrefabAsset(instance);
-
-            var currentPrefabStage = UnityEditor.SceneManagement.PrefabStageUtility.GetCurrentPrefabStage();
-            if (currentPrefabStage != null)
-            {
-                var instanceGameObject = instance as GameObject ?? (instance as Component)?.gameObject;
-                isAsset |= currentPrefabStage.IsPartOfPrefabContents(instanceGameObject);
-            }
-
-            return isInstance && !isAsset;
-        }
-#endif
-
-        public static void ResizeArray<T>(ref T[] array, int size) where T : new()
-        {
-            var source = array;
-            var result = new T[size];
-            Array.Copy(source, result, Math.Min(size, source.Length));
-            for (var i = source.Length; i < result.Length; i++)
-                result[i] = new T();
-            array = result;
-        }
-
-        internal static bool IsNull<T>([NotNullWhen(false)] this T arg)
-        {
-            if (arg == null) return true;
-            if (typeof(Object).IsAssignableFrom(typeof(T)))
-                return (Object)(object)arg == null;
-            return false;
-        }
-
-        internal static bool IsNotNull<T>([NotNullWhen(true)] this T arg) => !arg.IsNull();
-    }
-
     public interface IPrefabSafeSetApi<T>
     {
         public void SetValueNonPrefab(IEnumerable<T> values);

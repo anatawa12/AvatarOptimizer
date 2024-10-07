@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Anatawa12.AvatarOptimizer.PrefabSafeSet;
+using Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection;
 using Anatawa12.AvatarOptimizer.Test.Runtime;
 using NUnit.Framework;
 using UnityEditor;
@@ -25,7 +26,7 @@ namespace Anatawa12.AvatarOptimizer.Test.PrefabSafeSet
         {
             var newObject = (GameObject)PrefabUtility.InstantiatePrefab(basePrefab);
             var component = newObject.GetComponent<PrefabSafeSetComponent>();
-            PrefabSafeSetRuntimeUtil.ResizeArray(ref component.stringSet.prefabLayers, 1);
+            PrefabSafeUniqueCollectionRuntimeUtil.ResizeArray(ref component.stringSet.prefabLayers, 1);
             component.stringSet.prefabLayers[0].additions =
                 new[] { "addedTwiceInVariant", "addedInVariant", "addedInVariantRemovedInInstance" };
             component.stringSet.prefabLayers[0].removes = new[] { "removedInVariant", "fakeRemovedInVariant" };
@@ -38,7 +39,7 @@ namespace Anatawa12.AvatarOptimizer.Test.PrefabSafeSet
         {
             var newObject = (GameObject)PrefabUtility.InstantiatePrefab(baseObject);
             var component = newObject.GetComponent<PrefabSafeSetComponent>();
-            PrefabSafeSetRuntimeUtil.ResizeArray(ref component.stringSet.prefabLayers, 2);
+            PrefabSafeUniqueCollectionRuntimeUtil.ResizeArray(ref component.stringSet.prefabLayers, 2);
             component.stringSet.prefabLayers[1].additions = new[] { "addedTwiceInInstance", "addedInInstance" };
             component.stringSet.prefabLayers[1].removes = new[]
                 { "removedInInstance", "addedInVariantRemovedInInstance", "fakeRemovedInInstance" };
