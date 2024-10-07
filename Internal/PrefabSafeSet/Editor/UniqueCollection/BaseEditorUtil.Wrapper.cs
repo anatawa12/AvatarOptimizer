@@ -40,17 +40,17 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
                 _impl = CreateImpl(property, nestCount, _helper);
             }
 
-            public override IReadOnlyList<IElement<TAdditionValue, TRemoveKey>> Elements => GetImpl().Elements;
+            public override IReadOnlyList<IBaseElement<TAdditionValue, TRemoveKey>> Elements => GetImpl().Elements;
             public override int ElementsCount => GetImpl().ElementsCount;
             public override int Count => GetImpl().Count;
             public override IEnumerable<TAdditionValue> Values => GetImpl().Values;
             public override void Clear() => GetImpl().Clear();
             public override bool HasPrefabOverride() => GetImpl().HasPrefabOverride();
-            public override IElement<TAdditionValue, TRemoveKey> Set(TAdditionValue value) => GetImpl().Set(value);
-            public override IElement<TAdditionValue, TRemoveKey> Add(TAdditionValue value) => GetImpl().Add(value);
-            public override IElement<TAdditionValue, TRemoveKey>? Remove(TRemoveKey key) => GetImpl().Remove(key);
+            public override IBaseElement<TAdditionValue, TRemoveKey> Set(TAdditionValue value) => GetImpl().Set(value);
+            public override IBaseElement<TAdditionValue, TRemoveKey> Add(TAdditionValue value) => GetImpl().Add(value);
+            public override IBaseElement<TAdditionValue, TRemoveKey>? Remove(TRemoveKey key) => GetImpl().Remove(key);
 
-            public override void HandleApplyRevertMenuItems(IElement<TAdditionValue, TRemoveKey> element, GenericMenu genericMenu) =>
+            public override void HandleApplyRevertMenuItems(IBaseElement<TAdditionValue, TRemoveKey> element, GenericMenu genericMenu) =>
                 GetImpl().HandleApplyRevertMenuItems(element, genericMenu);
         }
     }

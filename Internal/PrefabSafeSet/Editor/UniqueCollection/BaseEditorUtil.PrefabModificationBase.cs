@@ -161,7 +161,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
             }
 
 
-            public sealed override IReadOnlyList<IElement<TAdditionValue, TRemoveKey>> Elements => ElementImpls;
+            public sealed override IReadOnlyList<IBaseElement<TAdditionValue, TRemoveKey>> Elements => ElementImpls;
             private List<ElementImpl> ElementImpls
             {
                 get
@@ -264,10 +264,10 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
                     _currentAdditionsSize = CurrentAdditions.arraySize = 0;
             }
 
-            public override IElement<TAdditionValue, TRemoveKey> Set(TAdditionValue value) => Set(value, false);
-            public override IElement<TAdditionValue, TRemoveKey> Add(TAdditionValue value) => Set(value, true);
+            public override IBaseElement<TAdditionValue, TRemoveKey> Set(TAdditionValue value) => Set(value, false);
+            public override IBaseElement<TAdditionValue, TRemoveKey> Add(TAdditionValue value) => Set(value, true);
 
-            public override IElement<TAdditionValue, TRemoveKey> Remove(TRemoveKey key)
+            public override IBaseElement<TAdditionValue, TRemoveKey> Remove(TRemoveKey key)
             {
                 if (GetElementOf(key) is { } element)
                 {
@@ -283,7 +283,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
                 }
             }
 
-            public IElement<TAdditionValue, TRemoveKey> Set(TAdditionValue value, bool forceAdd)
+            public IBaseElement<TAdditionValue, TRemoveKey> Set(TAdditionValue value, bool forceAdd)
             {
                 if (value == null) throw new ArgumentNullException(nameof(value));
                 var key = _helper.GetRemoveKey(value);
@@ -345,7 +345,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
 
             public sealed override bool HasPrefabOverride() => _elements.Any(x => x.IsPrefabOverride());
 
-            private class ElementImpl : IElement<TAdditionValue, TRemoveKey>
+            private class ElementImpl : IBaseElement<TAdditionValue, TRemoveKey>
             {
                 public BaseEditorUtil<TAdditionValue, TRemoveKey> Container => _container;
                 private readonly PrefabModificationBase _container;
@@ -593,7 +593,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
                 }
             }
 
-            public sealed override void HandleApplyRevertMenuItems(IElement<TAdditionValue, TRemoveKey> element, GenericMenu genericMenu)
+            public sealed override void HandleApplyRevertMenuItems(IBaseElement<TAdditionValue, TRemoveKey> element, GenericMenu genericMenu)
             {
                 var elementImpl = (ElementImpl)element;
                 HandleApplyMenuItems(RootProperty.serializedObject.targetObject, elementImpl, genericMenu);

@@ -77,9 +77,9 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
         private class ElementsWrapper : IReadOnlyList<IElement<T>>
         {
             private readonly PSSEditorUtil<T> _container;
-            private IReadOnlyList<IElement<T, T>> _upstream;
+            private IReadOnlyList<IBaseElement<T, T>> _upstream;
 
-            public ElementsWrapper(IReadOnlyList<IElement<T, T>> upstream, PSSEditorUtil<T> container)
+            public ElementsWrapper(IReadOnlyList<IBaseElement<T, T>> upstream, PSSEditorUtil<T> container)
             {
                 _upstream = upstream;
                 _container = container;
@@ -94,10 +94,10 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 
             private class Enumerator : IEnumerator<IElement<T>>
             {
-                private IEnumerator<IElement<T, T>> _upstream;
+                private IEnumerator<IBaseElement<T, T>> _upstream;
                 private readonly PSSEditorUtil<T> _container;
 
-                public Enumerator(IEnumerator<IElement<T, T>> upstream, PSSEditorUtil<T> container)
+                public Enumerator(IEnumerator<IBaseElement<T, T>> upstream, PSSEditorUtil<T> container)
                 {
                     _upstream = upstream;
                     _container = container;
@@ -114,10 +114,10 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 
         private class ElementWrapper : IElement<T>
         {
-            internal IElement<T, T>? Upstream;
+            internal IBaseElement<T, T>? Upstream;
             private readonly PSSEditorUtil<T> _container;
 
-            public ElementWrapper(IElement<T, T> upstream, PSSEditorUtil<T> container)
+            public ElementWrapper(IBaseElement<T, T> upstream, PSSEditorUtil<T> container)
             {
                 _container = container;
                 Upstream = upstream;

@@ -20,7 +20,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
                            ?? throw new ArgumentException("mainSet not found", nameof(property));
             }
 
-            public override IReadOnlyList<IElement<TAdditionValue, TRemoveKey>> Elements => List;
+            public override IReadOnlyList<IBaseElement<TAdditionValue, TRemoveKey>> Elements => List;
             private List<ElementImpl> List
             {
                 get
@@ -46,9 +46,9 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
 
             public override bool HasPrefabOverride() => false;
 
-            public override IElement<TAdditionValue, TRemoveKey> Add(TAdditionValue value) => Set(value);
+            public override IBaseElement<TAdditionValue, TRemoveKey> Add(TAdditionValue value) => Set(value);
 
-            public override IElement<TAdditionValue, TRemoveKey> Set(TAdditionValue value)
+            public override IBaseElement<TAdditionValue, TRemoveKey> Set(TAdditionValue value)
             {
                 var key = _helper.GetRemoveKey(value);
 
@@ -75,19 +75,19 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
                 }
             }
 
-            public override IElement<TAdditionValue, TRemoveKey>? Remove(TRemoveKey key)
+            public override IBaseElement<TAdditionValue, TRemoveKey>? Remove(TRemoveKey key)
             {
                 var element = GetElementOf(key);
                 element?.EnsureRemoved();
                 return element;
             }
 
-            public override void HandleApplyRevertMenuItems(IElement<TAdditionValue, TRemoveKey> element, GenericMenu genericMenu)
+            public override void HandleApplyRevertMenuItems(IBaseElement<TAdditionValue, TRemoveKey> element, GenericMenu genericMenu)
             {
                 // logic failure
             }
 
-            private class ElementImpl : IElement<TAdditionValue, TRemoveKey>
+            private class ElementImpl : IBaseElement<TAdditionValue, TRemoveKey>
             {
                 public BaseEditorUtil<TAdditionValue, TRemoveKey> Container => _container;
                 public TAdditionValue Value { get; internal set; }
