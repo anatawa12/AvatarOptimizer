@@ -72,9 +72,10 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
             Elements.FirstOrDefault(x => x.RemoveKey.Equals(key));
 
         // do not create overrides if the value is already in the set / map
-        public abstract void Set(TAdditionValue value);
+        public abstract IElement<TAdditionValue, TRemoveKey> Set(TAdditionValue value);
         // tries to add modification to the element.
-        public abstract void Add(TAdditionValue value);
+        public abstract IElement<TAdditionValue, TRemoveKey> Add(TAdditionValue value);
+        public abstract IElement<TAdditionValue, TRemoveKey>? Remove(TRemoveKey key);
 
         public abstract void HandleApplyRevertMenuItems(IElement<TAdditionValue, TRemoveKey> element, GenericMenu genericMenu);
 

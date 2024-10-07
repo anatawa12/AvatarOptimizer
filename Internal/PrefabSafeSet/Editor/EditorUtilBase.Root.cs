@@ -46,8 +46,9 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
 
             public override bool HasPrefabOverride() => false;
 
-            public override void Add(TAdditionValue value) => Set(value);
-            public override void Set(TAdditionValue value)
+            public override IElement<TAdditionValue, TRemoveKey> Add(TAdditionValue value) => Set(value);
+
+            public override IElement<TAdditionValue, TRemoveKey> Set(TAdditionValue value)
             {
                 var key = _helper.GetRemoveKey(value);
 
@@ -59,14 +60,26 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
                     var index = _mainSet.arraySize;
                     var newElementProperty = AddArrayElement(_mainSet);
                     _helper.WriteAdditionValue(newElementProperty, value);
-                    List.Add(new ElementImpl(this, newElementProperty, index));
+                    var element = new ElementImpl(this, newElementProperty, index);
+                    List.Add(element);
+
+                    return element;
                 }
                 else
                 {
                     var element = List[elementIndex];
                     element.Value = value;
                     _helper.WriteAdditionValue(element.ModifierProp!, value);
+
+                    return element;
                 }
+            }
+
+            public override IElement<TAdditionValue, TRemoveKey>? Remove(TRemoveKey key)
+            {
+                var element = GetElementOf(key);
+                element?.EnsureRemoved();
+                return element;
             }
 
             public override void HandleApplyRevertMenuItems(IElement<TAdditionValue, TRemoveKey> element, GenericMenu genericMenu)
@@ -80,7 +93,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
                 public TAdditionValue Value { get; internal set; }
                 public TRemoveKey RemoveKey { get; }
                 public ElementStatus Status => Contains ? ElementStatus.Natural : ElementStatus.Invalid;
-                public bool Contains => true;
+                public bool Contains => ModifierProp != null;
                 public SerializedProperty? ModifierProp { get; private set; }
 
                 private readonly Root _container;
@@ -113,6 +126,8 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
                     _index = index;
                     ModifierProp = _container._mainSet.GetArrayElementAtIndex(index);
                 }
+
+                public override string ToString() => $"Element(Root, {Value}, {Contains})";
             }
         }
     }

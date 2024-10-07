@@ -94,7 +94,13 @@ namespace Anatawa12.AvatarOptimizer
                 var fieldPosition = EditorGUILayout.GetControlRect();
                 var label = new GUIContent(AAOL10N.Tr("MergeSkinnedMesh:label:Merge"));
                 using (new PrefabSafeSet.PropertyScope<Material>(element, fieldPosition, label))
-                    element.SetExistence(!EditorGUI.ToggleLeft(fieldPosition, label, !element.Contains));
+                {
+                    
+                    EditorGUI.BeginChangeCheck();
+                    var selected = !EditorGUI.ToggleLeft(fieldPosition, label, !element.Contains);
+                    if (EditorGUI.EndChangeCheck())
+                        element.SetExistence(selected);
+                }
 
                 EditorGUILayout.LabelField(AAOL10N.Tr("MergeSkinnedMesh:label:Renderers"));
                 EditorGUI.indentLevel++;

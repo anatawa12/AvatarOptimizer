@@ -43,14 +43,4 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             }
         }
     }
-    
-    public enum ElementStatus
-    {
-        Natural,
-        Removed,
-        NewElement,
-        AddedTwice,
-        FakeRemoved,
-        NewSlot,
-    }
 }

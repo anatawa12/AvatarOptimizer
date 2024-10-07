@@ -1,7 +1,7 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
+using Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection;
 using UnityEditor;
 
 namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
@@ -10,84 +10,151 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
     /// Utility to edit PrefabSafeSet in CustomEditor with SerializedProperty
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public abstract partial class EditorUtil<T> where T : notnull
+    public sealed class EditorUtil<T> where T : notnull
     {
-        // common property;
-        private readonly Func<SerializedProperty, T> _getValue;
-        private readonly Action<SerializedProperty, T> _setValue;
+        EditorUtil<T, T> _upstream;
 
-        public abstract IReadOnlyList<IElement<T>> Elements { get; }
-        public abstract int ElementsCount { get; }
-        public virtual int Count => Elements.Count(x => x.Contains);
-        public virtual IEnumerable<T> Values => Elements.Where(x => x.Contains).Select(x => x.Value);
-
-        public static EditorUtil<T> Create(SerializedProperty property,
-            Func<SerializedProperty, T> getValue,
-            Action<SerializedProperty, T> setValue) 
-            => new Wrapper(property, getValue, setValue);
-
-        static EditorUtil<T> CreateImpl(SerializedProperty property, int nestCount,
-            Func<SerializedProperty, T> getValue,
-            Action<SerializedProperty, T> setValue)
+        class EditorUtilHelper : IEditorUtilHelper<T, T>
         {
-            if (nestCount == 0)
-                return new Root(property, getValue, setValue);
-            var useOnSceneLayer = PrefabSafeSetUtil.ShouldUsePrefabOnSceneLayer(property.serializedObject.targetObject);
-            if (useOnSceneLayer)
-                return new PrefabModificationOnScene(property, nestCount, getValue, setValue);
-            return new PrefabModificationOnAsset(property, nestCount, getValue, setValue);
-        }
+            private readonly Func<SerializedProperty, T> _getValue;
+            private readonly Action<SerializedProperty, T> _setValue;
 
-        private EditorUtil(Func<SerializedProperty, T> getValue, Action<SerializedProperty, T> setValue)
-        {
-            _getValue = getValue ?? throw new ArgumentNullException(nameof(getValue));
-            _setValue = setValue ?? throw new ArgumentNullException(nameof(setValue));
-        }
-
-        public abstract void Clear();
-
-        protected abstract IElement<T> NewSlotElement(T value);
-
-        public abstract bool HasPrefabOverride();
-
-        public IElement<T> GetElementOf(T value) =>
-            Elements.FirstOrDefault(x => x.Value.Equals(value)) ?? NewSlotElement(value);
-
-        public abstract void HandleApplyRevertMenuItems(IElement<T> element, GenericMenu genericMenu);
-
-        private static SerializedProperty AddArrayElement(SerializedProperty array)
-        {
-            array.arraySize += 1;
-            return array.GetArrayElementAtIndex(array.arraySize - 1);
-        }
-
-        private void RemoveArrayElementAt(SerializedProperty array, int index)
-        {
-            var prevProp = array.GetArrayElementAtIndex(index);
-            for (var i = index + 1; i < array.arraySize; i++)
+            public EditorUtilHelper(Func<SerializedProperty, T> getValue, Action<SerializedProperty, T> setValue)
             {
-                var curProp = array.GetArrayElementAtIndex(i);
-                _setValue(prevProp, _getValue(curProp));;
-                prevProp = curProp;
+                _getValue = getValue;
+                _setValue = setValue;
             }
 
-            array.arraySize -= 1;
+            public T? ReadAdditionValue(SerializedProperty property) => _getValue(property);
+            public void WriteAdditionValue(SerializedProperty property, T value) => _setValue(property, value);
+            public T? ReadRemoveKey(SerializedProperty property) => _getValue(property);
+            public void WriteRemoveKey(SerializedProperty property, T value) => _setValue(property, value);
+            public T GetRemoveKey(T value) => value;
         }
 
-        private T[] ToArray(SerializedProperty? array)
+        public static EditorUtil<T> Create(SerializedProperty property,
+            Func<SerializedProperty, T> getValue, Action<SerializedProperty, T> setValue) =>
+            new(EditorUtil<T, T>.Create(property, new EditorUtilHelper(getValue, setValue)));
+
+        private EditorUtil(EditorUtil<T, T> upstream)
         {
-            if (array == null) return Array.Empty<T>();
-            var result = new T[array.arraySize];
-            for (var i = 0; i < result.Length; i++)
-                result[i] = _getValue(array.GetArrayElementAtIndex(i));
-            return result;
+            _upstream = upstream;
         }
 
-        private void SetArray(SerializedProperty array, T[] values)
+        public int ElementsCount => _upstream.ElementsCount;
+        public int Count => _upstream.Count;
+        public IEnumerable<T> Values => _upstream.Values;
+        public void Clear() => _upstream.Clear();
+        public bool HasPrefabOverride() => _upstream.HasPrefabOverride();
+
+        public IReadOnlyList<IElement<T>> Elements => new ElementsWrapper(_upstream.Elements, this);
+
+        public IElement<T> GetElementOf(T value)
         {
-            array.arraySize = values.Length;
-            for (var i = 0; i < values.Length; i++)
-                _setValue(array.GetArrayElementAtIndex(i), values[i]);
+            var element = _upstream.GetElementOf(value);
+            return element == null ? new ElementWrapper(value, this) : new ElementWrapper(element, this);
+        }
+
+        public void HandleApplyRevertMenuItems(IElement<T> element, GenericMenu genericMenu)
+        {
+            var upstreamEleement = ((ElementWrapper)element).Upstream;
+            if (upstreamEleement == null) return;
+            _upstream.HandleApplyRevertMenuItems(upstreamEleement, genericMenu);
+        }
+
+        public static ElementStatus MapStatus(PrefabSafeUniqueCollection.ElementStatus status) =>
+            status switch
+            {
+                PrefabSafeUniqueCollection.ElementStatus.Natural => ElementStatus.Natural,
+                PrefabSafeUniqueCollection.ElementStatus.Removed => ElementStatus.Removed,
+                PrefabSafeUniqueCollection.ElementStatus.NewElement => ElementStatus.NewElement,
+                PrefabSafeUniqueCollection.ElementStatus.Overriden => ElementStatus.AddedTwice,
+                PrefabSafeUniqueCollection.ElementStatus.FakeRemoved => ElementStatus.FakeRemoved,
+                PrefabSafeUniqueCollection.ElementStatus.Invalid => ElementStatus.NewSlot,
+                _ => throw new ArgumentOutOfRangeException(nameof(status), status, null),
+            };
+
+        private class ElementsWrapper : IReadOnlyList<IElement<T>>
+        {
+            private readonly EditorUtil<T> _container;
+            private IReadOnlyList<IElement<T, T>> _upstream;
+
+            public ElementsWrapper(IReadOnlyList<IElement<T, T>> upstream, EditorUtil<T> container)
+            {
+                _upstream = upstream;
+                _container = container;
+            }
+
+            public int Count => _upstream.Count;
+
+            public IElement<T> this[int index] => new ElementWrapper(_upstream[index], _container);
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+            public IEnumerator<IElement<T>> GetEnumerator() => new Enumerator(_upstream.GetEnumerator(), _container);
+
+            private class Enumerator : IEnumerator<IElement<T>>
+            {
+                private IEnumerator<IElement<T, T>> _upstream;
+                private readonly EditorUtil<T> _container;
+
+                public Enumerator(IEnumerator<IElement<T, T>> upstream, EditorUtil<T> container)
+                {
+                    _upstream = upstream;
+                    _container = container;
+                }
+
+                public IElement<T> Current => new ElementWrapper(_upstream.Current, _container);
+                object IEnumerator.Current => Current;
+
+                public void Dispose() => _upstream.Dispose();
+                public bool MoveNext() => _upstream.MoveNext();
+                public void Reset() => _upstream.Reset();
+            }
+        }
+
+        private class ElementWrapper : IElement<T>
+        {
+            internal IElement<T, T>? Upstream;
+            private readonly EditorUtil<T> _container;
+
+            public ElementWrapper(IElement<T, T> upstream, EditorUtil<T> container)
+            {
+                _container = container;
+                Upstream = upstream;
+                Value = upstream.RemoveKey;
+            }
+
+            public ElementWrapper(T value, EditorUtil<T> container)
+            {
+                Value = value;
+                _container = container;
+            }
+
+            public T Value { get; }
+            public EditorUtil<T> Container => _container;
+            public ElementStatus Status => Upstream == null ? ElementStatus.NewSlot : MapStatus(Upstream.Status);
+            public bool Contains => Upstream?.Contains ?? false;
+            public SerializedProperty? ModifierProp => Upstream?.ModifierProp;
+
+            public void EnsureAdded() => Upstream = _container._upstream.Set(Value);
+            public void Add() => Upstream = _container._upstream.Add(Value);
+            public void EnsureRemoved() => Upstream?.EnsureRemoved();
+
+            public void Remove()
+            {
+                if (Upstream == null) Upstream = _container._upstream.Remove(Value);
+                else Upstream.Remove();
+            }
+
+            public void SetExistence(bool existence)
+            {
+                if (existence)
+                    Add();
+                else
+                    Remove();
+            }
+
+            public override string ToString() => $"Wrapper({Upstream?.ToString() ?? "<none>"})";
         }
     }
 
@@ -103,5 +170,15 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
         void EnsureRemoved();
         void Remove();
         void SetExistence(bool existence);
+    }
+    
+    public enum ElementStatus
+    {
+        Natural,
+        Removed,
+        NewElement,
+        AddedTwice,
+        FakeRemoved,
+        NewSlot,
     }
 }

@@ -46,8 +46,9 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
             public override IEnumerable<TAdditionValue> Values => GetImpl().Values;
             public override void Clear() => GetImpl().Clear();
             public override bool HasPrefabOverride() => GetImpl().HasPrefabOverride();
-            public override void Set(TAdditionValue value) => GetImpl().Set(value);
-            public override void Add(TAdditionValue value) => GetImpl().Add(value);
+            public override IElement<TAdditionValue, TRemoveKey> Set(TAdditionValue value) => GetImpl().Set(value);
+            public override IElement<TAdditionValue, TRemoveKey> Add(TAdditionValue value) => GetImpl().Add(value);
+            public override IElement<TAdditionValue, TRemoveKey>? Remove(TRemoveKey key) => GetImpl().Remove(key);
 
             public override void HandleApplyRevertMenuItems(IElement<TAdditionValue, TRemoveKey> element, GenericMenu genericMenu) =>
                 GetImpl().HandleApplyRevertMenuItems(element, genericMenu);

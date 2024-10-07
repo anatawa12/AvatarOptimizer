@@ -362,7 +362,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
         public void Add(TAdditionValue? value)
         {
             if (value == null) return;
-            var key = default(TManipulator).GetKey(value);
+            var key = _manipulator.GetKey(value);
             if (key == null) return;
             if (_index.TryGetValue(key, out var node))
                 node.Value = value;
@@ -399,7 +399,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
         public TAdditionValue[] ToArray() => _list.ToArray();
 
         public bool ContainsKey(TAdditionValue additionValue) =>
-            ContainsKey(default(TManipulator).GetKey(additionValue));
+            ContainsKey(_manipulator.GetKey(additionValue));
 
         public bool ContainsKey(TRemoveKey? removeKey) => removeKey.IsNotNull() && _index.ContainsKey(removeKey);
 

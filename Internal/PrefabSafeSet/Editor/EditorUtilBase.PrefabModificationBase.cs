@@ -93,7 +93,6 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
                     var value = _helper.ReadAdditionValue(valueProp);
                     if (value == null) continue;
                     upstreamValues.Add(ElementImpl.Natural(this, value, 0));
-                    _elements.Add(ElementImpl.Natural(this, value, 0));
                 }
 
                 for (var i = 0; i < NestCount - 1 && i < PrefabLayers.arraySize; i++)
@@ -121,6 +120,8 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
                     _layerRemoves[i] = new ArraySizeCheck(removes.FindPropertyRelative("Array.size"));
                     _layerAdditions[i] = new ArraySizeCheck(additions.FindPropertyRelative("Array.size"));
                 }
+
+                _elements.AddRange(upstreamValues);
 
                 _upstreamElementCount = _elements.Count;
                 _mainSet.Updated();
@@ -263,10 +264,26 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
                     _currentAdditionsSize = CurrentAdditions.arraySize = 0;
             }
 
-            public override void Set(TAdditionValue value) => Set(value, false);
-            public override void Add(TAdditionValue value) => Set(value, false);
+            public override IElement<TAdditionValue, TRemoveKey> Set(TAdditionValue value) => Set(value, false);
+            public override IElement<TAdditionValue, TRemoveKey> Add(TAdditionValue value) => Set(value, true);
 
-            public void Set(TAdditionValue value, bool forceAdd)
+            public override IElement<TAdditionValue, TRemoveKey> Remove(TRemoveKey key)
+            {
+                if (GetElementOf(key) is { } element)
+                {
+                    element.Remove();
+                    return element;
+                }
+                else
+                {
+                    var (indexInModifier, _) = AddToRemoves(key);
+                    var newElement = ElementImpl.FakeRemoved(this, key, indexInModifier);
+                    ElementImpls.Add(newElement);
+                    return newElement;
+                }
+            }
+
+            public IElement<TAdditionValue, TRemoveKey> Set(TAdditionValue value, bool forceAdd)
             {
                 if (value == null) throw new ArgumentNullException(nameof(value));
                 var key = _helper.GetRemoveKey(value);
@@ -276,7 +293,9 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
                 {
                     // there is no element with the same key; add new element
                     var (indexInModifier, _) = AddToAdditions(value);
-                    ElementImpls.Add(ElementImpl.NewElement(this, value, indexInModifier));
+                    var newElement = ElementImpl.NewElement(this, value, indexInModifier);
+                    ElementImpls.Add(newElement);
+                    return newElement;
                 }
                 else
                 {
@@ -319,6 +338,8 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
                             element.Value = value;
                         }
                     }
+
+                    return element;
                 }
             }
 
@@ -419,7 +440,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
                             _container.RemoveAdditionsAt(IndexInModifier);
                             Status = ElementStatus.Invalid;
                             _container._elements.Remove(this);
-                            ModifierProp = null;
+                            if (forceRemove) goto case ElementStatus.Invalid; // if force remove, do remove again
                             break;
                         case ElementStatus.Overriden:
                             _container.RemoveAdditionsAt(IndexInModifier);
@@ -515,6 +536,14 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
                             throw new ArgumentOutOfRangeException();
                     }
                 }
+
+                public override string ToString() => Status switch
+                {
+                    ElementStatus.Natural or ElementStatus.Removed or ElementStatus.NewElement
+                        or ElementStatus.Overriden => $"Element(Prefab, {Value}, {Status})",
+                    ElementStatus.FakeRemoved or ElementStatus.Invalid => $"Element(Prefab, {RemoveKey}, {Status})",
+                    _ => throw new ArgumentOutOfRangeException()
+                };
             }
 
             private (int indexInModifier, SerializedProperty modifierProp) AddToAdditions(TAdditionValue value) => 
