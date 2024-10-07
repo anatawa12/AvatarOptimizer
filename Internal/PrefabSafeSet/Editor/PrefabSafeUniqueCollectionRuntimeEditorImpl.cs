@@ -68,8 +68,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
 
                 if (maxLayerCount == 0)
                 {
-                    var result =
-                        new ListMap<TAdditionValue, TRemoveKey, TManipulator>(PrefabSafeUniqueCollection.mainSet);
+                    var result = new ListMap<TAdditionValue, TRemoveKey, TManipulator>(PrefabSafeUniqueCollection.mainSet, default);
                     foreach (var layer in PrefabSafeUniqueCollection.prefabLayers)
                     {
                         result.RemoveRange(layer.removes);
@@ -122,7 +121,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
             // first, replace missing with null
             if (typeof(Object).IsAssignableFrom(typeof(TRemoveKey)))
             {
-                var context = new PrefabSafeSetUtil.NullOrMissingContext(self.OuterObject);
+                var context = new PrefabSafeUniqueCollectionUtil.NullOrMissingContext(self.OuterObject);
 
                 void ReplaceMissingWithNullEntries(TAdditionValue?[] array)
                 {
@@ -216,7 +215,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
             if (maxLayerCount == 0 && !shouldUsePrefabOnSceneLayer)
             {
                 // nestCount is 0: apply everything to mainSet
-                var result = new ListMap<TAdditionValue, TRemoveKey, TManipulator>(self.mainSet);
+                var result = new ListMap<TAdditionValue, TRemoveKey, TManipulator>(self.mainSet, default);
                 foreach (var layer in self.prefabLayers)
                 {
                     result.RemoveRange(layer.removes);
@@ -233,8 +232,8 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
                 var targetLayer = shouldUsePrefabOnSceneLayer
                     ? self.onSceneLayer
                     : self.prefabLayers[maxLayerCount - 1];
-                var additions = new ListMap<TAdditionValue, TRemoveKey, TManipulator>(targetLayer.additions);
-                var removes = new ListMap<TRemoveKey, TRemoveKey, IdentityManipulator<TRemoveKey>>(targetLayer.removes);
+                var additions = new ListMap<TAdditionValue, TRemoveKey, TManipulator>(targetLayer.additions, default);
+                var removes = new ListMap<TRemoveKey, TRemoveKey, IdentityManipulator<TRemoveKey>>(targetLayer.removes, default);
 
                 foreach (var layer in self.prefabLayers.Skip(maxLayerCount))
                 {

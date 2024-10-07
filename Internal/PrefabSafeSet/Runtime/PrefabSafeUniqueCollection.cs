@@ -140,7 +140,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
 
         private protected ListMap<TAdditionValue, TRemoveKey, TManipulator> GetCollection()
         {
-            var baseMap = new ListMap<TAdditionValue, TRemoveKey, TManipulator>(mainSet);
+            var baseMap = new ListMap<TAdditionValue, TRemoveKey, TManipulator>(mainSet, default);
             foreach (var layer in prefabLayers)
                 layer.ApplyTo(baseMap);
             if (usingOnSceneLayer) onSceneLayer.ApplyTo(baseMap);
@@ -155,7 +155,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
             {
                 if (!usingOnSceneLayer)
                     usingOnSceneLayer = true;
-                var baseMap = new ListMap<TAdditionValue, TRemoveKey, TManipulator>(mainSet);
+                var baseMap = new ListMap<TAdditionValue, TRemoveKey, TManipulator>(mainSet, default);
                 return (baseMap, onSceneLayer);
             }
             else
@@ -163,7 +163,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
                 if (prefabLayers.Length < nestCount)
                     PrefabSafeUniqueCollectionRuntimeUtil.ResizeArray(ref prefabLayers, nestCount);
 
-                var baseMap = new ListMap<TAdditionValue, TRemoveKey, TManipulator>(mainSet);
+                var baseMap = new ListMap<TAdditionValue, TRemoveKey, TManipulator>(mainSet, default);
 
                 for (var i = 0; i < nestCount - 1; i++) prefabLayers[i].ApplyTo(baseMap);
                 var layer = prefabLayers[nestCount - 1];
@@ -190,7 +190,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
             if (nestCount == 0)
             {
                 var originalSize = mainSet.Length;
-                var list = new ListMap<TAdditionValue, TRemoveKey, TManipulator>(mainSet);
+                var list = new ListMap<TAdditionValue, TRemoveKey, TManipulator>(mainSet, default);
                 list.AddRange(valueEnumerable);
                 mainSet = list.ToArray();
                 return originalSize != mainSet.Length;
@@ -208,7 +208,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
 
                 layer.removes = layer.removes.Where(x => x.IsNotNull() && !addingKeys.Contains(x)).ToArray();
 
-                var additions = new ListMap<TAdditionValue, TRemoveKey, TManipulator>(layer.additions);
+                var additions = new ListMap<TAdditionValue, TRemoveKey, TManipulator>(layer.additions, default);
                 additions.AddRange(valuesList.Where(x => !baseSet.ContainsKey(x)));
                 layer.additions = additions.ToArray();
 
@@ -335,15 +335,16 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
     internal readonly struct ListMap<TAdditionValue, TRemoveKey, TManipulator> : IEnumerable<TAdditionValue>
         where TManipulator : struct, IManipulator<TAdditionValue, TRemoveKey>
     {
+        private readonly TManipulator _manipulator;
         private readonly LinkedList<TAdditionValue> _list;
         private readonly Dictionary<TRemoveKey, LinkedListNode<TAdditionValue>> _index;
 
-        public ListMap(TAdditionValue?[] initialize)
+        public ListMap(TAdditionValue?[] initialize, TManipulator manipulator)
         {
             _list = new LinkedList<TAdditionValue>();
             _index = new Dictionary<TRemoveKey, LinkedListNode<TAdditionValue>>();
+            _manipulator = manipulator;
 
-            var manipulator = default(TManipulator);
             foreach (var value in initialize)
             {
                 if (value == null) continue;
@@ -378,6 +379,21 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
         {
             if (remove.IsNotNull() && _index.Remove(remove, out var node))
                 _list.Remove(node);
+        }
+
+        public bool Remove(TRemoveKey remove, [NotNullWhen(true)] out TAdditionValue? o)
+        {
+            if (remove.IsNotNull() && _index.Remove(remove, out var node))
+            {
+                o = node.Value!;
+                _list.Remove(node);
+                return true;
+            }
+            else
+            {
+                o = default;
+                return false;
+            }
         }
 
         public TAdditionValue[] ToArray() => _list.ToArray();
