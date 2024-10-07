@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -159,7 +160,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
         private void DoBoneMap2(MeshInfo2 meshInfo2, Dictionary<Transform, Transform> mergeMapping)
         {
-            var primaryBones = new Dictionary<Transform, Bone>();
+            var primaryBones = new ConcurrentDictionary<Transform, Bone>();
             var boneReplaced = false;
 
             Profiler.BeginSample("Map Bone");
@@ -177,8 +178,8 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 else
                 {
                     // we assume fist bone we find is the most natural bone.
-                    if (!primaryBones.ContainsKey(bone.Transform) && ValidBindPose(bone.Bindpose))
-                        primaryBones.Add(bone.Transform, bone);
+                    if (ValidBindPose(bone.Bindpose))
+                        primaryBones.TryAdd(bone.Transform, bone);
                 }
             }
 
@@ -194,8 +195,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 var singleBoneTransform = vertex.BoneWeights.Select(x => x.bone.Transform)
                     .DistinctSingleOrDefaultIfNoneOrMultiple();
                 if (singleBoneTransform == null) return;
-                if (!primaryBones.TryGetValue(singleBoneTransform, out var finalBone))
-                    primaryBones.Add(singleBoneTransform, finalBone = vertex.BoneWeights[0].bone);
+                var finalBone = primaryBones.GetOrAdd(singleBoneTransform, vertex.BoneWeights[0].bone);
 
                 // about bindposes and bones
                 //    (∑ localToWorldMatrix * bindPose * weight) * point
