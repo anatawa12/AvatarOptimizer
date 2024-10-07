@@ -10,7 +10,8 @@ using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
 {
-    public static class PrefabSafeUniqueCollectionUtil
+    // PSUC: PrefabSafeUniqueCollection
+    public static class PSUCUtil
     {
         public static int PrefabNestCount(Object instance)
         {
@@ -22,7 +23,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
         }
 
         public static bool ShouldUsePrefabOnSceneLayer(Object instance) =>
-            PrefabSafeUniqueCollectionRuntimeUtil.ShouldUsePrefabOnSceneLayer(instance);
+            PSUCRuntimeUtil.ShouldUsePrefabOnSceneLayer(instance);
 
         public static bool IsNullOrMissing<T>(this T self, Object context) =>
             self.IsNullOrMissing(new NullOrMissingContext(context));

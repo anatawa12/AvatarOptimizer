@@ -7,7 +7,7 @@ using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
 {
-    public abstract partial class EditorUtil<TAdditionValue, TRemoveKey>
+    public abstract partial class BaseEditorUtil<TAdditionValue, TRemoveKey>
     {
         private struct ArraySizeCheck
         {
@@ -25,7 +25,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
             public void Updated() => _size = _prop?.intValue ?? 0;
         }
 
-        private abstract class PrefabModificationBase : EditorUtil<TAdditionValue, TRemoveKey>
+        private abstract class PrefabModificationBase : BaseEditorUtil<TAdditionValue, TRemoveKey>
         {
             private readonly List<ElementImpl> _elements;
             private bool _needsUpstreamUpdate;
@@ -347,7 +347,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
 
             private class ElementImpl : IElement<TAdditionValue, TRemoveKey>
             {
-                public EditorUtil<TAdditionValue, TRemoveKey> Container => _container;
+                public BaseEditorUtil<TAdditionValue, TRemoveKey> Container => _container;
                 private readonly PrefabModificationBase _container;
                 internal int IndexInModifier;
                 internal readonly int SourceNestCount;

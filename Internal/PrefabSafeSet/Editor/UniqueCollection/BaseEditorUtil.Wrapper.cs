@@ -8,22 +8,22 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
     /// Utility to edit PrefabSafeSet in CustomEditor with SerializedProperty
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public abstract partial class EditorUtil<TAdditionValue, TRemoveKey>
+    public abstract partial class BaseEditorUtil<TAdditionValue, TRemoveKey>
     {
-        private class Wrapper : EditorUtil<TAdditionValue, TRemoveKey>
+        private class Wrapper : BaseEditorUtil<TAdditionValue, TRemoveKey>
         {
-            private EditorUtil<TAdditionValue, TRemoveKey> _impl;
+            private BaseEditorUtil<TAdditionValue, TRemoveKey> _impl;
 
             private readonly SerializedProperty _property;
             private readonly Object _targetObject;
             private Object? _correspondingObject;
 
-            private EditorUtil<TAdditionValue, TRemoveKey> GetImpl()
+            private BaseEditorUtil<TAdditionValue, TRemoveKey> GetImpl()
             {
                 var correspondingObject = PrefabUtility.GetCorrespondingObjectFromSource(_targetObject);
                 if (correspondingObject != _correspondingObject)
                 {
-                    _impl = CreateImpl(_property, PrefabSafeUniqueCollectionUtil.PrefabNestCount(_targetObject), _helper);
+                    _impl = CreateImpl(_property, PSUCUtil.PrefabNestCount(_targetObject), _helper);
                     _correspondingObject = correspondingObject;
                 }
 
@@ -36,7 +36,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
                 _property = property;
                 _targetObject = property.serializedObject.targetObject;
                 _correspondingObject = PrefabUtility.GetCorrespondingObjectFromSource(_targetObject);
-                var nestCount = PrefabSafeUniqueCollectionUtil.PrefabNestCount(_targetObject);
+                var nestCount = PSUCUtil.PrefabNestCount(_targetObject);
                 _impl = CreateImpl(property, nestCount, _helper);
             }
 

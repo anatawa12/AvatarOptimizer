@@ -6,11 +6,11 @@ namespace Anatawa12.AvatarOptimizer
     [CustomEditor(typeof(FreezeBlendShape))]
     class FreezeBlendShapeEditor : AvatarTagComponentEditorBase
     {
-        private PrefabSafeSet.EditorUtil<string> _shapeKeysSet = null!; // initialized in OnEnable
+        private PrefabSafeSet.PSSEditorUtil<string> _shapeKeysSet = null!; // initialized in OnEnable
 
         private void OnEnable()
         {
-            _shapeKeysSet = PrefabSafeSet.EditorUtil<string>.Create(
+            _shapeKeysSet = PrefabSafeSet.PSSEditorUtil<string>.Create(
                 serializedObject.FindProperty("shapeKeysSet"),
                 x => x.stringValue,
                 (x, v) => x.stringValue = v);

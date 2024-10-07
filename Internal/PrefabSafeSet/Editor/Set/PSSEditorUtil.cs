@@ -10,9 +10,9 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
     /// Utility to edit PrefabSafeSet in CustomEditor with SerializedProperty
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public sealed class EditorUtil<T> where T : notnull
+    public sealed class PSSEditorUtil<T> where T : notnull
     {
-        EditorUtil<T, T> _upstream;
+        BaseEditorUtil<T, T> _upstream;
 
         class EditorUtilHelper : IEditorUtilHelper<T, T>
         {
@@ -32,11 +32,11 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             public T GetRemoveKey(T value) => value;
         }
 
-        public static EditorUtil<T> Create(SerializedProperty property,
+        public static PSSEditorUtil<T> Create(SerializedProperty property,
             Func<SerializedProperty, T> getValue, Action<SerializedProperty, T> setValue) =>
-            new(EditorUtil<T, T>.Create(property, new EditorUtilHelper(getValue, setValue)));
+            new(BaseEditorUtil<T, T>.Create(property, new EditorUtilHelper(getValue, setValue)));
 
-        private EditorUtil(EditorUtil<T, T> upstream)
+        private PSSEditorUtil(BaseEditorUtil<T, T> upstream)
         {
             _upstream = upstream;
         }
@@ -76,10 +76,10 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 
         private class ElementsWrapper : IReadOnlyList<IElement<T>>
         {
-            private readonly EditorUtil<T> _container;
+            private readonly PSSEditorUtil<T> _container;
             private IReadOnlyList<IElement<T, T>> _upstream;
 
-            public ElementsWrapper(IReadOnlyList<IElement<T, T>> upstream, EditorUtil<T> container)
+            public ElementsWrapper(IReadOnlyList<IElement<T, T>> upstream, PSSEditorUtil<T> container)
             {
                 _upstream = upstream;
                 _container = container;
@@ -95,9 +95,9 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             private class Enumerator : IEnumerator<IElement<T>>
             {
                 private IEnumerator<IElement<T, T>> _upstream;
-                private readonly EditorUtil<T> _container;
+                private readonly PSSEditorUtil<T> _container;
 
-                public Enumerator(IEnumerator<IElement<T, T>> upstream, EditorUtil<T> container)
+                public Enumerator(IEnumerator<IElement<T, T>> upstream, PSSEditorUtil<T> container)
                 {
                     _upstream = upstream;
                     _container = container;
@@ -115,23 +115,23 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
         private class ElementWrapper : IElement<T>
         {
             internal IElement<T, T>? Upstream;
-            private readonly EditorUtil<T> _container;
+            private readonly PSSEditorUtil<T> _container;
 
-            public ElementWrapper(IElement<T, T> upstream, EditorUtil<T> container)
+            public ElementWrapper(IElement<T, T> upstream, PSSEditorUtil<T> container)
             {
                 _container = container;
                 Upstream = upstream;
                 Value = upstream.RemoveKey;
             }
 
-            public ElementWrapper(T value, EditorUtil<T> container)
+            public ElementWrapper(T value, PSSEditorUtil<T> container)
             {
                 Value = value;
                 _container = container;
             }
 
             public T Value { get; }
-            public EditorUtil<T> Container => _container;
+            public PSSEditorUtil<T> Container => _container;
             public ElementStatus Status => Upstream == null ? ElementStatus.NewSlot : MapStatus(Upstream.Status);
             public bool Contains => Upstream?.Contains ?? false;
             public SerializedProperty? ModifierProp => Upstream?.ModifierProp;
@@ -160,7 +160,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 
     public interface IElement<T> where T : notnull
     {
-        EditorUtil<T> Container { get; }
+        PSSEditorUtil<T> Container { get; }
         T Value { get; }
         ElementStatus Status { get; }
         bool Contains { get; }

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection;
 using UnityEngine;
@@ -68,32 +67,5 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
         {
             PrefabSafeUniqueCollection.PrefabSafeUniqueCollection.OnValidate(component, getPrefabSafeSet);
         }
-    }
-
-    internal readonly struct ListSet<T>
-    {
-        private readonly List<T> _list;
-        private readonly HashSet<T> _set;
-        public ListSet(T[] initialize)
-        {
-            _list = new List<T>(initialize);
-            _set = new HashSet<T>(initialize);
-        }
-
-        public void AddRange(IEnumerable<T> values)
-        {
-            foreach (var value in values)
-                if (value.IsNotNull() && _set.Add(value))
-                    _list?.Add(value);
-        }
-
-        public void RemoveRange(IEnumerable<T> values)
-        {
-            foreach (var value in values)
-                if (value.IsNotNull() && _set.Remove(value))
-                    _list?.Remove(value);
-        }
-
-        public T[] ToArray() => _list.ToArray();
     }
 }

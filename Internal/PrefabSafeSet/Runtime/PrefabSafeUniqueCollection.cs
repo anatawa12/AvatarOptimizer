@@ -10,7 +10,8 @@ using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
 {
-    internal static class PrefabSafeUniqueCollectionRuntimeUtil
+    // PSUC: PrefabSafeUniqueCollection
+    internal static class PSUCRuntimeUtil
     {
 #if UNITY_EDITOR
         public static bool ShouldUsePrefabOnSceneLayer(Object instance)
@@ -55,7 +56,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
 #if UNITY_EDITOR
         private static readonly Type OnBeforeSerializeImplType;
 
-        static PrefabSafeUniqueCollectionRuntimeUtil()
+        static PSUCRuntimeUtil()
         {
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
@@ -161,7 +162,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
             else
             {
                 if (prefabLayers.Length < nestCount)
-                    PrefabSafeUniqueCollectionRuntimeUtil.ResizeArray(ref prefabLayers, nestCount);
+                    PSUCRuntimeUtil.ResizeArray(ref prefabLayers, nestCount);
 
                 var baseMap = new ListMap<TAdditionValue, TRemoveKey, TManipulator>(mainSet, default);
 
@@ -185,7 +186,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
         {
             var valueEnumerable = values.Where(x => x.IsNotNull());
             var nestCount = PrefabNestCount(OuterObject);
-            var useOnSceneLayer = PrefabSafeUniqueCollectionRuntimeUtil.ShouldUsePrefabOnSceneLayer(OuterObject);
+            var useOnSceneLayer = PSUCRuntimeUtil.ShouldUsePrefabOnSceneLayer(OuterObject);
 
             if (nestCount == 0)
             {
@@ -220,7 +221,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
         {
             var valueEnumerable = values.Where(x => x.IsNotNull());
             var nestCount = PrefabNestCount(OuterObject);
-            var useOnSceneLayer = PrefabSafeUniqueCollectionRuntimeUtil.ShouldUsePrefabOnSceneLayer(OuterObject);
+            var useOnSceneLayer = PSUCRuntimeUtil.ShouldUsePrefabOnSceneLayer(OuterObject);
 
             if (nestCount == 0)
             {
@@ -251,7 +252,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
         private protected void RemoveIf(Func<TAdditionValue, bool> predicate)
         {
             var nestCount = PrefabNestCount(OuterObject);
-            var useOnSceneLayer = PrefabSafeUniqueCollectionRuntimeUtil.ShouldUsePrefabOnSceneLayer(OuterObject);
+            var useOnSceneLayer = PSUCRuntimeUtil.ShouldUsePrefabOnSceneLayer(OuterObject);
 
             if (nestCount == 0)
             {
@@ -269,7 +270,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
         private protected void Clear()
         {
             var nestCount = PrefabNestCount(OuterObject);
-            var useSceneLayer = PrefabSafeUniqueCollectionRuntimeUtil.ShouldUsePrefabOnSceneLayer(OuterObject);
+            var useSceneLayer = PSUCRuntimeUtil.ShouldUsePrefabOnSceneLayer(OuterObject);
 
             if (nestCount == 0)
             {
@@ -309,7 +310,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
         private static class ValidateMethodHolder<TAdditionValue, TRemoveKey, TManipulator, TComponent>
         {
             public static MethodInfo OnValidateCallbackMethodGeneric =
-                PrefabSafeUniqueCollectionRuntimeUtil.GetOnValidateCallbackMethod(typeof(TAdditionValue),
+                PSUCRuntimeUtil.GetOnValidateCallbackMethod(typeof(TAdditionValue),
                     typeof(TRemoveKey), typeof(TManipulator), typeof(TComponent));
         }
 #endif

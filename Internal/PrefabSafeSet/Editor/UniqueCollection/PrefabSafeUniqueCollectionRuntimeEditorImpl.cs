@@ -55,7 +55,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
             PrefabSafeUniqueCollection.NestCount = nestCount;
 
             var shouldUsePrefabOnSceneLayer =
-                PrefabSafeUniqueCollectionRuntimeUtil.ShouldUsePrefabOnSceneLayer(component);
+                PSUCRuntimeUtil.ShouldUsePrefabOnSceneLayer(component);
             var maxLayerCount = shouldUsePrefabOnSceneLayer ? nestCount - 1 : nestCount;
 
             // https://github.com/anatawa12/AvatarOptimizer/issues/52
@@ -83,7 +83,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
                 }
                 else
                 {
-                    PrefabSafeUniqueCollectionRuntimeUtil.ResizeArray(ref PrefabSafeUniqueCollection.prefabLayers,
+                    PSUCRuntimeUtil.ResizeArray(ref PrefabSafeUniqueCollection.prefabLayers,
                         maxLayerCount);
                     var currentLayer = PrefabSafeUniqueCollection.prefabLayers[maxLayerCount - 1];
                     currentLayer.additions = currentLayer.additions.Concat(onSceneLayer.additions).ToArray();
@@ -121,7 +121,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
             // first, replace missing with null
             if (typeof(Object).IsAssignableFrom(typeof(TRemoveKey)))
             {
-                var context = new PrefabSafeUniqueCollectionUtil.NullOrMissingContext(self.OuterObject);
+                var context = new PSUCUtil.NullOrMissingContext(self.OuterObject);
 
                 void ReplaceMissingWithNullEntries(TAdditionValue?[] array)
                 {
@@ -188,20 +188,20 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
             {
                 var currentLayer = self.onSceneLayer;
                 //self.usingOnSceneLayer = true; // this will create prefab overrides, which is not good.
-                DistinctCheckArrayEntry(ref currentLayer.additions, PrefabSafeUniqueCollectionRuntimeUtil.IsNotNull);
+                DistinctCheckArrayEntry(ref currentLayer.additions, PSUCRuntimeUtil.IsNotNull);
                 DistinctCheckArrayKey(ref currentLayer.removes,
                     x => x.IsNotNull() && !currentLayer.additions.Any(e => Equals(default(TManipulator).GetKey(e), x)));
             }
             else if (maxLayerCount == 0)
             {
-                DistinctCheckArrayEntry(ref self.mainSet, PrefabSafeUniqueCollectionRuntimeUtil.IsNotNull);
+                DistinctCheckArrayEntry(ref self.mainSet, PSUCRuntimeUtil.IsNotNull);
             }
             else if (maxLayerCount < self.prefabLayers.Length)
             {
                 var currentLayer = self.prefabLayers[maxLayerCount - 1] ??
                                    (self.prefabLayers[maxLayerCount - 1] =
                                        new PrefabLayer<TAdditionValue, TRemoveKey>());
-                DistinctCheckArrayEntry(ref currentLayer.additions, PrefabSafeUniqueCollectionRuntimeUtil.IsNotNull);
+                DistinctCheckArrayEntry(ref currentLayer.additions, PSUCRuntimeUtil.IsNotNull);
                 DistinctCheckArrayKey(ref currentLayer.removes,
                     x => x.IsNotNull() && !currentLayer.additions.Any(e => Equals(default(TManipulator).GetKey(e), x)));
             }
@@ -248,7 +248,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
                 targetLayer.removes = removes.ToArray();
 
                 // resize array.               
-                PrefabSafeUniqueCollectionRuntimeUtil.ResizeArray(ref self.prefabLayers, maxLayerCount);
+                PSUCRuntimeUtil.ResizeArray(ref self.prefabLayers, maxLayerCount);
             }
         }
     }

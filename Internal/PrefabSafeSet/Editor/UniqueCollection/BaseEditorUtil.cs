@@ -34,7 +34,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
     /// Utility to edit PrefabSafeUniqueCollection in CustomEditor with SerializedProperty
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public abstract partial class EditorUtil<TAdditionValue, TRemoveKey>
+    public abstract partial class BaseEditorUtil<TAdditionValue, TRemoveKey>
         where TAdditionValue : notnull
         where TRemoveKey : notnull
     {
@@ -45,21 +45,21 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
         public virtual int Count => Elements.Count(x => x.Contains);
         public virtual IEnumerable<TAdditionValue> Values => Elements.Where(x => x.Contains).Select(x => x.Value!);
 
-        public static EditorUtil<TAdditionValue, TRemoveKey> Create(SerializedProperty property, IEditorUtilHelper<TAdditionValue, TRemoveKey> helper) 
+        public static BaseEditorUtil<TAdditionValue, TRemoveKey> Create(SerializedProperty property, IEditorUtilHelper<TAdditionValue, TRemoveKey> helper) 
             => new Wrapper(property, helper);
 
-        static EditorUtil<TAdditionValue, TRemoveKey> CreateImpl(SerializedProperty property, int nestCount,
+        static BaseEditorUtil<TAdditionValue, TRemoveKey> CreateImpl(SerializedProperty property, int nestCount,
             IEditorUtilHelper<TAdditionValue, TRemoveKey> helper)
         {
             if (nestCount == 0)
                 return new Root(property, helper);
-            var useOnSceneLayer = PrefabSafeUniqueCollectionUtil.ShouldUsePrefabOnSceneLayer(property.serializedObject.targetObject);
+            var useOnSceneLayer = PSUCUtil.ShouldUsePrefabOnSceneLayer(property.serializedObject.targetObject);
             if (useOnSceneLayer)
                 return new PrefabModificationOnScene(property, nestCount, helper);
             return new PrefabModificationOnAsset(property, nestCount, helper);
         }
 
-        private EditorUtil(IEditorUtilHelper<TAdditionValue, TRemoveKey> helper)
+        private BaseEditorUtil(IEditorUtilHelper<TAdditionValue, TRemoveKey> helper)
         {
             _helper = helper ?? throw new ArgumentNullException(nameof(helper));
         }
@@ -122,7 +122,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
         where TAdditionValue : notnull
         where TRemoveKey : notnull
     {
-        EditorUtil<TAdditionValue, TRemoveKey> Container { get; }
+        BaseEditorUtil<TAdditionValue, TRemoveKey> Container { get; }
 
         TAdditionValue? Value { get; } // can be null if fake removed
         TRemoveKey RemoveKey { get; }

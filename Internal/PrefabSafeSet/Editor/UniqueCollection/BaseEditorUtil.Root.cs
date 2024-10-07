@@ -5,9 +5,9 @@ using UnityEditor;
 
 namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
 {
-    public abstract partial class EditorUtil<TAdditionValue, TRemoveKey>
+    public abstract partial class BaseEditorUtil<TAdditionValue, TRemoveKey>
     {
-        private sealed class Root : EditorUtil<TAdditionValue, TRemoveKey>
+        private sealed class Root : BaseEditorUtil<TAdditionValue, TRemoveKey>
         {
             private List<ElementImpl>? _list;
             private readonly SerializedProperty _mainSet;
@@ -89,7 +89,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
 
             private class ElementImpl : IElement<TAdditionValue, TRemoveKey>
             {
-                public EditorUtil<TAdditionValue, TRemoveKey> Container => _container;
+                public BaseEditorUtil<TAdditionValue, TRemoveKey> Container => _container;
                 public TAdditionValue Value { get; internal set; }
                 public TRemoveKey RemoveKey { get; }
                 public ElementStatus Status => Contains ? ElementStatus.Natural : ElementStatus.Invalid;

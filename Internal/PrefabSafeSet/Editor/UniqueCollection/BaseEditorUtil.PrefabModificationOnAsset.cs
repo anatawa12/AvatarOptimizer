@@ -3,7 +3,7 @@ using UnityEditor;
 
 namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
 {
-    public abstract partial class EditorUtil<TAdditionValue, TRemoveKey>
+    public abstract partial class BaseEditorUtil<TAdditionValue, TRemoveKey>
     {
         private sealed class PrefabModificationOnAsset : PrefabModificationBase
         {
