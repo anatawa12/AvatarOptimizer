@@ -89,8 +89,8 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
             {
                 var srcIter = src.Copy();
                 var dstIter = dst.Copy();
-                var srcEnd = src.GetEndProperty();
-                var dstEnd = dst.GetEndProperty();
+                var srcEnd = src.GetEndProperty(true);
+                var dstEnd = dst.GetEndProperty(true);
                 var enterChildren = true;
                 while (srcIter.Next(enterChildren) && !SerializedProperty.EqualContents(srcIter, srcEnd))
                 {
