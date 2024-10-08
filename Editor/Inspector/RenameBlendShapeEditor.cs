@@ -22,6 +22,8 @@ internal class RenameBlendShapeEditor : AvatarTagComponentEditorBase
 
     protected override void OnInspectorGUIInner()
     {
+        var component = (RenameBlendShape)target;
+        var shapes = EditSkinnedMeshComponentUtil.GetBlendShapes(component.GetComponent<SkinnedMeshRenderer>(), component);
         // header
         {
             var (original, changed, button) = DivideToTwo(EditorGUILayout.GetControlRect());
@@ -32,16 +34,27 @@ internal class RenameBlendShapeEditor : AvatarTagComponentEditorBase
             var content = new GUIContent("+");
             if (EditorGUI.DropdownButton(button, content, FocusType.Passive, EditorStyles.miniButton))
             {
-                var mesh = ((RenameBlendShape)target).GetComponent<SkinnedMeshRenderer>()?.sharedMesh;
-                var blendShapeNames = mesh == null
-                    ? Array.Empty<string>()
-                    : Enumerable.Range(0, mesh.blendShapeCount).Select(mesh.GetBlendShapeName).ToArray();
-                BlendShapePicker.Show(button, blendShapeNames, _nameMap, serializedObject);
-                //_nameMap.Add()
+                var shapeNames = shapes
+                    .Select(x => x.name)
+                    .Where(name => _nameMap.GetElementOf(name)?.Contains != true)
+                    .ToArray();
+                BlendShapePicker.Show(button, shapeNames, _nameMap, serializedObject);
             }
         }
 
+
+        var duplicatedNames = shapes
+            .Select(x => x.name)
+            .Where(name => _nameMap.GetElementOf(name)?.Contains != true)
+            .Concat(_nameMap.Entries.Select(x => x.Value).Where(x => !string.IsNullOrEmpty(x)))
+            .GroupBy(x => x)
+            .Where(x => x.Count() > 1)
+            .Select(x => x.Key)
+            .ToHashSet();
+
         Action? deferredAction = null;
+        var hasEmptyError = false;
+        var hasDuplicatedWarning = duplicatedNames.Any();
 
         foreach (var element in _nameMap.Elements)
         {
@@ -50,11 +63,21 @@ internal class RenameBlendShapeEditor : AvatarTagComponentEditorBase
             using var disabledScope = new EditorGUI.DisabledScope(!element.Contains);
 
             var (original, changed, button) = DivideToTwo(rect);
-
             GUI.Label(original, element.Key);
             if (element.Contains)
             {
+                var prevColor = GUI.color;
+                if (string.IsNullOrEmpty(element.Value))
+                {
+                    hasEmptyError = true;
+                    GUI.color = new Color(1, 0.5f, 0.5f);
+                }
+                else if (element.Value != null && duplicatedNames.Contains(element.Value))
+                {
+                    GUI.color = new Color(1, 1, 0.5f);
+                }
                 element.Set(EditorGUI.TextField(changed, element.Value));
+                GUI.color = prevColor;
 
                 if (GUI.Button(button, "-"))
                     deferredAction += () => element.Remove();
@@ -63,6 +86,16 @@ internal class RenameBlendShapeEditor : AvatarTagComponentEditorBase
             {
                 GUI.Label(changed, "(Removed)");
             }
+        }
+
+        if (hasEmptyError)
+        {
+            EditorGUILayout.HelpBox("Some changed names are empty.", MessageType.Error);
+        }
+
+        if (hasDuplicatedWarning)
+        {
+            EditorGUILayout.HelpBox("Some changed names are duplicated. Those blendShapes will be merged to one.", MessageType.Warning);
         }
 
         deferredAction?.Invoke();

@@ -47,11 +47,9 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeMap
                 _setValue(property.FindPropertyRelative(Names.Value), value.Value);
             }
 
-            public TKey? ReadRemoveKey(SerializedProperty property) =>
-                _getKey(property.FindPropertyRelative(Names.Key));
+            public TKey? ReadRemoveKey(SerializedProperty property) => _getKey(property);
 
-            public void WriteRemoveKey(SerializedProperty property, TKey value) =>
-                _setKey(property.FindPropertyRelative(Names.Key), value);
+            public void WriteRemoveKey(SerializedProperty property, TKey value) => _setKey(property, value);
 
             public TKey GetRemoveKey(KeyValuePair<TKey, TValue> value) => value.Key;
         }
