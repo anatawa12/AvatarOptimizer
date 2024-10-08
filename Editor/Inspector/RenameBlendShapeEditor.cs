@@ -80,7 +80,7 @@ internal class RenameBlendShapeEditor : AvatarTagComponentEditorBase
                 GUI.color = prevColor;
 
                 if (GUI.Button(button, "-"))
-                    deferredAction += () => element.Remove();
+                    deferredAction += () => element.EnsureRemoved();
             }
             else
             {
