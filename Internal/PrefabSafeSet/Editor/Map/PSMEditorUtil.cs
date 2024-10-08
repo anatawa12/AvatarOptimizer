@@ -71,6 +71,9 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeMap
         public bool HasPrefabOverride() => _upstream.HasPrefabOverride();
         public IReadOnlyList<IElement<TKey, TValue>> Elements => new ElementsWrapper(_upstream.Elements, this);
 
+        public  IElement<TKey, TValue> Add(TKey key, TValue value) =>
+            new ElementWrapper(_upstream.Add(new KeyValuePair<TKey, TValue>(key, value)), this);
+
         public IElement<TKey, TValue>? GetElementOf(TKey key) =>
             _upstream.GetElementOf(key) is { } element ? new ElementWrapper(element, this) : null;
 
