@@ -552,6 +552,25 @@ msgstr "Failed to save the texture. Refer to the log for details."
 
 # region RenameBlendShape
 
+# used in inspector
+
+msgid "RenameBlendShape:removed"
+msgstr "(Removed)"
+
+msgid "RenameBlendShape:original"
+msgstr "Original"
+
+msgid "RenameBlendShape:changed"
+msgstr "Changed"
+
+msgid "RenameBlendShape:error:empty-name-some"
+msgstr "Some changed names are empty."
+
+msgid "RenameBlendShape:warning:weight-conflict-some"
+msgstr "Some changed names are duplicated. Those blendShapes will be merged to one."
+
+# used in NDMF Console
+
 msgid "RenameBlendShape:error:empty-name"
 msgstr "Renamed BlendShape name for '{0}' is empty, which is not allowed."
 

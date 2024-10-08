@@ -28,8 +28,8 @@ internal class RenameBlendShapeEditor : AvatarTagComponentEditorBase
         {
             var (original, changed, button) = DivideToTwo(EditorGUILayout.GetControlRect());
 
-            GUI.Label(original, "Original", EditorStyles.boldLabel);
-            GUI.Label(changed, "Changed", EditorStyles.boldLabel);
+            GUI.Label(original, AAOL10N.Tr("RenameBlendShape:original"), EditorStyles.boldLabel);
+            GUI.Label(changed, AAOL10N.Tr("RenameBlendShape:changed"), EditorStyles.boldLabel);
 
             var content = new GUIContent("+");
             if (EditorGUI.DropdownButton(button, content, FocusType.Passive, EditorStyles.miniButton))
@@ -84,18 +84,18 @@ internal class RenameBlendShapeEditor : AvatarTagComponentEditorBase
             }
             else
             {
-                GUI.Label(changed, "(Removed)");
+                GUI.Label(changed, AAOL10N.Tr("RenameBlendShape:removed"));
             }
         }
 
         if (hasEmptyError)
         {
-            EditorGUILayout.HelpBox("Some changed names are empty.", MessageType.Error);
+            EditorGUILayout.HelpBox(AAOL10N.Tr("RenameBlendShape:error:empty-name-some"), MessageType.Error);
         }
 
         if (hasDuplicatedWarning)
         {
-            EditorGUILayout.HelpBox("Some changed names are duplicated. Those blendShapes will be merged to one.", MessageType.Warning);
+            EditorGUILayout.HelpBox(AAOL10N.Tr("RenameBlendShape:warning:weight-conflict-some"), MessageType.Warning);
         }
 
         deferredAction?.Invoke();
