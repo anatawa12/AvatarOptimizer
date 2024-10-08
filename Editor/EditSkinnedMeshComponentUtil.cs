@@ -206,6 +206,7 @@ namespace Anatawa12.AvatarOptimizer
                 [typeof(RemoveMeshByBlendShape)] = x => new RemoveMeshByBlendShapeProcessor((RemoveMeshByBlendShape)x),
                 [typeof(RemoveMeshByMask)] = x => new RemoveMeshByMaskProcessor((RemoveMeshByMask)x),
                 [typeof(InternalAutoFreezeMeaninglessBlendShape)] = x => new InternalAutoFreezeMeaninglessBlendShapeProcessor((InternalAutoFreezeMeaninglessBlendShape)x),
+                [typeof(RenameBlendShape)] = x => new RenameBlendShapeProcessor((RenameBlendShape)x),
                 [typeof(InternalRemoveEmptySubMesh)] = x => new RemoveEmptySubMeshProcessor((InternalRemoveEmptySubMesh)x),
             };
 
