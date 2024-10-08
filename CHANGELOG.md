@@ -55,7 +55,7 @@ The format is based on [Keep a Changelog].
 - Renamed debug options internally `#1228`
   - This will lose previously configured debug options.
   - However, debug options are not considered as Public API as stated in documents so this is not backward incompatible changes in semver 2.0.0 section 8.
-- Performance Improvements `#1234`
+- Performance Improvements `#1234` `#1243` `#1240`
 
 ### Deprecated
 
@@ -67,6 +67,7 @@ The format is based on [Keep a Changelog].
 - Avatar Optimizer does not support `Additive Reference Pose` `#1208`
 - Typo in menu for creating Asset Description `#1213`
 - maxSquish cannot be configured for mergePB`#1231`
+- Avatar Descriptor can be removed by Avatar Optimizer in extreamely rare case `#1242`
 
 ### Security
 
