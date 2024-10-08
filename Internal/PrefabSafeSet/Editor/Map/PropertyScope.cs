@@ -1,9 +1,10 @@
+using System;
 using UnityEditor;
 using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer.PrefabSafeMap
 {
-    public readonly struct PropertyScope<TKey, TValue>
+    public readonly struct PropertyScope<TKey, TValue> : IDisposable
         where TKey : notnull
         where TValue : notnull
     {
