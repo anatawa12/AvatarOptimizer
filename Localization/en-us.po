@@ -550,6 +550,19 @@ msgstr "Failed to save the texture. Refer to the log for details."
 
 # endregion
 
+# region RenameBlendShape
+
+msgid "RenameBlendShape:error:empty-name"
+msgstr "Renamed BlendShape name for '{0}' is empty, which is not allowed."
+
+msgid "RenameBlendShape:warning:weight-conflict"
+msgstr "Weight for merged BlendShape '{0}' is not same in all sources: {1}"
+
+msgid "RenameBlendShape:warning:animation-conflict"
+msgstr "Weights of source BlendShapes for merged BlendShape '{0}' is partially animated"
+
+# endregion
+
 # region AvatarGlobalComponent
 
 msgid "AvatarGlobalComponent:NotOnAvatarRoot"
