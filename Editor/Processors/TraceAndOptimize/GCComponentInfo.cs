@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using nadena.dev.ndmf;
+using UnityEditor;
 using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
@@ -30,6 +31,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             {
                 if (component is Transform) continue;
                 var activeness = ComputeActiveness(component, transformActiveness);
+                // objects without enabled checkbox are treated as enabled
+                // https://github.com/anatawa12/AvatarOptimizer/issues/1241
+                if (EditorUtility.GetObjectEnabled(component) == -1) activeness = true;
                 _dependencies.Add(component, new GCComponentInfo(component, activeness));
             }
 
