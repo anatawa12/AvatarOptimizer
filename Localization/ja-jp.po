@@ -487,7 +487,7 @@ msgid "RenameBlendShape:error:empty-name"
 msgstr "BlendShape '{0}' の変更後の名前が空です。BlendShape名を空にすることはできません。"
 
 msgid "RenameBlendShape:warning:weight-conflict"
-msgstr "BlendShape '{0}' への統合対象となるBlendShapeの値が揃っていません。その名前になるBlendShapeで1番目のBlendShapeの値が使用されます。\n"
+msgstr "BlendShape '{0}' への統合対象となるBlendShapeの値が揃っていません。統合対象の内のいずれかの値が使用されます。\n"
 "以下のBlendShapeが該当の統合対象です: {1}"
 
 msgid "RenameBlendShape:warning:animation-conflict"
