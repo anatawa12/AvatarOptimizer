@@ -148,11 +148,19 @@ namespace Anatawa12.AvatarOptimizer
         [Serializable]
         public struct CurveVector3Config
         {
-            public bool @override;
+            public CurveOverride @override;
             public Vector3 value;
             public AnimationCurve curveX;
             public AnimationCurve curveY;
             public AnimationCurve curveZ;
+            
+            public enum CurveOverride
+            {
+                Copy,
+                Override,
+                // Change bone angle to match the curve
+                Fix,
+            }
         }
 
         [Serializable]
