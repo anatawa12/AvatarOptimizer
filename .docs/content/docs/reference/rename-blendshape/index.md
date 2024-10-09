@@ -13,7 +13,7 @@ If renamed name is duplicated, it will merge the BlendShapes into one.
 
 ![component.png](component.png)
 
-You'll see list of blendShape mapping.
+You'll see list of BlendShape mapping.
 
 Click upper left '+' button to add new mapping.
 
