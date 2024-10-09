@@ -2,11 +2,10 @@ using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer
 {
-
     [AddComponentMenu("Avatar Optimizer/AAO Rename BlendShape")]
     [DisallowMultipleComponent]
     [HelpURL("https://vpm.anatawa12.com/avatar-optimizer/ja/docs/reference/rename-blend-shape/")]
-    public class RenameBlendShape : EditSkinnedMeshComponent
+    internal class RenameBlendShape : EditSkinnedMeshComponent
     {
         [SerializeField] internal PrefabSafeMap.PrefabSafeMap<string, string> nameMap;
 
