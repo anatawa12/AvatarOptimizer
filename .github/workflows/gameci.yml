@@ -33,6 +33,7 @@ jobs:
         with:
           repos: |
             https://vpm.anatawa12.com/vpm.json
+            https://vpm.nadena.dev/vpm-prerelease.json
 
       - uses: actions/cache@v4
         with:
@@ -48,7 +49,7 @@ jobs:
           testMode: EditMode
           githubToken: ${{ github.token }}
           coverageOptions: generateAdditionalMetrics;generateHtmlReport;generateBadgeReport;assemblyFilters:+com.anatawa12.avatar-optimizer.*
-          customParameters: -nographics
+          customParameters: 
           checkName: Test results ${{ matrix.unity }}
 
       - uses: actions/upload-artifact@v4

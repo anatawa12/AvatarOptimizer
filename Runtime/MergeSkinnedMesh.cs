@@ -35,6 +35,12 @@ namespace Anatawa12.AvatarOptimizer
         [SerializeField]
         internal bool skipEnablementMismatchedRenderers;
 
+        [AAOLocalized("MergeSkinnedMesh:prop:copyEnablementAnimation")]
+        [NotKeyable]
+        [ToggleLeft]
+        [SerializeField]
+        internal bool copyEnablementAnimation;
+
         APIChecker _checker;
 
         internal MergeSkinnedMesh()
@@ -42,6 +48,13 @@ namespace Anatawa12.AvatarOptimizer
             renderersSet = new PrefabSafeSet.PrefabSafeSet<SkinnedMeshRenderer>(this);
             staticRenderersSet = new PrefabSafeSet.PrefabSafeSet<MeshRenderer>(this);
             doNotMergeMaterials = new PrefabSafeSet.PrefabSafeSet<Material>(this);
+        }
+
+        private void OnValidate()
+        {
+            PrefabSafeSet.PrefabSafeSet.OnValidate(this, x => x.renderersSet);
+            PrefabSafeSet.PrefabSafeSet.OnValidate(this, x => x.staticRenderersSet);
+            PrefabSafeSet.PrefabSafeSet.OnValidate(this, x => x.doNotMergeMaterials);
         }
 
         /// <summary>

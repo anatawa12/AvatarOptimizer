@@ -6,9 +6,11 @@ using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer
 {
+    // Since AAO 1.8.0, this component can be added multiple times.
+    // In AAO 1.7.0 or earlier, this component was marked as [DisallowMultipleComponent].
     [AddComponentMenu("Avatar Optimizer/AAO Remove Mesh in Box")]
     [RequireComponent(typeof(SkinnedMeshRenderer))]
-    [DisallowMultipleComponent]
+    [AllowMultipleComponent]
     [HelpURL("https://vpm.anatawa12.com/avatar-optimizer/ja/docs/reference/remove-mesh-in-box/")]
     [PublicAPI]
     public sealed class RemoveMeshInBox : EditSkinnedMeshComponent
@@ -104,6 +106,8 @@ namespace Anatawa12.AvatarOptimizer
         [PublicAPI]
         public void Initialize(int version)
         {
+            // In Play Mode, the Reset() is not called so we have to call it manually here.
+            Reset();
             switch (version)
             {
                 case 1:

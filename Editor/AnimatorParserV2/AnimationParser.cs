@@ -49,10 +49,10 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             var children = blendTree.children;
 
             return NodesMerger.Merge<
-                ImmutableNodeContainer, ImmutablePropModNode<float>, ImmutablePropModNode<Object>,
-                BlendTreeElement<float>, BlendTreeElement<Object>,
-                ImmutableNodeContainer, ImmutableNodeContainer, ImmutablePropModNode<float>, 
-                ImmutablePropModNode<Object>,
+                ImmutableNodeContainer, ImmutablePropModNode<FloatValueInfo>, ImmutablePropModNode<ObjectValueInfo>,
+                BlendTreeElement<FloatValueInfo>, BlendTreeElement<ObjectValueInfo>,
+                ImmutableNodeContainer, ImmutableNodeContainer, ImmutablePropModNode<FloatValueInfo>, 
+                ImmutablePropModNode<ObjectValueInfo>,
                 BlendTreeMergeProperty
             >(children.Select(x => ParseMotionInner(root, x.motion, mapping)),
                 new BlendTreeMergeProperty(blendTree.blendType));
@@ -60,10 +60,10 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
         internal readonly struct BlendTreeMergeProperty : 
             IMergeProperty1<
-                ImmutableNodeContainer, ImmutablePropModNode<float>, ImmutablePropModNode<Object>,
-                BlendTreeElement<float>, BlendTreeElement<Object>,
-                ImmutableNodeContainer, ImmutableNodeContainer, ImmutablePropModNode<float>,
-                ImmutablePropModNode<Object>
+                ImmutableNodeContainer, ImmutablePropModNode<FloatValueInfo>, ImmutablePropModNode<ObjectValueInfo>,
+                BlendTreeElement<FloatValueInfo>, BlendTreeElement<ObjectValueInfo>,
+                ImmutableNodeContainer, ImmutableNodeContainer, ImmutablePropModNode<FloatValueInfo>,
+                ImmutablePropModNode<ObjectValueInfo>
             >
         {
             private readonly BlendTreeType _blendType;
@@ -76,17 +76,17 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             public ImmutableNodeContainer CreateContainer() => new();
             public ImmutableNodeContainer GetContainer(ImmutableNodeContainer source) => source;
 
-            public BlendTreeElement<float> GetIntermediate(ImmutableNodeContainer source,
-                ImmutablePropModNode<float> node, int index) => new BlendTreeElement<float>(index, node);
+            public BlendTreeElement<FloatValueInfo> GetIntermediate(ImmutableNodeContainer source,
+                ImmutablePropModNode<FloatValueInfo> node, int index) => new BlendTreeElement<FloatValueInfo>(index, node);
 
-            public BlendTreeElement<Object> GetIntermediate(ImmutableNodeContainer source,
-                ImmutablePropModNode<Object> node, int index) => new BlendTreeElement<Object>(index, node);
+            public BlendTreeElement<ObjectValueInfo> GetIntermediate(ImmutableNodeContainer source,
+                ImmutablePropModNode<ObjectValueInfo> node, int index) => new BlendTreeElement<ObjectValueInfo>(index, node);
 
-            public ImmutablePropModNode<float> MergeNode(List<BlendTreeElement<float>> nodes, int sourceCount) =>
-                new BlendTreeNode<float>(nodes, _blendType, partial: nodes.Count != sourceCount);
+            public ImmutablePropModNode<FloatValueInfo> MergeNode(List<BlendTreeElement<FloatValueInfo>> nodes, int sourceCount) =>
+                new BlendTreeNode<FloatValueInfo>(nodes, _blendType, partial: nodes.Count != sourceCount);
 
-            public ImmutablePropModNode<Object> MergeNode(List<BlendTreeElement<Object>> nodes, int sourceCount) =>
-                new BlendTreeNode<Object>(nodes, _blendType, partial: nodes.Count != sourceCount);
+            public ImmutablePropModNode<ObjectValueInfo> MergeNode(List<BlendTreeElement<ObjectValueInfo>> nodes, int sourceCount) =>
+                new BlendTreeNode<ObjectValueInfo>(nodes, _blendType, partial: nodes.Count != sourceCount);
         }
 
         private readonly Dictionary<(GameObject, AnimationClip), ImmutableNodeContainer> _parsedAnimationCache = new();
@@ -103,6 +103,26 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         {
             var nodes = new ImmutableNodeContainer();
 
+            AnimationClip? additiveReferenceClip;
+            // in seconds
+            float additiveReferenceFrame;
+
+            using (var serialized = new SerializedObject(clip))
+            {
+                if (serialized.FindProperty("m_AnimationClipSettings.m_HasAdditiveReferencePose").boolValue)
+                {
+                    additiveReferenceClip = (AnimationClip?)serialized
+                        .FindProperty("m_AnimationClipSettings.m_AdditiveReferencePoseClip").objectReferenceValue;
+                    additiveReferenceFrame = serialized
+                        .FindProperty("m_AnimationClipSettings.m_AdditiveReferencePoseTime").floatValue;
+                }
+                else
+                {
+                    additiveReferenceClip = null;
+                    additiveReferenceFrame = 0;
+                }
+            }
+
             foreach (var binding in AnimationUtility.GetCurveBindings(clip))
             {
                 var obj = AnimationUtility.GetAnimatedObject(root, binding);
@@ -117,7 +137,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 if (binding.type == typeof(Behaviour) && propertyName == "m_Enabled")
                     propertyName = Props.EnabledFor(obj);
 
-                var node = FloatAnimationCurveNode.Create(clip, binding);
+                var node = FloatAnimationCurveNode.Create(clip, binding, additiveReferenceClip, additiveReferenceFrame);
                 if (node == null) continue;
                 nodes.Set(componentOrGameObject, propertyName, node);
             }

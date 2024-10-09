@@ -36,9 +36,9 @@ namespace Anatawa12.AvatarOptimizer
             Clip = clip;
         }
 
-        public static IEnumerable<AnimationLocation> CollectAnimationLocation(RootPropModNode<float> node)
+        public static IEnumerable<AnimationLocation> CollectAnimationLocation(RootPropModNode<FloatValueInfo> node)
         {
-            foreach (var animatorNode in node.ComponentNodes.OfType<AnimatorPropModNode<float>>())
+            foreach (var animatorNode in node.ComponentNodes.OfType<AnimatorPropModNode<FloatValueInfo>>())
             foreach (var playableNodeInfo in animatorNode.LayersReversed.WhileApplied())
             foreach (var animatorNodeInfo in playableNodeInfo.Node.LayersReversed.WhileApplied())
             foreach (var animatorStateNode in animatorNodeInfo.Node.Children)
@@ -50,7 +50,7 @@ namespace Anatawa12.AvatarOptimizer
 
         public static IEnumerable<AnimationLocation> CollectAnimationLocation(Animator animator, int playableLayer,
             int animatorLayer,
-            AnimatorState state, ImmutablePropModNode<float> node)
+            AnimatorState state, ImmutablePropModNode<FloatValueInfo> node)
         {
             // fast path
             if (node is FloatAnimationCurveNode floatNode)
@@ -63,11 +63,11 @@ namespace Anatawa12.AvatarOptimizer
         }
 
         private static IEnumerable<AnimationLocation> CollectAnimationLocationSlow(Animator animator,
-            int playableLayer, int animatorLayer, AnimatorState state, ImmutablePropModNode<float> node)
+            int playableLayer, int animatorLayer, AnimatorState state, ImmutablePropModNode<FloatValueInfo> node)
         {
             // slow path: recursively collect blend tree
-            var queue = new Queue<(BlendTreeNode<float>, int[])>();
-            queue.Enqueue(((BlendTreeNode<float>)node, Array.Empty<int>()));
+            var queue = new Queue<(BlendTreeNode<FloatValueInfo>, int[])>();
+            queue.Enqueue(((BlendTreeNode<FloatValueInfo>)node, Array.Empty<int>()));
 
             while (queue.Count != 0)
             {
@@ -83,7 +83,7 @@ namespace Anatawa12.AvatarOptimizer
                             yield return new AnimationLocation(animator, playableLayer, animatorLayer, state,
                                 newLocation, floatNode.Curve, floatNode.Clip);
                             break;
-                        case BlendTreeNode<float> childBlendTree:
+                        case BlendTreeNode<FloatValueInfo> childBlendTree:
                             queue.Enqueue((childBlendTree, newLocation));
                             break;
                         default:
@@ -112,7 +112,7 @@ namespace Anatawa12.AvatarOptimizer
             hashCode.Add(AnimatorState);
             foreach (var location in BlendTreeLocation)
                 hashCode.Add(location);
-            hashCode.Add(Curve);
+            hashCode.Add(Curve.GetHashCode2());
             return hashCode.ToHashCode();
         }
 

@@ -8,27 +8,113 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- AnyState to Entry/Exit optimization in Optimize Animator `#1157`
+
+### Changed
+- Performance Improvements with Mesh Manipulation, especially with blendshape-heavy meshes `#1234` `#1243` `#1240`
+
+### Deprecated
+
+### Removed
+
+### Fixed
+- maxSquish cannot be configured for mergePB`#1231`
+- Error from Optimize Texture if there is Merge Skinned Mesh with material slot animation `#1235`
+- Unncecessary Prefab Overrides are Generated with Prefab Safe Set `#1236`
+- CS8632 warning for released version `#1237`
+- Avatar Descriptor can be removed by Avatar Optimizer in extreamely rare case `#1242`
+
+### Security
+
+## [1.8.0-beta.4] - 2024-10-05
+### Changed
+- Animator Parser Debug Window now supports ObjectReference animation support [`#1222`](https://github.com/anatawa12/AvatarOptimizer/pull/1222)
+- Reimplemented Animator Parser node system [`#1227`](https://github.com/anatawa12/AvatarOptimizer/pull/1227)
+- Renamed debug options internally [`#1228`](https://github.com/anatawa12/AvatarOptimizer/pull/1228)
+  - This will lose previously configured debug options.
+  - However, debug options are not considered as Public API as stated in documents so this is not backward incompatible changes in semver 2.0.0 section 8.
+
+### Fixed
+- API about Prefab Safe Set are broken with prefab instance [`#1219`](https://github.com/anatawa12/AvatarOptimizer/pull/1219)
+- Optimize Texture may cause false positive optimization with blendtree [`#1225`](https://github.com/anatawa12/AvatarOptimizer/pull/1225)
+- Error with PrefabSafeSet [`#1221`](https://github.com/anatawa12/AvatarOptimizer/pull/1221)
+
+## [1.7.13] - 2024-10-01
+## [1.8.0-beta.3] - 2024-09-30
+### Added
+- API to get in advance whether a polygon will be removed [`#1177`](https://github.com/anatawa12/AvatarOptimizer/pull/1177)
+
+### Changed
+- Improved Prefab Safe Set, which are used in MergePhysBone, MergeSkinnedMesh, FreezeBlendShape and more components [`#1212`](https://github.com/anatawa12/AvatarOptimizer/pull/1212)
+  - This should improve compatibility with replacing base prefab, which is added in Unity 2022.
+- Allow multiple component for Remove Mesh components with API [`#1216`](https://github.com/anatawa12/AvatarOptimizer/pull/1216) [`#1218`](https://github.com/anatawa12/AvatarOptimizer/pull/1218)
+  - This allows non-destructive tools to add Remove Mesh components even if Remove Mesh component are added before.
+
+### Fixed
+- Typo in menu for creating Asset Description [`#1213`](https://github.com/anatawa12/AvatarOptimizer/pull/1213)
+- Optimize Texture broken with Crunch Compression [`#1215`](https://github.com/anatawa12/AvatarOptimizer/pull/1215)
+
+## [1.7.13-beta.2] - 2024-09-29
+### Fixed
+- Default value for RemoveMeshInBox is not correct in Play mode [`#1217`](https://github.com/anatawa12/AvatarOptimizer/pull/1217)
+    - This fix will make `Initialize` method set default value for `boxes`.
+
+## [1.8.0-beta.2] - 2024-09-25
+### Changed
+- Reimplement Preview system with NDMF Preview System [`#1131`](https://github.com/anatawa12/AvatarOptimizer/pull/1131)
+  - This will prevent issues relates to Animation Mode bug.
+  - This allows you to preview Remove Mesh components without selecting Mesh OR while in Animation Mode.
+
+### Fixed
+- Texture Packing which resolves to the white texture would break the Unity Editor [`#1193`](https://github.com/anatawa12/AvatarOptimizer/pull/1193)
+- Performance issues with preview system [`#1195`](https://github.com/anatawa12/AvatarOptimizer/pull/1195)
+- Avatar Optimizer does not support `Additive Reference Pose` [`#1208`](https://github.com/anatawa12/AvatarOptimizer/pull/1208)
+
+## [1.7.13-beta.1] - 2024-09-23
+### Fixed
+- Null Reference Exception with newly created VRCAnimatorPlayAudio [`#1199`](https://github.com/anatawa12/AvatarOptimizer/pull/1199)
+- Particle System that uses local scale will be broken [`#1197`](https://github.com/anatawa12/AvatarOptimizer/pull/1197)
+- Avatars with Visame Skinned Mesh disabled will not able to upload [`#1202`](https://github.com/anatawa12/AvatarOptimizer/pull/1202)
+
+## [1.8.0-beta.1] - 2024-09-20
+### Added
+- AnyState to Entry/Exit optimization in Optimize Animator [`#1157`](https://github.com/anatawa12/AvatarOptimizer/pull/1157)
   - If AAO found animator layer only with AnyState, AAO tries to convert them to Entry / Exit pattern.
     - Currently due to implementation there are some patterns that can be convert but but not converted.
     - We may relax some restriction in the future.
   - Because we have to check for each condition if we use AnyState but we can check for only one (in best case) with entry/exit, this generally reduces cost for checking an parameter in a state.
   - Combined with Entry / Exit to 1D BlendTree optimization, which is implemented in previous release, your AnyState layer may be optimized to 1D BlendTree.
+- Optimize Texture in Trace nad Optimize [`#1181`](https://github.com/anatawa12/AvatarOptimizer/pull/1181) [`#1184`](https://github.com/anatawa12/AvatarOptimizer/pull/1184)
+  - Avatar Optimizer will pack texture and tries to reduce the VRAM usage.
+  - Currently liltoon is only supported.
+- `Copy Enablement Animation` to Merge Skinned Mesh [`#1173`](https://github.com/anatawa12/AvatarOptimizer/pull/1173)
+  - This feature copies activeness / enablement animation from merge target renderers to the merged renderer.
+  - This feature is not enabled by default. You have to enable it in the inspector.
+  - This feature supports copying activeness animation of `activeSelf` of the GameObjects or ancestors of the GameObjects.
+    However, this feature does not work if multiple GameObjects (or both GameObject and Renderer itself) are animated.
+  - In addition, this feature will be animate the `enabled` of the merged renderer, so you must not animate the `enabled` of the merged renderer.
+    - If animations are unsupported, AAO will show an error message and abort the build.
+- Support Read/Write disabled Meshes with Av3Emulator Enabled [`#1185`](https://github.com/anatawa12/AvatarOptimizer/pull/1185)
+  - Previously, AAO cannot process meshes with Read/Write disabled if AAO is triggered by Av3Emulator.
+  - Since this release, AAO can process meshes with Read/Write disabled if AAO is triggered by Av3Emulator.
+  - In addition, AAO now supports non-Float32 vertex buffers. 
+    - We still use Float32 internally so Int32 data might lose precision a little.
+    - However, AFAIK there is no real-world problem with this so we implemented this way.
+    - If you found such a case, please report it.
+  - This change make AAO incompatible with Unity without Graphics.
+    - If you're building your avatar with batchmode with -nographics, please remove -nographics.
+- Asset Description for Avatar Modify Support bundled in an avatar, Shinano [`#1189`](https://github.com/anatawa12/AvatarOptimizer/pull/1189)
 
 ### Changed
-- Skip Enablement Mismatched Renderers is now disabled by default `#1169`
+- Skip Enablement Mismatched Renderers is now disabled by default [`#1169`](https://github.com/anatawa12/AvatarOptimizer/pull/1169)
   - You still can enable it in the Inspector.
   - This change does not affect the behavior of previously added components.
-
-### Deprecated
+- Use UInt16 index buffer if possible even when total vertex count is more than 2^16 [`#1178`](https://github.com/anatawa12/AvatarOptimizer/pull/1178)
+  - With baseVertex in index buffer, we can use UInt16 index buffer even if total vertex count is more than 2^16.
+  - Of course, if one submeh references wide range of vertices, we cannot use UInt16 index buffer so we still use UInt32 index buffer in such a case.
 
 ### Removed
-- Unity 2019 Support `#1146`
+- Unity 2019 Support [`#1146`](https://github.com/anatawa12/AvatarOptimizer/pull/1146)
   - For 2019 users, please use 1.7.x.
-
-### Fixed
-
-### Security
 
 ## [1.7.12] - 2024-08-27
 ## [1.7.12-beta.3] - 2024-08-25
@@ -1518,7 +1604,14 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.12...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/1.8.0-beta.4...HEAD
+[1.8.0-beta.4]: https://github.com/anatawa12/AvatarOptimizer/compare/1.7.13...v1.8.0-beta.4
+[1.7.13]: https://github.com/anatawa12/AvatarOptimizer/compare/1.8.0-beta.3...v1.7.13
+[1.8.0-beta.3]: https://github.com/anatawa12/AvatarOptimizer/compare/1.7.13-beta.2...v1.8.0-beta.3
+[1.7.13-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/1.8.0-beta.2...v1.7.13-beta.2
+[1.8.0-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/1.7.13-beta.1...v1.8.0-beta.2
+[1.7.13-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/1.8.0-beta.1...v1.7.13-beta.1
+[1.8.0-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.12...v1.8.0-beta.1
 [1.7.12]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.12-beta.3...v1.7.12
 [1.7.12-beta.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.12-beta.2...v1.7.12-beta.3
 [1.7.12-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.12-beta.1...v1.7.12-beta.2

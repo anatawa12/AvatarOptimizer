@@ -14,8 +14,9 @@ namespace Anatawa12.AvatarOptimizer
         private SerializedProperty _optimizeAnimator = null!; // Initialized in OnEnable
         private SerializedProperty _mergeSkinnedMesh = null!; // Initialized in OnEnable
         private SerializedProperty _allowShuffleMaterialSlots = null!; // Initialized in OnEnable
+        private SerializedProperty _optimizeTexture = null!; // Initialized in OnEnable
         private SerializedProperty _mmdWorldCompatibility = null!; // Initialized in OnEnable
-        private SerializedProperty _advancedSettings = null!; // Initialized in OnEnable
+        private SerializedProperty _debugOptions = null!; // Initialized in OnEnable
         private GUIContent _advancedSettingsLabel = new GUIContent();
         private GUIContent _debugOptionsLabel = new GUIContent();
 
@@ -29,8 +30,9 @@ namespace Anatawa12.AvatarOptimizer
             _optimizeAnimator = serializedObject.FindProperty(nameof(TraceAndOptimize.optimizeAnimator));
             _mergeSkinnedMesh = serializedObject.FindProperty(nameof(TraceAndOptimize.mergeSkinnedMesh));
             _allowShuffleMaterialSlots = serializedObject.FindProperty(nameof(TraceAndOptimize.allowShuffleMaterialSlots));
+            _optimizeTexture = serializedObject.FindProperty(nameof(TraceAndOptimize.optimizeTexture));
             _mmdWorldCompatibility = serializedObject.FindProperty(nameof(TraceAndOptimize.mmdWorldCompatibility));
-            _advancedSettings = serializedObject.FindProperty(nameof(TraceAndOptimize.advancedSettings));
+            _debugOptions = serializedObject.FindProperty(nameof(TraceAndOptimize.debugOptions));
         }
 
         protected override void OnInspectorGUIInner()
@@ -58,6 +60,7 @@ namespace Anatawa12.AvatarOptimizer
                 EditorGUILayout.PropertyField(_allowShuffleMaterialSlots);
                 EditorGUI.indentLevel--;
             }
+            EditorGUILayout.PropertyField(_optimizeTexture);
 
             _advancedSettingsLabel.text = AAOL10N.Tr("TraceAndOptimize:prop:advancedOptimization");
             AdvancedOpened = EditorGUILayout.Foldout(AdvancedOpened, _advancedSettingsLabel);
@@ -70,11 +73,11 @@ namespace Anatawa12.AvatarOptimizer
             }
 
             _debugOptionsLabel.text = AAOL10N.Tr("TraceAndOptimize:prop:debugOptions");
-            if (EditorGUILayout.PropertyField(_advancedSettings, _debugOptionsLabel, false))
+            if (EditorGUILayout.PropertyField(_debugOptions, _debugOptionsLabel, false))
             {
                 EditorGUI.indentLevel++;
                 EditorGUILayout.HelpBox(AAOL10N.Tr("TraceAndOptimize:warn:debugOptions"), MessageType.Warning);
-                var iterator = _advancedSettings.Copy();
+                var iterator = _debugOptions.Copy();
                 var enterChildren = true;
                 while (iterator.NextVisible(enterChildren))
                 {

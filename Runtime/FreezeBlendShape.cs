@@ -17,5 +17,10 @@ namespace Anatawa12.AvatarOptimizer
         }
 
         public HashSet<string> FreezingShapeKeys => shapeKeysSet.GetAsSet();
+
+        private void OnValidate()
+        {
+            PrefabSafeSet.PrefabSafeSet.OnValidate(this, x => x.shapeKeysSet);
+        }
     }
 }

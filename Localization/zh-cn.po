@@ -650,12 +650,6 @@ msgstr "在模型的根对象下没有找到Animator组件。"
 
 #region MeshInfo2
 
-msgid "MeshInfo2:error:MeshNotReadable"
-msgstr "由于网格不可读，无法在播放模式中处理网格。"
-
-msgid "MeshInfo2:error:MeshNotReadable:description"
-msgstr "请在网格的导入设置中将 Read/Write (读取/写入) 设置为true。"
-
 msgid "MeshInfo2:warning:multiPassRendering"
 msgstr ""
 "在使用'{0}'组件的网格中，使用了多个材质进行多通道渲染。\n"

@@ -68,31 +68,48 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 }
             }
 
-            var freezes = new BitArray(target.BlendShapes.Count);
-            for (var i = 0; i < target.BlendShapes.Count; i++)
-                freezes[i] = freezeNames.Contains(target.BlendShapes[i].name);
+            Profiler.BeginSample("DoFreezeBlendShape New");
+            Profiler.BeginSample("CollectVerticesByBuffer");
+            var vertexByBuffer = target.Vertices.GroupBy(x => x.BlendShapeBuffer)
+                .Select(x => (buffer: x.Key, vertices: x.ToArray()))
+                .ToList();
+            Profiler.EndSample();
 
-            Profiler.BeginSample("DoFreezeBlendShape");
-            foreach (var vertex in target.Vertices)
+            var freezingShapes = target.BlendShapes.Where((shape, _) => freezeNames.Contains(shape.name)).ToArray();
+
+            foreach (var (buffer, vertices) in vertexByBuffer)
             {
-                for (var i = 0; i < target.BlendShapes.Count; i++)
-                {
-                    if (!freezes[i]) continue;
-                    var (name, weight) = target.BlendShapes[i];
-                    Profiler.BeginSample("TryGetBlendShape");
-                    var result =
-                        vertex.TryGetBlendShape(name, weight, out var position, out var normal, out var tangent);
-                    Profiler.EndSample();
-                    if (!result) continue;
+                Profiler.BeginSample("CollectFrames");
+                var frames = freezingShapes
+                    .SelectMany(shape => buffer.GetApplyFramesInfo(shape.name, shape.weight))
+                    .ToList();
+                Profiler.EndSample();
 
-                    Profiler.BeginSample("Apply offsets");
-                    vertex.Position += position;
-                    vertex.Normal += normal;
-                    tangent += (Vector3)vertex.Tangent;
+                Profiler.BeginSample("ApplyFramesForEachVertex");
+                foreach (var vertex in vertices)
+                {
+                    Profiler.BeginSample("ProcessVertex");
+                    var position = vertex.Position;
+                    var normal = vertex.Normal;
+                    var tangent = (Vector3)vertex.Tangent;
+                    foreach (var frame in frames)
+                    {
+                        Profiler.BeginSample("ApplyFrame");
+                        position += buffer.DeltaVertices[frame.FrameIndex][vertex.BlendShapeBufferVertexIndex] * frame.ApplyWeight;
+                        normal += buffer.DeltaNormals[frame.FrameIndex][vertex.BlendShapeBufferVertexIndex] * frame.ApplyWeight;
+                        tangent += buffer.DeltaTangents[frame.FrameIndex][vertex.BlendShapeBufferVertexIndex] * frame.ApplyWeight;
+                        Profiler.EndSample();
+                    }
+                    
+                    vertex.Position = position;
+                    vertex.Normal = normal;
                     vertex.Tangent = new Vector4(tangent.x, tangent.y, tangent.z, vertex.Tangent.w);
-                    vertex.BlendShapes.Remove(name);
                     Profiler.EndSample();
                 }
+                Profiler.EndSample();
+
+                foreach (var (name, _) in freezingShapes)
+                    buffer.RemoveBlendShape(name);
             }
             Profiler.EndSample();
 
@@ -101,7 +118,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 int srcI = 0, dstI = 0;
                 for (; srcI < target.BlendShapes.Count; srcI++)
                 {
-                    if (!freezes[srcI])
+                    if (!freezeNames.Contains(target.BlendShapes[srcI].name))
                     {
                         // for keep prop: move the BlendShape index. name is not changed.
                         context.RecordMoveProperty(targetSMR, VProp.BlendShapeIndex(srcI), VProp.BlendShapeIndex(dstI));

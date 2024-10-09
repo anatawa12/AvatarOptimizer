@@ -71,7 +71,6 @@ namespace Anatawa12.AvatarOptimizer
         public MergePhysBoneEditorModificationUtils(SerializedObject serializedObject)
         {
             this._serializedObject = serializedObject;
-            var nestCount = PrefabSafeSet.PrefabSafeSetUtil.PrefabNestCount(serializedObject.targetObject);
             MakeParent = serializedObject.FindProperty(nameof(MergePhysBone.makeParent));
 
             Version = ValueProp(nameof(MergePhysBone.versionConfig), nameof(VRCPhysBoneBase.version));
@@ -99,7 +98,7 @@ namespace Anatawa12.AvatarOptimizer
             // == Stretch & Squish ==
             StretchMotion = CurveProp(nameof(MergePhysBone.stretchMotionConfig), nameof(VRCPhysBoneBase.stretchMotion), nameof(VRCPhysBoneBase.stretchMotionCurve));
             MaxStretch = CurveProp(nameof(MergePhysBone.maxStretchConfig), nameof(VRCPhysBoneBase.maxStretch), nameof(VRCPhysBoneBase.maxStretchCurve));
-            MaxSquish = CurveProp(nameof(MergePhysBone.maxStretchConfig), nameof(VRCPhysBoneBase.maxStretch), nameof(VRCPhysBoneBase.maxStretchCurve));
+            MaxSquish = CurveProp(nameof(MergePhysBone.maxSquishConfig), nameof(VRCPhysBoneBase.maxSquish), nameof(VRCPhysBoneBase.maxSquishCurve));
             // == Grab & Pose ==
             AllowGrabbing = PermissionProp(nameof(MergePhysBone.allowGrabbingConfig), nameof(VRCPhysBoneBase.allowGrabbing), nameof(VRCPhysBoneBase.grabFilter));
             AllowPosing = PermissionProp(nameof(MergePhysBone.allowPosingConfig), nameof(VRCPhysBoneBase.allowPosing), nameof(VRCPhysBoneBase.poseFilter));
@@ -112,7 +111,7 @@ namespace Anatawa12.AvatarOptimizer
 
             var componentsSetProp = serializedObject.FindProperty(nameof(MergePhysBone.componentsSet));
             ComponentsSetEditorUtil = PrefabSafeSet.EditorUtil<VRCPhysBoneBase>.Create(
-                componentsSetProp, nestCount, x => (VRCPhysBoneBase)x.objectReferenceValue,
+                componentsSetProp, x => (VRCPhysBoneBase)x.objectReferenceValue,
                 (x, v) => x.objectReferenceValue = v);
         }
 

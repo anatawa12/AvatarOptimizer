@@ -251,6 +251,11 @@ namespace Anatawa12.AvatarOptimizer
         {
             componentsSet = new PrefabSafeSet.PrefabSafeSet<VRCPhysBoneBase>(this);
         }
+
+        private void OnValidate()
+        {
+            PrefabSafeSet.PrefabSafeSet.OnValidate(this, x => x.componentsSet);
+        }
     }
 
     internal enum CollidersSettings

@@ -136,8 +136,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             {
                 foreach (var prop in properties)
                 {
-                    _modifications.Add(component, prop, new VariableComponentPropModNode<float>(Modifier!), true);
-                    _modifications.Add(component, prop, new VariableComponentPropModNode<Object>(Modifier!), true);
+                    _modifications.Add(component, prop, new VariableComponentPropModNode(Modifier!), true);
                 }
             }
         }
@@ -285,7 +284,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             {
                 foreach (var shape in MmdBlendShapeNames)
                     modifications.Add(bodySkinnedMesh, $"blendShape.{shape}",
-                        new VariableComponentPropModNode<float>(descriptor), true);
+                        new VariableComponentPropModNode(descriptor), true);
             }
         }
 
@@ -320,7 +319,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 var blendShapePropName =
                     $"blendShape.{skinnedMeshRenderer.sharedMesh.GetBlendShapeName(binding.Index)}";
                 nodes.Add(skinnedMeshRenderer, blendShapePropName,
-                    new VariableComponentPropModNode<float>(vrmBlendShapeProxy));
+                    new VariableComponentPropModNode(vrmBlendShapeProxy));
             }
 
             // Currently, MaterialValueBindings are guaranteed to not change (MaterialName, in particular)
@@ -345,7 +344,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 var blendShapePropName =
                     $"blendShape.{skinnedMeshRenderer.sharedMesh.GetBlendShapeName(binding.Index)}";
                 nodes.Add(skinnedMeshRenderer, blendShapePropName,
-                    new VariableComponentPropModNode<float>(vrm10Instance));
+                    new VariableComponentPropModNode(vrm10Instance));
             }
 
             // Currently, MaterialValueBindings are guaranteed to not change (MaterialName, in particular)
@@ -449,39 +448,39 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             }
 
             return NodesMerger.Merge<
-                AnimatorLayerNodeContainer, AnimatorLayerPropModNode<float>, AnimatorLayerPropModNode<Object>,
-                AnimatorStatePropModNode<float>, AnimatorStatePropModNode<Object>,
+                AnimatorLayerNodeContainer, AnimatorLayerPropModNode<FloatValueInfo>, AnimatorLayerPropModNode<ObjectValueInfo>,
+                AnimatorStatePropModNode<FloatValueInfo>, AnimatorStatePropModNode<ObjectValueInfo>,
                 (AnimatorState, ImmutableNodeContainer),
-                ImmutableNodeContainer, ImmutablePropModNode<float>, ImmutablePropModNode<Object>,
+                ImmutableNodeContainer, ImmutablePropModNode<FloatValueInfo>, ImmutablePropModNode<ObjectValueInfo>,
                 LayerMerger
             >(parsedMotions, default);
         }
 
         struct LayerMerger : IMergeProperty1<
-            AnimatorLayerNodeContainer, AnimatorLayerPropModNode<float>, AnimatorLayerPropModNode<Object>,
-            AnimatorStatePropModNode<float>, AnimatorStatePropModNode<Object>,
+            AnimatorLayerNodeContainer, AnimatorLayerPropModNode<FloatValueInfo>, AnimatorLayerPropModNode<ObjectValueInfo>,
+            AnimatorStatePropModNode<FloatValueInfo>, AnimatorStatePropModNode<ObjectValueInfo>,
             (AnimatorState, ImmutableNodeContainer),
-            ImmutableNodeContainer, ImmutablePropModNode<float>, ImmutablePropModNode<Object>
+            ImmutableNodeContainer, ImmutablePropModNode<FloatValueInfo>, ImmutablePropModNode<ObjectValueInfo>
         >
         {
             public AnimatorLayerNodeContainer CreateContainer() => new AnimatorLayerNodeContainer();
             public ImmutableNodeContainer GetContainer((AnimatorState, ImmutableNodeContainer) source) => source.Item2;
 
-            public AnimatorStatePropModNode<float> GetIntermediate((AnimatorState, ImmutableNodeContainer) source,
-                ImmutablePropModNode<float> node, int index) =>
-                new AnimatorStatePropModNode<float>(node, source.Item1);
+            public AnimatorStatePropModNode<FloatValueInfo> GetIntermediate((AnimatorState, ImmutableNodeContainer) source,
+                ImmutablePropModNode<FloatValueInfo> node, int index) =>
+                new AnimatorStatePropModNode<FloatValueInfo>(node, source.Item1);
 
-            public AnimatorStatePropModNode<Object> GetIntermediate((AnimatorState, ImmutableNodeContainer) source,
-                ImmutablePropModNode<Object> node, int index) =>
-                new AnimatorStatePropModNode<Object>(node, source.Item1);
+            public AnimatorStatePropModNode<ObjectValueInfo> GetIntermediate((AnimatorState, ImmutableNodeContainer) source,
+                ImmutablePropModNode<ObjectValueInfo> node, int index) =>
+                new AnimatorStatePropModNode<ObjectValueInfo>(node, source.Item1);
 
-            public AnimatorLayerPropModNode<float>
-                MergeNode(List<AnimatorStatePropModNode<float>> nodes, int sourceCount) =>
-                new AnimatorLayerPropModNode<float>(nodes, nodes.Count != sourceCount);
+            public AnimatorLayerPropModNode<FloatValueInfo>
+                MergeNode(List<AnimatorStatePropModNode<FloatValueInfo>> nodes, int sourceCount) =>
+                new AnimatorLayerPropModNode<FloatValueInfo>(nodes, nodes.Count != sourceCount);
 
-            public AnimatorLayerPropModNode<Object>
-                MergeNode(List<AnimatorStatePropModNode<Object>> nodes, int sourceCount) =>
-                new AnimatorLayerPropModNode<Object>(nodes, nodes.Count != sourceCount);
+            public AnimatorLayerPropModNode<ObjectValueInfo>
+                MergeNode(List<AnimatorStatePropModNode<ObjectValueInfo>> nodes, int sourceCount) =>
+                new AnimatorLayerPropModNode<ObjectValueInfo>(nodes, nodes.Count != sourceCount);
         }
 
         AnimatorWeightState? GetWeightState(float weight, AnimatorWeightChange external)

@@ -73,7 +73,7 @@ namespace Anatawa12.AvatarOptimizer.Test.PrefabSafeSet
                 InstanceSerialized = new SerializedObject(Instance);
 
                 EditorUtil<string> MakeUtil(SerializedObject obj, int nestCount) => EditorUtil<string>.Create(
-                        obj.FindProperty("stringSet"), nestCount,
+                        obj.FindProperty("stringSet"),
                         x => x.stringValue, (x, v) => x.stringValue = v);
 
                 List<string> props = new List<string>();
