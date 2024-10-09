@@ -78,6 +78,16 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
             return implType.GetMethod("OnValidate", BindingFlags.Public | BindingFlags.Static)!
                 .MakeGenericMethod(tComponentType);
         }
+
+        // Avoid buffer overflow on exit
+        public static void SetIsNewFalse<TAdditionValue, TRemoveKey, TManipulator>(
+            this PrefabSafeUniqueCollection<TAdditionValue, TRemoveKey, TManipulator> collection)
+            where TAdditionValue : notnull
+            where TRemoveKey : notnull
+            where TManipulator : struct, IManipulator<TAdditionValue, TRemoveKey>
+        {
+            collection.IsNew = false;
+        }
 #endif
     }
 
@@ -135,7 +145,18 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
             // ReSharper disable once Unity.NoNullCoalescing
             OuterObject = outerObject ?? throw new ArgumentNullException(nameof(outerObject));
             IsNew = true;
-            UnityEditor.EditorApplication.delayCall += () => IsNew = false;
+            // This would cause buffer overflow on [Performance] logging on exiting Unity.
+            // This would make unity crash on exit so I replaced with SetIsNewFalse extension method on PSUCRuntimeUtil
+            // This buffer overflow is caused by the very long type name as a result of the generic type name expansion.
+            // The log does not include the generic parameters of the function, so we can shorten by moving 
+            // the generic parameters from type generic to function generic.
+            // In this case, I created a extension method to set IsNew to false and used it as a delayCall callback.
+            //
+            // Please refer Performance::Tracker::Report (crash location) in Unity source code / assembly.
+            // You would see sprintf (not snprintf) is used to format the log message with fixed buffer size.
+            // TODO: report to Unity
+            //  UnityEditor.EditorApplication.delayCall += () => IsNew = false;
+            UnityEditor.EditorApplication.delayCall += this.SetIsNewFalse;
 #endif
         }
 
