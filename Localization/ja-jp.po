@@ -462,6 +462,39 @@ msgstr "テクスチャの保存に失敗しました。詳細はログを参照
 
 # endregion
 
+# region RenameBlendShape
+
+# used in inspector
+
+msgid "RenameBlendShape:removed"
+msgstr "(削除済)"
+
+msgid "RenameBlendShape:original"
+msgstr "元の名前"
+
+msgid "RenameBlendShape:changed"
+msgstr "変更後の名前"
+
+msgid "RenameBlendShape:error:empty-name-some"
+msgstr "変更後の名前が空になっているものがあります。"
+
+msgid "RenameBlendShape:warning:weight-conflict-some"
+msgstr "変更後の名前が重複しているものがあります。重複するBlendShapeは1つに統合されます。"
+
+# used in NDMF Console
+
+msgid "RenameBlendShape:error:empty-name"
+msgstr "BlendShape '{0}' の変更後の名前が空です。BlendShape名を空にすることはできません。"
+
+msgid "RenameBlendShape:warning:weight-conflict"
+msgstr "BlendShape '{0}' への統合対象となるBlendShapeの値が揃っていません。その名前になるBlendShapeで1番目のBlendShapeの値が使用されます。\n"
+"以下のBlendShapeが該当の統合対象です: {1}"
+
+msgid "RenameBlendShape:warning:animation-conflict"
+msgstr "BlendShape '{0}' への統合対象となるBlendShapeに対するアニメーションが異なります。"
+
+# endregion
+
 # region AvatarGlobalComponent
 
 msgid "AvatarGlobalComponent:NotOnAvatarRoot"
