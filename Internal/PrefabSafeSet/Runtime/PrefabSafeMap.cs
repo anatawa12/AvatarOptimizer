@@ -25,10 +25,6 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeMap
     public class PrefabSafeMap<TKey, TValue> : PrefabSafeUniqueCollection<MapEntry<TKey, TValue>, TKey, PrefabSafeMapManipulator<TKey, TValue>>
         where TKey : notnull
     {
-#if UNITY_EDITOR
-        [SerializeField, HideInInspector] internal TKey? fakeSlot;
-#endif
-
         public PrefabSafeMap(Object outerObject) : base(outerObject)
         {
         }
