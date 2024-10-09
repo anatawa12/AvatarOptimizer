@@ -488,10 +488,11 @@ msgstr "BlendShape '{0}' の変更後の名前が空です。BlendShape名を空
 
 msgid "RenameBlendShape:warning:weight-conflict"
 msgstr "BlendShape '{0}' への統合対象となるBlendShapeの値が揃っていません。統合対象の内のいずれかの値が使用されます。\n"
-"以下のBlendShapeが該当の統合対象です: {1}"
+"以下のBlendShapeが該当するBlendShapeです: {1}"
 
 msgid "RenameBlendShape:warning:animation-conflict"
-msgstr "BlendShape '{0}' への統合対象となるBlendShapeに対するアニメーションが異なります。"
+msgstr "BlendShape '{0}' への統合対象となるBlendShapeに対するアニメーションが異なります。\n"
+"以下のBlendShapeが該当するBlendShapeです: {1}"
 
 # endregion
 
