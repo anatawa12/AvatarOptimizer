@@ -52,6 +52,10 @@ jobs:
           customParameters: 
           checkName: Test results ${{ matrix.unity }}
 
+      - name: "Show files at root folder to find crash log"
+        if: always()
+        run: ls -la
+
       - uses: actions/upload-artifact@v4
         if: always()
         with:

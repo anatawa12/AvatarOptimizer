@@ -54,6 +54,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         RemoveEmpty = -15000,
         AutoConfigureFreezeBlendShape = -10000 - 1,
         AfterRemoveMesh = -10000,
+        AfterFreezeBlendShape = -10000 + 1,
     }
 
     internal interface IMeshInfoComputer

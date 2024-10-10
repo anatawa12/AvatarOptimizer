@@ -135,11 +135,11 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                                     // if object is dropped from hierarchy view, add all components of the object
                                     foreach (var component in gameObject.GetComponents(_elementType))
                                         if (component != null)
-                                            EditorUtil.GetElementOf(component).EnsureAdded();
+                                            EditorUtil.GetElementOf(component).Add();
                                 }
                                 else
                                 {
-                                    EditorUtil.GetElementOf(object2).EnsureAdded();
+                                    EditorUtil.GetElementOf(object2).Add();
                                 }
                                 flag3 = true;
                                 DragAndDrop.activeControlID = 0;

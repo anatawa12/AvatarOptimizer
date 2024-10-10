@@ -65,7 +65,7 @@ namespace Anatawa12.AvatarOptimizer
         protected readonly ValueConfigProp ResetWhenDisabled;
         #endregion
 
-        protected readonly PrefabSafeSet.EditorUtil<VRCPhysBoneBase> ComponentsSetEditorUtil;
+        protected readonly PrefabSafeSet.PSSEditorUtil<VRCPhysBoneBase> ComponentsSetEditorUtil;
         // ReSharper restore MemberCanBePrivate.Global
 
         public MergePhysBoneEditorModificationUtils(SerializedObject serializedObject)
@@ -110,7 +110,7 @@ namespace Anatawa12.AvatarOptimizer
             ResetWhenDisabled = ValueProp(nameof(MergePhysBone.resetWhenDisabledConfig), nameof(VRCPhysBoneBase.resetWhenDisabled));
 
             var componentsSetProp = serializedObject.FindProperty(nameof(MergePhysBone.componentsSet));
-            ComponentsSetEditorUtil = PrefabSafeSet.EditorUtil<VRCPhysBoneBase>.Create(
+            ComponentsSetEditorUtil = PrefabSafeSet.PSSEditorUtil<VRCPhysBoneBase>.Create(
                 componentsSetProp, x => (VRCPhysBoneBase)x.objectReferenceValue,
                 (x, v) => x.objectReferenceValue = v);
         }

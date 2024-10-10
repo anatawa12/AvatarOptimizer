@@ -21,7 +21,7 @@ namespace Anatawa12.AvatarOptimizer.Test.PrefabSafeSet
             }
         }
 
-        [TestCase("mainSet", true, ElementStatus.Natural)]
+        [TestCase("mainSet", true, ElementStatus.AddedTwice)]
         [TestCase("mainSet", false, ElementStatus.Removed)]
         [TestCase("removedInInstance", true, ElementStatus.AddedTwice)]
         [TestCase("removedInInstance", false, ElementStatus.Removed)]
@@ -32,7 +32,7 @@ namespace Anatawa12.AvatarOptimizer.Test.PrefabSafeSet
         [TestCase("fakeRemovedInInstance", true, ElementStatus.NewElement)]
         [TestCase("fakeRemovedInInstance", false, ElementStatus.FakeRemoved)]
         [TestCase("notExists", true, ElementStatus.NewElement)]
-        [TestCase("notExists", false, ElementStatus.NewSlot)]
+        [TestCase("notExists", false, ElementStatus.FakeRemoved)]
         public void SetExistenceInstance(string name, bool value, ElementStatus postStatus)
         {
             using (var scope = new PSSTestUtil.Scope())
@@ -92,7 +92,7 @@ namespace Anatawa12.AvatarOptimizer.Test.PrefabSafeSet
         }
 
         [TestCase("mainSet", ElementStatus.AddedTwice)]
-        [TestCase("removedInInstance", ElementStatus.Natural)]
+        [TestCase("removedInInstance", ElementStatus.AddedTwice)]
         [TestCase("addedInInstance", ElementStatus.NewElement)]
         [TestCase("addedTwiceInInstance", ElementStatus.AddedTwice)]
         [TestCase("fakeRemovedInInstance", ElementStatus.NewElement)]
@@ -157,7 +157,7 @@ namespace Anatawa12.AvatarOptimizer.Test.PrefabSafeSet
 
         [TestCase("mainSet", ElementStatus.Removed)]
         [TestCase("removedInInstance", ElementStatus.Removed)]
-        [TestCase("addedInInstance", ElementStatus.NewSlot)]
+        [TestCase("addedInInstance", ElementStatus.FakeRemoved)]
         [TestCase("addedTwiceInInstance", ElementStatus.Removed)]
         [TestCase("fakeRemovedInInstance", ElementStatus.FakeRemoved)]
         [TestCase("notExists", ElementStatus.FakeRemoved)]

@@ -1,15 +1,17 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.Assertions;
 using Object = UnityEngine.Object;
 
-namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
+namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
 {
-    public static class PrefabSafeSetUtil
+    // PSUC: PrefabSafeUniqueCollection
+    public static class PSUCUtil
     {
         public static int PrefabNestCount(Object instance)
         {
@@ -21,7 +23,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
         }
 
         public static bool ShouldUsePrefabOnSceneLayer(Object instance) =>
-            PrefabSafeSetRuntimeUtil.ShouldUsePrefabOnSceneLayer(instance);
+            PSUCRuntimeUtil.ShouldUsePrefabOnSceneLayer(instance);
 
         public static bool IsNullOrMissing<T>(this T self, Object context) =>
             self.IsNullOrMissing(new NullOrMissingContext(context));
@@ -87,8 +89,8 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             {
                 var srcIter = src.Copy();
                 var dstIter = dst.Copy();
-                var srcEnd = src.GetEndProperty();
-                var dstEnd = dst.GetEndProperty();
+                var srcEnd = src.GetEndProperty(true);
+                var dstEnd = dst.GetEndProperty(true);
                 var enterChildren = true;
                 while (srcIter.Next(enterChildren) && !SerializedProperty.EqualContents(srcIter, srcEnd))
                 {

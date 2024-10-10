@@ -16,7 +16,7 @@ namespace Anatawa12.AvatarOptimizer.Test
         {
             var mergePhysBone = target.AddComponent<MergePhysBone>();
             var serialized = new SerializedObject(mergePhysBone);
-            var set = EditorUtil<VRCPhysBoneBase>.Create(serialized.FindProperty("componentsSet"),
+            var set = PSSEditorUtil<VRCPhysBoneBase>.Create(serialized.FindProperty("componentsSet"),
                 x => (VRCPhysBoneBase)x.objectReferenceValue,
                 (x, v) => x.objectReferenceValue = v);
 

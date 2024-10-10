@@ -701,8 +701,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 var buffers = new List<BlendShapeBuffer>();
                 var verticesByBuffer = new List<List<(Vertex, int)>>();
 
-                foreach (var vertex in Vertices)
+                for (var i = 0; i < Vertices.Count; i++)
                 {
+                    var vertex = Vertices[i];
                     var buffer = vertex.BlendShapeBuffer;
                     var bufferIndex = buffers.IndexOf(buffer);
                     if (bufferIndex == -1)
@@ -712,8 +713,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                         verticesByBuffer.Add(new List<(Vertex, int)>());
                     }
 
-                    verticesByBuffer[bufferIndex].Add((vertex, vertex.BlendShapeBufferVertexIndex));
+                    verticesByBuffer[bufferIndex].Add((vertex, i));
                 }
+
                 Profiler.EndSample();
 
                 for (var i = 0; i < BlendShapes.Count; i++)
@@ -1132,8 +1134,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
     /// </summary>
     public class BlendShapeBuffer
     {
-        private readonly Dictionary<string, BlendShapeShape> _shapes = new();
-        public IReadOnlyDictionary<string, BlendShapeShape> Shapes => _shapes;
+        public Dictionary<string, BlendShapeShape> Shapes { get; } = new();
         public readonly Vector3[][] DeltaVertices;
         public readonly Vector3[][] DeltaNormals;
         public readonly Vector3[][] DeltaTangents;
@@ -1174,7 +1175,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     frameIndex++;
                 }
 
-                _shapes.Add(name, new BlendShapeShape(frameInfos));
+                Shapes.Add(name, new BlendShapeShape(frameInfos));
             }
             Profiler.EndSample();
         }
@@ -1188,24 +1189,25 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         }
 
         public ApplyFrame2Array GetApplyFramesInfo(string shapeName, float weight, bool getDefined = false) =>
-            _shapes.TryGetValue(shapeName, out var shape) ? shape.GetApplyFramesInfo(weight, getDefined) : default;
+            Shapes.TryGetValue(shapeName, out var shape) ? shape.GetApplyFramesInfo(weight, getDefined) : default;
 
         public static BlendShapeBuffer Empty { get; } = new();
 
-        public void RemoveBlendShape(string name) => _shapes.Remove(name);
+        public void RemoveBlendShape(string name) => Shapes.Remove(name);
     }
 
     public class BlendShapeShape
     {
-        internal readonly BlendShapeFrameInfo[] Frames;
+        public readonly BlendShapeFrameInfo[] Frames;
 
-        internal BlendShapeShape(BlendShapeFrameInfo[] frames)
+        public BlendShapeShape(BlendShapeFrameInfo[] frames)
         {
             if (frames.Length == 0) throw new ArgumentException("frames must not be empty", nameof(frames));
             // Frames must be sorted by weight
             Frames = frames;
         }
 
+        public int FrameCount => Frames.Length;
         public IEnumerable<int> FramesBufferIndices => Frames.Select(x => x.BufferIndex);
         
         public ApplyFrame2Array GetApplyFramesInfo(
@@ -1285,7 +1287,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         }
     }
 
-    internal readonly struct BlendShapeFrameInfo
+    public readonly struct BlendShapeFrameInfo
     {
         public readonly float Weight;
         public readonly int BufferIndex;
@@ -1331,18 +1333,40 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         public ApplyFrame2Array(int firstFrameIndex, float firstFrameApplyWeight)
         {
-            _firstFrameIndexInverted = ~firstFrameIndex;
-            _firstFrameApplyWeight = firstFrameApplyWeight;
-            _secondFrameIndexInverted = ~-1;
-            _secondFrameApplyWeight = 0;
+            // optimization: if first frame is not to be applied, we can skip first frame
+            if (firstFrameApplyWeight == 0)
+            {
+                this = default;
+            }
+            else
+            {
+                _firstFrameIndexInverted = ~firstFrameIndex;
+                _firstFrameApplyWeight = firstFrameApplyWeight;
+                _secondFrameIndexInverted = ~-1;
+                _secondFrameApplyWeight = 0;
+            }
         }
 
-        public ApplyFrame2Array(int firstFrameIndex, float firstFrameApplyWeight, int secondFrameIndex, float secondFrameApplyWeight)
+        public ApplyFrame2Array(int firstFrameIndex, float firstFrameApplyWeight, int secondFrameIndex,
+            float secondFrameApplyWeight)
         {
-            _firstFrameIndexInverted = ~firstFrameIndex;
-            _firstFrameApplyWeight = firstFrameApplyWeight;
-            _secondFrameIndexInverted = ~secondFrameIndex;
-            _secondFrameApplyWeight = secondFrameApplyWeight;
+            // optimization: if either frame is not to be applied, we can skip that frame
+            if (firstFrameApplyWeight == 0)
+            {
+                this = new ApplyFrame2Array(secondFrameIndex, secondFrameApplyWeight);
+            }
+            else if (secondFrameApplyWeight == 0)
+            {
+                this = new ApplyFrame2Array(firstFrameIndex, firstFrameApplyWeight);
+            }
+            else
+            {
+
+                _firstFrameIndexInverted = ~firstFrameIndex;
+                _firstFrameApplyWeight = firstFrameApplyWeight;
+                _secondFrameIndexInverted = ~secondFrameIndex;
+                _secondFrameApplyWeight = secondFrameApplyWeight;
+            }
         }
 
         public Enumerator GetEnumerator() => new(this);

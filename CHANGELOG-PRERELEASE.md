@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Rename BlendShape component to rename BlendShapes `#1245`
+  - This can be used to avoid blendShape name conflicts in Merge Skinned Mesh
 
 ### Changed
 - Performance Improvements with Mesh Manipulation, especially with blendshape-heavy meshes `#1234` `#1243` `#1240`
