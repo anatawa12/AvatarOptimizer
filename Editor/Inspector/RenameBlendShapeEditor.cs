@@ -26,7 +26,7 @@ internal class RenameBlendShapeEditor : AvatarTagComponentEditorBase
         var shapes = EditSkinnedMeshComponentUtil.GetBlendShapes(component.GetComponent<SkinnedMeshRenderer>(), component);
         // header
         {
-            var (original, changed, button) = DivideToTwo(EditorGUILayout.GetControlRect());
+            var (original, changed, button) = DivideToTwo(EditorGUI.IndentedRect(EditorGUILayout.GetControlRect()));
 
             GUI.Label(original, AAOL10N.Tr("RenameBlendShape:original"), EditorStyles.boldLabel);
             GUI.Label(changed, AAOL10N.Tr("RenameBlendShape:changed"), EditorStyles.boldLabel);
@@ -58,7 +58,7 @@ internal class RenameBlendShapeEditor : AvatarTagComponentEditorBase
 
         foreach (var element in _nameMap.Elements)
         {
-            var rect = EditorGUILayout.GetControlRect();
+            var rect = EditorGUI.IndentedRect(EditorGUILayout.GetControlRect());
             using var propertyScope = new PropertyScope<string, string>(element, rect, GUIContent.none);
             using var disabledScope = new EditorGUI.DisabledScope(!element.Contains);
 
@@ -67,16 +67,21 @@ internal class RenameBlendShapeEditor : AvatarTagComponentEditorBase
             if (element.Contains)
             {
                 var prevColor = GUI.color;
+                var tooltip = "";
                 if (string.IsNullOrEmpty(element.Value))
                 {
                     hasEmptyError = true;
                     GUI.color = new Color(1, 0.5f, 0.5f);
+                    tooltip = AAOL10N.Tr("RenameBlendShape:error:empty-name-this");
                 }
                 else if (element.Value != null && duplicatedNames.Contains(element.Value))
                 {
                     GUI.color = new Color(1, 1, 0.5f);
+                    tooltip = AAOL10N.Tr("RenameBlendShape:warning:name-conflict-this");
                 }
-                element.Set(EditorGUI.TextField(changed, element.Value));
+
+                GUI.Label(changed, new GUIContent("", tooltip));
+                element.Set(GUI.TextField(changed, element.Value));
                 GUI.color = prevColor;
 
                 if (GUI.Button(button, "-"))
