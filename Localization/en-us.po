@@ -566,7 +566,7 @@ msgstr "Changed"
 msgid "RenameBlendShape:error:empty-name-some"
 msgstr "Some changed names are empty."
 
-msgid "RenameBlendShape:warning:weight-conflict-some"
+msgid "RenameBlendShape:warning:name-conflict-some"
 msgstr "Some changed names are duplicated. Those blendShapes will be merged to one."
 
 # used in NDMF Console

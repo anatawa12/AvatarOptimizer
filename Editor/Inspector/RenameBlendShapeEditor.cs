@@ -95,7 +95,7 @@ internal class RenameBlendShapeEditor : AvatarTagComponentEditorBase
 
         if (hasDuplicatedWarning)
         {
-            EditorGUILayout.HelpBox(AAOL10N.Tr("RenameBlendShape:warning:weight-conflict-some"), MessageType.Warning);
+            EditorGUILayout.HelpBox(AAOL10N.Tr("RenameBlendShape:warning:name-conflict-some"), MessageType.Warning);
         }
 
         deferredAction?.Invoke();
