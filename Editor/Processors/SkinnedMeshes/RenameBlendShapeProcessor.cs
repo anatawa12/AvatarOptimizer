@@ -16,7 +16,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         public override void Process(BuildContext context, MeshInfo2 target)
         {
-            var mapping = GetBlendShapeSources(target.BlendShapes);
+            var mapping = CollectBlendShapeSources(target.BlendShapes, Component.nameMap.GetAsMap());
             var weightMap = target.BlendShapes.ToDictionary(x => x.name, x => x.weight);
             WarnErrorConflicts(mapping, weightMap, context);
             SetTemporalNameForEmpty(mapping);
@@ -218,10 +218,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             }            
         }
 
-        private List<(string name, float weight, List<string> sources)> GetBlendShapeSources(IEnumerable<(string, float)> blendShapes)
+        public static List<(string name, float weight, List<string> sources)> CollectBlendShapeSources(
+            IEnumerable<(string, float)> blendShapes, Dictionary<string, string?> mapping)
         {
-            var mapping = Component.nameMap.GetAsMap();
-
             var newList = new List<(string, float, List<string> sources)>();
 
             foreach (var (name, weight) in blendShapes)
@@ -261,7 +260,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             public override (string, float)[] BlendShapes()
             {
-                return _processor.GetBlendShapeSources(base.BlendShapes())
+                return CollectBlendShapeSources(base.BlendShapes(), _processor.Component.nameMap.GetAsMap())
                     .Select(x => (x.name, x.weight))
                     .ToArray();
             }
