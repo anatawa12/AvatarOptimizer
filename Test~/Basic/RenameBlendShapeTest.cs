@@ -84,6 +84,73 @@ public class RenameBlendShapeTest
     }
 
     [Test]
+    public void TestDoRenameSwapName()
+    {
+        // prepare test mesh
+        var cube = TestUtils.NewCubeMesh();
+        cube.AddBlendShapeFrame("test0", 100, NewFrame((0, Vector3.up)), null, null);
+        cube.AddBlendShapeFrame("test1", 100, NewFrame((0, Vector3.down)), null, null);
+        cube.AddBlendShapeFrame("test2", 100, NewFrame((0, Vector3.left)), null, null);
+
+        var newRenderer = TestUtils.NewSkinnedMeshRenderer(cube);
+        var meshInfo2 = new MeshInfo2(newRenderer);
+
+        // do process
+        var mapping = new List<(string, float, List<string>)>
+        {
+            ("test1", 0, new List<string> { "test0" }),
+            ("test0", 10, new List<string> { "test1" }),
+            ("test2", 20, new List<string> { "test2" }),
+        };
+        RenameBlendShapeProcessor.DoRenameBlendShapes(meshInfo2, mapping);
+
+        // check
+        var newMesh = new Mesh();
+        meshInfo2.WriteToMesh(newMesh);
+
+        Assert.That(newMesh.blendShapeCount, Is.EqualTo(3));
+
+        // check names
+        Assert.That(newMesh.GetBlendShapeName(0), Is.EqualTo("test1"));
+        Assert.That(newMesh.GetBlendShapeName(1), Is.EqualTo("test0"));
+        Assert.That(newMesh.GetBlendShapeName(2), Is.EqualTo("test2"));
+
+        // check frame
+        var frame = new Vector3[8];
+        newMesh.GetBlendShapeFrameVertices(0, 0, frame, null, null);
+        Assert.That(frame, Is.EqualTo(NewFrame((0, Vector3.up))));
+
+        newMesh.GetBlendShapeFrameVertices(1, 0, frame, null, null);
+        Assert.That(frame, Is.EqualTo(NewFrame((0, Vector3.down))));
+
+        newMesh.GetBlendShapeFrameVertices(2, 0, frame, null, null);
+        Assert.That(frame, Is.EqualTo(NewFrame((0, Vector3.left))));
+    }
+
+    [Test]
+    public void TestCollectSwapName()
+    {
+        var mapping = RenameBlendShapeProcessor.CollectBlendShapeSources(new List<(string, float)>()
+            {
+                ("test0", 0),
+                ("test1", 10),
+                ("test2", 20),
+            },
+            new Dictionary<string, string>
+            {
+                { "test0", "test1" },
+                { "test1", "test0" },
+            });
+
+        Assert.That(mapping, Is.EqualTo(new List<(string, float, List<string>)>
+        {
+            ("test1", 0, new List<string> { "test0" }),
+            ("test0", 10, new List<string> { "test1" }),
+            ("test2", 20, new List<string> { "test2" }),
+        }).UsingTupleAdapter());
+    }
+
+    [Test]
     public void TestDoRenameRenameToMerge()
     {
         // prepare test mesh
