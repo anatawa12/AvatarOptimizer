@@ -56,13 +56,13 @@ namespace Anatawa12.AvatarOptimizer
 
         public void ImportProperty(RootPropModNode<FloatValueInfo> node)
         {
-            if (FloatNode != null) throw new InvalidOperationException();
+            if (_floatNode != null) throw new InvalidOperationException();
             _floatNode = node;
         }
 
         public void ImportProperty(RootPropModNode<ObjectValueInfo> node)
         {
-            if (ObjectNode != null) throw new InvalidOperationException();
+            if (_objectNode != null) throw new InvalidOperationException();
             _objectNode = node;
         }
 
