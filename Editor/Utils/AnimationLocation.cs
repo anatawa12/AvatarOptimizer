@@ -119,4 +119,10 @@ namespace Anatawa12.AvatarOptimizer
         public IEnumerable<ObjectReference> ContextReferences => new[]
             { ObjectRegistry.GetReference(Component), ObjectRegistry.GetReference(Clip) };
     }
+
+    internal static class CollectAnimationLocationExtensions
+    {
+        public static IEnumerable<AnimationLocation> CollectAnimationLocation(this RootPropModNode<FloatValueInfo> node)
+            => AnimationLocation.CollectAnimationLocation(node);
+    }
 }

@@ -455,14 +455,13 @@ internal struct OptimizeTextureImpl {
     {
         var component = context.GetAnimationComponent(renderer);
 
-        if (!component.TryGetObject($"m_Materials.Array.data[{materialSlotIndex}]", out var animation))
-            return (safeToMerge: true, Array.Empty<Material>());
+        var animation = component.GetObjectNode($"m_Materials.Array.data[{materialSlotIndex}]");
 
-        if (animation.ComponentNodes.SingleOrDefaultIfNoneOrMultiple() is AnimatorPropModNode<ObjectValueInfo> componentNode)
+        if (animation.ComponentNodes.All(x => x is AnimatorPropModNode<ObjectValueInfo>))
         {
-            var possibleValues = componentNode.Value.PossibleValues;
+            var possibleValues = animation.Value.PossibleValues;
 
-            if (componentNode.Value.PossibleValues.All(x => x is Material))
+            if (possibleValues.All(x => x is Material))
                 return (safeToMerge: true, materials: possibleValues.Cast<Material>());
 
             return (safeToMerge: false, materials: possibleValues.OfType<Material>());
@@ -493,8 +492,13 @@ internal struct OptimizeTextureImpl {
         private T? GetValue<T>(string propertyName, Func<string, T> computer, bool considerAnimation) where T : struct
         {
             // animated; return null
-            if (considerAnimation && _infos.Any(x => x.TryGetFloat($"material.{propertyName}", out _)))
-                return null;
+            if (considerAnimation)
+            {
+                var animationProperty = $"material.{propertyName}";
+                if (_infos.Any(x => x.GetFloatNode(animationProperty).ComponentNodes.Any()))
+                    return null;
+            }
+
             return computer(propertyName);
         }
 

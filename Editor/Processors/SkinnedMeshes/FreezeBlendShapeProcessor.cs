@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Anatawa12.AvatarOptimizer.AnimatorParsersV2;
 using nadena.dev.ndmf;
 using UnityEngine;
 using UnityEngine.Profiling;
@@ -36,12 +37,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
                 foreach (var blendShape in freezeNames)
                 {
-                    if (animationComponent.TryGetFloat($"blendShape.{blendShape}", out var p))
+                    // do not create warning for constant animation
+                    var propModNode = animationComponent.GetFloatNode($"blendShape.{blendShape}");
+                    if (propModNode.ApplyState != ApplyState.Never)
                     {
-                        // allow constant animation
                         var weight = target.BlendShapes.Find(r => r.name == blendShape);
                         if (weight.name == null) continue; // no such blendShape 
-                        var values = p.Value.PossibleValues;
+                        var values = propModNode.Value.PossibleValues;
                         if (values != null)
                         {
                             // animated to constant.
@@ -56,7 +58,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                         } 
 
                         modified.Add(blendShape);
-                        sources.Add(p.ContextReferences);
+                        sources.Add(propModNode.ContextReferences);
                     }
                 }
 

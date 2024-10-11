@@ -34,7 +34,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             foreach (var collider in context.GetComponents<VRCPhysBoneColliderBase>())
             {
                 // if any of the property is animated, we do not merge the collider.
-                if (PhysBoneColliderProperties.Any(context.GetAnimationComponent(collider).ContainsFloat))
+                if (PhysBoneColliderProperties.Any(context.GetAnimationComponent(collider).IsAnimatedFloat))
                     continue;
 
                 var rootTransform = collider.GetRootTransform();
@@ -45,8 +45,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
                 bool IsAnimated()
                 {
-                    if (TransformProperties.Any(context.GetAnimationComponent(transform).ContainsFloat)) return true;
-                    if (context.GetAnimationComponent(transform.gameObject).ContainsFloat(Props.IsActive)) return true;
+                    if (TransformProperties.Any(context.GetAnimationComponent(transform).IsAnimatedFloat)) return true;
+                    if (context.GetAnimationComponent(transform.gameObject).IsAnimatedFloat(Props.IsActive)) return true;
                     return false;
                 }
 
@@ -175,7 +175,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         {
             foreach (var transformProperty in TransformProperties)
             {
-                if (!animation.TryGetFloat(transformProperty, out var property)) continue;
+                var property = animation.GetFloatNode(transformProperty);
                 if (property.SourceComponents.Any(sourceComponent => sourceComponent != physBone)) return true;
             }
 

@@ -281,7 +281,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             var properties = new List<(bool, ComponentOrGameObject, string)>();
 
             {
-                if (context.GetAnimationComponent(meshInfo.SourceRenderer).ContainsFloat(Props.EnabledFor(meshInfo.SourceRenderer)))
+                if (context.GetAnimationComponent(meshInfo.SourceRenderer).IsAnimatedFloat(Props.EnabledFor(meshInfo.SourceRenderer)))
                 {
                     properties.Add((meshInfo.SourceRenderer.enabled, meshInfo.SourceRenderer, Props.EnabledFor(meshInfo.SourceRenderer)));
                 }
@@ -290,7 +290,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                      meshInfo.SourceRenderer.transform.ParentEnumerable(commonParent, includeMe: true))
             {
                 var gameObject = transform.gameObject;
-                if (context.GetAnimationComponent(gameObject).ContainsFloat(Props.IsActive))
+                if (context.GetAnimationComponent(gameObject).IsAnimatedFloat(Props.IsActive))
                 {
                     properties.Add((gameObject.activeSelf, gameObject, Props.IsActive));
                 }
@@ -332,9 +332,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             var alwaysInactive = false;
             var locations = new HashSet<(bool initial, EqualsHashSet<AnimationLocation> animations)>();
             {
-                if (context.GetAnimationComponent(component).TryGetFloat(Props.EnabledFor(component), out var p))
+                var p = context.GetAnimationComponent(component).GetFloatNode(Props.EnabledFor(component));
+                if (p.ApplyState != AnimatorParsersV2.ApplyState.Never)
                 {
-                    if (p.ComponentNodes.Any(x => !(x is AnimatorParsersV2.AnimatorPropModNode<AnimatorParsersV2.FloatValueInfo>)))
+                    if (p.ComponentNodes.Any(x => x is not AnimatorParsersV2.AnimatorPropModNode<AnimatorParsersV2.FloatValueInfo>))
                         return null;
                     locations.Add((component.enabled,
                         new EqualsHashSet<AnimationLocation>(AnimationLocation.CollectAnimationLocation(p))));
@@ -347,7 +348,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             foreach (var transform in
                      component.transform.ParentEnumerable(context.AvatarRootTransform, includeMe: true))
             {
-                if (context.GetAnimationComponent(transform.gameObject).TryGetFloat(Props.IsActive, out var p))
+                var p = context.GetAnimationComponent(component).GetFloatNode(Props.IsActive);
+                if (p.ApplyState != AnimatorParsersV2.ApplyState.Never)
                 {
                     if (p.ComponentNodes.Any(x => x is not AnimatorParsersV2.AnimatorPropModNode<AnimatorParsersV2.FloatValueInfo>))
                         return null;
@@ -383,7 +385,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             foreach (var (property, node) in animationComponent.GetAllFloatProperties())
             {
                 if (property == Props.EnabledFor(typeof(SkinnedMeshRenderer))) continue; // m_Enabled is proceed separatedly
-                if (node.ComponentNodes.Any(x => !(x is AnimatorParsersV2.AnimatorPropModNode<AnimatorParsersV2.FloatValueInfo>)))
+                if (node.ComponentNodes.Any(x => x is not AnimatorParsersV2.AnimatorPropModNode<AnimatorParsersV2.FloatValueInfo>))
                     return null;
                 locations.UnionWith(AnimationLocation.CollectAnimationLocation(node)
                     .Select(location => (property, location)));
@@ -571,11 +573,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         private bool IsAnimatedForbidden(AnimationComponentInfo<PropertyInfo> component)
         {
             // any of object / pptr / material animation is forbidden
-            if (component.GetAllObjectProperties().Any())
+            if (component.GetAllObjectProperties().Any(x => x.node.ComponentNodes.Any()))
                 return true;
 
-            foreach (var (name, _) in component.GetAllFloatProperties())
+            foreach (var (name, node) in component.GetAllFloatProperties())
             {
+                // skip non animating ones
+                if (!node.ComponentNodes.Any()) continue;
                 // m_Enabled is allowed
                 if (name == Props.EnabledFor(typeof(SkinnedMeshRenderer))) continue;
                 // blendShapes are removed so it's allowed

@@ -357,8 +357,6 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 DestroyTracker.Untrack(componentInfo.Component, OnDestroy);
             _children.Clear();
         }
-
-        public RootPropModNode<TValueInfo>? Normalize() => IsEmpty ? null : this;
     }
 
     internal abstract class ImmutablePropModNode<TValueInfo> : PropModNode<TValueInfo>

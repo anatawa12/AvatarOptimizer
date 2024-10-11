@@ -415,6 +415,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 foreach (var (name, property) in component.GetAllFloatProperties())
                 {
                     if (!name.StartsWith("material.", StringComparison.Ordinal)) continue;
+                    if (!property.ComponentNodes.Any()) continue; // skip empty nodes
                     var materialPropertyName = name.Substring("material.".Length);
 
                     if (!properties.TryGetValue(materialPropertyName, out var list))
@@ -425,8 +426,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 var materials = new List<Material>();
                 for (var i = 0; i < meshInfo2.SubMeshes.Count; i++)
                 {
-                    if (component.TryGetObject($"m_Materials.Array.data[{i}]", out var objectNode))
-                        materials.AddRange(objectNode.Value.PossibleValues.OfType<Material>().Where(x => x));
+                    var objectNode = component.GetObjectNode($"m_Materials.Array.data[{i}]");
+                    materials.AddRange(objectNode.Value.PossibleValues.OfType<Material>().Where(x => x));
                     if (meshInfo2.SubMeshes[i].SharedMaterial is {} newMaterial)
                         materials.Add(newMaterial);
                 }
@@ -480,11 +481,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 return;
             }
 
-            if (context.GetAnimationComponent(target.SourceRenderer)
-                .TryGetFloat(Props.EnabledFor(target.SourceRenderer), out var p))
+            // if there is animation, we should warn it.
+            var propModNode = context.GetAnimationComponent(target.SourceRenderer).GetFloatNode(Props.EnabledFor(target.SourceRenderer));
+            if (propModNode.ComponentNodes.Any())
             {
                 BuildLog.LogError("MergeSinnedMesh:copy-enablement-animation:error:enablement-of-merged-mesh-is-animated",
-                    target.SourceRenderer, p);
+                    target.SourceRenderer, propModNode);
             }
 
             if (meshInfos.Length == 0) return;
@@ -514,18 +516,18 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             }
         }
 
-        private static IEnumerable<(ComponentOrGameObject target, HashSet<AnimationLocation> animaions)> GetActivenessAnimationLocations(
-            BuildContext context, Renderer component, Transform root)
+        private static IEnumerable<(ComponentOrGameObject target, HashSet<AnimationLocation> animaions)>
+            GetActivenessAnimationLocations(BuildContext context, Renderer component, Transform root)
         {
             {
-                if (context.GetAnimationComponent(component).TryGetFloat(Props.EnabledFor(component), out var p))
-                    if (AnimationLocation.CollectAnimationLocation(p).ToHashSet() is { Count: > 0 } locations)
-                        yield return (component, locations);
+                if (context.GetAnimationComponent(component).GetFloatNode(Props.EnabledFor(component))
+                        .CollectAnimationLocation().ToHashSet() is { Count: > 0 } locations)
+                    yield return (component, locations);
             }
             foreach (var transform in component.transform.ParentEnumerable(root, includeMe: true))
-                if (context.GetAnimationComponent(transform.gameObject).TryGetFloat(Props.IsActive, out var p))
-                    if (AnimationLocation.CollectAnimationLocation(p).ToHashSet() is { Count: > 0 } locations)
-                        yield return (transform.gameObject, locations);
+                if (context.GetAnimationComponent(transform.gameObject).GetFloatNode(Props.IsActive)
+                        .CollectAnimationLocation().ToHashSet() is { Count: > 0 } locations)
+                    yield return (transform.gameObject, locations);
         }
 
         private static void ActivenessAnimationWarning(IEnumerable<Renderer> renderers, Renderer target,
@@ -556,12 +558,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         {
             var locations = new HashSet<AnimationLocation>();
             {
-                if (context.GetAnimationComponent(component).TryGetFloat(Props.EnabledFor(component), out var p))
-                    locations.UnionWith(AnimationLocation.CollectAnimationLocation(p));
+                locations.UnionWith(context.GetAnimationComponent(component)
+                    .GetFloatNode(Props.EnabledFor(component)).CollectAnimationLocation());
             }
             foreach (var transform in component.transform.ParentEnumerable(context.AvatarRootTransform, includeMe: true))
-                if (context.GetAnimationComponent(transform.gameObject).TryGetFloat(Props.IsActive, out var p))
-                    locations.UnionWith(AnimationLocation.CollectAnimationLocation(p));
+                locations.UnionWith(context.GetAnimationComponent(transform.gameObject)
+                    .GetFloatNode(Props.IsActive).CollectAnimationLocation());
             return locations;
         }
 

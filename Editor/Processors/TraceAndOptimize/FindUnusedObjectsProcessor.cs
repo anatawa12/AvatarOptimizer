@@ -115,7 +115,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 if (!componentInfo.Component) continue; // swept
                 if (componentInfo.IsEntrypoint) continue;
                 if (!componentInfo.HeavyBehaviourComponent) continue;
-                if (_context.GetAnimationComponent(componentInfo.Component).ContainsFloat(Props.EnabledFor(componentInfo.Component)))
+                if (_context.GetAnimationComponent(componentInfo.Component).ContainsAnimationForFloat(Props.EnabledFor(componentInfo.Component)))
                     continue; // enabled is animated so we will not generate activeness animation
 
                 HashSet<Component> resultSet;
@@ -208,13 +208,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     return found;
                 var set = new HashSet<Component>();
 
-                if (context.GetAnimationComponent(entryPoint).ContainsFloat(Props.EnabledFor(entryPoint)))
+                if (context.GetAnimationComponent(entryPoint).ContainsAnimationForFloat(Props.EnabledFor(entryPoint)))
                     set.Add(entryPoint);
 
                 for (var transform = entryPoint.transform;
                      transform != context.AvatarRootTransform;
                      transform = transform.parent)
-                    if (context.GetAnimationComponent(transform.gameObject).ContainsFloat(Props.IsActive))
+                    if (context.GetAnimationComponent(transform.gameObject).ContainsAnimationForFloat(Props.IsActive))
                         set.Add(transform);
 
                 entryPointActiveness.Add(entryPoint, set);
@@ -392,7 +392,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 var transformProperties = context.GetAnimationComponent(transform);
                 // TODO: constant animation detection
                 foreach (var transformProperty in TransformProperties)
-                    if (transformProperties.ContainsFloat(transformProperty))
+                    if (transformProperties.IsAnimatedFloat(transformProperty))
                         return true;
 
                 return false;
@@ -402,7 +402,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             {
                 var objectProperties = context.GetAnimationComponent(transform.gameObject);
 
-                if (objectProperties.ContainsFloat(Props.IsActive))
+                if (objectProperties.IsAnimatedFloat(Props.IsActive))
                     return true;
 
                 return false;
