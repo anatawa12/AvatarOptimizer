@@ -476,11 +476,11 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
             public AnimatorLayerPropModNode<FloatValueInfo>
                 MergeNode(List<AnimatorStatePropModNode<FloatValueInfo>> nodes, int sourceCount) =>
-                new AnimatorLayerPropModNode<FloatValueInfo>(nodes, nodes.Count != sourceCount);
+                new AnimatorLayerPropModNode<FloatValueInfo>(nodes, nodes.Count != sourceCount ? ApplyState.Partially : ApplyState.Always);
 
             public AnimatorLayerPropModNode<ObjectValueInfo>
                 MergeNode(List<AnimatorStatePropModNode<ObjectValueInfo>> nodes, int sourceCount) =>
-                new AnimatorLayerPropModNode<ObjectValueInfo>(nodes, nodes.Count != sourceCount);
+                new AnimatorLayerPropModNode<ObjectValueInfo>(nodes, nodes.Count != sourceCount ? ApplyState.Partially : ApplyState.Always);
         }
 
         AnimatorWeightState? GetWeightState(float weight, AnimatorWeightChange external)

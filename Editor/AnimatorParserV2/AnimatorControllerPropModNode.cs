@@ -14,7 +14,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         }
 
         public override FloatValueInfo Value => FloatValueInfo.Variable;
-        public override bool AppliedAlways => true;
+        public override ApplyState ApplyState => ApplyState.Always;
     }
 
     internal readonly struct PlayableLayerNodeInfo<TValueInfo> : ILayer<TValueInfo>
@@ -55,21 +55,21 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         {
             _layersReversed = layersReversed;
 
-            _appliedAlways = new Lazy<bool>(
-                () => NodeImplUtils.AlwaysAppliedForOverriding(_layersReversed),
-                isThreadSafe: false);
-
             _constantInfo = new Lazy<TValueInfo>(
                 () => default(TValueInfo).ConstantInfoForOverriding(_layersReversed),
+                isThreadSafe: false);
+
+            _applyState = new Lazy<ApplyState>(
+                () => NodeImplUtils.ApplyStateForOverriding(_layersReversed),
                 isThreadSafe: false);
         }
 
 
-        private readonly Lazy<bool> _appliedAlways;
         private readonly Lazy<TValueInfo> _constantInfo;
+        private readonly Lazy<ApplyState> _applyState;
 
         public IEnumerable<PlayableLayerNodeInfo<TValueInfo>> LayersReversed => _layersReversed;
-        public override bool AppliedAlways => _appliedAlways.Value;
+        public override ApplyState ApplyState => _applyState.Value;
         public override TValueInfo Value => _constantInfo.Value;
         public override IEnumerable<ObjectReference> ContextReferences => base.ContextReferences.Concat(
             _layersReversed.SelectMany(x => x.Node.ContextReferences));
@@ -115,10 +115,9 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
         public IEnumerable<AnimatorLayerNodeInfo<TValueInfo>> LayersReversed => _layersReversed;
 
-        public override TValueInfo Value => default(TValueInfo).ConstantInfoForOverriding(_layersReversed);
-
         // we may possible to implement complex logic which simulates state machine but not for now.
-        public override bool AppliedAlways => NodeImplUtils.AlwaysAppliedForOverriding(_layersReversed);
+        public override ApplyState ApplyState => NodeImplUtils.ApplyStateForOverriding(_layersReversed);
+        public override TValueInfo Value => default(TValueInfo).ConstantInfoForOverriding(_layersReversed);
 
         public override IEnumerable<ObjectReference> ContextReferences =>
             _layersReversed.SelectMany(x => x.Node.ContextReferences);
@@ -126,6 +125,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
     internal enum AnimatorWeightState
     {
+        AlwaysZero,
         AlwaysOne,
         EitherZeroOrOne,
         Variable
@@ -135,19 +135,20 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         where TValueInfo : struct, IValueInfo<TValueInfo>
     {
         private readonly IEnumerable<AnimatorStatePropModNode<TValueInfo>> _children;
-        private readonly bool _partial;
+        private readonly ApplyState _layerApplyState;
 
-        public AnimatorLayerPropModNode(ICollection<AnimatorStatePropModNode<TValueInfo>> children, bool partial)
+        public AnimatorLayerPropModNode(ICollection<AnimatorStatePropModNode<TValueInfo>> children, ApplyState applyState)
         {
             // expected to pass list or array
             // ReSharper disable once PossibleMultipleEnumeration
             Debug.Assert(children.Any());
             // ReSharper disable once PossibleMultipleEnumeration
             _children = children;
-            _partial = partial;
+            _layerApplyState = applyState;
         }
 
-        public override bool AppliedAlways => !_partial && _children.All(x => x.AppliedAlways);
+        public override ApplyState ApplyState =>
+            _layerApplyState.MultiplyApplyState(_children.Select(x => x.ApplyState).MergeSideBySide());
         public override TValueInfo Value => default(TValueInfo).ConstantInfoForSideBySide(_children);
         public override IEnumerable<ObjectReference> ContextReferences => _children.SelectMany(x => x.ContextReferences);
         public IEnumerable<AnimatorStatePropModNode<TValueInfo>> Children => _children;
@@ -167,7 +168,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
         public ImmutablePropModNode<TValueInfo> Node => _node;
         public AnimatorState State => _state;
-        public override bool AppliedAlways => _node.AppliedAlways;
+        public override ApplyState ApplyState => _node.ApplyState;
         public override TValueInfo Value => _node.Value;
         public override IEnumerable<ObjectReference> ContextReferences => _node.ContextReferences;
     }
