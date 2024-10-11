@@ -100,12 +100,8 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
     {
         private readonly IEnumerable<AnimatorLayerNodeInfo<TValueInfo>> _layersReversed;
 
-        public static AnimatorControllerPropModNode<TValueInfo>? Create(List<AnimatorLayerNodeInfo<TValueInfo>> value)
+        public static AnimatorControllerPropModNode<TValueInfo> Create(List<AnimatorLayerNodeInfo<TValueInfo>> value)
         {
-            if (value.Count == 0) return null;
-            if (value.All(x => x.BlendingMode == AnimatorLayerBlendingMode.Additive && x.Node.Value.IsConstant))
-                return null; // unchanged constant
-
             value.Reverse();
             return new AnimatorControllerPropModNode<TValueInfo>(value);
         }

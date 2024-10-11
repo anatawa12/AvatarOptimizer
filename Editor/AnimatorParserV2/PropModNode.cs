@@ -13,6 +13,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
     interface IPropModNode
     {
         ApplyState ApplyState { get; }
+        bool IsConstantValue { get; }
     }
 
     interface IValueInfo<TValueInfo>
@@ -54,6 +55,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         where TValueInfo: struct, IValueInfo<TValueInfo>
     {
         public abstract ApplyState ApplyState { get; }
+        public bool IsConstantValue => Value.IsConstant;
 
         public abstract TValueInfo Value { get; }
         public abstract IEnumerable<ObjectReference> ContextReferences { get; }
@@ -213,19 +215,47 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             var current = ApplyState.Never;
             foreach (var layer in layersReversed)
             {
-                var layerState = ApplyStateForWeightState(layer.Weight)
-                    .MultiplyApplyState(layer.Node.ApplyState);
-                if (layer.BlendingMode != AnimatorLayerBlendingMode.Override)
-                    layerState = ApplyState.Partially.MultiplyApplyState(layerState);
-                switch (layerState)
+                switch (layer.BlendingMode)
                 {
-                    case ApplyState.Always:
-                        return ApplyState.Always;
-                    case ApplyState.Partially:
-                        current = ApplyState.Partially;
+                    case AnimatorLayerBlendingMode.Override:
+                    {
+                        var layerState = ApplyStateForWeightState(layer.Weight)
+                            .MultiplyApplyState(layer.Node.ApplyState);
+                        switch (layerState)
+                        {
+                            case ApplyState.Always:
+                                return ApplyState.Always;
+                            case ApplyState.Partially:
+                                current = ApplyState.Partially;
+                                break;
+                            case ApplyState.Never:
+                                break;
+                            default:
+                                throw new ArgumentOutOfRangeException();
+                        }
+
                         break;
-                    case ApplyState.Never:
+                    }
+                    case AnimatorLayerBlendingMode.Additive:
+                    {
+                        var layerState = ApplyStateForWeightState(layer.Weight)
+                            .MultiplyApplyState(layer.Node.ApplyState);
+                        switch (layerState)
+                        {
+                            case ApplyState.Always:
+                            case ApplyState.Partially:
+                                // constant node does not have effect with additive layer
+                                if (layer.Node.IsConstantValue) continue;
+                                current = ApplyState.Partially;
+                                break;
+                            case ApplyState.Never:
+                                break;
+                            default:
+                                throw new ArgumentOutOfRangeException();
+                        }
+
                         break;
+                    }
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
@@ -262,8 +292,18 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             }
         }
 
-        public static ApplyState MergeSideBySide(this IEnumerable<ApplyState> states) =>
-            states.Aggregate(ApplyState.Never, MergeSideBySide);
+        public static ApplyState MergeSideBySide(this IEnumerable<ApplyState> states)
+        {
+            if (states == null) throw new ArgumentNullException(nameof(states));
+
+            using IEnumerator<ApplyState> enumerator = states.GetEnumerator();
+            if (!enumerator.MoveNext()) return ApplyState.Never;
+            var result = enumerator.Current;
+            if (result == ApplyState.Partially) return ApplyState.Partially;
+            while (enumerator.MoveNext())
+                if (result != enumerator.Current) return ApplyState.Partially;
+            return result;
+        }
 
         public static ApplyState MergeSideBySide(this ApplyState a, ApplyState b) => (a, b) switch
         {

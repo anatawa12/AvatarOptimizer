@@ -70,12 +70,10 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             var nodes = merger.CreateContainer();
 
             foreach (var ((target, prop), value) in floats)
-                if (merger.MergeNode(value, sourceCount) is TResultFloatNode merged)
-                    nodes.Add(target, prop, merged);
+                nodes.Add(target, prop, merger.MergeNode(value, sourceCount));
 
             foreach (var ((target, prop), value) in objects)
-                if (merger.MergeNode(value, sourceCount) is TResultObjectNode merged)
-                    nodes.Add(target, prop, merged);
+                nodes.Add(target, prop, merger.MergeNode(value, sourceCount));
 
             return nodes;
         }
@@ -112,8 +110,8 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         TIntermediateFloat GetIntermediate(TSource source, TSourceFloatNode node, int index);
         TIntermediateObject GetIntermediate(TSource source, TSourceObjectNode node, int index);
 
-        TResultFloatNode? MergeNode(List<TIntermediateFloat> nodes, int sourceCount);
-        TResultObjectNode? MergeNode(List<TIntermediateObject> nodes, int sourceCount);
+        TResultFloatNode MergeNode(List<TIntermediateFloat> nodes, int sourceCount);
+        TResultObjectNode MergeNode(List<TIntermediateObject> nodes, int sourceCount);
     }
 
     static partial class NodesMerger 
@@ -240,11 +238,11 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 AnimatorLayerPropModNode<ObjectValueInfo> node, int index) =>
                 new AnimatorLayerNodeInfo<ObjectValueInfo>(source.Item1, source.Item2, node, index);
 
-            public AnimatorControllerPropModNode<FloatValueInfo>? MergeNode(List<AnimatorLayerNodeInfo<FloatValueInfo>> nodes,
+            public AnimatorControllerPropModNode<FloatValueInfo> MergeNode(List<AnimatorLayerNodeInfo<FloatValueInfo>> nodes,
                 int sourceCount) =>
                 AnimatorControllerPropModNode<FloatValueInfo>.Create(nodes);
 
-            public AnimatorControllerPropModNode<ObjectValueInfo>? MergeNode(List<AnimatorLayerNodeInfo<ObjectValueInfo>> nodes,
+            public AnimatorControllerPropModNode<ObjectValueInfo> MergeNode(List<AnimatorLayerNodeInfo<ObjectValueInfo>> nodes,
                 int sourceCount) =>
                 AnimatorControllerPropModNode<ObjectValueInfo>.Create(nodes);
         }
