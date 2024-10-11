@@ -8,26 +8,26 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
         // (bool always, bool constant, float value)
         public struct Expected
         {
-            public readonly bool Always;
+            public readonly ApplyState ApplyState;
             public readonly FloatValueInfo Value;
 
-            public Expected(bool always, FloatValueInfo value)
+            public Expected(ApplyState applyApplyState, FloatValueInfo value)
             {
-                Always = always;
+                ApplyState = applyApplyState;
                 Value = value;
             }
         }
 
-        public static Expected ConstantAlways(float value) => new Expected(true, new FloatValueInfo(value));
-        public static Expected ConstantPartially(float value) => new Expected(false, new FloatValueInfo(value));
-        public static Expected Variable(bool always = true) => new Expected(always, FloatValueInfo.Variable);
+        public static Expected ConstantAlways(float value) => new(ApplyState.Always, new FloatValueInfo(value));
+        public static Expected ConstantPartially(float value) => new(ApplyState.Partially, new FloatValueInfo(value));
+        public static Expected Variable(ApplyState applyState = ApplyState.Always) => new(applyState, FloatValueInfo.Variable);
 
         public static Expected MultipleAlways(params float[] values) =>
-            new Expected(true, new FloatValueInfo(values));
+            new(ApplyState.Always, new FloatValueInfo(values));
 
         public static void AssertPropertyNode(PropModNode<FloatValueInfo> propertyNode, Expected property)
         {
-            Assert.That(propertyNode.AppliedAlways, Is.EqualTo(property.Always));
+            Assert.That(propertyNode.ApplyState, Is.EqualTo(property.ApplyState));
             Assert.That(propertyNode.Value, Is.EqualTo(property.Value));
         }
     }

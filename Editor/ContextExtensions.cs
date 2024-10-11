@@ -56,7 +56,7 @@ namespace Anatawa12.AvatarOptimizer
                     if (constValue is not { } b) constValue = current;
                     else if (b != current) return null;
                 }
-                if (node.AppliedAlways || constValue == currentValue)
+                if (node.ApplyState == ApplyState.Always || constValue == currentValue)
                     return constValue;
             }
 

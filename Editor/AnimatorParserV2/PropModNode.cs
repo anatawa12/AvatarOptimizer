@@ -12,7 +12,6 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 {
     interface IPropModNode
     {
-        bool AppliedAlways { get; }
         ApplyState ApplyState { get; }
     }
 
@@ -54,10 +53,6 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
     internal abstract class PropModNode<TValueInfo> : IErrorContext, IPropModNode
         where TValueInfo: struct, IValueInfo<TValueInfo>
     {
-        /// <summary>
-        /// Returns true if this node is always applied. For inactive nodes, this returns false.
-        /// </summary>
-        public bool AppliedAlways => ApplyState == ApplyState.Always;
         public abstract ApplyState ApplyState { get; }
 
         public abstract TValueInfo Value { get; }
@@ -248,18 +243,11 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             _ => throw new ArgumentOutOfRangeException()
         };
 
-        public static bool AlwaysAppliedForOverriding<TLayer>(IEnumerable<TLayer> layersReversed)
-            where TLayer : ILayer
-        {
-            return layersReversed.Any(x =>
-                x.Weight == AnimatorWeightState.AlwaysOne && x.BlendingMode == AnimatorLayerBlendingMode.Override &&
-                x.Node.AppliedAlways);
-        }
-
         public static bool IsAlwaysOverride<TLayer>(this TLayer layer)
             where TLayer : ILayer
         {
-            return layer.Node.AppliedAlways && layer.Weight == AnimatorWeightState.AlwaysOne &&
+            return layer.Node.ApplyState == ApplyState.Always &&
+                   layer.Weight == AnimatorWeightState.AlwaysOne &&
                    layer.BlendingMode == AnimatorLayerBlendingMode.Override;
         }
 
@@ -315,18 +303,18 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         internal readonly struct ComponentInfo
         {
             public readonly ComponentPropModNodeBase<TValueInfo> Node;
-            public readonly bool AlwaysApplied;
+            public readonly ApplyState ComponentApplyState;
 
-            public bool AppliedAlways => AlwaysApplied && Node.AppliedAlways;
-            public ApplyState ApplyState => Node.ApplyState.MultiplyApplyState(AlwaysApplied ? ApplyState.Always : ApplyState.Partially);
+            public ApplyState ApplyState => Node.ApplyState.MultiplyApplyState(ComponentApplyState);
             public IEnumerable<ObjectReference> ContextReferences => Node.ContextReferences;
             public Component Component => Node.Component;
 
-            public ComponentInfo(ComponentPropModNodeBase<TValueInfo> node, bool alwaysApplied)
+            public ComponentInfo(ComponentPropModNodeBase<TValueInfo> node, ApplyState applyState)
             {
                 Node = node;
-                AlwaysApplied = alwaysApplied;
+                ComponentApplyState = applyState;
             }
+
         }
 
         private readonly List<ComponentInfo> _children = new List<ComponentInfo>();
@@ -345,9 +333,9 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         public IEnumerable<Component> SourceComponents => _children.Select(x => x.Component);
         public IEnumerable<ComponentPropModNodeBase<TValueInfo>> ComponentNodes => _children.Select(x => x.Node);
 
-        public void Add(ComponentPropModNodeBase<TValueInfo> node, bool alwaysApplied)
+        public void Add(ComponentPropModNodeBase<TValueInfo> node, ApplyState applyState)
         {
-            _children.Add(new ComponentInfo(node, alwaysApplied));
+            _children.Add(new ComponentInfo(node, applyState));
             DestroyTracker.Track(node.Component, OnDestroy);
         }
 
@@ -355,7 +343,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         {
             if (toAdd == null) throw new ArgumentNullException(nameof(toAdd));
             foreach (var child in toAdd._children)
-                Add(child.Node, child.AppliedAlways);
+                Add(child.Node, child.ApplyState);
         }
 
         private void OnDestroy(int objectId)

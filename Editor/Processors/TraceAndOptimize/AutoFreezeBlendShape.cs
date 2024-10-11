@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Anatawa12.AvatarOptimizer.AnimatorParsersV2;
 using nadena.dev.ndmf;
 using UnityEngine;
 
@@ -55,7 +56,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
                     if (prop.Value.TryGetConstantValue(out var constWeight))
                     {
-                        if (prop.AppliedAlways)
+                        if (prop.ApplyState == ApplyState.Always)
                         {
                             newWeight = constWeight;
                             return true;

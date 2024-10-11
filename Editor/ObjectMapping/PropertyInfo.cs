@@ -67,16 +67,16 @@ namespace Anatawa12.AvatarOptimizer
             _objectNode = node;
         }
 
-        public void AddModification(ComponentPropModNodeBase<FloatValueInfo> node, bool alwaysApplied)
+        public void AddModification(ComponentPropModNodeBase<FloatValueInfo> node, ApplyState applyState)
         {
             if (_floatNode == null) _floatNode = new RootPropModNode<FloatValueInfo>();
-            _floatNode.Add(node, alwaysApplied);
+            _floatNode.Add(node, applyState);
         }
 
-        public void AddModification(ComponentPropModNodeBase<ObjectValueInfo> node, bool alwaysApplied)
+        public void AddModification(ComponentPropModNodeBase<ObjectValueInfo> node, ApplyState applyState)
         {
             if (_objectNode == null) _objectNode = new RootPropModNode<ObjectValueInfo>();
-            _objectNode.Add(node, alwaysApplied);
+            _objectNode.Add(node, ApplyState.Always);
         }
     }
 
@@ -108,10 +108,10 @@ namespace Anatawa12.AvatarOptimizer
         }
 
         public static void AddModification(this AnimationComponentInfo<PropertyInfo> info, string property,
-            ComponentPropModNodeBase<FloatValueInfo> node, bool alwaysApplied)
+            ComponentPropModNodeBase<FloatValueInfo> node, ApplyState applyState)
         {
             if (info == null) throw new ArgumentNullException(nameof(info));
-            info.GetPropertyInfo(property).AddModification(node, alwaysApplied);
+            info.GetPropertyInfo(property).AddModification(node, applyState);
         }
 
         public static bool ContainsObject(this AnimationComponentInfo<PropertyInfo> info, string property)
@@ -129,10 +129,10 @@ namespace Anatawa12.AvatarOptimizer
         }
 
         public static void AddModification(this AnimationComponentInfo<PropertyInfo> info, string property,
-            ComponentPropModNodeBase<ObjectValueInfo> node, bool alwaysApplied)
+            ComponentPropModNodeBase<ObjectValueInfo> node, ApplyState applyState)
         {
             if (info == null) throw new ArgumentNullException(nameof(info));
-            info.GetPropertyInfo(property).AddModification(node, alwaysApplied);
+            info.GetPropertyInfo(property).AddModification(node, applyState);
         }
 
         public static IEnumerable<(string, RootPropModNode<FloatValueInfo>)> GetAllFloatProperties(

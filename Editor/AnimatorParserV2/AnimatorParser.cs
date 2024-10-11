@@ -136,7 +136,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             {
                 foreach (var prop in properties)
                 {
-                    _modifications.Add(component, prop, new VariableComponentPropModNode(Modifier!), true);
+                    _modifications.Add(component, prop, new VariableComponentPropModNode(Modifier!), ApplyState.Always);
                 }
             }
         }
@@ -281,7 +281,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             {
                 foreach (var shape in MmdBlendShapeNames)
                     modifications.Add(bodySkinnedMesh, $"blendShape.{shape}",
-                        new VariableComponentPropModNode(descriptor), true);
+                        new VariableComponentPropModNode(descriptor), ApplyState.Always);
             }
         }
 
