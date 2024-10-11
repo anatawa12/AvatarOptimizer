@@ -1,3 +1,4 @@
+using System;
 using Anatawa12.AvatarOptimizer.AnimatorParsersV2;
 using NUnit.Framework;
 
@@ -18,6 +19,7 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
             }
         }
 
+        public static Expected Never() => new(ApplyState.Never, new FloatValueInfo(Array.Empty<float>()));
         public static Expected ConstantAlways(float value) => new(ApplyState.Always, new FloatValueInfo(value));
         public static Expected ConstantPartially(float value) => new(ApplyState.Partially, new FloatValueInfo(value));
         public static Expected Variable(ApplyState applyState = ApplyState.Always) => new(applyState, FloatValueInfo.Variable);

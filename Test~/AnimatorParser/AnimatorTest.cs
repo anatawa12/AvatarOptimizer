@@ -165,10 +165,10 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
                 (rendererTarget, "blendShape.shape11"),
                 (rendererTarget, "blendShape.shape12"),
                 (rendererTarget, "blendShape.shape13"),
-                // (rendererTarget, "blendShape.shape14"), // 14 is additive constant so no motion
+                (rendererTarget, "blendShape.shape14"), // 14 is additive constant so no motion
                 (rendererTarget, "blendShape.shape15"),
-                // (rendererTarget, "blendShape.shape16"), // weight is 0
-                // (rendererTarget, "blendShape.shape17"), // weight is 0
+                (rendererTarget, "blendShape.shape16"), // weight is 0
+                (rendererTarget, "blendShape.shape17"), // weight is 0
             }));
 
             AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape0")], ConstantAlways(100));
@@ -185,10 +185,10 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
             AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape11")], ConstantPartially(100));
             AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape12")], ConstantAlways(10));
             AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape13")], ConstantAlways(10));
-            //AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape14")], ConstantAlways());
+            AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape14")], Never());
             AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape15")], Variable());
-            //AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape16")], ConstantAlways(100));
-            //AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape17")], ConstantAlways(100));
+            AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape16")], Never());
+            AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape17")], Never());
         }
 
         [Test]
