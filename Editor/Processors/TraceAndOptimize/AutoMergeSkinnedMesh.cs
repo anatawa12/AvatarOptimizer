@@ -387,6 +387,23 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 if (property == Props.EnabledFor(typeof(SkinnedMeshRenderer))) continue; // m_Enabled is proceed separatedly
                 if (node.ComponentNodes.Any(x => x is not AnimatorParsersV2.AnimatorPropModNode<AnimatorParsersV2.FloatValueInfo>))
                     return null;
+                if (property.StartsWith("material.", StringComparison.Ordinal))
+                {
+                    // For material animation, weight 0 (appear as 'Never' in PropModNode system) layer has effects
+                    // to make each materials property value to be it of first material, so it should not be merged.
+                    // We may implement removing such animation before AutoMergeSkinnedMesh pass in the future,
+                    // which allows this merge.
+                    // However, it will remove animation node from ComponentNodes tree so changing this logic will not required.
+                    //
+                    // Please note that It might be impossible to perform optimization above,
+                    // and we cannot skip this condition if animator is not enabled at first frame
+                    // because "make each materials property value to be it of first material" will occur
+                    // at the first frame of the Animator component.
+                    // If Animator component is not enabled at first frame, until it's enabled,
+                    // the value of the property of each material will be different.
+                    if (node.ComponentNodes.Any(x => x.ApplyState == AnimatorParsersV2.ApplyState.Never))
+                        return null;
+                }
                 locations.UnionWith(AnimationLocation.CollectAnimationLocation(node)
                     .Select(location => (property, location)));
             }
