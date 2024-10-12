@@ -12,7 +12,8 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 {
     interface IPropModNode
     {
-        bool AppliedAlways { get; }
+        ApplyState ApplyState { get; }
+        bool IsConstantValue { get; }
     }
 
     interface IValueInfo<TValueInfo>
@@ -29,7 +30,17 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         TValueInfo ConstantInfoForOverriding<TLayer>(IEnumerable<TLayer> layersReversed)
             where TLayer : ILayer<TValueInfo>;
     }
-    
+
+    /// <summary>
+    /// The apply state of PropModNode.
+    /// </summary>
+    enum ApplyState
+    {
+        Always,
+        Partially,
+        Never,
+    }
+
     /// <summary>
     /// This class represents a node in the property modification tree.
     ///
@@ -43,10 +54,8 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
     internal abstract class PropModNode<TValueInfo> : IErrorContext, IPropModNode
         where TValueInfo: struct, IValueInfo<TValueInfo>
     {
-        /// <summary>
-        /// Returns true if this node is always applied. For inactive nodes, this returns false.
-        /// </summary>
-        public abstract bool AppliedAlways { get; }
+        public abstract ApplyState ApplyState { get; }
+        public bool IsConstantValue => Value.IsConstant;
 
         public abstract TValueInfo Value { get; }
         public abstract IEnumerable<ObjectReference> ContextReferences { get; }
@@ -110,6 +119,8 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             {
                 switch (layer.Weight)
                 {
+                    case AnimatorWeightState.AlwaysZero:
+                        continue; // Might have effect with write defaults true?
                     case AnimatorWeightState.AlwaysOne:
                     case AnimatorWeightState.EitherZeroOrOne:
                     {
@@ -198,18 +209,75 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             return new HashSet<T>(a).SetEquals(b);
         }
 
-        public static bool AlwaysAppliedForOverriding<TLayer>(IEnumerable<TLayer> layersReversed)
+        public static ApplyState ApplyStateForOverriding<TLayer>(IEnumerable<TLayer> layersReversed)
             where TLayer : ILayer
         {
-            return layersReversed.Any(x =>
-                x.Weight == AnimatorWeightState.AlwaysOne && x.BlendingMode == AnimatorLayerBlendingMode.Override &&
-                x.Node.AppliedAlways);
+            var current = ApplyState.Never;
+            foreach (var layer in layersReversed)
+            {
+                switch (layer.BlendingMode)
+                {
+                    case AnimatorLayerBlendingMode.Override:
+                    {
+                        var layerState = ApplyStateForWeightState(layer.Weight)
+                            .MultiplyApplyState(layer.Node.ApplyState);
+                        switch (layerState)
+                        {
+                            case ApplyState.Always:
+                                return ApplyState.Always;
+                            case ApplyState.Partially:
+                                current = ApplyState.Partially;
+                                break;
+                            case ApplyState.Never:
+                                break;
+                            default:
+                                throw new ArgumentOutOfRangeException();
+                        }
+
+                        break;
+                    }
+                    case AnimatorLayerBlendingMode.Additive:
+                    {
+                        var layerState = ApplyStateForWeightState(layer.Weight)
+                            .MultiplyApplyState(layer.Node.ApplyState);
+                        switch (layerState)
+                        {
+                            case ApplyState.Always:
+                            case ApplyState.Partially:
+                                // constant node does not have effect with additive layer
+                                if (layer.Node.IsConstantValue) continue;
+                                current = ApplyState.Partially;
+                                break;
+                            case ApplyState.Never:
+                                break;
+                            default:
+                                throw new ArgumentOutOfRangeException();
+                        }
+
+                        break;
+                    }
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+
+            return current;
         }
+
+        private static ApplyState ApplyStateForWeightState(AnimatorWeightState weight) => weight switch
+        {
+            AnimatorWeightState.AlwaysZero => ApplyState.Never, // Might have effect with write defaults true?
+            AnimatorWeightState.AlwaysOne => ApplyState.Always,
+            AnimatorWeightState.EitherZeroOrOne => ApplyState.Partially,
+            AnimatorWeightState.Variable => ApplyState.Partially,
+            _ => throw new ArgumentOutOfRangeException()
+        };
 
         public static bool IsAlwaysOverride<TLayer>(this TLayer layer)
             where TLayer : ILayer
         {
-            return layer.Node.AppliedAlways && layer.Weight == AnimatorWeightState.AlwaysOne &&
+            return layer.Node.ApplyState == ApplyState.Always &&
+                   layer.Weight == AnimatorWeightState.AlwaysOne &&
                    layer.BlendingMode == AnimatorLayerBlendingMode.Override;
         }
 
@@ -218,10 +286,40 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         {
             foreach (var layerInfo in layer)
             {
+                if (layerInfo.Weight == AnimatorWeightState.AlwaysZero) continue; // might have effect with write defaults true?
                 yield return layerInfo;
                 if (layerInfo.IsAlwaysOverride()) yield break;
             }
         }
+
+        public static ApplyState MergeSideBySide(this IEnumerable<ApplyState> states)
+        {
+            if (states == null) throw new ArgumentNullException(nameof(states));
+
+            using IEnumerator<ApplyState> enumerator = states.GetEnumerator();
+            if (!enumerator.MoveNext()) return ApplyState.Never;
+            var result = enumerator.Current;
+            if (result == ApplyState.Partially) return ApplyState.Partially;
+            while (enumerator.MoveNext())
+                if (result != enumerator.Current) return ApplyState.Partially;
+            return result;
+        }
+
+        public static ApplyState MergeSideBySide(this ApplyState a, ApplyState b) => (a, b) switch
+        {
+            (ApplyState.Always, ApplyState.Always) => ApplyState.Always,
+            (ApplyState.Never, ApplyState.Never) => ApplyState.Never,
+            _ => ApplyState.Partially
+        };
+        
+        // multiply: Apply either inside the other
+        public static ApplyState MultiplyApplyState(this ApplyState a, ApplyState b) => (a, b) switch
+        {
+            (ApplyState.Always, ApplyState.Always) => ApplyState.Always,
+            (ApplyState.Never, _) => ApplyState.Never,
+            (_, ApplyState.Never) => ApplyState.Never,
+            _ => ApplyState.Partially
+        };
     }
 
     interface ILayer
@@ -245,38 +343,39 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         internal readonly struct ComponentInfo
         {
             public readonly ComponentPropModNodeBase<TValueInfo> Node;
-            public readonly bool AlwaysApplied;
+            public readonly ApplyState ComponentApplyState;
 
-            public bool AppliedAlways => AlwaysApplied && Node.AppliedAlways;
+            public ApplyState ApplyState => Node.ApplyState.MultiplyApplyState(ComponentApplyState);
             public IEnumerable<ObjectReference> ContextReferences => Node.ContextReferences;
             public Component Component => Node.Component;
 
-            public ComponentInfo(ComponentPropModNodeBase<TValueInfo> node, bool alwaysApplied)
+            public ComponentInfo(ComponentPropModNodeBase<TValueInfo> node, ApplyState applyState)
             {
                 Node = node;
-                AlwaysApplied = alwaysApplied;
+                ComponentApplyState = applyState;
             }
+
         }
 
         private readonly List<ComponentInfo> _children = new List<ComponentInfo>();
 
         public IEnumerable<ComponentInfo> Children => _children;
 
-        public override bool AppliedAlways => _children.All(x => x.AppliedAlways);
+        public override ApplyState ApplyState => _children.Select(x => x.ApplyState).MergeSideBySide();
 
         public override IEnumerable<ObjectReference> ContextReferences =>
             _children.SelectMany(x => x.ContextReferences);
 
         public override TValueInfo Value => default(TValueInfo).ConstantInfoForSideBySide(_children.Select(x => x.Node));
 
-        public bool IsEmpty => _children.Count == 0;
+        public bool IsEmpty => _children.Count == 0 || ApplyState == ApplyState.Never;
 
         public IEnumerable<Component> SourceComponents => _children.Select(x => x.Component);
         public IEnumerable<ComponentPropModNodeBase<TValueInfo>> ComponentNodes => _children.Select(x => x.Node);
 
-        public void Add(ComponentPropModNodeBase<TValueInfo> node, bool alwaysApplied)
+        public void Add(ComponentPropModNodeBase<TValueInfo> node, ApplyState applyState)
         {
-            _children.Add(new ComponentInfo(node, alwaysApplied));
+            _children.Add(new ComponentInfo(node, applyState));
             DestroyTracker.Track(node.Component, OnDestroy);
         }
 
@@ -284,7 +383,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         {
             if (toAdd == null) throw new ArgumentNullException(nameof(toAdd));
             foreach (var child in toAdd._children)
-                Add(child.Node, child.AppliedAlways);
+                Add(child.Node, child.ApplyState);
         }
 
         private void OnDestroy(int objectId)
@@ -298,8 +397,6 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 DestroyTracker.Untrack(componentInfo.Component, OnDestroy);
             _children.Clear();
         }
-
-        public RootPropModNode<TValueInfo>? Normalize() => IsEmpty ? null : this;
     }
 
     internal abstract class ImmutablePropModNode<TValueInfo> : PropModNode<TValueInfo>
@@ -341,7 +438,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
         private readonly Lazy<FloatValueInfo> _constantInfo;
 
-        public override bool AppliedAlways => true;
+        public override ApplyState ApplyState => ApplyState.Always;
         public override FloatValueInfo Value => _constantInfo.Value;
         public override IEnumerable<ObjectReference> ContextReferences => new[] { ObjectRegistry.GetReference(Clip) };
 
@@ -400,7 +497,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
         private readonly Lazy<ObjectValueInfo> _constantInfo;
 
-        public override bool AppliedAlways => true;
+        public override ApplyState ApplyState => ApplyState.Always;
         public override ObjectValueInfo Value => _constantInfo.Value;
         public override IEnumerable<ObjectReference> ContextReferences => new[] { ObjectRegistry.GetReference(Clip) };
 
@@ -443,7 +540,10 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
         private bool WeightSumIsOne => _blendTreeType != BlendTreeType.Direct;
         public IReadOnlyList<BlendTreeElement<TValueInfo>> Children => _children;
-        public override bool AppliedAlways => WeightSumIsOne && !_partial && _children.All(x => x.Node.AppliedAlways);
+
+        public override ApplyState ApplyState =>
+            (WeightSumIsOne && !_partial ? ApplyState.Always : ApplyState.Partially)
+            .MultiplyApplyState(_children.Select(x => x.Node.ApplyState).MergeSideBySide());
 
         public override TValueInfo Value
         {
@@ -491,7 +591,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         {
         }
 
-        public override bool AppliedAlways => false;
+        public override ApplyState ApplyState => ApplyState.Partially;
         public override FloatValueInfo Value => FloatValueInfo.Variable;
     }
 
@@ -508,7 +608,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
         private readonly Lazy<TValueInfo> _constantInfo;
 
-        public override bool AppliedAlways => true;
+        public override ApplyState ApplyState => Animation.ApplyState;
         public override TValueInfo Value => _constantInfo.Value;
 
         public override IEnumerable<ObjectReference> ContextReferences =>

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.AnimatorParsersV2;
 using Object = UnityEngine.Object;
@@ -12,8 +11,8 @@ namespace Anatawa12.AvatarOptimizer
         private RootPropModNode<FloatValueInfo>? _floatNode;
         private RootPropModNode<ObjectValueInfo>? _objectNode;
 
-        public RootPropModNode<FloatValueInfo>? FloatNode => _floatNode?.Normalize();
-        public RootPropModNode<ObjectValueInfo>? ObjectNode => _objectNode?.Normalize();
+        public RootPropModNode<FloatValueInfo> FloatNode => _floatNode ??= new RootPropModNode<FloatValueInfo>();
+        public RootPropModNode<ObjectValueInfo> ObjectNode => _objectNode ??= new RootPropModNode<ObjectValueInfo>();
 
         public void MergeTo(ref PropertyInfo property)
         {
@@ -57,26 +56,26 @@ namespace Anatawa12.AvatarOptimizer
 
         public void ImportProperty(RootPropModNode<FloatValueInfo> node)
         {
-            if (FloatNode != null) throw new InvalidOperationException();
+            if (_floatNode != null) throw new InvalidOperationException();
             _floatNode = node;
         }
 
         public void ImportProperty(RootPropModNode<ObjectValueInfo> node)
         {
-            if (ObjectNode != null) throw new InvalidOperationException();
+            if (_objectNode != null) throw new InvalidOperationException();
             _objectNode = node;
         }
 
-        public void AddModification(ComponentPropModNodeBase<FloatValueInfo> node, bool alwaysApplied)
+        public void AddModification(ComponentPropModNodeBase<FloatValueInfo> node, ApplyState applyState)
         {
             if (_floatNode == null) _floatNode = new RootPropModNode<FloatValueInfo>();
-            _floatNode.Add(node, alwaysApplied);
+            _floatNode.Add(node, applyState);
         }
 
-        public void AddModification(ComponentPropModNodeBase<ObjectValueInfo> node, bool alwaysApplied)
+        public void AddModification(ComponentPropModNodeBase<ObjectValueInfo> node, ApplyState applyState)
         {
             if (_objectNode == null) _objectNode = new RootPropModNode<ObjectValueInfo>();
-            _objectNode.Add(node, alwaysApplied);
+            _objectNode.Add(node, ApplyState.Always);
         }
     }
 
@@ -92,61 +91,97 @@ namespace Anatawa12.AvatarOptimizer
                 builder.GetAnimationComponent(target).GetPropertyInfo(prop).ImportProperty(value);
         }
 
-        public static bool ContainsFloat(this AnimationComponentInfo<PropertyInfo> info, string property)
+        /// <summary>
+        /// Check if there is animation for the property.
+        /// This returns true even if the animation animating the property is in layer with weight 0.
+        /// </summary>
+        /// <param name="info">The animation component info.</param>
+        /// <param name="property">The property name.</param>
+        /// <returns>Returns true if there is animation for the property.</returns>
+        public static bool ContainsAnimationForFloat(this AnimationComponentInfo<PropertyInfo> info, string property)
         {
             if (info == null) throw new ArgumentNullException(nameof(info));
-            return info.TryGetPropertyInfo(property).FloatNode != null;
+            return info.TryGetPropertyInfo(property).FloatNode.ComponentNodes.Any();
         }
 
-        [JetBrains.Annotations.Pure]
-        public static bool TryGetFloat(this AnimationComponentInfo<PropertyInfo> info, string property, 
-            [NotNullWhen(true)] out RootPropModNode<FloatValueInfo>? animation)
+        /// <summary>
+        /// Check if the property is animated by some component.
+        ///
+        /// This returns false if the animation animating the property is in layer with weight 0.
+        /// Be careful when using this method with some properties like "material.XXX" or Animator Animated Paramaeter.
+        /// </summary>
+        /// <param name="info">The animation component info.</param>
+        /// <param name="property">The property name.</param>
+        /// <returns>Returns true if the property is animated by some component.</returns>
+        public static bool IsAnimatedFloat(this AnimationComponentInfo<PropertyInfo> info, string property)
         {
             if (info == null) throw new ArgumentNullException(nameof(info));
-            animation = info.TryGetPropertyInfo(property).FloatNode;
-            return animation != null;
+            return info.TryGetPropertyInfo(property).FloatNode.ApplyState != ApplyState.Never;
+        }
+
+        public static RootPropModNode<FloatValueInfo> GetFloatNode(this AnimationComponentInfo<PropertyInfo> info, string property)
+        {
+            if (info == null) throw new ArgumentNullException(nameof(info));
+            return info.GetPropertyInfo(property).FloatNode;
         }
 
         public static void AddModification(this AnimationComponentInfo<PropertyInfo> info, string property,
-            ComponentPropModNodeBase<FloatValueInfo> node, bool alwaysApplied)
+            ComponentPropModNodeBase<FloatValueInfo> node, ApplyState applyState)
         {
             if (info == null) throw new ArgumentNullException(nameof(info));
-            info.GetPropertyInfo(property).AddModification(node, alwaysApplied);
+            info.GetPropertyInfo(property).AddModification(node, applyState);
         }
 
-        public static bool ContainsObject(this AnimationComponentInfo<PropertyInfo> info, string property)
+        /// <summary>
+        /// Check if there is animation for the property.
+        /// This returns true even if the animation animating the property is in layer with weight 0.
+        /// </summary>
+        /// <param name="info">The animation component info.</param>
+        /// <param name="property">The property name.</param>
+        /// <returns>Returns true if there is animation for the property.</returns>
+        public static bool ContainsAnimationForObject(this AnimationComponentInfo<PropertyInfo> info, string property)
         {
             if (info == null) throw new ArgumentNullException(nameof(info));
-            return info.TryGetPropertyInfo(property).ObjectNode != null;
+            return info.TryGetPropertyInfo(property).ObjectNode.ComponentNodes.Any();
         }
 
-        public static bool TryGetObject(this AnimationComponentInfo<PropertyInfo> info, string property,
-            [NotNullWhen(true)] out RootPropModNode<ObjectValueInfo>? animation)
+        /// <summary>
+        /// Check if the property is animated by some component.
+        /// This returns false if the animation animating the property is in layer with weight 0.
+        /// </summary>
+        /// <param name="info">Animation component info.</param>
+        /// <param name="property">The property name.</param>
+        /// <returns>Returns true if the property is animated by some component.</returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        public static bool IsAnimatedObject(this AnimationComponentInfo<PropertyInfo> info, string property)
         {
             if (info == null) throw new ArgumentNullException(nameof(info));
-            animation = info.TryGetPropertyInfo(property).ObjectNode;
-            return animation != null;
+            return info.TryGetPropertyInfo(property).ObjectNode.ApplyState != ApplyState.Never;
+        }
+
+        public static RootPropModNode<ObjectValueInfo> GetObjectNode(this AnimationComponentInfo<PropertyInfo> info, string property)
+        {
+            if (info == null) throw new ArgumentNullException(nameof(info));
+            return info.GetPropertyInfo(property).ObjectNode;
         }
 
         public static void AddModification(this AnimationComponentInfo<PropertyInfo> info, string property,
-            ComponentPropModNodeBase<ObjectValueInfo> node, bool alwaysApplied)
+            ComponentPropModNodeBase<ObjectValueInfo> node, ApplyState applyState)
         {
             if (info == null) throw new ArgumentNullException(nameof(info));
-            info.GetPropertyInfo(property).AddModification(node, alwaysApplied);
+            info.GetPropertyInfo(property).AddModification(node, applyState);
         }
 
-        public static IEnumerable<(string, RootPropModNode<FloatValueInfo>)> GetAllFloatProperties(
+        public static IEnumerable<(string property, RootPropModNode<FloatValueInfo> node)> GetAllFloatProperties(
             this AnimationComponentInfo<PropertyInfo> info)
         {
-            return info.GetAllPropertyInfo.Where(x => x.info.FloatNode != null)
-                .Select(x => (x.name, x.info.FloatNode!));
+            return info.GetAllPropertyInfo.Select(x => (x.name, x.info.FloatNode));
         }
 
-        public static IEnumerable<(string, RootPropModNode<ObjectValueInfo>)> GetAllObjectProperties(
+        public static IEnumerable<(string property, RootPropModNode<ObjectValueInfo> node)> GetAllObjectProperties(
             this AnimationComponentInfo<PropertyInfo> info)
         {
-            return info.GetAllPropertyInfo.Where(x => x.info.ObjectNode != null)
-                .Select(x => (x.name, x.info.ObjectNode!));
+            return info.GetAllPropertyInfo.Select(x => (x.name, x.info.ObjectNode));
         }
     }
 }

@@ -136,7 +136,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             {
                 foreach (var prop in properties)
                 {
-                    _modifications.Add(component, prop, new VariableComponentPropModNode(Modifier!), true);
+                    _modifications.Add(component, prop, new VariableComponentPropModNode(Modifier!), ApplyState.Always);
                 }
             }
         }
@@ -239,7 +239,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             }
 
             var playableLayers =
-                new List<(AnimatorWeightState, AnimatorLayerBlendingMode, AnimatorControllerNodeContainer?)>();
+                new List<(AnimatorWeightState, AnimatorLayerBlendingMode, AnimatorControllerNodeContainer)>();
 
             void MergeLayer(
                 VRCAvatarDescriptor.AnimLayerType type,
@@ -248,17 +248,14 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 AnimatorLayerBlendingMode mode = AnimatorLayerBlendingMode.Override
             )
             {
-                AnimatorWeightState? weightState;
+                AnimatorWeightState weightState;
                 weightState = alwaysApplied
                     ? AnimatorWeightState.AlwaysOne
                     : GetWeightState(defaultWeight, playableWeightChanged[type]);
 
-                if (weightState == null) return;
-
-
                 var parsedLayer =
                     ParseAnimatorController(descriptor.gameObject, controllers[type], animatorLayerWeightChanged[type]);
-                playableLayers.Add((weightState.Value, mode, parsedLayer));
+                playableLayers.Add((weightState, mode, parsedLayer));
             }
 
             var isHumanoid = animator != null && animator.isHuman;
@@ -284,7 +281,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             {
                 foreach (var shape in MmdBlendShapeNames)
                     modifications.Add(bodySkinnedMesh, $"blendShape.{shape}",
-                        new VariableComponentPropModNode(descriptor), true);
+                        new VariableComponentPropModNode(descriptor), ApplyState.Always);
             }
         }
 
@@ -411,15 +408,12 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 {
                     var external = externallyWeightChanged?.Get(i) ?? AnimatorWeightChange.NotChanged;
 
-                    if (GetWeightState(layers[i].defaultWeight, external) is not { } parsed)
-                        return (default, default, null); // skip weight zero layer
-
-                    weightState = parsed;
+                    weightState = GetWeightState(layers[i].defaultWeight, external);
                 }
 
                 var parsedLayer = ParseAnimatorControllerLayer(root, controller, mapping, i);
 
-                return (weightState, layer.blendingMode, (AnimatorLayerNodeContainer?)parsedLayer);
+                return (weightState, layer.blendingMode, parsedLayer);
             }));
         }
 
@@ -476,14 +470,14 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
             public AnimatorLayerPropModNode<FloatValueInfo>
                 MergeNode(List<AnimatorStatePropModNode<FloatValueInfo>> nodes, int sourceCount) =>
-                new AnimatorLayerPropModNode<FloatValueInfo>(nodes, nodes.Count != sourceCount);
+                new AnimatorLayerPropModNode<FloatValueInfo>(nodes, nodes.Count != sourceCount ? ApplyState.Partially : ApplyState.Always);
 
             public AnimatorLayerPropModNode<ObjectValueInfo>
                 MergeNode(List<AnimatorStatePropModNode<ObjectValueInfo>> nodes, int sourceCount) =>
-                new AnimatorLayerPropModNode<ObjectValueInfo>(nodes, nodes.Count != sourceCount);
+                new AnimatorLayerPropModNode<ObjectValueInfo>(nodes, nodes.Count != sourceCount ? ApplyState.Partially : ApplyState.Always);
         }
 
-        AnimatorWeightState? GetWeightState(float weight, AnimatorWeightChange external)
+        AnimatorWeightState GetWeightState(float weight, AnimatorWeightChange external)
         {
             bool isOneWeight;
 
@@ -495,12 +489,10 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             switch (external)
             {
                 case AnimatorWeightChange.NotChanged:
-                    if (!isOneWeight) return null; // skip weight zero layer
-                    return AnimatorWeightState.AlwaysOne;
+                    return isOneWeight ? AnimatorWeightState.AlwaysOne : AnimatorWeightState.AlwaysZero;
 
                 case AnimatorWeightChange.AlwaysZero:
-                    if (!isOneWeight) return null; // skip weight zero layer
-                    return AnimatorWeightState.EitherZeroOrOne;
+                    return isOneWeight ? AnimatorWeightState.EitherZeroOrOne : AnimatorWeightState.AlwaysZero;
 
                 case AnimatorWeightChange.AlwaysOne:
                     return isOneWeight

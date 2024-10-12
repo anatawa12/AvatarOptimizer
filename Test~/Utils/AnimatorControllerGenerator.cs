@@ -36,11 +36,14 @@ namespace Anatawa12.AvatarOptimizer.Test
             _controller = new AnimatorController { name = name };
         }
 
-        public AnimatorControllerBuilder AddLayer(string name, Action<AnimatorStateMachineBuilder> action)
+        public AnimatorControllerBuilder AddLayer(string name, Action<AnimatorStateMachineBuilder> action) =>
+            AddLayer(name, 0, action);
+
+        public AnimatorControllerBuilder AddLayer(string name, float layerWeight, Action<AnimatorStateMachineBuilder> action)
         {
             var builder = new AnimatorStateMachineBuilder(name);
             action(builder);
-            _controller.AddLayer(new AnimatorControllerLayer { name = name, stateMachine = builder.Build() });
+            _controller.AddLayer(new AnimatorControllerLayer { name = name, stateMachine = builder.Build(), defaultWeight = layerWeight });
             return this;
         }
 

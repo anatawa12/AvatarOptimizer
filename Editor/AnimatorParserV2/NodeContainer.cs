@@ -42,35 +42,37 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         {
             if (container == null) return;
 
+            var applyState = alwaysApplied ? ApplyState.Always : ApplyState.Partially;
+
             foreach (var (key, value) in container.FloatNodes)
             {
                 if (!FloatNodes.TryGetValue(key, out var node))
                     _floatNodes.Add(key, node = new RootPropModNode<FloatValueInfo>());
-                node.Add(value, alwaysApplied);
+                node.Add(value, applyState);
             }
             
             foreach (var (key, value) in container.ObjectNodes)
             {
                 if (!ObjectNodes.TryGetValue(key, out var node))
                     _objectNodes.Add(key, node = new RootPropModNode<ObjectValueInfo>());
-                node.Add(value, alwaysApplied);
+                node.Add(value, applyState);
             }
         }
 
-        public void Add(Component component, string prop, ComponentPropModNodeBase<FloatValueInfo> node, bool alwaysApplied)
+        public void Add(Component component, string prop, ComponentPropModNodeBase<FloatValueInfo> node, ApplyState applyState)
         {
             var key = (component, prop);
             if (!FloatNodes.TryGetValue(key, out var root))
                 _floatNodes.Add(key, root = new RootPropModNode<FloatValueInfo>());
-            root.Add(node, alwaysApplied);
+            root.Add(node, applyState);
         }
 
-        public void Add(Component component, string prop, ComponentPropModNodeBase<ObjectValueInfo> node, bool alwaysApplied)
+        public void Add(Component component, string prop, ComponentPropModNodeBase<ObjectValueInfo> node, ApplyState applyState)
         {
             var key = (component, prop);
             if (!_objectNodes.TryGetValue(key, out var root))
                 _objectNodes.Add(key, root = new RootPropModNode<ObjectValueInfo>());
-            root.Add(node, alwaysApplied);
+            root.Add(node, applyState);
         }
 
         public bool? GetConstantValue(ComponentOrGameObject gameObject, string property, bool currentValue) =>

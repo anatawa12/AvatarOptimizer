@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using Anatawa12.AvatarOptimizer.AnimatorParsersV2;
 using nadena.dev.ndmf;
 using UnityEngine;
 
@@ -51,23 +53,32 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 bool IsUnchangedBlendShape(string name, float weight, out float newWeight)
                 {
                     newWeight = weight;
-                    if (!modifies.TryGetFloat($"blendShape.{name}", out var prop)) return true;
+                    var prop = modifies.GetFloatNode($"blendShape.{name}");
 
-                    if (prop.Value.TryGetConstantValue(out var constWeight))
+                    switch (prop.ApplyState)
                     {
-                        if (prop.AppliedAlways)
+                        case ApplyState.Always:
                         {
-                            newWeight = constWeight;
+                            if (prop.Value.TryGetConstantValue(out var constWeight))
+                            {
+                                newWeight = constWeight;
+                                return true;
+                            }
+                            else
+                            {
+                                return false;
+                            }
+                        }
+                            break;
+                        case ApplyState.Partially:
+                        {
+                            return prop.Value.TryGetConstantValue(out var constWeight) && constWeight.Equals(weight);
+                        }
+                            break;
+                        case ApplyState.Never:
                             return true;
-                        }
-                        else
-                        {
-                            return constWeight.Equals(weight);
-                        }
-                    }
-                    else
-                    {
-                        return false;
+                        default:
+                            throw new ArgumentOutOfRangeException();
                     }
                 }
 

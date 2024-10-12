@@ -1,3 +1,4 @@
+using Anatawa12.AvatarOptimizer.AnimatorParsersV2;
 using NUnit.Framework;
 using UnityEditor.Animations;
 using UnityEngine;
@@ -22,7 +23,7 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest.Issue967
                 
             Assert.That(node != null, nameof(node) + " != null");
 
-            Assert.That(node.AppliedAlways, Is.True);
+            Assert.That(node.ApplyState, Is.EqualTo(ApplyState.Always));
             Assert.That(node.Value.IsConstant, Is.False);
             Assert.That(node.Value.PossibleValues, Is.EquivalentTo(new[] {0f, 100f}));
         }

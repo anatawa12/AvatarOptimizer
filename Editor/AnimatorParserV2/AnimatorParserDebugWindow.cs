@@ -45,19 +45,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 EditorGUILayout.ObjectField(group.Key, typeof(Object), true);
                 EditorGUI.indentLevel++;
                 foreach (var ((_, propName), propState) in group)
-                {
-                    string propStateInfo = "";
-
-                    if (!propState.AppliedAlways)
-                        propStateInfo += "Partial:";
-
-                    if (propState.Value.PossibleValues is float[] values)
-                        propStateInfo += $"Const:{string.Join(",", values)}";
-                    else
-                        propStateInfo += "Variable";
-
-                    NarrowValueLabelField(propName, propStateInfo);
-                }
+                    NarrowValueLabelField(propName, ToShortDescription(propState));
                 EditorGUI.indentLevel--;
             }
 
@@ -66,16 +54,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 EditorGUILayout.ObjectField(group.Key, typeof(Object), true);
                 EditorGUI.indentLevel++;
                 foreach (var ((_, propName), propState) in group)
-                {
-                    string propStateInfo = "";
-
-                    if (!propState.AppliedAlways)
-                        propStateInfo += "Partial:";
-
-                    propStateInfo += $"Const:{string.Join(",", propState.Value.PossibleValues.Select(x => x.name))}";
-
-                    NarrowValueLabelField(propName, propStateInfo);
-                }
+                    NarrowValueLabelField(propName, ToShortDescription(propState));
                 EditorGUI.indentLevel--;
             }
 
@@ -95,17 +74,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
                 foreach (var ((_, propName), propState) in group)
                 {
-                    string propStateInfo = "";
-
-                    if (!propState.AppliedAlways)
-                        propStateInfo += "Partial:";
-
-                    if (propState.Value.PossibleValues is float[] values)
-                        propStateInfo += $"Const:{string.Join(",", values)}";
-                    else
-                        propStateInfo += "Variable";
-
-                    resultText.Append("  ").Append(propName).Append(": ").Append(propStateInfo).Append('\n');
+                    resultText.Append("  ").Append(propName).Append(": ").Append(ToShortDescription(propState)).Append('\n');
                     if (detailed)
                         AppendNodeRecursive(propState, resultText, "    ");
                 }
@@ -121,14 +90,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
                 foreach (var ((_, propName), propState) in group)
                 {
-                    string propStateInfo = "";
-
-                    if (!propState.AppliedAlways)
-                        propStateInfo += "Partial:";
-
-                    propStateInfo += $"Const:{string.Join(",", propState.Value.PossibleValues.Select(x => x.name))}";
-
-                    resultText.Append("  ").Append(propName).Append(": ").Append(propStateInfo).Append('\n');
+                    resultText.Append("  ").Append(propName).Append(": ").Append(ToShortDescription(propState)).Append('\n');
                     if (detailed)
                         AppendNodeRecursive(propState, resultText, "    ");
                 }
@@ -206,6 +168,22 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             }
         }
 
+        private string ToShortDescription(PropModNode<FloatValueInfo> propState)
+        {
+            string propStateInfo = "";
+
+            propStateInfo += $"{propState.ApplyState}:";
+
+            if (propState.Value.PossibleValues is float[] values)
+                propStateInfo += $"Const:{string.Join(",", values)}";
+            else
+                propStateInfo += "Variable";
+
+            return propStateInfo;
+        }
+
+        private string ToShortDescription(PropModNode<ObjectValueInfo> propState) =>
+            $"{propState.ApplyState}:Const:{string.Join(",", propState.Value.PossibleValues.Select(x => x.name))}";
 
         private static void NarrowValueLabelField(string label0, string value)
         {
