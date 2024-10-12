@@ -18,7 +18,18 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         {
             if (!state.MergeSkinnedMesh) return;
 
-            Profiler.BeginSample("Collect for Dependencies to not merge dependant objects"); 
+            var mergeMeshes = FilterMergeMeshes(context, state);
+            if (mergeMeshes.Count == 0) return;
+
+            var categorizedMeshes = CategoryMeshesForMerge(context, mergeMeshes);
+            if (categorizedMeshes.Count == 0) return;
+
+            MergeMeshes(context, state, categorizedMeshes);
+        }
+
+        public static List<MeshInfo2> FilterMergeMeshes(BuildContext context, TraceAndOptimizeState state)
+        {
+            Profiler.BeginSample("Collect for Dependencies to not merge dependant objects");
 
             var componentInfos = new GCComponentInfoHolder(context);
 
@@ -54,7 +65,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     if (dependants.Count != 1 || dependants[0] != meshRenderer)
                     {
                         if (state.GCDebug)
-                            UnityEngine.Debug.Log($"EntryPoints of {meshRenderer}: {string.Join(", ", componentInfo.DependantComponents)}");
+                            UnityEngine.Debug.Log(
+                                $"EntryPoints of {meshRenderer}: {string.Join(", ", componentInfo.DependantComponents)}");
                         continue;
                     }
                 }
@@ -91,6 +103,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 }
             }
 
+            return mergeMeshes;
+        }
+
+        public static Dictionary<CategorizationKey, List<MeshInfo2>> CategoryMeshesForMerge(BuildContext context, List<MeshInfo2> mergeMeshes)
+        {
             // then, group by mesh attributes
             var categorizedMeshes = new Dictionary<CategorizationKey, List<MeshInfo2>>();
             foreach (var meshInfo2 in mergeMeshes)
@@ -123,8 +140,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             Profiler.EndSample();
 
-            if (categorizedMeshes.Count == 0) return;
+            return categorizedMeshes;
+        }
 
+        public static void MergeMeshes(BuildContext context, TraceAndOptimizeState state,
+            Dictionary<CategorizationKey, List<MeshInfo2>> categorizedMeshes)
+        {
             Profiler.BeginSample("Merge Meshes");
 
             Func<MeshInfo2[], (int[][], List<(MeshTopology, Material?)>)> createSubMeshes;
@@ -166,7 +187,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             Profiler.EndSample();
         }
 
-        private void MergeStaticSkinnedMesh(
+        private static void MergeStaticSkinnedMesh(
             BuildContext context,
             Func<GameObject> gameObjectFactory,
             CategorizationKey key,
@@ -190,7 +211,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 removeEmptyRendererObject: false);
         }
 
-        private void MergeAnimatingSkinnedMesh(
+        private static void MergeAnimatingSkinnedMesh(
             BuildContext context,
             Func<GameObject> gameObjectFactory,
             CategorizationKey key,
@@ -411,7 +432,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             return new EqualsHashSet<(string property, AnimationLocation location)>(locations);
         }
 
-        private SkinnedMeshRenderer CreateNewRenderer(
+        private static SkinnedMeshRenderer CreateNewRenderer(
             Func<GameObject> gameObjectFactory,
             Transform parent,
             CategorizationKey key
@@ -587,7 +608,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             }
         }
 
-        private bool IsAnimatedForbidden(AnimationComponentInfo<PropertyInfo> component)
+        private static bool IsAnimatedForbidden(AnimationComponentInfo<PropertyInfo> component)
         {
             // any of object / pptr / material animation is forbidden
             if (component.GetAllObjectProperties().Any(x => x.node.ComponentNodes.Any()))
@@ -610,7 +631,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             return false;
         }
 
-        private bool HasUnsupportedComponents(GameObject gameObject)
+        private static bool HasUnsupportedComponents(GameObject gameObject)
         {
             return !gameObject.GetComponents<Component>().All(component =>
                 component is Transform
@@ -619,7 +640,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 || component is Animator);
         }
 
-        enum Activeness
+        internal enum Activeness
         {
             AlwaysActive,
             AlwaysInactive,
@@ -659,7 +680,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         // - sharedMesh - merge
         // - skinnedMotionVectors - must be same
         // - blendShapes - always empty
-        private struct CategorizationKey : IEquatable<CategorizationKey>
+        internal struct CategorizationKey : IEquatable<CategorizationKey>
         {
             public bool HasNormals;
 
