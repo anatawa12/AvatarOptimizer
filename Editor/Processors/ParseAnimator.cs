@@ -12,7 +12,11 @@ namespace Anatawa12.AvatarOptimizer.Processors
         {
             // do not parse Animator if there are no AAO components in the project to avoid warnings
             if (!context.GetState<AAOEnabled>().Enabled) return;
+            RunPass(context);
+        }
 
+        public static void RunPass(BuildContext context)
+        {
             var traceAndOptimize = context.GetState<TraceAndOptimizes.TraceAndOptimizeState>();
             var modifications = new AnimatorParser(traceAndOptimize.MmdWorldCompatibility)
                 .GatherAnimationModifications(context);
