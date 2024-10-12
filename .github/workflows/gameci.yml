@@ -48,7 +48,7 @@ jobs:
         with:
           testMode: EditMode
           githubToken: ${{ github.token }}
-          coverageOptions: generateAdditionalMetrics;generateHtmlReport;generateBadgeReport;assemblyFilters:+com.anatawa12.avatar-optimizer.*
+          coverageOptions: generateAdditionalMetrics;generateHtmlReport;generateBadgeReport;assemblyFilters:+com.anatawa12.avatar-optimizer.*,-*.test.*
           customParameters: 
           checkName: Test results ${{ matrix.unity }}
 
