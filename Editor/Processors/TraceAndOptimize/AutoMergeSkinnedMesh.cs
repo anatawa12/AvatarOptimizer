@@ -408,6 +408,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             foreach (var (property, node) in animationComponent.GetAllFloatProperties())
             {
                 if (property == Props.EnabledFor(typeof(SkinnedMeshRenderer))) continue; // m_Enabled is proceed separatedly
+                if (!node.ComponentNodes.Any()) continue; // skip empty nodes, likely means PPtr animation
                 if (node.ComponentNodes.Any(x => x is not AnimatorParsersV2.AnimatorPropModNode<AnimatorParsersV2.FloatValueInfo>))
                     return null;
 
