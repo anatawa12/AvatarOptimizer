@@ -212,7 +212,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     BuildLog.LogWarning("RenameBlendShape:warning:weight-conflict", name, string.Join(", ", sources));
 
                 // animation checks (we only check for isAnimated, for now
-                var partiallyAnimated = sources.Select(source => animationComponent.TryGetFloat($"blendShape.{source}", out _)).Distinct().Count() > 1;
+                var partiallyAnimated = sources.Select(source => animationComponent.ContainsAnimationForFloat($"blendShape.{source}")).Distinct().Count() > 1;
                 if (partiallyAnimated)
                     BuildLog.LogWarning("RenameBlendShape:warning:animation-conflict", name, string.Join(", ", sources));
             }            
