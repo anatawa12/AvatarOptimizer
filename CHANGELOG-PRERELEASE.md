@@ -16,9 +16,12 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- InvalidOperationException with AutoMergeSkinnedMesh `#1253`
 
 ### Security
+
+## [1.8.0-beta.6] - 2024-10-12
+### Fixed
+- InvalidOperationException with AutoMergeSkinnedMesh [`#1253`](https://github.com/anatawa12/AvatarOptimizer/pull/1253)
 
 ## [1.8.0-beta.5] - 2024-10-12
 ### Added
@@ -1615,7 +1618,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-beta.5...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-beta.6...HEAD
+[1.8.0-beta.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-beta.5...v1.8.0-beta.6
 [1.8.0-beta.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-beta.4...v1.8.0-beta.5
 [1.8.0-beta.4]: https://github.com/anatawa12/AvatarOptimizer/compare/1.7.13...v1.8.0-beta.4
 [1.7.13]: https://github.com/anatawa12/AvatarOptimizer/compare/1.8.0-beta.3...v1.7.13
