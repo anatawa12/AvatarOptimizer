@@ -22,6 +22,7 @@ The format is based on [Keep a Changelog].
 - Unncecessary Prefab Overrides are Generated with Prefab Safe Set `#1236`
 - CS8632 warning for released version `#1237`
 - Avatar Descriptor can be removed by Avatar Optimizer in extreamely rare case `#1242`
+- Material property animation with weight 0 layer might be broken with AutoMergeSkinnedMesh `#1248`
 
 ### Security
 

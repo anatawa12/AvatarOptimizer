@@ -68,6 +68,7 @@ The format is based on [Keep a Changelog].
 - Typo in menu for creating Asset Description `#1213`
 - maxSquish cannot be configured for mergePB`#1231`
 - Avatar Descriptor can be removed by Avatar Optimizer in extreamely rare case `#1242`
+- Material property animation with weight 0 layer might be broken with AutoMergeSkinnedMesh `#1248`
 
 ### Security
 
