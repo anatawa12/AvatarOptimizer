@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- InvalidOperationException with AutoMergeSkinnedMesh `#1253`
 
 ### Security
 
