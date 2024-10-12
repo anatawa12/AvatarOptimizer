@@ -27,3 +27,4 @@ Following components are Modifying Edit Skinned Mesh Component.
 - [Remove Mesh in Box](../../reference/remove-mesh-by-blendshape)
 - [Freeze BlendShape](../../reference/freeze-blendshape)
 - [Merge ToonLit Material](../../reference/merge-toonlit-material)
+- [Rename BlendsShape](../../reference/rename-blendshape)

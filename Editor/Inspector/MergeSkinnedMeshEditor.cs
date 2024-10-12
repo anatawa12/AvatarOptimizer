@@ -28,7 +28,7 @@ namespace Anatawa12.AvatarOptimizer
         SerializedProperty _removeEmptyRendererObjectProp = null!; // initialized in OnEnable
         SerializedProperty _skipEnablementMismatchedRenderers = null!; // initialized in OnEnable
         SerializedProperty _copyEnablementAnimation = null!; // initialized in OnEnable
-        PrefabSafeSet.EditorUtil<Material> _doNotMergeMaterials = null!; // initialized in OnEnable
+        PrefabSafeSet.PSSEditorUtil<Material> _doNotMergeMaterials = null!; // initialized in OnEnable
 
         private void OnEnable()
         {
@@ -38,7 +38,7 @@ namespace Anatawa12.AvatarOptimizer
             _skipEnablementMismatchedRenderers =
                 serializedObject.FindProperty(nameof(MergeSkinnedMesh.skipEnablementMismatchedRenderers));
             _copyEnablementAnimation = serializedObject.FindProperty(nameof(MergeSkinnedMesh.copyEnablementAnimation));
-            _doNotMergeMaterials = PrefabSafeSet.EditorUtil<Material>.Create(
+            _doNotMergeMaterials = PrefabSafeSet.PSSEditorUtil<Material>.Create(
                 serializedObject.FindProperty("doNotMergeMaterials"),
                 x => (Material)x.objectReferenceValue,
                 (x, v) => x.objectReferenceValue = v);
@@ -94,7 +94,13 @@ namespace Anatawa12.AvatarOptimizer
                 var fieldPosition = EditorGUILayout.GetControlRect();
                 var label = new GUIContent(AAOL10N.Tr("MergeSkinnedMesh:label:Merge"));
                 using (new PrefabSafeSet.PropertyScope<Material>(element, fieldPosition, label))
-                    element.SetExistence(!EditorGUI.ToggleLeft(fieldPosition, label, !element.Contains));
+                {
+                    
+                    EditorGUI.BeginChangeCheck();
+                    var selected = !EditorGUI.ToggleLeft(fieldPosition, label, !element.Contains);
+                    if (EditorGUI.EndChangeCheck())
+                        element.SetExistence(selected);
+                }
 
                 EditorGUILayout.LabelField(AAOL10N.Tr("MergeSkinnedMesh:label:Renderers"));
                 EditorGUI.indentLevel++;

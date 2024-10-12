@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Anatawa12.AvatarOptimizer.PrefabSafeSet;
+using Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection;
 using Anatawa12.AvatarOptimizer.Test.Runtime;
 using NUnit.Framework;
 using UnityEditor;
@@ -25,7 +26,7 @@ namespace Anatawa12.AvatarOptimizer.Test.PrefabSafeSet
         {
             var newObject = (GameObject)PrefabUtility.InstantiatePrefab(basePrefab);
             var component = newObject.GetComponent<PrefabSafeSetComponent>();
-            PrefabSafeSetRuntimeUtil.ResizeArray(ref component.stringSet.prefabLayers, 1);
+            PSUCRuntimeUtil.ResizeArray(ref component.stringSet.prefabLayers, 1);
             component.stringSet.prefabLayers[0].additions =
                 new[] { "addedTwiceInVariant", "addedInVariant", "addedInVariantRemovedInInstance" };
             component.stringSet.prefabLayers[0].removes = new[] { "removedInVariant", "fakeRemovedInVariant" };
@@ -38,7 +39,7 @@ namespace Anatawa12.AvatarOptimizer.Test.PrefabSafeSet
         {
             var newObject = (GameObject)PrefabUtility.InstantiatePrefab(baseObject);
             var component = newObject.GetComponent<PrefabSafeSetComponent>();
-            PrefabSafeSetRuntimeUtil.ResizeArray(ref component.stringSet.prefabLayers, 2);
+            PSUCRuntimeUtil.ResizeArray(ref component.stringSet.prefabLayers, 2);
             component.stringSet.prefabLayers[1].additions = new[] { "addedTwiceInInstance", "addedInInstance" };
             component.stringSet.prefabLayers[1].removes = new[]
                 { "removedInInstance", "addedInVariantRemovedInInstance", "fakeRemovedInInstance" };
@@ -55,9 +56,9 @@ namespace Anatawa12.AvatarOptimizer.Test.PrefabSafeSet
             public readonly SerializedObject VariantSerialized;
             public readonly SerializedObject InstanceSerialized;
 
-            public readonly EditorUtil<string> PrefabEditorUtil;
-            public readonly EditorUtil<string> VariantEditorUtil;
-            public readonly EditorUtil<string> InstanceEditorUtil;
+            public readonly PSSEditorUtil<string> PrefabEditorUtil;
+            public readonly PSSEditorUtil<string> VariantEditorUtil;
+            public readonly PSSEditorUtil<string> InstanceEditorUtil;
 
             public Scope()
             {
@@ -72,7 +73,7 @@ namespace Anatawa12.AvatarOptimizer.Test.PrefabSafeSet
                 VariantSerialized = new SerializedObject(Variant);
                 InstanceSerialized = new SerializedObject(Instance);
 
-                EditorUtil<string> MakeUtil(SerializedObject obj, int nestCount) => EditorUtil<string>.Create(
+                PSSEditorUtil<string> MakeUtil(SerializedObject obj, int nestCount) => PSSEditorUtil<string>.Create(
                         obj.FindProperty("stringSet"),
                         x => x.stringValue, (x, v) => x.stringValue = v);
 

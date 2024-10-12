@@ -7,7 +7,7 @@ namespace Anatawa12.AvatarOptimizer
     [CustomEditor(typeof(RemoveMeshByBlendShape))]
     internal class RemoveMeshByBlendShapeEditor : AvatarTagComponentEditorBase
     {
-        private PrefabSafeSet.EditorUtil<string> _shapeKeysSet = null!; // initialized in OnEnable
+        private PrefabSafeSet.PSSEditorUtil<string> _shapeKeysSet = null!; // initialized in OnEnable
         private SerializedProperty _toleranceProp = null!; // initialized in OnEnable
         private SkinnedMeshRenderer? _renderer;
         public bool automaticallySetWeightWhenToggle;
@@ -16,7 +16,7 @@ namespace Anatawa12.AvatarOptimizer
         {
             NativeLeakDetection.Mode = NativeLeakDetectionMode.EnabledWithStackTrace;
             _renderer = targets.Length == 1 ? ((Component)target).GetComponent<SkinnedMeshRenderer>() : null;
-            _shapeKeysSet = PrefabSafeSet.EditorUtil<string>.Create(
+            _shapeKeysSet = PrefabSafeSet.PSSEditorUtil<string>.Create(
                 serializedObject.FindProperty("shapeKeysSet"),
                 x => x.stringValue,
                 (x, v) => x.stringValue = v);

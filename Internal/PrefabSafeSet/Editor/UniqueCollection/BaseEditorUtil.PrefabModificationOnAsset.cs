@@ -1,9 +1,9 @@
 using System;
 using UnityEditor;
 
-namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
+namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
 {
-    public abstract partial class EditorUtil<T>
+    public abstract partial class BaseEditorUtil<TAdditionValue, TRemoveKey>
     {
         private sealed class PrefabModificationOnAsset : PrefabModificationBase
         {
@@ -13,7 +13,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             // upstream change check
 
             public PrefabModificationOnAsset(SerializedProperty property, int nestCount,
-                Func<SerializedProperty, T> getValue, Action<SerializedProperty, T> setValue) : base(property, nestCount, getValue, setValue)
+                IEditorUtilHelper<TAdditionValue, TRemoveKey> helper) : base(property, nestCount, helper)
             {
             }
 

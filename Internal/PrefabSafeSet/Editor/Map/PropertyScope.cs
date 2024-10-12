@@ -2,18 +2,20 @@ using System;
 using UnityEditor;
 using UnityEngine;
 
-namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
+namespace Anatawa12.AvatarOptimizer.PrefabSafeMap
 {
-    public readonly struct PropertyScope<T> : IDisposable where T : notnull
+    public readonly struct PropertyScope<TKey, TValue> : IDisposable
+        where TKey : notnull
+        where TValue : notnull
     {
         private readonly SerializedProperty? _property;
         private readonly Rect _totalPosition;
-        public readonly IElement<T> Element;
+        public readonly IElement<TKey, TValue>? Element;
         public readonly GUIContent Label;
 
-        public PropertyScope(IElement<T> element, Rect totalPosition, GUIContent label)
+        public PropertyScope(IElement<TKey, TValue>? element, Rect totalPosition, GUIContent label)
         {
-            _property = element.ModifierProp;
+            _property = element?.ModifierProp;
             Element = element;
             _totalPosition = totalPosition;
             Label = label;
@@ -34,7 +36,8 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                         && _property.prefabOverride)
                     {
                         Event.current.Use();
-                        Element.Container.HandleApplyRevertMenuItems(Element, genericMenu);
+                        var element = Element!; // _property != null ensures Element is not null
+                        element.Container.HandleApplyRevertMenuItems(element, genericMenu);
                         genericMenu.ShowAsContext();
                     }
                 }
@@ -42,15 +45,5 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                 EditorGUI.EndProperty();
             }
         }
-    }
-    
-    public enum ElementStatus
-    {
-        Natural,
-        Removed,
-        NewElement,
-        AddedTwice,
-        FakeRemoved,
-        NewSlot,
     }
 }

@@ -4,6 +4,7 @@ using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
+using Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection;
 
 namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 {
@@ -45,7 +46,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
         private int _nestCountCache = -1;
 
         private int GetNestCount(Object obj) =>
-            _nestCountCache != -1 ? _nestCountCache : _nestCountCache = PrefabSafeSetUtil.PrefabNestCount(obj);
+            _nestCountCache != -1 ? _nestCountCache : _nestCountCache = PSUCUtil.PrefabNestCount(obj);
 
         private readonly Dictionary<string, EditorBase?> _caches = new ();
 
@@ -182,12 +183,6 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
     internal static class Names
     {
         public const string FakeSlot = nameof(PrefabSafeSet<object>.fakeSlot);
-        public const string MainSet = nameof(PrefabSafeSet<object>.mainSet);
-        public const string PrefabLayers = nameof(PrefabSafeSet<object>.prefabLayers);
-        public const string UsingOnSceneLayer = nameof(PrefabSafeSet<object>.usingOnSceneLayer);
-        public const string OnSceneLayer = nameof(PrefabSafeSet<object>.onSceneLayer);
-        public const string Additions = nameof(PrefabLayer<object>.additions);
-        public const string Removes = nameof(PrefabLayer<object>.removes);
     }
 
     internal abstract class EditorBase
@@ -200,7 +195,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
     internal abstract class EditorBase<T> : EditorBase where T : notnull
     {
         protected readonly SerializedProperty FakeSlot;
-        internal readonly EditorUtil<T> EditorUtil;
+        internal readonly PSSEditorUtil<T> EditorUtil;
 
         public EditorBase(SerializedProperty property, int nestCount)
         {
@@ -208,7 +203,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                 throw new ArgumentException("multi editing not supported", nameof(property));
             FakeSlot = property.FindPropertyRelative(Names.FakeSlot)
                         ?? throw new ArgumentException("fakeSlot not found");
-            EditorUtil = EditorUtil<T>.Create(property, GetValue, SetValue);
+            EditorUtil = PSSEditorUtil<T>.Create(property, GetValue, SetValue);
         }
 
         private protected abstract T GetValue(SerializedProperty prop);

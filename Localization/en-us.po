@@ -550,6 +550,46 @@ msgstr "Failed to save the texture. Refer to the log for details."
 
 # endregion
 
+# region RenameBlendShape
+
+# used in inspector
+
+msgid "RenameBlendShape:removed"
+msgstr "(Removed)"
+
+msgid "RenameBlendShape:original"
+msgstr "Original"
+
+msgid "RenameBlendShape:changed"
+msgstr "Changed"
+
+msgid "RenameBlendShape:error:empty-name-some"
+msgstr "Some changed names are empty."
+
+msgid "RenameBlendShape:warning:name-conflict-some"
+msgstr "Some changed names are duplicated. Those blendShapes will be merged to one."
+
+msgid "RenameBlendShape:error:empty-name-this"
+msgstr "Changed name is empty."
+
+msgid "RenameBlendShape:warning:name-conflict-this"
+msgstr "Changed name is duplicated with some other. This blendShape will be merged to one."
+
+# used in NDMF Console
+
+msgid "RenameBlendShape:error:empty-name"
+msgstr "Renamed BlendShape name for '{0}' is empty, which is not allowed."
+
+msgid "RenameBlendShape:warning:weight-conflict"
+msgstr "Weight for merged BlendShape '{0}' is not same in all sources, so it's hard to know which weight will be used.\n"
+"Sources: {1}"
+
+msgid "RenameBlendShape:warning:animation-conflict"
+msgstr "Weights of source BlendShapes for merged BlendShape '{0}' are partially animated.\n"
+"Sources: {1}"
+
+# endregion
+
 # region AvatarGlobalComponent
 
 msgid "AvatarGlobalComponent:NotOnAvatarRoot"

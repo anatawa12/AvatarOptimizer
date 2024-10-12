@@ -1,33 +1,29 @@
-using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using UnityEditor;
 using Object = UnityEngine.Object;
 
-namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
+namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
 {
     /// <summary>
     /// Utility to edit PrefabSafeSet in CustomEditor with SerializedProperty
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public abstract partial class EditorUtil<T> where T : notnull
+    public abstract partial class BaseEditorUtil<TAdditionValue, TRemoveKey>
     {
-        private class Wrapper : EditorUtil<T>
+        private class Wrapper : BaseEditorUtil<TAdditionValue, TRemoveKey>
         {
-            private EditorUtil<T> _impl;
+            private BaseEditorUtil<TAdditionValue, TRemoveKey> _impl;
 
             private readonly SerializedProperty _property;
             private readonly Object _targetObject;
             private Object? _correspondingObject;
 
-            private EditorUtil<T> GetImpl()
+            private BaseEditorUtil<TAdditionValue, TRemoveKey> GetImpl()
             {
                 var correspondingObject = PrefabUtility.GetCorrespondingObjectFromSource(_targetObject);
                 if (correspondingObject != _correspondingObject)
                 {
-                    _impl = CreateImpl(_property, PrefabSafeSetUtil.PrefabNestCount(_targetObject), _getValue,
-                        _setValue);
+                    _impl = CreateImpl(_property, PSUCUtil.PrefabNestCount(_targetObject), _helper);
                     _correspondingObject = correspondingObject;
                 }
 
@@ -35,25 +31,26 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             }
 
             public Wrapper(SerializedProperty property,
-                Func<SerializedProperty, T> getValue,
-                Action<SerializedProperty, T> setValue) : base(getValue, setValue)
+                IEditorUtilHelper<TAdditionValue, TRemoveKey> helper) : base(helper)
             {
                 _property = property;
                 _targetObject = property.serializedObject.targetObject;
                 _correspondingObject = PrefabUtility.GetCorrespondingObjectFromSource(_targetObject);
-                var nestCount = PrefabSafeSetUtil.PrefabNestCount(_targetObject);
-                _impl = CreateImpl(property, nestCount, getValue, setValue);
+                var nestCount = PSUCUtil.PrefabNestCount(_targetObject);
+                _impl = CreateImpl(property, nestCount, _helper);
             }
 
-            public override IReadOnlyList<IElement<T>> Elements => GetImpl().Elements;
+            public override IReadOnlyList<IBaseElement<TAdditionValue, TRemoveKey>> Elements => GetImpl().Elements;
             public override int ElementsCount => GetImpl().ElementsCount;
             public override int Count => GetImpl().Count;
-            public override IEnumerable<T> Values => GetImpl().Values;
+            public override IEnumerable<TAdditionValue> Values => GetImpl().Values;
             public override void Clear() => GetImpl().Clear();
-            protected override IElement<T> NewSlotElement(T value) => GetImpl().NewSlotElement(value);
             public override bool HasPrefabOverride() => GetImpl().HasPrefabOverride();
+            public override IBaseElement<TAdditionValue, TRemoveKey> Set(TAdditionValue value) => GetImpl().Set(value);
+            public override IBaseElement<TAdditionValue, TRemoveKey> Add(TAdditionValue value) => GetImpl().Add(value);
+            public override IBaseElement<TAdditionValue, TRemoveKey>? Remove(TRemoveKey key) => GetImpl().Remove(key);
 
-            public override void HandleApplyRevertMenuItems(IElement<T> element, GenericMenu genericMenu) =>
+            public override void HandleApplyRevertMenuItems(IBaseElement<TAdditionValue, TRemoveKey> element, GenericMenu genericMenu) =>
                 GetImpl().HandleApplyRevertMenuItems(element, genericMenu);
         }
     }
