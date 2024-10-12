@@ -581,7 +581,8 @@ msgid "RenameBlendShape:error:empty-name"
 msgstr "Renamed BlendShape name for '{0}' is empty, which is not allowed."
 
 msgid "RenameBlendShape:warning:weight-conflict"
-msgstr "Weight for merged BlendShape '{0}' is not same in all sources: {1}"
+msgstr "Weight for merged BlendShape '{0}' is not same in all sources, so it's hard to know which weight will be used.\n"
+"Sources: {1}"
 
 msgid "RenameBlendShape:warning:animation-conflict"
 msgstr "Weights of source BlendShapes for merged BlendShape '{0}' is partially animated"
