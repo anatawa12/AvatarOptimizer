@@ -150,6 +150,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             Func<MeshInfo2[], (int[][], List<(MeshTopology, Material?)>)> createSubMeshes;
 
+            // createSubMeshes must preserve first material to be the first material
             if (state.SkipMergeMaterials)
                 createSubMeshes = CreateSubMeshesNoMerge;
             else if (state.AllowShuffleMaterialSlots)
@@ -258,6 +259,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             var newMeshInfo = context.GetMeshInfoFor(newSkinnedMeshRenderer);
             var meshInfosArray = meshInfos.ToArray();
 
+            // もしAnimationがPatrially Appliedなことがある場合は初期値を取れるマテリアルを最初のスロットに適用するべきかも。createSubMeshesの中で
             var (subMeshIndexMap, materials) = createSubMeshes(meshInfosArray);
 
             MergeSkinnedMeshProcessor.DoMerge(context, newMeshInfo, meshInfosArray, subMeshIndexMap,
@@ -461,6 +463,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             return newSkinnedMeshRenderer;
         }
 
+        // must preserve first material to be the first material
         public static (int[][], List<(MeshTopology, Material?)>) CreateSubMeshesNoMerge(MeshInfo2[] meshInfos)
         {
             var subMeshIndexMap = new int[meshInfos.Length][];
@@ -483,6 +486,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         public static (int[][], List<(MeshTopology, Material?)>) CreateSubMeshesMergeShuffling(MeshInfo2[] meshInfos) =>
             MergeSkinnedMeshProcessor.GenerateSubMeshMapping(meshInfos, new HashSet<Material>());
 
+        // must preserve first material to be the first material
         public static (int[][], List<(MeshTopology, Material?)>) CreateSubMeshesMergePreserveOrder(MeshInfo2[] meshInfos)
         {
             // merge consecutive submeshes with same material to one for simpler logic

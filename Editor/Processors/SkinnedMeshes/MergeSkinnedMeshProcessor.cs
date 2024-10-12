@@ -229,6 +229,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             }
         }
 
+        // must preserve first material to be the first material for AutoMergeSkinnedMesh
         public static (int[][] subMeshIndexMap, List<(MeshTopology topology, Material? material)> materials)
             GenerateSubMeshMapping(
                 MeshInfo2[] meshInfos,
@@ -567,6 +568,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             return locations;
         }
 
+        // must preserve first material to be the first material for AutoMergeSkinnedMesh
         private static (int[][] mapping, List<(MeshTopology topology, Material? material)> materials)
             CreateMergedMaterialsAndSubMeshIndexMapping((MeshTopology topology, Material? material)[][] sourceMaterials,
                 HashSet<Material> doNotMerges)
