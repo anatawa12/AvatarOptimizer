@@ -585,7 +585,8 @@ msgstr "Weight for merged BlendShape '{0}' is not same in all sources, so it's h
 "Sources: {1}"
 
 msgid "RenameBlendShape:warning:animation-conflict"
-msgstr "Weights of source BlendShapes for merged BlendShape '{0}' is partially animated"
+msgstr "Weights of source BlendShapes for merged BlendShape '{0}' are partially animated.\n"
+"Sources: {1}"
 
 # endregion
 
