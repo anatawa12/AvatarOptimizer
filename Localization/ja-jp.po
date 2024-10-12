@@ -481,6 +481,12 @@ msgstr "変更後の名前が空になっているものがあります。"
 msgid "RenameBlendShape:warning:name-conflict-some"
 msgstr "変更後の名前が重複しているものがあります。重複するBlendShapeは1つに統合されます。"
 
+msgid "RenameBlendShape:error:empty-name-this"
+msgstr "変更後の名前が空です。"
+
+msgid "RenameBlendShape:warning:name-conflict-this"
+msgstr "変更後の名前が他と重複しています。重複するBlendShapeは1つに統合されます。"
+
 # used in NDMF Console
 
 msgid "RenameBlendShape:error:empty-name"
