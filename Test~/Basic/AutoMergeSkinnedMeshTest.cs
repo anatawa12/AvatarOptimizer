@@ -393,6 +393,33 @@ namespace Anatawa12.AvatarOptimizer.Test
             Assert.That(categorization.Values, Is.EquivalentTo(Enumerable.Empty<List<MeshInfo2>>()));
         }
 
+        [Test]
+        public void Issue1252NoCrashWithObjectReferenceCurve()
+        {
+            // initialize test avatar
+            var avatar = new TwoCubeAvatar(0);
+
+            TestUtils.SetFxLayer(avatar.avatar, BuildAnimatorController("")
+                .AddLayer("Base", _ => { })
+                .AddLayer("ZeroWeight", 0, sm => sm
+                    .NewClipState("State0", clip => clip
+                        .AddObjectReferenceBinding("Renderer0", typeof(SkinnedMeshRenderer),
+                            "m_Materials.Array.data[0]",
+                            (0, new Material(Shader.Find("Standard"))))))
+                .Build());
+
+            // preprocess
+            var buildContext = PreprocessAvatar(avatar.avatar);
+
+            // do process
+            AutoMergeSkinnedMesh.CategoryMeshesForMerge(buildContext, new List<MeshInfo2>()
+            {
+                buildContext.GetMeshInfoFor(avatar.renderer0), buildContext.GetMeshInfoFor(avatar.renderer1),
+            });
+
+            // No crash
+        }
+
         private static Mesh GetCubeMesh()
         {
             return AssetDatabase.LoadAllAssetsAtPath("Library/unity default resources")
