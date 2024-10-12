@@ -1,7 +1,12 @@
+using System.Collections.Generic;
+using Anatawa12.AvatarOptimizer.ndmf;
+using Anatawa12.AvatarOptimizer.Processors;
 using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
 using Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes;
+using nadena.dev.ndmf;
 using NUnit.Framework;
 using UnityEngine;
+using static Anatawa12.AvatarOptimizer.Test.AnimatorControllerGeneratorStatics;
 
 namespace Anatawa12.AvatarOptimizer.Test
 {
@@ -56,6 +61,59 @@ namespace Anatawa12.AvatarOptimizer.Test
             renderer.sharedMaterials = material;
             renderer.sharedMesh = newMesh;
             return new MeshInfo2(renderer);
+        }
+        
+        [Test]
+        public void CategorizeMeshesForMerge_SplitByActivenessAnimation()
+        {
+            // initialize test avatar
+            var avatar = TestUtils.NewAvatar();
+            avatar.AddComponent<TraceAndOptimize>();
+            var renderer0GameObject = Utils.NewGameObject("Renderer0", avatar.transform);
+            var renderer1GameObject = Utils.NewGameObject("Renderer1", avatar.transform);
+            var renderer2GameObject = Utils.NewGameObject("Renderer2", avatar.transform);
+            var renderer3GameObject = Utils.NewGameObject("Renderer3", avatar.transform);
+            var renderer0 = renderer0GameObject.AddComponent<SkinnedMeshRenderer>();
+            var renderer1 = renderer1GameObject.AddComponent<SkinnedMeshRenderer>();
+            var renderer2 = renderer2GameObject.AddComponent<SkinnedMeshRenderer>();
+            var renderer3 = renderer3GameObject.AddComponent<SkinnedMeshRenderer>();
+
+            var rootBone = Utils.NewGameObject("RootBone", avatar.transform);
+            renderer0.rootBone = rootBone.transform;
+            renderer1.rootBone = rootBone.transform;
+            renderer2.rootBone = rootBone.transform;
+            renderer3.rootBone = rootBone.transform;
+
+            TestUtils.SetFxLayer(avatar, BuildAnimatorController("")
+                .AddLayer("Base", sm =>
+                {
+                    sm.NewClipState("State0", clip => clip
+                        .AddPropertyBinding("Renderer0", typeof(GameObject), "m_IsActive",
+                            new Keyframe(0, 0), new Keyframe(1, 1))
+                        .AddPropertyBinding("Renderer1", typeof(GameObject), "m_IsActive",
+                            new Keyframe(0, 0), new Keyframe(1, 1)));
+                })
+                .Build());
+
+            // preprocess
+            var buildContext = new BuildContext(avatar, null);
+            buildContext.GetState<AAOEnabled>().Enabled = true;
+            buildContext.ActivateExtensionContext<ObjectMappingContext>();
+            buildContext.ActivateExtensionContext<MeshInfo2Context>();
+            ParseAnimator.RunPass(buildContext);
+
+            // do process
+            var categorization = AutoMergeSkinnedMesh.CategoryMeshesForMerge(buildContext, new List<MeshInfo2>()
+            {
+                buildContext.GetMeshInfoFor(renderer0), buildContext.GetMeshInfoFor(renderer1),
+                buildContext.GetMeshInfoFor(renderer2), buildContext.GetMeshInfoFor(renderer3),
+            });
+
+            Assert.That(categorization.Values, Is.EquivalentTo(new []
+            {
+                new []{buildContext.GetMeshInfoFor(renderer0), buildContext.GetMeshInfoFor(renderer1)},
+                new []{buildContext.GetMeshInfoFor(renderer2), buildContext.GetMeshInfoFor(renderer3)},
+            }));
         }
     }
 }
