@@ -369,7 +369,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             foreach (var transform in
                      component.transform.ParentEnumerable(context.AvatarRootTransform, includeMe: true))
             {
-                var p = context.GetAnimationComponent(component).GetFloatNode(Props.IsActive);
+                var p = context.GetAnimationComponent(transform.gameObject).GetFloatNode(Props.IsActive);
                 if (p.ApplyState != AnimatorParsersV2.ApplyState.Never)
                 {
                     if (p.ComponentNodes.Any(x => x is not AnimatorParsersV2.AnimatorPropModNode<AnimatorParsersV2.FloatValueInfo>))
