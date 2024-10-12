@@ -8,25 +8,32 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Rename BlendShape component to rename BlendShapes `#1245`
-  - This can be used to avoid blendShape name conflicts in Merge Skinned Mesh
 
 ### Changed
-- Performance Improvements with Mesh Manipulation, especially with blendshape-heavy meshes `#1234` `#1243` `#1240`
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
-- maxSquish cannot be configured for mergePB`#1231`
-- Error from Optimize Texture if there is Merge Skinned Mesh with material slot animation `#1235`
-- Unncecessary Prefab Overrides are Generated with Prefab Safe Set `#1236`
-- CS8632 warning for released version `#1237`
-- Avatar Descriptor can be removed by Avatar Optimizer in extreamely rare case `#1242`
-- Material property animation with weight 0 layer might be broken with AutoMergeSkinnedMesh `#1248`
 
 ### Security
+
+## [1.8.0-beta.5] - 2024-10-12
+### Added
+- Rename BlendShape component to rename BlendShapes [`#1245`](https://github.com/anatawa12/AvatarOptimizer/pull/1245)
+  - This can be used to avoid blendShape name conflicts in Merge Skinned Mesh
+
+### Changed
+- Performance Improvements with Mesh Manipulation, especially with blendshape-heavy meshes [`#1234`](https://github.com/anatawa12/AvatarOptimizer/pull/1234) [`#1243`](https://github.com/anatawa12/AvatarOptimizer/pull/1243) [`#1240`](https://github.com/anatawa12/AvatarOptimizer/pull/1240)
+
+### Fixed
+- maxSquish cannot be configured for mergePB`#1231`
+- Error from Optimize Texture if there is Merge Skinned Mesh with material slot animation [`#1235`](https://github.com/anatawa12/AvatarOptimizer/pull/1235)
+- Unncecessary Prefab Overrides are Generated with Prefab Safe Set [`#1236`](https://github.com/anatawa12/AvatarOptimizer/pull/1236)
+- CS8632 warning for released version [`#1237`](https://github.com/anatawa12/AvatarOptimizer/pull/1237)
+- Avatar Descriptor can be removed by Avatar Optimizer in extreamely rare case [`#1242`](https://github.com/anatawa12/AvatarOptimizer/pull/1242)
+- Material property animation with weight 0 layer might be broken with AutoMergeSkinnedMesh [`#1248`](https://github.com/anatawa12/AvatarOptimizer/pull/1248)
 
 ## [1.8.0-beta.4] - 2024-10-05
 ### Changed
@@ -1607,7 +1614,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/1.8.0-beta.4...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-beta.5...HEAD
+[1.8.0-beta.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-beta.4...v1.8.0-beta.5
 [1.8.0-beta.4]: https://github.com/anatawa12/AvatarOptimizer/compare/1.7.13...v1.8.0-beta.4
 [1.7.13]: https://github.com/anatawa12/AvatarOptimizer/compare/1.8.0-beta.3...v1.7.13
 [1.8.0-beta.3]: https://github.com/anatawa12/AvatarOptimizer/compare/1.7.13-beta.2...v1.8.0-beta.3
