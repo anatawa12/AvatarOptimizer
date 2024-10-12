@@ -259,7 +259,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             var newMeshInfo = context.GetMeshInfoFor(newSkinnedMeshRenderer);
             var meshInfosArray = meshInfos.ToArray();
 
-            // もしAnimationがPatrially Appliedなことがある場合は初期値を取れるマテリアルを最初のスロットに適用するべきかも。createSubMeshesの中で
             var (subMeshIndexMap, materials) = createSubMeshes(meshInfosArray);
 
             MergeSkinnedMeshProcessor.DoMerge(context, newMeshInfo, meshInfosArray, subMeshIndexMap,
@@ -626,7 +625,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 if (name == Props.EnabledFor(typeof(SkinnedMeshRenderer))) continue;
 
                 // Note: when you added some other allowed properties,
-                // You have to add default value handling in GetAnimationLocationsForRendererAnimation
+                // You have to add default value handling in GetDefaultValue below
 
                 // blendShapes are removed so it's allowed
                 if (name.StartsWith("blendShapes.", StringComparison.Ordinal)) continue;
