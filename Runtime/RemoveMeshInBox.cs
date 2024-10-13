@@ -3,6 +3,7 @@ using System.Linq;
 using JetBrains.Annotations;
 using Unity.Burst;
 using UnityEngine;
+using UnityEngine.Animations;
 
 namespace Anatawa12.AvatarOptimizer
 {
@@ -20,6 +21,7 @@ namespace Anatawa12.AvatarOptimizer
 
         [SerializeField]
         [AAOLocalized("RemoveMeshInBox:prop:removePolygonsToggle")]
+        [NotKeyable]
         internal bool removeInBox = true;
 
         APIChecker _checker;
