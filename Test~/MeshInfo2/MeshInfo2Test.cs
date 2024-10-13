@@ -194,5 +194,26 @@ namespace Anatawa12.AvatarOptimizer.Test
                 Assert.That(position, Is.EqualTo(vertex.Position));
             }
         }
+
+        [Test]
+        public void ComputeActualPositionWithBones()
+        {
+            var mesh = TestUtils.NewCubeMesh();
+
+            var go = new GameObject();
+            var smr = go.AddComponent<SkinnedMeshRenderer>();
+            smr.sharedMesh = mesh;
+
+            var meshInfo2 = new MeshInfo2(smr);
+            meshInfo2.MakeBoned();
+
+            foreach (var vertex in meshInfo2.Vertices)
+            {
+                var position = vertex.ComputeActualPosition(meshInfo2,
+                    t => t.localToWorldMatrix, go.transform.worldToLocalMatrix);
+
+                Assert.That(position, Is.EqualTo(vertex.Position));
+            }
+        }
     }
 }
