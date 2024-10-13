@@ -101,7 +101,7 @@ namespace Anatawa12.AvatarOptimizer.Test
         [Test]
         public void MultiFrameBlendShapeWithPartiallyIdentity()
         {
-            var mesh = BoxMesh();
+            var mesh = TestUtils.NewCubeMesh();
             var deltas = new Vector3[8];
             deltas.AsSpan().Fill(new Vector3(1, 2, 3));
             mesh.AddBlendShapeFrame("shape", 0, new Vector3[8], null, null);
@@ -134,7 +134,7 @@ namespace Anatawa12.AvatarOptimizer.Test
         [Test]
         public void BlendShapeWithFrameAtZero()
         {
-            var mesh = BoxMesh();
+            var mesh = TestUtils.NewCubeMesh();
             var deltas = new Vector3[8];
             deltas.AsSpan().Fill(new Vector3(1, 2, 3));
             mesh.AddBlendShapeFrame("shape", 0, deltas, null, null);
@@ -158,7 +158,7 @@ namespace Anatawa12.AvatarOptimizer.Test
         [Test]
         public void WriteEmptySubMesh()
         {
-            var mesh = BoxMesh();
+            var mesh = TestUtils.NewCubeMesh();
 
             var go = new GameObject();
             var smr = go.AddComponent<SkinnedMeshRenderer>();
@@ -178,7 +178,7 @@ namespace Anatawa12.AvatarOptimizer.Test
         [Test]
         public void ComputeActualPositionWithoutBones()
         {
-            var mesh = BoxMesh();
+            var mesh = TestUtils.NewCubeMesh();
 
             var go = new GameObject();
             var smr = go.AddComponent<SkinnedMeshRenderer>();
@@ -193,48 +193,6 @@ namespace Anatawa12.AvatarOptimizer.Test
 
                 Assert.That(position, Is.EqualTo(vertex.Position));
             }
-        }
-
-        private Mesh BoxMesh()
-        {
-            var mesh = new Mesh
-            {
-                vertices = new[]
-                {
-                    new Vector3(-1, -1, -1),
-                    new Vector3(+1, -1, -1),
-                    new Vector3(-1, +1, -1),
-                    new Vector3(+1, +1, -1),
-                    new Vector3(-1, -1, +1),
-                    new Vector3(+1, -1, +1),
-                    new Vector3(-1, +1, +1),
-                    new Vector3(+1, +1, +1),
-                },
-                triangles = new[]
-                {
-                    0, 1, 2,
-                    1, 3, 2,
-
-                    4, 6, 5,
-                    5, 6, 7,
-
-                    0, 4, 1,
-
-                    1, 4, 5,
-                    1, 5, 3,
-                
-                    3, 5, 7,
-                    3, 7, 2,
-                
-                    2, 7, 6,
-                    2, 6, 0,
-                },
-            };
-
-            mesh.subMeshCount = 1;
-            mesh.SetSubMesh(0, new SubMeshDescriptor(0, mesh.triangles.Length));
-
-            return mesh;
         }
     }
 }
