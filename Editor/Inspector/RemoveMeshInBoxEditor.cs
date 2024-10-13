@@ -10,6 +10,7 @@ namespace Anatawa12.AvatarOptimizer
     internal class RemoveMeshInBoxEditor : AvatarTagComponentEditorBase
     {
         private SerializedProperty _boxes = null!; // Initialized in OnEnable
+        private SerializedProperty _removeInBox = null!; // Initialized in OnEnable
         private string? _editingBoxPropPath;
 
         private readonly Dictionary<string, (Quaternion value, Vector3 euler)> _eulerAngles =
@@ -18,10 +19,25 @@ namespace Anatawa12.AvatarOptimizer
         private void OnEnable()
         {
             _boxes = serializedObject.FindProperty(nameof(RemoveMeshInBox.boxes));
+            _removeInBox = serializedObject.FindProperty(nameof(RemoveMeshInBox.removeInBox));
         }
 
         protected override void OnInspectorGUIInner()
         {
+            // remove in box
+            {
+                var labelContent = new GUIContent(AAOL10N.Tr("RemoveMeshInBox:prop:removePolygonsInOrOut"));
+                var inBoxContent = new GUIContent(AAOL10N.Tr("RemoveMeshInBox:prop:removePolygonsInOrOut:inBox"));
+                var outOfBoxContent = new GUIContent(AAOL10N.Tr("RemoveMeshInBox:prop:removePolygonsInOrOut:outOfBox"));
+
+                var removeInBoxRect = EditorGUILayout.GetControlRect();
+                labelContent = EditorGUI.BeginProperty(removeInBoxRect, labelContent, _removeInBox);
+                var popup = EditorGUI.Popup(removeInBoxRect, labelContent, _removeInBox.boolValue ? 0 : 1,
+                    new[] { inBoxContent, outOfBoxContent });
+                _removeInBox.boolValue = popup == 0;
+                EditorGUI.EndProperty();
+            }
+
             // size prop
             _boxes.isExpanded = true;
             using (new BoundingBoxEditor.EditorScope(this))

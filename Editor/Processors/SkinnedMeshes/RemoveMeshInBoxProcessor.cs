@@ -26,7 +26,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     inBoxVertices.Add(vertex);
             }
 
-            Func<Vertex[], bool> condition = primitive => primitive.All(inBoxVertices.Contains);
+            Func<Vertex[], bool> condition = primitive => primitive.All(inBoxVertices.Contains) == Component.removeInBox;
             foreach (var subMesh in target.SubMeshes)
                 subMesh.RemovePrimitives("RemoveMeshInBox", condition);
 

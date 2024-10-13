@@ -18,6 +18,10 @@ namespace Anatawa12.AvatarOptimizer
         [SerializeField]
         internal BoundingBox[] boxes = Array.Empty<BoundingBox>();
 
+        [SerializeField]
+        [AAOLocalized("RemoveMeshInBox:prop:removePolygonsToggle")]
+        internal bool removeInBox = true;
+
         APIChecker _checker;
 
         internal RemoveMeshInBox()
@@ -117,6 +121,13 @@ namespace Anatawa12.AvatarOptimizer
                     throw new ArgumentOutOfRangeException(nameof(version), $"unsupported version: {version}");
             }
             _checker.OnInitialize(version, this);
+        }
+
+        [PublicAPI]
+        public bool RemoveInBox
+        {
+            get => _checker.OnAPIUsage(this, removeInBox);
+            set => _checker.OnAPIUsage(this, removeInBox = value);
         }
 
         /// <summary>
