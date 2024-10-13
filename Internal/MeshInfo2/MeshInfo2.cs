@@ -1090,6 +1090,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 if (TryGetBlendShape(name, weight, out var posDelta, out _, out _))
                     position += posDelta;
 
+            if (BoneWeights.Count == 0) return position;
+
             // then, apply bones
             var matrix = Matrix4x4.zero;
             foreach (var (bone, weight) in BoneWeights)
