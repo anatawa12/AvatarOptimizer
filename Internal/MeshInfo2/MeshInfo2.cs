@@ -616,8 +616,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     for (var index = 0; index < subMesh.Vertices.Count; index++)
                         indices[index] = vertexIndices[subMesh.Vertices[index]];
 
-                    var min = indices.Min();
-                    var max = indices.Max();
+                    var min = indices.Aggregate(0, Math.Min);
+                    var max = indices.Aggregate(0, Math.Max);
                     submeshWithMoreThan65536Verts |= max - min >= ushort.MaxValue;
 
                     for (var j = 0; j < count; j++)
