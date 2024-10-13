@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - `InvalidOperationException` with removing all polygon on one material slot `#1255`
+- Remove Mesh in Box does not work for meshes without Bones `#1256`
 
 ### Security
 
