@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- `InvalidOperationException` with removing all polygon on one material slot `#1255`
 
 ### Security
 
