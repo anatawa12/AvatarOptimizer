@@ -9,7 +9,7 @@ namespace Anatawa12.AvatarOptimizer
 {
     // Since AAO 1.8.0, this component can be added multiple times.
     // In AAO 1.7.0 or earlier, this component was marked as [DisallowMultipleComponent].
-    [AddComponentMenu("Avatar Optimizer/AAO Remove Mesh in Box")]
+    [AddComponentMenu("Avatar Optimizer/AAO Remove Mesh By Box")]
     [RequireComponent(typeof(SkinnedMeshRenderer))]
     [AllowMultipleComponent]
     [HelpURL("https://vpm.anatawa12.com/avatar-optimizer/ja/docs/reference/remove-mesh-in-box/")]

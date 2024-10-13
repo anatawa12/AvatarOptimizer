@@ -11,7 +11,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
 {
     internal class RemoveMeshInBoxRenderFilter : AAORenderFilterBase<RemoveMeshInBox>
     {
-        private RemoveMeshInBoxRenderFilter() : base("Remove Mesh in Box", "remove-mesh-in-box")
+        private RemoveMeshInBoxRenderFilter() : base("Remove Mesh by Box", "remove-mesh-in-box")
         {
         }
 

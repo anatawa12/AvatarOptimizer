@@ -1,9 +1,11 @@
 ---
-title: Remove Mesh in Box
+title: Remove Mesh By Box
 weight: 25
+aliases: 
+  - /en/docs/reference/remove-mesh-in-box/
 ---
 
-# Remove Mesh in Box
+# Remove Mesh By Box
 
 Remove some polygons in any of specified boxes.
 

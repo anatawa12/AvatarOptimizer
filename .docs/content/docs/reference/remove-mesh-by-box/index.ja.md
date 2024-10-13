@@ -1,9 +1,11 @@
 ---
-title: Remove Mesh in Box
+title: Remove Mesh By Box
 weight: 25
+aliases: 
+  - /ja/docs/reference/remove-mesh-in-box/
 ---
 
-# Remove Mesh in Box
+# Remove Mesh By Box
 
 箱で指定した範囲内のポリゴンを削除します。
 
