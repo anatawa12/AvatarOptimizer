@@ -155,6 +155,26 @@ namespace Anatawa12.AvatarOptimizer.Test
             Assert.That(position, Is.EqualTo(new Vector3(1, 2, 3)));
         }
 
+        [Test]
+        public void WriteEmptySubMesh()
+        {
+            var mesh = BoxMesh();
+
+            var go = new GameObject();
+            var smr = go.AddComponent<SkinnedMeshRenderer>();
+            smr.sharedMesh = mesh;
+
+            var meshInfo2 = new MeshInfo2(smr);
+
+            meshInfo2.SubMeshes[0].Vertices.Clear();
+            meshInfo2.Vertices.Clear();
+
+            var newMesh = new Mesh();
+            meshInfo2.WriteToMesh(newMesh);
+
+            Assert.That(newMesh.subMeshCount, Is.EqualTo(1));
+        }
+
         private Mesh BoxMesh()
         {
             var mesh = new Mesh
