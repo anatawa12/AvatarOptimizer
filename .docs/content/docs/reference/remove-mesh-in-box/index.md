@@ -15,18 +15,29 @@ By removing polygons which are hidden by clothes or something, you can reduce re
 
 ## Settings
 
-Adjust the value to add box.
-For each box, you can change the center Position, Size, and Rotation of the box. (In local coordinate)
-
 ![component.png](component.png)
 
-Click `Edit This Box` to show Gizmo to edit the box like below. You can scale, move and rotate the box.
+### Remove Polygons
 
-<img src="gizmo.png" width="563">
+You can choose whether to remove polygons in the any of boxes or outside the all boxes.
+
+### Boxes
+
+The list of boxes for removing polygons.
+
+You can add a box by changing size of the list with number on the left of `Boxes`.
+
+You can change the center position, size, and rotation of each box with the inspector. (In local coordinate of Skinned Mesh Renderer)
+
+Alternatively, you can edit the box with Gizmo by clicking `Edit This Box`.
+
+You can move or rotate the box with handle at the center of the box, and scale the box with dots on the faces of the box.
+
+<img src="gizmo.png" width="662">
 
 ## Example
 
 With boxes shown on upper image, meshes in the box will be removed as lower image shows.
 
-<img src="before.png" width="403">
-<img src="after.png" width="403">
+<img src="before.png" width="480">
+<img src="after.png" width="480">
