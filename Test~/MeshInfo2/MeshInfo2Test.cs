@@ -175,6 +175,26 @@ namespace Anatawa12.AvatarOptimizer.Test
             Assert.That(newMesh.subMeshCount, Is.EqualTo(1));
         }
 
+        [Test]
+        public void ComputeActualPositionWithoutBones()
+        {
+            var mesh = BoxMesh();
+
+            var go = new GameObject();
+            var smr = go.AddComponent<SkinnedMeshRenderer>();
+            smr.sharedMesh = mesh;
+
+            var meshInfo2 = new MeshInfo2(smr);
+
+            foreach (var vertex in meshInfo2.Vertices)
+            {
+                var position = vertex.ComputeActualPosition(meshInfo2,
+                    t => t.localToWorldMatrix, go.transform.worldToLocalMatrix);
+
+                Assert.That(position, Is.EqualTo(vertex.Position));
+            }
+        }
+
         private Mesh BoxMesh()
         {
             var mesh = new Mesh
