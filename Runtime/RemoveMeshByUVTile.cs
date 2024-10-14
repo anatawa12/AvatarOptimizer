@@ -44,6 +44,7 @@ namespace Anatawa12.AvatarOptimizer
             [SerializeField] public bool removeTile14;
             [SerializeField] public bool removeTile15;
 
+            [AAOLocalized("RemoveMeshByUVTile:prop:UVChannel")]
             [SerializeField] public UVChannel uvChannel;
 
             [BurstCompile]
