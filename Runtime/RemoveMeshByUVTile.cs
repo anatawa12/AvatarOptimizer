@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.InteropServices;
 using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer
@@ -22,6 +23,7 @@ namespace Anatawa12.AvatarOptimizer
         }
 
         [Serializable]
+        [StructLayout(LayoutKind.Sequential)]
         internal struct MaterialSlot : IEquatable<MaterialSlot>
         {
             [SerializeField] public bool removeTile0;
@@ -40,6 +42,16 @@ namespace Anatawa12.AvatarOptimizer
             [SerializeField] public bool removeTile13;
             [SerializeField] public bool removeTile14;
             [SerializeField] public bool removeTile15;
+
+            private Span<bool> AsSpan() => MemoryMarshal.CreateSpan(ref removeTile0, 16);
+
+            public bool RemoveAnyTile =>
+                removeTile0 || removeTile1 || removeTile2 || removeTile3 ||
+                removeTile4 || removeTile5 || removeTile6 || removeTile7 ||
+                removeTile8 || removeTile9 || removeTile10 || removeTile11 ||
+                removeTile12 || removeTile13 || removeTile14 || removeTile15;
+
+            public bool GetTile(int tile) => AsSpan()[tile];
 
             public bool Equals(MaterialSlot other) =>
                 removeTile0 == other.removeTile0 &&
