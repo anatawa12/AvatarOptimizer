@@ -13,10 +13,10 @@ This component should be added to a GameObject which has a SkinnedMeshRenderer c
 
 By removing polygons which are hidden by clothes or something, you can reduce rendering cost, BlendShape processing cost, etc. without affecting the appearance so much.
 
-You can use this component to easily remove polygons of models designed to hide some portion with UV Tile Discard feature of poiyomi or liltoon.
-This component works as like UV Tile Discard Mode to Vertex.
+You can use this component to easily remove polygons of models designed to hide some portion with UV Tile Discard feature of Poiyomi or lilToon.\
+This component works like UV Tile Discard with Vertex Mode.
 
-Please read [documentation of poiyomi's UV Tile Discard][UV Tile Discard] for more details about UV Tile Discard.
+Please read [documentation of Poiyomi's UV Tile Discard][UV Tile Discard] for more details about UV Tile Discard.
 
 You also may use some other non-destructive tool to create UV Tiling for the model.
 
@@ -32,4 +32,4 @@ You can select the UV Tile to remove polygons by clicking the tile.
 Checked tiles will be removed.
 
 You may also select UV Channel to use for UV Tile selection above.
-Unlike UV Tile Discard of lilToon or poiyomi, this component can use any UV Channel for UV Tile selection.
+Unlike UV Tile Discard of Poiyomi or lilToon, this component can use any UV Channel for UV Tile selection.
