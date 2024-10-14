@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.InteropServices;
+using Unity.Burst;
 using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer
@@ -43,6 +44,7 @@ namespace Anatawa12.AvatarOptimizer
             [SerializeField] public bool removeTile14;
             [SerializeField] public bool removeTile15;
 
+            [BurstCompile]
             private Span<bool> AsSpan() => MemoryMarshal.CreateSpan(ref removeTile0, 16);
 
             public bool RemoveAnyTile =>
@@ -51,7 +53,9 @@ namespace Anatawa12.AvatarOptimizer
                 removeTile8 || removeTile9 || removeTile10 || removeTile11 ||
                 removeTile12 || removeTile13 || removeTile14 || removeTile15;
 
+            [BurstCompile]
             public bool GetTile(int tile) => AsSpan()[tile];
+            
 
             public bool Equals(MaterialSlot other) =>
                 removeTile0 == other.removeTile0 &&
