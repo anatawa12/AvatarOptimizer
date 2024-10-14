@@ -27,7 +27,7 @@ You can choose whether to remove polygons in the any of boxes or outside the all
 
 The list of boxes for removing polygons.
 
-You can add a box by changing size of the list with number on the left of `Boxes`.
+You can add a box by changing size of the list with number on the right of `Boxes`.
 
 You can change the center position, size, and rotation of each box with the inspector. (In local coordinate of Skinned Mesh Renderer)
 
