@@ -10,7 +10,7 @@ The format is based on [Keep a Changelog].
 ### Added
 - Invert option for Remove Mesh in Box `#1257`
   - You now can remove polygons outside of the box instead of inside the box.
-  - Along with this new feature, we renamed `Remove Mesh in Box` to `Remove Mesh by Box` to make it more clear.
+  - Along with this new feature, we renamed `Remove Mesh in Box` to `Remove Mesh By Box` to make it more clear.
     - This doesn't change the class name of the component since it's already a part of the public API.
 
 ### Changed
