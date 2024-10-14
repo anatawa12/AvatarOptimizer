@@ -1,6 +1,6 @@
 msgid ""
 msgstr ""
-"Language: zh-cn\n"
+"Language: zh-hans\n"
 
 msgid "CheckForUpdate:out-of-date"
 msgstr "Avatar Optimizer的新版本 {0} 已经发布！(您当前使用的版本是 {1})"

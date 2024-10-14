@@ -18,7 +18,7 @@ namespace Anatawa12.AvatarOptimizer
             {
                 AssetDatabase.LoadAssetAtPath<LocalizationAsset>(localizationFolder + "en-us.po"),
                 AssetDatabase.LoadAssetAtPath<LocalizationAsset>(localizationFolder + "ja-jp.po"),
-                AssetDatabase.LoadAssetAtPath<LocalizationAsset>(localizationFolder + "zh-cn.po"),
+                AssetDatabase.LoadAssetAtPath<LocalizationAsset>(localizationFolder + "zh-hans.po"),
                 AssetDatabase.LoadAssetAtPath<LocalizationAsset>(localizationFolder + "zh-hant.po"),
             };
         });
