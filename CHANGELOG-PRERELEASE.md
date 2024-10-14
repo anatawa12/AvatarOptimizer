@@ -12,6 +12,8 @@ The format is based on [Keep a Changelog].
 ### Changed
 - Transform gizmo are now hidden while you're editing box of Remove Mesh in Box `#1259`
   - This prevents mistakenly moving the Skinned Mesh Renderer while editing the box.
+- Make MergePhysBone implement `INetworkID` `#1260`
+  - This allow you to configure networkid for merged PhysBone component
 
 ### Deprecated
 
