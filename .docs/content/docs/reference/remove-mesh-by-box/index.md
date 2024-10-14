@@ -7,7 +7,7 @@ aliases:
 
 # Remove Mesh By Box
 
-Remove some polygons in any of specified boxes.
+Remove some polygons with any of specified boxes.
 
 This component should be added to a GameObject which has a SkinnedMeshRenderer component. (Kind: [Modifying Edit Skinned Mesh Component](../../component-kind/edit-skinned-mesh-components#modifying-component))
 
