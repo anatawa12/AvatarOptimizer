@@ -27,11 +27,18 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 var submesh = submeshes[i];
                 var materialSetting = materialSettings[i];
                 if (!materialSetting.RemoveAnyTile) continue;
+                var uvChannel = (int) materialSetting.uvChannel;
+                if (uvChannel is < 0 or >= 8)
+                {
+                    BuildLog.LogError("RemoveMeshByUVTile:error:uvChannelOutOfRange", i);
+                    continue;
+                }
+                if (target.GetTexCoordStatus(uvChannel) == TexCoordStatus.NotDefined) continue;
 
                 submesh.RemovePrimitives("Remove Mesh By UV Tile",
                     vertices => vertices.Any(v =>
                     {
-                        var texCoord = v.TexCoord0;
+                        var texCoord = v.GetTexCoord(uvChannel);
                         var x = Mathf.FloorToInt(texCoord.x);
                         var y = Mathf.FloorToInt(texCoord.y);
                         if (x is < 0 or >= 4) return false;

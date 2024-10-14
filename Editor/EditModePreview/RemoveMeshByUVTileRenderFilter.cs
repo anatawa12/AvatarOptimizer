@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -29,8 +30,6 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
         {
             var component = components[0];
 
-            var uv = duplicated.uv;
-            using var uvJob = new NativeArray<Vector2>(uv, Allocator.TempJob);
 
             var materialSettings = context.Observe(component, c => c.materials.ToArray(), (a, b) => a.SequenceEqual(b));
             for (var subMeshI = 0; subMeshI < duplicated.subMeshCount; subMeshI++)
@@ -40,6 +39,38 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                     var materialSetting = materialSettings[subMeshI];
                     if (!materialSetting.RemoveAnyTile) continue;
 
+                    Vector2[] uv;
+                    switch (materialSetting.uvChannel)
+                    {
+                        case RemoveMeshByUVTile.UVChannel.TexCoord0:
+                            uv = duplicated.uv;
+                            break;
+                        case RemoveMeshByUVTile.UVChannel.TexCoord1:
+                            uv = duplicated.uv2;
+                            break;
+                        case RemoveMeshByUVTile.UVChannel.TexCoord2:
+                            uv = duplicated.uv3;
+                            break;
+                        case RemoveMeshByUVTile.UVChannel.TexCoord3:
+                            uv = duplicated.uv4;
+                            break;
+                        case RemoveMeshByUVTile.UVChannel.TexCoord4:
+                            uv = duplicated.uv5;
+                            break;
+                        case RemoveMeshByUVTile.UVChannel.TexCoord5:
+                            uv = duplicated.uv6;
+                            break;
+                        case RemoveMeshByUVTile.UVChannel.TexCoord6:
+                            uv = duplicated.uv7;
+                            break;
+                        case RemoveMeshByUVTile.UVChannel.TexCoord7:
+                            uv = duplicated.uv8;
+                            break;
+                        default:
+                            continue;
+                    }
+                    if (uv.Length == 0) continue;
+                    using var uvJob = new NativeArray<Vector2>(uv, Allocator.TempJob);
 
                     var subMesh = duplicated.GetSubMesh(subMeshI);
                     int vertexPerPrimitive;

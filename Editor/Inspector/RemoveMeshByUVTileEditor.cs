@@ -58,8 +58,8 @@ namespace Anatawa12.AvatarOptimizer
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
             if (!property.isExpanded) return EditorGUIUtility.singleLineHeight;
-            // one line for foldout, 4 lines for each tile
-            return EditorGUIUtility.singleLineHeight * 5 + EditorGUIUtility.standardVerticalSpacing * 4;
+            // one line for foldout, 4 lines for each tile, one line for uv channel
+            return EditorGUIUtility.singleLineHeight * 6 + EditorGUIUtility.standardVerticalSpacing * 5;
         }
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
@@ -69,8 +69,14 @@ namespace Anatawa12.AvatarOptimizer
             property.isExpanded = EditorGUI.Foldout(position, property.isExpanded, label);
             if (!property.isExpanded) return;
 
-            position.xMin += 15f;
+            position.y += lineOffset;
+            var uvChannelPosition = position;
+            EditorGUI.indentLevel++;
+            EditorGUI.PropertyField(uvChannelPosition,
+                property.FindPropertyRelative(nameof(RemoveMeshByUVTile.MaterialSlot.uvChannel)));
+            EditorGUI.indentLevel--;
 
+            position.xMin += 15f * (EditorGUI.indentLevel + 1);
             position.y += lineOffset;
             var line3 = position;
             position.y += lineOffset;
@@ -97,10 +103,13 @@ namespace Anatawa12.AvatarOptimizer
             for (var i = 0; i < 16; i++)
             {
                 var tileProp = property.FindPropertyRelative($"removeTile{i}");
+                var text = new GUIContent(string.Format(template, i));
+                text = EditorGUI.BeginProperty(tiles[i], text, tileProp);
                 EditorGUI.BeginChangeCheck();
-                var value = GUI.Toggle(tiles[i], tileProp.boolValue, string.Format(template, i));
+                var value = GUI.Toggle(tiles[i], tileProp.boolValue, text);
                 if (EditorGUI.EndChangeCheck())
                     tileProp.boolValue = value;
+                EditorGUI.EndProperty();
             }
         }
 

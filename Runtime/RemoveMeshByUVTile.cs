@@ -44,6 +44,8 @@ namespace Anatawa12.AvatarOptimizer
             [SerializeField] public bool removeTile14;
             [SerializeField] public bool removeTile15;
 
+            [SerializeField] public UVChannel uvChannel;
+
             [BurstCompile]
             private Span<bool> AsSpan() => MemoryMarshal.CreateSpan(ref removeTile0, 16);
 
@@ -101,6 +103,18 @@ namespace Anatawa12.AvatarOptimizer
 
             public static bool operator ==(MaterialSlot left, MaterialSlot right) => left.Equals(right);
             public static bool operator !=(MaterialSlot left, MaterialSlot right) => !left.Equals(right);
+        }
+
+        internal enum UVChannel
+        {
+            TexCoord0,
+            TexCoord1,
+            TexCoord2,
+            TexCoord3,
+            TexCoord4,
+            TexCoord5,
+            TexCoord6,
+            TexCoord7,
         }
     }
 }

@@ -482,6 +482,9 @@ msgstr "Material Slot {0}"
 msgid "RemoveMeshByUVTile:prop:Tile"
 msgstr "Tile {0}"
 
+msgid "RemoveMeshByUVTile:error:uvChannelOutOfRange"
+msgstr "UV Channel is out of range: {0}"
+
 # endregion
 
 # region MaskTextureEditor
