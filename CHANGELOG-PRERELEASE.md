@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
+- Transform gizmo are now hidden while you're editing box of Remove Mesh in Box `#1259`
+  - This prevents mistakenly moving the Skinned Mesh Renderer while editing the box.
 - Changed locale code for simplified chinese from `zh-cn` to `zh-hans` `#1264`
   - This would improve compatibility with other NDMF tools.
   - Many NDMF tools uses `zh-hans` so previously you may see both 中文 (中国) and 中文 (简体).

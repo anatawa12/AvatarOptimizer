@@ -20,6 +20,11 @@ namespace Anatawa12.AvatarOptimizer
             _boxes = serializedObject.FindProperty(nameof(RemoveMeshInBox.boxes));
         }
 
+        private void OnDisable()
+        {
+            RestoreToolState();
+        }
+
         protected override void OnInspectorGUIInner()
         {
             // size prop
@@ -134,9 +139,35 @@ namespace Anatawa12.AvatarOptimizer
         }
 
         private readonly BoxHandle _boxBoundsHandle = new BoxHandle();
+        private string? _editingBoxPropPathPrevFrame;
+
+        private void RestoreToolState()
+        {
+            if (_editingBoxPropPathPrevFrame != null)
+            {
+                // tools are not generally hidden in unity so we simply revert to show state instead of saving and restoring
+                // This prevents the tools from being hidden forever because of bug in the editor script.
+                Tools.hidden = false;
+            }
+        }
 
         private void OnSceneGUI()
         {
+            if (_editingBoxPropPathPrevFrame != _editingBoxPropPath)
+            {
+                if (_editingBoxPropPath != null)
+                {
+                    if (_editingBoxPropPathPrevFrame == null)
+                    {
+                        Tools.hidden = true;
+                    }
+                }
+                else
+                {
+                    RestoreToolState();
+                }
+            }
+            _editingBoxPropPathPrevFrame = _editingBoxPropPath;
             if (_editingBoxPropPath == null) return;
             var box = serializedObject.FindProperty(_editingBoxPropPath);
             if (box == null) return;
