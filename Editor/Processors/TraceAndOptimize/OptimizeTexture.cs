@@ -984,6 +984,9 @@ internal struct OptimizeTextureImpl {
                 newTexture = new Texture2D(newWidth, newHeight, texture2D.format, mipmapCount, !texture2D.isDataSRGB);
                 newTexture.wrapModeU = texture2D.wrapModeU;
                 newTexture.wrapModeV = texture2D.wrapModeV;
+                newTexture.filterMode = texture2D.filterMode;
+                newTexture.anisoLevel = texture2D.anisoLevel;
+                newTexture.mipMapBias = texture2D.mipMapBias;
                 newTexture.SetPixelData(destTextureData, 0);
                 newTexture.Apply(true, !texture2D.isReadable);
             }
@@ -1038,6 +1041,9 @@ internal struct OptimizeTextureImpl {
                     newTexture.name = texture2D.name + " (AAO UV Packed)";
                     newTexture.wrapModeU = texture2D.wrapModeU;
                     newTexture.wrapModeV = texture2D.wrapModeV;
+                    newTexture.filterMode = texture2D.filterMode;
+                    newTexture.anisoLevel = texture2D.anisoLevel;
+                    newTexture.mipMapBias = texture2D.mipMapBias;
                     newTexture.Apply(true, !texture2D.isReadable);
                 }
             }
