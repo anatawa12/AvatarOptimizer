@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Texture Optimizer support for tiling UV `#1268`
 
 ### Changed
 - Transform gizmo are now hidden while you're editing box of Remove Mesh in Box `#1259`
