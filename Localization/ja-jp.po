@@ -392,6 +392,25 @@ msgstr "画像ファイルから読み込まれたマスクテクスチャでは
 
 # endregion
 
+# region Remove Mesh By UV Tile
+
+msgid "RemoveMeshByUVTile:warning:NoMesh"
+msgstr "Skinned Mesh RendererにMeshが設定されていません。"
+
+msgid "RemoveMeshByUVTile:prop:MaterialSlot"
+msgstr "{0}番のマテリアルスロット"
+
+msgid "RemoveMeshByUVTile:prop:Tile"
+msgstr "{0}番のタイル"
+
+msgid "RemoveMeshByUVTile:prop:UVChannel"
+msgstr "UVチャンネル"
+
+msgid "RemoveMeshByUVTile:error:uvChannelOutOfRange"
+msgstr "UVチャンネルの{0}番は範囲外です。"
+
+# endregion
+
 # region MaskTextureEditor
 
 msgid "MaskTextureEditor:create"

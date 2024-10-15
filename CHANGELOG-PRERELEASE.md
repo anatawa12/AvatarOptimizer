@@ -12,6 +12,9 @@ The format is based on [Keep a Changelog].
   - You now can remove polygons outside of the box instead of inside the box.
   - Along with this new feature, we renamed `Remove Mesh in Box` to `Remove Mesh By Box` to make it more clear.
     - This doesn't change the class name of the component since it's already a part of the public API.
+- Remove Mesh By UV Tile, a new way to remove polygons `#1263`
+  - You now easily remove some polygons of models configured for UV Tile Discard.
+  - This component removes polygons like UV Tile Discard with Vertex Discard Mode.
 
 ### Changed
 - Transform gizmo are now hidden while you're editing box of Remove Mesh in Box `#1259`
