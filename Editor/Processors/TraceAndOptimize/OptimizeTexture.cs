@@ -700,7 +700,7 @@ internal struct OptimizeTextureImpl {
         return AtlasResult.Empty;
     }
 
-    private List<AtlasIsland>? CreateIslands(ICollection<UVID> users, 
+    internal static List<AtlasIsland>? CreateIslands(ICollection<UVID> users, 
         TextureWrapMode? wrapModeU, TextureWrapMode? wrapModeV)
     {
         foreach (var user in users)
