@@ -668,7 +668,7 @@ internal struct OptimizeTextureImpl {
 
         FitToBlockSizeAndAddPadding(islands, blockSizeRatioX, blockSizeRatioY, paddingRatio);
 
-        var atlasIslands = islands.Select(x => new AtlasIsland(x)).ToArray();
+        var atlasIslands = islands.ToArray();
         Array.Sort(atlasIslands, (a, b) => b.Size.y.CompareTo(a.Size.y));
 
         if (AfterAtlasSizesSmallToBig(atlasIslands) is not {} atlasSizes)
@@ -695,7 +695,7 @@ internal struct OptimizeTextureImpl {
         return AtlasResult.Empty;
     }
 
-    private List<IslandUtility.Island>? CreateIslands(ICollection<UVID> users, 
+    private List<AtlasIsland>? CreateIslands(ICollection<UVID> users, 
         TextureWrapMode? wrapModeU, TextureWrapMode? wrapModeV)
     {
         foreach (var user in users)
@@ -751,10 +751,10 @@ internal struct OptimizeTextureImpl {
             }
         }
 
-        return islands;
+        return islands.Select(x => new AtlasIsland(x)).ToList();
     }
 
-    private void MergeIslands(List<IslandUtility.Island> islands)
+    private void MergeIslands(List<AtlasIsland> islands)
     {
         // TODO: We may merge islands >N% wrapped (heuristic merge islands)
         // This mage can be after fitting to block size
@@ -772,7 +772,7 @@ internal struct OptimizeTextureImpl {
                 if (islandI.MinPos.x <= islandJ.MinPos.x && islandJ.MaxPos.x <= islandI.MaxPos.x &&
                     islandI.MinPos.y <= islandJ.MinPos.y && islandJ.MaxPos.y <= islandI.MaxPos.y)
                 {
-                    islandI.triangles.AddRange(islandJ.triangles);
+                    islandI.OriginalIslands.AddRange(islandI.OriginalIslands);
                     islands.RemoveAt(j);
                     j--;
                     if (j < i) i--;
@@ -843,7 +843,7 @@ internal struct OptimizeTextureImpl {
         return (blockSizeRatioX, blockSizeRatioY, paddingRatio);
     }
 
-    private void FitToBlockSizeAndAddPadding(List<IslandUtility.Island> islands, float blockSizeRatioX, float blockSizeRatioY, float paddingRatio)
+    private void FitToBlockSizeAndAddPadding(List<AtlasIsland> islands, float blockSizeRatioX, float blockSizeRatioY, float paddingRatio)
     {
         foreach (var island in islands)
         {
@@ -918,8 +918,8 @@ internal struct OptimizeTextureImpl {
                     var xBlockCount = (xPixelCount + blockWidth - 1) / blockWidth;
                     var yBlockCount = (yPixelCount + blockHeight - 1) / blockHeight;
 
-                    var sourceXPixelPosition = (int)(atlasIsland.OriginalIsland.MinPos.x * texture2D.width);
-                    var sourceYPixelPosition = (int)(atlasIsland.OriginalIsland.MinPos.y * texture2D.height);
+                    var sourceXPixelPosition = (int)(atlasIsland.MinPos.x * texture2D.width);
+                    var sourceYPixelPosition = (int)(atlasIsland.MinPos.y * texture2D.height);
                     var sourceXBlockPosition = sourceXPixelPosition / blockWidth;
                     var sourceYBlockPosition = sourceYPixelPosition / blockHeight;
 
@@ -960,8 +960,8 @@ internal struct OptimizeTextureImpl {
                 foreach (var atlasIsland in atlasIslands)
                 {
                     HelperMaterial.SetVector(SrcRectProp,
-                        new Vector4(atlasIsland.OriginalIsland.MinPos.x, atlasIsland.OriginalIsland.MinPos.y,
-                            atlasIsland.OriginalIsland.Size.x, atlasIsland.OriginalIsland.Size.y));
+                        new Vector4(atlasIsland.MinPos.x, atlasIsland.MinPos.y,
+                            atlasIsland.Size.x, atlasIsland.Size.y));
 
                     var pivot = atlasIsland.Pivot / atlasSize;
                     var size = atlasIsland.Size / atlasSize;
@@ -1004,12 +1004,13 @@ internal struct OptimizeTextureImpl {
         var newUVs = new Dictionary<Vertex, List<(int uvChannel, Vector2 newUV)>>();
 
         foreach (var atlasIsland in atlasIslands)
-        foreach (var triangle in atlasIsland.OriginalIsland.triangles)
+        foreach (var originalIsland in atlasIsland.OriginalIslands)
+        foreach (var triangle in originalIsland.triangles)
         foreach (var vertex in triangle)
         {
             var uv = (Vector2)vertex.GetTexCoord(triangle.UVIndex);
 
-            uv -= atlasIsland.OriginalIsland.MinPos;
+            uv -= atlasIsland.MinPos;
             uv += atlasIsland.Pivot;
             uv /= atlasSize;
 
@@ -1179,14 +1180,18 @@ internal struct OptimizeTextureImpl {
     internal class AtlasIsland
     {
         //TODO: rotate
-        public IslandUtility.Island OriginalIsland;
+        public readonly List<IslandUtility.Island> OriginalIslands;
         public Vector2 Pivot;
 
-        public Vector2 Size => OriginalIsland.Size;
+        public Vector2 MinPos;
+        public Vector2 MaxPos;
+        public Vector2 Size => MaxPos - MinPos;
 
         public AtlasIsland(IslandUtility.Island originalIsland)
         {
-            OriginalIsland = originalIsland;
+            OriginalIslands = new List<IslandUtility.Island> { originalIsland };
+            MinPos = originalIsland.MinPos;
+            MaxPos = originalIsland.MaxPos;
         }
     }
 
@@ -1424,8 +1429,6 @@ internal struct OptimizeTextureImpl {
             public List<Triangle> triangles;
             public Vector2 MinPos;
             public Vector2 MaxPos;
-
-            public Vector2 Size => MaxPos - MinPos;
 
             public Island(Island source)
             {
