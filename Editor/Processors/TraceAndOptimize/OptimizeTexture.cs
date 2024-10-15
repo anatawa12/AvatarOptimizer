@@ -502,11 +502,14 @@ internal struct OptimizeTextureImpl {
             return computer(propertyName);
         }
 
-        public override int? GetInteger(string propertyName, bool considerAnimation = true) => GetValue(propertyName, _material.GetInt, considerAnimation);
+        public override int? GetInteger(string propertyName, bool considerAnimation = true) =>
+            GetValue(propertyName, _material.GetInt, considerAnimation);
 
-        public override float? GetFloat(string propertyName, bool considerAnimation = true) => GetValue(propertyName, _material.GetFloat, considerAnimation);
+        public override float? GetFloat(string propertyName, bool considerAnimation = true) =>
+            GetValue(propertyName, _material.GetFloat, considerAnimation);
 
-        public override Vector4? GetVector(string propertyName, bool considerAnimation = true) => GetValue(propertyName, _material.GetVector, considerAnimation);
+        public override Vector4? GetVector(string propertyName, bool considerAnimation = true) =>
+            GetValue(propertyName, _material.GetVector, considerAnimation);
 
         public override void RegisterOtherUVUsage(UsingUVChannels uvChannel)
         {
@@ -515,9 +518,9 @@ internal struct OptimizeTextureImpl {
         }
 
         public override void RegisterTextureUVUsage(
-            string textureMaterialPropertyName, 
+            string textureMaterialPropertyName,
             SamplerStateInformation samplerState,
-            UsingUVChannels uvChannels, 
+            UsingUVChannels uvChannels,
             Matrix2x3? uvMatrix)
         {
             if (_textureUsageInformations == null) return;
@@ -556,12 +559,42 @@ internal struct OptimizeTextureImpl {
                     return;
             }
 
-            if (uvMatrix != Matrix2x3.Identity && uvChannel != UVChannel.NonMeshRelated) {
+            if (uvMatrix != Matrix2x3.Identity && uvChannel != UVChannel.NonMeshRelated)
+            {
                 _textureUsageInformations = null;
                 return;
             }
 
-            _textureUsageInformations?.Add(new TextureUsageInformation(textureMaterialPropertyName, uvChannel));
+            TextureWrapMode? wrapModeU, wrapModeV;
+
+            if (samplerState.MaterialProperty)
+            {
+                var texture = _material.GetTexture(textureMaterialPropertyName);
+                if (texture != null)
+                {
+                    wrapModeU = texture.wrapModeU;
+                    wrapModeV = texture.wrapModeV;
+                }
+                else
+                {
+                    wrapModeU = null;
+                    wrapModeV = null;
+                }
+            }
+            else
+            {
+                wrapModeV = wrapModeU = samplerState.TextureName switch
+                {
+                    "PointClamp" or "LinearClamp" or "TrilinearClamp" => TextureWrapMode.Clamp,
+                    "PointRepeat" or "LinearRepeat" or "TrilinearRepeat" => TextureWrapMode.Repeat,
+                    "PointMirror" or "LinearMirror" or "TrilinearMirror" => TextureWrapMode.Mirror,
+                    "PointMirrorOnce" or "LinearMirrorOnce" or "TrilinearMirrorOnce" => TextureWrapMode.MirrorOnce,
+                    "Unknown" or _ => null,
+                };
+            }
+
+            _textureUsageInformations?.Add(new TextureUsageInformation(textureMaterialPropertyName, uvChannel,
+                wrapModeU, wrapModeV));
         }
     }
 
@@ -569,11 +602,15 @@ internal struct OptimizeTextureImpl {
     {
         public string MaterialPropertyName { get; }
         public UVChannel UVChannel { get; }
+        public TextureWrapMode? WrapModeU { get; }
+        public TextureWrapMode? WrapModeV { get; }
 
-        internal TextureUsageInformation(string materialPropertyName, UVChannel uvChannel)
+        internal TextureUsageInformation(string materialPropertyName, UVChannel uvChannel, TextureWrapMode? wrapModeU, TextureWrapMode? wrapModeV)
         {
             MaterialPropertyName = materialPropertyName;
             UVChannel = uvChannel;
+            WrapModeU = wrapModeU;
+            WrapModeV = wrapModeV;
         }
     }
     
