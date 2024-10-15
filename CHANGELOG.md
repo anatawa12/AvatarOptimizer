@@ -66,6 +66,10 @@ The format is based on [Keep a Changelog].
   - This prevents mistakenly moving the Skinned Mesh Renderer while editing the box.
 - Make MergePhysBone implement `INetworkID` `#1260`
   - This allow you to configure networkid for merged PhysBone component
+- Changed locale code for simplified chinese from `zh-cn` to `zh-hans` `#1264`
+  - This would improve compatibility with other NDMF tools.
+  - Many NDMF tools uses `zh-hans` so previously you may see both 中文 (中国) and 中文 (简体).
+  - I think zh-hans is more accurate expression so I changed so.
 
 ### Deprecated
 
