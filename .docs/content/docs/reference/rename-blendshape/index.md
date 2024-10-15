@@ -16,6 +16,6 @@ This component should be added to a GameObject which has a SkinnedMeshRenderer c
 
 You'll see list of BlendShape mapping.
 
-Click upper left '+' button to add new mapping.
+Click upper right '+' button to add new mapping.
 
 If the renamed name is duplicated, it will be shown in yellow color to indicate that it will be merged.

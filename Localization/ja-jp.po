@@ -294,6 +294,15 @@ msgstr "テクスチャのサイズ"
 
 # region RemoveMeshInBox
 
+msgid "RemoveMeshInBox:prop:removePolygonsInOrOut"
+msgstr "削除するポリゴン"
+
+msgid "RemoveMeshInBox:prop:removePolygonsInOrOut:inBox"
+msgstr "箱の内側"
+
+msgid "RemoveMeshInBox:prop:removePolygonsInOrOut:outOfBox"
+msgstr "箱の外側"
+
 msgid "RemoveMeshInBox:BoundingBox:prop:center"
 msgstr "中心"
 

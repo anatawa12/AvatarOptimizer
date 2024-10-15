@@ -382,6 +382,15 @@ msgstr "Texture Size"
 
 # region RemoveMeshInBox
 
+msgid "RemoveMeshInBox:prop:removePolygonsInOrOut"
+msgstr "Remove polygons"
+
+msgid "RemoveMeshInBox:prop:removePolygonsInOrOut:inBox"
+msgstr "In the box"
+
+msgid "RemoveMeshInBox:prop:removePolygonsInOrOut:outOfBox"
+msgstr "Out of the box"
+
 msgid "RemoveMeshInBox:BoundingBox:prop:center"
 msgstr "Center"
 

@@ -37,6 +37,10 @@ The format is based on [Keep a Changelog].
 - API to get in advance whether a polygon will be removed `#1177`
 - Rename BlendShape component to rename BlendShapes `#1245`
   - This can be used to avoid blendShape name conflicts in Merge Skinned Mesh
+- Invert option for Remove Mesh in Box `#1257`
+  - You now can remove polygons outside of the box instead of inside the box.
+  - Along with this new feature, we renamed `Remove Mesh in Box` to `Remove Mesh By Box` to make it more clear.
+    - This doesn't change the class name of the component since it's already a part of the public API.
 - Remove Mesh By UV Tile, a new way to remove polygons `#1263`
   - You now easily remove some polygons of models configured for UV Tile Discard.
   - This component removes polygons like UV Tile Discard with Vertex Discard Mode.
@@ -61,6 +65,10 @@ The format is based on [Keep a Changelog].
   - This will lose previously configured debug options.
   - However, debug options are not considered as Public API as stated in documents so this is not backward incompatible changes in semver 2.0.0 section 8.
 - Performance Improvements `#1234` `#1243` `#1240`
+- Transform gizmo are now hidden while you're editing box of Remove Mesh in Box `#1259`
+  - This prevents mistakenly moving the Skinned Mesh Renderer while editing the box.
+- Make MergePhysBone implement `INetworkID` `#1260`
+  - This allow you to configure networkid for merged PhysBone component
 
 ### Deprecated
 
@@ -75,6 +83,7 @@ The format is based on [Keep a Changelog].
 - Avatar Descriptor can be removed by Avatar Optimizer in extreamely rare case `#1242`
 - Material property animation with weight 0 layer might be broken with AutoMergeSkinnedMesh `#1248` `#1253`
 - Remove Mesh in Box does not work for meshes without Bones `#1256`
+- NullReferenceException in `GetBlendShape` if Mesh is not specified for SkinnedMeshRenderer `#1267`
 
 ### Security
 

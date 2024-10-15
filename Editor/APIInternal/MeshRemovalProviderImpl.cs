@@ -1,5 +1,6 @@
 using System;
 using Anatawa12.AvatarOptimizer.API;
+using nadena.dev.ndmf.preview;
 using Unity.Collections;
 using UnityEditor;
 using UnityEngine;
@@ -62,7 +63,7 @@ internal class MeshRemovalProviderImpl : MeshRemovalProvider
 
         if (removeMeshInBox.Length != 0)
         {
-            _removedByBox = EditModePreview.RemoveMeshInBoxRendererNode.ComputeShouldRemoveVertex(renderer, removeMeshInBox);
+            _removedByBox = EditModePreview.RemoveMeshInBoxRendererNode.ComputeShouldRemoveVertex(renderer, removeMeshInBox, ComputeContext.NullContext);
         }
 
         if (removeMeshByMask != null)
