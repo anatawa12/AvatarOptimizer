@@ -692,6 +692,30 @@ internal struct OptimizeTextureImpl {
         var triangles = users.SelectMany(TrianglesByUVID).ToList();
         var islands = IslandUtility.UVtoIsland(triangles);
 
+        foreach (var island in islands)
+        {
+            int tileX, tileY;
+            {
+                var triangle = island.triangles[0];
+                var coord = triangle.zero.GetTexCoord(triangle.UVIndex);
+                tileX = Mathf.FloorToInt(coord.x);
+                tileY = Mathf.FloorToInt(coord.y);
+            }
+
+            // We may allow both 0.5000 and 1.00000 in the future 
+            foreach (var islandTriangle in island.triangles)
+            foreach (var vertex in islandTriangle)
+            {
+                var currentTileX = Mathf.FloorToInt(vertex.GetTexCoord(islandTriangle.UVIndex).x);
+                var currentTileY = Mathf.FloorToInt(vertex.GetTexCoord(islandTriangle.UVIndex).y);
+                if (currentTileX != tileX || currentTileY != tileY)
+                {
+                    TraceLog($"{string.Join(", ", users)} will not merged because UV is not in same tile");
+                    return null;
+                }
+            }
+        }
+
         return islands;
     }
 
