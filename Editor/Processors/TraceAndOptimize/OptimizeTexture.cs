@@ -11,6 +11,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
 using UnityEngine.Profiling;
+using UnityEngine.Serialization;
 using Debug = UnityEngine.Debug;
 using Object = UnityEngine.Object;
 
@@ -788,7 +789,9 @@ internal struct OptimizeTextureImpl {
             var flipY = wrapModeV is TextureWrapMode.Mirror or TextureWrapMode.MirrorOnce && (tileV & 1) != 0;
             island.tileU = tileU;
             island.tileV = tileV;
-            atlasIslands.Add(new AtlasIsland(island, flipX, flipY));
+            island.flipU = flipX;
+            island.flipV = flipY;
+            atlasIslands.Add(new AtlasIsland(island));
         }
 
         return atlasIslands;
@@ -1065,8 +1068,8 @@ internal struct OptimizeTextureImpl {
             uv.y -= originalIsland.tileV;
 
             // flip if needed
-            if (atlasIsland.FlipX) uv.x = 1 - uv.x;
-            if (atlasIsland.FlipY) uv.y = 1 - uv.y;
+            if (originalIsland.flipU) uv.x = 1 - uv.x;
+            if (originalIsland.flipV) uv.y = 1 - uv.y;
 
             // apply new pivot
             uv -= atlasIsland.MinPos;
@@ -1074,8 +1077,8 @@ internal struct OptimizeTextureImpl {
             uv /= atlasSize;
 
             // re-flip if needed
-            if (atlasIsland.FlipX) uv.x = 1 - uv.x;
-            if (atlasIsland.FlipY) uv.y = 1 - uv.y;
+            if (originalIsland.flipU) uv.x = 1 - uv.x;
+            if (originalIsland.flipV) uv.y = 1 - uv.y;
 
             // move to tile
             uv.x += originalIsland.tileU;
@@ -1252,15 +1255,10 @@ internal struct OptimizeTextureImpl {
 
         public Vector2 MinPos;
         public Vector2 MaxPos;
-        public readonly bool FlipX;
-        public readonly bool FlipY;
         public Vector2 Size => MaxPos - MinPos;
 
-        public AtlasIsland(IslandUtility.Island originalIsland, bool flipX, bool flipY)
+        public AtlasIsland(IslandUtility.Island originalIsland)
         {
-            FlipX = flipX;
-            FlipY = flipY;
-
             OriginalIslands = new List<IslandUtility.Island> { originalIsland };
             MinPos = originalIsland.MinPos;
             MaxPos = originalIsland.MaxPos;
@@ -1271,8 +1269,8 @@ internal struct OptimizeTextureImpl {
             MaxPos.y -= originalIsland.tileV;
 
             // if flip is true, each position will be replaced with 1-position
-            if (FlipX) (MinPos.x, MaxPos.x) = (1 - MaxPos.x, 1 - MinPos.x);
-            if (FlipY) (MinPos.y, MaxPos.y) = (1 - MaxPos.y, 1 - MinPos.y);
+            if (originalIsland.flipU) (MinPos.x, MaxPos.x) = (1 - MaxPos.x, 1 - MinPos.x);
+            if (originalIsland.flipV) (MinPos.y, MaxPos.y) = (1 - MaxPos.y, 1 - MinPos.y);
         }
     }
 
@@ -1512,6 +1510,8 @@ internal struct OptimizeTextureImpl {
             public Vector2 MaxPos;
             public int tileU;
             public int tileV;
+            [FormerlySerializedAs("flipX")] public bool flipU;
+            [FormerlySerializedAs("flipY")] public bool flipV;
 
             public Island(Island source)
             {
