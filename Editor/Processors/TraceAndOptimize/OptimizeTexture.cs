@@ -978,6 +978,8 @@ internal struct OptimizeTextureImpl {
                 }
 
                 newTexture = new Texture2D(newWidth, newHeight, texture2D.format, mipmapCount, !texture2D.isDataSRGB);
+                newTexture.wrapModeU = texture2D.wrapModeU;
+                newTexture.wrapModeV = texture2D.wrapModeV;
                 newTexture.SetPixelData(destTextureData, 0);
                 newTexture.Apply(true, !texture2D.isReadable);
             }
@@ -1030,6 +1032,8 @@ internal struct OptimizeTextureImpl {
                     if (GraphicsFormatUtility.IsCompressedFormat(texture2D.format))
                         EditorUtility.CompressTexture(newTexture, texture2D.format, TextureCompressionQuality.Normal);
                     newTexture.name = texture2D.name + " (AAO UV Packed)";
+                    newTexture.wrapModeU = texture2D.wrapModeU;
+                    newTexture.wrapModeV = texture2D.wrapModeV;
                     newTexture.Apply(true, !texture2D.isReadable);
                 }
             }
