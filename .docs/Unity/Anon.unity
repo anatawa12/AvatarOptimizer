@@ -285,6 +285,11 @@ MonoBehaviour:
       removes: []
       additions: []
     fakeSlot: 
+--- !u!1 &974301401 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1329111341535104285, guid: 8ae2a6881bbfcd84697b56e80d826039, type: 3}
+  m_PrefabInstance: {fileID: 1411353992}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1391228312
 GameObject:
   m_ObjectHideFlags: 0
@@ -513,6 +518,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 7703706129674054865, guid: 8ae2a6881bbfcd84697b56e80d826039, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1411354008}
+    - targetCorrespondingSourceObject: {fileID: 1329111341535104285, guid: 8ae2a6881bbfcd84697b56e80d826039, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1655699778}
   m_SourcePrefab: {fileID: 100100000, guid: 8ae2a6881bbfcd84697b56e80d826039, type: 3}
 --- !u!4 &1411353993 stripped
 Transform:
@@ -670,7 +678,6 @@ MonoBehaviour:
     onSceneLayer:
       removes: []
       additions: []
-    fakeSlot: 
 --- !u!1 &1560436838
 GameObject:
   m_ObjectHideFlags: 1
@@ -715,6 +722,26 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1655699778
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 974301401}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a9fd0617dd174314b0a375fb2188510c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  boxes:
+  - center: {x: 0.29100206, y: 1.0768387, z: -0.0119}
+    size: {x: 0.25102097, y: 0.17831689, z: 0.16013935}
+    rotation: {x: 0, y: 0, z: 0, w: 1}
+  - center: {x: -0.2910021, y: 1.0768387, z: -0.0119}
+    size: {x: 0.25102097, y: 0.17831689, z: 0.16013935}
+    rotation: {x: 0, y: 0, z: 0, w: 1}
+  removeInBox: 1
 --- !u!1 &1911908305
 GameObject:
   m_ObjectHideFlags: 0

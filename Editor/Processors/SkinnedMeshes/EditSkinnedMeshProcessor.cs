@@ -85,10 +85,15 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         public SourceMeshInfoComputer(SkinnedMeshRenderer target) => _target = target;
 
 
-        public static (string, float)[] BlendShapes(SkinnedMeshRenderer renderer) => Enumerable
-            .Range(0, renderer.sharedMesh.blendShapeCount)
-            .Select(i => (renderer.sharedMesh.GetBlendShapeName(i), renderer.GetBlendShapeWeight(i)))
-            .ToArray();
+        public static (string, float)[] BlendShapes(SkinnedMeshRenderer renderer)
+        {
+            var mesh = renderer.sharedMesh;
+            if (mesh == null) return Array.Empty<(string, float)>();
+            var array = new (string, float)[mesh.blendShapeCount];
+            for (var i = 0; i < mesh.blendShapeCount; i++)
+                array[i] = (mesh.GetBlendShapeName(i), renderer.GetBlendShapeWeight(i));
+            return array;
+        }
 
         public static Material[] Materials(SkinnedMeshRenderer renderer) => renderer.sharedMaterials;
 

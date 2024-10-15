@@ -1,11 +1,13 @@
 ---
-title: Remove Mesh in Box
+title: Remove Mesh By Box
 weight: 25
+aliases: 
+  - /ja/docs/reference/remove-mesh-in-box/
 ---
 
-# Remove Mesh in Box
+# Remove Mesh By Box
 
-箱で指定した範囲内のポリゴンを削除します。
+箱で指定した範囲のポリゴンを削除します。
 
 このコンポーネントは、SkinnedMeshRendererコンポーネントのあるGameObjectに追加してください。(分類: [Modifying Edit Skinned Mesh Component](../../component-kind/edit-skinned-mesh-components#modifying-component))
 
@@ -15,12 +17,21 @@ weight: 25
 
 ## 設定 {#settings}
 
-数値を調整して箱を追加します。
+### 削除するポリゴン {#remove-polygons}
+
+箱の内側のポリゴンを削除するか、箱の外側のポリゴンを削除するかを選択することが出来ます。
+
+### 箱 {#boxes}
+
+ポリゴンを削除するための箱の一覧が表示されます。
+`Boxes`の右側の数値を大きくすることで、箱を追加することが出来ます。
+
 それぞれの箱について、中心位置、大きさ、角度を変更することが出来ます。(ローカル座標で指定します)
 
 ![component.png](component.png)
 
-`Edit This Box`をクリックして下図のようなギズモを表示します。箱の大きさ、位置、角度を調整することが出来ます。
+`Edit This Box`をクリックすると下図のようなギズモを表示します。
+こちらから箱の位置、大きさ、角度を調整することも出来ます。
 
 <img src="gizmo.png" width="563">
 

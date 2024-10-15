@@ -37,6 +37,10 @@ The format is based on [Keep a Changelog].
 - API to get in advance whether a polygon will be removed `#1177`
 - Rename BlendShape component to rename BlendShapes `#1245`
   - This can be used to avoid blendShape name conflicts in Merge Skinned Mesh
+- Invert option for Remove Mesh in Box `#1257`
+  - You now can remove polygons outside of the box instead of inside the box.
+  - Along with this new feature, we renamed `Remove Mesh in Box` to `Remove Mesh By Box` to make it more clear.
+    - This doesn't change the class name of the component since it's already a part of the public API.
 
 ### Changed
 - Skip Enablement Mismatched Renderers is now disabled by default `#1169`
@@ -60,6 +64,8 @@ The format is based on [Keep a Changelog].
 - Performance Improvements `#1234` `#1243` `#1240`
 - Transform gizmo are now hidden while you're editing box of Remove Mesh in Box `#1259`
   - This prevents mistakenly moving the Skinned Mesh Renderer while editing the box.
+- Make MergePhysBone implement `INetworkID` `#1260`
+  - This allow you to configure networkid for merged PhysBone component
 - Changed locale code for simplified chinese from `zh-cn` to `zh-hans` `#1264`
   - This would improve compatibility with other NDMF tools.
   - Many NDMF tools uses `zh-hans` so previously you may see both 中文 (中国) and 中文 (简体).
@@ -78,6 +84,7 @@ The format is based on [Keep a Changelog].
 - Avatar Descriptor can be removed by Avatar Optimizer in extreamely rare case `#1242`
 - Material property animation with weight 0 layer might be broken with AutoMergeSkinnedMesh `#1248` `#1253`
 - Remove Mesh in Box does not work for meshes without Bones `#1256`
+- NullReferenceException in `GetBlendShape` if Mesh is not specified for SkinnedMeshRenderer `#1267`
 
 ### Security
 
