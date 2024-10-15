@@ -11,6 +11,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
 using UnityEngine.Profiling;
+using UnityEngine.Serialization;
 using Debug = UnityEngine.Debug;
 using Object = UnityEngine.Object;
 
@@ -371,8 +372,11 @@ internal struct OptimizeTextureImpl {
 
         foreach (var (uvids, textureNodes) in textureUvIdsPairs)
         {
+            var usageInformations = textureNodes.SelectMany(x => x.Users).SelectMany(x => x.Value);
+            var wrapModeU = usageInformations.Select(x => x.WrapModeU).Aggregate((a, b) => a == b ? a : null);
+            var wrapModeV = usageInformations.Select(x => x.WrapModeV).Aggregate((a, b) => a == b ? a : null);
             var textures = textureNodes.Select(x => x.Texture).ToList();
-            var atlasResult = MayAtlasTexture(textures, uvids.backedSet);
+            var atlasResult = MayAtlasTexture(textures, uvids.backedSet, wrapModeU, wrapModeV);
 
             if (atlasResult.IsEmpty()) continue;
 
@@ -502,11 +506,14 @@ internal struct OptimizeTextureImpl {
             return computer(propertyName);
         }
 
-        public override int? GetInteger(string propertyName, bool considerAnimation = true) => GetValue(propertyName, _material.GetInt, considerAnimation);
+        public override int? GetInteger(string propertyName, bool considerAnimation = true) =>
+            GetValue(propertyName, _material.GetInt, considerAnimation);
 
-        public override float? GetFloat(string propertyName, bool considerAnimation = true) => GetValue(propertyName, _material.GetFloat, considerAnimation);
+        public override float? GetFloat(string propertyName, bool considerAnimation = true) =>
+            GetValue(propertyName, _material.GetFloat, considerAnimation);
 
-        public override Vector4? GetVector(string propertyName, bool considerAnimation = true) => GetValue(propertyName, _material.GetVector, considerAnimation);
+        public override Vector4? GetVector(string propertyName, bool considerAnimation = true) =>
+            GetValue(propertyName, _material.GetVector, considerAnimation);
 
         public override void RegisterOtherUVUsage(UsingUVChannels uvChannel)
         {
@@ -515,9 +522,9 @@ internal struct OptimizeTextureImpl {
         }
 
         public override void RegisterTextureUVUsage(
-            string textureMaterialPropertyName, 
+            string textureMaterialPropertyName,
             SamplerStateInformation samplerState,
-            UsingUVChannels uvChannels, 
+            UsingUVChannels uvChannels,
             Matrix2x3? uvMatrix)
         {
             if (_textureUsageInformations == null) return;
@@ -556,12 +563,42 @@ internal struct OptimizeTextureImpl {
                     return;
             }
 
-            if (uvMatrix != Matrix2x3.Identity && uvChannel != UVChannel.NonMeshRelated) {
+            if (uvMatrix != Matrix2x3.Identity && uvChannel != UVChannel.NonMeshRelated)
+            {
                 _textureUsageInformations = null;
                 return;
             }
 
-            _textureUsageInformations?.Add(new TextureUsageInformation(textureMaterialPropertyName, uvChannel));
+            TextureWrapMode? wrapModeU, wrapModeV;
+
+            if (samplerState.MaterialProperty)
+            {
+                var texture = _material.GetTexture(textureMaterialPropertyName);
+                if (texture != null)
+                {
+                    wrapModeU = texture.wrapModeU;
+                    wrapModeV = texture.wrapModeV;
+                }
+                else
+                {
+                    wrapModeU = null;
+                    wrapModeV = null;
+                }
+            }
+            else
+            {
+                wrapModeV = wrapModeU = samplerState.TextureName switch
+                {
+                    "PointClamp" or "LinearClamp" or "TrilinearClamp" => TextureWrapMode.Clamp,
+                    "PointRepeat" or "LinearRepeat" or "TrilinearRepeat" => TextureWrapMode.Repeat,
+                    "PointMirror" or "LinearMirror" or "TrilinearMirror" => TextureWrapMode.Mirror,
+                    "PointMirrorOnce" or "LinearMirrorOnce" or "TrilinearMirrorOnce" => TextureWrapMode.MirrorOnce,
+                    "Unknown" or _ => null,
+                };
+            }
+
+            _textureUsageInformations?.Add(new TextureUsageInformation(textureMaterialPropertyName, uvChannel,
+                wrapModeU, wrapModeV));
         }
     }
 
@@ -569,11 +606,15 @@ internal struct OptimizeTextureImpl {
     {
         public string MaterialPropertyName { get; }
         public UVChannel UVChannel { get; }
+        public TextureWrapMode? WrapModeU { get; }
+        public TextureWrapMode? WrapModeV { get; }
 
-        internal TextureUsageInformation(string materialPropertyName, UVChannel uvChannel)
+        internal TextureUsageInformation(string materialPropertyName, UVChannel uvChannel, TextureWrapMode? wrapModeU, TextureWrapMode? wrapModeV)
         {
             MaterialPropertyName = materialPropertyName;
             UVChannel = uvChannel;
+            WrapModeU = wrapModeU;
+            WrapModeV = wrapModeV;
         }
     }
     
@@ -616,12 +657,13 @@ internal struct OptimizeTextureImpl {
             (NewUVs == null || NewUVs.Count == 0);
     }
 
-    AtlasResult MayAtlasTexture(ICollection<Texture2D> textures, ICollection<UVID> users)
+    AtlasResult MayAtlasTexture(ICollection<Texture2D> textures, ICollection<UVID> users,
+        TextureWrapMode? wrapModeU, TextureWrapMode? wrapModeV)
     {
         if (users.Any(uvid => uvid.UVChannel == UVChannel.NonMeshRelated))
             return AtlasResult.Empty;
 
-        if (CreateIslands(users) is not {} islands)
+        if (CreateIslands(users, wrapModeU, wrapModeV) is not {} islands)
             return AtlasResult.Empty;
 
         MergeIslands(islands);
@@ -631,7 +673,7 @@ internal struct OptimizeTextureImpl {
 
         FitToBlockSizeAndAddPadding(islands, blockSizeRatioX, blockSizeRatioY, paddingRatio);
 
-        var atlasIslands = islands.Select(x => new AtlasIsland(x)).ToArray();
+        var atlasIslands = islands.ToArray();
         Array.Sort(atlasIslands, (a, b) => b.Size.y.CompareTo(a.Size.y));
 
         if (AfterAtlasSizesSmallToBig(atlasIslands) is not {} atlasSizes)
@@ -658,7 +700,8 @@ internal struct OptimizeTextureImpl {
         return AtlasResult.Empty;
     }
 
-    private List<IslandUtility.Island>? CreateIslands(ICollection<UVID> users)
+    internal static List<AtlasIsland>? CreateIslands(ICollection<UVID> users, 
+        TextureWrapMode? wrapModeU, TextureWrapMode? wrapModeV)
     {
         foreach (var user in users)
         {
@@ -666,15 +709,6 @@ internal struct OptimizeTextureImpl {
             // currently non triangle topology is not supported
             if (submesh.Topology != MeshTopology.Triangles)
                 return null;
-            foreach (var vertex in submesh.Vertices)
-            {
-                var coord = vertex.GetTexCoord((int)user.UVChannel);
-
-                // UV Tiling is currently not supported
-                // TODO: if entire island is in n.0<=x<n+1, y.0<=y<n+1, then it might be safe to atlas (if TextureWrapMode is repeat)
-                if (coord.x is not (>= 0 and < 1) || coord.y is not (>= 0 and < 1))
-                    return null;
-            }
         }
 
         static IEnumerable<IslandUtility.Triangle> TrianglesByUVID(UVID uvid)
@@ -692,10 +726,78 @@ internal struct OptimizeTextureImpl {
         var triangles = users.SelectMany(TrianglesByUVID).ToList();
         var islands = IslandUtility.UVtoIsland(triangles);
 
-        return islands;
+        var atlasIslands = new List<AtlasIsland>(islands.Count);
+
+        foreach (var island in islands)
+        {
+            int tileU, tileV;
+            {
+                var triangle = island.triangles[0];
+                var coord = triangle.zero.GetTexCoord(triangle.UVIndex);
+                tileU = Mathf.FloorToInt(coord.x);
+                tileV = Mathf.FloorToInt(coord.y);
+            }
+
+            // We may allow both 0.5000 and 1.00000 in the future 
+            foreach (var islandTriangle in island.triangles)
+            foreach (var vertex in islandTriangle)
+            {
+                var currentTileX = Mathf.FloorToInt(vertex.GetTexCoord(islandTriangle.UVIndex).x);
+                var currentTileY = Mathf.FloorToInt(vertex.GetTexCoord(islandTriangle.UVIndex).y);
+                if (currentTileX != tileU || currentTileY != tileV)
+                {
+                    TraceLog($"{string.Join(", ", users)} will not merged because UV is not in same tile");
+                    return null;
+                }
+            }
+
+            foreach (var (wrapMode, tile) in stackalloc []{ (wrapModeU, tileU), (wrapModeV, tileV) })
+            {
+                switch (wrapMode)
+                {
+                    case null:
+                        if (tile != 0)
+                        {
+                            TraceLog($"{string.Join(", ", users)} will not merged because UV is tile-ed but wrap mode is unknown");
+                            return null;
+                        }
+                        break;
+                    case TextureWrapMode.Clamp:
+                        if (tile != 0)
+                        {
+                            TraceLog($"{string.Join(", ", users)} will not merged because UV is tile-ed and wrap mode is clamp");
+                            return null;
+                        }
+                        break;
+                    case TextureWrapMode.MirrorOnce:
+                        if (tile is not -1 and not 0)
+                        {
+                            TraceLog($"{string.Join(", ", users)} will not merged because UV is tile-ed and wrap mode is MirrorOnce");
+                            return null;
+                        }
+                        break;
+                    case TextureWrapMode.Repeat:
+                    case TextureWrapMode.Mirror:
+                        // no problem
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+
+            var flipX = wrapModeU is TextureWrapMode.Mirror or TextureWrapMode.MirrorOnce && (tileU & 1) != 0;
+            var flipY = wrapModeV is TextureWrapMode.Mirror or TextureWrapMode.MirrorOnce && (tileV & 1) != 0;
+            island.tileU = tileU;
+            island.tileV = tileV;
+            island.flipU = flipX;
+            island.flipV = flipY;
+            atlasIslands.Add(new AtlasIsland(island));
+        }
+
+        return atlasIslands;
     }
 
-    private void MergeIslands(List<IslandUtility.Island> islands)
+    private void MergeIslands(List<AtlasIsland> islands)
     {
         // TODO: We may merge islands >N% wrapped (heuristic merge islands)
         // This mage can be after fitting to block size
@@ -713,7 +815,7 @@ internal struct OptimizeTextureImpl {
                 if (islandI.MinPos.x <= islandJ.MinPos.x && islandJ.MaxPos.x <= islandI.MaxPos.x &&
                     islandI.MinPos.y <= islandJ.MinPos.y && islandJ.MaxPos.y <= islandI.MaxPos.y)
                 {
-                    islandI.triangles.AddRange(islandJ.triangles);
+                    islandI.OriginalIslands.AddRange(islandI.OriginalIslands);
                     islands.RemoveAt(j);
                     j--;
                     if (j < i) i--;
@@ -784,7 +886,7 @@ internal struct OptimizeTextureImpl {
         return (blockSizeRatioX, blockSizeRatioY, paddingRatio);
     }
 
-    private void FitToBlockSizeAndAddPadding(List<IslandUtility.Island> islands, float blockSizeRatioX, float blockSizeRatioY, float paddingRatio)
+    private void FitToBlockSizeAndAddPadding(List<AtlasIsland> islands, float blockSizeRatioX, float blockSizeRatioY, float paddingRatio)
     {
         foreach (var island in islands)
         {
@@ -859,8 +961,8 @@ internal struct OptimizeTextureImpl {
                     var xBlockCount = (xPixelCount + blockWidth - 1) / blockWidth;
                     var yBlockCount = (yPixelCount + blockHeight - 1) / blockHeight;
 
-                    var sourceXPixelPosition = (int)(atlasIsland.OriginalIsland.MinPos.x * texture2D.width);
-                    var sourceYPixelPosition = (int)(atlasIsland.OriginalIsland.MinPos.y * texture2D.height);
+                    var sourceXPixelPosition = (int)(atlasIsland.MinPos.x * texture2D.width);
+                    var sourceYPixelPosition = (int)(atlasIsland.MinPos.y * texture2D.height);
                     var sourceXBlockPosition = sourceXPixelPosition / blockWidth;
                     var sourceYBlockPosition = sourceYPixelPosition / blockHeight;
 
@@ -883,6 +985,11 @@ internal struct OptimizeTextureImpl {
                 }
 
                 newTexture = new Texture2D(newWidth, newHeight, texture2D.format, mipmapCount, !texture2D.isDataSRGB);
+                newTexture.wrapModeU = texture2D.wrapModeU;
+                newTexture.wrapModeV = texture2D.wrapModeV;
+                newTexture.filterMode = texture2D.filterMode;
+                newTexture.anisoLevel = texture2D.anisoLevel;
+                newTexture.mipMapBias = texture2D.mipMapBias;
                 newTexture.SetPixelData(destTextureData, 0);
                 newTexture.Apply(true, !texture2D.isReadable);
             }
@@ -901,8 +1008,8 @@ internal struct OptimizeTextureImpl {
                 foreach (var atlasIsland in atlasIslands)
                 {
                     HelperMaterial.SetVector(SrcRectProp,
-                        new Vector4(atlasIsland.OriginalIsland.MinPos.x, atlasIsland.OriginalIsland.MinPos.y,
-                            atlasIsland.OriginalIsland.Size.x, atlasIsland.OriginalIsland.Size.y));
+                        new Vector4(atlasIsland.MinPos.x, atlasIsland.MinPos.y,
+                            atlasIsland.Size.x, atlasIsland.Size.y));
 
                     var pivot = atlasIsland.Pivot / atlasSize;
                     var size = atlasIsland.Size / atlasSize;
@@ -935,6 +1042,11 @@ internal struct OptimizeTextureImpl {
                     if (GraphicsFormatUtility.IsCompressedFormat(texture2D.format))
                         EditorUtility.CompressTexture(newTexture, texture2D.format, TextureCompressionQuality.Normal);
                     newTexture.name = texture2D.name + " (AAO UV Packed)";
+                    newTexture.wrapModeU = texture2D.wrapModeU;
+                    newTexture.wrapModeV = texture2D.wrapModeV;
+                    newTexture.filterMode = texture2D.filterMode;
+                    newTexture.anisoLevel = texture2D.anisoLevel;
+                    newTexture.mipMapBias = texture2D.mipMapBias;
                     newTexture.Apply(true, !texture2D.isReadable);
                 }
             }
@@ -945,14 +1057,22 @@ internal struct OptimizeTextureImpl {
         var newUVs = new Dictionary<Vertex, List<(int uvChannel, Vector2 newUV)>>();
 
         foreach (var atlasIsland in atlasIslands)
-        foreach (var triangle in atlasIsland.OriginalIsland.triangles)
+        foreach (var originalIsland in atlasIsland.OriginalIslands)
+        foreach (var triangle in originalIsland.triangles)
         foreach (var vertex in triangle)
         {
             var uv = (Vector2)vertex.GetTexCoord(triangle.UVIndex);
 
-            uv -= atlasIsland.OriginalIsland.MinPos;
+            // move to 0,0 tile
+            uv = originalIsland.TiledToUV(uv);
+
+            // apply new pivot
+            uv -= atlasIsland.MinPos;
             uv += atlasIsland.Pivot;
             uv /= atlasSize;
+
+            // re-flip if needed
+            uv = originalIsland.UVToTiled(uv);
 
             if (!newUVs.TryGetValue(vertex, out var newUVList))
                 newUVs.Add(vertex, newUVList = new List<(int uvChannel, Vector2 newUV)>());
@@ -1120,14 +1240,24 @@ internal struct OptimizeTextureImpl {
     internal class AtlasIsland
     {
         //TODO: rotate
-        public IslandUtility.Island OriginalIsland;
+        public readonly List<IslandUtility.Island> OriginalIslands;
         public Vector2 Pivot;
 
-        public Vector2 Size => OriginalIsland.Size;
+        public Vector2 MinPos;
+        public Vector2 MaxPos;
+        public Vector2 Size => MaxPos - MinPos;
 
         public AtlasIsland(IslandUtility.Island originalIsland)
         {
-            OriginalIsland = originalIsland;
+            OriginalIslands = new List<IslandUtility.Island> { originalIsland };
+            MinPos = originalIsland.MinPos;
+            MaxPos = originalIsland.MaxPos;
+
+            MinPos = originalIsland.TiledToUV(MinPos);
+            MaxPos = originalIsland.TiledToUV(MaxPos);
+
+            (MinPos.x, MaxPos.x) = (Mathf.Min(MinPos.x, MaxPos.x), Mathf.Max(MinPos.x, MaxPos.x));
+            (MinPos.y, MaxPos.y) = (Mathf.Min(MinPos.y, MaxPos.y), Mathf.Max(MinPos.y, MaxPos.y));
         }
     }
 
@@ -1365,8 +1495,10 @@ internal struct OptimizeTextureImpl {
             public List<Triangle> triangles;
             public Vector2 MinPos;
             public Vector2 MaxPos;
-
-            public Vector2 Size => MaxPos - MinPos;
+            public int tileU;
+            public int tileV;
+            [FormerlySerializedAs("flipX")] public bool flipU;
+            [FormerlySerializedAs("flipY")] public bool flipV;
 
             public Island(Island source)
             {
@@ -1388,6 +1520,28 @@ internal struct OptimizeTextureImpl {
             public Island(List<Triangle> trianglesOfIsland)
             {
                 triangles = trianglesOfIsland;
+            }
+
+            public Vector2 TiledToUV(Vector2 uv)
+            {
+                uv.x -= tileU;
+                uv.y -= tileV;
+
+                if (flipU) uv.x = 1 - uv.x;
+                if (flipV) uv.y = 1 - uv.y;
+
+                return uv;
+            }
+
+            public Vector2 UVToTiled(Vector2 uv)
+            {
+                if (flipU) uv.x = 1 - uv.x;
+                if (flipV) uv.y = 1 - uv.y;
+
+                uv.x += tileU;
+                uv.y += tileV;
+
+                return uv;
             }
         }
     }

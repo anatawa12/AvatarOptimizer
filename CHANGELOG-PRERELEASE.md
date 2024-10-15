@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog].
 - Remove Mesh By UV Tile, a new way to remove polygons `#1263`
   - You now easily remove some polygons of models configured for UV Tile Discard.
   - This component removes polygons like UV Tile Discard with Vertex Discard Mode.
+- Texture Optimizer support for tiling UV `#1268`
 
 ### Changed
 - Transform gizmo are now hidden while you're editing box of Remove Mesh in Box `#1259`

@@ -268,28 +268,28 @@ namespace Anatawa12.AvatarOptimizer.API
     [PublicAPI]
     public readonly struct SamplerStateInformation
     {
-        private readonly string _textureName;
-        private readonly bool _materialProperty;
+        internal readonly string TextureName;
+        internal readonly bool MaterialProperty;
 
         [PublicAPI]
         public SamplerStateInformation(string textureName)
         {
-            _textureName = textureName;
-            _materialProperty = true;
+            TextureName = textureName;
+            MaterialProperty = true;
         }
 
         // construct builtin non-material property sampler state
         private SamplerStateInformation(string textureName, bool dummy)
         {
-            _textureName = textureName;
-            _materialProperty = false;
+            TextureName = textureName;
+            MaterialProperty = false;
         }
 
         // I don't want to expose equals to public API so I made this internal function instead of overriding Equals
         internal static bool EQ(SamplerStateInformation left, SamplerStateInformation right)
         {
-            if (left._materialProperty != right._materialProperty) return false;
-            if (left._textureName != right._textureName) return false;
+            if (left.MaterialProperty != right.MaterialProperty) return false;
+            if (left.TextureName != right.TextureName) return false;
             return true;
         }
 
