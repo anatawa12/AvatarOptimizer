@@ -721,6 +721,8 @@ internal struct OptimizeTextureImpl {
         var triangles = users.SelectMany(TrianglesByUVID).ToList();
         var islands = IslandUtility.UVtoIsland(triangles);
 
+        var atlasIslands = new List<AtlasIsland>(islands.Count);
+
         foreach (var island in islands)
         {
             int tileU, tileV;
@@ -777,9 +779,15 @@ internal struct OptimizeTextureImpl {
                         throw new ArgumentOutOfRangeException();
                 }
             }
+
+            var flipX = wrapModeU is TextureWrapMode.Mirror or TextureWrapMode.MirrorOnce && (tileU & 1) != 0;
+            var flipY = wrapModeV is TextureWrapMode.Mirror or TextureWrapMode.MirrorOnce && (tileV & 1) != 0;
+            island.tileU = tileU;
+            island.tileV = tileV;
+            atlasIslands.Add(new AtlasIsland(island, flipX, flipY));
         }
 
-        return islands.Select(x => new AtlasIsland(x)).ToList();
+        return atlasIslands;
     }
 
     private void MergeIslands(List<AtlasIsland> islands)
@@ -1038,9 +1046,26 @@ internal struct OptimizeTextureImpl {
         {
             var uv = (Vector2)vertex.GetTexCoord(triangle.UVIndex);
 
+            // move to 0,0 tile
+            uv.x -= originalIsland.tileU;
+            uv.y -= originalIsland.tileV;
+
+            // flip if needed
+            if (atlasIsland.FlipX) uv.x = 1 - uv.x;
+            if (atlasIsland.FlipY) uv.y = 1 - uv.y;
+
+            // apply new pivot
             uv -= atlasIsland.MinPos;
             uv += atlasIsland.Pivot;
             uv /= atlasSize;
+
+            // re-flip if needed
+            if (atlasIsland.FlipX) uv.x = 1 - uv.x;
+            if (atlasIsland.FlipY) uv.y = 1 - uv.y;
+
+            // move to tile
+            uv.x += originalIsland.tileU;
+            uv.y += originalIsland.tileV;
 
             if (!newUVs.TryGetValue(vertex, out var newUVList))
                 newUVs.Add(vertex, newUVList = new List<(int uvChannel, Vector2 newUV)>());
@@ -1213,13 +1238,27 @@ internal struct OptimizeTextureImpl {
 
         public Vector2 MinPos;
         public Vector2 MaxPos;
+        public readonly bool FlipX;
+        public readonly bool FlipY;
         public Vector2 Size => MaxPos - MinPos;
 
-        public AtlasIsland(IslandUtility.Island originalIsland)
+        public AtlasIsland(IslandUtility.Island originalIsland, bool flipX, bool flipY)
         {
+            FlipX = flipX;
+            FlipY = flipY;
+
             OriginalIslands = new List<IslandUtility.Island> { originalIsland };
             MinPos = originalIsland.MinPos;
             MaxPos = originalIsland.MaxPos;
+
+            MinPos.x -= originalIsland.tileU;
+            MinPos.y -= originalIsland.tileV;
+            MaxPos.x -= originalIsland.tileU;
+            MaxPos.y -= originalIsland.tileV;
+
+            // if flip is true, each position will be replaced with 1-position
+            if (FlipX) (MinPos.x, MaxPos.x) = (1 - MaxPos.x, 1 - MinPos.x);
+            if (FlipY) (MinPos.y, MaxPos.y) = (1 - MaxPos.y, 1 - MinPos.y);
         }
     }
 
@@ -1457,6 +1496,8 @@ internal struct OptimizeTextureImpl {
             public List<Triangle> triangles;
             public Vector2 MinPos;
             public Vector2 MaxPos;
+            public int tileU;
+            public int tileV;
 
             public Island(Island source)
             {
