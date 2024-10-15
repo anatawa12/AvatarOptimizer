@@ -371,8 +371,11 @@ internal struct OptimizeTextureImpl {
 
         foreach (var (uvids, textureNodes) in textureUvIdsPairs)
         {
+            var usageInformations = textureNodes.SelectMany(x => x.Users).SelectMany(x => x.Value);
+            var wrapModeU = usageInformations.Select(x => x.WrapModeU).Aggregate((a, b) => a == b ? a : null);
+            var wrapModeV = usageInformations.Select(x => x.WrapModeV).Aggregate((a, b) => a == b ? a : null);
             var textures = textureNodes.Select(x => x.Texture).ToList();
-            var atlasResult = MayAtlasTexture(textures, uvids.backedSet);
+            var atlasResult = MayAtlasTexture(textures, uvids.backedSet, wrapModeU, wrapModeV);
 
             if (atlasResult.IsEmpty()) continue;
 
@@ -653,12 +656,13 @@ internal struct OptimizeTextureImpl {
             (NewUVs == null || NewUVs.Count == 0);
     }
 
-    AtlasResult MayAtlasTexture(ICollection<Texture2D> textures, ICollection<UVID> users)
+    AtlasResult MayAtlasTexture(ICollection<Texture2D> textures, ICollection<UVID> users,
+        TextureWrapMode? wrapModeU, TextureWrapMode? wrapModeV)
     {
         if (users.Any(uvid => uvid.UVChannel == UVChannel.NonMeshRelated))
             return AtlasResult.Empty;
 
-        if (CreateIslands(users, null, null) is not {} islands)
+        if (CreateIslands(users, wrapModeU, wrapModeV) is not {} islands)
             return AtlasResult.Empty;
 
         MergeIslands(islands);
