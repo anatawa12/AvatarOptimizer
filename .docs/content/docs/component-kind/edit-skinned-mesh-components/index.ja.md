@@ -23,7 +23,8 @@ Edit Skinned Mesh ComponentはSkinnedMeshRendererコンポーネントのあるG
 以下のコンポーネントがModifying Edit Skinned Mesh Componentです。
 
 - [Remove Mesh By BlendShape](../../reference/remove-mesh-by-blendshape)
-- [Remove Mesh in Box](../../reference/remove-mesh-by-blendshape)
+- [Remove Mesh By Box](../../reference/remove-mesh-by-box)
+- [Remove Mesh By UV Tile](../../remove-mesh-by-uv-tile/)
 - [Freeze BlendShape](../../reference/freeze-blendshape)
 - [Merge ToonLit Material](../../reference/merge-toonlit-material)
 - [Rename BlendsShape](../../reference/rename-blendshape)

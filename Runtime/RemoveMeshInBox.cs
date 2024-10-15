@@ -3,12 +3,13 @@ using System.Linq;
 using JetBrains.Annotations;
 using Unity.Burst;
 using UnityEngine;
+using UnityEngine.Animations;
 
 namespace Anatawa12.AvatarOptimizer
 {
     // Since AAO 1.8.0, this component can be added multiple times.
     // In AAO 1.7.0 or earlier, this component was marked as [DisallowMultipleComponent].
-    [AddComponentMenu("Avatar Optimizer/AAO Remove Mesh in Box")]
+    [AddComponentMenu("Avatar Optimizer/AAO Remove Mesh By Box")]
     [RequireComponent(typeof(SkinnedMeshRenderer))]
     [AllowMultipleComponent]
     [HelpURL("https://vpm.anatawa12.com/avatar-optimizer/ja/docs/reference/remove-mesh-in-box/")]
@@ -17,6 +18,11 @@ namespace Anatawa12.AvatarOptimizer
     {
         [SerializeField]
         internal BoundingBox[] boxes = Array.Empty<BoundingBox>();
+
+        [SerializeField]
+        [AAOLocalized("RemoveMeshInBox:prop:removePolygonsToggle")]
+        [NotKeyable]
+        internal bool removeInBox = true;
 
         APIChecker _checker;
 
@@ -117,6 +123,13 @@ namespace Anatawa12.AvatarOptimizer
                     throw new ArgumentOutOfRangeException(nameof(version), $"unsupported version: {version}");
             }
             _checker.OnInitialize(version, this);
+        }
+
+        [PublicAPI]
+        public bool RemoveInBox
+        {
+            get => _checker.OnAPIUsage(this, removeInBox);
+            set => _checker.OnAPIUsage(this, removeInBox = value);
         }
 
         /// <summary>

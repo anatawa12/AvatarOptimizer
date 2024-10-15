@@ -8,11 +8,24 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Invert option for Remove Mesh in Box `#1257`
+  - You now can remove polygons outside of the box instead of inside the box.
+  - Along with this new feature, we renamed `Remove Mesh in Box` to `Remove Mesh By Box` to make it more clear.
+    - This doesn't change the class name of the component since it's already a part of the public API.
+- Remove Mesh By UV Tile, a new way to remove polygons `#1263`
+  - You now easily remove some polygons of models configured for UV Tile Discard.
+  - This component removes polygons like UV Tile Discard with Vertex Discard Mode.
 - Texture Optimizer support for tiling UV `#1268`
 
 ### Changed
 - Transform gizmo are now hidden while you're editing box of Remove Mesh in Box `#1259`
   - This prevents mistakenly moving the Skinned Mesh Renderer while editing the box.
+- Make MergePhysBone implement `INetworkID` `#1260`
+  - This allow you to configure networkid for merged PhysBone component
+- Changed locale code for simplified chinese from `zh-cn` to `zh-hans` `#1264`
+  - This would improve compatibility with other NDMF tools.
+  - Many NDMF tools uses `zh-hans` so previously you may see both 中文 (中国) and 中文 (简体).
+  - I think zh-hans is more accurate expression so I changed so.
 
 ### Deprecated
 
@@ -21,6 +34,7 @@ The format is based on [Keep a Changelog].
 ### Fixed
 - `InvalidOperationException` with removing all polygon on one material slot `#1255`
 - Remove Mesh in Box does not work for meshes without Bones `#1256`
+- NullReferenceException in `GetBlendShape` if Mesh is not specified for SkinnedMeshRenderer `#1267`
 
 ### Security
 

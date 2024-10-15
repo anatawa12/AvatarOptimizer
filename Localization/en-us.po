@@ -382,6 +382,15 @@ msgstr "Texture Size"
 
 # region RemoveMeshInBox
 
+msgid "RemoveMeshInBox:prop:removePolygonsInOrOut"
+msgstr "Remove polygons"
+
+msgid "RemoveMeshInBox:prop:removePolygonsInOrOut:inBox"
+msgstr "In the box"
+
+msgid "RemoveMeshInBox:prop:removePolygonsInOrOut:outOfBox"
+msgstr "Out of the box"
+
 msgid "RemoveMeshInBox:BoundingBox:prop:center"
 msgstr "Center"
 
@@ -468,6 +477,25 @@ msgstr "Make Readable"
 
 msgid "RemoveMeshByMask:tooltip:textureIsNotImported"
 msgstr "Mask Texture is not imported from image file."
+
+# endregion
+
+# region Remove Mesh By UV Tile
+
+msgid "RemoveMeshByUVTile:warning:NoMesh"
+msgstr "No Mesh is specified to the Skinned Mesh Renderer."
+
+msgid "RemoveMeshByUVTile:prop:MaterialSlot"
+msgstr "Material Slot {0}"
+
+msgid "RemoveMeshByUVTile:prop:Tile"
+msgstr "Tile {0}"
+
+msgid "RemoveMeshByUVTile:prop:UVChannel"
+msgstr "UV Channel"
+
+msgid "RemoveMeshByUVTile:error:uvChannelOutOfRange"
+msgstr "UV Channel is out of range: {0}"
 
 # endregion
 
