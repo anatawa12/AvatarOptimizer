@@ -1064,12 +1064,7 @@ internal struct OptimizeTextureImpl {
             var uv = (Vector2)vertex.GetTexCoord(triangle.UVIndex);
 
             // move to 0,0 tile
-            uv.x -= originalIsland.tileU;
-            uv.y -= originalIsland.tileV;
-
-            // flip if needed
-            if (originalIsland.flipU) uv.x = 1 - uv.x;
-            if (originalIsland.flipV) uv.y = 1 - uv.y;
+            uv = originalIsland.TiledToUV(uv);
 
             // apply new pivot
             uv -= atlasIsland.MinPos;
@@ -1077,12 +1072,7 @@ internal struct OptimizeTextureImpl {
             uv /= atlasSize;
 
             // re-flip if needed
-            if (originalIsland.flipU) uv.x = 1 - uv.x;
-            if (originalIsland.flipV) uv.y = 1 - uv.y;
-
-            // move to tile
-            uv.x += originalIsland.tileU;
-            uv.y += originalIsland.tileV;
+            uv = originalIsland.UVToTiled(uv);
 
             if (!newUVs.TryGetValue(vertex, out var newUVList))
                 newUVs.Add(vertex, newUVList = new List<(int uvChannel, Vector2 newUV)>());
@@ -1263,14 +1253,11 @@ internal struct OptimizeTextureImpl {
             MinPos = originalIsland.MinPos;
             MaxPos = originalIsland.MaxPos;
 
-            MinPos.x -= originalIsland.tileU;
-            MinPos.y -= originalIsland.tileV;
-            MaxPos.x -= originalIsland.tileU;
-            MaxPos.y -= originalIsland.tileV;
+            MinPos = originalIsland.TiledToUV(MinPos);
+            MaxPos = originalIsland.TiledToUV(MaxPos);
 
-            // if flip is true, each position will be replaced with 1-position
-            if (originalIsland.flipU) (MinPos.x, MaxPos.x) = (1 - MaxPos.x, 1 - MinPos.x);
-            if (originalIsland.flipV) (MinPos.y, MaxPos.y) = (1 - MaxPos.y, 1 - MinPos.y);
+            (MinPos.x, MaxPos.x) = (Mathf.Min(MinPos.x, MaxPos.x), Mathf.Max(MinPos.x, MaxPos.x));
+            (MinPos.y, MaxPos.y) = (Mathf.Min(MinPos.y, MaxPos.y), Mathf.Max(MinPos.y, MaxPos.y));
         }
     }
 
@@ -1533,6 +1520,28 @@ internal struct OptimizeTextureImpl {
             public Island(List<Triangle> trianglesOfIsland)
             {
                 triangles = trianglesOfIsland;
+            }
+
+            public Vector2 TiledToUV(Vector2 uv)
+            {
+                uv.x -= tileU;
+                uv.y -= tileV;
+
+                if (flipU) uv.x = 1 - uv.x;
+                if (flipV) uv.y = 1 - uv.y;
+
+                return uv;
+            }
+
+            public Vector2 UVToTiled(Vector2 uv)
+            {
+                if (flipU) uv.x = 1 - uv.x;
+                if (flipV) uv.y = 1 - uv.y;
+
+                uv.x += tileU;
+                uv.y += tileV;
+
+                return uv;
             }
         }
     }
