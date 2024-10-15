@@ -658,7 +658,7 @@ internal struct OptimizeTextureImpl {
         if (users.Any(uvid => uvid.UVChannel == UVChannel.NonMeshRelated))
             return AtlasResult.Empty;
 
-        if (CreateIslands(users) is not {} islands)
+        if (CreateIslands(users, null, null) is not {} islands)
             return AtlasResult.Empty;
 
         MergeIslands(islands);
@@ -695,7 +695,8 @@ internal struct OptimizeTextureImpl {
         return AtlasResult.Empty;
     }
 
-    private List<IslandUtility.Island>? CreateIslands(ICollection<UVID> users)
+    private List<IslandUtility.Island>? CreateIslands(ICollection<UVID> users, 
+        TextureWrapMode? wrapModeU, TextureWrapMode? wrapModeV)
     {
         foreach (var user in users)
         {
@@ -703,15 +704,6 @@ internal struct OptimizeTextureImpl {
             // currently non triangle topology is not supported
             if (submesh.Topology != MeshTopology.Triangles)
                 return null;
-            foreach (var vertex in submesh.Vertices)
-            {
-                var coord = vertex.GetTexCoord((int)user.UVChannel);
-
-                // UV Tiling is currently not supported
-                // TODO: if entire island is in n.0<=x<n+1, y.0<=y<n+1, then it might be safe to atlas (if TextureWrapMode is repeat)
-                if (coord.x is not (>= 0 and < 1) || coord.y is not (>= 0 and < 1))
-                    return null;
-            }
         }
 
         static IEnumerable<IslandUtility.Triangle> TrianglesByUVID(UVID uvid)
@@ -731,12 +723,12 @@ internal struct OptimizeTextureImpl {
 
         foreach (var island in islands)
         {
-            int tileX, tileY;
+            int tileU, tileV;
             {
                 var triangle = island.triangles[0];
                 var coord = triangle.zero.GetTexCoord(triangle.UVIndex);
-                tileX = Mathf.FloorToInt(coord.x);
-                tileY = Mathf.FloorToInt(coord.y);
+                tileU = Mathf.FloorToInt(coord.x);
+                tileV = Mathf.FloorToInt(coord.y);
             }
 
             // We may allow both 0.5000 and 1.00000 in the future 
@@ -745,11 +737,17 @@ internal struct OptimizeTextureImpl {
             {
                 var currentTileX = Mathf.FloorToInt(vertex.GetTexCoord(islandTriangle.UVIndex).x);
                 var currentTileY = Mathf.FloorToInt(vertex.GetTexCoord(islandTriangle.UVIndex).y);
-                if (currentTileX != tileX || currentTileY != tileY)
+                if (currentTileX != tileU || currentTileY != tileV)
                 {
                     TraceLog($"{string.Join(", ", users)} will not merged because UV is not in same tile");
                     return null;
                 }
+            }
+
+            if (wrapModeU == null && tileU != 0 || wrapModeV == null && tileV != 0)
+            {
+                TraceLog($"{string.Join(", ", users)} will not merged because UV is tile-ed but wrap mode is unknown");
+                return null;
             }
         }
 
