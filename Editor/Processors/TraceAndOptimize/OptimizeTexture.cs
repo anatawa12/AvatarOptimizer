@@ -744,10 +744,38 @@ internal struct OptimizeTextureImpl {
                 }
             }
 
-            if (wrapModeU == null && tileU != 0 || wrapModeV == null && tileV != 0)
+            foreach (var (wrapMode, tile) in stackalloc []{ (wrapModeU, tileU), (wrapModeV, tileV) })
             {
-                TraceLog($"{string.Join(", ", users)} will not merged because UV is tile-ed but wrap mode is unknown");
-                return null;
+                switch (wrapMode)
+                {
+                    case null:
+                        if (tile != 0)
+                        {
+                            TraceLog($"{string.Join(", ", users)} will not merged because UV is tile-ed but wrap mode is unknown");
+                            return null;
+                        }
+                        break;
+                    case TextureWrapMode.Clamp:
+                        if (tile != 0)
+                        {
+                            TraceLog($"{string.Join(", ", users)} will not merged because UV is tile-ed and wrap mode is clamp");
+                            return null;
+                        }
+                        break;
+                    case TextureWrapMode.MirrorOnce:
+                        if (tile is not -1 and not 0)
+                        {
+                            TraceLog($"{string.Join(", ", users)} will not merged because UV is tile-ed and wrap mode is MirrorOnce");
+                            return null;
+                        }
+                        break;
+                    case TextureWrapMode.Repeat:
+                    case TextureWrapMode.Mirror:
+                        // no problem
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
             }
         }
 
