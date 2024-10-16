@@ -35,6 +35,7 @@ The format is based on [Keep a Changelog].
 - `InvalidOperationException` with removing all polygon on one material slot `#1255`
 - Remove Mesh in Box does not work for meshes without Bones `#1256`
 - NullReferenceException in `GetBlendShape` if Mesh is not specified for SkinnedMeshRenderer `#1267`
+- NDMF Preview for Mesh by Box will is partially broken `#1270`
 
 ### Security
 
