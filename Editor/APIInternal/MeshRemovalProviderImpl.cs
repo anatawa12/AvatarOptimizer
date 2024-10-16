@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Anatawa12.AvatarOptimizer.API;
 using nadena.dev.ndmf.preview;
 using Unity.Collections;
@@ -20,6 +21,7 @@ internal class MeshRemovalProviderImpl : MeshRemovalProvider
         var removeMeshByMask = renderer.GetComponent<RemoveMeshByMask>();
         var removeMeshByBlendShape = renderer.GetComponents<RemoveMeshByBlendShape>();
         var removeMeshInBox = renderer.GetComponents<RemoveMeshInBox>();
+        var evacuate = renderer.GetComponent<UVUsageCompabilityAPIImpl.Evacuate>();
 
         if (removeMeshByMask == null && removeMeshByBlendShape.Length == 0 && removeMeshInBox.Length == 0)
             return null;
@@ -27,7 +29,7 @@ internal class MeshRemovalProviderImpl : MeshRemovalProvider
         if (!renderer.sharedMesh.isReadable)
             return null;
 
-        return new MeshRemovalProviderImpl(renderer, removeMeshByMask, removeMeshByBlendShape, removeMeshInBox);
+        return new MeshRemovalProviderImpl(renderer, evacuate, removeMeshByMask, removeMeshByBlendShape, removeMeshInBox);
     }
 
     private NativeArray<bool> _removedByBlendShape;
@@ -49,10 +51,10 @@ internal class MeshRemovalProviderImpl : MeshRemovalProvider
         }
     }
 
-    private MeshRemovalProviderImpl(
-        SkinnedMeshRenderer renderer, 
-        RemoveMeshByMask? removeMeshByMask, 
-        RemoveMeshByBlendShape[] removeMeshByBlendShape, 
+    private MeshRemovalProviderImpl(SkinnedMeshRenderer renderer,
+        UVUsageCompabilityAPIImpl.Evacuate? evacuate,
+        RemoveMeshByMask? removeMeshByMask,
+        RemoveMeshByBlendShape[] removeMeshByBlendShape,
         RemoveMeshInBox[] removeMeshInBox)
     {
         if (removeMeshByBlendShape.Length != 0)
@@ -69,7 +71,18 @@ internal class MeshRemovalProviderImpl : MeshRemovalProvider
         if (removeMeshByMask != null)
         {
             _removedByMask = new MaterialSlotInformation[renderer.sharedMesh.subMeshCount];
-            _uv = renderer.sharedMesh.uv;
+            var evacuated = evacuate?.EvacuateIndex(0) ?? 0;
+            _uv = evacuated switch
+            {
+                0 => renderer.sharedMesh.uv,
+                1 => renderer.sharedMesh.uv2,
+                2 => renderer.sharedMesh.uv3,
+                3 => renderer.sharedMesh.uv4,
+                4 => renderer.sharedMesh.uv5,
+                5 => renderer.sharedMesh.uv6,
+                6 => renderer.sharedMesh.uv7,
+                7 => renderer.sharedMesh.uv8,
+            };
 
             for (var index = 0; index < removeMeshByMask.materials.Length && index < _removedByMask.Length; index++)
             {

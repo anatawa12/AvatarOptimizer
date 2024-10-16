@@ -25,6 +25,14 @@ internal class UVUsageCompabilityAPIImpl : UVUsageCompabilityAPI.IUVUsageCompabi
             public int originalChannel;
             public int savedChannel;
         }
+
+        public int EvacuateIndex(int index)
+        {
+            foreach (var evacuation in evacuations)
+                if (evacuation.originalChannel == index)
+                    index = evacuation.savedChannel;
+            return index;
+        }
     }
 
     public class RevertEvacuate : EditSkinnedMeshComponent
