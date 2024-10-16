@@ -33,6 +33,8 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
             renderer.BakeMesh(tempMesh);
             UnityEngine.Profiling.Profiler.EndSample();
 
+            var localToWorldMatrix = Matrix4x4.TRS(renderer.transform.position, renderer.transform.rotation, Vector3.one);
+
             var mesh = renderer.sharedMesh;
 
             var removeVertex = new NativeArray<bool>(mesh.vertexCount, Allocator.TempJob);
@@ -55,7 +57,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                         boxes = boxes,
                         vertexPosition = realPosition,
                         removeVertex = removeVertex,
-                        meshToBoxTransform = renderer.transform.localToWorldMatrix * componentWorldToLocalMatrix,
+                        meshToBoxTransform = componentWorldToLocalMatrix * localToWorldMatrix,
                     }.Schedule(mesh.vertexCount, 32).Complete();
                 }
 
