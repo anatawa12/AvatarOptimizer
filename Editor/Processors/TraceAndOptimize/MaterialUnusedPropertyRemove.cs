@@ -15,18 +15,16 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             if (state.SkipRemoveMaterialUnusedProperties) { return; }
 
             var renderers = context.GetComponents<Renderer>();
-            var swapDict = new Dictionary<Material, Material>();
+            var cleaned = new HashSet<Material>();
 
-            void SwapMaterialArray(Material?[] matArray)
+            void MaterialCleaning(IEnumerable<Material?> materials)
             {
-                for (var i = 0; matArray.Length > i; i += 1)
-                {
-                    var sourceMaterial = matArray[i];
-                    if (sourceMaterial == null) { continue; }
-
-                    if (swapDict.TryGetValue(sourceMaterial, out var cleanMaterial)) { matArray[i] = cleanMaterial; }
-                    else { swapDict[sourceMaterial] = matArray[i] = MaterialCleaning(sourceMaterial); }
-                }
+                foreach (var m in materials)
+                    if (m is not null && cleaned.Contains(m) is false)
+                    {
+                        RemoveUnusedProperties(m);
+                        cleaned.Add(m);
+                    }
             }
 
             foreach (var renderer in renderers)
@@ -35,25 +33,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 {
                     var meshInfo = context.GetMeshInfoFor(smr);
                     foreach (var subMesh in meshInfo.SubMeshes)
-                        SwapMaterialArray(subMesh.SharedMaterials);
+                        MaterialCleaning(subMesh.SharedMaterials);
                 }
-                else
-                {
-                    var matArray = renderer.sharedMaterials;
-                    SwapMaterialArray(matArray);
-                    renderer.sharedMaterials = matArray;
-                }
+                else { MaterialCleaning(renderer.sharedMaterials); }
             }
-
-            foreach (var matKv in swapDict) ObjectRegistry.RegisterReplacedObject(matKv.Key, matKv.Value);
-        }
-
-        public static Material MaterialCleaning(Material i)
-        {
-            var mat = UnityEngine.Object.Instantiate(i);
-            mat.name = i.name + "&AAO_MATERIAL_UNUSED_PROPERTIES_REMOLDED";
-            RemoveUnusedProperties(mat);
-            return mat;
         }
 
         //MIT License
