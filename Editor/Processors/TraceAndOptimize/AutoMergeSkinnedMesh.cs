@@ -398,9 +398,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             if (component is SkinnedMeshRenderer renderer && animations.TryGetValue(renderer, out var properties))
             {
-                var animatedProperties = properties.ToHashSet();
+                var animatedProperties = new HashSet<string>(properties);
                 animatedProperties.Remove("m_Enabled");
-                var foundProperties = locations.Select(x => x.property).ToHashSet();
+                var foundProperties = new HashSet<string>(locations.Select(x => x.property));
                 if (!animatedProperties.SetEquals(foundProperties))
                     return null;
             }
