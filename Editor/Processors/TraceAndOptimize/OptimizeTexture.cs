@@ -617,7 +617,7 @@ internal struct OptimizeTextureImpl {
             WrapModeV = wrapModeV;
         }
     }
-    
+
     public enum UVChannel
     {
         UV0 = 0,
