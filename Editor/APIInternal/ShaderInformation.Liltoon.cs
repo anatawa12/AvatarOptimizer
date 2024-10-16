@@ -33,7 +33,7 @@ internal class LiltoonShaderInformation : ShaderInformation
         }
     }
 
-    private static int supportedLiltoon = 43;
+    private static int supportedLiltoon = 44;
 
     private static string[] guids =
     {
@@ -109,9 +109,9 @@ internal class LiltoonShaderInformation : ShaderInformation
 
         var uvMain = UsingUVChannels.UV0;
         var uvMainScaleOffset = "_MainTex_ST";
-        UnityEngine.Matrix4x4? uvMainMatrix = ComputeUVMainMatrix();
+        Matrix2x3? uvMainMatrix = ComputeUVMainMatrix();
 
-        UnityEngine.Matrix4x4? ComputeUVMainMatrix()
+        Matrix2x3? ComputeUVMainMatrix()
         {
             // _ShiftBackfaceUV
             if (matInfo.GetFloat("_ShiftBackfaceUV") != 0) return null; // changed depends on face
@@ -488,7 +488,7 @@ internal class LiltoonShaderInformation : ShaderInformation
                     case null:
                         LIL_SAMPLE_2D_ST_WithMat("_AudioLinkMask", sampler,
                             uvMain | UsingUVChannels.UV1 | UsingUVChannels.UV2 | UsingUVChannels.UV3,
-                            Combine(uvMainMatrix, Matrix4x4.identity));
+                            Combine(uvMainMatrix, Matrix2x3.Identity));
                         break;
                 }
             }
@@ -547,7 +547,7 @@ internal class LiltoonShaderInformation : ShaderInformation
                         "_OutlineVectorTex",
                         SamplerStateInformation.LinearRepeatSampler,
                         UsingUVChannels.UV0 | UsingUVChannels.UV1 | UsingUVChannels.UV2 | UsingUVChannels.UV3,
-                        Combine(uvMainMatrix, UnityEngine.Matrix4x4.identity)
+                        Combine(uvMainMatrix, Matrix2x3.Identity)
                     );
                     break;
             }
@@ -563,7 +563,7 @@ internal class LiltoonShaderInformation : ShaderInformation
                 textureName,
                 samplerName,
                 uvChannel,
-                UnityEngine.Matrix4x4.identity
+                Matrix2x3.Identity
             );
         }
 
@@ -574,12 +574,12 @@ internal class LiltoonShaderInformation : ShaderInformation
                 textureName,
                 samplerName,
                 uvChannel,
-                UnityEngine.Matrix4x4.identity
+                Matrix2x3.Identity
             );
         }
 
         void LIL_SAMPLE_2D_WithMat(string textureName, SamplerStateInformation samplerName, UsingUVChannels uvChannel,
-            UnityEngine.Matrix4x4? matrix)
+            Matrix2x3? matrix)
         {
             // might be _LOD: using SampleLevel
             matInfo.RegisterTextureUVUsage(
@@ -597,7 +597,7 @@ internal class LiltoonShaderInformation : ShaderInformation
         }
 
         void LIL_SAMPLE_2D_GRAD_WithMat(string textureName, SamplerStateInformation samplerName,
-            UsingUVChannels uvChannel, UnityEngine.Matrix4x4? matrix)
+            UsingUVChannels uvChannel, Matrix2x3? matrix)
         {
             // additional parameter for SampleGrad does not affect UV location much
             LIL_SAMPLE_2D_WithMat(textureName, samplerName, uvChannel, matrix);
@@ -614,7 +614,7 @@ internal class LiltoonShaderInformation : ShaderInformation
         }
 
         void LIL_SAMPLE_2D_ST_WithMat(string textureName, SamplerStateInformation samplerName,
-            UsingUVChannels uvChannel, UnityEngine.Matrix4x4? matrix)
+            UsingUVChannels uvChannel, Matrix2x3? matrix)
         {
             matInfo.RegisterTextureUVUsage(
                 textureName,
@@ -645,7 +645,7 @@ internal class LiltoonShaderInformation : ShaderInformation
             // fd.isRightHand?
 
 
-            Matrix4x4? ComputeMatrix()
+            Matrix2x3? ComputeMatrix()
             {
                 var stValueOpt = matInfo.GetVector(st);
                 var rotateValueOpt = matInfo.GetVector(scrollRotate);
@@ -695,10 +695,10 @@ internal class LiltoonShaderInformation : ShaderInformation
                 parallaxEnabled ? null : STAndScrollRotateToMatrix($"{textureName}_ST", $"{textureName}_ScrollRotate"));
         }
 
-        void LIL_GET_EMIMASK_WithMat(string textureName, UsingUVChannels uvChannel, UnityEngine.Matrix4x4? matrix)
+        void LIL_GET_EMIMASK_WithMat(string textureName, UsingUVChannels uvChannel, Matrix2x3? matrix)
         {
             LIL_SAMPLE_2D_WithMat(textureName, "_MainTex", uvChannel,
-                Multiply(matrix, STAndScrollRotateToMatrix($"{textureName}_ST", $"{textureName}_ScrollRotate")));
+                Multiply(STAndScrollRotateToMatrix($"{textureName}_ST", $"{textureName}_ScrollRotate"), matrix));
         }
 
         void LIL_GET_EMIMASK(string textureName, UsingUVChannels uvChannel)
@@ -730,27 +730,20 @@ internal class LiltoonShaderInformation : ShaderInformation
         }
 
         // lilCalcUV
-        Matrix4x4? STToMatrix(string stPropertyName) => STValueToMatrix(matInfo.GetVector(stPropertyName));
+        Matrix2x3? STToMatrix(string stPropertyName) => STValueToMatrix(matInfo.GetVector(stPropertyName));
 
-        Matrix4x4? STValueToMatrix(Vector4? stIn)
+        Matrix2x3? STValueToMatrix(Vector4? stIn)
         {
             if (stIn is not { } st) return null;
-
-            var matrix = Matrix4x4.identity;
-            matrix.m00 = st.x;
-            matrix.m11 = st.y;
-            matrix.m03 = st.z;
-            matrix.m13 = st.w;
-
-            return matrix;
+            return Matrix2x3.NewScaleOffset(st);
         }
 
         // lilCalcUV
-        Matrix4x4? STAndScrollRotateToMatrix(string stPropertyName, string scrollRotatePropertyName) =>
+        Matrix2x3? STAndScrollRotateToMatrix(string stPropertyName, string scrollRotatePropertyName) =>
             STAndScrollRotateValueToMatrix(matInfo.GetVector(stPropertyName),
                 matInfo.GetVector(scrollRotatePropertyName));
 
-        Matrix4x4? STAndScrollRotateValueToMatrix(Vector4? stValueIn, Vector4? scrollRotateIn)
+        Matrix2x3? STAndScrollRotateValueToMatrix(Vector4? stValueIn, Vector4? scrollRotateIn)
         {
             if (STValueToMatrix(stValueIn) is not { } stMatrix) return null;
             if (scrollRotateIn is not { } scrollRotate) return stMatrix;
@@ -765,14 +758,14 @@ internal class LiltoonShaderInformation : ShaderInformation
 
             var result = stMatrix;
 
-            result *= Matrix4x4.TRS(new Vector3(-0.5f, -0.5f), Quaternion.identity, Vector3.one);
-            result *= Matrix4x4.TRS(Vector3.zero, Quaternion.Euler(0, 0, staticAngle), Vector3.one);
-            result *= Matrix4x4.TRS(new Vector3(0.5f, 0.5f), Quaternion.identity, Vector3.one);
+            result = Matrix2x3.Translate(-0.5f, -0.5f) * result;
+            result = Matrix2x3.Rotate(staticAngle) * result;
+            result = Matrix2x3.Translate(0.5f, 0.5f) * result;
 
             return result;
         }
 
-        static Matrix4x4? Combine(Matrix4x4? a, Matrix4x4? b)
+        static Matrix2x3? Combine(Matrix2x3? a, Matrix2x3? b)
         {
             if (a == null) return b;
             if (b == null) return a;
@@ -780,7 +773,7 @@ internal class LiltoonShaderInformation : ShaderInformation
             return null;
         }
 
-        Matrix4x4? Multiply(Matrix4x4? a, Matrix4x4? b)
+        Matrix2x3? Multiply(Matrix2x3? a, Matrix2x3? b)
         {
             if (a == null || b == null) return null;
             return a.Value * b.Value;

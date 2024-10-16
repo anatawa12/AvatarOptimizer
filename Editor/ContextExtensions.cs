@@ -40,13 +40,12 @@ namespace Anatawa12.AvatarOptimizer
 
         public static bool? GetConstantValue(this BuildContext context, ComponentOrGameObject obj,
             string property, bool currentValue) =>
-            !context.GetAnimationComponent(obj).TryGetFloat(property, out var node)
-                ? currentValue
-                : node.AsConstantValue(currentValue);
+            context.GetAnimationComponent(obj).GetFloatNode(property).AsConstantValue(currentValue);
 
-        public static bool? AsConstantValue(this PropModNode<float>? node, bool currentValue)
+        public static bool? AsConstantValue(this PropModNode<FloatValueInfo>? node, bool currentValue)
         {
             if (node == null) return currentValue;
+            if (node.ApplyState == ApplyState.Never) return currentValue;
             if (node.Value.PossibleValues is { } values)
             {
                 bool? constValue = null;
@@ -56,7 +55,7 @@ namespace Anatawa12.AvatarOptimizer
                     if (constValue is not { } b) constValue = current;
                     else if (b != current) return null;
                 }
-                if (node.AppliedAlways || constValue == currentValue)
+                if (node.ApplyState == ApplyState.Always || constValue == currentValue)
                     return constValue;
             }
 

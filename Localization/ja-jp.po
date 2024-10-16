@@ -294,6 +294,15 @@ msgstr "テクスチャのサイズ"
 
 # region RemoveMeshInBox
 
+msgid "RemoveMeshInBox:prop:removePolygonsInOrOut"
+msgstr "削除するポリゴン"
+
+msgid "RemoveMeshInBox:prop:removePolygonsInOrOut:inBox"
+msgstr "箱の内側"
+
+msgid "RemoveMeshInBox:prop:removePolygonsInOrOut:outOfBox"
+msgstr "箱の外側"
+
 msgid "RemoveMeshInBox:BoundingBox:prop:center"
 msgstr "中心"
 
@@ -383,6 +392,25 @@ msgstr "画像ファイルから読み込まれたマスクテクスチャでは
 
 # endregion
 
+# region Remove Mesh By UV Tile
+
+msgid "RemoveMeshByUVTile:warning:NoMesh"
+msgstr "Skinned Mesh RendererにMeshが設定されていません。"
+
+msgid "RemoveMeshByUVTile:prop:MaterialSlot"
+msgstr "{0}番のマテリアルスロット"
+
+msgid "RemoveMeshByUVTile:prop:Tile"
+msgstr "{0}番のタイル"
+
+msgid "RemoveMeshByUVTile:prop:UVChannel"
+msgstr "UVチャンネル"
+
+msgid "RemoveMeshByUVTile:error:uvChannelOutOfRange"
+msgstr "UVチャンネルの{0}番は範囲外です。"
+
+# endregion
+
 # region MaskTextureEditor
 
 msgid "MaskTextureEditor:create"
@@ -459,6 +487,46 @@ msgstr "テクスチャの作成に失敗しました。詳細はログを参照
 
 msgid "MaskTextureEditor:errorMessageSaveFailed"
 msgstr "テクスチャの保存に失敗しました。詳細はログを参照してください。"
+
+# endregion
+
+# region RenameBlendShape
+
+# used in inspector
+
+msgid "RenameBlendShape:removed"
+msgstr "(削除済)"
+
+msgid "RenameBlendShape:original"
+msgstr "元の名前"
+
+msgid "RenameBlendShape:changed"
+msgstr "変更後の名前"
+
+msgid "RenameBlendShape:error:empty-name-some"
+msgstr "変更後の名前が空になっているものがあります。"
+
+msgid "RenameBlendShape:warning:name-conflict-some"
+msgstr "変更後の名前が重複しているものがあります。重複するBlendShapeは1つに統合されます。"
+
+msgid "RenameBlendShape:error:empty-name-this"
+msgstr "変更後の名前が空です。"
+
+msgid "RenameBlendShape:warning:name-conflict-this"
+msgstr "変更後の名前が他と重複しています。重複するBlendShapeは1つに統合されます。"
+
+# used in NDMF Console
+
+msgid "RenameBlendShape:error:empty-name"
+msgstr "BlendShape '{0}' の変更後の名前が空です。BlendShape名を空にすることはできません。"
+
+msgid "RenameBlendShape:warning:weight-conflict"
+msgstr "BlendShape '{0}' への統合対象となるBlendShapeの値が揃っていません。統合対象の内のいずれかの値が使用されます。\n"
+"該当する統合対象: {1}"
+
+msgid "RenameBlendShape:warning:animation-conflict"
+msgstr "BlendShape '{0}' への統合対象となるBlendShapeに対するアニメーションが異なります。\n"
+"該当する統合対象: {1}"
 
 # endregion
 

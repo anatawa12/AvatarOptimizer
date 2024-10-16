@@ -11,6 +11,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
 using UnityEngine.Profiling;
+using UnityEngine.Serialization;
 using Debug = UnityEngine.Debug;
 using Object = UnityEngine.Object;
 
@@ -31,7 +32,7 @@ internal struct OptimizeTextureImpl {
     private Dictionary<(Color c, bool isSrgb), Texture2D>? _colorTextures;
     private Dictionary<(Color c, bool isSrgb), Texture2D> ColorTextures => _colorTextures ??= new Dictionary<(Color c, bool isSrgb), Texture2D>();
 
-    readonly struct UVID: IEquatable<UVID>
+    internal readonly struct UVID: IEquatable<UVID>
     {
         public readonly MeshInfo2? MeshInfo2;
         public readonly int SubMeshIndex;
@@ -102,202 +103,305 @@ internal struct OptimizeTextureImpl {
     {
         if (!state.OptimizeTexture) return;
 
-        var materialInformation = CollectMaterials(context);
+        // collect all connected components of materialSlot - material - texture graph
+        var connectedComponentInfos = CollectMaterialsUnionFind(context);
 
-        DoAtlas(materialInformation);
+        // atlas texture for each connected component
+        var uvInformation = connectedComponentInfos.SelectMany(AtlasConnectedComponent);
+
+        RemapVertexUvs(uvInformation.ToList());
     }
 
-    internal IEnumerable<(Material, TextureUsageInformation[], HashSet<SubMeshId>)> CollectMaterials(
-        BuildContext context
-        )
+    internal abstract class UnionFindNodeBase : UnionFindNode<UnionFindNodeBase>
     {
-        // those two maps should only hold mergeable materials and submeshes
-        var materialUsers = new Dictionary<Material, HashSet<SubMeshId>>();
-        var materialsBySubMesh = new Dictionary<SubMeshId, HashSet<Material>>();
+    }
 
-        var unmergeableMaterials = new HashSet<Material>();
+    internal class ConnectedComponentInfo
+    {
+        public List<SubMeshNode> SubMeshes { get; } = new();
+        public List<MaterialNode> Materials { get; } = new();
+        public List<TextureNode> Textures { get; } = new();
+    }
 
-        // first, collect all submeshes information
+    internal class SubMeshNode : UnionFindNodeBase
+    {
+        // If we cannot get materials from animation, we cannot merge
+        public bool SafeToMergeByAnimation { get; set; }
+
+        public SubMeshId SubMeshId { get; }
+
+        public SubMeshNode(SubMeshId subMeshId) => SubMeshId = subMeshId;
+    }
+
+    internal class MaterialNode : UnionFindNodeBase
+    {
+        // If we cannot collect textures from shader information (if null), unable to merge
+        public List<TextureUsageInformation>? TextureUsageInformations { get; set; }
+
+        // The list of submeshes that use this material
+        public List<SubMeshNode> Users { get; } = new();
+
+        public Material Material { get; }
+
+        public MaterialNode(Material material) => Material = material;
+
+        public void UseThis(SubMeshNode subMeshNode)
+        {
+            Users.Add(subMeshNode);
+            UnionFind.Merge<UnionFindNodeBase>(this, subMeshNode);
+        }
+    }
+
+    internal class TextureNode : UnionFindNodeBase
+    {
+        public Dictionary<MaterialNode, List<TextureUsageInformation>> Users { get; } = new();
+
+        public Texture2D Texture { get; }
+
+        public TextureNode(Texture2D texture) => Texture = texture;
+
+        public void UseTexture(MaterialNode material, TextureUsageInformation? usage)
+        {
+            UnionFind.Merge<UnionFindNodeBase>(this, material);
+
+            if (!Users.TryGetValue(material, out var usages))
+                Users.Add(material, usages = new List<TextureUsageInformation>());
+            if (usage != null) usages.Add(usage);
+        }
+    }
+
+    internal IEnumerable<ConnectedComponentInfo> CollectMaterialsUnionFind(
+        BuildContext context
+    )
+    {
+        var subMeshes = new Dictionary<SubMeshId, SubMeshNode>();
+        var materials = new Dictionary<Material, MaterialNode>();
+
+        MaterialNode? GetMaterialNode(Material? material)
+        {
+            if (material == null) return null;
+            if (!materials.TryGetValue(material, out var node))
+                materials.Add(material, node = new MaterialNode(material));
+            return node;
+        }
+
+        var texturs = new Dictionary<Texture2D, TextureNode>();
+
+        TextureNode? GetTextureNode(Texture2D? texture)
+        {
+            if (texture == null) return null;
+            if (!texturs.TryGetValue(texture, out var node))
+                texturs.Add(texture, node = new TextureNode(texture));
+            return node;
+        }
+
+        // first, process all submeshes and corresponding materials
         foreach (var renderer in context.GetComponents<SkinnedMeshRenderer>())
         {
             var meshInfo = context.GetMeshInfoFor(renderer);
-
-            if (meshInfo.SubMeshes.All(x => x.SharedMaterials.Length == 1 && x.SharedMaterial != null))
+            for (var submeshIndex = 0; submeshIndex < meshInfo.SubMeshes.Count; submeshIndex++)
             {
-                // Good! It's mergeable
-                for (var submeshIndex = 0; submeshIndex < meshInfo.SubMeshes.Count; submeshIndex++)
-                {
-                    var subMesh = meshInfo.SubMeshes[submeshIndex];
+                var subMeshId = new SubMeshId(meshInfo, submeshIndex);
+                var subMeshNode = new SubMeshNode(subMeshId);
+                subMeshes.Add(subMeshId, subMeshNode);
 
-                    var possibleMaterials = new HashSet<Material>(new[] { subMesh.SharedMaterial! });
-                    var (safeToMerge, animatedMaterials) = GetAnimatedMaterialsForSubMesh(context,
-                        meshInfo.SourceRenderer, submeshIndex);
-                    possibleMaterials.UnionWith(animatedMaterials);
+                var subMesh = meshInfo.SubMeshes[submeshIndex];
 
-                    if (safeToMerge)
-                    {
-                        materialsBySubMesh.Add(new SubMeshId(meshInfo, submeshIndex), possibleMaterials);
-                        foreach (var possibleMaterial in possibleMaterials)
-                        {
-                            if (!materialUsers.TryGetValue(possibleMaterial, out var users))
-                                materialUsers.Add(possibleMaterial, users = new HashSet<SubMeshId>());
+                foreach (var material in subMesh.SharedMaterials)
+                    GetMaterialNode(material)?.UseThis(subMeshNode);
 
-                            users.Add(new SubMeshId(meshInfo, submeshIndex));
-                        }
-                    }
-                    else
-                    {
-                        unmergeableMaterials.UnionWith(possibleMaterials);
-                    }
-                }
+                var (safeToMerge, animatedMaterials) = GetAnimatedMaterialsForSubMesh(context,
+                    meshInfo.SourceRenderer, submeshIndex);
+
+                subMeshNode.SafeToMergeByAnimation = safeToMerge;
+
+                foreach (var material in animatedMaterials)
+                    GetMaterialNode(material)?.UseThis(subMeshNode);
+            }
+        }
+
+        // them, process textures
+        foreach (var (material, materialNode) in materials)
+        {
+            var users = materialNode.Users;
+
+            var provider = new TextureUsageInformationCallbackImpl(
+                material,
+                users.Select(x => context.GetAnimationComponent(x.SubMeshId.MeshInfo2.SourceRenderer))
+                    .ToList());
+
+            IEnumerable<(Texture2D?, TextureUsageInformation?)> textures;
+
+            // collect texture usage information
+            if (ShaderInformationRegistry.GetShaderInformation(material.shader) is { } information
+                && information.GetTextureUsageInformationForMaterial(provider)
+                && provider.TextureUsageInformations is { } informations)
+            {
+                materialNode.TextureUsageInformations = informations.ToList();
+
+                textures = informations.Select(x =>
+                    ((Texture2D?)material.GetTexture(x.MaterialPropertyName), (TextureUsageInformation?)x));
             }
             else
             {
-                // Sorry, I don't support this (for now)
-                var materialSlotIndex = 0;
-
-                foreach (var subMesh in meshInfo.SubMeshes)
-                {
-                    foreach (var material in subMesh.SharedMaterials)
-                    {
-                        if (material != null) unmergeableMaterials.Add(material);
-
-                        var (_, materials) = GetAnimatedMaterialsForSubMesh(context, renderer, materialSlotIndex);
-                        unmergeableMaterials.UnionWith(materials);
-                        materialSlotIndex++;
-                    }
-                }
+                // failed to retrive texture information, just link texture node
+                textures = material.GetTexturePropertyNames().Select(x => material.GetTexture(x)).OfType<Texture2D?>()
+                    .Select(t => (t, (TextureUsageInformation?)null));
             }
+
+            // merge texture nodes
+
+            foreach (var (texture2D, usage) in textures)
+                GetTextureNode(texture2D)?.UseTexture(materialNode, usage);
         }
 
-        // collect usageInformation for each material, and add to unmergeableMaterials if it's impossible
-        var usageInformations = new Dictionary<Material, TextureUsageInformation[]>();
+        // We've finished merging nodes.
+        // Now, we collect all information onto the connected component info
+        var rootNodes = new Dictionary<UnionFindNodeBase, ConnectedComponentInfo>();
+
+        foreach (var subMeshNode in subMeshes.Values)
         {
+            var rootNode = subMeshNode.FindRoot();
+            if (!rootNodes.TryGetValue(rootNode, out var rootInfo))
+                rootNodes.Add(rootNode, rootInfo = new ConnectedComponentInfo());
 
-            foreach (var (material, _) in materialUsers)
-            {
-                var provider = new TextureUsageInformationCallbackImpl(
-                    material,
-                    materialUsers[material].Select(x => context.GetAnimationComponent(x.MeshInfo2.SourceRenderer))
-                        .ToList());
-                if (ShaderInformationRegistry.GetShaderInformation(material.shader) is {} information
-                    && information.GetTextureUsageInformationForMaterial(provider)
-                    && provider.TextureUsageInformations is {} informations)
-                    usageInformations.Add(material, informations.ToArray());
-                else
-                    unmergeableMaterials.Add(material);
-            }
+            rootInfo.SubMeshes.Add(subMeshNode);
         }
 
-        // for implementation simplicity, we don't support texture(s) that are not used by multiple set of UV
+        foreach (var materialNode in materials.Values)
         {
-            var materialsByUSerSubmeshId = new Dictionary<EqualsHashSet<SubMeshId>, HashSet<Material>>();
-            foreach (var (material, users) in materialUsers)
-            {
-                if (unmergeableMaterials.Contains(material)) continue;
-                var set = new EqualsHashSet<SubMeshId>(users);
-                if (!materialsByUSerSubmeshId.TryGetValue(set, out var materials))
-                    materialsByUSerSubmeshId.Add(set, materials = new HashSet<Material>());
-                materials.Add(material);
-            }
+            var rootNode = materialNode.FindRoot();
+            if (!rootNodes.TryGetValue(rootNode, out var rootInfo))
+                rootNodes.Add(rootNode, rootInfo = new ConnectedComponentInfo());
 
-            var textureUserSets = new Dictionary<Texture2D, HashSet<EqualsHashSet<UVID>>>();
-            var textureUserMaterials = new Dictionary<Texture2D, HashSet<Material>>();
-            foreach (var (key, materials) in materialsByUSerSubmeshId)
-            {
-                foreach (var material in materials)
-                {
-                    foreach (var information in usageInformations[material])
-                    {
-                        var texture = (Texture2D)material.GetTexture(information.MaterialPropertyName);
-                        if (texture == null) continue;
-                        if (!textureUserSets.TryGetValue(texture, out var users))
-                            textureUserSets.Add(texture, users = new HashSet<EqualsHashSet<UVID>>());
-                        users.Add(key.backedSet.Select(x => new UVID(x, information.UVChannel)).ToEqualsHashSet());
-                        if (!textureUserMaterials.TryGetValue(texture, out var materialsSet))
-                            textureUserMaterials.Add(texture, materialsSet = new HashSet<Material>());
-                        materialsSet.Add(material);
-                    }
-                }
-            }
-
-            foreach (var (texture, users) in textureUserSets.Where(x => x.Value.Count >= 2))
-                unmergeableMaterials.UnionWith(textureUserMaterials[texture]);
+            rootInfo.Materials.Add(materialNode);
         }
 
-        // remove unmergeable materials and submeshes that have unmergeable materials
+        foreach (var textureNode in texturs.Values)
         {
-            var processMaterials = new List<Material>(unmergeableMaterials);
-            while (processMaterials.Count != 0)
-            {
-                var processSubmeshes = new List<SubMeshId>();
+            var rootNode = textureNode.FindRoot();
+            if (!rootNodes.TryGetValue(rootNode, out var rootInfo))
+                rootNodes.Add(rootNode, rootInfo = new ConnectedComponentInfo());
 
-                foreach (var processMaterial in processMaterials)
-                {
-                    if (!materialUsers.Remove(processMaterial, out var users)) continue;
-
-                    foreach (var user in users)
-                        processSubmeshes.Add(user);
-                }
-
-                processMaterials.Clear();
-
-                foreach (var processSubmesh in processSubmeshes)
-                {
-                    if (!materialsBySubMesh.Remove(processSubmesh, out var materials)) continue;
-
-                    var newUnmergeableMaterials = materials.Where(m => !unmergeableMaterials.Contains(m)).ToList();
-                    unmergeableMaterials.UnionWith(newUnmergeableMaterials);
-                    processMaterials.AddRange(newUnmergeableMaterials);
-                }
-            }
+            rootInfo.Textures.Add(textureNode);
         }
 
-        return materialUsers.Select(x => (x.Key, usageInformations[x.Key], x.Value));
+        // now we have all connected components, process each connected component
+
+        return rootNodes.Values;
     }
 
-    internal void DoAtlas(IEnumerable<(Material, TextureUsageInformation[], HashSet<SubMeshId>)> materialInformation)
+    private IEnumerable<(EqualsHashSet<UVID>, AtlasResult)> AtlasConnectedComponent(
+        ConnectedComponentInfo info)
+    {
+        // all material slot must successfully determine which materials will be used
+        if (info.SubMeshes.Any(x => !x.SafeToMergeByAnimation))
+            return Array.Empty<(EqualsHashSet<UVID>, AtlasResult)>();
+
+        // all material must have valid TextureUsageInformation, otherwise UV packing would cause invalid data
+        if (info.Materials.Any(mat => mat.TextureUsageInformations == null))
+            return Array.Empty<(EqualsHashSet<UVID>, AtlasResult)>();
+
+        var textureByUvId = new Dictionary<UVID, List<TextureNode>>();
+        var uvidByTexture = new Dictionary<TextureNode, List<UVID>>();
+
+        foreach (var texture in info.Textures)
+        {
+            var uvids = texture.Users.SelectMany((pair) =>
+            {
+                var (material, usages) = pair;
+                return material.Users.SelectMany(x => usages.Select(y => new UVID(x.SubMeshId, y.UVChannel)));
+            }).ToList();
+
+            foreach (var uvid in uvids)
+            {
+                if (!textureByUvId.TryGetValue(uvid, out var list))
+                    textureByUvId.Add(uvid, list = new List<TextureNode>());
+                list.Add(texture);
+            }
+
+            uvidByTexture.Add(texture, uvids);
+        }
+
+        var badUvIds = new HashSet<UVID>();
+
+        // texture to uvid graph must be (multiple set of) complete bipartite graph
+        foreach (var (_, uvIds) in uvidByTexture)
+        {
+            // if the texture UV is not related to mesh, it's bad texture / UV
+            if (uvIds.Any(x => x.UVChannel == UVChannel.NonMeshRelated))
+            {
+                badUvIds.UnionWith(uvIds);
+                continue;
+            }
+
+            // if uvIDs for the textures using any of the uvIds is not equals to the uvIds, it's bad texture / UV
+            if (uvIds
+                .SelectMany(uvId => textureByUvId[uvId])
+                .Select(inner => uvidByTexture[inner])
+                .Any(innerUvIds => !uvIds.SequenceEqual(innerUvIds)))
+            {
+                badUvIds.UnionWith(uvIds);
+                continue;
+            }
+        }
+
+        // convert badUvIds to badTextures
+
+        var badTextures = uvidByTexture
+            .Where(x => x.Value.Any(badUvIds.Contains))
+            .Select(x => x.Key).ToHashSet();
+
+        var validTextures = info.Textures.Where(textureNode => !badTextures.Contains(textureNode));
+
+        var textureUvIdsPairs = validTextures.Select(textureNode =>
+            {
+                var uvIds = textureNode.Users.SelectMany(pair =>
+                    {
+                        var (material, usages) = pair;
+                        return usages.SelectMany(usage => material.Users.Select(userSubMesh => (usage, userSubMesh)))
+                            .Select(pair => new UVID(pair.userSubMesh.SubMeshId, pair.usage.UVChannel));
+                    })
+                    .ToEqualsHashSet();
+
+                return (uvIds, texture: textureNode);
+            }).GroupBy(k => k.uvIds)
+            .Select(grouping => (uvids: grouping.Key, textures: grouping.Select(x => x.texture).ToHashSet()));
+
+        var atlasResults = new List<(EqualsHashSet<UVID>, AtlasResult)>();
+
+        foreach (var (uvids, textureNodes) in textureUvIdsPairs)
+        {
+            var usageInformations = textureNodes.SelectMany(x => x.Users).SelectMany(x => x.Value);
+            var wrapModeU = usageInformations.Select(x => x.WrapModeU).Aggregate((a, b) => a == b ? a : null);
+            var wrapModeV = usageInformations.Select(x => x.WrapModeV).Aggregate((a, b) => a == b ? a : null);
+            var textures = textureNodes.Select(x => x.Texture).ToList();
+            var atlasResult = MayAtlasTexture(textures, uvids.backedSet, wrapModeU, wrapModeV);
+
+            if (atlasResult.IsEmpty()) continue;
+
+            atlasResults.Add((uvids, atlasResult));
+            foreach (var textureNode in textureNodes)
+            {
+                var newTexture = atlasResult.TextureMapping[textureNode.Texture];
+
+                foreach (var (material, usages) in textureNode.Users)
+                foreach (var usage in usages)
+                    material.Material.SetTexture(usage.MaterialPropertyName, newTexture);
+            }
+        }
+
+        return atlasResults;
+    }
+
+    internal void RemapVertexUvs(ICollection<(EqualsHashSet<UVID>, AtlasResult)> atlasResults)
     {
         {
-            var textureUserMaterials = new Dictionary<Texture2D, HashSet<(Material, string)>>();
-            var textureByUVs = new Dictionary<EqualsHashSet<UVID>, HashSet<Texture2D>>();
-            foreach (var (material, usageInformations, value) in materialInformation)
-            {
-                foreach (var information in usageInformations)
-                {
-                    var texture = (Texture2D)material.GetTexture(information.MaterialPropertyName);
-                    if (texture == null) continue;
-
-                    var uvSet = new EqualsHashSet<UVID>(value.Select(x => new UVID(x, information.UVChannel)));
-                    if (!textureByUVs.TryGetValue(uvSet, out var textures))
-                        textureByUVs.Add(uvSet, textures = new HashSet<Texture2D>());
-                    textures.Add(texture);
-
-                    if (!textureUserMaterials.TryGetValue(texture, out var materials))
-                        textureUserMaterials.Add(texture, materials = new HashSet<(Material, string)>());
-                    materials.Add((material, information.MaterialPropertyName));
-                }
-            }
-
-            var textureMapping = new Dictionary<Texture2D, Texture2D>();
-            var atlasResults = new Dictionary<EqualsHashSet<UVID>, AtlasResult>();
-
-            foreach (var (uvSet, textures) in textureByUVs)
-            {
-                var atlasResult = MayAtlasTexture(textures, uvSet.backedSet);
-
-                if (atlasResult.IsEmpty()) continue;
-
-                atlasResults.Add(uvSet, atlasResult);
-                foreach (var (key, value) in atlasResult.TextureMapping)
-                    textureMapping.Add(key, value);
-            }
-
             var used = new HashSet<Vertex>();
 
             // collect vertices used by non-atlas submeshes
             {
-                var uvids = atlasResults.Keys.SelectMany(x => x.backedSet);
+                var uvids = atlasResults.SelectMany(x => x.Item1.backedSet);
                 var mergingSubMeshes = uvids.Select(x => x.MeshInfo2!.SubMeshes[x.SubMeshIndex]).ToHashSet();
                 var meshes = uvids.Select(x => x.MeshInfo2!).Distinct();
 
@@ -347,14 +451,6 @@ internal struct OptimizeTextureImpl {
                     }
                 }
             }
-
-            foreach (var (original, users) in textureUserMaterials)
-            {
-                if (!textureMapping.TryGetValue(original, out var newTexture)) continue;
-
-                foreach (var (material, propertyName) in users)
-                    material.SetTexture(propertyName, newTexture);
-            }
         }
     }
 
@@ -363,35 +459,22 @@ internal struct OptimizeTextureImpl {
     {
         var component = context.GetAnimationComponent(renderer);
 
-        if (!component.TryGetObject($"m_Materials.Array.data[{materialSlotIndex}]", out var animation))
-            return (safeToMerge: true, Array.Empty<Material>());
+        var animation = component.GetObjectNode($"m_Materials.Array.data[{materialSlotIndex}]");
 
-        if (animation.ComponentNodes.SingleOrDefault() is AnimatorPropModNode<Object> componentNode)
+        if (animation.ComponentNodes.All(x => x is AnimatorPropModNode<ObjectValueInfo>))
         {
-            if (componentNode.Value.PossibleValues is { } possibleValues)
-            {
-                if (possibleValues.All(x => x is Material))
-                    return (safeToMerge: true, materials: possibleValues.Cast<Material>());
+            var possibleValues = animation.Value.PossibleValues;
 
-                return (safeToMerge: false, materials: possibleValues.OfType<Material>());
-            }
-            else
-            {
-                return (safeToMerge: false, materials: Array.Empty<Material>());
-            }
-        }
-        else if (animation.Value.PossibleValues is { } possibleValues)
-        {
+            if (possibleValues.All(x => x is Material))
+                return (safeToMerge: true, materials: possibleValues.Cast<Material>());
+
             return (safeToMerge: false, materials: possibleValues.OfType<Material>());
         }
-        else if (animation.ComponentNodes.OfType<AnimatorPropModNode<Object>>().FirstOrDefault() is
-                 { } fallbackAnimatorNode)
+        else
         {
-            var materials = fallbackAnimatorNode.Value.PossibleValues?.OfType<Material>() ?? Array.Empty<Material>();
-            return (safeToMerge: false, materials);
+            var possibleValues = animation.Value.PossibleValues;
+            return (safeToMerge: false, materials: possibleValues.OfType<Material>());
         }
-
-        return (safeToMerge: true, Array.Empty<Material>());
     }
 
     class TextureUsageInformationCallbackImpl : TextureUsageInformationCallback
@@ -413,16 +496,24 @@ internal struct OptimizeTextureImpl {
         private T? GetValue<T>(string propertyName, Func<string, T> computer, bool considerAnimation) where T : struct
         {
             // animated; return null
-            if (considerAnimation && _infos.Any(x => x.TryGetFloat($"material.{propertyName}", out _)))
-                return null;
+            if (considerAnimation)
+            {
+                var animationProperty = $"material.{propertyName}";
+                if (_infos.Any(x => x.GetFloatNode(animationProperty).ComponentNodes.Any()))
+                    return null;
+            }
+
             return computer(propertyName);
         }
 
-        public override int? GetInteger(string propertyName, bool considerAnimation = true) => GetValue(propertyName, _material.GetInt, considerAnimation);
+        public override int? GetInteger(string propertyName, bool considerAnimation = true) =>
+            GetValue(propertyName, _material.GetInt, considerAnimation);
 
-        public override float? GetFloat(string propertyName, bool considerAnimation = true) => GetValue(propertyName, _material.GetFloat, considerAnimation);
+        public override float? GetFloat(string propertyName, bool considerAnimation = true) =>
+            GetValue(propertyName, _material.GetFloat, considerAnimation);
 
-        public override Vector4? GetVector(string propertyName, bool considerAnimation = true) => GetValue(propertyName, _material.GetVector, considerAnimation);
+        public override Vector4? GetVector(string propertyName, bool considerAnimation = true) =>
+            GetValue(propertyName, _material.GetVector, considerAnimation);
 
         public override void RegisterOtherUVUsage(UsingUVChannels uvChannel)
         {
@@ -431,10 +522,10 @@ internal struct OptimizeTextureImpl {
         }
 
         public override void RegisterTextureUVUsage(
-            string textureMaterialPropertyName, 
+            string textureMaterialPropertyName,
             SamplerStateInformation samplerState,
-            UsingUVChannels uvChannels, 
-            UnityEngine.Matrix4x4? uvMatrix)
+            UsingUVChannels uvChannels,
+            Matrix2x3? uvMatrix)
         {
             if (_textureUsageInformations == null) return;
             UVChannel uvChannel;
@@ -472,12 +563,42 @@ internal struct OptimizeTextureImpl {
                     return;
             }
 
-            if (uvMatrix != Matrix4x4.identity && uvChannel != UVChannel.NonMeshRelated) {
+            if (uvMatrix != Matrix2x3.Identity && uvChannel != UVChannel.NonMeshRelated)
+            {
                 _textureUsageInformations = null;
                 return;
             }
 
-            _textureUsageInformations?.Add(new TextureUsageInformation(textureMaterialPropertyName, uvChannel));
+            TextureWrapMode? wrapModeU, wrapModeV;
+
+            if (samplerState.MaterialProperty)
+            {
+                var texture = _material.GetTexture(textureMaterialPropertyName);
+                if (texture != null)
+                {
+                    wrapModeU = texture.wrapModeU;
+                    wrapModeV = texture.wrapModeV;
+                }
+                else
+                {
+                    wrapModeU = null;
+                    wrapModeV = null;
+                }
+            }
+            else
+            {
+                wrapModeV = wrapModeU = samplerState.TextureName switch
+                {
+                    "PointClamp" or "LinearClamp" or "TrilinearClamp" => TextureWrapMode.Clamp,
+                    "PointRepeat" or "LinearRepeat" or "TrilinearRepeat" => TextureWrapMode.Repeat,
+                    "PointMirror" or "LinearMirror" or "TrilinearMirror" => TextureWrapMode.Mirror,
+                    "PointMirrorOnce" or "LinearMirrorOnce" or "TrilinearMirrorOnce" => TextureWrapMode.MirrorOnce,
+                    "Unknown" or _ => null,
+                };
+            }
+
+            _textureUsageInformations?.Add(new TextureUsageInformation(textureMaterialPropertyName, uvChannel,
+                wrapModeU, wrapModeV));
         }
     }
 
@@ -485,11 +606,15 @@ internal struct OptimizeTextureImpl {
     {
         public string MaterialPropertyName { get; }
         public UVChannel UVChannel { get; }
+        public TextureWrapMode? WrapModeU { get; }
+        public TextureWrapMode? WrapModeV { get; }
 
-        internal TextureUsageInformation(string materialPropertyName, UVChannel uvChannel)
+        internal TextureUsageInformation(string materialPropertyName, UVChannel uvChannel, TextureWrapMode? wrapModeU, TextureWrapMode? wrapModeV)
         {
             MaterialPropertyName = materialPropertyName;
             UVChannel = uvChannel;
+            WrapModeU = wrapModeU;
+            WrapModeV = wrapModeV;
         }
     }
     
@@ -513,7 +638,7 @@ internal struct OptimizeTextureImpl {
         Debug.Log(message);
     }
 
-    struct AtlasResult
+    internal struct AtlasResult
     {
         public Dictionary<Texture2D, Texture2D> TextureMapping;
         public Dictionary<Vertex, List<(int uvChannel, Vector2 newUV)>> NewUVs;
@@ -532,12 +657,13 @@ internal struct OptimizeTextureImpl {
             (NewUVs == null || NewUVs.Count == 0);
     }
 
-    AtlasResult MayAtlasTexture(ICollection<Texture2D> textures, ICollection<UVID> users)
+    AtlasResult MayAtlasTexture(ICollection<Texture2D> textures, ICollection<UVID> users,
+        TextureWrapMode? wrapModeU, TextureWrapMode? wrapModeV)
     {
         if (users.Any(uvid => uvid.UVChannel == UVChannel.NonMeshRelated))
             return AtlasResult.Empty;
 
-        if (CreateIslands(users) is not {} islands)
+        if (CreateIslands(users, wrapModeU, wrapModeV) is not {} islands)
             return AtlasResult.Empty;
 
         MergeIslands(islands);
@@ -547,7 +673,7 @@ internal struct OptimizeTextureImpl {
 
         FitToBlockSizeAndAddPadding(islands, blockSizeRatioX, blockSizeRatioY, paddingRatio);
 
-        var atlasIslands = islands.Select(x => new AtlasIsland(x)).ToArray();
+        var atlasIslands = islands.ToArray();
         Array.Sort(atlasIslands, (a, b) => b.Size.y.CompareTo(a.Size.y));
 
         if (AfterAtlasSizesSmallToBig(atlasIslands) is not {} atlasSizes)
@@ -574,7 +700,8 @@ internal struct OptimizeTextureImpl {
         return AtlasResult.Empty;
     }
 
-    private List<IslandUtility.Island>? CreateIslands(ICollection<UVID> users)
+    internal static List<AtlasIsland>? CreateIslands(ICollection<UVID> users, 
+        TextureWrapMode? wrapModeU, TextureWrapMode? wrapModeV)
     {
         foreach (var user in users)
         {
@@ -582,15 +709,6 @@ internal struct OptimizeTextureImpl {
             // currently non triangle topology is not supported
             if (submesh.Topology != MeshTopology.Triangles)
                 return null;
-            foreach (var vertex in submesh.Vertices)
-            {
-                var coord = vertex.GetTexCoord((int)user.UVChannel);
-
-                // UV Tiling is currently not supported
-                // TODO: if entire island is in n.0<=x<n+1, y.0<=y<n+1, then it might be safe to atlas (if TextureWrapMode is repeat)
-                if (coord.x is not (>= 0 and < 1) || coord.y is not (>= 0 and < 1))
-                    return null;
-            }
         }
 
         static IEnumerable<IslandUtility.Triangle> TrianglesByUVID(UVID uvid)
@@ -608,10 +726,78 @@ internal struct OptimizeTextureImpl {
         var triangles = users.SelectMany(TrianglesByUVID).ToList();
         var islands = IslandUtility.UVtoIsland(triangles);
 
-        return islands;
+        var atlasIslands = new List<AtlasIsland>(islands.Count);
+
+        foreach (var island in islands)
+        {
+            int tileU, tileV;
+            {
+                var triangle = island.triangles[0];
+                var coord = triangle.zero.GetTexCoord(triangle.UVIndex);
+                tileU = Mathf.FloorToInt(coord.x);
+                tileV = Mathf.FloorToInt(coord.y);
+            }
+
+            // We may allow both 0.5000 and 1.00000 in the future 
+            foreach (var islandTriangle in island.triangles)
+            foreach (var vertex in islandTriangle)
+            {
+                var currentTileX = Mathf.FloorToInt(vertex.GetTexCoord(islandTriangle.UVIndex).x);
+                var currentTileY = Mathf.FloorToInt(vertex.GetTexCoord(islandTriangle.UVIndex).y);
+                if (currentTileX != tileU || currentTileY != tileV)
+                {
+                    TraceLog($"{string.Join(", ", users)} will not merged because UV is not in same tile");
+                    return null;
+                }
+            }
+
+            foreach (var (wrapMode, tile) in stackalloc []{ (wrapModeU, tileU), (wrapModeV, tileV) })
+            {
+                switch (wrapMode)
+                {
+                    case null:
+                        if (tile != 0)
+                        {
+                            TraceLog($"{string.Join(", ", users)} will not merged because UV is tile-ed but wrap mode is unknown");
+                            return null;
+                        }
+                        break;
+                    case TextureWrapMode.Clamp:
+                        if (tile != 0)
+                        {
+                            TraceLog($"{string.Join(", ", users)} will not merged because UV is tile-ed and wrap mode is clamp");
+                            return null;
+                        }
+                        break;
+                    case TextureWrapMode.MirrorOnce:
+                        if (tile is not -1 and not 0)
+                        {
+                            TraceLog($"{string.Join(", ", users)} will not merged because UV is tile-ed and wrap mode is MirrorOnce");
+                            return null;
+                        }
+                        break;
+                    case TextureWrapMode.Repeat:
+                    case TextureWrapMode.Mirror:
+                        // no problem
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+
+            var flipX = wrapModeU is TextureWrapMode.Mirror or TextureWrapMode.MirrorOnce && (tileU & 1) != 0;
+            var flipY = wrapModeV is TextureWrapMode.Mirror or TextureWrapMode.MirrorOnce && (tileV & 1) != 0;
+            island.tileU = tileU;
+            island.tileV = tileV;
+            island.flipU = flipX;
+            island.flipV = flipY;
+            atlasIslands.Add(new AtlasIsland(island));
+        }
+
+        return atlasIslands;
     }
 
-    private void MergeIslands(List<IslandUtility.Island> islands)
+    private void MergeIslands(List<AtlasIsland> islands)
     {
         // TODO: We may merge islands >N% wrapped (heuristic merge islands)
         // This mage can be after fitting to block size
@@ -629,7 +815,7 @@ internal struct OptimizeTextureImpl {
                 if (islandI.MinPos.x <= islandJ.MinPos.x && islandJ.MaxPos.x <= islandI.MaxPos.x &&
                     islandI.MinPos.y <= islandJ.MinPos.y && islandJ.MaxPos.y <= islandI.MaxPos.y)
                 {
-                    islandI.triangles.AddRange(islandJ.triangles);
+                    islandI.OriginalIslands.AddRange(islandI.OriginalIslands);
                     islands.RemoveAt(j);
                     j--;
                     if (j < i) i--;
@@ -700,7 +886,7 @@ internal struct OptimizeTextureImpl {
         return (blockSizeRatioX, blockSizeRatioY, paddingRatio);
     }
 
-    private void FitToBlockSizeAndAddPadding(List<IslandUtility.Island> islands, float blockSizeRatioX, float blockSizeRatioY, float paddingRatio)
+    private void FitToBlockSizeAndAddPadding(List<AtlasIsland> islands, float blockSizeRatioX, float blockSizeRatioY, float paddingRatio)
     {
         foreach (var island in islands)
         {
@@ -735,9 +921,9 @@ internal struct OptimizeTextureImpl {
             Texture2D newTexture;
 
             var mipmapCount = Mathf.Min(Utils.MostSignificantBit(Mathf.Min(newWidth, newHeight)), texture2D.mipmapCount);
-            if (useBlockCopying && GraphicsFormatUtility.IsCompressedFormat(texture2D.format) && mipmapCount == 1)
+            // Crunch compressed texture will return empty array for `GetRawTextureData`
+            if (useBlockCopying && GraphicsFormatUtility.IsCompressedFormat(texture2D.format) && !GraphicsFormatUtility.IsCrunchFormat(texture2D.format) && mipmapCount == 1)
             {
-
                 var destMipmapSize = GraphicsFormatUtility.ComputeMipmapSize(newWidth, newHeight, texture2D.format);
                 var sourceMipmapSize = GraphicsFormatUtility.ComputeMipmapSize(texture2D.width, texture2D.height, texture2D.format);
 
@@ -775,8 +961,8 @@ internal struct OptimizeTextureImpl {
                     var xBlockCount = (xPixelCount + blockWidth - 1) / blockWidth;
                     var yBlockCount = (yPixelCount + blockHeight - 1) / blockHeight;
 
-                    var sourceXPixelPosition = (int)(atlasIsland.OriginalIsland.MinPos.x * texture2D.width);
-                    var sourceYPixelPosition = (int)(atlasIsland.OriginalIsland.MinPos.y * texture2D.height);
+                    var sourceXPixelPosition = (int)(atlasIsland.MinPos.x * texture2D.width);
+                    var sourceYPixelPosition = (int)(atlasIsland.MinPos.y * texture2D.height);
                     var sourceXBlockPosition = sourceXPixelPosition / blockWidth;
                     var sourceYBlockPosition = sourceYPixelPosition / blockHeight;
 
@@ -799,6 +985,11 @@ internal struct OptimizeTextureImpl {
                 }
 
                 newTexture = new Texture2D(newWidth, newHeight, texture2D.format, mipmapCount, !texture2D.isDataSRGB);
+                newTexture.wrapModeU = texture2D.wrapModeU;
+                newTexture.wrapModeV = texture2D.wrapModeV;
+                newTexture.filterMode = texture2D.filterMode;
+                newTexture.anisoLevel = texture2D.anisoLevel;
+                newTexture.mipMapBias = texture2D.mipMapBias;
                 newTexture.SetPixelData(destTextureData, 0);
                 newTexture.Apply(true, !texture2D.isReadable);
             }
@@ -817,8 +1008,8 @@ internal struct OptimizeTextureImpl {
                 foreach (var atlasIsland in atlasIslands)
                 {
                     HelperMaterial.SetVector(SrcRectProp,
-                        new Vector4(atlasIsland.OriginalIsland.MinPos.x, atlasIsland.OriginalIsland.MinPos.y,
-                            atlasIsland.OriginalIsland.Size.x, atlasIsland.OriginalIsland.Size.y));
+                        new Vector4(atlasIsland.MinPos.x, atlasIsland.MinPos.y,
+                            atlasIsland.Size.x, atlasIsland.Size.y));
 
                     var pivot = atlasIsland.Pivot / atlasSize;
                     var size = atlasIsland.Size / atlasSize;
@@ -851,6 +1042,11 @@ internal struct OptimizeTextureImpl {
                     if (GraphicsFormatUtility.IsCompressedFormat(texture2D.format))
                         EditorUtility.CompressTexture(newTexture, texture2D.format, TextureCompressionQuality.Normal);
                     newTexture.name = texture2D.name + " (AAO UV Packed)";
+                    newTexture.wrapModeU = texture2D.wrapModeU;
+                    newTexture.wrapModeV = texture2D.wrapModeV;
+                    newTexture.filterMode = texture2D.filterMode;
+                    newTexture.anisoLevel = texture2D.anisoLevel;
+                    newTexture.mipMapBias = texture2D.mipMapBias;
                     newTexture.Apply(true, !texture2D.isReadable);
                 }
             }
@@ -861,14 +1057,22 @@ internal struct OptimizeTextureImpl {
         var newUVs = new Dictionary<Vertex, List<(int uvChannel, Vector2 newUV)>>();
 
         foreach (var atlasIsland in atlasIslands)
-        foreach (var triangle in atlasIsland.OriginalIsland.triangles)
+        foreach (var originalIsland in atlasIsland.OriginalIslands)
+        foreach (var triangle in originalIsland.triangles)
         foreach (var vertex in triangle)
         {
             var uv = (Vector2)vertex.GetTexCoord(triangle.UVIndex);
 
-            uv -= atlasIsland.OriginalIsland.MinPos;
+            // move to 0,0 tile
+            uv = originalIsland.TiledToUV(uv);
+
+            // apply new pivot
+            uv -= atlasIsland.MinPos;
             uv += atlasIsland.Pivot;
             uv /= atlasSize;
+
+            // re-flip if needed
+            uv = originalIsland.UVToTiled(uv);
 
             if (!newUVs.TryGetValue(vertex, out var newUVList))
                 newUVs.Add(vertex, newUVList = new List<(int uvChannel, Vector2 newUV)>());
@@ -1036,14 +1240,24 @@ internal struct OptimizeTextureImpl {
     internal class AtlasIsland
     {
         //TODO: rotate
-        public IslandUtility.Island OriginalIsland;
+        public readonly List<IslandUtility.Island> OriginalIslands;
         public Vector2 Pivot;
 
-        public Vector2 Size => OriginalIsland.Size;
+        public Vector2 MinPos;
+        public Vector2 MaxPos;
+        public Vector2 Size => MaxPos - MinPos;
 
         public AtlasIsland(IslandUtility.Island originalIsland)
         {
-            OriginalIsland = originalIsland;
+            OriginalIslands = new List<IslandUtility.Island> { originalIsland };
+            MinPos = originalIsland.MinPos;
+            MaxPos = originalIsland.MaxPos;
+
+            MinPos = originalIsland.TiledToUV(MinPos);
+            MaxPos = originalIsland.TiledToUV(MaxPos);
+
+            (MinPos.x, MaxPos.x) = (Mathf.Min(MinPos.x, MaxPos.x), Mathf.Max(MinPos.x, MaxPos.x));
+            (MinPos.y, MaxPos.y) = (Mathf.Min(MinPos.y, MaxPos.y), Mathf.Max(MinPos.y, MaxPos.y));
         }
     }
 
@@ -1281,8 +1495,10 @@ internal struct OptimizeTextureImpl {
             public List<Triangle> triangles;
             public Vector2 MinPos;
             public Vector2 MaxPos;
-
-            public Vector2 Size => MaxPos - MinPos;
+            public int tileU;
+            public int tileV;
+            [FormerlySerializedAs("flipX")] public bool flipU;
+            [FormerlySerializedAs("flipY")] public bool flipV;
 
             public Island(Island source)
             {
@@ -1304,6 +1520,28 @@ internal struct OptimizeTextureImpl {
             public Island(List<Triangle> trianglesOfIsland)
             {
                 triangles = trianglesOfIsland;
+            }
+
+            public Vector2 TiledToUV(Vector2 uv)
+            {
+                uv.x -= tileU;
+                uv.y -= tileV;
+
+                if (flipU) uv.x = 1 - uv.x;
+                if (flipV) uv.y = 1 - uv.y;
+
+                return uv;
+            }
+
+            public Vector2 UVToTiled(Vector2 uv)
+            {
+                if (flipU) uv.x = 1 - uv.x;
+                if (flipV) uv.y = 1 - uv.y;
+
+                uv.x += tileU;
+                uv.y += tileV;
+
+                return uv;
             }
         }
     }

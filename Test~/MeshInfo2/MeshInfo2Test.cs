@@ -101,7 +101,7 @@ namespace Anatawa12.AvatarOptimizer.Test
         [Test]
         public void MultiFrameBlendShapeWithPartiallyIdentity()
         {
-            var mesh = BoxMesh();
+            var mesh = TestUtils.NewCubeMesh();
             var deltas = new Vector3[8];
             deltas.AsSpan().Fill(new Vector3(1, 2, 3));
             mesh.AddBlendShapeFrame("shape", 0, new Vector3[8], null, null);
@@ -118,12 +118,15 @@ namespace Anatawa12.AvatarOptimizer.Test
 
             foreach (var vertex in meshInfo2.Vertices)
             {
-                var frames = vertex.BlendShapes["shape"];
-                Assert.That(frames.Length, Is.EqualTo(5));
-                for (var i = 0; i < frames.Length; i++)
+                var buffer = vertex.BlendShapeBuffer;
+                var shapeShape = buffer.Shapes["shape"];
+                Assert.That(shapeShape.Frames.Length, Is.EqualTo(5));
+                for (var i = 0; i < shapeShape.Frames.Length; i++)
                 {
-                    Assert.That(frames[i].Weight, Is.EqualTo((float)i));
-                    Assert.That(frames[i].Position, Is.EqualTo(i == 3 ? new Vector3(1, 2, 3) : new Vector3()));
+                    var frameInfo = shapeShape.Frames[i];
+                    Assert.That(frameInfo.Weight, Is.EqualTo((float)i));
+                    var position = buffer.DeltaVertices[frameInfo.BufferIndex][vertex.BlendShapeBufferVertexIndex];
+                    Assert.That(position, Is.EqualTo(i == 3 ? new Vector3(1, 2, 3) : new Vector3()));
                 }
             }
         }
@@ -131,7 +134,7 @@ namespace Anatawa12.AvatarOptimizer.Test
         [Test]
         public void BlendShapeWithFrameAtZero()
         {
-            var mesh = BoxMesh();
+            var mesh = TestUtils.NewCubeMesh();
             var deltas = new Vector3[8];
             deltas.AsSpan().Fill(new Vector3(1, 2, 3));
             mesh.AddBlendShapeFrame("shape", 0, deltas, null, null);
@@ -145,53 +148,72 @@ namespace Anatawa12.AvatarOptimizer.Test
 
             Vector3 position;
             var vertex = meshInfo2.Vertices[0];
-            Assert.That(vertex.TryGetBlendShape("shape", 0, out position, out _, out _), Is.True);
+            Assert.That(vertex.TryGetBlendShape("shape", 0, out position, out _, out _), Is.False);
             Assert.That(position, Is.EqualTo(new Vector3(0, 0, 0)));
 
             Assert.That(vertex.TryGetBlendShape("shape", 0, out position, out _, out _, getDefined: true), Is.True);
             Assert.That(position, Is.EqualTo(new Vector3(1, 2, 3)));
         }
 
-        private Mesh BoxMesh()
+        [Test]
+        public void WriteEmptySubMesh()
         {
-            var mesh = new Mesh
+            var mesh = TestUtils.NewCubeMesh();
+
+            var go = new GameObject();
+            var smr = go.AddComponent<SkinnedMeshRenderer>();
+            smr.sharedMesh = mesh;
+
+            var meshInfo2 = new MeshInfo2(smr);
+
+            meshInfo2.SubMeshes[0].Vertices.Clear();
+            meshInfo2.Vertices.Clear();
+
+            var newMesh = new Mesh();
+            meshInfo2.WriteToMesh(newMesh);
+
+            Assert.That(newMesh.subMeshCount, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void ComputeActualPositionWithoutBones()
+        {
+            var mesh = TestUtils.NewCubeMesh();
+
+            var go = new GameObject();
+            var smr = go.AddComponent<SkinnedMeshRenderer>();
+            smr.sharedMesh = mesh;
+
+            var meshInfo2 = new MeshInfo2(smr);
+
+            foreach (var vertex in meshInfo2.Vertices)
             {
-                vertices = new[]
-                {
-                    new Vector3(-1, -1, -1),
-                    new Vector3(+1, -1, -1),
-                    new Vector3(-1, +1, -1),
-                    new Vector3(+1, +1, -1),
-                    new Vector3(-1, -1, +1),
-                    new Vector3(+1, -1, +1),
-                    new Vector3(-1, +1, +1),
-                    new Vector3(+1, +1, +1),
-                },
-                triangles = new[]
-                {
-                    0, 1, 2,
-                    1, 3, 2,
+                var position = vertex.ComputeActualPosition(meshInfo2,
+                    t => t.localToWorldMatrix, go.transform.worldToLocalMatrix);
 
-                    4, 6, 5,
-                    5, 6, 7,
+                Assert.That(position, Is.EqualTo(vertex.Position));
+            }
+        }
 
-                    0, 4, 1,
+        [Test]
+        public void ComputeActualPositionWithBones()
+        {
+            var mesh = TestUtils.NewCubeMesh();
 
-                    1, 4, 5,
-                    1, 5, 3,
-                
-                    3, 5, 7,
-                    3, 7, 2,
-                
-                    2, 7, 6,
-                    2, 6, 0,
-                },
-            };
+            var go = new GameObject();
+            var smr = go.AddComponent<SkinnedMeshRenderer>();
+            smr.sharedMesh = mesh;
 
-            mesh.subMeshCount = 1;
-            mesh.SetSubMesh(0, new SubMeshDescriptor(0, mesh.triangles.Length));
+            var meshInfo2 = new MeshInfo2(smr);
+            meshInfo2.MakeBoned();
 
-            return mesh;
+            foreach (var vertex in meshInfo2.Vertices)
+            {
+                var position = vertex.ComputeActualPosition(meshInfo2,
+                    t => t.localToWorldMatrix, go.transform.worldToLocalMatrix);
+
+                Assert.That(position, Is.EqualTo(vertex.Position));
+            }
         }
     }
 }

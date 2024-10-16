@@ -27,8 +27,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
             // currently remove meshes are only supported
             var components = ctx.GetComponentsByType<T>();
 
-            var groups = new HashSet<RenderGroup>();
-
+            var componentsByRenderer = new Dictionary<Renderer, List<T>>();
             foreach (var component in components)
             {
                 if (component.GetComponent<MergeSkinnedMesh>())
@@ -42,10 +41,16 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                 if (renderer == null) continue;
                 if (renderer.sharedMesh == null) continue;
 
-                groups.Add(RenderGroup.For(renderer).WithData<T[]>(new[] { component }));
+                if (!componentsByRenderer.TryGetValue(renderer, out var list))
+                    componentsByRenderer.Add(renderer, list = new List<T>());
+
+                list.Add(component);
             }
 
-            return groups.ToImmutableList();
+            return componentsByRenderer
+                .Where(x => SupportsMultiple() ? x.Value.Count >= 1 : x.Value.Count == 1)
+                .Select(pair => RenderGroup.For(pair.Key).WithData(pair.Value.ToArray()))
+                .ToImmutableList();
         }
 
         public async Task<IRenderFilterNode?> Instantiate(RenderGroup group,

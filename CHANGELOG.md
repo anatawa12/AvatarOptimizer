@@ -14,7 +14,7 @@ The format is based on [Keep a Changelog].
     - We may relax some restriction in the future.
   - Because we have to check for each condition if we use AnyState but we can check for only one (in best case) with entry/exit, this generally reduces cost for checking an parameter in a state.
   - Combined with Entry / Exit to 1D BlendTree optimization, which is implemented in previous release, your AnyState layer may be optimized to 1D BlendTree.
-- Optimize Texture in Trace nad Optimize `#1181` `#1184` `#1193`
+- Optimize Texture in Trace nad Optimize `#1181` `#1184` `#1193` `#1215` `#1225` `#1235` `#1268`
   - Avatar Optimizer will pack texture and tries to reduce the VRAM usage.
   - Currently liltoon is only supported.
 - `Copy Enablement Animation` to Merge Skinned Mesh `#1173`
@@ -34,6 +34,16 @@ The format is based on [Keep a Changelog].
   - This change make AAO incompatible with Unity without Graphics.
     - If you're building your avatar with batchmode with -nographics, please remove -nographics.
 - Asset Description for Avatar Modify Support bundled in an avatar, Shinano `#1189`
+- API to get in advance whether a polygon will be removed `#1177`
+- Rename BlendShape component to rename BlendShapes `#1245`
+  - This can be used to avoid blendShape name conflicts in Merge Skinned Mesh
+- Invert option for Remove Mesh in Box `#1257`
+  - You now can remove polygons outside of the box instead of inside the box.
+  - Along with this new feature, we renamed `Remove Mesh in Box` to `Remove Mesh By Box` to make it more clear.
+    - This doesn't change the class name of the component since it's already a part of the public API.
+- Remove Mesh By UV Tile, a new way to remove polygons `#1263`
+  - You now easily remove some polygons of models configured for UV Tile Discard.
+  - This component removes polygons like UV Tile Discard with Vertex Discard Mode.
 - Automatically remove unnecessary material properties based on shader `#1041`
   - This feature is added to `Remove Unused Objects` in `Trace and Optimize`.
   - When you changed shader for an material, properties for previously used shaders might be remain
@@ -43,12 +53,30 @@ The format is based on [Keep a Changelog].
 - Skip Enablement Mismatched Renderers is now disabled by default `#1169`
   - You still can enable it in the Inspector.
   - This change does not affect the behavior of previously added components.
-- Use UInt16 index buffer if possible even when total vertex count is more than 2^16 `#1178`
+- Use UInt16 index buffer if possible even when total vertex count is more than 2^16 `#1178` `#1255`
   - With baseVertex in index buffer, we can use UInt16 index buffer even if total vertex count is more than 2^16.
   - Of course, if one submeh references wide range of vertices, we cannot use UInt16 index buffer so we still use UInt32 index buffer in such a case.
-- Reimplement Preview system with NDMF Preview System `#1131` `#1195`
+- Reimplement Preview system with NDMF Preview System `#1131` `#1195` `#1218` `#1270`
   - This will prevent issues relates to Animation Mode bug.
   - This allows you to preview Remove Mesh components without selecting Mesh OR while in Animation Mode.
+- Improved Prefab Safe Set, which are used in MergePhysBone, MergeSkinnedMesh, FreezeBlendShape and more components `#1212` `#1219` `#1221` `#1236`
+  - This should improve compatibility with replacing base prefab, which is added in Unity 2022.
+- Allow multiple component for Remove Mesh components with API `#1216` `#1218`
+  - This allows non-destructive tools to add Remove Mesh components even if Remove Mesh component are added before.
+- Animator Parser Debug Window now supports ObjectReference animation support `#1222`
+- Reimplemented Animator Parser node system `#1227`
+- Renamed debug options internally `#1228`
+  - This will lose previously configured debug options.
+  - However, debug options are not considered as Public API as stated in documents so this is not backward incompatible changes in semver 2.0.0 section 8.
+- Performance Improvements `#1234` `#1243` `#1240`
+- Transform gizmo are now hidden while you're editing box of Remove Mesh in Box `#1259`
+  - This prevents mistakenly moving the Skinned Mesh Renderer while editing the box.
+- Make MergePhysBone implement `INetworkID` `#1260`
+  - This allow you to configure networkid for merged PhysBone component
+- Changed locale code for simplified chinese from `zh-cn` to `zh-hans` `#1264`
+  - This would improve compatibility with other NDMF tools.
+  - Many NDMF tools uses `zh-hans` so previously you may see both 中文 (中国) and 中文 (简体).
+  - I think zh-hans is more accurate expression so I changed so.
 
 ### Deprecated
 
@@ -57,8 +85,23 @@ The format is based on [Keep a Changelog].
   - For 2019 users, please use 1.7.x.
 
 ### Fixed
+- Avatar Optimizer does not support `Additive Reference Pose` `#1208`
+- Typo in menu for creating Asset Description `#1213`
+- maxSquish cannot be configured for mergePB`#1231`
+- Avatar Descriptor can be removed by Avatar Optimizer in extreamely rare case `#1242`
+- Material property animation with weight 0 layer might be broken with AutoMergeSkinnedMesh `#1248` `#1253`
+- Remove Mesh in Box does not work for meshes without Bones `#1256`
+- NullReferenceException in `GetBlendShape` if Mesh is not specified for SkinnedMeshRenderer `#1267`
 
 ### Security
+
+## [1.7.13] - 2024-10-01
+### Fixed
+- Null Reference Exception with newly created VRCAnimatorPlayAudio [`#1199`](https://github.com/anatawa12/AvatarOptimizer/pull/1199)
+- Particle System that uses local scale will be broken [`#1197`](https://github.com/anatawa12/AvatarOptimizer/pull/1197)
+- Avatars with Visame Skinned Mesh disabled will not able to upload [`#1202`](https://github.com/anatawa12/AvatarOptimizer/pull/1202)
+- Default value for RemoveMeshInBox is not correct in Play mode [`#1217`](https://github.com/anatawa12/AvatarOptimizer/pull/1217)
+  - This fix will make `Initialize` method set default value for `boxes`.
 
 ## [1.7.12] - 2024-08-27
 ### Changed
@@ -1034,7 +1077,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.12...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.13...HEAD
+[1.7.13]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.12...v1.7.13
 [1.7.12]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.11...v1.7.12
 [1.7.11]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.10...v1.7.11
 [1.7.10]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.9...v1.7.10

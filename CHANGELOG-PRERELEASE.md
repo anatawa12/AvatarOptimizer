@@ -8,25 +8,110 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Invert option for Remove Mesh in Box `#1257`
+  - You now can remove polygons outside of the box instead of inside the box.
+  - Along with this new feature, we renamed `Remove Mesh in Box` to `Remove Mesh By Box` to make it more clear.
+    - This doesn't change the class name of the component since it's already a part of the public API.
+- Remove Mesh By UV Tile, a new way to remove polygons `#1263`
+  - You now easily remove some polygons of models configured for UV Tile Discard.
+  - This component removes polygons like UV Tile Discard with Vertex Discard Mode.
+- Texture Optimizer support for tiling UV `#1268`
 - Automatically remove unnecessary material properties based on shader `#1041`
   - This feature is added to `Remove Unused Objects` in `Trace and Optimize`.
   - When you changed shader for an material, properties for previously used shaders might be remain
   - This may increase your avatar size by unexpectedly including unused textures
 
 ### Changed
-- Reimplement Preview system with NDMF Preview System `#1131`
-  - This will prevent issues relates to Animation Mode bug.
-  - This allows you to preview Remove Mesh components without selecting Mesh OR while in Animation Mode.
+- Transform gizmo are now hidden while you're editing box of Remove Mesh in Box `#1259`
+  - This prevents mistakenly moving the Skinned Mesh Renderer while editing the box.
+- Make MergePhysBone implement `INetworkID` `#1260`
+  - This allow you to configure networkid for merged PhysBone component
+- Changed locale code for simplified chinese from `zh-cn` to `zh-hans` `#1264`
+  - This would improve compatibility with other NDMF tools.
+  - Many NDMF tools uses `zh-hans` so previously you may see both 中文 (中国) and 中文 (简体).
+  - I think zh-hans is more accurate expression so I changed so.
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
-- Texture Packing which resolves to the white texture would break the Unity Editor `#1193`
-- Performance issues with preview system `#1195`
+- `InvalidOperationException` with removing all polygon on one material slot `#1255`
+- Remove Mesh in Box does not work for meshes without Bones `#1256`
+- NullReferenceException in `GetBlendShape` if Mesh is not specified for SkinnedMeshRenderer `#1267`
+- NDMF Preview for Mesh by Box will is partially broken `#1270`
 
 ### Security
+
+## [1.8.0-beta.6] - 2024-10-12
+### Fixed
+- InvalidOperationException with AutoMergeSkinnedMesh [`#1253`](https://github.com/anatawa12/AvatarOptimizer/pull/1253)
+
+## [1.8.0-beta.5] - 2024-10-12
+### Added
+- Rename BlendShape component to rename BlendShapes [`#1245`](https://github.com/anatawa12/AvatarOptimizer/pull/1245)
+  - This can be used to avoid blendShape name conflicts in Merge Skinned Mesh
+
+### Changed
+- Performance Improvements with Mesh Manipulation, especially with blendshape-heavy meshes [`#1234`](https://github.com/anatawa12/AvatarOptimizer/pull/1234) [`#1243`](https://github.com/anatawa12/AvatarOptimizer/pull/1243) [`#1240`](https://github.com/anatawa12/AvatarOptimizer/pull/1240)
+
+### Fixed
+- maxSquish cannot be configured for mergePB`#1231`
+- Error from Optimize Texture if there is Merge Skinned Mesh with material slot animation [`#1235`](https://github.com/anatawa12/AvatarOptimizer/pull/1235)
+- Unncecessary Prefab Overrides are Generated with Prefab Safe Set [`#1236`](https://github.com/anatawa12/AvatarOptimizer/pull/1236)
+- CS8632 warning for released version [`#1237`](https://github.com/anatawa12/AvatarOptimizer/pull/1237)
+- Avatar Descriptor can be removed by Avatar Optimizer in extreamely rare case [`#1242`](https://github.com/anatawa12/AvatarOptimizer/pull/1242)
+- Material property animation with weight 0 layer might be broken with AutoMergeSkinnedMesh [`#1248`](https://github.com/anatawa12/AvatarOptimizer/pull/1248)
+
+## [1.8.0-beta.4] - 2024-10-05
+### Changed
+- Animator Parser Debug Window now supports ObjectReference animation support [`#1222`](https://github.com/anatawa12/AvatarOptimizer/pull/1222)
+- Reimplemented Animator Parser node system [`#1227`](https://github.com/anatawa12/AvatarOptimizer/pull/1227)
+- Renamed debug options internally [`#1228`](https://github.com/anatawa12/AvatarOptimizer/pull/1228)
+  - This will lose previously configured debug options.
+  - However, debug options are not considered as Public API as stated in documents so this is not backward incompatible changes in semver 2.0.0 section 8.
+
+### Fixed
+- API about Prefab Safe Set are broken with prefab instance [`#1219`](https://github.com/anatawa12/AvatarOptimizer/pull/1219)
+- Optimize Texture may cause false positive optimization with blendtree [`#1225`](https://github.com/anatawa12/AvatarOptimizer/pull/1225)
+- Error with PrefabSafeSet [`#1221`](https://github.com/anatawa12/AvatarOptimizer/pull/1221)
+
+## [1.7.13] - 2024-10-01
+## [1.8.0-beta.3] - 2024-09-30
+### Added
+- API to get in advance whether a polygon will be removed [`#1177`](https://github.com/anatawa12/AvatarOptimizer/pull/1177)
+
+### Changed
+- Improved Prefab Safe Set, which are used in MergePhysBone, MergeSkinnedMesh, FreezeBlendShape and more components [`#1212`](https://github.com/anatawa12/AvatarOptimizer/pull/1212)
+  - This should improve compatibility with replacing base prefab, which is added in Unity 2022.
+- Allow multiple component for Remove Mesh components with API [`#1216`](https://github.com/anatawa12/AvatarOptimizer/pull/1216) [`#1218`](https://github.com/anatawa12/AvatarOptimizer/pull/1218)
+  - This allows non-destructive tools to add Remove Mesh components even if Remove Mesh component are added before.
+
+### Fixed
+- Typo in menu for creating Asset Description [`#1213`](https://github.com/anatawa12/AvatarOptimizer/pull/1213)
+- Optimize Texture broken with Crunch Compression [`#1215`](https://github.com/anatawa12/AvatarOptimizer/pull/1215)
+
+## [1.7.13-beta.2] - 2024-09-29
+### Fixed
+- Default value for RemoveMeshInBox is not correct in Play mode [`#1217`](https://github.com/anatawa12/AvatarOptimizer/pull/1217)
+    - This fix will make `Initialize` method set default value for `boxes`.
+
+## [1.8.0-beta.2] - 2024-09-25
+### Changed
+- Reimplement Preview system with NDMF Preview System [`#1131`](https://github.com/anatawa12/AvatarOptimizer/pull/1131)
+  - This will prevent issues relates to Animation Mode bug.
+  - This allows you to preview Remove Mesh components without selecting Mesh OR while in Animation Mode.
+
+### Fixed
+- Texture Packing which resolves to the white texture would break the Unity Editor [`#1193`](https://github.com/anatawa12/AvatarOptimizer/pull/1193)
+- Performance issues with preview system [`#1195`](https://github.com/anatawa12/AvatarOptimizer/pull/1195)
+- Avatar Optimizer does not support `Additive Reference Pose` [`#1208`](https://github.com/anatawa12/AvatarOptimizer/pull/1208)
+
+## [1.7.13-beta.1] - 2024-09-23
+### Fixed
+- Null Reference Exception with newly created VRCAnimatorPlayAudio [`#1199`](https://github.com/anatawa12/AvatarOptimizer/pull/1199)
+- Particle System that uses local scale will be broken [`#1197`](https://github.com/anatawa12/AvatarOptimizer/pull/1197)
+- Avatars with Visame Skinned Mesh disabled will not able to upload [`#1202`](https://github.com/anatawa12/AvatarOptimizer/pull/1202)
 
 ## [1.8.0-beta.1] - 2024-09-20
 ### Added
@@ -1557,7 +1642,15 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-beta.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-beta.6...HEAD
+[1.8.0-beta.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-beta.5...v1.8.0-beta.6
+[1.8.0-beta.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-beta.4...v1.8.0-beta.5
+[1.8.0-beta.4]: https://github.com/anatawa12/AvatarOptimizer/compare/1.7.13...v1.8.0-beta.4
+[1.7.13]: https://github.com/anatawa12/AvatarOptimizer/compare/1.8.0-beta.3...v1.7.13
+[1.8.0-beta.3]: https://github.com/anatawa12/AvatarOptimizer/compare/1.7.13-beta.2...v1.8.0-beta.3
+[1.7.13-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/1.8.0-beta.2...v1.7.13-beta.2
+[1.8.0-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/1.7.13-beta.1...v1.8.0-beta.2
+[1.7.13-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/1.8.0-beta.1...v1.7.13-beta.1
 [1.8.0-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.12...v1.8.0-beta.1
 [1.7.12]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.12-beta.3...v1.7.12
 [1.7.12-beta.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.12-beta.2...v1.7.12-beta.3

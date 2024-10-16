@@ -9,7 +9,7 @@ using Debug = System.Diagnostics.Debug;
 
 namespace Anatawa12.AvatarOptimizer
 {
-    [CreateAssetMenu(fileName = "New Avatar Optimizer Asset Description", menuName = "Avatar Optimizer/Asset Descriotion")]
+    [CreateAssetMenu(fileName = "New Avatar Optimizer Asset Description", menuName = "Avatar Optimizer/Asset Description")]
     internal class AssetDescription : ScriptableObject
     {
         [SerializeField]

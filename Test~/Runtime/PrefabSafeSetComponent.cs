@@ -10,5 +10,10 @@ namespace Anatawa12.AvatarOptimizer.Test.Runtime
         {
             stringSet = new PrefabSafeSet.PrefabSafeSet<string>(this);
         }
+
+        private void OnValidate()
+        {
+            PrefabSafeSet.PrefabSafeSet.OnValidate(this, x => x.stringSet);
+        }
     }
 }

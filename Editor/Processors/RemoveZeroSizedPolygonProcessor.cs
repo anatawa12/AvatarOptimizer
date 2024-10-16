@@ -27,7 +27,18 @@ namespace Anatawa12.AvatarOptimizer.Processors
             {
                 subMesh.RemovePrimitives("RemoveZeroSizedPolygon", poly =>
                 {
-                    if (poly.Any(v => v.BlendShapes.Count != 0)) return false;
+                    // if any vertex has blend shape with non-zero delta, it's not zero-sized.
+                    if (poly.Any(v =>
+                        {
+                            var buffer = v.BlendShapeBuffer;
+                            return buffer.Shapes.Any(shape => shape.Value.FramesBufferIndices.Any(
+                                bufferIndex =>
+                                    buffer.DeltaVertices[bufferIndex][v.BlendShapeBufferVertexIndex] != Vector3.zero
+                                    || buffer.DeltaNormals[bufferIndex][v.BlendShapeBufferVertexIndex] != Vector3.zero
+                                    || buffer.DeltaNormals[bufferIndex][v.BlendShapeBufferVertexIndex] !=
+                                    Vector3.zero));
+                        }))
+                        return false;
                     var first = poly[0];
                     var firstWeights = new HashSet<(Bone bone, float weight)>(first.BoneWeights);
                     return poly.Skip(1).All(v => first.Position.Equals(v.Position) && firstWeights.SetEquals(v.BoneWeights));

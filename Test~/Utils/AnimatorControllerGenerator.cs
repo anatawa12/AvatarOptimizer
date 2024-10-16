@@ -4,6 +4,7 @@ using UnityEditor.Animations;
 using UnityEngine;
 
 using static Anatawa12.AvatarOptimizer.Test.AnimatorControllerGeneratorStatics;
+using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.Test
 {
@@ -36,11 +37,14 @@ namespace Anatawa12.AvatarOptimizer.Test
             _controller = new AnimatorController { name = name };
         }
 
-        public AnimatorControllerBuilder AddLayer(string name, Action<AnimatorStateMachineBuilder> action)
+        public AnimatorControllerBuilder AddLayer(string name, Action<AnimatorStateMachineBuilder> action) =>
+            AddLayer(name, 0, action);
+
+        public AnimatorControllerBuilder AddLayer(string name, float layerWeight, Action<AnimatorStateMachineBuilder> action)
         {
             var builder = new AnimatorStateMachineBuilder(name);
             action(builder);
-            _controller.AddLayer(new AnimatorControllerLayer { name = name, stateMachine = builder.Build() });
+            _controller.AddLayer(new AnimatorControllerLayer { name = name, stateMachine = builder.Build(), defaultWeight = layerWeight });
             return this;
         }
 
@@ -89,6 +93,17 @@ namespace Anatawa12.AvatarOptimizer.Test
 
         public AnimationClipBuilder AddPropertyBinding(string path, Type type, string propertyName, params Keyframe[] keyframes) => 
             AddPropertyBinding(path, type, propertyName, new AnimationCurve(keyframes));
+
+        public AnimationClipBuilder AddObjectReferenceBinding(string path, Type type, string propertyName, params ObjectReferenceKeyframe[] keyframes)
+        {
+            AnimationUtility.SetObjectReferenceCurve(_clip, new EditorCurveBinding { path = path, type = type, propertyName = propertyName }, keyframes);
+            return this;
+        }
+
+        public AnimationClipBuilder AddObjectReferenceBinding(string path, Type type, string propertyName,
+            params (float time, Object value)[] keyframe) =>
+            AddObjectReferenceBinding(path, type, propertyName,
+                Array.ConvertAll(keyframe, k => new ObjectReferenceKeyframe { time = k.time, value = k.value }));
 
         public AnimationClip Build() => _clip;
     }

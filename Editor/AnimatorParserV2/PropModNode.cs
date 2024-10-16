@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using nadena.dev.ndmf;
 using UnityEditor;
@@ -13,7 +12,33 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 {
     interface IPropModNode
     {
-        bool AppliedAlways { get; }
+        ApplyState ApplyState { get; }
+        bool IsConstantValue { get; }
+    }
+
+    interface IValueInfo<TValueInfo>
+        where TValueInfo : struct, IValueInfo<TValueInfo>
+    {
+        public bool IsConstant { get; }
+
+        // following functions are intended to be called on default(TValueInfo) and "this" will not be affected
+        // Those functions should be static abstract but Unity doesn't support static abstract functions.
+
+        TValueInfo ConstantInfoForSideBySide(IEnumerable<PropModNode<TValueInfo>> nodes);
+        TValueInfo ConstantInfoForBlendTree(IEnumerable<PropModNode<TValueInfo>> nodes, BlendTreeType blendTreeType);
+
+        TValueInfo ConstantInfoForOverriding<TLayer>(IEnumerable<TLayer> layersReversed)
+            where TLayer : ILayer<TValueInfo>;
+    }
+
+    /// <summary>
+    /// The apply state of PropModNode.
+    /// </summary>
+    enum ApplyState
+    {
+        Always,
+        Partially,
+        Never,
     }
 
     /// <summary>
@@ -26,29 +51,25 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
     ///
     /// Most nodes are immutable but some nodes are mutable.
     /// </summary>
-    internal abstract class PropModNode<T> : IErrorContext, IPropModNode
-        where T : notnull
+    internal abstract class PropModNode<TValueInfo> : IErrorContext, IPropModNode
+        where TValueInfo: struct, IValueInfo<TValueInfo>
     {
-        /// <summary>
-        /// Returns true if this node is always applied. For inactive nodes, this returns false.
-        /// </summary>
-        public abstract bool AppliedAlways { get; }
+        public abstract ApplyState ApplyState { get; }
+        public bool IsConstantValue => Value.IsConstant;
 
-        public abstract ValueInfo<T> Value { get; }
+        public abstract TValueInfo Value { get; }
         public abstract IEnumerable<ObjectReference> ContextReferences { get; }
     }
 
-    /// <summary>
-    /// The abstract information about actual value of PropModNode.
-    /// </summary>
-    // by design, this struct doesn't handle blending between two states.
-    internal readonly struct ValueInfo<T>
-        where T : notnull
+    internal readonly struct FloatValueInfo : IValueInfo<FloatValueInfo>, IEquatable<FloatValueInfo>
     {
-        public bool IsConstant => _possibleValues != null && _possibleValues.Length == 1;
-        private readonly T[]? _possibleValues;
+        public bool IsConstant => _possibleValues is { Length: 1 };
+        private readonly float[]? _possibleValues;
 
-        public T ConstantValue
+        public FloatValueInfo(float value) => _possibleValues = new[] { value };
+        public FloatValueInfo(float[] values) => _possibleValues = values;
+
+        public float ConstantValue
         {
             get
             {
@@ -57,23 +78,10 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             }
         }
 
-        public T[]? PossibleValues => _possibleValues;
+        public float[]? PossibleValues => _possibleValues;
+        public static FloatValueInfo Variable => default;
 
-        public static ValueInfo<T> Variable => default;
-
-        public ValueInfo(T value) => _possibleValues = new[] { value };
-
-        public ValueInfo(T[] possibleValues)
-        {
-            if (possibleValues == null) throw new ArgumentNullException(nameof(possibleValues));
-            if (possibleValues.Length == 0)
-                throw new ArgumentException("Value cannot be an empty array.", nameof(possibleValues));
-            if (possibleValues.Distinct().Count() != possibleValues.Length)
-                throw new ArgumentException("Value cannot contain duplicate values.", nameof(possibleValues));
-            _possibleValues = possibleValues;
-        }
-
-        public bool TryGetConstantValue([NotNullWhen(true)] out T? o)
+        public bool TryGetConstantValue(out float o)
         {
             if (IsConstant)
             {
@@ -87,19 +95,108 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             }
         }
 
-        public bool Equals(ValueInfo<T> other)
+        public FloatValueInfo ConstantInfoForSideBySide(IEnumerable<PropModNode<FloatValueInfo>> nodes)
         {
-            return NodeImplUtils.SetEquals(_possibleValues, other._possibleValues);
+            var allPossibleValues = new HashSet<float>();
+            foreach (var propModNode in nodes)
+            {
+                if (propModNode.Value.PossibleValues is not { } values) return Variable;
+                allPossibleValues.UnionWith(values);
+            }
+            return new FloatValueInfo(allPossibleValues.ToArray());
         }
 
-        public override bool Equals(object obj) => obj is ValueInfo<T> other && Equals(other);
+        public FloatValueInfo ConstantInfoForBlendTree(IEnumerable<PropModNode<FloatValueInfo>> nodes,
+            BlendTreeType blendTreeType) =>
+            blendTreeType == BlendTreeType.Direct ? Variable : ConstantInfoForSideBySide(nodes);
 
-        public override int GetHashCode() => _possibleValues == null ? 0 : _possibleValues.GetSetHashCode();
+        public FloatValueInfo ConstantInfoForOverriding<TLayer>(IEnumerable<TLayer> layersReversed)
+            where TLayer : ILayer<FloatValueInfo>
+        {
+            var allPossibleValues = new HashSet<float>();
 
-        public override string ToString() =>
-            _possibleValues == null
-                ? $"ValueInfo<{typeof(T).Name}>{{Variable}}"
-                : $"ValueInfo<{typeof(T).Name}>{{PossibleValues={string.Join(",", _possibleValues)}}}";
+            foreach (var layer in layersReversed)
+            {
+                switch (layer.Weight)
+                {
+                    case AnimatorWeightState.AlwaysZero:
+                        continue; // Might have effect with write defaults true?
+                    case AnimatorWeightState.AlwaysOne:
+                    case AnimatorWeightState.EitherZeroOrOne:
+                    {
+                        if (layer.Node.Value.PossibleValues is not { } otherValues) return Variable;
+
+                        switch (layer.BlendingMode)
+                        {
+                            case AnimatorLayerBlendingMode.Additive:
+                                // having multiple possible value means animated, and this means variable.
+                                // if only one value is exists with additive layer, noting is added so skip this layer.
+                                // for additive reference pose, length of otherValues will be two or more with 
+                                // reference post value.
+                                // see implementation of FloatAnimationCurveNode.ParseProperty
+                                if (otherValues.Length != 1) return Variable;
+                                break;
+                            case AnimatorLayerBlendingMode.Override:
+                                allPossibleValues.UnionWith(otherValues);
+
+                                if (layer.IsAlwaysOverride())
+                                {
+                                    // the layer is always applied at the highest property.
+                                    return new FloatValueInfo(allPossibleValues.ToArray());
+                                }
+
+                                break;
+                            default:
+                                throw new ArgumentOutOfRangeException();
+                        }
+                    }
+                        break;
+                    case AnimatorWeightState.Variable:
+                        return Variable;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+
+            return new FloatValueInfo(allPossibleValues.ToArray());
+        }
+
+        public bool Equals(FloatValueInfo other) => NodeImplUtils.SetEquals(_possibleValues, other._possibleValues);
+        public override bool Equals(object? obj) => obj is FloatValueInfo other && Equals(other);
+        public override int GetHashCode() => _possibleValues != null ? _possibleValues.GetSetHashCode() : 0;
+        public static bool operator ==(FloatValueInfo left, FloatValueInfo right) => left.Equals(right);
+        public static bool operator !=(FloatValueInfo left, FloatValueInfo right) => !left.Equals(right);
+    }
+
+    // note: no default is allowed
+    internal readonly struct ObjectValueInfo : IValueInfo<ObjectValueInfo>, IEquatable<ObjectValueInfo>
+    {
+        private readonly Object[] _possibleValues;
+
+        public ObjectValueInfo(Object value) => _possibleValues = new[] { value };
+        public ObjectValueInfo(Object[] values) => _possibleValues = values;
+
+        public bool IsConstant => _possibleValues is { Length: 1 };
+
+        public Object[] PossibleValues => _possibleValues ?? Array.Empty<Object>();
+
+        public ObjectValueInfo ConstantInfoForSideBySide(IEnumerable<PropModNode<ObjectValueInfo>> nodes) =>
+            new(nodes.SelectMany(node => node.Value.PossibleValues).Distinct().ToArray());
+
+        public ObjectValueInfo ConstantInfoForBlendTree(IEnumerable<PropModNode<ObjectValueInfo>> nodes,
+            BlendTreeType blendTreeType) => ConstantInfoForSideBySide(nodes);
+
+        public ObjectValueInfo ConstantInfoForOverriding<TLayer>(IEnumerable<TLayer> layersReversed)
+            where TLayer : ILayer<ObjectValueInfo>
+        {
+            return new ObjectValueInfo(layersReversed.WhileApplied().SelectMany(layer => layer.Node.Value.PossibleValues).Distinct().ToArray());
+        }
+
+        public bool Equals(ObjectValueInfo other) => NodeImplUtils.SetEquals(PossibleValues, PossibleValues);
+        public override bool Equals(object? obj) => obj is ObjectValueInfo other && Equals(other);
+        public override int GetHashCode() => _possibleValues.GetHashCode();
+        public static bool operator ==(ObjectValueInfo left, ObjectValueInfo right) => left.Equals(right);
+        public static bool operator !=(ObjectValueInfo left, ObjectValueInfo right) => !left.Equals(right);
     }
 
     internal static class NodeImplUtils
@@ -112,75 +209,75 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             return new HashSet<T>(a).SetEquals(b);
         }
 
-        public static ValueInfo<T> ConstantInfoForSideBySide<T>(IEnumerable<PropModNode<T>> nodes) where T : notnull
+        public static ApplyState ApplyStateForOverriding<TLayer>(IEnumerable<TLayer> layersReversed)
+            where TLayer : ILayer
         {
-            using (var enumerator = nodes.GetEnumerator())
-            {
-                Debug.Assert(enumerator.MoveNext());
-
-                if (!(enumerator.Current.Value.PossibleValues is T[] possibleValues))
-                    return ValueInfo<T>.Variable;
-
-                var allPossibleValues = new HashSet<T>(possibleValues);
-
-                while (enumerator.MoveNext())
-                {
-                    if (!(enumerator.Current.Value.PossibleValues is T[] otherValues))
-                        return ValueInfo<T>.Variable;
-
-                    allPossibleValues.UnionWith(otherValues);
-                }
-
-                return new ValueInfo<T>(allPossibleValues.ToArray());
-            }
-        }
-
-        public static bool AlwaysAppliedForOverriding<T, TLayer>(IEnumerable<TLayer> layersReversed)
-            where T : notnull
-            where TLayer : ILayer<T>
-        {
-            return layersReversed.Any(x =>
-                x.Weight == AnimatorWeightState.AlwaysOne && x.BlendingMode == AnimatorLayerBlendingMode.Override &&
-                x.Node.AppliedAlways);
-        }
-
-        public static ValueInfo<T> ConstantInfoForOverriding<T, TLayer>(IEnumerable<TLayer> layersReversed)
-            where T : notnull
-            where TLayer : ILayer<T>
-        {
-            var allPossibleValues = new HashSet<T>();
-
+            var current = ApplyState.Never;
             foreach (var layer in layersReversed)
             {
-                switch (layer.Weight)
+                switch (layer.BlendingMode)
                 {
-                    case AnimatorWeightState.AlwaysOne:
-                    case AnimatorWeightState.EitherZeroOrOne:
-                        if (!(layer.Node.Value.PossibleValues is T[] otherValues)) return ValueInfo<T>.Variable;
-
-                        allPossibleValues.UnionWith(otherValues);
-
-                        if (layer.IsAlwaysOverride())
+                    case AnimatorLayerBlendingMode.Override:
+                    {
+                        var layerState = ApplyStateForWeightState(layer.Weight)
+                            .MultiplyApplyState(layer.Node.ApplyState);
+                        switch (layerState)
                         {
-                            // the layer is always applied at the highest property.
-                            return new ValueInfo<T>(allPossibleValues.ToArray());
+                            case ApplyState.Always:
+                                return ApplyState.Always;
+                            case ApplyState.Partially:
+                                current = ApplyState.Partially;
+                                break;
+                            case ApplyState.Never:
+                                break;
+                            default:
+                                throw new ArgumentOutOfRangeException();
                         }
 
                         break;
-                    case AnimatorWeightState.Variable:
-                        return ValueInfo<T>.Variable;
+                    }
+                    case AnimatorLayerBlendingMode.Additive:
+                    {
+                        var layerState = ApplyStateForWeightState(layer.Weight)
+                            .MultiplyApplyState(layer.Node.ApplyState);
+                        switch (layerState)
+                        {
+                            case ApplyState.Always:
+                            case ApplyState.Partially:
+                                // constant node does not have effect with additive layer
+                                if (layer.Node.IsConstantValue) continue;
+                                current = ApplyState.Partially;
+                                break;
+                            case ApplyState.Never:
+                                break;
+                            default:
+                                throw new ArgumentOutOfRangeException();
+                        }
+
+                        break;
+                    }
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
             }
 
-            return new ValueInfo<T>(allPossibleValues.ToArray());
+            return current;
         }
+
+        private static ApplyState ApplyStateForWeightState(AnimatorWeightState weight) => weight switch
+        {
+            AnimatorWeightState.AlwaysZero => ApplyState.Never, // Might have effect with write defaults true?
+            AnimatorWeightState.AlwaysOne => ApplyState.Always,
+            AnimatorWeightState.EitherZeroOrOne => ApplyState.Partially,
+            AnimatorWeightState.Variable => ApplyState.Partially,
+            _ => throw new ArgumentOutOfRangeException()
+        };
 
         public static bool IsAlwaysOverride<TLayer>(this TLayer layer)
             where TLayer : ILayer
         {
-            return layer.Node.AppliedAlways && layer.Weight == AnimatorWeightState.AlwaysOne &&
+            return layer.Node.ApplyState == ApplyState.Always &&
+                   layer.Weight == AnimatorWeightState.AlwaysOne &&
                    layer.BlendingMode == AnimatorLayerBlendingMode.Override;
         }
 
@@ -189,10 +286,40 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         {
             foreach (var layerInfo in layer)
             {
+                if (layerInfo.Weight == AnimatorWeightState.AlwaysZero) continue; // might have effect with write defaults true?
                 yield return layerInfo;
                 if (layerInfo.IsAlwaysOverride()) yield break;
             }
         }
+
+        public static ApplyState MergeSideBySide(this IEnumerable<ApplyState> states)
+        {
+            if (states == null) throw new ArgumentNullException(nameof(states));
+
+            using IEnumerator<ApplyState> enumerator = states.GetEnumerator();
+            if (!enumerator.MoveNext()) return ApplyState.Never;
+            var result = enumerator.Current;
+            if (result == ApplyState.Partially) return ApplyState.Partially;
+            while (enumerator.MoveNext())
+                if (result != enumerator.Current) return ApplyState.Partially;
+            return result;
+        }
+
+        public static ApplyState MergeSideBySide(this ApplyState a, ApplyState b) => (a, b) switch
+        {
+            (ApplyState.Always, ApplyState.Always) => ApplyState.Always,
+            (ApplyState.Never, ApplyState.Never) => ApplyState.Never,
+            _ => ApplyState.Partially
+        };
+        
+        // multiply: Apply either inside the other
+        public static ApplyState MultiplyApplyState(this ApplyState a, ApplyState b) => (a, b) switch
+        {
+            (ApplyState.Always, ApplyState.Always) => ApplyState.Always,
+            (ApplyState.Never, _) => ApplyState.Never,
+            (_, ApplyState.Never) => ApplyState.Never,
+            _ => ApplyState.Partially
+        };
     }
 
     interface ILayer
@@ -202,60 +329,61 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         IPropModNode Node { get; }
     }
 
-    internal interface ILayer<T> : ILayer
-        where T : notnull
+    internal interface ILayer<TValueInfo> : ILayer
+        where TValueInfo : struct, IValueInfo<TValueInfo>
     {
         new AnimatorWeightState Weight { get; }
         new AnimatorLayerBlendingMode BlendingMode { get; }
-        new PropModNode<T> Node { get; }
+        new PropModNode<TValueInfo> Node { get; }
     }
 
-    internal sealed class RootPropModNode<T> : PropModNode<T>, IErrorContext
-        where T : notnull
+    internal sealed class RootPropModNode<TValueInfo> : PropModNode<TValueInfo>, IErrorContext
+        where TValueInfo : struct, IValueInfo<TValueInfo>
     {
         internal readonly struct ComponentInfo
         {
-            public readonly ComponentPropModNodeBase<T> Node;
-            public readonly bool AlwaysApplied;
+            public readonly ComponentPropModNodeBase<TValueInfo> Node;
+            public readonly ApplyState ComponentApplyState;
 
-            public bool AppliedAlways => AlwaysApplied && Node.AppliedAlways;
+            public ApplyState ApplyState => Node.ApplyState.MultiplyApplyState(ComponentApplyState);
             public IEnumerable<ObjectReference> ContextReferences => Node.ContextReferences;
             public Component Component => Node.Component;
 
-            public ComponentInfo(ComponentPropModNodeBase<T> node, bool alwaysApplied)
+            public ComponentInfo(ComponentPropModNodeBase<TValueInfo> node, ApplyState applyState)
             {
                 Node = node;
-                AlwaysApplied = alwaysApplied;
+                ComponentApplyState = applyState;
             }
+
         }
 
         private readonly List<ComponentInfo> _children = new List<ComponentInfo>();
 
         public IEnumerable<ComponentInfo> Children => _children;
 
-        public override bool AppliedAlways => _children.All(x => x.AppliedAlways);
+        public override ApplyState ApplyState => _children.Select(x => x.ApplyState).MergeSideBySide();
 
         public override IEnumerable<ObjectReference> ContextReferences =>
             _children.SelectMany(x => x.ContextReferences);
 
-        public override ValueInfo<T> Value => NodeImplUtils.ConstantInfoForSideBySide(_children.Select(x => x.Node));
+        public override TValueInfo Value => default(TValueInfo).ConstantInfoForSideBySide(_children.Select(x => x.Node));
 
-        public bool IsEmpty => _children.Count == 0;
+        public bool IsEmpty => _children.Count == 0 || ApplyState == ApplyState.Never;
 
         public IEnumerable<Component> SourceComponents => _children.Select(x => x.Component);
-        public IEnumerable<ComponentPropModNodeBase<T>> ComponentNodes => _children.Select(x => x.Node);
+        public IEnumerable<ComponentPropModNodeBase<TValueInfo>> ComponentNodes => _children.Select(x => x.Node);
 
-        public void Add(ComponentPropModNodeBase<T> node, bool alwaysApplied)
+        public void Add(ComponentPropModNodeBase<TValueInfo> node, ApplyState applyState)
         {
-            _children.Add(new ComponentInfo(node, alwaysApplied));
+            _children.Add(new ComponentInfo(node, applyState));
             DestroyTracker.Track(node.Component, OnDestroy);
         }
 
-        public void Add(RootPropModNode<T> toAdd)
+        public void Add(RootPropModNode<TValueInfo> toAdd)
         {
             if (toAdd == null) throw new ArgumentNullException(nameof(toAdd));
             foreach (var child in toAdd._children)
-                Add(child.Node, child.AppliedAlways);
+                Add(child.Node, child.ApplyState);
         }
 
         private void OnDestroy(int objectId)
@@ -269,47 +397,62 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 DestroyTracker.Untrack(componentInfo.Component, OnDestroy);
             _children.Clear();
         }
-
-        public RootPropModNode<T>? Normalize() => IsEmpty ? null : this;
     }
 
-    internal abstract class ImmutablePropModNode<T> : PropModNode<T>
-        where T : notnull
+    internal abstract class ImmutablePropModNode<TValueInfo> : PropModNode<TValueInfo>
+        where TValueInfo: struct, IValueInfo<TValueInfo>
     {
     }
 
-    internal class FloatAnimationCurveNode : ImmutablePropModNode<float>
+    internal class FloatAnimationCurveNode : ImmutablePropModNode<FloatValueInfo>
     {
         public AnimationCurve Curve { get; }
         public AnimationClip Clip { get; }
 
-        public static FloatAnimationCurveNode? Create(AnimationClip clip, EditorCurveBinding binding)
+        public static FloatAnimationCurveNode? Create(AnimationClip clip, EditorCurveBinding binding,
+            AnimationClip? additiveReferenceClip, float additiveReferenceFrame)
         {
             var curve = AnimationUtility.GetEditorCurve(clip, binding);
             if (curve == null) return null;
             if (curve.keys.Length == 0) return null;
-            return new FloatAnimationCurveNode(clip, curve);
+            
+            float referenceValue = 0;
+            if (additiveReferenceClip != null 
+                && AnimationUtility.GetEditorCurve(additiveReferenceClip, binding) is { } referenceCurve)
+                referenceValue = referenceCurve.Evaluate(additiveReferenceFrame);
+            else
+                referenceValue = curve.Evaluate(0);
+
+            return new FloatAnimationCurveNode(clip, curve, referenceValue);
         }
 
-        private FloatAnimationCurveNode(AnimationClip clip, AnimationCurve curve)
+        private FloatAnimationCurveNode(AnimationClip clip, AnimationCurve curve, float referenceValue)
         {
             if (!clip) throw new ArgumentNullException(nameof(clip));
             if (curve == null) throw new ArgumentNullException(nameof(curve));
             Debug.Assert(curve.keys.Length > 0);
             Clip = clip;
             Curve = curve;
-            _constantInfo = new Lazy<ValueInfo<float>>(() => ParseProperty(curve), isThreadSafe: false);
+            _constantInfo = new Lazy<FloatValueInfo>(() => ParseProperty(curve, referenceValue), isThreadSafe: false);
         }
 
-        private readonly Lazy<ValueInfo<float>> _constantInfo;
+        private readonly Lazy<FloatValueInfo> _constantInfo;
 
-        public override bool AppliedAlways => true;
-        public override ValueInfo<float> Value => _constantInfo.Value;
+        public override ApplyState ApplyState => ApplyState.Always;
+        public override FloatValueInfo Value => _constantInfo.Value;
         public override IEnumerable<ObjectReference> ContextReferences => new[] { ObjectRegistry.GetReference(Clip) };
 
-        private static ValueInfo<float> ParseProperty(AnimationCurve curve)
+        private static FloatValueInfo ParseProperty(AnimationCurve curve, float referenceValue)
         {
-            if (curve.keys.Length == 1) return new ValueInfo<float>(curve.keys[0].value);
+            var curveValue = ParseCurve(curve);
+            if (curveValue.PossibleValues == null) return FloatValueInfo.Variable;
+            return new FloatValueInfo(curveValue.PossibleValues.Concat(new[] { referenceValue }).Distinct()
+                .ToArray());
+        }
+
+        private static FloatValueInfo ParseCurve(AnimationCurve curve)
+        {
+            if (curve.keys.Length == 1) return new FloatValueInfo(curve.keys[0].value);
 
             float constValue = 0;
             foreach (var (preKey, postKey) in curve.keys.ZipWithNext())
@@ -317,20 +460,20 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 var preWeighted = preKey.weightedMode == WeightedMode.Out || preKey.weightedMode == WeightedMode.Both;
                 var postWeighted = postKey.weightedMode == WeightedMode.In || postKey.weightedMode == WeightedMode.Both;
 
-                if (preKey.value.CompareTo(postKey.value) != 0) return ValueInfo<float>.Variable;
+                if (preKey.value.CompareTo(postKey.value) != 0) return FloatValueInfo.Variable;
                 constValue = preKey.value;
                 // it's constant
                 if (float.IsInfinity(preKey.outWeight) || float.IsInfinity(postKey.inTangent)) continue;
                 if (preKey.outTangent == 0 && postKey.inTangent == 0) continue;
                 if (preWeighted && postWeighted && preKey.outWeight == 0 && postKey.inWeight == 0) continue;
-                return ValueInfo<float>.Variable;
+                return FloatValueInfo.Variable;
             }
 
-            return new ValueInfo<float>(constValue);
+            return new FloatValueInfo(constValue);
         }
     }
 
-    internal class ObjectAnimationCurveNode : ImmutablePropModNode<Object>
+    internal class ObjectAnimationCurveNode : ImmutablePropModNode<ObjectValueInfo>
     {
         public ObjectReferenceKeyframe[] Frames { get; set; }
         public AnimationClip Clip { get; }
@@ -348,41 +491,41 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             Debug.Assert(frames.Length > 0);
             Clip = clip;
             Frames = frames;
-            _constantInfo = new Lazy<ValueInfo<Object>>(() => ParseProperty(frames), isThreadSafe: false);
+            _constantInfo = new Lazy<ObjectValueInfo>(() => ParseProperty(frames), isThreadSafe: false);
         }
 
 
-        private readonly Lazy<ValueInfo<Object>> _constantInfo;
+        private readonly Lazy<ObjectValueInfo> _constantInfo;
 
-        public override bool AppliedAlways => true;
-        public override ValueInfo<Object> Value => _constantInfo.Value;
+        public override ApplyState ApplyState => ApplyState.Always;
+        public override ObjectValueInfo Value => _constantInfo.Value;
         public override IEnumerable<ObjectReference> ContextReferences => new[] { ObjectRegistry.GetReference(Clip) };
 
-        private static ValueInfo<Object> ParseProperty(ObjectReferenceKeyframe[] frames) =>
-            new ValueInfo<Object>(frames.Select(x => x.value).Distinct().ToArray());
+        private static ObjectValueInfo ParseProperty(ObjectReferenceKeyframe[] frames) =>
+            new(frames.Select(x => x.value).Distinct().ToArray());
     }
 
-    internal struct BlendTreeElement<T>
-        where T : notnull
+    internal struct BlendTreeElement<TValueInfo>
+        where TValueInfo : struct, IValueInfo<TValueInfo>
     {
         public int Index;
-        public ImmutablePropModNode<T> Node;
+        public ImmutablePropModNode<TValueInfo> Node;
 
-        public BlendTreeElement(int index, ImmutablePropModNode<T> node)
+        public BlendTreeElement(int index, ImmutablePropModNode<TValueInfo> node)
         {
             Index = index;
             Node = node ?? throw new ArgumentNullException(nameof(node));
         }
     }
 
-    internal class BlendTreeNode<T> : ImmutablePropModNode<T>
-        where T : notnull
+    internal class BlendTreeNode<TValueInfo> : ImmutablePropModNode<TValueInfo>
+        where TValueInfo : struct, IValueInfo<TValueInfo>
     {
-        private readonly List<BlendTreeElement<T>> _children;
+        private readonly List<BlendTreeElement<TValueInfo>> _children;
         private readonly BlendTreeType _blendTreeType;
         private readonly bool _partial;
 
-        public BlendTreeNode(List<BlendTreeElement<T>> children,
+        public BlendTreeNode(List<BlendTreeElement<TValueInfo>> children,
             BlendTreeType blendTreeType, bool partial)
         {
             // expected to pass list or array
@@ -396,19 +539,23 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
 
         private bool WeightSumIsOne => _blendTreeType != BlendTreeType.Direct;
-        public IReadOnlyList<BlendTreeElement<T>> Children => _children;
-        public override bool AppliedAlways => WeightSumIsOne && !_partial && _children.All(x => x.Node.AppliedAlways);
+        public IReadOnlyList<BlendTreeElement<TValueInfo>> Children => _children;
 
-        public override ValueInfo<T> Value => !WeightSumIsOne
-            ? ValueInfo<T>.Variable
-            : NodeImplUtils.ConstantInfoForSideBySide(_children.Select(x => x.Node));
+        public override ApplyState ApplyState =>
+            (WeightSumIsOne && !_partial ? ApplyState.Always : ApplyState.Partially)
+            .MultiplyApplyState(_children.Select(x => x.Node.ApplyState).MergeSideBySide());
+
+        public override TValueInfo Value
+        {
+            get => default(TValueInfo).ConstantInfoForBlendTree(_children.Select(x => x.Node), _blendTreeType);
+        }
 
         public override IEnumerable<ObjectReference> ContextReferences =>
             _children.SelectMany(x => x.Node.ContextReferences);
     }
 
-    abstract class ComponentPropModNodeBase<T> : PropModNode<T>
-        where T : notnull
+    abstract class ComponentPropModNodeBase<TValueInfo> : PropModNode<TValueInfo>
+        where TValueInfo : struct, IValueInfo<TValueInfo>
     {
         protected ComponentPropModNodeBase(Component component)
         {
@@ -422,8 +569,8 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             new[] { ObjectRegistry.GetReference(Component) };
     }
 
-    abstract class ComponentPropModNode<T, TComponent> : ComponentPropModNodeBase<T>
-        where T : notnull
+    abstract class ComponentPropModNode<TValueInfo, TComponent> : ComponentPropModNodeBase<TValueInfo>
+        where TValueInfo : struct, IValueInfo<TValueInfo>
         where TComponent : Component
     {
         protected ComponentPropModNode(TComponent component) : base(component)
@@ -438,32 +585,31 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             new[] { ObjectRegistry.GetReference(Component) };
     }
 
-    class VariableComponentPropModNode<T> : ComponentPropModNode<T, Component>
-        where T : notnull
+    class VariableComponentPropModNode : ComponentPropModNode<FloatValueInfo, Component>
     {
         public VariableComponentPropModNode(Component component) : base(component)
         {
         }
 
-        public override bool AppliedAlways => false;
-        public override ValueInfo<T> Value => ValueInfo<T>.Variable;
+        public override ApplyState ApplyState => ApplyState.Partially;
+        public override FloatValueInfo Value => FloatValueInfo.Variable;
     }
 
-    class AnimationComponentPropModNode<T> : ComponentPropModNode<T, Animation>
-        where T : notnull
+    class AnimationComponentPropModNode<TValueInfo> : ComponentPropModNode<TValueInfo, Animation>
+        where TValueInfo : struct, IValueInfo<TValueInfo>
     {
-        public ImmutablePropModNode<T> Animation { get; }
+        public ImmutablePropModNode<TValueInfo> Animation { get; }
 
-        public AnimationComponentPropModNode(Animation component, ImmutablePropModNode<T> animation) : base(component)
+        public AnimationComponentPropModNode(Animation component, ImmutablePropModNode<TValueInfo> animation) : base(component)
         {
             Animation = animation;
-            _constantInfo = new Lazy<ValueInfo<T>>(() => animation.Value, isThreadSafe: false);
+            _constantInfo = new Lazy<TValueInfo>(() => animation.Value, isThreadSafe: false);
         }
 
-        private readonly Lazy<ValueInfo<T>> _constantInfo;
+        private readonly Lazy<TValueInfo> _constantInfo;
 
-        public override bool AppliedAlways => true;
-        public override ValueInfo<T> Value => _constantInfo.Value;
+        public override ApplyState ApplyState => Animation.ApplyState;
+        public override TValueInfo Value => _constantInfo.Value;
 
         public override IEnumerable<ObjectReference> ContextReferences =>
             base.ContextReferences.Concat(Animation.ContextReferences);

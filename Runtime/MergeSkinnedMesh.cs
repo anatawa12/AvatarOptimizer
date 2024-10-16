@@ -50,6 +50,13 @@ namespace Anatawa12.AvatarOptimizer
             doNotMergeMaterials = new PrefabSafeSet.PrefabSafeSet<Material>(this);
         }
 
+        private void OnValidate()
+        {
+            PrefabSafeSet.PrefabSafeSet.OnValidate(this, x => x.renderersSet);
+            PrefabSafeSet.PrefabSafeSet.OnValidate(this, x => x.staticRenderersSet);
+            PrefabSafeSet.PrefabSafeSet.OnValidate(this, x => x.doNotMergeMaterials);
+        }
+
         /// <summary>
         /// Initializes the MergeSkinnedMesh with the specified default behavior version.
         ///

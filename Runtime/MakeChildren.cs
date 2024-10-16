@@ -17,5 +17,10 @@ namespace Anatawa12.AvatarOptimizer
         {
             children = new PrefabSafeSet.PrefabSafeSet<Transform>(this);
         }
+
+        private void OnValidate()
+        {
+            PrefabSafeSet.PrefabSafeSet.OnValidate(this, x => x.children);
+        }
     }
 }

@@ -45,19 +45,16 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 EditorGUILayout.ObjectField(group.Key, typeof(Object), true);
                 EditorGUI.indentLevel++;
                 foreach (var ((_, propName), propState) in group)
-                {
-                    string propStateInfo = "";
+                    NarrowValueLabelField(propName, ToShortDescription(propState));
+                EditorGUI.indentLevel--;
+            }
 
-                    if (!propState.AppliedAlways)
-                        propStateInfo += "Partial:";
-
-                    if (propState.Value.PossibleValues is float[] values)
-                        propStateInfo += $"Const:{string.Join(",", values)}";
-                    else
-                        propStateInfo += "Variable";
-
-                    NarrowValueLabelField(propName, propStateInfo);
-                }
+            foreach (var group in Container.ObjectNodes.GroupBy(x => x.Key.target))
+            {
+                EditorGUILayout.ObjectField(group.Key, typeof(Object), true);
+                EditorGUI.indentLevel++;
+                foreach (var ((_, propName), propState) in group)
+                    NarrowValueLabelField(propName, ToShortDescription(propState));
                 EditorGUI.indentLevel--;
             }
 
@@ -77,17 +74,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
                 foreach (var ((_, propName), propState) in group)
                 {
-                    string propStateInfo = "";
-
-                    if (!propState.AppliedAlways)
-                        propStateInfo += "Partial:";
-
-                    if (propState.Value.PossibleValues is float[] values)
-                        propStateInfo += $"Const:{string.Join(",", values)}";
-                    else
-                        propStateInfo += "Variable";
-
-                    resultText.Append("  ").Append(propName).Append(": ").Append(propStateInfo).Append('\n');
+                    resultText.Append("  ").Append(propName).Append(": ").Append(ToShortDescription(propState)).Append('\n');
                     if (detailed)
                         AppendNodeRecursive(propState, resultText, "    ");
                 }
@@ -95,14 +82,30 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 resultText.Append('\n');
             }
 
+            foreach (var group in Container.ObjectNodes.GroupBy(x => x.Key.target))
+            {
+                var gameObject = group.Key.transform;
+                resultText.Append(Utils.RelativePath(root, gameObject)).Append(": ")
+                    .Append(((Object)group.Key).GetType().FullName).Append('\n');
+
+                foreach (var ((_, propName), propState) in group)
+                {
+                    resultText.Append("  ").Append(propName).Append(": ").Append(ToShortDescription(propState)).Append('\n');
+                    if (detailed)
+                        AppendNodeRecursive(propState, resultText, "    ");
+                }
+                resultText.Append('\n');
+            }
+
             return resultText.ToString();
         }
 
-        private void AppendNodeRecursive(PropModNode<float> propState, StringBuilder resultText, string indent)
+        private void AppendNodeRecursive<TValueInfo>(PropModNode<TValueInfo> propState, StringBuilder resultText, string indent)
+            where TValueInfo : struct, IValueInfo<TValueInfo>
         {
             switch (propState)
             {
-                case AnimatorControllerPropModNode<float> animCont:
+                case AnimatorControllerPropModNode<TValueInfo> animCont:
                     resultText.Append($"{indent}AnimatorController: \n");
                     foreach (var layerInfo in animCont.LayersReversed)
                     {
@@ -110,11 +113,11 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                         AppendNodeRecursive(layerInfo.Node, resultText, indent + "    ");
                     }
                     break;
-                case AnimationComponentPropModNode<float> animation:
+                case AnimationComponentPropModNode<TValueInfo> animation:
                     resultText.Append($"{indent}Animation: {animation.Component.name}\n");
                     AppendNodeRecursive(animation.Animation, resultText, indent + "  ");
                     break;
-                case AnimatorPropModNode<float> animator:
+                case AnimatorPropModNode<TValueInfo> animator:
                     resultText.Append($"{indent}Animator: {animator.Component.name}\n");
                     foreach (var layerInfo in animator.LayersReversed)
                     {
@@ -125,19 +128,19 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 case HumanoidAnimatorPropModNode humanoid:
                     resultText.Append($"{indent}Humanoid: {humanoid.Component.name}\n");
                     break;
-                case VariableComponentPropModNode<float> variable:
+                case VariableComponentPropModNode variable:
                     resultText.Append($"{indent}Variable({variable.Component.GetType().Name}): {variable.Component.name}\n");
                     break;
-                case AnimatorLayerPropModNode<float> animatorLayer:
+                case AnimatorLayerPropModNode<TValueInfo> animatorLayer:
                     resultText.Append($"{indent}AnimatorLayer:\n");
                     foreach (var childNode in animatorLayer.Children)
                         AppendNodeRecursive(childNode, resultText, indent + "  ");
                     break;
-                case AnimatorStatePropModNode<float> stateNode:
+                case AnimatorStatePropModNode<TValueInfo> stateNode:
                     resultText.Append($"{indent}AnimatorState: {stateNode.State.name}\n");
                     AppendNodeRecursive(stateNode.Node, resultText, indent + "  ");
                     break;
-                case BlendTreeNode<float> blendTreeNode:
+                case BlendTreeNode<TValueInfo> blendTreeNode:
                     resultText.Append($"{indent}BlendTree:\n");
                     foreach (var childNode in blendTreeNode.Children)
                     {
@@ -146,9 +149,12 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                     }
                     break;
                 case FloatAnimationCurveNode curve:
-                    resultText.Append($"{indent}AnimationCurve: {curve.Clip.name}\n");
+                    resultText.Append($"{indent}FloatAnimationCurve: {curve.Clip.name}\n");
                     break;
-                case RootPropModNode<float> rootNode:
+                case ObjectAnimationCurveNode curve:
+                    resultText.Append($"{indent}ObjectAnimationCurve: {curve.Clip.name}\n");
+                    break;
+                case RootPropModNode<TValueInfo> rootNode:
                     resultText.Append($"{indent}Root:\n");
                     foreach (var rootNodeChild in rootNode.Children)
                     {
@@ -162,6 +168,22 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             }
         }
 
+        private string ToShortDescription(PropModNode<FloatValueInfo> propState)
+        {
+            string propStateInfo = "";
+
+            propStateInfo += $"{propState.ApplyState}:";
+
+            if (propState.Value.PossibleValues is float[] values)
+                propStateInfo += $"Const:{string.Join(",", values)}";
+            else
+                propStateInfo += "Variable";
+
+            return propStateInfo;
+        }
+
+        private string ToShortDescription(PropModNode<ObjectValueInfo> propState) =>
+            $"{propState.ApplyState}:Const:{string.Join(",", propState.Value.PossibleValues.Select(x => x.name))}";
 
         private static void NarrowValueLabelField(string label0, string value)
         {

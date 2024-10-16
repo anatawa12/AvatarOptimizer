@@ -180,17 +180,30 @@ MonoBehaviour:
     - {fileID: 1411353995}
     - {fileID: 1411353994}
     prefabLayers: []
+    usingOnSceneLayer: 0
+    onSceneLayer:
+      removes: []
+      additions: []
     fakeSlot: {fileID: 0}
   staticRenderersSet:
     mainSet: []
     prefabLayers: []
+    usingOnSceneLayer: 0
+    onSceneLayer:
+      removes: []
+      additions: []
     fakeSlot: {fileID: 0}
   doNotMergeMaterials:
     mainSet: []
     prefabLayers: []
+    usingOnSceneLayer: 0
+    onSceneLayer:
+      removes: []
+      additions: []
     fakeSlot: {fileID: 0}
   removeEmptyRendererObject: 1
   skipEnablementMismatchedRenderers: 0
+  copyEnablementAnimation: 0
 --- !u!137 &870201505
 SkinnedMeshRenderer:
   m_ObjectHideFlags: 0
@@ -267,7 +280,16 @@ MonoBehaviour:
     - Delete_Bra
     - Delete_Pants
     prefabLayers: []
+    usingOnSceneLayer: 0
+    onSceneLayer:
+      removes: []
+      additions: []
     fakeSlot: 
+--- !u!1 &974301401 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1329111341535104285, guid: 8ae2a6881bbfcd84697b56e80d826039, type: 3}
+  m_PrefabInstance: {fileID: 1411353992}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1391228312
 GameObject:
   m_ObjectHideFlags: 0
@@ -493,6 +515,15 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 7703706129674054865, guid: 8ae2a6881bbfcd84697b56e80d826039, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1411354005}
+    - targetCorrespondingSourceObject: {fileID: 7703706129674054865, guid: 8ae2a6881bbfcd84697b56e80d826039, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1411354008}
+    - targetCorrespondingSourceObject: {fileID: 1329111341535104285, guid: 8ae2a6881bbfcd84697b56e80d826039, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1655699778}
+    - targetCorrespondingSourceObject: {fileID: 3008187356582009515, guid: 8ae2a6881bbfcd84697b56e80d826039, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1729971164}
   m_SourcePrefab: {fileID: 100100000, guid: 8ae2a6881bbfcd84697b56e80d826039, type: 3}
 --- !u!4 &1411353993 stripped
 Transform:
@@ -577,6 +608,10 @@ MonoBehaviour:
     - Shrink_Spine_2
     - Shrink_Hip
     prefabLayers: []
+    usingOnSceneLayer: 0
+    onSceneLayer:
+      removes: []
+      additions: []
     fakeSlot: 
   tolerance: 0.001
 --- !u!1 &1411354006 stripped
@@ -603,8 +638,10 @@ MonoBehaviour:
   optimizePhysBone: 1
   optimizeAnimator: 1
   mergeSkinnedMesh: 1
+  allowShuffleMaterialSlots: 0
+  optimizeTexture: 1
   mmdWorldCompatibility: 1
-  advancedSettings:
+  debugOptions:
     exclusions: []
     gcDebug: 0
     noConfigureMergeBone: 0
@@ -615,11 +652,35 @@ MonoBehaviour:
     skipMergePhysBoneCollider: 0
     skipEntryExitToBlendTree: 0
     skipRemoveUnusedAnimatingProperties: 0
-    skipMergeDirectBlendTreeLayers: 0
+    skipMergeBlendTreeLayer: 0
     skipRemoveMeaninglessAnimatorLayer: 0
     skipMergeStaticSkinnedMesh: 0
     skipMergeAnimatingSkinnedMesh: 0
+    skipMergeMaterialAnimatingSkinnedMesh: 0
     skipMergeMaterials: 0
+    skipRemoveEmptySubMesh: 0
+    skipAnyStateToEntryExit: 0
+--- !u!114 &1411354008
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1411354004}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 71ba6c5e4332471bb8048f7890eaab73, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  nameMap:
+    mainSet:
+    - key: Breast_flat
+      value: New Name
+    prefabLayers: []
+    usingOnSceneLayer: 0
+    onSceneLayer:
+      removes: []
+      additions: []
 --- !u!1 &1560436838
 GameObject:
   m_ObjectHideFlags: 1
@@ -664,6 +725,78 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1655699778
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 974301401}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a9fd0617dd174314b0a375fb2188510c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  boxes:
+  - center: {x: 0.29100206, y: 1.0768387, z: -0.0119}
+    size: {x: 0.25102097, y: 0.17831689, z: 0.16013935}
+    rotation: {x: 0, y: 0, z: 0, w: 1}
+  - center: {x: -0.2910021, y: 1.0768387, z: -0.0119}
+    size: {x: 0.25102097, y: 0.17831689, z: 0.16013935}
+    rotation: {x: 0, y: 0, z: 0, w: 1}
+  removeInBox: 1
+--- !u!1 &1729971163 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3008187356582009515, guid: 8ae2a6881bbfcd84697b56e80d826039, type: 3}
+  m_PrefabInstance: {fileID: 1411353992}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1729971164
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1729971163}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9c28afa2e4d445a5b6c8beffa8daa0e2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  materials:
+  - removeTile0: 0
+    removeTile1: 0
+    removeTile2: 0
+    removeTile3: 0
+    removeTile4: 0
+    removeTile5: 0
+    removeTile6: 0
+    removeTile7: 0
+    removeTile8: 0
+    removeTile9: 0
+    removeTile10: 0
+    removeTile11: 0
+    removeTile12: 0
+    removeTile13: 0
+    removeTile14: 0
+    removeTile15: 0
+    uvChannel: 0
+  - removeTile0: 0
+    removeTile1: 0
+    removeTile2: 0
+    removeTile3: 0
+    removeTile4: 0
+    removeTile5: 0
+    removeTile6: 0
+    removeTile7: 0
+    removeTile8: 0
+    removeTile9: 0
+    removeTile10: 0
+    removeTile11: 0
+    removeTile12: 0
+    removeTile13: 0
+    removeTile14: 0
+    removeTile15: 0
+    uvChannel: 7
 --- !u!1 &1911908305
 GameObject:
   m_ObjectHideFlags: 0

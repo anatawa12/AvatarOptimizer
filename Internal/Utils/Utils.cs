@@ -183,6 +183,15 @@ namespace Anatawa12.AvatarOptimizer
             }
         }
 
+        public static T? SingleOrDefaultIfNoneOrMultiple<T>(this IEnumerable<T> enumerable)
+        {
+            using var enumerator = enumerable.GetEnumerator();
+            if (!enumerator.MoveNext()) return default;
+            var found = enumerator.Current;
+            if (enumerator.MoveNext()) return default;
+            return found;
+        }
+
         public static T RemoveLast<T>(this IList<T> list)
         {
             if (list == null) throw new ArgumentNullException(nameof(list));
