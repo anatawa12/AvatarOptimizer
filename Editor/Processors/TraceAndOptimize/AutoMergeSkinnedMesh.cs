@@ -102,7 +102,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 var (activeness, activenessAnimationLocations) = activenessInfo.Value;
 
                 var rendererAnimationLocations =
-                    GetAnimationLocationsForRendererAnimation(context, meshInfo2.SourceRenderer);
+                    GetAnimationLocationsForRendererAnimation(context, (SkinnedMeshRenderer) meshInfo2.SourceRenderer);
                 if (rendererAnimationLocations == null)
                     continue; // animating renderer properties with non animator is not supported
 
@@ -377,11 +377,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
 
         [CanBeNull]
-        private static EqualsHashSet<(string property, AnimationLocation location)>
+        private static EqualsHashSet<(float inital, string property, AnimationLocation location)>
             GetAnimationLocationsForRendererAnimation(
-                BuildContext context, Component component)
+                BuildContext context, SkinnedMeshRenderer component)
         {
-            var locations = new HashSet<(string property, AnimationLocation location)>();
+            var animations = context.GetState<MaterialAnimationWeightZeroEffectHotFixState>().SkinnedMeshAnimations;
+            var locations = new HashSet<(float inital, string property, AnimationLocation location)>();
             var animationComponent = context.GetAnimationComponent(component);
 
             foreach (var (property, node) in animationComponent.GetAllFloatProperties())
@@ -389,11 +390,71 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 if (property == Props.EnabledFor(typeof(SkinnedMeshRenderer))) continue; // m_Enabled is proceed separatedly
                 if (node.ComponentNodes.Any(x => !(x is AnimatorParsersV2.AnimatorPropModNode<float>)))
                     return null;
+                var initial = GetInitialValue(property, context, component);
+                if (initial == null) return null;
                 locations.UnionWith(AnimationLocation.CollectAnimationLocation(node)
-                    .Select(location => (property, location)));
+                    .Select(location => (initial.Value, property, location)));
             }
 
-            return new EqualsHashSet<(string property, AnimationLocation location)>(locations);
+            if (component is SkinnedMeshRenderer renderer && animations.TryGetValue(renderer, out var properties))
+            {
+                var animatedProperties = new HashSet<string>(properties);
+                animatedProperties.Remove("m_Enabled");
+                var foundProperties = new HashSet<string>(locations.Select(x => x.property));
+                if (!animatedProperties.SetEquals(foundProperties))
+                    return null;
+            }
+
+            return new EqualsHashSet<(float inital, string property, AnimationLocation location)>(locations);
+        }
+        
+        private static float? GetInitialValue(string property, BuildContext context, SkinnedMeshRenderer component)
+        {
+            var meshInfo = context.GetMeshInfoFor(component);
+            if (property.StartsWith("material.", StringComparison.Ordinal))
+            {
+                var materialProperty = property.Substring("material.".Length);
+                var material = meshInfo
+                    .SubMeshes.FirstOrDefault()
+                    ?.SharedMaterials?.FirstOrDefault();
+
+                // according to experiment, if the material is not set, the value becomes 0
+                if (material == null) return 0;
+
+                if (materialProperty.Length > 3 && materialProperty[materialProperty.Length - 2] == '.')
+                {
+                    // xyzw or rgba
+                    var propertyName = materialProperty.Substring(0, materialProperty.Length - 2);
+                    var channel = materialProperty[materialProperty.Length - 1];
+
+                    switch (channel)
+                    {
+                        case 'x': return material.GetVector(propertyName).x;
+                        case 'y': return material.GetVector(propertyName).y;
+                        case 'z': return material.GetVector(propertyName).z;
+                        case 'w': return material.GetVector(propertyName).w;
+                        case 'r': return material.GetColor(propertyName).r;
+                        case 'g': return material.GetColor(propertyName).g;
+                        case 'b': return material.GetColor(propertyName).b;
+                        case 'a': return material.GetColor(propertyName).a;
+                        default: return null;
+                    };
+                }
+                else
+                {
+                    // float
+                    return material.GetFloat(materialProperty);
+                }
+            }
+
+            if (property.StartsWith("blendShapes.", StringComparison.Ordinal))
+            {
+                var blendShapeName = property.Substring("blendShapes.".Length);
+                return meshInfo.BlendShapes.FirstOrDefault(x => x.name == blendShapeName).weight;
+            }
+
+            UnityEngine.Debug.LogError($"AAO forgot to implement handling for {property}");
+            return null;
         }
 
         private SkinnedMeshRenderer CreateNewRenderer(
@@ -649,7 +710,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             public EqualsHashSet<(bool initial, EqualsHashSet<AnimationLocation> animation)>
                 ActivenessAnimationLocations;
 
-            public EqualsHashSet<(string property, AnimationLocation location)> RendererAnimationLocations;
+            public EqualsHashSet<(float inital, string property, AnimationLocation location)> RendererAnimationLocations;
             public Activeness Activeness;
 
             // renderer properties
@@ -672,7 +733,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 MeshInfo2 meshInfo2,
                 Activeness activeness,
                 EqualsHashSet<(bool initial, EqualsHashSet<AnimationLocation> animation)> activenessAnimationLocations,
-                EqualsHashSet<(string property, AnimationLocation location)> rendererAnimationLocations
+                EqualsHashSet<(float inital, string property, AnimationLocation location)> rendererAnimationLocations
             )
             {
                 var renderer = (SkinnedMeshRenderer)meshInfo2.SourceRenderer;

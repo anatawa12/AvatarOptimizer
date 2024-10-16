@@ -19,6 +19,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
     {
         private readonly bool _mmdWorldCompatibility;
         private readonly AnimationParser _animationParser = new AnimationParser();
+        public Dictionary<SkinnedMeshRenderer, HashSet<string>> SkinnedMeshAnimations => _animationParser.SkinnedMeshAnimations;
 
         public AnimatorParser(bool mmdWorldCompatibility)
         {

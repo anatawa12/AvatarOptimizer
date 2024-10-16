@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- incorrect AutoMergeSkinnedMesh with material property animations `#1271`
 
 ### Security
 
