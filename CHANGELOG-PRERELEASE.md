@@ -16,9 +16,12 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- incorrect AutoMergeSkinnedMesh with material property animations `#1271`
 
 ### Security
+
+## [1.7.14-beta.1] - 2024-10-16
+### Fixed
+- incorrect AutoMergeSkinnedMesh with material property animations [`#1271`](https://github.com/anatawa12/AvatarOptimizer/pull/1271)
 
 ## [1.7.13] - 2024-10-01
 ## [1.7.13-beta.2] - 2024-09-29
@@ -1520,7 +1523,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.13...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.14-beta.1...HEAD
+[1.7.14-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.13...v1.7.14-beta.1
 [1.7.13]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.13-beta.2...v1.7.13
 [1.7.13-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.13-beta.1...v1.7.13-beta.2
 [1.7.13-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.12...v1.7.13-beta.1
