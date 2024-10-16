@@ -12,6 +12,9 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 {
     class AnimationParser
     {
+        // AAO 1.7 hotfix. see https://github.com/anatawa12/AvatarOptimizer/issues/1244
+        public Dictionary<SkinnedMeshRenderer, HashSet<string>> SkinnedMeshAnimations = new Dictionary<SkinnedMeshRenderer, HashSet<string>>();
+
         internal ImmutableNodeContainer ParseMotion([NotNull] GameObject root, [CanBeNull] Motion motion,
             [NotNull] IReadOnlyDictionary<AnimationClip, AnimationClip> mapping)
         {
@@ -101,7 +104,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             return parsed;
         }
 
-        public static ImmutableNodeContainer ParseAnimation([NotNull] GameObject root, [NotNull] AnimationClip clip)
+        public ImmutableNodeContainer ParseAnimation([NotNull] GameObject root, [NotNull] AnimationClip clip)
         {
             var nodes = new ImmutableNodeContainer();
 
@@ -118,6 +121,13 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 //  we have to use `Behavior.m_Enabled` instead if `Animator.m_Enabled` so we store as different property name.
                 if (binding.type == typeof(Behaviour) && propertyName == "m_Enabled")
                     propertyName = Props.EnabledFor(obj);
+
+                if (componentOrGameObject.Value is SkinnedMeshRenderer renderer)
+                {
+                    if (!SkinnedMeshAnimations.TryGetValue(renderer, out var set))
+                        SkinnedMeshAnimations.Add(renderer, set = new HashSet<string>());
+                    set.Add(propertyName);
+                }
 
                 var node = FloatAnimationCurveNode.Create(clip, binding);
                 if (node == null) continue;
