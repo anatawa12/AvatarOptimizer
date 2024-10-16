@@ -57,6 +57,7 @@ namespace Anatawa12.AvatarOptimizer.API
         /// <returns>Returns true if the specified UV channel is used by Avatar Optimizer.</returns>
         /// <exception cref="ArgumentOutOfRangeException">channel is out of range</exception>
         /// <exception cref="ArgumentNullException">some argument is null</exception>
+        [PublicAPI]
         public static bool IsTexCoordUsed(SkinnedMeshRenderer renderer, int channel)
         {
             if (renderer == null) throw new ArgumentNullException(nameof(renderer));
@@ -73,6 +74,7 @@ namespace Anatawa12.AvatarOptimizer.API
         /// <exception cref="ArgumentOutOfRangeException">channel is out of range</exception>
         /// <exception cref="ArgumentNullException">some argument is null</exception>
         /// <exception cref="InvalidOperationException">If evaluation failed. If savedChannel is used by AAO, evacuation fails.</exception>
+        [PublicAPI]
         public static void RegisterTexCoordEvacuation(SkinnedMeshRenderer renderer, int originalChannel, int savedChannel)
         {
             if (renderer == null) throw new ArgumentNullException(nameof(renderer));

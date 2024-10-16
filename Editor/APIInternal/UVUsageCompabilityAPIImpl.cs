@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer.APIInternal;
 
-public class UVUsageCompabilityAPIImpl : UVUsageCompabilityAPI.IUVUsageCompabilityAPIImpl
+internal class UVUsageCompabilityAPIImpl : UVUsageCompabilityAPI.IUVUsageCompabilityAPIImpl
 {
     [InitializeOnLoadMethod]
     private static void Register()
