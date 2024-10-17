@@ -224,6 +224,7 @@ namespace Anatawa12.AvatarOptimizer.API
         /// Avatar Optimizer will preserve the integer part (floor(x, y)) of the UV Value while optimization for each primitive.
         /// If your usage only use integer part of the UV like UV Tile Discard, you should not register the UV Usage as Other UV Usage.
         /// </summary>
+        /// <remarks>This API is to provide <see cref="ShaderInformationKind.TextureAndUVUsage"/>.</remarks>
         /// <param name="uvChannel">The UVChannels that are used in the shader.</param>
         [PublicAPI]
         public abstract void RegisterOtherUVUsage(UsingUVChannels uvChannel);
@@ -233,6 +234,7 @@ namespace Anatawa12.AvatarOptimizer.API
         /// 
         /// The texture might go to the atlas / UV Packing if the UsingUVChannels is set and the UV Matrix is known
         /// </summary>
+        /// <remarks>This API is to provide <see cref="ShaderInformationKind.TextureAndUVUsage"/>.</remarks>
         /// <param name="textureMaterialPropertyName">The name of the texture property in the material.</param>
         /// <param name="samplerState">The information about the sampler state used for the specified texture.</param>
         /// <param name="uvChannels">The UVChannels that are used in the shader to determine the UV for the texture.</param>

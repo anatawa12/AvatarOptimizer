@@ -80,9 +80,11 @@ internal class MaterialInformation
         if (ShaderInformationRegistry.GetShaderInformation(material.shader) is { } information)
         {
             HasShaderInformation = true;
-            
+
+            var supportedKind = information.SupportedInformationKind;
             var provider = new MaterialInformationCallbackImpl(
                 material,
+                supportedKind,
                 renderers.Select(renderer => context.GetAnimationComponent(renderer)).ToList());
             information.GetMaterialInformation(provider);
             TextureUsageInformationList = provider.TextureUsageInformations;
@@ -94,14 +96,20 @@ internal class MaterialInformation
     {
         private readonly Material _material;
         private readonly List<AnimationComponentInfo<PropertyInfo>> _infos;
-        private List<TextureUsageInformation>? _textureUsageInformations = new();
+        private List<TextureUsageInformation>? _textureUsageInformations;
+        private readonly ShaderInformationKind _supportedKind;
 
         public List<TextureUsageInformation>? TextureUsageInformations => _textureUsageInformations;
 
-        public MaterialInformationCallbackImpl(Material material, List<AnimationComponentInfo<PropertyInfo>> infos)
+        public MaterialInformationCallbackImpl(Material material, ShaderInformationKind supportedKind,
+            List<AnimationComponentInfo<PropertyInfo>> infos)
         {
             _material = material;
+            _supportedKind = supportedKind;
             _infos = infos;
+
+            if ((_supportedKind & ShaderInformationKind.TextureAndUVUsage) != 0)
+                _textureUsageInformations = new List<TextureUsageInformation>();
         }
 
         public Shader Shader => _material.shader;
@@ -130,6 +138,9 @@ internal class MaterialInformation
 
         public override void RegisterOtherUVUsage(UsingUVChannels uvChannel)
         {
+            if ((_supportedKind & ShaderInformationKind.TextureAndUVUsage) == 0)
+                throw new InvalidOperationException("RegisterOtherUVUsage is not registered as supported information");
+
             // no longer atlasing is not supported
             _textureUsageInformations = null;
         }
@@ -140,6 +151,8 @@ internal class MaterialInformation
             UsingUVChannels uvChannels,
             Matrix2x3? uvMatrix)
         {
+            if ((_supportedKind & ShaderInformationKind.TextureAndUVUsage) == 0)
+                throw new InvalidOperationException("RegisterOtherUVUsage is not registered as supported information");
             if (_textureUsageInformations == null) return;
             UVChannel uvChannel;
             switch (uvChannels)
