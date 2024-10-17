@@ -141,6 +141,12 @@ namespace Anatawa12.AvatarOptimizer.API
         internal virtual bool IsInternalInformation => false;
 
         /// <summary>
+        /// The kind of information provided by this class.
+        /// </summary>
+        [PublicAPI]
+        public abstract ShaderInformationKind SupportedInformationKind { get; }
+
+        /// <summary>
         /// Gets the texture usage information for the material.
         ///
         /// This function should call the callback to provide the texture usage information for the material.
@@ -148,18 +154,39 @@ namespace Anatawa12.AvatarOptimizer.API
         /// <param name="matInfo">The callback to provide the texture usage information for the material.</param>
         /// <returns>Whether the information is provided successfully. If false, the information is considered as not provided.</returns>
         [PublicAPI]
-        public abstract bool GetTextureUsageInformationForMaterial(TextureUsageInformationCallback matInfo);
+        public abstract void GetMaterialInformation(MaterialInformationCallback matInfo);
 
         // note for future this class update: this class is extandable public abstract class so you must not add new abstract method to this class.
+    }
+
+    /// <summary>
+    /// The flags to express which information is provided by the ShaderInformation.
+    ///
+    /// It's recommended to provide as much information as possible.
+    /// </summary>
+    [Flags]
+    [PublicAPI]
+    public enum ShaderInformationKind
+    {
+        /// <summary>
+        /// No information
+        /// </summary>
+        None = 0,
+        /// <summary>
+        /// The texture and UV usage information
+        ///
+        /// Providing this information will allow Avatar Optimizer to optimize the texture usage like UV Packing.
+        /// </summary>
+        TextureAndUVUsage = 1,
     }
 
     /// <summary>
     /// The callback for the texture usage information.
     /// </summary>
     [PublicAPI]
-    public abstract class TextureUsageInformationCallback
+    public abstract class MaterialInformationCallback
     {
-        internal TextureUsageInformationCallback()
+        internal MaterialInformationCallback()
         {
         }
 
@@ -194,7 +221,11 @@ namespace Anatawa12.AvatarOptimizer.API
         /// Registers UV Usage that are not considered by Avatar Optimizer.
         ///
         /// This will the UV Channel not affected by optimizations of Avatar Optimizer.
+        ///
+        /// Avatar Optimizer will preserve the integer part (floor(x, y)) of the UV Value while optimization for each primitive.
+        /// If your usage only use integer part of the UV like UV Tile Discard, you should not register the UV Usage as Other UV Usage.
         /// </summary>
+        /// <remarks>This API is to provide <see cref="ShaderInformationKind.TextureAndUVUsage"/>.</remarks>
         /// <param name="uvChannel">The UVChannels that are used in the shader.</param>
         [PublicAPI]
         public abstract void RegisterOtherUVUsage(UsingUVChannels uvChannel);
@@ -204,6 +235,7 @@ namespace Anatawa12.AvatarOptimizer.API
         /// 
         /// The texture might go to the atlas / UV Packing if the UsingUVChannels is set and the UV Matrix is known
         /// </summary>
+        /// <remarks>This API is to provide <see cref="ShaderInformationKind.TextureAndUVUsage"/>.</remarks>
         /// <param name="textureMaterialPropertyName">The name of the texture property in the material.</param>
         /// <param name="samplerState">The information about the sampler state used for the specified texture.</param>
         /// <param name="uvChannels">The UVChannels that are used in the shader to determine the UV for the texture.</param>
