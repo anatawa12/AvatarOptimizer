@@ -143,6 +143,7 @@ namespace Anatawa12.AvatarOptimizer.API
         /// <summary>
         /// The kind of information provided by this class.
         /// </summary>
+        [PublicAPI]
         public abstract ShaderInformationKind SupportedInformationKind { get; }
 
         /// <summary>
