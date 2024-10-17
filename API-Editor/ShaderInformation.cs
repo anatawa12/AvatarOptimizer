@@ -194,6 +194,9 @@ namespace Anatawa12.AvatarOptimizer.API
         /// Registers UV Usage that are not considered by Avatar Optimizer.
         ///
         /// This will the UV Channel not affected by optimizations of Avatar Optimizer.
+        ///
+        /// Avatar Optimizer will preserve the integer part (floor(x, y)) of the UV Value while optimization for each primitive.
+        /// If your usage only use integer part of the UV like UV Tile Discard, you should not register the UV Usage as Other UV Usage.
         /// </summary>
         /// <param name="uvChannel">The UVChannels that are used in the shader.</param>
         [PublicAPI]
