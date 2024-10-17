@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Anatawa12.AvatarOptimizer.Processors;
 using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
 using Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes;
 using NUnit.Framework;
@@ -70,7 +71,7 @@ public class OptimizeTextureTest
         var meshInfo2 = GetMesh(BorderMesh);
 
         var result = OptimizeTextureImpl.CreateIslands(
-            new[] { new OptimizeTextureImpl.UVID(meshInfo2, 0, OptimizeTextureImpl.UVChannel.UV0) },
+            new[] { new OptimizeTextureImpl.UVID(meshInfo2, 0, UVChannel.UV0) },
             wrapMode, wrapMode);
 
         Assert.That(result, Is.Null);
@@ -98,7 +99,7 @@ public class OptimizeTextureTest
         var meshInfo2 = GetMesh(generator);
 
         var result = OptimizeTextureImpl.CreateIslands(
-            new[] { new OptimizeTextureImpl.UVID(meshInfo2, 0, OptimizeTextureImpl.UVChannel.UV0) },
+            new[] { new OptimizeTextureImpl.UVID(meshInfo2, 0, UVChannel.UV0) },
             wrapMode, wrapMode);
 
         Assert.That(result, Is.Null);
@@ -133,7 +134,7 @@ public class OptimizeTextureTest
         var meshInfo2 = GetMesh(generator);
 
         var result = OptimizeTextureImpl.CreateIslands(
-            new[] { new OptimizeTextureImpl.UVID(meshInfo2, 0, OptimizeTextureImpl.UVChannel.UV0) },
+            new[] { new OptimizeTextureImpl.UVID(meshInfo2, 0, UVChannel.UV0) },
             wrapMode, wrapMode);
 
         AssertIsland(result, tileU, tileV, flipU, flipV);
