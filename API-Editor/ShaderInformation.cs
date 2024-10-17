@@ -148,7 +148,7 @@ namespace Anatawa12.AvatarOptimizer.API
         /// <param name="matInfo">The callback to provide the texture usage information for the material.</param>
         /// <returns>Whether the information is provided successfully. If false, the information is considered as not provided.</returns>
         [PublicAPI]
-        public abstract bool GetTextureUsageInformationForMaterial(TextureUsageInformationCallback matInfo);
+        public abstract void GetTextureUsageInformationForMaterial(TextureUsageInformationCallback matInfo);
 
         // note for future this class update: this class is extandable public abstract class so you must not add new abstract method to this class.
     }

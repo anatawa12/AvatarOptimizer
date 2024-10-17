@@ -103,7 +103,7 @@ internal class LiltoonShaderInformation : ShaderInformation
         "f96a89829ccb1e54b85214550519a8d6", // ltspass_baker.shader
     };
 
-    public override bool GetTextureUsageInformationForMaterial(TextureUsageInformationCallback matInfo)
+    public override void GetTextureUsageInformationForMaterial(TextureUsageInformationCallback matInfo)
     {
         // TODO: version check
 
@@ -555,7 +555,7 @@ internal class LiltoonShaderInformation : ShaderInformation
 
         // _BaseMap and _BaseColorMap are unused
 
-        return true;
+        return;
 
         void LIL_SAMPLE_1D(string textureName, SamplerStateInformation samplerName, UsingUVChannels uvChannel)
         {
