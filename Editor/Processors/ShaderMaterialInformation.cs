@@ -81,16 +81,16 @@ internal class MaterialInformation
         {
             HasShaderInformation = true;
             
-            var provider = new TextureUsageInformationCallbackImpl(
+            var provider = new MaterialInformationCallbackImpl(
                 material,
                 renderers.Select(renderer => context.GetAnimationComponent(renderer)).ToList());
-            information.GetTextureUsageInformationForMaterial(provider);
+            information.GetMaterialInformation(provider);
             TextureUsageInformationList = provider.TextureUsageInformations;
         }
     }
 
     
-    class TextureUsageInformationCallbackImpl : TextureUsageInformationCallback
+    class MaterialInformationCallbackImpl : MaterialInformationCallback
     {
         private readonly Material _material;
         private readonly List<AnimationComponentInfo<PropertyInfo>> _infos;
@@ -98,7 +98,7 @@ internal class MaterialInformation
 
         public List<TextureUsageInformation>? TextureUsageInformations => _textureUsageInformations;
 
-        public TextureUsageInformationCallbackImpl(Material material, List<AnimationComponentInfo<PropertyInfo>> infos)
+        public MaterialInformationCallbackImpl(Material material, List<AnimationComponentInfo<PropertyInfo>> infos)
         {
             _material = material;
             _infos = infos;
