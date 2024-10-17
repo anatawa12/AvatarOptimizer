@@ -141,6 +141,11 @@ namespace Anatawa12.AvatarOptimizer.API
         internal virtual bool IsInternalInformation => false;
 
         /// <summary>
+        /// The kind of information provided by this class.
+        /// </summary>
+        public abstract ShaderInformationKind SupportedInformationKind { get; }
+
+        /// <summary>
         /// Gets the texture usage information for the material.
         ///
         /// This function should call the callback to provide the texture usage information for the material.
@@ -151,6 +156,27 @@ namespace Anatawa12.AvatarOptimizer.API
         public abstract void GetMaterialInformation(MaterialInformationCallback matInfo);
 
         // note for future this class update: this class is extandable public abstract class so you must not add new abstract method to this class.
+    }
+
+    /// <summary>
+    /// The flags to express which information is provided by the ShaderInformation.
+    ///
+    /// It's recommended to provide as much information as possible.
+    /// </summary>
+    [Flags]
+    [PublicAPI]
+    public enum ShaderInformationKind
+    {
+        /// <summary>
+        /// No information
+        /// </summary>
+        None = 0,
+        /// <summary>
+        /// The texture and UV usage information
+        ///
+        /// Providing this information will allow Avatar Optimizer to optimize the texture usage like UV Packing.
+        /// </summary>
+        TextureAndUVUsage = 1,
     }
 
     /// <summary>

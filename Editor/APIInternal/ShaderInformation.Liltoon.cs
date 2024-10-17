@@ -11,6 +11,9 @@ internal class LiltoonShaderInformation : ShaderInformation
 {
     internal override bool IsInternalInformation => true;
 
+    public override ShaderInformationKind SupportedInformationKind =>
+        ShaderInformationKind.TextureAndUVUsage;
+
     static LiltoonShaderInformation()
     {
         Register();
