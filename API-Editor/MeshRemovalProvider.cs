@@ -15,6 +15,8 @@ namespace Anatawa12.AvatarOptimizer.API
     /// This class is designed to not have false-positive removal prediction.
     /// if the mesh might be kept, this class will report as not removed.
     ///
+    /// You should not change the mesh data after creating this class except for evacuated UV channels registered with <see cref="UVUsageCompabilityAPI"/>.
+    ///
     /// For example, current implementation does not support removing mesh after merging mesh with MergeSkinnedMesh
     /// but primitives merged after MergeSkinnedMesh will be reported as not removed.
     /// 

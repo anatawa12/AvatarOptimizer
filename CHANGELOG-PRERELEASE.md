@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
   - You now easily remove some polygons of models configured for UV Tile Discard.
   - This component removes polygons like UV Tile Discard with Vertex Discard Mode.
 - Texture Optimizer support for tiling UV `#1268`
+- API for AtlasTexture Compability `#1269`
 
 ### Changed
 - Transform gizmo are now hidden while you're editing box of Remove Mesh in Box `#1259`
