@@ -247,7 +247,7 @@ internal class TextureUsageInformation
     }
 }
 
-public enum UVChannel
+enum UVChannel
 {
     UV0 = 0,
     UV1 = 1,
