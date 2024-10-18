@@ -96,6 +96,7 @@ The format is based on [Keep a Changelog].
 - Material property animation with weight 0 layer might be broken with AutoMergeSkinnedMesh `#1248` `#1253`
 - Remove Mesh in Box does not work for meshes without Bones `#1256`
 - NullReferenceException in `GetBlendShape` if Mesh is not specified for SkinnedMeshRenderer `#1267`
+- Animation for target renderer of Merge Skinned Mesh might be overridden by animation for source renderer `#1276`
 
 ### Security
 
