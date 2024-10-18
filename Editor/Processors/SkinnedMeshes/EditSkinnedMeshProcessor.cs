@@ -50,11 +50,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
     enum EditSkinnedMeshProcessorOrder : int
     {
         Generation = int.MinValue,
+        Evacuate = int.MinValue + 1,
         RemovingMesh = -20000,
         RemoveEmpty = -15000,
         AutoConfigureFreezeBlendShape = -10000 - 1,
         AfterRemoveMesh = -10000,
         AfterFreezeBlendShape = -10000 + 1,
+        ReverseEvacuate = int.MaxValue,
     }
 
     internal interface IMeshInfoComputer

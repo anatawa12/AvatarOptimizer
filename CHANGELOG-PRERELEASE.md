@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
   - You now easily remove some polygons of models configured for UV Tile Discard.
   - This component removes polygons like UV Tile Discard with Vertex Discard Mode.
 - Texture Optimizer support for tiling UV `#1268`
+- API for AtlasTexture Compability `#1269`
 - Automatically remove unnecessary material properties based on shader `#1041`
   - This feature is added to `Remove Unused Objects` in `Trace and Optimize`.
   - When you changed shader for an material, properties for previously used shaders might be remain
