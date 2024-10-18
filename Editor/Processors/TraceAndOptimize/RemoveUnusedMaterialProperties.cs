@@ -17,14 +17,17 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             var renderers = context.GetComponents<Renderer>();
             var cleaned = new HashSet<Material>();
 
-            void MaterialCleaning(IEnumerable<Material?> materials)
+            void CleanMaterial(IEnumerable<Material?> materials)
             {
                 foreach (var m in materials)
-                    if (m is not null && cleaned.Contains(m) is false)
+                {
+                    if (m != null && !cleaned.Contains(m))
                     {
-                        RemoveUnusedProperties(m);
+                        if (context.IsTemporaryAsset(m))
+                            RemoveUnusedProperties(m);
                         cleaned.Add(m);
                     }
+                }
             }
 
             foreach (var renderer in renderers)
@@ -33,14 +36,14 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 {
                     var meshInfo = context.GetMeshInfoFor(smr);
                     foreach (var subMesh in meshInfo.SubMeshes)
-                        MaterialCleaning(subMesh.SharedMaterials);
+                        CleanMaterial(subMesh.SharedMaterials);
                 }
                 else
                 {
-                    MaterialCleaning(renderer.sharedMaterials);
+                    CleanMaterial(renderer.sharedMaterials);
                 }
 
-                MaterialCleaning(context.GetAnimationComponent(renderer).GetAllObjectProperties()
+                CleanMaterial(context.GetAnimationComponent(renderer).GetAllObjectProperties()
                     .SelectMany(x => x.node.Value.PossibleValues)
                     .OfType<Material>());
             }
