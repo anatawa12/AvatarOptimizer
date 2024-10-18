@@ -14,18 +14,8 @@ internal class GatherShaderMaterialInformation : Pass<GatherShaderMaterialInform
         var renderersByMaterial = new Dictionary<Material, List<Renderer>>();
 
         foreach (var renderer in context.GetComponents<Renderer>())
-        { 
-            IEnumerable<Material?> materials;
-
-            if (renderer is SkinnedMeshRenderer skinnedMeshRenderer)
-                materials = context.GetMeshInfoFor(skinnedMeshRenderer).SubMeshes.SelectMany(x => x.SharedMaterials);
-            else
-                materials = renderer.sharedMaterials;
-
-            materials = materials.Concat(context.GetAnimationComponent(renderer).GetAllObjectProperties()
-                .SelectMany(x => x.node.Value.PossibleValues).OfType<Material>());
-
-            foreach (var material in materials)
+        {
+            foreach (var material in context.GetAllPossibleMaterialFor(renderer))
             {
                 if (material == null) continue;
 
@@ -67,6 +57,7 @@ internal class MaterialInformation
 
     public readonly bool HasShaderInformation;
     public readonly List<TextureUsageInformation>? TextureUsageInformationList;
+    public readonly bool UseVertexIndex;
 
     public MaterialInformation(Material material, List<Renderer> renderers, BuildContext context)
     {
@@ -76,6 +67,7 @@ internal class MaterialInformation
         // collect texture usage information
 
         HasShaderInformation = false;
+        UseVertexIndex = false;
         TextureUsageInformationList = null;
         if (ShaderInformationRegistry.GetShaderInformation(material.shader) is { } information)
         {
@@ -88,10 +80,10 @@ internal class MaterialInformation
                 renderers.Select(renderer => context.GetAnimationComponent(renderer)).ToList());
             information.GetMaterialInformation(provider);
             TextureUsageInformationList = provider.TextureUsageInformations;
+            UseVertexIndex = provider.UseVertexIndex;
         }
     }
 
-    
     class MaterialInformationCallbackImpl : MaterialInformationCallback
     {
         private readonly Material _material;
@@ -99,6 +91,7 @@ internal class MaterialInformation
         private List<TextureUsageInformation>? _textureUsageInformations;
         private readonly ShaderInformationKind _supportedKind;
 
+        public bool UseVertexIndex { get; private set; }
         public List<TextureUsageInformation>? TextureUsageInformations => _textureUsageInformations;
 
         public MaterialInformationCallbackImpl(Material material, ShaderInformationKind supportedKind,
@@ -226,6 +219,13 @@ internal class MaterialInformation
 
             _textureUsageInformations?.Add(new TextureUsageInformation(textureMaterialPropertyName, uvChannel,
                 wrapModeU, wrapModeV));
+        }
+
+        public override void RegisterVertexIndexUsage()
+        {
+            if ((_supportedKind & ShaderInformationKind.VertexIndexUsage) == 0)
+                throw new InvalidOperationException("RegisterVertexIndexUsage is not registered as supported information");
+            UseVertexIndex = true;
         }
     }
 

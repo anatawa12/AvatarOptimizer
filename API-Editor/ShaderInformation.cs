@@ -178,6 +178,13 @@ namespace Anatawa12.AvatarOptimizer.API
         /// Providing this information will allow Avatar Optimizer to optimize the texture usage like UV Packing.
         /// </summary>
         TextureAndUVUsage = 1,
+        /// <summary>
+        /// The vertex index usage information.
+        ///
+        /// If you don't provide this information, Avatar Optimizer will assume that vertex indices are <b>not</b> used
+        /// in the shader, so Avatar Optimizer may shuffle the vertex indices.
+        /// </summary>
+        VertexIndexUsage = 2,
     }
 
     /// <summary>
@@ -258,6 +265,19 @@ namespace Anatawa12.AvatarOptimizer.API
             SamplerStateInformation samplerState,
             UsingUVChannels uvChannels,
             Matrix2x3? uvMatrix);
+
+        /// <summary>
+        /// Registers the vertex index usage.
+        ///
+        /// Calling this will prevent Avatar Optimizer from automatically caning the vertex indices.
+        /// If user ask, Avatar Optimizer may change the vertex indices.
+        ///
+        /// If vertex indices are used only for noise or other purposes that don't affect the mesh much,
+        /// tou don't need to call this function.
+        /// </summary>
+        /// <remarks>This API is to provide <see cref="ShaderInformationKind.VertexIndexUsage"/>.</remarks>
+        [PublicAPI]
+        public abstract void RegisterVertexIndexUsage();
     }
 
     /// <summary>

@@ -21,6 +21,9 @@ The format is based on [Keep a Changelog].
   - This feature is added to `Remove Unused Objects` in `Trace and Optimize`.
   - When you changed shader for an material, properties for previously used shaders might be remain
   - This may increase your avatar size by unexpectedly including unused textures
+- Support for Shaders that depends on vertex index `#1275`
+  - Avatar Optimizer will not automatically merge meshes that are using vertex index
+  - since merging them may change vertex order, which changes vertex index
 
 ### Changed
 - Transform gizmo are now hidden while you're editing box of Remove Mesh in Box `#1259`
