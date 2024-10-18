@@ -44,6 +44,10 @@ The format is based on [Keep a Changelog].
 - Remove Mesh By UV Tile, a new way to remove polygons `#1263`
   - You now easily remove some polygons of models configured for UV Tile Discard.
   - This component removes polygons like UV Tile Discard with Vertex Discard Mode.
+- Automatically remove unnecessary material properties based on shader `#1041`
+  - This feature is added to `Remove Unused Objects` in `Trace and Optimize`.
+  - When you changed shader for an material, properties for previously used shaders might be remain
+  - This may increase your avatar size by unexpectedly including unused textures
 
 ### Changed
 - Skip Enablement Mismatched Renderers is now disabled by default `#1169`
