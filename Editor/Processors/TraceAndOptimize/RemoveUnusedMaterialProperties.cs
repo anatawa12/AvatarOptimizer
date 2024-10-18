@@ -64,13 +64,50 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         public static void DeleteUnused(ref SerializedProperty props, Material material)
         {
-            for (int i = props.arraySize - 1; i >= 0; i--)
+            for (var i = props.arraySize - 1; i >= 0; i--)
             {
-                if (!material.HasProperty(props.GetArrayElementAtIndex(i).FindPropertyRelative("first").stringValue))
+                var porpertyName = props.GetArrayElementAtIndex(i).FindPropertyRelative("first").stringValue;
+                if (!material.HasProperty(porpertyName) && !fallbackShaderProperties.Contains(porpertyName))
                 {
                     props.DeleteArrayElementAtIndex(i);
                 }
             }
         }
+
+        // https://creators.vrchat.com/avatars/shader-fallback-system
+        private static HashSet<string> fallbackShaderProperties = new HashSet<string>
+        {
+            "_MainTex",
+            "_MetallicGlossMap",
+            "_SpecGlossMap",
+            "_BumpMap",
+            "_ParallaxMap",
+            "_OcclusionMap",
+            "_EmissionMap",
+            "_DetailMask",
+            "_DetailAlbedoMap",
+            "_DetailNormalMap",
+            "_Color",
+            "_EmissionColor",
+            "_SpecColor",
+            "_Cutoff",
+            "_Glossiness",
+            "_GlossMapScale",
+            "_SpecularHighlights",
+            "_GlossyReflections",
+            "_SmoothnessTextureChannel",
+            "_Metallic",
+            "_SpecularHighlights",
+            "_GlossyReflections",
+            "_BumpScale",
+            "_Parallax",
+            "_OcclusionStrength",
+            "_DetailNormalMapScale",
+            "_UVSec",
+            "_Mode",
+            "_SrcBlend",
+            "_DstBlend",
+            "_ZWrite",
+        };
     }
 }
