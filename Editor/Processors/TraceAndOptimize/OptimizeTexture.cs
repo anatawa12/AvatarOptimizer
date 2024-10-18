@@ -651,7 +651,7 @@ internal struct OptimizeTextureImpl {
                 if (islandI.MinPos.x <= islandJ.MinPos.x && islandJ.MaxPos.x <= islandI.MaxPos.x &&
                     islandI.MinPos.y <= islandJ.MinPos.y && islandJ.MaxPos.y <= islandI.MaxPos.y)
                 {
-                    islandI.OriginalIslands.AddRange(islandI.OriginalIslands);
+                    islandI.OriginalIslands.AddRange(islandJ.OriginalIslands);
                     islands.RemoveAt(j);
                     j--;
                     if (j < i) i--;
