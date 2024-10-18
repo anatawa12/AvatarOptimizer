@@ -56,6 +56,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         //https://light11.hatenadiary.com/entry/2018/12/04/224253
         public static void RemoveUnusedProperties(Material material)
         {
+            // TODO: support material variant
             var so = new SerializedObject(material);
             so.Update();
             var savedProps = so.FindProperty("m_SavedProperties");
@@ -84,6 +85,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             }
         }
 
+        // TODO: change set of properties by fallback shader names
         // https://creators.vrchat.com/avatars/shader-fallback-system
         private static HashSet<string> fallbackShaderProperties = new HashSet<string>
         {
