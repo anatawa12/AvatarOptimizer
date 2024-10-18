@@ -38,7 +38,14 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             if (Component.copyEnablementAnimation)
                 CopyEnablementAnimation(context, target, meshInfos);
 
-            DoMerge(context, target, meshInfos, subMeshIndexMap, materials);
+            var targetAnimatedProperties = context.GetAnimationComponent(target.SourceRenderer)
+                .GetAllFloatProperties()
+                .Where(x => x.node.ComponentNodes.Any())
+                .Where(x => x.property.StartsWith("material.", StringComparison.Ordinal))
+                .Select(x => x.property["material.".Length..])
+                .ToHashSet();
+
+            DoMerge(context, target, meshInfos, subMeshIndexMap, materials, targetAnimatedProperties);
             MergeBounds(target, meshInfos);
 
             RemoveOldRenderers(target, meshInfos, Component.removeEmptyRendererObject);
@@ -105,7 +112,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             MeshInfo2[] meshInfos
         ) {
             Profiler.BeginSample("Material / Shader Parameter Animation Warnings");
-            MaterialParameterAnimationWarnings(meshInfos, context);
+            MaterialParameterAnimationWarnings(meshInfos, target, context);
             Profiler.EndSample();
 
             Profiler.BeginSample("Material Normal Configuration Check");
@@ -245,13 +252,14 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             return (subMeshIndexMap, materials);
         }
 
-        public static void DoMerge(
-            BuildContext context, 
+        public static void DoMerge(BuildContext context,
             MeshInfo2 target,
             MeshInfo2[] meshInfos,
             int[][] subMeshIndexMap,
-            List<(MeshTopology topology, Material? material)> materials
-        ) {
+            List<(MeshTopology topology, Material? material)> materials, 
+            ICollection<string>? targetAnimatedProperties) {
+            targetAnimatedProperties ??= Array.Empty<string>();
+
             target.ClearMeshData();
             target.SubMeshes.Capacity = Math.Max(target.SubMeshes.Capacity, materials.Count);
             foreach (var material in materials)
@@ -310,6 +318,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 // property for original mesh in animation.
                 // This invalidation doesn't affect to m_Enabled property of merged mesh.
                 context.RecordRemoveProperty(meshInfo.SourceRenderer, Props.EnabledFor(meshInfo.SourceRenderer));
+
+                // If both source and target have animation, it will conflict so we remove it from source,
+                // and forcibly keep target's animation.
+                foreach (var targetAnimatedProperty in targetAnimatedProperties)
+                    context.RecordRemoveProperty(meshInfo.SourceRenderer, $"material.{targetAnimatedProperty}");
 
                 context.RecordMergeComponent(meshInfo.SourceRenderer, target.SourceRenderer);
 
@@ -406,8 +419,15 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             Profiler.EndSample();
         }
 
-        private static void MaterialParameterAnimationWarnings(MeshInfo2[] sourceRenderers, BuildContext context)
+        private static void MaterialParameterAnimationWarnings(MeshInfo2[] sourceRenderers, MeshInfo2 target,
+            BuildContext context)
         {
+            var targetAnimatedProperties = context.GetAnimationComponent(target.SourceRenderer)
+                .GetAllFloatProperties()
+                .Where(x => x.node.ComponentNodes.Any())
+                .Where(x => x.property.StartsWith("material.", StringComparison.Ordinal))
+                .Select(x => x.property["material.".Length..])
+                .ToHashSet();
             var properties = new Dictionary<string, List<(RootPropModNode<FloatValueInfo>, MeshInfo2)>>();
             var materialByMeshInfo2 = new List<(MeshInfo2 meshInfo2, List<Material> materials)>();
             foreach (var meshInfo2 in sourceRenderers)
@@ -439,6 +459,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             foreach (var (propertyName, animatingProperties) in properties)
             {
+                if (targetAnimatedProperties.Contains(propertyName)) continue;
                 var rendererBySource = new Dictionary<AnimationLocation, HashSet<MeshInfo2>>();
 
                 foreach (var (property, renderer) in animatingProperties)

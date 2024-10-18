@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Animation for target renderer of Merge Skinned Mesh might be overridden by animation for source renderer `#1276`
 
 ### Security
 
