@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Anatawa12.AvatarOptimizer.AnimatorParsersV2;
 using nadena.dev.ndmf;
 using UnityEngine;
@@ -60,6 +62,20 @@ namespace Anatawa12.AvatarOptimizer
             }
 
             return null;
+        }
+
+        public static IEnumerable<Material> GetAllPossibleMaterialFor(this BuildContext context, Renderer renderer)
+        {
+            if (context == null) throw new ArgumentNullException(nameof(context));
+            if (renderer == null) throw new ArgumentNullException(nameof(renderer));
+            var materialsRaw =
+                renderer is SkinnedMeshRenderer skinned
+                    ? context.GetMeshInfoFor(skinned).SubMeshes.SelectMany(x => x.SharedMaterials)
+                    : renderer.sharedMaterials;
+            var materials = materialsRaw.OfType<Material>();
+            var animated = context.GetAnimationComponent(renderer).GetAllObjectProperties()
+                .SelectMany(x => x.node.Value.PossibleValues).OfType<Material>();
+            return materials.Concat(animated).Distinct();
         }
     }
 }

@@ -14,18 +14,8 @@ internal class GatherShaderMaterialInformation : Pass<GatherShaderMaterialInform
         var renderersByMaterial = new Dictionary<Material, List<Renderer>>();
 
         foreach (var renderer in context.GetComponents<Renderer>())
-        { 
-            IEnumerable<Material?> materials;
-
-            if (renderer is SkinnedMeshRenderer skinnedMeshRenderer)
-                materials = context.GetMeshInfoFor(skinnedMeshRenderer).SubMeshes.SelectMany(x => x.SharedMaterials);
-            else
-                materials = renderer.sharedMaterials;
-
-            materials = materials.Concat(context.GetAnimationComponent(renderer).GetAllObjectProperties()
-                .SelectMany(x => x.node.Value.PossibleValues).OfType<Material>());
-
-            foreach (var material in materials)
+        {
+            foreach (var material in context.GetAllPossibleMaterialFor(renderer))
             {
                 if (material == null) continue;
 
