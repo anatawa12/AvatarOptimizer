@@ -112,7 +112,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             MeshInfo2[] meshInfos
         ) {
             Profiler.BeginSample("Material / Shader Parameter Animation Warnings");
-            MaterialParameterAnimationWarnings(meshInfos, context);
+            MaterialParameterAnimationWarnings(meshInfos, target, context);
             Profiler.EndSample();
 
             Profiler.BeginSample("Material Normal Configuration Check");
@@ -419,8 +419,15 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             Profiler.EndSample();
         }
 
-        private static void MaterialParameterAnimationWarnings(MeshInfo2[] sourceRenderers, BuildContext context)
+        private static void MaterialParameterAnimationWarnings(MeshInfo2[] sourceRenderers, MeshInfo2 target,
+            BuildContext context)
         {
+            var targetAnimatedProperties = context.GetAnimationComponent(target.SourceRenderer)
+                .GetAllFloatProperties()
+                .Where(x => x.node.ComponentNodes.Any())
+                .Where(x => x.property.StartsWith("material.", StringComparison.Ordinal))
+                .Select(x => x.property["material.".Length..])
+                .ToHashSet();
             var properties = new Dictionary<string, List<(RootPropModNode<FloatValueInfo>, MeshInfo2)>>();
             var materialByMeshInfo2 = new List<(MeshInfo2 meshInfo2, List<Material> materials)>();
             foreach (var meshInfo2 in sourceRenderers)
@@ -452,6 +459,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             foreach (var (propertyName, animatingProperties) in properties)
             {
+                if (targetAnimatedProperties.Contains(propertyName)) continue;
                 var rendererBySource = new Dictionary<AnimationLocation, HashSet<MeshInfo2>>();
 
                 foreach (var (property, renderer) in animatingProperties)
