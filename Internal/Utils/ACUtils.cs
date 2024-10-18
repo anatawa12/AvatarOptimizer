@@ -86,6 +86,23 @@ namespace Anatawa12.AvatarOptimizer
             }
         }
 
+        public static IEnumerable<BlendTree> AllBlendTrees(Motion? motion)
+        {
+            switch (motion)
+            {
+                case null:
+                    yield break;
+                case AnimationClip _:
+                    break;
+                case BlendTree blendTree:
+                    yield return blendTree;
+                    foreach (var child in blendTree.children)
+                    foreach (var tree in AllBlendTrees(child.motion))
+                        yield return tree;
+                    break;
+            }
+        }
+
         public static IEnumerable<StateMachineBehaviour> StateMachineBehaviours(
             RuntimeAnimatorController runtimeController)
         {
