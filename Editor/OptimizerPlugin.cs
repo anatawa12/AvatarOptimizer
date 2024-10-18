@@ -77,7 +77,7 @@ namespace Anatawa12.AvatarOptimizer.ndmf
                         .Then.Run(Processors.TraceAndOptimizes.AutoMergeSkinnedMesh.Instance)
                         .Then.Run(Processors.TraceAndOptimizes.FindUnusedObjects.Instance)
                         .Then.Run(Processors.TraceAndOptimizes.ConfigureRemoveZeroSizedPolygon.Instance)
-                        .Then.Run(Processors.TraceAndOptimizes.MaterialUnusedPropertyRemove.Instance)
+                        .Then.Run(Processors.TraceAndOptimizes.RemoveUnusedMaterialProperties.Instance)
                         .Then.Run(Processors.MergeBoneProcessor.Instance)
                         .Then.Run(Processors.RemoveZeroSizedPolygonProcessor.Instance)
                         .Then.Run(Processors.TraceAndOptimizes.OptimizeTexture.Instance)

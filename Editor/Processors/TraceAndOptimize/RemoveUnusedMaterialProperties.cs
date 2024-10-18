@@ -6,9 +6,9 @@ using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 {
-    internal class MaterialUnusedPropertyRemove : TraceAndOptimizePass<MaterialUnusedPropertyRemove>
+    internal class RemoveUnusedMaterialProperties : TraceAndOptimizePass<RemoveUnusedMaterialProperties>
     {
-        public override string DisplayName => "T&O: MaterialUnusedPropertyRemove";
+        public override string DisplayName => "T&O: RemoveUnusedMaterialProperties";
         protected override void Execute(BuildContext context, TraceAndOptimizeState state)
         {
             if (!state.RemoveUnusedObjects) { return; }
