@@ -8,44 +8,51 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Invert option for Remove Mesh in Box `#1257`
-  - You now can remove polygons outside of the box instead of inside the box.
-  - Along with this new feature, we renamed `Remove Mesh in Box` to `Remove Mesh By Box` to make it more clear.
-    - This doesn't change the class name of the component since it's already a part of the public API.
-- Remove Mesh By UV Tile, a new way to remove polygons `#1263`
-  - You now easily remove some polygons of models configured for UV Tile Discard.
-  - This component removes polygons like UV Tile Discard with Vertex Discard Mode.
-- Texture Optimizer support for tiling UV `#1268`
-- API for AtlasTexture Compability `#1269`
-- Automatically remove unnecessary material properties based on shader `#1041`
-  - This feature is added to `Remove Unused Objects` in `Trace and Optimize`.
-  - When you changed shader for an material, properties for previously used shaders might be remain
-  - This may increase your avatar size by unexpectedly including unused textures
-- Support for Shaders that depends on vertex index `#1275`
-  - Avatar Optimizer will not automatically merge meshes that are using vertex index
-  - since merging them may change vertex order, which changes vertex index
 
 ### Changed
-- Transform gizmo are now hidden while you're editing box of Remove Mesh in Box `#1259`
-  - This prevents mistakenly moving the Skinned Mesh Renderer while editing the box.
-- Make MergePhysBone implement `INetworkID` `#1260`
-  - This allow you to configure networkid for merged PhysBone component
-- Changed locale code for simplified chinese from `zh-cn` to `zh-hans` `#1264`
-  - This would improve compatibility with other NDMF tools.
-  - Many NDMF tools uses `zh-hans` so previously you may see both 中文 (中国) and 中文 (简体).
-  - I think zh-hans is more accurate expression so I changed so.
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
-- `InvalidOperationException` with removing all polygon on one material slot `#1255`
-- Remove Mesh in Box does not work for meshes without Bones `#1256`
-- NullReferenceException in `GetBlendShape` if Mesh is not specified for SkinnedMeshRenderer `#1267`
-- NDMF Preview for Mesh by Box will is partially broken `#1270`
 
 ### Security
+
+## [1.8.0-beta.7] - 2024-10-18
+### Added
+- Invert option for Remove Mesh in Box [`#1257`](https://github.com/anatawa12/AvatarOptimizer/pull/1257)
+  - You now can remove polygons outside of the box instead of inside the box.
+  - Along with this new feature, we renamed `Remove Mesh in Box` to `Remove Mesh By Box` to make it more clear.
+    - This doesn't change the class name of the component since it's already a part of the public API.
+- Remove Mesh By UV Tile, a new way to remove polygons [`#1263`](https://github.com/anatawa12/AvatarOptimizer/pull/1263)
+  - You now easily remove some polygons of models configured for UV Tile Discard.
+  - This component removes polygons like UV Tile Discard with Vertex Discard Mode.
+- Texture Optimizer support for tiling UV [`#1268`](https://github.com/anatawa12/AvatarOptimizer/pull/1268)
+- API for AtlasTexture Compability [`#1269`](https://github.com/anatawa12/AvatarOptimizer/pull/1269)
+- Automatically remove unnecessary material properties based on shader [`#1041`](https://github.com/anatawa12/AvatarOptimizer/pull/1041)
+  - This feature is added to `Remove Unused Objects` in `Trace and Optimize`.
+  - When you changed shader for an material, properties for previously used shaders might be remain
+  - This may increase your avatar size by unexpectedly including unused textures
+- Support for Shaders that depends on vertex index [`#1275`](https://github.com/anatawa12/AvatarOptimizer/pull/1275)
+  - Avatar Optimizer will not automatically merge meshes that are using vertex index
+  - since merging them may change vertex order, which changes vertex index
+
+### Changed
+- Transform gizmo are now hidden while you're editing box of Remove Mesh in Box [`#1259`](https://github.com/anatawa12/AvatarOptimizer/pull/1259)
+  - This prevents mistakenly moving the Skinned Mesh Renderer while editing the box.
+- Make MergePhysBone implement `INetworkID` [`#1260`](https://github.com/anatawa12/AvatarOptimizer/pull/1260)
+  - This allow you to configure networkid for merged PhysBone component
+- Changed locale code for simplified chinese from `zh-cn` to `zh-hans` [`#1264`](https://github.com/anatawa12/AvatarOptimizer/pull/1264)
+  - This would improve compatibility with other NDMF tools.
+  - Many NDMF tools uses `zh-hans` so previously you may see both 中文 (中国) and 中文 (简体).
+  - I think zh-hans is more accurate expression so I changed so.
+
+### Fixed
+- `InvalidOperationException` with removing all polygon on one material slot [`#1255`](https://github.com/anatawa12/AvatarOptimizer/pull/1255)
+- Remove Mesh in Box does not work for meshes without Bones [`#1256`](https://github.com/anatawa12/AvatarOptimizer/pull/1256)
+- NullReferenceException in `GetBlendShape` if Mesh is not specified for SkinnedMeshRenderer [`#1267`](https://github.com/anatawa12/AvatarOptimizer/pull/1267)
+- NDMF Preview for Mesh by Box will is partially broken [`#1270`](https://github.com/anatawa12/AvatarOptimizer/pull/1270)
 
 ## [1.8.0-beta.6] - 2024-10-12
 ### Fixed
@@ -1646,7 +1653,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-beta.6...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-beta.7...HEAD
+[1.8.0-beta.7]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-beta.6...v1.8.0-beta.7
 [1.8.0-beta.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-beta.5...v1.8.0-beta.6
 [1.8.0-beta.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-beta.4...v1.8.0-beta.5
 [1.8.0-beta.4]: https://github.com/anatawa12/AvatarOptimizer/compare/1.7.13...v1.8.0-beta.4
