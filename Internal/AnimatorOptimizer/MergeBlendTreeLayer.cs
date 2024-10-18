@@ -34,13 +34,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 
                 if (blendTree != null)
                 {
-                    var blendTreeModified = ACUtils.AllClips(blendTree).Aggregate(new HashSet<EditorCurveBinding>(),
-                        (set, clip) =>
-                        {
-                            set.UnionWith(AnimationUtility.GetCurveBindings(clip));
-                            set.UnionWith(AnimationUtility.GetObjectReferenceCurveBindings(clip));
-                            return set;
-                        });
+                    var blendTreeModified = blendTree.GetAllBindings();
                     // nothing is animated in higher priority layer
                     if (!blendTreeModified.Any(modifiedProperties.Contains))
                         directBlendTrees.Add((i, blendTree));
@@ -50,11 +44,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 else
                 {
                     foreach (var motion in layer.GetMotions())
-                    foreach (var clip in ACUtils.AllClips(motion))
-                    {
-                        modifiedProperties.UnionWith(AnimationUtility.GetCurveBindings(clip));
-                        modifiedProperties.UnionWith(AnimationUtility.GetObjectReferenceCurveBindings(clip));
-                    }
+                        modifiedProperties.UnionWith(motion.GetAllBindings());
                 }
             }
 
