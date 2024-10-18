@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Reflection;
 using Anatawa12.AvatarOptimizer.API;
 using UnityEditor;
@@ -12,7 +13,7 @@ internal class LiltoonShaderInformation : ShaderInformation
     internal override bool IsInternalInformation => true;
 
     public override ShaderInformationKind SupportedInformationKind =>
-        ShaderInformationKind.TextureAndUVUsage;
+        ShaderInformationKind.TextureAndUVUsage | ShaderInformationKind.VertexIndexUsage;
 
     static LiltoonShaderInformation()
     {
@@ -557,6 +558,22 @@ internal class LiltoonShaderInformation : ShaderInformation
         }
 
         // _BaseMap and _BaseColorMap are unused
+
+        // Vertex ID
+        var idMaskProperties = new[]
+        {
+            "_IDMask1", "_IDMask2", "_IDMask3", "_IDMask4", "_IDMask5", "_IDMask6", "_IDMask7", "_IDMask8",
+            "_IDMaskPrior1", "_IDMaskPrior2", "_IDMaskPrior3", "_IDMaskPrior4", "_IDMaskPrior5", "_IDMaskPrior6", "_IDMaskPrior7", "_IDMaskPrior8", 
+            "_IDMaskIsBitmap", "_IDMaskCompile"
+        };
+        if (idMaskProperties.Any(prop => matInfo.GetInteger(prop) != 0))
+        {
+            // with _IDMaskFrom = 0..7, uv is used for ID Mask, but it will only use integer part
+            // (cast to int with normal rounding in hlsl) so it's not necessary to register UV usage.
+            matInfo.RegisterVertexIndexUsage();
+        }
+
+        // fur shader will use vertex ID, but it's for noise so it's not necessary to register UV usage.
 
         return;
 

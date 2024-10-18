@@ -93,6 +93,14 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     // light probe proxy volume override must be defined if light probe usage is UseProxyVolume
                     && (meshRenderer.lightProbeUsage != LightProbeUsage.UseProxyVolume
                         || meshRenderer.lightProbeProxyVolumeOverride != null)
+                    // shader must not use vertex index.
+                    // Even if the original mesh is already shuffled, we won't merge automatically because
+                    // user may configure material to match with affected vertex index.
+                    // Note for users reading this comment: Vertex Index after remove mesh or merge mesh is 
+                    // not guaranteed so upgrading Avatar Optimizer may break your avatar if you rely on vertex index
+                    // after Remove Mesh By **** or Merge Skinned Mesh.
+                    && !context.GetAllPossibleMaterialFor(meshRenderer)
+                        .Any(x => context.GetMaterialInformation(x)?.UseVertexIndex ?? false)
 
                     // other notes:
                     // - activeness animation can be ignored here because we'll combine based on activeness animation
