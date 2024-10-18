@@ -35,7 +35,14 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     foreach (var subMesh in meshInfo.SubMeshes)
                         MaterialCleaning(subMesh.SharedMaterials);
                 }
-                else { MaterialCleaning(renderer.sharedMaterials); }
+                else
+                {
+                    MaterialCleaning(renderer.sharedMaterials);
+                }
+
+                MaterialCleaning(context.GetAnimationComponent(renderer).GetAllObjectProperties()
+                    .SelectMany(x => x.node.Value.PossibleValues)
+                    .OfType<Material>());
             }
         }
 
