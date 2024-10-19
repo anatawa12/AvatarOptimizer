@@ -18,6 +18,7 @@ The format is based on [Keep a Changelog].
 ### Fixed
 - Animation for target renderer of Merge Skinned Mesh might be overridden by animation for source renderer `#1276`
 - Merge islands incorrectly when one island covers the other `#1278`
+- NRE when no AAO component attached `#1281`
 
 ### Security
 
