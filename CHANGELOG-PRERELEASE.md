@@ -16,11 +16,14 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Animation for target renderer of Merge Skinned Mesh might be overridden by animation for source renderer `#1276`
-- Merge islands incorrectly when one island covers the other `#1278`
-- NRE when no AAO component attached `#1281`
 
 ### Security
+
+## [1.8.0-beta.8] - 2024-10-19
+### Fixed
+- Animation for target renderer of Merge Skinned Mesh might be overridden by animation for source renderer [`#1276`](https://github.com/anatawa12/AvatarOptimizer/pull/1276)
+- Merge islands incorrectly when one island covers the other [`#1278`](https://github.com/anatawa12/AvatarOptimizer/pull/1278)
+- NRE when no AAO component attached [`#1281`](https://github.com/anatawa12/AvatarOptimizer/pull/1281)
 
 ## [1.8.0-beta.7] - 2024-10-18
 ### Added
@@ -1656,7 +1659,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-beta.7...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-beta.8...HEAD
+[1.8.0-beta.8]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-beta.7...v1.8.0-beta.8
 [1.8.0-beta.7]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-beta.6...v1.8.0-beta.7
 [1.8.0-beta.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-beta.5...v1.8.0-beta.6
 [1.8.0-beta.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-beta.4...v1.8.0-beta.5
