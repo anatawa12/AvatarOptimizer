@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.API;
+using Anatawa12.AvatarOptimizer.ndmf;
 using nadena.dev.ndmf;
 using UnityEngine;
 
@@ -11,6 +12,8 @@ internal class GatherShaderMaterialInformation : Pass<GatherShaderMaterialInform
 {
     protected override void Execute(BuildContext context)
     {
+        if (!context.GetState<AAOEnabled>().Enabled) return;
+
         var renderersByMaterial = new Dictionary<Material, List<Renderer>>();
 
         foreach (var renderer in context.GetComponents<Renderer>())
