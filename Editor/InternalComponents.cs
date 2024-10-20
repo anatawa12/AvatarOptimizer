@@ -10,6 +10,12 @@ internal class InternalAutoFreezeMeaninglessBlendShape : EditSkinnedMeshComponen
 {
 }
 
+[AddComponentMenu("")]
+[DisallowMultipleComponent]
+internal class InternalAutoFreezeNonAnimatedBlendShapes : EditSkinnedMeshComponent
+{
+}
+
 public class InternalEvacuateUVChannel : EditSkinnedMeshComponent
 {
     public List<Evacuation> evacuations = new List<Evacuation>();

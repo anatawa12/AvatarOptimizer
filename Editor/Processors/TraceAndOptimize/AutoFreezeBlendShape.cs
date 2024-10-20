@@ -33,61 +33,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             {
                 if (state.Exclusions.Contains(skinnedMeshRenderer.gameObject)) continue; // manual exclusiton
                 if (skinnedMeshRenderer.GetComponent<Cloth>()) continue; // cloth is too complex https://github.com/anatawa12/AvatarOptimizer/issues/1027
-
-                var meshInfo = context.GetMeshInfoFor(skinnedMeshRenderer);
-
-                var modifies = context.GetAnimationComponent(skinnedMeshRenderer);
-
-                var unchanged = new HashSet<string>();
-
-                for (var i = 0; i < meshInfo.BlendShapes.Count; i++)
-                {
-                    var (name, weight) = meshInfo.BlendShapes[i];
-                    if (IsUnchangedBlendShape(name, weight, out var newWeight))
-                    {
-                        unchanged.Add(name);
-                        meshInfo.BlendShapes[i] = (name, newWeight);
-                    }
-                }
-                
-                bool IsUnchangedBlendShape(string name, float weight, out float newWeight)
-                {
-                    newWeight = weight;
-                    var prop = modifies.GetFloatNode($"blendShape.{name}");
-
-                    switch (prop.ApplyState)
-                    {
-                        case ApplyState.Always:
-                        {
-                            if (prop.Value.TryGetConstantValue(out var constWeight))
-                            {
-                                newWeight = constWeight;
-                                return true;
-                            }
-                            else
-                            {
-                                return false;
-                            }
-                        }
-                            break;
-                        case ApplyState.Partially:
-                        {
-                            return prop.Value.TryGetConstantValue(out var constWeight) && constWeight.Equals(weight);
-                        }
-                            break;
-                        case ApplyState.Never:
-                            return true;
-                        default:
-                            throw new ArgumentOutOfRangeException();
-                    }
-                }
-
-                if (unchanged.Count == 0) continue;
-
-                var freeze = skinnedMeshRenderer.gameObject.GetOrAddComponent<FreezeBlendShape>();
-                var shapeKeys = freeze.shapeKeysSet.GetAsSet();
-                shapeKeys.UnionWith(unchanged);
-                freeze.shapeKeysSet.SetValueNonPrefab(shapeKeys);
+                skinnedMeshRenderer.gameObject.GetOrAddComponent<FreezeBlendShape>();
+                skinnedMeshRenderer.gameObject.GetOrAddComponent<InternalAutoFreezeNonAnimatedBlendShapes>();
             }
         }
 
