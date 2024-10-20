@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - Error with material property animation `#1285`
+- InvalidOperationException in PrefabSafeUniqueCollection `#1287`
 
 ### Security
 
