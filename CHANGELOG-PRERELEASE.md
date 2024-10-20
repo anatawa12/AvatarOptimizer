@@ -16,10 +16,13 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Error with material property animation `#1285`
-- InvalidOperationException in PrefabSafeUniqueCollection `#1287`
 
 ### Security
+
+## [1.8.0-beta.9] - 2024-10-20
+### Fixed
+- Error with material property animation [`#1285`](https://github.com/anatawa12/AvatarOptimizer/pull/1285)
+- InvalidOperationException in PrefabSafeUniqueCollection [`#1287`](https://github.com/anatawa12/AvatarOptimizer/pull/1287)
 
 ## [1.8.0-beta.8] - 2024-10-19
 ### Fixed
@@ -1661,7 +1664,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-beta.8...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-beta.9...HEAD
+[1.8.0-beta.9]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-beta.8...v1.8.0-beta.9
 [1.8.0-beta.8]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-beta.7...v1.8.0-beta.8
 [1.8.0-beta.7]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-beta.6...v1.8.0-beta.7
 [1.8.0-beta.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-beta.5...v1.8.0-beta.6
