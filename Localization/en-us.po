@@ -321,6 +321,16 @@ msgstr ""
 "Merging both meshes with and without normal is not supported."
 "Please change import setting of models to include normals!"
 
+msgid "MergeSkinnedMesh:error:blendShape-animated-by-multiple-renderers"
+msgstr "Differently animated BlendShape is detected: {0}"
+
+msgid "MergeSkinnedMesh:error:blendShape-animated-by-multiple-renderers:description"
+msgstr ""
+"You're merging meshes that their BlendShapes are animated differently between meshes.\n"
+"Since BlendShapes are configured to merge, applied animation cannot be determined if animated differently.\n"
+"\n"
+"Please remove animation for some source SkinnedMeshRenderers or make them animated similarly."
+
 msgid "MergeSkinnedMesh:warning:removeZeroSizedPolygonOnSources"
 msgstr "Since Remove Zero Sized Polygons are processed later, it has no effects if it is added with the source Skinned Mesh Renderers."
 
