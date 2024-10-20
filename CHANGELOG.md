@@ -78,7 +78,7 @@ The format is based on [Keep a Changelog].
   - Many NDMF tools uses `zh-hans` so previously you may see both 中文 (中国) and 中文 (简体).
   - I think zh-hans is more accurate expression so I changed so.
 - Improve RemoveMeshByMask compability with Tex Trans Tool `#1269`
-- Support for Shaders that depends on vertex index `#1275` `#1281`
+- Support for Shaders that depends on vertex index `#1275` `#1281` `#1285`
   - Avatar Optimizer will not automatically merge meshes that are using vertex index
   - since merging them may change vertex order, which changes vertex index
 
