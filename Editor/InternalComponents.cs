@@ -16,7 +16,7 @@ internal class InternalAutoFreezeNonAnimatedBlendShapes : EditSkinnedMeshCompone
 {
 }
 
-public class InternalEvacuateUVChannel : EditSkinnedMeshComponent
+internal class InternalEvacuateUVChannel : EditSkinnedMeshComponent
 {
     public List<Evacuation> evacuations = new List<Evacuation>();
         
@@ -36,7 +36,7 @@ public class InternalEvacuateUVChannel : EditSkinnedMeshComponent
     }
 }
 
-public class InternalRevertEvacuateUVChannel : EditSkinnedMeshComponent
+internal class InternalRevertEvacuateUVChannel : EditSkinnedMeshComponent
 {
     public InternalEvacuateUVChannel evacuate = null!; // initialized on add
 }
