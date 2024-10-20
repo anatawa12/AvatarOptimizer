@@ -28,11 +28,19 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         void FreezeNonAnimatedBlendShapes(BuildContext context, TraceAndOptimizeState state)
         {
+            var mergeBlendShapeMergeSkinnedMeshSources = new HashSet<SkinnedMeshRenderer>();
+            foreach (var mergeSkinnedMesh in context.GetComponents<MergeSkinnedMesh>())
+            {
+                if (mergeSkinnedMesh.blendShapeMode == MergeSkinnedMesh.BlendShapeMode.MergeSameName)
+                    mergeBlendShapeMergeSkinnedMeshSources.UnionWith(mergeSkinnedMesh.renderersSet.GetAsSet());
+            }
+
             // first optimization: unused BlendShapes
             foreach (var skinnedMeshRenderer in context.GetComponents<SkinnedMeshRenderer>())
             {
                 if (state.Exclusions.Contains(skinnedMeshRenderer.gameObject)) continue; // manual exclusiton
                 if (skinnedMeshRenderer.GetComponent<Cloth>()) continue; // cloth is too complex https://github.com/anatawa12/AvatarOptimizer/issues/1027
+                if (mergeBlendShapeMergeSkinnedMeshSources.Contains(skinnedMeshRenderer)) continue; // skip if it will be merged
                 skinnedMeshRenderer.gameObject.GetOrAddComponent<FreezeBlendShape>();
                 skinnedMeshRenderer.gameObject.GetOrAddComponent<InternalAutoFreezeNonAnimatedBlendShapes>();
             }
