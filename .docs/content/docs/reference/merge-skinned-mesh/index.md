@@ -79,6 +79,15 @@ This feature supports copying only one animated property so if there are multipl
 
 In addition, if this is enabled, you must not animate `enabled` of the merged renderer since it will be overwritten by the copied animation.
 
+### BlendShape Mode
+
+The mode of BlendShape handling.
+
+- `Rename BlendShape to avoid conflict`: Renames BlendShapes to avoid conflicts. This is the default behavior.
+- `Merge BlendShapes with same name`: Merges BlendShapes with the same name. This is useful when you want to merge BlendShapes of the same name from different SkinnedMeshRenderers.
+- `v1.7.x or older compability mode`: This mode is for compatibility with v1.7.x or older versions. It will merge BlendShapes, but this merge is not considered by Trace and Optimize. This mode is not available for new components.
+
+
 ### Merge Materials
 
 If this component found some Materials used in multiple renderers, the Materials will be listed here.

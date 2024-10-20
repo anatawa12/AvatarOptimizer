@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
@@ -29,6 +30,7 @@ namespace Anatawa12.AvatarOptimizer
         SerializedProperty _skipEnablementMismatchedRenderers = null!; // initialized in OnEnable
         SerializedProperty _copyEnablementAnimation = null!; // initialized in OnEnable
         PrefabSafeSet.PSSEditorUtil<Material> _doNotMergeMaterials = null!; // initialized in OnEnable
+        SerializedProperty _blendShapeMode = null!; // initialized in OnEnable
 
         private void OnEnable()
         {
@@ -42,6 +44,7 @@ namespace Anatawa12.AvatarOptimizer
                 serializedObject.FindProperty("doNotMergeMaterials"),
                 x => (Material)x.objectReferenceValue,
                 (x, v) => x.objectReferenceValue = v);
+            _blendShapeMode = serializedObject.FindProperty(nameof(MergeSkinnedMesh.blendShapeMode));
         }
 
         protected override void OnInspectorGUIInner()
@@ -57,6 +60,36 @@ namespace Anatawa12.AvatarOptimizer
             EditorGUILayout.PropertyField(_removeEmptyRendererObjectProp);
             EditorGUILayout.PropertyField(_skipEnablementMismatchedRenderers);
             EditorGUILayout.PropertyField(_copyEnablementAnimation);
+
+            // blendShapeMode
+            {
+                var label = new GUIContent(AAOL10N.Tr("MergeSkinnedMesh:prop:blendShapeMode"));
+
+                var isOther = _blendShapeMode.intValue is not 0 and not 1;
+                // if this mode is selected, use toggle left
+                var rect = EditorGUILayout.GetControlRect();
+                label = EditorGUI.BeginProperty(rect, label, _blendShapeMode);
+                var after = EditorGUI.Popup(rect, label, _blendShapeMode.intValue, new[]
+                {
+                    new GUIContent(AAOL10N.Tr("MergeSkinnedMesh:prop:blendShapeMode:MergeSameName")),
+                    new GUIContent(AAOL10N.Tr("MergeSkinnedMesh:prop:blendShapeMode:RenameToAvoidConflict")),
+                    isOther
+                        ? new GUIContent(AAOL10N.Tr("MergeSkinnedMesh:prop:blendShapeMode:TraditionalCompability"))
+                        : GUIContent.none,
+                });
+                EditorGUI.BeginChangeCheck();
+                if (after != _blendShapeMode.intValue)
+                {
+                    _blendShapeMode.intValue = after;
+                }
+
+                if ((MergeSkinnedMesh.BlendShapeMode)_blendShapeMode.intValue ==
+                    MergeSkinnedMesh.BlendShapeMode.TraditionalCompability)
+                {
+                    EditorGUILayout.HelpBox(AAOL10N.Tr("MergeSkinnedMesh:warn:TraditionalBlendShapeMode"),
+                        MessageType.Info);
+                }
+            }
 
             serializedObject.ApplyModifiedProperties();
 
