@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- InvalidOperationException in PrefabSafeUniqueCollection `#1287`
 
 ### Security
 
