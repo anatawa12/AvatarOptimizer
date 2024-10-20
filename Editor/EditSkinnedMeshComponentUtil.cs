@@ -210,8 +210,8 @@ namespace Anatawa12.AvatarOptimizer
                 [typeof(InternalAutoFreezeMeaninglessBlendShape)] = x => new InternalAutoFreezeMeaninglessBlendShapeProcessor((InternalAutoFreezeMeaninglessBlendShape)x),
                 [typeof(RenameBlendShape)] = x => new RenameBlendShapeProcessor((RenameBlendShape)x),
                 [typeof(InternalRemoveEmptySubMesh)] = x => new RemoveEmptySubMeshProcessor((InternalRemoveEmptySubMesh)x),
-                [typeof(UVUsageCompabilityAPIImpl.Evacuate)] = x => new EvacuateProcessor((UVUsageCompabilityAPIImpl.Evacuate)x),
-                [typeof(UVUsageCompabilityAPIImpl.RevertEvacuate)] = x => new RevertEvacuateProcessor((UVUsageCompabilityAPIImpl.RevertEvacuate)x),
+                [typeof(InternalEvacuateUVChannel)] = x => new EvacuateProcessor((InternalEvacuateUVChannel)x),
+                [typeof(InternalRevertEvacuateUVChannel)] = x => new RevertEvacuateProcessor((InternalRevertEvacuateUVChannel)x),
             };
 
         private static IEditSkinnedMeshProcessor CreateProcessor(EditSkinnedMeshComponent mergePhysBone) =>

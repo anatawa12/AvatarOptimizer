@@ -15,38 +15,13 @@ internal class UVUsageCompabilityAPIImpl : UVUsageCompabilityAPI.IUVUsageCompabi
         UVUsageCompabilityAPI.Impl = new UVUsageCompabilityAPIImpl();
     }
 
-    public class Evacuate : EditSkinnedMeshComponent
-    {
-        public List<Evacuation> evacuations = new List<Evacuation>();
-        
-        [Serializable]
-        public struct Evacuation
-        {
-            public int originalChannel;
-            public int savedChannel;
-        }
-
-        public int EvacuateIndex(int index)
-        {
-            foreach (var evacuation in evacuations)
-                if (evacuation.originalChannel == index)
-                    index = evacuation.savedChannel;
-            return index;
-        }
-    }
-
-    public class RevertEvacuate : EditSkinnedMeshComponent
-    {
-        public Evacuate evacuate = null!; // initialized on add
-    }
-
     private BitArray GetUsedChannels(SkinnedMeshRenderer renderer)
     {
         var usedChannels = new BitArray(8);
 
         var removeMeshByMask = renderer.GetComponent<RemoveMeshByMask>() as RemoveMeshByMask;
         var removeMeshByUVTile = renderer.GetComponent<RemoveMeshByUVTile>() as RemoveMeshByUVTile;
-        var evacuate = renderer.GetComponent<Evacuate>() as Evacuate;
+        var evacuate = renderer.GetComponent<InternalEvacuateUVChannel>() as InternalEvacuateUVChannel;
 
         if (removeMeshByMask != null)
         {
@@ -82,13 +57,13 @@ internal class UVUsageCompabilityAPIImpl : UVUsageCompabilityAPI.IUVUsageCompabi
     {
         var channels = GetUsedChannels(renderer);
         if (channels[savedChannel]) throw new InvalidOperationException("savedChannel is used by AAO");
-        var evacuate = renderer.GetComponent<Evacuate>();
+        var evacuate = renderer.GetComponent<InternalEvacuateUVChannel>();
         if (evacuate == null)
         {
-            evacuate = renderer.gameObject.AddComponent<Evacuate>();
-            renderer.gameObject.AddComponent<RevertEvacuate>().evacuate = evacuate;
+            evacuate = renderer.gameObject.AddComponent<InternalEvacuateUVChannel>();
+            renderer.gameObject.AddComponent<InternalRevertEvacuateUVChannel>().evacuate = evacuate;
         }
-        evacuate.evacuations.Add(new Evacuate.Evacuation
+        evacuate.evacuations.Add(new InternalEvacuateUVChannel.Evacuation
         {
             originalChannel = originalChannel,
             savedChannel = savedChannel,
