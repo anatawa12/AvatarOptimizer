@@ -69,6 +69,8 @@ namespace Anatawa12.AvatarOptimizer.Test
             state.motion = clip;
             animatorController.AddLayer(layer);
 
+            rootMapper.FixAnimatorController(animatorController);
+
             var mappedClip = animatorController.layers[0].stateMachine.states[0].state.motion as AnimationClip;
             Assert.That(mappedClip, Is.Not.Null);
             

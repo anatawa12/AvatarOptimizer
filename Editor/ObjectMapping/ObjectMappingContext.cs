@@ -228,12 +228,12 @@ namespace Anatawa12.AvatarOptimizer
         public Motion? MapMotion(Motion? motion)
         {
             if (motion == null) return null;
-            ValidateTemporaryAsset(motion);
             switch (motion)
             {
                 case AnimationClip clip:
                     return MapClip(clip);
                 case BlendTree blendTree:
+                    ValidateTemporaryAsset(motion);
                     if (!_fixedObjects.Add(motion)) return blendTree;
                     var children = blendTree.children;
                     foreach (ref var childMotion in children.AsSpan())
