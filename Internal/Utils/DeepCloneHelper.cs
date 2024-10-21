@@ -17,8 +17,12 @@ namespace Anatawa12.AvatarOptimizer
         [return:NotNullIfNotNull("obj")]
         public T? MapObject<T>(T? obj) where T : Object
         {
+            Profiler.BeginSample("MapObject", obj);
+            T? result;
             using (ErrorReport.WithContextObject(obj))
-                return DeepClone(obj);
+                result = DeepClone(obj);
+            Profiler.EndSample();
+            return result;
         }
 
         // https://github.com/bdunderscore/modular-avatar/blob/db49e2e210bc070671af963ff89df853ae4514a5/Packages/nadena.dev.modular-avatar/Editor/AnimatorMerger.cs#L199-L241
