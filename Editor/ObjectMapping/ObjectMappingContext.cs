@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.API;
 using Anatawa12.AvatarOptimizer.APIInternal;
@@ -69,22 +70,28 @@ namespace Anatawa12.AvatarOptimizer
                             var objectReferenceValue = p.objectReferenceValue;
                             switch (objectReferenceValue)
                             {
-                                case RuntimeAnimatorController _:
+                                case RuntimeAnimatorController runtimeController:
+                                    mapper ??= new AnimatorControllerMapper(
+                                        mapping.CreateAnimationMapper(component.gameObject), context);
+
+                                    // all RuntimeAnimatorControllers in those components should be flattened to
+                                    // AnimatorController
+                                    mapper.FixAnimatorController(runtimeController);
+                                    break;
 #if AAO_VRM0
-                                case VRM.BlendShapeAvatar _:
+                                case VRM.BlendShapeAvatar avatar:
+                                    mapper ??= new AnimatorControllerMapper(
+                                        mapping.CreateAnimationMapper(component.gameObject), context);
+                                    mapper.FixBlendShapeAvatar(avatar);
+                                    break;
 #endif
 #if AAO_VRM1
-                                case UniVRM10.VRM10Object _:
-#endif
-                                    if (mapper == null)
-                                        mapper = new AnimatorControllerMapper(
-                                            mapping.CreateAnimationMapper(component.gameObject));
-
-                                    // ReSharper disable once AccessToModifiedClosure
-                                    var mapped = mapper.MapObject(objectReferenceValue);
-                                    if (mapped != objectReferenceValue)
-                                        p.objectReferenceValue = mapped;
+                                case UniVRM10.VRM10Object vrm10Object:
+                                    mapper ??= new AnimatorControllerMapper(
+                                        mapping.CreateAnimationMapper(component.gameObject), context);
+                                    mapper.FixVRM10Object(vrm10Object);
                                     break;
+#endif
                             }
                         }
                     }
@@ -158,307 +165,279 @@ namespace Anatawa12.AvatarOptimizer
         }
     }
 
-    internal class AnimatorControllerMapper : DeepCloneHelper
+    internal class AnimatorControllerMapper
     {
         private readonly AnimationObjectMapper _mapping;
+        private readonly BuildContext _context;
 
-        public AnimatorControllerMapper(AnimationObjectMapper mapping)
+        public AnimatorControllerMapper(AnimationObjectMapper mapping, BuildContext context)
         {
             _mapping = mapping;
+            _context = context;
         }
 
-        protected override Object? CustomClone(Object o)
+        private void ValidateTemporaryAsset(Object asset)
         {
-            if (o is AnimationClip clip)
+            if (asset == null) return;
+            if (!_context.IsTemporaryAsset(asset))
+                throw new ArgumentException("asset is not temporary asset", nameof(asset));
+        }
+
+        public void FixAnimatorController(RuntimeAnimatorController? controller)
+        {
+            if (controller == null) return;
+            ValidateTemporaryAsset(controller);
+            if (controller is not AnimatorController animatorController)
+                throw new ArgumentException($"controller {controller.name} is not AnimatorController", nameof(controller));
+            FixAnimatorController(animatorController);
+        }
+
+        public void FixAnimatorController(AnimatorController? controller)
+        {
+            if (controller == null) return;
+            ValidateTemporaryAsset(controller);
+            var layers = controller.layers;
+            foreach (var layer in layers)
             {
+                FixAvatarMask(layer.avatarMask);
+                foreach (var animatorState in ACUtils.AllStates(layer.stateMachine))
+                    animatorState.motion = MapMotion(animatorState.motion);
+            }
+            controller.layers = layers;
+            foreach (var stateMachineBehaviour in ACUtils.StateMachineBehaviours(controller))
+            {
+                FixStateMachineBehaviour(stateMachineBehaviour);
+            }
+        }
+
+        public Motion? MapMotion(Motion? motion)
+        {
+            if (motion == null) return null;
+            ValidateTemporaryAsset(motion);
+            switch (motion)
+            {
+                case AnimationClip clip:
+                    return MapClip(clip);
+                case BlendTree blendTree:
+                    var children = blendTree.children;
+                    foreach (ref var childMotion in children.AsSpan())
+                        childMotion.motion = MapMotion(childMotion.motion);
+                    blendTree.children = children;
+                    return blendTree;
+                default:
+                    throw new NotSupportedException($"Unsupported motion type: {motion.GetType()}");
+            }
+        }
+
+        public AnimationClip? MapClip(AnimationClip? clip)
+        {
+            if (clip == null) return null;
 #if AAO_VRCSDK3_AVATARS
-                // TODO: when BuildContext have property to check if it is for VRCSDK3, additionally use it.
-                if (clip.IsProxy()) return clip;
+            // TODO: when BuildContext have property to check if it is for VRCSDK3, additionally use it.
+            if (clip.IsProxy()) return clip;
 #endif
-                var newClip = new AnimationClip();
-                ObjectRegistry.RegisterReplacedObject(clip, newClip);
-                newClip.name = "rebased " + clip.name;
+            var newClip = new AnimationClip();
+            ObjectRegistry.RegisterReplacedObject(clip, newClip);
+            newClip.name = "rebased " + clip.name;
 
-                // copy m_UseHighQualityCurve with SerializedObject since m_UseHighQualityCurve doesn't have public API
-                using (var serializedClip = new SerializedObject(clip))
-                using (var serializedNewClip = new SerializedObject(newClip))
+            // copy m_UseHighQualityCurve with SerializedObject since m_UseHighQualityCurve doesn't have public API
+            using (var serializedClip = new SerializedObject(clip))
+            using (var serializedNewClip = new SerializedObject(newClip))
+            {
+                serializedNewClip.FindProperty("m_UseHighQualityCurve")
+                    .boolValue = serializedClip.FindProperty("m_UseHighQualityCurve").boolValue;
+                serializedNewClip.ApplyModifiedPropertiesWithoutUndo();
+            }
+
+            foreach (var binding in AnimationUtility.GetCurveBindings(clip))
+            {
+                var newBindings = _mapping.MapBinding(binding.path, binding.type, binding.propertyName);
+                if (newBindings == null)
                 {
-                    serializedNewClip.FindProperty("m_UseHighQualityCurve")
-                        .boolValue = serializedClip.FindProperty("m_UseHighQualityCurve").boolValue;
-                    serializedNewClip.ApplyModifiedPropertiesWithoutUndo();
+                    newClip.SetCurve(binding.path, binding.type, binding.propertyName,
+                        AnimationUtility.GetEditorCurve(clip, binding));
                 }
-
-                foreach (var binding in AnimationUtility.GetCurveBindings(clip))
+                else
                 {
-                    var newBindings = _mapping.MapBinding(binding.path, binding.type, binding.propertyName);
-                    if (newBindings == null)
+                    foreach (var newBinding in newBindings)
                     {
-                        newClip.SetCurve(binding.path, binding.type, binding.propertyName,
+                        newClip.SetCurve(newBinding.path, newBinding.type, newBinding.propertyName,
                             AnimationUtility.GetEditorCurve(clip, binding));
                     }
-                    else
-                    {
-                        Changed();
-                        foreach (var newBinding in newBindings)
-                        {
-                            newClip.SetCurve(newBinding.path, newBinding.type, newBinding.propertyName,
-                                AnimationUtility.GetEditorCurve(clip, binding));
-                        }
-                    }
                 }
+            }
 
-                foreach (var binding in AnimationUtility.GetObjectReferenceCurveBindings(clip))
+            foreach (var binding in AnimationUtility.GetObjectReferenceCurveBindings(clip))
+            {
+                var newBindings = _mapping.MapBinding(binding.path, binding.type, binding.propertyName);
+                if (newBindings == null)
                 {
-                    var newBindings = _mapping.MapBinding(binding.path, binding.type, binding.propertyName);
-                    if (newBindings == null)
+                    AnimationUtility.SetObjectReferenceCurve(newClip, binding,
+                        AnimationUtility.GetObjectReferenceCurve(clip, binding));
+                }
+                else
+                {
+                    foreach (var tuple in newBindings)
                     {
-                        AnimationUtility.SetObjectReferenceCurve(newClip, binding,
+                        var newBinding = binding;
+                        newBinding.path = tuple.path;
+                        newBinding.type = tuple.type;
+                        newBinding.propertyName = tuple.propertyName;
+                        AnimationUtility.SetObjectReferenceCurve(newClip, newBinding,
                             AnimationUtility.GetObjectReferenceCurve(clip, binding));
                     }
+                }
+            }
+
+            // ReSharper disable once CompareOfFloatsByEqualityOperator
+            if (newClip.length != clip.length)
+            {
+                // if newClip has less properties than original clip (especially for no properties), 
+                // length of newClip can be changed which is bad.
+                newClip.SetCurve(
+                    "$AvatarOptimizerClipLengthDummy$", typeof(GameObject), Props.IsActive,
+                    AnimationCurve.Constant(clip.length, clip.length, 1f));
+            }
+
+            newClip.wrapMode = clip.wrapMode;
+            newClip.legacy = clip.legacy;
+            newClip.frameRate = clip.frameRate;
+            newClip.localBounds = clip.localBounds;
+            var settings = AnimationUtility.GetAnimationClipSettings(clip);
+            settings.additiveReferencePoseClip = MapClip(settings.additiveReferencePoseClip);
+            AnimationUtility.SetAnimationClipSettings(newClip, settings);
+
+            return newClip;
+        }
+
+        public void FixStateMachineBehaviour(StateMachineBehaviour? stateMachineBehaviour)
+        {
+            if (stateMachineBehaviour == null) return;
+            ValidateTemporaryAsset(stateMachineBehaviour);
+#if AAO_VRCSDK3_AVATARS
+            if (stateMachineBehaviour is VRC.SDKBase.VRC_AnimatorPlayAudio playAudio)
+            {
+                if (playAudio.SourcePath != null)
+                    playAudio.SourcePath = _mapping.MapPath(playAudio.SourcePath, typeof(AudioSource));
+            }
+#endif
+        }
+
+        public void FixAvatarMask(AvatarMask? mask)
+        {
+            if (mask == null) return;
+            ValidateTemporaryAsset(mask);
+            var dstI = 0;
+            for (var srcI = 0; srcI < mask.transformCount; srcI++)
+            {
+                var path = mask.GetTransformPath(srcI);
+                var newPath = _mapping.MapPath(path, typeof(Transform));
+                if (newPath != null)
+                {
+                    mask.SetTransformPath(dstI, newPath);
+                    mask.SetTransformActive(dstI, mask.GetTransformActive(srcI));
+                    dstI++;
+                }
+            }
+            mask.transformCount = dstI;
+        }
+
+#if AAO_VRM0
+        public void FixBlendShapeAvatar(VRM.BlendShapeAvatar? blendShapeAvatar)
+        {
+            if (blendShapeAvatar == null) return;
+            ValidateTemporaryAsset(blendShapeAvatar);
+            foreach (var clip in blendShapeAvatar.Clips)
+                FixVRMBlendShapeClip(clip);
+        }
+
+        public void FixVRMBlendShapeClip(VRM.BlendShapeClip? blendShapeClip)
+        {
+            if (blendShapeClip == null) return;
+            ValidateTemporaryAsset(blendShapeClip);
+            blendShapeClip.Values = blendShapeClip.Values.SelectMany(binding =>
+            {
+                var mappedBindings = _mapping.MapBinding(binding.RelativePath, typeof(SkinnedMeshRenderer), VProp.BlendShapeIndex(binding.Index));
+                if (mappedBindings == null)
+                {
+                    return new[] { binding };
+                }
+                return mappedBindings
+                    .Select(mapped => new VRM.BlendShapeBinding
+                    {
+                        RelativePath = _mapping.MapPath(mapped.path, typeof(SkinnedMeshRenderer)),
+                        Index = VProp.ParseBlendShapeIndex(mapped.propertyName),
+                        Weight = binding.Weight
+                    });
+            }).ToArray(); 
+            // Currently, MaterialValueBindings are guaranteed to not change (MaterialName, in particular)
+            // unless MergeToonLitMaterial is used, which breaks material animations anyway.
+            // Map MaterialValues here once we start tracking material changes...
+        }
+#endif
+
+#if AAO_VRM1
+        public void FixVRM10Object(UniVRM10.VRM10Object? vrm10Object)
+        {
+            if (vrm10Object == null) return;
+            ValidateTemporaryAsset(vrm10Object);
+            foreach (var customClip in vrm10Object.Expression.CustomClips)
+                FixVRM10Expression(customClip);
+
+            vrm10Object.FirstPerson.Renderers = vrm10Object.FirstPerson.Renderers
+                .Select(r => new UniVRM10.RendererFirstPersonFlags
+                {
+                    Renderer = _mapping.MapPath(r.Renderer, typeof(Renderer)),
+                    FirstPersonFlag = r.FirstPersonFlag
+                })
+                .Where(r => r.Renderer != null)
+                .GroupBy(r => r.Renderer, r => r.FirstPersonFlag)
+                .Select(grouping =>
+                {
+                    UniGLTF.Extensions.VRMC_vrm.FirstPersonType mergedFirstPersonFlag;
+                    var firstPersonFlags = grouping.Distinct().ToArray();
+                    if (firstPersonFlags.Length == 1)
+                    {
+                        mergedFirstPersonFlag = firstPersonFlags[0];
+                    }
                     else
                     {
-                        Changed();
-                        foreach (var tuple in newBindings)
-                        {
-                            var newBinding = binding;
-                            newBinding.path = tuple.path;
-                            newBinding.type = tuple.type;
-                            newBinding.propertyName = tuple.propertyName;
-                            AnimationUtility.SetObjectReferenceCurve(newClip, newBinding,
-                                AnimationUtility.GetObjectReferenceCurve(clip, binding));
-                        }
+                        mergedFirstPersonFlag = firstPersonFlags.Contains(UniGLTF.Extensions.VRMC_vrm.FirstPersonType.both) ? UniGLTF.Extensions.VRMC_vrm.FirstPersonType.both : UniGLTF.Extensions.VRMC_vrm.FirstPersonType.auto;
+                        BuildLog.LogWarning("MergeSkinnedMesh:warning:VRM:FirstPersonFlagsMismatch", mergedFirstPersonFlag.ToString());
                     }
-                }
 
-                // ReSharper disable once CompareOfFloatsByEqualityOperator
-                if (newClip.length != clip.length)
-                {
-                    // if newClip has less properties than original clip (especially for no properties), 
-                    // length of newClip can be changed which is bad.
-                    newClip.SetCurve(
-                        "$AvatarOptimizerClipLengthDummy$", typeof(GameObject), Props.IsActive,
-                        AnimationCurve.Constant(clip.length, clip.length, 1f));
-                }
-
-                newClip.wrapMode = clip.wrapMode;
-                newClip.legacy = clip.legacy;
-                newClip.frameRate = clip.frameRate;
-                newClip.localBounds = clip.localBounds;
-                var settings = AnimationUtility.GetAnimationClipSettings(clip);
-                settings.additiveReferencePoseClip = DeepClone(settings.additiveReferencePoseClip);
-                AnimationUtility.SetAnimationClipSettings(newClip, settings);
-
-                return newClip;
-            }
-#if AAO_VRCSDK3_AVATARS
-            else if (o is VRC.SDKBase.VRC_AnimatorPlayAudio playAudio)
-            {
-                using (new MappedScope(this))
-                {
-                    var newPlayAudio = DefaultDeepClone(playAudio);
-                    newPlayAudio.name = playAudio.name + " (rebased)";
-                    if (!HasChanged()) newPlayAudio = playAudio;
-                    if (playAudio.SourcePath != null)
-                        newPlayAudio.SourcePath = _mapping.MapPath(playAudio.SourcePath, typeof(AudioSource));
-                    return newPlayAudio;
-                }
-            }
-#endif
-            else if (o is AvatarMask mask)
-            {
-                var newMask = new AvatarMask();
-                ObjectRegistry.RegisterReplacedObject(mask, newMask);
-
-                for (var part = AvatarMaskBodyPart.Root; part < AvatarMaskBodyPart.LastBodyPart; ++part)
-                    newMask.SetHumanoidBodyPartActive(part, mask.GetHumanoidBodyPartActive(part));
-                newMask.name = "rebased " + mask.name;
-                newMask.transformCount = mask.transformCount;
-                var dstI = 0;
-                for (var srcI = 0; srcI < mask.transformCount; srcI++)
-                {
-                    var path = mask.GetTransformPath(srcI);
-                    var newPath = _mapping.MapPath(path, typeof(Transform));
-                    if (newPath != null)
+                    return new UniVRM10.RendererFirstPersonFlags
                     {
-                        newMask.SetTransformPath(dstI, newPath);
-                        newMask.SetTransformActive(dstI, mask.GetTransformActive(srcI));
-                        dstI++;
-                    }
-                    if (path != newPath) Changed();
-                }
-                newMask.transformCount = dstI;
-
-                return newMask;
-            }
-#if AAO_VRM0
-            else if (o is VRM.BlendShapeClip blendShapeClip)
-            {
-                var newBlendShapeClip = DefaultDeepClone(blendShapeClip);
-                newBlendShapeClip.Prefab = null; // This likely to point prefab before mapping, which is invalid by now
-                newBlendShapeClip.name = "rebased " + blendShapeClip.name;
-                newBlendShapeClip.Values = newBlendShapeClip.Values.SelectMany(binding =>
-                {
-                    var mappedBindings = _mapping.MapBinding(binding.RelativePath, typeof(SkinnedMeshRenderer), VProp.BlendShapeIndex(binding.Index));
-                    if (mappedBindings == null)
-                    {
-                        return new[] { binding };
-                    }
-                    Changed();
-                    return mappedBindings
-                        .Select(mapped => new VRM.BlendShapeBinding
-                        {
-                            RelativePath = _mapping.MapPath(mapped.path, typeof(SkinnedMeshRenderer)),
-                            Index = VProp.ParseBlendShapeIndex(mapped.propertyName),
-                            Weight = binding.Weight
-                        });
-                }).ToArray(); 
-                // Currently, MaterialValueBindings are guaranteed to not change (MaterialName, in particular)
-                // unless MergeToonLitMaterial is used, which breaks material animations anyway.
-                // Map MaterialValues here once we start tracking material changes...
-                return newBlendShapeClip;
-            }
-#endif
-#if AAO_VRM1
-            else if (o is UniVRM10.VRM10Expression vrm10Expression)
-            {
-                var newVrm10Expression = DefaultDeepClone(vrm10Expression);
-                newVrm10Expression.Prefab = null; // This likely to point prefab before mapping, which is invalid by now
-                newVrm10Expression.name = "rebased " + vrm10Expression.name;
-                newVrm10Expression.MorphTargetBindings = newVrm10Expression.MorphTargetBindings.SelectMany(binding =>
-                {
-                    var mappedBindings = _mapping.MapBinding(binding.RelativePath, typeof(SkinnedMeshRenderer), VProp.BlendShapeIndex(binding.Index));
-                    if (mappedBindings == null)
-                    {
-                        return new[] { binding };
-                    }
-                    Changed();
-                    return mappedBindings
-                        .Select(mapped => new UniVRM10.MorphTargetBinding
-                        {
-                            RelativePath = _mapping.MapPath(mapped.path, typeof(SkinnedMeshRenderer)),
-                            Index = VProp.ParseBlendShapeIndex(mapped.propertyName),
-                            Weight = binding.Weight
-                        });
-                }).ToArray(); 
-                // Currently, MaterialColorBindings and MaterialUVBindings are guaranteed to not change (MaterialName, in particular)
-                // unless MergeToonLitMaterial is used, which breaks material animations anyway.
-                // Map MaterialColorBindings / MaterialUVBindings here once we start tracking material changes...
-                return newVrm10Expression;
-            }
-#endif
-            else if (o is RuntimeAnimatorController controller)
-            {
-                using (new MappedScope(this))
-                {
-                    var newController = DefaultDeepClone(controller);
-                    newController.name = controller.name + " (rebased)";
-                    if (!HasChanged()) newController = controller;
-                    return newController;
-                }
-            }
-#if AAO_VRM0
-            else if (o is VRM.BlendShapeAvatar blendShapeAvatar)
-            {
-                using (new MappedScope(this))
-                {
-                    var newBlendShapeAvatar = DefaultDeepClone(blendShapeAvatar);
-                    newBlendShapeAvatar.name = blendShapeAvatar.name + " (rebased)";
-                    if (!HasChanged()) newBlendShapeAvatar = blendShapeAvatar;
-                    return newBlendShapeAvatar;
-                }
-            }
-#endif
-#if AAO_VRM1
-            else if (o is UniVRM10.VRM10Object vrm10Object)
-            {
-                using (new MappedScope(this))
-                {
-                    var newVrm10Object = DefaultDeepClone(vrm10Object);
-                    newVrm10Object.name = vrm10Object.name + " (rebased)";
-                    if (!HasChanged()) newVrm10Object = vrm10Object;
-
-                    newVrm10Object.FirstPerson.Renderers = newVrm10Object.FirstPerson.Renderers
-                        .Select(r => new UniVRM10.RendererFirstPersonFlags
-                        {
-                            Renderer = _mapping.MapPath(r.Renderer, typeof(Renderer)),
-                            FirstPersonFlag = r.FirstPersonFlag
-                        })
-                        .Where(r => r.Renderer != null)
-                        .GroupBy(r => r.Renderer, r => r.FirstPersonFlag)
-                        .Select(grouping =>
-                        {
-                            UniGLTF.Extensions.VRMC_vrm.FirstPersonType mergedFirstPersonFlag;
-                            var firstPersonFlags = grouping.Distinct().ToArray();
-                            if (firstPersonFlags.Length == 1)
-                            {
-                                mergedFirstPersonFlag = firstPersonFlags[0];
-                            }
-                            else
-                            {
-                                mergedFirstPersonFlag = firstPersonFlags.Contains(UniGLTF.Extensions.VRMC_vrm.FirstPersonType.both) ? UniGLTF.Extensions.VRMC_vrm.FirstPersonType.both : UniGLTF.Extensions.VRMC_vrm.FirstPersonType.auto;
-                                BuildLog.LogWarning("MergeSkinnedMesh:warning:VRM:FirstPersonFlagsMismatch", mergedFirstPersonFlag.ToString());
-                            }
-
-                            return new UniVRM10.RendererFirstPersonFlags
-                            {
-                                Renderer = grouping.Key,
-                                FirstPersonFlag = mergedFirstPersonFlag
-                            };
-                        }).ToList();
-
-                    return newVrm10Object;
-                }
-            }
-#endif
-            else
-            {
-                return null;
-            }
+                        Renderer = grouping.Key,
+                        FirstPersonFlag = mergedFirstPersonFlag
+                    };
+                }).ToList();
         }
-        
-        protected override ComponentSupport GetComponentSupport(Object original)
+
+        public void FixVRM10Expression(UniVRM10.VRM10Expression? vrm10Expression)
         {
-            switch (original)
+            if (vrm10Expression == null) return;
+            ValidateTemporaryAsset(vrm10Expression);
+            vrm10Expression.Prefab = null; // This likely to point prefab before mapping, which is invalid by now
+            vrm10Expression.MorphTargetBindings = vrm10Expression.MorphTargetBindings.SelectMany(binding =>
             {
-                // Any object referenced by an animator that we intend to mutate needs to be listed here.
-                case Motion _:
-                case AvatarMask _:
-                case AnimatorController _:
-                case AnimatorOverrideController _:
-                case AnimatorState _:
-                case AnimatorStateMachine _:
-                case AnimatorTransitionBase _:
-                case StateMachineBehaviour _:
-
-                case AudioClip _: // Used in VRC Animator Play Audio State Behavior
-
-                // also handle VRM objects here
-#if AAO_VRM0
-                case VRM.BlendShapeAvatar _:
-                case VRM.BlendShapeClip _:
-#endif
-#if AAO_VRM1
-                case UniVRM10.VRM10Object _:
-                case UniVRM10.VRM10Expression _:
-#endif
-                    return ComponentSupport.Clone;
-
-                // Leave textures, materials, and script definitions alone
-                case Texture _:
-                case MonoScript _:
-                case Material _:
-                case GameObject _:
-                    return ComponentSupport.NoClone;
-
-                // Also avoid copying unknown scriptable objects.
-                // This ensures compatibility with e.g. avatar remote, which stores state information in a state
-                // behaviour referencing a custom ScriptableObject
-                case ScriptableObject _:
-                    return ComponentSupport.NoClone;
-
-                default:
-                    return ComponentSupport.Unsupported;
-            }
+                var mappedBindings = _mapping.MapBinding(binding.RelativePath, typeof(SkinnedMeshRenderer), VProp.BlendShapeIndex(binding.Index));
+                if (mappedBindings == null)
+                {
+                    return new[] { binding };
+                }
+                return mappedBindings
+                    .Select(mapped => new UniVRM10.MorphTargetBinding
+                    {
+                        RelativePath = _mapping.MapPath(mapped.path, typeof(SkinnedMeshRenderer)),
+                        Index = VProp.ParseBlendShapeIndex(mapped.propertyName),
+                        Weight = binding.Weight
+                    });
+            }).ToArray(); 
+            // Currently, MaterialColorBindings and MaterialUVBindings are guaranteed to not change (MaterialName, in particular)
+            // unless MergeToonLitMaterial is used, which breaks material animations anyway.
+            // Map MaterialColorBindings / MaterialUVBindings here once we start tracking material changes...
         }
+#endif
     }
 }
