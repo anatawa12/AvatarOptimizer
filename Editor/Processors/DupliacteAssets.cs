@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Anatawa12.AvatarOptimizer.ndmf;
 using nadena.dev.ndmf;
 using UnityEditor;
@@ -19,14 +20,19 @@ internal class DupliacteAssets : Pass<DupliacteAssets>
     {
         if (!context.GetState<AAOEnabled>().Enabled) return;
 
-        var cloner = new Cloner();
+        var sharedCache = new Dictionary<Object, Object>();
 
         foreach (var component in context.GetComponents<Component>())
         {
             switch (component)
             {
+                // skip some known unrelated components
+                case Transform:
+                case ParticleSystem:
+                    break;
                 case SkinnedMeshRenderer renderer:
                 {
+                    var cloner = new Cloner(sharedCache);
                     var meshInfo2 = context.GetMeshInfoFor(renderer);
                     foreach (var subMesh in meshInfo2.SubMeshes)
                     foreach (ref var material in subMesh.SharedMaterials.AsSpan())
@@ -36,6 +42,13 @@ internal class DupliacteAssets : Pass<DupliacteAssets>
                 default:
                 {
                     using var serializedObject = new SerializedObject(component);
+                    var cloner = new Cloner(sharedCache);
+
+                    cloner.FlattenOverrideController = component is Animator
+#if AAO_VRCSDK3_AVATARS
+                            or VRC.SDK3.Avatars.Components.VRCAvatarDescriptor
+#endif
+                        ;
 
                     foreach (var objectReferenceProperty in serializedObject.ObjectReferenceProperties())
                     {
@@ -52,7 +65,54 @@ internal class DupliacteAssets : Pass<DupliacteAssets>
 
     class Cloner : DeepCloneHelper
     {
-        protected override Object? CustomClone(Object o) => null;
+        public Dictionary<Object, Object> SharedObjects;
+        public bool FlattenOverrideController;
+
+        public Cloner(Dictionary<Object, Object> sharedObjects)
+        {
+            SharedObjects = sharedObjects;
+        }
+
+        protected override Dictionary<Object, Object> GetCache(Type type)
+        {
+            if (type == typeof(Material)) return SharedObjects;
+            return base.GetCache(type);
+        }
+
+        private IReadOnlyDictionary<AnimationClip,AnimationClip>? _mapping;
+
+        protected override Object? CustomClone(Object o)
+        {
+            if (o is Material mat)
+            {
+                var newMat = new Material(mat);
+                newMat.parent = null; // force flatten material variants
+                ObjectRegistry.RegisterReplacedObject(mat, newMat);
+                return newMat;
+            }
+            else if (o is AnimationClip clip)
+            {
+                if (_mapping != null && _mapping.TryGetValue(clip, out var mapped))
+                    return DefaultDeepClone(mapped);
+                return DefaultDeepClone(clip);
+            }
+            else if (o is AnimatorOverrideController overrideController)
+            {
+                if (!FlattenOverrideController) return DefaultDeepClone(overrideController);
+                if (_mapping != null)
+                    throw new NotImplementedException("AnimatorOverrideController recursive clone");
+                var (controller, mapping) = ACUtils.GetControllerAndOverrides(overrideController);
+                _mapping = mapping;
+                try
+                {
+                    return DeepClone(controller);
+                } finally {
+                    _mapping = null;
+                }
+            }
+
+            return null;
+        }
 
         protected override ComponentSupport GetComponentSupport(Object o)
         {

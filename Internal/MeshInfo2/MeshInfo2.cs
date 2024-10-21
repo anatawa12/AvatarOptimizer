@@ -49,24 +49,30 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 if (mesh != null)
                     ReadSkinnedMesh(mesh);
 
+                Profiler.BeginSample("Bounds");
                 var updateWhenOffscreen = renderer.updateWhenOffscreen;
                 renderer.updateWhenOffscreen = false;
                 Bounds = renderer.localBounds;
                 // ReSharper disable once Unity.InefficientPropertyAccess
                 // updateWhenOffscreen = false before accessing localBounds
                 renderer.updateWhenOffscreen = updateWhenOffscreen;
+                Profiler.EndSample();
                 RootBone = renderer.rootBone ? renderer.rootBone : renderer.transform;
 
+                Profiler.BeginSample("GetBlendShapeWeight");
                 if (mesh != null)
                 {
                     for (var i = 0; i < mesh.blendShapeCount; i++)
                         BlendShapes[i] = (BlendShapes[i].name, renderer.GetBlendShapeWeight(i));
                 }
+                Profiler.EndSample();
 
                 SetMaterials(renderer);
 
+                Profiler.BeginSample("Bone Transforms");
                 var bones = renderer.bones;
                 for (var i = 0; i < bones.Length && i < Bones.Count; i++) Bones[i].Transform = bones[i];
+                Profiler.EndSample();
 
                 RemoveUnusedBones();
 
@@ -98,6 +104,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         {
             if (SubMeshes.Count == 0) return;
 
+            Profiler.BeginSample("SetMaterials");
+
             var sourceMaterials = renderer.sharedMaterials;
 
             if (sourceMaterials.Length < SubMeshes.Count)
@@ -120,17 +128,21 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     lastMeshMaterials[j] = sourceMaterials[i];
                 SubMeshes[^1].SharedMaterials = lastMeshMaterials;
             }
+
+            Profiler.EndSample();
         }
 
         [Conditional("UNITY_ASSERTIONS")]
         public void AssertInvariantContract(string context)
         {
+            Profiler.BeginSample("AssertInvariantContract");
             var vertices = new HashSet<Vertex>(Vertices);
             Debug.Assert(SubMeshes.SelectMany(x => x.Vertices).All(vertices.Contains),
                 $"{context}: some SubMesh has invalid triangles");
             var bones = new HashSet<Bone>(Bones);
             Debug.Assert(Vertices.SelectMany(x => x.BoneWeights).Select(x => x.bone).All(bones.Contains),
                 $"{context}: some SubMesh has invalid bone weights");
+            Profiler.EndSample();
         }
 
         /// <summary>
@@ -148,6 +160,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         public void ReadSkinnedMesh(Mesh mesh)
         {
+            Profiler.BeginSample("Read Skinned Mesh");
             ReadStaticMesh(mesh);
 
             Profiler.BeginSample("Read Skinned Mesh Part");
@@ -156,6 +169,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             Profiler.EndSample();
             Profiler.BeginSample("Read BlendShapes");
             ReadBlendShapes(mesh);
+            Profiler.EndSample();
             Profiler.EndSample();
             Profiler.EndSample();
         }
@@ -464,6 +478,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         private void RemoveUnusedBones()
         {
             if (Bones.Count == 0) return;
+            Profiler.BeginSample("Remove Unused Bones");
             var hasValidBone = Bones.Any(x => x.Transform != null);
 
             // GC Bones
@@ -479,6 +494,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 // so we have to some bone to render.
                 if (RootBone) Bones.Add(new Bone(Matrix4x4.identity, RootBone));
             }
+            Profiler.EndSample();
         }
 
         /// <returns>true if we flattened multi pass rendering</returns>
@@ -1157,6 +1173,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             var frameIndex = 0;
             for (var blendShapeIndex = 0; blendShapeIndex < sourceMesh.blendShapeCount; blendShapeIndex++)
             {
+                Profiler.BeginSample("Process Shape");
                 var name = sourceMesh.GetBlendShapeName(blendShapeIndex);
                 var frameCount = sourceMesh.GetBlendShapeFrameCount(blendShapeIndex);
 
@@ -1164,20 +1181,29 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
                 for (var blendShapeFrameIndex = 0; blendShapeFrameIndex < frameCount; blendShapeFrameIndex++)
                 {
+                    Profiler.BeginSample("Process Frame");
+                    Profiler.BeginSample("NewBuffer");
                     var deltaVertices = DeltaVertices[frameIndex] = new Vector3[vertexCount];
                     var deltaNormals = DeltaNormals[frameIndex] = new Vector3[vertexCount];
                     var deltaTangents = DeltaTangents[frameIndex] = new Vector3[vertexCount];
+                    Profiler.EndSample();
 
+                    Profiler.BeginSample("GetBlendShapeFrameVertices");
                     sourceMesh.GetBlendShapeFrameVertices(blendShapeIndex, blendShapeFrameIndex, 
                         deltaVertices, deltaNormals, deltaTangents);
+                    Profiler.EndSample();
 
+                    Profiler.BeginSample("GetBlendShapeFrameWeight");
                     var weight = sourceMesh.GetBlendShapeFrameWeight(blendShapeIndex, blendShapeFrameIndex);
                     frameInfos[blendShapeFrameIndex] = new BlendShapeFrameInfo(weight, frameIndex);
+                    Profiler.EndSample();
 
                     frameIndex++;
+                    Profiler.EndSample();
                 }
 
                 Shapes.Add(name, new BlendShapeShape(frameInfos));
+                Profiler.EndSample();
             }
             Profiler.EndSample();
         }

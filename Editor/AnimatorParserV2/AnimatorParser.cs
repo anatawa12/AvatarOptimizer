@@ -7,6 +7,7 @@ using Anatawa12.AvatarOptimizer.APIInternal;
 using nadena.dev.ndmf;
 using UnityEditor.Animations;
 using UnityEngine;
+using UnityEngine.Profiling;
 using Object = UnityEngine.Object;
 
 #if AAO_VRCSDK3_AVATARS
@@ -27,6 +28,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
         public RootPropModNodeContainer GatherAnimationModifications(BuildContext context)
         {
+            Profiler.BeginSample("GatherAnimationModifications");
             var rootNode = new RootPropModNodeContainer();
 
             CollectAvatarRootAnimatorModifications(context, rootNode);
@@ -35,6 +37,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 WalkForAnimator(child, true, rootNode);
 
             OtherMutateComponents(rootNode, context);
+            Profiler.EndSample();
 
             return rootNode;
         }
@@ -146,6 +149,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         /// </summary>
         private static void OtherMutateComponents(RootPropModNodeContainer mod, BuildContext context)
         {
+            Profiler.BeginSample("OtherMutateComponents");
             var collector = new Collector(mod);
             foreach (var component in context.GetComponents<Component>())
             {
@@ -153,9 +157,14 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 {
                     collector.Modifier = component;
                     if (ComponentInfoRegistry.TryGetInformation(component.GetType(), out var info))
+                    {
+                        Profiler.BeginSample($"CollectMutationsInternal ({component.GetType()})");
                         info.CollectMutationsInternal(component, collector);
+                        Profiler.EndSample();
+                    }
                 }
             }
+            Profiler.EndSample();
         }
 
         #endregion
@@ -396,8 +405,9 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             IReadOnlyDictionary<AnimationClip, AnimationClip> mapping,
             AnimatorWeightChangesList? externallyWeightChanged)
         {
+            Profiler.BeginSample("AdvancedParseAnimatorController");
             var layers = controller.layers;
-            return NodesMerger.AnimatorControllerFromAnimatorLayers(controller.layers.Select((layer, i) =>
+            var result = NodesMerger.AnimatorControllerFromAnimatorLayers(controller.layers.Select((layer, i) =>
             {
                 AnimatorWeightState weightState;
                 if (i == 0)
@@ -415,6 +425,8 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
                 return (weightState, layer.blendingMode, parsedLayer);
             }));
+            Profiler.EndSample();
+            return result;
         }
 
         public AnimatorLayerNodeContainer ParseAnimatorControllerLayer(

@@ -5,6 +5,7 @@ using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
+using UnityEngine.Profiling;
 using Debug = System.Diagnostics.Debug;
 using Object = UnityEngine.Object;
 

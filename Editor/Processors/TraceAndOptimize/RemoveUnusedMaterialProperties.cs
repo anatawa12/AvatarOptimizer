@@ -49,40 +49,48 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             }
         }
 
-        //MIT License
-        //Copyright (c) 2020-2021 lilxyzw
-        //https://github.com/lilxyzw/lilToon/blob/b96470d3dd9092b840052578048b2307fe6d8786/Assets/lilToon/Editor/lilMaterialUtils.cs#L658-L686
+        // Algorithm is based on lilToon or thr following blog post,
+        // but speed up with not using DeleteArrayElementAtIndex.
         //
-        //https://light11.hatenadiary.com/entry/2018/12/04/224253
-        public static void RemoveUnusedProperties(Material material)
+        // MIT License
+        // Copyright (c) 2020-2021 lilxyzw
+        // https://github.com/lilxyzw/lilToon/blob/b96470d3dd9092b840052578048b2307fe6d8786/Assets/lilToon/Editor/lilMaterialUtils.cs#L658-L686
+        //
+        // https://light11.hatenadiary.com/entry/2018/12/04/224253
+        private static void RemoveUnusedProperties(Material material)
         {
-            // TODO: support material variant
-            var so = new SerializedObject(material);
-            so.Update();
-            var savedProps = so.FindProperty("m_SavedProperties");
+            using var so = new SerializedObject(material);
 
-            var texs = savedProps.FindPropertyRelative("m_TexEnvs");
-            DeleteUnused(ref texs, material);
-
-            var floats = savedProps.FindPropertyRelative("m_Floats");
-            DeleteUnused(ref floats, material);
-
-            var colors = savedProps.FindPropertyRelative("m_Colors");
-            DeleteUnused(ref colors, material);
+            DeleteUnusedProperties(so.FindProperty("m_SavedProperties.m_TexEnvs"), material);
+            DeleteUnusedProperties(so.FindProperty("m_SavedProperties.m_Floats"), material);
+            DeleteUnusedProperties(so.FindProperty("m_SavedProperties.m_Colors"), material);
 
             so.ApplyModifiedProperties();
         }
 
-        public static void DeleteUnused(ref SerializedProperty props, Material material)
+        private static void DeleteUnusedProperties(SerializedProperty props, Material material)
         {
-            for (var i = props.arraySize - 1; i >= 0; i--)
+            if (props.arraySize == 0) return;
+
+            var destCount = 0;
+            for (
+                SerializedProperty srcIter = props.GetArrayElementAtIndex(0),
+                    destIter = srcIter.Copy(),
+                    srcEnd = props.GetEndProperty();
+                !SerializedProperty.EqualContents(srcIter, srcEnd);
+                srcIter.NextVisible(false)
+            )
             {
-                var porpertyName = props.GetArrayElementAtIndex(i).FindPropertyRelative("first").stringValue;
-                if (!material.HasProperty(porpertyName) && !fallbackShaderProperties.Contains(porpertyName))
+                var porpertyName = srcIter.FindPropertyRelative("first").stringValue;
+                if (material.HasProperty(porpertyName) || fallbackShaderProperties.Contains(porpertyName))
                 {
-                    props.DeleteArrayElementAtIndex(i);
+                    destIter.CopyDataFrom(srcIter);
+                    destIter.NextVisible(false);
+                    destCount++;
                 }
             }
+
+            props.arraySize = destCount;
         }
 
         // TODO: change set of properties by fallback shader names

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Profiling;
 
 namespace Anatawa12.AvatarOptimizer
 {
@@ -100,7 +101,19 @@ namespace Anatawa12.AvatarOptimizer
             }
         }
 
+        private Dictionary<(string, Type, string), (string, Type, string)[]?> _bindingCache = new();
+
         public (string path, Type type, string propertyName)[]? MapBinding(string path, Type type, string propertyName)
+        {
+            if (_bindingCache.TryGetValue((path, type, propertyName), out var result))
+                return result;
+            Profiler.BeginSample("MapBindingImpl");
+            result = MapBindingImpl(path, type, propertyName);
+            Profiler.EndSample();
+            _bindingCache.Add((path, type, propertyName), result);
+            return result;
+        }
+        (string path, Type type, string propertyName)[]? MapBindingImpl(string path, Type type, string propertyName)
         {
             var gameObjectInfo = GetGameObjectInfo(path);
             if (gameObjectInfo == null)

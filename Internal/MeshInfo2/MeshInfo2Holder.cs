@@ -63,7 +63,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
             if (avatarTagComponent == null) return;
             foreach (var renderer in rootObject.GetComponentsInChildren<SkinnedMeshRenderer>(true))
             {
-                Profiler.BeginSample($"Read Skinned Mesh");
+                Profiler.BeginSample($"GetMeshInfoFor");
                 GetMeshInfoFor(renderer);
                 Profiler.EndSample();
             }
