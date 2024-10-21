@@ -245,7 +245,7 @@ namespace Anatawa12.AvatarOptimizer
                 newClip.frameRate = clip.frameRate;
                 newClip.localBounds = clip.localBounds;
                 var settings = AnimationUtility.GetAnimationClipSettings(clip);
-                settings.additiveReferencePoseClip = MapObject(settings.additiveReferencePoseClip);
+                settings.additiveReferencePoseClip = DeepClone(settings.additiveReferencePoseClip);
                 AnimationUtility.SetAnimationClipSettings(newClip, settings);
 
                 return newClip;
