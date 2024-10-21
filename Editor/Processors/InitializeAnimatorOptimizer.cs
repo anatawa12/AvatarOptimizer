@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes;
 using nadena.dev.ndmf;
@@ -42,47 +43,47 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 
             foreach (var component in context.AvatarRootObject.GetComponents<Component>())
             {
-                GameObject? animatorControllerRoot = null;
-
                 switch (component)
                 {
-                    case Animator:
-#if AAO_VRCSDK3_AVATARS
-                    case VRCAvatarDescriptor:
-#endif
-                        animatorControllerRoot = component.gameObject;
+                    case Animator animator:
+                        animator.runtimeAnimatorController = ProcessController(animator.runtimeAnimatorController, component.gameObject);
                         break;
+#if AAO_VRCSDK3_AVATARS
+                    case VRCAvatarDescriptor avatarDescriptor:
+                        foreach (ref var layer in avatarDescriptor.baseAnimationLayers.AsSpan())
+                            layer.animatorController = ProcessController(layer.animatorController, component.gameObject);
+                        foreach (ref var layer in avatarDescriptor.specialAnimationLayers.AsSpan())
+                            layer.animatorController = ProcessController(layer.animatorController, component.gameObject);
+#endif
+                        break;
+                    // do not run animator optimizer with unknown components
+                    default:
+                        continue;
                 }
-
-                using (var serializedObject = new SerializedObject(component))
-                {
-                    foreach (var property in serializedObject.ObjectReferenceProperties())
-                    {
-                        if (property.objectReferenceValue is RuntimeAnimatorController runtimeController)
-                        {
-                            var cloned = (AnimatorController)runtimeController;
-                            var wrapper = new AOAnimatorController(cloned, animatorControllerRoot);
-                            animatorState.Add(wrapper);
-                            property.objectReferenceValue = cloned;
-                            clonedToController.Add(cloned, wrapper);
+            }
+            
+            AnimatorController? ProcessController(RuntimeAnimatorController? runtimeController,
+                GameObject rootGameObject)
+            {
+                if (runtimeController == null) return null;
+                var cloned = (AnimatorController)runtimeController;
+                var wrapper = new AOAnimatorController(cloned, rootGameObject);
+                animatorState.Add(wrapper);
+                clonedToController.Add(cloned, wrapper);
 
 #if AAO_VRCSDK3_AVATARS
-                            foreach (var behaviour in ACUtils.StateMachineBehaviours(cloned))
-                            {
-                                switch (behaviour)
-                                {
-                                    case VRC_AnimatorLayerControl control:
-                                        if (control.playable.ToAnimLayerType() is VRCAvatarDescriptor.AnimLayerType l)
-                                            changerBehaviours[l].Add(control);
-                                        break;
-                                }
-                            }
-#endif
-                        }
+                foreach (var behaviour in ACUtils.StateMachineBehaviours(cloned))
+                {
+                    switch (behaviour)
+                    {
+                        case VRC_AnimatorLayerControl control:
+                            if (control.playable.ToAnimLayerType() is VRCAvatarDescriptor.AnimLayerType l)
+                                changerBehaviours[l].Add(control);
+                            break;
                     }
-
-                    serializedObject.ApplyModifiedPropertiesWithoutUndo();
                 }
+#endif
+                return cloned;
             }
             
 #if AAO_VRCSDK3_AVATARS
