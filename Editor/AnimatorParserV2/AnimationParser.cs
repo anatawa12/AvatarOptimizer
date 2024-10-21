@@ -5,6 +5,7 @@ using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
+using UnityEngine.Profiling;
 using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
@@ -101,6 +102,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
         public static ImmutableNodeContainer ParseAnimation(GameObject root, AnimationClip clip)
         {
+            Profiler.BeginSample("ParseAnimation");
             var nodes = new ImmutableNodeContainer();
 
             AnimationClip? additiveReferenceClip;
@@ -121,7 +123,11 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 }
             }
 
-            foreach (var binding in AnimationUtility.GetCurveBindings(clip))
+            Profiler.BeginSample("ParseAnimation.GetCurveBindings");
+            var floatBindings = AnimationUtility.GetCurveBindings(clip);
+            Profiler.EndSample();
+            Profiler.BeginSample("AnimationParser.ProcessFloatNodes");
+            foreach (var binding in floatBindings)
             {
                 var obj = AnimationUtility.GetAnimatedObject(root, binding);
                 if (obj == null) continue;
@@ -139,8 +145,13 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 if (node == null) continue;
                 nodes.Set(componentOrGameObject, propertyName, node);
             }
+            Profiler.EndSample();
 
-            foreach (var binding in AnimationUtility.GetObjectReferenceCurveBindings(clip))
+            Profiler.BeginSample("ParseAnimation.GetObjectReferenceCurveBindings");
+            var objectBindings = AnimationUtility.GetObjectReferenceCurveBindings(clip);
+            Profiler.EndSample();
+            Profiler.BeginSample("ProcessObjectNodes");
+            foreach (var binding in objectBindings)
             {
                 var obj = AnimationUtility.GetAnimatedObject(root, binding);
                 if (obj == null) continue;
@@ -152,7 +163,9 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 if (node == null) continue;
                 nodes.Set(componentOrGameObject, binding.propertyName, node);
             }
+            Profiler.EndSample();
 
+            Profiler.EndSample();
             return nodes;
         }
     }
