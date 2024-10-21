@@ -10,6 +10,14 @@ namespace Anatawa12.AvatarOptimizer
 {
     partial class Utils
     {
+        /// <summary>
+        /// Returns an enumerable of all object reference properties in the serialized object.
+        /// </summary>
+        /// <param name="obj">The serialized object to enumerate.</param>
+        /// <returns>An enumerable of all object reference properties in the serialized object.</returns>
+        /// <remarks>
+        /// Please note this may omit some object reference properties that will MonoScript be assigned.
+        /// </remarks>
         public static ObjectReferencePropertiesEnumerable ObjectReferenceProperties(this SerializedObject obj)
             => new ObjectReferencePropertiesEnumerable(obj);
 
@@ -82,6 +90,57 @@ namespace Anatawa12.AvatarOptimizer
                             case SerializedPropertyType.ManagedReference:
                             default:
                                 enterChildren = true;
+                                if (_iterator.serializedObject.targetObject is AnimationClip)
+                                {
+                                    switch (_iterator.propertyPath)
+                                    {
+                                        // there will be many monoScript property for those types, but it's useless
+                                        case "m_RotationCurves":
+                                        case "m_CompressedRotationCurves":
+                                        case "m_EulerCurves":
+                                        case "m_PositionCurves":
+                                        case "m_ScaleCurves":
+                                        case "m_FloatCurves":
+
+                                        case "m_EditorCurves":
+                                        case "m_EulerEditorCurves":
+                                            enterChildren = false;
+                                            break;
+                                    }
+                                }
+                                else if (_iterator.serializedObject.targetObject is ParticleSystem)
+                                {
+                                    // some ParticleSystem module doesn't have any object reference property,
+                                    // but has many properties so it's better to skip them.
+                                    switch (_iterator.propertyPath)
+                                    {
+                                        case "InitialModule":
+                                        // case "ShapeModule": // has SMR / Renderer / Mesh reference
+                                        case "EmissionModule":
+                                        case "SizeModule":
+                                        case "RotationModule":
+                                        case "ColorModule":
+                                        // case "UVModule": // has sprite reference
+                                        case "VelocityModule":
+                                        case "InheritVelocityModule":
+                                        case "LifetimeByEmitterSpeedModule":
+                                        case "ForceModule":
+                                        case "ExternalForcesModule":
+                                        case "ClampVelocityModule": 
+                                        case "NoiseModule":
+                                        case "SizeBySpeedModule":
+                                        case "RotationBySpeedModule":
+                                        case "ColorBySpeedModule":
+                                        // case "CollisionModule": // has collider (transform) reference
+                                        // case "TriggerModule": // has collider (component) reference
+                                        // case "SubModule": // has ParticleSystem reference
+                                        // case "LightsModule": // has light reference
+                                        case "TrailModule":
+                                        case "CustomDataModule":
+                                            enterChildren = false;
+                                            break;
+                                    }
+                                }
                                 break;
                         }
 

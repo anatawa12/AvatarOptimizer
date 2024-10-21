@@ -25,6 +25,10 @@ internal class DupliacteAssets : Pass<DupliacteAssets>
         {
             switch (component)
             {
+                // skip some known unrelated components
+                case Transform:
+                case ParticleSystem:
+                    break;
                 case SkinnedMeshRenderer renderer:
                 {
                     var meshInfo2 = context.GetMeshInfoFor(renderer);
@@ -52,7 +56,18 @@ internal class DupliacteAssets : Pass<DupliacteAssets>
 
     class Cloner : DeepCloneHelper
     {
-        protected override Object? CustomClone(Object o) => null;
+        protected override Object? CustomClone(Object o)
+        {
+            if (o is Material mat)
+            {
+                var newMat = new Material(mat);
+                newMat.parent = null; // force flatten material variants
+                ObjectRegistry.RegisterReplacedObject(mat, newMat);
+                return newMat;
+            }
+
+            return null;
+        }
 
         protected override ComponentSupport GetComponentSupport(Object o)
         {
