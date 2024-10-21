@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Profiling;
 using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer
@@ -97,8 +98,10 @@ namespace Anatawa12.AvatarOptimizer
             }
             else
             {
+                Profiler.BeginSample("DeepCloneHelper.CopySerialized");
                 obj = (T)ctor.Invoke(Array.Empty<object>());
                 EditorUtility.CopySerialized(original, obj);
+                Profiler.EndSample();
             }
 
             ObjectRegistry.RegisterReplacedObject(original, obj);

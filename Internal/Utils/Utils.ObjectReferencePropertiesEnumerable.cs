@@ -1,7 +1,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEditor;
+using UnityEngine;
+using UnityEngine.Profiling;
 
 namespace Anatawa12.AvatarOptimizer
 {
@@ -27,6 +30,22 @@ namespace Anatawa12.AvatarOptimizer
                 public Enumerator(SerializedObject obj) => _iterator = obj.GetIterator();
 
                 public bool MoveNext()
+                {
+                    Profiler.BeginSample($"ObjectReferencePropertiesEnumerable.MoveNext ({_iterator.serializedObject.targetObject.GetType().FullName})");
+                    var result = MoveNextImpl();
+                    if (result && Profiler.enabled)
+                    {
+                        // I think this is not best way to collect list of propertyPath with profiler
+                        // but I can't find better way.
+                        Profiler.BeginSample(_iterator.propertyPath);
+                        Profiler.EndSample();
+                    }
+                    Profiler.EndSample();
+                    return result;
+                }
+
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                private bool MoveNextImpl()
                 {
                     while (true)
                     {
