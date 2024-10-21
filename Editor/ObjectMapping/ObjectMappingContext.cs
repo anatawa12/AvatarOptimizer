@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.API;
 using Anatawa12.AvatarOptimizer.APIInternal;
@@ -6,6 +7,7 @@ using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
+using UnityEngine.Profiling;
 using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer
@@ -169,6 +171,7 @@ namespace Anatawa12.AvatarOptimizer
     {
         private readonly AnimationObjectMapper _mapping;
         private readonly BuildContext _context;
+        private readonly HashSet<Object> _fixedObjects = new();
 
         public AnimatorControllerMapper(AnimationObjectMapper mapping, BuildContext context)
         {
@@ -196,7 +199,17 @@ namespace Anatawa12.AvatarOptimizer
         {
             if (controller == null) return;
             ValidateTemporaryAsset(controller);
+            if (!_fixedObjects.Add(controller)) return;
+
+            Profiler.BeginSample("FixAnimatorController");
+
             var layers = controller.layers;
+
+            // Setting empty array (removing relationship between StateMachines and AnimatorController)
+            // would speed up most setter of AnimatorController related classes like
+            // AnimatorState.motion and BlendTree.children.
+            controller.layers = Array.Empty<AnimatorControllerLayer>();
+
             foreach (var layer in layers)
             {
                 FixAvatarMask(layer.avatarMask);
@@ -208,6 +221,8 @@ namespace Anatawa12.AvatarOptimizer
             {
                 FixStateMachineBehaviour(stateMachineBehaviour);
             }
+
+            Profiler.EndSample();
         }
 
         public Motion? MapMotion(Motion? motion)
@@ -219,6 +234,7 @@ namespace Anatawa12.AvatarOptimizer
                 case AnimationClip clip:
                     return MapClip(clip);
                 case BlendTree blendTree:
+                    if (!_fixedObjects.Add(motion)) return blendTree;
                     var children = blendTree.children;
                     foreach (ref var childMotion in children.AsSpan())
                         childMotion.motion = MapMotion(childMotion.motion);
@@ -229,6 +245,8 @@ namespace Anatawa12.AvatarOptimizer
             }
         }
 
+        Dictionary<AnimationClip, AnimationClip> _clipMapping = new();
+
         public AnimationClip? MapClip(AnimationClip? clip)
         {
             if (clip == null) return null;
@@ -236,6 +254,8 @@ namespace Anatawa12.AvatarOptimizer
             // TODO: when BuildContext have property to check if it is for VRCSDK3, additionally use it.
             if (clip.IsProxy()) return clip;
 #endif
+            if (_clipMapping.TryGetValue(clip, out var mapped)) return mapped;
+            Profiler.BeginSample("MapClip");
             var newClip = new AnimationClip();
             ObjectRegistry.RegisterReplacedObject(clip, newClip);
             newClip.name = "rebased " + clip.name;
@@ -307,6 +327,8 @@ namespace Anatawa12.AvatarOptimizer
             settings.additiveReferencePoseClip = MapClip(settings.additiveReferencePoseClip);
             AnimationUtility.SetAnimationClipSettings(newClip, settings);
 
+            Profiler.EndSample();
+            _clipMapping[clip] = newClip;
             return newClip;
         }
 
@@ -314,6 +336,8 @@ namespace Anatawa12.AvatarOptimizer
         {
             if (stateMachineBehaviour == null) return;
             ValidateTemporaryAsset(stateMachineBehaviour);
+            if (!_fixedObjects.Add(stateMachineBehaviour)) return;
+            Profiler.BeginSample("FixStateMachineBehaviour");
 #if AAO_VRCSDK3_AVATARS
             if (stateMachineBehaviour is VRC.SDKBase.VRC_AnimatorPlayAudio playAudio)
             {
@@ -321,12 +345,14 @@ namespace Anatawa12.AvatarOptimizer
                     playAudio.SourcePath = _mapping.MapPath(playAudio.SourcePath, typeof(AudioSource));
             }
 #endif
+            Profiler.EndSample();
         }
 
         public void FixAvatarMask(AvatarMask? mask)
         {
             if (mask == null) return;
             ValidateTemporaryAsset(mask);
+            if (!_fixedObjects.Add(mask)) return;
             var dstI = 0;
             for (var srcI = 0; srcI < mask.transformCount; srcI++)
             {
@@ -347,6 +373,7 @@ namespace Anatawa12.AvatarOptimizer
         {
             if (blendShapeAvatar == null) return;
             ValidateTemporaryAsset(blendShapeAvatar);
+            if (!_fixedObjects.Add(blendShapeAvatar)) return;
             foreach (var clip in blendShapeAvatar.Clips)
                 FixVRMBlendShapeClip(clip);
         }
@@ -355,6 +382,7 @@ namespace Anatawa12.AvatarOptimizer
         {
             if (blendShapeClip == null) return;
             ValidateTemporaryAsset(blendShapeClip);
+            if (!_fixedObjects.Add(blendShapeClip)) return;
             blendShapeClip.Values = blendShapeClip.Values.SelectMany(binding =>
             {
                 var mappedBindings = _mapping.MapBinding(binding.RelativePath, typeof(SkinnedMeshRenderer), VProp.BlendShapeIndex(binding.Index));
@@ -381,6 +409,7 @@ namespace Anatawa12.AvatarOptimizer
         {
             if (vrm10Object == null) return;
             ValidateTemporaryAsset(vrm10Object);
+            if (!_fixedObjects.Add(vrm10Object)) return;
             foreach (var customClip in vrm10Object.Expression.CustomClips)
                 FixVRM10Expression(customClip);
 
@@ -418,6 +447,7 @@ namespace Anatawa12.AvatarOptimizer
         {
             if (vrm10Expression == null) return;
             ValidateTemporaryAsset(vrm10Expression);
+            if (!_fixedObjects.Add(vrm10Expression)) return;
             vrm10Expression.Prefab = null; // This likely to point prefab before mapping, which is invalid by now
             vrm10Expression.MorphTargetBindings = vrm10Expression.MorphTargetBindings.SelectMany(binding =>
             {
