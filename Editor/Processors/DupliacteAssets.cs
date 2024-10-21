@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Anatawa12.AvatarOptimizer.ndmf;
 using nadena.dev.ndmf;
 using UnityEditor;
@@ -56,6 +57,8 @@ internal class DupliacteAssets : Pass<DupliacteAssets>
 
     class Cloner : DeepCloneHelper
     {
+        private IReadOnlyDictionary<AnimationClip,AnimationClip>? _mapping;
+
         protected override Object? CustomClone(Object o)
         {
             if (o is Material mat)
@@ -64,6 +67,25 @@ internal class DupliacteAssets : Pass<DupliacteAssets>
                 newMat.parent = null; // force flatten material variants
                 ObjectRegistry.RegisterReplacedObject(mat, newMat);
                 return newMat;
+            }
+            else if (o is AnimationClip clip)
+            {
+                if (_mapping != null && _mapping.TryGetValue(clip, out var mapped))
+                    return DefaultDeepClone(mapped);
+                return DefaultDeepClone(clip);
+            }
+            else if (o is AnimatorOverrideController overrideController)
+            {
+                if (_mapping != null)
+                    throw new NotImplementedException("AnimatorOverrideController recursive clone");
+                var (controller, mapping) = ACUtils.GetControllerAndOverrides(overrideController);
+                _mapping = mapping;
+                try
+                {
+                    return MapObject(controller);
+                } finally {
+                    _mapping = null;
+                }
             }
 
             return null;

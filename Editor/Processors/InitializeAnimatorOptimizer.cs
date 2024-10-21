@@ -1,11 +1,9 @@
-using System;
 using System.Collections.Generic;
 using Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes;
 using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
-using Object = UnityEngine.Object;
 
 #if AAO_VRCSDK3_AVATARS
 using VRC.SDKBase;
@@ -17,8 +15,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
     // This pass prepares animator optimizer
     // This pass does the following things:
     // - Collects all AnimatorController objects and save to state
-    // - Clones AnimatorController and StateMachines to avoid modifying original AnimatorController if needed
     // - If the RuntimeAnimatorController is AnimatorOverrideController, convert it to AnimatorController
+    // Cloning the AnimatorController is moved to DuplicateAssets pass
     class InitializeAnimatorOptimizer : TraceAndOptimizePass<InitializeAnimatorOptimizer>
     {
         public override string DisplayName => "AnimOpt: Initialize";
@@ -62,7 +60,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                     {
                         if (property.objectReferenceValue is RuntimeAnimatorController runtimeController)
                         {
-                            var cloned = AnimatorControllerCloner.Clone(context, runtimeController);
+                            var cloned = (AnimatorController)runtimeController;
                             var wrapper = new AOAnimatorController(cloned, animatorControllerRoot);
                             animatorState.Add(wrapper);
                             property.objectReferenceValue = cloned;
@@ -129,59 +127,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 }
             }
 #endif
-        }
-    }
-
-    class AnimatorControllerCloner : DeepCloneHelper
-    {
-        private readonly BuildContext _context;
-        private readonly IReadOnlyDictionary<AnimationClip,AnimationClip>? _mapping;
-
-        private AnimatorControllerCloner(BuildContext context,
-            IReadOnlyDictionary<AnimationClip, AnimationClip>? mapping)
-        {
-            _context = context ?? throw new ArgumentNullException(nameof(context));
-            _mapping = mapping;
-        }
-
-        public static AnimatorController Clone(BuildContext context, RuntimeAnimatorController runtimeController)
-        {
-            var (controller, mapping) = ACUtils.GetControllerAndOverrides(runtimeController);
-
-            return new AnimatorControllerCloner(context, mapping).MapObject(controller);
-        }
-
-        protected override Object? CustomClone(Object o)
-        {
-            if (o is AnimationClip clip)
-            {
-                if (_mapping != null && _mapping.TryGetValue(clip, out var mapped))
-                    return mapped;
-                return clip;
-            }
-
-            return null;
-        }
-
-        protected override ComponentSupport GetComponentSupport(Object o)
-        {
-            switch (o)
-            {
-                case AnimatorController _:
-                case AnimatorStateMachine _:
-                case AnimatorState _:
-                case AnimatorTransitionBase _:
-                case StateMachineBehaviour _:
-                case Motion _ :
-                    return ComponentSupport.Clone;
-
-                // should not reach this case
-                case RuntimeAnimatorController _:
-                    return ComponentSupport.Unsupported;
-
-                default:
-                    return ComponentSupport.NoClone;
-            }
         }
     }
 }
