@@ -185,29 +185,6 @@ namespace Anatawa12.AvatarOptimizer
                 {
                     serializedNewClip.FindProperty("m_UseHighQualityCurve")
                         .boolValue = serializedClip.FindProperty("m_UseHighQualityCurve").boolValue;
-
-                    const string mHasAdditiveReferencePose = "m_AnimationClipSettings.m_HasAdditiveReferencePose";
-                    const string mAdditiveReferenceClip = "m_AnimationClipSettings.m_AdditiveReferencePoseClip";
-                    const string mAdditiveReferenceTime = "m_AnimationClipSettings.m_AdditiveReferencePoseTime";
-
-                    if (serializedClip.FindProperty(mHasAdditiveReferencePose).boolValue)
-                    {
-                        // create new clip to avoid unncecessary recursion
-                        var additiveReferenceClip =
-                            (AnimationClip?)serializedClip.FindProperty(mAdditiveReferenceClip).objectReferenceValue;
-                        var additiveReferenceFrame = serializedClip.FindProperty(mAdditiveReferenceTime).floatValue;
-
-                        if (additiveReferenceClip != null)
-                        {
-                            serializedNewClip.FindProperty(mHasAdditiveReferencePose).boolValue = true;
-                            serializedNewClip.FindProperty(mAdditiveReferenceClip).objectReferenceValue =
-                                MapObject(additiveReferenceClip);
-                            serializedNewClip.FindProperty(mAdditiveReferenceTime).floatValue = additiveReferenceFrame;
-
-                            Changed();
-                        }
-                    }
-
                     serializedNewClip.ApplyModifiedPropertiesWithoutUndo();
                 }
 
@@ -267,7 +244,9 @@ namespace Anatawa12.AvatarOptimizer
                 newClip.legacy = clip.legacy;
                 newClip.frameRate = clip.frameRate;
                 newClip.localBounds = clip.localBounds;
-                AnimationUtility.SetAnimationClipSettings(newClip, AnimationUtility.GetAnimationClipSettings(clip));
+                var settings = AnimationUtility.GetAnimationClipSettings(clip);
+                settings.additiveReferencePoseClip = MapObject(settings.additiveReferencePoseClip);
+                AnimationUtility.SetAnimationClipSettings(newClip, settings);
 
                 return newClip;
             }

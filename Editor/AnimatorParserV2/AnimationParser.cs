@@ -107,14 +107,12 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             // in seconds
             float additiveReferenceFrame;
 
-            using (var serialized = new SerializedObject(clip))
             {
-                if (serialized.FindProperty("m_AnimationClipSettings.m_HasAdditiveReferencePose").boolValue)
+                var settings = AnimationUtility.GetAnimationClipSettings(clip);
+                if (settings.hasAdditiveReferencePose)
                 {
-                    additiveReferenceClip = (AnimationClip?)serialized
-                        .FindProperty("m_AnimationClipSettings.m_AdditiveReferencePoseClip").objectReferenceValue;
-                    additiveReferenceFrame = serialized
-                        .FindProperty("m_AnimationClipSettings.m_AdditiveReferencePoseTime").floatValue;
+                    additiveReferenceClip = settings.additiveReferencePoseClip;
+                    additiveReferenceFrame = settings.additiveReferencePoseTime;
                 }
                 else
                 {
