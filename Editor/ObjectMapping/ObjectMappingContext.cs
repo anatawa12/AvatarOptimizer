@@ -255,7 +255,22 @@ namespace Anatawa12.AvatarOptimizer
             if (clip.IsProxy()) return clip;
 #endif
             if (_clipMapping.TryGetValue(clip, out var mapped)) return mapped;
+
             Profiler.BeginSample("MapClip");
+
+            var floatBindings = AnimationUtility.GetCurveBindings(clip);
+            var objectBindings = AnimationUtility.GetObjectReferenceCurveBindings(clip);
+
+            var shouldMap = floatBindings.Concat(objectBindings)
+                .Any(binding => _mapping.MapBinding(binding.path, binding.type, binding.propertyName) != null);
+
+            if (!shouldMap)
+            {
+                Profiler.EndSample();
+                _clipMapping[clip] = clip;
+                return clip;
+            }
+
             var newClip = new AnimationClip();
             ObjectRegistry.RegisterReplacedObject(clip, newClip);
             newClip.name = "rebased " + clip.name;
@@ -269,7 +284,7 @@ namespace Anatawa12.AvatarOptimizer
                 serializedNewClip.ApplyModifiedPropertiesWithoutUndo();
             }
 
-            foreach (var binding in AnimationUtility.GetCurveBindings(clip))
+            foreach (var binding in floatBindings)
             {
                 var newBindings = _mapping.MapBinding(binding.path, binding.type, binding.propertyName);
                 if (newBindings == null)
@@ -287,7 +302,7 @@ namespace Anatawa12.AvatarOptimizer
                 }
             }
 
-            foreach (var binding in AnimationUtility.GetObjectReferenceCurveBindings(clip))
+            foreach (var binding in objectBindings)
             {
                 var newBindings = _mapping.MapBinding(binding.path, binding.type, binding.propertyName);
                 if (newBindings == null)
