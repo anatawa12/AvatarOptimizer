@@ -168,6 +168,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             using var meshInfo2 = new MeshInfo2(smr);
 
             meshInfo2.SubMeshes[0].Vertices.Clear();
+            Utils.DisposeAll(meshInfo2.VerticesMutable);
             meshInfo2.VerticesMutable.Clear();
 
             var newMesh = new Mesh();

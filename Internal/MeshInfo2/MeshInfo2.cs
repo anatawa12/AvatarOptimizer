@@ -22,6 +22,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         public readonly Renderer SourceRenderer;
         public Transform? RootBone;
         public Bounds Bounds;
+        // owns Vertices
         public readonly List<Vertex> VerticesMutable = new List<Vertex>(0);
         public IReadOnlyList<Vertex> Vertices => VerticesMutable;
 
@@ -216,6 +217,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         {
             Profiler.BeginSample($"Read Static Mesh Part");
             VerticesMutable.Capacity = Math.Max(VerticesMutable.Capacity, mesh.vertexCount);
+            Utils.DisposeAll(VerticesMutable);
             VerticesMutable.Clear();
             for (var i = 0; i < mesh.vertexCount; i++) VerticesMutable.Add(new Vertex());
 
@@ -453,6 +455,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         public void ClearMeshData()
         {
+            Utils.DisposeAll(VerticesMutable);
             VerticesMutable.Clear();
             _texCoordStatus = default;
             SubMeshes.Clear();
@@ -889,12 +892,21 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             foreach (var vertex in subMesh.Vertices)
                 usedVertices.Add(vertex);
 
-            VerticesMutable.RemoveAll(x => !usedVertices.Contains(x));
+            var removed = new List<Vertex>();
+            VerticesMutable.RemoveAll(x =>
+            {
+                var remove = !usedVertices.Contains(x);
+                if (remove) removed.Add(x);
+                return remove;
+            });
+            Utils.DisposeAll(removed);
             Profiler.EndSample();
         }
 
         public void Dispose()
         {
+            Utils.DisposeAll(VerticesMutable);
+            VerticesMutable.Clear();
         }
     }
 
@@ -912,6 +924,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             }
         }
 
+        // borrowed from MeshInfo2
         public List<Vertex> Vertices { get; } = new List<Vertex>();
 
         public Material? SharedMaterial
@@ -996,7 +1009,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         }
     }
 
-    public class Vertex
+    public class Vertex : IDisposable
     {
         public Vector3 Position { get; set; }
         public Vector3 Normal { get; set; }
@@ -1092,7 +1105,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             return frames.FrameCount != 0;
         }
 
-        public Vertex()
+        internal Vertex()
         {
         }
 
@@ -1141,6 +1154,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             matrix = rendererWorldToLocalMatrix * matrix;
             return matrix * new Vector4(position.x, position.y, position.z, 1f);
+        }
+
+        public void Dispose()
+        {
         }
     }
 
