@@ -1028,7 +1028,14 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         // SkinnedMesh related
         public List<(Bone bone, float weight)> BoneWeights = new List<(Bone, float)>();
 
-        public BlendShapeBuffer BlendShapeBuffer = BlendShapeBuffer.Empty;
+        private RefCountField<BlendShapeBuffer> _blendShapeBuffer = BlendShapeBuffer.Empty;
+
+        public BlendShapeBuffer BlendShapeBuffer
+        {
+            get => _blendShapeBuffer.Value;
+            set => _blendShapeBuffer.Value = value;
+        }
+
         public int BlendShapeBufferVertexIndex;
 
         public readonly struct BlendShapeFrame
@@ -1158,6 +1165,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         public void Dispose()
         {
+            _blendShapeBuffer.Dispose();
         }
     }
 
@@ -1187,7 +1195,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
     ///
     /// This class is generally immutable except for removing blendShapes because adding data would require creating new array.
     /// </summary>
-    public class BlendShapeBuffer
+    public class BlendShapeBuffer : IReferenceCount
     {
         public Dictionary<string, BlendShapeShape> Shapes { get; } = new();
         public readonly Vector3[][] DeltaVertices;
@@ -1253,12 +1261,24 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             DeltaTangents = Array.Empty<Vector3[]>();
         }
 
+        static BlendShapeBuffer()
+        {
+            Empty = new BlendShapeBuffer();
+            RefCount.Increment(Empty);
+        }
+
         public ApplyFrame2Array GetApplyFramesInfo(string shapeName, float weight, bool getDefined = false) =>
             Shapes.TryGetValue(shapeName, out var shape) ? shape.GetApplyFramesInfo(weight, getDefined) : default;
 
-        public static BlendShapeBuffer Empty { get; } = new();
+        public static BlendShapeBuffer Empty { get; }
 
         public void RemoveBlendShape(string name) => Shapes.Remove(name);
+
+        ReferenceCount IReferenceCount.ReferenceCount { get; } = new();
+
+        public void Dispose()
+        {
+        }
     }
 
     public class BlendShapeShape
