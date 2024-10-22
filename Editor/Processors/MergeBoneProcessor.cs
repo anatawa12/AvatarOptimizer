@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
 using nadena.dev.ndmf;
+using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Profiling;
 using Object = UnityEngine.Object;
@@ -221,10 +222,14 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 var buffer = vertex.BlendShapeBuffer;
                 var bufferVertexIndex = vertex.BlendShapeBufferVertexIndex;
 
-                static void ApplyMatrixToArray(Matrix4x4 matrix, Vector3[][] arrayArray, int index)
+                static void ApplyMatrixToArray(Matrix4x4 matrix, NativeArray<Vector3>[] arrayArray, int index)
                 {
-                    foreach (var array in arrayArray)
+                    foreach (var array1 in arrayArray)
+                    {
+                        // Why NativeArray<Vector3>.[array] is not readonly accessor?
+                        var array = array1;
                         array[index] = matrix.MultiplyPoint3x3(array[index]);
+                    }
                 }
 
                 ApplyMatrixToArray(transBindPose, buffer.DeltaVertices, bufferVertexIndex);

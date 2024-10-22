@@ -1198,9 +1198,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
     public class BlendShapeBuffer : IReferenceCount
     {
         public Dictionary<string, BlendShapeShape> Shapes { get; } = new();
-        public readonly Vector3[][] DeltaVertices;
-        public readonly Vector3[][] DeltaNormals;
-        public readonly Vector3[][] DeltaTangents;
+        public readonly NativeArray<Vector3>[] DeltaVertices;
+        public readonly NativeArray<Vector3>[] DeltaNormals;
+        public readonly NativeArray<Vector3>[] DeltaTangents;
 
         public BlendShapeBuffer(Mesh sourceMesh)
         {
@@ -1211,9 +1211,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             var vertexCount = sourceMesh.vertexCount;
 
-            DeltaVertices = new Vector3[totalFrames][];
-            DeltaNormals = new Vector3[totalFrames][];
-            DeltaTangents = new Vector3[totalFrames][];
+            DeltaVertices = new NativeArray<Vector3>[totalFrames];
+            DeltaNormals = new NativeArray<Vector3>[totalFrames];
+            DeltaTangents = new NativeArray<Vector3>[totalFrames];
+
+            var readVertices = new Vector3[vertexCount];
+            var readNormals = new Vector3[vertexCount];
+            var readTangents = new Vector3[vertexCount];
 
             var frameIndex = 0;
             for (var blendShapeIndex = 0; blendShapeIndex < sourceMesh.blendShapeCount; blendShapeIndex++)
@@ -1227,15 +1231,16 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 for (var blendShapeFrameIndex = 0; blendShapeFrameIndex < frameCount; blendShapeFrameIndex++)
                 {
                     Profiler.BeginSample("Process Frame");
-                    Profiler.BeginSample("NewBuffer");
-                    var deltaVertices = DeltaVertices[frameIndex] = new Vector3[vertexCount];
-                    var deltaNormals = DeltaNormals[frameIndex] = new Vector3[vertexCount];
-                    var deltaTangents = DeltaTangents[frameIndex] = new Vector3[vertexCount];
-                    Profiler.EndSample();
 
                     Profiler.BeginSample("GetBlendShapeFrameVertices");
                     sourceMesh.GetBlendShapeFrameVertices(blendShapeIndex, blendShapeFrameIndex, 
-                        deltaVertices, deltaNormals, deltaTangents);
+                        readVertices, readNormals, readTangents);
+                    Profiler.EndSample();
+
+                    Profiler.BeginSample("SaveToBuffer");
+                    DeltaVertices[frameIndex] = new NativeArray<Vector3>(readVertices, Allocator.TempJob);
+                    DeltaNormals[frameIndex] = new NativeArray<Vector3>(readNormals, Allocator.TempJob);
+                    DeltaTangents[frameIndex] = new NativeArray<Vector3>(readTangents, Allocator.TempJob);
                     Profiler.EndSample();
 
                     Profiler.BeginSample("GetBlendShapeFrameWeight");
@@ -1256,9 +1261,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         // create empty
         private BlendShapeBuffer()
         {
-            DeltaVertices = Array.Empty<Vector3[]>();
-            DeltaNormals = Array.Empty<Vector3[]>();
-            DeltaTangents = Array.Empty<Vector3[]>();
+            DeltaVertices = Array.Empty<NativeArray<Vector3>>();
+            DeltaNormals = Array.Empty<NativeArray<Vector3>>();
+            DeltaTangents = Array.Empty<NativeArray<Vector3>>();
         }
 
         static BlendShapeBuffer()
@@ -1480,7 +1485,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             }
         }
 
-        public Vector3 Apply(Vector3[][] deltas, int bufferIndex)
+        public Vector3 Apply(NativeArray<Vector3>[] deltas, int bufferIndex)
         {
             var delta = Vector3.zero;
             if (FirstFrameIndex == -1) return delta;

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using nadena.dev.ndmf;
+using Unity.Collections;
 using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
@@ -139,18 +140,24 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
                 // we create new buffer for each frame
                 var bufferSize = buffer.DeltaNormals[0].Length;
-                var positionBuffers = new Vector3[weights.Length][];
-                var normalBuffers = new Vector3[weights.Length][];
-                var tangentBuffers = new Vector3[weights.Length][];
+                var positionBuffers = new NativeArray<Vector3>[weights.Length];
+                var normalBuffers = new NativeArray<Vector3>[weights.Length];
+                var tangentBuffers = new NativeArray<Vector3>[weights.Length];
+
+                // dispose all buffers when exiting this scope\
+                // elements in positionBuffers can be one of Uninitialized, buffer we created,
+                // or old buffer in buffer.DeltaVertices
+                using var disposeScope =
+                    Utils.NewMultiDisposable(() => positionBuffers.Concat(normalBuffers).Concat(tangentBuffers));
 
                 for (var i = 0; i < weights.Length; i++)
                 {
                     var frameInfo = applyFrameInfos[i];
 
                     // copy with apply
-                    var positionBuffer = positionBuffers[i] = new Vector3[bufferSize];
-                    var normalBuffer = normalBuffers[i] = new Vector3[bufferSize];
-                    var tangentBuffer = tangentBuffers[i] = new Vector3[bufferSize];
+                    var positionBuffer = positionBuffers[i] = new NativeArray<Vector3>(bufferSize, Allocator.TempJob);
+                    var normalBuffer = normalBuffers[i] = new NativeArray<Vector3>(bufferSize, Allocator.TempJob);
+                    var tangentBuffer = tangentBuffers[i] = new NativeArray<Vector3>(bufferSize, Allocator.TempJob);
 
                     for (var j = 0; j < bufferSize; j++)
                     {
@@ -183,9 +190,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     var index = bufferIndices[i].BufferIndex;
                     var weight = weights[i];
                     frames[i] = new BlendShapeFrameInfo(weight, index);
-                    buffer.DeltaVertices[index] = positionBuffers[i];
-                    buffer.DeltaNormals[index] = normalBuffers[i];
-                    buffer.DeltaTangents[index] = tangentBuffers[i];
+                    // by swapping, we can store old buffer to ****Buffers and can be disposed with disposeScope
+                    Utils.Swap(ref buffer.DeltaVertices[index], ref positionBuffers[i]);
+                    Utils.Swap(ref buffer.DeltaNormals[index], ref normalBuffers[i]);
+                    Utils.Swap(ref buffer.DeltaTangents[index], ref tangentBuffers[i]);
                 }
                 return frames;
             }
