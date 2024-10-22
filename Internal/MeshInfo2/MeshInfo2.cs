@@ -22,7 +22,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         public readonly Renderer SourceRenderer;
         public Transform? RootBone;
         public Bounds Bounds;
-        public readonly List<Vertex> Vertices = new List<Vertex>(0);
+        public readonly List<Vertex> VerticesMutable = new List<Vertex>(0);
+        public IReadOnlyList<Vertex> Vertices => VerticesMutable;
 
         private readonly Mesh? _originalMesh;
 
@@ -214,9 +215,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         public void ReadStaticMesh(Mesh mesh)
         {
             Profiler.BeginSample($"Read Static Mesh Part");
-            Vertices.Capacity = Math.Max(Vertices.Capacity, mesh.vertexCount);
-            Vertices.Clear();
-            for (var i = 0; i < mesh.vertexCount; i++) Vertices.Add(new Vertex());
+            VerticesMutable.Capacity = Math.Max(VerticesMutable.Capacity, mesh.vertexCount);
+            VerticesMutable.Clear();
+            for (var i = 0; i < mesh.vertexCount; i++) VerticesMutable.Add(new Vertex());
 
             var vertexBuffers = GetVertexBuffers(mesh);
 
@@ -452,7 +453,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         public void ClearMeshData()
         {
-            Vertices.Clear();
+            VerticesMutable.Clear();
             _texCoordStatus = default;
             SubMeshes.Clear();
             BlendShapes.Clear();
@@ -876,6 +877,21 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         public override string ToString() =>
             SourceRenderer ? $"MeshInfo2({SourceRenderer})" : $"MeshInfo2(Not Belong to Renderer)";
+
+        /// <summary>
+        /// Removes vertices that are not used in any submesh.
+        /// </summary>
+        public void RemoveUnusedVertices()
+        {
+            Profiler.BeginSample("Purge Unused Vertices");
+            var usedVertices = new HashSet<Vertex>();
+            foreach (var subMesh in SubMeshes)
+            foreach (var vertex in subMesh.Vertices)
+                usedVertices.Add(vertex);
+
+            VerticesMutable.RemoveAll(x => !usedVertices.Contains(x));
+            Profiler.EndSample();
+        }
     }
 
     public class SubMesh
@@ -920,7 +936,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             SharedMaterial = material;
         }
 
-        public SubMesh(List<Vertex> vertices, List<int> triangles, SubMeshDescriptor descriptor)
+        public SubMesh(IReadOnlyList<Vertex> vertices, List<int> triangles, SubMeshDescriptor descriptor)
         {
             Topology = descriptor.topology;
             Vertices.Capacity = descriptor.indexCount;

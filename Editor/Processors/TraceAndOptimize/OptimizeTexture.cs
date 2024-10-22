@@ -431,7 +431,7 @@ internal struct OptimizeTextureImpl {
                             {
                                 vertex = originalVertex.Clone();
                                 newVertexMap.Add(originalVertex, vertex);
-                                meshInfo2.Vertices.Add(vertex);
+                                meshInfo2.VerticesMutable.Add(vertex);
                                 TraceLog("Duplicating vertex");
                             }
 

@@ -62,7 +62,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             smr.sharedMesh = mesh;
             var meshInfo2 = new MeshInfo2(smr);
 
-            var vertex = meshInfo2.Vertices.Find(x => x.Position == new Vector3(+1, +1, +1));
+            var vertex = meshInfo2.Vertices.First(x => x.Position == new Vector3(+1, +1, +1));
 
             vertex.TryGetBlendShape("test0", weight, out var position, out _, out _);
 
@@ -167,7 +167,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             var meshInfo2 = new MeshInfo2(smr);
 
             meshInfo2.SubMeshes[0].Vertices.Clear();
-            meshInfo2.Vertices.Clear();
+            meshInfo2.VerticesMutable.Clear();
 
             var newMesh = new Mesh();
             meshInfo2.WriteToMesh(newMesh);

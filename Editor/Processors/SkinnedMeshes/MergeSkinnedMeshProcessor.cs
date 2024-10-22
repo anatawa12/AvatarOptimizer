@@ -278,8 +278,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
                 meshInfo.AssertInvariantContract($"processing source #{i} of {target.SourceRenderer.gameObject.name}");
 
-                target.Vertices.AddRange(meshInfo.Vertices);
-                meshInfo.Vertices.Clear();
+                target.VerticesMutable.AddRange(meshInfo.Vertices);
+                meshInfo.VerticesMutable.Clear();
 
                 for (var j = 0; j < 8; j++)
                     target.SetTexCoordStatus(j,

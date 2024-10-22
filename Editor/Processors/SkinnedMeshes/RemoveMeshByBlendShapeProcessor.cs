@@ -44,7 +44,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 subMesh.RemovePrimitives("RemoveMeshByBlendShape", condition);
 
             // remove unused vertices
-            target.Vertices.RemoveAll(x => byBlendShapeVertices.Contains(x));
+            target.RemoveUnusedVertices();
 
             // remove the BlendShapes
             FreezeBlendShapeProcessor.FreezeBlendShapes(Target, context, target, Component.RemovingShapeKeys);

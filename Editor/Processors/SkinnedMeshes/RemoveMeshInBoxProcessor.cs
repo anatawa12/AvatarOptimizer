@@ -30,17 +30,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             foreach (var subMesh in target.SubMeshes)
                 subMesh.RemovePrimitives("RemoveMeshInBox", condition);
 
-            // We don't need to reset AdditionalTemporal because if out of box, it always be used.
-            // Vertex.AdditionalTemporal: 0 if unused, 1 if used
-
-            inBoxVertices.Clear();
-            var usingVertices = inBoxVertices;
-            foreach (var subMesh in target.SubMeshes)
-            foreach (var vertex in subMesh.Vertices)
-                usingVertices.Add(vertex);
-
             // remove unused vertices
-            target.Vertices.RemoveAll(x => !usingVertices.Contains(x));
+            target.RemoveUnusedVertices();
         }
 
         public override IMeshInfoComputer GetComputer(IMeshInfoComputer upstream) => upstream;
