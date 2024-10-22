@@ -1205,6 +1205,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         public readonly NativeArray<Vector3>[] DeltaVertices;
         public readonly NativeArray<Vector3>[] DeltaNormals;
         public readonly NativeArray<Vector3>[] DeltaTangents;
+        public readonly int VertexCount;
 
         public BlendShapeBuffer(Mesh sourceMesh)
         {
@@ -1213,6 +1214,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             for (var i = 0; i < sourceMesh.blendShapeCount; i++)
                 totalFrames += sourceMesh.GetBlendShapeFrameCount(i);
 
+            VertexCount = sourceMesh.vertexCount;
             var vertexCount = sourceMesh.vertexCount;
 
             DeltaVertices = new NativeArray<Vector3>[totalFrames];
