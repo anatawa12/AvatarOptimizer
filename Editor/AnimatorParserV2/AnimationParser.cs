@@ -142,7 +142,6 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                     propertyName = Props.EnabledFor(obj);
 
                 var node = FloatAnimationCurveNode.Create(clip, binding, additiveReferenceClip, additiveReferenceFrame);
-                if (node == null) continue;
                 nodes.Set(componentOrGameObject, propertyName, node);
             }
             Profiler.EndSample();

@@ -410,31 +410,20 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         public AnimationCurve Curve { get; }
         public AnimationClip Clip { get; }
 
-        public static FloatAnimationCurveNode? Create(AnimationClip clip, EditorCurveBinding binding,
+        public static FloatAnimationCurveNode Create(AnimationClip clip, EditorCurveBinding binding,
             AnimationClip? additiveReferenceClip, float additiveReferenceFrame)
         {
-            var curve = AnimationUtility.GetEditorCurve(clip, binding);
-            if (curve == null) return null;
-            if (curve.keys.Length == 0) return null;
-            
-            float referenceValue = 0;
-            if (additiveReferenceClip != null 
-                && AnimationUtility.GetEditorCurve(additiveReferenceClip, binding) is { } referenceCurve)
-                referenceValue = referenceCurve.Evaluate(additiveReferenceFrame);
-            else
-                referenceValue = curve.Evaluate(0);
-
-            return new FloatAnimationCurveNode(clip, curve, referenceValue);
+            return new FloatAnimationCurveNode(clip, binding, additiveReferenceClip, additiveReferenceFrame);
         }
 
-        private FloatAnimationCurveNode(AnimationClip clip, AnimationCurve curve, float referenceValue)
+        private FloatAnimationCurveNode(AnimationClip clip, EditorCurveBinding binding,
+            AnimationClip? additiveReferenceClip, float additiveReferenceFrame)
         {
             if (!clip) throw new ArgumentNullException(nameof(clip));
-            if (curve == null) throw new ArgumentNullException(nameof(curve));
-            Debug.Assert(curve.keys.Length > 0);
             Clip = clip;
-            Curve = curve;
-            _constantInfo = new Lazy<FloatValueInfo>(() => ParseProperty(curve, referenceValue), isThreadSafe: false);
+            var curve = AnimationUtility.GetEditorCurve(clip, binding);
+            Curve = curve ?? throw new ArgumentNullException(nameof(curve));
+            _constantInfo = new Lazy<FloatValueInfo>(() => ParseProperty(curve, additiveReferenceClip, binding, additiveReferenceFrame), isThreadSafe: false);
         }
 
         private readonly Lazy<FloatValueInfo> _constantInfo;
@@ -443,16 +432,26 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         public override FloatValueInfo Value => _constantInfo.Value;
         public override IEnumerable<ObjectReference> ContextReferences => new[] { ObjectRegistry.GetReference(Clip) };
 
-        private static FloatValueInfo ParseProperty(AnimationCurve curve, float referenceValue)
+        private static FloatValueInfo ParseProperty(AnimationCurve curve,
+            AnimationClip? additiveReferenceClip, EditorCurveBinding binding, float additiveReferenceFrame)
         {
             var curveValue = ParseCurve(curve);
             if (curveValue.PossibleValues == null) return FloatValueInfo.Variable;
-            return new FloatValueInfo(curveValue.PossibleValues.Concat(new[] { referenceValue }).Distinct()
-                .ToArray());
+
+            float referenceValue = 0;
+            if (additiveReferenceClip != null 
+                && AnimationUtility.GetEditorCurve(additiveReferenceClip, binding) is { } referenceCurve)
+                referenceValue = referenceCurve.Evaluate(additiveReferenceFrame);
+            else
+                referenceValue = curve.Evaluate(0);
+
+            return new FloatValueInfo(curveValue.PossibleValues.Concat(new[] { referenceValue }).Distinct().ToArray());
         }
 
         private static FloatValueInfo ParseCurve(AnimationCurve curve)
         {
+            // TODO: we should check actual behavior with no keyframes
+            if (curve.keys.Length == 0) return FloatValueInfo.Variable; 
             if (curve.keys.Length == 1) return new FloatValueInfo(curve.keys[0].value);
 
             float constValue = 0;
