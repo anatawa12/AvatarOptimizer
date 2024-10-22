@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.ExceptionServices;
 
 namespace Anatawa12.AvatarOptimizer;
@@ -57,9 +56,28 @@ partial class Utils
         }
         return new DisposableList<T>(list);
     }
+
+    public static MultiDisposable<T> NewMultiDisposable<T>(Func<IEnumerable<T>> disposables) where T : IDisposable =>
+        new(disposables);
 }
 
-public readonly struct DisposableList<T> : IDisposable, IEnumerable<T>, IList<T>
+public readonly struct MultiDisposable<T> : IDisposable
+    where T : IDisposable
+{
+    private readonly Func<IEnumerable<T>> disposables;
+
+    public MultiDisposable(Func<IEnumerable<T>> disposables)
+    {
+        this.disposables = disposables;
+    }
+
+    public void Dispose()
+    {
+        Utils.DisposeAll(disposables());
+    }
+}
+
+public readonly struct DisposableList<T> : IDisposable, IList<T>
     where T : IDisposable
 {
     public readonly List<T> list;
