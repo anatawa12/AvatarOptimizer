@@ -17,7 +17,7 @@ using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 {
-    public class MeshInfo2
+    public class MeshInfo2 : IDisposable
     {
         public readonly Renderer SourceRenderer;
         public Transform? RootBone;
@@ -891,6 +891,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             VerticesMutable.RemoveAll(x => !usedVertices.Contains(x));
             Profiler.EndSample();
+        }
+
+        public void Dispose()
+        {
         }
     }
 

@@ -94,8 +94,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             Profiler.EndSample();
 
             Profiler.BeginSample("Collect MeshInfos");
+            // Owns staticRendererMeshInfos
+            using var staticRendererMeshInfos = staticMeshRenderers.Select(renderer => new MeshInfo2(renderer)).ToDisposableList();
             var meshInfos = skinnedMeshRenderers.Select(context.GetMeshInfoFor)
-                .Concat(staticMeshRenderers.Select(renderer => new MeshInfo2(renderer)))
+                .Concat(staticRendererMeshInfos)
                 .ToArray();
 
             foreach (var meshInfo2 in meshInfos) meshInfo2.FlattenMultiPassRendering("Merge Skinned Mesh");

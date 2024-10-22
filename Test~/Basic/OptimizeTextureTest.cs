@@ -68,7 +68,7 @@ public class OptimizeTextureTest
     [TestCase(TextureWrapMode.Mirror)]
     public void CreateIslands_OnBorder(TextureWrapMode? wrapMode)
     {
-        var meshInfo2 = GetMesh(BorderMesh);
+        using var meshInfo2 = GetMesh(BorderMesh);
 
         var result = OptimizeTextureImpl.CreateIslands(
             new[] { new OptimizeTextureImpl.UVID(meshInfo2, 0, UVChannel.UV0) },
@@ -96,7 +96,7 @@ public class OptimizeTextureTest
 
     public void CreateIslands_Fails(string generator, TextureWrapMode? wrapMode)
     {
-        var meshInfo2 = GetMesh(generator);
+        using var meshInfo2 = GetMesh(generator);
 
         var result = OptimizeTextureImpl.CreateIslands(
             new[] { new OptimizeTextureImpl.UVID(meshInfo2, 0, UVChannel.UV0) },
@@ -131,7 +131,7 @@ public class OptimizeTextureTest
 
     public void CreateIslands_Success(string generator, TextureWrapMode? wrapMode, int tileU, int tileV, bool flipU, bool flipV)
     {
-        var meshInfo2 = GetMesh(generator);
+        using var meshInfo2 = GetMesh(generator);
 
         var result = OptimizeTextureImpl.CreateIslands(
             new[] { new OptimizeTextureImpl.UVID(meshInfo2, 0, UVChannel.UV0) },

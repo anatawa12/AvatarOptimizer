@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
 using NUnit.Framework;
 using UnityEngine;
@@ -60,7 +61,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             var go = new GameObject();
             var smr = go.AddComponent<SkinnedMeshRenderer>();
             smr.sharedMesh = mesh;
-            var meshInfo2 = new MeshInfo2(smr);
+            using var meshInfo2 = new MeshInfo2(smr);
 
             var vertex = meshInfo2.Vertices.First(x => x.Position == new Vector3(+1, +1, +1));
 
@@ -81,7 +82,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             var go = new GameObject();
             var smr = go.AddComponent<SkinnedMeshRenderer>();
             smr.sharedMesh = mesh;
-            var meshInfo2 = new MeshInfo2(smr);
+            using var meshInfo2 = new MeshInfo2(smr);
 
             var newMesh = new Mesh();
             meshInfo2.WriteToMesh(newMesh);
@@ -94,7 +95,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             var secondGo = new GameObject();
             var smr = go.AddComponent<SkinnedMeshRenderer>();
             smr.rootBone = secondGo.transform;
-            var meshInfo2 = new MeshInfo2(smr);
+            using var meshInfo2 = new MeshInfo2(smr);
             Assert.That(meshInfo2.RootBone, Is.EqualTo(secondGo.transform));
         }
 
@@ -114,7 +115,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             var smr = go.AddComponent<SkinnedMeshRenderer>();
             smr.sharedMesh = mesh;
 
-            var meshInfo2 = new MeshInfo2(smr);
+            using var meshInfo2 = new MeshInfo2(smr);
 
             foreach (var vertex in meshInfo2.Vertices)
             {
@@ -144,7 +145,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             var smr = go.AddComponent<SkinnedMeshRenderer>();
             smr.sharedMesh = mesh;
 
-            var meshInfo2 = new MeshInfo2(smr);
+            using var meshInfo2 = new MeshInfo2(smr);
 
             Vector3 position;
             var vertex = meshInfo2.Vertices[0];
@@ -164,7 +165,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             var smr = go.AddComponent<SkinnedMeshRenderer>();
             smr.sharedMesh = mesh;
 
-            var meshInfo2 = new MeshInfo2(smr);
+            using var meshInfo2 = new MeshInfo2(smr);
 
             meshInfo2.SubMeshes[0].Vertices.Clear();
             meshInfo2.VerticesMutable.Clear();
@@ -184,7 +185,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             var smr = go.AddComponent<SkinnedMeshRenderer>();
             smr.sharedMesh = mesh;
 
-            var meshInfo2 = new MeshInfo2(smr);
+            using var meshInfo2 = new MeshInfo2(smr);
 
             foreach (var vertex in meshInfo2.Vertices)
             {
@@ -204,7 +205,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             var smr = go.AddComponent<SkinnedMeshRenderer>();
             smr.sharedMesh = mesh;
 
-            var meshInfo2 = new MeshInfo2(smr);
+            using var meshInfo2 = new MeshInfo2(smr);
             meshInfo2.MakeBoned();
 
             foreach (var vertex in meshInfo2.Vertices)
