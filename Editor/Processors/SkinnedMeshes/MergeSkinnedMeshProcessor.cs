@@ -279,6 +279,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 meshInfo.AssertInvariantContract($"processing source #{i} of {target.SourceRenderer.gameObject.name}");
 
                 target.Vertices.AddRange(meshInfo.Vertices);
+                meshInfo.Vertices.Clear();
+
                 for (var j = 0; j < 8; j++)
                     target.SetTexCoordStatus(j,
                         TexCoordStatusMax(target.GetTexCoordStatus(j), meshInfo.GetTexCoordStatus(j)));
@@ -293,6 +295,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     mappings.Add(($"m_Materials.Array.data[{j}]",
                         $"m_Materials.Array.data[{targetSubMeshIndex}]"));
                 }
+                meshInfo.SubMeshes.Clear();
 
 
                 // add BlendShape if not defined by name
