@@ -19,6 +19,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 {
     public class MeshInfo2 : IDisposable
     {
+        public static bool MeshValidationEnabled = true;
+
         public readonly Renderer SourceRenderer;
         public Transform? RootBone;
         public Bounds Bounds;
@@ -137,6 +139,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         [Conditional("UNITY_ASSERTIONS")]
         public void AssertInvariantContract(string context)
         {
+            if (!MeshValidationEnabled) return;
+
             Profiler.BeginSample("AssertInvariantContract");
             var vertices = new HashSet<Vertex>(Vertices);
             Debug.Assert(SubMeshes.SelectMany(x => x.Vertices).All(vertices.Contains),
