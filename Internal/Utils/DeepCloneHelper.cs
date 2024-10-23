@@ -4,21 +4,28 @@ using System.Diagnostics.CodeAnalysis;
 using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Profiling;
 using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer
 {
     public abstract class DeepCloneHelper
     {
-        private readonly Dictionary<Object, Object> _cache = new Dictionary<Object, Object>();
+        private readonly Dictionary<Object, Object> _cache = new();
         private bool _mapped = false;
 
         [return:NotNullIfNotNull("obj")]
         public T? MapObject<T>(T? obj) where T : Object
         {
+            Profiler.BeginSample("MapObject", obj);
+            T? result;
             using (ErrorReport.WithContextObject(obj))
-                return DeepClone(obj);
+                result = DeepClone(obj);
+            Profiler.EndSample();
+            return result;
         }
+
+        protected virtual Dictionary<Object, Object> GetCache(Type type) => _cache;
 
         // https://github.com/bdunderscore/modular-avatar/blob/db49e2e210bc070671af963ff89df853ae4514a5/Packages/nadena.dev.modular-avatar/Editor/AnimatorMerger.cs#L199-L241
         // Originally under MIT License
@@ -55,7 +62,7 @@ namespace Anatawa12.AvatarOptimizer
         protected void Changed() => _mapped = true;
         protected bool HasChanged() => _mapped;
 
-        protected void RegisterNotCloned(Object original) => _cache[original] = original;
+        protected void RegisterNotCloned(Object original) => GetCache(original.GetType())[original] = original;
 
         // https://github.com/bdunderscore/modular-avatar/blob/db49e2e210bc070671af963ff89df853ae4514a5/Packages/nadena.dev.modular-avatar/Editor/AnimatorMerger.cs#LL242-L340C10
         // Originally under MIT License
@@ -77,17 +84,21 @@ namespace Anatawa12.AvatarOptimizer
                     throw new ArgumentOutOfRangeException();
             }
 
-            if (_cache.TryGetValue(original, out var cached)) return (T)cached;
+            var cache = GetCache(original.GetType());
+            if (cache.TryGetValue(original, out var cached)) return (T)cached;
 
             var obj = CustomClone(original);
-            if (obj == null) return DefaultDeepClone(original);
+            if (obj == null) return DefaultDeepCloneImpl(original, cache);
 
-            _cache[original] = obj;
-            _cache[obj] = obj;
+            cache[original] = obj;
+            cache[obj] = obj;
             return (T)obj;
         }
 
-        protected T DefaultDeepClone<T>(T original) where T : Object
+        protected T DefaultDeepClone<T>(T original) where T : Object =>
+            DefaultDeepCloneImpl(original, GetCache(original.GetType()));
+
+        private T DefaultDeepCloneImpl<T>(T original, Dictionary<Object, Object> cache) where T : Object
         {
             Object obj;
             var ctor = original.GetType().GetConstructor(Type.EmptyTypes);
@@ -97,13 +108,15 @@ namespace Anatawa12.AvatarOptimizer
             }
             else
             {
+                Profiler.BeginSample("DeepCloneHelper.CopySerialized");
                 obj = (T)ctor.Invoke(Array.Empty<object>());
                 EditorUtility.CopySerialized(original, obj);
+                Profiler.EndSample();
             }
 
             ObjectRegistry.RegisterReplacedObject(original, obj);
-            _cache[original] = obj;
-            _cache[obj] = obj;
+            cache[original] = obj;
+            cache[obj] = obj;
 
             using (var so = new SerializedObject(obj))
             {

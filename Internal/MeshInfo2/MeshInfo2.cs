@@ -17,12 +17,16 @@ using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 {
-    public class MeshInfo2
+    public class MeshInfo2 : IDisposable
     {
+        public static bool MeshValidationEnabled = true;
+
         public readonly Renderer SourceRenderer;
         public Transform? RootBone;
         public Bounds Bounds;
-        public readonly List<Vertex> Vertices = new List<Vertex>(0);
+        // owns Vertices
+        public readonly List<Vertex> VerticesMutable = new List<Vertex>(0);
+        public IReadOnlyList<Vertex> Vertices => VerticesMutable;
 
         private readonly Mesh? _originalMesh;
 
@@ -49,24 +53,30 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 if (mesh != null)
                     ReadSkinnedMesh(mesh);
 
+                Profiler.BeginSample("Bounds");
                 var updateWhenOffscreen = renderer.updateWhenOffscreen;
                 renderer.updateWhenOffscreen = false;
                 Bounds = renderer.localBounds;
                 // ReSharper disable once Unity.InefficientPropertyAccess
                 // updateWhenOffscreen = false before accessing localBounds
                 renderer.updateWhenOffscreen = updateWhenOffscreen;
+                Profiler.EndSample();
                 RootBone = renderer.rootBone ? renderer.rootBone : renderer.transform;
 
+                Profiler.BeginSample("GetBlendShapeWeight");
                 if (mesh != null)
                 {
                     for (var i = 0; i < mesh.blendShapeCount; i++)
                         BlendShapes[i] = (BlendShapes[i].name, renderer.GetBlendShapeWeight(i));
                 }
+                Profiler.EndSample();
 
                 SetMaterials(renderer);
 
+                Profiler.BeginSample("Bone Transforms");
                 var bones = renderer.bones;
                 for (var i = 0; i < bones.Length && i < Bones.Count; i++) Bones[i].Transform = bones[i];
+                Profiler.EndSample();
 
                 RemoveUnusedBones();
 
@@ -98,6 +108,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         {
             if (SubMeshes.Count == 0) return;
 
+            Profiler.BeginSample("SetMaterials");
+
             var sourceMaterials = renderer.sharedMaterials;
 
             if (sourceMaterials.Length < SubMeshes.Count)
@@ -120,17 +132,23 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     lastMeshMaterials[j] = sourceMaterials[i];
                 SubMeshes[^1].SharedMaterials = lastMeshMaterials;
             }
+
+            Profiler.EndSample();
         }
 
         [Conditional("UNITY_ASSERTIONS")]
         public void AssertInvariantContract(string context)
         {
+            if (!MeshValidationEnabled) return;
+
+            Profiler.BeginSample("AssertInvariantContract");
             var vertices = new HashSet<Vertex>(Vertices);
             Debug.Assert(SubMeshes.SelectMany(x => x.Vertices).All(vertices.Contains),
                 $"{context}: some SubMesh has invalid triangles");
             var bones = new HashSet<Bone>(Bones);
             Debug.Assert(Vertices.SelectMany(x => x.BoneWeights).Select(x => x.bone).All(bones.Contains),
                 $"{context}: some SubMesh has invalid bone weights");
+            Profiler.EndSample();
         }
 
         /// <summary>
@@ -148,6 +166,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         public void ReadSkinnedMesh(Mesh mesh)
         {
+            Profiler.BeginSample("Read Skinned Mesh");
             ReadStaticMesh(mesh);
 
             Profiler.BeginSample("Read Skinned Mesh Part");
@@ -156,6 +175,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             Profiler.EndSample();
             Profiler.BeginSample("Read BlendShapes");
             ReadBlendShapes(mesh);
+            Profiler.EndSample();
             Profiler.EndSample();
             Profiler.EndSample();
         }
@@ -200,9 +220,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         public void ReadStaticMesh(Mesh mesh)
         {
             Profiler.BeginSample($"Read Static Mesh Part");
-            Vertices.Capacity = Math.Max(Vertices.Capacity, mesh.vertexCount);
-            Vertices.Clear();
-            for (var i = 0; i < mesh.vertexCount; i++) Vertices.Add(new Vertex());
+            VerticesMutable.Capacity = Math.Max(VerticesMutable.Capacity, mesh.vertexCount);
+            Utils.DisposeAll(VerticesMutable);
+            VerticesMutable.Clear();
+            for (var i = 0; i < mesh.vertexCount; i++) VerticesMutable.Add(new Vertex());
 
             var vertexBuffers = GetVertexBuffers(mesh);
 
@@ -438,7 +459,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         public void ClearMeshData()
         {
-            Vertices.Clear();
+            Utils.DisposeAll(VerticesMutable);
+            VerticesMutable.Clear();
             _texCoordStatus = default;
             SubMeshes.Clear();
             BlendShapes.Clear();
@@ -464,6 +486,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         private void RemoveUnusedBones()
         {
             if (Bones.Count == 0) return;
+            Profiler.BeginSample("Remove Unused Bones");
             var hasValidBone = Bones.Any(x => x.Transform != null);
 
             // GC Bones
@@ -479,6 +502,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 // so we have to some bone to render.
                 if (RootBone) Bones.Add(new Bone(Matrix4x4.identity, RootBone));
             }
+            Profiler.EndSample();
         }
 
         /// <returns>true if we flattened multi pass rendering</returns>
@@ -860,6 +884,34 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         public override string ToString() =>
             SourceRenderer ? $"MeshInfo2({SourceRenderer})" : $"MeshInfo2(Not Belong to Renderer)";
+
+        /// <summary>
+        /// Removes vertices that are not used in any submesh.
+        /// </summary>
+        public void RemoveUnusedVertices()
+        {
+            Profiler.BeginSample("Purge Unused Vertices");
+            var usedVertices = new HashSet<Vertex>();
+            foreach (var subMesh in SubMeshes)
+            foreach (var vertex in subMesh.Vertices)
+                usedVertices.Add(vertex);
+
+            var removed = new List<Vertex>();
+            VerticesMutable.RemoveAll(x =>
+            {
+                var remove = !usedVertices.Contains(x);
+                if (remove) removed.Add(x);
+                return remove;
+            });
+            Utils.DisposeAll(removed);
+            Profiler.EndSample();
+        }
+
+        public void Dispose()
+        {
+            Utils.DisposeAll(VerticesMutable);
+            VerticesMutable.Clear();
+        }
     }
 
     public class SubMesh
@@ -876,6 +928,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             }
         }
 
+        // borrowed from MeshInfo2
         public List<Vertex> Vertices { get; } = new List<Vertex>();
 
         public Material? SharedMaterial
@@ -904,7 +957,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             SharedMaterial = material;
         }
 
-        public SubMesh(List<Vertex> vertices, List<int> triangles, SubMeshDescriptor descriptor)
+        public SubMesh(IReadOnlyList<Vertex> vertices, List<int> triangles, SubMeshDescriptor descriptor)
         {
             Topology = descriptor.topology;
             Vertices.Capacity = descriptor.indexCount;
@@ -960,7 +1013,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         }
     }
 
-    public class Vertex
+    public class Vertex : IDisposable
     {
         public Vector3 Position { get; set; }
         public Vector3 Normal { get; set; }
@@ -979,7 +1032,14 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         // SkinnedMesh related
         public List<(Bone bone, float weight)> BoneWeights = new List<(Bone, float)>();
 
-        public BlendShapeBuffer BlendShapeBuffer = BlendShapeBuffer.Empty;
+        private RefCountField<BlendShapeBuffer> _blendShapeBuffer = BlendShapeBuffer.Empty;
+
+        public BlendShapeBuffer BlendShapeBuffer
+        {
+            get => _blendShapeBuffer.Value;
+            set => _blendShapeBuffer.Value = value;
+        }
+
         public int BlendShapeBufferVertexIndex;
 
         public readonly struct BlendShapeFrame
@@ -1056,7 +1116,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             return frames.FrameCount != 0;
         }
 
-        public Vertex()
+        internal Vertex()
         {
         }
 
@@ -1106,6 +1166,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             matrix = rendererWorldToLocalMatrix * matrix;
             return matrix * new Vector4(position.x, position.y, position.z, 1f);
         }
+
+        public void Dispose()
+        {
+            _blendShapeBuffer.Dispose();
+        }
     }
 
     public class Bone
@@ -1134,12 +1199,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
     ///
     /// This class is generally immutable except for removing blendShapes because adding data would require creating new array.
     /// </summary>
-    public class BlendShapeBuffer
+    public class BlendShapeBuffer : IReferenceCount
     {
         public Dictionary<string, BlendShapeShape> Shapes { get; } = new();
-        public readonly Vector3[][] DeltaVertices;
-        public readonly Vector3[][] DeltaNormals;
-        public readonly Vector3[][] DeltaTangents;
+        public readonly NativeArray<Vector3>[] DeltaVertices;
+        public readonly NativeArray<Vector3>[] DeltaNormals;
+        public readonly NativeArray<Vector3>[] DeltaTangents;
+        public readonly int VertexCount;
 
         public BlendShapeBuffer(Mesh sourceMesh)
         {
@@ -1148,15 +1214,21 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             for (var i = 0; i < sourceMesh.blendShapeCount; i++)
                 totalFrames += sourceMesh.GetBlendShapeFrameCount(i);
 
+            VertexCount = sourceMesh.vertexCount;
             var vertexCount = sourceMesh.vertexCount;
 
-            DeltaVertices = new Vector3[totalFrames][];
-            DeltaNormals = new Vector3[totalFrames][];
-            DeltaTangents = new Vector3[totalFrames][];
+            DeltaVertices = new NativeArray<Vector3>[totalFrames];
+            DeltaNormals = new NativeArray<Vector3>[totalFrames];
+            DeltaTangents = new NativeArray<Vector3>[totalFrames];
+
+            var readVertices = new Vector3[vertexCount];
+            var readNormals = new Vector3[vertexCount];
+            var readTangents = new Vector3[vertexCount];
 
             var frameIndex = 0;
             for (var blendShapeIndex = 0; blendShapeIndex < sourceMesh.blendShapeCount; blendShapeIndex++)
             {
+                Profiler.BeginSample("Process Shape");
                 var name = sourceMesh.GetBlendShapeName(blendShapeIndex);
                 var frameCount = sourceMesh.GetBlendShapeFrameCount(blendShapeIndex);
 
@@ -1164,20 +1236,30 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
                 for (var blendShapeFrameIndex = 0; blendShapeFrameIndex < frameCount; blendShapeFrameIndex++)
                 {
-                    var deltaVertices = DeltaVertices[frameIndex] = new Vector3[vertexCount];
-                    var deltaNormals = DeltaNormals[frameIndex] = new Vector3[vertexCount];
-                    var deltaTangents = DeltaTangents[frameIndex] = new Vector3[vertexCount];
+                    Profiler.BeginSample("Process Frame");
 
+                    Profiler.BeginSample("GetBlendShapeFrameVertices");
                     sourceMesh.GetBlendShapeFrameVertices(blendShapeIndex, blendShapeFrameIndex, 
-                        deltaVertices, deltaNormals, deltaTangents);
+                        readVertices, readNormals, readTangents);
+                    Profiler.EndSample();
 
+                    Profiler.BeginSample("SaveToBuffer");
+                    DeltaVertices[frameIndex] = new NativeArray<Vector3>(readVertices, Allocator.TempJob);
+                    DeltaNormals[frameIndex] = new NativeArray<Vector3>(readNormals, Allocator.TempJob);
+                    DeltaTangents[frameIndex] = new NativeArray<Vector3>(readTangents, Allocator.TempJob);
+                    Profiler.EndSample();
+
+                    Profiler.BeginSample("GetBlendShapeFrameWeight");
                     var weight = sourceMesh.GetBlendShapeFrameWeight(blendShapeIndex, blendShapeFrameIndex);
                     frameInfos[blendShapeFrameIndex] = new BlendShapeFrameInfo(weight, frameIndex);
+                    Profiler.EndSample();
 
                     frameIndex++;
+                    Profiler.EndSample();
                 }
 
                 Shapes.Add(name, new BlendShapeShape(frameInfos));
+                Profiler.EndSample();
             }
             Profiler.EndSample();
         }
@@ -1185,17 +1267,29 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         // create empty
         private BlendShapeBuffer()
         {
-            DeltaVertices = Array.Empty<Vector3[]>();
-            DeltaNormals = Array.Empty<Vector3[]>();
-            DeltaTangents = Array.Empty<Vector3[]>();
+            DeltaVertices = Array.Empty<NativeArray<Vector3>>();
+            DeltaNormals = Array.Empty<NativeArray<Vector3>>();
+            DeltaTangents = Array.Empty<NativeArray<Vector3>>();
+        }
+
+        static BlendShapeBuffer()
+        {
+            Empty = new BlendShapeBuffer();
+            RefCount.Increment(Empty);
         }
 
         public ApplyFrame2Array GetApplyFramesInfo(string shapeName, float weight, bool getDefined = false) =>
             Shapes.TryGetValue(shapeName, out var shape) ? shape.GetApplyFramesInfo(weight, getDefined) : default;
 
-        public static BlendShapeBuffer Empty { get; } = new();
+        public static BlendShapeBuffer Empty { get; }
 
         public void RemoveBlendShape(string name) => Shapes.Remove(name);
+
+        ReferenceCount IReferenceCount.ReferenceCount { get; } = new();
+
+        public void Dispose()
+        {
+        }
     }
 
     public class BlendShapeShape
@@ -1397,7 +1491,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             }
         }
 
-        public Vector3 Apply(Vector3[][] deltas, int bufferIndex)
+        public Vector3 Apply(NativeArray<Vector3>[] deltas, int bufferIndex)
         {
             var delta = Vector3.zero;
             if (FirstFrameIndex == -1) return delta;

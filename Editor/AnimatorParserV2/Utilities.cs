@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using UnityEditor.Animations;
 using UnityEngine;
+using UnityEngine.Profiling;
 using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
@@ -67,6 +68,8 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 }
             }
 
+            Profiler.BeginSample("NodesMerger.Merge (main)");
+
             var nodes = merger.CreateContainer();
 
             foreach (var ((target, prop), value) in floats)
@@ -75,6 +78,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             foreach (var ((target, prop), value) in objects)
                 nodes.Add(target, prop, merger.MergeNode(value, sourceCount));
 
+            Profiler.EndSample();
             return nodes;
         }
     }

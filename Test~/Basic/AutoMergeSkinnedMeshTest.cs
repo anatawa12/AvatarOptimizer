@@ -27,14 +27,15 @@ namespace Anatawa12.AvatarOptimizer.Test
             var material2 = new Material(shader);
             var material3 = new Material(shader);
             var material4 = new Material(shader);
-            var (indexMap, meshes) = AutoMergeSkinnedMesh.CreateSubMeshesMergePreserveOrder(new[]
+            using var meshInfo2s = new[]
             {
                 MakeMeshInfo2(material0, material1),
                 MakeMeshInfo2(material0, material2),
                 MakeMeshInfo2(material1, material2),
                 MakeMeshInfo2(material0, material4),
                 MakeMeshInfo2(material3, material4),
-            });
+            }.ToDisposableList();
+            var (indexMap, meshes) = AutoMergeSkinnedMesh.CreateSubMeshesMergePreserveOrder(meshInfo2s.ToArray());
 
             Assert.That(indexMap, Is.EquivalentTo(new[]
             {

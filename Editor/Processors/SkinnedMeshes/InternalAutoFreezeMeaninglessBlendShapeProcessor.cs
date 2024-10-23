@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using nadena.dev.ndmf;
+using Unity.Collections;
 using UnityEditor;
 using UnityEngine;
 
@@ -21,15 +22,43 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             if (state.PreserveBlendShapes.TryGetValue(Target, out var preserve))
                 meaninglessBlendShapes.ExceptWith(preserve);
 
-            var buffers = target.Vertices.Select(x => x.BlendShapeBuffer).Distinct();
-            foreach (var shapeBuffer in buffers)
+            var buffers = new Dictionary<BlendShapeBuffer, NativeArray<bool>>();
+            using var dispose = Utils.NewMultiDisposable(() => buffers.Values);
+
+            foreach (var vertex in target.Vertices)
+            {
+                var buffer = vertex.BlendShapeBuffer;
+                if (!buffers.TryGetValue(buffer, out var value))
+                    buffers.Add(buffer, value = new NativeArray<bool>(buffer.VertexCount, Allocator.TempJob));
+
+                if (value.Length == 0) continue;
+                value[vertex.BlendShapeBufferVertexIndex] = true;
+            }
+
+            foreach (var (shapeBuffer, useIndices) in buffers)
             {
                 foreach (var (shapeName, shapeShape) in shapeBuffer.Shapes)
                 {
-                    var meaningfull = shapeShape.FramesBufferIndices.Any(bufferIndex => 
-                        shapeBuffer.DeltaVertices[bufferIndex].Any(x => x != Vector3.zero) 
-                        || shapeBuffer.DeltaNormals[bufferIndex].Any(x => x != Vector3.zero) 
-                        || shapeBuffer.DeltaNormals[bufferIndex].Any(x => x != Vector3.zero));
+                    if (!meaninglessBlendShapes.Contains(shapeName)) continue;
+
+                    var meaningfull = false;
+
+                    foreach (var bufferIndex in shapeShape.FramesBufferIndices)
+                    {
+                        var deltaVertices = shapeBuffer.DeltaVertices[bufferIndex];
+                        var deltaNormals = shapeBuffer.DeltaNormals[bufferIndex];
+                        var deltaTangents = shapeBuffer.DeltaTangents[bufferIndex];
+
+                        for (var i = 0; i < deltaVertices.Length; i++)
+                        {
+                            if (!useIndices[i]) continue;
+                            if (deltaVertices[i] != Vector3.zero || deltaNormals[i] != Vector3.zero || deltaTangents[i] != Vector3.zero)
+                            {
+                                meaningfull = true;
+                                break;
+                            }
+                        }
+                    }
 
                     if (meaningfull)
                         meaninglessBlendShapes.Remove(shapeName);

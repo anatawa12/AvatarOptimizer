@@ -21,12 +21,12 @@ namespace Anatawa12.AvatarOptimizer.Processors
             var processorLists = graph.GetSortedProcessors(renderers);
             foreach (var processors in processorLists)
             {
-                Profiler.BeginSample($"EditSkinnedMeshComponents: {processors.Target.name}");
+                Profiler.BeginSample($"EditSkinnedMeshComponents");
                 var target = context.GetMeshInfoFor(processors.Target);
 
                 foreach (var processor in processors.GetSorted())
                 {
-                    Profiler.BeginSample($"{processor.GetType().Name}: {processors.Target.name}");
+                    Profiler.BeginSample($"{processor.GetType().Name}");
                     using (ErrorReport.WithContextObject(processor.Component)) processor.Process(context, target);
                     target.AssertInvariantContract(
                         $"after {processor.GetType().Name} " +
