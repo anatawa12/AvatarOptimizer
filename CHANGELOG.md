@@ -82,6 +82,10 @@ The format is based on [Keep a Changelog].
 - Support for Shaders that depends on vertex index `#1275` `#1281` `#1285`
   - Avatar Optimizer will not automatically merge meshes that are using vertex index
   - since merging them may change vertex order, which changes vertex index
+- BlendShape support for Merge Skinned Mesh `#1286`
+  - You now can successfully merge Meshes with BlendShape with Merge Skinned Mesh.
+  - Actually, previous version does not have proper consideration for BlendShape.
+  - This version introduces options to select BlendShape behavior in Merge Skinned Mesh.
 
 ### Deprecated
 
@@ -98,6 +102,8 @@ The format is based on [Keep a Changelog].
 - Remove Mesh in Box does not work for meshes without Bones `#1256`
 - NullReferenceException in `GetBlendShape` if Mesh is not specified for SkinnedMeshRenderer `#1267`
 - Animation for target renderer of Merge Skinned Mesh might be overridden by animation for source renderer `#1276`
+- BlendShape with same name is impclitly merged in Merge Skinned Mesh `#1286`
+  - Now you can rename BlendShape to avoid conflicts.
 
 ### Security
 

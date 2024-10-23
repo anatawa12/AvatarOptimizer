@@ -4,9 +4,9 @@ using nadena.dev.ndmf;
 
 namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
 
-internal class EvacuateProcessor : EditSkinnedMeshProcessor<UVUsageCompabilityAPIImpl.Evacuate>
+internal class EvacuateProcessor : EditSkinnedMeshProcessor<InternalEvacuateUVChannel>
 {
-    public EvacuateProcessor(UVUsageCompabilityAPIImpl.Evacuate component) : base(component)
+    public EvacuateProcessor(InternalEvacuateUVChannel component) : base(component)
     {
     }
 
@@ -32,9 +32,9 @@ internal class EvacuateProcessor : EditSkinnedMeshProcessor<UVUsageCompabilityAP
     public override IMeshInfoComputer GetComputer(IMeshInfoComputer upstream) => upstream;
 }
 
-internal class RevertEvacuateProcessor : EditSkinnedMeshProcessor<UVUsageCompabilityAPIImpl.RevertEvacuate>
+internal class RevertEvacuateProcessor : EditSkinnedMeshProcessor<InternalRevertEvacuateUVChannel>
 {
-    public RevertEvacuateProcessor(UVUsageCompabilityAPIImpl.RevertEvacuate component) : base(component)
+    public RevertEvacuateProcessor(InternalRevertEvacuateUVChannel component) : base(component)
     {
     }
 
