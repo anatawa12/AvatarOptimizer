@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using Anatawa12.AvatarOptimizer.ndmf;
 using nadena.dev.ndmf;
 using UnityEditor;
@@ -85,8 +86,9 @@ internal class DupliacteAssets : Pass<DupliacteAssets>
         {
             if (o is Material mat)
             {
-                var newMat = Object.Instantiate(mat);
-                newMat.name = mat.name;
+                Material newMat;
+                using (MaterialEditorReflection.BeginNoApplyMaterialPropertyDrawers())
+                    newMat = new Material(mat);
                 newMat.parent = null; // force flatten material variants
                 ObjectRegistry.RegisterReplacedObject(mat, newMat);
                 return newMat;
@@ -114,6 +116,7 @@ internal class DupliacteAssets : Pass<DupliacteAssets>
 
             return null;
         }
+
 
         protected override ComponentSupport GetComponentSupport(Object o)
         {
@@ -153,6 +156,44 @@ internal class DupliacteAssets : Pass<DupliacteAssets>
 
                 default:
                     return ComponentSupport.NoClone;
+            }
+        }
+    }
+
+    static class MaterialEditorReflection
+    {
+        static MaterialEditorReflection()
+        {
+            DisableApplyMaterialPropertyDrawersPropertyInfo = typeof(EditorMaterialUtility).GetProperty(
+                "disableApplyMaterialPropertyDrawers", BindingFlags.Static | BindingFlags.NonPublic)!;
+        }
+
+        public static readonly System.Reflection.PropertyInfo DisableApplyMaterialPropertyDrawersPropertyInfo;
+
+        public static DisableApplyMaterialPropertyDisposable BeginNoApplyMaterialPropertyDrawers()
+        {
+            return new DisableApplyMaterialPropertyDisposable(true);
+        }
+
+        public static bool DisableApplyMaterialPropertyDrawers
+        {
+            get => (bool)DisableApplyMaterialPropertyDrawersPropertyInfo.GetValue(null);
+            set => DisableApplyMaterialPropertyDrawersPropertyInfo.SetValue(null, value);
+        }
+
+        public struct DisableApplyMaterialPropertyDisposable : IDisposable
+        {
+            private readonly bool _originalValue;
+
+            public DisableApplyMaterialPropertyDisposable(bool value)
+            {
+                _originalValue = DisableApplyMaterialPropertyDrawers;
+                DisableApplyMaterialPropertyDrawers = value;
+            }
+
+            public void Dispose()
+            {
+                DisableApplyMaterialPropertyDrawers = _originalValue;
             }
         }
     }
