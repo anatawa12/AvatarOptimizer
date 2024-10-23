@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using UnityEditor;
 using UnityEngine;
@@ -374,5 +375,9 @@ namespace Anatawa12.AvatarOptimizer
         /// <param name="b">second array</param>
         /// <returns>whether two arrays are equal</returns>
         public static bool Color32ArrayEquals(Color32[] a, Color32[] b) => Color32ArrayEquals(a.AsSpan(), b.AsSpan());
+
+        // Exception-safe swap
+        public static void Swap<T>(ref T a, ref T b) =>
+            (a, b) = (b, a);
     }
 }

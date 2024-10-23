@@ -23,7 +23,12 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
             if (currentPrefabStage != null)
             {
                 var instanceGameObject = instance as GameObject ?? (instance as Component)?.gameObject;
-                isAsset |= currentPrefabStage.IsPartOfPrefabContents(instanceGameObject);
+                // isAsset |= currentPrefabStage.IsPartOfPrefabContents(instanceGameObject);
+                // but ^^ will cause InvalidOperationException.
+                // This is because `OnValidate` invocation is from `PrefabStageUtility:LoadPrefabIntoPreviewScene`
+                // invocation in PrefabStage.LoadStage method, which assigns m_PrefabContentsRoot.
+                // scene property is already available so we use it instead for detecting GameObjects in the PrefabStage. 
+                isAsset |= instanceGameObject?.scene == currentPrefabStage.scene;
             }
 
             return isInstance && !isAsset;

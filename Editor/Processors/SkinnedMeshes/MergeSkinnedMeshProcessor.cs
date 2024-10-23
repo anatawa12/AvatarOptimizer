@@ -94,8 +94,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             Profiler.EndSample();
 
             Profiler.BeginSample("Collect MeshInfos");
+            // Owns staticRendererMeshInfos
+            using var staticRendererMeshInfos = staticMeshRenderers.Select(renderer => new MeshInfo2(renderer)).ToDisposableList();
             var meshInfos = skinnedMeshRenderers.Select(context.GetMeshInfoFor)
-                .Concat(staticMeshRenderers.Select(renderer => new MeshInfo2(renderer)))
+                .Concat(staticRendererMeshInfos)
                 .ToArray();
 
             foreach (var meshInfo2 in meshInfos) meshInfo2.FlattenMultiPassRendering("Merge Skinned Mesh");
@@ -314,7 +316,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
                 meshInfo.AssertInvariantContract($"processing source #{i} of {target.SourceRenderer.gameObject.name}");
 
-                target.Vertices.AddRange(meshInfo.Vertices);
+                target.VerticesMutable.AddRange(meshInfo.Vertices);
+                meshInfo.VerticesMutable.Clear();
+
                 for (var j = 0; j < 8; j++)
                     target.SetTexCoordStatus(j,
                         TexCoordStatusMax(target.GetTexCoordStatus(j), meshInfo.GetTexCoordStatus(j)));
@@ -329,6 +333,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     mappings.Add(($"m_Materials.Array.data[{j}]",
                         $"m_Materials.Array.data[{targetSubMeshIndex}]"));
                 }
+                meshInfo.SubMeshes.Clear();
 
                 // rename if componentBlendShapeMode is RenameToAvoidConflict
                 if (componentBlendShapeMode == MergeSkinnedMesh.BlendShapeMode.RenameToAvoidConflict)

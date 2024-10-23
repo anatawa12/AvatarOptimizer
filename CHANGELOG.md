@@ -59,7 +59,7 @@ The format is based on [Keep a Changelog].
 - Reimplement Preview system with NDMF Preview System `#1131` `#1195` `#1218` `#1270`
   - This will prevent issues relates to Animation Mode bug.
   - This allows you to preview Remove Mesh components without selecting Mesh OR while in Animation Mode.
-- Improved Prefab Safe Set, which are used in MergePhysBone, MergeSkinnedMesh, FreezeBlendShape and more components `#1212` `#1219` `#1221` `#1236`
+- Improved Prefab Safe Set, which are used in MergePhysBone, MergeSkinnedMesh, FreezeBlendShape and more components `#1212` `#1219` `#1221` `#1236` `#1287`
   - This should improve compatibility with replacing base prefab, which is added in Unity 2022.
 - Allow multiple component for Remove Mesh components with API `#1216` `#1218`
   - This allows non-destructive tools to add Remove Mesh components even if Remove Mesh component are added before.
@@ -68,7 +68,7 @@ The format is based on [Keep a Changelog].
 - Renamed debug options internally `#1228`
   - This will lose previously configured debug options.
   - However, debug options are not considered as Public API as stated in documents so this is not backward incompatible changes in semver 2.0.0 section 8.
-- Performance Improvements `#1234` `#1243` `#1240`
+- Performance Improvements `#1234` `#1243` `#1240` `#1288`
 - Transform gizmo are now hidden while you're editing box of Remove Mesh in Box `#1259`
   - This prevents mistakenly moving the Skinned Mesh Renderer while editing the box.
 - Make MergePhysBone implement `INetworkID` `#1260`
@@ -78,7 +78,7 @@ The format is based on [Keep a Changelog].
   - Many NDMF tools uses `zh-hans` so previously you may see both 中文 (中国) and 中文 (简体).
   - I think zh-hans is more accurate expression so I changed so.
 - Improve RemoveMeshByMask compability with Tex Trans Tool `#1269`
-- Support for Shaders that depends on vertex index `#1275` `#1281`
+- Support for Shaders that depends on vertex index `#1275` `#1281` `#1285`
   - Avatar Optimizer will not automatically merge meshes that are using vertex index
   - since merging them may change vertex order, which changes vertex index
 

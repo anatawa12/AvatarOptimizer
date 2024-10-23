@@ -19,7 +19,7 @@ public class RenameBlendShapeTest
         cube.AddBlendShapeFrame("test3", 100, NewFrame((0, Vector3.right)), null, null);
 
         var newRenderer = TestUtils.NewSkinnedMeshRenderer(cube);
-        var meshInfo2 = new MeshInfo2(newRenderer);
+        using var meshInfo2 = new MeshInfo2(newRenderer);
 
         // do process
         var mapping = new List<(string, float, List<string>)>
@@ -93,7 +93,7 @@ public class RenameBlendShapeTest
         cube.AddBlendShapeFrame("test2", 100, NewFrame((0, Vector3.left)), null, null);
 
         var newRenderer = TestUtils.NewSkinnedMeshRenderer(cube);
-        var meshInfo2 = new MeshInfo2(newRenderer);
+        using var meshInfo2 = new MeshInfo2(newRenderer);
 
         // do process
         var mapping = new List<(string, float, List<string>)>
@@ -161,7 +161,7 @@ public class RenameBlendShapeTest
         cube.AddBlendShapeFrame("test3", 100, NewFrame((0, Vector3.right)), null, null);
 
         var newRenderer = TestUtils.NewSkinnedMeshRenderer(cube);
-        var meshInfo2 = new MeshInfo2(newRenderer);
+        using var meshInfo2 = new MeshInfo2(newRenderer);
 
         // do process
         var mapping = new List<(string, float, List<string>)>

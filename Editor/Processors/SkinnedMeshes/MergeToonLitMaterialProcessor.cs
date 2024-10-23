@@ -66,7 +66,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                         {
                             // if there are multiple users for the vertex: duplicate it
                             var cloned = subMesh.Vertices[i].Clone();
-                            target.Vertices.Add(cloned);
+                            target.VerticesMutable.Add(cloned);
 
                             users[subMesh.Vertices[i]]--;
 
