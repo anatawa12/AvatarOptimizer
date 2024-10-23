@@ -48,6 +48,7 @@ The format is based on [Keep a Changelog].
   - This feature is added to `Remove Unused Objects` in `Trace and Optimize`.
   - When you changed shader for an material, properties for previously used shaders might be remain
   - This may increase your avatar size by unexpectedly including unused textures
+- Right-click menu option to create a new GameObject with a specified component
 
 ### Changed
 - Skip Enablement Mismatched Renderers is now disabled by default `#1169`

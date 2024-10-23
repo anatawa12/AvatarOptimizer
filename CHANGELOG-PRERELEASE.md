@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Right-click menu option to create a new GameObject with a specified component
 
 ### Changed
 
