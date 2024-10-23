@@ -39,16 +39,7 @@ namespace Anatawa12.AvatarOptimizer
 
                 public bool MoveNext()
                 {
-                    Profiler.BeginSample($"ObjectReferencePropertiesEnumerable.MoveNext ({_iterator.serializedObject.targetObject.GetType().FullName})");
                     var result = MoveNextImpl();
-                    if (result && Profiler.enabled)
-                    {
-                        // I think this is not best way to collect list of propertyPath with profiler
-                        // but I can't find better way.
-                        Profiler.BeginSample(_iterator.propertyPath);
-                        Profiler.EndSample();
-                    }
-                    Profiler.EndSample();
                     return result;
                 }
 
