@@ -6,7 +6,8 @@ namespace Anatawa12.AvatarOptimizer
     internal class NewGameObjectAndAddComponent
     {
         private const string BASE_PATH = "GameObject/Avatar Optimizer/";
-        
+        private const int PRIORITY = 20;
+
         private const string MERGE_SKINNED_MESH = "Merge Skinned Mesh";
         private const string MERGE_PHYSBONE = "Merge PhysBone";
 
@@ -30,17 +31,17 @@ namespace Anatawa12.AvatarOptimizer
         }
 
 
-        [MenuItem(BASE_PATH + MERGE_SKINNED_MESH, true)]
+        [MenuItem(BASE_PATH + MERGE_SKINNED_MESH, true, PRIORITY)]
         private static bool ValidateCreateMergeSkinnedMesh() => Selection.activeGameObject != null;
 
-        [MenuItem(BASE_PATH + MERGE_SKINNED_MESH)]
+        [MenuItem(BASE_PATH + MERGE_SKINNED_MESH, false, PRIORITY)]
         private static void CreateMergeSkinnedMesh() => CreateAndAddComponent<MergeSkinnedMesh>(MERGE_SKINNED_MESH);
 
 
-        [MenuItem(BASE_PATH + MERGE_PHYSBONE, true)]
+        [MenuItem(BASE_PATH + MERGE_PHYSBONE, true, PRIORITY)]
         private static bool ValidateCreateMergePhysBone() => Selection.activeGameObject != null;
 
-        [MenuItem(BASE_PATH + MERGE_PHYSBONE)]
+        [MenuItem(BASE_PATH + MERGE_PHYSBONE, false, PRIORITY)]
         private static void CreateMergePhysBone() => CreateAndAddComponent<MergePhysBone>(MERGE_PHYSBONE);
     }
 }
