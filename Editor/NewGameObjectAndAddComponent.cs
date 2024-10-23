@@ -6,8 +6,9 @@ namespace Anatawa12.AvatarOptimizer
     internal class NewGameObjectAndAddComponent
     {
         private const string BASE_PATH = "GameObject/Avatar Optimizer/";
-        private const string MSM = "Merge Skinned Mesh";
-        private const string MPB = "Merge PhysBone";
+        
+        private const string MERGE_SKINNED_MESH = "Merge Skinned Mesh";
+        private const string MERGE_PHYSBONE = "Merge PhysBone";
 
         private static void CreateAndAddComponent<T>(string componentName) where T : MonoBehaviour
         {
@@ -29,17 +30,17 @@ namespace Anatawa12.AvatarOptimizer
         }
 
 
-        [MenuItem(BASE_PATH + MSM, true)]
+        [MenuItem(BASE_PATH + MERGE_SKINNED_MESH, true)]
         private static bool ValidateCreateMergeSkinnedMesh() => Selection.activeGameObject != null;
 
-        [MenuItem(BASE_PATH + MSM)]
-        private static void CreateMergeSkinnedMesh() => CreateAndAddComponent<MergeSkinnedMesh>(MSM);
+        [MenuItem(BASE_PATH + MERGE_SKINNED_MESH)]
+        private static void CreateMergeSkinnedMesh() => CreateAndAddComponent<MergeSkinnedMesh>(MERGE_SKINNED_MESH);
 
 
-        [MenuItem(BASE_PATH + MPB, true)]
+        [MenuItem(BASE_PATH + MERGE_PHYSBONE, true)]
         private static bool ValidateCreateMergePhysBone() => Selection.activeGameObject != null;
 
-        [MenuItem(BASE_PATH + MPB)]
-        private static void CreateMergePhysBone() => CreateAndAddComponent<MergePhysBone>(MPB);
+        [MenuItem(BASE_PATH + MERGE_PHYSBONE)]
+        private static void CreateMergePhysBone() => CreateAndAddComponent<MergePhysBone>(MERGE_PHYSBONE);
     }
 }
