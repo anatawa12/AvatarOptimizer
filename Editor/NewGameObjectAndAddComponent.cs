@@ -13,7 +13,12 @@ namespace Anatawa12.AvatarOptimizer
             if (selectedObject == null) return;
 
             var newGameObject = new GameObject(typeof(T).Name);
-            newGameObject.transform.SetParent(selectedObject.transform, false);
+            var transform = newGameObject.transform;
+            transform.SetParent(selectedObject.transform, false);
+            transform.localPosition = Vector3.zero;
+            transform.localRotation = Quaternion.identity;
+            transform.localScale = Vector3.one;
+            
             newGameObject.AddComponent<T>();
 
             Undo.RegisterCreatedObjectUndo(newGameObject, $"Create {typeof(T).Name}");
