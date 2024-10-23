@@ -26,8 +26,14 @@ namespace Anatawa12.AvatarOptimizer
             EditorGUIUtility.PingObject(newGameObject);
         }
 
+        [MenuItem(BASE_PATH + nameof(MergeSkinnedMesh), true)]
+        private static bool ValidateCreateMergeSkinnedMesh() => Selection.activeGameObject != null;
+
         [MenuItem(BASE_PATH + nameof(MergeSkinnedMesh))]
         private static void CreateMergeSkinnedMesh() => CreateAndAddComponent<MergeSkinnedMesh>();
+
+        [MenuItem(BASE_PATH + nameof(MergePhysBone), true)]
+        private static bool ValidateCreateMergePhysBone() => Selection.activeGameObject != null;
 
         [MenuItem(BASE_PATH + nameof(MergePhysBone))]
         private static void CreateMergePhysBone() => CreateAndAddComponent<MergePhysBone>();
