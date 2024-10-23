@@ -85,7 +85,8 @@ internal class DupliacteAssets : Pass<DupliacteAssets>
         {
             if (o is Material mat)
             {
-                var newMat = new Material(mat);
+                var newMat = Object.Instantiate(mat);
+                newMat.name = mat.name;
                 newMat.parent = null; // force flatten material variants
                 ObjectRegistry.RegisterReplacedObject(mat, newMat);
                 return newMat;
