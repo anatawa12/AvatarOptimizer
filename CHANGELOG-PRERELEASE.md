@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
+- More Preference Improvement `#1288`
 
 ### Deprecated
 
