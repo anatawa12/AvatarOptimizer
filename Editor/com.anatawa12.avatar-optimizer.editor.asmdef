@@ -14,6 +14,7 @@
         "com.anatawa12.avatar-optimizer.internal.meshinfo2",
         "com.anatawa12.avatar-optimizer.internal.utils",
         "Unity.Burst",
+        "Unity.Mathematics",
         "nadena.dev.ndmf",
         "nadena.dev.ndmf.runtime",
         "nadena.dev.ndmf.reactive-query.core",
