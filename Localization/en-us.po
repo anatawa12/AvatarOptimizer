@@ -154,7 +154,7 @@ msgstr "The PhysBone Version is not supported (yet) by Avatar Optimizer.\n"
 "Please tell author on twitter (@anatawa12_vrc) or GitHub (anatawa12/AvatarOptimizer)!"
 
 msgid "MergePhysBone:message:fix-yaw-pitch"
-msgstr "Fix to 0, 0, 0 by rotating bones"
+msgstr "Fix Roll with rotating bones"
 
 msgid "MergePhysBone:error:differValues"
 msgstr "The values is differ between two or more sources. You have to set same value OR override this property: {0}"
@@ -183,7 +183,7 @@ msgstr ""
 msgid "MergePhysBone:error:LimitRotationFix:NonZeroEndpointPosition"
 msgstr ""
 "Endpoint Position is not zero while Limit Rotation mode Fix.\n"
-"Please set Endpoint Position to zero, or change Limit Rotation mode to other than Fix."
+"Please set Endpoint Position to zero, set Endpoint Position mode to Clear, or change Limit Rotation mode to other than Fix."
 
 msgid "MergePhysBone:dialog:versionInfo:title"
 msgstr "Version Info" 
