@@ -7,7 +7,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
     public class TraceAndOptimizeState
     {
         public bool Enabled;
-        public bool FreezeBlendShape;
+        public bool OptimizeBlendShape;
         public bool RemoveUnusedObjects;
         public bool RemoveZeroSizedPolygon;
         public bool OptimizePhysBone;
@@ -43,7 +43,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         internal void Initialize(TraceAndOptimize config)
         {
-            FreezeBlendShape = config.freezeBlendShape;
+            OptimizeBlendShape = config.optimizeBlendShape;
             RemoveUnusedObjects = config.removeUnusedObjects;
             RemoveZeroSizedPolygon = config.removeZeroSizedPolygons;
             OptimizePhysBone = config.optimizePhysBone;

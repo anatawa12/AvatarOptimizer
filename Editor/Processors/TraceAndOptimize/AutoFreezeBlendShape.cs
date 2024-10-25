@@ -18,7 +18,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         protected override void Execute(BuildContext context, TraceAndOptimizeState state)
         {
-            if (!state.FreezeBlendShape) return;
+            if (!state.OptimizeBlendShape) return;
 
             if (!state.SkipFreezingNonAnimatedBlendShape)
                 FreezeNonAnimatedBlendShapes(context, state);

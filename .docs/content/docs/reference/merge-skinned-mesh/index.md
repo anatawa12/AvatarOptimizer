@@ -35,7 +35,7 @@ That's why it's not good to merge face meshes.
 In addition, because of same reasons, you should freeze & remove unchanging BlendShapes for body / cloth meshes.
 You can freeze & remove BlendShape using [Freeze BlendShape](../freeze-blendshape) component.
 Add this component to both/either merge source SkinnedMeshRenderer and/or merged SkinnedMeshRenderer to freeze & remove BlendShapes.
-Also, you can use `Automatically Freeze BlendShape` of [Trace and Optimize](../trace-and-optimize) component to get the same benefits.
+Also, you can use `Freeze BlendShapes` of [Trace and Optimize](../trace-and-optimize) component to get the same benefits.
 
 {{< hint info >}}
 
