@@ -22,6 +22,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- PrefabSafeUniqueCollection does not consider unity fake null `#1294`
 - BlendShape with same name is impclitly merged in Merge Skinned Mesh `#1286`
   - Now you can rename BlendShape to avoid conflicts.
 
