@@ -393,5 +393,27 @@ namespace Anatawa12.AvatarOptimizer
             return CheckScale(localScale.x / localScale.y) && CheckScale(localScale.x / localScale.z) &&
                    CheckScale(localScale.y / localScale.z);
         }
+
+        public static TSource MaxBy<TSource, TComparable>(this IEnumerable<TSource> source, 
+            Func<TSource, TComparable> selector)
+            where TComparable : IComparable<TComparable>
+        {
+            using var enumerator = source.GetEnumerator();
+            if (!enumerator.MoveNext()) throw new InvalidOperationException("Sequence is empty");
+            var max = enumerator.Current;
+            var maxComparable = selector(max);
+            while (enumerator.MoveNext())
+            {
+                var current = enumerator.Current;
+                var currentComparable = selector(current);
+                if (currentComparable.CompareTo(maxComparable) > 0)
+                {
+                    max = current;
+                    maxComparable = currentComparable;
+                }
+            }
+
+            return max;
+        }
     }
 }
