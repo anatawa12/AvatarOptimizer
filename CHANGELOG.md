@@ -49,6 +49,12 @@ The format is based on [Keep a Changelog].
   - When you changed shader for an material, properties for previously used shaders might be remain
   - This may increase your avatar size by unexpectedly including unused textures
 - Right-click menu option to create a new GameObject with a specified component [`#1290`](https://github.com/anatawa12/AvatarOptimizer/pull/1290)
+- Automatically Merge Blendshape `#1300`
+  - This is new automatic optimization in Trace and Optimize
+  - This is a part of "Optimize BlendShape" optimization.
+  - AAO 1.8.0 introduced BlendShape support for Merge Skinned Mesh, but new default mode "Rename to avoid conflicts" would increase number of BlendShape.
+  - This feature is added to relax this problem by automatically merging multiple BlendShapes of one Mesh.
+  - With this feature, you can use rename mode without performance loss.
 
 ### Changed
 - Skip Enablement Mismatched Renderers is now disabled by default `#1169`
@@ -86,6 +92,7 @@ The format is based on [Keep a Changelog].
   - You now can successfully merge Meshes with BlendShape with Merge Skinned Mesh.
   - Actually, previous version does not have proper consideration for BlendShape.
   - This version introduces options to select BlendShape behavior in Merge Skinned Mesh.
+- Renamed "Automatically Freeze BlendShape" to "Optimize BlendShape" `#1300`
 
 ### Deprecated
 
