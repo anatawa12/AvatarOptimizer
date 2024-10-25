@@ -274,6 +274,24 @@ msgstr ""
 msgid "MergeSkinnedMesh:validation:self-recursive"
 msgstr "Skinned Renderers contains the SkinnedMeshRenderer of MergeSkinnedMesh!"
 
+msgid "MergeSkinnedMesh:warn:TraditionalBlendShapeMode"
+msgstr ""
+"You're using v1.7.x or older compability mode.\n"
+"This mode is only for compatibility with old versions of Avatar Optimizer.\n"
+"Please consider change to other mode."
+
+msgid "MergeSkinnedMesh:prop:blendShapeMode"
+msgstr "BlendShape Mode"
+
+msgid "MergeSkinnedMesh:prop:blendShapeMode:MergeSameName"
+msgstr "Merge BlendShapes with same name"
+
+msgid "MergeSkinnedMesh:prop:blendShapeMode:RenameToAvoidConflict"
+msgstr "Rename BlendShapes to avoid conflict"
+
+msgid "MergeSkinnedMesh:prop:blendShapeMode:TraditionalCompability"
+msgstr "v1.7.x or older compability mode"
+
 msgid "MergeSkinnedMesh:prop:renderers"
 msgstr "Skinned Renderers"
 
@@ -302,6 +320,16 @@ msgid "MergeSkinnedMesh:error:mix-normal-existence"
 msgstr ""
 "Merging both meshes with and without normal is not supported."
 "Please change import setting of models to include normals!"
+
+msgid "MergeSkinnedMesh:error:blendShape-animated-by-multiple-renderers"
+msgstr "Differently animated BlendShape is detected: {0}"
+
+msgid "MergeSkinnedMesh:error:blendShape-animated-by-multiple-renderers:description"
+msgstr ""
+"You're merging meshes that their BlendShapes are animated differently between meshes.\n"
+"Since BlendShapes are configured to merge, applied animation cannot be determined if animated differently.\n"
+"\n"
+"Please remove animation for some source SkinnedMeshRenderers or make them animated similarly."
 
 msgid "MergeSkinnedMesh:warning:removeZeroSizedPolygonOnSources"
 msgstr "Since Remove Zero Sized Polygons are processed later, it has no effects if it is added with the source Skinned Mesh Renderers."

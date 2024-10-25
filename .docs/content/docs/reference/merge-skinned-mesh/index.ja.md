@@ -67,7 +67,7 @@ BlendShapeは、頂点とBlendShapeの数に比例して負荷が大きくなる
 
 統合先のSkinnedMeshRendererと有効無効の状態が異なる(Skinned)MeshRendererが統合対象の中に含まれている場合、それらをビルド時に統合対象から除外するオプションです。
 
-### "有効無効状態に関するアニメーションをコピーする" {#copy-enablement-animation}
+### 有効無効状態に関するアニメーションをコピーする {#copy-enablement-animation}
 
 統合対象の(Skinned)MeshRendererの有効無効状態に関するアニメーションを統合先のSkinnedMeshRendererにコピーするオプションです。
 
@@ -75,6 +75,14 @@ BlendShapeは、頂点とBlendShapeの数に比例して負荷が大きくなる
 ただし、アニメーションされているプロパティは1種類しかコピーできないため、複数種類/階層のプロパティがアニメーションされている場合(`enabled`と`activeSelf`の両方がアニメーションされている場合や、自身と親の両方の`activeSelf`がアニメーションされている場合など)はエラーになります。
 
 なお、統合先のSkinnedMeshRendererの`enabled`に対するアニメーションはこの機能によって上書きされるため、この機能を使用する時は統合先のSkinnedMeshRendererの`enabled`をアニメーションしてはいけません。
+
+### BlendShapeモード {#blendshape-mode}
+
+BlendShapeをどのように扱うかについてのオプションです。
+
+- `BlendShape名を自動変更して重複を避ける`: 重複を避けるために、BlendShape名を自動で変更します。これはデフォルトの設定になっています。
+- `同名のBlendShapeを統合する`: 同じ名前のBlendShapeを統合します。異なるSkinnedMeshRendererにある同じ名前のBlendShapeを統合する際に便利です。
+- `v1.7.x互換モード`: v1.7.x以前のAvatar Optimizerとの互換性を維持するためのモードです。同じ名前のBlendShapeが統合されますが、Trace and Optimizeの判断では考慮されません。また、新しく追加したコンポーネントでこのモードを選択することはできません。
 
 ### マテリアルの統合 {#merge-materials}
 

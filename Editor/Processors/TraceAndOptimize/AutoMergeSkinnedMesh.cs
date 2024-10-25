@@ -212,7 +212,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             var (subMeshIndexMap, materials) = createSubMeshes(meshInfosArray);
 
-            MergeSkinnedMeshProcessor.DoMerge(context, newMeshInfo, meshInfosArray, subMeshIndexMap, materials, null);
+            MergeSkinnedMeshProcessor.DoMerge(context, newMeshInfo, meshInfosArray, subMeshIndexMap, materials);
 
             // We process FindUnusedObjects after this pass so we wipe empty renderer object in that pass
             MergeSkinnedMeshProcessor.RemoveOldRenderers(newMeshInfo, meshInfosArray,
@@ -268,7 +268,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             var (subMeshIndexMap, materials) = createSubMeshes(meshInfosArray);
 
-            MergeSkinnedMeshProcessor.DoMerge(context, newMeshInfo, meshInfosArray, subMeshIndexMap, materials, null);
+            MergeSkinnedMeshProcessor.DoMerge(context, newMeshInfo, meshInfosArray, subMeshIndexMap, materials);
 
             // We process FindUnusedObjects after this pass so we wipe empty renderer object in that pass
             MergeSkinnedMeshProcessor.RemoveOldRenderers(newMeshInfo, meshInfosArray,
