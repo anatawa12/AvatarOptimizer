@@ -18,6 +18,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- PrefabSafeUniqueCollection does not consider unity fake null `#1294`
 
 ### Security
 
