@@ -211,6 +211,24 @@ msgstr ""
 msgid "MergeSkinnedMesh:validation:self-recursive"
 msgstr "統合対象のスキンメッシュレンダラーに、MergeSkinnedMesh自身のスキンメッシュレンダラーが含まれています！"
 
+msgid "MergeSkinnedMesh:warn:TraditionalBlendShapeMode"
+msgstr ""
+"v1.7.x互換モードが選択されています。\n"
+"このモードはv1.7.x以前のAvatar Optimizerとの互換性を維持するためにのみ存在します。\n"
+"他のモードを選択することを検討してください。"
+
+msgid "MergeSkinnedMesh:prop:blendShapeMode"
+msgstr "BlendShapeモード"
+
+msgid "MergeSkinnedMesh:prop:blendShapeMode:MergeSameName"
+msgstr "同名のBlendShapeを統合する"
+
+msgid "MergeSkinnedMesh:prop:blendShapeMode:RenameToAvoidConflict"
+msgstr "BlendShape名を自動変更して重複を避ける"
+
+msgid "MergeSkinnedMesh:prop:blendShapeMode:TraditionalCompability"
+msgstr "v1.7.x互換モード"
+
 msgid "MergeSkinnedMesh:prop:renderers"
 msgstr "スキンメッシュレンダラー"
 
@@ -239,6 +257,16 @@ msgid "MergeSkinnedMesh:error:mix-normal-existence"
 msgstr ""
 "法線があるメッシュとないメッシュの両方を1つに統合する操作には対応していません。"
 "法線が含まれるようにモデルのインポート設定を変更してください！"
+
+msgid "MergeSkinnedMesh:error:blendShape-animated-by-multiple-renderers"
+msgstr "統合対象のメッシュ間で、以下のBlendShapeに対するアニメーションが揃っていません: {0}"
+
+msgid "MergeSkinnedMesh:error:blendShape-animated-by-multiple-renderers:description"
+msgstr ""
+"統合対象のメッシュ間で、同名のBlendShapeに対するアニメーションが揃っていません。\n"
+"同名のBlendShapeを統合するように設定されていますが、アニメーションが揃っていないと統合後の動作を決定することができません。\n"
+"\n"
+"そのBlendShapeを操作しているアニメーションの一部を削除するか、同じようにアニメーションされるようにしてください。"
 
 msgid "MergeSkinnedMesh:warning:removeZeroSizedPolygonOnSources"
 msgstr "Remove Zero Sized Polygonsは遅めに処理されるため、統合対象のメッシュにつけても効果がありません"
@@ -519,14 +547,6 @@ msgstr "変更後の名前が他と重複しています。重複するBlendShap
 
 msgid "RenameBlendShape:error:empty-name"
 msgstr "BlendShape '{0}' の変更後の名前が空です。BlendShape名を空にすることはできません。"
-
-msgid "RenameBlendShape:warning:weight-conflict"
-msgstr "BlendShape '{0}' への統合対象となるBlendShapeの値が揃っていません。統合対象の内のいずれかの値が使用されます。\n"
-"該当する統合対象: {1}"
-
-msgid "RenameBlendShape:warning:animation-conflict"
-msgstr "BlendShape '{0}' への統合対象となるBlendShapeに対するアニメーションが異なります。\n"
-"該当する統合対象: {1}"
 
 # endregion
 

@@ -9,6 +9,10 @@ The format is based on [Keep a Changelog].
 ## [Unreleased]
 ### Added
 - Right-click menu option to create a new GameObject with a specified component [`#1290`](https://github.com/anatawa12/AvatarOptimizer/pull/1290)
+- BlendShape support for Merge Skinned Mesh `#1286`
+  - You now can successfully merge Meshes with BlendShape with Merge Skinned Mesh.
+  - Actually, previous version does not have proper consideration for BlendShape.
+  - This version introduces options to select BlendShape behavior in Merge Skinned Mesh.
 - Fix mode for PhysBone Limits in Merge PhysBone `#665`
   - In addition to existing `Copy` and `Override`, we added `Fix` mode.
   - This mode will try to correct roll axis by rotating bone.
@@ -21,8 +25,13 @@ The format is based on [Keep a Changelog].
 ### Deprecated
 
 ### Removed
+- Merging BlendShape from Rename BlendShape component `#1296`
+  - We will add a new component for merging BlendShapes in the future.
 
 ### Fixed
+- PrefabSafeUniqueCollection does not consider unity fake null `#1294`
+- BlendShape with same name is impclitly merged in Merge Skinned Mesh `#1286`
+  - Now you can rename BlendShape to avoid conflicts.
 
 ### Security
 

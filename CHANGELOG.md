@@ -35,7 +35,7 @@ The format is based on [Keep a Changelog].
     - If you're building your avatar with batchmode with -nographics, please remove -nographics.
 - Asset Description for Avatar Modify Support bundled in an avatar, Shinano `#1189`
 - API to get in advance whether a polygon will be removed `#1177`
-- Rename BlendShape component to rename BlendShapes `#1245`
+- Rename BlendShape component to rename BlendShapes `#1245` `#1296`
   - This can be used to avoid blendShape name conflicts in Merge Skinned Mesh
 - Invert option for Remove Mesh in Box `#1257`
   - You now can remove polygons outside of the box instead of inside the box.
@@ -65,7 +65,7 @@ The format is based on [Keep a Changelog].
 - Reimplement Preview system with NDMF Preview System `#1131` `#1195` `#1218` `#1270`
   - This will prevent issues relates to Animation Mode bug.
   - This allows you to preview Remove Mesh components without selecting Mesh OR while in Animation Mode.
-- Improved Prefab Safe Set, which are used in MergePhysBone, MergeSkinnedMesh, FreezeBlendShape and more components `#1212` `#1219` `#1221` `#1236` `#1287`
+- Improved Prefab Safe Set, which are used in MergePhysBone, MergeSkinnedMesh, FreezeBlendShape and more components `#1212` `#1219` `#1221` `#1236` `#1287` `#1294`
   - This should improve compatibility with replacing base prefab, which is added in Unity 2022.
 - Allow multiple component for Remove Mesh components with API `#1216` `#1218`
   - This allows non-destructive tools to add Remove Mesh components even if Remove Mesh component are added before.
@@ -87,6 +87,10 @@ The format is based on [Keep a Changelog].
 - Support for Shaders that depends on vertex index `#1275` `#1281` `#1285`
   - Avatar Optimizer will not automatically merge meshes that are using vertex index
   - since merging them may change vertex order, which changes vertex index
+- BlendShape support for Merge Skinned Mesh `#1286`
+  - You now can successfully merge Meshes with BlendShape with Merge Skinned Mesh.
+  - Actually, previous version does not have proper consideration for BlendShape.
+  - This version introduces options to select BlendShape behavior in Merge Skinned Mesh.
 
 ### Deprecated
 
@@ -103,6 +107,8 @@ The format is based on [Keep a Changelog].
 - Remove Mesh in Box does not work for meshes without Bones `#1256`
 - NullReferenceException in `GetBlendShape` if Mesh is not specified for SkinnedMeshRenderer `#1267`
 - Animation for target renderer of Merge Skinned Mesh might be overridden by animation for source renderer `#1276`
+- BlendShape with same name is impclitly merged in Merge Skinned Mesh `#1286`
+  - Now you can rename BlendShape to avoid conflicts.
 
 ### Security
 
