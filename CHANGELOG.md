@@ -35,7 +35,7 @@ The format is based on [Keep a Changelog].
     - If you're building your avatar with batchmode with -nographics, please remove -nographics.
 - Asset Description for Avatar Modify Support bundled in an avatar, Shinano `#1189`
 - API to get in advance whether a polygon will be removed `#1177`
-- Rename BlendShape component to rename BlendShapes `#1245`
+- Rename BlendShape component to rename BlendShapes `#1245` `#1296`
   - This can be used to avoid blendShape name conflicts in Merge Skinned Mesh
 - Invert option for Remove Mesh in Box `#1257`
   - You now can remove polygons outside of the box instead of inside the box.
