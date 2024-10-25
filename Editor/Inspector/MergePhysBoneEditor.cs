@@ -607,6 +607,9 @@ namespace Anatawa12.AvatarOptimizer
         {
             if (SourcePhysBones.Count() <= 1)
                 BuildLog.LogError("MergePhysBone:error:oneSource");
+
+            foreach (var vrcPhysBoneBase in SourcePhysBones)
+                vrcPhysBoneBase.InitTransforms(true);
         }
 
         protected override bool BeginSection(string name, string docTag) => true;
@@ -619,8 +622,6 @@ namespace Anatawa12.AvatarOptimizer
             
             if (_usingCopyCurve)
             {
-                foreach (var vrcPhysBoneBase in SourcePhysBones)
-                    vrcPhysBoneBase.InitTransforms(true);
                 var maxLength = SourcePhysBones.Max(x => x.BoneChainLength());
                 if (SourcePhysBones.Any(x => x.BoneChainLength() != maxLength))
                     BuildLog.LogWarning("MergePhysBone:warning:differChainLength",
@@ -701,7 +702,73 @@ namespace Anatawa12.AvatarOptimizer
                 case MergePhysBone.CurveVector3Config.CurveOverride.Override:
                     break;
                 case MergePhysBone.CurveVector3Config.CurveOverride.Fix:
-                    // more validation about skew scaling and rotation animation on build
+                    if (SourcePhysBones.Any())
+                    {
+                        // skew scaling is disallowed
+                        var scaledUnevenly = SourcePhysBones
+                            .SelectMany(x => x.GetAffectedTransforms())
+                            .Where(x => !Utils.ScaledEvenly(x.localScale))
+                            .ToList();
+
+                        if (scaledUnevenly.Count != 0)
+                            BuildLog.LogError("MergePhysBone:error:LimitRotationFix:SkewScaling", scaledUnevenly);
+
+                        // error if there is different limit / rotation
+                        var longestPhysBone = SourcePhysBones.MaxBy(x => x.BoneChainLength());
+
+                        var fixedRotations = Enumerable.Range(0, longestPhysBone.BoneChainLength())
+                            .Select(index =>
+                            {
+                                var time = (float)index / longestPhysBone.BoneChainLength() - 1;
+
+                                var rotation = longestPhysBone.CalcLimitRotation(time);
+
+                                return Processors.MergePhysBoneProcessor.ConvertRotation(rotation)
+                                    with
+                                    {
+                                        y = 0
+                                    };
+                            })
+                            .ToList();
+
+                        var differRotation = SourcePhysBones
+                            .Any(physBone =>
+                            {
+                                return Enumerable.Range(0, physBone.BoneChainLength()).Any(index =>
+                                {
+                                    var time = (float)index / physBone.BoneChainLength() - 1;
+                                    var rotation = longestPhysBone.CalcLimitRotation(time);
+                                    var fixedRot = Processors.MergePhysBoneProcessor.ConvertRotation(rotation)with
+                                    {
+                                        y = 0
+                                    };
+
+                                    return fixedRot != fixedRotations[index];
+                                });
+                            });
+
+                        if (differRotation)
+                        {
+                            BuildLog.LogError("MergePhysBone:error:LimitRotationFix:DifferRotation");
+                        }
+
+                        // endpoint position must be zero
+                        switch ((MergePhysBone.EndPointPositionConfig.Override)EndpointPosition.OverrideProperty.enumValueIndex)
+                        {
+                            case MergePhysBone.EndPointPositionConfig.Override.Clear:
+                                // no problem; endpoint position is zero
+                                break;
+                            case MergePhysBone.EndPointPositionConfig.Override.Copy:
+                                if (EndpointPosition.PhysBoneValue!.vector3Value != Vector3.zero)
+                                    BuildLog.LogError("MergePhysBone:error:LimitRotationFix:NonZeroEndpointPosition");
+                                break;
+                            case MergePhysBone.EndPointPositionConfig.Override.Override:
+                                if (EndpointPosition.ValueProperty.vector3Value != Vector3.zero)
+                                    BuildLog.LogError("MergePhysBone:error:LimitRotationFix:NonZeroEndpointPosition");
+                                break;
+                        }
+                    }
+
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();

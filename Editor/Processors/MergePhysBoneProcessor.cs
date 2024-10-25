@@ -358,9 +358,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
             }
         }
 
-        private static Vector3 ConvertRotation(
-            Vector3 limitRotation
-        )
+        public static Vector3 ConvertRotation(Vector3 limitRotation)
         {
             // XYZ is the order used in VRCPhysBone
             var quat = quaternion.EulerXYZ(limitRotation * Mathf.Deg2Rad);
