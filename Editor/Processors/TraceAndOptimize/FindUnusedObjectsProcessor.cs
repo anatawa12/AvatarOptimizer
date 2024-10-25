@@ -375,7 +375,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                             // if this is not identity transform, animating children is not good
                             return NotMerged();
 
-                        if (!MergeBoneProcessor.ScaledEvenly(localScale))
+                        if (!Utils.ScaledEvenly(localScale))
                             // non even scaling is not possible to reproduce in children
                             return NotMerged();
                     }

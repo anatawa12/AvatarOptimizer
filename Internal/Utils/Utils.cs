@@ -379,5 +379,19 @@ namespace Anatawa12.AvatarOptimizer
         // Exception-safe swap
         public static void Swap<T>(ref T a, ref T b) =>
             (a, b) = (b, a);
+        
+        /// <summary>
+        /// Returns whether the given local scale is scaled evenly.
+        ///
+        /// If the scale is skewed, this returns false.
+        /// </summary>
+        /// <param name="localScale">the local scale to check</param>
+        /// <returns>whether the given local scale is scaled evenly</returns>
+        public static bool ScaledEvenly(Vector3 localScale)
+        {
+            bool CheckScale(float scale) => 0.995 < scale && scale < 1.005;
+            return CheckScale(localScale.x / localScale.y) && CheckScale(localScale.x / localScale.z) &&
+                   CheckScale(localScale.y / localScale.z);
+        }
     }
 }
