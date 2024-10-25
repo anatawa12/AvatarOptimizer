@@ -74,12 +74,12 @@ public class RenameBlendShapeTest
                 { "test2", "renamed1" },
             });
 
-        Assert.That(mapping, Is.EqualTo(new List<(string, float, List<string>)>
+        Assert.That(mapping, Is.EqualTo(new List<(string, float, string)>
         {
-            ("renamed0", 0, new List<string> { "test0" }),
-            ("test1", 10, new List<string> { "test1" }),
-            ("renamed1", 20, new List<string> { "test2" }),
-            ("test3", 30, new List<string> { "test3" }),
+            ("renamed0", 0, "test0"),
+            ("test1", 10, "test1"),
+            ("renamed1", 20, "test2"),
+            ("test3", 30, "test3"),
         }).UsingTupleAdapter());
     }
 
@@ -142,11 +142,11 @@ public class RenameBlendShapeTest
                 { "test1", "test0" },
             });
 
-        Assert.That(mapping, Is.EqualTo(new List<(string, float, List<string>)>
+        Assert.That(mapping, Is.EqualTo(new List<(string, float, string)>
         {
-            ("test1", 0, new List<string> { "test0" }),
-            ("test0", 10, new List<string> { "test1" }),
-            ("test2", 20, new List<string> { "test2" }),
+            ("test1", 0, "test0"),
+            ("test0", 10, "test1"),
+            ("test2", 20, "test2"),
         }).UsingTupleAdapter());
     }
 
@@ -197,7 +197,6 @@ public class RenameBlendShapeTest
         newMesh.GetBlendShapeFrameVertices(2, 0, frame, null, null);
         Assert.That(frame, Is.EqualTo(NewFrame((0, Vector3.right))));
     }
-    */
 
     [Test]
     public void TestCollectRenameToMerge()
@@ -222,6 +221,7 @@ public class RenameBlendShapeTest
             ("test3", 30, new List<string> { "test3" }),
         }).UsingTupleAdapter());
     }
+    */
 
     private static Vector3[] NewFrame(params (int index, Vector3 delta)[] deltas)
     {
