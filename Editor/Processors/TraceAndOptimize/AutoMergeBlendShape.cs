@@ -10,7 +10,7 @@ using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes;
 
-public class AutoMergeBlendShape: TraceAndOptimizePass<AutoMergeBlendShape>
+class AutoMergeBlendShape: TraceAndOptimizePass<AutoMergeBlendShape>
 {
     public override string DisplayName => "T&O: Auto Merge Blend Shape";
 
