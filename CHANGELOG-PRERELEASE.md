@@ -9,6 +9,11 @@ The format is based on [Keep a Changelog].
 ## [Unreleased]
 ### Added
 - Right-click menu option to create a new GameObject with a specified component [`#1290`](https://github.com/anatawa12/AvatarOptimizer/pull/1290)
+- Fix mode for PhysBone Limits in Merge PhysBone `#665`
+  - In addition to existing `Copy` and `Override`, we added `Fix` mode.
+  - This mode will try to correct roll axis by rotating bone.
+  - This feature allows you to configure the mode for PhysBone Limits in Merge PhysBone.
+  - This is useful if all configuration is same but roll axis is different.
 
 ### Changed
 - More Preference Improvement `#1288`
