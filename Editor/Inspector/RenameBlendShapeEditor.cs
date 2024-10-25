@@ -76,7 +76,8 @@ internal class RenameBlendShapeEditor : AvatarTagComponentEditorBase
                 }
                 else if (element.Value != null && duplicatedNames.Contains(element.Value))
                 {
-                    GUI.color = new Color(1, 1, 0.5f);
+                    hasEmptyError = true;
+                    GUI.color = new Color(1, 0.5f, 0.5f);
                     tooltip = AAOL10N.Tr("RenameBlendShape:warning:name-conflict-this");
                 }
 
