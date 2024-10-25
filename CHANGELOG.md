@@ -82,7 +82,7 @@ The format is based on [Keep a Changelog].
 - Support for Shaders that depends on vertex index `#1275` `#1281` `#1285`
   - Avatar Optimizer will not automatically merge meshes that are using vertex index
   - since merging them may change vertex order, which changes vertex index
-- BlendShape support for Merge Skinned Mesh `#1286`
+- BlendShape support for Merge Skinned Mesh `#1286` `#1299`
   - You now can successfully merge Meshes with BlendShape with Merge Skinned Mesh.
   - Actually, previous version does not have proper consideration for BlendShape.
   - This version introduces options to select BlendShape behavior in Merge Skinned Mesh.
