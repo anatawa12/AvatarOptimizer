@@ -316,6 +316,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
                 meshInfo.AssertInvariantContract($"processing source #{i} of {target.SourceRenderer.gameObject.name}");
 
+                // borrows
+                var copiedVertices = meshInfo.Vertices.ToList();
+
                 target.VerticesMutable.AddRange(meshInfo.Vertices);
                 meshInfo.VerticesMutable.Clear();
 
@@ -339,7 +342,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 if (componentBlendShapeMode == MergeSkinnedMesh.BlendShapeMode.RenameToAvoidConflict)
                 {
                     var prefix = rendererPrefixes.GetPrefix(meshInfo.SourceRenderer.gameObject.name);
-                    var buffers = meshInfo.Vertices.Select(x => x.BlendShapeBuffer).Distinct().ToList();
+                    var buffers = copiedVertices.Select(x => x.BlendShapeBuffer).Distinct().ToList();
 
                     for (var sourceI = 0; sourceI < meshInfo.BlendShapes.Count; sourceI++)
                     {
