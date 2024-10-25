@@ -16,6 +16,8 @@ The format is based on [Keep a Changelog].
 ### Deprecated
 
 ### Removed
+- Merging BlendShape from Rename BlendShape component `#1296`
+  - We will add a new component for merging BlendShapes in the future.
 
 ### Fixed
 - PrefabSafeUniqueCollection does not consider unity fake null `#1294`
