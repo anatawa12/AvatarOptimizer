@@ -23,24 +23,40 @@ namespace Anatawa12.AvatarOptimizer
 
         const int MonoScriptIdentifierType = 1;
 
+        private static AssetDescriptionData? _data;
+
+        private static AssetDescriptionData Data => _data ??= LoadData();
+
+        class AssetDescriptionData
+        {
+            public HashSet<Type> meaninglessComponents = new();
+        }
+
+        static AssetDescriptionData LoadData()
+        {
+            var data = new AssetDescriptionData();
+            foreach (var description in GetAllAssetDescriptions())
+            {
+                foreach (var component in description.meaninglessComponents)
+                    if (GetMonoScriptFromGuid(component.guid, component.fileID) is MonoScript monoScript)
+                        data.meaninglessComponents.Add(monoScript.GetClass());
+            }
+
+            return data;
+        }
+
         private static IEnumerable<AssetDescription> GetAllAssetDescriptions()
         {
             foreach (var findAsset in AssetDatabase.FindAssets("t:AssetDescription"))
             {
                 var path = AssetDatabase.GUIDToAssetPath(findAsset);
                 var asset = AssetDatabase.LoadAssetAtPath<AssetDescription>(path);
-                if (asset) yield return asset;
+                if (asset != null) yield return asset;
             }
         }
 
-        public static IEnumerable<Type> GetMeaninglessComponents()
-        {
-            return GetAllAssetDescriptions()
-                .SelectMany(description => description.meaninglessComponents)
-                .Select(component => GetMonoScriptFromGuid(component.guid, component.fileID) as MonoScript)
-                .Where(monoScript => monoScript != null)
-                .Select(monoScript => monoScript!.GetClass());
-        }
+        public static void Reload() => _data = LoadData();
+        public static HashSet<Type> GetMeaninglessComponents() => Data.meaninglessComponents;
 
         private static Object GetMonoScriptFromGuid(string guid, ulong fileid)
         {
