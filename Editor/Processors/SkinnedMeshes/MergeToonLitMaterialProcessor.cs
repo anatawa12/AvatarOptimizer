@@ -293,7 +293,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             if (compress && IsCompressedFormat(finalFormat))
                 EditorUtility.CompressTexture(texture, (TextureFormat)finalFormat, TextureCompressionQuality.Normal);
 
-            System.Diagnostics.Debug.Assert(texture.format == (TextureFormat)finalFormat, 
+            Utils.Assert(texture.format == (TextureFormat)finalFormat, 
                 $"TextureFormat mismatch: expected {finalFormat} but was {texture.format}");
 
             return texture;

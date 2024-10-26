@@ -261,7 +261,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 newSkinnedMeshRenderer.enabled = initial;
             }
 
-            Debug.Assert(activenessAnimatingProperties.Count == 0);
+            Utils.Assert(activenessAnimatingProperties.Count == 0);
 
             var newMeshInfo = context.GetMeshInfoFor(newSkinnedMeshRenderer);
             var meshInfosArray = meshInfos.ToArray();

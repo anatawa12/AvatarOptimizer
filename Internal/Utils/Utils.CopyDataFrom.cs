@@ -1,6 +1,5 @@
 using System;
 using UnityEditor;
-using UnityEngine.Assertions;
 
 namespace Anatawa12.AvatarOptimizer
 {
@@ -25,14 +24,14 @@ namespace Anatawa12.AvatarOptimizer
                 while (srcIter.Next(enterChildren) && !SerializedProperty.EqualContents(srcIter, srcEnd))
                 {
                     var destCheck = dstIter.Next(enterChildren) && !SerializedProperty.EqualContents(dstIter, dstEnd);
-                    Assert.IsTrue(destCheck);
+                    Utils.Assert(destCheck);
 
                     //Debug.Log($"prop: {dstIter.propertyPath}: {dstIter.propertyType}");
 
                     switch (dstIter.propertyType)
                     {
                         case SerializedPropertyType.FixedBufferSize:
-                            Assert.AreEqual(srcIter.fixedBufferSize, dstIter.fixedBufferSize);
+                            Utils.Assert(srcIter.fixedBufferSize == dstIter.fixedBufferSize);
                             break;
                         case SerializedPropertyType.Generic:
                             break;
@@ -47,7 +46,7 @@ namespace Anatawa12.AvatarOptimizer
                 {
                     var destCheck = dstIter.NextVisible(enterChildren) &&
                                     !SerializedProperty.EqualContents(dstIter, dstEnd);
-                    Assert.IsFalse(destCheck);
+                    Utils.Assert(!destCheck);
                 }
             }
 

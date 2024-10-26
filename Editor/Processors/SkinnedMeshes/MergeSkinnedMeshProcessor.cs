@@ -4,6 +4,7 @@ using System.Linq;
 using Anatawa12.AvatarOptimizer.AnimatorParsersV2;
 using nadena.dev.ndmf;
 using UnityEngine;
+using UnityEngine.Assertions;
 using UnityEngine.Profiling;
 using UnityEngine.Rendering;
 using Debug = System.Diagnostics.Debug;
@@ -340,7 +341,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     var targetSubMeshIndex = subMeshIndexMap[i][j];
                     var targetSubMesh = target.SubMeshes[targetSubMeshIndex];
                     var sourceSubMesh = meshInfo.SubMeshes[j];
-                    System.Diagnostics.Debug.Assert(targetSubMesh.Topology == sourceSubMesh.Topology);
+                    Utils.Assert(targetSubMesh.Topology == sourceSubMesh.Topology);
                     targetSubMesh.Vertices.AddRange(sourceSubMesh.Vertices);
                     mappings.Add(($"m_Materials.Array.data[{j}]",
                         $"m_Materials.Array.data[{targetSubMeshIndex}]"));

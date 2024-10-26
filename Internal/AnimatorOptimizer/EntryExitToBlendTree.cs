@@ -533,7 +533,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 // ReSharper disable once CompareOfFloatsByEqualityOperator
                 if (rounded == after)
                 {
-                    Debug.Assert((int)Mathf.Round(Utils.PreviousFloat(threshold)) == before);
+                    Utils.Assert((int)Mathf.Round(Utils.PreviousFloat(threshold)) == before);
                     // in this case, .5 will go the motion so default is one before .5
                     children.Add(CreateChild(Utils.PreviousFloat(threshold), beforeMotion));
                     children.Add(CreateChild(threshold, afterMotion));
@@ -541,7 +541,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 // ReSharper disable once CompareOfFloatsByEqualityOperator
                 else if (rounded == before)
                 {
-                    Debug.Assert((int)Mathf.Round(Utils.NextFloat(threshold)) == after);
+                    Utils.Assert((int)Mathf.Round(Utils.NextFloat(threshold)) == after);
                     // in this case, .5 will go to default motion so default is .5
                     children.Add(CreateChild(threshold, beforeMotion));
                     children.Add(CreateChild(Utils.NextFloat(threshold), afterMotion));
@@ -711,9 +711,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                         threshold = Utils.PreviousFloat(threshold);
 
                     // ReSharper disable once CompareOfFloatsByEqualityOperator
-                    Debug.Assert(Mathf.Round(threshold) == thresholdRound - 1);
+                    Utils.Assert(Mathf.Round(threshold) == thresholdRound - 1);
                     // ReSharper disable once CompareOfFloatsByEqualityOperator
-                    Debug.Assert(Mathf.Round(Utils.NextFloat(threshold)) == thresholdRound);
+                    Utils.Assert(Mathf.Round(Utils.NextFloat(threshold)) == thresholdRound);
 
                     return new[]
                     {
@@ -737,9 +737,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                         threshold = Utils.NextFloat(threshold);
 
                     // ReSharper disable once CompareOfFloatsByEqualityOperator
-                    Debug.Assert(Mathf.Round(threshold) == thresholdRound + 1);
+                    Utils.Assert(Mathf.Round(threshold) == thresholdRound + 1);
                     // ReSharper disable once CompareOfFloatsByEqualityOperator
-                    Debug.Assert(Mathf.Round(Utils.PreviousFloat(threshold)) == thresholdRound);
+                    Utils.Assert(Mathf.Round(Utils.PreviousFloat(threshold)) == thresholdRound);
 
                     return new[]
                     {
@@ -768,13 +768,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                         upperThreshold = Utils.NextFloat(upperThreshold);
 
                     // ReSharper disable once CompareOfFloatsByEqualityOperator
-                    Debug.Assert(Mathf.Round(lowerThreshold) == thresholdRound - 1);
+                    Utils.Assert(Mathf.Round(lowerThreshold) == thresholdRound - 1);
                     // ReSharper disable once CompareOfFloatsByEqualityOperator
-                    Debug.Assert(Mathf.Round(Utils.NextFloat(lowerThreshold)) == thresholdRound);
+                    Utils.Assert(Mathf.Round(Utils.NextFloat(lowerThreshold)) == thresholdRound);
                     // ReSharper disable once CompareOfFloatsByEqualityOperator
-                    Debug.Assert(Mathf.Round(Utils.PreviousFloat(upperThreshold)) == thresholdRound);
+                    Utils.Assert(Mathf.Round(Utils.PreviousFloat(upperThreshold)) == thresholdRound);
                     // ReSharper disable once CompareOfFloatsByEqualityOperator
-                    Debug.Assert(Mathf.Round(upperThreshold) == thresholdRound + 1);
+                    Utils.Assert(Mathf.Round(upperThreshold) == thresholdRound + 1);
 
                     // AND condition
                     return new[]
@@ -813,13 +813,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                         upperThreshold = Utils.PreviousFloat(upperThreshold);
 
                     // ReSharper disable once CompareOfFloatsByEqualityOperator
-                    Debug.Assert(Mathf.Round(Utils.PreviousFloat(lowerThreshold)) == thresholdRound - 1);
+                    Utils.Assert(Mathf.Round(Utils.PreviousFloat(lowerThreshold)) == thresholdRound - 1);
                     // ReSharper disable once CompareOfFloatsByEqualityOperator
-                    Debug.Assert(Mathf.Round(lowerThreshold) == thresholdRound);
+                    Utils.Assert(Mathf.Round(lowerThreshold) == thresholdRound);
                     // ReSharper disable once CompareOfFloatsByEqualityOperator
-                    Debug.Assert(Mathf.Round(upperThreshold) == thresholdRound);
+                    Utils.Assert(Mathf.Round(upperThreshold) == thresholdRound);
                     // ReSharper disable once CompareOfFloatsByEqualityOperator
-                    Debug.Assert(Mathf.Round(Utils.NextFloat(upperThreshold)) == thresholdRound + 1);
+                    Utils.Assert(Mathf.Round(Utils.NextFloat(upperThreshold)) == thresholdRound + 1);
 
                     // OR condition
                     return new[]

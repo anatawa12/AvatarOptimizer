@@ -363,6 +363,16 @@ namespace Anatawa12.AvatarOptimizer
                 }
             }
         }
+        
+        public static void Assert(bool condition)
+        {
+            if (!condition) throw new InvalidOperationException("assertion failed");
+        }
+        
+        public static void Assert(bool condition, string message)
+        {
+            if (!condition) throw new InvalidOperationException(message);
+        }
 
         /// <summary>
         /// Fast compare of <see cref="Color32"/> array.

@@ -6,7 +6,6 @@ using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
 using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEngine;
-using Debug = System.Diagnostics.Debug;
 using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
@@ -156,7 +155,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             
             public void Init(GCComponentInfo info)
             {
-                Debug.Assert(_info == null, "Init on not finished");
+                Utils.Assert(_info == null, "Init on not finished");
                 _info = info;
             }
 
