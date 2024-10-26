@@ -116,12 +116,21 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     }
                 }
 
-                if (descriptor.customExpressions)
+                if (descriptor is { customExpressions: true, expressionParameters: var expressionParameters }
+                    && expressionParameters != null)
                 {
-                    var expressionParameters = descriptor.expressionParameters;
-                    foreach (var parameter in expressionParameters.parameters)
-                        if (parameter != null)
-                            parameters.Add(parameter.name);
+                    if (expressionParameters.parameters != null)
+                    {
+                        foreach (var parameter in expressionParameters.parameters)
+                            if (parameter != null)
+                                parameters.Add(parameter.name);
+                    }
+                }
+                else
+                {
+                    parameters.Add("VRCEmote");
+                    parameters.Add("VRCFaceBlendH");
+                    parameters.Add("VRCFaceBlendV");
                 }
             }
 #endif
