@@ -8,6 +8,19 @@ Asset Description is the file to provide information of your assets for Avatar O
 
 ## Why Asset Description is needed
 
+Asset Description is a file that provides information about your assets to Avatar Optimizer.\
+Avatar Optimizer uses those information to not excessively optimize user's avatar.
+
+Current Asset Description can provide the following information:
+
+- Meaningless Components: Components that should be ignored by Avatar Optimizer.
+- Parameters Read By External Tools: Parameters that can be read by external tools, especially for OSC Tools.
+- Parameters Changed By External Tools: Parameters that can be changed by external tools, especially for OSC Tools.
+
+We will discuss why Asset Description is needed for each information below.
+
+### Meaningless Components {#why-meaningless-components}
+
 Avatar Optimizer has to know about all existing components in the Avatar to remove unnecessary ones.\
 Avatar Optimizer v1.6.0 added [document to make your components compatible with AAO][make-component-compatible] and API for it, but
 for in-place modification tools that do not process on build,
@@ -17,6 +30,24 @@ Therefore, Asset Description was added in v1.7.0 as a simple mechanism to specif
 For non-destructive tools, we still recommend you to continue to remove components in `IVRCSDKPreprocessAvatarCallback` to prevent Avatar Optimizer from accidentally removing components when the execution order is incorrect.
 
 [make-component-compatible]: ../make-your-components-compatible-with-aao
+
+### Parameters Read By Extenral Tools {#why-parameters-read-by-external-tools}
+
+Avatar Optimizer will remove components that are not used in the Avatar.
+Some components like VRCPhysBone and VRCContactReceiver will create Animator Parameters that can be read by OSC Tools.
+However, Avatar Optimizer cannot know if the parameters are used by OSC Tools or not.
+Therefore, Avatar Optimizer will remove those parameters or components that create those parameters.
+
+To prevent Avatar Optimizer from removing those parameters, you can specify the parameters that are read by OSC Tools in Asset Description.
+
+### Parameters Changed By External Tools {#why-parameters-written-by-external-tools}
+
+Currently this information is not actually used by Avatar Optimizer, but it is planned to be used in the future.
+
+Avatar Optimizer is planned to optimize Animator Controller by analyzing unchanged parameters.
+However, if the parameters are changed by external tools, this optimization will break effects of the external tools.
+
+To prevent this, you can specify the parameters that are changed by external tools in Asset Description.
 
 ## Create Asset Description {#create-asset-description}
 
@@ -40,3 +71,15 @@ Avatar Optimizer ignores the component of the specified Script Asset type and it
 
 In Asset Description, as with the components in the Scene, types are stored in the form of guid and fileID of the Script Asset.\
 Therefore, even if the class name is changed, the specification in Asset Description will work without any problems as long as the components in the Scene are not broken.
+
+### Parameters Read By External Tools {#parameters-read-by-external-tools}
+
+Specify the parameters that are read by external tools.
+
+Please read [above](#why-parameters-read-by-external-tools) for more information.
+
+### Parameters Changed By External Tools {#parameters-changed-by-external-tools}
+
+Specify the parameters that are changed by external tools.
+
+Please read [above](#why-parameters-written-by-external-tools) for more information.
