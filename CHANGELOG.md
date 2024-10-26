@@ -104,6 +104,8 @@ The format is based on [Keep a Changelog].
 - Animation for target renderer of Merge Skinned Mesh might be overridden by animation for source renderer `#1276`
 - BlendShape with same name is impclitly merged in Merge Skinned Mesh `#1286`
   - Now you can rename BlendShape to avoid conflicts.
+- NRE if specified expression parameters is None `#1303`
+  - This error only happens if you don't use Modular Avatar since Modular Avatar will assign parameters asset.
 
 ### Security
 
