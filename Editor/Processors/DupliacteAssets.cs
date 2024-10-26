@@ -124,9 +124,6 @@ internal class DupliacteAssets : Pass<DupliacteAssets>
             {
                 // Target Objects
                 case Material:
-                    return ComponentSupport.Clone;
-
-                // intermediate objects
                 case Motion:
                 case AnimatorController:
                 case AnimatorOverrideController:
@@ -134,6 +131,7 @@ internal class DupliacteAssets : Pass<DupliacteAssets>
                 case AnimatorStateMachine:
                 case AnimatorTransitionBase:
                 case StateMachineBehaviour:
+                case AvatarMask:
 
 #if AAO_VRM0
                 case VRM.BlendShapeAvatar:
@@ -144,15 +142,6 @@ internal class DupliacteAssets : Pass<DupliacteAssets>
                 case UniVRM10.VRM10Expression:
 #endif
                     return ComponentSupport.Clone;
-
-                case Texture:
-                case MonoScript:
-                case Component:
-                case GameObject:
-                    return ComponentSupport.NoClone;
-
-                case ScriptableObject:
-                    return ComponentSupport.NoClone;
 
                 default:
                     return ComponentSupport.NoClone;
