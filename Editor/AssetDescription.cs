@@ -4,6 +4,7 @@ using System.Linq;
 using nadena.dev.ndmf.localization;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Serialization;
 using Object = UnityEngine.Object;
 using Debug = System.Diagnostics.Debug;
 
@@ -20,6 +21,36 @@ namespace Anatawa12.AvatarOptimizer
 #pragma warning restore CS0414
         [SerializeField]
         private ClassReference[] meaninglessComponents = Array.Empty<ClassReference>();
+        /// <summary>
+        /// <para>
+        /// The animator parameters that External Tools reads.
+        /// </para>
+        /// <para>
+        /// Avatar Optimizer will treat changing those parameters as side effects.
+        ///
+        /// As a part of optimization, Avatar Optimizer may remove PhysBones or Contact Receivers that are not used by the animator.
+        /// However, if those parameters are used by some External Tools like OSC Tools in VRChat, it may break the behavior of the avatar.
+        /// Registering parameters to this will prevent Avatar Optimizer from removing PhysBones or Contact Receivers that are used by OSC Tools.
+        /// </para>
+        /// </summary>
+        [SerializeField]
+        private string[] parametersExternalToolsReads = Array.Empty<string>();
+        /// <summary>
+        /// <para>
+        /// The animator parameters that OSC Tools changes.
+        /// </para>
+        /// <para>
+        /// Avatar Optimizer will assume those parameters might be changed by some external tools.
+        ///
+        /// Currently, this configuration is unused.
+        ///
+        /// Avatar Optimizer will implement optimizing Animator Controller by fixing non-animated parameters.
+        /// However, if those parameters are changed by some external tools like OSC Tools in VRChat, it may break the behavior of the avatar.
+        /// Therefore, registering parameters to this will prevent Avatar Optimizer from fixing non-animated parameters.
+        /// </para>
+        /// </summary>
+        [SerializeField]
+        private string[] parametersExternalsToolsChanges = Array.Empty<string>();
 
         const int MonoScriptIdentifierType = 1;
 
@@ -30,6 +61,8 @@ namespace Anatawa12.AvatarOptimizer
         class AssetDescriptionData
         {
             public HashSet<Type> meaninglessComponents = new();
+            public HashSet<string> parametersExternalToolsReads = new();
+            public HashSet<string> parametersExternalsToolsChanges = new();
         }
 
         static AssetDescriptionData LoadData()
@@ -40,6 +73,9 @@ namespace Anatawa12.AvatarOptimizer
                 foreach (var component in description.meaninglessComponents)
                     if (GetMonoScriptFromGuid(component.guid, component.fileID) is MonoScript monoScript)
                         data.meaninglessComponents.Add(monoScript.GetClass());
+
+                data.parametersExternalToolsReads.UnionWith(description.parametersExternalToolsReads);
+                data.parametersExternalsToolsChanges.UnionWith(description.parametersExternalsToolsChanges);
             }
 
             return data;
@@ -57,6 +93,8 @@ namespace Anatawa12.AvatarOptimizer
 
         public static void Reload() => _data = LoadData();
         public static HashSet<Type> GetMeaninglessComponents() => Data.meaninglessComponents;
+        public static HashSet<string> GetParametersExternalToolsReads() => Data.parametersExternalToolsReads;
+        public static HashSet<string> GetParametersExternalsToolsChanges() => Data.parametersExternalsToolsChanges;
 
         private static Object GetMonoScriptFromGuid(string guid, ulong fileid)
         {
@@ -70,11 +108,15 @@ namespace Anatawa12.AvatarOptimizer
         {
             private SerializedProperty _comment = null!; // Initialized by OnEnable
             private SerializedProperty _meaninglessComponents = null!; // Initialized by OnEnable
+            private SerializedProperty _parametersExternalToolsReads = null!; // Initialized by OnEnable
+            private SerializedProperty _parametersExternalsToolsChanges = null!; // Initialized by OnEnable
 
             private void OnEnable()
             {
                 _comment = serializedObject.FindProperty("comment");
                 _meaninglessComponents = serializedObject.FindProperty("meaninglessComponents");
+                _parametersExternalToolsReads = serializedObject.FindProperty(nameof(parametersExternalToolsReads));
+                _parametersExternalsToolsChanges = serializedObject.FindProperty(nameof(parametersExternalsToolsChanges));
             }
 
             public override void OnInspectorGUI()
@@ -93,6 +135,8 @@ namespace Anatawa12.AvatarOptimizer
                 EditorGUILayout.Space(20f);
                 EditorGUILayout.PropertyField(_comment);
                 EditorGUILayout.PropertyField(_meaninglessComponents);
+                EditorGUILayout.PropertyField(_parametersExternalToolsReads, true);
+                EditorGUILayout.PropertyField(_parametersExternalsToolsChanges, true);
 
                 serializedObject.ApplyModifiedProperties();
             }
