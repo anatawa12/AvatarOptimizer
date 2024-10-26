@@ -19,6 +19,8 @@ The format is based on [Keep a Changelog].
 - NRE if specified expression parameters is None `#1303`
   - This error only happens if you don't use Modular Avatar since Modular Avatar will assign parameters asset.
 - "asset is not temporary asset" error if no Modular Avatar is used `#1304`
+- Merge Skinned Mesh with Basic Mesh is not working `#1307`
+- Validation system in Avatar Optimizer is not working `#1307`
 
 ### Security
 
