@@ -18,4 +18,10 @@ MonoBehaviour:
     some avatar for short priod of time'
   meaninglessComponents: []
   parametersReadByExternalTools: []
-  parametersChangedByExternalTools: []
+  parametersChangedByExternalTools:
+  - Gshock_Sec
+  - Gshock_Min
+  - Gshock_Hour
+  - Gshock_Week
+  - Gshock_Day
+  - Gshock_Month
