@@ -1260,7 +1260,7 @@ internal struct OptimizeTextureImpl {
             Profiler.BeginSample("Preprocess vertices");
             var indexToUv = new List<Vector2>();
             var uvToIndex = new Dictionary<Vector2, int>();
-            var inputVertToUniqueIndex = new List<int>();
+            //var inputVertToUniqueIndex = new List<int>();
             var vertexToUniqueIndex = new Dictionary<Vertex, int>();
             {
                 var uniqueUv = 0;
@@ -1275,13 +1275,13 @@ internal struct OptimizeTextureImpl {
                             indexToUv.Add(uv);
                         }
 
-                        inputVertToUniqueIndex.Add(uvVert);
+                        //inputVertToUniqueIndex.Add(uvVert);
                         vertexToUniqueIndex[vertex] = uvVert;
                     }
                 }
             }
-            System.Diagnostics.Debug.Assert(indexToUv.Count == uvToIndex.Count);
-            System.Diagnostics.Debug.Assert(indexToUv.Count == inputVertToUniqueIndex.Count);
+            Utils.Assert(indexToUv.Count == uvToIndex.Count);
+            // Utils.Assert(indexToUv.Count == inputVertToUniqueIndex.Count); // Came from upstream but assertion fails. actually inputVertToUniqueIndex is unused
             Profiler.EndSample();
 
             // Union-Find用のデータストラクチャーを初期化

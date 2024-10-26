@@ -10,7 +10,7 @@ namespace Anatawa12.AvatarOptimizer
         public EqualsHashSet(HashSet<T> backedSet)
         {
             if (backedSet == null) throw new ArgumentNullException(nameof(backedSet));
-            System.Diagnostics.Debug.Assert(Equals(backedSet.Comparer, EqualityComparer<T>.Default));
+            Utils.Assert(Equals(backedSet.Comparer, EqualityComparer<T>.Default));
             this.backedSet = backedSet;
         }
 
