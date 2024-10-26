@@ -28,7 +28,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         public override void Process(BuildContext context, MeshInfo2 target)
         {
-            var meshInfos = CollectMeshInfos(context);
+            var (disposableList, meshInfos) = CollectMeshInfos(context);
+            using var _ = disposableList;
 
             GenerateWarningsOrErrors(context, Component.copyEnablementAnimation, Component.blendShapeMode, target, meshInfos);
 
@@ -51,7 +52,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             RemoveOldRenderers(target, meshInfos, Component.removeEmptyRendererObject);
         }
 
-        public MeshInfo2[] CollectMeshInfos(BuildContext context)
+        public (DisposableList<MeshInfo2>, MeshInfo2[] meshInfos) CollectMeshInfos(BuildContext context)
         {
             List<SkinnedMeshRenderer> skinnedMeshRenderers;
             List<MeshRenderer> staticMeshRenderers;
@@ -95,16 +96,24 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             Profiler.BeginSample("Collect MeshInfos");
             // Owns staticRendererMeshInfos
-            using var staticRendererMeshInfos = staticMeshRenderers.Select(renderer => new MeshInfo2(renderer)).ToDisposableList();
-            var meshInfos = skinnedMeshRenderers.Select(context.GetMeshInfoFor)
-                .Concat(staticRendererMeshInfos)
-                .ToArray();
+            var staticRendererMeshInfos = staticMeshRenderers.Select(renderer => new MeshInfo2(renderer)).ToDisposableList();
+            try
+            {
+                var meshInfos = skinnedMeshRenderers.Select(context.GetMeshInfoFor)
+                    .Concat(staticRendererMeshInfos)
+                    .ToArray();
 
-            foreach (var meshInfo2 in meshInfos) meshInfo2.FlattenMultiPassRendering("Merge Skinned Mesh");
-            foreach (var meshInfo2 in meshInfos) meshInfo2.MakeBoned();
-            Profiler.EndSample();
+                foreach (var meshInfo2 in meshInfos) meshInfo2.FlattenMultiPassRendering("Merge Skinned Mesh");
+                foreach (var meshInfo2 in meshInfos) meshInfo2.MakeBoned();
+                Profiler.EndSample();
 
-            return meshInfos;
+                return (staticRendererMeshInfos, meshInfos);
+            }
+            catch
+            {
+                staticRendererMeshInfos.Dispose();
+                throw;
+            }
         }
 
         public static void GenerateWarningsOrErrors(BuildContext context,
