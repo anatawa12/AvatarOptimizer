@@ -135,6 +135,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             }
 #endif
 
+            // OSC and other External Tools Parameters
+            parameters.UnionWith(AssetDescription.GetParametersExternalToolsReads());
+
             return parameters;
         }
 
