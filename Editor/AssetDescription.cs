@@ -34,7 +34,7 @@ namespace Anatawa12.AvatarOptimizer
         /// </para>
         /// </summary>
         [SerializeField]
-        private string[] parametersExternalToolsReads = Array.Empty<string>();
+        private string[] parametersReadByExternalTools = Array.Empty<string>();
         /// <summary>
         /// <para>
         /// The animator parameters that OSC Tools changes.
@@ -50,7 +50,7 @@ namespace Anatawa12.AvatarOptimizer
         /// </para>
         /// </summary>
         [SerializeField]
-        private string[] parametersExternalsToolsChanges = Array.Empty<string>();
+        private string[] parametersChangedByExternalTools = Array.Empty<string>();
 
         const int MonoScriptIdentifierType = 1;
 
@@ -61,8 +61,8 @@ namespace Anatawa12.AvatarOptimizer
         class AssetDescriptionData
         {
             public HashSet<Type> meaninglessComponents = new();
-            public HashSet<string> parametersExternalToolsReads = new();
-            public HashSet<string> parametersExternalsToolsChanges = new();
+            public HashSet<string> parametersReadByExternalTools = new();
+            public HashSet<string> parametersChangedByExternalTools = new();
         }
 
         static AssetDescriptionData LoadData()
@@ -74,8 +74,8 @@ namespace Anatawa12.AvatarOptimizer
                     if (GetMonoScriptFromGuid(component.guid, component.fileID) is MonoScript monoScript)
                         data.meaninglessComponents.Add(monoScript.GetClass());
 
-                data.parametersExternalToolsReads.UnionWith(description.parametersExternalToolsReads);
-                data.parametersExternalsToolsChanges.UnionWith(description.parametersExternalsToolsChanges);
+                data.parametersReadByExternalTools.UnionWith(description.parametersReadByExternalTools);
+                data.parametersChangedByExternalTools.UnionWith(description.parametersChangedByExternalTools);
             }
 
             return data;
@@ -93,8 +93,8 @@ namespace Anatawa12.AvatarOptimizer
 
         public static void Reload() => _data = LoadData();
         public static HashSet<Type> GetMeaninglessComponents() => Data.meaninglessComponents;
-        public static HashSet<string> GetParametersExternalToolsReads() => Data.parametersExternalToolsReads;
-        public static HashSet<string> GetParametersExternalsToolsChanges() => Data.parametersExternalsToolsChanges;
+        public static HashSet<string> GetParametersReadByExternalTools() => Data.parametersReadByExternalTools;
+        public static HashSet<string> GetParametersChangedByExternalTools() => Data.parametersChangedByExternalTools;
 
         private static Object GetMonoScriptFromGuid(string guid, ulong fileid)
         {
@@ -115,8 +115,8 @@ namespace Anatawa12.AvatarOptimizer
             {
                 _comment = serializedObject.FindProperty("comment");
                 _meaninglessComponents = serializedObject.FindProperty("meaninglessComponents");
-                _parametersExternalToolsReads = serializedObject.FindProperty(nameof(parametersExternalToolsReads));
-                _parametersExternalsToolsChanges = serializedObject.FindProperty(nameof(parametersExternalsToolsChanges));
+                _parametersExternalToolsReads = serializedObject.FindProperty(nameof(parametersReadByExternalTools));
+                _parametersExternalsToolsChanges = serializedObject.FindProperty(nameof(parametersChangedByExternalTools));
             }
 
             public override void OnInspectorGUI()
