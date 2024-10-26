@@ -8,6 +8,9 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Improved OSC Gimmick Support `#1306`
+  - We added two information for OSC Gimmick in Asset Description.
+  - By defining parameters read / written by OSC Gimmick, your OSC Gimmick no longer breaks.
 
 ### Changed
 
