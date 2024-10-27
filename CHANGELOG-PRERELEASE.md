@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
+- Show version name on NDMF Console `#1309`
 
 ### Deprecated
 
