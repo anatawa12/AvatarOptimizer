@@ -47,6 +47,22 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 }
             }
 
+            // if MMD World Compatibility is enabled, body mesh will be animated by MMD World
+            if (state.MmdWorldCompatibility)
+            {
+                var mmdBody = context.AvatarRootTransform.Find("Body");
+                if (mmdBody != null)
+                {
+                    var mmdBodyRenderer = mmdBody.GetComponent<SkinnedMeshRenderer>();
+                    if (mmdBodyRenderer != null)
+                    {
+                        componentInfos.GetInfo(mmdBodyRenderer)
+                            .DependantEntrypoint
+                            .Add(context.AvatarRootTransform, GCComponentInfo.DependencyType.Normal);
+                    }
+                }
+            }
+
             Profiler.EndSample();
 
             Profiler.BeginSample("Collect Merging Targets");
@@ -78,8 +94,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     meshInfo.Bones.Count > 0
                     // FlattenMultiPassRendering will increase polygon count by VRChat so it's not good for T&O
                     && meshInfo.SubMeshes.All(x => x.SharedMaterials.Length == 1)
-                    // Merging Meshes with BlendShapes can increase rendering cost or break the animation
-                    && meshInfo.BlendShapes.Count == 0
+                    // Since 1.8.0 (targets 2022) we merge meshes with BlendShapes with RenameToAvoidConflict
+                    // && meshInfo.BlendShapes.Count == 0
                     // Animating renderer is not supported by this optimization
                     && !IsAnimatedForbidden(context.GetAnimationComponent(meshRenderer))
                     // any other components are not supported
@@ -415,11 +431,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             {
                 if (property == Props.EnabledFor(typeof(SkinnedMeshRenderer))) continue; // m_Enabled is proceed separatedly
                 if (!node.ComponentNodes.Any()) continue; // skip empty nodes, likely means PPtr animation
+                if (property.StartsWith("blendShape.", StringComparison.Ordinal)) continue; // blendShapes are renamed so we don't need to collect animation location
                 if (node.ComponentNodes.Any(x => x is not AnimatorParsersV2.AnimatorPropModNode<AnimatorParsersV2.FloatValueInfo>))
                     return null;
-
-                if (property.StartsWith("blendShape.", StringComparison.Ordinal))
-                    continue;
 
                 float? defaultValue;
                 if (node.ApplyState == AnimatorParsersV2.ApplyState.Always)
@@ -634,8 +648,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 // Note: when you added some other allowed properties,
                 // You have to add default value handling in GetDefaultValue below
 
-                // blendShapes are removed so it's allowed
-                if (name.StartsWith("blendShapes.", StringComparison.Ordinal)) continue;
+                // blendShapes are renamed to avoid conflict, so it's allowed
+                if (name.StartsWith("blendShape.", StringComparison.Ordinal)) continue;
                 // material properties are allowed, will be merged if animated similarly
                 if (name.StartsWith("material.", StringComparison.Ordinal)) continue;
                 // other float properties are forbidden
@@ -682,12 +696,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     // float
                     return material.GetFloat(materialProperty);
                 }
-            }
-
-            if (property.StartsWith("blendShapes.", StringComparison.Ordinal))
-            {
-                var blendShapeName = property.Substring("blendShapes.".Length);
-                return meshInfo.BlendShapes.FirstOrDefault(x => x.name == blendShapeName).weight;
             }
 
             throw new InvalidOperationException($"AAO forgot to implement handling for {property}");
