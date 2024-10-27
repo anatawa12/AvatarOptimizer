@@ -27,19 +27,17 @@ If you are using [Modular Avatar], you can add [`MA Mesh Settings`] component to
 
 {{< /hint >}}
 
-This component is good for merging your cloth meshes and body meshes but not good for face meshes because BlendShape can cause performance impact.
-BlendShape is a feature became heavier in proportion to the count of vertices and BlendShapes.
-Merging SkinnedMesh increases vertices and face mesh usually have many BlendShapes.
-That's why it's not good to merge face meshes.
-
-In addition, because of same reasons, you should freeze & remove unchanging BlendShapes for body / cloth meshes.
+It's better freeze & remove unchanging BlendShapes for body / cloth meshes to reduce BlendShape load.
 You can freeze & remove BlendShape using [Freeze BlendShape](../freeze-blendshape) component.
 Add this component to both/either merge source SkinnedMeshRenderer and/or merged SkinnedMeshRenderer to freeze & remove BlendShapes.
 Also, you can use `Automatically Freeze BlendShape` of [Trace and Optimize](../trace-and-optimize) component to get the same benefits.
 
+In previous versions of Avatar Optimizer, Unity 2019 recommended not merging face meshes due to merging BlendShape-heavy mesh will increase load on BlendShape much.
+However, in Unity 2022, we no longer recommends not merging face meshes because the BlendShape load has been improved.
+
 {{< hint info >}}
 
-[Trace And Optimize](../trace-and-optimize) will automatically do the same process, so in some cases you do not need to use this component.
+[Trace And Optimize](../trace-and-optimize) will automatically do the same process, so in most cases you do not need to use this component.
 
 {{< /hint >}}
 
