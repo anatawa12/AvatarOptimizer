@@ -10,20 +10,25 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
-- Show version name on NDMF Console `#1309`
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
-- NRE if specified expression parameters is None `#1303`
-  - This error only happens if you don't use Modular Avatar since Modular Avatar will assign parameters asset.
-- "asset is not temporary asset" error if no Modular Avatar is used `#1304`
-- Merge Skinned Mesh with Basic Mesh is not working `#1307`
-- Validation system in Avatar Optimizer is not working `#1307`
 
 ### Security
+
+## [1.8.0-beta.11] - 2024-10-27
+### Changed
+- Show version name on NDMF Console [`#1309`](https://github.com/anatawa12/AvatarOptimizer/pull/1309)
+
+### Fixed
+- NRE if specified expression parameters is None [`#1303`](https://github.com/anatawa12/AvatarOptimizer/pull/1303)
+  - This error only happens if you don't use Modular Avatar since Modular Avatar will assign parameters asset.
+- "asset is not temporary asset" error if no Modular Avatar is used [`#1304`](https://github.com/anatawa12/AvatarOptimizer/pull/1304)
+- Merge Skinned Mesh with Basic Mesh is not working [`#1307`](https://github.com/anatawa12/AvatarOptimizer/pull/1307)
+- Validation system in Avatar Optimizer is not working [`#1307`](https://github.com/anatawa12/AvatarOptimizer/pull/1307)
 
 ## [1.8.0-beta.10] - 2024-10-26
 ### Added
@@ -1690,7 +1695,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-beta.10...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-beta.11...HEAD
+[1.8.0-beta.11]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-beta.10...v1.8.0-beta.11
 [1.8.0-beta.10]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-beta.9...v1.8.0-beta.10
 [1.8.0-beta.9]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-beta.8...v1.8.0-beta.9
 [1.8.0-beta.8]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-beta.7...v1.8.0-beta.8
