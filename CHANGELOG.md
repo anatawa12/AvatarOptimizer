@@ -107,6 +107,7 @@ The format is based on [Keep a Changelog].
 - NRE if specified expression parameters is None `#1303`
   - This error only happens if you don't use Modular Avatar since Modular Avatar will assign parameters asset.
 - Show version name on NDMF Console `#1309`
+- Fix non-VRChat project support `#1310`
 
 ### Security
 

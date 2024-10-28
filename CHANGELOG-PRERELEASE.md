@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Fix non-VRChat project support `#1310`
 
 ### Security
 
