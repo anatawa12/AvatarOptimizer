@@ -124,13 +124,13 @@ internal class MaterialInformation
         }
 
         public override int? GetInteger(string propertyName, bool considerAnimation = true) =>
-            GetValue(propertyName, _material.GetInt, considerAnimation);
+            GetValue(propertyName, _material.SafeGetInteger, considerAnimation);
 
         public override float? GetFloat(string propertyName, bool considerAnimation = true) =>
-            GetValue(propertyName, _material.GetFloat, considerAnimation);
+            GetValue(propertyName, _material.SafeGetFloat, considerAnimation);
 
         public override Vector4? GetVector(string propertyName, bool considerAnimation = true) =>
-            GetValue(propertyName, _material.GetVector, considerAnimation);
+            GetValue(propertyName, _material.SafeGetVector, considerAnimation);
 
         public override void RegisterOtherUVUsage(UsingUVChannels uvChannel)
         {
