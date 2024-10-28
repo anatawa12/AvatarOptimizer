@@ -374,6 +374,18 @@ namespace Anatawa12.AvatarOptimizer
             if (!condition) throw new InvalidOperationException(message);
         }
 
+        public static float SafeGetFloat(this Material material, string propertyName) =>
+            material.HasProperty(propertyName) ? material.GetFloat(propertyName) : 0;
+
+        public static int SafeGetInteger(this Material material, string propertyName) =>
+            material.HasProperty(propertyName) ? material.GetInteger(propertyName) : 0;
+
+        public static Vector4 SafeGetVector(this Material material, string propertyName) =>
+            material.HasProperty(propertyName) ? material.GetVector(propertyName) : Vector4.zero;
+
+        public static Color SafeGetColor(this Material material, string propertyName) =>
+            material.HasProperty(propertyName) ? material.GetColor(propertyName) : Color.clear;
+
         /// <summary>
         /// Fast compare of <see cref="Color32"/> array.
         ///

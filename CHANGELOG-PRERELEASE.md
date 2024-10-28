@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - Fix non-VRChat project support `#1310`
+- 'shader' doesn't have a float or range property 'prop' error `#1312`
 
 ### Security
 
