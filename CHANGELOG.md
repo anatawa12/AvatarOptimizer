@@ -108,6 +108,7 @@ The format is based on [Keep a Changelog].
   - This error only happens if you don't use Modular Avatar since Modular Avatar will assign parameters asset.
 - Show version name on NDMF Console `#1309`
 - Fix non-VRChat project support `#1310`
+- 'shader' doesn't have a float or range property 'prop' error `#1312`
 
 ### Security
 
