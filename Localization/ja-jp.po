@@ -608,8 +608,8 @@ msgstr "Trace and Optimizeへの移行が完了しました！"
 msgid "TraceAndOptimize:description"
 msgstr "このコンポーネントをアバターにつけると、アバターを走査して自動的にできる限りの最適化を行います。"
 
-msgid "TraceAndOptimize:prop:freezeBlendShape"
-msgstr "BlendShapeを自動的に固定・除去する"
+msgid "TraceAndOptimize:prop:optimizeBlendShape"
+msgstr "BlendShapeを最適化する"
 
 msgid "TraceAndOptimize:prop:removeUnusedObjects"
 msgstr "使われていないObjectを自動的に削除する"
