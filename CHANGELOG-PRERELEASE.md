@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog].
 - Fix non-VRChat project support `#1310`
 - 'shader' doesn't have a float or range property 'prop' error `#1312`
 - Integer and Int confusion `#1313`
+- NativeArray leak `#1314`
 
 ### Security
 
