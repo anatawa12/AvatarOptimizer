@@ -126,6 +126,9 @@ internal class MaterialInformation
         public override int? GetInteger(string propertyName, bool considerAnimation = true) =>
             GetValue(propertyName, _material.SafeGetInteger, considerAnimation);
 
+        public override int? GetInt(string propertyName, bool considerAnimation = true) =>
+            GetValue(propertyName, _material.SafeGetInt, considerAnimation);
+
         public override float? GetFloat(string propertyName, bool considerAnimation = true) =>
             GetValue(propertyName, _material.SafeGetFloat, considerAnimation);
 

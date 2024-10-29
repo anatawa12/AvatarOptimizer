@@ -380,6 +380,9 @@ namespace Anatawa12.AvatarOptimizer
         public static int SafeGetInteger(this Material material, string propertyName) =>
             material.HasProperty(propertyName) ? material.GetInteger(propertyName) : 0;
 
+        public static int SafeGetInt(this Material material, string propertyName) =>
+            material.HasProperty(propertyName) ? material.GetInt(propertyName) : 0;
+
         public static Vector4 SafeGetVector(this Material material, string propertyName) =>
             material.HasProperty(propertyName) ? material.GetVector(propertyName) : Vector4.zero;
 
