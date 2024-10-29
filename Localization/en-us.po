@@ -623,7 +623,7 @@ msgid "RenameBlendShape:error:empty-name-some"
 msgstr "Some changed names are empty."
 
 msgid "RenameBlendShape:warning:name-conflict-some"
-msgstr "Some changed names are duplicated. Those blendShapes will be merged to one."
+msgstr "Some changed names are duplicated."
 
 msgid "RenameBlendShape:error:empty-name-this"
 msgstr "Changed name is empty."

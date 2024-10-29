@@ -535,18 +535,21 @@ msgid "RenameBlendShape:error:empty-name-some"
 msgstr "変更後の名前が空になっているものがあります。"
 
 msgid "RenameBlendShape:warning:name-conflict-some"
-msgstr "変更後の名前が重複しているものがあります。重複するBlendShapeは1つに統合されます。"
+msgstr "変更後の名前が重複しているものがあります。"
 
 msgid "RenameBlendShape:error:empty-name-this"
 msgstr "変更後の名前が空です。"
 
 msgid "RenameBlendShape:warning:name-conflict-this"
-msgstr "変更後の名前が他と重複しています。重複するBlendShapeは1つに統合されます。"
+msgstr "変更後の名前が他と重複しています。"
 
 # used in NDMF Console
 
 msgid "RenameBlendShape:error:empty-name"
 msgstr "BlendShape '{0}' の変更後の名前が空です。BlendShape名を空にすることはできません。"
+
+msgid "RenameBlendShape:error:after-name-conflict"
+msgstr "BlendShape名 '{0}' は重複しています。Rename BlendShapeコンポーネントによる名前変更で同名のBlendShapeを作成することはできません。"
 
 # endregion
 
