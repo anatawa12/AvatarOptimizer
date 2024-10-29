@@ -110,7 +110,8 @@ internal class MaterialInformation
 
         public Shader Shader => _material.shader;
 
-        private T? GetValue<T>(string propertyName, Func<string, T> computer, bool considerAnimation) where T : struct
+        private T? GetValue<T>(string propertyName, Func<string, T> computer, bool considerAnimation,
+            string[]? subProperties = null) where T : struct
         {
             // animated; return null
             if (considerAnimation)
@@ -118,6 +119,12 @@ internal class MaterialInformation
                 var animationProperty = $"material.{propertyName}";
                 if (_infos.Any(x => x.GetFloatNode(animationProperty).ComponentNodes.Any()))
                     return null;
+                foreach (var subProperty in subProperties ?? Array.Empty<string>())
+                {
+                    var subAnimationProperty = $"material.{propertyName}.{subProperty}";
+                    if (_infos.Any(x => x.GetFloatNode(subAnimationProperty).ComponentNodes.Any()))
+                        return null;
+                }
             }
 
             return computer(propertyName);
@@ -126,11 +133,16 @@ internal class MaterialInformation
         public override int? GetInteger(string propertyName, bool considerAnimation = true) =>
             GetValue(propertyName, _material.SafeGetInteger, considerAnimation);
 
+        public override int? GetInt(string propertyName, bool considerAnimation = true) =>
+            GetValue(propertyName, _material.SafeGetInt, considerAnimation);
+
+        private static readonly string[] VectorSubProperties = new[] { "r", "g", "b", "a", "x", "y", "z", "w" };
+
         public override float? GetFloat(string propertyName, bool considerAnimation = true) =>
-            GetValue(propertyName, _material.SafeGetFloat, considerAnimation);
+            GetValue(propertyName, _material.SafeGetFloat, considerAnimation, VectorSubProperties);
 
         public override Vector4? GetVector(string propertyName, bool considerAnimation = true) =>
-            GetValue(propertyName, _material.SafeGetVector, considerAnimation);
+            GetValue(propertyName, _material.SafeGetVector, considerAnimation, VectorSubProperties);
 
         public override void RegisterOtherUVUsage(UsingUVChannels uvChannel)
         {

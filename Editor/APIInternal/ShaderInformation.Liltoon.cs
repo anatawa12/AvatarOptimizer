@@ -131,13 +131,13 @@ internal class LiltoonShaderInformation : ShaderInformation
             UsingUVChannels.NonMesh, null); // GradationMap UV is based on color
         LIL_SAMPLE_2D_WithMat("_MainColorAdjustMask", "_MainTex", uvMain, uvMainMatrix); // simple LIL_SAMPLE_2D
 
-        if (matInfo.GetInteger("_UseMain2ndTex") != 0)
+        if (matInfo.GetInt("_UseMain2ndTex") != 0)
         {
             // caller of lilGetMain2nd will pass sampler for _MainTex as samp
             SamplerStateInformation samp = "_MainTex";
 
             UsingUVChannels uv2nd;
-            switch (matInfo.GetInteger("_Main2ndTex_UVMode"))
+            switch (matInfo.GetInt("_Main2ndTex_UVMode"))
             {
                 case 0:
                     uv2nd = UsingUVChannels.UV0;
@@ -172,13 +172,13 @@ internal class LiltoonShaderInformation : ShaderInformation
             );
         }
 
-        if (matInfo.GetInteger("_UseMain3rdTex") != 0)
+        if (matInfo.GetInt("_UseMain3rdTex") != 0)
         {
             // caller of lilGetMain3rd will pass sampler for _MainTex as samp
             var samp = "_MainTex";
 
             UsingUVChannels uv3rd;
-            switch (matInfo.GetInteger("_Main2ndTex_UVMode"))
+            switch (matInfo.GetInt("_Main2ndTex_UVMode"))
             {
                 case 0:
                     uv3rd = UsingUVChannels.UV0;
@@ -214,16 +214,16 @@ internal class LiltoonShaderInformation : ShaderInformation
         }
 
         LIL_SAMPLE_2D_ST_WithMat("_AlphaMask", "_MainTex", uvMain, uvMainMatrix);
-        if (matInfo.GetInteger("_UseBumpMap") != 0)
+        if (matInfo.GetInt("_UseBumpMap") != 0)
         {
             LIL_SAMPLE_2D_ST_WithMat("_BumpMap", "_MainTex", uvMain, uvMainMatrix);
         }
 
-        if (matInfo.GetInteger("_UseBump2ndMap") != 0)
+        if (matInfo.GetInt("_UseBump2ndMap") != 0)
         {
             var uvBump2nd = UsingUVChannels.UV0;
 
-            switch (matInfo.GetInteger("_Bump2ndMap_UVMode"))
+            switch (matInfo.GetInt("_Bump2ndMap_UVMode"))
             {
                 case 0:
                     uvBump2nd = UsingUVChannels.UV0;
@@ -248,7 +248,7 @@ internal class LiltoonShaderInformation : ShaderInformation
             // Note: _Bump2ndScaleMask is defined as NoScaleOffset but sampled with LIL_SAMPLE_2D_ST?
         }
 
-        if (matInfo.GetInteger("_UseAnisotropy") != 0)
+        if (matInfo.GetInt("_UseAnisotropy") != 0)
         {
             LIL_SAMPLE_2D_ST_WithMat("_AnisotropyTangentMap", "_MainTex", uvMain, uvMainMatrix);
             LIL_SAMPLE_2D_ST_WithMat("_AnisotropyScaleMask", "_MainTex", uvMain, uvMainMatrix);
@@ -257,13 +257,13 @@ internal class LiltoonShaderInformation : ShaderInformation
             LIL_SAMPLE_2D_ST_WithMat("_AnisotropyShiftNoiseMask", "_MainTex", uvMain, uvMainMatrix);
         }
 
-        if (matInfo.GetInteger("_UseBacklight") != 0)
+        if (matInfo.GetInt("_UseBacklight") != 0)
         {
             var samp = "_MainTex";
             LIL_SAMPLE_2D_ST_WithMat("_BacklightColorTex", samp, uvMain, uvMainMatrix);
         }
 
-        if (matInfo.GetInteger("_UseShadow") != 0)
+        if (matInfo.GetInt("_UseShadow") != 0)
         {
             SamplerStateInformation samp = "_MainTex";
             LIL_SAMPLE_2D_GRAD_WithMat("_ShadowStrengthMask", SamplerStateInformation.LinearRepeatSampler, uvMain,
@@ -273,7 +273,7 @@ internal class LiltoonShaderInformation : ShaderInformation
             LIL_SAMPLE_2D_GRAD_WithMat("_ShadowBlurMask", SamplerStateInformation.LinearRepeatSampler, uvMain,
                 uvMainMatrix);
             // lilSampleLUT
-            switch (matInfo.GetInteger("_ShadowColorType"))
+            switch (matInfo.GetInt("_ShadowColorType"))
             {
                 case 1:
                     LIL_SAMPLE_2D_WithMat("_ShadowColorTex", SamplerStateInformation.LinearClampSampler,
@@ -297,14 +297,14 @@ internal class LiltoonShaderInformation : ShaderInformation
             }
         }
 
-        if (matInfo.GetInteger("_UseRimShade") != 0)
+        if (matInfo.GetInt("_UseRimShade") != 0)
         {
             var samp = "_MainTex";
 
             LIL_SAMPLE_2D_WithMat("_RimShadeMask", samp, uvMain, uvMainMatrix);
         }
 
-        if (matInfo.GetInteger("_UseReflection") != 0)
+        if (matInfo.GetInt("_UseReflection") != 0)
         {
             // TODO: research
             var samp = "_MainTex"; // or SamplerStateInformation.LinearRepeatSampler in lil_pass_foreward_reblur.hlsl
@@ -315,45 +315,45 @@ internal class LiltoonShaderInformation : ShaderInformation
         }
 
         // Matcap
-        if (matInfo.GetInteger("_UseMatCap") != 0)
+        if (matInfo.GetInt("_UseMatCap") != 0)
         {
             var samp = "_MainTex"; // caller of lilGetMatCap
 
             LIL_SAMPLE_2D("_MatCapTex", SamplerStateInformation.LinearRepeatSampler, UsingUVChannels.NonMesh);
             LIL_SAMPLE_2D_ST_WithMat("_MatCapBlendMask", samp, uvMain, uvMainMatrix);
 
-            if (matInfo.GetInteger("_MatCapCustomNormal") != 0)
+            if (matInfo.GetInt("_MatCapCustomNormal") != 0)
             {
                 LIL_SAMPLE_2D_ST_WithMat("_MatCapBumpMap", samp, uvMain, uvMainMatrix);
             }
         }
 
-        if (matInfo.GetInteger("_UseMatCap2nd") != 0)
+        if (matInfo.GetInt("_UseMatCap2nd") != 0)
         {
             var samp = "_MainTex"; // caller of lilGetMatCap
 
             LIL_SAMPLE_2D("_MatCap2ndTex", SamplerStateInformation.LinearRepeatSampler, UsingUVChannels.NonMesh);
             LIL_SAMPLE_2D_ST_WithMat("_MatCap2ndBlendMask", samp, uvMain, uvMainMatrix);
 
-            if (matInfo.GetInteger("_MatCap2ndCustomNormal") != 0)
+            if (matInfo.GetInt("_MatCap2ndCustomNormal") != 0)
             {
                 LIL_SAMPLE_2D_ST_WithMat("_MatCap2ndBumpMap", samp, uvMain, uvMainMatrix);
             }
         }
 
         // rim light
-        if (matInfo.GetInteger("_UseRim") != 0)
+        if (matInfo.GetInt("_UseRim") != 0)
         {
             var samp = "_MainTex"; // caller of lilGetRim
             LIL_SAMPLE_2D_ST_WithMat("_RimColorTex", samp, uvMain, uvMainMatrix);
         }
 
-        if (matInfo.GetInteger("_UseGlitter") != 0)
+        if (matInfo.GetInt("_UseGlitter") != 0)
         {
             var samp = "_MainTex"; // caller of lilGetGlitter
 
             LIL_SAMPLE_2D_ST_WithMat("_GlitterColorTex", samp, uvMain, uvMainMatrix);
-            if (matInfo.GetInteger("_GlitterApplyShape") != 0)
+            if (matInfo.GetInt("_GlitterApplyShape") != 0)
             {
                 // complex uv
                 LIL_SAMPLE_2D_GRAD("_GlitterShapeTex", SamplerStateInformation.LinearClampSampler,
@@ -361,11 +361,11 @@ internal class LiltoonShaderInformation : ShaderInformation
             }
         }
 
-        if (matInfo.GetInteger("_UseEmission") != 0)
+        if (matInfo.GetInt("_UseEmission") != 0)
         {
             UsingUVChannels emissionUV = UsingUVChannels.UV0;
 
-            switch (matInfo.GetInteger("_EmissionMap_UVMode"))
+            switch (matInfo.GetInt("_EmissionMap_UVMode"))
             {
                 case 1:
                     emissionUV = UsingUVChannels.UV1;
@@ -403,17 +403,17 @@ internal class LiltoonShaderInformation : ShaderInformation
                 LIL_GET_EMIMASK_WithMat("_EmissionBlendMask", uvMain, uvMainMatrix);
             }
 
-            if (matInfo.GetInteger("_EmissionUseGrad") != 0)
+            if (matInfo.GetInt("_EmissionUseGrad") != 0)
             {
                 LIL_SAMPLE_1D("_EmissionGradTex", SamplerStateInformation.LinearRepeatSampler, UsingUVChannels.NonMesh);
             }
         }
 
-        if (matInfo.GetInteger("_UseEmission2nd") != 0)
+        if (matInfo.GetInt("_UseEmission2nd") != 0)
         {
             UsingUVChannels emission2ndUV = UsingUVChannels.UV0;
 
-            switch (matInfo.GetInteger("_Emission2ndMap_UVMode"))
+            switch (matInfo.GetInt("_Emission2ndMap_UVMode"))
             {
                 case 1:
                     emission2ndUV = UsingUVChannels.UV1;
@@ -453,28 +453,28 @@ internal class LiltoonShaderInformation : ShaderInformation
                 LIL_GET_EMIMASK_WithMat("_Emission2ndBlendMask", uvMain, uvMainMatrix);
             }
 
-            if (matInfo.GetInteger("_Emission2ndUseGrad") != 0)
+            if (matInfo.GetInt("_Emission2ndUseGrad") != 0)
             {
                 LIL_SAMPLE_1D("_Emission2ndGradTex", SamplerStateInformation.LinearRepeatSampler,
                     UsingUVChannels.NonMesh);
             }
         }
 
-        if (matInfo.GetInteger("_UseParallax") != 0)
+        if (matInfo.GetInt("_UseParallax") != 0)
         {
             matInfo.RegisterTextureUVUsage("_ParallaxMap", SamplerStateInformation.LinearRepeatSampler,
                 UsingUVChannels.UV0, null);
         }
 
-        if (matInfo.GetInteger("_UseAudioLink") != 0 && matInfo.GetInteger("_AudioLink2Vertex") != 0)
+        if (matInfo.GetInt("_UseAudioLink") != 0 && matInfo.GetInt("_AudioLink2Vertex") != 0)
         {
-            var _AudioLinkUVMode = matInfo.GetInteger("_AudioLinkUVMode");
+            var _AudioLinkUVMode = matInfo.GetInt("_AudioLinkUVMode");
 
             if (_AudioLinkUVMode is 3 or 4 or null)
             {
                 // TODO: _AudioLinkMask_ScrollRotate
                 var sampler = "_AudioLinkMask" | SamplerStateInformation.LinearRepeatSampler;
-                switch (matInfo.GetInteger("_AudioLinkMask_UVMode"))
+                switch (matInfo.GetInt("_AudioLinkMask_UVMode"))
                 {
                     case 0:
                     default:
@@ -518,7 +518,7 @@ internal class LiltoonShaderInformation : ShaderInformation
             );
         }
 
-        if (matInfo.GetInteger("_UseOutline") != 0)
+        if (matInfo.GetInt("_UseOutline") != 0)
         {
             // not on material side, on editor side toggle
             LIL_SAMPLE_2D_WithMat("_OutlineTex", "_OutlineTex", uvMain, uvMainMatrix);
@@ -527,7 +527,7 @@ internal class LiltoonShaderInformation : ShaderInformation
             // _OutlineVectorTex SamplerStateInformation.LinearRepeatSampler
             // UVs _OutlineVectorUVMode main,1,2,3
 
-            switch (matInfo.GetInteger("_AudioLinkMask_UVMode"))
+            switch (matInfo.GetInt("_AudioLinkMask_UVMode"))
             {
                 case 0:
                     LIL_SAMPLE_2D_WithMat("_OutlineVectorTex", SamplerStateInformation.LinearRepeatSampler, uvMain,
@@ -566,7 +566,7 @@ internal class LiltoonShaderInformation : ShaderInformation
             "_IDMaskPrior1", "_IDMaskPrior2", "_IDMaskPrior3", "_IDMaskPrior4", "_IDMaskPrior5", "_IDMaskPrior6", "_IDMaskPrior7", "_IDMaskPrior8", 
             "_IDMaskIsBitmap", "_IDMaskCompile"
         };
-        if (idMaskProperties.Any(prop => matInfo.GetInteger(prop) != 0))
+        if (idMaskProperties.Any(prop => matInfo.GetInt(prop) != 0))
         {
             // with _IDMaskFrom = 0..7, uv is used for ID Mask, but it will only use integer part
             // (cast to int with normal rounding in hlsl) so it's not necessary to register UV usage.

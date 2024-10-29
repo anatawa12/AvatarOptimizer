@@ -375,16 +375,19 @@ namespace Anatawa12.AvatarOptimizer
         }
 
         public static float SafeGetFloat(this Material material, string propertyName) =>
-            material.HasProperty(propertyName) ? material.GetFloat(propertyName) : 0;
+            material.HasFloat(propertyName) ? material.GetFloat(propertyName) : 0;
 
         public static int SafeGetInteger(this Material material, string propertyName) =>
-            material.HasProperty(propertyName) ? material.GetInteger(propertyName) : 0;
+            material.HasInteger(propertyName) ? material.GetInteger(propertyName) : 0;
+
+        public static int SafeGetInt(this Material material, string propertyName) =>
+            material.HasInt(propertyName) ? material.GetInt(propertyName) : 0;
 
         public static Vector4 SafeGetVector(this Material material, string propertyName) =>
-            material.HasProperty(propertyName) ? material.GetVector(propertyName) : Vector4.zero;
+            material.HasVector(propertyName) ? material.GetVector(propertyName) : Vector4.zero;
 
         public static Color SafeGetColor(this Material material, string propertyName) =>
-            material.HasProperty(propertyName) ? material.GetColor(propertyName) : Color.clear;
+            material.HasColor(propertyName) ? material.GetColor(propertyName) : Color.clear;
 
         /// <summary>
         /// Fast compare of <see cref="Color32"/> array.
