@@ -147,7 +147,7 @@ msgid "MergePhysBone:error:oneSource"
 msgstr "There is only one source PhysBone. You must specify two or more merge source PhysBones."
 
 msgid "MergePhysBone:error:multiChildType"
-msgstr "Some PysBone has multi child type != Ignore"
+msgstr "Some PhysBone has multi child type != Ignore"
 
 msgid "MergePhysBone:error:unsupportedPbVersion"
 msgstr "The PhysBone Version is not supported (yet) by Avatar Optimizer.\n"
@@ -172,8 +172,8 @@ msgstr ""
 
 msgid "MergePhysBone:error:LimitRotationFix:DifferRotation"
 msgstr ""
-"Limit Rotation of source phys bones differs in unfixable way.\n"
-"Please fix Limit Rotation of source phys bones to same value, or change to other mode."
+"Limit Rotation of source PhysBones differs in unfixable way.\n"
+"Please fix Limit Rotation of source PhysBones to same value, or change to other mode."
 
 msgid "MergePhysBone:error:LimitRotationFix:DifferRotation:description"
 msgstr ""
@@ -182,7 +182,7 @@ msgstr ""
 
 msgid "MergePhysBone:error:LimitRotationFix:NonZeroEndpointPosition"
 msgstr ""
-"Endpoint Position is not zero while Limit Rotation mode Fix.\n"
+"Endpoint Position is not zero while Limit Rotation mode is Fix.\n"
 "Please set Endpoint Position to zero, set Endpoint Position mode to Clear, or change Limit Rotation mode to other than Fix."
 
 msgid "MergePhysBone:dialog:versionInfo:title"
