@@ -19,9 +19,15 @@ MonoBehaviour:
   meaninglessComponents: []
   parametersReadByExternalTools: []
   parametersChangedByExternalTools:
-  - Gshock_Sec
-  - Gshock_Min
-  - Gshock_Hour
-  - Gshock_Week
-  - Gshock_Day
-  - Gshock_Month
+  - name: Gshock_Sec
+    matchMode: 0
+  - name: Gshock_Min
+    matchMode: 0
+  - name: Gshock_Hour
+    matchMode: 0
+  - name: Gshock_Week
+    matchMode: 0
+  - name: Gshock_Day
+    matchMode: 0
+  - name: Gshock_Month
+    matchMode: 0

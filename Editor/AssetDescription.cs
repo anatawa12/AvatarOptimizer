@@ -34,7 +34,7 @@ namespace Anatawa12.AvatarOptimizer
         /// </para>
         /// </summary>
         [SerializeField]
-        private string[] parametersReadByExternalTools = Array.Empty<string>();
+        private OscParameter[] parametersReadByExternalTools = Array.Empty<OscParameter>();
         /// <summary>
         /// <para>
         /// The animator parameters that OSC Tools changes.
@@ -50,7 +50,7 @@ namespace Anatawa12.AvatarOptimizer
         /// </para>
         /// </summary>
         [SerializeField]
-        private string[] parametersChangedByExternalTools = Array.Empty<string>();
+        private OscParameter[] parametersChangedByExternalTools = Array.Empty<OscParameter>();
 
         const int MonoScriptIdentifierType = 1;
 
@@ -61,8 +61,8 @@ namespace Anatawa12.AvatarOptimizer
         class AssetDescriptionData
         {
             public HashSet<Type> meaninglessComponents = new();
-            public HashSet<string> parametersReadByExternalTools = new();
-            public HashSet<string> parametersChangedByExternalTools = new();
+            public HashSet<OscParameter> parametersReadByExternalTools = new();
+            public HashSet<OscParameter> parametersChangedByExternalTools = new();
         }
 
         static AssetDescriptionData LoadData()
@@ -77,6 +77,9 @@ namespace Anatawa12.AvatarOptimizer
                 data.parametersReadByExternalTools.UnionWith(description.parametersReadByExternalTools);
                 data.parametersChangedByExternalTools.UnionWith(description.parametersChangedByExternalTools);
             }
+
+            data.parametersReadByExternalTools.RemoveWhere(x => x.name == "");
+            data.parametersChangedByExternalTools.RemoveWhere(x => x.name == "");
 
             return data;
         }
@@ -93,8 +96,8 @@ namespace Anatawa12.AvatarOptimizer
 
         public static void Reload() => _data = LoadData();
         public static HashSet<Type> GetMeaninglessComponents() => Data.meaninglessComponents;
-        public static HashSet<string> GetParametersReadByExternalTools() => Data.parametersReadByExternalTools;
-        public static HashSet<string> GetParametersChangedByExternalTools() => Data.parametersChangedByExternalTools;
+        public static HashSet<OscParameter> GetParametersReadByExternalTools() => Data.parametersReadByExternalTools;
+        public static HashSet<OscParameter> GetParametersChangedByExternalTools() => Data.parametersChangedByExternalTools;
 
         private static Object GetMonoScriptFromGuid(string guid, ulong fileid)
         {
@@ -230,6 +233,65 @@ namespace Anatawa12.AvatarOptimizer
             GUIContent MissingScriptContent(string className) => EditorGUI.showMixedValue
                 ? Constants.MixedValueContent
                 : new GUIContent($"Missing: {className}");
+        }
+        
+        // This class describes the OSC parameter
+        [Serializable]
+        public struct OscParameter : IEquatable<OscParameter>
+        {
+            [SerializeField]
+            public string name;
+            [SerializeField]
+            public MatchMode matchMode;
+
+            public enum MatchMode
+            {
+                Exact,
+                Prefix,
+                Suffix,
+                Contains,
+            }
+
+            public bool Equals(OscParameter other) => name == other.name && matchMode == other.matchMode;
+            public override bool Equals(object? obj) => obj is OscParameter other && Equals(other);
+            public override int GetHashCode() => HashCode.Combine(name, (int)matchMode);
+            public static bool operator ==(OscParameter left, OscParameter right) => left.Equals(right);
+            public static bool operator !=(OscParameter left, OscParameter right) => !left.Equals(right);
+        }
+
+        [CustomPropertyDrawer(typeof(OscParameter))]
+        internal class OscParameterEditor : PropertyDrawer
+        {
+            public override float GetPropertyHeight(SerializedProperty property, GUIContent label) => 
+                EditorGUIUtility.singleLineHeight;
+
+            public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+            {
+                var nameProperty = property.FindPropertyRelative("name");
+                var matchModeProperty = property.FindPropertyRelative("matchMode");
+
+                var rect = EditorGUI.PrefixLabel(position, label);
+                Rect text, popup;
+
+                float width;
+                if (rect.width > 200)
+                    width = 99.5f;
+                else
+                    width = rect.width / 2 - 0.5f;
+
+                text = rect with { width = rect.width - width - 1 };
+                popup = rect with { x = rect.xMax - width, width = width };
+
+                EditorGUI.BeginChangeCheck();
+                var newName = EditorGUI.TextField(text, nameProperty.stringValue);
+                if (EditorGUI.EndChangeCheck())
+                    nameProperty.stringValue = newName;
+                
+                EditorGUI.BeginChangeCheck();
+                var newMatchMode = (OscParameter.MatchMode)EditorGUI.EnumPopup(popup, (OscParameter.MatchMode)matchModeProperty.enumValueIndex);
+                if (EditorGUI.EndChangeCheck())
+                    matchModeProperty.enumValueIndex = (int)newMatchMode;
+            }
         }
     }
 }
