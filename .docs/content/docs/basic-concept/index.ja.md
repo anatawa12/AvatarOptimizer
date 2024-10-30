@@ -31,7 +31,7 @@ Avatar Optimizerは、アバターを非破壊的に最適化するためのツ�
 BlendShapeを統合すると、そのBlendShapeに対するアニメーションによる動作が変わってしまうため、これはバグとして扱われます。\
 このバグを使用して、あるSkinned Mesh RendererのBlendShapeに対するアニメーションを、別のSkinned Mesh RendererのBlendShapeに対しても同時に作用させることができます。\
 しかし、これはサポートされていない動作であり、他のコンポーネントが動作を壊すかもしれません。\
-例えば、`AAO Trace and Optimize`コンポーネントの`BlendShapeを自動的に固定・除去する`は、このバグによって`AAO Merge Skinned Mesh`コンポーネントで統合されて動くようになる可能性があるBlendShapeであっても、固定・除去します。
+例えば、`AAO Trace and Optimize`コンポーネントの`BlendShapeを最適化する`は、このバグによって`AAO Merge Skinned Mesh`コンポーネントで統合されて動くようになる可能性があるBlendShapeであっても、固定・除去します。
 
 ## Avatar Optimizerの振る舞いは将来のバージョンでも安定していますか？ {#behavior-stability}
 

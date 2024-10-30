@@ -700,8 +700,8 @@ msgstr "Migrating to Trace and Optimize is finished!"
 msgid "TraceAndOptimize:description"
 msgstr "When you added this component to your avatar, AvatarOptimizer will trace your avatar and optimize automatically."
 
-msgid "TraceAndOptimize:prop:freezeBlendShape"
-msgstr "Automatically Freeze BlendShape"
+msgid "TraceAndOptimize:prop:optimizeBlendShape"
+msgstr "Optimize BlendShape"
 
 msgid "TraceAndOptimize:prop:removeUnusedObjects"
 msgstr "Remove unused Objects Automatically"

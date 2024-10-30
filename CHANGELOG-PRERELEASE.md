@@ -8,6 +8,12 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Automatically Merge Blendshape `#1300`
+  - This is new automatic optimization in Trace and Optimize
+  - This is a part of "Optimize BlendShape" optimization.
+  - AAO 1.8.0 introduced BlendShape support for Merge Skinned Mesh, but new default mode "Rename to avoid conflicts" would increase number of BlendShape.
+  - This feature is added to relax this problem by automatically merging multiple BlendShapes of one Mesh.
+  - With this feature, you can use rename mode without performance loss.
 
 ### Changed
 

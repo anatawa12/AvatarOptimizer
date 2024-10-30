@@ -23,10 +23,11 @@ namespace Anatawa12.AvatarOptimizer
         }
 
         [NotKeyable]
-        [AAOLocalized("TraceAndOptimize:prop:freezeBlendShape")]
+        [AAOLocalized("TraceAndOptimize:prop:optimizeBlendShape")]
         [ToggleLeft]
         [SerializeField]
-        internal bool freezeBlendShape = true;
+        [FormerlySerializedAs("freezeBlendShape")] // renamed in 1.8.0
+        internal bool optimizeBlendShape = true;
         [NotKeyable]
         [AAOLocalized("TraceAndOptimize:prop:removeUnusedObjects")]
         [ToggleLeft]
@@ -140,6 +141,8 @@ namespace Anatawa12.AvatarOptimizer
             public bool skipAnyStateToEntryExit;
             [ToggleLeft]
             public bool skipRemoveMaterialUnusedProperties;
+            [ToggleLeft]
+            public bool skipAutoMergeBlendShape;
         }
     }
 }
