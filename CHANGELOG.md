@@ -14,7 +14,7 @@ The format is based on [Keep a Changelog].
     - We may relax some restriction in the future.
   - Because we have to check for each condition if we use AnyState but we can check for only one (in best case) with entry/exit, this generally reduces cost for checking an parameter in a state.
   - Combined with Entry / Exit to 1D BlendTree optimization, which is implemented in previous release, your AnyState layer may be optimized to 1D BlendTree.
-- Optimize Texture in Trace nad Optimize `#1181` `#1184` `#1193` `#1215` `#1225` `#1235` `#1268` `#1278`
+- Optimize Texture in Trace nad Optimize `#1181` `#1184` `#1193` `#1215` `#1225` `#1235` `#1268` `#1278` `#1313`
   - Avatar Optimizer will pack texture and tries to reduce the VRAM usage.
   - Currently liltoon is only supported.
 - `Copy Enablement Animation` to Merge Skinned Mesh `#1173`
@@ -75,7 +75,7 @@ The format is based on [Keep a Changelog].
 - Renamed debug options internally `#1228`
   - This will lose previously configured debug options.
   - However, debug options are not considered as Public API as stated in documents so this is not backward incompatible changes in semver 2.0.0 section 8.
-- Performance Improvements `#1234` `#1243` `#1240` `#1288`
+- Performance Improvements `#1234` `#1243` `#1240` `#1288` `#1304` `#1307` `#1314`
 - Transform gizmo are now hidden while you're editing box of Remove Mesh in Box `#1259`
   - This prevents mistakenly moving the Skinned Mesh Renderer while editing the box.
 - Make MergePhysBone implement `INetworkID` `#1260`
@@ -88,7 +88,7 @@ The format is based on [Keep a Changelog].
 - Support for Shaders that depends on vertex index `#1275` `#1281` `#1285`
   - Avatar Optimizer will not automatically merge meshes that are using vertex index
   - since merging them may change vertex order, which changes vertex index
-- BlendShape support for Merge Skinned Mesh `#1286`
+- BlendShape support for Merge Skinned Mesh `#1286` `#1299`
   - You now can successfully merge Meshes with BlendShape with Merge Skinned Mesh.
   - Actually, previous version does not have proper consideration for BlendShape.
   - This version introduces options to select BlendShape behavior in Merge Skinned Mesh.
@@ -111,6 +111,11 @@ The format is based on [Keep a Changelog].
 - Animation for target renderer of Merge Skinned Mesh might be overridden by animation for source renderer `#1276`
 - BlendShape with same name is impclitly merged in Merge Skinned Mesh `#1286`
   - Now you can rename BlendShape to avoid conflicts.
+- NRE if specified expression parameters is None `#1303`
+  - This error only happens if you don't use Modular Avatar since Modular Avatar will assign parameters asset.
+- Show version name on NDMF Console `#1309`
+- Fix non-VRChat project support `#1310`
+- 'shader' doesn't have a float or range property 'prop' error `#1312`
 
 ### Security
 

@@ -143,10 +143,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             Profiler.BeginSample("AssertInvariantContract");
             var vertices = new HashSet<Vertex>(Vertices);
-            Debug.Assert(SubMeshes.SelectMany(x => x.Vertices).All(vertices.Contains),
+            Utils.Assert(SubMeshes.SelectMany(x => x.Vertices).All(vertices.Contains),
                 $"{context}: some SubMesh has invalid triangles");
             var bones = new HashSet<Bone>(Bones);
-            Debug.Assert(Vertices.SelectMany(x => x.BoneWeights).Select(x => x.bone).All(bones.Contains),
+            Utils.Assert(Vertices.SelectMany(x => x.BoneWeights).Select(x => x.bone).All(bones.Contains),
                 $"{context}: some SubMesh has invalid bone weights");
             Profiler.EndSample();
         }
@@ -677,8 +677,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     destMesh.indexFormat = IndexFormat.UInt32;
                 }
 
-                var submeshIndex = 0;
-
                 destMesh.subMeshCount = submeshIndexBuffers.Length;
 
                 for (var i = 0; i < submeshIndexBuffers.Length; i++)
@@ -687,8 +685,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     destMesh.SetIndices(indices, 0, subMesh.Vertices.Count, subMesh.Topology, i,
                         baseVertex: baseVertex);
                 }
-
-                Debug.Assert(submeshIndexBuffers.Length == submeshIndex);
             }
             Profiler.EndSample();
 
@@ -745,7 +741,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 for (var i = 0; i < BlendShapes.Count; i++)
                 {
                     Profiler.BeginSample("Process Shape");
-                    Debug.Assert(destMesh.blendShapeCount == i, "Unexpected state: BlendShape count");
+                    Utils.Assert(destMesh.blendShapeCount == i, "Unexpected state: BlendShape count");
                     var (shapeName, _) = BlendShapes[i];
 
                     Profiler.BeginSample("Collect Weights");
@@ -923,7 +919,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         {
             get
             {
-                Debug.Assert(Topology == MeshTopology.Triangles);
+                Utils.Assert(Topology == MeshTopology.Triangles);
                 return Vertices;
             }
         }
@@ -1289,6 +1285,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         public void Dispose()
         {
+            Utils.DisposeAll(DeltaVertices.Concat(DeltaNormals).Concat(DeltaTangents));
         }
     }
 

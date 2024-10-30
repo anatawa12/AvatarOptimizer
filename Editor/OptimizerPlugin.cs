@@ -9,7 +9,7 @@ namespace Anatawa12.AvatarOptimizer.ndmf
 {
     internal class OptimizerPlugin : Plugin<OptimizerPlugin>
     {
-        public override string DisplayName => "AAO: Avatar Optimizer";
+        public override string DisplayName => $"AAO: Avatar Optimizer ({CheckForUpdate.Checker.CurrentVersionName})";
 
         public override string QualifiedName => "com.anatawa12.avatar-optimizer";
 
