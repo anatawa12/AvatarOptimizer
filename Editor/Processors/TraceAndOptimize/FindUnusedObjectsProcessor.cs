@@ -121,7 +121,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 HashSet<Component> resultSet;
                 using (var enumerator = componentInfo.DependantComponents.GetEnumerator())
                 {
-                    System.Diagnostics.Debug.Assert(enumerator.MoveNext());
+                    Utils.Assert(enumerator.MoveNext());
                     resultSet = GetEntrypointActiveness(enumerator.Current, _context);
 
                     // resultSet.Count == 0 => no longer meaning
@@ -182,7 +182,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                             }
                         }
 
-                        System.Diagnostics.Debug.Assert(commonActiveness != null);
+                        Utils.Assert(commonActiveness != null);
                     }
                 }
 

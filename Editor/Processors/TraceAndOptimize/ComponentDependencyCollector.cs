@@ -6,7 +6,6 @@ using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
 using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEngine;
-using Debug = System.Diagnostics.Debug;
 using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
@@ -116,12 +115,21 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     }
                 }
 
-                if (descriptor.customExpressions)
+                if (descriptor is { customExpressions: true, expressionParameters: var expressionParameters }
+                    && expressionParameters != null)
                 {
-                    var expressionParameters = descriptor.expressionParameters;
-                    foreach (var parameter in expressionParameters.parameters)
-                        if (parameter != null)
-                            parameters.Add(parameter.name);
+                    if (expressionParameters.parameters != null)
+                    {
+                        foreach (var parameter in expressionParameters.parameters)
+                            if (parameter != null)
+                                parameters.Add(parameter.name);
+                    }
+                }
+                else
+                {
+                    parameters.Add("VRCEmote");
+                    parameters.Add("VRCFaceBlendH");
+                    parameters.Add("VRCFaceBlendV");
                 }
             }
 #endif
@@ -147,7 +155,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             
             public void Init(GCComponentInfo info)
             {
-                Debug.Assert(_info == null, "Init on not finished");
+                Utils.Assert(_info == null, "Init on not finished");
                 _info = info;
             }
 

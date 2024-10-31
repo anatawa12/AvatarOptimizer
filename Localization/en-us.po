@@ -646,7 +646,7 @@ msgid "RenameBlendShape:error:empty-name-some"
 msgstr "Some changed names are empty."
 
 msgid "RenameBlendShape:warning:name-conflict-some"
-msgstr "Some changed names are duplicated. Those blendShapes will be merged to one."
+msgstr "Some changed names are duplicated."
 
 msgid "RenameBlendShape:error:empty-name-this"
 msgstr "Changed name is empty."
@@ -723,8 +723,8 @@ msgstr "Migrating to Trace and Optimize is finished!"
 msgid "TraceAndOptimize:description"
 msgstr "When you added this component to your avatar, AvatarOptimizer will trace your avatar and optimize automatically."
 
-msgid "TraceAndOptimize:prop:freezeBlendShape"
-msgstr "Automatically Freeze BlendShape"
+msgid "TraceAndOptimize:prop:optimizeBlendShape"
+msgstr "Optimize BlendShape"
 
 msgid "TraceAndOptimize:prop:removeUnusedObjects"
 msgstr "Remove unused Objects Automatically"

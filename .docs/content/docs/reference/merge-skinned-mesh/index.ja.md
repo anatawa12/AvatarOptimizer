@@ -33,7 +33,7 @@ BlendShapeは、頂点とBlendShapeの数に比例して負荷が大きくなる
 
 同様に、体や服のメッシュのBlendShapeは固定・除去することを推奨します。
 [Freeze BlendShape](../freeze-blendshape)コンポーネントを統合対象・統合先のSkinnedMeshRendererコンポーネントのいずれか(または両方)に追加して、BlendShapeを固定・除去することが出来ます。
-[Trace and Optimize](../trace-and-optimize)コンポーネントの`BlendShapeを自動的に固定・除去する`によっても同様の効果を得ることが出来ます。
+[Trace and Optimize](../trace-and-optimize)コンポーネントの`BlendShapeを最適化する`によっても同様の効果を得ることが出来ます。
 
 {{< hint info >}}
 

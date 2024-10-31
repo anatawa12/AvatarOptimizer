@@ -363,6 +363,31 @@ namespace Anatawa12.AvatarOptimizer
                 }
             }
         }
+        
+        public static void Assert(bool condition)
+        {
+            if (!condition) throw new InvalidOperationException("assertion failed");
+        }
+        
+        public static void Assert(bool condition, string message)
+        {
+            if (!condition) throw new InvalidOperationException(message);
+        }
+
+        public static float SafeGetFloat(this Material material, string propertyName) =>
+            material.HasFloat(propertyName) ? material.GetFloat(propertyName) : 0;
+
+        public static int SafeGetInteger(this Material material, string propertyName) =>
+            material.HasInteger(propertyName) ? material.GetInteger(propertyName) : 0;
+
+        public static int SafeGetInt(this Material material, string propertyName) =>
+            material.HasInt(propertyName) ? material.GetInt(propertyName) : 0;
+
+        public static Vector4 SafeGetVector(this Material material, string propertyName) =>
+            material.HasVector(propertyName) ? material.GetVector(propertyName) : Vector4.zero;
+
+        public static Color SafeGetColor(this Material material, string propertyName) =>
+            material.HasColor(propertyName) ? material.GetColor(propertyName) : Color.clear;
 
         /// <summary>
         /// Fast compare of <see cref="Color32"/> array.

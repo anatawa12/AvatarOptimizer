@@ -5,8 +5,6 @@ using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
-using UnityEngine.Profiling;
-using Debug = System.Diagnostics.Debug;
 using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
@@ -488,7 +486,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
         private ObjectAnimationCurveNode(AnimationClip clip, ObjectReferenceKeyframe[] frames)
         {
-            Debug.Assert(frames.Length > 0);
+            Utils.Assert(frames.Length > 0);
             Clip = clip;
             Frames = frames;
             _constantInfo = new Lazy<ObjectValueInfo>(() => ParseProperty(frames), isThreadSafe: false);
@@ -530,7 +528,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         {
             // expected to pass list or array
             // ReSharper disable once PossibleMultipleEnumeration
-            Debug.Assert(children.Any());
+            Utils.Assert(children.Any());
             // ReSharper disable once PossibleMultipleEnumeration
             _children = children;
             _blendTreeType = blendTreeType;

@@ -8,11 +8,12 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Right-click menu option to create a new GameObject with a specified component [`#1290`](https://github.com/anatawa12/AvatarOptimizer/pull/1290)
-- BlendShape support for Merge Skinned Mesh `#1286`
-  - You now can successfully merge Meshes with BlendShape with Merge Skinned Mesh.
-  - Actually, previous version does not have proper consideration for BlendShape.
-  - This version introduces options to select BlendShape behavior in Merge Skinned Mesh.
+- Automatically Merge Blendshape `#1300`
+  - This is new automatic optimization in Trace and Optimize
+  - This is a part of "Optimize BlendShape" optimization.
+  - AAO 1.8.0 introduced BlendShape support for Merge Skinned Mesh, but new default mode "Rename to avoid conflicts" would increase number of BlendShape.
+  - This feature is added to relax this problem by automatically merging multiple BlendShapes of one Mesh.
+  - With this feature, you can use rename mode without performance loss.
 - Fix mode for PhysBone Limits in Merge PhysBone `#665`
   - In addition to existing `Copy` and `Override`, we added `Fix` mode.
   - This mode will try to correct roll axis by rotating bone.
@@ -20,20 +21,49 @@ The format is based on [Keep a Changelog].
   - This is useful if all configuration is same but roll axis is different.
 
 ### Changed
-- More Preference Improvement `#1288`
 
 ### Deprecated
 
 ### Removed
-- Merging BlendShape from Rename BlendShape component `#1296`
+
+### Fixed
+- Fix non-VRChat project support `#1310`
+- 'shader' doesn't have a float or range property 'prop' error `#1312`
+- Integer and Int confusion `#1313`
+- NativeArray leak `#1314`
+
+### Security
+
+## [1.8.0-beta.11] - 2024-10-27
+### Changed
+- Show version name on NDMF Console [`#1309`](https://github.com/anatawa12/AvatarOptimizer/pull/1309)
+
+### Fixed
+- NRE if specified expression parameters is None [`#1303`](https://github.com/anatawa12/AvatarOptimizer/pull/1303)
+  - This error only happens if you don't use Modular Avatar since Modular Avatar will assign parameters asset.
+- "asset is not temporary asset" error if no Modular Avatar is used [`#1304`](https://github.com/anatawa12/AvatarOptimizer/pull/1304)
+- Merge Skinned Mesh with Basic Mesh is not working [`#1307`](https://github.com/anatawa12/AvatarOptimizer/pull/1307)
+- Validation system in Avatar Optimizer is not working [`#1307`](https://github.com/anatawa12/AvatarOptimizer/pull/1307)
+
+## [1.8.0-beta.10] - 2024-10-26
+### Added
+- Right-click menu option to create a new GameObject with a specified component [`#1290`](https://github.com/anatawa12/AvatarOptimizer/pull/1290)
+- BlendShape support for Merge Skinned Mesh [`#1286`](https://github.com/anatawa12/AvatarOptimizer/pull/1286) [`#1299`](https://github.com/anatawa12/AvatarOptimizer/pull/1299)
+  - You now can successfully merge Meshes with BlendShape with Merge Skinned Mesh.
+  - Actually, previous version does not have proper consideration for BlendShape.
+  - This version introduces options to select BlendShape behavior in Merge Skinned Mesh.
+
+### Changed
+- More Preference Improvement [`#1288`](https://github.com/anatawa12/AvatarOptimizer/pull/1288)
+
+### Removed
+- Merging BlendShape from Rename BlendShape component [`#1296`](https://github.com/anatawa12/AvatarOptimizer/pull/1296)
   - We will add a new component for merging BlendShapes in the future.
 
 ### Fixed
-- PrefabSafeUniqueCollection does not consider unity fake null `#1294`
-- BlendShape with same name is impclitly merged in Merge Skinned Mesh `#1286`
+- PrefabSafeUniqueCollection does not consider unity fake null [`#1294`](https://github.com/anatawa12/AvatarOptimizer/pull/1294)
+- BlendShape with same name is impclitly merged in Merge Skinned Mesh [`#1286`](https://github.com/anatawa12/AvatarOptimizer/pull/1286)
   - Now you can rename BlendShape to avoid conflicts.
-
-### Security
 
 ## [1.8.0-beta.9] - 2024-10-20
 ### Fixed
@@ -1680,7 +1710,9 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-beta.9...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-beta.11...HEAD
+[1.8.0-beta.11]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-beta.10...v1.8.0-beta.11
+[1.8.0-beta.10]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-beta.9...v1.8.0-beta.10
 [1.8.0-beta.9]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-beta.8...v1.8.0-beta.9
 [1.8.0-beta.8]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-beta.7...v1.8.0-beta.8
 [1.8.0-beta.7]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-beta.6...v1.8.0-beta.7
