@@ -43,4 +43,4 @@ MultiChildTypeはIgnoreになります。
 
 Endpoint Positionについては、`Clear`を選択して[Clear Endpoint Position](../clear-endpoint-position)を使用することができます。
 
-角度制限については、`Fix`を選択して向きの異なるボーンに対する角度制限を1つに纏めるすることができます。
+角度制限では、Fix`を選択することで、ボーンに対して捻るような回転(ロール)を自動で調整して角度制限を纏めて適用することができます。
