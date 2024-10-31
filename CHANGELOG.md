@@ -116,6 +116,7 @@ The format is based on [Keep a Changelog].
 - Show version name on NDMF Console `#1309`
 - Fix non-VRChat project support `#1310`
 - 'shader' doesn't have a float or range property 'prop' error `#1312`
+- Error if all components are on inactive GameObject `#1318`
 
 ### Security
 

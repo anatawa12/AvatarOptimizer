@@ -26,6 +26,7 @@ The format is based on [Keep a Changelog].
 - 'shader' doesn't have a float or range property 'prop' error `#1312`
 - Integer and Int confusion `#1313`
 - NativeArray leak `#1314`
+- Error if all components are on inactive GameObject`#1318`
 
 ### Security
 
