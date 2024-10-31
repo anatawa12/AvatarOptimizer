@@ -43,4 +43,4 @@ For colliders, you can select `Merge` to merge colliders array from source physb
 For Endpoint Position, you can select `Clear` to apply [Clear Endpoint Position](../clear-endpoint-position)
 
 For Limit Rotation, you can select `Fix` to fix different roll axis on the model.
-If your model has different roll bones and fixes with Limit Rotation, you may use this option.
+If your model has different roll bones, you can limit their rotations together with this option.
