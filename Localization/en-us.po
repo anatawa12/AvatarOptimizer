@@ -147,11 +147,14 @@ msgid "MergePhysBone:error:oneSource"
 msgstr "There is only one source PhysBone. You must specify two or more merge source PhysBones."
 
 msgid "MergePhysBone:error:multiChildType"
-msgstr "Some PysBone has multi child type != Ignore"
+msgstr "Some PhysBone has multi child type != Ignore"
 
 msgid "MergePhysBone:error:unsupportedPbVersion"
 msgstr "The PhysBone Version is not supported (yet) by Avatar Optimizer.\n"
 "Please tell author on twitter (@anatawa12_vrc) or GitHub (anatawa12/AvatarOptimizer)!"
+
+msgid "MergePhysBone:message:fix-yaw-pitch"
+msgstr "Fix Roll with rotating bones"
 
 msgid "MergePhysBone:error:differValues"
 msgstr "The values is differ between two or more sources. You have to set same value OR override this property: {0}"
@@ -161,6 +164,26 @@ msgstr "The value is differ between two or more sources. You have to set same va
 
 msgid "MergePhysBone:warning:differChainLength"
 msgstr "The chain length is differ between two or more sources. Shorter chain will be thicker than original."
+
+msgid "MergePhysBone:error:LimitRotationFix:SkewScaling"
+msgstr ""
+"Skew scaling is not supported with Limit Rotation mode Fix.\n"
+"Please change the Limit Rotation mode to other than Fix, or fix the skew scaling."
+
+msgid "MergePhysBone:error:LimitRotationFix:DifferRotation"
+msgstr ""
+"Limit Rotation of source PhysBones differs in unfixable way.\n"
+"Please fix Limit Rotation of source PhysBones to same value, or change to other mode."
+
+msgid "MergePhysBone:error:LimitRotationFix:DifferRotation:description"
+msgstr ""
+"Limit Rotation Fix can fix Roll axis of different rotation but we cannot fix difference in other axis.\n"
+"Roll axis in this context is local X axis, and might be differs from Roll config on PhysBone inspector if there is Yaw rotation."
+
+msgid "MergePhysBone:error:LimitRotationFix:NonZeroEndpointPosition"
+msgstr ""
+"Endpoint Position is not zero while Limit Rotation mode is Fix.\n"
+"Please set Endpoint Position to zero, set Endpoint Position mode to Clear, or change Limit Rotation mode to other than Fix."
 
 msgid "MergePhysBone:dialog:versionInfo:title"
 msgstr "Version Info" 

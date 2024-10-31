@@ -156,6 +156,9 @@ msgid "MergePhysBone:error:unsupportedPbVersion"
 msgstr "このPhysBoneバージョンは(まだ)Avatar Optimizerによって対応されていません。\n"
 "作者にtwitter (@anatawa12_vrc)またはGitHub (anatawa12/AvatarOptimizer)で連絡してください！"
 
+msgid "MergePhysBone:message:fix-yaw-pitch"
+msgstr "ボーンを回転させてRollの値を揃える"
+
 msgid "MergePhysBone:error:differValues"
 msgstr "複数の統合対象の間で値に差異があります。以下の値は同じ値にするかOverrideする必要があります: {0}"
 
@@ -164,6 +167,26 @@ msgstr "複数の統合対象の間で値に差異があります。同じ値に
 
 msgid "MergePhysBone:warning:differChainLength"
 msgstr "複数の統合対象の間でチェーンの長さが異なります。短いチェーンのPBは元よりも太くなる可能性があります。"
+
+msgid "MergePhysBone:error:LimitRotationFix:SkewScaling"
+msgstr ""
+"Scaleが均一でないボーンの角度制限を統合することはサポートされていません。\n"
+"角度制限の設定をFix以外にするか、Scaleを均一にしてください。"
+
+msgid "MergePhysBone:error:LimitRotationFix:DifferRotation"
+msgstr ""
+"角度制限を統合できる状態ではありません。\n"
+"統合対象の角度制限の値を揃えるか、角度制限の設定をFix以外にしてください。"
+
+msgid "MergePhysBone:error:LimitRotationFix:DifferRotation:description"
+msgstr ""
+"角度制限の統合は、ボーンに対する捻るような回転(Roll)の値は揃えることができますが、他の軸の回転は揃えることができません。\n"
+"Roll回転の軸はローカル座標系におけるX軸になります。Yaw回転が含まれている場合はPBのInspectorにあるRollの表示とは異なることがあります。"
+
+msgid "MergePhysBone:error:LimitRotationFix:NonZeroEndpointPosition"
+msgstr ""
+"角度制限の設定がFixですが、Endpoint Positionが空ではありません。\n"
+"Endpoint Positionを空にするか、Endpoint Positionの設定をClearにするか、角度制限の設定をFix以外にしてください。"
 
 msgid "MergePhysBone:dialog:versionInfo:title"
 msgstr "バージョンについて" 

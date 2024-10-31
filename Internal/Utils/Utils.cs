@@ -404,5 +404,41 @@ namespace Anatawa12.AvatarOptimizer
         // Exception-safe swap
         public static void Swap<T>(ref T a, ref T b) =>
             (a, b) = (b, a);
+        
+        /// <summary>
+        /// Returns whether the given local scale is scaled evenly.
+        ///
+        /// If the scale is skewed, this returns false.
+        /// </summary>
+        /// <param name="localScale">the local scale to check</param>
+        /// <returns>whether the given local scale is scaled evenly</returns>
+        public static bool ScaledEvenly(Vector3 localScale)
+        {
+            bool CheckScale(float scale) => 0.995 < scale && scale < 1.005;
+            return CheckScale(localScale.x / localScale.y) && CheckScale(localScale.x / localScale.z) &&
+                   CheckScale(localScale.y / localScale.z);
+        }
+
+        public static TSource MaxBy<TSource, TComparable>(this IEnumerable<TSource> source, 
+            Func<TSource, TComparable> selector)
+            where TComparable : IComparable<TComparable>
+        {
+            using var enumerator = source.GetEnumerator();
+            if (!enumerator.MoveNext()) throw new InvalidOperationException("Sequence is empty");
+            var max = enumerator.Current;
+            var maxComparable = selector(max);
+            while (enumerator.MoveNext())
+            {
+                var current = enumerator.Current;
+                var currentComparable = selector(current);
+                if (currentComparable.CompareTo(maxComparable) > 0)
+                {
+                    max = current;
+                    maxComparable = currentComparable;
+                }
+            }
+
+            return max;
+        }
     }
 }
