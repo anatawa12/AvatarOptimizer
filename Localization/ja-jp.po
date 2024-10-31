@@ -157,7 +157,7 @@ msgstr "このPhysBoneバージョンは(まだ)Avatar Optimizerによって対�
 "作者にtwitter (@anatawa12_vrc)またはGitHub (anatawa12/AvatarOptimizer)で連絡してください！"
 
 msgid "MergePhysBone:message:fix-yaw-pitch"
-msgstr "ボーンの向きを揃える"
+msgstr "ボーンの回転(ロール)を揃える"
 
 msgid "MergePhysBone:error:differValues"
 msgstr "複数の統合対象の間で値に差異があります。以下の値は同じ値にするかOverrideする必要があります: {0}"
@@ -180,7 +180,7 @@ msgstr ""
 
 msgid "MergePhysBone:error:LimitRotationFix:DifferRotation:description"
 msgstr ""
-"角度制限の統合はロール回転の差がある場合にのみ用いることができ、他の軸で回転に差がある場合には用いることができません。\n"
+"角度制限の統合は、ボーンに対する捻るような回転(ロール)の差は揃えることができますが、他の軸の回転は揃えることができません。\n"
 "ロール回転の軸は通常ローカル座標におけるX軸ですが、ヨー回転が含まれている場合はInspectorの表示と異なることがあります。"
 
 msgid "MergePhysBone:error:LimitRotationFix:NonZeroEndpointPosition"
