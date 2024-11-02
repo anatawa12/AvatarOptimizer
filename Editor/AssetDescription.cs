@@ -6,7 +6,6 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.Serialization;
 using Object = UnityEngine.Object;
-using Debug = System.Diagnostics.Debug;
 
 namespace Anatawa12.AvatarOptimizer
 {
@@ -102,7 +101,7 @@ namespace Anatawa12.AvatarOptimizer
         private static Object GetMonoScriptFromGuid(string guid, ulong fileid)
         {
             var idString = $"GlobalObjectId_V1-{MonoScriptIdentifierType}-{guid}-{fileid}-0";
-            Debug.Assert(GlobalObjectId.TryParse(idString, out var id));
+            Utils.Assert(GlobalObjectId.TryParse(idString, out var id));
             return GlobalObjectId.GlobalObjectIdentifierToObjectSlow(id);
         }
 
@@ -208,8 +207,8 @@ namespace Anatawa12.AvatarOptimizer
                     if (asset != null && type != null)
                     {
                         var id = GlobalObjectId.GetGlobalObjectIdSlow(asset);
-                        Debug.Assert(id.identifierType == MonoScriptIdentifierType);
-                        Debug.Assert(id.targetPrefabId == 0);
+                        Utils.Assert(id.identifierType == MonoScriptIdentifierType);
+                        Utils.Assert(id.targetPrefabId == 0);
                         guidProperty.stringValue = id.assetGUID.ToString();
                         fileIDProperty.longValue = (long)id.targetObjectId;
                         classNameProperty.stringValue = type.Name;

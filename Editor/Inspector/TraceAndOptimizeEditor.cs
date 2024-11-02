@@ -22,7 +22,7 @@ namespace Anatawa12.AvatarOptimizer
 
         private void OnEnable()
         {
-            _freezeBlendShape = serializedObject.FindProperty(nameof(TraceAndOptimize.freezeBlendShape));
+            _freezeBlendShape = serializedObject.FindProperty(nameof(TraceAndOptimize.optimizeBlendShape));
             _removeUnusedObjects = serializedObject.FindProperty(nameof(TraceAndOptimize.removeUnusedObjects));
             _preserveEndBone = serializedObject.FindProperty(nameof(TraceAndOptimize.preserveEndBone));
             _removeZeroSizedPolygons = serializedObject.FindProperty(nameof(TraceAndOptimize.removeZeroSizedPolygons));

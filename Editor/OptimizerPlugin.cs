@@ -9,7 +9,7 @@ namespace Anatawa12.AvatarOptimizer.ndmf
 {
     internal class OptimizerPlugin : Plugin<OptimizerPlugin>
     {
-        public override string DisplayName => "AAO: Avatar Optimizer";
+        public override string DisplayName => $"AAO: Avatar Optimizer ({CheckForUpdate.Checker.CurrentVersionName})";
 
         public override string QualifiedName => "com.anatawa12.avatar-optimizer";
 
@@ -48,7 +48,7 @@ namespace Anatawa12.AvatarOptimizer.ndmf
                             ctx =>
                             {
                                 ctx.GetState<AAOEnabled>().Enabled =
-                                    ctx.AvatarRootObject.GetComponentInChildren<AvatarTagComponent>();
+                                    ctx.AvatarRootObject.GetComponentInChildren<AvatarTagComponent>(true);
                                 // invalidate ComponentInfoRegistry cache to support newly added assets
                                 AssetDescription.Reload();
                             })
@@ -78,6 +78,7 @@ namespace Anatawa12.AvatarOptimizer.ndmf
                         .Then.Run(Processors.TraceAndOptimizes.FindUnusedObjects.Instance)
                         .Then.Run(Processors.TraceAndOptimizes.ConfigureRemoveZeroSizedPolygon.Instance)
                         .Then.Run(Processors.TraceAndOptimizes.RemoveUnusedMaterialProperties.Instance)
+                        .Then.Run(Processors.TraceAndOptimizes.AutoMergeBlendShape.Instance)
                         .Then.Run(Processors.MergeBoneProcessor.Instance)
                         .Then.Run(Processors.RemoveZeroSizedPolygonProcessor.Instance)
                         .Then.Run(Processors.TraceAndOptimizes.OptimizeTexture.Instance)

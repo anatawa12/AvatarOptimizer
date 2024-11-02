@@ -14,7 +14,7 @@ The format is based on [Keep a Changelog].
     - We may relax some restriction in the future.
   - Because we have to check for each condition if we use AnyState but we can check for only one (in best case) with entry/exit, this generally reduces cost for checking an parameter in a state.
   - Combined with Entry / Exit to 1D BlendTree optimization, which is implemented in previous release, your AnyState layer may be optimized to 1D BlendTree.
-- Optimize Texture in Trace nad Optimize `#1181` `#1184` `#1193` `#1215` `#1225` `#1235` `#1268` `#1278`
+- Optimize Texture in Trace nad Optimize `#1181` `#1184` `#1193` `#1215` `#1225` `#1235` `#1268` `#1278` `#1313`
   - Avatar Optimizer will pack texture and tries to reduce the VRAM usage.
   - Currently liltoon is only supported.
 - `Copy Enablement Animation` to Merge Skinned Mesh `#1173`
@@ -49,6 +49,23 @@ The format is based on [Keep a Changelog].
   - When you changed shader for an material, properties for previously used shaders might be remain
   - This may increase your avatar size by unexpectedly including unused textures
 - Right-click menu option to create a new GameObject with a specified component [`#1290`](https://github.com/anatawa12/AvatarOptimizer/pull/1290)
+- Automatically Merge Blendshape `#1300`
+  - This is new automatic optimization in Trace and Optimize
+  - This is a part of "Optimize BlendShape" optimization.
+  - AAO 1.8.0 introduced BlendShape support for Merge Skinned Mesh, but new default mode "Rename to avoid conflicts" would increase number of BlendShape.
+  - This feature is added to relax this problem by automatically merging multiple BlendShapes of one Mesh.
+  - With this feature, you can use rename mode without performance loss.
+- Fix mode for PhysBone Limits in Merge PhysBone `#665`
+  - In addition to existing `Copy` and `Override`, we added `Fix` mode.
+  - This mode will try to correct roll axis by rotating bone.
+  - This feature allows you to configure the mode for PhysBone Limits in Merge PhysBone.
+  - This is useful if all configuration is same but roll axis is different.
+- Automatically merging meshes which have BlendShapes `#1308`
+  - In previous version of Avatar Optimizer, meshes which have BlendShapes are not automatically merged.
+  - This was because BlendShape manipulation load is proportional to the number of vertices in Unity 2019.
+  - However, in Unity 2020 and later, BlendShape manipulation load is mostly proportional to the number of moving vertices.
+  - This means that increasing the number of vertices in a mesh which has BlendShapes does not increase the load of BlendShape manipulation much.
+  - Therefore, we decided to automatically merge such meshes.
 - Improved OSC Gimmick Support `#1306`
   - We added two information for OSC Gimmick in Asset Description.
   - By defining parameters read / written by OSC Gimmick, your OSC Gimmick no longer breaks.
@@ -72,7 +89,7 @@ The format is based on [Keep a Changelog].
 - Renamed debug options internally `#1228`
   - This will lose previously configured debug options.
   - However, debug options are not considered as Public API as stated in documents so this is not backward incompatible changes in semver 2.0.0 section 8.
-- Performance Improvements `#1234` `#1243` `#1240` `#1288` `#1304`
+- Performance Improvements `#1234` `#1243` `#1240` `#1288` `#1304` `#1307` `#1314`
 - Transform gizmo are now hidden while you're editing box of Remove Mesh in Box `#1259`
   - This prevents mistakenly moving the Skinned Mesh Renderer while editing the box.
 - Make MergePhysBone implement `INetworkID` `#1260`
@@ -89,6 +106,7 @@ The format is based on [Keep a Changelog].
   - You now can successfully merge Meshes with BlendShape with Merge Skinned Mesh.
   - Actually, previous version does not have proper consideration for BlendShape.
   - This version introduces options to select BlendShape behavior in Merge Skinned Mesh.
+- Renamed "Automatically Freeze BlendShape" to "Optimize BlendShape" `#1300`
 
 ### Deprecated
 
@@ -109,6 +127,10 @@ The format is based on [Keep a Changelog].
   - Now you can rename BlendShape to avoid conflicts.
 - NRE if specified expression parameters is None `#1303`
   - This error only happens if you don't use Modular Avatar since Modular Avatar will assign parameters asset.
+- Show version name on NDMF Console `#1309`
+- Fix non-VRChat project support `#1310`
+- 'shader' doesn't have a float or range property 'prop' error `#1312`
+- Error if all components are on inactive GameObject `#1318`
 
 ### Security
 

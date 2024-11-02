@@ -121,7 +121,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 HashSet<Component> resultSet;
                 using (var enumerator = componentInfo.DependantComponents.GetEnumerator())
                 {
-                    System.Diagnostics.Debug.Assert(enumerator.MoveNext());
+                    Utils.Assert(enumerator.MoveNext());
                     resultSet = GetEntrypointActiveness(enumerator.Current, _context);
 
                     // resultSet.Count == 0 => no longer meaning
@@ -182,7 +182,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                             }
                         }
 
-                        System.Diagnostics.Debug.Assert(commonActiveness != null);
+                        Utils.Assert(commonActiveness != null);
                     }
                 }
 
@@ -375,7 +375,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                             // if this is not identity transform, animating children is not good
                             return NotMerged();
 
-                        if (!MergeBoneProcessor.ScaledEvenly(localScale))
+                        if (!Utils.ScaledEvenly(localScale))
                             // non even scaling is not possible to reproduce in children
                             return NotMerged();
                     }

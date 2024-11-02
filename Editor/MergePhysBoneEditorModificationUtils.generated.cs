@@ -40,51 +40,6 @@ namespace Anatawa12.AvatarOptimizer
             public SerializedProperty GetValueProperty(bool @override) => @override ? OverrideValue : SourceValue!;
             public SerializedProperty GetCurveProperty(bool @override) => @override ? OverrideCurve : SourceCurve!;
         }
-        protected partial class CurveVector3ConfigProp : OverridePropBase
-        {
-            public readonly SerializedProperty OverrideValue;
-            public SerializedProperty? SourceValue { get; private set; }
-            public readonly string PhysBoneValueName;
-            public readonly SerializedProperty OverrideCurveX;
-            public SerializedProperty? SourceCurveX { get; private set; }
-            public readonly string PhysBoneCurveXName;
-            public readonly SerializedProperty OverrideCurveY;
-            public SerializedProperty? SourceCurveY { get; private set; }
-            public readonly string PhysBoneCurveYName;
-            public readonly SerializedProperty OverrideCurveZ;
-            public SerializedProperty? SourceCurveZ { get; private set; }
-            public readonly string PhysBoneCurveZName;
-
-            public CurveVector3ConfigProp(
-                SerializedProperty rootProperty
-                , string physBoneValueName
-                , string physBoneCurveXName
-                , string physBoneCurveYName
-                , string physBoneCurveZName
-                ) : base(rootProperty)
-            {
-                OverrideValue = rootProperty.FindPropertyRelative("value");
-                PhysBoneValueName = physBoneValueName;
-                OverrideCurveX = rootProperty.FindPropertyRelative("curveX");
-                PhysBoneCurveXName = physBoneCurveXName;
-                OverrideCurveY = rootProperty.FindPropertyRelative("curveY");
-                PhysBoneCurveYName = physBoneCurveYName;
-                OverrideCurveZ = rootProperty.FindPropertyRelative("curveZ");
-                PhysBoneCurveZName = physBoneCurveZName;
-            }
-
-            internal override void UpdateSource(SerializedObject sourcePb)
-            {
-                SourceValue = sourcePb.FindProperty(PhysBoneValueName);
-                SourceCurveX = sourcePb.FindProperty(PhysBoneCurveXName);
-                SourceCurveY = sourcePb.FindProperty(PhysBoneCurveYName);
-                SourceCurveZ = sourcePb.FindProperty(PhysBoneCurveZName);
-            }
-            public SerializedProperty GetValueProperty(bool @override) => @override ? OverrideValue : SourceValue!;
-            public SerializedProperty GetCurveXProperty(bool @override) => @override ? OverrideCurveX : SourceCurveX!;
-            public SerializedProperty GetCurveYProperty(bool @override) => @override ? OverrideCurveY : SourceCurveY!;
-            public SerializedProperty GetCurveZProperty(bool @override) => @override ? OverrideCurveZ : SourceCurveZ!;
-        }
         protected partial class PermissionConfigProp : OverridePropBase
         {
             public readonly SerializedProperty OverrideValue;
