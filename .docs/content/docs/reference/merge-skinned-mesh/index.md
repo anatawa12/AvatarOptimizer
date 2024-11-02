@@ -9,6 +9,12 @@ Merges one or more SkinnedMeshRenderers and MeshRenderers into one SkinnedMeshRe
 
 This component should be added to a new GameObject which has a SkinnedMeshRenderer component without Mesh specified. (Kind: [Source Edit Skinned Mesh Component](../../component-kind/edit-skinned-mesh-components#source-component))
 
+{{< hint info >}}
+
+[Trace And Optimize](../trace-and-optimize) will automatically do the same process, so in most cases you do not need to use this component.
+
+{{< /hint >}}
+
 ## Benefits
 
 Merging SkinnedMeshRenderer will reduce number of deforming mesh (skinning).
@@ -34,12 +40,6 @@ Also, you can use `Automatically Freeze BlendShape` of [Trace and Optimize](../t
 
 In previous versions of Avatar Optimizer, we recommended not merging face meshes due to merging BlendShape-heavy mesh will increase load on BlendShape much in Unity 2019.
 However, in Unity 2022, we no longer recommends not merging face meshes because the BlendShape load has been improved.
-
-{{< hint info >}}
-
-[Trace And Optimize](../trace-and-optimize) will automatically do the same process, so in most cases you do not need to use this component.
-
-{{< /hint >}}
 
 ## Settings
 
