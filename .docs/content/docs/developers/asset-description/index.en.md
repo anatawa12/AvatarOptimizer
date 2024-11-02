@@ -8,16 +8,18 @@ Asset Description is the file to provide information of your assets for Avatar O
 
 ## Why Asset Description is needed
 
-Asset Description is a file that provides information about your assets to Avatar Optimizer.\
-Avatar Optimizer uses those information to not excessively optimize user's avatar.
+Avatar Optimizer uses information from Asset Description to not excessively optimize user's avatar.
 
 Current Asset Description can provide the following information:
 
-- Meaningless Components: Components that should be ignored by Avatar Optimizer.
-- Parameters Read By External Tools: Parameters that can be read by external tools, especially for OSC Tools.
-- Parameters Changed By External Tools: Parameters that can be changed by external tools, especially for OSC Tools.
+- `Meaningless Components`\
+  Components that should be ignored by Avatar Optimizer.
+- `Parameters Read By External Tools`\
+  Parameters that can be read by external tools, especially for OSC Tools.
+- `Parameters Changed By External Tools`
+  Parameters that can be changed by external tools, especially for OSC Tools.
 
-We will discuss why Asset Description is needed for each information below.
+We will describe why Asset Description is needed for each information below.
 
 ### Meaningless Components {#why-meaningless-components}
 
@@ -34,9 +36,9 @@ For non-destructive tools, we still recommend you to continue to remove componen
 ### Parameters Read By Extenral Tools {#why-parameters-read-by-external-tools}
 
 Avatar Optimizer will remove components that are not used in the Avatar.
-Some components like VRCPhysBone and VRCContactReceiver will create Animator Parameters that can be read by OSC Tools.
+Furthermore, some components like VRCPhysBone and VRCContactReceiver will create Animator Parameters that can be read by OSC Tools.
 However, Avatar Optimizer cannot know if the parameters are used by OSC Tools or not.
-Therefore, Avatar Optimizer will remove those parameters or components that create those parameters.
+Therefore, Avatar Optimizer will remove those parameters or components that create those parameters, unintentionally for the users.
 
 To prevent Avatar Optimizer from removing those parameters, you can specify the parameters that are read by OSC Tools in Asset Description.
 
