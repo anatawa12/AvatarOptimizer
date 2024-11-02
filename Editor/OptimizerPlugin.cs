@@ -50,7 +50,7 @@ namespace Anatawa12.AvatarOptimizer.ndmf
                                 ctx.GetState<AAOEnabled>().Enabled =
                                     ctx.AvatarRootObject.GetComponentInChildren<AvatarTagComponent>(true);
                                 // invalidate ComponentInfoRegistry cache to support newly added assets
-                                APIInternal.ComponentInfoRegistry.InvalidateCache();
+                                AssetDescription.Reload();
                             })
                         .Then.Run("Validation", (ctx) => ComponentValidation.ValidateAll(ctx.AvatarRootObject))
                         .Then.Run(Processors.TraceAndOptimizes.LoadTraceAndOptimizeConfiguration.Instance)

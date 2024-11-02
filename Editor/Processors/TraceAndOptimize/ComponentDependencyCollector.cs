@@ -30,9 +30,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         public void CollectAllUsages()
         {
-            var parameters = GetRootAnimatorParameters(_session.AvatarRootObject);
+            var isParameterUsed = GetRootAnimatorParameters(_session.AvatarRootObject);
 
-            var collector = new Collector(this, _componentInfos, parameters);
+            var collector = new Collector(this, _componentInfos, isParameterUsed);
             var unknownComponents = new Dictionary<Type, List<Object>>();
             // second iteration: process parsers
             foreach (var componentInfo in _componentInfos.AllInformation)
@@ -83,7 +83,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             }
         }
 
-        private static HashSet<string> GetRootAnimatorParameters(GameObject rootGameObject)
+        private static Predicate<string> GetRootAnimatorParameters(GameObject rootGameObject)
         {
             var parameters = new HashSet<string>();
 
@@ -134,23 +134,55 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             }
 #endif
 
-            return parameters;
+            // OSC and other External Tools Parameters
+            var externalParameters = AssetDescription.GetParametersReadByExternalTools();
+            var prefixes = new HashSet<string>();
+            var suffixes = new HashSet<string>();
+            var substrings = new HashSet<string>();
+            foreach (var externalParameter in externalParameters)
+            {
+                switch (externalParameter.matchMode)
+                {
+                    case AssetDescription.OscParameter.MatchMode.Exact:
+                        parameters.Add(externalParameter.name);
+                        break;
+                    case AssetDescription.OscParameter.MatchMode.Prefix:
+                        prefixes.Add(externalParameter.name);
+                        break;
+                    case AssetDescription.OscParameter.MatchMode.Suffix:
+                        suffixes.Add(externalParameter.name);
+                        break;
+                    case AssetDescription.OscParameter.MatchMode.Contains:
+                        substrings.Add(externalParameter.name);
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+
+            return parameter =>
+            {
+                return parameters.Contains(parameter) ||
+                       prefixes.Any(prefix => parameter.StartsWith(prefix, StringComparison.Ordinal)) ||
+                       suffixes.Any(suffix => parameter.EndsWith(suffix, StringComparison.Ordinal)) ||
+                       substrings.Any(substring => parameter.Contains(substring, StringComparison.Ordinal));
+            };
         }
 
         internal class Collector : API.ComponentDependencyCollector
         {
             private readonly ComponentDependencyCollector _collector;
             private readonly GCComponentInfoHolder _componentInfos;
-            private readonly HashSet<string> _parameters;
+            private readonly Predicate<string> _isParameterUsed;
             private GCComponentInfo? _info;
             private IDependencyInfo? _dependencyInfo;
 
             public Collector(ComponentDependencyCollector collector, GCComponentInfoHolder componentInfos,
-                HashSet<string> parameters)
+                Predicate<string> isParameterUsed)
             {
                 _collector = collector;
                 _componentInfos = componentInfos;
-                _parameters = parameters;
+                _isParameterUsed = isParameterUsed;
             }
             
             public void Init(GCComponentInfo info)
@@ -194,7 +226,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             internal override bool? GetAnimatedFlag(Component component, string animationProperty, bool currentValue) =>
                 _collector._session.GetConstantValue(component, animationProperty, currentValue);
 
-            internal override bool IsParameterUsed(string parameterName) => _parameters.Contains(parameterName);
+            internal override bool IsParameterUsed(string parameterName) => _isParameterUsed(parameterName);
 
             public override API.PathDependencyInfo AddPathDependency(Transform dependency, Transform root)
             {

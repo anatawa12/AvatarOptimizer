@@ -4,6 +4,7 @@ using System.Linq;
 using nadena.dev.ndmf.localization;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Serialization;
 using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer
@@ -19,8 +20,68 @@ namespace Anatawa12.AvatarOptimizer
 #pragma warning restore CS0414
         [SerializeField]
         private ClassReference[] meaninglessComponents = Array.Empty<ClassReference>();
+        /// <summary>
+        /// <para>
+        /// The animator parameters that External Tools reads.
+        /// </para>
+        /// <para>
+        /// Avatar Optimizer will treat changing those parameters as side effects.
+        ///
+        /// As a part of optimization, Avatar Optimizer may remove PhysBones or Contact Receivers that are not used by the animator.
+        /// However, if those parameters are used by some External Tools like OSC Tools in VRChat, it may break the behavior of the avatar.
+        /// Registering parameters to this will prevent Avatar Optimizer from removing PhysBones or Contact Receivers that are used by OSC Tools.
+        /// </para>
+        /// </summary>
+        [SerializeField]
+        private OscParameter[] parametersReadByExternalTools = Array.Empty<OscParameter>();
+        /// <summary>
+        /// <para>
+        /// The animator parameters that OSC Tools changes.
+        /// </para>
+        /// <para>
+        /// Avatar Optimizer will assume those parameters might be changed by some external tools.
+        ///
+        /// Currently, this configuration is unused.
+        ///
+        /// Avatar Optimizer will implement optimizing Animator Controller by fixing non-animated parameters.
+        /// However, if those parameters are changed by some external tools like OSC Tools in VRChat, it may break the behavior of the avatar.
+        /// Therefore, registering parameters to this will prevent Avatar Optimizer from fixing non-animated parameters.
+        /// </para>
+        /// </summary>
+        [SerializeField]
+        private OscParameter[] parametersChangedByExternalTools = Array.Empty<OscParameter>();
 
         const int MonoScriptIdentifierType = 1;
+
+        private static AssetDescriptionData? _data;
+
+        private static AssetDescriptionData Data => _data ??= LoadData();
+
+        class AssetDescriptionData
+        {
+            public HashSet<Type> meaninglessComponents = new();
+            public HashSet<OscParameter> parametersReadByExternalTools = new();
+            public HashSet<OscParameter> parametersChangedByExternalTools = new();
+        }
+
+        static AssetDescriptionData LoadData()
+        {
+            var data = new AssetDescriptionData();
+            foreach (var description in GetAllAssetDescriptions())
+            {
+                foreach (var component in description.meaninglessComponents)
+                    if (GetMonoScriptFromGuid(component.guid, component.fileID) is MonoScript monoScript)
+                        data.meaninglessComponents.Add(monoScript.GetClass());
+
+                data.parametersReadByExternalTools.UnionWith(description.parametersReadByExternalTools);
+                data.parametersChangedByExternalTools.UnionWith(description.parametersChangedByExternalTools);
+            }
+
+            data.parametersReadByExternalTools.RemoveWhere(x => x.name == "");
+            data.parametersChangedByExternalTools.RemoveWhere(x => x.name == "");
+
+            return data;
+        }
 
         private static IEnumerable<AssetDescription> GetAllAssetDescriptions()
         {
@@ -28,18 +89,14 @@ namespace Anatawa12.AvatarOptimizer
             {
                 var path = AssetDatabase.GUIDToAssetPath(findAsset);
                 var asset = AssetDatabase.LoadAssetAtPath<AssetDescription>(path);
-                if (asset) yield return asset;
+                if (asset != null) yield return asset;
             }
         }
 
-        public static IEnumerable<Type> GetMeaninglessComponents()
-        {
-            return GetAllAssetDescriptions()
-                .SelectMany(description => description.meaninglessComponents)
-                .Select(component => GetMonoScriptFromGuid(component.guid, component.fileID) as MonoScript)
-                .Where(monoScript => monoScript != null)
-                .Select(monoScript => monoScript!.GetClass());
-        }
+        public static void Reload() => _data = LoadData();
+        public static HashSet<Type> GetMeaninglessComponents() => Data.meaninglessComponents;
+        public static HashSet<OscParameter> GetParametersReadByExternalTools() => Data.parametersReadByExternalTools;
+        public static HashSet<OscParameter> GetParametersChangedByExternalTools() => Data.parametersChangedByExternalTools;
 
         private static Object GetMonoScriptFromGuid(string guid, ulong fileid)
         {
@@ -53,11 +110,15 @@ namespace Anatawa12.AvatarOptimizer
         {
             private SerializedProperty _comment = null!; // Initialized by OnEnable
             private SerializedProperty _meaninglessComponents = null!; // Initialized by OnEnable
+            private SerializedProperty _parametersExternalToolsReads = null!; // Initialized by OnEnable
+            private SerializedProperty _parametersExternalsToolsChanges = null!; // Initialized by OnEnable
 
             private void OnEnable()
             {
                 _comment = serializedObject.FindProperty("comment");
                 _meaninglessComponents = serializedObject.FindProperty("meaninglessComponents");
+                _parametersExternalToolsReads = serializedObject.FindProperty(nameof(parametersReadByExternalTools));
+                _parametersExternalsToolsChanges = serializedObject.FindProperty(nameof(parametersChangedByExternalTools));
             }
 
             public override void OnInspectorGUI()
@@ -76,6 +137,8 @@ namespace Anatawa12.AvatarOptimizer
                 EditorGUILayout.Space(20f);
                 EditorGUILayout.PropertyField(_comment);
                 EditorGUILayout.PropertyField(_meaninglessComponents);
+                EditorGUILayout.PropertyField(_parametersExternalToolsReads, true);
+                EditorGUILayout.PropertyField(_parametersExternalsToolsChanges, true);
 
                 serializedObject.ApplyModifiedProperties();
             }
@@ -169,6 +232,65 @@ namespace Anatawa12.AvatarOptimizer
             GUIContent MissingScriptContent(string className) => EditorGUI.showMixedValue
                 ? Constants.MixedValueContent
                 : new GUIContent($"Missing: {className}");
+        }
+        
+        // This class describes the OSC parameter
+        [Serializable]
+        public struct OscParameter : IEquatable<OscParameter>
+        {
+            [SerializeField]
+            public string name;
+            [SerializeField]
+            public MatchMode matchMode;
+
+            public enum MatchMode
+            {
+                Exact,
+                Prefix,
+                Suffix,
+                Contains,
+            }
+
+            public bool Equals(OscParameter other) => name == other.name && matchMode == other.matchMode;
+            public override bool Equals(object? obj) => obj is OscParameter other && Equals(other);
+            public override int GetHashCode() => HashCode.Combine(name, (int)matchMode);
+            public static bool operator ==(OscParameter left, OscParameter right) => left.Equals(right);
+            public static bool operator !=(OscParameter left, OscParameter right) => !left.Equals(right);
+        }
+
+        [CustomPropertyDrawer(typeof(OscParameter))]
+        internal class OscParameterEditor : PropertyDrawer
+        {
+            public override float GetPropertyHeight(SerializedProperty property, GUIContent label) => 
+                EditorGUIUtility.singleLineHeight;
+
+            public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+            {
+                var nameProperty = property.FindPropertyRelative("name");
+                var matchModeProperty = property.FindPropertyRelative("matchMode");
+
+                var rect = EditorGUI.PrefixLabel(position, label);
+                Rect text, popup;
+
+                float width;
+                if (rect.width > 200)
+                    width = 99.5f;
+                else
+                    width = rect.width / 2 - 0.5f;
+
+                text = rect with { width = rect.width - width - 1 };
+                popup = rect with { x = rect.xMax - width, width = width };
+
+                EditorGUI.BeginChangeCheck();
+                var newName = EditorGUI.TextField(text, nameProperty.stringValue);
+                if (EditorGUI.EndChangeCheck())
+                    nameProperty.stringValue = newName;
+                
+                EditorGUI.BeginChangeCheck();
+                var newMatchMode = (OscParameter.MatchMode)EditorGUI.EnumPopup(popup, (OscParameter.MatchMode)matchModeProperty.enumValueIndex);
+                if (EditorGUI.EndChangeCheck())
+                    matchModeProperty.enumValueIndex = (int)newMatchMode;
+            }
         }
     }
 }

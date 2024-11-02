@@ -25,6 +25,9 @@ The format is based on [Keep a Changelog].
   - However, in Unity 2020 and later, BlendShape manipulation load is mostly proportional to the number of moving vertices.
   - This means that increasing the number of vertices in a mesh which has BlendShapes does not increase the load of BlendShape manipulation much.
   - Therefore, we decided to automatically merge such meshes.
+- Improved OSC Gimmick Support `#1306`
+  - We added two information for OSC Gimmick in Asset Description.
+  - By defining parameters read / written by OSC Gimmick, your OSC Gimmick no longer breaks.
 
 ### Changed
 
