@@ -680,21 +680,21 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
                     return channel switch
                     {
-                        'x' => material.GetVector(propertyName).x,
-                        'y' => material.GetVector(propertyName).y,
-                        'z' => material.GetVector(propertyName).z,
-                        'w' => material.GetVector(propertyName).w,
-                        'r' => material.GetColor(propertyName).r,
-                        'g' => material.GetColor(propertyName).g,
-                        'b' => material.GetColor(propertyName).b,
-                        'a' => material.GetColor(propertyName).a,
+                        'x' => material.SafeGetVector(propertyName).x,
+                        'y' => material.SafeGetVector(propertyName).y,
+                        'z' => material.SafeGetVector(propertyName).z,
+                        'w' => material.SafeGetVector(propertyName).w,
+                        'r' => material.SafeGetColor(propertyName).r,
+                        'g' => material.SafeGetColor(propertyName).g,
+                        'b' => material.SafeGetColor(propertyName).b,
+                        'a' => material.SafeGetColor(propertyName).a,
                         _ => null
                     };
                 }
                 else
                 {
                     // float
-                    return material.GetFloat(materialProperty);
+                    return material.SafeGetFloat(materialProperty);
                 }
             }
 

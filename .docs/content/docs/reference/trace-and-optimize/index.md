@@ -24,8 +24,9 @@ We will fix it as much as we can.
 {{< /hint >}}
 
 Currently the following optimizations are applied automatically.
-- `Automatically Freeze BlendShape`\
-  Automatically freezes BlendShapes which are always the same value or unused in animation, etc.
+- `Optimize BlendShape`\
+  <small>Previously known as `Freeze BlendShapes` but renamed to add more functionality.</small>\
+  By scanning animation etc., remove, freeze, or merge BlendShapes automatically to reduce the number of BlendShapes.
 - `Remove unused Objects`\
   By scanning animation etc., automatically removes unused Objects (e.g. GameObjects, Components).\
   In addition, this will automatically toggle PhysBone Components if they are only used by toggled objects.

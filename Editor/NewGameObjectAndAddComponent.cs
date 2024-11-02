@@ -41,7 +41,9 @@ namespace Anatawa12.AvatarOptimizer
         [MenuItem(BASE_PATH + MERGE_PHYSBONE, true, PRIORITY)]
         private static bool ValidateCreateMergePhysBone() => Selection.activeGameObject != null;
 
+#if AAO_VRCSDK3_AVATARS
         [MenuItem(BASE_PATH + MERGE_PHYSBONE, false, PRIORITY)]
         private static void CreateMergePhysBone() => CreateAndAddComponent<MergePhysBone>(MERGE_PHYSBONE);
+#endif
     }
 }

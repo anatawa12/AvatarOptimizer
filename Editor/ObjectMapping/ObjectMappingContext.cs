@@ -48,7 +48,9 @@ namespace Anatawa12.AvatarOptimizer
                     switch (component)
                     {
                         case Animator _:
+#if AAO_VRCSDK3_AVATARS
                         case VRC.SDK3.Avatars.Components.VRCAvatarDescriptor _:
+#endif
 #if AAO_VRM0
                         case VRM.VRMBlendShapeProxy _:
 #endif

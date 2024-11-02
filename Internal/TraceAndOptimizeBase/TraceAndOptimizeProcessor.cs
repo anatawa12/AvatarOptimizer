@@ -7,7 +7,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
     public class TraceAndOptimizeState
     {
         public bool Enabled;
-        public bool FreezeBlendShape;
+        public bool OptimizeBlendShape;
         public bool RemoveUnusedObjects;
         public bool RemoveZeroSizedPolygon;
         public bool OptimizePhysBone;
@@ -37,13 +37,14 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         public bool SkipRemoveEmptySubMesh;
         public bool SkipAnyStateToEntryExit;
         public bool SkipRemoveMaterialUnusedProperties;
+        public bool SkipAutoMergeBlendShape;
 
         public Dictionary<SkinnedMeshRenderer, HashSet<string>> PreserveBlendShapes =
             new Dictionary<SkinnedMeshRenderer, HashSet<string>>();
 
         internal void Initialize(TraceAndOptimize config)
         {
-            FreezeBlendShape = config.freezeBlendShape;
+            OptimizeBlendShape = config.optimizeBlendShape;
             RemoveUnusedObjects = config.removeUnusedObjects;
             RemoveZeroSizedPolygon = config.removeZeroSizedPolygons;
             OptimizePhysBone = config.optimizePhysBone;
@@ -74,6 +75,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             SkipRemoveEmptySubMesh = config.debugOptions.skipRemoveEmptySubMesh;
             SkipAnyStateToEntryExit = config.debugOptions.skipAnyStateToEntryExit;
             SkipRemoveMaterialUnusedProperties = config.debugOptions.skipRemoveMaterialUnusedProperties;
+            SkipAutoMergeBlendShape = config.debugOptions.skipAutoMergeBlendShape;
 
             Enabled = true;
         }

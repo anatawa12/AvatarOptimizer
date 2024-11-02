@@ -1285,6 +1285,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         public void Dispose()
         {
+            Utils.DisposeAll(DeltaVertices.Concat(DeltaNormals).Concat(DeltaTangents));
         }
     }
 

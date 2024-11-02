@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.AnimatorParsersV2;
 using nadena.dev.ndmf;
+using Unity.Mathematics;
 using UnityEditor;
 using UnityEngine;
 using VRC.Dynamics;
@@ -122,6 +123,70 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+            // == Limits ==
+            
+            // yaw / pitch fix
+            if (merge.limitRotationConfig.@override == MergePhysBone.CurveVector3Config.CurveOverride.Fix)
+            {
+                var newIgnores = new List<Transform>();
+                // fix rotations
+                foreach (var physBone in sourceComponents)
+                    FixYawPitch(physBone, root, context, newIgnores);
+
+                // fix configurations
+                merged.ignoreTransforms = merged.ignoreTransforms.Concat(newIgnores).ToList();
+
+                var sourceComponent = sourceComponents[0];
+                var chainLength = sourceComponent.BoneChainLength();
+                var yaws = new float[chainLength];
+                float fixedRollOfLastBone = 0;
+                var pitches = new float[chainLength];
+
+                for (var i = 0; i < chainLength; i++)
+                {
+                    var rotationSpecified = sourceComponent.CalcLimitRotation((float)i / (chainLength - 1));
+                    var rotation = ConvertRotation(rotationSpecified);
+                    pitches[i] = rotation.x;
+                    fixedRollOfLastBone = rotation.y;
+                    yaws[i] = rotation.z;
+                }
+
+                var maxPitch = pitches.Select(Mathf.Abs).Max();
+                var maxYaw = yaws.Select(Mathf.Abs).Max();
+
+                merged.limitRotation = new Vector3(maxPitch, 0, maxYaw);
+
+                if (maxPitch != 0 || maxYaw != 0)
+                {
+                    // avoid NaN
+                    if (maxPitch == 0) maxPitch = 1;
+                    if (maxYaw == 0) maxYaw = 1;
+
+                    var pitchCurve = new AnimationCurve();
+                    var yawCurve = new AnimationCurve();
+
+                    pitchCurve.AddKey(0, pitches[0] / maxPitch);
+                    yawCurve.AddKey(0, yaws[0] / maxYaw);
+
+                    for (var i = 0; i < chainLength; i++)
+                    {
+                        var time = (float)(i + 1) / chainLength;
+                        pitchCurve.AddKey(time, pitches[i] / maxPitch);
+                        yawCurve.AddKey(time, yaws[i] / maxYaw);
+                    }
+
+                    merged.limitRotationXCurve = pitchCurve;
+                    merged.limitRotationZCurve = yawCurve;
+                }
+
+                if (merged.endpointPosition != Vector3.zero)
+                {
+                    // TODO: this Endpoint Fix might not enough
+                    // Rotation fix will conflict with this fix
+                    merged.endpointPosition = Quaternion.Euler(0, -fixedRollOfLastBone, 0) * merged.endpointPosition;
+                }
+            }
+
             // == Options ==
             merged.isAnimated = merge.isAnimatedConfig.value || sourceComponents.Any(x => x.isAnimated);
 
@@ -143,7 +208,181 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 }
             }
         }
-        
+
+        // To preserve bone reference, we keep original bone and create new GameObject for it.
+        // and later Trace and Object remove unused objects will merge original bones
+        public static void FixYawPitch(
+            VRCPhysBoneBase physBone,
+            Transform root, 
+            BuildContext? context,
+            List<Transform> newIgnores)
+        {
+            // Already fixed; nothing to do!
+            if (physBone.limitRotation.Equals(Vector3.zero)) return;
+
+            physBone.InitTransforms(true);
+            var maxChainLength = physBone.BoneChainLength();
+
+            var ignoreTransforms = new HashSet<Transform>(physBone.ignoreTransforms);
+
+            RotateRecursive(physBone, physBone.GetTarget(), root, maxChainLength, 0, ignoreTransforms, newIgnores);
+        }
+
+        /*
+         RotateRecursive will transform
+        Parent <= Parent
+         `- Root <= Transform
+             +- Bone1
+             |   +- Bone2
+             |       +- Bone3
+             `- Bone4
+                 +- Bone5
+         into
+        Parent
+         `- Root (AAO Merge Proxy)
+             +- Root
+             +- Bone1 (AAO Merge Proxy)
+             |   +- Bone1
+             |   `- Bone2 (AAO Merge Proxy)
+             |       +- Bone2
+             |       `- Bone3 (AAO Merge Proxy)
+             |           +- Bone3
+             `- Bone4 (AAO Merge Proxy)
+                 +- Bone4
+                 `- Bone5 (AAO Merge Proxy)
+                     +- Bone5
+
+          One pass of this method will transform into
+
+         Parent
+           `- Root (AAO Merge Proxy) <= New Parent
+               `- Root
+                   +- Bone1 <= New Transform
+                   |   +- Bone2
+                   |       +- Bone3
+                   `- Bone4 <= New Transform
+                       +- Bone5
+         and calls RotateRecursive with new set of bones to complete
+
+         */
+
+        private static void RotateRecursive(VRCPhysBoneBase physBone,
+            Transform transform,
+            Transform parent,
+            int totalDepth,
+            int depth,
+            HashSet<Transform> ignoreTransforms,
+            List<Transform> newIgnores)
+        {
+            Vector3 targetLocation;
+
+            var activeChildren = Enumerable.Range(0, transform.childCount)
+                .Select(transform.GetChild)
+                .Where(child => !ignoreTransforms.Contains(child))
+                .ToArray();
+
+            switch (activeChildren.Length)
+            {
+                case 0:
+                    // end bone
+                    if (physBone.endpointPosition != Vector3.zero)
+                        targetLocation = physBone.endpointPosition;
+                    else
+                        targetLocation = Vector3.up;
+                    break;
+                case 1:
+                    targetLocation = activeChildren[0].localPosition;
+                    break;
+                default:
+                    switch (physBone.multiChildType)
+                    {
+                        case VRCPhysBoneBase.MultiChildType.Ignore:
+                            targetLocation = Vector3.up;
+                            break;
+                        case VRCPhysBoneBase.MultiChildType.First:
+                            targetLocation = activeChildren[0].localPosition;
+                            break;
+                        case VRCPhysBoneBase.MultiChildType.Average:
+                            targetLocation =
+                                activeChildren.Aggregate(Vector3.zero, (current, child) => current + child.localPosition) /
+                                activeChildren.Length;
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
+
+                    break;
+            }
+
+            var specifiedRotation = physBone.CalcLimitRotation((float)depth / totalDepth);
+            var rotation = ConvertRotation(specifiedRotation).y;
+
+            // if the bone is at (0, -x, 0), we have infinite rotation for `FromToRotation` and
+            // `Quaternion.FromToRotation`'s choice is not happy for logic below.
+            // We need special handling for this case.
+            var dot = Vector3.Dot(Vector3.up, math.normalizesafe(targetLocation));
+            var critical = dot <= -1;
+
+            //Debug.Log($"is critical: {critical}, dot: {dot}, transform: {transform.name}");
+            var thisRotation = !critical ? rotation : -rotation;
+
+            // create new (actual) bone
+            var newBone = new GameObject($"{transform.name} (AAO Merge Proxy)");
+
+            // new bone should be at exactly same transform as the original bone
+            newBone.transform.parent = transform;
+            newBone.transform.localPosition = Vector3.zero;
+            newBone.transform.localRotation = Quaternion.identity;
+            newBone.transform.localScale = Vector3.one;
+
+            // move to parent
+            newBone.transform.SetParent(parent, true);
+
+            // rotate newBone to fix roll
+            newBone.transform.Rotate(Vector3.up, thisRotation, Space.Self);
+
+            // move old bone to child of newBone
+            transform.SetParent(newBone.transform, true);
+
+            newIgnores.Add(transform);
+
+            //var rotationQuaternion = Quaternion.Euler(0, -thisRotation, 0);
+
+            foreach (var child in activeChildren)
+            {
+                //child.localPosition = rotationQuaternion * child.localPosition;
+                //child.localRotation = rotationQuaternion * child.localRotation;
+                
+                if (ignoreTransforms.Contains(child)) continue;
+                RotateRecursive(physBone, child, newBone.transform, totalDepth, depth + 1, ignoreTransforms, newIgnores);
+            }
+        }
+
+        public static Vector3 ConvertRotation(Vector3 limitRotation)
+        {
+            // XYZ is the order used in VRCPhysBone
+            var quat = quaternion.EulerXYZ(limitRotation * Mathf.Deg2Rad);
+            return QuaternionToEulerXZY(quat) * Mathf.Rad2Deg;
+        }
+
+        private static Vector3 QuaternionToEulerXZY(Quaternion q)
+        {
+            // Quaternion to Euler
+            // https://qiita.com/aa_debdeb/items/abe90a9bd0b4809813da
+            // YZX Order in the article. (XZY in Unity)
+            // We use different perspective to represent same order of Euler order between Unity and the article.
+            var sz = 2 * q.x * q.y + 2 * q.z * q.w;
+            var unlocked = Mathf.Abs(sz) < 0.99999f;
+            Debug.Log("unlocked: " + unlocked);
+            return new Vector3(
+                unlocked ? Mathf.Atan2(-(2 * q.y * q.z - 2 * q.x * q.w), 2 * q.w * q.w + 2 * q.y * q.y - 1) : 0,
+                unlocked
+                    ? Mathf.Atan2(-(2 * q.x * q.z - 2 * q.y * q.w), 2 * q.w * q.w + 2 * q.x * q.x - 1)
+                    : Mathf.Atan2(2 * q.x * q.z + 2 * q.y * q.w, 2 * q.w * q.w + 2 * q.z * q.z - 1),
+                Mathf.Asin(sz)
+            );
+        }
+
         private static readonly string[] TransformRotationAndPositionAnimationKeys =
         {
             "m_LocalRotation.x", "m_LocalRotation.y", "m_LocalRotation.z", "m_LocalRotation.w", 
@@ -236,26 +475,38 @@ namespace Anatawa12.AvatarOptimizer.Processors
             protected override void Pb3DCurveProp(string label, string pbXCurveLabel, string pbYCurveLabel, string pbZCurveLabel,
                 CurveVector3ConfigProp prop, bool forceOverride = false)
             {
-                var @override = forceOverride || prop.IsOverride;
-                _mergedPhysBone.FindProperty(prop.PhysBoneValueName).vector3Value =
-                    prop.GetValueProperty(@override).vector3Value;
-                if (@override)
+                switch (prop.GetOverride(forceOverride))
                 {
-                    _mergedPhysBone.FindProperty(prop.PhysBoneCurveXName).animationCurveValue =
-                        prop.GetCurveXProperty(@override).animationCurveValue;
-                    _mergedPhysBone.FindProperty(prop.PhysBoneCurveYName).animationCurveValue =
-                        prop.GetCurveYProperty(@override).animationCurveValue;
-                    _mergedPhysBone.FindProperty(prop.PhysBoneCurveZName).animationCurveValue =
-                        prop.GetCurveZProperty(@override).animationCurveValue;
-                }
-                else
-                {
-                    _mergedPhysBone.FindProperty(prop.PhysBoneCurveXName).animationCurveValue =
-                        FixCurve(prop.GetCurveXProperty(@override).animationCurveValue);
-                    _mergedPhysBone.FindProperty(prop.PhysBoneCurveYName).animationCurveValue =
-                        FixCurve(prop.GetCurveYProperty(@override).animationCurveValue);
-                    _mergedPhysBone.FindProperty(prop.PhysBoneCurveZName).animationCurveValue =
-                        FixCurve(prop.GetCurveZProperty(@override).animationCurveValue);
+                    case MergePhysBone.CurveVector3Config.CurveOverride.Copy:
+                        _mergedPhysBone.FindProperty(prop.PhysBoneValueName).vector3Value =
+                            prop.SourceValue!.vector3Value;
+                        _mergedPhysBone.FindProperty(prop.PhysBoneCurveXName).animationCurveValue =
+                            FixCurve(prop.SourceCurveX!.animationCurveValue);
+                        _mergedPhysBone.FindProperty(prop.PhysBoneCurveYName).animationCurveValue =
+                            FixCurve(prop.SourceCurveY!.animationCurveValue);
+                        _mergedPhysBone.FindProperty(prop.PhysBoneCurveZName).animationCurveValue =
+                            FixCurve(prop.SourceCurveZ!.animationCurveValue);
+                        break;
+                    case MergePhysBone.CurveVector3Config.CurveOverride.Override:
+                        _mergedPhysBone.FindProperty(prop.PhysBoneValueName).vector3Value =
+                            prop.OverrideValue.vector3Value;
+                        _mergedPhysBone.FindProperty(prop.PhysBoneCurveXName).animationCurveValue =
+                            prop.OverrideCurveX.animationCurveValue;
+                        _mergedPhysBone.FindProperty(prop.PhysBoneCurveYName).animationCurveValue =
+                            prop.OverrideCurveY.animationCurveValue;
+                        _mergedPhysBone.FindProperty(prop.PhysBoneCurveZName).animationCurveValue =
+                            prop.OverrideCurveZ.animationCurveValue;
+                        break;
+                    case MergePhysBone.CurveVector3Config.CurveOverride.Fix:
+                        // Fixing rotation is proceeded before.
+                        // We just reset the value and curve.
+                        _mergedPhysBone.FindProperty(prop.PhysBoneValueName).vector3Value = Vector3.zero;
+                        _mergedPhysBone.FindProperty(prop.PhysBoneCurveXName).animationCurveValue = new AnimationCurve();
+                        _mergedPhysBone.FindProperty(prop.PhysBoneCurveYName).animationCurveValue = new AnimationCurve();
+                        _mergedPhysBone.FindProperty(prop.PhysBoneCurveZName).animationCurveValue = new AnimationCurve();
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
                 }
             }
 

@@ -39,6 +39,9 @@ MultiChildTypeはIgnoreになります。
 それぞれの項目について、統合対象の項目から値をコピーする場合は`Copy`(すべての統合対象で値が同じ場合のみ有効)、
 代わりに新しい値を設定する場合は`Override`を選択してください。
 
-コライダーについては、`Merge`を選択して統合対象のコライダー一覧を統合することも出来ます。
+コライダーについては、`Merge`を選択して統合対象のコライダー一覧を統合することができます。
 
-Endpoint Positionについては、`Clear`を選択して[Clear Endpoint Position](../clear-endpoint-position)を使用することもできます。
+Endpoint Positionについては、`Clear`を選択して[Clear Endpoint Position](../clear-endpoint-position)を使用することができます。
+
+角度制限では、`Fix`を選択することで、ボーンに対する捻るような回転(Roll)の値を自動で揃えられます。
+これにより、Rollの値だけが異なっているような場合に角度制限を纏めて適用することができます。

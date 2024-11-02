@@ -41,3 +41,6 @@ For each property, you may select `Copy` to copy value from source property
 For colliders, you can select `Merge` to merge colliders array from source physbones.
 
 For Endpoint Position, you can select `Clear` to apply [Clear Endpoint Position](../clear-endpoint-position)
+
+For Limit Rotation, you can select `Fix` to fix different roll axis on the model.
+If your model has different roll bones, you can limit their rotations together with this option.
