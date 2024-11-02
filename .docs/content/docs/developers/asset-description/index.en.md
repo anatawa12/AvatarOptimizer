@@ -35,12 +35,12 @@ For non-destructive tools, we still recommend you to continue to remove componen
 
 ### Parameters Read By Extenral Tools {#why-parameters-read-by-external-tools}
 
-Avatar Optimizer will remove components that are not used in the Avatar.
-Furthermore, some components like VRCPhysBone and VRCContactReceiver will create Animator Parameters that can be read by OSC Tools.
-However, Avatar Optimizer cannot know if the parameters are used by OSC Tools or not.
-Therefore, Avatar Optimizer will remove those parameters or components that create those parameters, unintentionally for the users.
+Components such as PhysBone and Contact Receiver will make parameters that can be read by OSC tools.
+Such parameters are readable by the OSC tools without being defined on Animator Controller or Expression Parameter.\
+Therefore, Avatar Optimizer is unable to determine whether those parameters are simply unused or intended to be read by the OSC tools.
+Since undefined parameters are relatively rarely used by OSC Tools, components that make such parameters are removed if parameters are unused from anywhere on the avatar.
 
-To prevent Avatar Optimizer from removing those parameters, you can specify the parameters that are read by OSC Tools in Asset Description.
+To prevent Avatar Optimizer from removing those parameters and components, you can specify the parameters that are read by OSC Tools in Asset Description.
 
 ### Parameters Changed By External Tools {#why-parameters-written-by-external-tools}
 
