@@ -12,8 +12,8 @@ The format is based on [Keep a Changelog].
   - In previous version of Avatar Optimizer, meshes which have BlendShapes are not automatically merged.
   - This was because BlendShape manipulation load is proportional to the number of vertices in Unity 2019.
   - However, in Unity 2020 and later, BlendShape manipulation load is mostly proportional to the number of moving vertices.
-  - This means that increasing the number of vertices in a mesh with BlendShapes does not increase the load of BlendShape manipulation much.
-  - Therefore, we decided to automatically merge meshes with BlendShapes.
+  - This means that increasing the number of vertices in a mesh which has BlendShapes does not increase the load of BlendShape manipulation much.
+  - Therefore, we decided to automatically merge such meshes.
 
 ### Changed
 

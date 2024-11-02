@@ -27,12 +27,12 @@ If you are using [Modular Avatar], you can add [`MA Mesh Settings`] component to
 
 {{< /hint >}}
 
-It's better freeze & remove unchanging BlendShapes for body / cloth meshes to reduce BlendShape load.
+It's better to freeze & remove unchanging BlendShapes for body / cloth meshes to reduce BlendShape load.
 You can freeze & remove BlendShape using [Freeze BlendShape](../freeze-blendshape) component.
 Add this component to both/either merge source SkinnedMeshRenderer and/or merged SkinnedMeshRenderer to freeze & remove BlendShapes.
 Also, you can use `Automatically Freeze BlendShape` of [Trace and Optimize](../trace-and-optimize) component to get the same benefits.
 
-In previous versions of Avatar Optimizer, Unity 2019 recommended not merging face meshes due to merging BlendShape-heavy mesh will increase load on BlendShape much.
+In previous versions of Avatar Optimizer, we recommended not merging face meshes due to merging BlendShape-heavy mesh will increase load on BlendShape much in Unity 2019.
 However, in Unity 2022, we no longer recommends not merging face meshes because the BlendShape load has been improved.
 
 {{< hint info >}}
