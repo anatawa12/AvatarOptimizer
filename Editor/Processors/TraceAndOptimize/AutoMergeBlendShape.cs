@@ -51,6 +51,8 @@ class AutoMergeBlendShape: TraceAndOptimizePass<AutoMergeBlendShape>
         // bulk remove to optimize removing blendshape process
         var removeNames = new HashSet<string>();
 
+        var newNames = new Dictionary<string, string>();
+
         var i = 0;
         // there is thing to merge
         foreach (var (key, names) in groups)
@@ -81,6 +83,12 @@ class AutoMergeBlendShape: TraceAndOptimizePass<AutoMergeBlendShape>
 
             // validation passed, merge
             var newName = $"AAO_Merged_{string.Join("_", names)}_{i++}";
+
+            foreach (var name in names)
+            {
+                newNames.Add(name, newName);
+                context.RecordMoveProperty(meshInfo2.SourceRenderer, $"blendShape.{name}", $"blendShape.{newName}");
+            }
 
             // process meshInfo2
             meshInfo2.BlendShapes.Add((newName, key.defaultWeight));
@@ -131,8 +139,22 @@ class AutoMergeBlendShape: TraceAndOptimizePass<AutoMergeBlendShape>
             next_shape: ;
         }
 
+        var prevNames = meshInfo2.BlendShapes.Select(x => x.name).ToList();
+
         // remove merged blendShapes
         meshInfo2.BlendShapes.RemoveAll(x => removeNames.Contains(x.name));
+
+        for (var index = 0; index < prevNames.Count; index++)
+        {
+            var name = prevNames[index];
+            var newName = newNames.GetValueOrDefault(name, name);
+            var newIndex = meshInfo2.BlendShapes.FindIndex(x => x.name == newName);
+            if (newIndex != -1)
+            {
+                context.RecordMoveProperty(meshInfo2.SourceRenderer, 
+                    VProp.BlendShapeIndex(index), VProp.BlendShapeIndex(newIndex));
+            }
+        }
     }
 
     readonly struct MergeKey : IEquatable<MergeKey>
