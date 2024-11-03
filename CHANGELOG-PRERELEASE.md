@@ -16,9 +16,12 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Animation broken with auto merge blendShape `#1324`
 
 ### Security
+
+## [1.8.0-rc.2] - 2024-11-03
+### Fixed
+- Animation broken with auto merge blendShape [`#1324`](https://github.com/anatawa12/AvatarOptimizer/pull/1324)
 
 ## [1.8.0-rc.1] - 2024-11-03
 ### Added
@@ -1726,7 +1729,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-rc.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-rc.2...HEAD
+[1.8.0-rc.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-rc.1...v1.8.0-rc.2
 [1.8.0-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-beta.11...v1.8.0-rc.1
 [1.8.0-beta.11]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-beta.10...v1.8.0-beta.11
 [1.8.0-beta.10]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-beta.9...v1.8.0-beta.10
