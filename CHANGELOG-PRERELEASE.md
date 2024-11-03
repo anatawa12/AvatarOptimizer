@@ -8,26 +8,6 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Automatically Merge Blendshape `#1300`
-  - This is new automatic optimization in Trace and Optimize
-  - This is a part of "Optimize BlendShape" optimization.
-  - AAO 1.8.0 introduced BlendShape support for Merge Skinned Mesh, but new default mode "Rename to avoid conflicts" would increase number of BlendShape.
-  - This feature is added to relax this problem by automatically merging multiple BlendShapes of one Mesh.
-  - With this feature, you can use rename mode without performance loss.
-- Fix mode for PhysBone Limits in Merge PhysBone `#665`
-  - In addition to existing `Copy` and `Override`, we added `Fix` mode.
-  - This mode will try to correct roll axis by rotating bone.
-  - This feature allows you to configure the mode for PhysBone Limits in Merge PhysBone.
-  - This is useful if all configuration is same but roll axis is different.
-- Automatically merging meshes which have BlendShapes `#1308`
-  - In previous version of Avatar Optimizer, meshes which have BlendShapes are not automatically merged.
-  - This was because BlendShape manipulation load is proportional to the number of vertices in Unity 2019.
-  - However, in Unity 2020 and later, BlendShape manipulation load is mostly proportional to the number of moving vertices.
-  - This means that increasing the number of vertices in a mesh which has BlendShapes does not increase the load of BlendShape manipulation much.
-  - Therefore, we decided to automatically merge such meshes.
-- Improved OSC Gimmick Support `#1306`
-  - We added two information for OSC Gimmick in Asset Description.
-  - By defining parameters read / written by OSC Gimmick, your OSC Gimmick no longer breaks.
 
 ### Changed
 
@@ -36,13 +16,38 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Fix non-VRChat project support `#1310`
-- 'shader' doesn't have a float or range property 'prop' error `#1312`
-- Integer and Int confusion `#1313`
-- NativeArray leak `#1314`
-- Error if all components are on inactive GameObject`#1318`
 
 ### Security
+
+## [1.8.0-rc.1] - 2024-11-03
+### Added
+- Automatically Merge Blendshape [`#1300`](https://github.com/anatawa12/AvatarOptimizer/pull/1300)
+  - This is new automatic optimization in Trace and Optimize
+  - This is a part of "Optimize BlendShape" optimization.
+  - AAO 1.8.0 introduced BlendShape support for Merge Skinned Mesh, but new default mode "Rename to avoid conflicts" would increase number of BlendShape.
+  - This feature is added to relax this problem by automatically merging multiple BlendShapes of one Mesh.
+  - With this feature, you can use rename mode without performance loss.
+- Fix mode for PhysBone Limits in Merge PhysBone [`#665`](https://github.com/anatawa12/AvatarOptimizer/pull/665)
+  - In addition to existing `Copy` and `Override`, we added `Fix` mode.
+  - This mode will try to correct roll axis by rotating bone.
+  - This feature allows you to configure the mode for PhysBone Limits in Merge PhysBone.
+  - This is useful if all configuration is same but roll axis is different.
+- Automatically merging meshes which have BlendShapes [`#1308`](https://github.com/anatawa12/AvatarOptimizer/pull/1308)
+  - In previous version of Avatar Optimizer, meshes which have BlendShapes are not automatically merged.
+  - This was because BlendShape manipulation load is proportional to the number of vertices in Unity 2019.
+  - However, in Unity 2020 and later, BlendShape manipulation load is mostly proportional to the number of moving vertices.
+  - This means that increasing the number of vertices in a mesh which has BlendShapes does not increase the load of BlendShape manipulation much.
+  - Therefore, we decided to automatically merge such meshes.
+- Improved OSC Gimmick Support [`#1306`](https://github.com/anatawa12/AvatarOptimizer/pull/1306)
+  - We added two information for OSC Gimmick in Asset Description.
+  - By defining parameters read / written by OSC Gimmick, your OSC Gimmick no longer breaks.
+
+### Fixed
+- Fix non-VRChat project support [`#1310`](https://github.com/anatawa12/AvatarOptimizer/pull/1310)
+- 'shader' doesn't have a float or range property 'prop' error [`#1312`](https://github.com/anatawa12/AvatarOptimizer/pull/1312)
+- Integer and Int confusion [`#1313`](https://github.com/anatawa12/AvatarOptimizer/pull/1313)
+- NativeArray leak [`#1314`](https://github.com/anatawa12/AvatarOptimizer/pull/1314)
+- Error if all components are on inactive GameObject`#1318`
 
 ## [1.8.0-beta.11] - 2024-10-27
 ### Changed
@@ -1720,7 +1725,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-beta.11...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-rc.1...HEAD
+[1.8.0-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-beta.11...v1.8.0-rc.1
 [1.8.0-beta.11]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-beta.10...v1.8.0-beta.11
 [1.8.0-beta.10]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-beta.9...v1.8.0-beta.10
 [1.8.0-beta.9]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-beta.8...v1.8.0-beta.9
