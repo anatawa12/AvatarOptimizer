@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Animation broken with auto merge blendShape `#1324`
 
 ### Security
 
