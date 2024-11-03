@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 672cf279ebc041f5b87addc7c6c980bb, type: 3}
+  m_Name: nadeXnade
+  m_EditorClassIdentifier: 
+  comment: 'nadeXnade default parameters
+
+
+    https://xintechs-koubou.com/pages/%E3%83%8F%E3%83%97%E3%83%86%E3%82%A3%E3%82%AF%E3%82%B9'
+  meaninglessComponents: []
+  parametersReadByExternalTools:
+  - name: output01
+    matchMode: 0
+  - name: output02
+    matchMode: 0
+  - name: output03
+    matchMode: 0
+  - name: output04
+    matchMode: 0
+  parametersChangedByExternalTools: []
