@@ -89,7 +89,7 @@ The format is based on [Keep a Changelog].
 - Renamed debug options internally `#1228`
   - This will lose previously configured debug options.
   - However, debug options are not considered as Public API as stated in documents so this is not backward incompatible changes in semver 2.0.0 section 8.
-- Performance Improvements `#1234` `#1243` `#1240` `#1288` `#1304` `#1307` `#1314`
+- Performance Improvements `#1234` `#1243` `#1240` `#1288` `#1304` `#1307` `#1314` `#1325`
 - Transform gizmo are now hidden while you're editing box of Remove Mesh in Box `#1259`
   - This prevents mistakenly moving the Skinned Mesh Renderer while editing the box.
 - Make MergePhysBone implement `INetworkID` `#1260`
@@ -131,7 +131,6 @@ The format is based on [Keep a Changelog].
 - Fix non-VRChat project support `#1310`
 - 'shader' doesn't have a float or range property 'prop' error `#1312`
 - Error if all components are on inactive GameObject `#1318`
-- Improved performance in InternalAutoFreezeMeaninglessBlendShapeProcessor `#1325`
 
 ### Security
 
