@@ -18,6 +18,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- basic Mesh Renderers are not considered in Optimize Texture `#1328`
 
 ### Security
 
