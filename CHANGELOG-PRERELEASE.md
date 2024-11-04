@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
+- Performance improvements for AutoMergeBlendShape `#1327`
 
 ### Deprecated
 

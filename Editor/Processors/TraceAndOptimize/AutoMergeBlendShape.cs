@@ -46,7 +46,7 @@ class AutoMergeBlendShape: TraceAndOptimizePass<AutoMergeBlendShape>
         if (groups.Values.All(x => x.Count <= 1)) return;
 
         // prepare merge
-        var buffers = meshInfo2.Vertices.Select(x => x.BlendShapeBuffer).ToArray();
+        var buffers = meshInfo2.Vertices.Select(x => x.BlendShapeBuffer).Distinct().ToArray();
 
         // bulk remove to optimize removing blendshape process
         var removeNames = new HashSet<string>();
