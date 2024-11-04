@@ -10,17 +10,22 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
-- Improved performance in InternalAutoFreezeMeaninglessBlendShapeProcessor [`#1325`](https://github.com/anatawa12/AvatarOptimizer/pull/1325)
-- Performance improvements for AutoMergeBlendShape `#1327`
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
-- basic Mesh Renderers are not considered in Optimize Texture `#1328`
 
 ### Security
+
+## [1.8.0-rc.3] - 2024-11-04
+### Changed
+- Improved performance in InternalAutoFreezeMeaninglessBlendShapeProcessor [`#1325`](https://github.com/anatawa12/AvatarOptimizer/pull/1325)
+- Performance improvements for AutoMergeBlendShape [`#1327`](https://github.com/anatawa12/AvatarOptimizer/pull/1327)
+
+### Fixed
+- basic Mesh Renderers are not considered in Optimize Texture [`#1328`](https://github.com/anatawa12/AvatarOptimizer/pull/1328)
 
 ## [1.8.0-rc.2] - 2024-11-03
 ### Fixed
@@ -1732,7 +1737,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-rc.2...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-rc.3...HEAD
+[1.8.0-rc.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-rc.2...v1.8.0-rc.3
 [1.8.0-rc.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-rc.1...v1.8.0-rc.2
 [1.8.0-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-beta.11...v1.8.0-rc.1
 [1.8.0-beta.11]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-beta.10...v1.8.0-beta.11
