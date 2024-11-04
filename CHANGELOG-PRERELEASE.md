@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Improved performance in InternalAutoFreezeMeaninglessBlendShapeProcessor [`#1325`](https://github.com/anatawa12/AvatarOptimizer/pull/1325)
 
 ### Security
 
