@@ -7,6 +7,7 @@ using nadena.dev.ndmf;
 using Unity.Collections;
 using Unity.Jobs;
 using UnityEngine;
+using UnityEngine.Profiling;
 
 namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes;
 
@@ -23,13 +24,22 @@ class AutoMergeBlendShape: TraceAndOptimizePass<AutoMergeBlendShape>
         {
             if (state.Exclusions.Contains(skinnedMeshRenderer.gameObject)) continue; // manual exclusion
 
-            ErrorReport.WithContextObject(skinnedMeshRenderer, () => DoAutoMerge(context.GetMeshInfoFor(skinnedMeshRenderer), context));
+            ErrorReport.WithContextObject(skinnedMeshRenderer, () =>
+            {
+                Profiler.BeginSample("GetMeshInfoFor", skinnedMeshRenderer);
+                var meshInfo = context.GetMeshInfoFor(skinnedMeshRenderer);
+                Profiler.EndSample();
+                
+                DoAutoMerge(meshInfo, context);
+            });
         }
     }
 
     private static void DoAutoMerge(MeshInfo2 meshInfo2, BuildContext context)
     {
         var animationComponent = context.GetAnimationComponent(meshInfo2.SourceRenderer);
+        
+        Profiler.BeginSample("Compute merge keys");
         var groups = new Dictionary<MergeKey, List<string>>();
 
         foreach (var (name, weight) in meshInfo2.BlendShapes)
@@ -43,10 +53,17 @@ class AutoMergeBlendShape: TraceAndOptimizePass<AutoMergeBlendShape>
         }
 
         // nothing to merge
-        if (groups.Values.All(x => x.Count <= 1)) return;
+        if (groups.Values.All(x => x.Count <= 1))
+        {
+            Profiler.EndSample();
+            return;
+        }
+        Profiler.EndSample();
 
+        Profiler.BeginSample("Prepare merge");
         // prepare merge
-        var buffers = meshInfo2.Vertices.Select(x => x.BlendShapeBuffer).ToArray();
+        var buffers = meshInfo2.Vertices.Select(x => x.BlendShapeBuffer).Distinct().ToArray();
+        Profiler.EndSample();
 
         // bulk remove to optimize removing blendshape process
         var removeNames = new HashSet<string>();
@@ -59,6 +76,7 @@ class AutoMergeBlendShape: TraceAndOptimizePass<AutoMergeBlendShape>
         {
             // validate the blendShapes are simple enough to merge
             // if not, skip
+            Profiler.BeginSample("AutoMergeBlendShape: Validate");
             foreach (var buffer in buffers)
             {
                 float? commonFrameWeight = null;
@@ -80,6 +98,7 @@ class AutoMergeBlendShape: TraceAndOptimizePass<AutoMergeBlendShape>
                     }
                 }
             }
+            Profiler.EndSample();
 
             // validation passed, merge
             var newName = $"AAO_Merged_{string.Join("_", names)}_{i++}";
@@ -94,6 +113,7 @@ class AutoMergeBlendShape: TraceAndOptimizePass<AutoMergeBlendShape>
             meshInfo2.BlendShapes.Add((newName, key.defaultWeight));
             removeNames.UnionWith(names);
 
+            Profiler.BeginSample("AutoMergeBlendShape: Merge");
             // actually merge data
             foreach (var buffer in buffers)
             {
@@ -136,6 +156,8 @@ class AutoMergeBlendShape: TraceAndOptimizePass<AutoMergeBlendShape>
                 }
             }
 
+            Profiler.EndSample();
+            
             next_shape: ;
         }
 
