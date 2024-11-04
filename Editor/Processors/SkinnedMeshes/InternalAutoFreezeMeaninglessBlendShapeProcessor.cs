@@ -44,7 +44,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             
             var shapeCount = buffers.Sum(x => x.Key.Shapes.Count);
             
-            NativeArray<bool> isMeaningfulArray = new NativeArray<bool>(shapeCount, Allocator.TempJob);
+            using var isMeaningfulArray = new NativeArray<bool>(shapeCount, Allocator.TempJob);
             List<(string, JobHandle, int)> meaningfulIndex = new List<(string, JobHandle, int)>(shapeCount);
 
             int bufIndexNext = 0;
