@@ -309,7 +309,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             target.ClearMeshData();
             target.SubMeshes.Capacity = Math.Max(target.SubMeshes.Capacity, materials.Count);
             foreach (var material in materials)
+            {
                 target.SubMeshes.Add(new SubMesh(material.material, material.topology));
+                if (material.material != null
+                    && context.GetMaterialInformation(material.material) is { } information)
+                    information.UserRenderers.Add(target.SourceRenderer);
+            }
 
             TexCoordStatus TexCoordStatusMax(TexCoordStatus x, TexCoordStatus y) =>
                 (TexCoordStatus)Math.Max((int)x, (int)y);

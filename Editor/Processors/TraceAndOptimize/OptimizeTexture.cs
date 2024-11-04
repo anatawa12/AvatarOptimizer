@@ -135,6 +135,7 @@ internal struct OptimizeTextureImpl {
     {
         // If we cannot collect textures from shader information (if null), unable to merge
         public List<TextureUsageInformation>? TextureUsageInformations { get; set; }
+        public List<Renderer>? UserRenderersOnAvatar { get; set; }
 
         // The list of submeshes that use this material
         public List<SubMeshNode> Users { get; } = new();
@@ -229,6 +230,7 @@ internal struct OptimizeTextureImpl {
             if (materialInformation?.TextureUsageInformationList is { } informations)
             {
                 materialNode.TextureUsageInformations = informations.ToList();
+                materialNode.UserRenderersOnAvatar = materialInformation.UserRenderers.Where(x => x != null).ToList();
 
                 textures = informations.Select(x =>
                     ((Texture2D?)material.GetTexture(x.MaterialPropertyName), (TextureUsageInformation?)x));
@@ -291,6 +293,12 @@ internal struct OptimizeTextureImpl {
 
         // all material must have valid TextureUsageInformation, otherwise UV packing would cause invalid data
         if (info.Materials.Any(mat => mat.TextureUsageInformations == null))
+            return Array.Empty<(EqualsHashSet<UVID>, AtlasResult)>();
+
+        // the material should not be used by other renderers.
+        // we're ignoring basic Mesh Renderers so we have to check if the material is not used by basic Mesh Renderers.
+        var renderers = info.SubMeshes.Select(x => x.SubMeshId.MeshInfo2.SourceRenderer).ToHashSet();
+        if (info.Materials.Any(mat => mat.UserRenderersOnAvatar == null || !renderers.SetEquals(mat.UserRenderersOnAvatar)))
             return Array.Empty<(EqualsHashSet<UVID>, AtlasResult)>();
 
         var textureByUvId = new Dictionary<UVID, List<TextureNode>>();
