@@ -168,11 +168,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 while (from != to)
                 {
                     var costToRetain = remainingMoves;
-                    var costToDelete = remainingArraySize - from - 1;
+                    var costToDelete = remainingArraySize - to - 1;
 
                     if (costToDelete < costToRetain)
                     {
-                        props.DeleteArrayElementAtIndex(from);
+                        props.DeleteArrayElementAtIndex(to);
                         sourceOffset--;
                         remainingArraySize--;
                         from--;
