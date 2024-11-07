@@ -8,11 +8,8 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Automatically Merge Material Slot `#1334`
-  - If you have multile material slots with same material, it will be merged automatically.
 
 ### Changed
-- Improved performance in RemoveUnusedMaterialProperties [`#1326`](https://github.com/anatawa12/AvatarOptimizer/pull/1326)
 
 ### Deprecated
 
@@ -21,6 +18,14 @@ The format is based on [Keep a Changelog].
 ### Fixed
 
 ### Security
+
+## [1.8.0-rc.5] - 2024-11-07
+### Added
+- Automatically Merge Material Slot [`#1334`](https://github.com/anatawa12/AvatarOptimizer/pull/1334)
+  - If you have multile material slots with same material, it will be merged automatically.
+
+### Changed
+- Improved performance in RemoveUnusedMaterialProperties [`#1326`](https://github.com/anatawa12/AvatarOptimizer/pull/1326)
 
 ## [1.8.0-rc.4] - 2024-11-06
 ### Fixed
@@ -1745,7 +1750,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-rc.4...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-rc.5...HEAD
+[1.8.0-rc.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-rc.4...v1.8.0-rc.5
 [1.8.0-rc.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-rc.3...v1.8.0-rc.4
 [1.8.0-rc.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-rc.2...v1.8.0-rc.3
 [1.8.0-rc.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-rc.1...v1.8.0-rc.2
