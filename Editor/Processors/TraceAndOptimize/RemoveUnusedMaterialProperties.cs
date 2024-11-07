@@ -90,7 +90,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             }
         }
         
-        private Dictionary<Shader, ShaderInfo> _shaderInfoCache = new();
+        private static Dictionary<Shader, ShaderInfo> _shaderInfoCache = new();
         
         // Algorithm is based on lilToon or thr following blog post,
         // but speed up with not using DeleteArrayElementAtIndex.
@@ -100,7 +100,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         // https://github.com/lilxyzw/lilToon/blob/b96470d3dd9092b840052578048b2307fe6d8786/Assets/lilToon/Editor/lilMaterialUtils.cs#L658-L686
         //
         // https://light11.hatenadiary.com/entry/2018/12/04/224253
-        private void RemoveUnusedProperties(Material material)
+        public static void RemoveUnusedProperties(Material material)
         {
             var shader = material.shader;
             if (shader == null) return;
@@ -120,7 +120,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             so.ApplyModifiedProperties();
         }
 
-        private void DeleteUnusedProperties(SerializedProperty props, Material material, ShaderInfo shaderInfo)
+        private static void DeleteUnusedProperties(SerializedProperty props, Material material, ShaderInfo shaderInfo)
         {
             if (props.arraySize == 0) return;
             
