@@ -143,3 +143,4 @@ Avatar Optimizerは他の非破壊改変ツールとの互換性を確保する�
 [NDMF]: https://ndmf.nadena.dev/
 [modular-avatar]: https://modular-avatar.nadena.dev/
 [Version Defines]: https://docs.unity3d.com/2019.4/Documentation/Manual/ScriptCompilationAssemblyDefinitionFiles.html#define-symbols
+[Asset Description]: ../asset-description
