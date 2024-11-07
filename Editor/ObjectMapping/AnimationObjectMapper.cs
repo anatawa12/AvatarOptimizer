@@ -186,7 +186,26 @@ namespace Anatawa12.AvatarOptimizer
 
                 var component = EditorUtility.InstanceIDToObject(instanceId);
                 if (!component)
+                {
+#if AAO_VRCSDK3_AVATARS
+                    // See https://github.com/anatawa12/AvatarOptimizer/issues/1330
+                    // Some flying avatar gimmicks use VRCStation to make the Collider for flying.
+                    // (Box Collider is not whitelisted for quest avatars)
+                    // Therefore, we need to keep animation bindings for BoxCollider (and Collider) if 
+                    // the GameObject has VRCStation component.
+                    if (type == typeof(BoxCollider) || type == typeof(Collider))
+                    {
+                        var (stationInstanceId, _) = gameObjectInfo.GetComponentByType(typeof(VRC.SDK3.Avatars.Components.VRCStation));
+                        if (EditorUtility.InstanceIDToObject(stationInstanceId) != null)
+                        {
+                            goto componentLive;
+                        }
+                    }
+#endif
+
                     return Array.Empty<(string path, Type type, string propertyName)>(); // this means removed
+                }
+                componentLive:;
 
                 if (gameObjectInfo.NewPath == null) return Array.Empty<(string path, Type type, string propertyName)>();
                 if (path == gameObjectInfo.NewPath) return null;

@@ -122,6 +122,7 @@ internal class LiltoonShaderInformation : ShaderInformation
             return STAndScrollRotateToMatrix("_MainTex_ST", "_MainTex_ScrollRotate");
         }
 
+#region Default.lilblock / DefaultALL.lilblock
         matInfo.RegisterTextureUVUsage("_DitherTex", SamplerStateInformation.LinearRepeatSampler,
             UsingUVChannels.NonMesh, null); // dither UV is based on screen space
 
@@ -558,7 +559,18 @@ internal class LiltoonShaderInformation : ShaderInformation
         }
 
         // _BaseMap and _BaseColorMap are unused
+#endregion Default.lilblock
 
+#region DefaultFurCutout, DefaultFurTransparent, DefaultAll, 
+        // fur
+        LIL_SAMPLE_2D_ST("_FurNoiseMask", "_MainTex", UsingUVChannels.UV0);
+        LIL_SAMPLE_2D_ST_WithMat("_FurMask", "_MainTex", uvMain, uvMainMatrix);
+        LIL_SAMPLE_2D_ST_WithMat("_FurLengthMask", "_MainTex", uvMain, uvMainMatrix);
+        LIL_SAMPLE_2D_WithMat("_FurLengthMask", SamplerStateInformation.LinearRepeatSampler, UsingUVChannels.UV0,
+            STToMatrix($"_MainTex_ST"));
+        LIL_SAMPLE_2D_WithMat("_FurVectorTex", SamplerStateInformation.LinearRepeatSampler, uvMain, uvMainMatrix);
+
+#endregion
         // Vertex ID
         var idMaskProperties = new[]
         {
