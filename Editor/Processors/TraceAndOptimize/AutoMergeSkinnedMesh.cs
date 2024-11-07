@@ -21,10 +21,22 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             var mergeMeshes = FilterMergeMeshes(context, state);
             if (mergeMeshes.Count == 0) return;
 
-            var categorizedMeshes = CategoryMeshesForMerge(context, mergeMeshes);
-            if (categorizedMeshes.Count == 0) return;
+            CategoryMeshesForMerge(context, mergeMeshes, out var categorizedMeshes, out var orphanMeshes);
+            
+            Func<MeshInfo2[], (int[][], List<(MeshTopology, Material?)>)> createSubMeshes;
 
-            MergeMeshes(context, state, categorizedMeshes);
+            // createSubMeshes must preserve first material to be the first material
+            if (state.SkipMergeMaterials)
+                createSubMeshes = CreateSubMeshesNoMerge;
+            else if (state.AllowShuffleMaterialSlots)
+                createSubMeshes = CreateSubMeshesMergeShuffling;
+            else
+                createSubMeshes = CreateSubMeshesMergePreserveOrder;
+
+            foreach (var orphanMesh in orphanMeshes)
+                MergeMaterialSlot(orphanMesh, createSubMeshes);
+
+            MergeMeshes(context, state, categorizedMeshes, createSubMeshes);
         }
 
         public static List<MeshInfo2> FilterMergeMeshes(BuildContext context, TraceAndOptimizeState state)
@@ -130,10 +142,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             return mergeMeshes;
         }
 
-        public static Dictionary<CategorizationKey, List<MeshInfo2>> CategoryMeshesForMerge(BuildContext context, List<MeshInfo2> mergeMeshes)
+        public static void CategoryMeshesForMerge(BuildContext context, List<MeshInfo2> mergeMeshes,
+            out Dictionary<CategorizationKey, List<MeshInfo2>> categorizedMeshes, out List<MeshInfo2> orphanMeshes)
         {
             // then, group by mesh attributes
-            var categorizedMeshes = new Dictionary<CategorizationKey, List<MeshInfo2>>();
+            categorizedMeshes = new Dictionary<CategorizationKey, List<MeshInfo2>>();
             foreach (var meshInfo2 in mergeMeshes)
             {
                 var activenessInfo = GetActivenessInformation(context, meshInfo2.SourceRenderer);
@@ -157,30 +170,40 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 list.Add(meshInfo2);
             }
 
+            orphanMeshes = new List<MeshInfo2>();
+
             // remove single mesh group
             foreach (var (key, list) in categorizedMeshes.ToArray())
+            {
                 if (list.Count == 1)
+                {
                     categorizedMeshes.Remove(key);
+                    orphanMeshes.Add(list[0]);
+                }
+            }
 
             Profiler.EndSample();
+        }
 
-            return categorizedMeshes;
+        private void MergeMaterialSlot(MeshInfo2 orphanMesh,
+            Func<MeshInfo2[], (int[][], List<(MeshTopology, Material?)>)> createSubMeshes)
+        {
+            var (mapping, subMeshInfos) = createSubMeshes(new[] { orphanMesh });
+            var subMeshes = orphanMesh.SubMeshes.ToList();
+
+            orphanMesh.SubMeshes.Clear();
+            foreach (var (meshTopology, material) in subMeshInfos)
+                orphanMesh.SubMeshes.Add(new SubMesh(material, meshTopology));
+
+            for (var i = 0; i < subMeshes.Count; i++)
+                orphanMesh.SubMeshes[mapping[0][i]].Vertices.AddRange(subMeshes[i].Vertices);
         }
 
         public static void MergeMeshes(BuildContext context, TraceAndOptimizeState state,
-            Dictionary<CategorizationKey, List<MeshInfo2>> categorizedMeshes)
+            Dictionary<CategorizationKey, List<MeshInfo2>> categorizedMeshes,
+            Func<MeshInfo2[], (int[][], List<(MeshTopology, Material?)>)> createSubMeshes)
         {
             Profiler.BeginSample("Merge Meshes");
-
-            Func<MeshInfo2[], (int[][], List<(MeshTopology, Material?)>)> createSubMeshes;
-
-            // createSubMeshes must preserve first material to be the first material
-            if (state.SkipMergeMaterials)
-                createSubMeshes = CreateSubMeshesNoMerge;
-            else if (state.AllowShuffleMaterialSlots)
-                createSubMeshes = CreateSubMeshesMergeShuffling;
-            else
-                createSubMeshes = CreateSubMeshesMergePreserveOrder;
 
             var index = 0;
             Func<GameObject> gameObjectFactory = () => new GameObject($"$$AAO_AUTO_MERGE_SKINNED_MESH_{index++}");
