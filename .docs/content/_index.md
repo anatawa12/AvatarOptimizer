@@ -10,8 +10,13 @@ Those utilities are applied on entering play mode or building avatars.
 
 Avatar Optimizer is a Open Source Software developed on [GitHub] published under the [MIT License].
 
+[![discord link][shields-discord]][ndmf-discord]
+
 [GitHub]: https://github.com/anatawa12/AvatarOptimizer
 [MIT License]: https://github.com/anatawa12/AvatarOptimizer/blob/HEAD/LICENSE
+[shields-discord]: https://img.shields.io/badge/chat_on-NDMF_Discord-5865F2?logo=discord&logoColor=white
+
+[ndmf-discord]: https://discord.gg/dV4cVpewmM
 
 ## Installation {#installation}
 

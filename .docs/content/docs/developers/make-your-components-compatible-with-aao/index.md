@@ -9,7 +9,7 @@ This page describes the following two things.
 - When can components be incompatible with Avatar Optimizer?
 - How to improve the compatibility?
 
-If you have some question, please feel free to ask [`@anatawa12@misskey.niri.la` on fediverse][fediverse].
+If you have some question, please feel free to ask [`@anatawa12@misskey.niri.la` on fediverse][fediverse] or on [NDMF Discord].
 
 ## When can components be incompatible with Avatar Optimizer? {#when-incompatible}
 
@@ -153,3 +153,4 @@ with many non-destructive tools based on NDMF.
 [modular-avatar]: https://modular-avatar.nadena.dev/
 [Version Defines]: https://docs.unity3d.com/2019.4/Documentation/Manual/ScriptCompilationAssemblyDefinitionFiles.html#define-symbols
 [Asset Description]: ../asset-description
+[NDMF Discord]: https://discord.gg/dV4cVpewmM

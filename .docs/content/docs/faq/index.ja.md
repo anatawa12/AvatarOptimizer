@@ -6,7 +6,7 @@ weight: 2
 # よくある質問 {#faq}
 
 Avatar Optimizerに関するよくある質問のリストです。
-他に質問がある場合は、[GitHub Discussions]または[Fediverse (Misskey / Mastodon)][Fediverse]でお気軽にお尋ねください。
+他に質問がある場合は、[GitHub Discussions]、[NDMF Discord]、または[Fediverse (Misskey / Mastodon)][Fediverse]でお気軽にお尋ねください。
 
 ## `AAO Trace and Optimize`コンポーネントを使用すると、アバターの振る舞いや見た目が変わる {#avatar-behavior-or-appearance-changed-when-using-aao-trace-and-optimize-component}
 
@@ -114,5 +114,6 @@ Avatar Optimizerの開発を支援したい場合、[GitHub Discussions]での�
 [Booth]: https://anatawa12.booth.pm/items/4885109
 [good first issue]: https://github.com/anatawa12/AvatarOptimizer/labels/good%20first%20issue
 [help wanted]: https://github.com/anatawa12/AvatarOptimizer/labels/help%20wanted
+[NDMF Discord]: https://discord.gg/dV4cVpewmM
 
 [^merged-mesh]: 統合先のメッシュとは、`AAO Merge Skinned Mesh`コンポーネントと一緒に付いているSkinned Mesh Rendererのことです。
