@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog].
   - If you have multile material slots with same material, it will be merged automatically.
 
 ### Changed
+- Improved performance in RemoveUnusedMaterialProperties [`#1326`](https://github.com/anatawa12/AvatarOptimizer/pull/1326)
 
 ### Deprecated
 
