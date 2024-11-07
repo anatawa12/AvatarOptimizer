@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Automatically Merge Material Slot `#1334`
+  - If you have multile material slots with same material, it will be merged automatically.
 
 ### Changed
 

@@ -69,6 +69,8 @@ The format is based on [Keep a Changelog].
 - Improved OSC Gimmick Support `#1306`
   - We added two information for OSC Gimmick in Asset Description.
   - By defining parameters read / written by OSC Gimmick, your OSC Gimmick no longer breaks.
+- Automatically Merge Material Slot `#1334`
+  - If you have multile material slots with same material, it will be merged automatically.
 
 ### Changed
 - Skip Enablement Mismatched Renderers is now disabled by default `#1169`
