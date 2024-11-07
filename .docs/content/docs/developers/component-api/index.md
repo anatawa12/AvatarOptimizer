@@ -19,6 +19,12 @@ Here is the list of components that are supported by Component API.
 For components that supports configuring, to keep compatibility with future features that enabled by default,
 you need extra attention for the configuration. See document below for more details.
 
+Configuring component is only supported just after adding component.
+It's unsupported to configure component that is already added to the GameObject.
+This is because some future functionality might be incompatible with the existing component configuration.
+
+In fact, the Remove Mesh in Box invert option added in 1.8.0 changes the meaning of box, therefore it's incompatible with tools intended only for 1.7 and earlier. 
+
 ## Getting Started
 
 To use Component API, you have to reference `com.anatawa12.avatar-optimizer.runtime` assembly in your assembly definition file.
