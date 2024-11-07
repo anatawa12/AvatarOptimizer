@@ -162,6 +162,7 @@ internal class MaterialInformation
             if ((_supportedKind & ShaderInformationKind.TextureAndUVUsage) == 0)
                 throw new InvalidOperationException("RegisterOtherUVUsage is not registered as supported information");
             if (_textureUsageInformations == null) return;
+            if (_material.HasTexture(textureMaterialPropertyName)) return;
             UVChannel uvChannel;
             switch (uvChannels)
             {
