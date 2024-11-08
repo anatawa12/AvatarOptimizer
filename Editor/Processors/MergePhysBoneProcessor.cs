@@ -128,6 +128,27 @@ namespace Anatawa12.AvatarOptimizer.Processors
             // yaw / pitch fix
             if (merge.limitRotationConfig.@override == MergePhysBone.CurveVector3Config.CurveOverride.Fix)
             {
+                if (context != null)
+                {
+                    var animations = new HashSet<ObjectReference>();
+                    foreach (var physBone in sourceComponents)
+                    foreach (var affectedTransform in physBone.GetAffectedTransforms())
+                    {
+                        var component = context.GetAnimationComponent(affectedTransform);
+                        foreach (var property in TransformRotationAndPositionAnimationKeys)
+                        {
+                            var node = component.GetFloatNode(property);
+                            animations.UnionWith(node.ComponentNodes.OfType<AnimatorPropModNode<FloatValueInfo>>()
+                                .SelectMany(x => x.ContextReferences));
+                        }
+                    }
+
+                    if (animations.Count != 0)
+                    {
+                        BuildLog.LogWarning("MergePhysBone:warning:limit-rotation-fix-animation", animations);
+                    }
+                }
+
                 var newIgnores = new List<Transform>();
                 // fix rotations
                 foreach (var physBone in sourceComponents)

@@ -275,6 +275,12 @@ msgstr "Reset When Disabled"
 msgid "MergePhysBone:prop:components"
 msgstr "Components"
 
+msgid "MergePhysBone:warning:limit-rotation-fix-animation"
+msgstr "Limit Rotation mode is Fix but physBone affected transforms are animated."
+
+msgid "MergePhysBone:warning:limit-rotation-fix-animation:description"
+msgstr "This is not supported with Limit Rotation mode Fix for now."
+
 # endregion
 
 # region MergeSkinnedMesh

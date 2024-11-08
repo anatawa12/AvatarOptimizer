@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
+- Added animation validation warning for MergePhysBone limit rotation mode Fix `#1336`
 
 ### Deprecated
 
