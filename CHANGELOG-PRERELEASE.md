@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Broken Optimize Texture `#1338`
 
 ### Security
 
