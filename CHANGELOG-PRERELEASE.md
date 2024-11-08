@@ -10,16 +10,21 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
-- Added animation validation warning for MergePhysBone limit rotation mode Fix `#1336`
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
-- Broken Optimize Texture `#1338`
 
 ### Security
+
+## [1.8.0-rc.6] - 2024-11-08
+### Changed
+- Added animation validation warning for MergePhysBone limit rotation mode Fix [`#1336`](https://github.com/anatawa12/AvatarOptimizer/pull/1336)
+
+### Fixed
+- Broken Optimize Texture [`#1338`](https://github.com/anatawa12/AvatarOptimizer/pull/1338)
 
 ## [1.8.0-rc.5] - 2024-11-07
 ### Added
@@ -1752,7 +1757,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-rc.5...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-rc.6...HEAD
+[1.8.0-rc.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-rc.5...v1.8.0-rc.6
 [1.8.0-rc.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-rc.4...v1.8.0-rc.5
 [1.8.0-rc.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-rc.3...v1.8.0-rc.4
 [1.8.0-rc.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-rc.2...v1.8.0-rc.3
