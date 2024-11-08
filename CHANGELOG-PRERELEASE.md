@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog].
   - If you have multile material slots with same material, it will be merged automatically.
 
 ### Changed
+- Added animation validation warning for MergePhysBone limit rotation mode Fix `#1336`
 
 ### Deprecated
 
