@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Error with nested merge skinned mesh `#1340`
 
 ### Security
 
