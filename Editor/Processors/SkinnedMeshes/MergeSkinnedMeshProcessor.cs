@@ -367,8 +367,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
                         foreach (var buffer in buffers)
                         {
-                            buffer.Shapes[newName] = buffer.Shapes[name];
-                            buffer.Shapes.Remove(name);
+                            if (buffer.Shapes.Remove(name, out var shape))
+                                buffer.Shapes[newName] = shape;
                         }
 
                         mappings.Add(($"blendShape.{name}", $"blendShape.{newName}"));
