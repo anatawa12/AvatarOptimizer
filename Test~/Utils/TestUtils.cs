@@ -11,6 +11,8 @@ namespace Anatawa12.AvatarOptimizer.Test
 {
     public static class TestUtils
     {
+        class DummyAvatarTagComponent : AvatarTagComponent {}
+
         public static GameObject NewAvatar(string name = null)
         {
             var root = new GameObject();
@@ -20,6 +22,8 @@ namespace Anatawa12.AvatarOptimizer.Test
 #if AAO_VRCSDK3_AVATARS
             var descriptor = root.AddComponent<VRC.SDK3.Avatars.Components.VRCAvatarDescriptor>();
 #endif
+            // for any AvatarTagComponent checks on the avatar
+            root.AddComponent<DummyAvatarTagComponent>();
             return root;
         }
 
@@ -125,6 +129,13 @@ namespace Anatawa12.AvatarOptimizer.Test
             mesh.subMeshCount = 1;
             mesh.SetSubMesh(0, new SubMeshDescriptor(0, 12 * 3));
             return mesh;
+        }
+        
+        public static Vector3[] NewCubeBlendShapeFrame(params (int index, Vector3 delta)[] deltas)
+        {
+            var frame = new Vector3[8];
+            foreach (var (index, delta) in deltas) frame[index] = delta;
+            return frame;
         }
 
         public static SkinnedMeshRenderer NewSkinnedMeshRenderer(Mesh mesh)

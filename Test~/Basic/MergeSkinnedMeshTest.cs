@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Anatawa12.AvatarOptimizer.AnimatorParsersV2;
 using Anatawa12.AvatarOptimizer.ndmf;
 using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
@@ -242,5 +243,56 @@ public class MergeSkinnedMeshTest
 
             new MergeSkinnedMeshProcessor(merged).Process(context, context.GetMeshInfoFor(mergedRenderer));
         });
+    }
+
+    [Test]
+    public void NestedMergeSkinnedMeshWithPartialBlendShapes()
+    {
+        var mesh1 = TestUtils.NewCubeMesh();
+        mesh1.AddBlendShapeFrame("mesh1", 100, TestUtils.NewCubeBlendShapeFrame((0, Vector3.up)), null, null);
+        var mesh2 = TestUtils.NewCubeMesh();
+        mesh2.AddBlendShapeFrame("mesh2", 100, TestUtils.NewCubeBlendShapeFrame((0, Vector3.right)), null, null);
+        var mesh3 = TestUtils.NewCubeMesh();
+        mesh3.AddBlendShapeFrame("mesh3", 100, TestUtils.NewCubeBlendShapeFrame((0, Vector3.forward)), null, null);
+
+        var avatar = TestUtils.NewAvatar();
+        var renderer1GameObject = Utils.NewGameObject("Renderer1", avatar.transform);
+        var renderer1 = renderer1GameObject.AddComponent<SkinnedMeshRenderer>();
+        renderer1.sharedMesh = mesh1;
+        var renderer2GameObject = Utils.NewGameObject("Renderer2", avatar.transform);
+        var renderer2 = renderer2GameObject.AddComponent<SkinnedMeshRenderer>();
+        renderer2.sharedMesh = mesh2;
+        var renderer3GameObject = Utils.NewGameObject("Renderer3", avatar.transform);
+        var renderer3 = renderer3GameObject.AddComponent<SkinnedMeshRenderer>();
+        renderer3.sharedMesh = mesh3;
+        var mergedIntermediateGameObject = Utils.NewGameObject("MergedIntermediate", avatar.transform);
+        var mergedIntermediateRenderer = mergedIntermediateGameObject.AddComponent<SkinnedMeshRenderer>();
+        var mergedFinalGameObject = Utils.NewGameObject("MergedFinal", avatar.transform);
+        var mergedFinalRenderer = mergedFinalGameObject.AddComponent<SkinnedMeshRenderer>();
+
+        var context = new BuildContext(avatar, null);
+        context.ActivateExtensionContext<Processors.MeshInfo2Context>();
+        context.ActivateExtensionContext<ObjectMappingContext>();
+        context.ActivateExtensionContext<DestroyTracker.ExtensionContext>();
+
+        var meshInfo1 = context.GetMeshInfoFor(renderer1);
+        var meshInfo2 = context.GetMeshInfoFor(renderer2);
+        var meshInfo3 = context.GetMeshInfoFor(renderer3);
+        var meshInfoIntermediate = context.GetMeshInfoFor(mergedIntermediateRenderer);
+        var meshInfoFinal = context.GetMeshInfoFor(mergedFinalRenderer);
+
+        MergeSkinnedMeshProcessor.DoMerge(context,
+            meshInfoIntermediate,
+            new[] { meshInfo1, meshInfo2 },
+            new[] { new[] { 0 }, new[] { 0 } },
+            new List<(MeshTopology, Material)>() { (MeshTopology.Triangles, null) }
+        );
+
+        MergeSkinnedMeshProcessor.DoMerge(context,
+            meshInfoFinal,
+            new[] { meshInfoIntermediate, meshInfo3 },
+            new[] { new[] { 0 }, new[] { 0 } },
+            new List<(MeshTopology, Material)>() { (MeshTopology.Triangles, null) }
+        );
     }
 }
