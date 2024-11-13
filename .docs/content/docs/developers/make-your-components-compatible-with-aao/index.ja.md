@@ -9,7 +9,7 @@ title: コンポーネントにAvatar Optimizerとの互換性をもたせる
 - コンポーネントはどのような場合にAvatar Optimizerと非互換になるか
 - どのように互換性を改善するか
 
-もし質問があれば、お気軽に[fediverseで`@anatawa12@misskey.niri.la`][fediverse]や[NDMF Discord]でご連絡ください。
+もし質問があれば、お気軽に[Fediverse (Misskey / Mastodon)][fediverse]や[NDMF Discord]でご連絡ください。
 
 ## コンポーネントはどのような場合にAvatar Optimizerと非互換になるか {#when-incompatible}
 

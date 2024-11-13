@@ -9,7 +9,7 @@ This page describes the following two things.
 - When can components be incompatible with Avatar Optimizer?
 - How to improve the compatibility?
 
-If you have some question, please feel free to ask [`@anatawa12@misskey.niri.la` on fediverse][fediverse] or on [NDMF Discord].
+If you have some question, please feel free to ask on [Fediverse (Misskey / Mastodon)][fediverse] or [NDMF Discord].
 
 ## When can components be incompatible with Avatar Optimizer? {#when-incompatible}
 
