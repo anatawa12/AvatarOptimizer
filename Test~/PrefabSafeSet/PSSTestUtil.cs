@@ -18,7 +18,7 @@ namespace Anatawa12.AvatarOptimizer.Test.PrefabSafeSet
             component.stringSet.mainSet = new[]
                 { "mainSet", "addedTwiceInVariant", "removedInVariant", "addedTwiceInInstance", "removedInInstance" };
             newObject = PrefabUtility.SaveAsPrefabAsset(newObject, $"Assets/test-{Guid.NewGuid()}.prefab");
-            Assert.True(newObject);
+            newObject.GetComponent<PrefabSafeSetComponent>().stringSet.IsNew = false;
             return newObject;
         }
 
@@ -31,6 +31,7 @@ namespace Anatawa12.AvatarOptimizer.Test.PrefabSafeSet
                 new[] { "addedTwiceInVariant", "addedInVariant", "addedInVariantRemovedInInstance" };
             component.stringSet.prefabLayers[0].removes = new[] { "removedInVariant", "fakeRemovedInVariant" };
             newObject = PrefabUtility.SaveAsPrefabAsset(newObject, $"Assets/test-{Guid.NewGuid()}.prefab");
+            newObject.GetComponent<PrefabSafeSetComponent>().stringSet.IsNew = false;
             Assert.True(newObject);
             return newObject;
         }
@@ -43,6 +44,7 @@ namespace Anatawa12.AvatarOptimizer.Test.PrefabSafeSet
             component.stringSet.prefabLayers[1].additions = new[] { "addedTwiceInInstance", "addedInInstance" };
             component.stringSet.prefabLayers[1].removes = new[]
                 { "removedInInstance", "addedInVariantRemovedInInstance", "fakeRemovedInInstance" };
+            component.stringSet.IsNew = false;
             return newObject;
         }
 
