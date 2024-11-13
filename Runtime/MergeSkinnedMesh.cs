@@ -13,7 +13,7 @@ namespace Anatawa12.AvatarOptimizer
     [DisallowMultipleComponent]
     [HelpURL("https://vpm.anatawa12.com/avatar-optimizer/ja/docs/reference/merge-skinned-mesh/")]
     [PublicAPI]
-    public sealed class MergeSkinnedMesh : EditSkinnedMeshComponent, ISourceSkinnedMeshComponent
+    public sealed class MergeSkinnedMesh : EditSkinnedMeshComponent, ISourceSkinnedMeshComponent, ISerializationCallbackReceiver
     {
         [AAOLocalized("MergeSkinnedMesh:prop:renderers")]
         [SerializeField]
@@ -83,11 +83,18 @@ namespace Anatawa12.AvatarOptimizer
             doNotMergeMaterials = new PrefabSafeSet.PrefabSafeSet<Material>(this);
         }
 
-        private void OnValidate()
+        private void ValidatePSUC()
         {
             PrefabSafeSet.PrefabSafeSet.OnValidate(this, x => x.renderersSet);
             PrefabSafeSet.PrefabSafeSet.OnValidate(this, x => x.staticRenderersSet);
             PrefabSafeSet.PrefabSafeSet.OnValidate(this, x => x.doNotMergeMaterials);
+        }
+
+        private void OnValidate() => ValidatePSUC();
+        void ISerializationCallbackReceiver.OnBeforeSerialize() => ValidatePSUC();
+
+        void ISerializationCallbackReceiver.OnAfterDeserialize()
+        {
         }
 
         /// <summary>
