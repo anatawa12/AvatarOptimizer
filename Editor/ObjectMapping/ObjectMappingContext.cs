@@ -215,8 +215,17 @@ namespace Anatawa12.AvatarOptimizer
             foreach (var layer in layers)
             {
                 FixAvatarMask(layer.avatarMask);
-                foreach (var animatorState in ACUtils.AllStates(layer.stateMachine))
-                    animatorState.motion = MapMotion(animatorState.motion);
+                if (layer.syncedLayerIndex != -1)
+                {
+                    foreach (var animatorState in ACUtils.AllStates(layers[layer.syncedLayerIndex].stateMachine))
+                        if (layer.GetOverrideMotion(animatorState) is {} motion)
+                            layer.SetOverrideMotion(animatorState, motion);
+                }
+                else
+                {
+                    foreach (var animatorState in ACUtils.AllStates(layer.stateMachine))
+                        animatorState.motion = MapMotion(animatorState.motion);
+                }
             }
             controller.layers = layers;
             foreach (var stateMachineBehaviour in ACUtils.StateMachineBehaviours(controller))
