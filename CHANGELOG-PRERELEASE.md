@@ -10,6 +10,9 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
+- Make error for MergeBone with MergePB rotation mode fix `#1345`
+  - This was not working as expected in previous version so I made this error.
+  - We may add support or change behavior in the future release
 
 ### Deprecated
 
