@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - Error with nested merge skinned mesh `#1340`
+- Unpacking prefab might look like some data lost in PrefabSafeUniqueCollection `#1342`
 
 ### Security
 
