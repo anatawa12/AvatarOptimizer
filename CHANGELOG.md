@@ -55,7 +55,7 @@ The format is based on [Keep a Changelog].
   - AAO 1.8.0 introduced BlendShape support for Merge Skinned Mesh, but new default mode "Rename to avoid conflicts" would increase number of BlendShape.
   - This feature is added to relax this problem by automatically merging multiple BlendShapes of one Mesh.
   - With this feature, you can use rename mode without performance loss.
-- Fix mode for PhysBone Limits in Merge PhysBone `#665` `#1336`
+- Fix mode for PhysBone Limits in Merge PhysBone `#665` `#1336` `#1345`
   - In addition to existing `Copy` and `Override`, we added `Fix` mode.
   - This mode will try to correct roll axis by rotating bone.
   - This feature allows you to configure the mode for PhysBone Limits in Merge PhysBone.
