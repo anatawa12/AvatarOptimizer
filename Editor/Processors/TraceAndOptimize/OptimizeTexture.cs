@@ -155,9 +155,9 @@ internal struct OptimizeTextureImpl {
     {
         public Dictionary<MaterialNode, List<TextureUsageInformation>> Users { get; } = new();
 
-        public Texture2D Texture { get; }
+        public Texture Texture { get; }
 
-        public TextureNode(Texture2D texture) => Texture = texture;
+        public TextureNode(Texture texture) => Texture = texture;
 
         public void UseTexture(MaterialNode material, TextureUsageInformation? usage)
         {
@@ -184,9 +184,9 @@ internal struct OptimizeTextureImpl {
             return node;
         }
 
-        var texturs = new Dictionary<Texture2D, TextureNode>();
+        var texturs = new Dictionary<Texture, TextureNode>();
 
-        TextureNode? GetTextureNode(Texture2D? texture)
+        TextureNode? GetTextureNode(Texture? texture)
         {
             if (texture == null) return null;
             if (!texturs.TryGetValue(texture, out var node))
@@ -224,7 +224,9 @@ internal struct OptimizeTextureImpl {
         {
             var materialInformation = context.GetMaterialInformation(material);
 
-            IEnumerable<(Texture2D?, TextureUsageInformation?)> textures;
+            // We use Texture? to not have trouble with RenderTexture
+            // We check if texture is Texture2D or not in later phase
+            IEnumerable<(Texture?, TextureUsageInformation?)> textures;
 
             // collect texture usage information
             if (materialInformation?.TextureUsageInformationList is { } informations)
@@ -232,14 +234,13 @@ internal struct OptimizeTextureImpl {
                 materialNode.TextureUsageInformations = informations.ToList();
                 materialNode.UserRenderersOnAvatar = materialInformation.UserRenderers.Where(x => x != null).ToList();
 
-                textures = informations.Select(x =>
-                    ((Texture2D?)material.GetTexture(x.MaterialPropertyName), (TextureUsageInformation?)x));
+                textures = informations.Select((Texture?, TextureUsageInformation?) (x) => (material.GetTexture(x.MaterialPropertyName), x));
             }
             else
             {
                 // failed to retrive texture information, just link texture node
-                textures = material.GetTexturePropertyNames().Select(x => material.GetTexture(x)).OfType<Texture2D?>()
-                    .Select(t => (t, (TextureUsageInformation?)null));
+                textures = material.GetTexturePropertyNames().Select(x => material.GetTexture(x))
+                    .Select((Texture?, TextureUsageInformation?) (t) => (t, null));
             }
 
             // merge texture nodes
@@ -374,7 +375,8 @@ internal struct OptimizeTextureImpl {
             var usageInformations = textureNodes.SelectMany(x => x.Users).SelectMany(x => x.Value);
             var wrapModeU = usageInformations.Select(x => x.WrapModeU).Aggregate((a, b) => a == b ? a : null);
             var wrapModeV = usageInformations.Select(x => x.WrapModeV).Aggregate((a, b) => a == b ? a : null);
-            var textures = textureNodes.Select(x => x.Texture).ToList();
+            if (textureNodes.Any(x => x.Texture is not Texture2D)) continue;
+            var textures = textureNodes.Select(x => (Texture2D)x.Texture).ToList();
             var atlasResult = MayAtlasTexture(textures, uvids.backedSet, wrapModeU, wrapModeV);
 
             if (atlasResult.IsEmpty()) continue;
@@ -382,7 +384,7 @@ internal struct OptimizeTextureImpl {
             atlasResults.Add((uvids, atlasResult));
             foreach (var textureNode in textureNodes)
             {
-                var newTexture = atlasResult.TextureMapping[textureNode.Texture];
+                var newTexture = atlasResult.TextureMapping[(Texture2D)textureNode.Texture];
 
                 foreach (var (material, usages) in textureNode.Users)
                 foreach (var usage in usages)
