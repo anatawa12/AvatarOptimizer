@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog].
 - Error with nested merge skinned mesh `#1340`
 - Broken synced Layer support `#1341`
 - Unpacking prefab might look like some data lost in PrefabSafeUniqueCollection `#1342`
+- InvalidCastException with RenderTexture `#1334`
 
 ### Security
 
