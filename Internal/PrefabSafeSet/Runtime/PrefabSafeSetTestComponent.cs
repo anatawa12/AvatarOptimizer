@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 {
-    public class PrefabSafeSetTestComponent : MonoBehaviour
+    public class PrefabSafeSetTestComponent : MonoBehaviour, ISerializationCallbackReceiver
     {
         [SerializeField] internal PrefabSafeSet<Material> materials;
 
@@ -11,9 +11,16 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             materials = new PrefabSafeSet<Material>(this);
         }
 
-        private void OnValidate()
+        private void ValidatePSUC()
         {
             PrefabSafeSet.OnValidate(this, x => x.materials);
+        }
+
+        private void OnValidate() => ValidatePSUC();
+        void ISerializationCallbackReceiver.OnBeforeSerialize() => ValidatePSUC();
+
+        void ISerializationCallbackReceiver.OnAfterDeserialize()
+        {
         }
     }
 }
