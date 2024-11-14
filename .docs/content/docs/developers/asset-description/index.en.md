@@ -29,7 +29,7 @@ for in-place modification tools that do not process on build,
 it's a little bit complicated to remove components by `IVRCSDKPreprocessAvatarCallback` instead of Avatar Optimizer.
 Therefore, Asset Description was added in v1.7.0 as a simple mechanism to specify components that should be ignored by Avatar Optimizer at build time.
 
-For non-destructive tools, we still recommend you to continue to remove components in `IVRCSDKPreprocessAvatarCallback` to prevent Avatar Optimizer from accidentally removing components when the execution order is incorrect.
+For non-destructive tools, we still recommend you to continue to remove components in `IVRCSDKPreprocessAvatarCallback` or your NDMF Pass to prevent Avatar Optimizer from accidentally removing components when the execution order is incorrect.
 
 [make-component-compatible]: ../make-your-components-compatible-with-aao
 
