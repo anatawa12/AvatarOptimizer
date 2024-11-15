@@ -7,7 +7,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal;
 // Unity builtin "Standard" shader
 // https://github.com/TwoTailsGames/Unity-Built-in-Shaders/blob/master/DefaultResourcesExtra/Standard.shader
 [InitializeOnLoad]
-public class StandardShaderInformation : ShaderInformation
+class StandardShaderInformation : ShaderInformation
 {
     static StandardShaderInformation()
     {

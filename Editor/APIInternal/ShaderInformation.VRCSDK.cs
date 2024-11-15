@@ -7,7 +7,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal;
 // VRChat SDK Mobile Shaders
 
 [InitializeOnLoad]
-public class VRCSDKStandardLiteShaderInformation : ShaderInformation
+class VRCSDKStandardLiteShaderInformation : ShaderInformation
 {
     static VRCSDKStandardLiteShaderInformation()
     {
@@ -51,7 +51,7 @@ public class VRCSDKStandardLiteShaderInformation : ShaderInformation
 }
 
 [InitializeOnLoad]
-public class VRCSDKToonLitShaderInformation : ShaderInformation
+class VRCSDKToonLitShaderInformation : ShaderInformation
 {
     static VRCSDKToonLitShaderInformation()
     {
