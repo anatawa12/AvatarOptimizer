@@ -234,6 +234,14 @@ namespace Anatawa12.AvatarOptimizer.API
         public abstract Vector4? GetVector(string propertyName, bool considerAnimation = true);
 
         /// <summary>
+        /// Returns if the local Shader Keyword is enabled or not.
+        /// </summary>
+        /// <param name="keywordName">The name of local shader keyword</param>
+        /// <returns>true if the local shader keyword is enabled, false if disabled, null if unknown or mixed.</returns>
+        [PublicAPI]
+        public abstract bool? IsShaderKeywordEnabled(string keywordName);
+
+        /// <summary>
         /// Registers UV Usage that are not considered by Avatar Optimizer.
         ///
         /// This will the UV Channel not affected by optimizations of Avatar Optimizer.

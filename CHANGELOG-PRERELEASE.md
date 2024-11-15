@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Optimize Texture support for Unity Standard, VRChat SDK Standard Lite, VRChat SDK Toon Lit Shaders `#1346`
+  - If you want more shader support, please comment to [`#1183`](https://github.com/anatawa12/AvatarOptimizer/issues/1183) with shader name and link!
 
 ### Changed
 - Make error for MergeBone with MergePB rotation mode fix `#1345`
