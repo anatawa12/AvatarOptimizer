@@ -32,6 +32,9 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
             // - OnValidate will be called for prefab instance when the base prefab is changed
             var PrefabSafeUniqueCollection = getPrefabSafeUniqueCollection(component);
 
+            // The prefab from prefab stage is going to be saved. I don't update on this phase.
+            if (component == null) return;
+
             // detect creating new prefab
             var newCorrespondingObject = PrefabUtility.GetCorrespondingObjectFromSource(component);
             if (newCorrespondingObject != null &&
