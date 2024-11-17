@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- NRE when saving Prefab with PrefabSafeUniqueCollection `#1348`
 
 ### Security
 
