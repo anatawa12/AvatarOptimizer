@@ -16,9 +16,12 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- NRE when saving Prefab with PrefabSafeUniqueCollection `#1348`
 
 ### Security
+
+## [1.8.0-rc.8] - 2024-11-17
+### Fixed
+- NRE when saving Prefab with PrefabSafeUniqueCollection [`#1348`](https://github.com/anatawa12/AvatarOptimizer/pull/1348)
 
 ## [1.8.0-rc.7] - 2024-11-15
 ### Added
@@ -1774,7 +1777,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-rc.7...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-rc.8...HEAD
+[1.8.0-rc.8]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-rc.7...v1.8.0-rc.8
 [1.8.0-rc.7]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-rc.6...v1.8.0-rc.7
 [1.8.0-rc.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-rc.5...v1.8.0-rc.6
 [1.8.0-rc.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-rc.4...v1.8.0-rc.5
