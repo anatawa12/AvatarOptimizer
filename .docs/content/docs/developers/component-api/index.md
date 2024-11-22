@@ -23,8 +23,6 @@ Configuring component is only supported just after adding component.
 It's unsupported to configure component that is already added to the GameObject.
 This is because some future functionality might be incompatible with the existing component configuration.
 
-In fact, the Remove Mesh in Box invert option added in 1.8.0 changes the meaning of box, therefore it's incompatible with tools intended only for 1.7 and earlier. 
-
 ## Getting Started
 
 To use Component API, you have to reference `com.anatawa12.avatar-optimizer.runtime` assembly in your assembly definition file.
@@ -36,5 +34,20 @@ Second, If you want to configure components, you have to call `void Initialize(i
 The default setting of Avatar Optimizer can be changed in the future (as described in [Behavior Stability](../../basic-concept/#behavior-stability)).\
 The default setting of Components will be affected to the components added with `GameObject.AddComponent<T>()` method.
 Therefore, to keep behavior compability with future versions, you have to call `Initialize` method with the version of default configuration you want to use.
-The default configuration version should be described in the document of the `Initialize` method.\
-Without calling `Initialize` method, component will behave unexpectedly or you may get error in the future.
+The default configuration version should be described in the document of the `Initialize` method.
+
+{{< hint warning >}}
+
+Without calling `Initialize` method, component will behave unexpectedly, or you may get error with future versions.
+
+{{< /hint >}}
+
+{{< hint info >}}
+
+Configuring component is only supported just after adding component.
+It's unsupported to configure component that is already added to the GameObject.
+This is because some future functionality might be incompatible with the existing component configuration.
+
+In fact, the Remove Mesh in Box invert option added in 1.8.0 changes the meaning of box, therefore it's incompatible with tools intended only for 1.7 and earlier.
+
+{{< /hint >}}
