@@ -15,7 +15,7 @@ namespace Anatawa12.AvatarOptimizer
     [HelpURL("https://vpm.anatawa12.com/avatar-optimizer/ja/docs/reference/merge-physbone/")]
     // INetworkID is implemented to make it possible to assign networkID to this components GameObject
     // Note: when MergePhysBone become a public API, we should consider removing INetworkID implementation
-    internal class MergePhysBone : AvatarTagComponent, VRC.SDKBase.INetworkID
+    internal class MergePhysBone : AvatarTagComponent, VRC.SDKBase.INetworkID, ISerializationCallbackReceiver
     {
         [NotKeyable]
         [AAOLocalized("MergePhysBone:prop:makeParent", "MergePhysBone:tooltip:makeParent")]
@@ -254,9 +254,16 @@ namespace Anatawa12.AvatarOptimizer
             componentsSet = new PrefabSafeSet.PrefabSafeSet<VRCPhysBoneBase>(this);
         }
 
-        private void OnValidate()
+        private void ValidatePSUC()
         {
             PrefabSafeSet.PrefabSafeSet.OnValidate(this, x => x.componentsSet);
+        }
+
+        private void OnValidate() => ValidatePSUC();
+        void ISerializationCallbackReceiver.OnBeforeSerialize() => ValidatePSUC();
+
+        void ISerializationCallbackReceiver.OnAfterDeserialize()
+        {
         }
     }
 

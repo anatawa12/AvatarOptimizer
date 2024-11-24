@@ -8,8 +8,6 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Automatically Merge Material Slot `#1334`
-  - If you have multile material slots with same material, it will be merged automatically.
 
 ### Changed
 
@@ -20,6 +18,41 @@ The format is based on [Keep a Changelog].
 ### Fixed
 
 ### Security
+
+## [1.8.0-rc.8] - 2024-11-17
+### Fixed
+- NRE when saving Prefab with PrefabSafeUniqueCollection [`#1348`](https://github.com/anatawa12/AvatarOptimizer/pull/1348)
+
+## [1.8.0-rc.7] - 2024-11-15
+### Added
+- Optimize Texture support for Unity Standard, VRChat SDK Standard Lite, VRChat SDK Toon Lit Shaders [`#1346`](https://github.com/anatawa12/AvatarOptimizer/pull/1346)
+  - If you want more shader support, please comment to [`#1183`](https://github.com/anatawa12/AvatarOptimizer/issues/1183) with shader name and link!
+
+### Changed
+- Make error for MergeBone with MergePB rotation mode fix [`#1345`](https://github.com/anatawa12/AvatarOptimizer/pull/1345)
+  - This was not working as expected in previous version so I made this error.
+  - We may add support or change behavior in the future release
+
+### Fixed
+- Error with nested merge skinned mesh [`#1340`](https://github.com/anatawa12/AvatarOptimizer/pull/1340)
+- Broken synced Layer support [`#1341`](https://github.com/anatawa12/AvatarOptimizer/pull/1341)
+- Unpacking prefab might look like some data lost in PrefabSafeUniqueCollection [`#1342`](https://github.com/anatawa12/AvatarOptimizer/pull/1342)
+- InvalidCastException with RenderTexture [`#1334`](https://github.com/anatawa12/AvatarOptimizer/pull/1334)
+
+## [1.8.0-rc.6] - 2024-11-08
+### Changed
+- Added animation validation warning for MergePhysBone limit rotation mode Fix [`#1336`](https://github.com/anatawa12/AvatarOptimizer/pull/1336)
+
+### Fixed
+- Broken Optimize Texture [`#1338`](https://github.com/anatawa12/AvatarOptimizer/pull/1338)
+
+## [1.8.0-rc.5] - 2024-11-07
+### Added
+- Automatically Merge Material Slot [`#1334`](https://github.com/anatawa12/AvatarOptimizer/pull/1334)
+  - If you have multile material slots with same material, it will be merged automatically.
+
+### Changed
+- Improved performance in RemoveUnusedMaterialProperties [`#1326`](https://github.com/anatawa12/AvatarOptimizer/pull/1326)
 
 ## [1.8.0-rc.4] - 2024-11-06
 ### Fixed
@@ -1744,7 +1777,11 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-rc.4...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-rc.8...HEAD
+[1.8.0-rc.8]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-rc.7...v1.8.0-rc.8
+[1.8.0-rc.7]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-rc.6...v1.8.0-rc.7
+[1.8.0-rc.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-rc.5...v1.8.0-rc.6
+[1.8.0-rc.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-rc.4...v1.8.0-rc.5
 [1.8.0-rc.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-rc.3...v1.8.0-rc.4
 [1.8.0-rc.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-rc.2...v1.8.0-rc.3
 [1.8.0-rc.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-rc.1...v1.8.0-rc.2

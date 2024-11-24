@@ -14,7 +14,7 @@ The format is based on [Keep a Changelog].
     - We may relax some restriction in the future.
   - Because we have to check for each condition if we use AnyState but we can check for only one (in best case) with entry/exit, this generally reduces cost for checking an parameter in a state.
   - Combined with Entry / Exit to 1D BlendTree optimization, which is implemented in previous release, your AnyState layer may be optimized to 1D BlendTree.
-- Optimize Texture in Trace nad Optimize `#1181` `#1184` `#1193` `#1215` `#1225` `#1235` `#1268` `#1278` `#1313` `#1328`
+- Optimize Texture in Trace nad Optimize `#1181` `#1184` `#1193` `#1215` `#1225` `#1235` `#1268` `#1278` `#1313` `#1328` `#1338` `#1334` `#1346`
   - Avatar Optimizer will pack texture and tries to reduce the VRAM usage.
   - Currently liltoon is only supported.
 - `Copy Enablement Animation` to Merge Skinned Mesh `#1173`
@@ -55,7 +55,7 @@ The format is based on [Keep a Changelog].
   - AAO 1.8.0 introduced BlendShape support for Merge Skinned Mesh, but new default mode "Rename to avoid conflicts" would increase number of BlendShape.
   - This feature is added to relax this problem by automatically merging multiple BlendShapes of one Mesh.
   - With this feature, you can use rename mode without performance loss.
-- Fix mode for PhysBone Limits in Merge PhysBone `#665`
+- Fix mode for PhysBone Limits in Merge PhysBone `#665` `#1336` `#1345`
   - In addition to existing `Copy` and `Override`, we added `Fix` mode.
   - This mode will try to correct roll axis by rotating bone.
   - This feature allows you to configure the mode for PhysBone Limits in Merge PhysBone.
@@ -82,7 +82,7 @@ The format is based on [Keep a Changelog].
 - Reimplement Preview system with NDMF Preview System `#1131` `#1195` `#1218` `#1270`
   - This will prevent issues relates to Animation Mode bug.
   - This allows you to preview Remove Mesh components without selecting Mesh OR while in Animation Mode.
-- Improved Prefab Safe Set, which are used in MergePhysBone, MergeSkinnedMesh, FreezeBlendShape and more components `#1212` `#1219` `#1221` `#1236` `#1287` `#1294`
+- Improved Prefab Safe Set, which are used in MergePhysBone, MergeSkinnedMesh, FreezeBlendShape and more components `#1212` `#1219` `#1221` `#1236` `#1287` `#1294` `#1348`
   - This should improve compatibility with replacing base prefab, which is added in Unity 2022.
 - Allow multiple component for Remove Mesh components with API `#1216` `#1218`
   - This allows non-destructive tools to add Remove Mesh components even if Remove Mesh component are added before.
@@ -91,7 +91,7 @@ The format is based on [Keep a Changelog].
 - Renamed debug options internally `#1228`
   - This will lose previously configured debug options.
   - However, debug options are not considered as Public API as stated in documents so this is not backward incompatible changes in semver 2.0.0 section 8.
-- Performance Improvements `#1234` `#1243` `#1240` `#1288` `#1304` `#1307` `#1314` `#1325` `#1327`
+- Performance Improvements `#1234` `#1243` `#1240` `#1288` `#1304` `#1307` `#1314` `#1325` `#1327` `#1326` `#1341`
 - Transform gizmo are now hidden while you're editing box of Remove Mesh in Box `#1259`
   - This prevents mistakenly moving the Skinned Mesh Renderer while editing the box.
 - Make MergePhysBone implement `INetworkID` `#1260`

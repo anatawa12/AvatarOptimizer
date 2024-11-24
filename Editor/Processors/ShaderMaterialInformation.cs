@@ -5,6 +5,7 @@ using Anatawa12.AvatarOptimizer.API;
 using Anatawa12.AvatarOptimizer.ndmf;
 using nadena.dev.ndmf;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace Anatawa12.AvatarOptimizer.Processors;
 
@@ -144,6 +145,8 @@ internal class MaterialInformation
         public override Vector4? GetVector(string propertyName, bool considerAnimation = true) =>
             GetValue(propertyName, _material.SafeGetVector, considerAnimation, VectorSubProperties);
 
+        public override bool? IsShaderKeywordEnabled(string keywordName) => _material.IsKeywordEnabled(keywordName);
+
         public override void RegisterOtherUVUsage(UsingUVChannels uvChannel)
         {
             if ((_supportedKind & ShaderInformationKind.TextureAndUVUsage) == 0)
@@ -162,7 +165,7 @@ internal class MaterialInformation
             if ((_supportedKind & ShaderInformationKind.TextureAndUVUsage) == 0)
                 throw new InvalidOperationException("RegisterOtherUVUsage is not registered as supported information");
             if (_textureUsageInformations == null) return;
-            if (_material.HasTexture(textureMaterialPropertyName)) return;
+            if (!_material.HasTexture(textureMaterialPropertyName)) return;
             UVChannel uvChannel;
             switch (uvChannels)
             {

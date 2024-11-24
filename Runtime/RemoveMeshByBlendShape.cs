@@ -12,7 +12,7 @@ namespace Anatawa12.AvatarOptimizer
     [AllowMultipleComponent]
     [HelpURL("https://vpm.anatawa12.com/avatar-optimizer/ja/docs/reference/remove-mesh-by-blendshape/")]
     [PublicAPI]
-    public sealed class RemoveMeshByBlendShape : EditSkinnedMeshComponent
+    public sealed class RemoveMeshByBlendShape : EditSkinnedMeshComponent, ISerializationCallbackReceiver
     {
         [SerializeField]
         internal PrefabSafeSet.PrefabSafeSet<string> shapeKeysSet;
@@ -27,9 +27,16 @@ namespace Anatawa12.AvatarOptimizer
 
         internal HashSet<string> RemovingShapeKeys => shapeKeysSet.GetAsSet();
 
-        private void OnValidate()
+        private void ValidatePSUC()
         {
             PrefabSafeSet.PrefabSafeSet.OnValidate(this, x => x.shapeKeysSet);
+        }
+
+        private void OnValidate() => ValidatePSUC();
+        void ISerializationCallbackReceiver.OnBeforeSerialize() => ValidatePSUC();
+
+        void ISerializationCallbackReceiver.OnAfterDeserialize()
+        {
         }
 
         APIChecker _checker;

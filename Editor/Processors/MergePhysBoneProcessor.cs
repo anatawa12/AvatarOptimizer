@@ -128,13 +128,39 @@ namespace Anatawa12.AvatarOptimizer.Processors
             // yaw / pitch fix
             if (merge.limitRotationConfig.@override == MergePhysBone.CurveVector3Config.CurveOverride.Fix)
             {
-                var newIgnores = new List<Transform>();
+                if (context != null)
+                {
+                    var animations = new HashSet<ObjectReference>();
+                    foreach (var physBone in sourceComponents)
+                    foreach (var affectedTransform in physBone.GetAffectedTransforms())
+                    {
+                        var component = context.GetAnimationComponent(affectedTransform);
+                        foreach (var property in TransformRotationAndPositionAnimationKeys)
+                        {
+                            var node = component.GetFloatNode(property);
+                            animations.UnionWith(node.ComponentNodes.OfType<AnimatorPropModNode<FloatValueInfo>>()
+                                .SelectMany(x => x.ContextReferences));
+                        }
+                    }
+
+                    if (animations.Count != 0)
+                    {
+                        BuildLog.LogWarning("MergePhysBone:warning:limit-rotation-fix-animation", animations);
+                    }
+                }
+
+                var originalBones = new List<Transform>();
                 // fix rotations
                 foreach (var physBone in sourceComponents)
-                    FixYawPitch(physBone, root, context, newIgnores);
+                    FixYawPitch(physBone, root, context, originalBones);
+
+                if (originalBones.Any(x => x.GetComponent<MergeBone>()))
+                {
+                    BuildLog.LogError("MergePhysBone:error:limit-rotation-fix-merge-bone");
+                }
 
                 // fix configurations
-                merged.ignoreTransforms = merged.ignoreTransforms.Concat(newIgnores).ToList();
+                merged.ignoreTransforms = merged.ignoreTransforms.Concat(originalBones).ToList();
 
                 var sourceComponent = sourceComponents[0];
                 var chainLength = sourceComponent.BoneChainLength();
@@ -215,7 +241,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
             VRCPhysBoneBase physBone,
             Transform root, 
             BuildContext? context,
-            List<Transform> newIgnores)
+            List<Transform> originalBones)
         {
             // Already fixed; nothing to do!
             if (physBone.limitRotation.Equals(Vector3.zero)) return;
@@ -225,7 +251,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
             var ignoreTransforms = new HashSet<Transform>(physBone.ignoreTransforms);
 
-            RotateRecursive(physBone, physBone.GetTarget(), root, maxChainLength, 0, ignoreTransforms, newIgnores);
+            RotateRecursive(physBone, physBone.GetTarget(), root, maxChainLength, 0, ignoreTransforms, originalBones);
         }
 
         /*
@@ -272,7 +298,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
             int totalDepth,
             int depth,
             HashSet<Transform> ignoreTransforms,
-            List<Transform> newIgnores)
+            List<Transform> originalBones)
         {
             Vector3 targetLocation;
 
@@ -344,7 +370,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
             // move old bone to child of newBone
             transform.SetParent(newBone.transform, true);
 
-            newIgnores.Add(transform);
+            originalBones.Add(transform);
 
             //var rotationQuaternion = Quaternion.Euler(0, -thisRotation, 0);
 
@@ -354,7 +380,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 //child.localRotation = rotationQuaternion * child.localRotation;
                 
                 if (ignoreTransforms.Contains(child)) continue;
-                RotateRecursive(physBone, child, newBone.transform, totalDepth, depth + 1, ignoreTransforms, newIgnores);
+                RotateRecursive(physBone, child, newBone.transform, totalDepth, depth + 1, ignoreTransforms, originalBones);
             }
         }
 
