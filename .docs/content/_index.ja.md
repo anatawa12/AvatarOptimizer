@@ -15,20 +15,20 @@ Avatar Optimizerは[GitHub]上で開発され、[MIT License]で公開されて�
 
 ## インストール {#installation}
 
-Avatar Optimizerは[VPM][vpm]レポジトリを使用して公開されているため、任意のvpmクライアントを使用してインストールできます。
+Avatar Optimizerは[VPM][vpm]リポジトリを使用して公開されているため、任意のvpmクライアントを使用してインストールできます。
 
 {{< beta-only color="success" >}}
 {{< hint info >}}
 
-プレリリース版のAvatar Optimizerでは、anatawa12のvpmレポジトリで提供されていないNDMFのプレリリース版が使用されている場合があります。
-その場合、VCCにbd_ prereleasesレポジトリ(<https://vpm.nadena.dev/vpm-prerelease.json>)を追加する必要があります。
+プレリリース版のAvatar Optimizerでは、anatawa12のVPMリポジトリで提供されていないNDMFのプレリリース版が使用されている場合があります。
+その場合、VCCにbd_ prereleasesリポジトリ(<https://vpm.nadena.dev/vpm-prerelease.json>)を追加する必要があります。
 
 {{< /hint >}}
 {{< /beta-only >}}
 
 ### VCC を使用する (推奨) {#installation-vcc}
 
-1. [このリンク][VCC-add-repo-link]をクリックしてanatawa12のレポジトリを追加する。
+1. [このリンク][VCC-add-repo-link]をクリックしてanatawa12のリポジトリを追加する。
 2. VCCでAvatar Optimizerを追加する。
 
 ### UnityPackageを使用する {#installation-vpai}

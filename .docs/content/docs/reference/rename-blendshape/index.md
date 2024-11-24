@@ -14,7 +14,7 @@ This component should be added to a GameObject which has a SkinnedMeshRenderer c
 
 ![component.png](component.png)
 
-You'll see list of BlendShape mapping.
+You'll see the list of BlendShape mapping.
 
 Click upper right '+' button to add new mapping.
 
