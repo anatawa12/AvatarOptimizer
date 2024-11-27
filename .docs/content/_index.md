@@ -31,10 +31,10 @@ You may have to add <https://vpm.nadena.dev/vpm-prerelease.json>, bd_ prerelease
 {{< /hint >}}
 {{< /beta-only >}}
 
-### With VCC/ALCOM (Recommended) {#installation-vcc}
+### With VCC / ALCOM (Recommended) {#installation-vcc}
 
 1. Click [this link][VCC-add-repo-link] to add anatawa12's VPM repository.
-2. Add Avatar Optimizer to your project from VCC/ALCOM.
+2. Add Avatar Optimizer to your project from VCC / ALCOM.
 
 ### Using UnityPackage {#installation-vpai}
 
