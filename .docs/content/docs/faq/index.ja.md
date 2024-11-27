@@ -61,15 +61,11 @@ BlendShapeに対してアニメーションされるメッシュを統合する�
 最近のアバターは、PhysBone / Contact Receiverコンポーネントを使用した独自のギミックを持っていることがあるため、これらのコンポーネントを削除し忘れることがよくあります。
 そのため、`AAO Trace and Optimize`は、そのようなコンポーネントがOSCギミックで使用されていないと仮定して、それらが他の用途で使われていなければ削除します。
 
-もちろん、仮定が正しいとは限らないため、PhysBone / Contact ReceiverコンポーネントをOSCギミックに使用している場合には、それらが使用されていると分かるようにアバターを調整してもらわなければならないかもしれません。\
-`AAO Trace and Optimize`は、アバター内のAnimatorにあるパラメーターと同じパラメーターが使用されているPhysBone / Contact Receiverコンポーネントを削除しないようになっています。
-そのため、OSCギミックで使用されるパラメーターを、Animator Controllerのパラメーター一覧やExpression Parameterに追加することで、これらのコンポーネントが削除されないようになります。
+仮定が正しいとは限らないため、PhysBone / Contact ReceiverコンポーネントをOSCギミックに使用している場合には、[Asset Description]ファイルを作成し、[Parameters Read By External Tools]を設定してください。
 
-また、改善のための議論の材料として、OSCギミックで使われているPhysBoneやContact Receiverが削除された場合には、それらに設定されているパラメータ名を教えていただけると助かります。
-将来的に、有名なOSCギミックによって使用されるパラメーターの一覧を実装して、それらのパラメータが使用されている場合はコンポーネントを保持するような形を取るかもしれませんし、他の方法で対処するかもしれません。\
-以下のissueや[Fediverse (Misskey / Mastodon)][Fediverse]、[Twitter]などでお気軽にお知らせください。
-
-この問題のissue: [#1090](https://github.com/anatawa12/AvatarOptimizer/issues/1090)
+もしそのギミックが公開されていたり売られていたりする場合は、そのギミックと AAO の互換性を改善するために、作成した Asset Description ファイルを共有していただけると助かります。
+Asset Description を将来の Avatar Optimizer に組み込むことで、そのギミックが正しく動作するようになるかもしれません。
+もしよろしければ、[GitHub]、[NDMF Discord]、[Fediverse (Misskey / Mastodon)][Fediverse]、[Twitter]などでお知らせください。
 
 ## ビルド前のハードリミットチェックのせいでアバターをアップロードできない {#i-cannot-upload-the-avatar-because-of-pre-build-hard-limit-check}
 
@@ -115,5 +111,8 @@ Avatar Optimizerの開発を支援したい場合、[GitHub Discussions]での�
 [good first issue]: https://github.com/anatawa12/AvatarOptimizer/labels/good%20first%20issue
 [help wanted]: https://github.com/anatawa12/AvatarOptimizer/labels/help%20wanted
 [NDMF Discord]: https://discord.gg/dV4cVpewmM
+[GitHub]: https://github.com/anatawa12/AvatarOptimizer/
+[Asset Description]: ../developers/asset-description/
+[Parameters Read By External Tools]: ../developers/asset-description/#parameters-read-by-external-tools
 
 [^merged-mesh]: 統合先のメッシュとは、`AAO Merge Skinned Mesh`コンポーネントと一緒に付いているSkinned Mesh Rendererのことです。
