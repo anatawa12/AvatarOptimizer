@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- NRE if some playabke layer is missing from AvatarDesciptor `#1350`
 
 ### Security
 
