@@ -57,6 +57,18 @@ Please check [basic usages of anatawa12's Gist Pack][gists-basic-usage] and [doc
 
 {{< /hint >}}
 
+{{< hint info >}}
+
+### Applying non-destructive tools manually {#how-to-manual-bake}
+
+You can use `NDM Framework/Manual bake avatar` on the context menu of the Avatar GameObject to manually generate the avatar with applied non-destructive tools.
+
+This will clone your avatar and apply non-destructive tools to the cloned avatar, so your original avatar will not be modified.
+
+This can be useful in some cases (e.g. when exporting a VRChat avatar in VRM format).
+
+{{< /hint >}}
+
 Reduce polygons with BlendShapes which shrink parts of the body {#remove-mesh-by-blendshape}
 ---
 
