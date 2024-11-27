@@ -21,12 +21,14 @@ You can use this component to easily remove polygons with alpha mask texture or 
 
 ![component.png](component.png)
 
-You'll see the list of material slots of the mesh.
+You'll see the list of material slots of the mesh.\
 Select the material slots you want to remove polygons with mask texture.
 
 ### Mask Texture
 
-The mask texture to remove polygons.
+The mask texture to remove polygons.\
+If nothing is set, click "Create" button to create a new texture.
+
 Click "Edit" button to open the Mask Texture Editor.
 
 ### Remove Mode
