@@ -15,7 +15,7 @@ Avatar Optimizerは[GitHub]上で開発され、[MIT License]で公開されて�
 
 ## インストール {#installation}
 
-Avatar Optimizerは[VPM][vpm]リポジトリを使用して公開されているため、任意のvpmクライアントを使用してインストールできます。
+Avatar Optimizerは[VPM][vpm]リポジトリを使用して公開されているため、任意のVPMクライアントを使用してインストールできます。
 
 {{< beta-only color="success" >}}
 {{< hint info >}}
@@ -26,17 +26,17 @@ Avatar Optimizerは[VPM][vpm]リポジトリを使用して公開されている
 {{< /hint >}}
 {{< /beta-only >}}
 
-### VCC を使用する (推奨) {#installation-vcc}
+### VCCやALCOM を使用する (推奨) {#installation-vcc}
 
-1. [このリンク][VCC-add-repo-link]をクリックしてanatawa12のリポジトリを追加する。
-2. VCCでAvatar Optimizerを追加する。
+1. [このリンク][VCC-add-repo-link]をクリックして、anatawa12のVPMリポジトリを追加します。
+2. AAO: Avatar Optimizerをプロジェクトに追加！
 
 ### UnityPackageを使用する {#installation-vpai}
 
 unitypackageをインポートするだけでもこのツールをインストールできます。（VCCから追加する方法と全く同じようになります）
 
-1. [ここ][installer unitypackage 1.x.x]からインストーラunitypackageをダウンロードする。
-2. unitypackageをプロジェクトにインポートする。
+1. [ここ][installer unitypackage 1.x.x]からインストーラunitypackageをダウンロードします。
+2. unitypackageをプロジェクトにインポート！
 
 <details>
 <summary>他のバージョン用のインストーラ</summary>
@@ -53,7 +53,7 @@ unitypackageをインポートするだけでもこのツールをインスト�
 
 ### vrc-getを使用する {#installation-vrc-get}
 
-もしコマンドラインに精通しているのであれば、[vrc-get][vrc-get]を使用してインストールできます。
+もしコマンドラインに精通しているのであれば、[vrc-get][vrc-get]を使用してインストールすることもできます。
 
 ```bash
 # add our vpm repository
@@ -65,7 +65,7 @@ vrc-get install com.anatawa12.avatar-optimizer
 
 ### VPMコマンドラインインターフェースを使用する {#installation-vpm-cli}
 
-もしコマンドラインに精通しているのであれば、[VPM/VCC CLI][vcc-cli]を使用してインストールできます。
+もしコマンドラインに精通しているのであれば、[VPM/VCC CLI][vcc-cli]を使用してインストールすることもできます。
 
 ```bash
 # add our vpm repository

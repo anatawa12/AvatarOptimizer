@@ -20,7 +20,7 @@ Avatar Optimizer is a Open Source Software developed on [GitHub] published under
 
 ## Installation {#installation}
 
-Avatar Optimizer is published with [VPM][vpm] repository so you can install this package using any vpm clients.
+Avatar Optimizer is published with [VPM][vpm] repository so you can install this package using any VPM clients.
 
 {{< beta-only color="success" >}}
 {{< hint info >}}
@@ -31,10 +31,10 @@ You may have to add <https://vpm.nadena.dev/vpm-prerelease.json>, bd_ prerelease
 {{< /hint >}}
 {{< /beta-only >}}
 
-### With VCC (Recommended) {#installation-vcc}
+### With VCC/ALCOM (Recommended) {#installation-vcc}
 
-1. Click [this link][VCC-add-repo-link] to add anatawa12's repository.
-2. Add Avatar Optimizer from VCC.
+1. Click [this link][VCC-add-repo-link] to add anatawa12's VPM repository.
+2. Add Avatar Optimizer to your project from VCC/ALCOM.
 
 ### Using UnityPackage {#installation-vpai}
 
