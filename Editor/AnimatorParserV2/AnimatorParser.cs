@@ -216,6 +216,27 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
             // load controllers
             var controllers = new AnimatorLayerMap<RuntimeAnimatorController>();
+
+            // load default layers to not cause error
+            foreach (var layer in stackalloc[]
+                     {
+                         VRCAvatarDescriptor.AnimLayerType.Base,
+                         VRCAvatarDescriptor.AnimLayerType.Additive,
+                         VRCAvatarDescriptor.AnimLayerType.Gesture,
+                         VRCAvatarDescriptor.AnimLayerType.Action,
+                         VRCAvatarDescriptor.AnimLayerType.FX,
+                         VRCAvatarDescriptor.AnimLayerType.Sitting,
+                         VRCAvatarDescriptor.AnimLayerType.TPose,
+                         VRCAvatarDescriptor.AnimLayerType.IKPose,
+                     })
+            {
+                ref var loader = ref DefaultLayers[layer];
+                var controller = loader.Value;
+                if (controller == null)
+                    throw new InvalidOperationException($"default controller for {layer} not found");
+                controllers[layer] = controller;
+            }
+
             foreach (var layer in descriptor.specialAnimationLayers.Concat(descriptor.baseAnimationLayers))
                 controllers[layer.type] = GetPlayableLayerController(layer, useDefaultLayers)!;
 
