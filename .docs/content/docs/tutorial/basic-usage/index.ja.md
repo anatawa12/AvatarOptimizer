@@ -58,7 +58,7 @@ AAO: Avatar Optimizerは非破壊改変ツールであり、Playモードに入�
 
 ### 非破壊改変ツールを手動で適用する方法 {#how-to-manual-bake}
 
-アバターのGameObjectを右クリックして出てくるメニューの`NDM Framework`から`Manual bake avatar`をクリックすると、非破壊ツールによる処理が適用されたアバターを手動で生成することができます。
+アバターのGameObjectを右クリックして出てくるメニューの`NDM Framework`から`Manual bake avatar`をクリックすると、非破壊ツールによる処理を手動で適用することができます。
 
 `Manual bake avatar`は初めにアバターを複製し、その複製に対して非破壊ツールの処理を適用させるため、元のアバターは変更されないままになります。
 

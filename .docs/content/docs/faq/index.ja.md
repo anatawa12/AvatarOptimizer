@@ -61,11 +61,11 @@ BlendShapeに対してアニメーションされるメッシュを統合する�
 最近のアバターは、PhysBone / Contact Receiverコンポーネントを使用した独自のギミックを持っていることがあるため、これらのコンポーネントを削除し忘れることがよくあります。
 そのため、`AAO Trace and Optimize`は、そのようなコンポーネントがOSCギミックで使用されていないと仮定して、それらが他の用途で使われていなければ削除します。
 
-仮定が正しいとは限らないため、PhysBone / Contact ReceiverコンポーネントをOSCギミックに使用している場合には、[Asset Description]ファイルを作成し、[Parameters Read By External Tools]を設定してください。
+この仮定は正しいとは限らないため、PhysBone / Contact Receiverコンポーネントが(AnimatorやExpression Menuを使用せずに)OSCギミックで使用されている場合には、[Asset Description]ファイルを作成し、[Parameters Read By External Tools]を設定してください。
 
-もしそのギミックが公開されていたり売られていたりする場合は、そのギミックと AAO の互換性を改善するために、作成した Asset Description ファイルを共有していただけると助かります。
+そのギミックが公開・販売されているような場合には、そのギミックとAAOの互換性を改善するために、作成した Asset Descriptionファイルを共有していただけると助かります。
 Asset Description を将来の Avatar Optimizer に組み込むことで、そのギミックが正しく動作するようになるかもしれません。
-もしよろしければ、[GitHub]、[NDMF Discord]、[Fediverse (Misskey / Mastodon)][Fediverse]、[Twitter]などでお知らせください。
+共有していただける場合は、[GitHub]、[NDMF Discord]、[Fediverse (Misskey / Mastodon)][Fediverse]、[Twitter]などからご連絡ください。
 
 ## ビルド前のハードリミットチェックのせいでアバターをアップロードできない {#i-cannot-upload-the-avatar-because-of-pre-build-hard-limit-check}
 

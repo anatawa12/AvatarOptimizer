@@ -61,7 +61,7 @@ Please check [basic usages of anatawa12's Gist Pack][gists-basic-usage] and [doc
 
 ### Applying non-destructive tools manually {#how-to-manual-bake}
 
-You can use `NDM Framework/Manual bake avatar` on the context menu of the Avatar GameObject to manually generate the avatar with applied non-destructive tools.
+You can use `NDM Framework/Manual bake avatar` on the context menu of the Avatar GameObject to apply non-destructive tools manually.
 
 This will clone your avatar and apply non-destructive tools to the cloned avatar, so your original avatar will not be modified.
 
