@@ -67,7 +67,7 @@ This assumption is not always the case, so if you are using PhysBone / Contact R
 please create [Asset Description] and please configure [Parameters Read By External Tools] for your OSC-based gimmick.
 
 If the gimmick is published or selling, I would like to bundle your Asset Description with AAO to improve compatibility with the gimmick.
-If you like, please contact us on [GitHub], [NDMF Discord], [Fediverse (Misskey / Mastodon)][Fediverse], or [Twitter].
+If you would like to, please contact us on [GitHub], [NDMF Discord], [Fediverse (Misskey / Mastodon)][Fediverse], or [Twitter].
 
 ## I cannot upload the avatar because of pre-build hard limit check {#i-cannot-upload-the-avatar-because-of-pre-build-hard-limit-check}
 

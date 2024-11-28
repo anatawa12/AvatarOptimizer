@@ -64,7 +64,7 @@ BlendShapeに対してアニメーションされるメッシュを統合する�
 この仮定は正しいとは限らないため、PhysBone / Contact Receiverコンポーネントが(AnimatorやExpression Menuを使用せずに)OSCギミックで使用されている場合には、[Asset Description]ファイルを作成し、[Parameters Read By External Tools]を設定してください。
 
 そのギミックが公開・販売されているような場合には、そのギミックとAAOの互換性を改善するために、作成した Asset Descriptionファイルを共有していただけると助かります。
-Asset Description を将来の Avatar Optimizer に組み込むことで、そのギミックが正しく動作するようになるかもしれません。
+そのAsset Descriptionを将来のAvatar Optimizerに組み込むことにより、そのギミックが正しく動作するようになるかもしれません。
 共有していただける場合は、[GitHub]、[NDMF Discord]、[Fediverse (Misskey / Mastodon)][Fediverse]、[Twitter]などからご連絡ください。
 
 ## ビルド前のハードリミットチェックのせいでアバターをアップロードできない {#i-cannot-upload-the-avatar-because-of-pre-build-hard-limit-check}
