@@ -54,6 +54,18 @@ AAO: Avatar Optimizerは非破壊改変ツールであり、Playモードに入�
 
 {{< /hint >}}
 
+{{< hint info >}}
+
+### 非破壊改変ツールを手動で適用する方法 {#how-to-manual-bake}
+
+アバターのGameObjectを右クリックして出てくるメニューの`NDM Framework`から`Manual bake avatar`をクリックすると、非破壊ツールによる処理を手動で適用することができます。
+
+`Manual bake avatar`は初めにアバターを複製し、その複製に対して非破壊ツールの処理を適用させるため、元のアバターは変更されないままになります。
+
+VRChat向けアバターをVRM形式で出力したい場合などにご活用ください。
+
+{{< /hint >}}
+
 貫通防止用BlendShapeを利用してポリゴンを減らす {#remove-mesh-by-blendshape}
 ---
 

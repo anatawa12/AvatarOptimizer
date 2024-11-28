@@ -28,7 +28,7 @@ Avatar Optimizer v1.6.0で[コンポーネントにAAOとの互換性をもた�
 非破壊ツールでなく、ビルド時に処理を行わないようなツールでは、`IVRCSDKPreprocessAvatarCallback`でコンポーネントを削除するのは少し面倒だろうと考えました。\
 そのため、Avatar Optimizerに無視してほしい、ビルド時やランタイムで処理を行わないコンポーネントを指定するためのシンプルな仕組みとして、Asset Descriptionがv1.7.0で追加されました。
 
-なお、非破壊ツールの場合については、正しくない実行順で処理が行われた場合に、Avatar Optimizerがコンポーネントを誤って削除してしまわないように、従来通り`IVRCSDKPreprocessAvatarCallback`でコンポーネントを削除することを推奨します。
+なお、非破壊ツールの場合については、正しくない実行順で処理が行われた場合にAvatar Optimizerがコンポーネントを誤って削除してしまわないように、従来通り`IVRCSDKPreprocessAvatarCallback`やNDMFを使用してAvatar Optimizerの処理よりも先にコンポーネントを削除することを推奨します。
 
 [make-component-compatible]: ../make-your-components-compatible-with-aao
 

@@ -5,11 +5,14 @@ Avatar Optimizer
 [![GitHub deployments][shields-deployment-master]][github-latest]
 [![GitHub deployments][shields-deployment-vpm]][vpm-repository]
 [![VPM release][shields-vpm]][vpm-repository]
+[![discord link][shields-discord]][ndmf-discord]
 
 [shields-latest-release]: https://img.shields.io/github/v/release/anatawa12/AvatarOptimizer?display_name=tag&sort=semver
 [shields-deployment-vpm]: https://img.shields.io/github/deployments/anatawa12/AvatarOptimizer/vpm.anatawa12.com?label=VPM%20Deployment
 [shields-deployment-master]: https://img.shields.io/github/deployments/anatawa12/AvatarOptimizer/master%20branch?label=Deployment
 [shields-vpm]: https://img.shields.io/vpm/v/com.anatawa12.avatar-optimizer?repository_url=https%3A%2F%2Fvpm.anatawa12.com%2Fvpm.json
+[shields-discord]: https://img.shields.io/badge/chat_on-NDMF_Discord-5865F2?logo=discord&logoColor=white
+[ndmf-discord]: https://discord.gg/dV4cVpewmM
 
 Set of Anatawa12's Non-Destructive Small Avatar Optimization Utilities.
 Those utilies are applied on entering play mode or building VRC Avatars.

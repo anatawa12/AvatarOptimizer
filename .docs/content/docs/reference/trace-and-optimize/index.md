@@ -44,6 +44,9 @@ Currently the following optimizations are applied automatically.
   - `Allow Shuffling Material Slots`\
     By shuffling material slots, you may reduce draw calls of the avatar.
     The order of material slots usually doesn't matter, but it may affect the drawing order in rare cases.
+- `Optimize Texture`\
+  Optimizes textures without affecting the appearance.\
+  Currently, UV Packing and reducing texture size is performed only for materials with supported shaders.
 
 Also, You can adjust optimization with the following settings
 - `MMD World Compatibility`\

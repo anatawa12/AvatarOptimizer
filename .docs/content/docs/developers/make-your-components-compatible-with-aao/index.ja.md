@@ -9,7 +9,7 @@ title: コンポーネントにAvatar Optimizerとの互換性をもたせる
 - コンポーネントはどのような場合にAvatar Optimizerと非互換になるか
 - どのように互換性を改善するか
 
-もし質問があれば、お気軽に[fediverseで`@anatawa12@misskey.niri.la`][fediverse]にご連絡ください。
+もし質問があれば、お気軽に[Fediverse (Misskey / Mastodon)][fediverse]や[NDMF Discord]でご連絡ください。
 
 ## コンポーネントはどのような場合にAvatar Optimizerと非互換になるか {#when-incompatible}
 
@@ -143,3 +143,5 @@ Avatar Optimizerは他の非破壊改変ツールとの互換性を確保する�
 [NDMF]: https://ndmf.nadena.dev/
 [modular-avatar]: https://modular-avatar.nadena.dev/
 [Version Defines]: https://docs.unity3d.com/2019.4/Documentation/Manual/ScriptCompilationAssemblyDefinitionFiles.html#define-symbols
+[Asset Description]: ../asset-description
+[NDMF Discord]: https://discord.gg/dV4cVpewmM

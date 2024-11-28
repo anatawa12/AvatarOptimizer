@@ -10,12 +10,17 @@ Those utilities are applied on entering play mode or building avatars.
 
 Avatar Optimizer is a Open Source Software developed on [GitHub] published under the [MIT License].
 
+[![discord link][shields-discord]][ndmf-discord]
+
 [GitHub]: https://github.com/anatawa12/AvatarOptimizer
 [MIT License]: https://github.com/anatawa12/AvatarOptimizer/blob/HEAD/LICENSE
+[shields-discord]: https://img.shields.io/badge/chat_on-NDMF_Discord-5865F2?logo=discord&logoColor=white
+
+[ndmf-discord]: https://discord.gg/dV4cVpewmM
 
 ## Installation {#installation}
 
-Avatar Optimizer is published with [VPM][vpm] repository so you can install this package using any vpm clients.
+Avatar Optimizer is published with [VPM][vpm] repository so you can install this package using any VPM clients.
 
 {{< beta-only color="success" >}}
 {{< hint info >}}
@@ -26,10 +31,10 @@ You may have to add <https://vpm.nadena.dev/vpm-prerelease.json>, bd_ prerelease
 {{< /hint >}}
 {{< /beta-only >}}
 
-### With VCC (Recommended) {#installation-vcc}
+### With VCC / ALCOM (Recommended) {#installation-vcc}
 
-1. Click [this link][VCC-add-repo-link] to add anatawa12's repository.
-2. Add Avatar Optimizer from VCC.
+1. Click [this link][VCC-add-repo-link] to add anatawa12's VPM repository.
+2. Add Avatar Optimizer to your project from VCC / ALCOM.
 
 ### Using UnityPackage {#installation-vpai}
 

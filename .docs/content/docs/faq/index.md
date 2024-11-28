@@ -6,7 +6,7 @@ weight: 2
 # Frequently Asked Questions {#faq}
 
 Here is the list of frequently asked questions about Avatar Optimizer.
-If you have some other questions, please feel free to ask on the [GitHub Discussions] or on [Fediverse (Misskey / Mastodon)][Fediverse].
+If you have some other questions, please feel free to ask on the [GitHub Discussions], [NDMF Discord] or [Fediverse (Misskey / Mastodon)][Fediverse].
 I'm usually use Japanese, but you can ask me with English.
 
 ## The behavior or appearance of the avatar is changed when using `AAO Trace and Optimize` component {#avatar-behavior-or-appearance-changed-when-using-aao-trace-and-optimize-component}
@@ -63,18 +63,11 @@ However, for technical reasons, the `AAO Trace and Optimize` component cannot de
 Some modern avatars have their own gimmicks based on PhysBone / Contact Receiver components, so those components will be forgotten to remove in most cases.
 Therefore, `AAO Trace and Optimize` will assume that such components are not for OSC-based gimmick, and remove them if they are not used for other ways.
 
-Of course, this assumption is not always the case, so if you are using PhysBone / Contact Receiver components for the OSC-based gimmick without Animator or Expressions,
-please configure your avatar to detect them as used in the avatar.\
-`AAO Trace and Optimize` will not remove them if they are used in the Animator in the avatar.
-So, by adding parameters used in the OSC-based gimmick to the parameter list of Animator Controller or Expression Parameters,
-such components will not be removed.
+This assumption is not always the case, so if you are using PhysBone / Contact Receiver components for the OSC-based gimmick without Animator or Expressions,
+please create [Asset Description] and please configure [Parameters Read By External Tools] for your OSC-based gimmick.
 
-In addition, for future discussion, if your OSC-based gimmick is removed by `AAO Trace and Optimize`,
-could you let us know the name of parameter used in the OSC-based gimmicks?
-I may implement list of parameters likely to be used by OSC and keeping components for those parameters, or other ways to prevent removing them in the future.
-Please feel free to contact on the GitHub issue below, [Fediverse (Misskey / Mastodon)][Fediverse] or [Twitter].
-
-Issue of this problem: [#1090](https://github.com/anatawa12/AvatarOptimizer/issues/1090)
+If the gimmick is published or selling, I would like to bundle your Asset Description with AAO to improve compatibility with the gimmick.
+If you would like to, please contact us on [GitHub], [NDMF Discord], [Fediverse (Misskey / Mastodon)][Fediverse], or [Twitter].
 
 ## I cannot upload the avatar because of pre-build hard limit check {#i-cannot-upload-the-avatar-because-of-pre-build-hard-limit-check}
 
@@ -119,5 +112,9 @@ I also accept financial support on [GitHub Sponsors] and [Booth].
 [Booth]: https://anatawa12.booth.pm/items/4885109
 [good first issue]: https://github.com/anatawa12/AvatarOptimizer/labels/good%20first%20issue
 [help wanted]: https://github.com/anatawa12/AvatarOptimizer/labels/help%20wanted
+[NDMF Discord]: https://discord.gg/dV4cVpewmM
+[GitHub]: https://github.com/anatawa12/AvatarOptimizer/
+[Asset Description]: ../developers/asset-description/
+[Parameters Read By External Tools]: ../developers/asset-description/#parameters-read-by-external-tools
 
 [^merged-mesh]: Merged Mesh is a Skinned Mesh Renderer which is attached along with `AAO Merge Skinned Mesh` component.
