@@ -8,12 +8,15 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Regex mode for OSC Parameters in Asset Description `#1351`
 
 ### Changed
 
 ### Deprecated
 
 ### Removed
+- Prefix, Suffix, and Contains mode for OSC Parameters in Asset Description `#1351`
+  - Please use regex mode instead
 
 ### Fixed
 
