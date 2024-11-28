@@ -16,9 +16,12 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- NRE if some playabke layer is missing from AvatarDesciptor `#1350`
 
 ### Security
+
+## [1.8.0-rc.9] - 2024-11-28
+### Fixed
+- NRE if some playabke layer is missing from AvatarDesciptor [`#1350`](https://github.com/anatawa12/AvatarOptimizer/pull/1350)
 
 ## [1.8.0-rc.8] - 2024-11-17
 ### Fixed
@@ -1778,7 +1781,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-rc.8...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-rc.9...HEAD
+[1.8.0-rc.9]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-rc.8...v1.8.0-rc.9
 [1.8.0-rc.8]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-rc.7...v1.8.0-rc.8
 [1.8.0-rc.7]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-rc.6...v1.8.0-rc.7
 [1.8.0-rc.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-rc.5...v1.8.0-rc.6
