@@ -136,36 +136,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             // OSC and other External Tools Parameters
             var externalParameters = AssetDescription.GetParametersReadByExternalTools();
-            var prefixes = new HashSet<string>();
-            var suffixes = new HashSet<string>();
-            var substrings = new HashSet<string>();
-            foreach (var externalParameter in externalParameters)
-            {
-                switch (externalParameter.matchMode)
-                {
-                    case AssetDescription.OscParameter.MatchMode.Exact:
-                        parameters.Add(externalParameter.name);
-                        break;
-                    case AssetDescription.OscParameter.MatchMode.Prefix:
-                        prefixes.Add(externalParameter.name);
-                        break;
-                    case AssetDescription.OscParameter.MatchMode.Suffix:
-                        suffixes.Add(externalParameter.name);
-                        break;
-                    case AssetDescription.OscParameter.MatchMode.Contains:
-                        substrings.Add(externalParameter.name);
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-            }
+            parameters.UnionWith(externalParameters.ExactMatch);
 
             return parameter =>
             {
                 return parameters.Contains(parameter) ||
-                       prefixes.Any(prefix => parameter.StartsWith(prefix, StringComparison.Ordinal)) ||
-                       suffixes.Any(suffix => parameter.EndsWith(suffix, StringComparison.Ordinal)) ||
-                       substrings.Any(substring => parameter.Contains(substring, StringComparison.Ordinal));
+                       externalParameters.RegexMatch.Any(regex => regex.IsMatch(parameter));
             };
         }
 
