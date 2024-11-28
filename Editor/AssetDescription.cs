@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using nadena.dev.ndmf.localization;
 using UnityEditor;
 using UnityEngine;
@@ -60,8 +61,51 @@ namespace Anatawa12.AvatarOptimizer
         class AssetDescriptionData
         {
             public HashSet<Type> meaninglessComponents = new();
-            public HashSet<OscParameter> parametersReadByExternalTools = new();
-            public HashSet<OscParameter> parametersChangedByExternalTools = new();
+            public OscParameterInfo parametersReadByExternalTools = OscParameterInfo.New();
+            public OscParameterInfo parametersChangedByExternalTools = OscParameterInfo.New();
+        }
+
+        internal struct OscParameterInfo
+        {
+            public HashSet<string> ExactMatch;
+            public List<Regex> RegexMatch;
+
+            public static OscParameterInfo New()
+            {
+                return new OscParameterInfo
+                {
+                    ExactMatch = new HashSet<string>(),
+                    RegexMatch = new List<Regex>(),
+                };
+            }
+
+            public void Add(OscParameter parameter, AssetDescription desc)
+            {
+                if (parameter.name == "") return;
+                switch (parameter.matchMode)
+                {
+                    case OscParameter.MatchMode.Exact:
+                        ExactMatch.Add(parameter.name);
+                        break;
+                    case OscParameter.MatchMode.Regex:
+                        try
+                        {
+                            _ = new Regex($"{parameter.name}", RegexOptions.CultureInvariant | RegexOptions.Compiled);
+                            var regex = new Regex($"^(?:{parameter.name})$", RegexOptions.CultureInvariant | RegexOptions.Compiled);
+                            RegexMatch.Add(regex);
+                        }
+                        catch (Exception e)
+                        {
+                            Debug.LogException(
+                                new ArgumentException(
+                                    $"Invalid regex: {parameter.name} in asset description {desc.name}", e), desc);
+                        }
+
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
         }
 
         static AssetDescriptionData LoadData()
@@ -73,12 +117,11 @@ namespace Anatawa12.AvatarOptimizer
                     if (GetMonoScriptFromGuid(component.guid, component.fileID) is MonoScript monoScript)
                         data.meaninglessComponents.Add(monoScript.GetClass());
 
-                data.parametersReadByExternalTools.UnionWith(description.parametersReadByExternalTools);
-                data.parametersChangedByExternalTools.UnionWith(description.parametersChangedByExternalTools);
+                foreach (var parameter in description.parametersReadByExternalTools)
+                    data.parametersReadByExternalTools.Add(parameter, description);
+                foreach (var parameter in description.parametersChangedByExternalTools)
+                    data.parametersChangedByExternalTools.Add(parameter, description);
             }
-
-            data.parametersReadByExternalTools.RemoveWhere(x => x.name == "");
-            data.parametersChangedByExternalTools.RemoveWhere(x => x.name == "");
 
             return data;
         }
@@ -95,8 +138,8 @@ namespace Anatawa12.AvatarOptimizer
 
         public static void Reload() => _data = LoadData();
         public static HashSet<Type> GetMeaninglessComponents() => Data.meaninglessComponents;
-        public static HashSet<OscParameter> GetParametersReadByExternalTools() => Data.parametersReadByExternalTools;
-        public static HashSet<OscParameter> GetParametersChangedByExternalTools() => Data.parametersChangedByExternalTools;
+        public static OscParameterInfo GetParametersReadByExternalTools() => Data.parametersReadByExternalTools;
+        public static OscParameterInfo GetParametersChangedByExternalTools() => Data.parametersChangedByExternalTools;
 
         private static Object GetMonoScriptFromGuid(string guid, ulong fileid)
         {
@@ -246,9 +289,7 @@ namespace Anatawa12.AvatarOptimizer
             public enum MatchMode
             {
                 Exact,
-                Prefix,
-                Suffix,
-                Contains,
+                Regex,
             }
 
             public bool Equals(OscParameter other) => name == other.name && matchMode == other.matchMode;
@@ -278,6 +319,20 @@ namespace Anatawa12.AvatarOptimizer
                 else
                     width = rect.width / 2 - 0.5f;
 
+                var color = GUI.color;
+                if (matchModeProperty.enumValueIndex == (int)OscParameter.MatchMode.Regex)
+                {
+                    try
+                    {
+                        _ = new Regex($"{nameProperty.stringValue}", RegexOptions.CultureInvariant | RegexOptions.Compiled);
+                        _ = new Regex($"^(?:{nameProperty.stringValue})$", RegexOptions.CultureInvariant | RegexOptions.Compiled);
+                    }
+                    catch
+                    {
+                        GUI.color = Color.red;
+                    }
+                }
+
                 text = rect with { width = rect.width - width - 1 };
                 popup = rect with { x = rect.xMax - width, width = width };
 
@@ -285,6 +340,8 @@ namespace Anatawa12.AvatarOptimizer
                 var newName = EditorGUI.TextField(text, nameProperty.stringValue);
                 if (EditorGUI.EndChangeCheck())
                     nameProperty.stringValue = newName;
+
+                GUI.color = color;
                 
                 EditorGUI.BeginChangeCheck();
                 var newMatchMode = (OscParameter.MatchMode)EditorGUI.EnumPopup(popup, (OscParameter.MatchMode)matchModeProperty.enumValueIndex);
