@@ -12,6 +12,7 @@ using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer
 {
+    [DependsOnContext(typeof(DestroyTracker.ExtensionContext))]
     internal class ObjectMappingContext : IExtensionContext
     {
         public ObjectMappingBuilder<PropertyInfo>? MappingBuilder { get; private set; }
