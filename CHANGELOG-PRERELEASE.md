@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog].
 
 ### Security
 
+## [1.8.0] - 2024-11-30
 ## [1.8.0-rc.11] - 2024-11-29
 ## [1.8.0-rc.10] - 2024-11-28
 ### Added
@@ -1790,7 +1791,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-rc.11...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0...HEAD
+[1.8.0]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-rc.11...v1.8.0
 [1.8.0-rc.11]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-rc.10...v1.8.0-rc.11
 [1.8.0-rc.10]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-rc.9...v1.8.0-rc.10
 [1.8.0-rc.9]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-rc.8...v1.8.0-rc.9
