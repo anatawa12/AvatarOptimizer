@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Optimize Texture may break liltoon outline mask `#1357`
 
 ### Security
 
