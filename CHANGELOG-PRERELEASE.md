@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog].
 
 ### Security
 
+## [1.8.1] - 2024-12-01
 ## [1.8.1-beta.1] - 2024-11-30
 ### Fixed
 - Optimize Texture may break liltoon outline mask [`#1357`](https://github.com/anatawa12/AvatarOptimizer/pull/1357)
@@ -1795,7 +1796,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.1-beta.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.1...HEAD
+[1.8.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.1-beta.1...v1.8.1
 [1.8.1-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0...v1.8.1-beta.1
 [1.8.0]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-rc.11...v1.8.0
 [1.8.0-rc.11]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0-rc.10...v1.8.0-rc.11
