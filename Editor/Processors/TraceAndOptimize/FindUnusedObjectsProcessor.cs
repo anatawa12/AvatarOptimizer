@@ -70,7 +70,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
     internal readonly struct FindUnusedObjectsProcessor
     {
         private readonly BuildContext _context;
-        private readonly HashSet<GameObject> _exclusions;
+        private readonly HashSet<GameObject?> _exclusions;
         private readonly bool _preserveEndBone;
         private readonly bool _noConfigureMergeBone;
         private readonly bool _noActivenessAnimation;
@@ -248,8 +248,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 var markContext = new MarkObjectContext(componentInfos, _context.AvatarRootTransform, GetDependantMap);
 
                 foreach (var gameObject in _exclusions)
-                foreach (var component in gameObject.GetComponents<Component>())
-                    markContext.MarkComponent(component, GCComponentInfo.DependencyType.Normal);
+                    if (gameObject != null)
+                        foreach (var component in gameObject.GetComponents<Component>())
+                            markContext.MarkComponent(component, GCComponentInfo.DependencyType.Normal);
 
                 markContext.MarkRecursively();
             }
@@ -308,8 +309,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 var markContext = new MarkObjectContext(componentInfos, _context.AvatarRootTransform, GetDependantMap);
 
                 foreach (var gameObject in _exclusions)
-                foreach (var component in gameObject.GetComponents<Component>())
-                    markContext.MarkComponent(component, GCComponentInfo.DependencyType.Normal);
+                    if (gameObject != null)
+                        foreach (var component in gameObject.GetComponents<Component>())
+                            markContext.MarkComponent(component, GCComponentInfo.DependencyType.Normal);
 
                 markContext.MarkRecursively();
             }
