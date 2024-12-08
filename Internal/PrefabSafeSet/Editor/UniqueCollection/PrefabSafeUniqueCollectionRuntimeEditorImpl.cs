@@ -58,7 +58,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
             PrefabSafeUniqueCollection.NestCount = nestCount;
 
             var shouldUsePrefabOnSceneLayer =
-                PSUCRuntimeUtil.ShouldUsePrefabOnSceneLayer(component);
+                nestCount != 0 && PSUCRuntimeUtil.ShouldUsePrefabOnSceneLayer(component);
             var maxLayerCount = shouldUsePrefabOnSceneLayer ? nestCount - 1 : nestCount;
 
             // https://github.com/anatawa12/AvatarOptimizer/issues/52
