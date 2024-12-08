@@ -37,6 +37,9 @@ msgstr "Drag & Drop value to here to add element to this set."
 msgid "PrefabSafeSet:tooltip:Force Add Button"
 msgstr "Add this element in current prefab modifications."
 
+msgid "PrefabSafeSet:tooltip:Remove Button"
+msgstr "Remove Element"
+
 # , csharp-format
 msgid "PrefabSafeSet:label:Element {0}"
 msgstr "Element {0}"
