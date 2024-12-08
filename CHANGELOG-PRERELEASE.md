@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - Errors with models with UV at very edge `#1363`
+- Errors if exactly same AnimatorController is specified for multiple playable layers `#1366`
 
 ### Security
 

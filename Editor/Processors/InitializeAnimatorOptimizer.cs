@@ -46,14 +46,14 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 switch (component)
                 {
                     case Animator animator:
-                        animator.runtimeAnimatorController = ProcessController(animator.runtimeAnimatorController, component.gameObject);
+                        ProcessController(animator.runtimeAnimatorController, component.gameObject);
                         break;
 #if AAO_VRCSDK3_AVATARS
                     case VRCAvatarDescriptor avatarDescriptor:
                         foreach (ref var layer in avatarDescriptor.baseAnimationLayers.AsSpan())
-                            layer.animatorController = ProcessController(layer.animatorController, component.gameObject);
+                            ProcessController(layer.animatorController, component.gameObject);
                         foreach (ref var layer in avatarDescriptor.specialAnimationLayers.AsSpan())
-                            layer.animatorController = ProcessController(layer.animatorController, component.gameObject);
+                            ProcessController(layer.animatorController, component.gameObject);
 #endif
                         break;
                     // do not run animator optimizer with unknown components
@@ -62,14 +62,14 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 }
             }
             
-            AnimatorController? ProcessController(RuntimeAnimatorController? runtimeController,
+            void ProcessController(RuntimeAnimatorController? runtimeController,
                 GameObject rootGameObject)
             {
-                if (runtimeController == null) return null;
+                if (runtimeController == null) return;
                 var cloned = (AnimatorController)runtimeController;
                 var wrapper = new AOAnimatorController(cloned, rootGameObject);
                 animatorState.Add(wrapper);
-                clonedToController.Add(cloned, wrapper);
+                if (!clonedToController.TryAdd(cloned, wrapper)) return;
 
 #if AAO_VRCSDK3_AVATARS
                 foreach (var behaviour in ACUtils.StateMachineBehaviours(cloned))
@@ -83,7 +83,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                     }
                 }
 #endif
-                return cloned;
             }
             
 #if AAO_VRCSDK3_AVATARS
