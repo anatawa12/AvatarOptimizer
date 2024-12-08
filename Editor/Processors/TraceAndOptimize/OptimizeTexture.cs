@@ -740,10 +740,11 @@ internal struct OptimizeTextureImpl {
             ref var max = ref island.MaxPos;
 
             // fit to block size
-            min.x = Mathf.Floor(min.x / blockSizeRatioX - paddingRatio) * blockSizeRatioX;
-            min.y = Mathf.Floor(min.y / blockSizeRatioY - paddingRatio) * blockSizeRatioY;
-            max.x = Mathf.Ceil(max.x / blockSizeRatioX + paddingRatio) * blockSizeRatioX;
-            max.y = Mathf.Ceil(max.y / blockSizeRatioY + paddingRatio) * blockSizeRatioY;
+            // if rest texture size is less than padding, fit to the UV coordinate
+            min.x = Mathf.Max(Mathf.Floor(min.x / blockSizeRatioX - paddingRatio) * blockSizeRatioX, 0);
+            min.y = Mathf.Max(Mathf.Floor(min.y / blockSizeRatioY - paddingRatio) * blockSizeRatioY, 0);
+            max.x = Mathf.Min(Mathf.Ceil(max.x / blockSizeRatioX + paddingRatio) * blockSizeRatioX, 1);
+            max.y = Mathf.Min(Mathf.Ceil(max.y / blockSizeRatioY + paddingRatio) * blockSizeRatioY, 1);
         }
     }
 

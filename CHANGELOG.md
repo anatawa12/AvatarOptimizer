@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Errors with models with UV at very edge `#1363`
 
 ### Security
 
