@@ -12,7 +12,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
     {
         private static GUIContent WithLocalization(GUIContent content, string key, string? tooltip = null)
         {
-            content.text = AAOL10N.Tr(key);
+            content.text = key.StartsWith('\0') ? key.Substring(1) : AAOL10N.Tr(key);
             if (tooltip != null)
                 content.tooltip = AAOL10N.Tr(tooltip);
             return content;
@@ -37,7 +37,11 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
 
         private static readonly GUIContent ForceAddButtonBacked = new GUIContent();
         public static GUIContent ForceAddButton => WithLocalization(ForceAddButtonBacked, 
-            "+", "PrefabSafeSet:tooltip:Force Add Button");
+            "\0+", "PrefabSafeSet:tooltip:Force Add Button");
+
+        private static readonly GUIContent RemoveButtonBacked = new GUIContent();
+        public static GUIContent RemoveButton => WithLocalization(RemoveButtonBacked, 
+            "\0-", "PrefabSafeSet:tooltip:Remove Button");
     }
 
     [CustomPropertyDrawer(typeof(PrefabSafeSet<>), true)]
@@ -294,12 +298,24 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             ModificationKind kind)
         {
             // layout
-            var fieldPosition = position;
+            var buttonWidth = EditorGUIUtility.singleLineHeight;
+            var spacing = EditorGUIUtility.standardVerticalSpacing;
+
+            var fieldPosition = position with
+            {
+                width = position.width - (buttonWidth + spacing) * 2,
+            };
             // two buttons
-            fieldPosition.width -= EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
-            var addButtonPosition = new Rect(
-                fieldPosition.xMax + EditorGUIUtility.standardVerticalSpacing, position.y,
-                EditorGUIUtility.singleLineHeight, position.height);
+            var addButtonPosition = position with
+            {
+                x = fieldPosition.xMax + spacing,
+                width = buttonWidth,
+            };
+            var removeButtonPosition = position with
+            {
+                x = addButtonPosition.xMax + spacing,
+                width = buttonWidth,
+            };
 
             var result = ModificationKind.Natural;
 
@@ -314,6 +330,11 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                 EditorGUI.BeginDisabledGroup(kind == ModificationKind.Add);
                 if (GUI.Button(addButtonPosition, EditorStatics.ForceAddButton))
                     result = ModificationKind.Add;
+                EditorGUI.EndDisabledGroup();
+                
+                EditorGUI.BeginDisabledGroup(kind == ModificationKind.Remove);
+                if (GUI.Button(removeButtonPosition, EditorStatics.RemoveButton))
+                    result = ModificationKind.Remove;
                 EditorGUI.EndDisabledGroup();
                 EditorGUI.EndDisabledGroup();
             }
