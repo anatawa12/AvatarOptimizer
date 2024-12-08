@@ -20,6 +20,7 @@ The format is based on [Keep a Changelog].
 - Errors with models with UV at very edge `#1363`
 - Errors if exactly same AnimatorController is specified for multiple playable layers `#1366`
 - Errors if objects removed by some component is listed on exclusions of Trace and Optimize `#1367`
+- OverflowException when creating prefab `#1369`
 
 ### Security
 
