@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- `-` button for prefab safe set `#1368`
 
 ### Changed
 
