@@ -8,7 +8,6 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- `-` button for prefab safe set `#1368`
 
 ### Changed
 
@@ -17,12 +16,18 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Errors with models with UV at very edge `#1363`
-- Errors if exactly same AnimatorController is specified for multiple playable layers `#1366`
-- Errors if objects removed by some component is listed on exclusions of Trace and Optimize `#1367`
-- OverflowException when creating prefab `#1369`
 
 ### Security
+
+## [1.8.2] - 2024-12-11
+### Added
+- `-` button for prefab safe set [`#1368`](https://github.com/anatawa12/AvatarOptimizer/pull/1368)
+
+### Fixed
+- Errors with models with UV at very edge [`#1363`](https://github.com/anatawa12/AvatarOptimizer/pull/1363)
+- Errors if exactly same AnimatorController is specified for multiple playable layers [`#1366`](https://github.com/anatawa12/AvatarOptimizer/pull/1366)
+- Errors if objects removed by some component is listed on exclusions of Trace and Optimize [`#1367`](https://github.com/anatawa12/AvatarOptimizer/pull/1367)
+- OverflowException when creating prefab [`#1369`](https://github.com/anatawa12/AvatarOptimizer/pull/1369)
 
 ## [1.8.1] - 2024-12-01
 ### Fixed
@@ -1139,7 +1144,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.2...HEAD
+[1.8.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.1...v1.8.2
 [1.8.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0...v1.8.1
 [1.8.0]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.13...v1.8.0
 [1.7.13]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.12...v1.7.13
