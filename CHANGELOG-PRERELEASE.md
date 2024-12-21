@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Prefab overrides on the scene are reverted on first load of the scene at first launch `#1372`
 
 ### Security
 
