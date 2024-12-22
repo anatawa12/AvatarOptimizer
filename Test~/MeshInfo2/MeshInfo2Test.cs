@@ -217,5 +217,59 @@ namespace Anatawa12.AvatarOptimizer.Test
                 Assert.That(position, Is.EqualTo(vertex.Position));
             }
         }
+
+        // test with binary-edited fbx which is originally exported from blender
+        [Test]
+        public void MultipleSameNameBlendShapeBlenderBinaryEdited()
+        {
+            var fbx = TestUtils.GetAssetAt<GameObject>("MeshInfo2/same-name-blendshape-blender-binary-edited.fbx");
+            var renderer = fbx.GetComponent<SkinnedMeshRenderer>();
+            var mesh = renderer.sharedMesh;
+
+            // check the mesh has same name blendShape
+            Assert.That(mesh.blendShapeCount, Is.EqualTo(2));
+            Assert.That(mesh.GetBlendShapeName(0), Is.EqualTo("BlendShape1"));
+            Assert.That(mesh.GetBlendShapeName(1), Is.EqualTo("BlendShape1"));
+            
+            using var meshInfo2 = new MeshInfo2(renderer);
+            // we've checked no exception is thrown
+            
+            // second shape is renamed
+            Assert.That(meshInfo2.BlendShapes[0].name, Is.EqualTo("BlendShape1"));
+            Assert.That(meshInfo2.BlendShapes[1].name, Does.StartWith("BlendShape1-nameConflict-"));
+            // and there is buffer for each vertex
+            foreach (var vertex in meshInfo2.Vertices)
+            {
+                Assert.That(vertex.BlendShapeBuffer.Shapes[meshInfo2.BlendShapes[0].name], Is.Not.Null);
+                Assert.That(vertex.BlendShapeBuffer.Shapes[meshInfo2.BlendShapes[1].name], Is.Not.Null);
+            }
+        }
+
+        // test with real fbx
+        [Test]
+        public void MultipleSameNameBlendShape3dsMax()
+        {
+            var fbx = TestUtils.GetAssetAt<GameObject>("MeshInfo2/same-name-blendshape-3ds-max.fbx");
+            var renderer = fbx.transform.Find("Box001").GetComponent<SkinnedMeshRenderer>();
+            var mesh = renderer.sharedMesh;
+
+            // check the mesh has same name blendShape
+            Assert.That(mesh.blendShapeCount, Is.EqualTo(2));
+            Assert.That(mesh.GetBlendShapeName(0), Is.EqualTo("Shape"));
+            Assert.That(mesh.GetBlendShapeName(1), Is.EqualTo("Shape"));
+
+            using var meshInfo2 = new MeshInfo2(renderer);
+            // we've checked no exception is thrown
+
+            // second shape is renamed
+            Assert.That(meshInfo2.BlendShapes[0].name, Is.EqualTo("Shape"));
+            Assert.That(meshInfo2.BlendShapes[1].name, Does.StartWith("Shape-nameConflict-"));
+            // and there is buffer for each vertex
+            foreach (var vertex in meshInfo2.Vertices)
+            {
+                Assert.That(vertex.BlendShapeBuffer.Shapes[meshInfo2.BlendShapes[0].name], Is.Not.Null);
+                Assert.That(vertex.BlendShapeBuffer.Shapes[meshInfo2.BlendShapes[1].name], Is.Not.Null);
+            }
+        }
     }
 }
