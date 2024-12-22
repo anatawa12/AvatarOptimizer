@@ -39,7 +39,8 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
             var newCorrespondingObject = PrefabUtility.GetCorrespondingObjectFromSource(component);
             if (newCorrespondingObject != null &&
                 PrefabUtility.GetCorrespondingObjectFromSource(newCorrespondingObject) ==
-                PrefabSafeUniqueCollection.CorrespondingObject)
+                PrefabSafeUniqueCollection.CorrespondingObject
+                && !PrefabSafeUniqueCollection.IsNew) // not loading scene
             {
                 // this might be creating prefab. we do more checks
                 var newCorrespondingPrefabSafeUniqueCollection = getPrefabSafeUniqueCollection(newCorrespondingObject);
