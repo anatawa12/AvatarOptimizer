@@ -14,6 +14,7 @@ using UnityEngine.Profiling;
 using UnityEngine.Rendering;
 using Debug = System.Diagnostics.Debug;
 using Object = UnityEngine.Object;
+using Random = UnityEngine.Random;
 
 namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 {
@@ -201,14 +202,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         private void ReadBlendShapes(Mesh mesh)
         {
-            BlendShapes.Clear();
-            Profiler.BeginSample("Save Applied Weights");
-            for (var blendShape = 0; blendShape < mesh.blendShapeCount; blendShape++)
-                BlendShapes.Add((mesh.GetBlendShapeName(blendShape), 0.0f));
-            Profiler.EndSample();
-            
             Profiler.BeginSample("New Reading Method");
-            var buffer = new BlendShapeBuffer(mesh);
+            BlendShapes.Clear();
+            var buffer = new BlendShapeBuffer(mesh, BlendShapes);
             for (var vertex = 0; vertex < Vertices.Count; vertex++)
             {
                 Vertices[vertex].BlendShapeBuffer = buffer;
@@ -1203,7 +1199,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         public readonly NativeArray<Vector3>[] DeltaTangents;
         public readonly int VertexCount;
 
-        public BlendShapeBuffer(Mesh sourceMesh)
+        public BlendShapeBuffer(Mesh sourceMesh, List<(string name, float weight)> blendShapes)
         {
             Profiler.BeginSample("BlendShapeBuffer:Create");
             var totalFrames = 0;
@@ -1254,10 +1250,41 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     Profiler.EndSample();
                 }
 
-                Shapes.Add(name, new BlendShapeShape(frameInfos));
+                if (!Shapes.TryAdd(name, new BlendShapeShape(frameInfos)))
+                {
+                    // duplicated blendShape name detected.
+                    // This can be generated with 3ds Max or other tools.
+                    // Rename blendShape a little to avoid conflict.
+                    name = $"{name}-nameConflict-{GetShortRandom()}";
+                    Shapes.Add(name, new BlendShapeShape(frameInfos));
+                }
+                blendShapes.Add((name, 0.0f));
                 Profiler.EndSample();
             }
             Profiler.EndSample();
+        }
+
+        private static string GetShortRandom()
+        {
+            // generate 4-char base64 string
+            // with 4 of 64 characters, it has 64^4 = 16777216 possibilities.
+            // When we create 100 times, the possibility of collision is one in about 3390
+            var chars = new char[4];
+
+            for (var i = 0; i < chars.Length; i++)
+                chars[i] = Base64Char(Random.Range(0, 64));
+            return new string(chars);
+
+            static char Base64Char(int value) => value switch
+            {
+                < 0 => throw new ArgumentOutOfRangeException(nameof(value), $"{value}"),
+                < 10 => (char)('0' + value),
+                < 36 => (char)('A' + value - 10),
+                < 62 => (char)('a' + value - 36),
+                62 => '-',
+                63 => '_',
+                _ => throw new ArgumentOutOfRangeException(nameof(value), $"{value}"),
+            };
         }
 
         // create empty
