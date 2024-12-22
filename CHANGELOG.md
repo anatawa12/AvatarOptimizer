@@ -17,6 +17,8 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - Prefab overrides on the scene are reverted on first load of the scene at first launch `#1372`
+- Animating transform with C# named properties are broken by merge bone `#1373`
+  - Animator window won't create such animation but some script generates and it works surprisingly
 
 ### Security
 
