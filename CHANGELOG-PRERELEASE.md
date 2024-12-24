@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog].
 
 ### Security
 
+## [1.8.3] - 2024-12-24
 ## [1.8.3-beta.1] - 2024-12-24
 ### Fixed
 - Prefab overrides on the scene are reverted on first load of the scene at first launch [`#1372`](https://github.com/anatawa12/AvatarOptimizer/pull/1372)
@@ -1816,7 +1817,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.3-beta.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.3...HEAD
+[1.8.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.3-beta.1...v1.8.3
 [1.8.3-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.2...v1.8.3-beta.1
 [1.8.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.1...v1.8.2
 [1.8.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.1-beta.1...v1.8.1

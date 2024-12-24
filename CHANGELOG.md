@@ -16,15 +16,18 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Prefab overrides on the scene are reverted on first load of the scene at first launch `#1372`
-- Animating transform with C# named properties are broken by merge bone `#1373`
+
+### Security
+
+## [1.8.3] - 2024-12-24
+### Fixed
+- Prefab overrides on the scene are reverted on first load of the scene at first launch [`#1372`](https://github.com/anatawa12/AvatarOptimizer/pull/1372)
+- Animating transform with C# named properties are broken by merge bone [`#1373`](https://github.com/anatawa12/AvatarOptimizer/pull/1373)
   - Animator window won't create such animation but some script generates and it works surprisingly
-- Errors with blendShapes with exactly same name in a mesh `#1374`
+- Errors with blendShapes with exactly same name in a mesh [`#1374`](https://github.com/anatawa12/AvatarOptimizer/pull/1374)
   - Such mesh can be generated with Autodesk Maya or 3ds Max
   - Unity API denies generating such mesh with C# so AAO will rename such blendShapes to unique name to support.
   - Unity Animator does animate first blendshale only so second shape would generally removed by remove unused blendShapes.
-
-### Security
 
 ## [1.8.2] - 2024-12-11
 ### Added
@@ -1151,7 +1154,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.2...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.3...HEAD
+[1.8.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.2...v1.8.3
 [1.8.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.1...v1.8.2
 [1.8.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.0...v1.8.1
 [1.8.0]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.7.13...v1.8.0
