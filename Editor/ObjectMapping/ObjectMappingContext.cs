@@ -420,7 +420,7 @@ namespace Anatawa12.AvatarOptimizer
                 return mappedBindings
                     .Select(mapped => new VRM.BlendShapeBinding
                     {
-                        RelativePath = _mapping.MapPath(mapped.path, typeof(SkinnedMeshRenderer)),
+                        RelativePath = mapped.path,
                         Index = VProp.ParseBlendShapeIndex(mapped.propertyName),
                         Weight = binding.Weight
                     });
@@ -486,7 +486,7 @@ namespace Anatawa12.AvatarOptimizer
                 return mappedBindings
                     .Select(mapped => new UniVRM10.MorphTargetBinding
                     {
-                        RelativePath = _mapping.MapPath(mapped.path, typeof(SkinnedMeshRenderer)),
+                        RelativePath = mapped.path,
                         Index = VProp.ParseBlendShapeIndex(mapped.propertyName),
                         Weight = binding.Weight
                     });
