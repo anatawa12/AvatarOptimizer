@@ -793,14 +793,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             Animating,
         }
 
-        internal enum VrmFirstPersonFlag
-        {
-            Auto,
-            Both,
-            ThirdPersonOnly,
-            FirstPersonOnly,
-        }
-
         // Here's the all list of properties in SkinnedMeshRenderer
         // Renderer:
         // - bounds (local bounds) - must be same
