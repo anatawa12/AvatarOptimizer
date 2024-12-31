@@ -4,6 +4,15 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
+#if AAO_VRM0
+using VRM;
+#endif
+
+#if AAO_VRM1
+using UniVRM10;
+using UniGLTF.Extensions.VRMC_vrm;
+#endif
+
 namespace Anatawa12.AvatarOptimizer
 {
     /// <summary>
@@ -16,6 +25,7 @@ namespace Anatawa12.AvatarOptimizer
         // - Track moving GameObjects
         // - Track renaming Properties in Component
         // - Track merging Components
+        // - Track VrmFirstPersonFlags
 
         private readonly IReadOnlyDictionary<int, BeforeGameObjectTree> _beforeGameObjectInfos;
 
@@ -41,25 +51,85 @@ namespace Anatawa12.AvatarOptimizer
             }
 
             _beforeGameObjectInfos[rootObject.GetInstanceID()].InitializeRecursive();
+            
+#if AAO_VRM0
+            if (rootObject.TryGetComponent<VRMFirstPerson>(out var firstPerson))
+            {
+                foreach (var renderer in firstPerson.Renderers)
+                {
+                    GetComponentInfo(renderer.Renderer).VrmFirstPersonFlag = renderer.FirstPersonFlag switch
+                    {
+                        FirstPersonFlag.Auto => VrmFirstPersonFlag.Auto,
+                        FirstPersonFlag.Both => VrmFirstPersonFlag.Both,
+                        FirstPersonFlag.ThirdPersonOnly => VrmFirstPersonFlag.ThirdPersonOnly,
+                        FirstPersonFlag.FirstPersonOnly => VrmFirstPersonFlag.FirstPersonOnly,
+                        _ => throw new ArgumentOutOfRangeException()
+                    };
+                }
+            }
+#endif
+
+#if AAO_VRM1
+            if (rootObject.TryGetComponent<Vrm10Instance>(out var vrm10Instance))
+            {
+                foreach (var renderer in vrm10Instance.Vrm.FirstPerson.Renderers)
+                {
+                    GetComponentInfo(renderer.GetRenderer(rootObject.transform)).VrmFirstPersonFlag = renderer.FirstPersonFlag switch
+                    {
+                        FirstPersonType.auto => VrmFirstPersonFlag.Auto,
+                        FirstPersonType.both => VrmFirstPersonFlag.Both,
+                        FirstPersonType.thirdPersonOnly => VrmFirstPersonFlag.ThirdPersonOnly,
+                        FirstPersonType.firstPersonOnly => VrmFirstPersonFlag.FirstPersonOnly,
+                        _ => throw new ArgumentOutOfRangeException()
+                    };
+                }
+            }
+#endif
         }
 
         public void RecordMergeComponent<T>(T from, T mergeTo) where T: Component
         {
+            var newMergeToInfo = new BuildingComponentInfo(mergeTo);
+
+#if AAO_VRM0 || AAO_VRM1
+            newMergeToInfo.VrmFirstPersonFlag = MergeVrmFirstPersonFlags(GetVrmFirstPersonFlag(from), GetVrmFirstPersonFlag(mergeTo));
+#endif
+
             if (!_componentInfos.TryGetValue(mergeTo.GetInstanceID(), out var mergeToInfo))
             {
-                var newMergeToInfo = new BuildingComponentInfo(mergeTo);
                 _originalComponentInfos.Add(mergeTo.GetInstanceID(), newMergeToInfo);
                 _componentInfos.Add(mergeTo.GetInstanceID(), newMergeToInfo);
                 GetComponentInfo(from).MergedTo(newMergeToInfo);
             }
             else
             {
-                var newMergeToInfo = new BuildingComponentInfo(mergeTo);
                 _componentInfos[mergeTo.GetInstanceID()]= newMergeToInfo;
                 mergeToInfo.MergedTo(newMergeToInfo);
                 GetComponentInfo(from).MergedTo(newMergeToInfo);
             }
         }
+
+#if AAO_VRM0 || AAO_VRM1
+        VrmFirstPersonFlag? MergeVrmFirstPersonFlags(VrmFirstPersonFlag? from, VrmFirstPersonFlag? to)
+        {
+            if (!from.HasValue)
+            {
+                return to;
+            }
+            if (!to.HasValue)
+            {
+                return from;
+            }
+            if (from == to)
+            {
+                return from;
+            }
+            
+            var mergedFirstPersonFlag = from == VrmFirstPersonFlag.Both || to == VrmFirstPersonFlag.Both ? VrmFirstPersonFlag.Both : VrmFirstPersonFlag.Auto; 
+            BuildLog.LogWarning("MergeSkinnedMesh:warning:VRM:FirstPersonFlagsMismatch", mergedFirstPersonFlag.ToString());
+            return mergedFirstPersonFlag;
+        }
+#endif
 
         public void RecordMoveProperties(ComponentOrGameObject from, params (string old, string @new)[] props) =>
             GetComponentInfo(from).MoveProperties(props);
@@ -81,6 +151,9 @@ namespace Anatawa12.AvatarOptimizer
 
         public IEnumerable<AnimationComponentInfo<TPropInfo>> GetAllAnimationComponents() =>
             _componentInfos.Values.Where(x => !x.IsMerged);
+
+        public VrmFirstPersonFlag? GetVrmFirstPersonFlag(ComponentOrGameObject component)
+            => _componentInfos.TryGetValue(component.GetInstanceID(), out var info) ? info.VrmFirstPersonFlag : null;
 
         private BuildingComponentInfo GetComponentInfo(ComponentOrGameObject component)
         {
@@ -195,6 +268,8 @@ namespace Anatawa12.AvatarOptimizer
             private readonly Dictionary<string, AnimationPropertyInfo> _beforePropertyIds = new();
 
             private readonly Dictionary<string, AnimationPropertyInfo> _afterPropertyIds = new();
+
+            internal VrmFirstPersonFlag? VrmFirstPersonFlag;
 
             public BuildingComponentInfo(ComponentOrGameObject component)
             {
