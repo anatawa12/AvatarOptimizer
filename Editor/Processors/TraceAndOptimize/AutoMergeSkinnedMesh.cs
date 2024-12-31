@@ -490,44 +490,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         private static VrmFirstPersonFlag GetVrmFirstPersonFlag(BuildContext context, Component component)
         {
-#if AAO_VRM0
-            if (context.AvatarRootObject.GetComponent<VRMFirstPerson>() is VRMFirstPerson vrmFirstPerson)
-            {
-                switch (vrmFirstPerson.Renderers.FirstOrDefault(c => c.Renderer == component).FirstPersonFlag)
-                {
-                    case FirstPersonFlag.Auto:
-                        return VrmFirstPersonFlag.Auto;
-                    case FirstPersonFlag.Both:
-                        return VrmFirstPersonFlag.Both;
-                    case FirstPersonFlag.ThirdPersonOnly:
-                        return VrmFirstPersonFlag.ThirdPersonOnly;
-                    case FirstPersonFlag.FirstPersonOnly:
-                        return VrmFirstPersonFlag.FirstPersonOnly;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-            }
-#endif
-#if AAO_VRM1
-            if (context.AvatarRootObject.GetComponent<Vrm10Instance>() is Vrm10Instance vrm10Object)
-            {
-                switch (vrm10Object.Vrm.FirstPerson.Renderers.FirstOrDefault(c => c.GetRenderer(context.AvatarRootTransform) == component).FirstPersonFlag)
-                {
-                    case FirstPersonType.auto:
-                        return VrmFirstPersonFlag.Auto;
-                    case FirstPersonType.both:
-                        return VrmFirstPersonFlag.Both;
-                    case FirstPersonType.thirdPersonOnly:
-                        return VrmFirstPersonFlag.ThirdPersonOnly;
-                    case FirstPersonType.firstPersonOnly:
-                        return VrmFirstPersonFlag.FirstPersonOnly;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-            }
-#endif
             // note: unset will fallback to Auto
-            return VrmFirstPersonFlag.Auto;
+            return context.GetMappingBuilder().GetVrmFirstPersonFlag(component) ?? VrmFirstPersonFlag.Auto;
         }
 
         private static SkinnedMeshRenderer CreateNewRenderer(
