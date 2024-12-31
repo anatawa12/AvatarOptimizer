@@ -353,7 +353,7 @@ namespace Anatawa12.AvatarOptimizer
                             propertyMapping.Add(key, value.GetMappedInfo());
                 }
 
-                return new ComponentInfo(InstanceId, mergedInfo.InstanceId, Type, propertyMapping);
+                return new ComponentInfo(InstanceId, mergedInfo.InstanceId, Type, propertyMapping, mergedInfo.VrmFirstPersonFlag);
             }
 
             public override ComponentOrGameObject TargetComponent

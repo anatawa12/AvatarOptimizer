@@ -141,6 +141,12 @@ namespace Anatawa12.AvatarOptimizer
                 found = new API.MappedPropertyInfo(_component, property);
                 return true;
             }
+
+            public override bool TryGetMappedVrmFirstPersonFlag(out VrmFirstPersonFlag vrmFirstPersonFlag)
+            {
+                vrmFirstPersonFlag = default;
+                return false;
+            }
         }
 
         private class ComponentInfo<T> : MappedComponentInfo<T> where T : Object
@@ -166,6 +172,17 @@ namespace Anatawa12.AvatarOptimizer
                     mappedProp.MappedProperty.Name);
                 return true;
 
+            }
+            
+            public override bool TryGetMappedVrmFirstPersonFlag(out VrmFirstPersonFlag vrmFirstPersonFlag)
+            {
+                if (!_info.VrmFirstPersonFlag.HasValue)
+                {
+                    vrmFirstPersonFlag = default;
+                    return false;
+                }
+                vrmFirstPersonFlag = _info.VrmFirstPersonFlag.Value;
+                return true;
             }
         }
     }

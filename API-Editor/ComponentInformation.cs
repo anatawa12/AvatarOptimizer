@@ -434,6 +434,12 @@ namespace Anatawa12.AvatarOptimizer.API
         /// <returns>Whether if the property is successfully mapped or removed</returns>
         [PublicAPI]
         public abstract bool TryMapProperty(string property, out MappedPropertyInfo found);
+
+        /// <summary>
+        /// Gets the VRM FirstPersonFlag of the component, following component mappings.
+        /// </summary>
+        [PublicAPI]
+        public abstract bool TryGetMappedVrmFirstPersonFlag(out VrmFirstPersonFlag vrmFirstPersonFlag);
     }
 
     [PublicAPI]
