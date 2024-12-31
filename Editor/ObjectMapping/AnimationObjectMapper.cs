@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Anatawa12.AvatarOptimizer.API;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Profiling;
@@ -211,6 +212,19 @@ namespace Anatawa12.AvatarOptimizer
                 if (path == gameObjectInfo.NewPath) return null;
                 return new[] { (gameObjectInfo.NewPath, type, propertyName) };
             }
+        }
+
+        public bool TryGetMappedVrmFirstPersonFlag(Renderer component, out VrmFirstPersonFlag vrmFirstPersonFlag)
+        {
+            var componentInfo = _objectMapping.GetComponentMapping(component.GetInstanceID());
+            if (componentInfo == null)
+            {
+                vrmFirstPersonFlag = default;
+                return false;
+            }
+
+            vrmFirstPersonFlag = componentInfo.VrmFirstPersonFlag ?? default;
+            return componentInfo.VrmFirstPersonFlag.HasValue;
         }
     }
 }
