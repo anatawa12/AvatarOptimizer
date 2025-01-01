@@ -439,7 +439,7 @@ namespace Anatawa12.AvatarOptimizer.API
         /// Gets the VRM FirstPersonFlag of the component, following component mappings.
         /// </summary>
         [PublicAPI]
-        public abstract bool TryGetMappedVrmFirstPersonFlag(out VrmFirstPersonFlag vrmFirstPersonFlag);
+        internal abstract bool TryGetMappedVrmFirstPersonFlag(out VrmFirstPersonFlag vrmFirstPersonFlag);
     }
 
     [PublicAPI]
@@ -462,5 +462,16 @@ namespace Anatawa12.AvatarOptimizer.API
             Component = component;
             Property = property;
         }
+    }
+    
+    /// <summary>
+    /// The VRM FirstPersonFlag settings for renderers of a VRM0/VRM1 avatar, respective to either VRMFirstPerson.RendererFirstPersonFlags (VRM0) or FirstPersonType (VRM1).  
+    /// </summary>
+    internal enum VrmFirstPersonFlag
+    {
+        Auto,
+        Both,
+        ThirdPersonOnly,
+        FirstPersonOnly,
     }
 }

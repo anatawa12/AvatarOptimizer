@@ -146,7 +146,7 @@ namespace Anatawa12.AvatarOptimizer
                 return true;
             }
 
-            public override bool TryGetMappedVrmFirstPersonFlag(out VrmFirstPersonFlag vrmFirstPersonFlag)
+            internal override bool TryGetMappedVrmFirstPersonFlag(out VrmFirstPersonFlag vrmFirstPersonFlag)
             {
                 vrmFirstPersonFlag = default;
                 return false;
@@ -178,7 +178,7 @@ namespace Anatawa12.AvatarOptimizer
 
             }
             
-            public override bool TryGetMappedVrmFirstPersonFlag(out VrmFirstPersonFlag vrmFirstPersonFlag)
+            internal override bool TryGetMappedVrmFirstPersonFlag(out VrmFirstPersonFlag vrmFirstPersonFlag)
             {
                 switch (_info.VrmFirstPersonFlag)
                 {
