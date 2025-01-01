@@ -113,22 +113,19 @@ namespace Anatawa12.AvatarOptimizer
 #if AAO_VRM0 || AAO_VRM1
         VrmFirstPersonFlag? MergeVrmFirstPersonFlags(VrmFirstPersonFlag? from, VrmFirstPersonFlag? to)
         {
-            if (!from.HasValue)
+            switch (from, to)
             {
-                return to;
+                case (null, var other): return other;
+                case (var other, null): return other; 
+                case ({ } fromFlag, { } toFlag) when fromFlag == toFlag: return fromFlag;
+                case ({ } fromFlag, { } toFlag):
+                {
+                    var mergedFirstPersonFlag = fromFlag == VrmFirstPersonFlag.Both || toFlag == VrmFirstPersonFlag.Both
+                        ? VrmFirstPersonFlag.Both : VrmFirstPersonFlag.Auto; 
+                    BuildLog.LogWarning("MergeSkinnedMesh:warning:VRM:FirstPersonFlagsMismatch", mergedFirstPersonFlag.ToString());
+                    return mergedFirstPersonFlag;
+                }
             }
-            if (!to.HasValue)
-            {
-                return from;
-            }
-            if (from == to)
-            {
-                return from;
-            }
-            
-            var mergedFirstPersonFlag = from == VrmFirstPersonFlag.Both || to == VrmFirstPersonFlag.Both ? VrmFirstPersonFlag.Both : VrmFirstPersonFlag.Auto; 
-            BuildLog.LogWarning("MergeSkinnedMesh:warning:VRM:FirstPersonFlagsMismatch", mergedFirstPersonFlag.ToString());
-            return mergedFirstPersonFlag;
         }
 #endif
 
