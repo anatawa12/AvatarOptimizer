@@ -214,6 +214,18 @@ namespace Anatawa12.AvatarOptimizer
             }
         }
 
+        public bool TryGetMappedVrmFirstPersonFlag(string path, out VrmFirstPersonFlag vrmFirstPersonFlag)
+        {
+            vrmFirstPersonFlag = default;
+            var gameObjectInfo = GetGameObjectInfo(path);
+            if (gameObjectInfo == null) return false;
+            var (_, componentInfo) = gameObjectInfo.GetComponentByType(typeof(Renderer));
+            if (componentInfo?.VrmFirstPersonFlag is not { } firstPersonFlag) return false;
+            vrmFirstPersonFlag = firstPersonFlag;
+            return true;
+        }
+
+        [Obsolete]
         public bool TryGetMappedVrmFirstPersonFlag(Renderer component, out VrmFirstPersonFlag vrmFirstPersonFlag)
         {
             var componentInfo = _objectMapping.GetComponentMapping(component.GetInstanceID());

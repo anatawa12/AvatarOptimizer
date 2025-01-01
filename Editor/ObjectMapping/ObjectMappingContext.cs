@@ -98,7 +98,7 @@ namespace Anatawa12.AvatarOptimizer
                                 case UniVRM10.VRM10Object vrm10Object:
                                     mapper ??= new AnimatorControllerMapper(
                                         mapping.CreateAnimationMapper(component.gameObject), context);
-                                    mapper.FixVRM10Object(context, vrm10Object);
+                                    mapper.FixVRM10Object(vrm10Object);
                                     break;
 #endif
                             }
@@ -455,7 +455,7 @@ namespace Anatawa12.AvatarOptimizer
 #endif
 
 #if AAO_VRM1
-        public void FixVRM10Object(BuildContext context, UniVRM10.VRM10Object? vrm10Object)
+        public void FixVRM10Object(UniVRM10.VRM10Object? vrm10Object)
         {
             if (vrm10Object == null) return;
             ValidateTemporaryAsset(vrm10Object);
@@ -467,8 +467,7 @@ namespace Anatawa12.AvatarOptimizer
                 .Select(r =>
                 {
                     var rendererPath = _mapping.MapPath(r.Renderer, typeof(Renderer));
-                    var renderer = context.AvatarRootTransform.Find(rendererPath)?.GetComponent<Renderer>();
-                    if (renderer == null || !_mapping.TryGetMappedVrmFirstPersonFlag(renderer, out var vrmFirstPersonFlag))
+                    if (rendererPath == null || !_mapping.TryGetMappedVrmFirstPersonFlag(rendererPath, out var vrmFirstPersonFlag))
                     {
                         vrmFirstPersonFlag = VrmFirstPersonFlag.Auto;
                     }
