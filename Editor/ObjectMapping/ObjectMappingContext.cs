@@ -464,16 +464,19 @@ namespace Anatawa12.AvatarOptimizer
                 FixVRM10Expression(clip.Clip);
 
             vrm10Object.FirstPerson.Renderers = vrm10Object.FirstPerson.Renderers
-                .Select(r =>
+                .Select(renderer => renderer.Renderer)
+                .Where(rendererPath => rendererPath != null)
+                .Distinct()
+                .Select(rendererPath =>
                 {
-                    var rendererPath = _mapping.MapPath(r.Renderer, typeof(Renderer));
-                    if (rendererPath == null || !_mapping.TryGetMappedVrmFirstPersonFlag(rendererPath, out var vrmFirstPersonFlag))
+                    var mappedRendererPath = _mapping.MapPath(rendererPath, typeof(Renderer));
+                    if (mappedRendererPath == null || !_mapping.TryGetMappedVrmFirstPersonFlag(mappedRendererPath, out var vrmFirstPersonFlag))
                     {
                         vrmFirstPersonFlag = VrmFirstPersonFlag.Auto;
                     }
                     return new UniVRM10.RendererFirstPersonFlags
                     {
-                        Renderer = rendererPath,
+                        Renderer = mappedRendererPath,
                         FirstPersonFlag = vrmFirstPersonFlag switch
                         {
 
@@ -483,28 +486,6 @@ namespace Anatawa12.AvatarOptimizer
                             VrmFirstPersonFlag.FirstPersonOnly => FirstPersonType.firstPersonOnly,
                             _ => throw new ArgumentOutOfRangeException()
                         }
-                    };
-                })
-                .Where(r => r.Renderer != null)
-                .GroupBy(r => r.Renderer, r => r.FirstPersonFlag)
-                .Select(grouping =>
-                {
-                    FirstPersonType mergedFirstPersonFlag;
-                    var firstPersonFlags = grouping.Distinct().ToArray();
-                    if (firstPersonFlags.Length == 1)
-                    {
-                        mergedFirstPersonFlag = firstPersonFlags[0];
-                    }
-                    else
-                    {
-                        mergedFirstPersonFlag = firstPersonFlags.Contains(FirstPersonType.both) ? FirstPersonType.both : FirstPersonType.auto;
-                        BuildLog.LogWarning("MergeSkinnedMesh:warning:VRM:FirstPersonFlagsMismatch", mergedFirstPersonFlag.ToString());
-                    }
-
-                    return new UniVRM10.RendererFirstPersonFlags
-                    {
-                        Renderer = grouping.Key,
-                        FirstPersonFlag = mergedFirstPersonFlag
                     };
                 }).ToList();
         }
