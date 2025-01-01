@@ -121,10 +121,12 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
         protected override void ApplySpecialMapping(VRMFirstPerson component, MappingSource mappingSource)
         {
             component.Renderers = component.Renderers
-                .Select(r =>
+                .Select(renderer => renderer.Renderer)
+                .Where(renderer => renderer)
+                .Distinct()
+                .Select(renderer =>
                 {
-
-                    var mappedComponentInfo = mappingSource.GetMappedComponent(r.Renderer);
+                    var mappedComponentInfo = mappingSource.GetMappedComponent(renderer);
                     if (!mappedComponentInfo.TryGetMappedVrmFirstPersonFlag(out var firstPersonFlag))
                     {
                         firstPersonFlag = VrmFirstPersonFlag.Auto;
@@ -141,28 +143,6 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
                             VrmFirstPersonFlag.FirstPersonOnly => FirstPersonFlag.FirstPersonOnly,
                             _ => throw new ArgumentOutOfRangeException()
                         }
-                    };
-                })
-                .Where(r => r.Renderer)
-                .GroupBy(r => r.Renderer, r => r.FirstPersonFlag)
-                .Select(grouping =>
-                {
-                    FirstPersonFlag mergedFirstPersonFlag;
-                    var firstPersonFlags = grouping.Distinct().ToArray();
-                    if (firstPersonFlags.Length == 1)
-                    {
-                        mergedFirstPersonFlag = firstPersonFlags[0];
-                    }
-                    else
-                    {
-                        mergedFirstPersonFlag = firstPersonFlags.Contains(FirstPersonFlag.Both) ? FirstPersonFlag.Both : FirstPersonFlag.Auto;
-                        BuildLog.LogWarning("MergeSkinnedMesh:warning:VRM:FirstPersonFlagsMismatch", mergedFirstPersonFlag.ToString());
-                    }
-
-                    return new VRMFirstPerson.RendererFirstPersonFlags
-                    {
-                        Renderer = grouping.Key,
-                        FirstPersonFlag = mergedFirstPersonFlag
                     };
                 }).ToList();
         }
