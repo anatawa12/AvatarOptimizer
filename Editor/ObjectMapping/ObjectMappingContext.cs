@@ -180,13 +180,15 @@ namespace Anatawa12.AvatarOptimizer
             
             public override bool TryGetMappedVrmFirstPersonFlag(out VrmFirstPersonFlag vrmFirstPersonFlag)
             {
-                if (!_info.VrmFirstPersonFlag.HasValue)
+                switch (_info.VrmFirstPersonFlag)
                 {
-                    vrmFirstPersonFlag = default;
-                    return false;
+                    case { } firstPersonFlag: 
+                        vrmFirstPersonFlag = firstPersonFlag;
+                        return true;
+                    case null:
+                        vrmFirstPersonFlag = default;
+                        return false;
                 }
-                vrmFirstPersonFlag = _info.VrmFirstPersonFlag.Value;
-                return true;
             }
         }
     }
