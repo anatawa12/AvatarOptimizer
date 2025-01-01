@@ -8,16 +8,6 @@ using UnityEngine;
 using UnityEngine.Profiling;
 using UnityEngine.Rendering;
 
-#if AAO_VRM0
-using VRM;
-#endif
-#if AAO_VRM1
-using UniGLTF.Extensions.VRMC_vrm;
-using UniVRM10;
-#endif
-
-using Debug = System.Diagnostics.Debug;
-
 namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 {
     internal class AutoMergeSkinnedMesh : TraceAndOptimizePass<AutoMergeSkinnedMesh>
