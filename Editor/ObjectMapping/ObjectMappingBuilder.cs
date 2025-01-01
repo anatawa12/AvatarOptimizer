@@ -90,28 +90,23 @@ namespace Anatawa12.AvatarOptimizer
 
         public void RecordMergeComponent<T>(T from, T mergeTo) where T: Component
         {
-            var newMergeToInfo = new BuildingComponentInfo(mergeTo);
-
-#if AAO_VRM0 || AAO_VRM1
-            newMergeToInfo.VrmFirstPersonFlag = MergeVrmFirstPersonFlags(GetVrmFirstPersonFlag(from), GetVrmFirstPersonFlag(mergeTo));
-#endif
-
             if (!_componentInfos.TryGetValue(mergeTo.GetInstanceID(), out var mergeToInfo))
             {
+                var newMergeToInfo = new BuildingComponentInfo(mergeTo);
                 _originalComponentInfos.Add(mergeTo.GetInstanceID(), newMergeToInfo);
                 _componentInfos.Add(mergeTo.GetInstanceID(), newMergeToInfo);
                 GetComponentInfo(from).MergedTo(newMergeToInfo);
             }
             else
             {
+                var newMergeToInfo = new BuildingComponentInfo(mergeTo, mergeToInfo);
                 _componentInfos[mergeTo.GetInstanceID()]= newMergeToInfo;
                 mergeToInfo.MergedTo(newMergeToInfo);
                 GetComponentInfo(from).MergedTo(newMergeToInfo);
             }
         }
 
-#if AAO_VRM0 || AAO_VRM1
-        VrmFirstPersonFlag? MergeVrmFirstPersonFlags(VrmFirstPersonFlag? from, VrmFirstPersonFlag? to)
+        static VrmFirstPersonFlag? MergeVrmFirstPersonFlags(VrmFirstPersonFlag? from, VrmFirstPersonFlag? to)
         {
             switch (from, to)
             {
@@ -127,7 +122,6 @@ namespace Anatawa12.AvatarOptimizer
                 }
             }
         }
-#endif
 
         public void RecordMoveProperties(ComponentOrGameObject from, params (string old, string @new)[] props) =>
             GetComponentInfo(from).MoveProperties(props);
@@ -275,6 +269,11 @@ namespace Anatawa12.AvatarOptimizer
                 Type = component.Value.GetType();
             }
 
+            public BuildingComponentInfo(ComponentOrGameObject component, BuildingComponentInfo oldComponentInfo) : this(component)
+            {
+                VrmFirstPersonFlag = oldComponentInfo.VrmFirstPersonFlag;
+            }
+
             internal bool IsMerged => _mergedInto != null;
 
             private AnimationPropertyInfo GetProperty(string name, bool remove = false)
@@ -302,6 +301,8 @@ namespace Anatawa12.AvatarOptimizer
                 foreach (var property in _afterPropertyIds.Values)
                     property.MergeTo(mergeTo.GetProperty(property.Name!));
                 _afterPropertyIds.Clear();
+
+                mergeTo.VrmFirstPersonFlag = MergeVrmFirstPersonFlags(VrmFirstPersonFlag, mergeTo.VrmFirstPersonFlag);
             }
 
             public void MoveProperties(params (string old, string @new)[] props)
