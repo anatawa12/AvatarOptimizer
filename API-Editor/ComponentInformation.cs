@@ -439,7 +439,6 @@ namespace Anatawa12.AvatarOptimizer.API
         /// Gets the VRM FirstPersonFlag of the component, following component mappings.
         /// NOTE for external users: this API is subject to change in future releases.
         /// </summary>
-        [PublicAPI]
         internal abstract bool TryGetMappedVrmFirstPersonFlag(out VrmFirstPersonFlag vrmFirstPersonFlag);
     }
 
