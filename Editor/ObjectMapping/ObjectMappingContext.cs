@@ -467,6 +467,7 @@ namespace Anatawa12.AvatarOptimizer
                 .Select(renderer => renderer.Renderer)
                 .Where(rendererPath => rendererPath != null)
                 .Select(rendererPath => _mapping.MapPath(rendererPath, typeof(Renderer)))
+                .Where(mappedRendererPath => mappedRendererPath != null)
                 .Distinct()
                 .Select(mappedRendererPath =>
                 {

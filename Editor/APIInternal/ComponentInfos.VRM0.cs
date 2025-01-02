@@ -124,6 +124,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
                 .Select(renderer => renderer.Renderer)
                 .Where(renderer => renderer)
                 .Select(mappingSource.GetMappedComponent)
+                .Where(mappedComponentInfo => mappedComponentInfo.MappedComponent)
                 .GroupBy(mappedComponentInfo => mappedComponentInfo.MappedComponent)
                 .Select(g => g.First())
                 .Select(mappedComponentInfo =>
