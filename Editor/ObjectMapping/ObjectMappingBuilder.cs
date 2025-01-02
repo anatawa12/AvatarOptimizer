@@ -99,7 +99,7 @@ namespace Anatawa12.AvatarOptimizer
             }
             else
             {
-                var newMergeToInfo = new BuildingComponentInfo(mergeTo, mergeToInfo);
+                var newMergeToInfo = new BuildingComponentInfo(mergeTo);
                 _componentInfos[mergeTo.GetInstanceID()]= newMergeToInfo;
                 mergeToInfo.MergedTo(newMergeToInfo);
                 GetComponentInfo(from).MergedTo(newMergeToInfo);
@@ -267,11 +267,6 @@ namespace Anatawa12.AvatarOptimizer
             {
                 InstanceId = component.GetInstanceID();
                 Type = component.Value.GetType();
-            }
-
-            public BuildingComponentInfo(ComponentOrGameObject component, BuildingComponentInfo oldComponentInfo) : this(component)
-            {
-                VrmFirstPersonFlag = oldComponentInfo.VrmFirstPersonFlag;
             }
 
             internal bool IsMerged => _mergedInto != null;
