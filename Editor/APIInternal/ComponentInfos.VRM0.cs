@@ -123,10 +123,11 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
             component.Renderers = component.Renderers
                 .Select(renderer => renderer.Renderer)
                 .Where(renderer => renderer)
-                .Distinct()
-                .Select(renderer =>
+                .Select(mappingSource.GetMappedComponent)
+                .GroupBy(mappedComponentInfo => mappedComponentInfo.MappedComponent)
+                .Select(g => g.First())
+                .Select(mappedComponentInfo =>
                 {
-                    var mappedComponentInfo = mappingSource.GetMappedComponent(renderer);
                     if (!mappedComponentInfo.TryGetMappedVrmFirstPersonFlag(out var firstPersonFlag))
                     {
                         firstPersonFlag = VrmFirstPersonFlag.Auto;

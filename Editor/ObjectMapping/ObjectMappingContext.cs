@@ -466,10 +466,10 @@ namespace Anatawa12.AvatarOptimizer
             vrm10Object.FirstPerson.Renderers = vrm10Object.FirstPerson.Renderers
                 .Select(renderer => renderer.Renderer)
                 .Where(rendererPath => rendererPath != null)
+                .Select(rendererPath => _mapping.MapPath(rendererPath, typeof(Renderer)))
                 .Distinct()
-                .Select(rendererPath =>
+                .Select(mappedRendererPath =>
                 {
-                    var mappedRendererPath = _mapping.MapPath(rendererPath, typeof(Renderer));
                     if (mappedRendererPath == null || !_mapping.TryGetMappedVrmFirstPersonFlag(mappedRendererPath, out var vrmFirstPersonFlag))
                     {
                         vrmFirstPersonFlag = VrmFirstPersonFlag.Auto;
