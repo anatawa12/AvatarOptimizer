@@ -16,7 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Performance improvements
+- Performance improvements `#1380`
 
 ### Security
 
