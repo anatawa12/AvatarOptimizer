@@ -520,8 +520,8 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         where TValueInfo : struct, IValueInfo<TValueInfo>
     {
         private readonly List<BlendTreeElement<TValueInfo>> _children;
-        private readonly BlendTreeType _blendTreeType;
-        private readonly bool _partial;
+        public BlendTreeType TreeType { get; }
+        public bool Partial { get; }
 
         public BlendTreeNode(List<BlendTreeElement<TValueInfo>> children,
             BlendTreeType blendTreeType, bool partial)
@@ -531,21 +531,21 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             Utils.Assert(children.Any());
             // ReSharper disable once PossibleMultipleEnumeration
             _children = children;
-            _blendTreeType = blendTreeType;
-            _partial = partial;
+            TreeType = blendTreeType;
+            Partial = partial;
         }
 
 
-        private bool WeightSumIsOne => _blendTreeType != BlendTreeType.Direct;
+        private bool WeightSumIsOne => TreeType != BlendTreeType.Direct;
         public IReadOnlyList<BlendTreeElement<TValueInfo>> Children => _children;
 
         public override ApplyState ApplyState =>
-            (WeightSumIsOne && !_partial ? ApplyState.Always : ApplyState.Partially)
+            (WeightSumIsOne && !Partial ? ApplyState.Always : ApplyState.Partially)
             .MultiplyApplyState(_children.Select(x => x.Node.ApplyState).MergeSideBySide());
 
         public override TValueInfo Value
         {
-            get => default(TValueInfo).ConstantInfoForBlendTree(_children.Select(x => x.Node), _blendTreeType);
+            get => default(TValueInfo).ConstantInfoForBlendTree(_children.Select(x => x.Node), TreeType);
         }
 
         public override IEnumerable<ObjectReference> ContextReferences =>
