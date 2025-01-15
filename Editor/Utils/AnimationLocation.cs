@@ -10,15 +10,16 @@ using UnityEngine;
 namespace Anatawa12.AvatarOptimizer
 {
     // The class describes the location of the animation curve
+    [Serializable]
     internal sealed class AnimationLocation : IErrorContext
     {
-        public Animator Component { get; }
-        public int PlayableLayerIndex { get; }
-        public int AnimationLayerIndex { get; }
-        public AnimatorState AnimatorState { get; }
-        public int[] BlendTreeLocation { get; }
-        public AnimationCurve Curve { get; }
-        public AnimationClip Clip { get; set; }
+        public Animator Component;
+        public int PlayableLayerIndex;
+        public int AnimationLayerIndex;
+        public AnimatorState AnimatorState;
+        public int[] BlendTreeLocation;
+        public AnimationCurve Curve;
+        public AnimationClip Clip;
 
         public AnimationLocation(Animator component, int playableLayerIndex, int animationLayerIndex,
             AnimatorState state, int[]? blendTreeLocation, AnimationCurve curve,

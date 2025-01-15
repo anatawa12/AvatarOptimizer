@@ -22,7 +22,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             if (mergeMeshes.Count == 0) return;
 
             CategoryMeshesForMerge(context, mergeMeshes, out var categorizedMeshes, out var orphanMeshes);
-            
+
+            if (CategorizationKeyDebugEnabled.DebugEnabled)
+            {
+                context.AvatarRootObject.AddComponent<CategorizationKeyHolderRoot>();
+                return;
+            }
+
             Func<MeshInfo2[], (int[][], List<(MeshTopology, Material?)>)> createSubMeshes;
 
             // createSubMeshes must preserve first material to be the first material
@@ -161,6 +167,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
                 var key = new CategorizationKey(meshInfo2, activeness, activenessAnimationLocations,
                     rendererAnimationLocations);
+                if (CategorizationKeyDebugEnabled.DebugEnabled)
+                {
+                    meshInfo2.SourceRenderer.gameObject.AddComponent<CategorizationKeyHolder>().key = key;
+                    continue;
+                }
+
                 if (!categorizedMeshes.TryGetValue(key, out var list))
                 {
                     list = new List<MeshInfo2>();
@@ -740,6 +752,124 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             Animating,
         }
 
+        private static class CategorizationKeyDebugEnabled
+        {
+            public static bool DebugEnabled = false;
+            private const string MenuName = "Tools/Avatar Optimizer/CategorizationKey Debug";
+
+            [UnityEditor.InitializeOnLoadMethod]
+            public static void Initialize()
+            {
+                UnityEditor.EditorApplication.delayCall += () =>
+                {
+                    UnityEditor.Menu.SetChecked(MenuName,
+                        DebugEnabled);
+                };
+            }
+
+            [UnityEditor.MenuItem(MenuName)]
+            public static void Enable()
+            {
+                DebugEnabled = !DebugEnabled;
+                UnityEditor.Menu.SetChecked(MenuName, DebugEnabled);
+            }
+        }
+
+        [UnityEditor.CustomEditor(typeof(CategorizationKeyHolderRoot))]
+        private class CategorizationKeyHolderRootEditor : UnityEditor.Editor
+        {
+            private int a;
+            private int b;
+            private string lastCompareResult;
+
+            public override void OnInspectorGUI()
+            {
+                var root = (CategorizationKeyHolderRoot)target;
+                if (GUILayout.Button("Save to file"))
+                {
+                    var path = UnityEditor.EditorUtility.SaveFilePanelInProject("Save Categorization Key", "CategorizationKey", "asset", "Save Categorization Key");
+                    if (string.IsNullOrEmpty(path)) return;
+
+
+                    var meshes = root.gameObject.GetComponentsInChildren<CategorizationKeyHolder>(true);
+                    var asset = ScriptableObject.CreateInstance<CategorizationKeyHolderAsset>();
+
+                    asset.pairs = meshes.Select(x => new CategorizationKeyHolderAsset.CategorizationKeyHolderPair
+                    {
+                        meshPath = Utils.RelativePath(root.gameObject.transform, x.gameObject.transform),
+                        key = x.key,
+                    }).ToArray();
+
+                    UnityEditor.AssetDatabase.CreateAsset(asset, path);
+                }
+
+                var paths = root.gameObject.GetComponentsInChildren<CategorizationKeyHolder>(true)
+                    .Select(key => (meshPath: Utils.RelativePath(root.gameObject.transform, key.gameObject.transform), key.key))
+                    .ToArray();
+                GUILayout.Label("Compare two keys:");
+                a = UnityEditor.EditorGUILayout.Popup(a, Array.ConvertAll(paths, x => x.meshPath));
+                b = UnityEditor.EditorGUILayout.Popup(b, Array.ConvertAll(paths, x => x.meshPath));
+                if (GUILayout.Button("Compare"))
+                {
+                    var keyA = paths[a].key;
+                    var keyB = paths[b].key;
+                    var result = keyA.Equals(keyB);
+                    lastCompareResult = $"{paths[a].meshPath} and {paths[b].meshPath} are {(result ? "same" : "different")}";
+                }
+                if (!string.IsNullOrEmpty(lastCompareResult))
+                    GUILayout.Label(lastCompareResult, UnityEditor.EditorStyles.wordWrappedLabel);
+                Utils.HorizontalLine();
+
+                base.OnInspectorGUI();
+            }
+        }
+        private class CategorizationKeyHolderRoot : MonoBehaviour
+        {
+        }
+        [UnityEditor.CustomEditor(typeof(CategorizationKeyHolderAsset))]
+        public class CategorizationKeyHolderAssetEditor : UnityEditor.Editor
+        {
+            private int a;
+            private int b;
+            private string lastCompareResult;
+
+            public override void OnInspectorGUI()
+            {
+                var asset = (CategorizationKeyHolderAsset)target;
+                var paths = asset.pairs.Select( x => x.meshPath).ToArray();
+                GUILayout.Label("Compare two keys:");
+                a = UnityEditor.EditorGUILayout.Popup(a, paths);
+                b = UnityEditor.EditorGUILayout.Popup(b, paths);
+                if (GUILayout.Button("Compare"))
+                {
+                    var keyA = asset.pairs[a].key;
+                    var keyB = asset.pairs[b].key;
+                    var result = keyA.Equals(keyB);
+                    lastCompareResult = $"{asset.pairs[a].meshPath} and {asset.pairs[b].meshPath} are {(result ? "same" : "different")}";
+                }
+                if (!string.IsNullOrEmpty(lastCompareResult))
+                    GUILayout.Label(lastCompareResult);
+                Utils.HorizontalLine();
+                base.OnInspectorGUI();
+            }
+        }
+
+        private class CategorizationKeyHolderAsset : ScriptableObject
+        {
+            public CategorizationKeyHolderPair[] pairs;
+
+            [Serializable]
+            public class CategorizationKeyHolderPair
+            {
+                public string meshPath;
+                public CategorizationKey key;
+            }
+        }
+        private class CategorizationKeyHolder : MonoBehaviour
+        {
+            public CategorizationKey key;
+        }
+
         // Here's the all list of properties in SkinnedMeshRenderer
         // Renderer:
         // - bounds (local bounds) - must be same
@@ -773,16 +903,52 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         // - sharedMesh - merge
         // - skinnedMotionVectors - must be same
         // - blendShapes - always empty
-        internal struct CategorizationKey : IEquatable<CategorizationKey>
+        [Serializable]
+        internal struct CategorizationKey : IEquatable<CategorizationKey>, ISerializationCallbackReceiver
         {
             public bool HasNormals;
 
             public EqualsHashSet<(bool initial, EqualsHashSet<AnimationLocation> animation)>
                 ActivenessAnimationLocations;
 
+            [SerializeField]
+            private ActivenessAnimationLocation[] activenessAnimationLocations;
+            [Serializable]
+            private struct ActivenessAnimationLocation
+            {
+                public bool initial;
+                public AnimationLocation[] animation;
+
+                public ActivenessAnimationLocation((bool initial, EqualsHashSet<AnimationLocation> animation) pair)
+                {
+                    this.initial = pair.initial;
+                    this.animation = pair.animation.backedSet.ToArray();
+                }
+            }
+
             // defaultValue will be null if the animation is always applied. this means default value does not matter
             public EqualsHashSet<(string property, float? defaultValue, EqualsHashSet<AnimationLocation> locations)>
                 RendererAnimationLocations;
+
+            [SerializeField]
+            private RendererAnimationLocation[] rendererAnimationLocations;
+            [Serializable]
+            private struct RendererAnimationLocation
+            {
+                public string property;
+                public float hasDefaultValue;
+                public float defaultValue;
+                public AnimationLocation[] locations;
+
+                public RendererAnimationLocation((string property, float? defaultValue, EqualsHashSet<AnimationLocation> locations) tuple)
+                {
+                    property = tuple.property;
+                    hasDefaultValue = tuple.defaultValue.HasValue ? 1 : 0;
+                    defaultValue = tuple.defaultValue ?? 0;
+                    locations = tuple.locations.backedSet.ToArray();
+                }
+            }
+
             public Activeness Activeness;
 
             // renderer properties
@@ -829,6 +995,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 UpdateWhenOffscreen = renderer.updateWhenOffscreen;
                 RootBone = renderer.rootBone;
                 SkinnedMotionVectors = renderer.skinnedMotionVectors;
+
+                this.activenessAnimationLocations = Array.Empty<ActivenessAnimationLocation>();
+                this.rendererAnimationLocations = Array.Empty<RendererAnimationLocation>();
             }
 
             public bool Equals(CategorizationKey other)
@@ -876,6 +1045,17 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 hashCode.Add(RootBone);
                 hashCode.Add(SkinnedMotionVectors);
                 return hashCode.ToHashCode();
+            }
+
+            void ISerializationCallbackReceiver.OnBeforeSerialize()
+            {
+                activenessAnimationLocations = ActivenessAnimationLocations?.backedSet?.Select(x => new ActivenessAnimationLocation(x))?.ToArray() ?? activenessAnimationLocations;
+                rendererAnimationLocations = RendererAnimationLocations?.backedSet?.Select(x => new RendererAnimationLocation(x))?.ToArray() ?? rendererAnimationLocations;
+            }
+
+            void ISerializationCallbackReceiver.OnAfterDeserialize()
+            {
+                ActivenessAnimationLocations = new EqualsHashSet<(bool initial, EqualsHashSet<AnimationLocation> animation)>(activenessAnimationLocations.Select(x => (x.initial, new EqualsHashSet<AnimationLocation>(x.animation))));
             }
         }
     }
