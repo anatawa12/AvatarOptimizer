@@ -16,6 +16,8 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Performance improvements `#1380`
+- Meshes merged by AutoMergeSkinnedMesh might be incorrectly removed `#1381`
 - VRM: Fix BlendShape mapping [`#1375`](https://github.com/anatawa12/AvatarOptimizer/pull/1375)
 - VRM: Fix Trace and Optimize incorrectly merging Skinned Meshes with different FirstPerson settings  [`#1103`](https://github.com/anatawa12/AvatarOptimizer/pull/1103)
 
