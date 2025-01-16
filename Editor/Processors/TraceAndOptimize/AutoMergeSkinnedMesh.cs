@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
 using nadena.dev.ndmf;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Profiling;
 using UnityEngine.Rendering;
@@ -13,6 +15,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
     internal class AutoMergeSkinnedMesh : TraceAndOptimizePass<AutoMergeSkinnedMesh>
     {
         public override string DisplayName => "T&O: AutoMergeSkinnedMesh";
+
+        private static void Log(string log, [CallerLineNumber] int lineNum = 0)
+        {
+            UnityEngine.Debug.Log($"[AutoMergeSkinnedMesh:{lineNum}] {log}");
+        }
 
         protected override void Execute(BuildContext context, TraceAndOptimizeState state)
         {
@@ -33,8 +40,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             else
                 createSubMeshes = CreateSubMeshesMergePreserveOrder;
 
+            Log("MergeMaterialSlots");
             foreach (var orphanMesh in orphanMeshes)
                 MergeMaterialSlot(orphanMesh, createSubMeshes);
+            Log("MergeMaterialSlots End");
 
             MergeMeshes(context, state, categorizedMeshes, createSubMeshes);
         }
@@ -94,7 +103,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     {
                         if (state.GCDebug)
                             UnityEngine.Debug.Log(
-                                $"EntryPoints of {meshRenderer}: {string.Join(", ", componentInfo.DependantComponents)}");
+                                $"EntryPoints of {meshRenderer}: [{string.Join(", ", componentInfo.DependantComponents)}]");
                         continue;
                     }
                 }
@@ -145,29 +154,50 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         public static void CategoryMeshesForMerge(BuildContext context, List<MeshInfo2> mergeMeshes,
             out Dictionary<CategorizationKey, List<MeshInfo2>> categorizedMeshes, out List<MeshInfo2> orphanMeshes)
         {
+            Log("Begin CategoryMeshesForMerge");
             // then, group by mesh attributes
             categorizedMeshes = new Dictionary<CategorizationKey, List<MeshInfo2>>();
             foreach (var meshInfo2 in mergeMeshes)
             {
+                Log($"Processing {meshInfo2}");
                 var activenessInfo = GetActivenessInformation(context, meshInfo2.SourceRenderer);
                 if (activenessInfo == null)
+                {
+                    Log($"Activeness Animation from non-animator Detected:  {meshInfo2}");
                     continue; // animating activeness with non animator is not supported
+                }
+
                 var (activeness, activenessAnimationLocations) = activenessInfo.Value;
 
                 var rendererAnimationLocations =
                     GetAnimationLocationsForRendererAnimation(context, (SkinnedMeshRenderer)meshInfo2.SourceRenderer);
                 if (rendererAnimationLocations == null)
+                {
+                    Log($"AnimatingRendererProperties Detected: {meshInfo2}");
                     continue; // animating renderer properties with non animator is not supported
+                }
 
                 var key = new CategorizationKey(meshInfo2, activeness, activenessAnimationLocations,
                     rendererAnimationLocations);
+                Log($"Categorization Key for {meshInfo2}: {key}");
+                Log($"Categorization Key Hash: {key.GetHashCode()}");
                 if (!categorizedMeshes.TryGetValue(key, out var list))
                 {
                     list = new List<MeshInfo2>();
                     categorizedMeshes[key] = list;
+                    Log($"We could not find existing key; creating new (id: {RuntimeHelpers.GetHashCode(list)})");
+                }
+                else
+                {
+                    Log($"We find existing key, the key has meshes: [{string.Join(", ", list)}] (id: {RuntimeHelpers.GetHashCode(list)})");
+                    var existingKey = categorizedMeshes.First(x => x.Value == list).Key;
+                    Log($"existing key: {existingKey}");
+                    Log($"existing key.Equals(current key): {existingKey.Equals(key)}");
+                    Log($"existing key HashCode: {existingKey.GetHashCode()}");
                 }
 
                 list.Add(meshInfo2);
+                Log($"Added the mesh to key");
             }
 
             orphanMeshes = new List<MeshInfo2>();
@@ -177,10 +207,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             {
                 if (list.Count == 1)
                 {
+                    Log($"The key has {list[0]} is single mesh group; removing: {key}");
                     categorizedMeshes.Remove(key);
                     orphanMeshes.Add(list[0]);
                 }
             }
+            Log("End CategoryMeshesForMerge");
 
             Profiler.EndSample();
         }
@@ -203,6 +235,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             Dictionary<CategorizationKey, List<MeshInfo2>> categorizedMeshes,
             Func<MeshInfo2[], (int[][], List<(MeshTopology, Material?)>)> createSubMeshes)
         {
+            Log("Begin MergeMeshes");
             Profiler.BeginSample("Merge Meshes");
 
             var index = 0;
@@ -212,6 +245,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             foreach (var (key, meshInfos) in categorizedMeshes)
             {
+                Log($"Note: next mesh {(key.RendererAnimationLocations.Count == 0 ? "doesn't have" : "have")} renderer animation");
                 if (key.RendererAnimationLocations.Count != 0 && state.SkipMergeMaterialAnimatingSkinnedMesh)
                     continue;
 
@@ -233,6 +267,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             }
 
             Profiler.EndSample();
+            Log("End MergeMeshes");
         }
 
         private static void MergeStaticSkinnedMesh(
@@ -243,8 +278,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             Func<MeshInfo2[], (int[][], List<(MeshTopology, Material?)>)> createSubMeshes
         )
         {
+            Log($"Creating Merged Mesh (Static) for [{string.Join(", ", meshInfos)}]: {key}");
             // if there's no activeness animation, we merge them at root
             var newSkinnedMeshRenderer = CreateNewRenderer(gameObjectFactory, context.AvatarRootTransform, key);
+            Log($"The new Mesh is: {newSkinnedMeshRenderer}");
             newSkinnedMeshRenderer.gameObject.SetActive(key.Activeness == Activeness.AlwaysActive);
             var newMeshInfo = context.GetMeshInfoFor(newSkinnedMeshRenderer);
             var meshInfosArray = meshInfos.ToArray();
@@ -266,17 +303,22 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             Func<MeshInfo2[], (int[][], List<(MeshTopology, Material?)>)> createSubMeshes,
             ObjectMappingBuilder<PropertyInfo> mappingBuilder)
         {
+            Log($"Creating Merged Mesh (Animating) for [{string.Join(", ", meshInfos)}]: {key}");
             // if there is activeness animation, we have to decide the parent of merged mesh
 
             var commonParent = ComputeCommonParent(meshInfos, context.AvatarRootTransform);
+            Log($"Common Parent is {commonParent} (path: {Utils.RelativePath(context.AvatarRootTransform, commonParent)})");
 
             var activenessAnimatingProperties =
                 GetActivenessAnimationPropertiesNotAffectsCommonParent(context, meshInfos[0], commonParent);
+
+            Log($"ActivenessAnimatingProperties: [{string.Join(", ", activenessAnimatingProperties.Select(tuple => $"[{tuple.Item2}].{tuple.Item3} = {tuple.Item1}"))}]");
 
             // we have to have intermediate GameObject to simulate activeness animation 
             commonParent = CreateIntermediateGameObjects(context, activenessAnimatingProperties, gameObjectFactory,
                 commonParent, keepPropertyCount: 2);
 
+            Log($"Common Parent is: {commonParent} (path: {Utils.RelativePath(context.AvatarRootTransform, commonParent)})");
             var newSkinnedMeshRenderer = CreateNewRenderer(gameObjectFactory, commonParent, key);
 
             // process rest activeness animation
@@ -288,6 +330,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     sourceComponent, property,
                     newSkinnedMeshRenderer.gameObject, Props.IsActive);
                 newSkinnedMeshRenderer.gameObject.SetActive(initial);
+                Log("Added ActivenessAnimation for SetActive");
             }
 
             if (activenessAnimatingProperties.Count > 0)
@@ -298,10 +341,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     sourceComponent, property,
                     newSkinnedMeshRenderer, Props.EnabledFor(newSkinnedMeshRenderer));
                 newSkinnedMeshRenderer.enabled = initial;
+                Log("Added ActivenessAnimation for enabled");
             }
 
             Utils.Assert(activenessAnimatingProperties.Count == 0);
 
+            Log("Merging Mesh to new renderer");
             var newMeshInfo = context.GetMeshInfoFor(newSkinnedMeshRenderer);
             var meshInfosArray = meshInfos.ToArray();
 
@@ -876,6 +921,61 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 hashCode.Add(RootBone);
                 hashCode.Add(SkinnedMotionVectors);
                 return hashCode.ToHashCode();
+            }
+
+            private static string ToString(AnimationLocation location)
+            {
+                return
+                    $"Component({location.Component.name}) " +
+                    $"Playable#{location.PlayableLayerIndex} " +
+                    $"Animator#{location.AnimationLayerIndex} " +
+                    $"State({location.AnimatorState.name}) " +
+                    $"Tree[{string.Join(", ", location.BlendTreeLocation)}] " +
+                    $"Clip({location.Clip.name}) " +
+                    $"Curve({ToString(location.Curve)})";
+            }
+
+            private static string ToString(AnimationCurve curve)
+            {
+                var builder = new System.Text.StringBuilder();
+                builder.Append("[");
+                for (var i = 0; i < curve.length; i++)
+                {
+                    if (i != 0) builder.Append(", ");
+                    builder.Append("Key(")
+                        .Append("time: ").Append(curve[i].time).Append(", ")
+                        .Append("value: ").Append(curve[i].value).Append(", ")
+                        .Append("inTangent: ").Append(curve[i].inTangent).Append(", ")
+                        .Append("outTangent: ").Append(curve[i].outTangent).Append(", ")
+                        .Append("leftTangentMode: ").Append(AnimationUtility.GetKeyLeftTangentMode(curve, i)).Append(", ")
+                        .Append("rightTangentMode: ").Append(AnimationUtility.GetKeyRightTangentMode(curve, i)).Append(", ")
+                        .Append("inWeight: ").Append(curve[i].inWeight).Append(", ")
+                        .Append("outWeight: ").Append(curve[i].outWeight)
+                        .Append(")");
+                }
+                builder.Append("]");
+                return builder.ToString();
+            }
+
+            public override string ToString()
+            {
+                return $"CategorizationKey{{" +
+                       $"HasNormals: {HasNormals}, " +
+                       $"ActivenessAnimationLocations: [{string.Join(", ", ActivenessAnimationLocations.backedSet.Select(x => $"(initial: {x.initial}, animation: [{string.Join(",", x.animation.backedSet.Select(ToString))}])"))}], " +
+                       $"RendererAnimationLocations: [{string.Join(", ", RendererAnimationLocations.backedSet.Select(x => $"(property: {x}, animation: [{string.Join(",", x.locations.backedSet.Select(ToString))}])"))}], " +
+                       $"Activeness: {Activeness}, " +
+                       $"Bounds: {{{Bounds}}}, " +
+                       $"ShadowCastingMode: {ShadowCastingMode}, " +
+                       $"ReceiveShadows: {ReceiveShadows}, " +
+                       $"LightProbeUsage: {LightProbeUsage}, " +
+                       $"ReflectionProbeUsage: {ReflectionProbeUsage}, " +
+                       $"AllowOcclusionWhenDynamic: {AllowOcclusionWhenDynamic}, " +
+                       $"LightProbeProxyVolumeOverride: {LightProbeProxyVolumeOverride}, " +
+                       $"ProbeAnchor: {ProbeAnchor}, " +
+                       $"Quality: {Quality}, " +
+                       $"UpdateWhenOffscreen: {UpdateWhenOffscreen}, " +
+                       $"RootBone: {RootBone}, " +
+                       $"SkinnedMotionVectors: {SkinnedMotionVectors}}}";
             }
         }
     }
