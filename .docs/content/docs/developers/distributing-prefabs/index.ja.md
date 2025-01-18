@@ -18,8 +18,8 @@ Avatar OptimizerはMITライセンスの下で公開されているため、再�
 ユーザーをAvatar Optimizer公式の配布場所に誘導する際に推奨される方法は以下の通りです。
 1. VPMでアセットを配布する場合は、Avatar OptimizerをVPMからインストールするように指示してください。\
    VPMで配布するアセットの`package.json`でAvatar Optimizerを依存関係として宣言し、
-   Avatar OptimizerのVPMリポジトリをVCCに追加するようにユーザーを誘導してください。
-   [こちら][add-repo]はAvatar Optimizerの公式リポジトリをVCCに追加するためのリンクです。\
+   Avatar OptimizerのVPMリポジトリをALCOMまたはVCCに追加するようにユーザーを誘導してください。
+   [こちら][add-repo]はAvatar Optimizerの公式リポジトリをALCOMまたはVCCに追加するためのリンクです。\
    また、配布するアセットと同じVPMリポジトリに[Avatar Optimizerの公式リポジトリ][repo]をミラーしても構いません。
    ミラーする場合は、GitHubのReleasesからミラーするのではなく、VPMリポジトリ自体をミラーしてください。
 2. Avatar Optimizerの公式ドキュメントへのリンクを提供してください。\
