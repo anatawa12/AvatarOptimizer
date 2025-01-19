@@ -16,12 +16,15 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Performance improvements `#1380`
-- Meshes merged by AutoMergeSkinnedMesh might be incorrectly removed `#1381`
-- VRM: Fix BlendShape mapping [`#1375`](https://github.com/anatawa12/AvatarOptimizer/pull/1375)
-- VRM: Fix Trace and Optimize incorrectly merging Skinned Meshes with different FirstPerson settings  [`#1376`](https://github.com/anatawa12/AvatarOptimizer/pull/1376)
 
 ### Security
+
+## [1.8.4] - 2025-01-19
+### Fixed
+- Performance improvements [`#1380`](https://github.com/anatawa12/AvatarOptimizer/pull/1380)
+- Meshes merged by AutoMergeSkinnedMesh might be incorrectly removed [`#1381`](https://github.com/anatawa12/AvatarOptimizer/pull/1381)
+- VRM: Fix BlendShape mapping [`#1375`](https://github.com/anatawa12/AvatarOptimizer/pull/1375)
+- VRM: Fix Trace and Optimize incorrectly merging Skinned Meshes with different FirstPerson settings  [`#1376`](https://github.com/anatawa12/AvatarOptimizer/pull/1376)
 
 ## [1.8.3] - 2024-12-24
 ## [1.8.3-beta.1] - 2024-12-24
@@ -1821,7 +1824,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.3...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.4...HEAD
+[1.8.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.3...v1.8.4
 [1.8.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.3-beta.1...v1.8.3
 [1.8.3-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.2...v1.8.3-beta.1
 [1.8.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.1...v1.8.2
