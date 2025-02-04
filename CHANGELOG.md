@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Component Validation Errors doesn't have error source component information `#1390`
 
 ### Security
 
