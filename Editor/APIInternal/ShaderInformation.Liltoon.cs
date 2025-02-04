@@ -327,6 +327,10 @@ internal class LiltoonShaderInformation : ShaderInformation
             LIL_SAMPLE_2D("_MatCapTex", SamplerStateInformation.LinearRepeatSampler, UsingUVChannels.NonMesh);
             LIL_SAMPLE_2D_ST_WithMat("_MatCapBlendMask", samp, uvMain, uvMainMatrix);
 
+            var matCapBlendUv1 = matInfo.GetVector("_MatCapBlendUV1");
+            if (matCapBlendUv1 is null or not { x: 0, y: 0 })
+                matInfo.RegisterOtherUVUsage(UsingUVChannels.UV1);
+
             if (matInfo.GetInt("_MatCapCustomNormal") != 0)
             {
                 LIL_SAMPLE_2D_ST_WithMat("_MatCapBumpMap", samp, uvMain, uvMainMatrix);
@@ -339,6 +343,10 @@ internal class LiltoonShaderInformation : ShaderInformation
 
             LIL_SAMPLE_2D("_MatCap2ndTex", SamplerStateInformation.LinearRepeatSampler, UsingUVChannels.NonMesh);
             LIL_SAMPLE_2D_ST_WithMat("_MatCap2ndBlendMask", samp, uvMain, uvMainMatrix);
+
+            var matCapBlendUv1 = matInfo.GetVector("_MatCap2ndBlendUV1");
+            if (matCapBlendUv1 is null or not { x: 0, y: 0 })
+                matInfo.RegisterOtherUVUsage(UsingUVChannels.UV1);
 
             if (matInfo.GetInt("_MatCap2ndCustomNormal") != 0)
             {

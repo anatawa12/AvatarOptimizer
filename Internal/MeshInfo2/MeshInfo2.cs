@@ -243,9 +243,16 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             for (var uvChannel = 0; uvChannel <= 7; uvChannel++)
             {
                 // ReSharper disable AccessToModifiedClosure
-                CopyVertexAttr(mesh, VertexAttribute.TexCoord0 + uvChannel, vertexBuffers, DataParsers.Vector4Provider,
+                var hasUV = CopyVertexAttr(mesh, VertexAttribute.TexCoord0 + uvChannel, vertexBuffers, DataParsers.Vector4Provider,
                     setHasAttribute: dims => SetTexCoordStatus(uvChannel, TexCoordStatus.Vector2 + (dims - 2)),
                     assign: (x, v) => x.SetTexCoord(uvChannel, v));
+
+                // if uvN is absent, copy from uvN-1
+                if (!hasUV && uvChannel != 0)
+                {
+                    var prevChannel = uvChannel - 1;
+                    Vertices.AsParallel().ForAll(v => v.SetTexCoord(uvChannel, v.GetTexCoord(prevChannel)));
+                }
                 // ReSharper restore AccessToModifiedClosure
             }
 
@@ -283,7 +290,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         delegate T DataParser<T>(byte[] data, int offset);
         delegate DataParser<T> ReadDataProvider<T>(VertexAttributeFormat format, int dimension);
 
-        void CopyVertexAttr<T>(
+        bool CopyVertexAttr<T>(
             Mesh mesh, 
             VertexAttribute attribute, 
             (byte[] buffer, int stride)[] vertexDataList,
@@ -291,7 +298,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             Action<int>? setHasAttribute,
             Action<Vertex, T> assign)
         {
-            if (Vertices.Count == 0) return;
+            if (Vertices.Count == 0) return true;
 
             var dimension = mesh.GetVertexAttributeDimension(attribute);
 
@@ -299,7 +306,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             {
                 if (setHasAttribute == null)
                     throw new InvalidOperationException($"required attribute {attribute} does not exist");
-                return;
+                return false;
             }
 
             setHasAttribute?.Invoke(dimension);
@@ -318,6 +325,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 var data = reader(buffer, stride * i + offset);
                 assign(Vertices[i], data);
             }
+
+            return true;
         }
 
         static class DataParsers
