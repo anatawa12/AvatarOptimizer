@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - Component Validation Errors doesn't have error source component information `#1390`
+- liltoon Angel Ring MatCap settings broken `#1391`
 
 ### Security
 
