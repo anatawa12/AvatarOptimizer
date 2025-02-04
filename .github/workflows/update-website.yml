@@ -77,7 +77,7 @@ jobs:
       - name: zip docs
         run: cd .docs/public && zip ../../build/website.zip -r .
       - name: Upload docs
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: website
           path: .docs/public

@@ -130,18 +130,18 @@ jobs:
             [installer for this]: https://api.anatawa12.com/create-vpai/?name=AvatarOptimizer-{}-installer.unitypackage&repo=https://vpm.anatawa12.com/vpm.json&package=com.anatawa12.avatar-optimizer&version=${{ env.VERSION }}
       - name: Upload CHANGELOG.md
         if: ${{ !fromJSON(env.PRERELEASE) }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: CHANGELOG
           path: CHANGELOG.md
       - name: Upload CHANGELOG-PRERELEASE.md
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: CHANGELOG-PRERELEASE
           path: CHANGELOG-PRERELEASE.md
       - run: cp "${{ steps.changelog.outputs.release-note }}" release-note.md
       - name: Upload release note
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: changelog
           path: release-note.md
@@ -180,7 +180,7 @@ jobs:
         run: |
           zip -r "build/$PKG_NAME-$VERSION.zip" . -x 'build*' '.*' 'Test~/*'
       - name: Upload VPM release
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: vpm-package
           path: build/${{ env.PKG_NAME }}-${{ env.VERSION }}.zip
@@ -207,7 +207,7 @@ jobs:
       - name: zip docs
         run: cd .docs/public && zip ../../build/website.zip -r .
       - name: Upload docs
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: website
           path: .docs/public
