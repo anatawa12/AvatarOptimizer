@@ -16,10 +16,13 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Component Validation Errors doesn't have error source component information `#1390`
-- liltoon Angel Ring MatCap settings broken `#1391`
 
 ### Security
+
+## [1.8.5] - 2025-02-05
+### Fixed
+- Component Validation Errors doesn't have error source component information [`#1390`](https://github.com/anatawa12/AvatarOptimizer/pull/1390)
+- liltoon Angel Ring MatCap settings broken [`#1391`](https://github.com/anatawa12/AvatarOptimizer/pull/1391)
 
 ## [1.8.4] - 2025-01-19
 ### Fixed
@@ -1163,7 +1166,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.4...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.5...HEAD
+[1.8.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.4...v1.8.5
 [1.8.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.3...v1.8.4
 [1.8.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.2...v1.8.3
 [1.8.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.1...v1.8.2

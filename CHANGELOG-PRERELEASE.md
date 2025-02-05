@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog].
 
 ### Security
 
+## [1.8.5] - 2025-02-05
 ## [1.8.5-beta.1] - 2025-02-04
 ### Fixed
 - Component Validation Errors doesn't have error source component information [`#1390`](https://github.com/anatawa12/AvatarOptimizer/pull/1390)
@@ -1829,7 +1830,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.5-beta.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.5...HEAD
+[1.8.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.5-beta.1...v1.8.5
 [1.8.5-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.4...v1.8.5-beta.1
 [1.8.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.3...v1.8.4
 [1.8.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.3-beta.1...v1.8.3
