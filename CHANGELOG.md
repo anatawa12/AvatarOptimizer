@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Error when we manually configure Merge Skinned Mesh for face mesh along with Trace and Optimize `#1396`
 
 ### Security
 
