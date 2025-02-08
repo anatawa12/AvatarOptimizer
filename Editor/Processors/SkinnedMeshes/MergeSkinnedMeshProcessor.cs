@@ -80,21 +80,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 staticMeshRenderers = StaticMeshRenderers.ToList();
             }
 
-            Profiler.BeginSample("Merge PreserveBlendShapes");
-            {
-                var state = context.GetState<TraceAndOptimizes.TraceAndOptimizeState>();
-                HashSet<string>? thisPreserve = null;
-                foreach (var skinnedRenderer in skinnedMeshRenderers)
-                {
-                    if (!state.PreserveBlendShapes.TryGetValue(skinnedRenderer, out var preserve)) continue;
-
-                    if (thisPreserve == null && !state.PreserveBlendShapes.TryGetValue(Target, out thisPreserve))
-                        state.PreserveBlendShapes.Add(Target, thisPreserve = new HashSet<string>());
-                    thisPreserve.UnionWith(preserve);
-                }
-            }
-            Profiler.EndSample();
-
             Profiler.BeginSample("Collect MeshInfos");
             // Owns staticRendererMeshInfos
             var staticRendererMeshInfos = staticMeshRenderers.Select(renderer => new MeshInfo2(renderer)).ToDisposableList();
@@ -323,6 +308,16 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             var rendererPrefixes = BlendShapePrefixComputer.Create();
 
+            var traceAndOptimizeState = context.GetState<TraceAndOptimizes.TraceAndOptimizeState>();
+
+            void AddPreserveBlendShapes(IEnumerable<string> preserves)
+            {
+                var targetRenderer = (SkinnedMeshRenderer)target.SourceRenderer;
+                if (!traceAndOptimizeState.PreserveBlendShapes.TryGetValue(targetRenderer, out var thisPreserve))
+                    traceAndOptimizeState.PreserveBlendShapes.Add(targetRenderer, thisPreserve = new HashSet<string>());
+                thisPreserve.UnionWith(preserves);
+            }
+
             for (var i = 0; i < meshInfos.Length; i++)
             {
                 Profiler.BeginSample($"Process MeshInfo#{i}");
@@ -353,6 +348,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 }
                 meshInfo.SubMeshes.Clear();
 
+                var preserveShapes = meshInfo.SourceRenderer is SkinnedMeshRenderer skinnedRenderer
+                    ? traceAndOptimizeState.PreserveBlendShapes.GetValueOrDefault(skinnedRenderer)
+                    : null;
+
                 // rename if componentBlendShapeMode is RenameToAvoidConflict
                 if (componentBlendShapeMode == MergeSkinnedMesh.BlendShapeMode.RenameToAvoidConflict)
                 {
@@ -372,8 +371,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                         }
 
                         mappings.Add(($"blendShape.{name}", $"blendShape.{newName}"));
+                        if (preserveShapes?.Contains(name) ?? false)
+                            preserveShapes.Add(newName);
                     }
                 }
+
+                if (preserveShapes != null)
+                    AddPreserveBlendShapes(preserveShapes);
 
                 // add BlendShape if not defined by name
                 for (var sourceI = 0; sourceI < meshInfo.BlendShapes.Count; sourceI++)
