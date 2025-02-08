@@ -120,7 +120,7 @@ public class MergeSkinnedMeshTest
         LogTestUtility.Test(scope =>
         {
             scope.ExpectError(ErrorSeverity.Error,
-                "MergeSinnedMesh:copy-enablement-animation:error:enablement-of-merged-mesh-is-animated");
+                "MergeSkinnedMesh:copy-enablement-animation:error:enablement-of-merged-mesh-is-animated");
 
             new MergeSkinnedMeshProcessor(merged).Process(context, context.GetMeshInfoFor(mergedRenderer));
         });

@@ -622,7 +622,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             var propModNode = context.GetAnimationComponent(target.SourceRenderer).GetFloatNode(Props.EnabledFor(target.SourceRenderer));
             if (propModNode.ComponentNodes.Any())
             {
-                BuildLog.LogError("MergeSinnedMesh:copy-enablement-animation:error:enablement-of-merged-mesh-is-animated",
+                BuildLog.LogError("MergeSkinnedMesh:copy-enablement-animation:error:enablement-of-merged-mesh-is-animated",
                     target.SourceRenderer, propModNode);
             }
 
