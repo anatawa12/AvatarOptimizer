@@ -321,24 +321,24 @@ msgstr "統合先のメッシュのAnchor Overrideを手動で設定する必要
 "Modular Avatarを使用している場合は、アバターのルートにMA Mesh Settingsコンポーネントを追加して設定することにより、アバター全体のAnchor Overrideをまとめて設定することもできます。"
 
 msgid "MergeSkinnedMesh:copy-enablement-animation:error:enablement-of-merged-mesh-is-animated"
-msgstr "統合先のメッシュの enabled がアニメーションされています。"
+msgstr "統合先のSkinnedMeshRendererの有効無効状態がアニメーションされています。"
 
 msgid "MergeSkinnedMesh:copy-enablement-animation:error:enablement-of-merged-mesh-is-animated:description"
-msgstr "'有効無効状態に関するアニメーションをコピーする'が有効な場合、統合先のメッシュの enabled を操作するアニメーションは Merge Skinned Mesh によって作成されます。\n"
-"そのため、手動で設定されたアニメーションはあってはなりません。"
+msgstr "'有効無効状態に関するアニメーションをコピーする'が有効な場合、統合先のSkinnedMeshRendererの有効無効状態(enabled)を操作するアニメーションがMerge Skinned Meshによって作成されます。\n"
+"そのため、その項目を手動でアニメーションすることはできません。"
 
 msgid "MergeSkinnedMesh:copy-enablement-animation:error:too-many-activeness-animation"
-msgstr "以下の統合対象のメッシュの有効無効状態が複数のプロパティーのアニメーションによって決定しています。"
+msgstr "以下の統合対象のメッシュの有効無効状態が、複数のプロパティをアニメーションすることによって決定されています。"
 
 msgid "MergeSkinnedMesh:copy-enablement-animation:error:too-many-activeness-animation:description"
-msgid "'有効無効状態に関するアニメーションをコピーする'は enabled の操作にアニメーションをコピーするように設計されています。\n"
-"そのため、Component の enabled と GameObjectの Active 状態や、複数の Active 状態のように複数のプロパティーでアニメーションされている場合には、コピーすることができません。"
+msgid "'有効無効状態に関するアニメーションをコピーする'は、有効無効状態に関する操作を統合先のSkinnedMeshRendererの有効無効状態(enabled)に対して適用するように設計されています。\n"
+"そのため、SkinnedMeshRendererの有効無効状態(enabled)とGameObjectの有効無効状態(activeSelf)の両方や、複数階層の有効無効状態(activeSelf)をアニメーションで操作しているような場合には、コピーすることができません。"
 
 msgid "MergeSkinnedMesh:copy-enablement-animation:error:activeness-animation-of-source-mismatch"
-msgid "統合対象の有効無効に関するアニメーションが複数の統合対象の間で異なっています。"
+msgid "統合対象のメッシュ間で、有効無効状態に関するアニメーションが揃っていません。"
 
 msgid "MergeSkinnedMesh:copy-enablement-animation:error:activeness-animation-of-source-mismatch:description"
-msgid "'有効無効状態に関するアニメーションをコピーする'は、統合対象の有効無効状態に関するアニメーションが、同じアニメーションクリップから操作されている場合にのみ適用できます。"
+msgid "'有効無効状態に関するアニメーションをコピーする'は、統合対象の間で有効無効状態が同じようにアニメーションされている場合にのみ適用できます。"
 
 # endregion
 

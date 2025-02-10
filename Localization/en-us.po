@@ -424,21 +424,21 @@ msgid "MergeSkinnedMesh:copy-enablement-animation:error:enablement-of-merged-mes
 msgstr "'enabled' of the merged mesh is animated."
 
 msgid "MergeSkinnedMesh:copy-enablement-animation:error:enablement-of-merged-mesh-is-animated:description"
-msgstr "When 'Copy Enablement Animation' is enabled, 'enabled' of the merged mesh should not be animated.\n"
+msgstr "When 'Copy Enablement Animation' is enabled, Merge Skinned Mesh will create an animation for 'enabled' of the merged mesh.\n"
 "Therefore, you must not animate 'enabled' of the merged mesh."
 
 msgid "MergeSkinnedMesh:copy-enablement-animation:error:too-many-activeness-animation"
 msgstr "Multiple properties related to the activeness of the following source meshes are animated."
 
 msgid "MergeSkinnedMesh:copy-enablement-animation:error:too-many-activeness-animation:description"
-msgid "'Copy Enablement Animation' is designed to copy animations of enabled operation.\n"
-"Therefore, we cannot copy animations if there are multiple properties are animated like both renderer's enabled and GameObject's active state, or multiple active states."
+msgid "'Copy Enablement Animation' is designed to copy activeness / enablement animations to 'enabled' of the merged mesh.\n"
+"Therefore, we cannot copy animations if there are multiple properties are animated like both renderer's 'enabled' and GameObject's 'activeSelf', or multiple layers of 'activeSelf'."
 
 msgid "MergeSkinnedMesh:copy-enablement-animation:error:activeness-animation-of-source-mismatch"
-msgid "The animation of the activeness of the merged mesh is different between multiple source meshes."
+msgid "The animations for the activeness of the source meshes are different between multiple source meshes."
 
 msgid "MergeSkinnedMesh:copy-enablement-animation:error:activeness-animation-of-source-mismatch:description"
-msgid "'Copy Enablement Animation' can work if the activeness of the source meshes is animated by exactly same animations."
+msgid "'Copy Enablement Animation' can work if the activeness of the source meshes are animated with same curve and same animation clip."
 
 # endregion
 
