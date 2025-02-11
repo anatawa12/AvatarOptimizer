@@ -420,6 +420,26 @@ msgstr "MergeSkinnedMesh does not automatically set the Anchor Override of the m
 msgid "MergeSkinnedMesh:warning:no-probe-anchor:hint"
 msgstr "You need to set it manually. If you are using Modular Avatar, you can also add MA Mesh Settings component to the root of the avatar to set the Anchor Override for the whole avatar."
 
+msgid "MergeSkinnedMesh:copy-enablement-animation:error:enablement-of-merged-mesh-is-animated"
+msgstr "'enabled' of the merged mesh is animated."
+
+msgid "MergeSkinnedMesh:copy-enablement-animation:error:enablement-of-merged-mesh-is-animated:description"
+msgstr "When 'Copy Enablement Animation' is enabled, Merge Skinned Mesh will create an animation for 'enabled' of the merged mesh.\n"
+"Therefore, you must not animate 'enabled' of the merged mesh."
+
+msgid "MergeSkinnedMesh:copy-enablement-animation:error:too-many-activeness-animation"
+msgstr "Multiple properties related to the activeness of the following source meshes are animated."
+
+msgid "MergeSkinnedMesh:copy-enablement-animation:error:too-many-activeness-animation:description"
+msgid "'Copy Enablement Animation' is designed to copy activeness / enablement animations to 'enabled' of the merged mesh.\n"
+"Therefore, we cannot copy animations if there are multiple properties are animated like both renderer's 'enabled' and GameObject's 'activeSelf', or multiple layers of 'activeSelf'."
+
+msgid "MergeSkinnedMesh:copy-enablement-animation:error:activeness-animation-of-source-mismatch"
+msgid "The animations for the activeness of the source meshes are different between multiple source meshes."
+
+msgid "MergeSkinnedMesh:copy-enablement-animation:error:activeness-animation-of-source-mismatch:description"
+msgid "'Copy Enablement Animation' can work if the activeness of the source meshes are animated with same curve and same animation clip."
+
 # endregion
 
 # region MergeToonLitMaterial

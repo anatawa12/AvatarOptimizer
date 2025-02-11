@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - Error when we manually configure Merge Skinned Mesh for face mesh along with Trace and Optimize `#1396`
+- Missing localization for copy enablement animation related errors `#1397`
 
 ### Security
 
