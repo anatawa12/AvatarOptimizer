@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog].
 
 ### Security
 
+## [1.8.6] - 2025-02-14
 ## [1.8.6-beta.1] - 2025-02-11
 ### Fixed
 - Error when we manually configure Merge Skinned Mesh for face mesh along with Trace and Optimize [`#1396`](https://github.com/anatawa12/AvatarOptimizer/pull/1396)
@@ -1835,7 +1836,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.6-beta.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.6...HEAD
+[1.8.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.6-beta.1...v1.8.6
 [1.8.6-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.5...v1.8.6-beta.1
 [1.8.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.5-beta.1...v1.8.5
 [1.8.5-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.4...v1.8.5-beta.1

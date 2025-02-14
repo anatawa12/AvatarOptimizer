@@ -16,10 +16,13 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Error when we manually configure Merge Skinned Mesh for face mesh along with Trace and Optimize `#1396`
-- Missing localization for copy enablement animation related errors `#1397`
 
 ### Security
+
+## [1.8.6] - 2025-02-14
+### Fixed
+- Error when we manually configure Merge Skinned Mesh for face mesh along with Trace and Optimize [`#1396`](https://github.com/anatawa12/AvatarOptimizer/pull/1396)
+- Missing localization for copy enablement animation related errors [`#1397`](https://github.com/anatawa12/AvatarOptimizer/pull/1397)
 
 ## [1.8.5] - 2025-02-05
 ### Fixed
@@ -1168,7 +1171,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.5...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.6...HEAD
+[1.8.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.5...v1.8.6
 [1.8.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.4...v1.8.5
 [1.8.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.3...v1.8.4
 [1.8.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.2...v1.8.3
