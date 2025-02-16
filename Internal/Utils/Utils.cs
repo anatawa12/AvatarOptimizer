@@ -9,6 +9,7 @@ using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using UnityEditor;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer
 {
@@ -439,6 +440,65 @@ namespace Anatawa12.AvatarOptimizer
             }
 
             return max;
+        }
+
+        /// <summary>
+        /// The helper function to resolve the animation path.
+        ///
+        /// The <see cref="AnimationUtility.GetAnimatedObject"/> and <see cref="Transform.Find"/> does not handle
+        /// game objects with slash in their name, however, animator component can have slash in their name.
+        ///
+        /// Therefore, this function resolves the animation path with slash in the name.
+        ///
+        /// This function is generic over T because we use same logic for both Transform and ObjectMapping system
+        /// </summary>
+        /// <returns>Enumerable that resolves to list of game objects matching the path</returns>
+        public static IEnumerable<T> ResolveAnimationPath<T>(
+            T root,
+            string relative,
+            Func<T, string, IEnumerable<T>> findChild
+        ) {
+            // if relative path is empty, return itself
+            if (relative == "")
+                return new[] { root };
+            // otherwise, match as possible from start
+
+            // simplest pattern: the relative is entire path
+            var slashIndex = relative.IndexOf('/');
+            if (slashIndex == -1)
+                return findChild(root, relative);
+
+            // other patterns: the relative path has slash, so we tries to match from start
+            for (;slashIndex != -1; slashIndex = relative.IndexOf('/', slashIndex + 1))
+            {
+                var name = relative[..slashIndex];
+
+                var childrenMatched = findChild(root, name);
+                // ReSharper disable once PossibleMultipleEnumeration : single element is proceed
+                if (childrenMatched.Any())
+                {
+                    var remaining = relative[(slashIndex + 1)..];
+                    // ReSharper disable once PossibleMultipleEnumeration
+                    return childrenMatched.SelectMany(x => ResolveAnimationPath(x, remaining, findChild));
+                }
+            }
+
+            // no subpath matched, so we try to match the entire path
+            return findChild(root, relative);
+        }
+
+        public static Transform? ResolveAnimationPath(Transform root, string path) =>
+            ResolveAnimationPath(root, path, (transform, name) => 
+                Enumerable.Range(0, transform.childCount)
+                    .Select(transform.GetChild)
+                    .Where(x => x.name == name))
+                .FirstOrDefault();
+
+        public static Object? GetAnimatedObject(GameObject obj, EditorCurveBinding binding)
+        {
+            var gameObject = ResolveAnimationPath(obj.transform, binding.path);
+            if (gameObject == null) return null;
+            return binding.type == typeof(GameObject) ? gameObject.gameObject : gameObject.GetComponent(binding.type);
         }
     }
 }

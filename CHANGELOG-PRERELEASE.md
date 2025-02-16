@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Animations targets GameObjects includes '/' in their name can be broken `#1399`
 
 ### Security
 

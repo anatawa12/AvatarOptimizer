@@ -55,8 +55,8 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
                     var avatarRoot = component.gameObject;
                     foreach (var parent in hips.ParentEnumerable(avatarRoot.transform))
                     {
-                        var path = RuntimeUtil.RelativePath(avatarRoot, parent.gameObject);
-                        var parentByPath = avatarRoot.transform.Find(path);
+                        var path = RuntimeUtil.RelativePath(avatarRoot, parent.gameObject)!;
+                        var parentByPath = Utils.ResolveAnimationPath(avatarRoot.transform, path);
                         collector.AddDependency(parentByPath).EvenIfDependantDisabled();
                     }
                 }
