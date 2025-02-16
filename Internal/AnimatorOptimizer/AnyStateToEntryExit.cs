@@ -176,7 +176,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 static bool IsMeaningfulBinding(AnimationClip clip, EditorCurveBinding binding, GameObject? rootGameObject)
                 {
                     if (rootGameObject == null) return false; // we can't check no-op without rootGameObject
-                    var component = AnimationUtility.GetAnimatedObject(rootGameObject, binding);
+                    var component = Utils.GetAnimatedObject(rootGameObject, binding);
                     if (component == null) return true; // target is not exist: no-op
 
                     if (binding.isPPtrCurve)

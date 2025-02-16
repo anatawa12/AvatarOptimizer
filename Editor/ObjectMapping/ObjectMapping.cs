@@ -116,32 +116,8 @@ namespace Anatawa12.AvatarOptimizer
         public BeforeGameObjectTree? ResolvePath(string relative) =>
             relative == "" ? this : ResolvePathAll(relative).FirstOrDefault();
 
-        private IEnumerable<BeforeGameObjectTree> ResolvePathAll(string relative)
-        {
-            if (relative == "")
-                return new[] { this };
-            // otherwise, match as possible from start
-
-            // simplest
-            var slashIndex = relative.IndexOf('/');
-
-            if (slashIndex == -1)
-                return Children.Where(x => x.Name == relative);
-
-            for (;slashIndex != -1; slashIndex = relative.IndexOf('/', slashIndex + 1))
-            {
-                var name = relative.Substring(0, slashIndex);
-
-                if (Children.Any(x => x.Name == name))
-                {
-                    var remaining = relative.Substring(slashIndex + 1);
-
-                    return Children.Where(x => x.Name == name).SelectMany(x => x.ResolvePathAll(remaining));
-                }
-            }
-
-            return Array.Empty<BeforeGameObjectTree>();
-        }
+        private IEnumerable<BeforeGameObjectTree> ResolvePathAll(string relative) =>
+            Utils.ResolveAnimationPath(this, relative, (tree, path) => tree.Children.Where(x => x.Name == path));
     }
 
     class ComponentInfo
