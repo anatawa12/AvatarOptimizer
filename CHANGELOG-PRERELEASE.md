@@ -16,9 +16,12 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Animations targets GameObjects includes '/' in their name can be broken `#1399`
 
 ### Security
+
+## [1.8.7-beta.1] - 2025-02-16
+### Fixed
+- Animations targets GameObjects includes '/' in their name can be broken [`#1399`](https://github.com/anatawa12/AvatarOptimizer/pull/1399)
 
 ## [1.8.6] - 2025-02-14
 ## [1.8.6-beta.1] - 2025-02-11
@@ -1837,7 +1840,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.6...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.7-beta.1...HEAD
+[1.8.7-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.6...v1.8.7-beta.1
 [1.8.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.6-beta.1...v1.8.6
 [1.8.6-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.5...v1.8.6-beta.1
 [1.8.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.5-beta.1...v1.8.5
