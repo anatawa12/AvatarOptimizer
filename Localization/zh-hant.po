@@ -633,14 +633,6 @@ msgstr "若有 BlendShapes 丟失或未設定，所有 viseme BlendShapes 將無
 
 #region ComponentInfos
 
-msgid "ComponentInfos:VRCAvatarDescriptor:warning:NoVisemeSkinnedMesh"
-msgstr "未指定用於 LipSync 的 Skinned Mesh Renderer。"
-
-msgid "ComponentInfos:VRCAvatarDescriptor:warning:NoVisemeSkinnedMesh:hint"
-msgstr ""
-"如果你想透過 BlendShapes 啟用 viseme lip sync，應在 Avatar Descriptor 中指定 SkinnedMeshRenderer。\n"
-"如果你不打算透過 BlendShapes 動畫嘴唇，應將 LipSync 更改為其他類型，如 Viseme Parameter Only。"
-
 msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownLipSyncStyle"
 msgstr "指定了未知的 LipSync 類型「{0}」。"
 
@@ -652,22 +644,6 @@ msgstr "在 {1} 的 Standard Collider 中指定了未知的設定「{0}」。"
 
 msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownColliderState:hint"
 msgstr "這通常是一個 Avatar Optimizer 的錯誤。請附上上面的訊息來回報此問題。"
-
-msgid "ComponentInfos:VRCAvatarDescriptor:warning:NoMeshInEyelidsSkinnedMesh"
-msgstr "未指定用於 Eyelids 的 Skinned Mesh Renderer 中的網格（Mesh）。"
-
-msgid "ComponentInfos:VRCAvatarDescriptor:warning:NoMeshInEyelidsSkinnedMesh:hint"
-msgstr ""
-"如果你想用 BlendShapes 來設定 Eyelids，應在 Avatar Descriptor 中指定擁有 Mesh 的 SkinnedMeshRenderer。\n"
-"如果你不打算用 BlendShapes 來設定 Eyelids，應把 Eyelids 更改為其他類型，如 None。"
-
-msgid "ComponentInfos:VRCAvatarDescriptor:warning:NoEyelidsSkinnedMesh"
-msgstr "未指定用於 Eyelids 的 Skinned Mesh Renderer。"
-
-msgid "ComponentInfos:VRCAvatarDescriptor:warning:NoEyelidsSkinnedMesh:hint"
-msgstr ""
-"如果你想用 BlendShapes 來設定 Eyelids，應在 Avatar Descriptor 中指定 SkinnedMeshRenderer 。\n"
-"如果你不打算用 BlendShapes 來設定 Eyelids，應把 Eyelids 更改為其他類型，如 None。"
 
 msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownEyelidType"
 msgstr "指定了未知的 Eyelid 類型：「{0}」。"

@@ -615,20 +615,11 @@ msgstr ""
 
 #region ComponentInfos
 
-msgid "ComponentInfos:VRCAvatarDescriptor:warning:NoVisemeSkinnedMesh"
-msgstr "没有用于唇形同步的SkinnedMeshRenderer。"
-
 msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownLipSyncStyle"
 msgstr "指定了未知的唇形同步类型'{0}'。"
 
 msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownColliderState"
 msgstr "在{1}的Standard Collider中指定了未知的设置'{0}'。"
-
-msgid "ComponentInfos:VRCAvatarDescriptor:warning:NoMeshInEyelidsSkinnedMesh"
-msgstr "眨眼用的SkinnedMeshRenderer中没有网格。"
-
-msgid "ComponentInfos:VRCAvatarDescriptor:warning:NoEyelidsSkinnedMesh"
-msgstr "没有用于眨眼的SkinnedMeshRenderer。"
 
 msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownEyelidType"
 msgstr "指定了未知的眨眼类型'{0}'。"

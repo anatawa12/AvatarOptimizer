@@ -80,8 +80,6 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
                     {
                         collector.ModifyProperties(component.VisemeSkinnedMesh,
                             $"blendShape.{component.MouthOpenBlendShapeName}");
-                    } else {
-                        BuildLog.LogWarning("ComponentInfos:VRCAvatarDescriptor:warning:NoVisemeSkinnedMesh", component);
                     }
                     break;
                 }
@@ -91,8 +89,6 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
                     {
                         collector.ModifyProperties(component.VisemeSkinnedMesh,
                             component.VisemeBlendShapes.Select(blendShape => $"blendShape.{blendShape}"));
-                    } else {
-                        BuildLog.LogWarning("ComponentInfos:VRCAvatarDescriptor:warning:NoVisemeSkinnedMesh", component);
                     }
                     break;
                 }
@@ -259,16 +255,6 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
                                     where 0 <= index && index < mesh.blendShapeCount
                                     select $"blendShape.{mesh.GetBlendShapeName(index)}");
                             }
-                            else
-                            {
-                                BuildLog.LogWarning("ComponentInfos:VRCAvatarDescriptor:warning:NoMeshInEyelidsSkinnedMesh",
-                                        component);
-                            }
-                        }
-                        else
-                        {
-                            BuildLog.LogWarning("ComponentInfos:VRCAvatarDescriptor:warning:NoEyelidsSkinnedMesh",
-                                    component);
                         }
                     }
                         break;

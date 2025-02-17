@@ -777,14 +777,6 @@ msgstr ""
 
 #region ComponentInfos
 
-msgid "ComponentInfos:VRCAvatarDescriptor:warning:NoVisemeSkinnedMesh"
-msgstr "リップシンク用のSkinnedMeshRendererがありません。"
-
-msgid "ComponentInfos:VRCAvatarDescriptor:warning:NoVisemeSkinnedMesh:hint"
-msgstr ""
-"リップシンクをBlendShapeで行う場合は、Avatar DescriptorにSkinnedMeshRendererを指定してください。\n"
-"リップシンクをBlendShapeで行わない場合は、Viseme TypeをBlendShape以外(Viseme Parameter Onlyなど)に変更してください。"
-
 msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownLipSyncStyle"
 msgstr "リップシンクの種類として未知の種類'{0}'が指定されています。"
 
@@ -796,22 +788,6 @@ msgstr "{1}のStandard Colliderに未知の設定'{0}'が指定されていま�
 
 msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownColliderState:hint"
 msgstr "多くの場合、これはAvatar Optimizerのバグです。この警告が表示された場合は、上記のメッセージとともにこの問題を報告してください。"
-
-msgid "ComponentInfos:VRCAvatarDescriptor:warning:NoMeshInEyelidsSkinnedMesh"
-msgstr "瞬き用のSkinnedMeshRendererにメッシュがありません。"
-
-msgid "ComponentInfos:VRCAvatarDescriptor:warning:NoMeshInEyelidsSkinnedMesh:hint"
-msgstr ""
-"瞬きをBlendShapeで行う場合は、Avatar DescriptorにMeshが指定されたSkinnedMeshRendererを指定してください。\n"
-"瞬きをBlendShapeで行わない場合は、Eyelids TypeをBlendShape以外(Noneなど)に変更してください。"
-
-msgid "ComponentInfos:VRCAvatarDescriptor:warning:NoEyelidsSkinnedMesh"
-msgstr "瞬き用のSkinnedMeshRendererがありません。"
-
-msgid "ComponentInfos:VRCAvatarDescriptor:warning:NoEyelidsSkinnedMesh:hint"
-msgstr ""
-"瞬きをBlendShapeで行う場合は、Avatar DescriptorにSkinnedMeshRendererを指定してください。\n"
-"瞬きをBlendShapeで行わない場合は、Eyelids TypeをBlendShape以外(Noneなど)に変更してください。"
 
 msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownEyelidType"
 msgstr "瞬きの種類として未知の種類'{0}'が指定されています。"
