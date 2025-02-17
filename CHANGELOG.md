@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
+- Removed missing viseme / eyelids warning `#1401`
 
 ### Deprecated
 
