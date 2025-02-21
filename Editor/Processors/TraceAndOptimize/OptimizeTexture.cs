@@ -382,6 +382,7 @@ internal struct OptimizeTextureImpl {
             if (atlasResult.IsEmpty()) continue;
 
             atlasResults.Add((uvids, atlasResult));
+            /*
             foreach (var textureNode in textureNodes)
             {
                 var newTexture = atlasResult.TextureMapping[(Texture2D)textureNode.Texture];
@@ -389,6 +390,25 @@ internal struct OptimizeTextureImpl {
                 foreach (var (material, usages) in textureNode.Users)
                 foreach (var usage in usages)
                     material.Material.SetTexture(usage.MaterialPropertyName, newTexture);
+            }
+            // */
+        }
+
+        {
+            // TODO: remove this code and restore code above when we implemented removing unused textures
+            var mapping = atlasResults.SelectMany(x => x.Item2.TextureMapping).ToDictionary(k => k.Key, v => v.Value);
+            foreach (var materialNode in info.Materials)
+            {
+                var material = materialNode.Material;
+                foreach (var name in material.GetTexturePropertyNames())
+                {
+                    if (material.HasTexture(name))
+                    {
+                        var texture = material.GetTexture(name) as Texture2D;
+                        if (texture != null && mapping.TryGetValue(texture, out var newTexture))
+                            material.SetTexture(name, newTexture);
+                    }
+                }
             }
         }
 
