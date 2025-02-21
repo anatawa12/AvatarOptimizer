@@ -132,6 +132,10 @@ internal class LiltoonShaderInformation : ShaderInformation
 
         // TODO: _MainTex with POM / PARALLAX (using LIL_SAMPLE_2D_POM)
         LIL_SAMPLE_2D_WithMat("_MainTex", "_MainTex", uvMain, uvMainMatrix); // main texture
+        // dummy properties set by liltoon
+        // TODO: consider remove _BaseMap and _BaseColorMap from material on build since they are unused
+        LIL_SAMPLE_2D_WithMat("_BaseMap", "_MainTex", uvMain, uvMainMatrix);
+        LIL_SAMPLE_2D_WithMat("_BaseColorMap", "_MainTex", uvMain, uvMainMatrix);
         matInfo.RegisterTextureUVUsage("_MainGradationTex", SamplerStateInformation.LinearClampSampler,
             UsingUVChannels.NonMesh, null); // GradationMap UV is based on color
         LIL_SAMPLE_2D_WithMat("_MainColorAdjustMask", "_MainTex", uvMain, uvMainMatrix); // simple LIL_SAMPLE_2D
