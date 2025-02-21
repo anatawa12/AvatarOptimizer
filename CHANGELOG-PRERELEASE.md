@@ -11,6 +11,8 @@ The format is based on [Keep a Changelog].
 
 ### Changed
 - Removed missing viseme / eyelids warning `#1401`
+- Improved Optimize Texture a little `#1404`
+  - This should reduce texture memory usage a little and fixes a bug that may increase texture usage.
 
 ### Deprecated
 
