@@ -10,9 +10,6 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
-- Removed missing viseme / eyelids warning `#1401`
-- Improved Optimize Texture a little `#1404`
-  - This should reduce texture memory usage a little and fixes a bug that may increase texture usage.
 
 ### Deprecated
 
@@ -21,6 +18,12 @@ The format is based on [Keep a Changelog].
 ### Fixed
 
 ### Security
+
+## [1.8.7-beta.2] - 2025-02-21
+### Changed
+- Removed missing viseme / eyelids warning [`#1401`](https://github.com/anatawa12/AvatarOptimizer/pull/1401)
+- Improved Optimize Texture a little [`#1404`](https://github.com/anatawa12/AvatarOptimizer/pull/1404)
+  - This should reduce texture memory usage a little and fixes a bug that may increase texture usage.
 
 ## [1.8.7-beta.1] - 2025-02-16
 ### Fixed
@@ -1843,7 +1846,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.7-beta.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.7-beta.2...HEAD
+[1.8.7-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.7-beta.1...v1.8.7-beta.2
 [1.8.7-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.6...v1.8.7-beta.1
 [1.8.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.6-beta.1...v1.8.6
 [1.8.6-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.5...v1.8.6-beta.1
