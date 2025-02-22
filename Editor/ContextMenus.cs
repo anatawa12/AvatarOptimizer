@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -12,23 +13,61 @@ namespace Anatawa12.AvatarOptimizer
         private const string MERGE_SKINNED_MESH = "Merge Skinned Mesh";
         private const string MERGE_PHYSBONE = "Merge PhysBone";
 
-        private static void CreateAndAddComponent<T>(string componentName) where T : MonoBehaviour
+        private static bool CreateOrCreateAndConfigureWithMultipleValidate(Func<GameObject, bool> filter)
         {
-            var selectedObject = Selection.activeGameObject;
-            if (selectedObject == null) return;
+            var objects = Selection.objects;
+            if (objects.Length == 0) return false; // no selection
+            var gameObjects = objects.OfType<GameObject>().ToArray();
+            if (gameObjects.Length != objects.Length) return false; // some selections are not GameObject
+            if (gameObjects.Length == 1) return true; // only one selection: create empty object
+            // otherwise, we create configuration object and configure it
+            return gameObjects.Any(filter);
+        }
+
+        private static void CreateAddComponentAndConfigure<T>(string componentName, Action<T, GameObject[]> configure) where T : MonoBehaviour
+        {
+            var gameObjects = Selection.gameObjects;
+            if (gameObjects.Length == 0) return;
+            var parentGameObject = FindCommonRoot(gameObjects);
 
             var newGameObject = new GameObject(componentName);
             var transform = newGameObject.transform;
-            transform.SetParent(selectedObject.transform, false);
+            transform.SetParent(parentGameObject?.transform, false);
             transform.localPosition = Vector3.zero;
             transform.localRotation = Quaternion.identity;
             transform.localScale = Vector3.one;
             
-            newGameObject.AddComponent<T>();
+            var addedComponent = newGameObject.AddComponent<T>();
+
+            if (gameObjects.Length > 1)
+                configure(addedComponent, gameObjects);
 
             Undo.RegisterCreatedObjectUndo(newGameObject, $"Create {componentName}");
             Selection.activeGameObject = newGameObject;
             EditorGUIUtility.PingObject(newGameObject);
+        }
+
+        private static GameObject? FindCommonRoot(GameObject[] gameObjects)
+        {
+            if (gameObjects.Length == 0) return null;
+            if (gameObjects.Length == 1) return gameObjects[0];
+
+            var commonParents = gameObjects[0].transform.ParentEnumerable(includeMe: false).ToList();
+            if (commonParents.Count == 0) return null;
+            commonParents.Reverse();
+
+            foreach (var gameObject in gameObjects.Skip(1))
+            {
+                var otherParents = gameObject.transform.ParentEnumerable(includeMe: false).ToList();
+                otherParents.Reverse();
+
+                var commonParentCount = commonParents.Zip(otherParents, (a, b) => a == b).TakeWhile(x => x).Count();
+                commonParents.RemoveRange(commonParentCount, commonParents.Count - commonParentCount);
+
+                if (commonParents.Count == 0) return null;
+            }
+
+            return commonParents.Last().gameObject;
         }
 
         // for GameObject/ menu, the handler will be called multiple times (selection count times)
@@ -44,18 +83,37 @@ namespace Anatawa12.AvatarOptimizer
         }
 
         [MenuItem(BASE_PATH + MERGE_SKINNED_MESH, true, PRIORITY)]
-        private static bool ValidateCreateMergeSkinnedMesh() => Selection.objects.Length == 1 && Selection.activeGameObject != null;
+        private static bool ValidateCreateMergeSkinnedMesh() =>
+            CreateOrCreateAndConfigureWithMultipleValidate(go => 
+                go.TryGetComponent<SkinnedMeshRenderer>(out _)
+                || go.TryGetComponent<MeshRenderer>(out _));
 
         [MenuItem(BASE_PATH + MERGE_SKINNED_MESH, false, PRIORITY)]
-        private static void CreateMergeSkinnedMesh() => CreateAndAddComponent<MergeSkinnedMesh>(MERGE_SKINNED_MESH);
+        private static void CreateMergeSkinnedMesh() => OnceFilter(() =>
+            CreateAddComponentAndConfigure<MergeSkinnedMesh>(MERGE_SKINNED_MESH,
+                (mergeSkinnedMesh, objects) =>
+                {
+                    mergeSkinnedMesh.renderersSet.AddRange(
+                        objects.Select(x => x.GetComponent<SkinnedMeshRenderer>()));
+                    mergeSkinnedMesh.staticRenderersSet.AddRange(
+                        objects.Select(x => x.GetComponent<MeshRenderer>()));
+                }));
 
-
-        [MenuItem(BASE_PATH + MERGE_PHYSBONE, true, PRIORITY)]
-        private static bool ValidateCreateMergePhysBone() => Selection.objects.Length == 1 && Selection.activeGameObject != null;
 
 #if AAO_VRCSDK3_AVATARS
+        [MenuItem(BASE_PATH + MERGE_PHYSBONE, true, PRIORITY)]
+        private static bool ValidateCreateMergePhysBone() => 
+            CreateOrCreateAndConfigureWithMultipleValidate(go => 
+                go.TryGetComponent<VRC.Dynamics.VRCPhysBoneBase>(out _));
+
         [MenuItem(BASE_PATH + MERGE_PHYSBONE, false, PRIORITY)]
-        private static void CreateMergePhysBone() => CreateAndAddComponent<MergePhysBone>(MERGE_PHYSBONE);
+        private static void CreateMergePhysBone() => OnceFilter(() =>
+            CreateAddComponentAndConfigure<MergePhysBone>(MERGE_PHYSBONE,
+                (mergePhysBone, objects) =>
+                {
+                    mergePhysBone.componentsSet.AddRange(
+                        objects.Select(x => x.GetComponent<VRC.Dynamics.VRCPhysBoneBase>()));
+                }));
 #endif
     }
 }
