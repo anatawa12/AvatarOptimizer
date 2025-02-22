@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using nadena.dev.ndmf.runtime;
 using UnityEditor;
 using UnityEngine;
 
@@ -115,5 +116,26 @@ namespace Anatawa12.AvatarOptimizer
                         objects.Select(x => x.GetComponent<VRC.Dynamics.VRCPhysBoneBase>()));
                 }));
 #endif
+
+        [MenuItem(BASE_PATH + "Add Trace and Optimize", true, PRIORITY)]
+        private static bool ValidateAddTraceAndOptimize() => Selection.activeGameObject != null;
+
+        [MenuItem(BASE_PATH + "Add Trace and Optimize", false, PRIORITY)]
+        private static void AddTraceAndOptimize()
+        {
+            var gameObject = Selection.activeGameObject;
+            if (gameObject == null) return;
+            if (RuntimeUtil.IsAvatarRoot(gameObject.transform))
+            {
+                var traceAndOptimize = Undo.AddComponent<TraceAndOptimize>(gameObject);
+                EditorGUIUtility.PingObject(traceAndOptimize);
+            }
+            else
+            {
+                EditorUtility.DisplayDialog(AAOL10N.Tr("ContextMenus:AddTraceAndOptimize:FailedToAddTraceAndOptimize:Title"),
+                    AAOL10N.Tr("ContextMenus:AddTraceAndOptimize:FailedToAddTraceAndOptimize:Message"), 
+                    "OK");
+            }
+        }
     }
 }
