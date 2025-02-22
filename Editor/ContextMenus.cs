@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer
 {
-    internal class NewGameObjectAndAddComponent
+    internal static class ContextMenus
     {
         private const string BASE_PATH = "GameObject/Avatar Optimizer/";
         private const int PRIORITY = 20;
