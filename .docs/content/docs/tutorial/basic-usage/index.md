@@ -81,7 +81,7 @@ Select BlendShapes from the BlendShapes list below that shrink the parts of the 
 
 In case polygons you want to remove are not removed, or you do not want to remove are removed, you need to adjust the `Tolerance` value!
 `Tolerance` decides how much the vertex is moved by BlendShape to be removed.
-If some parts intended to be removed is not removed, increase the value a little and in the other case, decrease it a little!
+If some parts intended to be removed are not removed, increase the value a little; otherwise, decrease it a little!
 
 ![remove mesh by BlendShape](./remove-mesh-by-blendshape.png)
 
