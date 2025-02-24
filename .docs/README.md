@@ -13,4 +13,10 @@ Documentation site for AvatarOptimizer is created using [hugo](https://gohugo.io
 - Screenshots of the components are taken using EditorScreenshotTakeTool with width `320`
 - Screenshots in tutorial are taken with Anon.unity. The Anon.unity is made with [Anon] 1.06
 
+## Internals doc
+
+In addition to the documentation site, there is also an documentation for internal use tools in Avatar Optimizer in the `internals` folder.
+Those can be used to understand how the tools for debugging the Avatar Optimizer works.
+Those may not be up to date, but I hope it helps you to understand.
+
 [Anon]: https://booth.pm/ja/items/3564947
