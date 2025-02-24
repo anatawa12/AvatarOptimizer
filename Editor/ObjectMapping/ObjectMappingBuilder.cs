@@ -90,6 +90,7 @@ namespace Anatawa12.AvatarOptimizer
 
         public void RecordMergeComponent<T>(T from, T mergeTo) where T: Component
         {
+            Tracing.Trace(TracingArea.BuildObjectMapping, $"RecordMergeComponent: {from} -> {mergeTo}");
             if (!_componentInfos.TryGetValue(mergeTo.GetInstanceID(), out var mergeToInfo))
             {
                 var newMergeToInfo = new BuildingComponentInfo(mergeTo);
@@ -123,20 +124,35 @@ namespace Anatawa12.AvatarOptimizer
             }
         }
 
-        public void RecordMoveProperties(ComponentOrGameObject from, params (string old, string @new)[] props) =>
+        public void RecordMoveProperties(ComponentOrGameObject from, params (string old, string @new)[] props)
+        {
+            Tracing.Trace(TracingArea.BuildObjectMapping, $"RecordMoveProperties: {from} {string.Join(", ", props)}");
             GetComponentInfo(from).MoveProperties(props);
+        }
 
-        public void RecordMoveProperty(ComponentOrGameObject from, string oldProp, string newProp) =>
+        public void RecordMoveProperty(ComponentOrGameObject from, string oldProp, string newProp)
+        {
+            Tracing.Trace(TracingArea.BuildObjectMapping, $"RecordMoveProperty: {from} {oldProp} -> {newProp}");
             GetComponentInfo(from).MoveProperties((oldProp, newProp));
+        }
 
-        public void RecordMoveProperty(ComponentOrGameObject fromComponent, string oldProp, ComponentOrGameObject toComponent, string newProp) =>
+        public void RecordMoveProperty(ComponentOrGameObject fromComponent, string oldProp, ComponentOrGameObject toComponent, string newProp)
+        {
+            Tracing.Trace(TracingArea.BuildObjectMapping, $"RecordMoveProperty: {fromComponent} {oldProp} -> {toComponent} {newProp}");
             GetComponentInfo(fromComponent).MoveProperty(GetComponentInfo(toComponent), oldProp, newProp);
+        }
 
-        public void RecordCopyProperty(ComponentOrGameObject fromComponent, string oldProp, ComponentOrGameObject toComponent, string newProp) =>
+        public void RecordCopyProperty(ComponentOrGameObject fromComponent, string oldProp, ComponentOrGameObject toComponent, string newProp)
+        {
+            Tracing.Trace(TracingArea.BuildObjectMapping, $"RecordCopyProperty: {fromComponent} {oldProp} -> {toComponent} {newProp}");
             GetComponentInfo(fromComponent).CopyProperty(GetComponentInfo(toComponent), oldProp, newProp);
+        }
 
-        public void RecordRemoveProperty(ComponentOrGameObject from, string oldProp) =>
+        public void RecordRemoveProperty(ComponentOrGameObject from, string oldProp)
+        {
+            Tracing.Trace(TracingArea.BuildObjectMapping, $"RecordRemoveProperty: {from} {oldProp}");
             GetComponentInfo(from).RemoveProperty(oldProp);
+        }
 
         public AnimationComponentInfo<TPropInfo> GetAnimationComponent(ComponentOrGameObject component)
             => GetComponentInfo(component);
