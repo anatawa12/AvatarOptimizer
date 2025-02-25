@@ -75,8 +75,6 @@ Reduce polygons with BlendShapes which shrink parts of the body {#remove-mesh-by
 By removing polygons which are hidden by clothes or something, you can reduce rendering cost, BlendShape processing cost, etc. without affecting the appearance so much.
 To make this easier, AvatarOptimizer allows you to remove polygons with BlendShapes for shrinking parts of the body, which many avatars have!
 
-Let's add `AAO Remove Mesh By BlendShape` component to Body Mesh!
-
 Let's add `AAO Remove Mesh By BlendShape` component to Body Mesh, and select BlendShapes from the BlendShapes list below that shrink the parts of the body you want to remove!
 
 In case polygons you want to remove are not removed, or you do not want to remove are removed, you need to adjust the `Tolerance` value!
