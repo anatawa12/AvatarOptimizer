@@ -34,6 +34,8 @@ namespace Anatawa12.AvatarOptimizer
         {
             if (MappingBuilder == null) return;
 
+            Tracing.Trace(TracingArea.ApplyObjectMapping, "Deactivating ObjectMappingContext");
+
             var mapping = MappingBuilder.BuildObjectMapping();
             var mappingSource = new MappingSourceImpl(mapping);
 
@@ -46,7 +48,10 @@ namespace Anatawa12.AvatarOptimizer
 
                     // apply special mapping
                     if (ComponentInfoRegistry.TryGetInformation(component.GetType(), out var info))
+                    {
+                        Tracing.Trace(TracingArea.ApplyObjectMapping, $"Applying Special Mapping for {component}");
                         info.ApplySpecialMappingInternal(component, mappingSource);
+                    }
 
                     var mapAnimatorController = false;
 
@@ -80,6 +85,7 @@ namespace Anatawa12.AvatarOptimizer
                             switch (objectReferenceValue)
                             {
                                 case RuntimeAnimatorController runtimeController:
+                                    Tracing.Trace(TracingArea.ApplyObjectMapping, $"Applying AnimatorController Mapping for {component}");
                                     mapper ??= new AnimatorControllerMapper(
                                         mapping.CreateAnimationMapper(component.gameObject), context);
 
@@ -89,6 +95,7 @@ namespace Anatawa12.AvatarOptimizer
                                     break;
 #if AAO_VRM0
                                 case VRM.BlendShapeAvatar avatar:
+                                    Tracing.Trace(TracingArea.ApplyObjectMapping, $"Applying BlendShapeAvatar Mapping for {component}");
                                     mapper ??= new AnimatorControllerMapper(
                                         mapping.CreateAnimationMapper(component.gameObject), context);
                                     mapper.FixBlendShapeAvatar(avatar);
@@ -96,6 +103,7 @@ namespace Anatawa12.AvatarOptimizer
 #endif
 #if AAO_VRM1
                                 case UniVRM10.VRM10Object vrm10Object:
+                                    Tracing.Trace(TracingArea.ApplyObjectMapping, $"Applying VRM10Object Mapping for {component}");
                                     mapper ??= new AnimatorControllerMapper(
                                         mapping.CreateAnimationMapper(component.gameObject), context);
                                     mapper.FixVRM10Object(vrm10Object);
@@ -292,6 +300,7 @@ namespace Anatawa12.AvatarOptimizer
             if (_clipMapping.TryGetValue(clip, out var mapped)) return mapped;
 
             Profiler.BeginSample("MapClip");
+            Tracing.Trace(TracingArea.ApplyObjectMapping, $"Applying Clip map {clip}");
 
             var floatBindings = AnimationUtility.GetCurveBindings(clip);
             var objectBindings = AnimationUtility.GetObjectReferenceCurveBindings(clip);
@@ -322,6 +331,7 @@ namespace Anatawa12.AvatarOptimizer
             foreach (var binding in floatBindings)
             {
                 var newBindings = _mapping.MapBinding(binding.path, binding.type, binding.propertyName);
+                Tracing.Trace(TracingArea.ApplyObjectMapping, $"Mapping Float ({binding.path}, {binding.type}, {binding.propertyName}): {(newBindings == null ? "same mapping" : newBindings.Length == 0 ? "empty" : string.Join(", ", newBindings))}");
                 if (newBindings == null)
                 {
                     newClip.SetCurve(binding.path, binding.type, binding.propertyName,
@@ -340,6 +350,7 @@ namespace Anatawa12.AvatarOptimizer
             foreach (var binding in objectBindings)
             {
                 var newBindings = _mapping.MapBinding(binding.path, binding.type, binding.propertyName);
+                Tracing.Trace(TracingArea.ApplyObjectMapping, $"Mapping Object ({binding.path}, {binding.type}, {binding.propertyName}): {(newBindings == null ? "same mapping" : newBindings.Length == 0 ? "empty" : string.Join(", ", newBindings))}");
                 if (newBindings == null)
                 {
                     AnimationUtility.SetObjectReferenceCurve(newClip, binding,
@@ -364,6 +375,7 @@ namespace Anatawa12.AvatarOptimizer
             {
                 // if newClip has less properties than original clip (especially for no properties), 
                 // length of newClip can be changed which is bad.
+                Tracing.Trace(TracingArea.ApplyObjectMapping, $"Animation Clip Length Mismatch; {clip.length} -> {newClip.length}");
                 newClip.SetCurve(
                     "$AvatarOptimizerClipLengthDummy$", typeof(GameObject), Props.IsActive,
                     AnimationCurve.Constant(clip.length, clip.length, 1f));
