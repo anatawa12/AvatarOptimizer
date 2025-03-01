@@ -334,14 +334,18 @@ namespace Anatawa12.AvatarOptimizer
                 Tracing.Trace(TracingArea.ApplyObjectMapping, $"Mapping Float ({binding.path}, {binding.type}, {binding.propertyName}): {(newBindings == null ? "same mapping" : newBindings.Length == 0 ? "empty" : string.Join(", ", newBindings))}");
                 if (newBindings == null)
                 {
-                    newClip.SetCurve(binding.path, binding.type, binding.propertyName,
+                    AnimationUtility.SetEditorCurve(newClip, binding,
                         AnimationUtility.GetEditorCurve(clip, binding));
                 }
                 else
                 {
-                    foreach (var newBinding in newBindings)
+                    foreach (var tuple in newBindings)
                     {
-                        newClip.SetCurve(newBinding.path, newBinding.type, newBinding.propertyName,
+                        var newBinding = binding;
+                        newBinding.path = tuple.path;
+                        newBinding.type = tuple.type;
+                        newBinding.propertyName = tuple.propertyName;
+                        AnimationUtility.SetEditorCurve(newClip, newBinding,
                             AnimationUtility.GetEditorCurve(clip, binding));
                     }
                 }
@@ -376,8 +380,8 @@ namespace Anatawa12.AvatarOptimizer
                 // if newClip has less properties than original clip (especially for no properties), 
                 // length of newClip can be changed which is bad.
                 Tracing.Trace(TracingArea.ApplyObjectMapping, $"Animation Clip Length Mismatch; {clip.length} -> {newClip.length}");
-                newClip.SetCurve(
-                    "$AvatarOptimizerClipLengthDummy$", typeof(GameObject), Props.IsActive,
+                AnimationUtility.SetEditorCurve(newClip,
+                    EditorCurveBinding.FloatCurve("$AvatarOptimizerClipLengthDummy$", typeof(GameObject), Props.IsActive), 
                     AnimationCurve.Constant(clip.length, clip.length, 1f));
             }
 

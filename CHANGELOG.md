@@ -22,6 +22,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - Animations targets GameObjects includes '/' in their name can be broken `#1399`
+- Animation Clips can be broken if timeline window is open `#1417`
 
 ### Security
 
