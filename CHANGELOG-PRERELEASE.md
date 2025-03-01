@@ -18,6 +18,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Animation Clips can be broken if timeline window is open `#1417`
 
 ### Security
 
