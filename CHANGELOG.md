@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog].
 ## [Unreleased]
 ### Added
 - Context menu to add Trace And Optimize `#1411`
+- Undocumented trace level debug log `#1414`
 
 ### Changed
 - Removed missing viseme / eyelids warning `#1401`
