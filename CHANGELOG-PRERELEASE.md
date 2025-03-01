@@ -8,8 +8,6 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Context menu to add Trace And Optimize `#1411`
-- Undocumented trace level debug log `#1414`
 
 ### Changed
 
@@ -18,9 +16,16 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Animation Clips can be broken if timeline window is open `#1417`
 
 ### Security
+
+## [1.8.7] - 2025-03-01
+### Added
+- Context menu to add Trace And Optimize [`#1411`](https://github.com/anatawa12/AvatarOptimizer/pull/1411)
+- Undocumented trace level debug log [`#1414`](https://github.com/anatawa12/AvatarOptimizer/pull/1414)
+
+### Fixed
+- Animation Clips can be broken if timeline window is open [`#1417`](https://github.com/anatawa12/AvatarOptimizer/pull/1417)
 
 ## [1.8.7-beta.2] - 2025-02-21
 ### Changed
@@ -1849,7 +1854,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.7-beta.2...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.7...HEAD
+[1.8.7]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.7-beta.2...v1.8.7
 [1.8.7-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.7-beta.1...v1.8.7-beta.2
 [1.8.7-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.6...v1.8.7-beta.1
 [1.8.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.6-beta.1...v1.8.6

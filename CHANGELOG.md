@@ -8,23 +8,30 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Context menu to add Trace And Optimize `#1411`
-- Undocumented trace level debug log `#1414`
 
 ### Changed
-- Removed missing viseme / eyelids warning `#1401`
-- Improved Optimize Texture a little `#1404`
-  - This should reduce texture memory usage a little and fixes a bug that may increase texture usage.
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
-- Animations targets GameObjects includes '/' in their name can be broken `#1399`
-- Animation Clips can be broken if timeline window is open `#1417`
 
 ### Security
+
+## [1.8.7] - 2025-03-01
+### Added
+- Context menu to add Trace And Optimize [`#1411`](https://github.com/anatawa12/AvatarOptimizer/pull/1411)
+- Undocumented trace level debug log [`#1414`](https://github.com/anatawa12/AvatarOptimizer/pull/1414)
+
+### Changed
+- Removed missing viseme / eyelids warning [`#1401`](https://github.com/anatawa12/AvatarOptimizer/pull/1401)
+- Improved Optimize Texture a little [`#1404`](https://github.com/anatawa12/AvatarOptimizer/pull/1404)
+  - This should reduce texture memory usage a little and fixes a bug that may increase texture usage.
+
+### Fixed
+- Animations targets GameObjects includes '/' in their name can be broken [`#1399`](https://github.com/anatawa12/AvatarOptimizer/pull/1399)
+- Animation Clips can be broken if timeline window is open [`#1417`](https://github.com/anatawa12/AvatarOptimizer/pull/1417)
 
 ## [1.8.6] - 2025-02-14
 ### Fixed
@@ -1178,7 +1185,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.6...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.7...HEAD
+[1.8.7]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.6...v1.8.7
 [1.8.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.5...v1.8.6
 [1.8.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.4...v1.8.5
 [1.8.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.3...v1.8.4
