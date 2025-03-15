@@ -11,6 +11,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         public bool RemoveUnusedObjects;
         public bool RemoveZeroSizedPolygon;
         public bool OptimizePhysBone;
+        public bool ReplaceEndBoneWithEndpointPosition;
         public bool OptimizeAnimator;
         public bool MergeSkinnedMesh;
         public bool AllowShuffleMaterialSlots;
@@ -48,6 +49,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             RemoveUnusedObjects = config.removeUnusedObjects;
             RemoveZeroSizedPolygon = config.removeZeroSizedPolygons;
             OptimizePhysBone = config.optimizePhysBone;
+            ReplaceEndBoneWithEndpointPosition = config.replaceEndBoneWithEndpointPosition;
             OptimizeAnimator = config.optimizeAnimator;
             MergeSkinnedMesh = config.mergeSkinnedMesh;
             AllowShuffleMaterialSlots = config.allowShuffleMaterialSlots;

@@ -60,6 +60,16 @@ namespace Anatawa12.AvatarOptimizer
         internal bool optimizePhysBone = true;
 
         [NotKeyable]
+        [AAOLocalized("TraceAndOptimize:prop:replaceEndBoneWithEndpointPosition")]
+        [ToggleLeft]
+        [SerializeField]
+#if !AAO_VRCSDK3_AVATARS
+        // no meaning without VRCSDK
+        [HideInInspector]
+#endif
+        internal bool replaceEndBoneWithEndpointPosition = true;
+
+        [NotKeyable]
         [AAOLocalized("TraceAndOptimize:prop:optimizeAnimator")]
         [ToggleLeft]
         [SerializeField]

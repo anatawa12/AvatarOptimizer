@@ -22,6 +22,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             
             if (!state.SkipMergePhysBoneCollider)
                 MergePhysBoneColliders(context);
+            
+            if (state.ReplaceEndBoneWithEndpointPosition)
+                ConfigureReplaceEndBoneWithEndpointPosition(context, state);
         }
 
         private void MergePhysBoneColliders(BuildContext context)
@@ -205,6 +208,39 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             "rotation",
             "bonesAsSpheres",
         };
+
+        private void ConfigureReplaceEndBoneWithEndpointPosition(BuildContext context, TraceAndOptimizeState state)
+        {
+            var componentInfos = new GCComponentInfoHolder(context);
+            new ComponentDependencyCollector(context, false, componentInfos).CollectAllUsages();
+
+            foreach (var physbone in context.GetComponents<VRCPhysBoneBase>())
+            {
+                if (physbone.gameObject.GetComponent<ReplaceEndBoneWithEndpointPosition>() != null) continue;
+
+                if (state.Exclusions.Contains(physbone.gameObject)) continue;
+                if (physbone.endpointPosition != Vector3.zero) continue; // alreday used
+
+                var endBones = physbone.GetEndBones();
+                if (ReplaceEndBoneWithEndpointPositionProcessor.AreEndBonesEqualLocalPosition(endBones, out var position))
+                {
+                    if (endBones.All(bone => ValidateEndBone(bone)))
+                    {
+                        physbone.gameObject.AddComponent<ReplaceEndBoneWithEndpointPosition>().replacementPosition = position;
+                    }
+                }
+            }
+
+            bool ValidateEndBone(Transform endBone)
+            {
+                if (state.Exclusions.Contains(endBone.gameObject)) return false;
+                if (endBone.GetComponents<Component>().Length != 1) return false; // except transform
+                if (componentInfos.GetInfo(endBone).AllEntrypointUsages != 0) return false;
+
+                // no need to check animations if it has no usage.
+                return true;
+            }
+        }
     }
 }
 #endif
