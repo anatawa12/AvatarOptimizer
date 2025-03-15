@@ -19,6 +19,12 @@ namespace Anatawa12.AvatarOptimizer
                             MergePhysBoneValidator.Validate(mergePhysBone);
                         break;
                     }
+                    case ReplaceEndBoneWithEndpointPosition replaceEndBoneWithEndpointPosition:
+                    {
+                        using (ErrorReport.WithContextObject(replaceEndBoneWithEndpointPosition))
+                            ReplaceEndBoneWithEndpointPositionProcessor.Validate(replaceEndBoneWithEndpointPosition);
+                        break;
+                    }
 #endif
                     case MergeSkinnedMesh mergeSkinnedMesh:
                     {

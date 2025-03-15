@@ -696,6 +696,28 @@ msgstr "There are multiple BlendShapes with the same name '{0}' after renaming. 
 
 # endregion
 
+# region ReplaceEndBoneWithEndpointPosition
+
+msgid "ReplaceEndBoneWithEndpointPosition:prop:replacementPosition"
+msgstr "Replacement Position"
+
+msgid "ReplaceEndBoneWithEndpointPosition:validation:meaninglessReplacementPosition"
+msgstr "Converting to origin will not be applied."
+
+msgid "ReplaceEndBoneWithEndpointPosition:validation:endpointPositionNotZero"
+msgstr "The value of PhysBone Endpoint Position to be replaced is not zero."
+
+msgid "ReplaceEndBoneWithEndpointPosition:validation:endBoneHasComponents"
+msgstr "The end bone has components."
+
+msgid "ReplaceEndBoneWithEndpointPosition:validation:endBonesNotEqualLocalPosition"
+msgstr "Replacing end bones with different coordinates."
+
+msgid "ReplaceEndBoneWithEndpointPosition:validation:incorrectReplacementPosition"
+msgstr "Replacing to end bones with different coordinates."
+
+# endregion
+
 # region AvatarGlobalComponent
 
 msgid "AvatarGlobalComponent:NotOnAvatarRoot"
@@ -763,6 +785,9 @@ msgstr "Remove unused Objects Automatically"
 
 msgid "TraceAndOptimize:prop:optimizePhysBone"
 msgstr "Optimize PhysBone Settings"
+
+msgid "TraceAndOptimize:prop:replaceEndBoneWithEndpointPosition"
+msgstr "Replace EndBone With Endpoint Position"
 
 msgid "TraceAndOptimize:prop:optimizeAnimator"
 msgstr "Optimize Animator"
