@@ -14,45 +14,14 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
         private const float tolerance = 0.00001f;
 
-        public static void Validate(ReplaceEndBoneWithEndpointPosition replacer)
-        {
-            if (replacer.replacementPosition == Vector3.zero)
-            {
-                BuildLog.LogError("ReplaceEndBoneWithEndpointPosition:validation:meaninglessReplacementPosition", replacer);
-            }
-
-            foreach (var physbone in replacer.GetComponents<VRCPhysBoneBase>())
-            {
-                if (physbone.endpointPosition != Vector3.zero)
-                {
-                    BuildLog.LogError("ReplaceEndBoneWithEndpointPosition:validation:endpointPositionNotZero", replacer);
-                }
-
-                var endBones = physbone.GetEndBones();
-                
-                foreach (var endbone in endBones)
-                {
-                    if (endbone.GetComponents<Component>().Except(new Component[] { endbone }).Any())
-                    {
-                        BuildLog.LogWarning("ReplaceEndBoneWithEndpointPosition:validation:endBoneHasComponents", replacer);
-                    }
-                }
-
-                if (AreEndBonesEqualLocalPosition(endBones, out var position))
-                {
-                    BuildLog.LogWarning("ReplaceEndBoneWithEndpointPosition:validation:endBonesNotEqualLocalPosition", replacer);
-                }
-                else if (Vector3.Distance(replacer.replacementPosition, position) > tolerance)
-                {
-                    BuildLog.LogWarning("ReplaceEndBoneWithEndpointPosition:validation:incorrectReplacementPosition", replacer);
-                }
-            }
-        }
-
         protected override void Execute(BuildContext context)
         {
             foreach (var replacer in context.GetComponents<ReplaceEndBoneWithEndpointPosition>())
             {
+                if (replacer.replacementPosition == Vector3.zero)
+                {
+                    BuildLog.LogError("ReplaceEndBoneWithEndpointPosition:validation:meaninglessReplacementPosition", replacer);
+                }
                 foreach (var physbone in replacer.GetComponents<VRCPhysBoneBase>())
                 {
                     using (ErrorReport.WithContextObject(physbone))
@@ -64,7 +33,27 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
         private static void Process(ReplaceEndBoneWithEndpointPosition replacer, VRCPhysBoneBase physbone)
         {
+            if (physbone.endpointPosition != Vector3.zero)
+            {
+                BuildLog.LogError("ReplaceEndBoneWithEndpointPosition:validation:endpointPositionNotZero", replacer);
+            }
+
             var endBones = physbone.GetEndBones();
+            
+            if (endBones.Any(b => b.GetComponents<Component>().Length != 1)) // except transfrom
+            {
+                BuildLog.LogWarning("ReplaceEndBoneWithEndpointPosition:validation:endBoneHasComponents", replacer);
+            }
+
+            if (AreEndBonesEqualLocalPosition(endBones, out var position))
+            {
+                BuildLog.LogWarning("ReplaceEndBoneWithEndpointPosition:validation:endBonesNotEqualLocalPosition", replacer);
+            }
+            else if (Vector3.Distance(replacer.replacementPosition, position) > tolerance)
+            {
+                BuildLog.LogWarning("ReplaceEndBoneWithEndpointPosition:validation:incorrectReplacementPosition", replacer);
+            }
+
             foreach (var endbone in endBones)
             {
                 if (!endbone.gameObject.GetComponent<MergeBone>())
