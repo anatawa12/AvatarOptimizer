@@ -11,7 +11,6 @@ namespace Anatawa12.AvatarOptimizer
         private SerializedProperty _preserveEndBone = null!; // Initialized in OnEnable
         private SerializedProperty _removeZeroSizedPolygons = null!; // Initialized in OnEnable
         private SerializedProperty _optimizePhysBone = null!; // Initialized in OnEnable
-        private SerializedProperty _replaceEndBoneWithEndpointPosition = null!; // Initialized in OnEnable
         private SerializedProperty _optimizeAnimator = null!; // Initialized in OnEnable
         private SerializedProperty _mergeSkinnedMesh = null!; // Initialized in OnEnable
         private SerializedProperty _allowShuffleMaterialSlots = null!; // Initialized in OnEnable
@@ -28,7 +27,6 @@ namespace Anatawa12.AvatarOptimizer
             _preserveEndBone = serializedObject.FindProperty(nameof(TraceAndOptimize.preserveEndBone));
             _removeZeroSizedPolygons = serializedObject.FindProperty(nameof(TraceAndOptimize.removeZeroSizedPolygons));
             _optimizePhysBone = serializedObject.FindProperty(nameof(TraceAndOptimize.optimizePhysBone));
-            _replaceEndBoneWithEndpointPosition = serializedObject.FindProperty(nameof(TraceAndOptimize.replaceEndBoneWithEndpointPosition));
             _optimizeAnimator = serializedObject.FindProperty(nameof(TraceAndOptimize.optimizeAnimator));
             _mergeSkinnedMesh = serializedObject.FindProperty(nameof(TraceAndOptimize.mergeSkinnedMesh));
             _allowShuffleMaterialSlots = serializedObject.FindProperty(nameof(TraceAndOptimize.allowShuffleMaterialSlots));
@@ -54,12 +52,6 @@ namespace Anatawa12.AvatarOptimizer
                 EditorGUI.indentLevel--;
             }
             EditorGUILayout.PropertyField(_optimizePhysBone);
-            if (_optimizePhysBone.boolValue)
-            {
-                EditorGUI.indentLevel++;
-                EditorGUILayout.PropertyField(_replaceEndBoneWithEndpointPosition);
-                EditorGUI.indentLevel--;
-            }
             EditorGUILayout.PropertyField(_optimizeAnimator);
             EditorGUILayout.PropertyField(_mergeSkinnedMesh);
             if (_mergeSkinnedMesh.boolValue)

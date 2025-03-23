@@ -786,9 +786,6 @@ msgstr "Remove unused Objects Automatically"
 msgid "TraceAndOptimize:prop:optimizePhysBone"
 msgstr "Optimize PhysBone Settings"
 
-msgid "TraceAndOptimize:prop:replaceEndBoneWithEndpointPosition"
-msgstr "Replace EndBone With Endpoint Position"
-
 msgid "TraceAndOptimize:prop:optimizeAnimator"
 msgstr "Optimize Animator"
 

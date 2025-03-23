@@ -23,7 +23,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             if (!state.SkipMergePhysBoneCollider)
                 MergePhysBoneColliders(context);
             
-            if (state.ReplaceEndBoneWithEndpointPosition)
+            if (!state.SkipReplaceEndBoneWithEndpointPosition)
                 ConfigureReplaceEndBoneWithEndpointPosition(context, state);
         }
 

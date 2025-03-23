@@ -685,9 +685,6 @@ msgstr "使われていないObjectを自動的に削除する"
 msgid "TraceAndOptimize:prop:optimizePhysBone"
 msgstr "PhysBoneの設定を最適化する"
 
-msgid "TraceAndOptimize:prop:replaceEndBoneWithEndpointPosition"
-msgstr "endボーンをEndpoint Positionに変換する"
-
 msgid "TraceAndOptimize:prop:optimizeAnimator"
 msgstr "アニメーターを最適化する"
 
