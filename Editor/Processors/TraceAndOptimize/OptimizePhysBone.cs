@@ -211,10 +211,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         private void ConfigureReplaceEndBoneWithEndpointPosition(BuildContext context, TraceAndOptimizeState state)
         {
+            var physbones = context.GetComponents<VRCPhysBoneBase>();
+            if (!physbones.Any()) return;
+
             var componentInfos = new GCComponentInfoHolder(context);
             new ComponentDependencyCollector(context, false, componentInfos).CollectAllUsages();
 
-            foreach (var physbone in context.GetComponents<VRCPhysBoneBase>())
+            foreach (var physbone in physbones)
             {
                 if (physbone.gameObject.GetComponent<ReplaceEndBoneWithEndpointPosition>() != null) continue;
 
