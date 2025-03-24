@@ -38,6 +38,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         public bool SkipAnyStateToEntryExit;
         public bool SkipRemoveMaterialUnusedProperties;
         public bool SkipAutoMergeBlendShape;
+        public bool SkipRemoveUnusedSubMesh;
 
         public Dictionary<SkinnedMeshRenderer, HashSet<string>> PreserveBlendShapes =
             new Dictionary<SkinnedMeshRenderer, HashSet<string>>();
@@ -76,6 +77,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             SkipAnyStateToEntryExit = config.debugOptions.skipAnyStateToEntryExit;
             SkipRemoveMaterialUnusedProperties = config.debugOptions.skipRemoveMaterialUnusedProperties;
             SkipAutoMergeBlendShape = config.debugOptions.skipAutoMergeBlendShape;
+            SkipRemoveUnusedSubMesh = config.debugOptions.skipRemoveUnusedSubMesh;
 
             Enabled = true;
         }
