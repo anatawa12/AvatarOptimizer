@@ -16,6 +16,9 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Particle Systems referencing Skinned Mesh Renderers without material slots will be broken `#1426`
+  - AAO's removing unused submeshes feature will remove all submeshes if there are no material slots.
+  - However, Unity's Particle System does't require materials slots are present so AAO broke this relatively rare case.
 
 ### Security
 
