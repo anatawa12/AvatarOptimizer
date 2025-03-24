@@ -303,7 +303,7 @@ internal struct OptimizeTextureImpl {
             return Array.Empty<(EqualsHashSet<UVID>, AtlasResult)>();
 
         var textureByUvId = new Dictionary<UVID, List<TextureNode>>();
-        var uvidByTexture = new Dictionary<TextureNode, List<UVID>>();
+        var uvidByTexture = new Dictionary<TextureNode, EqualsHashSet<UVID>>();
 
         foreach (var texture in info.Textures)
         {
@@ -311,7 +311,7 @@ internal struct OptimizeTextureImpl {
             {
                 var (material, usages) = pair;
                 return material.Users.SelectMany(x => usages.Select(y => new UVID(x.SubMeshId, y.UVChannel)));
-            }).ToList();
+            }).ToEqualsHashSet();
 
             foreach (var uvid in uvids)
             {
@@ -339,7 +339,7 @@ internal struct OptimizeTextureImpl {
             if (uvIds
                 .SelectMany(uvId => textureByUvId[uvId])
                 .Select(inner => uvidByTexture[inner])
-                .Any(innerUvIds => !uvIds.SequenceEqual(innerUvIds)))
+                .Any(innerUvIds => !uvIds.Equals(innerUvIds)))
             {
                 badUvIds.UnionWith(uvIds);
                 continue;
