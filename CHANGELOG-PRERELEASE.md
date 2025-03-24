@@ -16,12 +16,15 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Particle Systems referencing Skinned Mesh Renderers without material slots will be broken `#1426`
-  - AAO's removing unused submeshes feature will remove all submeshes if there are no material slots.
-  - However, Unity's Particle System does't require materials slots are present so AAO broke this relatively rare case.
-- Optimize Texture is not applied in some cases `#1427`
 
 ### Security
+
+## [1.8.8-beta.1] - 2025-03-24
+### Fixed
+- Particle Systems referencing Skinned Mesh Renderers without material slots will be broken [`#1426`](https://github.com/anatawa12/AvatarOptimizer/pull/1426)
+  - AAO's removing unused submeshes feature will remove all submeshes if there are no material slots.
+  - However, Unity's Particle System does't require materials slots are present so AAO broke this relatively rare case.
+- Optimize Texture is not applied in some cases [`#1427`](https://github.com/anatawa12/AvatarOptimizer/pull/1427)
 
 ## [1.8.7] - 2025-03-01
 ### Added
@@ -1858,7 +1861,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.7...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.8-beta.1...HEAD
+[1.8.8-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.7...v1.8.8-beta.1
 [1.8.7]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.7-beta.2...v1.8.7
 [1.8.7-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.7-beta.1...v1.8.7-beta.2
 [1.8.7-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.6...v1.8.7-beta.1
