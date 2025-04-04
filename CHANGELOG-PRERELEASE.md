@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
+- Declare compatibility with VRCSDK 3.8.x `#1432`
+  - No beta sdk for 3.8.0 (it was 3.7.x) so this is not possible before stable release.
 
 ### Deprecated
 
