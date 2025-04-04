@@ -10,8 +10,6 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
-- Declare compatibility with VRCSDK 3.8.x `#1432`
-  - No beta sdk for 3.8.0 (it was 3.7.x) so this is not possible before stable release.
 
 ### Deprecated
 
@@ -20,6 +18,11 @@ The format is based on [Keep a Changelog].
 ### Fixed
 
 ### Security
+
+## [1.8.8] - 2025-04-04
+### Changed
+- Declare compatibility with VRCSDK 3.8.x [`#1432`](https://github.com/anatawa12/AvatarOptimizer/pull/1432)
+  - No beta sdk for 3.8.0 (it was 3.7.x) so this is not possible before stable release.
 
 ## [1.8.8-beta.2] - 2025-04-02
 ## [1.8.8-beta.1] - 2025-03-24
@@ -1864,7 +1867,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.8-beta.2...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.8...HEAD
+[1.8.8]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.8-beta.2...v1.8.8
 [1.8.8-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.8-beta.1...v1.8.8-beta.2
 [1.8.8-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.7...v1.8.8-beta.1
 [1.8.7]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.7-beta.2...v1.8.7
