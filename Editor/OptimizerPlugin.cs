@@ -2,11 +2,34 @@ using System;
 using Anatawa12.AvatarOptimizer.ndmf;
 using nadena.dev.ndmf;
 using nadena.dev.ndmf.builtin;
+using nadena.dev.ndmf.fluent;
+using nadena.dev.ndmf.model;
 
 [assembly: ExportsPlugin(typeof(OptimizerPlugin))]
 
 namespace Anatawa12.AvatarOptimizer.ndmf
 {
+    #if !NDMF_1_8_0_OR_NEWER
+    // These stubs allow the code to compile with NDMF 1.7.x or earlier
+    internal static class LegacyNDMFAdapter
+    {
+        public static Sequence OnAllPlatforms(this Sequence s)
+        {
+            return s;
+        }
+        
+        public static Sequence OnPlatforms(this Sequence s, params string[] platform)
+        {
+            return s;
+        }
+    }
+
+    internal static class WellKnownPlatforms
+    {
+        public const string VRChatAvatar30 = "";
+    }
+    #endif
+    
     internal class OptimizerPlugin : Plugin<OptimizerPlugin>
     {
         public override string DisplayName => $"AAO: Avatar Optimizer ({CheckForUpdate.Checker.CurrentVersionName})";
@@ -17,6 +40,7 @@ namespace Anatawa12.AvatarOptimizer.ndmf
         {
             // Run early steps before EditorOnly objects are purged
             InPhase(BuildPhase.Resolving)
+                .OnAllPlatforms()
                 .Run("Info if AAO is Out of Date", ctx =>
                 {
                     // we skip check for update 
@@ -60,10 +84,11 @@ namespace Anatawa12.AvatarOptimizer.ndmf
                         .Then.Run(Processors.TraceAndOptimizes.AddRemoveEmptySubMesh.Instance)
                         .Then.Run(Processors.TraceAndOptimizes.AutoFreezeBlendShape.Instance)
 #if AAO_VRCSDK3_AVATARS
-                        .Then.Run(Processors.ClearEndpointPositionProcessor.Instance)
+                        .Then.OnPlatforms(WellKnownPlatforms.VRChatAvatar30)
+                        .Run(Processors.ClearEndpointPositionProcessor.Instance)
                         .Then.Run(Processors.MergePhysBoneProcessor.Instance)
 #endif
-                        .Then.Run(Processors.EditSkinnedMeshComponentProcessor.Instance)
+                        .Then.OnAllPlatforms().Run(Processors.EditSkinnedMeshComponentProcessor.Instance)
                         .PreviewingWith(EditModePreview.RemoveMeshByMaskRenderFilter.Instance)
                         .PreviewingWith(EditModePreview.RemoveMeshByBlendShapeRenderFilter.Instance)
                         .PreviewingWith(EditModePreview.RemoveMeshInBoxRenderFilter.Instance)
@@ -72,9 +97,10 @@ namespace Anatawa12.AvatarOptimizer.ndmf
                             ctx => new Processors.MakeChildrenProcessor(early: false).Process(ctx)
                         )
 #if AAO_VRCSDK3_AVATARS
-                        .Then.Run(Processors.TraceAndOptimizes.OptimizePhysBone.Instance)
+                        .Then.OnPlatforms(WellKnownPlatforms.VRChatAvatar30)
+                        .Run(Processors.TraceAndOptimizes.OptimizePhysBone.Instance)
 #endif
-                        .Then.Run(Processors.TraceAndOptimizes.AutoMergeSkinnedMesh.Instance)
+                        .Then.OnAllPlatforms().Run(Processors.TraceAndOptimizes.AutoMergeSkinnedMesh.Instance)
                         .Then.Run(Processors.TraceAndOptimizes.FindUnusedObjects.Instance)
                         .Then.Run(Processors.TraceAndOptimizes.ConfigureRemoveZeroSizedPolygon.Instance)
                         .Then.Run(Processors.TraceAndOptimizes.RemoveUnusedMaterialProperties.Instance)
