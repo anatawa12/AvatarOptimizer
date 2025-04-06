@@ -33,6 +33,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
     // - all states have same write defaults value
     // - if write defaults is off, all states have same animating properties
     // - all states must not have motion time. you have to use 1d blend tree for gesture weight.
+    [RunsOnPlatforms(WellKnownPlatforms.VRChatAvatar30)] // EntryExit to BlendTree optimization heavily depends on VRChat's behavior
     public class EntryExitToBlendTree : AnimOptPassBase<EntryExitToBlendTree>
     {
         private static CachedGuidLoader<AnimationClip> _emptyClip = "ce6c609e7fd58444d9d59e98296eed35";
