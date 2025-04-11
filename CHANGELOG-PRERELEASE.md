@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Support for liltoon 1.9.0 `#1436`
 
 ### Changed
 
