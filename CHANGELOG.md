@@ -8,7 +8,6 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Support for liltoon 1.9.0 `#1436`
 
 ### Changed
 
@@ -19,6 +18,10 @@ The format is based on [Keep a Changelog].
 ### Fixed
 
 ### Security
+
+## [1.8.9] - 2025-04-11
+### Added
+- Support for liltoon 1.9.0 [`#1436`](https://github.com/anatawa12/AvatarOptimizer/pull/1436)
 
 ## [1.8.8] - 2025-04-04
 ### Changed
@@ -1197,7 +1200,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.8...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.9...HEAD
+[1.8.9]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.8...v1.8.9
 [1.8.8]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.7...v1.8.8
 [1.8.7]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.6...v1.8.7
 [1.8.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.5...v1.8.6
