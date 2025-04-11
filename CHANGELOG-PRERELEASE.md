@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Declare compatibility with non-VRCSDK platforms [`#1433`](https://github.com/anatawa12/AvatarOptimizer/pull/1433)
 
 ### Changed
 
