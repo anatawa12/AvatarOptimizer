@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Add Burst to dependencies directly `#1419`
 
 ### Security
 
