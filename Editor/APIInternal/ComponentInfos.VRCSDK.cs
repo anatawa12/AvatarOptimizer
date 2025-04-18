@@ -45,9 +45,8 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
             collector.AddDependency(component.GetComponent<PipelineManager>()).EvenIfDependantDisabled();
             collector.AddDependency(component.GetComponent<Animator>()).EvenIfDependantDisabled();
             
-            var animator = component.GetComponent<Animator>();
             // for empty Armature trick which is only valid for VRCSDK, we need to keep parent objects of Hips bone
-            if (animator && animator.isHuman)
+            if (component.TryGetComponent<Animator>(out var animator) && animator.isHuman)
             {
                 var hips = animator.GetBoneTransform(HumanBodyBones.Hips);
                 if (hips)

@@ -186,16 +186,14 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             Profiler.BeginSample("Warn / Error Unsupported Components");
             foreach (var renderer in meshInfos.Select(x => x.SourceRenderer).Where(x => x && x is SkinnedMeshRenderer))
             {
-                var removeZeroSizedPolygon = renderer.GetComponent<RemoveZeroSizedPolygon>();
-                if (removeZeroSizedPolygon)
+                if (renderer.TryGetComponent<RemoveZeroSizedPolygon>(out var removeZeroSizedPolygon))
                 {
                     BuildLog.LogWarning("MergeSkinnedMesh:warning:removeZeroSizedPolygonOnSources",
                         removeZeroSizedPolygon);
                     DestroyTracker.DestroyImmediate(removeZeroSizedPolygon);
                 }
 
-                var cloth = renderer.GetComponent<Cloth>();
-                if (cloth)
+                if (renderer.TryGetComponent<Cloth>(out var cloth))
                 {
                     BuildLog.LogError("MergeSkinnedMesh:error:clothOnSources", cloth);
                     DestroyTracker.DestroyImmediate(cloth);

@@ -9,6 +9,8 @@ using UnityEditor.Animations;
 using UnityEngine;
 using UnityEngine.Profiling;
 using Object = UnityEngine.Object;
+using System.Runtime.InteropServices;
+
 
 #if AAO_VRCSDK3_AVATARS
 using VRC.SDK3.Avatars.Components;
@@ -60,8 +62,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                     return;
             }
 
-            var animator = transform.GetComponent<Animator>();
-            if (animator && animator.runtimeAnimatorController)
+            if (transform.TryGetComponent<Animator>(out var animator) && animator.runtimeAnimatorController)
             {
                 ParseAnimationOrAnimator(animator, objectAlwaysActive, rootNode,
                     () => AddHumanoidModifications(
@@ -69,8 +70,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                             ParseAnimatorController(gameObject, animator.runtimeAnimatorController)), animator));
             }
 
-            var animation = transform.GetComponent<Animation>();
-            if (animation && animation.playAutomatically && animation.clip)
+            if (transform.TryGetComponent<Animation>(out var animation) && animation.playAutomatically && animation.clip)
             {
                 // We can animate `Animate Physics`, `Play Automatically` and `Enabled` of Animation component.
                 // However, animating `Play Automatically` will have no effect (initial state will be used)
@@ -205,8 +205,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             // see https://misskey.niri.la/notes/9ioemawdit
             // see https://creators.vrchat.com/avatars/playable-layers
 
-            var animator = descriptor.GetComponent<Animator>();
-            if (animator == null)
+            if (!descriptor.TryGetComponent<Animator>(out var animator))
             {
                 BuildLog.LogError("AnimatorParser:AnimatorNotFoundOnAvatarRoot", descriptor.gameObject);
                 return;
@@ -305,9 +304,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
             // TPose and IKPose should only affect to Humanoid so skip here~
 
-            var bodySkinnedMesh = descriptor.transform.Find("Body")?.GetComponent<SkinnedMeshRenderer>();
-
-            if (_mmdWorldCompatibility && bodySkinnedMesh != null)
+            if (_mmdWorldCompatibility && descriptor.transform.Find("Body") is { } body && body.TryGetComponent<SkinnedMeshRenderer>(out var bodySkinnedMesh))
             {
                 foreach (var shape in MmdBlendShapeNames)
                     modifications.Add(bodySkinnedMesh, $"blendShape.{shape}",

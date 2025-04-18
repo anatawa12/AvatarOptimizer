@@ -154,7 +154,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 foreach (var physBone in sourceComponents)
                     FixYawPitch(physBone, root, context, originalBones);
 
-                if (originalBones.Any(x => x.GetComponent<MergeBone>()))
+                if (originalBones.Any(x => x.TryGetComponent<MergeBone>(out _)))
                 {
                     BuildLog.LogError("MergePhysBone:error:limit-rotation-fix-merge-bone");
                 }
