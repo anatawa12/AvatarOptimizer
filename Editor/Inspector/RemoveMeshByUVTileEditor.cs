@@ -22,7 +22,7 @@ namespace Anatawa12.AvatarOptimizer
         protected override void OnInspectorGUIInner()
         {
             // if there is source skinned mesh component, show error
-            if ((Component)((Component)target).GetComponent<ISourceSkinnedMeshComponent>())
+            if (((Component)target).TryGetComponent<ISourceSkinnedMeshComponent>(out _))
             {
                 EditorGUILayout.HelpBox(AAOL10N.Tr("NoSourceEditSkinnedMeshComponent:HasSourceSkinnedMeshComponent"), MessageType.Error);
                 return;

@@ -377,7 +377,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 (bool, List<Transform>?) NotMerged() => (mergedChildren, null);
 
                 // Already Merged
-                if (transform.GetComponent<MergeBone>()) return YesMerge();
+                if (transform.TryGetComponent<MergeBone>(out _)) return YesMerge();
                 // Components must be Transform Only
                 if (transform.GetComponents<Component>().Length != 1) return NotMerged();
                 // The bone cannot be used generally

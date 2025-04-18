@@ -65,8 +65,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 var mmdBody = context.AvatarRootTransform.Find("Body");
                 if (mmdBody != null)
                 {
-                    var mmdBodyRenderer = mmdBody.GetComponent<SkinnedMeshRenderer>();
-                    if (mmdBodyRenderer != null)
+                    if (mmdBody.TryGetComponent<SkinnedMeshRenderer>(out var mmdBodyRenderer))
                     {
                         componentInfos.GetInfo(mmdBodyRenderer)
                             .DependantEntrypoint
