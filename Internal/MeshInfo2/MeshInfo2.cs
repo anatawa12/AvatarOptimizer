@@ -113,12 +113,17 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             var sourceMaterials = renderer.sharedMaterials;
 
-            if (sourceMaterials.Length < SubMeshes.Count)
-                SubMeshes.RemoveRange(sourceMaterials.Length, SubMeshes.Count - sourceMaterials.Length);
+            // In previous version of MeshInfo2, we removed SubMeshes if there are no materials
+            // since we thought no materials means no rendering, so it won't be used.
+            // However, acutally, Particle Systems uses SubMeshes without materials.
+            // Therefore, we keep SubMeshes here and have empty materisls in SubMeshes,
+            // and remove them in RemoveUnusedObjects or FlattenMultiPassRendering.
+            //if (sourceMaterials.Length < SubMeshes.Count)
+            //    SubMeshes.RemoveRange(sourceMaterials.Length, SubMeshes.Count - sourceMaterials.Length);
 
-            if (SubMeshes.Count == sourceMaterials.Length)
+            if (sourceMaterials.Length <= SubMeshes.Count)
             {
-                for (var i = 0; i < SubMeshes.Count; i++)
+                for (var i = 0; i < sourceMaterials.Length; i++)
                     SubMeshes[i].SharedMaterial = sourceMaterials[i];
             }
             else
@@ -510,7 +515,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             Profiler.EndSample();
         }
 
-        /// <returns>true if we flattened multi pass rendering</returns>
+        /// <summary>
+        /// Flattens multi pass rendereing, and removes unused submeshes.
+        /// After this function is applied, all submeshes will have exactly one material.
+        /// </summary>
         public void FlattenMultiPassRendering(string reasonComponent)
         {
             if (SubMeshes.All(x => x.SharedMaterials.Length == 1)) return;
@@ -625,12 +633,35 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 var submeshWithMoreThan65536Verts = false;
                 var submeshIndexBuffersList = new List<(SubMesh subMesh, int baseVertex, int[] indices)>();
 
+                // Until last non-empty submesh, we have to skip generating submesh if no material is assigned,
+                // because later materials will be assigned to another material slot.
+                // After last non-empty submesh, we can generate submesh even if no material is assigned.
+                // The reason to generate submesh without material is to support meshes referenced by particle system.
+                //
+                // If the materials and submeshes in MeshInfo2 are like this:
+                // Materials: | 0 | 1 | ∅ | 2 | 3 |
+                // SubMeshes: |  0    | 1 | 2 | 3 | 4 |
+                // Then, the generated submeshes will be like this:
+                // Materials: | 0 | 1 | 2 | 3 |
+                // SubMehses: | 0 | 0 | 2 | 3 | 4 |
+                // We've removed SubMesh 1 because it has no material and there is successor submesh with material.
+                // We keep SubMesh 4 because there is no successor submesh.
+                int lastNonEmptySubMeshIndex = -1;
+                for (var i = 0; i < SubMeshes.Count; i++)
+                {
+                    var subMesh = SubMeshes[i];
+                    if (subMesh.SharedMaterials.Length != 0)
+                        lastNonEmptySubMeshIndex = i;
+                }
+
                 for (var i = 0; i < SubMeshes.Count - 1; i++)
                 {
                     var subMesh = SubMeshes[i];
 
+                    var canKeepEmptySubMesh = lastNonEmptySubMeshIndex < i;
+
                     // for non-last submesh, we have to duplicate submesh for multi pass rendering
-                    AddSubmesh(subMesh, vertexIndices, submeshIndexBuffersList, ref submeshWithMoreThan65536Verts, subMesh.SharedMaterials.Length);
+                    AddSubmesh(subMesh, vertexIndices, submeshIndexBuffersList, ref submeshWithMoreThan65536Verts, Math.Max(subMesh.SharedMaterials.Length, canKeepEmptySubMesh ? 1 : 0));
                 }
 
                 {
@@ -935,10 +966,15 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         public Material? SharedMaterial
         {
             get => SharedMaterials[0];
-            set => SharedMaterials[0] = value;
+            set
+            {
+                if (SharedMaterials.Length == 0)
+                    SharedMaterials = new Material?[1];
+                SharedMaterials[0] = value;
+            }
         }
 
-        public Material?[] SharedMaterials = { null };
+        public Material?[] SharedMaterials = Array.Empty<Material?>();
 
         public SubMesh()
         {

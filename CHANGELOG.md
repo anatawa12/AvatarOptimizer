@@ -20,6 +20,21 @@ The format is based on [Keep a Changelog].
 
 ### Security
 
+## [1.8.9] - 2025-04-11
+### Added
+- Support for liltoon 1.9.0 [`#1436`](https://github.com/anatawa12/AvatarOptimizer/pull/1436)
+
+## [1.8.8] - 2025-04-04
+### Changed
+- Declare compatibility with VRCSDK 3.8.x [`#1432`](https://github.com/anatawa12/AvatarOptimizer/pull/1432)
+  - No beta sdk for 3.8.0 (it was 3.7.x) so this is not possible before stable release.
+
+### Fixed
+- Particle Systems referencing Skinned Mesh Renderers without material slots will be broken [`#1426`](https://github.com/anatawa12/AvatarOptimizer/pull/1426)
+  - AAO's removing unused submeshes feature will remove all submeshes if there are no material slots.
+  - However, Unity's Particle System does't require materials slots are present so AAO broke this relatively rare case.
+- Optimize Texture is not applied in some cases [`#1427`](https://github.com/anatawa12/AvatarOptimizer/pull/1427)
+
 ## [1.8.7] - 2025-03-01
 ### Added
 - Context menu to add Trace And Optimize [`#1411`](https://github.com/anatawa12/AvatarOptimizer/pull/1411)
@@ -1186,7 +1201,9 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.7...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.9...HEAD
+[1.8.9]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.8...v1.8.9
+[1.8.8]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.7...v1.8.8
 [1.8.7]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.6...v1.8.7
 [1.8.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.5...v1.8.6
 [1.8.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.4...v1.8.5
