@@ -1,9 +1,10 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace Anatawa12.AvatarOptimizer
 {
-    public sealed class EqualsHashSet<T> : IEquatable<EqualsHashSet<T>>
+    public sealed class EqualsHashSet<T> : IEquatable<EqualsHashSet<T>>, IEnumerable<T>
     {
         public readonly HashSet<T> backedSet;
 
@@ -24,6 +25,10 @@ namespace Anatawa12.AvatarOptimizer
 
         public bool Equals(EqualsHashSet<T> other) =>
             !ReferenceEquals(null, other) && (ReferenceEquals(this, other) || backedSet.SetEquals(other.backedSet));
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
+        public HashSet<T>.Enumerator GetEnumerator() => backedSet.GetEnumerator();
 
         public override bool Equals(object? obj) =>
             ReferenceEquals(this, obj) || obj is EqualsHashSet<T> other && Equals(other);

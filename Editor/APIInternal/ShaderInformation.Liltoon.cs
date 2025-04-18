@@ -43,7 +43,7 @@ internal class LiltoonShaderInformation : ShaderInformation
         }
     }
 
-    private static int supportedLiltoon = 44;
+    private static int supportedLiltoon = 45;
 
     private static (string, string)[] guids =
     {
