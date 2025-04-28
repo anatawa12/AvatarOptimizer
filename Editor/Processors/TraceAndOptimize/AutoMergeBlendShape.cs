@@ -4,6 +4,7 @@ using System.Linq;
 using Anatawa12.AvatarOptimizer.AnimatorParsersV2;
 using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
 using nadena.dev.ndmf;
+using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
 using UnityEngine;
@@ -209,6 +210,7 @@ class AutoMergeBlendShape: TraceAndOptimizePass<AutoMergeBlendShape>
         public static bool operator !=(MergeKey left, MergeKey right) => !left.Equals(right);
     }
 
+    [BurstCompile]
     struct MergeBlendShapeJob : IJobParallelFor
     {
         public NativeArray<Vector3> vertices;

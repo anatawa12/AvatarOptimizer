@@ -244,14 +244,14 @@ namespace Anatawa12.AvatarOptimizer
             // AnimatorState.motion and BlendTree.children.
             controller.layers = Array.Empty<AnimatorControllerLayer>();
 
-            foreach (var layer in layers)
+            foreach (ref var layer in layers.AsSpan())
             {
                 FixAvatarMask(layer.avatarMask);
                 if (layer.syncedLayerIndex != -1)
                 {
                     foreach (var animatorState in ACUtils.AllStates(layers[layer.syncedLayerIndex].stateMachine))
                         if (layer.GetOverrideMotion(animatorState) is {} motion)
-                            layer.SetOverrideMotion(animatorState, motion);
+                            layer.SetOverrideMotion(animatorState, MapMotion(motion));
                 }
                 else
                 {

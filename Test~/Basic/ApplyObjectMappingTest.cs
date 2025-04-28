@@ -121,5 +121,53 @@ namespace Anatawa12.AvatarOptimizer.Test
             mappedClip = animatorController.layers[0].stateMachine.states[1].state.motion as AnimationClip;
             Assert.That(mappedClip, Is.EqualTo(proxyMotion));
         }
+
+        [Test]
+        public void ProcessSyncedLayer()
+        {
+            var root = new GameObject();
+            var child1 = Utils.NewGameObject("child1", root.transform);
+            var child11 = Utils.NewGameObject("child11", child1.transform);
+            var builder = new ObjectMappingBuilder<DummyPropInfo>(root);
+
+            Object.DestroyImmediate(child11);
+
+            var built = builder.BuildObjectMapping();
+
+            var rootMapper = new AnimatorControllerMapper(built.CreateAnimationMapper(root), new BuildContext(root, null));
+
+            var animatorController = new AnimatorController();
+
+            var layer = new AnimatorControllerLayer
+            {
+                name = "layer",
+                stateMachine = new AnimatorStateMachine { name = "layer" },
+            };
+            var state = layer.stateMachine.AddState("theState");
+            var clip = new AnimationClip();
+            clip.SetCurve("child1/child11", typeof(GameObject), Props.IsActive, AnimationCurve.Constant(0, 0.3f, 1));
+            state.motion = clip;
+            animatorController.AddLayer(layer);
+
+            var syncedLayer = new AnimatorControllerLayer
+            {
+                name = "syncedLayer",
+                stateMachine = new AnimatorStateMachine { name = "syncedLayer" },
+                syncedLayerIndex = 0,
+            };
+            var syncedClip = new AnimationClip();
+            syncedClip.SetCurve("child1/child11", typeof(GameObject), Props.IsActive, AnimationCurve.Constant(0, 0.3f, 3));
+            syncedLayer.SetOverrideMotion(state, syncedClip);
+            animatorController.AddLayer(layer);
+
+            rootMapper.FixAnimatorController(animatorController);
+
+            // ensure non-proxy mapped
+            var mappedClip = animatorController.layers[0].stateMachine.states[0].state.motion as AnimationClip;
+            Assert.That(mappedClip, Is.Not.EqualTo(clip));
+            
+            var syncedMappedClip = animatorController.layers[1].GetOverrideMotion(state);
+            Assert.That(syncedMappedClip, Is.Not.EqualTo(syncedClip));
+        }
     }
 }

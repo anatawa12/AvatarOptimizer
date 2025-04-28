@@ -16,9 +16,14 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Add missing `[BurstCompile]` to jobs [`#1418`](https://github.com/anatawa12/AvatarOptimizer/pull/1418)
 - Add Burst to dependencies directly `#1419`
 
 ### Security
+
+## [1.8.10-beta.1] - 2025-04-28
+### Fixed
+- Synced Layers are not correctly proceed [`#1439`](https://github.com/anatawa12/AvatarOptimizer/pull/1439)
 
 ## [1.8.9] - 2025-04-11
 ### Added
@@ -1872,7 +1877,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.9...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.10-beta.1...HEAD
+[1.8.10-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.9...v1.8.10-beta.1
 [1.8.9]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.8...v1.8.9
 [1.8.8]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.8-beta.2...v1.8.8
 [1.8.8-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.8-beta.1...v1.8.8-beta.2
