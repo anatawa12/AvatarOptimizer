@@ -40,7 +40,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
             bool AnyNotMergedBone(Transform bone)
             {
                 if (bone.CompareTag("EditorOnly")) return false;
-                if (!bone.GetComponent<MergeBone>()) return true;
+                if (!bone.TryGetComponent<MergeBone>(out _)) return true;
                 foreach (var transform in bone.DirectChildrenEnumerable())
                     if (AnyNotMergedBone(transform))
                         return true;

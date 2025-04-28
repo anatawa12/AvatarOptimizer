@@ -108,10 +108,9 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
     {
         protected override void CollectDependency(MeshRenderer component, ComponentDependencyCollector collector)
         {
-            var meshFilter = component.GetComponent<MeshFilter>();
             // Mesh renderer without MeshFilter does nothing
             // Mesh renderer without Mesh does nothing
-            if (!meshFilter || !meshFilter.sharedMesh) return;
+            if (!component.TryGetComponent<MeshFilter>(out var meshFilter) || meshFilter.sharedMesh == null) return;
             base.CollectDependency(component, collector);
             collector.AddDependency(meshFilter).EvenIfDependantDisabled();
         }
@@ -286,8 +285,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
     {
         protected override void CollectDependency(Joint component, ComponentDependencyCollector collector)
         {
-            var rigidBody = component.GetComponent<Rigidbody>();
-            if (rigidBody)
+            if (component.TryGetComponent<Rigidbody>(out var rigidBody))
             {
                 collector.AddDependency(rigidBody, component);
                 collector.AddDependency(rigidBody);

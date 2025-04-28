@@ -45,7 +45,7 @@ namespace Anatawa12.AvatarOptimizer
 
                 if (component is INoSourceEditSkinnedMeshComponent)
                 {
-                    if ((Component)component.GetComponent<ISourceSkinnedMeshComponent>())
+                    if (component.TryGetComponent<ISourceSkinnedMeshComponent>(out _))
                         BuildLog.LogError("NoSourceEditSkinnedMeshComponent:HasSourceSkinnedMeshComponent", component);
                 }
             }
