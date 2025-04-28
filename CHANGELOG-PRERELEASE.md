@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Synced Layers are not correctly proceed `#1439`
 
 ### Security
 
