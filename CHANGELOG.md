@@ -20,6 +20,7 @@ The format is based on [Keep a Changelog].
 - Synced Layers are not correctly proceed `#1439`
 - Add missing `[BurstCompile]` to jobs [`#1418`](https://github.com/anatawa12/AvatarOptimizer/pull/1418)
 - Add Burst to dependencies directly `#1419`
+- Fixed Particle Systems are not correctly removed `#1440`
 
 ### Security
 
