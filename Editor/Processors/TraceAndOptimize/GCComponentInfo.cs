@@ -33,7 +33,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 var activeness = ComputeActiveness(component, transformActiveness);
                 // objects without enabled checkbox are treated as enabled
                 // https://github.com/anatawa12/AvatarOptimizer/issues/1241
-                if (EditorUtility.GetObjectEnabled(component) == -1) activeness = true;
+                if (component is MonoBehaviour&&EditorUtility.GetObjectEnabled(component) == -1) activeness = true;
                 _dependencies.Add(component, new GCComponentInfo(component, activeness));
             }
 
