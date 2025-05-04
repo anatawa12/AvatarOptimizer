@@ -23,6 +23,7 @@ The format is based on [Keep a Changelog].
 - Fixed Particle Systems are not correctly removed `#1440`
 - Fixed incorrect `IsAnimated` optimization of PhysBone if parent scale is changed `#1442`
   - Due to bug in PhysBone, `IsAnimated` Optimization would change behavior if parent scale is changed.
+  - [This Canny](https://feedback.vrchat.com/bug-reports/p/physbone-freezes-if-parents-scale-is-zero-on-enable-then-become-non-zero-and-isa) is about this issue.
 
 ### Security
 
