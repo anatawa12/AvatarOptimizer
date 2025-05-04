@@ -10,22 +10,27 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
-- Replace `GetComponent` with `TryGetComponent` `#1437`
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
-- Synced Layers are not correctly proceed `#1439`
-- Add missing `[BurstCompile]` to jobs [`#1418`](https://github.com/anatawa12/AvatarOptimizer/pull/1418)
-- Add Burst to dependencies directly `#1419`
-- Fixed Particle Systems are not correctly removed `#1440`
-- Fixed incorrect `IsAnimated` optimization of PhysBone if parent scale is changed `#1442`
-  - Due to bug in PhysBone, `IsAnimated` Optimization would change behavior if parent scale is changed.
-  - [This Canny](https://feedback.vrchat.com/bug-reports/p/physbone-freezes-if-parents-scale-is-zero-on-enable-then-become-non-zero-and-isa) is about this issue.
 
 ### Security
+
+## [1.8.10] - 2025-05-04
+### Changed
+- Replace `GetComponent` with `TryGetComponent` [`#1437`](https://github.com/anatawa12/AvatarOptimizer/pull/1437)
+
+### Fixed
+- Synced Layers are not correctly proceed [`#1439`](https://github.com/anatawa12/AvatarOptimizer/pull/1439)
+- Add missing `[BurstCompile]` to jobs [`#1418`](https://github.com/anatawa12/AvatarOptimizer/pull/1418)
+- Add Burst to dependencies directly [`#1419`](https://github.com/anatawa12/AvatarOptimizer/pull/1419)
+- Fixed Particle Systems are not correctly removed [`#1440`](https://github.com/anatawa12/AvatarOptimizer/pull/1440)
+- Fixed incorrect `IsAnimated` optimization of PhysBone if parent scale is changed [`#1442`](https://github.com/anatawa12/AvatarOptimizer/pull/1442)
+  - Due to bug in PhysBone, `IsAnimated` Optimization would change behavior if parent scale is changed.
+  - [This Canny](https://feedback.vrchat.com/bug-reports/p/physbone-freezes-if-parents-scale-is-zero-on-enable-then-become-non-zero-and-isa) is about this issue.
 
 ## [1.8.9] - 2025-04-11
 ### Added
@@ -1208,7 +1213,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.9...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.10...HEAD
+[1.8.10]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.9...v1.8.10
 [1.8.9]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.8...v1.8.9
 [1.8.8]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.7...v1.8.8
 [1.8.7]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.6...v1.8.7

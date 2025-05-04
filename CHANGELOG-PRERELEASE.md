@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog].
 
 ### Security
 
+## [1.8.10] - 2025-05-04
 ## [1.8.10-beta.2] - 2025-05-04
 ### Changed
 - Replace `GetComponent` with `TryGetComponent` [`#1437`](https://github.com/anatawa12/AvatarOptimizer/pull/1437)
@@ -1887,7 +1888,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.10-beta.2...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.10...HEAD
+[1.8.10]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.10-beta.2...v1.8.10
 [1.8.10-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.10-beta.1...v1.8.10-beta.2
 [1.8.10-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.9...v1.8.10-beta.1
 [1.8.9]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.8...v1.8.9
