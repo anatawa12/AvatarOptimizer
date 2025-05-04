@@ -10,20 +10,25 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
-- Replace `GetComponent` with `TryGetComponent` `#1437`
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
-- Add missing `[BurstCompile]` to jobs [`#1418`](https://github.com/anatawa12/AvatarOptimizer/pull/1418)
-- Add Burst to dependencies directly `#1419`
-- Fixed Particle Systems are not correctly removed `#1440`
-- Fixed incorrect `IsAnimated` optimization of PhysBone if parent scale is changed `#1442`
-  - Due to bug in PhysBone, `IsAnimated` Optimization would change behavior if parent scale is changed.
 
 ### Security
+
+## [1.8.10-beta.2] - 2025-05-04
+### Changed
+- Replace `GetComponent` with `TryGetComponent` [`#1437`](https://github.com/anatawa12/AvatarOptimizer/pull/1437)
+
+### Fixed
+- Add missing `[BurstCompile]` to jobs [`#1418`](https://github.com/anatawa12/AvatarOptimizer/pull/1418)
+- Add Burst to dependencies directly [`#1419`](https://github.com/anatawa12/AvatarOptimizer/pull/1419)
+- Fixed Particle Systems are not correctly removed [`#1440`](https://github.com/anatawa12/AvatarOptimizer/pull/1440)
+- Fixed incorrect `IsAnimated` optimization of PhysBone if parent scale is changed [`#1442`](https://github.com/anatawa12/AvatarOptimizer/pull/1442)
+  - Due to bug in PhysBone, `IsAnimated` Optimization would change behavior if parent scale is changed.
 
 ## [1.8.10-beta.1] - 2025-04-28
 ### Fixed
@@ -1881,7 +1886,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.10-beta.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.10-beta.2...HEAD
+[1.8.10-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.10-beta.1...v1.8.10-beta.2
 [1.8.10-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.9...v1.8.10-beta.1
 [1.8.9]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.8...v1.8.9
 [1.8.8]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.8-beta.2...v1.8.8
