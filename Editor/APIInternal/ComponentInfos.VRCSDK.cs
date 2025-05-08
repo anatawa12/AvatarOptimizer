@@ -545,5 +545,15 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
             collector.AddDependency(component.WorldUpTransform);
         }
     }
+    
+    // VRCPerPlatformOverrides
+    [ComponentInformationWithGUID("45da21a324e147228aaee066e399bff0", 11500000)]
+    internal class VRCPerPlatformOverridesInformation : ComponentInformation<Component>
+    {
+        protected override void CollectDependency(Component component, ComponentDependencyCollector collector)
+        {
+            // this component is used only for storing platform overrides
+        }
+    }
 }
 #endif
