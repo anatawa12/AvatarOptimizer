@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Added support for VRCPerPlatformOverrides added in VRCSDK 3.8.1 `#1445`
+- Added support for NDMFAvatarRoot added in NDMF 1.8.0 `#1445`
 
 ### Changed
 
