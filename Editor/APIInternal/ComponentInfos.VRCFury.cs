@@ -19,4 +19,23 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.Externals
         {
         }
     }
+
+    // VF.Model.VRCFuryTest
+    [ComponentInformationWithGUID("8ef9e6b301ba4ac59c2f7d2b836565e7", 11500000)]
+    internal class VRCFuryTestInformation : ComponentInformation<Component>, IExternalMarker
+    {
+        protected override void CollectDependency(Component component, ComponentDependencyCollector collector)
+        {
+            // Keep the component if the GameObject lives
+            collector.AddDependency(component, component.transform).EvenIfDependantDisabled();
+        }
+
+        protected override void CollectMutations(Component component, ComponentMutationsCollector collector)
+        {
+        }
+
+        protected override void ApplySpecialMapping(Component component, MappingSource mappingSource)
+        {
+        }
+    }
 }

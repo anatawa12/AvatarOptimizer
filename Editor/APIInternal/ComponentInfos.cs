@@ -14,6 +14,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
     [ComponentInformation(typeof(AudioSource))]
     [ComponentInformation(typeof(nadena.dev.ndmf.runtime.AvatarActivator))]
     // nadena.dev.ndmf.VRChat.ContextHolder with reflection
+    [ComponentInformationWithGUID("52fa21b17bc14dc294959f976e3e184f", 11500000)] // NDMFAvatarRoot experimental component in NDMF 1.8.0
     internal class EntrypointComponentInformation : ComponentInformation<Component>
     {
         protected override void CollectDependency(Component component, ComponentDependencyCollector collector)
