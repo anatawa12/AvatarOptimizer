@@ -467,7 +467,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
             protected override void OptionParameter()
             {
-                // nothing to do
+                _mergedPhysBone.FindProperty(Parameter.PhysBoneValueName).stringValue = Parameter.OverrideValue.stringValue;
             }
 
             protected override void OptionIsAnimated()
