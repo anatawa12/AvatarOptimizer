@@ -199,7 +199,12 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
                 {
                     case VRCAvatarDescriptor.ColliderConfig.State.Automatic:
                     case VRCAvatarDescriptor.ColliderConfig.State.Custom:
-                        collector.AddDependency(collider.transform).EvenIfDependantDisabled();
+                        if (collider.transform) {
+                            // The position of parent bone (iow local position of transform) will be used to 
+                            // determine the position and rotation of the collider
+                            collector.AddDependency(collider.transform).EvenIfDependantDisabled();
+                            collector.AddDependency(collider.transform.parent).EvenIfDependantDisabled();
+                        }
                         break;
                     case VRCAvatarDescriptor.ColliderConfig.State.Disabled:
                         break;
