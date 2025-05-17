@@ -20,6 +20,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - Parameter is not applied in MergePhysBone `#1448`
+- The rotation / position of global physbone collider may be altered `#1453`
 
 ### Security
 
