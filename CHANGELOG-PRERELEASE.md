@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Added support for Toon Standard shader added in VRCSDK 3.8.1 for Texture Optimization `#1457`
+- Added support for Toon Standard (Outline) shader added in VRCSDK 3.8.1 for Texture Optimization `#1457`
 
 ### Changed
 

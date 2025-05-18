@@ -11,6 +11,8 @@ The format is based on [Keep a Changelog].
 - Added support for VRCPerPlatformOverrides added in VRCSDK 3.8.1 `#1445`
 - Added support for NDMFAvatarRoot added in NDMF 1.8.0 `#1445`
 - Added support for VRCFuryTest in VRCFury `#1445`
+- Added support for Toon Standard shader added in VRCSDK 3.8.1 for Texture Optimization `#1457`
+- Added support for Toon Standard (Outline) shader added in VRCSDK 3.8.1 for Texture Optimization `#1457`
 
 ### Changed
 
