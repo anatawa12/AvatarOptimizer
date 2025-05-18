@@ -8,8 +8,6 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Added support for Toon Standard shader added in VRCSDK 3.8.1 for Texture Optimization `#1457`
-- Added support for Toon Standard (Outline) shader added in VRCSDK 3.8.1 for Texture Optimization `#1457`
 
 ### Changed
 
@@ -18,10 +16,17 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Parameter is not applied in MergePhysBone `#1448`
-- The rotation / position of global physbone collider may be altered `#1453`
 
 ### Security
+
+## [1.8.11-beta.2] - 2025-05-18
+### Added
+- Added support for Toon Standard shader added in VRCSDK 3.8.1 for Texture Optimization [`#1457`](https://github.com/anatawa12/AvatarOptimizer/pull/1457)
+- Added support for Toon Standard (Outline) shader added in VRCSDK 3.8.1 for Texture Optimization [`#1457`](https://github.com/anatawa12/AvatarOptimizer/pull/1457)
+
+### Fixed
+- Parameter is not applied in MergePhysBone [`#1448`](https://github.com/anatawa12/AvatarOptimizer/pull/1448)
+- The rotation / position of global physbone collider may be altered [`#1453`](https://github.com/anatawa12/AvatarOptimizer/pull/1453)
 
 ## [1.8.11-beta.1] - 2025-05-10
 ### Added
@@ -1898,7 +1903,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.11-beta.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.11-beta.2...HEAD
+[1.8.11-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.11-beta.1...v1.8.11-beta.2
 [1.8.11-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.10...v1.8.11-beta.1
 [1.8.10]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.10-beta.2...v1.8.10
 [1.8.10-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.10-beta.1...v1.8.10-beta.2
