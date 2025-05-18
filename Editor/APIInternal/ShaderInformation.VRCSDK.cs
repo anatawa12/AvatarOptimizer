@@ -73,3 +73,103 @@ class VRCSDKToonLitShaderInformation : ShaderInformation
         matInfo.RegisterTextureUVUsage("_MainTex", "_MainTex", UsingUVChannels.UV0, mainTexSTMat);
     }
 }
+
+[InitializeOnLoad]
+class VRCSDKToonStandardShaderInformation : ShaderInformation
+{
+    private readonly bool withOutline;
+
+    public VRCSDKToonStandardShaderInformation(bool withOutline)
+    {
+        this.withOutline = withOutline;
+    }
+
+    static VRCSDKToonStandardShaderInformation()
+    {
+        Register();
+    }
+
+    private static void Register()
+    {
+        ShaderInformationRegistry.RegisterShaderInformationWithGUID("e765db0afa7ecfc44ade2e4e2491f65a", new VRCSDKToonStandardShaderInformation(false));
+        ShaderInformationRegistry.RegisterShaderInformationWithGUID("051a0ed2f2aedd741aa8186ae92f97e0", new VRCSDKToonStandardShaderInformation(true));
+    }
+
+    public override ShaderInformationKind SupportedInformationKind =>
+        ShaderInformationKind.VertexIndexUsage | ShaderInformationKind.TextureAndUVUsage;
+    public override void GetMaterialInformation(MaterialInformationCallback matInfo)
+    {
+        // TODO: way may have to add atlasing support later
+
+        void Register(string name, UsingUVChannels uv)
+        {
+            var st = matInfo.GetVector(name + "_ST");
+            Matrix2x3? stMat = st is { } st2 ? Matrix2x3.NewScaleOffset(st2) : null;
+            matInfo.RegisterTextureUVUsage(name, name, uv, stMat);
+        }
+
+        Register("_MainTex", UsingUVChannels.UV0);
+        Register("_Ramp", UsingUVChannels.NonMesh);
+
+        if (matInfo.IsShaderKeywordEnabled("USE_NORMAL_MAPS") != false)
+        {
+            Register("_BumpMap", UsingUVChannels.UV0);
+        }
+
+        if (matInfo.IsShaderKeywordEnabled("USE_SPECULAR") != false)
+        {
+            Register("_MetallicMap", UsingUVChannels.UV0);
+            Register("_GlossMap", UsingUVChannels.UV0);
+        }
+
+        if (matInfo.IsShaderKeywordEnabled("USE_MATCAP") != false)
+        {
+            Register("_Matcap", UsingUVChannels.NonMesh);
+            Register("_MatcapMask", UsingUVChannels.UV0);
+        }
+
+        if (matInfo.IsShaderKeywordEnabled("USE_EMISSION_MAP") != false)
+        {
+            var uv = matInfo.GetFloat("_EmissionUV") switch
+            {
+                0 => UsingUVChannels.UV0,
+                1 => UsingUVChannels.UV1,
+                _ => UsingUVChannels.UV0 | UsingUVChannels.UV1,
+            };
+            Register("_EmissionMap", uv);
+        }
+
+        if (matInfo.IsShaderKeywordEnabled("USE_OCCLUSION_MAP") != false)
+        {
+            Register("_OcclusionMap", UsingUVChannels.UV0);
+        }
+
+        if (matInfo.IsShaderKeywordEnabled("USE_DETAIL_MAPS") != false)
+        {
+            var detailMapUV = matInfo.GetFloat("_DetailUV") switch
+            {
+                0 => UsingUVChannels.UV0,
+                1 => UsingUVChannels.UV1,
+                _ => UsingUVChannels.UV0 | UsingUVChannels.UV1,
+            };
+
+            Register("_DetailMask", UsingUVChannels.UV0); // always UV0 for mask
+            Register("_DetailAlbedoMap", detailMapUV);
+            if (matInfo.IsShaderKeywordEnabled("USE_NORMAL_MAPS") != false)
+            {
+                Register("_DetailNormalMap", detailMapUV);
+            }
+        }
+
+        if (matInfo.IsShaderKeywordEnabled("USE_HUE_SHIFT") != false)
+        {
+            Register("_HueShiftMask", UsingUVChannels.UV0);
+        }
+
+        if (withOutline)
+        {
+            // note: this does not require the mipmap
+            Register("_OutlineMask", UsingUVChannels.UV0);
+        }
+    }
+}
