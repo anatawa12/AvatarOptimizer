@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog].
 
 ### Security
 
+## [1.8.11] - 2025-05-23
 ## [1.8.11-beta.2] - 2025-05-18
 ### Added
 - Added support for Toon Standard shader added in VRCSDK 3.8.1 for Texture Optimization [`#1457`](https://github.com/anatawa12/AvatarOptimizer/pull/1457)
@@ -1903,7 +1904,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.11-beta.2...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.11...HEAD
+[1.8.11]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.11-beta.2...v1.8.11
 [1.8.11-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.11-beta.1...v1.8.11-beta.2
 [1.8.11-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.10...v1.8.11-beta.1
 [1.8.10]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.10-beta.2...v1.8.10

@@ -8,11 +8,6 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Added support for VRCPerPlatformOverrides added in VRCSDK 3.8.1 `#1445`
-- Added support for NDMFAvatarRoot added in NDMF 1.8.0 `#1445`
-- Added support for VRCFuryTest in VRCFury `#1445`
-- Added support for Toon Standard shader added in VRCSDK 3.8.1 for Texture Optimization `#1457`
-- Added support for Toon Standard (Outline) shader added in VRCSDK 3.8.1 for Texture Optimization `#1457`
 
 ### Changed
 
@@ -21,10 +16,20 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Parameter is not applied in MergePhysBone `#1448`
-- The rotation / position of global physbone collider may be altered `#1453`
 
 ### Security
+
+## [1.8.11] - 2025-05-23
+### Added
+- Added support for VRCPerPlatformOverrides added in VRCSDK 3.8.1 [`#1445`](https://github.com/anatawa12/AvatarOptimizer/pull/1445)
+- Added support for NDMFAvatarRoot added in NDMF 1.8.0 [`#1445`](https://github.com/anatawa12/AvatarOptimizer/pull/1445)
+- Added support for VRCFuryTest in VRCFury [`#1445`](https://github.com/anatawa12/AvatarOptimizer/pull/1445)
+- Added support for Toon Standard shader added in VRCSDK 3.8.1 for Texture Optimization [`#1457`](https://github.com/anatawa12/AvatarOptimizer/pull/1457)
+- Added support for Toon Standard (Outline) shader added in VRCSDK 3.8.1 for Texture Optimization [`#1457`](https://github.com/anatawa12/AvatarOptimizer/pull/1457)
+
+### Fixed
+- Parameter is not applied in MergePhysBone [`#1448`](https://github.com/anatawa12/AvatarOptimizer/pull/1448)
+- The rotation / position of global physbone collider may be altered [`#1453`](https://github.com/anatawa12/AvatarOptimizer/pull/1453)
 
 ## [1.8.10] - 2025-05-04
 ### Changed
@@ -1220,7 +1225,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.10...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.11...HEAD
+[1.8.11]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.10...v1.8.11
 [1.8.10]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.9...v1.8.10
 [1.8.9]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.8...v1.8.9
 [1.8.8]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.7...v1.8.8
