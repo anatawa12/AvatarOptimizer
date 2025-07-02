@@ -137,6 +137,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                         {
                             var component = enumerator.Current;
                             if (component == null) continue;
+                            if (component == componentInfo.Component) continue;
                             var current = GetEntrypointActiveness(component, _context);
                             resultSet.IntersectWith(current);
                         } while (enumerator.MoveNext() && resultSet.Count != 0);
