@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Automatically disabling PhysBones may not work in some situations `#1469`
 
 ### Security
 
