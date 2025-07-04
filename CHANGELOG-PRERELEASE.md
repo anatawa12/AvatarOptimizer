@@ -16,9 +16,12 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Automatically disabling PhysBones may not work in some situations `#1469`
 
 ### Security
+
+## [1.8.12-beta.1] - 2025-07-04
+### Fixed
+- Automatically disabling PhysBones may not work in some situations [`#1469`](https://github.com/anatawa12/AvatarOptimizer/pull/1469)
 
 ## [1.8.11] - 2025-05-23
 ## [1.8.11-beta.2] - 2025-05-18
@@ -1905,7 +1908,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.11...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.12-beta.1...HEAD
+[1.8.12-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.11...v1.8.12-beta.1
 [1.8.11]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.11-beta.2...v1.8.11
 [1.8.11-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.11-beta.1...v1.8.11-beta.2
 [1.8.11-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.10...v1.8.11-beta.1
