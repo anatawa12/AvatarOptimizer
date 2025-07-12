@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
+- Replace Mask Texture Editor ['#1470'](https://github.com/anatawa12/AvatarOptimizer/pull/1470)
 
 ### Deprecated
 
