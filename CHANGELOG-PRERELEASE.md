@@ -22,6 +22,8 @@ The format is based on [Keep a Changelog].
 [`BeforePlugin`]: https://ndmf.nadena.dev/api/nadena.dev.ndmf.fluent.Sequence.html#nadena_dev_ndmf_fluent_Sequence_BeforePlugin_System_String_System_String_System_Int32_
 [Make your components compatible with Avatar Optimizer]: https://vpm.anatawa12.com/avatar-optimizer/en/docs/developers/make-your-components-compatible-with-aao/
 
+- Replace Mask Texture Editor ['#1470'](https://github.com/anatawa12/AvatarOptimizer/pull/1470)
+
 ### Deprecated
 
 ### Removed
