@@ -2,11 +2,14 @@ using System;
 using Anatawa12.AvatarOptimizer.ndmf;
 using nadena.dev.ndmf;
 using nadena.dev.ndmf.builtin;
+using nadena.dev.ndmf.fluent;
+using nadena.dev.ndmf.model;
 
 [assembly: ExportsPlugin(typeof(OptimizerPlugin))]
 
 namespace Anatawa12.AvatarOptimizer.ndmf
 {
+    [RunsOnAllPlatforms]
     internal class OptimizerPlugin : Plugin<OptimizerPlugin>
     {
         public override string DisplayName => $"AAO: Avatar Optimizer ({CheckForUpdate.Checker.CurrentVersionName})";
