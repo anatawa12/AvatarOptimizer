@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog].
 - Declare compatibility with non-VRCSDK platforms [`#1433`](https://github.com/anatawa12/AvatarOptimizer/pull/1433)
 
 ### Changed
+- Replace Mask Texture Editor ['#1470'](https://github.com/anatawa12/AvatarOptimizer/pull/1470)
 
 ### Deprecated
 
