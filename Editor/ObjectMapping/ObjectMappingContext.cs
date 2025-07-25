@@ -389,7 +389,7 @@ namespace Anatawa12.AvatarOptimizer
             newClip.legacy = clip.legacy;
             newClip.frameRate = clip.frameRate;
             newClip.localBounds = clip.localBounds;
-            // We have to add to _clipMapping before processing additiveReferencePoseClip to avoid infinite recursion
+            // We have to add the clip to _clipMapping before processing additiveReferencePoseClip to avoid infinite recursion
             _clipMapping[clip] = newClip;
             var settings = AnimationUtility.GetAnimationClipSettings(clip);
             settings.additiveReferencePoseClip = MapClip(settings.additiveReferencePoseClip);
