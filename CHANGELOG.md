@@ -18,7 +18,7 @@ The format is based on [Keep a Changelog].
 ### Fixed
 - Padding used in OptimizeTexture is too small that can cause problems with masks `#1478`
 - StackOverflow with infinite recursion when AdditiveReferencePoseClip has recursion `#1480`
-- Generating preview of MergeToonLit do not work `#1481`
+- Generating preview of MergeToonLit does not work `#1481`
 
 ### Security
 
