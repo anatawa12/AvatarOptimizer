@@ -458,6 +458,12 @@ msgstr "Skinned Mesh RendererにMeshが設定されていません。"
 msgid "RemoveMeshByMask:button:makeReadable"
 msgstr "読み取り可能にする"
 
+msgid "RemoveMeshByMask:button:create"
+msgstr "作成"
+
+msgid "RemoveMeshByMask:button:edit"
+msgstr "編集"
+
 msgid "RemoveMeshByMask:tooltip:textureIsNotImported"
 msgstr "画像ファイルから読み込まれたマスクテクスチャではありません。"
 
@@ -479,85 +485,6 @@ msgstr "UVチャンネル"
 
 msgid "RemoveMeshByUVTile:error:uvChannelOutOfRange"
 msgstr "UVチャンネルの{0}番は範囲外です。"
-
-# endregion
-
-# region MaskTextureEditor
-
-msgid "MaskTextureEditor:create"
-msgstr "作成"
-
-msgid "MaskTextureEditor:edit"
-msgstr "編集"
-
-msgid "MaskTextureEditor:title"
-msgstr "AAO マスクテクスチャエディター"
-
-msgid "MaskTextureEditor:renderer"
-msgstr "スキンメッシュレンダラー"
-
-msgid "MaskTextureEditor:subMesh"
-msgstr "マテリアルスロット"
-
-msgid "MaskTextureEditor:subMeshIndex"
-msgstr "{0}番"
-
-msgid "MaskTextureEditor:texture"
-msgstr "マスクテクスチャ"
-
-msgid "MaskTextureEditor:save"
-msgstr "保存する"
-
-msgid "MaskTextureEditor:viewScale"
-msgstr "表示倍率 (Scroll)"
-
-msgid "MaskTextureEditor:viewOpacity"
-msgstr "表示透明度"
-
-msgid "MaskTextureEditor:resetView"
-msgstr "表示をウィンドウに合わせる"
-
-msgid "MaskTextureEditor:brushSize"
-msgstr "ブラシサイズ (Shift + Scroll)"
-
-msgid "MaskTextureEditor:brushColor"
-msgstr "ブラシカラー"
-
-msgid "MaskTextureEditor:black"
-msgstr "黒"
-
-msgid "MaskTextureEditor:white"
-msgstr "白"
-
-msgid "MaskTextureEditor:fillBlack"
-msgstr "黒で塗りつぶす"
-
-msgid "MaskTextureEditor:fillWhite"
-msgstr "白で塗りつぶす"
-
-msgid "MaskTextureEditor:inverse"
-msgstr "色を反転させる"
-
-msgid "MaskTextureEditor:saveChangesMessage"
-msgstr "保存されていない変更があります。保存しますか？"
-
-msgid "MaskTextureEditor:saveChangesButtonSave"
-msgstr "保存"
-
-msgid "MaskTextureEditor:saveChangesButtonDiscard"
-msgstr "破棄"
-
-msgid "MaskTextureEditor:saveChangesButtonCancel"
-msgstr "キャンセル"
-
-msgid "MaskTextureEditor:errorTitle"
-msgstr "エラー"
-
-msgid "MaskTextureEditor:errorMessageCreateFailed"
-msgstr "テクスチャの作成に失敗しました。詳細はログを参照してください。"
-
-msgid "MaskTextureEditor:errorMessageSaveFailed"
-msgstr "テクスチャの保存に失敗しました。詳細はログを参照してください。"
 
 # endregion
 
