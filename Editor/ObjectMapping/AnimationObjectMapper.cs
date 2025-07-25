@@ -102,9 +102,9 @@ namespace Anatawa12.AvatarOptimizer
             }
         }
 
-        private Dictionary<(string, Type, string), (string, Type, string)[]?> _bindingCache = new();
+        private Dictionary<(string, Type, string), (string, Type, string, int)[]?> _bindingCache = new();
 
-        public (string path, Type type, string propertyName)[]? MapBinding(string path, Type type, string propertyName)
+        public (string path, Type type, string propertyName, int index)[]? MapBinding(string path, Type type, string propertyName)
         {
             if (_bindingCache.TryGetValue((path, type, propertyName), out var result))
                 return result;
@@ -114,11 +114,11 @@ namespace Anatawa12.AvatarOptimizer
             _bindingCache.Add((path, type, propertyName), result);
             return result;
         }
-        (string path, Type type, string propertyName)[]? MapBindingImpl(string path, Type type, string propertyName)
+        (string path, Type type, string propertyName, int index)[]? MapBindingImpl(string path, Type type, string propertyName)
         {
             var gameObjectInfo = GetGameObjectInfo(path);
             if (gameObjectInfo == null)
-                return Array.Empty<(string, Type, string)>(); // this means the original GameObject does not exists
+                return Array.Empty<(string, Type, string, int)>(); // this means the original GameObject does not exists
             var (instanceId, componentInfo) = gameObjectInfo.GetComponentByType(type);
 
             if (componentInfo != null)
@@ -136,7 +136,7 @@ namespace Anatawa12.AvatarOptimizer
                         return null;
 
                     // there are mapping for property
-                    var mappedBindings = new (string path, Type type, string propertyName)[newProp.AllCopiedTo.Length];
+                    var mappedBindings = new (string path, Type type, string propertyName, int index)[newProp.AllCopiedTo.Length];
                     var copiedToIndex = 0;
                     foreach (var descriptor in newProp.AllCopiedTo)
                     {
@@ -150,14 +150,15 @@ namespace Anatawa12.AvatarOptimizer
 
                         // this means moved to out of the animator scope
                         // TODO: add warning
-                        if (newPath == null) return Array.Empty<(string path, Type type, string propertyName)>();
+                        if (newPath == null) return Array.Empty<(string path, Type type, string propertyName, int index)>();
 
-                        var binding = (newPath, descriptor.Type, descriptor.Name);
+                        var componentIndex = ComponentIndex(new ComponentOrGameObject(component));
+                        var binding = (newPath, descriptor.Type, descriptor.Name, componentIndex);
 
                         // For Animator component, to toggle `m_Enabled` as a property of `Behavior`,
                         //   we need to toggle `Behaviour.m_Enabled`.
                         if (descriptor.Name == VProp.AnimatorEnabledAsBehavior)
-                            binding = (newPath, typeof(Behaviour), "m_Enabled");
+                            binding = (newPath, typeof(Behaviour), "m_Enabled", componentIndex);
                         mappedBindings[copiedToIndex++] = binding;
                     }
 
@@ -170,15 +171,14 @@ namespace Anatawa12.AvatarOptimizer
                     var component =
                         new ComponentOrGameObject(EditorUtility.InstanceIDToObject(componentInfo.MergedInto));
                     if (!component)
-                        return Array.Empty<(string path, Type type, string propertyName)>(); // this means removed.
+                        return Array.Empty<(string path, Type type, string propertyName, int index)>(); // this means removed.
 
                     var newPath = Utils.RelativePath(_rootGameObject.transform, component.transform);
                     if (newPath == null)
-                        return Array
-                            .Empty<(string path, Type type, string propertyName
-                                )>(); // this means moved to out of the animator scope
+                        return Array.Empty<(string path, Type type, string propertyName, int index)>(); // this means moved to out of the animator scope
                     if (path == newPath) return null;
-                    return new[] { (newPath, type, propertyName) };
+                    var componentIndex = ComponentIndex(new ComponentOrGameObject(component));
+                    return new[] { (newPath, type, propertyName, componentIndex) };
                 }
             }
             else
@@ -204,13 +204,21 @@ namespace Anatawa12.AvatarOptimizer
                     }
 #endif
 
-                    return Array.Empty<(string path, Type type, string propertyName)>(); // this means removed
+                    return Array.Empty<(string path, Type type, string propertyName, int)>(); // this means removed
                 }
                 componentLive:;
 
-                if (gameObjectInfo.NewPath == null) return Array.Empty<(string path, Type type, string propertyName)>();
+                if (gameObjectInfo.NewPath == null) return Array.Empty<(string path, Type type, string propertyName, int)>();
                 if (path == gameObjectInfo.NewPath) return null;
-                return new[] { (gameObjectInfo.NewPath, type, propertyName) };
+                return new[] { (gameObjectInfo.NewPath, type, propertyName, 0) };
+            }
+
+            int ComponentIndex(ComponentOrGameObject componentOrGameObject)
+            {
+                var type = componentOrGameObject.Value.GetType();
+                if (type == typeof(GameObject)) return 0; // There is only one GameObject per path
+                var components = componentOrGameObject.gameObject.GetComponents(type);
+                return Array.IndexOf(components, componentOrGameObject.Value);
             }
         }
 

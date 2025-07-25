@@ -341,6 +341,8 @@ namespace Anatawa12.AvatarOptimizer
                 {
                     foreach (var tuple in newBindings)
                     {
+                        // We cannot generate animations targeting non-first component of the type on the GameObject
+                        if (tuple.index != 0) continue;
                         var newBinding = binding;
                         newBinding.path = tuple.path;
                         newBinding.type = tuple.type;
