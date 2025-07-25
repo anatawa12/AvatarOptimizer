@@ -342,7 +342,11 @@ namespace Anatawa12.AvatarOptimizer
                     foreach (var tuple in newBindings)
                     {
                         // We cannot generate animations targeting non-first component of the type on the GameObject
-                        if (tuple.index != 0) continue;
+                        if (tuple.index != 0)
+                        {
+                            Debug.LogWarning($"Mapping AnimationClip {clip.name}: Animation targeting non-first component of the type {tuple.type} on GameObject {tuple.path} is not supported. Skipping this binding.");
+                            continue;
+                        }
                         var newBinding = binding;
                         newBinding.path = tuple.path;
                         newBinding.type = tuple.type;
@@ -366,6 +370,12 @@ namespace Anatawa12.AvatarOptimizer
                 {
                     foreach (var tuple in newBindings)
                     {
+                        // We cannot generate animations targeting non-first component of the type on the GameObject
+                        if (tuple.index != 0)
+                        {
+                            Debug.LogWarning($"Mapping AnimationClip {clip.name}: Animation targeting non-first component of the type {tuple.type} on GameObject {tuple.path} is not supported. Skipping this binding.");
+                            continue;
+                        }
                         var newBinding = binding;
                         newBinding.path = tuple.path;
                         newBinding.type = tuple.type;
