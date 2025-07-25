@@ -69,26 +69,12 @@ BlendShapeに対してアニメーションされるメッシュを統合する�
 
 ## ビルド前のハードリミットチェックのせいでアバターをアップロードできない {#i-cannot-upload-the-avatar-because-of-pre-build-hard-limit-check}
 
-Avatar Optimizerなどの非破壊的なアバター改変ツールを使うと、元々ハードリミットを超えているようなアバターでも、ビルド後にはハードリミットを超えないようになることがあります。
-しかし、VRCSDKのコントロールパネルにあるアップロードボタンは、シーン上のアバターがハードリミットを超えている場合には押せないようになっています。\
-そのような場合でも、以下のような方法を使って、ビルド前のハードリミットチェックを飛ばしてアップロードすることができます。
-(ビルド後のハードリミットチェックも存在するため、ビルド後にハードリミットを超える場合は以下の方法でもアップロードに失敗します。)
+これは、VRCSDKのコントロールパネルにあるアップロードボタンが、シーン上のアバターがハードリミットを超えている場合には押せないようになっていたためです。
 
-- `Manual bake avatar`で生成したアバターをアップロードする。
+しかし、VRChat SDK 3.8.1以降では、シーン上のアバターがハードリミットを超えていても、アバターのビルドとアップロードを開始できるようになりました。
+そのため、この問題を解決するための推奨される方法は、VRCSDKを最新バージョンに更新することです。
 
-  アバターのGameObjectを右クリックして出てくるメニューの`NDM Framework`から`Manual bake avatar`をクリックすると、非破壊ツールによる処理を手動で適用することができます。
-  `Manual bake avatar`は初めにアバターを複製し、その複製に対して非破壊ツールの処理を適用させるため、元のアバターは変更されないままになります。
-- Sayamame-beansの[Upload without pre-check]を使用してアップロードする。
-
-  [Upload without pre-check]は、ビルド前のハードリミットチェックをスキップしてアップロードするためのツールです。
-- kurotuの[VRCQuestTools]を使用する
-
-  [VRCQuestTools]は、アバターをAndroid / Quest対応アバターに変換するためのツールです。\
-  このツールには、ビルド前チェックをスキップしてアバターをAndroid向けにビルドするための[VQT Avatar Builder]という機能が含まれています。
-
-[Upload without pre-check]: https://github.com/Sayamame-beans/Upload-without-preCheck?tab=readme-ov-file#upload-without-pre-check
-[VRCQuestTools]: https://kurotu.github.io/VRCQuestTools/
-[VQT Avatar Builder]: https://kurotu.github.io/VRCQuestTools/docs/references/main-menu/show-avatar-builder
+シーン上のアバターがハードリミットを超えている場合でも、VRCSDKコントロールパネルを使用せずにアップロードプロセスを開始できる外部ツールを使用することもできます。
 
 ## Avatar Optimizerの開発を支援したい {#i-want-to-support-the-development-of-avatar-optimizer}
 
