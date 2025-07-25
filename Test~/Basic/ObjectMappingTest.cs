@@ -575,6 +575,32 @@ namespace Anatawa12.AvatarOptimizer.Test
 
         }
 
+        [Test]
+        public void MultipleObjectOnSingleObject()
+        {
+            var root = new GameObject();
+            var child1 = Utils.NewGameObject("child1", root.transform);
+            var child1Collider = child1.AddComponent<BoxCollider>();
+            var child2 = Utils.NewGameObject("child2", root.transform);
+            var child2Collider0 = child2.AddComponent<BoxCollider>();
+            var child2Collider1 = child2.AddComponent<BoxCollider>();
+
+            var builder = new ObjectMappingBuilder<DummyPropInfo>(root);
+
+            builder.RecordCopyProperty(child1Collider, "m_Enabled", child2Collider1, "m_Enabled");
+
+            var built = builder.BuildObjectMapping();
+
+            var rootMapper = built.CreateAnimationMapper(root);
+            Assert.That(
+                rootMapper.MapBinding("child1", typeof(BoxCollider), "m_Enabled"),
+                Is.EquivalentTo(new[]
+                {
+                    B("child1", typeof(BoxCollider), "m_Enabled", 0),
+                    B("child2", typeof(BoxCollider), "m_Enabled", 1),
+                }));
+        }
+
         private static (string, Type, string, int) B(string path, Type type, string prop, int index) => (path, type, prop, index);
     }
 }
