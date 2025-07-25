@@ -46,12 +46,8 @@ Avatar Optimizerに関するよくある質問のリストです。
 
 ## `AAO Merge Skinned Mesh`コンポーネントを使用すると、BlendShapeに対するアニメーションが競合する {#blendshape-animations-conflict-when-using-aao-merge-skinned-mesh-component}
 
-この問題は既知のバグであり、現時点では競合してしまう仕様です。
-
-BlendShapeに対してアニメーションされるメッシュを統合する際は、競合しないようご注意ください。
-競合する場合は警告が表示されるので、そちらを確認してください。
-
-この問題のissue: [#568](https://github.com/anatawa12/AvatarOptimizer/issues/568)
+この問題は Avatar Optimizer 1.8.0 で修正されています。
+Avatar Optimizer 1.8.0 以降にアップデートしてください。
 
 ## OSCギミックで使用されているPhysBone / Contact Receiverが動作していない {#physbones-contact-receivers-that-are-used-in-the-osc-based-gimmick-are-not-working}
 

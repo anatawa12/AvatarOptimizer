@@ -48,12 +48,8 @@ If you have some material slots which will be replaced differently with animatio
 
 ## BlendShape animations conflict when using `AAO Merge Skinned Mesh` component {#blendshape-animations-conflict-when-using-aao-merge-skinned-mesh-component}
 
-This problem is a known bug and is currently expected to conflicts.
-
-When merging meshes with animated BlendShapes, be careful not to conflict.
-If there is a conflict, a warning will be displayed, so please check the warning.
-
-Issue of this problem: [#568](https://github.com/anatawa12/AvatarOptimizer/issues/568)
+This problem has been fixed since Avatar Optimizer 1.8.0.
+Please update to Avatar Optimizer 1.8.0 or later.
 
 ## PhysBones / Contact Receivers that are used in the OSC-based gimmick are not working {#physbones-contact-receivers-that-are-used-in-the-osc-based-gimmick-are-not-working}
 
