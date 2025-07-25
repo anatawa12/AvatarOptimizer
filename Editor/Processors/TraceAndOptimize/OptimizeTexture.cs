@@ -729,19 +729,11 @@ internal struct OptimizeTextureImpl {
                 Utils.LeastCommonMultiple(yBlockSizeInMaxResolutionLCM, yBlockSizeInMaxResolution);
         }
 
-        // padding is at least 4px with max resolution, 1px in min resolution
         var minResolutionPixelSizeInMaxResolution = maxResolution / minResolution;
-        var paddingSize = Mathf.Max(minResolutionPixelSizeInMaxResolution, maxResolution / 100);
-
-        if (minResolution <= paddingSize || maxResolution <= paddingSize)
-        {
-            TraceLog(
-                $"{string.Join(", ", textures)} will not merged because min resolution is less than {paddingSize} ({minResolution})");
-            return null;
-        }
-
         var blockSizeX = Utils.LeastCommonMultiple(xBlockSizeInMaxResolutionLCM, minResolutionPixelSizeInMaxResolution);
         var blockSizeY = Utils.LeastCommonMultiple(yBlockSizeInMaxResolutionLCM, minResolutionPixelSizeInMaxResolution);
+
+        var paddingSize = Math.Max(Math.Max(blockSizeX, blockSizeY) / 4, minResolutionPixelSizeInMaxResolution);
 
         var blockSizeRatioX = (float)blockSizeX / maxResolution;
         var blockSizeRatioY = (float)blockSizeY / maxResolution;
@@ -761,10 +753,10 @@ internal struct OptimizeTextureImpl {
 
             // fit to block size
             // if rest texture size is less than padding, fit to the UV coordinate
-            min.x = Mathf.Max(Mathf.Floor(min.x / blockSizeRatioX - paddingRatio) * blockSizeRatioX, 0);
-            min.y = Mathf.Max(Mathf.Floor(min.y / blockSizeRatioY - paddingRatio) * blockSizeRatioY, 0);
-            max.x = Mathf.Min(Mathf.Ceil(max.x / blockSizeRatioX + paddingRatio) * blockSizeRatioX, 1);
-            max.y = Mathf.Min(Mathf.Ceil(max.y / blockSizeRatioY + paddingRatio) * blockSizeRatioY, 1);
+            min.x = Mathf.Max(Mathf.Floor((min.x - paddingRatio) / blockSizeRatioX) * blockSizeRatioX, 0);
+            min.y = Mathf.Max(Mathf.Floor((min.y - paddingRatio) / blockSizeRatioY) * blockSizeRatioY, 0);
+            max.x = Mathf.Min(Mathf.Ceil((max.x + paddingRatio) / blockSizeRatioX) * blockSizeRatioX, 1);
+            max.y = Mathf.Min(Mathf.Ceil((max.y + paddingRatio) / blockSizeRatioY) * blockSizeRatioY, 1);
         }
     }
 
