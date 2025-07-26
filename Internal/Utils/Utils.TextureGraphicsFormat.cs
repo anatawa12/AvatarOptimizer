@@ -20,7 +20,7 @@ namespace Anatawa12.AvatarOptimizer
                 // Unity chooses G10G11R11 Unsigned Float packed float for RGB9e5Float, but precision loss can occur so we use R16G16B16_SFloat instead.
                 (TextureFormat.RGB9e5Float, false) => SystemInfo.GetCompatibleFormat(GraphicsFormat.R16G16B16_SFloat,
                     FormatUsage.Render),
-                // I don't know the best format for YUV2, but to expect highest precision, we ust float32 format
+                // I don't know the best format for YUV2, but to expect highest precision, we use float32 format
                 (TextureFormat.YUY2, false) => SystemInfo.GetCompatibleFormat(GraphicsFormat.R32G32B32A32_SFloat, FormatUsage.Render),
                 _ => SystemInfo.GetCompatibleFormat(GraphicsFormatUtility.GetGraphicsFormat(format, isSRGB: isSRGB),
                     FormatUsage.Render)
