@@ -529,10 +529,12 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
             // If the constraint is solved in local space, we need to preserve the parent transform of the source transforms and target transform.
             if (component.SolveInLocalSpace)
             {
-                collector.AddDependency(target.parent);
+                if (target.parent != null)
+                    collector.AddDependency(target.parent);
 
                 foreach (var source in component.Sources)
-                    collector.AddDependency(source.SourceTransform.parent);
+                    if (source.SourceTransform != null && source.SourceTransform.parent != null)
+                        collector.AddDependency(source.SourceTransform.parent);
             }
 
             // we may mark heavy behavior with complex rules but it's extremely difficult to implement
