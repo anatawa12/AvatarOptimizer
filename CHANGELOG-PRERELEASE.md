@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- VRCConstraints solve in local space can be broken with automatic merge bone `#1484`
 
 ### Security
 
