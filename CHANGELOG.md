@@ -21,6 +21,7 @@ The format is based on [Keep a Changelog].
 - Generating preview of MergeToonLit does not work `#1481`
 - Automatic toggle may create toggle for different object when multiple components on single GameObject `#1482`
 - VRCConstraints solve in local space can be broken with automatic merge bone `#1484`
+- Optimizing textures with some relatively rare texture formats `#1485`
 
 ### Security
 

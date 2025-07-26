@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Optimizing textures with some relatively rare texture formats `#1485`
 
 ### Security
 
