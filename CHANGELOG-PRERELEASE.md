@@ -16,9 +16,12 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- VRCConstraints solve in local space can be broken with automatic merge bone `#1484`
 
 ### Security
+
+## [1.8.13-beta.2] - 2025-07-26
+### Fixed
+- VRCConstraints solve in local space can be broken with automatic merge bone [`#1484`](https://github.com/anatawa12/AvatarOptimizer/pull/1484)
 
 ## [1.8.13-beta.1] - 2025-07-25
 ### Fixed
@@ -1917,7 +1920,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.13-beta.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.13-beta.2...HEAD
+[1.8.13-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.13-beta.1...v1.8.13-beta.2
 [1.8.13-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.12...v1.8.13-beta.1
 [1.8.12]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.12-beta.1...v1.8.12
 [1.8.12-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.11...v1.8.12-beta.1
