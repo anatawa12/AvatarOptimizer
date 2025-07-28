@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - Optimizing textures with some relatively rare texture formats `#1485`
+- Automatic MergeBone may break rendering if there is bones with scale zero `#1486`
 
 ### Security
 
