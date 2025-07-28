@@ -16,9 +16,12 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Padding used in OptimizeTexture is too small that can cause problems with masks `#1478`
 
 ### Security
+
+## [1.9.0-beta.2] - 2025-07-28
+### Fixed
+- Padding used in OptimizeTexture is too small that can cause problems with masks [`#1478`](https://github.com/anatawa12/AvatarOptimizer/pull/1478)
 
 ## [1.9.0-beta.1] - 2025-07-13
 ### Added
@@ -1914,7 +1917,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-beta.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-beta.2...HEAD
+[1.9.0-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-beta.1...v1.9.0-beta.2
 [1.9.0-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.12...v1.9.0-beta.1
 [1.8.12]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.12-beta.1...v1.8.12
 [1.8.12-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.11...v1.8.12-beta.1
