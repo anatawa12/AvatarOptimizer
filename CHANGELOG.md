@@ -16,15 +16,18 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Padding used in OptimizeTexture is too small that can cause problems with masks `#1478`
-- StackOverflow with infinite recursion when AdditiveReferencePoseClip has recursion `#1480`
-- Generating preview of MergeToonLit does not work `#1481`
-- Automatic toggle may create toggle for different object when multiple components on single GameObject `#1482`
-- VRCConstraints solve in local space can be broken with automatic merge bone `#1484`
-- Optimizing textures with some relatively rare texture formats `#1485`
-- Automatic MergeBone may break rendering if there is bones with scale zero `#1486`
 
 ### Security
+
+## [1.8.13] - 2025-07-28
+### Fixed
+- Padding used in OptimizeTexture is too small that can cause problems with masks [`#1478`](https://github.com/anatawa12/AvatarOptimizer/pull/1478)
+- StackOverflow with infinite recursion when AdditiveReferencePoseClip has recursion [`#1480`](https://github.com/anatawa12/AvatarOptimizer/pull/1480)
+- Generating preview of MergeToonLit does not work [`#1481`](https://github.com/anatawa12/AvatarOptimizer/pull/1481)
+- Automatic toggle may create toggle for different object when multiple components on single GameObject [`#1482`](https://github.com/anatawa12/AvatarOptimizer/pull/1482)
+- VRCConstraints solve in local space can be broken with automatic merge bone [`#1484`](https://github.com/anatawa12/AvatarOptimizer/pull/1484)
+- Optimizing textures with some relatively rare texture formats [`#1485`](https://github.com/anatawa12/AvatarOptimizer/pull/1485)
+- Automatic MergeBone may break rendering if there is bones with scale zero [`#1486`](https://github.com/anatawa12/AvatarOptimizer/pull/1486)
 
 ## [1.8.12] - 2025-07-13
 ### Fixed
@@ -1236,7 +1239,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.12...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.13...HEAD
+[1.8.13]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.12...v1.8.13
 [1.8.12]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.11...v1.8.12
 [1.8.11]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.10...v1.8.11
 [1.8.10]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.9...v1.8.10
