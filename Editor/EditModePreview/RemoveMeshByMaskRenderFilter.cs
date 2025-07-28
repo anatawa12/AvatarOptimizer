@@ -9,6 +9,9 @@ using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
 using UnityEngine;
+#if AAO_MASK_TEXTURE_EDITOR
+using MaskTextureEditor = net.nekobako.MaskTextureEditor.Editor;
+#endif
 
 namespace Anatawa12.AvatarOptimizer.EditModePreview
 {
@@ -44,7 +47,11 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                     if (materialSetting.mask == null) continue;
                     if (!materialSetting.mask.isReadable) continue;
 
-                    var editingTexture = MaskTextureEditor.Window.ObservePreviewTextureFor(original, subMeshI, context);
+#if AAO_MASK_TEXTURE_EDITOR
+                    var editingTexture = MaskTextureEditor.Window.ObserveTextureFor(context, original, subMeshI, RemoveMeshByMaskEditor.MaskTextureEditorToken);
+#else
+                    var editingTexture = default(Texture2D);
+#endif
                     int textureWidth;
                     int textureHeight;
                     Color32[] pixels;
