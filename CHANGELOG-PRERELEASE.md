@@ -16,10 +16,13 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Optimizing textures with some relatively rare texture formats `#1485`
-- Automatic MergeBone may break rendering if there is bones with scale zero `#1486`
 
 ### Security
+
+## [1.8.13-beta.3] - 2025-07-28
+### Fixed
+- Optimizing textures with some relatively rare texture formats [`#1485`](https://github.com/anatawa12/AvatarOptimizer/pull/1485)
+- Automatic MergeBone may break rendering if there is bones with scale zero [`#1486`](https://github.com/anatawa12/AvatarOptimizer/pull/1486)
 
 ## [1.8.13-beta.2] - 2025-07-26
 ### Fixed
@@ -1922,7 +1925,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.13-beta.2...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.13-beta.3...HEAD
+[1.8.13-beta.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.13-beta.2...v1.8.13-beta.3
 [1.8.13-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.13-beta.1...v1.8.13-beta.2
 [1.8.13-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.12...v1.8.13-beta.1
 [1.8.12]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.12-beta.1...v1.8.12
