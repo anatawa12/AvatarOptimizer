@@ -48,9 +48,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     }
                     else
                     {
-                        if (!unknownComponents.TryGetValue(component.GetType(), out var list))
-                            unknownComponents.Add(component.GetType(), list = new List<Object>());
-                        list.Add(component);
+                        // Ignore IEditorOnly components.
+                        if (!component.GetType().GetInterfaces().Contains(typeof(VRC.SDKBase.IEditorOnly)))
+                        {
+                            if (!unknownComponents.TryGetValue(component.GetType(), out var list))
+                                unknownComponents.Add(component.GetType(), list = new List<Object>());
+                            list.Add(component);
+                        }
 
                         FallbackDependenciesParser(component, collector);
                     }
