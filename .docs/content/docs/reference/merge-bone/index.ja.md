@@ -5,11 +5,11 @@ weight: 100
 
 # Merge Bone
 
-{{< hint info >}}
+<blockquote class="book-hint info">
 
 [Trace And Optimize](../trace-and-optimize)が自動で同様の処理を行うため、大抵の場合、このコンポーネントを使用する必要はありません。
 
-{{< /hint >}}
+</blockquote>
 
 このコンポーネントがGameObjectに付いている場合、そのGameObjectは親GameObjectに統合されて取り除かれます。
 また、統合対象にその他のコンポーネントが付属している場合はそれらも削除されます。

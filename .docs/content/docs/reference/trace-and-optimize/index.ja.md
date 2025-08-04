@@ -14,13 +14,13 @@ aliases:
 
 このコンポーネントはアバターのルートに追加してください。(分類: [Avatar Global Component](../../component-kind/avatar-global-components))
 
-{{< hint info >}}
+<blockquote class="book-hint info">
 
 Trace and Optimizeは「**見た目に絶対に影響させてはならない**」という前提の下で、かなり慎重に作られています。\
 そのため、見た目に影響が出たり、何らかのギミックが機能しなくなったりといった問題が発生した場合はすべて、例外なくAAOのバグとなります。\
 従って、問題が起きた際は報告していただければ、出来る限り修正いたします。
 
-{{< /hint >}}
+</blockquote>
 
 現在、以下の機能を使った自動最適化が可能です。
 - `BlendShapeを最適化する`\
