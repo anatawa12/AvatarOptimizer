@@ -9,11 +9,11 @@ BlendShapeをメッシュに固定し、除去することが出来ます。
 
 このコンポーネントは、SkinnedMeshRendererコンポーネントのあるGameObjectに追加してください。(分類: [Modifying Edit Skinned Mesh Component](../../component-kind/edit-skinned-mesh-components#modifying-component))
 
-{{< hint info >}}
+<blockquote class="book-hint info">
 
 [Trace And Optimize](../trace-and-optimize)が自動で同様の処理を行うため、大抵の場合、このコンポーネントを使用する必要はありません。
 
-{{< /hint >}}
+</blockquote>
 
 ## 利点 {#benefits}
 
