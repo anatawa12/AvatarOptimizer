@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
+- Improve performance of NDMF Preview [`1490`](https://github.com/anatawa12/AvatarOptimizer/pull/1490)
 
 ### Deprecated
 

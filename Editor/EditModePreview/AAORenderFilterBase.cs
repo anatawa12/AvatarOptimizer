@@ -40,7 +40,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                 if (!component.TryGetComponent<SkinnedMeshRenderer>(out var renderer)) continue;
                 if (renderer.sharedMesh == null) continue;
 
-                if (!ctx.ActiveInHierarchy(component.gameObject)) continue;
+                if (!ctx.ActiveInHierarchy(renderer.gameObject)) continue;
 
                 if (!componentsByRenderer.TryGetValue(renderer, out var list))
                     componentsByRenderer.Add(renderer, list = new List<T>());
