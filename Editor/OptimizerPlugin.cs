@@ -80,11 +80,13 @@ namespace Anatawa12.AvatarOptimizer.ndmf
                         .Then.Run(Processors.ParseAnimator.Instance)
                         .Then.Run(Processors.GatherShaderMaterialInformation.Instance)
                         .Then.WithRequiredExtension(typeof(GCComponentInfoContext), seq => seq
-                            .Run(Processors.TraceAndOptimizes.AddRemoveEmptySubMesh.Instance)
+                            .Run(new Processors.GCDebugPass(InternalGcDebugPosition.AtTheBeginning))
+                            .Then.Run(Processors.TraceAndOptimizes.AddRemoveEmptySubMesh.Instance)
                             .Then.Run(Processors.TraceAndOptimizes.AutoFreezeBlendShape.Instance)
 #if AAO_VRCSDK3_AVATARS
                             .Then.Run(Processors.ClearEndpointPositionProcessor.Instance)
                             .Then.Run(Processors.MergePhysBoneProcessor.Instance)
+                            .Then.Run(new Processors.GCDebugPass(InternalGcDebugPosition.AfterPhysBone))
 #endif
                             .Then.Run(Processors.EditSkinnedMeshComponentProcessor.Instance)
                             .PreviewingWith(EditModePreview.RemoveMeshByMaskRenderFilter.Instance)
@@ -94,11 +96,14 @@ namespace Anatawa12.AvatarOptimizer.ndmf
                             .Then.Run("MakeChildrenProcessor",
                                 ctx => new Processors.MakeChildrenProcessor(early: false).Process(ctx)
                             )
+                            .Then.Run(new Processors.GCDebugPass(InternalGcDebugPosition.AfterMeshProcessing))
 #if AAO_VRCSDK3_AVATARS
                             .Then.Run(Processors.TraceAndOptimizes.OptimizePhysBone.Instance)
 #endif
                             .Then.Run(Processors.TraceAndOptimizes.AutoMergeSkinnedMesh.Instance)
+                            .Then.Run(new Processors.GCDebugPass(InternalGcDebugPosition.AfterAutoMergeSkinnedMesh))
                             .Then.Run(Processors.TraceAndOptimizes.FindUnusedObjects.Instance)
+                            .Then.Run(new Processors.GCDebugPass(InternalGcDebugPosition.AfterGcComponents))
                             .Then.Run(Processors.TraceAndOptimizes.ConfigureRemoveZeroSizedPolygon.Instance)
                             .Then.Run(Processors.TraceAndOptimizes.RemoveUnusedMaterialProperties.Instance)
                             .Then.Run(Processors.TraceAndOptimizes.AutoMergeBlendShape.Instance)
@@ -106,6 +111,7 @@ namespace Anatawa12.AvatarOptimizer.ndmf
                             .Then.Run(Processors.RemoveZeroSizedPolygonProcessor.Instance)
                             .Then.Run(Processors.TraceAndOptimizes.OptimizeTexture.Instance)
                             .Then.Run(Processors.AnimatorOptimizer.RemoveInvalidProperties.Instance)
+                            .Then.Run(new Processors.GCDebugPass(InternalGcDebugPosition.AtTheEnd))
                         );
                 });
 

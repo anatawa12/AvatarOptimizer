@@ -22,31 +22,27 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
     internal readonly struct FindUnusedObjectsProcessor
     {
         private readonly BuildContext _context;
+        private readonly bool _noSweepComponents;
         private readonly bool _noConfigureMergeBone;
         private readonly bool _noActivenessAnimation;
         private readonly bool _skipRemoveUnusedSubMesh;
-        private readonly bool _gcDebug;
 
         public FindUnusedObjectsProcessor(BuildContext context, TraceAndOptimizeState state)
         {
             _context = context;
 
+            _noSweepComponents = state.NoSweepComponents;
             _noConfigureMergeBone = state.NoConfigureMergeBone;
             _noActivenessAnimation = state.NoActivenessAnimation;
             _skipRemoveUnusedSubMesh = state.SkipRemoveUnusedSubMesh;
-            _gcDebug = state.GCDebug;
         }
 
         public void ProcessNew()
         {
             var componentInfos = _context.Extension<GCComponentInfoContext>();
             var entrypointMap = DependantMap.CreateEntrypointsMap(_context);
-            if (_gcDebug)
-            {
-                GCDebug.AddGCDebugInfo(_context);
-                return;
-            }
-            Sweep(componentInfos, entrypointMap);
+            if (!_noSweepComponents)
+                Sweep(componentInfos, entrypointMap);
             if (!_noConfigureMergeBone)
                 MergeBone(componentInfos, entrypointMap);
             var behaviorMap = DependantMap.CreateDependantsMap(_context);

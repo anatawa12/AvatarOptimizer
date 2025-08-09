@@ -78,9 +78,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     var dependants = entryPointMap[componentInfo].Keys.ToList();
                     if (dependants.Count != 1 || dependants[0] != meshRenderer)
                     {
-                        if (state.GCDebug)
-                            UnityEngine.Debug.Log(
-                                $"EntryPoints of {meshRenderer}: {string.Join(", ", entryPointMap[componentInfo].Keys)}");
                         continue;
                     }
                 }
