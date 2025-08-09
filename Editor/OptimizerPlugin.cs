@@ -1,16 +1,35 @@
 using System;
-using Anatawa12.AvatarOptimizer.ndmf;
 using nadena.dev.ndmf;
 using nadena.dev.ndmf.builtin;
-using nadena.dev.ndmf.fluent;
-using nadena.dev.ndmf.model;
 
-[assembly: ExportsPlugin(typeof(OptimizerPlugin))]
+[assembly: ExportsPlugin(typeof(\uFFDC\uFFDC\uFFDC.Anatawa12.AvatarOptimizer.ndmf.OptimizerPlugin))]
+
+// NDMF sorts plugins by their 'FullName' of plugin name which is combination of namespace and class name with ordinal ordering. [1]
+// Avatar Optimizer is designed to run as late as possible, so having "Anatawa12.AvatarOptimizer.ndmf" namespace
+// is not good idea since 'A' is very early in the alphabet.
+// Therefore, we use special namespace only for the OptimizerPlugin class.
+//
+// C# allows '_' and any characters in Letter or Letter Number (`L` or `Nl`) category in the identifier start and
+// current C# compiler (Roslyn) only supports non-Surrogate / only BMP characters in the identifier.
+// The last block in BMP contains those category is "Halfwidth and Fullwidth Forms" which is at U+FF00–FFEF.
+// (The last block in BMP is "Specials" which is at U+FFF0–FFFF, but it contains only 16 characters and not usable for identifiers.)
+// The last latter in the block is "HALFWIDTH HANGUL LETTER I" at U+FFDC, which is a Other Letter (`Lo`) character.
+// Therefore we prepend the namespace with \uFFDC to make it sort later than any other plugins as possible,
+//
+// [1]: https://github.com/bdunderscore/ndmf/blob/1ae9bc1d92363229d2cc54156fbec2cb9a8aa19a/Editor/API/Solver/PluginResolver.cs#L21-L32
+// [2]: https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/lexical-structure#643-identifiers
+namespace \uFFDC\uFFDC\uFFDC.Anatawa12.AvatarOptimizer.ndmf
+{
+    [RunsOnAllPlatforms]
+    internal class OptimizerPlugin : global::Anatawa12.AvatarOptimizer.ndmf.OptimizerPluginImpl<OptimizerPlugin>
+    {
+    }
+}
 
 namespace Anatawa12.AvatarOptimizer.ndmf
 {
     [RunsOnAllPlatforms]
-    internal class OptimizerPlugin : Plugin<OptimizerPlugin>
+    internal abstract class OptimizerPluginImpl<T> : Plugin<T> where T : OptimizerPluginImpl<T>, new()
     {
         public override string DisplayName => $"AAO: Avatar Optimizer ({CheckForUpdate.Checker.CurrentVersionName})";
 
