@@ -45,16 +45,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             var componentInfos = context.Extension<GCComponentInfoContext>();
 
-            var entryPointMap = new DependantMap();
-            foreach (var componentInfo in componentInfos.AllInformation)
-            {
-                if (componentInfo.IsEntrypoint && componentInfo.Component != null)
-                {
-                    var markContext = new MarkObjectContext(componentInfos, componentInfo.Component, entryPointMap);
-                    markContext.MarkComponent(componentInfo.Component, GCComponentInfo.DependencyType.Normal);
-                    markContext.MarkRecursively();
-                }
-            }
+            var entryPointMap = DependantMap.CreateEntrypointMap(context);
 
             // if MMD World Compatibility is enabled, body mesh will be animated by MMD World
             if (state.MmdWorldCompatibility)

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using nadena.dev.ndmf;
 using nadena.dev.ndmf.runtime;
 using UnityEditor;
 using UnityEngine;
@@ -10,9 +11,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 {
     internal static class GCDebug
     {
-        public static void AddGCDebugInfo(GCComponentInfoContext componentInfos, GameObject avatarRootObject,
-            DependantMap entrypointMap)
+        public static void AddGCDebugInfo(BuildContext context)
         {
+            var componentInfos = context.Extension<GCComponentInfoContext>();
+            var avatarRootObject = context.AvatarRootObject;
+            var entrypointMap = DependantMap.CreateEntrypointMap(context);
+
             foreach (var componentInfo in componentInfos.AllInformation)
             {
                 var gcDebugInfo = componentInfo.Component.gameObject.AddComponent<GCDebugInfo>();
