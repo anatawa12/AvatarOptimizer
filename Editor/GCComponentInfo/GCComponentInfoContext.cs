@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Anatawa12.AvatarOptimizer.ndmf;
 using Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes;
 using nadena.dev.ndmf;
@@ -96,36 +95,9 @@ namespace Anatawa12.AvatarOptimizer
         /// <summary>
         /// Dependencies of this component
         /// </summary>
-        internal readonly Dictionary<Component, DependencyType> Dependencies =
-            new Dictionary<Component, DependencyType>();
-
-        /// <summary>
-        /// Dependants entrypoint components 
-        /// </summary>
-        internal readonly Dictionary<Component, DependencyType> DependantEntrypoint =
-            new Dictionary<Component, DependencyType>();
-
-        /// <summary>
-        /// Dependants entrypoint components 
-        /// </summary>
-        internal readonly Dictionary<Component, DependencyType> DependantBehaviours =
-            new Dictionary<Component, DependencyType>();
-
-        internal IEnumerable<Component> DependantComponents =>
-            DependantEntrypoint.Keys.Concat(DependantBehaviours.Keys).Where(x => x);
+        internal readonly Dictionary<Component, DependencyType> Dependencies = new();
 
         internal readonly Component Component;
-
-        public DependencyType AllEntrypointUsages
-        {
-            get
-            {
-                DependencyType type = default;
-                foreach (var usage in DependantEntrypoint.Values)
-                    type |= usage;
-                return type;
-            }
-        }
 
         public bool IsEntrypoint => EntrypointComponent && Activeness != false;
 

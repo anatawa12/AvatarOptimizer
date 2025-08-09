@@ -10,7 +10,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 {
     internal static class GCDebug
     {
-        public static void AddGCDebugInfo(GCComponentInfoContext componentInfos, GameObject avatarRootObject)
+        public static void AddGCDebugInfo(GCComponentInfoContext componentInfos, GameObject avatarRootObject,
+            DependantMap entrypointMap)
         {
             foreach (var componentInfo in componentInfos.AllInformation)
             {
@@ -18,7 +19,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 gcDebugInfo.component = componentInfo.Component;
                 gcDebugInfo.activeness = GCDebugInfo.ActivenessFromBool(componentInfo.Activeness);
                 gcDebugInfo.isEntryPoint = componentInfo.EntrypointComponent;
-                gcDebugInfo.entryPoints = componentInfo.DependantEntrypoint.Select(GCDebugInfo.ComponentTypePair.From).ToArray();
+                gcDebugInfo.entryPoints = entrypointMap[componentInfo].Select(GCDebugInfo.ComponentTypePair.From).ToArray();
                 gcDebugInfo.dependencies = componentInfo.Dependencies.Select(GCDebugInfo.ComponentTypePair.From).ToArray();
             }
 

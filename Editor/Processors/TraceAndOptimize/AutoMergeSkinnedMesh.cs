@@ -45,14 +45,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             var componentInfos = context.Extension<GCComponentInfoContext>();
 
+            var entryPointMap = new DependantMap();
             foreach (var componentInfo in componentInfos.AllInformation)
             {
-                if (componentInfo.IsEntrypoint)
+                if (componentInfo.IsEntrypoint && componentInfo.Component != null)
                 {
-                    var component = componentInfo.Component;
-
-                    var markContext = new MarkObjectContext(componentInfos, component, x => x.DependantEntrypoint);
-                    markContext.MarkComponent(component, GCComponentInfo.DependencyType.Normal);
+                    var markContext = new MarkObjectContext(componentInfos, componentInfo.Component, entryPointMap);
+                    markContext.MarkComponent(componentInfo.Component, GCComponentInfo.DependencyType.Normal);
                     markContext.MarkRecursively();
                 }
             }
@@ -65,8 +64,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 {
                     if (mmdBody.TryGetComponent<SkinnedMeshRenderer>(out var mmdBodyRenderer))
                     {
-                        componentInfos.GetInfo(mmdBodyRenderer)
-                            .DependantEntrypoint
+                        entryPointMap[componentInfos.GetInfo(mmdBodyRenderer)]
                             .Add(context.AvatarRootTransform, GCComponentInfo.DependencyType.Normal);
                     }
                 }
@@ -86,12 +84,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 var componentInfo = componentInfos.TryGetInfo(meshRenderer);
                 if (componentInfo != null)
                 {
-                    var dependants = componentInfo.DependantComponents.ToList();
+                    var dependants = entryPointMap[componentInfo].Keys.ToList();
                     if (dependants.Count != 1 || dependants[0] != meshRenderer)
                     {
                         if (state.GCDebug)
                             UnityEngine.Debug.Log(
-                                $"EntryPoints of {meshRenderer}: {string.Join(", ", componentInfo.DependantComponents)}");
+                                $"EntryPoints of {meshRenderer}: {string.Join(", ", entryPointMap[componentInfo].Keys)}");
                         continue;
                     }
                 }
