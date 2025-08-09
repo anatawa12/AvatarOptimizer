@@ -90,7 +90,7 @@ namespace Anatawa12.AvatarOptimizer
             }
         }
 
-        private static Predicate<string> GetRootAnimatorParameters(GameObject rootGameObject)
+        public static Predicate<string> GetRootAnimatorParameters(GameObject rootGameObject)
         {
             var parameters = new HashSet<string>();
 
@@ -157,7 +157,7 @@ namespace Anatawa12.AvatarOptimizer
             private readonly ComponentDependencyRetriever _collector;
             private readonly GCComponentInfoContext _componentInfos;
             private readonly Predicate<string> _isParameterUsed;
-            private GCComponentInfo? _info;
+            public GCComponentInfo? _info;
             private IDependencyInfo? _dependencyInfo;
 
             public Collector(ComponentDependencyRetriever collector, GCComponentInfoContext componentInfos,
@@ -240,10 +240,6 @@ namespace Anatawa12.AvatarOptimizer
                 AddDependencyInternal(_info, component.parent, GCComponentInfo.DependencyType.Parent)
                     .EvenIfDependantDisabled();
 
-            public void AddBoneDependency(Transform? bone) =>
-                AddDependencyInternal(_info, bone, GCComponentInfo.DependencyType.Bone)
-                    .EvenIfDependantDisabled();
-
             public void FinalizeForComponent()
             {
                 _dependencyInfo?.Finish();
@@ -311,8 +307,7 @@ namespace Anatawa12.AvatarOptimizer
                         if (_componentInfos.GetInfo(_dependency).Activeness == false) return;
                     }
 
-                    _dependantInformation.Dependencies.TryGetValue(_dependency, out var type);
-                    _dependantInformation.Dependencies[_dependency] = type | _type;
+                    _dependantInformation.AddDependency(_dependency, _type);
                 }
 
                 public override API.ComponentDependencyInfo EvenIfDependantDisabled()
@@ -372,10 +367,7 @@ namespace Anatawa12.AvatarOptimizer
                     }
 
                     foreach (var dependency in _dependencies)
-                    {
-                        _dependantInformation.Dependencies.TryGetValue(dependency, out var type);
-                        _dependantInformation.Dependencies[dependency] = type | GCComponentInfo.DependencyType.Normal;
-                    }
+                        _dependantInformation.AddDependency(dependency, GCComponentInfo.DependencyType.Normal);
                 }
 
                 public override API.PathDependencyInfo EvenIfDependantDisabled()

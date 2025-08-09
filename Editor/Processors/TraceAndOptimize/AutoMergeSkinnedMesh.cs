@@ -253,6 +253,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             // We process FindUnusedObjects after this pass so we wipe empty renderer object in that pass
             MergeSkinnedMeshProcessor.RemoveOldRenderers(newMeshInfo, meshInfosArray,
                 removeEmptyRendererObject: false);
+
+            var gcContext = context.Extension<GCComponentInfoContext>();
+            gcContext.NewComponent(newSkinnedMeshRenderer.transform);
+            APIInternal.SkinnedMeshRendererInformation.AddDependencyInformation(gcContext.NewComponent(newSkinnedMeshRenderer), newMeshInfo);
         }
 
         private static void MergeAnimatingSkinnedMesh(
@@ -309,6 +313,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             // We process FindUnusedObjects after this pass so we wipe empty renderer object in that pass
             MergeSkinnedMeshProcessor.RemoveOldRenderers(newMeshInfo, meshInfosArray,
                 removeEmptyRendererObject: false);
+            
+            var gcContext = context.Extension<GCComponentInfoContext>();
+            gcContext.NewComponent(newSkinnedMeshRenderer.transform);
+            APIInternal.SkinnedMeshRendererInformation.AddDependencyInformation(gcContext.NewComponent(newSkinnedMeshRenderer), newMeshInfo);
         }
 
         private static Transform ComputeCommonParent(IReadOnlyList<MeshInfo2> meshInfos, Transform avatarRoot)

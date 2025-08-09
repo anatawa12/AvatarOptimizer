@@ -74,13 +74,22 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
     {
         protected override void CollectDependency(T component, ComponentDependencyCollector collector)
         {
-            collector.MarkEntrypoint();
-            // anchor proves
-            if (component.reflectionProbeUsage != ReflectionProbeUsage.Off ||
-                component.lightProbeUsage != LightProbeUsage.Off)
-                collector.AddDependency(component.probeAnchor);
-            if (component.lightProbeUsage == LightProbeUsage.UseProxyVolume)
-                collector.AddDependency(component.lightProbeProxyVolumeOverride.transform);
+            var casted = (ComponentDependencyRetriever.Collector)collector;
+            AddDependencyInformation(casted._info!, component);
+        }
+
+        public static void AddDependencyInformation(GCComponentInfo info, Renderer renderer)
+        {
+            info.MarkEntrypoint();
+            if (info.Activeness != false)
+            {
+                // anchor proves when this renderer can be rendered.
+                if (renderer.reflectionProbeUsage != ReflectionProbeUsage.Off ||
+                    renderer.lightProbeUsage != LightProbeUsage.Off)
+                    info.AddDependency(renderer.probeAnchor);
+                if (renderer.lightProbeUsage == LightProbeUsage.UseProxyVolume)
+                    info.AddDependency(renderer.lightProbeProxyVolumeOverride.transform);
+            }
         }
     }
 
@@ -98,9 +107,17 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
 
             base.CollectDependency(component, collector);
 
+            AddDependencyInformation(casted._info!, meshInfo2);
+        }
+
+        public static void AddDependencyInformation(GCComponentInfo info, Processors.SkinnedMeshes.MeshInfo2 meshInfo2)
+        {
+            info.MarkEntrypoint();
             foreach (var bone in meshInfo2.Bones)
-                casted.AddBoneDependency(bone.Transform);
-            collector.AddDependency(meshInfo2.RootBone);
+                info.AddDependency(bone.Transform, GCComponentInfo.DependencyType.Bone);
+            if (info.Activeness != false)
+                info.AddDependency(meshInfo2.RootBone);
+            RendererInformation<SkinnedMeshRenderer>.AddDependencyInformation(info, meshInfo2.SourceRenderer);
         }
     }
 
