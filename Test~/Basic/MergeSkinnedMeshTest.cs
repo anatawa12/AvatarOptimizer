@@ -53,6 +53,7 @@ public class MergeSkinnedMeshTest
         context.ActivateExtensionContext<Processors.MeshInfo2Context>();
         context.ActivateExtensionContext<ObjectMappingContext>();
         context.ActivateExtensionContext<DestroyTracker.ExtensionContext>();
+        context.ActivateExtensionContext<GCComponentInfoContext>();
         context.GetMappingBuilder()
             .ImportModifications(new AnimatorParser(true).GatherAnimationModifications(context));
 
@@ -114,6 +115,7 @@ public class MergeSkinnedMeshTest
         context.ActivateExtensionContext<Processors.MeshInfo2Context>();
         context.ActivateExtensionContext<ObjectMappingContext>();
         context.ActivateExtensionContext<DestroyTracker.ExtensionContext>();
+        context.ActivateExtensionContext<GCComponentInfoContext>();
         context.GetMappingBuilder()
             .ImportModifications(new AnimatorParser(true).GatherAnimationModifications(context));
 
@@ -178,6 +180,7 @@ public class MergeSkinnedMeshTest
         context.ActivateExtensionContext<Processors.MeshInfo2Context>();
         context.ActivateExtensionContext<ObjectMappingContext>();
         context.ActivateExtensionContext<DestroyTracker.ExtensionContext>();
+        context.ActivateExtensionContext<GCComponentInfoContext>();
         context.GetMappingBuilder()
             .ImportModifications(new AnimatorParser(true).GatherAnimationModifications(context));
 
@@ -233,6 +236,7 @@ public class MergeSkinnedMeshTest
         context.ActivateExtensionContext<Processors.MeshInfo2Context>();
         context.ActivateExtensionContext<ObjectMappingContext>();
         context.ActivateExtensionContext<DestroyTracker.ExtensionContext>();
+        context.ActivateExtensionContext<GCComponentInfoContext>();
         context.GetMappingBuilder()
             .ImportModifications(new AnimatorParser(true).GatherAnimationModifications(context));
 
@@ -274,6 +278,7 @@ public class MergeSkinnedMeshTest
         context.ActivateExtensionContext<Processors.MeshInfo2Context>();
         context.ActivateExtensionContext<ObjectMappingContext>();
         context.ActivateExtensionContext<DestroyTracker.ExtensionContext>();
+        context.ActivateExtensionContext<GCComponentInfoContext>();
 
         var meshInfo1 = context.GetMeshInfoFor(renderer1);
         var meshInfo2 = context.GetMeshInfoFor(renderer2);
