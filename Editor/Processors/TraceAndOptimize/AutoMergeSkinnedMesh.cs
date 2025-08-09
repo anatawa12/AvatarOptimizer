@@ -43,9 +43,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         {
             Profiler.BeginSample("Collect for Dependencies to not merge dependant objects");
 
-            var componentInfos = new GCComponentInfoHolder(context);
-
-            new ComponentDependencyCollector(context, false, componentInfos).CollectAllUsages();
+            var componentInfos = context.Extension<GCComponentInfoContext>();
 
             foreach (var componentInfo in componentInfos.AllInformation)
             {

@@ -29,7 +29,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
     {
         protected override void CollectDependency(Transform component, ComponentDependencyCollector collector)
         {
-            var casted = (Processors.TraceAndOptimizes.ComponentDependencyCollector.Collector)collector;
+            var casted = (ComponentDependencyRetriever.Collector)collector;
             casted.AddParentDependency(component);
             // For compatibility with UnusedBonesByReferenceTool
             // https://github.com/anatawa12/AvatarOptimizer/issues/429
@@ -91,7 +91,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
             ComponentDependencyCollector collector)
         {
             // IMPORTANT NOTE: We have to use MeshInfo to get information about the mesh!!!
-            var casted = (Processors.TraceAndOptimizes.ComponentDependencyCollector.Collector)collector;
+            var casted = (ComponentDependencyRetriever.Collector)collector;
             var meshInfo2 = casted.GetMeshInfoFor(component);
             // SMR without mesh does nothing.
             if (meshInfo2.IsEmpty()) return;

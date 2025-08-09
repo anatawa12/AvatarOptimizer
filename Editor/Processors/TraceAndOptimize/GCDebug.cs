@@ -10,7 +10,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 {
     internal static class GCDebug
     {
-        public static void AddGCDebugInfo(GCComponentInfoHolder componentInfos, GameObject avatarRootObject)
+        public static void AddGCDebugInfo(GCComponentInfoContext componentInfos, GameObject avatarRootObject)
         {
             foreach (var componentInfo in componentInfos.AllInformation)
             {

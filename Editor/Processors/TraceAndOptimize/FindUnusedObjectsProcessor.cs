@@ -20,13 +20,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
     }
 
     internal readonly struct MarkObjectContext {
-        private readonly GCComponentInfoHolder _componentInfos;
+        private readonly GCComponentInfoContext _componentInfos;
 
         private readonly Func<GCComponentInfo, Dictionary<Component, GCComponentInfo.DependencyType>> _getDependantMap;
         private readonly Queue<Component> _processPending;
         private readonly Component _entrypoint;
 
-        public MarkObjectContext(GCComponentInfoHolder componentInfos, Component entrypoint,
+        public MarkObjectContext(GCComponentInfoContext componentInfos, Component entrypoint,
             Func<GCComponentInfo, Dictionary<Component, GCComponentInfo.DependencyType>> getDependantMap)
         {
             _componentInfos = componentInfos;
@@ -91,7 +91,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         public void ProcessNew()
         {
-            var componentInfos = new GCComponentInfoHolder(_context);
+            var componentInfos = _context.Extension<GCComponentInfoContext>();
             Mark(componentInfos);
             if (_gcDebug)
             {
@@ -108,7 +108,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 RemoveUnusedSubMeshes(componentInfos);
         }
 
-        private void ActivenessAnimation(GCComponentInfoHolder componentInfos)
+        private void ActivenessAnimation(GCComponentInfoContext componentInfos)
         {
             // entrypoint -> affected activeness animated components / GameObjects
             Dictionary<Component, HashSet<Component>> entryPointActiveness =
@@ -227,7 +227,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             }
         }
 
-        private void RemoveUnusedSubMeshes(GCComponentInfoHolder componentInfos)
+        private void RemoveUnusedSubMeshes(GCComponentInfoContext componentInfos)
         {
             foreach (var renderer in _context.AvatarRootObject.GetComponentsInChildren<SkinnedMeshRenderer>(true))
             {
@@ -246,14 +246,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             }
         }
 
-        private void Mark(GCComponentInfoHolder componentInfos)
+        private void Mark(GCComponentInfoContext componentInfos)
         {
-            // first, collect usages
-            
-            new ComponentDependencyCollector(_context, _preserveEndBone, componentInfos).CollectAllUsages();
-
-            // then, mark and sweep.
-
             // entrypoint for mark & sweep is active-able GameObjects
             foreach (var componentInfo in componentInfos.AllInformation)
             {
@@ -283,7 +277,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 x.DependantEntrypoint;
         }
 
-        private void Sweep(GCComponentInfoHolder componentInfos)
+        private void Sweep(GCComponentInfoContext componentInfos)
         {
             foreach (var componentInfo in componentInfos.AllInformation)
             {
@@ -314,7 +308,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             DestroyTracker.DestroyImmediate(component);
         }
 
-        private void MarkDependant(GCComponentInfoHolder componentInfos)
+        private void MarkDependant(GCComponentInfoContext componentInfos)
         {
             // entrypoint for mark & sweep is active-able GameObjects
             foreach (var componentInfo in componentInfos.AllInformation)
@@ -344,7 +338,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 x.DependantBehaviours;
         }
 
-        private void MergeBone(GCComponentInfoHolder componentInfos)
+        private void MergeBone(GCComponentInfoContext componentInfos)
         {
             ConfigureRecursive(_context.AvatarRootTransform, _context);
 

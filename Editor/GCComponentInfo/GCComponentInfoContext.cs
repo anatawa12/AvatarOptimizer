@@ -1,12 +1,36 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Anatawa12.AvatarOptimizer.ndmf;
+using Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes;
 using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEngine;
 
-namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
+namespace Anatawa12.AvatarOptimizer
 {
+    class GCComponentInfoContext : IExtensionContext
+    {
+        public GCComponentInfoHolder ComponentInfos;
+
+        public void OnActivate(BuildContext context)
+        {
+            if (!context.GetState<AAOEnabled>().Enabled) return;
+            ComponentInfos = new GCComponentInfoHolder(context);
+            var preserveEndBone = context.GetState<TraceAndOptimizeState>().PreserveEndBone;
+            new ComponentDependencyRetriever(context, preserveEndBone, this).RetriveAllUsages();
+        }
+
+        public void OnDeactivate(BuildContext context)
+        {
+            ComponentInfos = default;
+        }
+
+        public IEnumerable<GCComponentInfo> AllInformation => ComponentInfos.AllInformation;
+        public GCComponentInfo? TryGetInfo(Component? dependent) => ComponentInfos.TryGetInfo(dependent);
+        public GCComponentInfo GetInfo(Component dependent) => ComponentInfos.GetInfo(dependent);
+    }
+
     internal readonly partial struct GCComponentInfoHolder
     {
         private readonly BuildContext _context;
@@ -33,7 +57,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 var activeness = ComputeActiveness(component, transformActiveness);
                 // objects without enabled checkbox are treated as enabled
                 // https://github.com/anatawa12/AvatarOptimizer/issues/1241
-                if (component is MonoBehaviour&&EditorUtility.GetObjectEnabled(component) == -1) activeness = true;
+                if (component is MonoBehaviour && EditorUtility.GetObjectEnabled(component) == -1) activeness = true;
                 _dependencies.Add(component, new GCComponentInfo(component, activeness));
             }
 
@@ -58,7 +82,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         /// True if this component has Active side-effect Meaning on the Avatar.
         /// </summary>
         public bool EntrypointComponent = false;
-        
+
         /// <summary>
         /// True if activeness of this component has meaning and inactive is lighter
         /// </summary>
@@ -88,7 +112,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             new Dictionary<Component, DependencyType>();
 
         internal IEnumerable<Component> DependantComponents =>
-            DependantEntrypoint.Keys.Concat(DependantBehaviours.Keys);
+            DependantEntrypoint.Keys.Concat(DependantBehaviours.Keys).Where(x => x);
 
         internal readonly Component Component;
 

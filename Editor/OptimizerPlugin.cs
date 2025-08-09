@@ -79,33 +79,34 @@ namespace Anatawa12.AvatarOptimizer.ndmf
                         .Then.Run(Processors.DupliacteAssets.Instance)
                         .Then.Run(Processors.ParseAnimator.Instance)
                         .Then.Run(Processors.GatherShaderMaterialInformation.Instance)
-                        .Then.Run(Processors.TraceAndOptimizes.AddRemoveEmptySubMesh.Instance)
-                        .Then.Run(Processors.TraceAndOptimizes.AutoFreezeBlendShape.Instance)
+                        .Then.WithRequiredExtension(typeof(GCComponentInfoContext), seq => seq
+                            .Run(Processors.TraceAndOptimizes.AddRemoveEmptySubMesh.Instance)
+                            .Then.Run(Processors.TraceAndOptimizes.AutoFreezeBlendShape.Instance)
 #if AAO_VRCSDK3_AVATARS
-                        .Then.Run(Processors.ClearEndpointPositionProcessor.Instance)
-                        .Then.Run(Processors.MergePhysBoneProcessor.Instance)
+                            .Then.Run(Processors.ClearEndpointPositionProcessor.Instance)
+                            .Then.Run(Processors.MergePhysBoneProcessor.Instance)
 #endif
-                        .Then.Run(Processors.EditSkinnedMeshComponentProcessor.Instance)
-                        .PreviewingWith(EditModePreview.RemoveMeshByMaskRenderFilter.Instance)
-                        .PreviewingWith(EditModePreview.RemoveMeshByBlendShapeRenderFilter.Instance)
-                        .PreviewingWith(EditModePreview.RemoveMeshInBoxRenderFilter.Instance)
-                        .PreviewingWith(EditModePreview.RemoveMeshByUVTileRenderFilter.Instance)
-                        .Then.Run("MakeChildrenProcessor",
-                            ctx => new Processors.MakeChildrenProcessor(early: false).Process(ctx)
-                        )
+                            .Then.Run(Processors.EditSkinnedMeshComponentProcessor.Instance)
+                            .PreviewingWith(EditModePreview.RemoveMeshByMaskRenderFilter.Instance)
+                            .PreviewingWith(EditModePreview.RemoveMeshByBlendShapeRenderFilter.Instance)
+                            .PreviewingWith(EditModePreview.RemoveMeshInBoxRenderFilter.Instance)
+                            .PreviewingWith(EditModePreview.RemoveMeshByUVTileRenderFilter.Instance)
+                            .Then.Run("MakeChildrenProcessor",
+                                ctx => new Processors.MakeChildrenProcessor(early: false).Process(ctx)
+                            )
 #if AAO_VRCSDK3_AVATARS
-                        .Then.Run(Processors.TraceAndOptimizes.OptimizePhysBone.Instance)
+                            .Then.Run(Processors.TraceAndOptimizes.OptimizePhysBone.Instance)
 #endif
-                        .Then.Run(Processors.TraceAndOptimizes.AutoMergeSkinnedMesh.Instance)
-                        .Then.Run(Processors.TraceAndOptimizes.FindUnusedObjects.Instance)
-                        .Then.Run(Processors.TraceAndOptimizes.ConfigureRemoveZeroSizedPolygon.Instance)
-                        .Then.Run(Processors.TraceAndOptimizes.RemoveUnusedMaterialProperties.Instance)
-                        .Then.Run(Processors.TraceAndOptimizes.AutoMergeBlendShape.Instance)
-                        .Then.Run(Processors.MergeBoneProcessor.Instance)
-                        .Then.Run(Processors.RemoveZeroSizedPolygonProcessor.Instance)
-                        .Then.Run(Processors.TraceAndOptimizes.OptimizeTexture.Instance)
-                        .Then.Run(Processors.AnimatorOptimizer.RemoveInvalidProperties.Instance)
-                        ;
+                            .Then.Run(Processors.TraceAndOptimizes.AutoMergeSkinnedMesh.Instance)
+                            .Then.Run(Processors.TraceAndOptimizes.FindUnusedObjects.Instance)
+                            .Then.Run(Processors.TraceAndOptimizes.ConfigureRemoveZeroSizedPolygon.Instance)
+                            .Then.Run(Processors.TraceAndOptimizes.RemoveUnusedMaterialProperties.Instance)
+                            .Then.Run(Processors.TraceAndOptimizes.AutoMergeBlendShape.Instance)
+                            .Then.Run(Processors.MergeBoneProcessor.Instance)
+                            .Then.Run(Processors.RemoveZeroSizedPolygonProcessor.Instance)
+                            .Then.Run(Processors.TraceAndOptimizes.OptimizeTexture.Instance)
+                            .Then.Run(Processors.AnimatorOptimizer.RemoveInvalidProperties.Instance)
+                        );
                 });
 
             // animator optimizer is written in newer C# so requires 2021.3 or newer 

@@ -8,19 +8,19 @@ using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
+namespace Anatawa12.AvatarOptimizer
 {
     /// <summary>
     /// This class collects ALL dependencies of each component
     /// </summary>
-    readonly struct ComponentDependencyCollector
+    readonly struct ComponentDependencyRetriever
     {
         private readonly bool _preserveEndBone;
         private readonly BuildContext _session;
-        private readonly GCComponentInfoHolder _componentInfos;
+        private readonly GCComponentInfoContext _componentInfos;
 
-        public ComponentDependencyCollector(BuildContext session, bool preserveEndBone,
-            GCComponentInfoHolder componentInfos)
+        public ComponentDependencyRetriever(BuildContext session, bool preserveEndBone,
+            GCComponentInfoContext componentInfos)
         {
             _preserveEndBone = preserveEndBone;
             _session = session;
@@ -28,7 +28,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         }
 
 
-        public void CollectAllUsages()
+        public void RetriveAllUsages()
         {
             var isParameterUsed = GetRootAnimatorParameters(_session.AvatarRootObject);
 
@@ -48,11 +48,18 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     }
                     else
                     {
-                        if (!unknownComponents.TryGetValue(component.GetType(), out var list))
-                            unknownComponents.Add(component.GetType(), list = new List<Object>());
-                        list.Add(component);
+                        if (component is AvatarTagComponent)
+                        {
+                            // our components can be ignored
+                        }
+                        else
+                        {
+                            if (!unknownComponents.TryGetValue(component.GetType(), out var list))
+                                unknownComponents.Add(component.GetType(), list = new List<Object>());
+                            list.Add(component);
 
-                        FallbackDependenciesParser(component, collector);
+                            FallbackDependenciesParser(component, collector);
+                        }
                     }
 
                     foreach (var requiredComponent in RequireComponentCache.GetRequiredComponents(component.GetType()))
@@ -147,13 +154,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         internal class Collector : API.ComponentDependencyCollector
         {
-            private readonly ComponentDependencyCollector _collector;
-            private readonly GCComponentInfoHolder _componentInfos;
+            private readonly ComponentDependencyRetriever _collector;
+            private readonly GCComponentInfoContext _componentInfos;
             private readonly Predicate<string> _isParameterUsed;
             private GCComponentInfo? _info;
             private IDependencyInfo? _dependencyInfo;
 
-            public Collector(ComponentDependencyCollector collector, GCComponentInfoHolder componentInfos,
+            public Collector(ComponentDependencyRetriever collector, GCComponentInfoContext componentInfos,
                 Predicate<string> isParameterUsed)
             {
                 _collector = collector;
@@ -259,7 +266,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             private class ComponentDependencyInfo : API.ComponentDependencyInfo, IDependencyInfo
             {
-                private readonly GCComponentInfoHolder _componentInfos;
+                private readonly GCComponentInfoContext _componentInfos;
 
                 private Component? _dependency;
                 private readonly GCComponentInfo _dependantInformation;
@@ -270,7 +277,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
                 // ReSharper disable once NotNullOrRequiredMemberIsNotInitialized
                 public ComponentDependencyInfo(
-                    GCComponentInfoHolder componentInfos,
+                    GCComponentInfoContext componentInfos,
                     GCComponentInfo dependantInformation,
                     Component component,
                     GCComponentInfo.DependencyType type = GCComponentInfo.DependencyType.Normal)
