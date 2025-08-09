@@ -19,7 +19,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         public bool PreserveEndBone;
         public HashSet<GameObject?> Exclusions = new();
-        public bool GCDebug;
+        public int GCDebug;
+        public bool NoSweepComponents;
         public bool NoConfigureMergeBone;
         public bool NoActivenessAnimation;
         public bool SkipFreezingNonAnimatedBlendShape;
@@ -58,7 +59,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             PreserveEndBone = config.preserveEndBone;
 
             Exclusions = new HashSet<GameObject?>(config.debugOptions.exclusions);
-            GCDebug = config.debugOptions.gcDebug;
+            GCDebug = (int)config.debugOptions.gcDebug;
+            NoSweepComponents = config.debugOptions.noSweepComponents;
             NoConfigureMergeBone = config.debugOptions.noConfigureMergeBone;
             NoActivenessAnimation = config.debugOptions.noActivenessAnimation;
             SkipFreezingNonAnimatedBlendShape = config.debugOptions.skipFreezingNonAnimatedBlendShape;

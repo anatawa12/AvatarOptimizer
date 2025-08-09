@@ -1,12 +1,59 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Anatawa12.AvatarOptimizer.ndmf;
+using Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes;
 using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEngine;
+using VRC.SDK3.Dynamics.PhysBone.Components;
 
-namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
+namespace Anatawa12.AvatarOptimizer
 {
+    class GCComponentInfoContext : IExtensionContext
+    {
+        private GCComponentInfoHolder ComponentInfos;
+        public Predicate<string> IsParameterUsed => _isParameterUsed ?? throw new InvalidOperationException("GCComponentInfoContext is not activated.");
+        private Predicate<string> _isParameterUsed;
+
+        public void OnActivate(BuildContext context)
+        {
+            if (!context.GetState<AAOEnabled>().Enabled) return;
+            ComponentInfos = new GCComponentInfoHolder(context);
+            var preserveEndBone = context.GetState<TraceAndOptimizeState>().PreserveEndBone;
+            new ComponentDependencyRetriever(context, preserveEndBone, this).RetriveAllUsages();
+            _isParameterUsed = ComponentDependencyRetriever.GetRootAnimatorParameters(context.AvatarRootObject);
+        }
+
+        public void OnDeactivate(BuildContext context)
+        {
+            ComponentInfos = default;
+        }
+
+        public IEnumerable<GCComponentInfo> AllInformation => ComponentInfos.AllInformation.Where(info => info.Component);
+        public GCComponentInfo? TryGetInfo(Component? dependent) => ComponentInfos.TryGetInfo(dependent);
+        public GCComponentInfo GetInfo(Component dependent) => ComponentInfos.GetInfo(dependent);
+        public GCComponentInfo NewComponent(Component component) => ComponentInfos.NewComponent(component);
+
+        public void SetParent(Transform transform, Transform parent) => ReplaceParentImpl(transform, parent, null);
+        public void ReplaceParent(Transform transform, Transform parent, Transform oldParent) => ReplaceParentImpl(transform, parent, oldParent ?? throw new ArgumentNullException(nameof(oldParent)));
+        public void ReplaceParentImpl(Transform transform, Transform parent, Transform? oldParent = null)
+        {
+            var transformInfo = GetInfo(transform);
+            if (oldParent is not null)
+            {
+                transformInfo.Dependencies[oldParent] &= ~GCComponentInfo.DependencyType.Parent;
+            }
+            else
+            {
+                oldParent = transform.parent;
+                transformInfo.Dependencies[oldParent] &= ~GCComponentInfo.DependencyType.Parent;
+                transform.parent = parent;
+            }
+            transformInfo.AddDependency(parent, GCComponentInfo.DependencyType.Parent);
+        }
+    }
+
     internal readonly partial struct GCComponentInfoHolder
     {
         private readonly BuildContext _context;
@@ -33,7 +80,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 var activeness = ComputeActiveness(component, transformActiveness);
                 // objects without enabled checkbox are treated as enabled
                 // https://github.com/anatawa12/AvatarOptimizer/issues/1241
-                if (component is MonoBehaviour&&EditorUtility.GetObjectEnabled(component) == -1) activeness = true;
+                if (component is MonoBehaviour && EditorUtility.GetObjectEnabled(component) == -1) activeness = true;
                 _dependencies.Add(component, new GCComponentInfo(component, activeness));
             }
 
@@ -50,6 +97,14 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             dependent != null && _dependencies.TryGetValue(dependent, out var dependencies) ? dependencies : null;
 
         public GCComponentInfo GetInfo(Component dependent) => _dependencies[dependent];
+
+        public GCComponentInfo NewComponent(Component component)
+        {
+            var parentComponent = component is Transform t ? t.parent : component.transform;
+            var newInfo = new GCComponentInfo(component, ComputeActiveness(component, GetInfo(parentComponent).Activeness));
+            _dependencies.Add(component, newInfo); // Throw if already exists
+            return newInfo;
+        }
     }
 
     internal class GCComponentInfo
@@ -58,7 +113,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         /// True if this component has Active side-effect Meaning on the Avatar.
         /// </summary>
         public bool EntrypointComponent = false;
-        
+
         /// <summary>
         /// True if activeness of this component has meaning and inactive is lighter
         /// </summary>
@@ -72,36 +127,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         /// <summary>
         /// Dependencies of this component
         /// </summary>
-        internal readonly Dictionary<Component, DependencyType> Dependencies =
-            new Dictionary<Component, DependencyType>();
-
-        /// <summary>
-        /// Dependants entrypoint components 
-        /// </summary>
-        internal readonly Dictionary<Component, DependencyType> DependantEntrypoint =
-            new Dictionary<Component, DependencyType>();
-
-        /// <summary>
-        /// Dependants entrypoint components 
-        /// </summary>
-        internal readonly Dictionary<Component, DependencyType> DependantBehaviours =
-            new Dictionary<Component, DependencyType>();
-
-        internal IEnumerable<Component> DependantComponents =>
-            DependantEntrypoint.Keys.Concat(DependantBehaviours.Keys);
+        internal readonly Dictionary<Component, DependencyType> Dependencies = new();
 
         internal readonly Component Component;
-
-        public DependencyType AllEntrypointUsages
-        {
-            get
-            {
-                DependencyType type = default;
-                foreach (var usage in DependantEntrypoint.Values)
-                    type |= usage;
-                return type;
-            }
-        }
 
         public bool IsEntrypoint => EntrypointComponent && Activeness != false;
 
@@ -111,14 +139,28 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         public GCComponentInfo(Component component, bool? activeness)
         {
             Component = component;
-            Dependencies[component.gameObject.transform] = DependencyType.ComponentToTransform;
             Activeness = activeness;
+            AddDependency(component.gameObject.transform, DependencyType.ComponentToTransform);
         }
 
 
         public void MarkEntrypoint() => EntrypointComponent = true;
         public void MarkHeavyBehaviour() => HeavyBehaviourComponent = true;
         public void MarkBehaviour() => _behaviourComponent = true;
+
+        public void ClearDependencies()
+        {
+            Dependencies.Clear();
+            AddDependency(Component.gameObject.transform, DependencyType.ComponentToTransform);
+        }
+
+        public void AddDependency(Component? dependency, DependencyType addType = DependencyType.Normal)
+        {
+            if (dependency == null) return;
+
+            Dependencies.TryGetValue(dependency, out var type);
+            Dependencies[dependency] = type | addType;
+        }
 
         [Flags]
         public enum DependencyType : byte

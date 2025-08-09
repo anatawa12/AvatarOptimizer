@@ -2,27 +2,67 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes;
+using nadena.dev.ndmf;
 using nadena.dev.ndmf.runtime;
 using UnityEditor;
 using UnityEngine;
 
-namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
+namespace Anatawa12.AvatarOptimizer.Processors
 {
-    internal static class GCDebug
+    internal class GCDebugPass : Pass<GCDebugPass>
     {
-        public static void AddGCDebugInfo(GCComponentInfoHolder componentInfos, GameObject avatarRootObject)
+        private readonly InternalGcDebugPosition _position;
+
+        public GCDebugPass()
         {
+            throw new NotSupportedException("GCDebugPass should not be instantiated directly. Use constructors instead.");
+        }
+
+        public GCDebugPass(InternalGcDebugPosition position)
+        {
+            _position = position;
+        }
+
+        public override string QualifiedName => typeof(GCDebugPass).FullName + "." + _position;
+        public override string DisplayName => $"GC Debug Component Creation ({_position})";
+
+        protected override void Execute(BuildContext context)
+        {
+            if (context.GetState<TraceAndOptimizeState>().GCDebug == (int)_position)
+            {
+                AddGCDebugInfo(context);
+            }
+        }
+
+        public static void AddGCDebugInfo(BuildContext context)
+        {
+            var componentInfos = context.Extension<GCComponentInfoContext>();
+            var avatarRootObject = context.AvatarRootObject;
+            var entrypointMap = DependantMap.CreateEntrypointsMap(context);
+            var rootObjectGcInfo = componentInfos.GetInfo(avatarRootObject.transform);
+
             foreach (var componentInfo in componentInfos.AllInformation)
             {
                 var gcDebugInfo = componentInfo.Component.gameObject.AddComponent<GCDebugInfo>();
                 gcDebugInfo.component = componentInfo.Component;
                 gcDebugInfo.activeness = GCDebugInfo.ActivenessFromBool(componentInfo.Activeness);
                 gcDebugInfo.isEntryPoint = componentInfo.EntrypointComponent;
-                gcDebugInfo.entryPoints = componentInfo.DependantEntrypoint.Select(GCDebugInfo.ComponentTypePair.From).ToArray();
+                gcDebugInfo.entryPoints = entrypointMap[componentInfo].Select(GCDebugInfo.ComponentTypePair.From).ToArray();
                 gcDebugInfo.dependencies = componentInfo.Dependencies.Select(GCDebugInfo.ComponentTypePair.From).ToArray();
             }
 
-            avatarRootObject.AddComponent<GCDebugRoot>();
+            // Register all GCDebugInfo components
+            foreach (var gcDebugInfo in avatarRootObject.GetComponents<GCDebugInfo>())
+            {
+                componentInfos.NewComponent(gcDebugInfo);
+                rootObjectGcInfo.AddDependency(gcDebugInfo);
+                rootObjectGcInfo.AddDependency(gcDebugInfo.component);
+            }
+
+            var debugRoot = avatarRootObject.AddComponent<GCDebugRoot>();
+            componentInfos.NewComponent(debugRoot);
+            rootObjectGcInfo.AddDependency(debugRoot);
         }
 
         class GCDebugRoot : MonoBehaviour { }

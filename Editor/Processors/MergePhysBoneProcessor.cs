@@ -51,7 +51,11 @@ namespace Anatawa12.AvatarOptimizer.Processors
                     return; // error reported by validator
 
                 foreach (var physBone in sourceComponents)
+                {
+                    var oldParent = physBone.GetTarget().parent;
                     physBone.GetTarget().parent = root;
+                    context?.Extension<GCComponentInfoContext>()?.ReplaceParent(physBone.GetTarget(), root, oldParent);
+                }
             }
             else
             {
@@ -70,16 +74,21 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 else
                 {
                     root = Utils.NewGameObject($"PhysBoneRoot-{Guid.NewGuid()}", pb.GetTarget().parent).transform;
+                    context?.Extension<GCComponentInfoContext>()?.NewComponent(root.transform);
 
                     foreach (var physBone in sourceComponents)
+                    {
+                        var oldParent = physBone.GetTarget().parent;
                         physBone.GetTarget().parent = root;
+                        context?.Extension<GCComponentInfoContext>()?.ReplaceParent(physBone.GetTarget(), root, oldParent);
+                    }
                 }
             }
 
             // clear endpoint position
             if (merge.endpointPositionConfig.@override == MergePhysBone.EndPointPositionConfig.Override.Clear)
                 foreach (var physBone in sourceComponents)
-                    ClearEndpointPositionProcessor.Process(physBone);
+                    ClearEndpointPositionProcessor.Process(physBone, context);
 
             var merged = merge.gameObject.AddComponent<VRCPhysBone>();
 
@@ -223,6 +232,9 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
             if (context != null)
             {
+                var gcContext = context.Extension<GCComponentInfoContext>();
+                APIInternal.VRCSDK.VRCPhysBoneInformation.AddDependencyInformation(gcContext.NewComponent(merged), merged, gcContext);
+
                 // register modifications by merged component
                 foreach (var transform in merged.GetAffectedTransforms())
                 {
@@ -251,7 +263,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
             var ignoreTransforms = new HashSet<Transform>(physBone.ignoreTransforms);
 
-            RotateRecursive(physBone, physBone.GetTarget(), root, maxChainLength, 0, ignoreTransforms, originalBones);
+            RotateRecursive(physBone, physBone.GetTarget(), root, maxChainLength, 0, context, ignoreTransforms, originalBones);
         }
 
         /*
@@ -297,6 +309,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
             Transform parent,
             int totalDepth,
             int depth,
+            BuildContext? context,
             HashSet<Transform> ignoreTransforms,
             List<Transform> originalBones)
         {
@@ -370,6 +383,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
             // move old bone to child of newBone
             transform.SetParent(newBone.transform, true);
 
+            context?.Extension<GCComponentInfoContext>()?.NewComponent(newBone.transform);
             originalBones.Add(transform);
 
             //var rotationQuaternion = Quaternion.Euler(0, -thisRotation, 0);
@@ -380,7 +394,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 //child.localRotation = rotationQuaternion * child.localRotation;
                 
                 if (ignoreTransforms.Contains(child)) continue;
-                RotateRecursive(physBone, child, newBone.transform, totalDepth, depth + 1, ignoreTransforms, originalBones);
+                RotateRecursive(physBone, child, newBone.transform, totalDepth, depth + 1, context, ignoreTransforms, originalBones);
             }
         }
 

@@ -385,6 +385,57 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
             }
         }
 
+        public static void AddDependencyInformation(GCComponentInfo gcInfo, VRCPhysBone component, 
+            GCComponentInfoContext gcContext)
+        {
+            if (!IsOperatingPhysBone(component))
+                return;
+            if (gcInfo.Activeness == false)
+                return; // no-op if inactive
+
+            // first, Transform <=> PhysBone
+            // Transform is used even if the bone is inactive so Transform => PB is always dependency
+            // PhysBone works only if enabled so PB => Transform is active dependency
+            var ignoreTransforms = new HashSet<Transform>(component.ignoreTransforms);
+            var targetRoot = component.GetTarget();
+            if (gcContext.TryGetInfo(targetRoot) != null)
+                CollectTransforms(targetRoot);
+
+            void CollectTransforms(Transform bone)
+            {
+                gcContext.GetInfo(bone).AddDependency(component);
+                gcInfo.AddDependency(bone);
+                foreach (var child in bone.DirectChildrenEnumerable())
+                {
+                    if (!ignoreTransforms.Contains(child))
+                        CollectTransforms(child);
+                }
+            }
+
+            // then, PB => Collider
+            // in PB, PB Colliders work only if Colliders are enabled
+            foreach (var physBoneCollider in component.colliders)
+            {
+                var colliderInfo = gcContext.TryGetInfo(physBoneCollider);
+                if (colliderInfo?.Activeness != false)
+                    gcInfo.AddDependency(physBoneCollider);
+            }
+
+            gcInfo.MarkHeavyBehaviour();
+
+            // If parameter is not empty, the PB can be required for Animator Parameter so it's Entrypoint Component
+            // https://github.com/anatawa12/AvatarOptimizer/issues/450
+            // https://github.com/anatawa12/AvatarOptimizer/issues/898
+            if (!string.IsNullOrEmpty(component.parameter))
+            {
+                if (PhysBoneSuffix.Select(suffix => component.parameter + suffix)
+                    .Any(gcContext.IsParameterUsed.Invoke))
+                {
+                    gcInfo.MarkEntrypoint();
+                }
+            }
+        }
+
         // https://creators.vrchat.com/avatars/avatar-dynamics/physbones#options
         private static string[] PhysBoneSuffix = {
             "_IsGrabbed",
@@ -394,7 +445,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
             "_Squish",
         };
 
-        private bool IsOperatingPhysBone(VRCPhysBoneBase component)
+        private static bool IsOperatingPhysBone(VRCPhysBoneBase component)
         {
             var ignoreTransforms = new HashSet<Transform>(component.ignoreTransforms);
             foreach (var bone in component.GetAffectedTransforms())

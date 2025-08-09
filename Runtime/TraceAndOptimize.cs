@@ -103,9 +103,11 @@ namespace Anatawa12.AvatarOptimizer
         {
             [Tooltip("Exclude some GameObjects from Trace and Optimize")]
             public GameObject?[] exclusions;
-            [Tooltip("Add GC Debug Components instead of setting GC components")]
+            [Tooltip("Add GC Debug Components instead of setting GC components if set to non-None")]
+            public InternalGcDebugPosition gcDebug;
+            [Tooltip("Do Not Sweep (Remove) Components")]
             [ToggleLeft]
-            public bool gcDebug;
+            public bool noSweepComponents;
             [Tooltip("Do Not Configure MergeBone in New GC algorithm")]
             [ToggleLeft]
             public bool noConfigureMergeBone;
@@ -146,5 +148,16 @@ namespace Anatawa12.AvatarOptimizer
             [ToggleLeft]
             public bool skipRemoveUnusedSubMesh;
         }
+    }
+    
+    internal enum InternalGcDebugPosition
+    {
+        None,
+        AtTheBeginning = 10,
+        AfterPhysBone = 20,
+        AfterMeshProcessing = 30,
+        AfterAutoMergeSkinnedMesh = 40,
+        AfterGcComponents = 50,
+        AtTheEnd = 1000000,
     }
 }

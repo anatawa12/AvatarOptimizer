@@ -55,6 +55,8 @@ public class MergeSkinnedMeshTest
         context.ActivateExtensionContext<DestroyTracker.ExtensionContext>();
         context.GetMappingBuilder()
             .ImportModifications(new AnimatorParser(true).GatherAnimationModifications(context));
+        context.GetState<AAOEnabled>().Enabled = true;
+        context.ActivateExtensionContext<GCComponentInfoContext>();
 
         LogTestUtility.Test(_ =>
         {
@@ -116,6 +118,8 @@ public class MergeSkinnedMeshTest
         context.ActivateExtensionContext<DestroyTracker.ExtensionContext>();
         context.GetMappingBuilder()
             .ImportModifications(new AnimatorParser(true).GatherAnimationModifications(context));
+        context.GetState<AAOEnabled>().Enabled = true;
+        context.ActivateExtensionContext<GCComponentInfoContext>();
 
         LogTestUtility.Test(scope =>
         {
@@ -180,6 +184,8 @@ public class MergeSkinnedMeshTest
         context.ActivateExtensionContext<DestroyTracker.ExtensionContext>();
         context.GetMappingBuilder()
             .ImportModifications(new AnimatorParser(true).GatherAnimationModifications(context));
+        context.GetState<AAOEnabled>().Enabled = true;
+        context.ActivateExtensionContext<GCComponentInfoContext>();
 
         LogTestUtility.Test(scope =>
         {
@@ -235,6 +241,8 @@ public class MergeSkinnedMeshTest
         context.ActivateExtensionContext<DestroyTracker.ExtensionContext>();
         context.GetMappingBuilder()
             .ImportModifications(new AnimatorParser(true).GatherAnimationModifications(context));
+        context.GetState<AAOEnabled>().Enabled = true;
+        context.ActivateExtensionContext<GCComponentInfoContext>();
 
         LogTestUtility.Test(scope =>
         {
@@ -274,6 +282,7 @@ public class MergeSkinnedMeshTest
         context.ActivateExtensionContext<Processors.MeshInfo2Context>();
         context.ActivateExtensionContext<ObjectMappingContext>();
         context.ActivateExtensionContext<DestroyTracker.ExtensionContext>();
+        context.ActivateExtensionContext<GCComponentInfoContext>();
 
         var meshInfo1 = context.GetMeshInfoFor(renderer1);
         var meshInfo2 = context.GetMeshInfoFor(renderer2);

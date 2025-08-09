@@ -51,6 +51,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             MergeBounds(target, meshInfos);
 
             RemoveOldRenderers(target, meshInfos, Component.removeEmptyRendererObject);
+
+            var gcInfo = context.Extension<GCComponentInfoContext>().GetInfo(target.SourceRenderer);
+            gcInfo.ClearDependencies();
+            APIInternal.SkinnedMeshRendererInformation.AddDependencyInformation(gcInfo, target);
         }
 
         public (DisposableList<MeshInfo2>, MeshInfo2[] meshInfos) CollectMeshInfos(BuildContext context)

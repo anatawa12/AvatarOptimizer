@@ -84,7 +84,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                     Profiler.BeginSample("DoBoneMap");
                     var meshInfo2 = context.GetMeshInfoFor(renderer);
                     if (meshInfo2.Bones.Any(x => x.Transform != null && mergeMapping.ContainsKey(x.Transform)))
-                        DoBoneMap2(meshInfo2, mergeMapping);
+                        DoBoneMap2(meshInfo2, mergeMapping, context);
                     Profiler.EndSample();
                 }
             }
@@ -107,7 +107,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
                     var (position, rotation, scale) = parentInfo.ComputeInfoFor(child);
 
-                    child.parent = mapped;
+                    context.Extension<GCComponentInfoContext>().SetParent(child, mapped);
                     child.localPosition = position;
                     child.localRotation = rotation;
                     child.localScale = scale;
@@ -152,7 +152,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
         }
 #endif
 
-        private void DoBoneMap2(MeshInfo2 meshInfo2, Dictionary<Transform, Transform> mergeMapping)
+        private void DoBoneMap2(MeshInfo2 meshInfo2, Dictionary<Transform, Transform> mergeMapping, BuildContext context)
         {
             var primaryBones = new ConcurrentDictionary<Transform, Bone>();
             var boneReplaced = false;
@@ -167,6 +167,8 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 {
                     bone.Bindpose = mapped.worldToLocalMatrix * bone.Transform.localToWorldMatrix * bone.Bindpose;
                     bone.Transform = mapped;
+                    context.Extension<GCComponentInfoContext>().GetInfo(meshInfo2.SourceRenderer)
+                        .AddDependency(mapped, GCComponentInfo.DependencyType.Bone);
                     boneReplaced = true;
                 }
                 else
