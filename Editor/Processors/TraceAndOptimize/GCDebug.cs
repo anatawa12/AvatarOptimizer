@@ -15,7 +15,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         {
             var componentInfos = context.Extension<GCComponentInfoContext>();
             var avatarRootObject = context.AvatarRootObject;
-            var entrypointMap = DependantMap.CreateEntrypointMap(context);
+            var entrypointMap = DependantMap.CreateEntrypointsMap(context);
 
             foreach (var componentInfo in componentInfos.AllInformation)
             {

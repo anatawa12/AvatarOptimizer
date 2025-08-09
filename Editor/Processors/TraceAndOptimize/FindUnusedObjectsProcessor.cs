@@ -19,132 +19,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         }
     }
 
-    internal readonly struct DependantMap
-    {
-        private readonly Dictionary<GCComponentInfo, Dictionary<Component, GCComponentInfo.DependencyType>> _getDependantMap;
-
-        public DependantMap()
-        {
-            _getDependantMap = new Dictionary<GCComponentInfo, Dictionary<Component, GCComponentInfo.DependencyType>>();
-        }
-
-        public static DependantMap CreateEntrypointMap(BuildContext context) => 
-            CreateDependantMap(context, x => x.EntrypointComponent);
-
-        public static DependantMap CreateDependantMap(BuildContext context) => 
-            CreateDependantMap(context, x => x.BehaviourComponent || x.EntrypointComponent);
-
-        public static DependantMap CreateDependantMap(BuildContext context, Predicate<GCComponentInfo> filter)
-        {
-            var map = new DependantMap();
-
-            var componentInfos = context.Extension<GCComponentInfoContext>();
-            var state = context.GetState<TraceAndOptimizeState>();
-            var exclusions = state.Exclusions;
-
-            // entrypoint for mark & sweep is active-able GameObjects
-            foreach (var componentInfo in componentInfos.AllInformation)
-            {
-                if (componentInfo.Component != null && filter(componentInfo))
-                {
-                    var markContext = new MarkObjectContext(componentInfos, componentInfo.Component, map);
-                    markContext.MarkComponent(componentInfo.Component, GCComponentInfo.DependencyType.Normal);
-                    markContext.MarkRecursively();
-                }
-            }
-
-            if (exclusions.Count != 0) {
-                // excluded GameObjects must be exists
-                var markContext = new MarkObjectContext(componentInfos, context.AvatarRootTransform, map);
-
-                foreach (var gameObject in exclusions)
-                    if (gameObject != null)
-                        foreach (var component in gameObject.GetComponents<Component>())
-                            markContext.MarkComponent(component, GCComponentInfo.DependencyType.Normal);
-
-                markContext.MarkRecursively();
-            }
-
-            return map;
-        }
-
-        public Dictionary<Component, GCComponentInfo.DependencyType> Get(GCComponentInfo info)
-        {
-            if (info == null) throw new ArgumentNullException(nameof(info));
-            if (_getDependantMap.TryGetValue(info, out var map))
-                return map;
-
-            map = new Dictionary<Component, GCComponentInfo.DependencyType>();
-            _getDependantMap.Add(info, map);
-            return map;
-        }
-
-        public Dictionary<Component, GCComponentInfo.DependencyType> this[GCComponentInfo info] => Get(info);
-
-        public GCComponentInfo.DependencyType MergedUsages(GCComponentInfo info)
-        {
-            GCComponentInfo.DependencyType type = default;
-            foreach (var usage in this[info].Values)
-                type |= usage;
-            return type;
-        }
-    }
-
-    internal readonly struct MarkObjectContext {
-        private readonly GCComponentInfoContext _componentInfos;
-
-        private readonly DependantMap _map;
-        private readonly Queue<Component> _processPending;
-        private readonly Component _entrypoint;
-
-        public MarkObjectContext(GCComponentInfoContext componentInfos, Component entrypoint, DependantMap map)
-        {
-            if (entrypoint == null) throw new ArgumentNullException(nameof(entrypoint));
-            _componentInfos = componentInfos;
-            _processPending = new Queue<Component>();
-            _entrypoint = entrypoint;
-            _map = map;
-        }
-
-        public void MarkComponent(Component component,
-            GCComponentInfo.DependencyType type)
-        {
-            if (component == null) return; // typically means destroyed
-            var dependencies = _componentInfos.TryGetInfo(component);
-            if (dependencies == null) return;
-
-            var dependantMap = _map[dependencies];
-            if (dependantMap.TryGetValue(_entrypoint, out var existingFlags))
-            {
-                dependantMap[_entrypoint] = existingFlags | type;
-            }
-            else
-            {
-                _processPending.Enqueue(component);
-                dependantMap.Add(_entrypoint, type);
-            }
-        }
-
-        public void MarkRecursively()
-        {
-            while (_processPending.Count != 0)
-            {
-                var component = _processPending.Dequeue();
-                var dependencies = _componentInfos.TryGetInfo(component);
-                if (dependencies == null) continue; // not part of this Hierarchy Tree
-                if (dependencies.Component == null) continue; // already destroyed
-
-                foreach (var (dependency, type) in dependencies.Dependencies)
-                    MarkComponent(dependency, type);
-            }
-        }
-    }
-
     internal readonly struct FindUnusedObjectsProcessor
     {
         private readonly BuildContext _context;
-        private readonly HashSet<GameObject?> _exclusions;
-        private readonly bool _preserveEndBone;
         private readonly bool _noConfigureMergeBone;
         private readonly bool _noActivenessAnimation;
         private readonly bool _skipRemoveUnusedSubMesh;
@@ -154,18 +31,16 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         {
             _context = context;
 
-            _preserveEndBone = state.PreserveEndBone;
             _noConfigureMergeBone = state.NoConfigureMergeBone;
             _noActivenessAnimation = state.NoActivenessAnimation;
             _skipRemoveUnusedSubMesh = state.SkipRemoveUnusedSubMesh;
             _gcDebug = state.GCDebug;
-            _exclusions = state.Exclusions;
         }
 
         public void ProcessNew()
         {
             var componentInfos = _context.Extension<GCComponentInfoContext>();
-            var entrypointMap = DependantMap.CreateEntrypointMap(_context);
+            var entrypointMap = DependantMap.CreateEntrypointsMap(_context);
             if (_gcDebug)
             {
                 GCDebug.AddGCDebugInfo(_context);
@@ -174,7 +49,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             Sweep(componentInfos, entrypointMap);
             if (!_noConfigureMergeBone)
                 MergeBone(componentInfos, entrypointMap);
-            var behaviorMap = DependantMap.CreateDependantMap(_context);
+            var behaviorMap = DependantMap.CreateDependantsMap(_context);
             if (!_skipRemoveUnusedSubMesh)
                 RemoveUnusedSubMeshes(componentInfos, entrypointMap);
             if (!_noActivenessAnimation)
