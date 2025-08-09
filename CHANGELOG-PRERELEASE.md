@@ -16,11 +16,14 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- AAO may break infinimation `#1492`
-  - The infinimation is the technique of animation that may be used in NDMF or other tools.
-  - I hope most of AAO users don't experience this issue for now, but will be spread in the near future.
 
 ### Security
+
+## [1.8.14-beta.1] - 2025-08-09
+### Fixed
+- AAO may break infinimation [`#1492`](https://github.com/anatawa12/AvatarOptimizer/pull/1492)
+  - The infinimation is the technique of animation that may be used in NDMF or other tools.
+  - I hope most of AAO users don't experience this issue for now, but will be spread in the near future.
 
 ## [1.8.13] - 2025-07-28
 ## [1.8.13-beta.3] - 2025-07-28
@@ -1929,7 +1932,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.13...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.14-beta.1...HEAD
+[1.8.14-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.13...v1.8.14-beta.1
 [1.8.13]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.13-beta.3...v1.8.13
 [1.8.13-beta.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.13-beta.2...v1.8.13-beta.3
 [1.8.13-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.13-beta.1...v1.8.13-beta.2
