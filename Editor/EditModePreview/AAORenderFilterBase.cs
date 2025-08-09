@@ -59,8 +59,13 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
             if (!(pair.Item1 is SkinnedMeshRenderer original)) return null;
             if (!(pair.Item2 is SkinnedMeshRenderer proxy)) return null;
 
-            if (!context.ActiveInHierarchy(original.gameObject))
+            // We want to skip processing inactive gameobjects since it will be a unnecessary load.
+            // However, we don't want to invalidate the filter when the gameobject become invisibile.
+            // therefore, we check `activeInHierarchy` without observing first, and then
+            // observe ActiveInHierarchy if we're skipping.
+            if (!original.gameObject.activeInHierarchy)
             {
+                context.ActiveInHierarchy(original.gameObject);
                 return new AAOEmptyFilterNode();
             }
 
