@@ -40,8 +40,6 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                 if (!component.TryGetComponent<SkinnedMeshRenderer>(out var renderer)) continue;
                 if (renderer.sharedMesh == null) continue;
 
-                if (!ctx.ActiveInHierarchy(renderer.gameObject)) continue;
-
                 if (!componentsByRenderer.TryGetValue(renderer, out var list))
                     componentsByRenderer.Add(renderer, list = new List<T>());
 
@@ -61,6 +59,11 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
             if (!(pair.Item1 is SkinnedMeshRenderer original)) return null;
             if (!(pair.Item2 is SkinnedMeshRenderer proxy)) return null;
 
+            if (!context.ActiveInHierarchy(original.gameObject))
+            {
+                return new AAOEmptyFilterNode();
+            }
+
             // we modify the mesh so we need to clone the mesh
 
             var components = group.GetData<T[]>();
@@ -74,6 +77,13 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
 
         protected abstract AAORenderFilterNodeBase<T> CreateNode();
         protected abstract bool SupportsMultiple();
+
+        private sealed class AAOEmptyFilterNode : IRenderFilterNode
+        {
+            public RenderAspects WhatChanged => 0;
+            public void OnFrame(Renderer original, Renderer proxy) { }
+            public void Dispose() { }
+        }
     }
 
     internal abstract class AAORenderFilterNodeBase<T> : IRenderFilterNode
