@@ -53,9 +53,10 @@ public class MergeSkinnedMeshTest
         context.ActivateExtensionContext<Processors.MeshInfo2Context>();
         context.ActivateExtensionContext<ObjectMappingContext>();
         context.ActivateExtensionContext<DestroyTracker.ExtensionContext>();
-        context.ActivateExtensionContext<GCComponentInfoContext>();
         context.GetMappingBuilder()
             .ImportModifications(new AnimatorParser(true).GatherAnimationModifications(context));
+        context.GetState<AAOEnabled>().Enabled = true;
+        context.ActivateExtensionContext<GCComponentInfoContext>();
 
         LogTestUtility.Test(_ =>
         {
@@ -115,9 +116,10 @@ public class MergeSkinnedMeshTest
         context.ActivateExtensionContext<Processors.MeshInfo2Context>();
         context.ActivateExtensionContext<ObjectMappingContext>();
         context.ActivateExtensionContext<DestroyTracker.ExtensionContext>();
-        context.ActivateExtensionContext<GCComponentInfoContext>();
         context.GetMappingBuilder()
             .ImportModifications(new AnimatorParser(true).GatherAnimationModifications(context));
+        context.GetState<AAOEnabled>().Enabled = true;
+        context.ActivateExtensionContext<GCComponentInfoContext>();
 
         LogTestUtility.Test(scope =>
         {
@@ -180,9 +182,10 @@ public class MergeSkinnedMeshTest
         context.ActivateExtensionContext<Processors.MeshInfo2Context>();
         context.ActivateExtensionContext<ObjectMappingContext>();
         context.ActivateExtensionContext<DestroyTracker.ExtensionContext>();
-        context.ActivateExtensionContext<GCComponentInfoContext>();
         context.GetMappingBuilder()
             .ImportModifications(new AnimatorParser(true).GatherAnimationModifications(context));
+        context.GetState<AAOEnabled>().Enabled = true;
+        context.ActivateExtensionContext<GCComponentInfoContext>();
 
         LogTestUtility.Test(scope =>
         {
@@ -236,9 +239,10 @@ public class MergeSkinnedMeshTest
         context.ActivateExtensionContext<Processors.MeshInfo2Context>();
         context.ActivateExtensionContext<ObjectMappingContext>();
         context.ActivateExtensionContext<DestroyTracker.ExtensionContext>();
-        context.ActivateExtensionContext<GCComponentInfoContext>();
         context.GetMappingBuilder()
             .ImportModifications(new AnimatorParser(true).GatherAnimationModifications(context));
+        context.GetState<AAOEnabled>().Enabled = true;
+        context.ActivateExtensionContext<GCComponentInfoContext>();
 
         LogTestUtility.Test(scope =>
         {
