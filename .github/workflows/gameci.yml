@@ -14,7 +14,7 @@ jobs:
       matrix:
         include:
           - unity: 2022
-            projectRef: de0b2dde7824e33986730c40866d74cfe526942b # project-for-test-2022
+            projectRef: d2e10f445881af7cc806abd2fc99a0651942dbb8 # project-for-test-2022
         unity:
           - 2022
     permissions:
