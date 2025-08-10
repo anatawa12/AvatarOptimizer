@@ -294,6 +294,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 if (stateValues.Count != states.Length - 1) return null;
             }
 
+            if (!CheckForBasicStateCondition(states, optimizerState)) return null;
+
+            return DoParseDiamondLayer(states, defaultState, stateValues, allValues, conditionParameter);
+        }
+
+        private static bool CheckForBasicStateCondition(ChildAnimatorState[] states, AnimatorOptimizerState optimizerState)
+        {
             // check for each states
             // we have to check
             // - write defaults are same in the layer
@@ -308,26 +315,26 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 for (var index = 1; index < states.Length; index++)
                 {
                     // check WD
-                    if (states[index] is not { state: { writeDefaultValues: true } }) return null;
+                    if (states[index] is not { state: { writeDefaultValues: true } }) return false;
                 }
             }
             else
             {
-                if (states[0].state.motion == null) return null; // with WD=off, motion=None will cause broken animator
+                if (states[0].state.motion == null) return false; // with WD=off, motion=None will cause broken animator
                 var expectAnimatingProperties = CollectAnimatingProperties(states[0].state.motion);
-                if (expectAnimatingProperties == null) return null; // we found unsupported motion
+                if (expectAnimatingProperties == null) return false; // we found unsupported motion
 
                 for (var index = 1; index < states.Length; index++)
                 {
                     // check WD and animating properties
                     var childStateInfo = states[index];
                     if (childStateInfo is not { state: { motion: var motion, writeDefaultValues: false } })
-                        return null;
+                        return false;
 
-                    if (motion == null) return null; // with WD=off, motion=None will cause broken animator
+                    if (motion == null) return false; // with WD=off, motion=None will cause broken animator
                     var newAnimatingProperties = CollectAnimatingProperties(motion);
-                    if (newAnimatingProperties == null) return null; // we found unsupported motion
-                    if (!newAnimatingProperties.SetEquals(expectAnimatingProperties)) return null;
+                    if (newAnimatingProperties == null) return false; // we found unsupported motion
+                    if (!newAnimatingProperties.SetEquals(expectAnimatingProperties)) return false;
                 }
             }
 
@@ -343,17 +350,31 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                             behaviours: { Length: 0 },
                             timeParameterActive: false,
                             motion: var motion,
-                            transitions: var transitions,
-                        } state,
-                    }) return null;
+                        },
+                    }) return false;
 
                 // the clip is time dependant, we cannot convert it to blend tree
                 foreach (var clip in ACUtils.AllClips(motion))
                     if (optimizerState.IsTimeDependentClip(clip))
-                        return null;
+                        return false;
+            }
 
-                // check for transitions
+            return true;
+        }
 
+        private static ConvertibleLayerInfo? DoParseDiamondLayer(
+            ChildAnimatorState[] states,
+            AnimatorState defaultState,
+            Dictionary<AnimatorState, HashSet<IntOrBool>> stateValues,
+            HashSet<IntOrBool> allValues,
+            string conditionParameter
+        )
+        { 
+            // check for transitions
+            foreach (var childStateInfo in states)
+            {
+                var state = childStateInfo.state;
+                var transitions = state.transitions;
                 // basic transition check: all transitions are exit transitions without blending
                 var allConditions = new AnimatorCondition[transitions.Length][];
                 for (var i = 0; i < transitions.Length; i++)
