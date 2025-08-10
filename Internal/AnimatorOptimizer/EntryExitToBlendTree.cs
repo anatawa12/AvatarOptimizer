@@ -169,10 +169,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
         private static ConvertibleLayerInfo? TryParseLayer(AOAnimatorControllerLayer layer,
             AnimatorOptimizerState optimizerState, HashSet<string> intOrBoolParameters)
         {
+            if (!CheckForBasicStateCondition(layer, optimizerState)) return null;
+
             if (layer is not
                 {
-                    IsSynced: false,
-                    IsSyncedToOtherLayer: false,
                     stateMachine:
                     {
                         anyStateTransitions: { Length: 0 },
@@ -294,19 +294,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 if (stateValues.Count != states.Length - 1) return null;
             }
 
-            if (!CheckForBasicStateCondition(states, optimizerState)) return null;
-
-            return DoParseDiamondLayer(states, defaultState, stateValues, allValues, conditionParameter);
-        }
-
-        private static ConvertibleLayerInfo? DoParseDiamondLayer(
-            ChildAnimatorState[] states,
-            AnimatorState defaultState,
-            Dictionary<AnimatorState, HashSet<IntOrBool>> stateValues,
-            HashSet<IntOrBool> allValues,
-            string conditionParameter
-        )
-        { 
             // check for transitions
             foreach (var childStateInfo in states)
             {
@@ -398,8 +385,18 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             return new ConvertibleLayerInfo(conditionParameter, defaultState, stateValues);
         }
 
-        private static bool CheckForBasicStateCondition(ChildAnimatorState[] states, AnimatorOptimizerState optimizerState)
+        private static bool CheckForBasicStateCondition(AOAnimatorControllerLayer layer, AnimatorOptimizerState optimizerState)
         {
+            if (layer is not
+                {
+                    IsSynced: false,
+                    IsSyncedToOtherLayer: false,
+                    stateMachine: not null
+                })
+                return false;
+
+            var states = layer.stateMachine.states;
+
             // check for each states
             // we have to check
             // - write defaults are same in the layer
