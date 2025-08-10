@@ -477,10 +477,16 @@ msgid "RemoveMeshByMask:dialog:info"
 msgstr "情報"
 
 msgid "RemoveMeshByMask:dialog:maskTextureEditorNotFound"
-msgstr "マスクテクスチャエディタが見つかりませんでした。Webページを開きますか？"
+msgstr ""
+"マスクテクスチャエディターがインストールされていません。\n"
+"AAO 1.9 からマスクテクスチャエディターは別の VPM リポジトリのパッケージに移動しました。\n"
+"VPM リポジトリを追加して、このプロジェクトに「Mask Texture Editor」パッケージを追加してください。"
 
-msgid "RemoveMeshByMask:dialog:open"
-msgstr "開く"
+msgid "RemoveMeshByMask:dialog:addRepo"
+msgstr "ALCOM (VCC) を開く"
+
+msgid "RemoveMeshByMask:dialog:openWeb"
+msgstr "GitHub を開く"
 
 msgid "RemoveMeshByMask:dialog:cancel"
 msgstr "キャンセル"

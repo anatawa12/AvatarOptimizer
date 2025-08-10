@@ -577,10 +577,16 @@ msgid "RemoveMeshByMask:dialog:info"
 msgstr "Info"
 
 msgid "RemoveMeshByMask:dialog:maskTextureEditorNotFound"
-msgstr "Mask Texture Editor was not found. Do you want to open the web page?"
+msgstr ""
+"Mask Texture Editor is not installed.\n"
+"Since AAO 1.9, Mask Texture Editor has been moved to a package in a separate VPM repository.\n"
+"Please add the VPM repository and add the \"Mask Texture Editor\" package to this project."
 
-msgid "RemoveMeshByMask:dialog:open"
-msgstr "Open"
+msgid "RemoveMeshByMask:dialog:addRepo"
+msgstr "Open ALCOM (VCC)"
+
+msgid "RemoveMeshByMask:dialog:openWeb"
+msgstr "Open GitHub"
 
 msgid "RemoveMeshByMask:dialog:cancel"
 msgstr "Cancel"

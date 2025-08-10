@@ -178,13 +178,19 @@ namespace Anatawa12.AvatarOptimizer
                                 MaskTextureEditor.Window.TryClose();
                             }
 #else
-                            if (EditorUtility.DisplayDialog(
+                            switch (EditorUtility.DisplayDialogComplex(
                                 AAOL10N.Tr("RemoveMeshByMask:dialog:info"),
                                 AAOL10N.Tr("RemoveMeshByMask:dialog:maskTextureEditorNotFound"),
-                                AAOL10N.Tr("RemoveMeshByMask:dialog:open"),
-                                AAOL10N.Tr("RemoveMeshByMask:dialog:cancel")))
+                                AAOL10N.Tr("RemoveMeshByMask:dialog:addRepo"),
+                                AAOL10N.Tr("RemoveMeshByMask:dialog:cancel"),
+                                AAOL10N.Tr("RemoveMeshByMask:dialog:openWeb")))
                             {
-                                Application.OpenURL("https://github.com/nekobako/MaskTextureEditor");
+                                case 0:
+                                    Application.OpenURL("vcc://vpm/addRepo?url=https://vpm.nekobako.net/index.json");
+                                    break;
+                                case 2:
+                                    Application.OpenURL("https://github.com/nekobako/MaskTextureEditor");
+                                    break;
                             }
 #endif
 
