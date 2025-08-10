@@ -564,6 +564,27 @@ msgstr "Create"
 msgid "RemoveMeshByMask:button:edit"
 msgstr "Edit"
 
+msgid "RemoveMeshByMask:dialog:create"
+msgstr "Create"
+
+msgid "RemoveMeshByMask:dialog:error"
+msgstr "Error"
+
+msgid "RemoveMeshByMask:dialog:createMaskFailed"
+msgstr "Failed to create the texture. Refer to the log for details."
+
+msgid "RemoveMeshByMask:dialog:info"
+msgstr "Info"
+
+msgid "RemoveMeshByMask:dialog:maskTextureEditorNotFound"
+msgstr "Mask Texture Editor was not found. Do you want to open the web page?"
+
+msgid "RemoveMeshByMask:dialog:open"
+msgstr "Open"
+
+msgid "RemoveMeshByMask:dialog:cancel"
+msgstr "Cancel"
+
 msgid "RemoveMeshByMask:tooltip:textureIsNotImported"
 msgstr "Mask Texture is not imported from image file."
 

@@ -10,10 +10,8 @@ namespace Anatawa12.AvatarOptimizer
     [CustomEditor(typeof(RemoveMeshByMask))]
     internal class RemoveMeshByMaskEditor : AvatarTagComponentEditorBase
     {
-#if AAO_MASK_TEXTURE_EDITOR
         public const string MaskTextureEditorToken = "com.anatawa12.avatar-optimizer.remove-mesh-by-mask-editor";
         private static readonly Vector2Int DefaultTextureSize = new(1024, 1024);
-#endif
 
         private SerializedProperty _materials = null!; // Initialized in OnEnable
         private SkinnedMeshRenderer _renderer = null!; // Initialized in OnEnable
@@ -116,7 +114,6 @@ namespace Anatawa12.AvatarOptimizer
             SerializedProperty mode,
             SkinnedMeshRenderer renderer, int slot)
         {
-#if AAO_MASK_TEXTURE_EDITOR
             using (new EditorGUILayout.HorizontalScope())
             {
                 var texture = mask.objectReferenceValue as Texture2D;
@@ -129,10 +126,10 @@ namespace Anatawa12.AvatarOptimizer
                         switch ((RemoveMeshByMask.RemoveMode)mode.intValue)
                         {
                             case RemoveMeshByMask.RemoveMode.RemoveBlack:
-                                texture = MaskTextureEditor.Utility.CreateTexture(DefaultTextureSize, Color.white);
+                                texture = CreateTexture(DefaultTextureSize, Color.white);
                                 break;
                             case RemoveMeshByMask.RemoveMode.RemoveWhite:
-                                texture = MaskTextureEditor.Utility.CreateTexture(DefaultTextureSize, Color.black);
+                                texture = CreateTexture(DefaultTextureSize, Color.black);
                                 break;
                         }
 
@@ -140,10 +137,12 @@ namespace Anatawa12.AvatarOptimizer
                         mask.objectReferenceValue = texture;
                         mask.serializedObject.ApplyModifiedProperties();
 
+#if AAO_MASK_TEXTURE_EDITOR
                         if (texture != null)
                         {
                             MaskTextureEditor.Window.TryOpen(texture, renderer, slot, MaskTextureEditorToken);
                         }
+#endif
 
                         // Exit GUI to avoid "EndLayoutGroup: BeginLayoutGroup must be called first."
                         GUIUtility.ExitGUI();
@@ -151,7 +150,11 @@ namespace Anatawa12.AvatarOptimizer
                 }
                 else
                 {
+#if AAO_MASK_TEXTURE_EDITOR
                     var isOpenWindow = MaskTextureEditor.Window.IsOpenFor(renderer, slot, MaskTextureEditorToken);
+#else
+                    var isOpenWindow = false;
+#endif
                     using (new EditorGUI.DisabledScope(isOpenWindow))
                     {
                         EditorGUILayout.PropertyField(mask);
@@ -165,6 +168,7 @@ namespace Anatawa12.AvatarOptimizer
                             GUI.skin.button, GUILayout.ExpandWidth(false));
                         if (isOpenWindow != shouldOpenWindow)
                         {
+#if AAO_MASK_TEXTURE_EDITOR
                             if (shouldOpenWindow)
                             {
                                 MaskTextureEditor.Window.TryOpen(texture, renderer, slot, MaskTextureEditorToken);
@@ -173,6 +177,16 @@ namespace Anatawa12.AvatarOptimizer
                             {
                                 MaskTextureEditor.Window.TryClose();
                             }
+#else
+                            if (EditorUtility.DisplayDialog(
+                                AAOL10N.Tr("RemoveMeshByMask:dialog:info"),
+                                AAOL10N.Tr("RemoveMeshByMask:dialog:maskTextureEditorNotFound"),
+                                AAOL10N.Tr("RemoveMeshByMask:dialog:open"),
+                                AAOL10N.Tr("RemoveMeshByMask:dialog:cancel")))
+                            {
+                                Application.OpenURL("https://github.com/nekobako/MaskTextureEditor");
+                            }
+#endif
 
                             // Exit GUI to avoid "EndLayoutGroup: BeginLayoutGroup must be called first."
                             GUIUtility.ExitGUI();
@@ -180,11 +194,57 @@ namespace Anatawa12.AvatarOptimizer
                     }
                 }
             }
-#else
-            EditorGUILayout.PropertyField(mask);
-#endif
 
             EditorGUILayout.PropertyField(mode);
+        }
+
+        private static Texture2D? CreateTexture(Vector2Int size, Color color)
+        {
+            var path = EditorUtility.SaveFilePanelInProject(
+                AAOL10N.Tr("RemoveMeshByMask:dialog:create"),
+                string.Empty, "png", string.Empty);
+            if (string.IsNullOrEmpty(path))
+            {
+                return null;
+            }
+
+            var texture = new Texture2D(size.x, size.y);
+            for (var x = 0; x < size.x; x++)
+            {
+                for (var y = 0; y < size.y; y++)
+                {
+                    texture.SetPixel(x, y, color);
+                }
+            }
+            texture.Apply();
+
+            try
+            {
+                System.IO.File.WriteAllBytes(path, texture.EncodeToPNG());
+
+                AssetDatabase.ImportAsset(path);
+
+                var importer = (TextureImporter)AssetImporter.GetAtPath(path);
+                importer.isReadable = true;
+                importer.SaveAndReimport();
+
+                return AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+            }
+            catch (System.Exception e)
+            {
+                EditorUtility.DisplayDialog(
+                    AAOL10N.Tr("RemoveMeshByMask:dialog:error"),
+                    AAOL10N.Tr("RemoveMeshByMask:dialog:createMaskFailed"),
+                    "OK");
+
+                Debug.LogError(e);
+            }
+            finally
+            {
+                DestroyImmediate(texture);
+            }
+
+            return null;
         }
 
         TextureImporter? GetTextureImporter(Texture2D texture)

@@ -367,6 +367,27 @@ msgstr "创建"
 msgid "RemoveMeshByMask:button:edit"
 msgstr "编辑"
 
+msgid "RemoveMeshByMask:dialog:create"
+msgstr "创建"
+
+msgid "RemoveMeshByMask:dialog:error"
+msgstr "错误"
+
+msgid "RemoveMeshByMask:dialog:createMaskFailed"
+msgstr "创建纹理失败。请查看日志以获取详细信息。"
+
+msgid "RemoveMeshByMask:dialog:info"
+msgstr "信息"
+
+msgid "RemoveMeshByMask:dialog:maskTextureEditorNotFound"
+msgstr "未找到遮罩纹理编辑器。要打开网页吗？"
+
+msgid "RemoveMeshByMask:dialog:open"
+msgstr "打开"
+
+msgid "RemoveMeshByMask:dialog:cancel"
+msgstr "取消"
+
 msgid "RemoveMeshByMask:tooltip:textureIsNotImported"
 msgstr "这不是从图片文件导入的遮罩纹理。"
 

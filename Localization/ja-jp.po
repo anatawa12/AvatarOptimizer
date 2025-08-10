@@ -464,6 +464,27 @@ msgstr "作成"
 msgid "RemoveMeshByMask:button:edit"
 msgstr "編集"
 
+msgid "RemoveMeshByMask:dialog:create"
+msgstr "作成"
+
+msgid "RemoveMeshByMask:dialog:error"
+msgstr "エラー"
+
+msgid "RemoveMeshByMask:dialog:createMaskFailed"
+msgstr "テクスチャの作成に失敗しました。詳細はログを参照してください。"
+
+msgid "RemoveMeshByMask:dialog:info"
+msgstr "情報"
+
+msgid "RemoveMeshByMask:dialog:maskTextureEditorNotFound"
+msgstr "マスクテクスチャエディタが見つかりませんでした。Webページを開きますか？"
+
+msgid "RemoveMeshByMask:dialog:open"
+msgstr "開く"
+
+msgid "RemoveMeshByMask:dialog:cancel"
+msgstr "キャンセル"
+
 msgid "RemoveMeshByMask:tooltip:textureIsNotImported"
 msgstr "画像ファイルから読み込まれたマスクテクスチャではありません。"
 

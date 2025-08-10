@@ -403,6 +403,27 @@ msgstr "創建"
 msgid "RemoveMeshByMask:button:edit"
 msgstr "編輯"
 
+msgid "RemoveMeshByMask:dialog:create"
+msgstr "創建"
+
+msgid "RemoveMeshByMask:dialog:error"
+msgstr "錯誤"
+
+msgid "RemoveMeshByMask:dialog:createMaskFailed"
+msgstr "無法創建貼圖。請查看日誌以了解詳細資訊。"
+
+msgid "RemoveMeshByMask:dialog:info"
+msgstr "資訊"
+
+msgid "RemoveMeshByMask:dialog:maskTextureEditorNotFound"
+msgstr "找不到遮罩紋理編輯器。要打開網頁嗎？"
+
+msgid "RemoveMeshByMask:dialog:open"
+msgstr "打開"
+
+msgid "RemoveMeshByMask:dialog:cancel"
+msgstr "取消"
+
 msgid "RemoveMeshByMask:tooltip:textureIsNotImported"
 msgstr "遮罩貼圖未從圖像文件中導入。"
 
