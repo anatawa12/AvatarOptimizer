@@ -56,12 +56,12 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
             {
                 var context = new CheckEqualityContext();
                 context._mapping = new Dictionary<Object, Object>();
-                context._objectPath = new List<string>();
+                context._objectPath = new List<(string, string)>();
                 context.CheckEqualityImpl(except, actual);
             }
 
             private Dictionary<Object, Object> _mapping;
-            private List<string> _objectPath;
+            private List<(string, string)> _objectPath;
 
             public void CheckEqualityImpl(Object except, Object actual)
             {
@@ -133,8 +133,8 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
                 else
                 {
                     builder.AppendLine();
-                    foreach (var s in _objectPath)
-                        builder.AppendLine($"in object: {s}");
+                    foreach (var (path, name) in _objectPath)
+                        builder.AppendLine($"in object: {path} (name: {name})");
                 }
 
                 return new AssertionException(builder.ToString());
@@ -167,7 +167,7 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
                                 break;
                             // for other types, check equality by serialized data
                             default:
-                                _objectPath.Add(expectIterator.propertyPath);
+                                _objectPath.Add((expectIterator.propertyPath, expectObject.name));
                                 CheckEqualityImpl(expectIterator.objectReferenceValue, actualIterator.objectReferenceValue);
                                 _objectPath.RemoveAt(_objectPath.Count - 1);
                                 break;
