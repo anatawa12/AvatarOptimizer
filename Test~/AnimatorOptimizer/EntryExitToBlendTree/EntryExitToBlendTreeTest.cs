@@ -37,5 +37,25 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
             var except = LoadAnimatorController("GestureNonConvertibleBecauseCurve");
             RecursiveCheckEquals(except, controller);
         }
+
+        [Test]
+        public void LinearToggleConvertible()
+        {
+            var controller = LoadCloneAnimatorController("LinearToggleConvertible");
+            controller.name = "LinearToggleConvertible.converted";
+            EntryExitToBlendTree.Execute(_state, new AOAnimatorController(controller));
+            var except = LoadAnimatorController("LinearToggleConvertible.converted");
+            RecursiveCheckEquals(except, controller);
+        }
+
+        [Test]
+        public void LinearToggleNonConvertibleBecauseCurve()
+        {
+            var controller = LoadCloneAnimatorController("LinearToggleNonConvertibleBecauseCurve");
+            controller.name = "LinearToggleNonConvertibleBecauseCurve";
+            EntryExitToBlendTree.Execute(_state, new AOAnimatorController(controller));
+            var except = LoadAnimatorController("LinearToggleNonConvertibleBecauseCurve");
+            RecursiveCheckEquals(except, controller);
+        }
     }
 }
