@@ -81,6 +81,7 @@ namespace Anatawa12.AvatarOptimizer.ndmf
                         .Then.Run(Processors.GatherShaderMaterialInformation.Instance)
                         .Then.WithRequiredExtension(typeof(GCComponentInfoContext), seq => seq
                             .Run(new Processors.GCDebugPass(InternalGcDebugPosition.AtTheBeginning))
+                            .Then.Run(Processors.TraceAndOptimizes.RemoveSubMeshesWithoutMaterial.Instance)
                             .Then.Run(Processors.TraceAndOptimizes.AddRemoveEmptySubMesh.Instance)
                             .Then.Run(Processors.TraceAndOptimizes.AutoFreezeBlendShape.Instance)
 #if AAO_VRCSDK3_AVATARS
