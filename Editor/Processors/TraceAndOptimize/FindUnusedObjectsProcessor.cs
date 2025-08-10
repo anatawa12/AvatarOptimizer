@@ -46,8 +46,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             if (!_noConfigureMergeBone)
                 MergeBone(componentInfos, entrypointMap);
             var behaviorMap = DependantMap.CreateDependantsMap(_context);
-            if (!_skipRemoveUnusedSubMesh)
-                RemoveUnusedSubMeshes(componentInfos, entrypointMap);
             if (!_noActivenessAnimation)
                 ActivenessAnimation(componentInfos, behaviorMap);
         }
@@ -168,25 +166,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
                 entryPointActiveness.Add(entryPoint, set);
                 return set;
-            }
-        }
-
-        private void RemoveUnusedSubMeshes(GCComponentInfoContext componentInfos, DependantMap entrypointMap)
-        {
-            foreach (var renderer in _context.AvatarRootObject.GetComponentsInChildren<SkinnedMeshRenderer>(true))
-            {
-                if (!renderer) continue;
-                var meshInfo2 = _context.GetMeshInfoFor(renderer);
-                if (componentInfos.TryGetInfo(renderer) is not {} componentInfo) continue;
-                if (entrypointMap[componentInfo].Count == 1 &&
-                    entrypointMap[componentInfo].ContainsKey(renderer))
-                {
-                    // The SkinnedMeshRenderer is only used by itself, therefore it is safe to remove subMeshes without materials.
-                    // Removing subMeshes without materials was performed in MeshInfo2 until 1.8.7 (inclusive).
-                    // However, it broke particle system with SkinnedMeshRenderer so we remove here instead.
-                    // TODO: move to early as possible to perform removing unused blendShapes and bones after this deletion
-                    meshInfo2.SubMeshes.RemoveAll(x => x.SharedMaterials.Length == 0);
-                }
             }
         }
 
