@@ -16,6 +16,8 @@ The format is based on [Keep a Changelog].
   - It's not recommended but when you actually want to run after Avatar Optimizer, you can use [`AfterPlugin`] api with `"com.anatawa12.avatar-optimizer"` as the plugin name in NDMF.
     - In such cases, it might be necessary to register your components to Avatar Optimizer with API. For more details about registering components, see [Make your components compatible with Avatar Optimizer] in the documentation.
   - This changes order of default plugin order, but when your plugin depending on running Avatar Optimizer after your plugin, it's better to use [`BeforePlugin`] api with `"com.anatawa12.avatar-optimizer"` as the plugin name in NDMF.
+- Moved removing submeshes with no materials assigned to the early process of AAO `#1495`
+  - This should let other process like freezing blendshapes ignore such submeshes.
 
 [`AfterPlugin`]: https://ndmf.nadena.dev/api/nadena.dev.ndmf.fluent.Sequence.html#nadena_dev_ndmf_fluent_Sequence_AfterPlugin_System_String_System_String_System_Int32_
 [`BeforePlugin`]: https://ndmf.nadena.dev/api/nadena.dev.ndmf.fluent.Sequence.html#nadena_dev_ndmf_fluent_Sequence_BeforePlugin_System_String_System_String_System_Int32_
