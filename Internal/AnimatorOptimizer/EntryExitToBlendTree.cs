@@ -299,69 +299,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             return DoParseDiamondLayer(states, defaultState, stateValues, allValues, conditionParameter);
         }
 
-        private static bool CheckForBasicStateCondition(ChildAnimatorState[] states, AnimatorOptimizerState optimizerState)
-        {
-            // check for each states
-            // we have to check
-            // - write defaults are same in the layer
-            // - if write defaults is off, check animating properties are same between layers
-            // - exit transitions are correct for that state
-            // - there are no other transitions
-            // - there are no behaviors
-
-            // check write defaults and animating properties
-            if (states[0].state.writeDefaultValues)
-            {
-                for (var index = 1; index < states.Length; index++)
-                {
-                    // check WD
-                    if (states[index] is not { state: { writeDefaultValues: true } }) return false;
-                }
-            }
-            else
-            {
-                if (states[0].state.motion == null) return false; // with WD=off, motion=None will cause broken animator
-                var expectAnimatingProperties = CollectAnimatingProperties(states[0].state.motion);
-                if (expectAnimatingProperties == null) return false; // we found unsupported motion
-
-                for (var index = 1; index < states.Length; index++)
-                {
-                    // check WD and animating properties
-                    var childStateInfo = states[index];
-                    if (childStateInfo is not { state: { motion: var motion, writeDefaultValues: false } })
-                        return false;
-
-                    if (motion == null) return false; // with WD=off, motion=None will cause broken animator
-                    var newAnimatingProperties = CollectAnimatingProperties(motion);
-                    if (newAnimatingProperties == null) return false; // we found unsupported motion
-                    if (!newAnimatingProperties.SetEquals(expectAnimatingProperties)) return false;
-                }
-            }
-
-            foreach (var childStateInfo in states)
-            {
-                // TODO: for linear animation, we can simulate motion time with 1d blend tree
-                // https://github.com/anatawa12/AvatarOptimizer/issues/861
-
-                if (childStateInfo is not
-                    {
-                        state:
-                        {
-                            behaviours: { Length: 0 },
-                            timeParameterActive: false,
-                            motion: var motion,
-                        },
-                    }) return false;
-
-                // the clip is time dependant, we cannot convert it to blend tree
-                foreach (var clip in ACUtils.AllClips(motion))
-                    if (optimizerState.IsTimeDependentClip(clip))
-                        return false;
-            }
-
-            return true;
-        }
-
         private static ConvertibleLayerInfo? DoParseDiamondLayer(
             ChildAnimatorState[] states,
             AnimatorState defaultState,
@@ -459,6 +396,69 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             }
 
             return new ConvertibleLayerInfo(conditionParameter, defaultState, stateValues);
+        }
+
+        private static bool CheckForBasicStateCondition(ChildAnimatorState[] states, AnimatorOptimizerState optimizerState)
+        {
+            // check for each states
+            // we have to check
+            // - write defaults are same in the layer
+            // - if write defaults is off, check animating properties are same between layers
+            // - exit transitions are correct for that state
+            // - there are no other transitions
+            // - there are no behaviors
+
+            // check write defaults and animating properties
+            if (states[0].state.writeDefaultValues)
+            {
+                for (var index = 1; index < states.Length; index++)
+                {
+                    // check WD
+                    if (states[index] is not { state: { writeDefaultValues: true } }) return false;
+                }
+            }
+            else
+            {
+                if (states[0].state.motion == null) return false; // with WD=off, motion=None will cause broken animator
+                var expectAnimatingProperties = CollectAnimatingProperties(states[0].state.motion);
+                if (expectAnimatingProperties == null) return false; // we found unsupported motion
+
+                for (var index = 1; index < states.Length; index++)
+                {
+                    // check WD and animating properties
+                    var childStateInfo = states[index];
+                    if (childStateInfo is not { state: { motion: var motion, writeDefaultValues: false } })
+                        return false;
+
+                    if (motion == null) return false; // with WD=off, motion=None will cause broken animator
+                    var newAnimatingProperties = CollectAnimatingProperties(motion);
+                    if (newAnimatingProperties == null) return false; // we found unsupported motion
+                    if (!newAnimatingProperties.SetEquals(expectAnimatingProperties)) return false;
+                }
+            }
+
+            foreach (var childStateInfo in states)
+            {
+                // TODO: for linear animation, we can simulate motion time with 1d blend tree
+                // https://github.com/anatawa12/AvatarOptimizer/issues/861
+
+                if (childStateInfo is not
+                    {
+                        state:
+                        {
+                            behaviours: { Length: 0 },
+                            timeParameterActive: false,
+                            motion: var motion,
+                        },
+                    }) return false;
+
+                // the clip is time dependant, we cannot convert it to blend tree
+                foreach (var clip in ACUtils.AllClips(motion))
+                    if (optimizerState.IsTimeDependentClip(clip))
+                        return false;
+            }
+
+            return true;
         }
 
         readonly struct IntOrBool : IEquatable<IntOrBool>
