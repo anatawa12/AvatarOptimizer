@@ -17,12 +17,11 @@ The format is based on [Keep a Changelog].
   - This changes order of default plugin order, but when your plugin depending on running Avatar Optimizer after your plugin, it's better to use [`BeforePlugin`] api with `"com.anatawa12.avatar-optimizer"` as the plugin name in NDMF.
 - Moved removing submeshes with no materials assigned to the early process of AAO `#1495`
   - This should let other process like freezing blendshapes ignore such submeshes.
+- Replace Mask Texture Editor ['#1470'](https://github.com/anatawa12/AvatarOptimizer/pull/1470)
 
 [`AfterPlugin`]: https://ndmf.nadena.dev/api/nadena.dev.ndmf.fluent.Sequence.html#nadena_dev_ndmf_fluent_Sequence_AfterPlugin_System_String_System_String_System_Int32_
 [`BeforePlugin`]: https://ndmf.nadena.dev/api/nadena.dev.ndmf.fluent.Sequence.html#nadena_dev_ndmf_fluent_Sequence_BeforePlugin_System_String_System_String_System_Int32_
 [Make your components compatible with Avatar Optimizer]: https://vpm.anatawa12.com/avatar-optimizer/en/docs/developers/make-your-components-compatible-with-aao/
-
-- Replace Mask Texture Editor ['#1470'](https://github.com/anatawa12/AvatarOptimizer/pull/1470)
 
 ### Deprecated
 
