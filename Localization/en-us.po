@@ -558,6 +558,39 @@ msgstr "No Mesh is specified to the Skinned Mesh Renderer."
 msgid "RemoveMeshByMask:button:makeReadable"
 msgstr "Make Readable"
 
+msgid "RemoveMeshByMask:button:create"
+msgstr "Create"
+
+msgid "RemoveMeshByMask:button:edit"
+msgstr "Edit"
+
+msgid "RemoveMeshByMask:dialog:create"
+msgstr "Create"
+
+msgid "RemoveMeshByMask:dialog:error"
+msgstr "Error"
+
+msgid "RemoveMeshByMask:dialog:createMaskFailed"
+msgstr "Failed to create the texture. Refer to the log for details."
+
+msgid "RemoveMeshByMask:dialog:info"
+msgstr "Info"
+
+msgid "RemoveMeshByMask:dialog:maskTextureEditorNotFound"
+msgstr ""
+"Mask Texture Editor is not installed.\n"
+"Since AvatarOptimizer v1.9.0, Mask Texture Editor has been moved to a package in a separate VPM repository.\n"
+"Please add the VPM repository and install \"Mask Texture Editor\" package to this project."
+
+msgid "RemoveMeshByMask:dialog:addRepo"
+msgstr "Open ALCOM (VCC)"
+
+msgid "RemoveMeshByMask:dialog:openWeb"
+msgstr "Open GitHub"
+
+msgid "RemoveMeshByMask:dialog:cancel"
+msgstr "Cancel"
+
 msgid "RemoveMeshByMask:tooltip:textureIsNotImported"
 msgstr "Mask Texture is not imported from image file."
 
@@ -579,85 +612,6 @@ msgstr "UV Channel"
 
 msgid "RemoveMeshByUVTile:error:uvChannelOutOfRange"
 msgstr "UV Channel is out of range: {0}"
-
-# endregion
-
-# region MaskTextureEditor
-
-msgid "MaskTextureEditor:create"
-msgstr "Create"
-
-msgid "MaskTextureEditor:edit"
-msgstr "Edit"
-
-msgid "MaskTextureEditor:title"
-msgstr "AAO MaskTextureEditor"
-
-msgid "MaskTextureEditor:renderer"
-msgstr "Skinned Mesh Renderer"
-
-msgid "MaskTextureEditor:subMesh"
-msgstr "Material Slot"
-
-msgid "MaskTextureEditor:subMeshIndex"
-msgstr "{0}"
-
-msgid "MaskTextureEditor:texture"
-msgstr "Mask Texture"
-
-msgid "MaskTextureEditor:save"
-msgstr "Save"
-
-msgid "MaskTextureEditor:viewScale"
-msgstr "View Scale (Scroll)"
-
-msgid "MaskTextureEditor:viewOpacity"
-msgstr "View Opacity"
-
-msgid "MaskTextureEditor:resetView"
-msgstr "Fit the view to the window"
-
-msgid "MaskTextureEditor:brushSize"
-msgstr "Brush Size (Shift + Scroll)"
-
-msgid "MaskTextureEditor:brushColor"
-msgstr "Brush Color"
-
-msgid "MaskTextureEditor:black"
-msgstr "Black"
-
-msgid "MaskTextureEditor:white"
-msgstr "White"
-
-msgid "MaskTextureEditor:fillBlack"
-msgstr "Fill Black"
-
-msgid "MaskTextureEditor:fillWhite"
-msgstr "Fill White"
-
-msgid "MaskTextureEditor:inverse"
-msgstr "Inverse Color"
-
-msgid "MaskTextureEditor:saveChangesMessage"
-msgstr "There are unsaved changes. Would you like to save?"
-
-msgid "MaskTextureEditor:saveChangesButtonSave"
-msgstr "Save"
-
-msgid "MaskTextureEditor:saveChangesButtonDiscard"
-msgstr "Discard"
-
-msgid "MaskTextureEditor:saveChangesButtonCancel"
-msgstr "Cancel"
-
-msgid "MaskTextureEditor:errorTitle"
-msgstr "Error"
-
-msgid "MaskTextureEditor:errorMessageCreateFailed"
-msgstr "Failed to create the texture. Refer to the log for details."
-
-msgid "MaskTextureEditor:errorMessageSaveFailed"
-msgstr "Failed to save the texture. Refer to the log for details."
 
 # endregion
 

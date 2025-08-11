@@ -397,87 +397,41 @@ msgstr "Skinned Mesh Renderer 未指定網格（Mesh）。"
 msgid "RemoveMeshByMask:button:makeReadable"
 msgstr "使其可讀"
 
-msgid "RemoveMeshByMask:tooltip:textureIsNotImported"
-msgstr "遮罩貼圖未從圖像文件中導入。"
-
-# endregion
-
-# region MaskTextureEditor
-
-msgid "MaskTextureEditor:create"
+msgid "RemoveMeshByMask:button:create"
 msgstr "創建"
 
-msgid "MaskTextureEditor:edit"
+msgid "RemoveMeshByMask:button:edit"
 msgstr "編輯"
 
-msgid "MaskTextureEditor:title"
-msgstr "AAO 遮罩貼圖編輯器"
+msgid "RemoveMeshByMask:dialog:create"
+msgstr "創建"
 
-msgid "MaskTextureEditor:renderer"
-msgstr "Skinned Mesh Renderer"
-
-msgid "MaskTextureEditor:subMesh"
-msgstr "材質槽"
-
-msgid "MaskTextureEditor:subMeshIndex"
-msgstr "{0}"
-
-msgid "MaskTextureEditor:texture"
-msgstr "遮罩貼圖"
-
-msgid "MaskTextureEditor:save"
-msgstr "儲存"
-
-msgid "MaskTextureEditor:viewScale"
-msgstr "視圖大小（滾輪）"
-
-msgid "MaskTextureEditor:viewOpacity"
-msgstr "視圖透明度"
-
-msgid "MaskTextureEditor:resetView"
-msgstr "將視圖調整至視窗大小"
-
-msgid "MaskTextureEditor:brushSize"
-msgstr "比刷大小（Shift + 滾輪）"
-
-msgid "MaskTextureEditor:brushColor"
-msgstr "筆刷顏色"
-
-msgid "MaskTextureEditor:black"
-msgstr "黑色"
-
-msgid "MaskTextureEditor:white"
-msgstr "白色"
-
-msgid "MaskTextureEditor:fillBlack"
-msgstr "填滿黑色"
-
-msgid "MaskTextureEditor:fillWhite"
-msgstr "填滿白色"
-
-msgid "MaskTextureEditor:inverse"
-msgstr "反轉顏色"
-
-msgid "MaskTextureEditor:saveChangesMessage"
-msgstr "有尚未保留的變更。你要儲存嗎？"
-
-msgid "MaskTextureEditor:saveChangesButtonSave"
-msgstr "儲存"
-
-msgid "MaskTextureEditor:saveChangesButtonDiscard"
-msgstr "捨棄"
-
-msgid "MaskTextureEditor:saveChangesButtonCancel"
-msgstr "取消"
-
-msgid "MaskTextureEditor:errorTitle"
+msgid "RemoveMeshByMask:dialog:error"
 msgstr "錯誤"
 
-msgid "MaskTextureEditor:errorMessageCreateFailed"
+msgid "RemoveMeshByMask:dialog:createMaskFailed"
 msgstr "無法創建貼圖。請查看日誌以了解詳細資訊。"
 
-msgid "MaskTextureEditor:errorMessageSaveFailed"
-msgstr "無法儲存貼圖。請查看日誌以了解詳細資訊。"
+msgid "RemoveMeshByMask:dialog:info"
+msgstr "資訊"
+
+msgid "RemoveMeshByMask:dialog:maskTextureEditorNotFound"
+msgstr ""
+"未安裝遮罩紋理編輯器。\n"
+"自AvatarOptimizer v1.9.0起，遮罩紋理編輯器已移至單獨的VPM倉庫中的軟體包。\n"
+"請新增該VPM倉庫，並將「Mask Texture Editor」軟體包新增到此專案中。"
+
+msgid "RemoveMeshByMask:dialog:addRepo"
+msgstr "打開ALCOM (VCC)"
+
+msgid "RemoveMeshByMask:dialog:openWeb"
+msgstr "打開GitHub"
+
+msgid "RemoveMeshByMask:dialog:cancel"
+msgstr "取消"
+
+msgid "RemoveMeshByMask:tooltip:textureIsNotImported"
+msgstr "遮罩貼圖未從圖像文件中導入。"
 
 # endregion
 

@@ -22,7 +22,8 @@
         "VRC.SDKBase",
         "UniHumanoid",
         "VRM",
-        "VRM10"
+        "VRM10",
+        "net.nekobako.MaskTextureEditor.Editor"
     ],
     "includePlatforms": [
         "Editor"
@@ -65,6 +66,11 @@
             "name": "com.vrmc.vrm",
             "expression": "",
             "define": "AAO_VRM1"
+        },
+        {
+            "name": "net.nekobako.mask-texture-editor",
+            "expression": "[1,2)",
+            "define": "AAO_MASK_TEXTURE_EDITOR"
         }
     ],
     "noEngineReferences": false
