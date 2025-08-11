@@ -102,6 +102,7 @@ namespace Anatawa12.AvatarOptimizer.ndmf
                             .Then.Run(Processors.TraceAndOptimizes.OptimizePhysBone.Instance)
 #endif
                             .Then.Run(Processors.TraceAndOptimizes.AutoMergeSkinnedMesh.Instance)
+                            .Then.Run(Processors.TraceAndOptimizes.MergeMaterialSlots.Instance)
                             .Then.Run(new Processors.GCDebugPass(InternalGcDebugPosition.AfterAutoMergeSkinnedMesh))
                             .Then.Run(Processors.TraceAndOptimizes.FindUnusedObjects.Instance)
                             .Then.Run(new Processors.GCDebugPass(InternalGcDebugPosition.AfterGcComponents))
