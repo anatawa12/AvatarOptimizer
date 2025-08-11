@@ -9,6 +9,8 @@ The format is based on [Keep a Changelog].
 ## [Unreleased]
 ### Added
 - Declare compatibility with non-VRCSDK platforms [`#1433`](https://github.com/anatawa12/AvatarOptimizer/pull/1433)
+- Linear Entry-Exit support for Entry-Exit to 1D BlendTree Optimization `#1498`
+  - Since this version, Entry => State1 => State2 => Exit pattern is now supported.
 
 ### Changed
 - Avatar Optimizer will run as late as possible in NDMF Pipeline by default `#1493`

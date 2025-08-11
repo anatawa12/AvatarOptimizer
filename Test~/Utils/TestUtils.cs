@@ -3,6 +3,7 @@ using System.Linq;
 using System.Reflection;
 using NUnit.Framework.Constraints;
 using UnityEditor;
+using UnityEditor.Animations;
 using UnityEngine;
 using UnityEngine.Rendering;
 using Object = UnityEngine.Object;
@@ -84,6 +85,19 @@ namespace Anatawa12.AvatarOptimizer.Test
 
         public static T GetAssetAt<T>(string testRelativePath) where T : Object =>
             AssetDatabase.LoadAssetAtPath<T>(GetAssetPath(testRelativePath));
+
+        public static string GetStateName(AnimatorStateInfo stateInfo, AnimatorController controller)
+        {
+            foreach (var state in controller.layers.Select(x => x.stateMachine).SelectMany(ACUtils.AllStates))
+            {
+                var hash = Animator.StringToHash(state.name);
+                if (hash == stateInfo.shortNameHash)
+                {
+                    return state.name;
+                }
+            }
+            return $"<unknown name({stateInfo.shortNameHash:x8})>";
+        }
 
         [MenuItem("Tools/TestNewCubeMesh")]
         static void TestNewCubeMesh()

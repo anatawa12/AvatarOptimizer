@@ -66,13 +66,81 @@ Trace and Optimizeは「**見た目に絶対に影響させてはならない**�
 
 ## アニメーターの最適化 {#animator-optimizer}
 
-この機能では、アニメーターに対して以下の最適化を行います。
+この機能では、現在、アニメーターに対して以下の最適化を行います。
+
+(最適化処理の詳細な仕様は、将来的に変更される可能性があります。)
 
 - AnyState式のレイヤーをEntry-Exit式に変換\
-  アニメーターコントローラーのレイヤーをできる限りEntry-Exit式に変換します。
-  また、以下の最適化により、AnyState式のレイヤーがBlendTreeに変換されることがあります。
+  アニメーターコントローラーのレイヤーをできる限りDiamond型のEntry-Exit式に変換します。
+  また、後述の最適化により、AnyState式のレイヤーは最終的にBlendTreeに変換されることがあります。
+
+  ```mermaid
+  ---
+  title: AnyState式Layer
+  ---
+  graph LR;
+        AnyState(AnyState);
+        Entry(Entry) --> State1;
+        AnyState --> State1(State1);
+        AnyState --> State2(State2);
+        AnyState --> State3(State3);
+  
+  classDef default fill:#ab8211
+  classDef node stroke-width:0px,color:#ffffff
+  classDef state fill:#878787
+  style AnyState fill:#29a0cc
+  style Entry fill:#15910f
+  class Entry,State1,State2,Exit node
+  class State1 default
+  class State2,State3 state
+  ```
+
 - Entry-Exit式のレイヤーをBlendTreeに変換\
-  アニメーターコントローラーのレイヤーをできる限りBlendTreeに変換します。
+  アニメーターコントローラーのレイヤーをできる限りBlendTreeに変換します。\
+  現在、Diamond型、およびLinear型のEntry-Exit式のレイヤーがBlendTreeに変換されます。
+
+  ```mermaid
+  ---
+  title: Diamond型Entry-Exit式レイヤー
+  ---
+  graph LR;
+        Entry(Entry);
+        Entry --> State1(State1);
+        Entry --> State2(State2);
+        Entry --> State3(State3);
+        State1 --> Exit(Exit);
+        State2 --> Exit;
+        State3 --> Exit;
+  
+  classDef default fill:#ab8211
+  classDef node stroke-width:0px,color:#ffffff
+  classDef state fill:#878787
+  style Exit fill:#ba202f
+  style Entry fill:#15910f
+  class Entry,State1,State2,Exit node
+  class State1 default
+  class State2,State3 state
+  ```
+
+  ```mermaid
+  ---
+  title: Linear型Entry-Exit式レイヤー
+  ---
+  flowchart LR;
+        Entry(Entry) --> State1(State1);
+        State1 --> State2(State2);
+        State2 --> Exit(Exit);
+
+  classDef node stroke-width:0px,color:#ffffff
+  classDef defaultState fill:#ab8211
+  classDef state fill:#878787
+  style Exit fill:#ba202f
+  style Entry fill:#15910f
+  class Entry,State1,State2,Exit node
+  class State1 defaultState
+  class State2 state
+  ```
+
 - BlendTreeを統合\
   複数のBlendTreeレイヤーを1つのDirect BlendTreeに統合します。
 - 使われていないレイヤーを削除する\

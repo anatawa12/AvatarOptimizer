@@ -1,5 +1,6 @@
 {
     "name": "com.anatawa12.avatar-optimizer.test.runtime",
+    "rootNamespace": "Anatawa12.AvatarOptimizer.Test.Runtime",
     "references": [
         "com.anatawa12.avatar-optimizer.runtime",
         "com.anatawa12.avatar-optimizer.internal.prefab-safe-set"
