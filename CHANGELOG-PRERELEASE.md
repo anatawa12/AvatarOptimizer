@@ -27,6 +27,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Merging SubMeshes may not work for some meshes `#1501`
 
 ### Security
 
