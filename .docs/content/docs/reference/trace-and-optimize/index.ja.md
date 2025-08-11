@@ -97,7 +97,7 @@ Trace and Optimizeは「**見た目に絶対に影響させてはならない**�
 
 - Entry-Exit式のレイヤーをBlendTreeに変換\
   アニメーターコントローラーのレイヤーをできる限りBlendTreeに変換します。\
-  現在、 Diamond型、およびLinear型のEntry-Exit式のレイヤーがBlendTreeに変換されます。
+  現在、Diamond型、およびLinear型のEntry-Exit式のレイヤーがBlendTreeに変換されます。
 
   ```mermaid
   ---
