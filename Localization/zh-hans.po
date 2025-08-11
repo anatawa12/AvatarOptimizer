@@ -382,14 +382,14 @@ msgstr "信息"
 msgid "RemoveMeshByMask:dialog:maskTextureEditorNotFound"
 msgstr ""
 "未安装遮罩纹理编辑器。\n"
-"自 AAO 1.9 起，遮罩纹理编辑器已移至单独的 VPM 仓库中的软件包。\n"
-"请添加该 VPM 仓库，并将「Mask Texture Editor」软件包添加到此项目中。"
+"自AvatarOptimizer v1.9.0起，遮罩纹理编辑器已移至单独的VPM仓库中的软件包。\n"
+"请添加该VPM仓库，并将「Mask Texture Editor」软件包添加到此项目中。"
 
 msgid "RemoveMeshByMask:dialog:addRepo"
-msgstr "打开 ALCOM (VCC)"
+msgstr "打开ALCOM (VCC)"
 
 msgid "RemoveMeshByMask:dialog:openWeb"
-msgstr "打开 GitHub"
+msgstr "打开GitHub"
 
 msgid "RemoveMeshByMask:dialog:cancel"
 msgstr "取消"
