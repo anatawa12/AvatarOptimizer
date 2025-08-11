@@ -35,28 +35,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         public static List<MeshInfo2> FilterMergeMeshes(BuildContext context, TraceAndOptimizeState state)
         {
-            Profiler.BeginSample("Collect for Dependencies to not merge dependant objects");
-
-            var componentInfos = context.Extension<GCComponentInfoContext>();
-
-            var entryPointMap = DependantMap.CreateEntrypointsMap(context);
-
-            // if MMD World Compatibility is enabled, body mesh will be animated by MMD World
-            if (state.MmdWorldCompatibility)
-            {
-                var mmdBody = context.AvatarRootTransform.Find("Body");
-                if (mmdBody != null)
-                {
-                    if (mmdBody.TryGetComponent<SkinnedMeshRenderer>(out var mmdBodyRenderer))
-                    {
-                        entryPointMap[componentInfos.GetInfo(mmdBodyRenderer)]
-                            .Add(context.AvatarRootTransform, GCComponentInfo.DependencyType.Normal);
-                    }
-                }
-            }
-
-            Profiler.EndSample();
-
             Profiler.BeginSample("Collect Merging Targets");
             var mergeMeshes = new List<MeshInfo2>();
 
@@ -65,51 +43,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             {
                 if (state.Exclusions.Contains(meshRenderer.gameObject)) continue;
 
-                // if the renderer is referenced by other components, we can't merge it
-                var componentInfo = componentInfos.TryGetInfo(meshRenderer);
-                if (componentInfo != null)
-                {
-                    var dependants = entryPointMap[componentInfo].Keys.ToList();
-                    if (dependants.Count != 1 || dependants[0] != meshRenderer)
-                    {
-                        continue;
-                    }
-                }
-
                 var meshInfo = context.GetMeshInfoFor(meshRenderer);
                 if (
-                    // MakeBoned can break the mesh in extremely rare cases with complex shader gimmicks
-                    // so we can't call in T&O
-                    meshInfo.Bones.Count > 0
                     // FlattenMultiPassRendering will increase polygon count by VRChat so it's not good for T&O
-                    && meshInfo.SubMeshes.All(x => x.SharedMaterials.Length == 1)
-                    // Since 1.8.0 (targets 2022) we merge meshes with BlendShapes with RenameToAvoidConflict
-                    // && meshInfo.BlendShapes.Count == 0
-                    // Animating renderer is not supported by this optimization
-                    && !IsAnimatedForbidden(context.GetAnimationComponent(meshRenderer))
+                    meshInfo.SubMeshes.All(x => x.SharedMaterials.Length == 1)
                     // any other components are not supported
                     && !HasUnsupportedComponents(meshRenderer.gameObject)
-                    // root bone must be defined
-                    && meshInfo.RootBone != null
-                    // light probe usage must be defined if reflection probe usage is defined
-                    && (meshRenderer.lightProbeUsage == LightProbeUsage.Off
-                        && meshRenderer.reflectionProbeUsage == ReflectionProbeUsage.Off
-                        || meshRenderer.probeAnchor != null)
-                    // light probe proxy volume override must be defined if light probe usage is UseProxyVolume
-                    && (meshRenderer.lightProbeUsage != LightProbeUsage.UseProxyVolume
-                        || meshRenderer.lightProbeProxyVolumeOverride != null)
-                    // shader must not use vertex index.
-                    // Even if the original mesh is already shuffled, we won't merge automatically because
-                    // user may configure material to match with affected vertex index.
-                    // Note for users reading this comment: Vertex Index after remove mesh or merge mesh is 
-                    // not guaranteed so upgrading Avatar Optimizer may break your avatar if you rely on vertex index
-                    // after Remove Mesh By **** or Merge Skinned Mesh.
-                    && !context.GetAllPossibleMaterialFor(meshRenderer)
-                        .Any(x => context.GetMaterialInformation(x)?.UseVertexIndex ?? false)
-
-                    // other notes:
-                    // - activeness animation can be ignored here because we'll combine based on activeness animation
-                    // - normals existence can be ignored because we'll combine based on normals
                 )
                 {
                     mergeMeshes.Add(meshInfo);
