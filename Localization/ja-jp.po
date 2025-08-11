@@ -483,7 +483,7 @@ msgstr ""
 "VPMリポジトリを追加して、このプロジェクトに「Mask Texture Editor」パッケージを追加してください。"
 
 msgid "RemoveMeshByMask:dialog:addRepo"
-msgstr "ALCOM (VCC) を開く"
+msgstr "ALCOM(VCC)を開く"
 
 msgid "RemoveMeshByMask:dialog:openWeb"
 msgstr "GitHubを開く"
