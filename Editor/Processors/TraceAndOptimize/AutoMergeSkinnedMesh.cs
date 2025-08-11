@@ -21,7 +21,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             var mergeMeshes = FilterMergeMeshes(context, state);
             if (mergeMeshes.Count == 0) return;
 
-            CategoryMeshesForMerge(context, mergeMeshes, out var categorizedMeshes, out var orphanMeshes);
+            CategoryMeshesForMerge(context, mergeMeshes, out var categorizedMeshes);
             
             Func<MeshInfo2[], (int[][], List<(MeshTopology, Material?)>)> createSubMeshes;
 
@@ -32,9 +32,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 createSubMeshes = CreateSubMeshesMergeShuffling;
             else
                 createSubMeshes = CreateSubMeshesMergePreserveOrder;
-
-            foreach (var orphanMesh in orphanMeshes)
-                MergeMaterialSlot(orphanMesh, createSubMeshes);
 
             MergeMeshes(context, state, categorizedMeshes, createSubMeshes);
         }
@@ -126,8 +123,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         }
 
         public static void CategoryMeshesForMerge(BuildContext context, List<MeshInfo2> mergeMeshes,
-            out Dictionary<CategorizationKey, List<MeshInfo2>> categorizedMeshes, out List<MeshInfo2> orphanMeshes)
+            out Dictionary<CategorizationKey, List<MeshInfo2>> categorizedMeshes)
         {
+            List<MeshInfo2> orphanMeshes;
             // then, group by mesh attributes
             categorizedMeshes = new Dictionary<CategorizationKey, List<MeshInfo2>>();
             foreach (var meshInfo2 in mergeMeshes)
@@ -168,20 +166,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             }
 
             Profiler.EndSample();
-        }
-
-        private void MergeMaterialSlot(MeshInfo2 orphanMesh,
-            Func<MeshInfo2[], (int[][], List<(MeshTopology, Material?)>)> createSubMeshes)
-        {
-            var (mapping, subMeshInfos) = createSubMeshes(new[] { orphanMesh });
-            var subMeshes = orphanMesh.SubMeshes.ToList();
-
-            orphanMesh.SubMeshes.Clear();
-            foreach (var (meshTopology, material) in subMeshInfos)
-                orphanMesh.SubMeshes.Add(new SubMesh(material, meshTopology));
-
-            for (var i = 0; i < subMeshes.Count; i++)
-                orphanMesh.SubMeshes[mapping[0][i]].Vertices.AddRange(subMeshes[i].Vertices);
         }
 
         public static void MergeMeshes(BuildContext context, TraceAndOptimizeState state,

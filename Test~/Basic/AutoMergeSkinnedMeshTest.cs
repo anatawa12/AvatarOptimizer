@@ -119,7 +119,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             {
                 buildContext.GetMeshInfoFor(renderer0), buildContext.GetMeshInfoFor(renderer1),
                 buildContext.GetMeshInfoFor(renderer2), buildContext.GetMeshInfoFor(renderer3),
-            }, out var categorization, out _);
+            }, out var categorization);
 
             Assert.That(categorization.Values, Is.EquivalentTo(new[]
             {
@@ -189,7 +189,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             AutoMergeSkinnedMesh.CategoryMeshesForMerge(buildContext, new List<MeshInfo2>()
             {
                 buildContext.GetMeshInfoFor(avatar.renderer0), buildContext.GetMeshInfoFor(avatar.renderer1),
-            }, out var categorization, out _);
+            }, out var categorization);
 
             Assert.That(categorization.Values, Is.EquivalentTo(new[]
             {
@@ -230,7 +230,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             AutoMergeSkinnedMesh.CategoryMeshesForMerge(buildContext, new List<MeshInfo2>()
             {
                 buildContext.GetMeshInfoFor(avatar.renderer0), buildContext.GetMeshInfoFor(avatar.renderer1),
-            }, out var categorization, out _);
+            }, out var categorization);
 
             Assert.That(categorization.Values, Is.EquivalentTo(new[]
             {
@@ -270,7 +270,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             AutoMergeSkinnedMesh.CategoryMeshesForMerge(buildContext, new List<MeshInfo2>()
             {
                 buildContext.GetMeshInfoFor(avatar.renderer0), buildContext.GetMeshInfoFor(avatar.renderer1),
-            }, out var categorization, out _);
+            }, out var categorization);
 
             Assert.That(categorization.Values, Is.EquivalentTo(new[]
             {
@@ -310,7 +310,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             AutoMergeSkinnedMesh.CategoryMeshesForMerge(buildContext, new List<MeshInfo2>()
             {
                 buildContext.GetMeshInfoFor(avatar.renderer0), buildContext.GetMeshInfoFor(avatar.renderer1),
-            }, out var categorization, out _);
+            }, out var categorization);
 
             Assert.That(categorization.Values, Is.EquivalentTo(Enumerable.Empty<List<MeshInfo2>>()));
         }
@@ -347,7 +347,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             AutoMergeSkinnedMesh.CategoryMeshesForMerge(buildContext, new List<MeshInfo2>()
             {
                 buildContext.GetMeshInfoFor(avatar.renderer0), buildContext.GetMeshInfoFor(avatar.renderer1),
-            }, out var categorization, out _);
+            }, out var categorization);
 
             Assert.That(categorization.Values, Is.EquivalentTo(new[]
             {
@@ -389,7 +389,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             AutoMergeSkinnedMesh.CategoryMeshesForMerge(buildContext, new List<MeshInfo2>()
             {
                 buildContext.GetMeshInfoFor(avatar.renderer0), buildContext.GetMeshInfoFor(avatar.renderer1),
-            }, out var categorization, out _);
+            }, out var categorization);
 
             Assert.That(categorization.Values, Is.EquivalentTo(Enumerable.Empty<List<MeshInfo2>>()));
         }
@@ -416,7 +416,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             AutoMergeSkinnedMesh.CategoryMeshesForMerge(buildContext, new List<MeshInfo2>()
             {
                 buildContext.GetMeshInfoFor(avatar.renderer0), buildContext.GetMeshInfoFor(avatar.renderer1),
-            }, out _, out _);
+            }, out _);
 
             // No crash
         }
