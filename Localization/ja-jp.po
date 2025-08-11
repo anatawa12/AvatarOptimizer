@@ -486,7 +486,7 @@ msgid "RemoveMeshByMask:dialog:addRepo"
 msgstr "ALCOM (VCC) を開く"
 
 msgid "RemoveMeshByMask:dialog:openWeb"
-msgstr "GitHub を開く"
+msgstr "GitHubを開く"
 
 msgid "RemoveMeshByMask:dialog:cancel"
 msgstr "キャンセル"
