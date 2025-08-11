@@ -101,7 +101,7 @@ Trace and Optimizeは「**見た目に絶対に影響させてはならない**�
 
   ```mermaid
   ---
-  title: Entry-Exit式レイヤー(Diamond型)
+  title: Diamond型Entry-Exit式レイヤー
   ---
   graph LR;
         Entry(Entry);
@@ -124,7 +124,7 @@ Trace and Optimizeは「**見た目に絶対に影響させてはならない**�
 
   ```mermaid
   ---
-  title: Entry-Exit式レイヤー(Linear型)
+  title: Linear型Entry-Exit式レイヤー
   ---
   flowchart LR;
         Entry(Entry) --> State1(State1);
