@@ -69,10 +69,10 @@ See tooltips or implementation for more details.
 
 This feature currently applies the following optimizations.
 
-This might change in the future.
+(Details of optimization can be changed in the future.)
 
 - Convert AnyState to Entry-Exit\
-  This tries to convert Animator Controller layers of AnyState type to layers of Diamond-style Entry-Exit type as possible.
+  This tries to convert Animator Controller layers of AnyState type to Diamond-style Entry-Exit type as possible.
   With other optimizations, AnyState type layers may be converted to BlendTree.
 
   ```mermaid
