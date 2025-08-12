@@ -14,8 +14,40 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         protected override void Execute(BuildContext context, TraceAndOptimizeState state)
         {
             if (!state.RemoveUnusedObjects) { return; }
-            if (state.SkipRemoveMaterialUnusedProperties) { return; }
 
+            if (!state.SkipRemoveMaterialUnusedProperties)
+                RemoveUnusedProperties(context);
+
+            if (!state.SkipRemoveMaterialUnusedTextures)
+                RemoveUnusedTextures(context);
+        }
+
+        internal void RemoveUnusedTextures(BuildContext context)
+        {
+            var materials = context.GetComponents<Renderer>()
+                .SelectMany(x => context.GetAllPossibleMaterialFor(x))
+                .Where(x => x != null)
+                .ToHashSet();
+            
+            foreach (var material in materials)
+            {
+                if (context.GetMaterialInformation(material)?.TextureUsageInformationList is { } informations)
+                {
+                    var usedProperties = informations
+                        .Select(x => x.MaterialPropertyName)
+                        .ToHashSet();
+
+                    foreach (var property in material.GetTexturePropertyNames())
+                    {
+                        if (!usedProperties.Contains(property) && !fallbackShaderProperties.Contains(property))
+                            material.SetTexture(property, null);
+                    }
+                }
+            }
+        }
+
+        internal void RemoveUnusedProperties(BuildContext context)
+        {
             var renderers = context.GetComponents<Renderer>();
             var cleaned = new HashSet<Material>();
 
