@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog].
 ### Added
 - Linear Entry-Exit support for Entry-Exit to 1D BlendTree Optimization `#1498`
   - Since this version, Entry => State1 => State2 => Exit pattern is now supported.
+- Remove unused textures in Remove Unused Objects `1502`
 
 ### Changed
 - Avatar Optimizer will run as late as possible in NDMF Pipeline by default `#1493`
