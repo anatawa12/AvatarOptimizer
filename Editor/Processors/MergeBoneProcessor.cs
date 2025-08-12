@@ -189,8 +189,8 @@ namespace Anatawa12.AvatarOptimizer.Processors
             Parallel.ForEach(meshInfo2.Vertices, vertex =>
             {
                 var singleBoneTransform = vertex.BoneWeights.Select(x => x.bone.Transform)
-                    .DistinctSingleOrDefaultIfNoneOrMultiple();
-                if (singleBoneTransform == null) return;
+                    .DistinctSingleOrDefaultIfNoneOrMultiple<Transform?>(ReferenceEqualityComparer.Instance);
+                if (singleBoneTransform is null) return;
                 var finalBone = primaryBones.GetOrAdd(singleBoneTransform, vertex.BoneWeights[0].bone);
 
                 // about bindposes and bones

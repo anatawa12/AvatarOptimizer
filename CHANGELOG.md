@@ -33,6 +33,7 @@ The format is based on [Keep a Changelog].
 ### Fixed
 - Padding used in OptimizeTexture is too small that can cause problems with masks `#1478`
 - Merging SubMeshes may not work for some meshes `#1501`
+- EnsureRunningOnMainThread can only be called from the main thread error in some cases `#1503`
 
 ### Security
 
