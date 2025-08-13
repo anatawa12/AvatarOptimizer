@@ -32,6 +32,7 @@ The format is based on [Keep a Changelog].
 ### Fixed
 - Merging SubMeshes may not work for some meshes `#1501`
 - EnsureRunningOnMainThread can only be called from the main thread error in some cases `#1503`
+- Error from optimize texture when remove unused objects is disabled `#1504`
 
 ### Security
 
