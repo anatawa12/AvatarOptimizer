@@ -14,8 +14,49 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         protected override void Execute(BuildContext context, TraceAndOptimizeState state)
         {
             if (!state.RemoveUnusedObjects) { return; }
-            if (state.SkipRemoveMaterialUnusedProperties) { return; }
 
+            if (!state.SkipRemoveMaterialUnusedProperties)
+                RemoveUnusedProperties(context);
+
+            if (!state.SkipRemoveMaterialUnusedTextures)
+                RemoveUnusedTextures(context);
+        }
+
+        internal void RemoveUnusedTextures(BuildContext context)
+        {
+            var materials = context.GetComponents<Renderer>()
+                .SelectMany(x => context.GetAllPossibleMaterialFor(x))
+                .Where(x => x != null)
+                .ToHashSet();
+            
+            foreach (var material in materials)
+            {
+                if (context.GetMaterialInformation(material) is { } matInfo && matInfo.TextureUsageInformationList is { } texInfoList)
+                {
+                    var usedProperties = texInfoList
+                        .Select(x => x.MaterialPropertyName)
+                        .ToHashSet();
+                    
+                    // Fallback shaders are only considered if information is found.
+                    // This may change the behavior in fallback.                    
+                    if (matInfo.FallbackTextureUsageInformationList is { } fallbackTexInfoList)
+                    {
+                        usedProperties.UnionWith(fallbackTexInfoList
+                            .Select(x => x.MaterialPropertyName));
+                    }
+
+                    // GetTexturePropertyNames returns all texture properties regardless of the current shader.
+                    foreach (var property in material.GetTexturePropertyNames())
+                    {
+                        if (!usedProperties.Contains(property))
+                            material.SetTexture(property, null);
+                    }
+                }
+            }
+        }
+
+        internal void RemoveUnusedProperties(BuildContext context)
+        {
             var renderers = context.GetComponents<Renderer>();
             var cleaned = new HashSet<Material>();
 

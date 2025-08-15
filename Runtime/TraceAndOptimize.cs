@@ -144,6 +144,8 @@ namespace Anatawa12.AvatarOptimizer
             [ToggleLeft]
             public bool skipRemoveMaterialUnusedProperties;
             [ToggleLeft]
+            public bool skipRemoveMaterialUnusedTextures;
+            [ToggleLeft]
             public bool skipAutoMergeBlendShape;
             [ToggleLeft]
             public bool skipRemoveUnusedSubMesh;
