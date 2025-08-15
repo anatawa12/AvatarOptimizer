@@ -31,15 +31,24 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             
             foreach (var material in materials)
             {
-                if (context.GetMaterialInformation(material)?.TextureUsageInformationList is { } informations)
+                if (context.GetMaterialInformation(material) is { } matInfo && matInfo.TextureUsageInformationList is { } texInfoList)
                 {
-                    var usedProperties = informations
+                    var usedProperties = texInfoList
                         .Select(x => x.MaterialPropertyName)
                         .ToHashSet();
+                    
+                    // Fallback shaders are only considered if information is found.
+                    // This may change the behavior in fallback.                    
+                    if (matInfo.FallbackTextureUsageInformationList is { } fallbackTexInfoList)
+                    {
+                        usedProperties.UnionWith(fallbackTexInfoList
+                            .Select(x => x.MaterialPropertyName));
+                    }
 
+                    // GetTexturePropertyNames returns all texture properties regardless of the current shader.
                     foreach (var property in material.GetTexturePropertyNames())
                     {
-                        if (!usedProperties.Contains(property) && !fallbackShaderProperties.Contains(property))
+                        if (!usedProperties.Contains(property))
                             material.SetTexture(property, null);
                     }
                 }
