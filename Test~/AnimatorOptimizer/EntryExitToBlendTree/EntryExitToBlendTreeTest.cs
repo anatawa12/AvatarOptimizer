@@ -57,5 +57,17 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
             var except = LoadAnimatorController("LinearToggleNonConvertibleBecauseCurve");
             RecursiveCheckEquals(except, controller);
         }
+
+        // https://github.com/anatawa12/AvatarOptimizer/issues/1505
+        // IndexOutOfRangeException at AnimatorOptimizer with empty layers
+        [Test]
+        public void EmptyLayerNoErrors()
+        {
+            var controller = LoadCloneAnimatorController("EmptyLayer");
+            controller.name = "EmptyLayer";
+            EntryExitToBlendTree.Execute(_state, new AOAnimatorController(controller));
+            var except = LoadAnimatorController("EmptyLayer");
+            RecursiveCheckEquals(except, controller);
+        }
     }
 }
