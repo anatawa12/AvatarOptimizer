@@ -66,8 +66,7 @@ internal class MaterialInformation
 
     public readonly bool HasFallbackShaderInformation;
     public readonly List<TextureUsageInformation>? FallbackTextureUsageInformationList;
-
-    private static readonly Dictionary<(Type, int), ShaderInformation> _fallbackInfoCache = new();
+	public readonly bool UseVertexIndexForFallback;
 
     public MaterialInformation(Material material, List<Renderer> renderers, BuildContext context)
     {
@@ -95,6 +94,7 @@ internal class MaterialInformation
 		
 		HasFallbackShaderInformation = false;
 		FallbackTextureUsageInformationList = null;
+		UseVertexIndexForFallback = false;
 		if (GetFallbackShaderInformation(material, context) is { } fallbackInformation)
 		{
 			HasFallbackShaderInformation = true;
@@ -106,86 +106,14 @@ internal class MaterialInformation
 				renderers.Select(renderer => context.GetAnimationComponent(renderer)).ToList());
 			fallbackInformation.GetMaterialInformation(provider);
 			FallbackTextureUsageInformationList = provider.TextureUsageInformations;
+			UseVertexIndexForFallback = provider.UseVertexIndex;
 		}
 	}
 
-	// ref https://creators.vrchat.com/avatars/shader-fallback-system/
-	// return null if we failed to get fallback shader information.
-	private static ShaderInformation? GetFallbackShaderInformation(Material material, BuildContext context)
+	private ShaderInformation? GetFallbackShaderInformation(Material material, BuildContext context)
 	{
-		// VRChat 2021.4.2 Fallback System
-
-		var fallbackTag = material.GetTag("VRCFallback", false);
-		if (string.IsNullOrEmpty(fallbackTag)) return null;
-
-		var raw = fallbackTag;
-		var tag = raw.Replace(" ", string.Empty).ToLowerInvariant();
-
-		// Special uncombinable variants
-		if (tag == "toonstandard")
-			return GetCachedFallbackInfo<VRCSDKToonStandardShaderInformation>(() => new(false), variant: 0);
-		if (tag == "toonstandardoutline")
-			return GetCachedFallbackInfo<VRCSDKToonStandardShaderInformation>(() => new(true), variant: 1);
-
-		// Parse composite flags
-		var hasUnlit = tag.Contains("unlit");
-		var hasVertexLit = tag.Contains("vertexlit");
-		var hasToon = tag.Contains("toon");
-		var hasTransparent = tag.Contains("transparent");
-		var hasCutout = tag.Contains("cutout");
-		var hasFade = tag.Contains("fade");
-		var hasParticle = tag.Contains("particle");
-		var hasSprite = tag.Contains("sprite");
-		var hasMatcap = tag.Contains("matcap");
-		var hasMobileToon = tag.Contains("mobiletoon");
-		var hasDoubleSided = tag.Contains("doublesided");
-		var hasHidden = tag.Contains("hidden");
-
-		var anyTag =
-			hasUnlit ||
-			hasVertexLit ||
-			hasToon ||
-			hasTransparent ||
-			hasCutout ||
-			hasFade ||
-			hasParticle ||
-			hasSprite ||
-			hasMatcap ||
-			hasMobileToon ||
-			hasDoubleSided ||
-			hasHidden;
-
-		// hidden → mesh hidden
-		if (hasHidden) return null; // should return empty usage instead of null
-
-		if (hasToon)
-		{
-			if (hasTransparent || hasFade)
-				return null; // Transparent Unlit
-			return null; // can be combined with Transparent, Cutout, Fade and DoubleSided tags
-		}
-
-		if (hasUnlit)
-        {
-			return null; // can be combined with Transparent, Cutout and Fade tags
-        }
-
-		if (anyTag) return GetCachedFallbackInfo<StandardShaderInformation>(() => new());
-
-		// Old Fallback System
-
-		return null;
-	}
- 
-	private static T GetCachedFallbackInfo<T>(Func<T> factory, int variant = 0) where T : ShaderInformation
-	{
-		var key = (typeof(T), variant);
-		if (!_fallbackInfoCache.TryGetValue(key, out var info))
-		{
-			info = factory();
-			_fallbackInfoCache[key] = info;
-		}
-		return (T)info;
+		// should see BuildContext.PlatformProvider
+		return VRCFallbackShaderInformations.GetInformation(material);
 	}
 
     class MaterialInformationCallbackImpl : MaterialInformationCallback
