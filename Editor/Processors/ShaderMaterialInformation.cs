@@ -112,12 +112,12 @@ internal class MaterialInformation
 
 	private ShaderInformation? GetFallbackShaderInformation(Material material, BuildContext context)
 	{
-		if (context.PlatformProvider.QualifiedName == WellKnownPlatforms.VRChatAvatar30)
-		{
-			return VRCFallbackShaderInformations.GetInformation(material);
-		}
-		return null;
-	}
+        return context.PlatformProvider.QualifiedName switch
+        {
+            WellKnownPlatforms.VRChatAvatar30 => VRCFallbackShaderInformations.GetInformation(material),
+            _ => null,
+        };
+    }
 
     class MaterialInformationCallbackImpl : MaterialInformationCallback
     {

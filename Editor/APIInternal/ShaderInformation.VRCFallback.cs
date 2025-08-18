@@ -1,78 +1,31 @@
-using Anatawa12.AvatarOptimizer.API;
-
 namespace Anatawa12.AvatarOptimizer.APIInternal;
 
-internal class VRCFallbackHiddenShaderInformation : ShaderInformation
+// Hidden
+internal class VRCFallbackHiddenShaderInformation : EmptyShaderInformation
 {
-    public override ShaderInformationKind SupportedInformationKind =>
-        ShaderInformationKind.VertexIndexUsage | ShaderInformationKind.TextureAndUVUsage;
-
-    public override void GetMaterialInformation(MaterialInformationCallback matInfo)
-    {
-    }
 }
 
-internal class VRCFallbackToonShaderInformation : ShaderInformation
+// Toon
+internal class VRCFallbackToonShaderInformation : MainTexOnlyShaderInformation
 {
-    public override ShaderInformationKind SupportedInformationKind =>
-        ShaderInformationKind.VertexIndexUsage | ShaderInformationKind.TextureAndUVUsage;
-
-    public override void GetMaterialInformation(MaterialInformationCallback matInfo)
-    {
-        var mainTexST = matInfo.GetVector("_MainTex_ST");
-        Matrix2x3? mainTexSTMat = mainTexST is { } st ? Matrix2x3.NewScaleOffset(st) : null;
-        matInfo.RegisterTextureUVUsage("_MainTex", "_MainTex", UsingUVChannels.UV0, mainTexSTMat);
-    }
 }
 
-internal class VRCFallbackToonCutoutShaderInformation : ShaderInformation
+// ToonCutout
+internal class VRCFallbackToonCutoutShaderInformation : MainTexOnlyShaderInformation
 {
-    public override ShaderInformationKind SupportedInformationKind =>
-        ShaderInformationKind.VertexIndexUsage | ShaderInformationKind.TextureAndUVUsage;
-
-    public override void GetMaterialInformation(MaterialInformationCallback matInfo)
-    {
-        var mainTexST = matInfo.GetVector("_MainTex_ST");
-        Matrix2x3? mainTexSTMat = mainTexST is { } st ? Matrix2x3.NewScaleOffset(st) : null;
-        matInfo.RegisterTextureUVUsage("_MainTex", "_MainTex", UsingUVChannels.UV0, mainTexSTMat);
-    }
 }
 
-internal class VRCFallbackUnlitShaderInformation : ShaderInformation
+// Unlit
+internal class VRCFallbackUnlitShaderInformation : MainTexOnlyShaderInformation
 {
-    public override ShaderInformationKind SupportedInformationKind =>
-        ShaderInformationKind.VertexIndexUsage | ShaderInformationKind.TextureAndUVUsage;
-
-    public override void GetMaterialInformation(MaterialInformationCallback matInfo)
-    {
-        var mainTexST = matInfo.GetVector("_MainTex_ST");
-        Matrix2x3? mainTexSTMat = mainTexST is { } st ? Matrix2x3.NewScaleOffset(st) : null;
-        matInfo.RegisterTextureUVUsage("_MainTex", "_MainTex", UsingUVChannels.UV0, mainTexSTMat);
-    }
 }
 
-internal class VRCFallbackUnlitCutoutShaderInformation : ShaderInformation
+// UnlitCutout
+internal class VRCFallbackUnlitCutoutShaderInformation : MainTexOnlyShaderInformation
 {
-    public override ShaderInformationKind SupportedInformationKind =>
-        ShaderInformationKind.VertexIndexUsage | ShaderInformationKind.TextureAndUVUsage;
-
-    public override void GetMaterialInformation(MaterialInformationCallback matInfo)
-    {
-        var mainTexST = matInfo.GetVector("_MainTex_ST");
-        Matrix2x3? mainTexSTMat = mainTexST is { } st ? Matrix2x3.NewScaleOffset(st) : null;
-        matInfo.RegisterTextureUVUsage("_MainTex", "_MainTex", UsingUVChannels.UV0, mainTexSTMat);
-    }
 }
 
-internal class VRCFallbackUnlitTransparentShaderInformation : ShaderInformation
+// UnlitTransparent
+internal class VRCFallbackUnlitTransparentShaderInformation : MainTexOnlyShaderInformation
 {
-    public override ShaderInformationKind SupportedInformationKind =>
-        ShaderInformationKind.VertexIndexUsage | ShaderInformationKind.TextureAndUVUsage;
-
-    public override void GetMaterialInformation(MaterialInformationCallback matInfo)
-    {
-        var mainTexST = matInfo.GetVector("_MainTex_ST");
-        Matrix2x3? mainTexSTMat = mainTexST is { } st ? Matrix2x3.NewScaleOffset(st) : null;
-        matInfo.RegisterTextureUVUsage("_MainTex", "_MainTex", UsingUVChannels.UV0, mainTexSTMat);
-    }
 }

@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer.APIInternal;
 
+// https://creators.vrchat.com/avatars/shader-fallback-system
 internal static class VRCFallbackShaderInformations
 {
     public static ShaderInformation Standard = new StandardShaderInformation();
