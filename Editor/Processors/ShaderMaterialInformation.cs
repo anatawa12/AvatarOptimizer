@@ -95,7 +95,7 @@ internal class MaterialInformation
 		HasFallbackShaderInformation = false;
 		FallbackTextureUsageInformationList = null;
 		UseVertexIndexForFallback = false;
-		if (GetFallbackShaderInformation(material, context) is { } fallbackInformation)
+		if (IsShaderFallbackSupported(context) && GetFallbackShaderInformation(material, context) is { } fallbackInformation)
 		{
 			HasFallbackShaderInformation = true;
 
@@ -110,14 +110,19 @@ internal class MaterialInformation
 		}
 	}
 
+    private bool IsShaderFallbackSupported(BuildContext context)
+    {
+        return context.PlatformProvider.QualifiedName == WellKnownPlatforms.VRChatAvatar30;
+    }
+
 	private ShaderInformation? GetFallbackShaderInformation(Material material, BuildContext context)
 	{
-        return context.PlatformProvider.QualifiedName switch
-        {
-            WellKnownPlatforms.VRChatAvatar30 => VRCFallbackShaderInformations.GetInformation(material),
-            _ => null,
-        };
-    }
+		return context.PlatformProvider.QualifiedName switch
+		{
+			WellKnownPlatforms.VRChatAvatar30 => VRCFallbackShaderInformations.GetInformation(material),
+			_ => throw new NotSupportedException($"Shader Fallback for {context.PlatformProvider.QualifiedName} is not supported."),
+		};
+	}
 
     class MaterialInformationCallbackImpl : MaterialInformationCallback
     {
