@@ -15,7 +15,12 @@ internal static class VRCFallbackShaderInformations
     public static ShaderInformation Unlit = new VRCFallbackUnlitShaderInformation();
     public static ShaderInformation UnlitCutout = new VRCFallbackUnlitCutoutShaderInformation();
     public static ShaderInformation UnlitTransparent = new VRCFallbackUnlitTransparentShaderInformation();
+    public static ShaderInformation VertexLit = new VRCFallbackVertexLitShaderInformation();
+    public static ShaderInformation Particle = new VRCFallbackParticleShaderInformation();
+    public static ShaderInformation Sprite = new VRCFallbackSpriteShaderInformation();
+    public static ShaderInformation Matcap = new VRCFallbackMatcapShaderInformation();
 
+    public static ShaderInformation MobileToon = new VRCSDKToonLitShaderInformation(); // ToonLit
     public static ShaderInformation ToonStandard = new VRCSDKToonStandardShaderInformation(false);
     public static ShaderInformation ToonStandardOutline = new VRCSDKToonStandardShaderInformation(true);
 
@@ -68,19 +73,6 @@ internal static class VRCFallbackShaderInformations
 		var hasDoubleSided = tag.Contains("doublesided");
 		var hasHidden = tag.Contains("hidden");
 
-		var anyTag =
-			hasUnlit ||
-			hasVertexLit ||
-			hasToon ||
-			hasTransparent ||
-			hasCutout ||
-			hasFade ||
-			hasParticle ||
-			hasSprite ||
-			hasMatcap ||
-			hasMobileToon ||
-			hasDoubleSided ||
-			hasHidden;
 
 		if (hasHidden)
 		{
@@ -127,12 +119,35 @@ internal static class VRCFallbackShaderInformations
             return true;
         }
 
-		if (anyTag)
-		{
-			result = Standard;
-			return true;
-		}
 
-		return false;
+        if (hasVertexLit)
+        {
+            result = VertexLit;
+            return true;
+        }
+        if (hasParticle)
+        {
+            result = Particle;
+            return true;
+        }
+        if (hasSprite)
+        {
+            result = Sprite;
+            return true;
+        }
+        if (hasMatcap)
+        {
+            result = Matcap;
+            return true;
+        }
+        if (hasMobileToon)
+        {
+            result = MobileToon;
+            return true;
+        }
+
+		// If we've reached here, it means a VRCFallback tag was present, but it didn't match any of the specific rules above.
+		result = Standard;
+		return true;
     }
 }
