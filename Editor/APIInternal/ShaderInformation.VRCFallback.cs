@@ -2,6 +2,8 @@ using Anatawa12.AvatarOptimizer.API;
 
 namespace Anatawa12.AvatarOptimizer.APIInternal;
 
+// https://github.com/lilxyzw/lilAvatarUtils/tree/main/Shaders
+
 // Hidden
 internal class VRCFallbackHiddenShaderInformation : ShaderInformation
 {
