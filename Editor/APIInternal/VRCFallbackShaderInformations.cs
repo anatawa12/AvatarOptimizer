@@ -15,14 +15,17 @@ internal static class VRCFallbackShaderInformations
     public static ShaderInformation Unlit = new VRCFallbackUnlitShaderInformation();
     public static ShaderInformation UnlitCutout = new VRCFallbackUnlitCutoutShaderInformation();
     public static ShaderInformation UnlitTransparent = new VRCFallbackUnlitTransparentShaderInformation();
-    public static ShaderInformation VertexLit = new VRCFallbackVertexLitShaderInformation();
-    public static ShaderInformation Particle = new VRCFallbackParticleShaderInformation();
-    public static ShaderInformation Sprite = new VRCFallbackSpriteShaderInformation();
-    public static ShaderInformation Matcap = new VRCFallbackMatcapShaderInformation();
 
-    public static ShaderInformation MobileToon = new VRCSDKToonLitShaderInformation(); // ToonLit
+    // Estimate the behavior is the same as a known shader and use it.
+    public static ShaderInformation VertexLit = new MobileVertexLitShaderInformation(); // Mobile/Vertex Lit
+    public static ShaderInformation Particle = new VRCSDKParticleMultiplyShaderInformation(); // VRChat/Mobile/Particles/Multiply
+    public static ShaderInformation Sprite = new VRCSDKSpriteDefaultShaderInformation(); // VRChat/Sprites/Default
+    public static ShaderInformation Matcap = new VRCSDKMatcapLitShaderInformation(); // VRChat/Mobile/MatCap Lit
+    public static ShaderInformation MobileToon = new VRCSDKToonLitShaderInformation(); // VRChat/Mobile/Toon Lit
+
     public static ShaderInformation ToonStandard = new VRCSDKToonStandardShaderInformation(false);
     public static ShaderInformation ToonStandardOutline = new VRCSDKToonStandardShaderInformation(true);
+    
 
     // return null if we failed to get information
 	public static ShaderInformation? GetInformation(Material material)
