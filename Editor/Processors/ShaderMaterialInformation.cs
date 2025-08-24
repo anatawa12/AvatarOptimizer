@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.API;
+using Anatawa12.AvatarOptimizer.APIInternal;
 using Anatawa12.AvatarOptimizer.ndmf;
 using nadena.dev.ndmf;
 using UnityEngine;
@@ -63,6 +64,10 @@ internal class MaterialInformation
     public readonly List<TextureUsageInformation>? TextureUsageInformationList;
     public readonly bool UseVertexIndex;
 
+    public readonly bool HasFallbackShaderInformation;
+    public readonly List<TextureUsageInformation>? FallbackTextureUsageInformationList;
+	public readonly bool UseVertexIndexForFallback;
+
     public MaterialInformation(Material material, List<Renderer> renderers, BuildContext context)
     {
         Material = material;
@@ -86,7 +91,38 @@ internal class MaterialInformation
             TextureUsageInformationList = provider.TextureUsageInformations;
             UseVertexIndex = provider.UseVertexIndex;
         }
+		
+		HasFallbackShaderInformation = false;
+		FallbackTextureUsageInformationList = null;
+		UseVertexIndexForFallback = false;
+		if (IsShaderFallbackSupported(context) && GetFallbackShaderInformation(material, context) is { } fallbackInformation)
+		{
+			HasFallbackShaderInformation = true;
+
+			var supportedKind = fallbackInformation.SupportedInformationKind;
+			var provider = new MaterialInformationCallbackImpl(
+				material,
+				supportedKind,
+				renderers.Select(renderer => context.GetAnimationComponent(renderer)).ToList());
+			fallbackInformation.GetMaterialInformation(provider);
+			FallbackTextureUsageInformationList = provider.TextureUsageInformations;
+			UseVertexIndexForFallback = provider.UseVertexIndex;
+		}
+	}
+
+    private bool IsShaderFallbackSupported(BuildContext context)
+    {
+        return context.PlatformProvider.QualifiedName == WellKnownPlatforms.VRChatAvatar30;
     }
+
+	private ShaderInformation? GetFallbackShaderInformation(Material material, BuildContext context)
+	{
+		return context.PlatformProvider.QualifiedName switch
+		{
+			WellKnownPlatforms.VRChatAvatar30 => VRCFallbackShaderInformations.GetInformation(material),
+			_ => throw new NotSupportedException($"Shader Fallback for {context.PlatformProvider.QualifiedName} is not supported."),
+		};
+	}
 
     class MaterialInformationCallbackImpl : MaterialInformationCallback
     {
