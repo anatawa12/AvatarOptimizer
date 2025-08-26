@@ -174,7 +174,7 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
             AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape0")], ConstantAlways(100));
             AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape1")], ConstantAlways(100));
             AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape2")], Variable());
-            AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape3")], Variable(ApplyState.Partially));
+            AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape3")], PartialConstant(100, ApplyState.Partially));
             AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape4")], ConstantAlways(100));
             AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape5")], MultipleAlways(0, 100));
             AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape6")], MultipleAlways(0, 100));
@@ -182,7 +182,7 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
             AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape8")], ConstantAlways(100));
             AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape9")], ConstantAlways(100));
             AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape10")], ConstantAlways(100));
-            AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape11")], ConstantPartially(100));
+            AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape11")], PartialConstant(100, ApplyState.Partially));
             AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape12")], ConstantAlways(10));
             AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape13")], ConstantAlways(10));
             AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape14")], Never());
@@ -199,13 +199,13 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
             var externallyWeightChanged = new AnimatorWeightChangesList(_controller.layers.Length)
             {
                 // this should be ignored.
-                [0] = AnimatorWeightChange.Variable,
+                [0] = AnimatorWeightChange.NonZeroOneChange,
                 // variable even if external change is always 1
                 [3] = AnimatorWeightChange.AlwaysOne,
                 //
                 [7] = AnimatorWeightChange.AlwaysZero,
-                [8] = AnimatorWeightChange.EitherZeroOrOne,
-                [9] = AnimatorWeightChange.Variable,
+                [8] = AnimatorWeightChange.NonZeroOneChange,
+                [9] = AnimatorWeightChange.NonZeroOneChange,
                 // if original have 1, no meaning
                 [10] = AnimatorWeightChange.AlwaysOne,
                 // original is 0 and override is 1
@@ -227,20 +227,20 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
             AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape0")], ConstantAlways(100));
             //AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape1")], ConstantAlways(100));
             //AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape2")], Variable());
-            AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape3")], Variable(ApplyState.Partially));
+            AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape3")], PartialConstant(100, ApplyState.Partially));
             //AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape4")], ConstantAlways(100));
             //AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape5")], Variable());
             //AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape6")], Variable());
-            AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape7")], ConstantPartially(100));
-            AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape8")], ConstantPartially(100));
-            AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape9")], Variable(ApplyState.Partially));
+            AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape7")], PartialConstant(100, ApplyState.Partially));
+            AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape8")], PartialConstant(100, ApplyState.Partially));
+            AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape9")], PartialConstant(100, ApplyState.Partially));
             AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape10")], ConstantAlways(100));
             //AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape11")], ConstantPartially(100));
             //AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape12")], ConstantAlways(10));
             //AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape13")], ConstantAlways(10));
             //AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape14")], ConstantAlways());
             //AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape15")], Variable());
-            AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape16")], ConstantPartially(100));
+            AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape16")], PartialConstant(100, ApplyState.Partially));
             //AssertPropertyNode(parsed.FloatNodes[(rendererTarget, "blendShape.shape17")], ConstantAlways(100));
         }
 

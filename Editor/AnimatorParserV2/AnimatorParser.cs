@@ -263,8 +263,8 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             if (_mmdWorldCompatibility)
             {
                 var fxLayer = animatorLayerWeightChanged[VRCAvatarDescriptor.AnimLayerType.FX];
-                fxLayer[1] = fxLayer[1].Merge(AnimatorWeightChange.EitherZeroOrOne);
-                fxLayer[2] = fxLayer[2].Merge(AnimatorWeightChange.EitherZeroOrOne);
+                fxLayer[1] = fxLayer[1].Merge(AnimatorWeightChange.NonZeroOneChange);
+                fxLayer[2] = fxLayer[2].Merge(AnimatorWeightChange.NonZeroOneChange);
             }
 
             var playableLayers =
@@ -639,7 +639,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
             // if there is no transitioning transition targeting wierd states, we can simulate the behavior by setting lower layer weight to 0.
             // if there is transitioning one, simuration requires changing lower layer weight.
-            var simulatingWeightChange = hasTransitioningTransitionTargetingWierdStates ? AnimatorWeightChange.Variable : AnimatorWeightChange.AlwaysZero;
+            var simulatingWeightChange = hasTransitioningTransitionTargetingWierdStates ? AnimatorWeightChange.NonZeroOneChange : AnimatorWeightChange.AlwaysZero;
 
             // combine simulatingWeightChange and current layer's weight
             return (currentLayerWeight, simulatingWeightChange) switch
@@ -648,9 +648,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 (AnimatorWeightState.AlwaysZero, _) => AnimatorWeightChange.NotChanged,
                 // When the current layer weight is always 1, the wierd state behavior will always be activated, so we can always apply the simulating weight change.
                 // The AnimatorWeightChange does not imply always changed, it means 'can be changed to always 1' so no problem with EitherZeroOrOne.
-                (AnimatorWeightState.AlwaysOne or AnimatorWeightState.EitherZeroOrOne, var change) => change,
-                // if the weight is variable the wierd state behavior can be in between active and inactive, so we have to treat it as variable.
-                (AnimatorWeightState.Variable, _) => AnimatorWeightChange.Variable,
+                (AnimatorWeightState.AlwaysOne or AnimatorWeightState.NonZeroOne, var change) => change,
             };
         }
 
@@ -661,7 +659,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             if (weight == 0) isOneWeight = false;
             // ReSharper disable once CompareOfFloatsByEqualityOperator
             else if (weight == 1) isOneWeight = true;
-            else return AnimatorWeightState.Variable;
+            else return AnimatorWeightState.NonZeroOne;
 
             switch (external)
             {
@@ -669,17 +667,15 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                     return isOneWeight ? AnimatorWeightState.AlwaysOne : AnimatorWeightState.AlwaysZero;
 
                 case AnimatorWeightChange.AlwaysZero:
-                    return isOneWeight ? AnimatorWeightState.EitherZeroOrOne : AnimatorWeightState.AlwaysZero;
+                    return isOneWeight ? AnimatorWeightState.NonZeroOne : AnimatorWeightState.AlwaysZero;
 
                 case AnimatorWeightChange.AlwaysOne:
                     return isOneWeight
                         ? AnimatorWeightState.AlwaysOne
-                        : AnimatorWeightState.EitherZeroOrOne;
+                        : AnimatorWeightState.NonZeroOne;
 
-                case AnimatorWeightChange.EitherZeroOrOne:
-                    return AnimatorWeightState.EitherZeroOrOne;
-                case AnimatorWeightChange.Variable:
-                    return AnimatorWeightState.Variable;
+                case AnimatorWeightChange.NonZeroOneChange:
+                    return AnimatorWeightState.NonZeroOne;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -689,22 +685,10 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             (weight, external) switch
             {
                 (var w, AnimatorWeightChange.NotChanged) => w,
-                (_, AnimatorWeightChange.Variable) => AnimatorWeightState.Variable,
-                (AnimatorWeightState.Variable, _) => AnimatorWeightState.Variable,
-
                 (AnimatorWeightState.AlwaysZero, AnimatorWeightChange.AlwaysZero) => AnimatorWeightState.AlwaysZero,
-                (AnimatorWeightState.AlwaysZero, AnimatorWeightChange.AlwaysOne) => AnimatorWeightState.EitherZeroOrOne,
-                (AnimatorWeightState.AlwaysZero, AnimatorWeightChange.EitherZeroOrOne) => AnimatorWeightState.EitherZeroOrOne,
-
-                (AnimatorWeightState.AlwaysOne, AnimatorWeightChange.AlwaysZero) => AnimatorWeightState.EitherZeroOrOne,
                 (AnimatorWeightState.AlwaysOne, AnimatorWeightChange.AlwaysOne) => AnimatorWeightState.AlwaysOne,
-                (AnimatorWeightState.AlwaysOne, AnimatorWeightChange.EitherZeroOrOne) => AnimatorWeightState.EitherZeroOrOne,
 
-                (AnimatorWeightState.EitherZeroOrOne, AnimatorWeightChange.AlwaysZero) => AnimatorWeightState.EitherZeroOrOne,
-                (AnimatorWeightState.EitherZeroOrOne, AnimatorWeightChange.AlwaysOne) => AnimatorWeightState.EitherZeroOrOne,
-                (AnimatorWeightState.EitherZeroOrOne, AnimatorWeightChange.EitherZeroOrOne) => AnimatorWeightState.EitherZeroOrOne,
-
-                _ => throw new ArgumentOutOfRangeException(),
+                _ => AnimatorWeightState.NonZeroOne,
             };
 
         #endregion
