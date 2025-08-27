@@ -103,7 +103,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         {
             if (IsConstant && (!PartialApplication || currentValue.Equals(ConstantValue)))
             {
-                o = currentValue;
+                o = ConstantValue;
                 return true;
             }
 
