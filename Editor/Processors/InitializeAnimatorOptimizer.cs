@@ -119,7 +119,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                                 {
                                     wrapper.layers[i].MarkUnRemovable();
                                     wrapper.layers[i].WeightChange = wrapper.layers[i].WeightChange
-                                        .Merge(AnimatorWeightChange.EitherZeroOrOne);
+                                        .Merge(AnimatorWeightChange.NonZeroOneChange);
                                 }
                             }
                         }

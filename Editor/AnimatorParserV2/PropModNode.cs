@@ -62,11 +62,22 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
     internal readonly struct FloatValueInfo : IValueInfo<FloatValueInfo>, IEquatable<FloatValueInfo>
     {
+        /// <summary>
+        /// The application state of this value. Does not matter with variable value.
+        ///
+        /// In this context Partial Application means the value can be applied with weight in between 0 and 1.
+        /// </summary>
+        public bool PartialApplication { get; }
         public bool IsConstant => _possibleValues is { Length: 1 };
         private readonly float[]? _possibleValues;
 
-        public FloatValueInfo(float value) => _possibleValues = new[] { value };
-        public FloatValueInfo(float[] values) => _possibleValues = values;
+        public FloatValueInfo(float values, bool partialApplication = false) : this(new[] { values }, partialApplication) { }
+        public FloatValueInfo(float[] values, bool partialApplication = false)
+        {
+            _possibleValues = values ?? throw new ArgumentNullException(nameof(values));
+            PartialApplication = partialApplication;
+            if (_possibleValues.Length == 0) PartialApplication = true;
+        }
 
         public float ConstantValue
         {
@@ -77,21 +88,27 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             }
         }
 
+        /// <summary>
+        /// The possible animated values. If null, any value is possible (variable).
+        /// If the array has one value, it will be animated to the value (or just not animated)
+        /// If the array has more than one value, it will be animated to any of the values, or in between.
+        /// </summary>
         public float[]? PossibleValues => _possibleValues;
+        /// <summary>
+        /// The ValueInfo express any value.
+        /// </summary>
         public static FloatValueInfo Variable => default;
 
-        public bool TryGetConstantValue(out float o)
+        public bool TryGetConstantValue(float currentValue, out float o)
         {
-            if (IsConstant)
+            if (IsConstant && (!PartialApplication || currentValue.Equals(ConstantValue)))
             {
                 o = ConstantValue;
                 return true;
             }
-            else
-            {
-                o = default;
-                return false;
-            }
+
+            o = default;
+            return false;
         }
 
         public FloatValueInfo ConstantInfoForSideBySide(IEnumerable<PropModNode<FloatValueInfo>> nodes)
@@ -121,7 +138,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                     case AnimatorWeightState.AlwaysZero:
                         continue; // Might have effect with write defaults true?
                     case AnimatorWeightState.AlwaysOne:
-                    case AnimatorWeightState.EitherZeroOrOne:
+                    case AnimatorWeightState.NonZeroOne:
                     {
                         if (layer.Node.Value.PossibleValues is not { } otherValues) return Variable;
 
@@ -150,21 +167,27 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                         }
                     }
                         break;
-                    case AnimatorWeightState.Variable:
-                        return Variable;
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
             }
 
-            return new FloatValueInfo(allPossibleValues.ToArray());
+            return new FloatValueInfo(allPossibleValues.ToArray(), partialApplication: true);
         }
 
-        public bool Equals(FloatValueInfo other) => NodeImplUtils.SetEquals(_possibleValues, other._possibleValues);
+        public bool Equals(FloatValueInfo other) => NodeImplUtils.SetEquals(_possibleValues, other._possibleValues) && PartialApplication == other.PartialApplication;
         public override bool Equals(object? obj) => obj is FloatValueInfo other && Equals(other);
         public override int GetHashCode() => _possibleValues != null ? _possibleValues.GetSetHashCode() : 0;
         public static bool operator ==(FloatValueInfo left, FloatValueInfo right) => left.Equals(right);
         public static bool operator !=(FloatValueInfo left, FloatValueInfo right) => !left.Equals(right);
+
+        public override string ToString()
+        {
+            if (PossibleValues is not float[] values) return "Variable";
+            if (values.Length == 0) return "Never";
+            var isPartial = PartialApplication ? "Partial" : "Always";
+            return $"{isPartial}:Const:{string.Join(",", values)}";
+        }
     }
 
     // note: no default is allowed
@@ -267,8 +290,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         {
             AnimatorWeightState.AlwaysZero => ApplyState.Never, // Might have effect with write defaults true?
             AnimatorWeightState.AlwaysOne => ApplyState.Always,
-            AnimatorWeightState.EitherZeroOrOne => ApplyState.Partially,
-            AnimatorWeightState.Variable => ApplyState.Partially,
+            AnimatorWeightState.NonZeroOne => ApplyState.Partially,
             _ => throw new ArgumentOutOfRangeException()
         };
 

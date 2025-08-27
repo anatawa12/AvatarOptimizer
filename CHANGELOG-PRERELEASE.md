@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog].
 ### Added
 - Linear Entry-Exit support for Entry-Exit to 1D BlendTree Optimization `#1498` `#1506`
   - Since this version, Entry => State1 => State2 => Exit pattern is now supported.
+- More cases are supported by Automatically Freeze BlendShape `#1510`
+    - AAO can now freeze BlendShapes that are animated in animator layers with weights between 0 and 1.
 
 ### Changed
 - Avatar Optimizer will run as late as possible in NDMF Pipeline by default `#1493`
