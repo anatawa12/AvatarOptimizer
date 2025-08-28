@@ -22,6 +22,7 @@ The format is based on [Keep a Changelog].
 - Moved removing submeshes with no materials assigned to the early process of AAO `#1495`
   - This should let other process like freezing blendshapes ignore such submeshes.
 - Replace Mask Texture Editor ['#1470'](https://github.com/anatawa12/AvatarOptimizer/pull/1470)
+- Ignore unknown IEditorOnly components and log a warning in console instead of showing a popup. ['#1422'](https://github.com/anatawa12/AvatarOptimizer/pull/1422)
 
 [`AfterPlugin`]: https://ndmf.nadena.dev/api/nadena.dev.ndmf.fluent.Sequence.html#nadena_dev_ndmf_fluent_Sequence_AfterPlugin_System_String_System_String_System_Int32_
 [`BeforePlugin`]: https://ndmf.nadena.dev/api/nadena.dev.ndmf.fluent.Sequence.html#nadena_dev_ndmf_fluent_Sequence_BeforePlugin_System_String_System_String_System_Int32_
