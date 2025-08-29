@@ -779,7 +779,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 {
                     Profiler.BeginSample("Process Shape");
                     Utils.Assert(destMesh.blendShapeCount == i, "Unexpected state: BlendShape count");
-                    
                     var (shapeName, _) = BlendShapes[i];
 
                     Profiler.BeginSample("Collect Weights");
@@ -868,8 +867,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 Profiler.EndSample();
             }
 
-            // Add dummy blend shape for SkinnedMesh without blend shapes
-            if (isSkinnedMesh && BlendShapes.Count == 0)
+            // Add dummy blend shape for SkinnedMesh without blend shapes and without bone weights
+            if (isSkinnedMesh && BlendShapes.Count == 0 && !Vertices.Any(x => x.BoneWeights.Count != 0))
             {
                 Profiler.BeginSample("DummyBlendShape");
                 var positions = new Vector3[Vertices.Count];
