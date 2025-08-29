@@ -33,7 +33,7 @@ public class RenameBlendShapeTest
 
         // check
         var newMesh = new Mesh();
-        meshInfo2.WriteToMesh(newMesh);
+        meshInfo2.WriteToMesh(newMesh, isSkinnedMesh: true);
 
         Assert.That(newMesh.blendShapeCount, Is.EqualTo(4));
 
@@ -106,7 +106,7 @@ public class RenameBlendShapeTest
 
         // check
         var newMesh = new Mesh();
-        meshInfo2.WriteToMesh(newMesh);
+        meshInfo2.WriteToMesh(newMesh, isSkinnedMesh: true);
 
         Assert.That(newMesh.blendShapeCount, Is.EqualTo(3));
 
@@ -177,7 +177,7 @@ public class RenameBlendShapeTest
 
         // check
         var newMesh = new Mesh();
-        meshInfo2.WriteToMesh(newMesh);
+        meshInfo2.WriteToMesh(newMesh, isSkinnedMesh: true);
 
         Assert.That(newMesh.blendShapeCount, Is.EqualTo(3));
 
