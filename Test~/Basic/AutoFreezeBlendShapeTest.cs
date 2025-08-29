@@ -49,7 +49,9 @@ public class AutoFreezeBlendShapeTest
 
         context.DeactivateAllExtensionContexts();
 
-        Assert.That(renderer0.sharedMesh.blendShapeCount, Is.EqualTo(0));
+        // Should have a dummy blend shape since all blend shapes were frozen and no bone weights
+        Assert.That(renderer0.sharedMesh.blendShapeCount, Is.EqualTo(1));
+        Assert.That(renderer0.sharedMesh.GetBlendShapeName(0), Is.EqualTo("AAO_DummyBlendShape"));
     }
     
     [Test]
@@ -95,7 +97,9 @@ public class AutoFreezeBlendShapeTest
 
         context.DeactivateAllExtensionContexts();
 
-        Assert.That(renderer0.sharedMesh.blendShapeCount, Is.EqualTo(0));
+        // Should have a dummy blend shape since all blend shapes were frozen and no bone weights
+        Assert.That(renderer0.sharedMesh.blendShapeCount, Is.EqualTo(1));
+        Assert.That(renderer0.sharedMesh.GetBlendShapeName(0), Is.EqualTo("AAO_DummyBlendShape"));
         var vertices = renderer0.sharedMesh.vertices;
         Assert.That(vertices, Is.EqualTo(mesh0.vertices.Select((v, i) => v + frameDelta[i]).ToArray()));
     }
@@ -192,6 +196,8 @@ public class AutoFreezeBlendShapeTest
 
         context.DeactivateAllExtensionContexts();
 
-        Assert.That(renderer0.sharedMesh.blendShapeCount, Is.EqualTo(0));
+        // Should have a dummy blend shape since all blend shapes were frozen and no bone weights
+        Assert.That(renderer0.sharedMesh.blendShapeCount, Is.EqualTo(1));
+        Assert.That(renderer0.sharedMesh.GetBlendShapeName(0), Is.EqualTo("AAO_DummyBlendShape"));
     }
 }

@@ -85,7 +85,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             using var meshInfo2 = new MeshInfo2(smr);
 
             var newMesh = new Mesh();
-            meshInfo2.WriteToMesh(newMesh);
+            meshInfo2.WriteToMesh(newMesh, isSkinnedMesh: true);
         }
 
         [Test]
@@ -172,7 +172,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             meshInfo2.VerticesMutable.Clear();
 
             var newMesh = new Mesh();
-            meshInfo2.WriteToMesh(newMesh);
+            meshInfo2.WriteToMesh(newMesh, isSkinnedMesh: true);
 
             Assert.That(newMesh.subMeshCount, Is.EqualTo(1));
         }
@@ -270,6 +270,128 @@ namespace Anatawa12.AvatarOptimizer.Test
                 Assert.That(vertex.BlendShapeBuffer.Shapes[meshInfo2.BlendShapes[0].name], Is.Not.Null);
                 Assert.That(vertex.BlendShapeBuffer.Shapes[meshInfo2.BlendShapes[1].name], Is.Not.Null);
             }
+        }
+
+        [Test]
+        public void SkinnedMeshWithOnlyBlendShapesRemovedAddsDummy()
+        {
+            // This test specifically reproduces the issue described:
+            // "BlendShapeだけだったSkinneMeshからBlemdShapeを全部消すと" 
+            // (When removing all BlendShapes from a SkinnedMesh that only had BlendShapes)
+            
+            var mesh = TestUtils.NewCubeMesh();
+            
+            // Add some blend shapes to simulate a mesh that originally had only blend shapes
+            var deltas = new Vector3[8];
+            deltas.AsSpan().Fill(new Vector3(1, 0, 0));
+            mesh.AddBlendShapeFrame("OriginalShape1", 100, deltas, null, null);
+            deltas.AsSpan().Fill(new Vector3(0, 1, 0));
+            mesh.AddBlendShapeFrame("OriginalShape2", 100, deltas, null, null);
+
+            var go = new GameObject();
+            var smr = go.AddComponent<SkinnedMeshRenderer>();
+            smr.sharedMesh = mesh;
+
+            using var meshInfo2 = new MeshInfo2(smr);
+            
+            // Verify it originally had blend shapes but no bone weights
+            Assert.That(meshInfo2.BlendShapes.Count, Is.EqualTo(2));
+            Assert.That(meshInfo2.Vertices.All(v => v.BoneWeights.Count == 0), Is.True, "Should have no bone weights");
+            
+            // Simulate optimization removing all blend shapes
+            meshInfo2.BlendShapes.Clear();
+            
+            var newMesh = new Mesh();
+            meshInfo2.WriteToMesh(newMesh, isSkinnedMesh: true);
+
+            // Should have exactly 1 dummy blend shape added to prevent Unity error
+            Assert.That(newMesh.blendShapeCount, Is.EqualTo(1));
+            Assert.That(newMesh.GetBlendShapeName(0), Is.EqualTo("AAO_DummyBlendShape"));
+            
+            // Verify this doesn't cause Unity's error by checking the mesh has the required data
+            Assert.That(newMesh.blendShapeCount > 0 || newMesh.boneWeights.Length > 0, Is.True, 
+                "Mesh should have either blend shapes or bone weights to avoid Unity error");
+        }
+
+        [Test]
+        public void SkinnedMeshWithoutBlendShapesAddsDummy()
+        {
+            var mesh = TestUtils.NewCubeMesh();
+            var go = new GameObject();
+            var smr = go.AddComponent<SkinnedMeshRenderer>();
+            smr.sharedMesh = mesh;
+
+            using var meshInfo2 = new MeshInfo2(smr);
+            
+            // Remove all blend shapes to simulate the optimization scenario
+            meshInfo2.BlendShapes.Clear();
+            
+            var newMesh = new Mesh();
+            meshInfo2.WriteToMesh(newMesh, isSkinnedMesh: true);
+
+            // Should have exactly 1 dummy blend shape added
+            Assert.That(newMesh.blendShapeCount, Is.EqualTo(1));
+            Assert.That(newMesh.GetBlendShapeName(0), Is.EqualTo("AAO_DummyBlendShape"));
+            
+            // The dummy blend shape should have one frame with weight 100 and all zero deltas
+            Assert.That(newMesh.GetBlendShapeFrameCount(0), Is.EqualTo(1));
+            Assert.That(newMesh.GetBlendShapeFrameWeight(0, 0), Is.EqualTo(100f));
+            
+            var deltaVertices = new Vector3[newMesh.vertexCount];
+            var deltaNormals = new Vector3[newMesh.vertexCount];
+            var deltaTangents = new Vector3[newMesh.vertexCount];
+            newMesh.GetBlendShapeFrameVertices(0, 0, deltaVertices, deltaNormals, deltaTangents);
+            
+            // All deltas should be zero (dummy blend shape)
+            foreach (var delta in deltaVertices)
+                Assert.That(delta, Is.EqualTo(Vector3.zero));
+        }
+
+        [Test]
+        public void SkinnedMeshWithExistingBlendShapesDoesNotAddDummy()
+        {
+            var mesh = TestUtils.NewCubeMesh();
+            var deltas = new Vector3[8];
+            deltas.AsSpan().Fill(new Vector3(1, 1, 1));
+            mesh.AddBlendShapeFrame("ExistingShape", 100, deltas, null, null);
+
+            var go = new GameObject();
+            var smr = go.AddComponent<SkinnedMeshRenderer>();
+            smr.sharedMesh = mesh;
+
+            using var meshInfo2 = new MeshInfo2(smr);
+            
+            // Should have the original blend shape
+            Assert.That(meshInfo2.BlendShapes.Count, Is.EqualTo(1));
+            Assert.That(meshInfo2.BlendShapes[0].name, Is.EqualTo("ExistingShape"));
+            
+            var newMesh = new Mesh();
+            meshInfo2.WriteToMesh(newMesh, isSkinnedMesh: true);
+
+            // Should have exactly 1 blend shape (the original, no dummy added)
+            Assert.That(newMesh.blendShapeCount, Is.EqualTo(1));
+            Assert.That(newMesh.GetBlendShapeName(0), Is.EqualTo("ExistingShape"));
+        }
+
+        [Test]
+        public void MeshRendererWithoutBlendShapesDoesNotAddDummy()
+        {
+            var mesh = TestUtils.NewCubeMesh();
+            var go = new GameObject();
+            var mr = go.AddComponent<MeshRenderer>();
+            var mf = go.AddComponent<MeshFilter>();
+            mf.sharedMesh = mesh;
+
+            using var meshInfo2 = new MeshInfo2(mr);
+            
+            // Ensure no blend shapes
+            meshInfo2.BlendShapes.Clear();
+            
+            var newMesh = new Mesh();
+            meshInfo2.WriteToMesh(newMesh, isSkinnedMesh: false);
+
+            // Should have no blend shapes at all
+            Assert.That(newMesh.blendShapeCount, Is.EqualTo(0));
         }
     }
 }

@@ -533,7 +533,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 SubMeshes.Add(new SubMesh(subMesh, material));
         }
 
-        public void WriteToMesh(Mesh destMesh)
+        public void WriteToMesh(Mesh destMesh, bool isSkinnedMesh = false)
         {
             Optimize();
             destMesh.Clear();
@@ -774,6 +774,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
                 Profiler.EndSample();
 
+                // Process normal blend shapes
                 for (var i = 0; i < BlendShapes.Count; i++)
                 {
                     Profiler.BeginSample("Process Shape");
@@ -865,6 +866,18 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 }
                 Profiler.EndSample();
             }
+
+            // Add dummy blend shape for SkinnedMesh without blend shapes and without bone weights
+            if (isSkinnedMesh && BlendShapes.Count == 0 && !Vertices.Any(x => x.BoneWeights.Count != 0))
+            {
+                Profiler.BeginSample("DummyBlendShape");
+                var positions = new Vector3[Vertices.Count];
+                var normals = new Vector3[Vertices.Count];
+                var tangents = new Vector3[Vertices.Count];
+                // All arrays are initialized to zero by default, which is what we want for a dummy blend shape
+                destMesh.AddBlendShapeFrame("AAO_DummyBlendShape", 100, positions, normals, tangents);
+                Profiler.EndSample();
+            }
             Profiler.EndSample();
         }
 
@@ -877,7 +890,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     var name = $"AAOGeneratedMesh{targetRenderer.name}";
                     var mesh = new Mesh { name = name };
 
-                    WriteToMesh(mesh);
+                    WriteToMesh(mesh, isSkinnedMesh: true);
                     // I don't know why but Instantiating mesh will fix broken BlendShapes with
                     // https://github.com/anatawa12/AvatarOptimizer/issues/753
                     // https://booth.pm/ja/items/1054593.
@@ -907,7 +920,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             {
                 var mesh = new Mesh { name = $"AAOGeneratedMesh{targetRenderer.name}" };
                 var meshFilter = targetRenderer.GetComponent<MeshFilter>();
-                WriteToMesh(mesh);
+                WriteToMesh(mesh, isSkinnedMesh: false);
                 if (_originalMesh) ObjectRegistry.RegisterReplacedObject(_originalMesh, mesh);
                 meshFilter.sharedMesh = mesh;
                 targetRenderer.sharedMaterials = SubMeshes.SelectMany(x => x.SharedMaterials).ToArray();
