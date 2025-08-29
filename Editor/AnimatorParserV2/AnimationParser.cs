@@ -55,7 +55,11 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 ImmutableNodeContainer, ImmutableNodeContainer, ImmutablePropModNode<FloatValueInfo>, 
                 ImmutablePropModNode<ObjectValueInfo>,
                 BlendTreeMergeProperty
-            >(children.Select(x => ParseMotionInner(root, x.motion, mapping)),
+            >(children
+                        // As far as I tested, Unity Editor just ignores null motion in BlendTree.
+                        // See https://github.com/anatawa12/AvatarOptimizer/discussions/1489#discussioncomment-14211785
+                    .Where(x => x.motion != null)
+                    .Select(x => ParseMotionInner(root, x.motion, mapping)),
                 new BlendTreeMergeProperty(blendTree.blendType));
         }
 

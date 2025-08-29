@@ -561,11 +561,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 {
                     IsSynced: false,
                     IsSyncedToOtherLayer: false,
-                    stateMachine: not null
+                    stateMachine:
+                    {
+                        states: { Length: >= 2 } states,
+                    }
                 })
                 return false;
-
-            var states = layer.stateMachine.states;
 
             // check for each states
             // we have to check

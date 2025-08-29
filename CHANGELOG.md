@@ -9,8 +9,10 @@ The format is based on [Keep a Changelog].
 ## [Unreleased]
 ### Added
 - Declare compatibility with non-VRCSDK platforms [`#1433`](https://github.com/anatawa12/AvatarOptimizer/pull/1433)
-- Linear Entry-Exit support for Entry-Exit to 1D BlendTree Optimization `#1498`
+- Linear Entry-Exit support for Entry-Exit to 1D BlendTree Optimization `#1498` `#1506`
   - Since this version, Entry => State1 => State2 => Exit pattern is now supported.
+- More cases are supported by Automatically Freeze BlendShape `#1510`
+  - AAO can now freeze BlendShapes that are animated in animator layers with weights between 0 and 1.
 - Remove unused textures in Remove Unused Objects `1502`
 
 ### Changed
@@ -34,6 +36,8 @@ The format is based on [Keep a Changelog].
 ### Fixed
 - Padding used in OptimizeTexture is too small that can cause problems with masks `#1478`
 - Merging SubMeshes may not work for some meshes `#1501`
+- EnsureRunningOnMainThread can only be called from the main thread error in some cases `#1503`
+- Error from optimize texture when remove unused objects is disabled `#1504`
 
 ### Security
 

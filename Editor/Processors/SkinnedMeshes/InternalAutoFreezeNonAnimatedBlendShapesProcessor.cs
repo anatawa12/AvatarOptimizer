@@ -38,7 +38,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 {
                     case ApplyState.Always:
                     {
-                        if (prop.Value.TryGetConstantValue(out var constWeight))
+                        if (prop.Value.TryGetConstantValue(weight, out var constWeight))
                         {
                             newWeight = constWeight;
                             return true;
@@ -51,7 +51,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                         break;
                     case ApplyState.Partially:
                     {
-                        return prop.Value.TryGetConstantValue(out var constWeight) && constWeight.Equals(weight);
+                        return prop.Value.TryGetConstantValue(weight, out var constWeight) && constWeight.Equals(weight);
                     }
                         break;
                     case ApplyState.Never:

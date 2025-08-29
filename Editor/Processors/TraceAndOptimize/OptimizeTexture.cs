@@ -660,6 +660,8 @@ internal struct OptimizeTextureImpl {
             atlasIslands.Add(new AtlasIsland(island));
         }
 
+        if (atlasIslands.Count == 0) return null;
+
         return atlasIslands;
     }
 

@@ -123,8 +123,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
     {
         AlwaysZero,
         AlwaysOne,
-        EitherZeroOrOne,
-        Variable
+        NonZeroOne,
     }
 
     internal class AnimatorLayerPropModNode<TValueInfo> : ImmutablePropModNode<TValueInfo>

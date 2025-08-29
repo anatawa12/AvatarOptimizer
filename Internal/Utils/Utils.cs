@@ -167,12 +167,15 @@ namespace Anatawa12.AvatarOptimizer
                 .FirstOrDefault(type => !(type == null));
 
         public static T? DistinctSingleOrDefaultIfNoneOrMultiple<T>(this IEnumerable<T> enumerable)
+            => DistinctSingleOrDefaultIfNoneOrMultiple(enumerable, null);
+
+        public static T? DistinctSingleOrDefaultIfNoneOrMultiple<T>(this IEnumerable<T> enumerable, IEqualityComparer<T>? comparer)
         {
             using (var enumerator = enumerable.GetEnumerator())
             {
                 if (!enumerator.MoveNext()) return default;
                 var found = enumerator.Current;
-                var eqOperator = EqualityComparer<T>.Default;
+                var eqOperator = comparer ?? EqualityComparer<T>.Default;
 
                 while (enumerator.MoveNext())
                 {

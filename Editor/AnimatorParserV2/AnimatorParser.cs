@@ -263,8 +263,8 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             if (_mmdWorldCompatibility)
             {
                 var fxLayer = animatorLayerWeightChanged[VRCAvatarDescriptor.AnimLayerType.FX];
-                fxLayer[1] = fxLayer[1].Merge(AnimatorWeightChange.EitherZeroOrOne);
-                fxLayer[2] = fxLayer[2].Merge(AnimatorWeightChange.EitherZeroOrOne);
+                fxLayer[1] = fxLayer[1].Merge(AnimatorWeightChange.NonZeroOneChange);
+                fxLayer[2] = fxLayer[2].Merge(AnimatorWeightChange.NonZeroOneChange);
             }
 
             var playableLayers =
@@ -425,8 +425,13 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         {
             Profiler.BeginSample("AdvancedParseAnimatorController");
             var layers = controller.layers;
-            var result = NodesMerger.AnimatorControllerFromAnimatorLayers(controller.layers.Select((layer, i) =>
+            var parsedLayers = new (AnimatorWeightState, AnimatorLayerBlendingMode, AnimatorLayerNodeContainer)[layers.Length];
+
+            var wiredLayerSimulatingWeight = AnimatorWeightChange.NotChanged;
+
+            for (var i = layers.Length - 1; i >= 0; i--)
             {
+                var layer = layers[i];
                 AnimatorWeightState weightState;
                 if (i == 0)
                 {
@@ -439,10 +444,17 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                     weightState = GetWeightState(layers[i].defaultWeight, external);
                 }
 
+                weightState = GetWeightState(weightState, wiredLayerSimulatingWeight);
+
                 var parsedLayer = ParseAnimatorControllerLayer(root, controller, mapping, i);
 
-                return (weightState, layer.blendingMode, parsedLayer);
-            }));
+                parsedLayers[i] = (weightState, layer.blendingMode, parsedLayer);
+
+                wiredLayerSimulatingWeight = LowerLayerWeightForWriteNonDefaultNoneStateBehavior(controller, i, weightState)
+                    .Merge(wiredLayerSimulatingWeight);
+            }
+
+            var result = NodesMerger.AnimatorControllerFromAnimatorLayers(parsedLayers);
             Profiler.EndSample();
             return result;
         }
@@ -507,6 +519,139 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 new AnimatorLayerPropModNode<ObjectValueInfo>(nodes, nodes.Count != sourceCount ? ApplyState.Partially : ApplyState.Always);
         }
 
+        /// <summary>
+        /// Simulates the behavior of a state with motion set to 'None' when
+        /// <see cref="AnimatorState.writeDefaultValues"/> is false.
+        /// 
+        /// <para>
+        /// In this case, the 'None' motion produces extremely strange and bug-like behavior:
+        /// the state writes internal "state values" to all properties controlled by the Animator.
+        /// This behavior is undocumented, but has been confirmed by repeated experiments and
+        /// has existed for years.
+        /// </para>
+        /// 
+        /// <para>
+        /// This function reproduces that behavior by setting the weights of upper layers to 0.
+        /// When upper layers have zero weight, the AnimatorParserV2 system treats the properties
+        /// as "not controlled by animator layers," which allows the writing of "state values"
+        /// to be simulated.
+        /// </para>
+        /// 
+        /// <para>
+        /// Writing "state values" occurs when the state's motion is 'None' and
+        /// <see cref="AnimatorState.writeDefaultValues"/> is false.
+        /// However, there are specific cases where this behavior does <b>not</b> occur:
+        /// 
+        /// <list type="bullet">
+        ///   <item>
+        ///     When the state is entered on the first frame of the Animator Controller.
+        ///     In other words, the state must be entered by a transition that does not occur
+        ///     on the first frame. Entering via an entry/default transition is fine,
+        ///     but a subsequent transition to an exit state must occur on a non-first frame.
+        ///   </item>
+        ///   <item>
+        ///     When the layer weight has been 0 since the first frame of the state.
+        ///     Even if writing "state values" was active before, it becomes inactive once
+        ///     the layer weight is 0. Re-entering the state is required to reactivate it.
+        ///     Due to insufficient testing, it is unclear whether this reset occurs only when
+        ///     the animator layer weight becomes 0, or also when the playable (controller) weight
+        ///     becomes 0.
+        ///   </item>
+        /// </list>
+        /// </para>
+        /// 
+        /// <para>
+        /// According to our research, the writing of "state values" works as follows:
+        /// <list type="bullet">
+        ///   <item>
+        ///     Each state holds its own "state values," covering all properties the Animator controls.
+        ///   </item>
+        ///   <item>
+        ///     When transitioning into the state, its "state values" are updated to the
+        ///     output values of the previous frame.
+        ///   </item>
+        ///   <item>
+        ///     While the state is active (during both transitions and steady play),
+        ///     its "state values" are written to the output. No updates occur when not transitioning.
+        ///   </item>
+        /// </list>
+        /// As a result, transitions appear as a smooth interpolation (lerp) from the
+        /// previous frame’s output values to the "state values."
+        /// </para>
+        ///
+        /// <para>
+        /// We don't have to take care of None in BlendTree because BlendTree with None motion has completely different behavior.
+        /// </para>
+        /// 
+        /// <para>
+        /// For full details of this buggy Animator behavior, see the
+        /// <see href="https://github.com/anatawa12/AvatarOptimizer/discussions/1489#discussioncomment-14125328">
+        /// research thread in GitHub Discussions (Japanese)
+        /// </see>.
+        /// </para>
+        /// </summary>
+        /// <param name="stateMotions"></param>
+        private AnimatorWeightChange LowerLayerWeightForWriteNonDefaultNoneStateBehavior(AnimatorController controller, int layerIndex, AnimatorWeightState currentLayerWeight)
+        {
+            // We call write defaults = false state with None motion as wierd state.
+            var layer = controller.layers[layerIndex];
+
+            var syncedLayer = layer.syncedLayerIndex;
+
+            AnimatorStateMachine stateMachine;
+
+            IEnumerable<AnimatorState> noneStates;
+
+            if (syncedLayer == -1)
+            {
+                stateMachine = layer.stateMachine;
+                noneStates = ACUtils.AllStates(stateMachine).Where(state => state.motion == null);
+            }
+            else
+            {
+                stateMachine = controller.layers[syncedLayer].stateMachine;
+                noneStates = ACUtils.AllStates(stateMachine).Where(state => layer.GetOverrideMotion(state) == null);
+            }
+
+            var wierdState = noneStates.Where(state => state.writeDefaultValues == false).ToHashSet();
+
+            // No 'None' states. does not change the weight of the lower layers
+            if (wierdState.Count == 0) return AnimatorWeightChange.NotChanged;
+
+            // If there is at least one 'None' state with writeDefaultValues off,
+            // the weight of the lower layers can become zero, or can be changed dynamically if there is a transition with duration.
+
+            var allAnimatorTransitionsDirectlyTargetingWierdStates = ACUtils.AllTransitions(stateMachine)
+                .Where(x => wierdState.Contains(x.destinationState))
+                .OfType<AnimatorStateTransition>();
+            var hasEntryTransitionTargetingWierdStates = ACUtils.AllStateMachines(stateMachine)
+                .Any(stateMachine => wierdState.Contains(stateMachine.defaultState) ||
+                                    stateMachine.entryTransitions.Any(x => wierdState.Contains(x.destinationState)));
+            var allExitTransitions = ACUtils.AllTransitions(stateMachine).OfType<AnimatorStateTransition>().Where(x => x.isExit);
+
+            // if there is entry transiton targeting wierd states, all exit transitions can target wierd states.
+            var allAnimatorTransitionsTargetingWierdStates = allAnimatorTransitionsDirectlyTargetingWierdStates
+                .Concat(hasEntryTransitionTargetingWierdStates ? allExitTransitions : Enumerable.Empty<AnimatorStateTransition>());
+
+            // 'transitioning' means there is a frame blending before state and after state.
+            // we don't need to check fixedDuration because if duration is 0, transition is instant.
+            var hasTransitioningTransitionTargetingWierdStates = allAnimatorTransitionsTargetingWierdStates.Any(x => x.duration > 0);
+
+            // if there is no transitioning transition targeting wierd states, we can simulate the behavior by setting lower layer weight to 0.
+            // if there is transitioning one, simuration requires changing lower layer weight.
+            var simulatingWeightChange = hasTransitioningTransitionTargetingWierdStates ? AnimatorWeightChange.NonZeroOneChange : AnimatorWeightChange.AlwaysZero;
+
+            // combine simulatingWeightChange and current layer's weight
+            return (currentLayerWeight, simulatingWeightChange) switch
+            {
+                // When the current layer weight is always 0, the wierd state behavior will never be activated, so we can ignore it.
+                (AnimatorWeightState.AlwaysZero, _) => AnimatorWeightChange.NotChanged,
+                // When the current layer weight is always 1, the wierd state behavior will always be activated, so we can always apply the simulating weight change.
+                // The AnimatorWeightChange does not imply always changed, it means 'can be changed to always 1' so no problem with EitherZeroOrOne.
+                (AnimatorWeightState.AlwaysOne or AnimatorWeightState.NonZeroOne, var change) => change,
+            };
+        }
+
         AnimatorWeightState GetWeightState(float weight, AnimatorWeightChange external)
         {
             bool isOneWeight;
@@ -514,7 +659,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             if (weight == 0) isOneWeight = false;
             // ReSharper disable once CompareOfFloatsByEqualityOperator
             else if (weight == 1) isOneWeight = true;
-            else return AnimatorWeightState.Variable;
+            else return AnimatorWeightState.NonZeroOne;
 
             switch (external)
             {
@@ -522,21 +667,29 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                     return isOneWeight ? AnimatorWeightState.AlwaysOne : AnimatorWeightState.AlwaysZero;
 
                 case AnimatorWeightChange.AlwaysZero:
-                    return isOneWeight ? AnimatorWeightState.EitherZeroOrOne : AnimatorWeightState.AlwaysZero;
+                    return isOneWeight ? AnimatorWeightState.NonZeroOne : AnimatorWeightState.AlwaysZero;
 
                 case AnimatorWeightChange.AlwaysOne:
                     return isOneWeight
                         ? AnimatorWeightState.AlwaysOne
-                        : AnimatorWeightState.EitherZeroOrOne;
+                        : AnimatorWeightState.NonZeroOne;
 
-                case AnimatorWeightChange.EitherZeroOrOne:
-                    return AnimatorWeightState.EitherZeroOrOne;
-                case AnimatorWeightChange.Variable:
-                    return AnimatorWeightState.Variable;
+                case AnimatorWeightChange.NonZeroOneChange:
+                    return AnimatorWeightState.NonZeroOne;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
         }
+
+        AnimatorWeightState GetWeightState(AnimatorWeightState weight, AnimatorWeightChange external) =>
+            (weight, external) switch
+            {
+                (var w, AnimatorWeightChange.NotChanged) => w,
+                (AnimatorWeightState.AlwaysZero, AnimatorWeightChange.AlwaysZero) => AnimatorWeightState.AlwaysZero,
+                (AnimatorWeightState.AlwaysOne, AnimatorWeightChange.AlwaysOne) => AnimatorWeightState.AlwaysOne,
+
+                _ => AnimatorWeightState.NonZeroOne,
+            };
 
         #endregion
 
