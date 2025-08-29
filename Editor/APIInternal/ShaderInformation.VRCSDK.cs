@@ -66,6 +66,7 @@ class VRCSDKToonLitShaderInformation : ShaderInformation
 
     public override ShaderInformationKind SupportedInformationKind =>
         ShaderInformationKind.VertexIndexUsage | ShaderInformationKind.TextureAndUVUsage;
+
     public override void GetMaterialInformation(MaterialInformationCallback matInfo)
     {
         var mainTexST = matInfo.GetVector("_MainTex_ST");
@@ -171,5 +172,166 @@ class VRCSDKToonStandardShaderInformation : ShaderInformation
             // note: this does not require the mipmap
             Register("_OutlineMask", UsingUVChannels.UV0);
         }
+    }
+}
+
+// VRChat/Sprites/Default
+[InitializeOnLoad]
+class VRCSDKSpriteDefaultShaderInformation : ShaderInformation
+{
+    static VRCSDKSpriteDefaultShaderInformation()
+    {
+        Register();
+    }
+
+    private static void Register()
+    {
+        var information = new VRCSDKSpriteDefaultShaderInformation();
+        ShaderInformationRegistry.RegisterShaderInformationWithGUID("5f8fef09682fab74fb7a29d783391edb", information);
+    }
+
+    public override ShaderInformationKind SupportedInformationKind =>
+        ShaderInformationKind.VertexIndexUsage | ShaderInformationKind.TextureAndUVUsage;
+
+    public override void GetMaterialInformation(MaterialInformationCallback matInfo)
+    {
+        // _MainTex and _AlphaTex
+        // Do not apply _MainTex_ST to either
+        matInfo.RegisterTextureUVUsage("_MainTex", "_MainTex", UsingUVChannels.UV0, null);
+        matInfo.RegisterTextureUVUsage("_AlphaTex", "_AlphaTex", UsingUVChannels.UV0, null);
+    }
+}
+
+
+// VRChat/Sprites/Diffuse
+[InitializeOnLoad]
+class VRCSDKSpriteDiffuseShaderInformation : ShaderInformation
+{
+    static VRCSDKSpriteDiffuseShaderInformation()
+    {
+        Register();
+    }
+
+    private static void Register()
+    {
+        var information = new VRCSDKSpriteDiffuseShaderInformation();
+        ShaderInformationRegistry.RegisterShaderInformationWithGUID("9ae8ad653e1d98940bbc79866b9170f3", information);
+    }
+
+    public override ShaderInformationKind SupportedInformationKind =>
+        ShaderInformationKind.VertexIndexUsage | ShaderInformationKind.TextureAndUVUsage;
+
+    public override void GetMaterialInformation(MaterialInformationCallback matInfo)
+    {
+        // _MainTex and _AlphaTex
+        // Do not apply _MainTex_ST to either
+        matInfo.RegisterTextureUVUsage("_MainTex", "_MainTex", UsingUVChannels.UV0, null);
+        matInfo.RegisterTextureUVUsage("_AlphaTex", "_AlphaTex", UsingUVChannels.UV0, null);
+    }
+}
+
+// VRChat/Mobile/MatCap Lit
+[InitializeOnLoad]
+class VRCSDKMatcapLitShaderInformation : ShaderInformation
+{
+    static VRCSDKMatcapLitShaderInformation()
+    {
+        Register();
+    }
+
+    private static void Register()
+    {
+        var information = new VRCSDKMatcapLitShaderInformation();
+        ShaderInformationRegistry.RegisterShaderInformationWithGUID("3ad043b7f9839cb48a75a9238d433dec", information);
+    }
+
+    public override ShaderInformationKind SupportedInformationKind =>
+        ShaderInformationKind.VertexIndexUsage | ShaderInformationKind.TextureAndUVUsage;
+
+    public override void GetMaterialInformation(MaterialInformationCallback matInfo)
+    {
+        // _MainTex and _MatCap(NonMesh)
+        var mainTexST = matInfo.GetVector("_MainTex_ST");
+        Matrix2x3? mainTexSTMat = mainTexST is { } st ? Matrix2x3.NewScaleOffset(st) : null;
+        matInfo.RegisterTextureUVUsage("_MainTex", "_MainTex", UsingUVChannels.UV0, mainTexSTMat);
+        matInfo.RegisterTextureUVUsage("_MatCap", "_MatCap", UsingUVChannels.NonMesh, null);
+    }
+}
+
+// VRChat/Mobile/Particles/Additive
+[InitializeOnLoad]
+class VRCSDKParticleAdditiveShaderInformation : ShaderInformation
+{
+    static VRCSDKParticleAdditiveShaderInformation()
+    {
+        Register();
+    }
+
+    private static void Register()
+    {
+        var information = new VRCSDKParticleAdditiveShaderInformation();
+        ShaderInformationRegistry.RegisterShaderInformationWithGUID("9200bec112b65ec4fbbbd33fa89c20f4", information);
+    }
+
+    public override ShaderInformationKind SupportedInformationKind =>
+        ShaderInformationKind.VertexIndexUsage | ShaderInformationKind.TextureAndUVUsage;
+
+    public override void GetMaterialInformation(MaterialInformationCallback matInfo)
+    {
+        var mainTexST = matInfo.GetVector("_MainTex_ST");
+        Matrix2x3? mainTexSTMat = mainTexST is { } st ? Matrix2x3.NewScaleOffset(st) : null;
+        matInfo.RegisterTextureUVUsage("_MainTex", "_MainTex", UsingUVChannels.UV0, mainTexSTMat);
+    }
+}
+
+// VRChat/Mobile/Particles/Alpha Blended
+[InitializeOnLoad]
+class VRCSDKParticleAlphaBlendedShaderInformation : ShaderInformation
+{
+    static VRCSDKParticleAlphaBlendedShaderInformation()
+    {
+        Register();
+    }
+
+    private static void Register()
+    {
+        var information = new VRCSDKParticleAlphaBlendedShaderInformation();
+        ShaderInformationRegistry.RegisterShaderInformationWithGUID("8b39b95ac85682040beff730e0cfc77a", information);
+    }
+
+    public override ShaderInformationKind SupportedInformationKind =>
+        ShaderInformationKind.VertexIndexUsage | ShaderInformationKind.TextureAndUVUsage;
+
+    public override void GetMaterialInformation(MaterialInformationCallback matInfo)
+    {
+        var mainTexST = matInfo.GetVector("_MainTex_ST");
+        Matrix2x3? mainTexSTMat = mainTexST is { } st ? Matrix2x3.NewScaleOffset(st) : null;
+        matInfo.RegisterTextureUVUsage("_MainTex", "_MainTex", UsingUVChannels.UV0, mainTexSTMat);
+    }
+}
+
+// VRChat/Mobile/Particles/Multiply
+[InitializeOnLoad]
+class VRCSDKParticleMultiplyShaderInformation : ShaderInformation
+{
+    static VRCSDKParticleMultiplyShaderInformation()
+    {
+        Register();
+    }
+
+    private static void Register()
+    {
+        var information = new VRCSDKParticleMultiplyShaderInformation();
+        ShaderInformationRegistry.RegisterShaderInformationWithGUID("d5b89f0c74ccf5049ba803c14a090378", information);
+    }
+
+    public override ShaderInformationKind SupportedInformationKind =>
+        ShaderInformationKind.VertexIndexUsage | ShaderInformationKind.TextureAndUVUsage;
+
+    public override void GetMaterialInformation(MaterialInformationCallback matInfo)
+    {
+        var mainTexST = matInfo.GetVector("_MainTex_ST");
+        Matrix2x3? mainTexSTMat = mainTexST is { } st ? Matrix2x3.NewScaleOffset(st) : null;
+        matInfo.RegisterTextureUVUsage("_MainTex", "_MainTex", UsingUVChannels.UV0, mainTexSTMat);
     }
 }

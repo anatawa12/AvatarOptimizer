@@ -59,3 +59,33 @@ class StandardShaderInformation : ShaderInformation
         matInfo.RegisterTextureUVUsage("_DetailNormalMap", "_DetailNormalMap", detailMapUV, detailMapSTMat);
     }
 }
+
+// Unity builtin "Mobile/Vertex Lit" shader
+// https://github.com/TwoTailsGames/Unity-Built-in-Shaders/blob/master/DefaultResourcesExtra/Mobile/Mobile-VertexLit.shader
+[InitializeOnLoad]
+class MobileVertexLitShaderInformation : ShaderInformation
+{
+    static MobileVertexLitShaderInformation()
+    {
+        Register();
+    }
+
+    private static void Register()
+    {
+        var information = new MobileVertexLitShaderInformation();
+        if (!GlobalObjectId.TryParse("GlobalObjectId_V1-4-0000000000000000f000000000000000-10701-0", out var id)) return;
+        var shader = GlobalObjectId.GlobalObjectIdentifierToObjectSlow(id) as Shader;
+        if (shader == null) return;
+        ShaderInformationRegistry.RegisterShaderInformation(shader, information);
+    }
+
+    public override ShaderInformationKind SupportedInformationKind =>
+        ShaderInformationKind.VertexIndexUsage | ShaderInformationKind.TextureAndUVUsage;
+
+    public override void GetMaterialInformation(MaterialInformationCallback matInfo)
+    {
+        var mainTexST = matInfo.GetVector("_MainTex_ST");
+        Matrix2x3? mainTexSTMat = mainTexST is { } st ? Matrix2x3.NewScaleOffset(st) : null;
+        matInfo.RegisterTextureUVUsage("_MainTex", "_MainTex", UsingUVChannels.UV0, mainTexSTMat);
+    }
+}

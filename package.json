@@ -16,7 +16,7 @@
   "changelogUrl": "https://vpm.anatawa12.com/avatar-optimizer/en/docs/changelog/",
   "license": "MIT",
   "vpmDependencies": {
-    "nadena.dev.ndmf": ">=1.8.0-alpha.3 <2.0.0",
+    "nadena.dev.ndmf": ">=1.8.0 <2.0.0",
     "com.vrchat.avatars": ">=3.7.0 <3.9.0"
   },
   "dependencies": {

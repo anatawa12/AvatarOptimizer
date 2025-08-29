@@ -38,6 +38,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         public bool SkipRemoveEmptySubMesh;
         public bool SkipAnyStateToEntryExit;
         public bool SkipRemoveMaterialUnusedProperties;
+        public bool SkipRemoveMaterialUnusedTextures;
         public bool SkipAutoMergeBlendShape;
         public bool SkipRemoveUnusedSubMesh;
 
@@ -78,6 +79,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             SkipRemoveEmptySubMesh = config.debugOptions.skipRemoveEmptySubMesh;
             SkipAnyStateToEntryExit = config.debugOptions.skipAnyStateToEntryExit;
             SkipRemoveMaterialUnusedProperties = config.debugOptions.skipRemoveMaterialUnusedProperties;
+            SkipRemoveMaterialUnusedTextures = config.debugOptions.skipRemoveMaterialUnusedTextures;
             SkipAutoMergeBlendShape = config.debugOptions.skipAutoMergeBlendShape;
             SkipRemoveUnusedSubMesh = config.debugOptions.skipRemoveUnusedSubMesh;
 
