@@ -270,6 +270,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 mesh.GetIndices(triangles, i);
                 SubMeshes.Add(new SubMesh(Vertices, triangles, mesh.GetSubMesh(i)));
             }
+
+            var usedVertices = SubMeshes.SelectMany(x => x.Vertices).ToHashSet();
+            foreach (var vertex in Vertices)
+                vertex.IsOrphanVertex = !usedVertices.Contains(vertex);
             Profiler.EndSample();
         }
 
@@ -944,7 +948,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             var removed = new List<Vertex>();
             VerticesMutable.RemoveAll(x =>
             {
-                var remove = !usedVertices.Contains(x);
+                // orphan vertex are likely used for bounds calculation.
+                // Therefore, we keep orphan vertex even if it is not used in any submesh.
+                var remove = !usedVertices.Contains(x) && !x.IsOrphanVertex;
                 if (remove) removed.Add(x);
                 return remove;
             });
@@ -1092,6 +1098,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         public int BlendShapeBufferVertexIndex;
 
+        public bool IsOrphanVertex = false;
+
         public readonly struct BlendShapeFrame
         {
             public readonly float Weight;
@@ -1187,6 +1195,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             BoneWeights = vertex.BoneWeights.ToList();
             BlendShapeBuffer = vertex.BlendShapeBuffer;
             BlendShapeBufferVertexIndex = vertex.BlendShapeBufferVertexIndex;
+            IsOrphanVertex = vertex.IsOrphanVertex;
         }
 
         public Vertex Clone() => new Vertex(this);
