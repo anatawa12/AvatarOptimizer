@@ -54,9 +54,17 @@ namespace Anatawa12.AvatarOptimizer
                         }
                         else
                         {
-                            if (!unknownComponents.TryGetValue(component.GetType(), out var list))
-                                unknownComponents.Add(component.GetType(), list = new List<Object>());
-                            list.Add(component);
+                            // Ignore IEditorOnly components.
+                            if (!(component is VRC.SDKBase.IEditorOnly))
+                            {
+                                if (!unknownComponents.TryGetValue(component.GetType(), out var list))
+                                    unknownComponents.Add(component.GetType(), list = new List<Object>());
+                                list.Add(component);
+                            }
+                            else
+                            {
+                                Debug.LogWarning($"Ignored IEditorOnly component: {component.GetType().FullName}",component);
+                            }
 
                             FallbackDependenciesParser(component, collector);
                         }
