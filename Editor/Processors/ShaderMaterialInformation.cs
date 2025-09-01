@@ -68,7 +68,7 @@ internal class MaterialInformation
     public readonly List<TextureUsageInformation>? FallbackTextureUsageInformationList;
 	public readonly bool UseVertexIndexForFallback;
 
-    public MaterialInformation(Material material, List<Renderer> renderers, BuildContext context)
+    public MaterialInformation(Material material, List<Renderer> renderers, BuildContext? context)
     {
         Material = material;
         UserRenderers = renderers;
@@ -86,7 +86,7 @@ internal class MaterialInformation
             var provider = new MaterialInformationCallbackImpl(
                 material,
                 supportedKind,
-                renderers.Select(renderer => context.GetAnimationComponent(renderer)).ToList());
+                context == null ? null : renderers.Select(renderer => context.GetAnimationComponent(renderer)).ToList());
             information.GetMaterialInformation(provider);
             TextureUsageInformationList = provider.TextureUsageInformations;
             UseVertexIndex = provider.UseVertexIndex;
@@ -95,7 +95,7 @@ internal class MaterialInformation
 		HasFallbackShaderInformation = false;
 		FallbackTextureUsageInformationList = null;
 		UseVertexIndexForFallback = false;
-		if (IsShaderFallbackSupported(context) && GetFallbackShaderInformation(material, context) is { } fallbackInformation)
+		if (context != null && IsShaderFallbackSupported(context) && GetFallbackShaderInformation(material, context) is { } fallbackInformation)
 		{
 			HasFallbackShaderInformation = true;
 
@@ -135,11 +135,11 @@ internal class MaterialInformation
         public List<TextureUsageInformation>? TextureUsageInformations => _textureUsageInformations;
 
         public MaterialInformationCallbackImpl(Material material, ShaderInformationKind supportedKind,
-            List<AnimationComponentInfo<PropertyInfo>> infos)
+            List<AnimationComponentInfo<PropertyInfo>>? infos)
         {
             _material = material;
             _supportedKind = supportedKind;
-            _infos = infos;
+            _infos = infos ?? new List<AnimationComponentInfo<PropertyInfo>>();
 
             if ((_supportedKind & ShaderInformationKind.TextureAndUVUsage) != 0)
                 _textureUsageInformations = new List<TextureUsageInformation>();
