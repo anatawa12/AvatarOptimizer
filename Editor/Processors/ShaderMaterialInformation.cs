@@ -60,13 +60,8 @@ internal class MaterialInformation
     public readonly Material Material;
     public readonly List<Renderer> UserRenderers;
 
-    public readonly bool HasShaderInformation;
-    public readonly List<TextureUsageInformation>? TextureUsageInformationList;
-    public readonly bool UseVertexIndex;
-
-    public readonly bool HasFallbackShaderInformation;
-    public readonly List<TextureUsageInformation>? FallbackTextureUsageInformationList;
-	public readonly bool UseVertexIndexForFallback;
+    public readonly ShaderInformationResult? DefaultResult;
+    public readonly ShaderInformationResult? FallbackResult;
 
     public MaterialInformation(Material material, List<Renderer> renderers, BuildContext? context)
     {
@@ -75,40 +70,35 @@ internal class MaterialInformation
 
         // collect texture usage information
 
-        HasShaderInformation = false;
-        UseVertexIndex = false;
-        TextureUsageInformationList = null;
         if (ShaderInformationRegistry.GetShaderInformation(material.shader) is { } information)
         {
-            HasShaderInformation = true;
+            DefaultResult = new ShaderInformationResult(information, material, renderers, context);
+        }
+		
+		if (context != null && IsShaderFallbackSupported(context) && GetFallbackShaderInformation(material, context) is { } fallbackInformation)
+		{
+            FallbackResult = new ShaderInformationResult(fallbackInformation, material, renderers, context);
+		}
+	}
 
+    public class ShaderInformationResult
+    {
+        public List<TextureUsageInformation>? TextureUsageInformationList { get; init; }
+        public bool UseVertexIndex { get; init; }
+
+        public ShaderInformationResult(ShaderInformation information, Material material, List<Renderer> renderers, BuildContext? context)
+        {
             var supportedKind = information.SupportedInformationKind;
             var provider = new MaterialInformationCallbackImpl(
                 material,
                 supportedKind,
                 context == null ? null : renderers.Select(renderer => context.GetAnimationComponent(renderer)).ToList());
             information.GetMaterialInformation(provider);
+
             TextureUsageInformationList = provider.TextureUsageInformations;
             UseVertexIndex = provider.UseVertexIndex;
         }
-		
-		HasFallbackShaderInformation = false;
-		FallbackTextureUsageInformationList = null;
-		UseVertexIndexForFallback = false;
-		if (context != null && IsShaderFallbackSupported(context) && GetFallbackShaderInformation(material, context) is { } fallbackInformation)
-		{
-			HasFallbackShaderInformation = true;
-
-			var supportedKind = fallbackInformation.SupportedInformationKind;
-			var provider = new MaterialInformationCallbackImpl(
-				material,
-				supportedKind,
-				renderers.Select(renderer => context.GetAnimationComponent(renderer)).ToList());
-			fallbackInformation.GetMaterialInformation(provider);
-			FallbackTextureUsageInformationList = provider.TextureUsageInformations;
-			UseVertexIndexForFallback = provider.UseVertexIndex;
-		}
-	}
+    }
 
     private bool IsShaderFallbackSupported(BuildContext context)
     {

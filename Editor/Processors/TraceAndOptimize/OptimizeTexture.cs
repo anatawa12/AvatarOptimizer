@@ -229,7 +229,7 @@ internal struct OptimizeTextureImpl {
             IEnumerable<(Texture?, TextureUsageInformation?)> textures;
 
             // collect texture usage information
-            if (materialInformation?.TextureUsageInformationList is { } informations)
+            if (materialInformation?.DefaultResult?.TextureUsageInformationList is { } informations)
             {
                 materialNode.TextureUsageInformations = informations.ToList();
                 materialNode.UserRenderersOnAvatar = materialInformation.UserRenderers.Where(x => x != null).ToList();

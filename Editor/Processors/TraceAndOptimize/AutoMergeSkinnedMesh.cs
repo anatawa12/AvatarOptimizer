@@ -108,7 +108,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     // not guaranteed so upgrading Avatar Optimizer may break your avatar if you rely on vertex index
                     // after Remove Mesh By **** or Merge Skinned Mesh.
                     && !context.GetAllPossibleMaterialFor(meshRenderer)
-                        .Any(x => context.GetMaterialInformation(x)?.UseVertexIndex ?? false)
+                        .Any(x => context.GetMaterialInformation(x)?.DefaultResult?.UseVertexIndex ?? false)
 
                     // other notes:
                     // - activeness animation can be ignored here because we'll combine based on activeness animation
