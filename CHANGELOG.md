@@ -43,6 +43,8 @@ The format is based on [Keep a Changelog].
 - EnsureRunningOnMainThread can only be called from the main thread error in some cases `#1503`
 - Error from optimize texture when remove unused objects is disabled `#1504`
 - Unity error when SkinnedMesh has no blend shapes after optimization `#1402`
+- Mesh can be disappeared when BlendShapes with infinity in their delta are frozen with AAO `#1518`
+  - Freezing them would result Infinity in vertex position, which results NaN or Infinity in bounds, which makes Unity to clear the mesh.
 
 ### Security
 
