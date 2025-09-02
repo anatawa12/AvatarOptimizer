@@ -882,6 +882,25 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 destMesh.AddBlendShapeFrame("AAO_DummyBlendShape", 100, positions, normals, tangents);
                 Profiler.EndSample();
             }
+
+            if (Vertices.Count != 0) {
+                var min = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
+                var max = new Vector3(float.MinValue, float.MinValue, float.MinValue);
+                foreach (var v in Vertices)
+                {
+                    if (float.IsFinite(v.Position.x)) min.x = Math.Min(min.x, v.Position.x);
+                    if (float.IsFinite(v.Position.y)) min.y = Math.Min(min.y, v.Position.y);
+                    if (float.IsFinite(v.Position.z)) min.z = Math.Min(min.z, v.Position.z);
+                    if (float.IsFinite(v.Position.x)) max.x = Math.Max(max.x, v.Position.x);
+                    if (float.IsFinite(v.Position.y)) max.y = Math.Max(max.y, v.Position.y);
+                    if (float.IsFinite(v.Position.z)) max.z = Math.Max(max.z, v.Position.z);
+                }
+
+                var bounds = new Bounds();
+                bounds.SetMinMax(min, max);
+                destMesh.bounds = bounds;
+            }
+
             Profiler.EndSample();
         }
 

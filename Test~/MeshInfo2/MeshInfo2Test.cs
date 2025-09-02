@@ -393,5 +393,43 @@ namespace Anatawa12.AvatarOptimizer.Test
             // Should have no blend shapes at all
             Assert.That(newMesh.blendShapeCount, Is.EqualTo(0));
         }
+
+        // https://github.com/anatawa12/AvatarOptimizer/issues/1496
+        // Freezing inifnimation (blendShapes with infinity offset) would result non-finite position.
+        // Unity simply use min/max to compute bounding box so it will result non-finite bounding box.
+        // However, unity will have issue when mesh has non-finite bounding box and clears mesh data. in some situation.
+        // Therefore, we need to ensure the bounding box is always finite.
+        [Test]
+        public void NonFinitePositionShouldResultGood()
+        {
+            var mesh = TestUtils.NewCubeMesh();
+            var go = new GameObject();
+            var mr = go.AddComponent<MeshRenderer>();
+            var mf = go.AddComponent<MeshFilter>();
+            mf.sharedMesh = mesh;
+
+            using var meshInfo2 = new MeshInfo2(mr);
+
+            var vertex = meshInfo2.Vertices[0];
+            vertex.Position = new Vector3(float.NaN, float.PositiveInfinity, float.NegativeInfinity);
+
+            var newMesh = new Mesh();
+            meshInfo2.WriteToMesh(newMesh, isSkinnedMesh: false);
+
+            Assert.That(newMesh.vertexCount, Is.EqualTo(mesh.vertexCount));
+            Assert.That(float.IsFinite(newMesh.bounds.center.x));
+            Assert.That(float.IsFinite(newMesh.bounds.center.y));
+            Assert.That(float.IsFinite(newMesh.bounds.center.z));
+            Assert.That(float.IsFinite(newMesh.bounds.extents.x));
+            Assert.That(float.IsFinite(newMesh.bounds.extents.y));
+            Assert.That(float.IsFinite(newMesh.bounds.extents.z));
+
+            // according to experiment with debugger, accessing vertexBufferCount would force mesh to be analyzed in some way
+            // and triggers clearing mesh data when non-finite bounding box is present.
+            // so we access it and check vertex count later.
+            // It's unlikely to fail this test since we checked bounding box is finite above, but for ensuring the original issue is fixed, we check vertex count too.
+            _ = newMesh.vertexBufferCount;
+            Assert.That(newMesh.vertexCount, Is.EqualTo(mesh.vertexCount));
+        }
     }
 }
