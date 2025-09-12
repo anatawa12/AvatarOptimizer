@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Compatibility declaration for VRCSDK 3.9.x `#1520`
+  - No breaking changes affect AAO, so no code changes were required.
 
 ### Changed
 
