@@ -8,8 +8,6 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Compatibility declaration for VRCSDK 3.9.x `#1520`
-  - No breaking changes affect AAO, so no code changes were required.
 
 ### Changed
 
@@ -20,6 +18,11 @@ The format is based on [Keep a Changelog].
 ### Fixed
 
 ### Security
+
+## [1.8.14-beta.2] - 2025-09-13
+### Added
+- Compatibility declaration for VRCSDK 3.9.x [`#1520`](https://github.com/anatawa12/AvatarOptimizer/pull/1520)
+  - No breaking changes affect AAO, so no code changes were required.
 
 ## [1.8.14-beta.1] - 2025-08-09
 ### Fixed
@@ -1934,7 +1937,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.14-beta.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.14-beta.2...HEAD
+[1.8.14-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.14-beta.1...v1.8.14-beta.2
 [1.8.14-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.13...v1.8.14-beta.1
 [1.8.13]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.13-beta.3...v1.8.13
 [1.8.13-beta.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.13-beta.2...v1.8.13-beta.3
