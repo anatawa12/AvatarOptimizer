@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.AnimatorParsersV2;
+using Anatawa12.AvatarOptimizer.API;
 using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
 using nadena.dev.ndmf;
 using UnityEditor;
@@ -228,8 +229,14 @@ internal struct OptimizeTextureImpl {
             // We check if texture is Texture2D or not in later phase
             IEnumerable<(Texture?, TextureUsageInformation?)> textures;
 
+            const UsingUVChannels AnyUV = UsingUVChannels.UV0 | UsingUVChannels.UV1 | UsingUVChannels.UV2 | UsingUVChannels.UV3 |
+                                               UsingUVChannels.UV4 | UsingUVChannels.UV5 | UsingUVChannels.UV6 | UsingUVChannels.UV7;
+
             // collect texture usage information
-            if (materialInformation?.DefaultResult?.TextureUsageInformationList is { } informations)
+            // TODO: support partial UV usage
+            if (materialInformation?.DefaultResult?.TextureUsageInformationList is { } informations
+                && informations.All(x => x.UVMatrix == Matrix2x3.Identity)
+                && (materialInformation?.DefaultResult?.OtherUVUsage & AnyUV) == 0)
             {
                 materialNode.TextureUsageInformations = informations.ToList();
                 materialNode.UserRenderersOnAvatar = materialInformation.UserRenderers.Where(x => x != null).ToList();
