@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.AnimatorParsersV2;
 using Anatawa12.AvatarOptimizer.API;
@@ -106,7 +107,9 @@ internal struct OptimizeTextureImpl {
         var connectedComponentInfos = CollectMaterialsUnionFind(context);
 
         // atlas texture for each connected component
-        var uvInformation = connectedComponentInfos.SelectMany(AtlasConnectedComponent);
+        var self = this;
+        var uvInformation = connectedComponentInfos
+            .Select((info) => self.AtlasConnectedComponent(info, context));
 
         RemapVertexUvs(uvInformation.ToList());
     }
@@ -117,56 +120,165 @@ internal struct OptimizeTextureImpl {
 
     internal class ConnectedComponentInfo
     {
-        public List<SubMeshNode> SubMeshes { get; } = new();
-        public List<MaterialNode> Materials { get; } = new();
+        public HashSet<SubMeshUVNode> SubMeshUvs { get; } = new();
         public List<TextureNode> Textures { get; } = new();
     }
 
-    internal class SubMeshNode : UnionFindNodeBase
+    internal class SubMeshUVNode : UnionFindNodeBase
     {
-        // If we cannot get materials from animation, we cannot merge
-        public bool SafeToMergeByAnimation { get; set; }
+        // If some materials are not known for the submesh, we cannot atlas texture
+        public bool AllMaterialsAreKnown { get; set; }
+
+        // If some materials use non-texture information (like color), we cannot atlas texture
+        public bool ThereIsNonTextureUsage { get; set; }
+
+        public bool CanBeUsedForAtlas => AllMaterialsAreKnown && UVChannel != UVChannel.NonMeshRelated && !ThereIsNonTextureUsage;
 
         public SubMeshId SubMeshId { get; }
 
-        public SubMeshNode(SubMeshId subMeshId) => SubMeshId = subMeshId;
-    }
+        // The actual UV Channel used.
+        // This can be different from the UVChannel in TextureUsageInformation when
+        // the mesh has less UV channels than the material expects.
+        public UVChannel UVChannel { get; }
 
-    internal class MaterialNode : UnionFindNodeBase
-    {
-        // If we cannot collect textures from shader information (if null), unable to merge
-        public List<TextureUsageInformation>? TextureUsageInformations { get; set; }
-        public List<Renderer>? UserRenderersOnAvatar { get; set; }
+        public UVID UVId => new(SubMeshId, UVChannel);
 
-        // The list of submeshes that use this material
-        public List<SubMeshNode> Users { get; } = new();
-
-        public Material Material { get; }
-
-        public MaterialNode(Material material) => Material = material;
-
-        public void UseThis(SubMeshNode subMeshNode)
+        public SubMeshUVNode()
         {
-            Users.Add(subMeshNode);
-            UnionFind.Merge<UnionFindNodeBase>(this, subMeshNode);
+            SubMeshId = default;
+            UVChannel = UVChannel.NonMeshRelated;
+        }
+
+        public SubMeshUVNode(SubMeshId subMeshId, UVChannel uvChannel)
+        {
+            SubMeshId = subMeshId;
+            UVChannel = uvChannel;
+            if (uvChannel is < UVChannel.UV0 or > UVChannel.UV7)
+                throw new ArgumentException("NonMeshRelated UV cannot be specified with SubMeshId");
         }
     }
 
     internal class TextureNode : UnionFindNodeBase
     {
-        public Dictionary<MaterialNode, List<TextureUsageInformation>> Users { get; } = new();
+        public Dictionary<Material, HashSet<TextureUsageInformation>> Users { get; } = new();
+        public HashSet<SubMeshUVNode> UserSubMeshUVs { get; } = new();
 
         public Texture Texture { get; }
 
         public TextureNode(Texture texture) => Texture = texture;
 
-        public void UseTexture(MaterialNode material, TextureUsageInformation? usage)
+        public void UseTexture(Material material, SubMeshUVNode subMeshUV, TextureUsageInformation usage)
         {
-            UnionFind.Merge<UnionFindNodeBase>(this, material);
-
+            UnionFind.Merge<UnionFindNodeBase>(this, subMeshUV);
+            
             if (!Users.TryGetValue(material, out var usages))
-                Users.Add(material, usages = new List<TextureUsageInformation>());
-            if (usage != null) usages.Add(usage);
+                Users.Add(material, usages = new());
+            usages.Add(usage);
+            UserSubMeshUVs.Add(subMeshUV);
+        }
+    }
+
+    internal class SubMeshUVCollection
+    {
+        public SubMeshUVNode NonMeshRelated;
+        public SubMeshUVNode UV0;
+        public SubMeshUVNode UV1;
+        public SubMeshUVNode UV2;
+        public SubMeshUVNode UV3;
+        public SubMeshUVNode UV4;
+        public SubMeshUVNode UV5;
+        public SubMeshUVNode UV6;
+        public SubMeshUVNode UV7;
+
+        public SubMeshUVNode this[UVChannel channel]
+        {
+            get => channel switch
+            {
+                UVChannel.NonMeshRelated => NonMeshRelated,
+                UVChannel.UV0 => UV0,
+                UVChannel.UV1 => UV1,
+                UVChannel.UV2 => UV2,
+                UVChannel.UV3 => UV3,
+                UVChannel.UV4 => UV4,
+                UVChannel.UV5 => UV5,
+                UVChannel.UV6 => UV6,
+                UVChannel.UV7 => UV7,
+                _ => throw new ArgumentOutOfRangeException(nameof(channel), channel, null)
+            };
+            set => _ = channel switch
+            {
+                UVChannel.NonMeshRelated => NonMeshRelated = value,
+                UVChannel.UV0 => UV0 = value,
+                UVChannel.UV1 => UV1 = value,
+                UVChannel.UV2 => UV2 = value,
+                UVChannel.UV3 => UV3 = value,
+                UVChannel.UV4 => UV4 = value,
+                UVChannel.UV5 => UV5 = value,
+                UVChannel.UV6 => UV6 = value,
+                UVChannel.UV7 => UV7 = value,
+                _ => throw new ArgumentOutOfRangeException(nameof(channel), channel, null)
+            };
+        }
+        
+        public SubMeshUVNode this[int channel]
+        {
+            get => channel switch
+            {
+                0 => UV0,
+                1 => UV1,
+                2 => UV2,
+                3 => UV3,
+                4 => UV4,
+                5 => UV5,
+                6 => UV6,
+                7 => UV7,
+                _ => throw new ArgumentOutOfRangeException(nameof(channel), channel, null)
+            };
+            set => _ = channel switch
+            {
+                0 => UV0 = value,
+                1 => UV1 = value,
+                2 => UV2 = value,
+                3 => UV3 = value,
+                4 => UV4 = value,
+                5 => UV5 = value,
+                6 => UV6 = value,
+                7 => UV7 = value,
+                _ => throw new ArgumentOutOfRangeException(nameof(channel), channel, null)
+            };
+        }
+
+        public Enumerator GetEnumerator() => new(this);
+
+        public struct Enumerator : IEnumerator<SubMeshUVNode>
+        {
+            private readonly SubMeshUVCollection _collection;
+            private int _index;
+
+            public Enumerator(SubMeshUVCollection collection) => (_collection, _index) = (collection, -1);
+
+            public bool MoveNext() => ++_index < 9;
+            public void Reset() => _index = -1;
+
+            public SubMeshUVNode Current => _index switch
+            {
+                0 => _collection.NonMeshRelated,
+                1 => _collection.UV0,
+                2 => _collection.UV1,
+                3 => _collection.UV2,
+                4 => _collection.UV3,
+                5 => _collection.UV4,
+                6 => _collection.UV5,
+                7 => _collection.UV6,
+                8 => _collection.UV7,
+                _ => throw new InvalidOperationException()
+            };
+
+            object IEnumerator.Current => Current;
+
+            public void Dispose()
+            {
+            }
         }
     }
 
@@ -174,26 +286,17 @@ internal struct OptimizeTextureImpl {
         BuildContext context
     )
     {
-        var subMeshes = new Dictionary<SubMeshId, SubMeshNode>();
-        var materials = new Dictionary<Material, MaterialNode>();
-
-        MaterialNode? GetMaterialNode(Material? material)
-        {
-            if (material == null) return null;
-            if (!materials.TryGetValue(material, out var node))
-                materials.Add(material, node = new MaterialNode(material));
-            return node;
-        }
-
         var texturs = new Dictionary<Texture, TextureNode>();
 
-        TextureNode? GetTextureNode(Texture? texture)
+        TextureNode GetTextureNode(Texture texture)
         {
-            if (texture == null) return null;
             if (!texturs.TryGetValue(texture, out var node))
                 texturs.Add(texture, node = new TextureNode(texture));
             return node;
         }
+
+        var uvChannelsForMaterial = new Dictionary<Material, List<SubMeshUVCollection>>();
+        var nonMeshRelatedNode = new SubMeshUVNode();
 
         // first, process all submeshes and corresponding materials
         foreach (var renderer in context.GetComponents<SkinnedMeshRenderer>())
@@ -202,80 +305,108 @@ internal struct OptimizeTextureImpl {
             for (var submeshIndex = 0; submeshIndex < meshInfo.SubMeshes.Count; submeshIndex++)
             {
                 var subMeshId = new SubMeshId(meshInfo, submeshIndex);
-                var subMeshNode = new SubMeshNode(subMeshId);
-                subMeshes.Add(subMeshId, subMeshNode);
 
                 var subMesh = meshInfo.SubMeshes[submeshIndex];
-
-                foreach (var material in subMesh.SharedMaterials)
-                    GetMaterialNode(material)?.UseThis(subMeshNode);
 
                 var (safeToMerge, animatedMaterials) = GetAnimatedMaterialsForSubMesh(context,
                     meshInfo.SourceRenderer, submeshIndex);
 
-                subMeshNode.SafeToMergeByAnimation = safeToMerge;
+                var subMeshUVs = new SubMeshUVCollection();
+                var currentUV = nonMeshRelatedNode;
+                for (var uvIndex = 0; uvIndex < 8; uvIndex++)
+                {
+                    if (meshInfo.GetTexCoordStatus(uvIndex) != TexCoordStatus.NotDefined)
+                        currentUV = new SubMeshUVNode(subMeshId, (UVChannel)uvIndex);
+                    subMeshUVs[uvIndex] = currentUV;
+                }
+                subMeshUVs[UVChannel.NonMeshRelated] = nonMeshRelatedNode;
 
-                foreach (var material in animatedMaterials)
-                    GetMaterialNode(material)?.UseThis(subMeshNode);
+                foreach (var uvNode in subMeshUVs)
+                    uvNode.AllMaterialsAreKnown = safeToMerge;
+
+                foreach (var material in animatedMaterials.Concat(subMesh.SharedMaterials))
+                {
+                    if (material == null) continue;
+                    if (!uvChannelsForMaterial.TryGetValue(material, out var list))
+                        uvChannelsForMaterial.Add(material, list = new List<SubMeshUVCollection>());
+                    list.Add(subMeshUVs);
+                }
             }
         }
 
-        // them, process textures
-        foreach (var (material, materialNode) in materials)
+        foreach (var (material, uvNodesList) in uvChannelsForMaterial)
         {
             var materialInformation = context.GetMaterialInformation(material);
 
-            // We use Texture? to not have trouble with RenderTexture
-            // We check if texture is Texture2D or not in later phase
-            IEnumerable<(Texture?, TextureUsageInformation?)> textures;
-
-            const UsingUVChannels AnyUV = UsingUVChannels.UV0 | UsingUVChannels.UV1 | UsingUVChannels.UV2 | UsingUVChannels.UV3 |
-                                               UsingUVChannels.UV4 | UsingUVChannels.UV5 | UsingUVChannels.UV6 | UsingUVChannels.UV7;
-
             // collect texture usage information
-            // TODO: support partial UV usage
-            if (materialInformation?.DefaultResult?.TextureUsageInformationList is { } informations
-                && informations.All(x => x.UVMatrix == Matrix2x3.Identity)
-                && (materialInformation?.DefaultResult?.OtherUVUsage & AnyUV) == 0)
+            if (materialInformation?.DefaultResult?.TextureUsageInformationList is { } informations)
             {
-                materialNode.TextureUsageInformations = informations.ToList();
-                materialNode.UserRenderersOnAvatar = materialInformation.UserRenderers.Where(x => x != null).ToList();
+                foreach (var usage in informations)
+                {
+                    var texture = material.GetTexture(usage.MaterialPropertyName);
+                    if (texture == null) continue;
+                    foreach (var subMeshUVs in uvNodesList)
+                    {
+                        GetTextureNode(texture).UseTexture(material, subMeshUVs[usage.UVChannel], usage);
+                    }
+                }
 
-                textures = informations.Select((Texture?, TextureUsageInformation?) (x) => (material.GetTexture(x.MaterialPropertyName), x));
+                foreach (var (uvChannel, uvMask) in new[]
+                         {
+                             (UVChannel.UV0, UsingUVChannels.UV0),
+                             (UVChannel.UV1, UsingUVChannels.UV1),
+                             (UVChannel.UV2, UsingUVChannels.UV2),
+                             (UVChannel.UV3, UsingUVChannels.UV3),
+                             (UVChannel.UV4, UsingUVChannels.UV4),
+                             (UVChannel.UV5, UsingUVChannels.UV5),
+                             (UVChannel.UV6, UsingUVChannels.UV6),
+                             (UVChannel.UV7, UsingUVChannels.UV7),
+                         })
+                {
+                    if ((materialInformation.DefaultResult.OtherUVUsage & uvMask) != 0)
+                    {
+                        foreach (var subMeshUVs in uvNodesList)
+                            subMeshUVs[uvChannel].ThereIsNonTextureUsage = true;
+                    }
+                }
             }
             else
             {
-                // failed to retrive texture information, just link texture node
-                textures = material.GetTexturePropertyNames().Select(x => material.GetTexture(x))
-                    .Select((Texture?, TextureUsageInformation?) (t) => (t, null));
+                // failed to retrieve texture information so we assume the texture is used on any UV channels
+                // and also assume those UV channels have non-texture usage
+
+                // mark all UV channels have non-texture usage
+                foreach (var subMeshUVs in uvNodesList)
+                foreach (var subMeshUVNode in subMeshUVs)
+                    subMeshUVNode.ThereIsNonTextureUsage = true;
+
+                // As a implementation details, we're currently not atlasing textures with non-mesh-related UV usage.
+                // Therefore, as a optimization we do link non-mesh-related UV to all textures rather than linking all UV channels.
+                foreach (var texturePropertyName in material.GetTexturePropertyNames())
+                {
+                    var texture = material.GetTexture(texturePropertyName);
+                    if (texture == null) continue;
+
+                    GetTextureNode(texture).UseTexture(material, nonMeshRelatedNode,
+                        new TextureUsageInformation(texturePropertyName, UVChannel.NonMeshRelated, 
+                            null, null, null));
+                }
             }
-
-            // merge texture nodes
-
-            foreach (var (texture2D, usage) in textures)
-                GetTextureNode(texture2D)?.UseTexture(materialNode, usage);
         }
 
         // We've finished merging nodes.
         // Now, we collect all information onto the connected component info
         var rootNodes = new Dictionary<UnionFindNodeBase, ConnectedComponentInfo>();
 
-        foreach (var subMeshNode in subMeshes.Values)
+        foreach (var subMeshUvsList in uvChannelsForMaterial.Values)
+        foreach (var subMeshUvs in subMeshUvsList)
+        foreach (var subMeshUVNode in subMeshUvs)
         {
-            var rootNode = subMeshNode.FindRoot();
+            var rootNode = subMeshUVNode.FindRoot();
             if (!rootNodes.TryGetValue(rootNode, out var rootInfo))
                 rootNodes.Add(rootNode, rootInfo = new ConnectedComponentInfo());
 
-            rootInfo.SubMeshes.Add(subMeshNode);
-        }
-
-        foreach (var materialNode in materials.Values)
-        {
-            var rootNode = materialNode.FindRoot();
-            if (!rootNodes.TryGetValue(rootNode, out var rootInfo))
-                rootNodes.Add(rootNode, rootInfo = new ConnectedComponentInfo());
-
-            rootInfo.Materials.Add(materialNode);
+            rootInfo.SubMeshUvs.Add(subMeshUVNode);
         }
 
         foreach (var textureNode in texturs.Values)
@@ -292,134 +423,61 @@ internal struct OptimizeTextureImpl {
         return rootNodes.Values;
     }
 
-    private IEnumerable<(EqualsHashSet<UVID>, AtlasResult)> AtlasConnectedComponent(
-        ConnectedComponentInfo info)
-    {
-        // all material slot must successfully determine which materials will be used
-        if (info.SubMeshes.Any(x => !x.SafeToMergeByAnimation))
-            return Array.Empty<(EqualsHashSet<UVID>, AtlasResult)>();
+    private static readonly (EqualsHashSet<UVID>, AtlasResult) EmptyAtlasConnectedResult =
+        (EqualsHashSet<UVID>.Empty, AtlasResult.Empty);
 
-        // all material must have valid TextureUsageInformation, otherwise UV packing would cause invalid data
-        if (info.Materials.Any(mat => mat.TextureUsageInformations == null))
-            return Array.Empty<(EqualsHashSet<UVID>, AtlasResult)>();
+    private (EqualsHashSet<UVID>, AtlasResult) AtlasConnectedComponent(ConnectedComponentInfo info,
+        BuildContext context)
+    {
+        // all material slot / uv must be known
+        if (info.SubMeshUvs.Any(x => !x.CanBeUsedForAtlas))
+            return EmptyAtlasConnectedResult;
 
         // the material should not be used by other renderers.
         // we're ignoring basic Mesh Renderers so we have to check if the material is not used by basic Mesh Renderers.
-        var renderers = info.SubMeshes.Select(x => x.SubMeshId.MeshInfo2.SourceRenderer).ToHashSet();
-        if (info.Materials.Any(mat => mat.UserRenderersOnAvatar == null || !renderers.SetEquals(mat.UserRenderersOnAvatar)))
-            return Array.Empty<(EqualsHashSet<UVID>, AtlasResult)>();
+        var renderers = info.SubMeshUvs.Select(x => x.SubMeshId.MeshInfo2.SourceRenderer).ToHashSet();
+        if (info.Textures.SelectMany(x => x.Users.Keys)
+            .Any(mat => context.GetMaterialInformation(mat) is not { } matInfo ||
+                        !renderers.SetEquals(matInfo.UserRenderers.Where(x => x))))
+            return EmptyAtlasConnectedResult;
 
-        var textureByUvId = new Dictionary<UVID, List<TextureNode>>();
-        var uvidByTexture = new Dictionary<TextureNode, EqualsHashSet<UVID>>();
+        var uvids = info.SubMeshUvs.Select(x => x.UVId).ToEqualsHashSet();
 
+        // Check if texture to uvid graph is complete bipartite graph.
+        // If it's not a complete bipartite graph, it's unlikely to atlas would result in better packing.
+        // TODO: consider removing checking complete bipartite graph
         foreach (var texture in info.Textures)
         {
-            var uvids = texture.Users.SelectMany((pair) =>
-            {
-                var (material, usages) = pair;
-                return material.Users.SelectMany(x => usages.Select(y => new UVID(x.SubMeshId, y.UVChannel)));
-            }).ToEqualsHashSet();
-
-            foreach (var uvid in uvids)
-            {
-                if (!textureByUvId.TryGetValue(uvid, out var list))
-                    textureByUvId.Add(uvid, list = new List<TextureNode>());
-                list.Add(texture);
-            }
-
-            uvidByTexture.Add(texture, uvids);
+            var textureUVIds = texture.UserSubMeshUVs.Select(x => x.UVId).ToEqualsHashSet();
+            if (!textureUVIds.Equals(uvids))
+                return EmptyAtlasConnectedResult;
         }
 
-        var badUvIds = new HashSet<UVID>();
+        // only Texture2D can be atlased. Any other (especially RenderTexture) cannot be atlased.
+        if (info.Textures.Any(x => x.Texture is not Texture2D))
+            return EmptyAtlasConnectedResult;
+        var textures = info.Textures.Select(x => (Texture2D)x.Texture).ToList();
 
-        // texture to uvid graph must be (multiple set of) complete bipartite graph
-        foreach (var (_, uvIds) in uvidByTexture)
         {
-            // if the texture UV is not related to mesh, it's bad texture / UV
-            if (uvIds.Any(x => x.UVChannel == UVChannel.NonMeshRelated))
-            {
-                badUvIds.UnionWith(uvIds);
-                continue;
-            }
-
-            // if uvIDs for the textures using any of the uvIds is not equals to the uvIds, it's bad texture / UV
-            if (uvIds
-                .SelectMany(uvId => textureByUvId[uvId])
-                .Select(inner => uvidByTexture[inner])
-                .Any(innerUvIds => !uvIds.Equals(innerUvIds)))
-            {
-                badUvIds.UnionWith(uvIds);
-                continue;
-            }
-        }
-
-        // convert badUvIds to badTextures
-
-        var badTextures = uvidByTexture
-            .Where(x => x.Value.Any(badUvIds.Contains))
-            .Select(x => x.Key).ToHashSet();
-
-        var validTextures = info.Textures.Where(textureNode => !badTextures.Contains(textureNode));
-
-        var textureUvIdsPairs = validTextures.Select(textureNode =>
-            {
-                var uvIds = textureNode.Users.SelectMany(pair =>
-                    {
-                        var (material, usages) = pair;
-                        return usages.SelectMany(usage => material.Users.Select(userSubMesh => (usage, userSubMesh)))
-                            .Select(pair => new UVID(pair.userSubMesh.SubMeshId, pair.usage.UVChannel));
-                    })
-                    .ToEqualsHashSet();
-
-                return (uvIds, texture: textureNode);
-            }).GroupBy(k => k.uvIds)
-            .Select(grouping => (uvids: grouping.Key, textures: grouping.Select(x => x.texture).ToHashSet()));
-
-        var atlasResults = new List<(EqualsHashSet<UVID>, AtlasResult)>();
-
-        foreach (var (uvids, textureNodes) in textureUvIdsPairs)
-        {
-            var usageInformations = textureNodes.SelectMany(x => x.Users).SelectMany(x => x.Value);
+            var usageInformations = info.Textures.SelectMany(x => x.Users).SelectMany(x => x.Value);
             var wrapModeU = usageInformations.Select(x => x.WrapModeU).Aggregate((a, b) => a == b ? a : null);
             var wrapModeV = usageInformations.Select(x => x.WrapModeV).Aggregate((a, b) => a == b ? a : null);
-            if (textureNodes.Any(x => x.Texture is not Texture2D)) continue;
-            var textures = textureNodes.Select(x => (Texture2D)x.Texture).ToList();
+
             var atlasResult = MayAtlasTexture(textures, uvids.backedSet, wrapModeU, wrapModeV);
 
-            if (atlasResult.IsEmpty()) continue;
+            if (atlasResult.IsEmpty()) return EmptyAtlasConnectedResult;
 
-            atlasResults.Add((uvids, atlasResult));
-            /*
-            foreach (var textureNode in textureNodes)
+            foreach (var textureNode in info.Textures)
             {
                 var newTexture = atlasResult.TextureMapping[(Texture2D)textureNode.Texture];
 
                 foreach (var (material, usages) in textureNode.Users)
                 foreach (var usage in usages)
-                    material.Material.SetTexture(usage.MaterialPropertyName, newTexture);
+                    material.SetTexture(usage.MaterialPropertyName, newTexture);
             }
-            // */
-        }
 
-        {
-            // TODO: remove this code and restore code above when we implemented removing unused textures
-            var mapping = atlasResults.SelectMany(x => x.Item2.TextureMapping).ToDictionary(k => k.Key, v => v.Value);
-            foreach (var materialNode in info.Materials)
-            {
-                var material = materialNode.Material;
-                foreach (var name in material.GetTexturePropertyNames())
-                {
-                    if (material.HasTexture(name))
-                    {
-                        var texture = material.GetTexture(name) as Texture2D;
-                        if (texture != null && mapping.TryGetValue(texture, out var newTexture))
-                            material.SetTexture(name, newTexture);
-                    }
-                }
-            }
+            return (uvids, atlasResult);
         }
-
-        return atlasResults;
     }
 
     internal void RemapVertexUvs(ICollection<(EqualsHashSet<UVID>, AtlasResult)> atlasResults)
