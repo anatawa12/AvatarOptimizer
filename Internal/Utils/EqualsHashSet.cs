@@ -35,5 +35,8 @@ namespace Anatawa12.AvatarOptimizer
 
         public static bool operator ==(EqualsHashSet<T>? left, EqualsHashSet<T>? right) => Equals(left, right);
         public static bool operator !=(EqualsHashSet<T>? left, EqualsHashSet<T>? right) => !Equals(left, right);
+
+        // empty
+        public static readonly EqualsHashSet<T> Empty = new(new HashSet<T>());
     }
 }
