@@ -15,8 +15,8 @@ internal readonly struct DependantMap
         _getDependantMap = new Dictionary<GCComponentInfo, Dictionary<Component, GCComponentInfo.DependencyType>>();
     }
 
-    public static DependantMap CreateEntrypointsMap(BuildContext context) => 
-        CreateMap(context, x => x.EntrypointComponent);
+    public static DependantMap CreateEntrypointsMap(BuildContext context) =>
+        CreateMap(context, x => x.IsEntrypoint);
 
     public static DependantMap CreateDependantsMap(BuildContext context) => 
         CreateMap(context, x => x.BehaviourComponent || x.EntrypointComponent);
