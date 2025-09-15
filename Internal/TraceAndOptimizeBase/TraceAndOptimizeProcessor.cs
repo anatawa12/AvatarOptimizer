@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using nadena.dev.ndmf;
 using UnityEngine;
@@ -59,7 +60,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             PreserveEndBone = config.preserveEndBone;
 
-            Exclusions = new HashSet<GameObject?>(config.debugOptions.exclusions);
+            Exclusions = new HashSet<GameObject?>(config.debugOptions.exclusions ?? Array.Empty<GameObject?>());
             GCDebug = (int)config.debugOptions.gcDebug;
             NoSweepComponents = config.debugOptions.noSweepComponents;
             NoConfigureMergeBone = config.debugOptions.noConfigureMergeBone;

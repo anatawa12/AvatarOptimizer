@@ -102,7 +102,7 @@ namespace Anatawa12.AvatarOptimizer
         internal struct DebugOptions
         {
             [Tooltip("Exclude some GameObjects from Trace and Optimize")]
-            public GameObject?[] exclusions;
+            public GameObject?[]? exclusions;
             [Tooltip("Add GC Debug Components instead of setting GC components if set to non-None")]
             public InternalGcDebugPosition gcDebug;
             [Tooltip("Do Not Sweep (Remove) Components")]

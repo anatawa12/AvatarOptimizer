@@ -31,7 +31,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             
             foreach (var material in materials)
             {
-                if (context.GetMaterialInformation(material) is { } matInfo && matInfo.TextureUsageInformationList is { } texInfoList)
+                if (context.GetMaterialInformation(material) is { DefaultResult.TextureUsageInformationList: { } texInfoList } matInfo)
                 {
                     var usedProperties = texInfoList
                         .Select(x => x.MaterialPropertyName)
@@ -39,7 +39,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     
                     // Fallback shaders are only considered if information is found.
                     // This may change the behavior in fallback.                    
-                    if (matInfo.FallbackTextureUsageInformationList is { } fallbackTexInfoList)
+                    if (matInfo.FallbackResult?.TextureUsageInformationList is { } fallbackTexInfoList)
                     {
                         usedProperties.UnionWith(fallbackTexInfoList
                             .Select(x => x.MaterialPropertyName));

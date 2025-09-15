@@ -60,55 +60,47 @@ internal class MaterialInformation
     public readonly Material Material;
     public readonly List<Renderer> UserRenderers;
 
-    public readonly bool HasShaderInformation;
-    public readonly List<TextureUsageInformation>? TextureUsageInformationList;
-    public readonly bool UseVertexIndex;
+    public readonly ShaderInformationResult? DefaultResult;
+    public readonly ShaderInformationResult? FallbackResult;
 
-    public readonly bool HasFallbackShaderInformation;
-    public readonly List<TextureUsageInformation>? FallbackTextureUsageInformationList;
-	public readonly bool UseVertexIndexForFallback;
-
-    public MaterialInformation(Material material, List<Renderer> renderers, BuildContext context)
+    public MaterialInformation(Material material, List<Renderer> renderers, BuildContext? context)
     {
         Material = material;
         UserRenderers = renderers;
 
         // collect texture usage information
 
-        HasShaderInformation = false;
-        UseVertexIndex = false;
-        TextureUsageInformationList = null;
         if (ShaderInformationRegistry.GetShaderInformation(material.shader) is { } information)
         {
-            HasShaderInformation = true;
+            DefaultResult = new ShaderInformationResult(information, material, renderers, context);
+        }
+		
+		if (context != null && IsShaderFallbackSupported(context) && GetFallbackShaderInformation(material, context) is { } fallbackInformation)
+		{
+            FallbackResult = new ShaderInformationResult(fallbackInformation, material, renderers, context);
+		}
+	}
 
+    public class ShaderInformationResult
+    {
+        public List<TextureUsageInformation>? TextureUsageInformationList { get; init; }
+        public UsingUVChannels OtherUVUsage { get; init; }
+        public bool UseVertexIndex { get; init; }
+
+        public ShaderInformationResult(ShaderInformation information, Material material, List<Renderer> renderers, BuildContext? context)
+        {
             var supportedKind = information.SupportedInformationKind;
             var provider = new MaterialInformationCallbackImpl(
                 material,
                 supportedKind,
-                renderers.Select(renderer => context.GetAnimationComponent(renderer)).ToList());
+                context == null ? null : renderers.Select(renderer => context.GetAnimationComponent(renderer)).ToList());
             information.GetMaterialInformation(provider);
+
             TextureUsageInformationList = provider.TextureUsageInformations;
+            OtherUVUsage = provider.OtherUVUsage;
             UseVertexIndex = provider.UseVertexIndex;
         }
-		
-		HasFallbackShaderInformation = false;
-		FallbackTextureUsageInformationList = null;
-		UseVertexIndexForFallback = false;
-		if (IsShaderFallbackSupported(context) && GetFallbackShaderInformation(material, context) is { } fallbackInformation)
-		{
-			HasFallbackShaderInformation = true;
-
-			var supportedKind = fallbackInformation.SupportedInformationKind;
-			var provider = new MaterialInformationCallbackImpl(
-				material,
-				supportedKind,
-				renderers.Select(renderer => context.GetAnimationComponent(renderer)).ToList());
-			fallbackInformation.GetMaterialInformation(provider);
-			FallbackTextureUsageInformationList = provider.TextureUsageInformations;
-			UseVertexIndexForFallback = provider.UseVertexIndex;
-		}
-	}
+    }
 
     private bool IsShaderFallbackSupported(BuildContext context)
     {
@@ -128,21 +120,24 @@ internal class MaterialInformation
     {
         private readonly Material _material;
         private readonly List<AnimationComponentInfo<PropertyInfo>> _infos;
-        private List<TextureUsageInformation>? _textureUsageInformations;
+        private readonly List<TextureUsageInformation>? _textureUsageInformations;
         private readonly ShaderInformationKind _supportedKind;
 
         public bool UseVertexIndex { get; private set; }
         public List<TextureUsageInformation>? TextureUsageInformations => _textureUsageInformations;
+        public UsingUVChannels OtherUVUsage { get; private set; }
 
         public MaterialInformationCallbackImpl(Material material, ShaderInformationKind supportedKind,
-            List<AnimationComponentInfo<PropertyInfo>> infos)
+            List<AnimationComponentInfo<PropertyInfo>>? infos)
         {
             _material = material;
             _supportedKind = supportedKind;
-            _infos = infos;
+            _infos = infos ?? new List<AnimationComponentInfo<PropertyInfo>>();
 
             if ((_supportedKind & ShaderInformationKind.TextureAndUVUsage) != 0)
+            {
                 _textureUsageInformations = new List<TextureUsageInformation>();
+            }
         }
 
         public Shader Shader => _material.shader;
@@ -188,8 +183,7 @@ internal class MaterialInformation
             if ((_supportedKind & ShaderInformationKind.TextureAndUVUsage) == 0)
                 throw new InvalidOperationException("RegisterOtherUVUsage is not registered as supported information");
 
-            // no longer atlasing is not supported
-            _textureUsageInformations = null;
+            OtherUVUsage |= uvChannel;
         }
 
         public override void RegisterTextureUVUsage(
@@ -200,80 +194,61 @@ internal class MaterialInformation
         {
             if ((_supportedKind & ShaderInformationKind.TextureAndUVUsage) == 0)
                 throw new InvalidOperationException("RegisterOtherUVUsage is not registered as supported information");
-            if (_textureUsageInformations == null) return;
+            if (uvChannels == 0) throw new ArgumentOutOfRangeException(nameof(uvChannels), "No UV Source is specified");
             if (!_material.HasTexture(textureMaterialPropertyName)) return;
-            UVChannel uvChannel;
-            switch (uvChannels)
-            {
-                case UsingUVChannels.NonMesh:
-                    uvChannel = UVChannel.NonMeshRelated;
-                    break;
-                case UsingUVChannels.UV0:
-                    uvChannel = UVChannel.UV0;
-                    break;
-                case UsingUVChannels.UV1:
-                    uvChannel = UVChannel.UV1;
-                    break;
-                case UsingUVChannels.UV2:
-                    uvChannel = UVChannel.UV2;
-                    break;
-                case UsingUVChannels.UV3:
-                    uvChannel = UVChannel.UV3;
-                    break;
-                case UsingUVChannels.UV4:
-                    uvChannel = UVChannel.UV4;
-                    break;
-                case UsingUVChannels.UV5:
-                    uvChannel = UVChannel.UV5;
-                    break;
-                case UsingUVChannels.UV6:
-                    uvChannel = UVChannel.UV6;
-                    break;
-                case UsingUVChannels.UV7:
-                    uvChannel = UVChannel.UV7;
-                    break;
-                case UsingUVChannels.Unknown:
-                default:
-                    _textureUsageInformations = null;
-                    return;
-            }
 
-            if (uvMatrix != Matrix2x3.Identity && uvChannel != UVChannel.NonMeshRelated)
-            {
-                _textureUsageInformations = null;
-                return;
-            }
+            const UsingUVChannels unsupportedUVChannels =
+                ~(UsingUVChannels.NonMesh | UsingUVChannels.UV0 | UsingUVChannels.UV1 |
+                  UsingUVChannels.UV2 | UsingUVChannels.UV3 | UsingUVChannels.UV4 |
+                  UsingUVChannels.UV5 | UsingUVChannels.UV6 | UsingUVChannels.UV7);
 
-            TextureWrapMode? wrapModeU, wrapModeV;
-
-            if (samplerState.MaterialProperty)
+            foreach (var (uvChannel, usage) in new[]
+                     {
+                         (UVChannel.NonMeshRelated, UsingUVChannels.NonMesh | unsupportedUVChannels),
+                         (UVChannel.UV0, UsingUVChannels.UV0),
+                         (UVChannel.UV1, UsingUVChannels.UV1),
+                         (UVChannel.UV2, UsingUVChannels.UV2),
+                         (UVChannel.UV3, UsingUVChannels.UV3),
+                         (UVChannel.UV4, UsingUVChannels.UV4),
+                         (UVChannel.UV5, UsingUVChannels.UV5),
+                         (UVChannel.UV6, UsingUVChannels.UV6),
+                         (UVChannel.UV7, UsingUVChannels.UV7),
+                     })
             {
-                var texture = _material.GetTexture(textureMaterialPropertyName);
-                if (texture != null)
+                if ((uvChannels & usage) == 0) continue;
+
+                TextureWrapMode? wrapModeU, wrapModeV;
+
+                if (samplerState.MaterialProperty)
                 {
-                    wrapModeU = texture.wrapModeU;
-                    wrapModeV = texture.wrapModeV;
+                    var texture = _material.GetTexture(textureMaterialPropertyName);
+                    if (texture != null)
+                    {
+                        wrapModeU = texture.wrapModeU;
+                        wrapModeV = texture.wrapModeV;
+                    }
+                    else
+                    {
+                        wrapModeU = null;
+                        wrapModeV = null;
+                    }
                 }
                 else
                 {
-                    wrapModeU = null;
-                    wrapModeV = null;
+                    wrapModeV = wrapModeU = samplerState.TextureName switch
+                    {
+                        "PointClamp" or "LinearClamp" or "TrilinearClamp" => TextureWrapMode.Clamp,
+                        "PointRepeat" or "LinearRepeat" or "TrilinearRepeat" => TextureWrapMode.Repeat,
+                        "PointMirror" or "LinearMirror" or "TrilinearMirror" => TextureWrapMode.Mirror,
+                        "PointMirrorOnce" or "LinearMirrorOnce" or "TrilinearMirrorOnce" => TextureWrapMode.MirrorOnce,
+                        "Unknown" or _ => null,
+                    };
                 }
-            }
-            else
-            {
-                wrapModeV = wrapModeU = samplerState.TextureName switch
-                {
-                    "PointClamp" or "LinearClamp" or "TrilinearClamp" => TextureWrapMode.Clamp,
-                    "PointRepeat" or "LinearRepeat" or "TrilinearRepeat" => TextureWrapMode.Repeat,
-                    "PointMirror" or "LinearMirror" or "TrilinearMirror" => TextureWrapMode.Mirror,
-                    "PointMirrorOnce" or "LinearMirrorOnce" or "TrilinearMirrorOnce" => TextureWrapMode.MirrorOnce,
-                    "Unknown" or _ => null,
-                };
-            }
 
-            _textureUsageInformations?.Add(new TextureUsageInformation(textureMaterialPropertyName, uvChannel,
-                wrapModeU, wrapModeV));
+                _textureUsageInformations?.Add(new TextureUsageInformation(textureMaterialPropertyName, uvChannel,
+                    uvMatrix,
+                    wrapModeU, wrapModeV));
+            }
         }
 
         public override void RegisterVertexIndexUsage()
@@ -290,13 +265,15 @@ internal class TextureUsageInformation
 {
     public string MaterialPropertyName { get; }
     public UVChannel UVChannel { get; }
+    public Matrix2x3? UVMatrix { get; }
     public TextureWrapMode? WrapModeU { get; }
     public TextureWrapMode? WrapModeV { get; }
 
-    internal TextureUsageInformation(string materialPropertyName, UVChannel uvChannel, TextureWrapMode? wrapModeU, TextureWrapMode? wrapModeV)
+    internal TextureUsageInformation(string materialPropertyName, UVChannel uvChannel, Matrix2x3? uvMatrix, TextureWrapMode? wrapModeU, TextureWrapMode? wrapModeV)
     {
         MaterialPropertyName = materialPropertyName;
         UVChannel = uvChannel;
+        UVMatrix = uvMatrix;
         WrapModeU = wrapModeU;
         WrapModeV = wrapModeV;
     }

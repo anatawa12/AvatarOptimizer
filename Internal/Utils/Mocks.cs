@@ -11,4 +11,9 @@ namespace System.Runtime.CompilerServices {
         public InterpolatedStringHandlerArgumentAttribute(params string[] arguments) => Arguments = arguments;
         public string[] Arguments { get; }
     }
+
+    // init-only support
+    public static class IsExternalInit
+    {
+    }
 }
