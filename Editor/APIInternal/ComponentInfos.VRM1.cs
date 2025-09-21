@@ -54,7 +54,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
         protected override void CollectMutations(Vrm10Instance component, ComponentMutationsCollector collector)
         {
             // SpringBones
-            foreach (var joint in component.SpringBone.Springs.SelectMany(spring => spring.Joints))
+            foreach (var joint in component.SpringBone.Springs.SelectMany(spring => spring.Joints).Where(joint => joint))
             {
                 collector.TransformPositionAndRotation(joint.transform);
             }
