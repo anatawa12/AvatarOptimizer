@@ -36,7 +36,10 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
                 }
             }
 
-            foreach (var collider in component.ColliderGroups) collector.AddDependency(collider);
+            if (component.ColliderGroups != null)
+            {
+                foreach (var collider in component.ColliderGroups) collector.AddDependency(collider);
+            }
         }
 
         protected override void CollectMutations(VRMSpringBone component, ComponentMutationsCollector collector)
