@@ -21,6 +21,7 @@ The format is based on [Keep a Changelog].
 - AAO may break infinimation `#1492`
   - The infinimation is the technique of animation that may be used in NDMF or other tools.
   - I hope most of AAO users don't experience this issue for now, but will be spread in the near future.
+- Optimize Texture will break EmissionMap of ToonStandarad `#1525`
 
 ### Security
 
