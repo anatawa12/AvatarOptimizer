@@ -8,8 +8,6 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Compatibility declaration for VRCSDK 3.9.x `#1520`
-  - No breaking changes affect AAO, so no code changes were required.
 
 ### Changed
 
@@ -18,12 +16,19 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- AAO may break infinimation `#1492`
-  - The infinimation is the technique of animation that may be used in NDMF or other tools.
-  - I hope most of AAO users don't experience this issue for now, but will be spread in the near future.
-- Optimize Texture will break EmissionMap of ToonStandarad `#1525`
 
 ### Security
+
+## [1.8.14] - 2025-10-04
+### Added
+- Compatibility declaration for VRCSDK 3.9.x [`#1520`](https://github.com/anatawa12/AvatarOptimizer/pull/1520)
+  - No breaking changes affect AAO, so no code changes were required.
+
+### Fixed
+- AAO may break infinimation [`#1492`](https://github.com/anatawa12/AvatarOptimizer/pull/1492)
+  - The infinimation is the technique of animation that may be used in NDMF or other tools.
+  - I hope most of AAO users don't experience this issue for now, but will be spread in the near future.
+- Optimize Texture will break EmissionMap of ToonStandarad [`#1525`](https://github.com/anatawa12/AvatarOptimizer/pull/1525)
 
 ## [1.8.13] - 2025-07-28
 ### Fixed
@@ -1245,7 +1250,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.13...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.14...HEAD
+[1.8.14]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.13...v1.8.14
 [1.8.13]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.12...v1.8.13
 [1.8.12]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.11...v1.8.12
 [1.8.11]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.10...v1.8.11

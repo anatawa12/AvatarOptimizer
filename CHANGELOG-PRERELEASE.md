@@ -16,9 +16,12 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Optimize Texture will break EmissionMap of ToonStandarad `#1525`
 
 ### Security
+
+## [1.8.14] - 2025-10-04
+### Fixed
+- Optimize Texture will break EmissionMap of ToonStandarad [`#1525`](https://github.com/anatawa12/AvatarOptimizer/pull/1525)
 
 ## [1.8.14-beta.2] - 2025-09-13
 ### Added
@@ -1938,7 +1941,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.14-beta.2...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.14...HEAD
+[1.8.14]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.14-beta.2...v1.8.14
 [1.8.14-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.14-beta.1...v1.8.14-beta.2
 [1.8.14-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.13...v1.8.14-beta.1
 [1.8.13]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.13-beta.3...v1.8.13
