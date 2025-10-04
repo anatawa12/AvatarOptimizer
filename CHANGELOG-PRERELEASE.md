@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Optimize Texture will break EmissionMap of ToonStandarad `#1525`
 
 ### Security
 
