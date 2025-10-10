@@ -326,14 +326,81 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         {
             var mat = new Material(mergeInfo.ReferenceMaterial);
             mat.name = "AAO Merged Material";
+
+            var mergePlanAndTargetProperties = new Dictionary<TextureMergePlan, List<string>>();
+
             foreach (var information in mergeInfo.ReferenceInformation.DefaultResult!.TextureUsageInformationList!)
             {
                 if (information.UVChannel == UVChannel.NonMeshRelated) continue;
-                var texture = GenerateTexture(mergeInfo, target.SubMeshes, information.MaterialPropertyName, compress);
-                if (texture) texture.name = "AAO Merged Texture (for " + information.MaterialPropertyName + ")";
-                mat.SetTexture(information.MaterialPropertyName, texture);
+                // For mask textures, it's likely to have no texture.
+                // In such case, we just return null.
+                if (mergeInfo.Sources.All(source =>
+                        !source.UsagesByName.ContainsKey(information.MaterialPropertyName) ||
+                        target.SubMeshes[source.SubMeshIndex].SharedMaterial!.GetTexture(information.MaterialPropertyName) == null))
+                    continue;
+                
+                HashSet<(Texture, Matrix2x3, Rect)> sources = new();
+                foreach (var source in mergeInfo.Sources)
+                {
+                    if (!source.UsagesByName.TryGetValue(information.MaterialPropertyName, out var usageInformation)) continue;
+                    var sourceMat = target.SubMeshes[source.SubMeshIndex].SharedMaterial!;
+                    var sourceTex = sourceMat.GetTexture(information.MaterialPropertyName);
+                    var sourceTexTransform = usageInformation.UVMatrix!.Value;
+
+                    sources.Add((sourceTex, sourceTexTransform, source.Settings.targetRect));
+                }
+
+                var finalFormat = mergeInfo.Settings.mergedFormat;
+                if (finalFormat == MergeMaterial.MergedTextureFormat.Default)
+#if UNITY_ANDROID || UNITY_IOS
+                finalFormat = MergeMaterial.MergedTextureFormat.ASTC_6x6;
+#else
+                    finalFormat = MergeMaterial.MergedTextureFormat.DXT5;
+#endif
+
+                var plan = new TextureMergePlan(mergeInfo.Settings.textureSize.x, mergeInfo.Settings.textureSize.y, finalFormat, sources);
+                if (!mergePlanAndTargetProperties.TryGetValue(plan, out var targetProperties))
+                    mergePlanAndTargetProperties.Add(plan, targetProperties = new List<string>());
+                targetProperties.Add(information.MaterialPropertyName);
             }
+
+            foreach (var (mergePlan, properties) in mergePlanAndTargetProperties)
+            {
+                var texture = GenerateTexture(mergePlan, compress: true);
+                if (texture != null) texture.name = "AAO Merged Texture (for " + string.Join(", ", properties) + ")";
+
+                foreach (var property in properties)
+                    mat.SetTexture(property, texture);
+            }
+
             return mat;
+        }
+
+        readonly struct TextureMergePlan : IEquatable<TextureMergePlan>
+        {
+            public readonly int Width;
+            public readonly int Height;
+            public readonly MergeMaterial.MergedTextureFormat Format;
+            public readonly HashSet<(Texture, Matrix2x3, Rect)> Sources;
+
+            public TextureMergePlan(int width, int height, MergeMaterial.MergedTextureFormat format, HashSet<(Texture, Matrix2x3, Rect)> sources)
+            {
+                Width = width;
+                Height = height;
+                Format = format;
+                Sources = sources;
+            }
+
+            public bool Equals(TextureMergePlan other) =>
+                Width == other.Width &&
+                Height == other.Height &&
+                Format == other.Format &&
+                Sources.SetEquals(other.Sources);
+
+            public override bool Equals(object? obj) => obj is TextureMergePlan other && Equals(other);
+            public override int GetHashCode() => Sources.GetSetHashCode();
+            public static bool operator ==(TextureMergePlan left, TextureMergePlan right) => left.Equals(right);
+            public static bool operator !=(TextureMergePlan left, TextureMergePlan right) => !left.Equals(right);
         }
 
         private static TextureFormat BaseTextureFormat(MergeMaterial.MergedTextureFormat finalFormat)
@@ -448,16 +515,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             }
         }
 
-        private static Texture? GenerateTexture(
-            ValidatedMergeInfo mergeInfo,
-            List<SubMesh> subMeshes,
-            string propertyName,
-            bool compress
-        )
+        private static Texture? GenerateTexture(TextureMergePlan mergePlan, bool compress)
         {
-            var texWidth = mergeInfo.Settings.textureSize.x;
-            var texHeight = mergeInfo.Settings.textureSize.y;
-            var finalFormat = mergeInfo.Settings.mergedFormat;
+            var texWidth = mergePlan.Width;
+            var texHeight = mergePlan.Height;
+            var finalFormat = mergePlan.Format;
             if (finalFormat == MergeMaterial.MergedTextureFormat.Default)
 #if UNITY_ANDROID || UNITY_IOS
                 finalFormat = MergeMaterial.MergedTextureFormat.ASTC_6x6;
@@ -470,40 +532,25 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             targetFormat = SystemInfo.GetCompatibleFormat(targetFormat, FormatUsage.Render);
             var target = new RenderTexture(texWidth, texHeight, 0, targetFormat);
 
-            // For mask textures, it's likely to have no texture.
-            // In such case, we just return null.
-            if (mergeInfo.Sources.All(source =>
-                    !source.UsagesByName.ContainsKey(propertyName) ||
-                    subMeshes[source.SubMeshIndex].SharedMaterial!.GetTexture(propertyName) == null))
+            foreach (var (sourceTex, texTransform, targetRect) in mergePlan.Sources)
             {
-                return null;
-            }
-
-#if true
-            foreach (var source in mergeInfo.Sources)
-            {
-                if (!source.UsagesByName.TryGetValue(propertyName, out var usageInformation)) continue;
-                var sourceMat = subMeshes[source.SubMeshIndex].SharedMaterial!; // selected material should not be null
-                var sourceTex = sourceMat.GetTexture(propertyName);
-                var sourceTexTransform = usageInformation.UVMatrix!.Value;
                 HelperMaterial.SetTexture(MainTexProp, sourceTex);
                 HelperMaterial.SetMatrix(MainTexTransformProp, new UnityEngine.Matrix4x4()
                 {
-                    m00 = sourceTexTransform.M00,
-                    m01 = sourceTexTransform.M01,
-                    m02 = sourceTexTransform.M02,
-                    m10 = sourceTexTransform.M10,
-                    m11 = sourceTexTransform.M11,
-                    m12 = sourceTexTransform.M12,
+                    m00 = texTransform.M00,
+                    m01 = texTransform.M01,
+                    m02 = texTransform.M02,
+                    m10 = texTransform.M10,
+                    m11 = texTransform.M11,
+                    m12 = texTransform.M12,
                     m22 = 1,
                     m33 = 1,
                 });
                 HelperMaterial.SetVector(RectProp,
-                    new Vector4(source.Settings.targetRect.x, source.Settings.targetRect.y, 
-                        source.Settings.targetRect.width, source.Settings.targetRect.height));
+                    new Vector4(targetRect.x, targetRect.y, 
+                        targetRect.width, targetRect.height));
                 Graphics.Blit(sourceTex, target, HelperMaterial);
             }
-#endif
 
             var texture = CopyFromRenderTarget(target, finalFormat);
 
