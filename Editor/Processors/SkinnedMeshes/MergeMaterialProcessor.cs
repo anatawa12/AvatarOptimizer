@@ -101,6 +101,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 }
             }
 
+            // bit 0..7 for uv0..uv7
+            var transformUvs = new int[target.SubMeshes.Count];
             var slotsForMerge = new BitArray(target.SubMeshes.Count);
             var validatedSettings = new List<ValidatedMergeInfo>();
 
@@ -214,6 +216,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
                     // The settings LGTM! let's prepare for merge.
 
+                    var uvFlags = referenceUsages.Aggregate(0, (f, i) => f | (i.UVChannel == UVChannel.NonMeshRelated ? 0 : 1 << ((int)i.UVChannel)));
+                    foreach (var goodSource in goodSources) transformUvs[goodSource.SubMeshIndex] = uvFlags;
                     foreach (var goodSource in goodSources) slotsForMerge[goodSource.SubMeshIndex] = true;
                     validatedSettings.Add(new ValidatedMergeInfo(referenceMaterial, referenceInfomration, mergeInfo, goodSources));
                 }
@@ -235,7 +239,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             // map UVs`
             for (var subMeshI = 0; subMeshI < target.SubMeshes.Count; subMeshI++)
             {
-                if (slotsForMerge[subMeshI])
+                var transformChannels = transformUvs[subMeshI];
+                if (transformChannels != 0)
                 {
                     // the material is for merge.
                     var subMesh = target.SubMeshes[subMeshI];
@@ -264,7 +269,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                             vertexCache[subMesh.Vertices[i]] = subMesh.Vertices[i];
                         }
 
-                        subMesh.Vertices[i].TexCoord0 = MapUV(subMesh.Vertices[i].TexCoord0, targetRect);
+                        for (var channel = 0; channel < 8; channel++)
+                        {
+                            if ((transformChannels & (1 << channel)) == 0) continue;
+                            subMesh.Vertices[i].SetTexCoord(channel, MapUV(subMesh.Vertices[i].GetTexCoord(channel), targetRect));
+                        }
                     }
                 }
             }
