@@ -303,7 +303,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             foreach (var information in mergeInfo.ReferenceInformation.DefaultResult!.TextureUsageInformationList!)
             {
                 var texture = GenerateTexture(mergeInfo, target.SubMeshes, information.MaterialPropertyName, compress);
-                texture.name = "AAO Merged Texture (for " + information.MaterialPropertyName + ")";
+                if (texture) texture.name = "AAO Merged Texture (for " + information.MaterialPropertyName + ")";
                 mat.SetTexture(information.MaterialPropertyName, texture);
             }
             return mat;
@@ -421,7 +421,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             }
         }
 
-        private static Texture GenerateTexture(
+        private static Texture? GenerateTexture(
             ValidatedMergeInfo mergeInfo,
             List<SubMesh> subMeshes,
             string propertyName,
@@ -442,6 +442,15 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             var targetFormat = GraphicsFormatUtility.GetGraphicsFormat(GetRenderTarget(finalFormat), RenderTextureReadWrite.Default);
             targetFormat = SystemInfo.GetCompatibleFormat(targetFormat, FormatUsage.Render);
             var target = new RenderTexture(texWidth, texHeight, 0, targetFormat);
+
+            // For mask textures, it's likely to have no texture.
+            // In such case, we just return null.
+            if (mergeInfo.Sources.All(source =>
+                    !source.UsagesByName.ContainsKey(propertyName) ||
+                    subMeshes[source.SubMeshIndex].SharedMaterial!.GetTexture(propertyName) == null))
+            {
+                return null;
+            }
 
 #if true
             foreach (var source in mergeInfo.Sources)
