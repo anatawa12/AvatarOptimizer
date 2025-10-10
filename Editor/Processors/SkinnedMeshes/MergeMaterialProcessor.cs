@@ -302,6 +302,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             mat.name = "AAO Merged Material";
             foreach (var information in mergeInfo.ReferenceInformation.DefaultResult!.TextureUsageInformationList!)
             {
+                if (information.UVChannel == UVChannel.NonMeshRelated) continue;
                 var texture = GenerateTexture(mergeInfo, target.SubMeshes, information.MaterialPropertyName, compress);
                 if (texture) texture.name = "AAO Merged Texture (for " + information.MaterialPropertyName + ")";
                 mat.SetTexture(information.MaterialPropertyName, texture);
@@ -456,7 +457,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             foreach (var source in mergeInfo.Sources)
             {
                 if (!source.UsagesByName.TryGetValue(propertyName, out var usageInformation)) continue;
-                if (usageInformation.UVChannel == UVChannel.NonMeshRelated) continue;
                 var sourceMat = subMeshes[source.SubMeshIndex].SharedMaterial!; // selected material should not be null
                 var sourceTex = sourceMat.GetTexture(propertyName);
                 var sourceTexTransform = usageInformation.UVMatrix!.Value;
