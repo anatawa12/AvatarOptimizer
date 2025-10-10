@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Anatawa12.AvatarOptimizer.API;
 using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEngine;
@@ -112,11 +113,36 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
                 // TODO: add option to override material properties and shader
                 Shader? shader = null;
-                Material? referenceMaterial = null;
+                Material? referenceMaterial = mergeInfo.referenceMaterial;
                 MaterialInformation? referenceInfomration = null;
                 bool isAutoReferenceMaterial = referenceMaterial == null;
                 bool hasShaderError = false;
                 var goodSources = new List<ValidatedMergeSource>();
+
+                if (referenceMaterial != null) 
+                {
+                    shader = referenceMaterial.shader;
+                    
+                    // We don't reuse context.GetMaterialInformation(material)
+                    // because we need to get non-animated material information
+                    var matInfo = new MaterialInformation(referenceMaterial, new List<Renderer>() { Target }, null);
+                    referenceInfomration ??= matInfo;
+                    if (matInfo.DefaultResult is not { } shaderInformationResult)
+                    {
+                        BuildLog.LogError("MergeMaterial:UnsupportedShaderInMergeSetting", shader);
+                        hasShaderError = true;
+                        continue;
+                    }
+
+                    if (shaderInformationResult.TextureUsageInformationList is null)
+                    {
+                        BuildLog.LogError("MergeMaterial:UnsupportedShaderInMergeSetting", referenceMaterial);
+                        hasShaderError = true;
+                        continue;
+                    }
+
+                    referenceInfomration = matInfo;
+                }
 
                 foreach (var mergeSource in mergeInfo.source)
                 {
@@ -202,11 +228,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                         continue;
                     }
 
-                    if (referenceUsages.Any(usage => usage.UVChannel != UVChannel.NonMeshRelated && usage.UVMatrix == null))
+                    var badProperties = referenceUsages.Where(usage => usage.UVChannel != UVChannel.NonMeshRelated && usage.UVMatrix != Matrix2x3.Identity)
+                        .Select(x => x.MaterialPropertyName)
+                        .ToList();
+                    if (badProperties.Any())
                     {
-                        var badProperties = referenceUsages.Where(usage => usage.UVChannel != UVChannel.NonMeshRelated && usage.UVMatrix == null)
-                            .Select(x => x.MaterialPropertyName)
-                            .ToList();
 
                         // We don't have to create error if the reference material is automatically selected since it should
                         // already errored

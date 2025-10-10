@@ -13,6 +13,7 @@ namespace Anatawa12.AvatarOptimizer
         [Serializable]
         internal class MergeInfo
         {
+            public Material? referenceMaterial;
             public MergeSource[] source = Array.Empty<MergeSource>();
 
             public MergedTextureFormat mergedFormat;

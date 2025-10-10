@@ -100,6 +100,8 @@ namespace Anatawa12.AvatarOptimizer
             DrawList(ref component.merges, AAOL10N.Tr("MergeMaterial:button:Add Merged Material"),
                 (componentMerge, i) =>
                 {
+                    componentMerge.referenceMaterial = EditorGUILayout.ObjectField(AAOL10N.Tr("MergeMaterial:Reference Material"), componentMerge.referenceMaterial, typeof(Material), false) as Material;
+
                     DrawList(ref componentMerge.source, AAOL10N.Tr("MergeMaterial:button:Add Source"),
                         (mergeSource, _) =>
                         {
