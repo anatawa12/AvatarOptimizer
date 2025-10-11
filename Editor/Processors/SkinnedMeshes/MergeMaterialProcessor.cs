@@ -126,17 +126,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     // We don't reuse context.GetMaterialInformation(material)
                     // because we need to get non-animated material information
                     var matInfo = new MaterialInformation(referenceMaterial, new List<Renderer>() { Target }, null);
-                    referenceInfomration ??= matInfo;
-                    if (matInfo.DefaultResult is not { } shaderInformationResult)
-                    {
-                        BuildLog.LogError("MergeMaterial:UnsupportedShaderInMergeSetting", shader);
-                        hasShaderError = true;
-                        continue;
-                    }
 
-                    if (shaderInformationResult.TextureUsageInformationList is null)
+                    if (matInfo.DefaultResult is not { TextureUsageInformationList: not null })
                     {
-                        BuildLog.LogError("MergeMaterial:UnsupportedShaderInMergeSetting", referenceMaterial);
+                        BuildLog.LogError("MergeMaterial:UnsupportedShaderInMergeSetting", referenceMaterial, shader);
                         hasShaderError = true;
                         continue;
                     }
@@ -183,28 +176,26 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     // because we need to get non-animated material information
                     var matInfo = new MaterialInformation(material, new List<Renderer>() { Target }, null);
                     referenceInfomration ??= matInfo;
-                    if (matInfo.DefaultResult is not { } shaderInformationResult)
+                    if (matInfo.DefaultResult is not { TextureUsageInformationList: {} textureUsageInformations })
                     {
-                        BuildLog.LogError("MergeMaterial:UnsupportedShaderInMergeSetting", shader);
+                        BuildLog.LogError("MergeMaterial:UnsupportedShaderInMergeSetting", material, shader);
                         hasShaderError = true;
                         continue;
                     }
 
-                    if (shaderInformationResult.TextureUsageInformationList is not { } textureUsageInformations)
+                    if (referenceMaterial != material)
                     {
-                        BuildLog.LogError("MergeMaterial:UnsupportedShaderInMergeSetting", material);
-                        hasShaderError = true;
-                        continue;
-                    }
+                        var badProperties = textureUsageInformations.Where(usage =>
+                                usage.UVChannel != UVChannel.NonMeshRelated && usage.UVMatrix == null)
+                            .Select(x => x.MaterialPropertyName)
+                            .ToList();
 
-                    var badProperties = textureUsageInformations.Where(usage => usage.UVChannel != UVChannel.NonMeshRelated && usage.UVMatrix == null)
-                        .Select(x => x.MaterialPropertyName)
-                        .ToList();
-
-                    if (badProperties.Any())
-                    {
-                        BuildLog.LogError("MergeMaterial:UnsupportedMaterialSettings:UnknownUVTransform", string.Join(", ", badProperties), material);
-                        continue;
+                        if (badProperties.Any())
+                        {
+                            BuildLog.LogError("MergeMaterial:UnsupportedMaterialSettings:UnknownUVTransform",
+                                string.Join(", ", badProperties), material);
+                            continue;
+                        }
                     }
 
                     goodSources.Add(new (mergeSource, subMeshIndices[0], textureUsageInformations));
@@ -220,10 +211,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
                     var allProperties = goodSources.SelectMany(x => x.Usages).Select(x => x.MaterialPropertyName).ToHashSet();
                     var referenceUsages = referenceInfomration.DefaultResult!.TextureUsageInformationList!;
-                    if (!referenceUsages.Select(x => x.MaterialPropertyName).ToHashSet().SetEquals(allProperties))
+                    var nonUsedProperties = allProperties.Except(referenceUsages.Select(x => x.MaterialPropertyName)).ToList();
+                    if (nonUsedProperties.Any())
                     {
                         // TODO: consider just ignore unused textures?
-                        var nonUsedProperties = allProperties.Except(referenceUsages.Select(x => x.MaterialPropertyName)).ToList();
                         BuildLog.LogError("MergeMaterial:ReferenceMaterial:NotAllTexturesUsed", referenceMaterial, string.Join(", ", nonUsedProperties));
                         continue;
                     }
