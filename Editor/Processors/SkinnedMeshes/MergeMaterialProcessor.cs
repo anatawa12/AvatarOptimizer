@@ -28,7 +28,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         public override EditSkinnedMeshProcessorOrder ProcessOrder => EditSkinnedMeshProcessorOrder.AfterRemoveMesh;
 
-        class ValidatedMergeInfo
+        public class ValidatedMergeInfo
         {
             public readonly Material ReferenceMaterial;
             public readonly MaterialInformation ReferenceInformation;
@@ -47,7 +47,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             }
         }
 
-        class ValidatedMergeSource
+        public class ValidatedMergeSource
         {
             public MergeMaterial.MergeSource Settings;
             public int SubMeshIndex;
@@ -65,12 +65,19 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         public override void Process(BuildContext context, MeshInfo2 target)
         {
+            CheckForDuplicatedMaterials(Component);
+            var validatedSettings = ValidateMaterials(target, Component);
+            DoMergeMaterial(target, validatedSettings);
+        }
+
+        public static void CheckForDuplicatedMaterials(MergeMaterial component)
+        {
             // check and remove duplicated materials in merge setting
             {
                 var mergeInfoByMaterial = new Dictionary<ObjectReference, MergeMaterial.MergeInfo>();
                 var duplicatedMaterials = new HashSet<ObjectReference>();
 
-                foreach (var componentMerge in Component.merges)
+                foreach (var componentMerge in component.merges)
                 {
                     var newSources = new List<MergeMaterial.MergeSource>(componentMerge.source.Length);
                     foreach (var mergeSource in componentMerge.source)
@@ -82,13 +89,17 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                         else
                             duplicatedMaterials.Add(materialReference);
                     }
+
                     componentMerge.source = newSources.ToArray();
                 }
 
                 if (duplicatedMaterials.Count > 0)
                     BuildLog.LogError("MergeMaterial:DuplicateMaterialInMergeSetting", duplicatedMaterials);
             }
+        }
 
+        public static List<ValidatedMergeInfo> ValidateMaterials(MeshInfo2 target, MergeMaterial component)
+        {
             var submeshByMaterial = new Dictionary<ObjectReference, List<int>>();
             for (var i = 0; i < target.SubMeshes.Count; i++)
             {
@@ -103,11 +114,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             }
 
             // bit 0..7 for uv0..uv7
-            var transformUvs = new int[target.SubMeshes.Count];
-            var slotsForMerge = new BitArray(target.SubMeshes.Count);
             var validatedSettings = new List<ValidatedMergeInfo>();
 
-            foreach (var mergeInfo in Component.merges)
+            foreach (var mergeInfo in component.merges)
             {
                 if (mergeInfo.source.Length == 0) continue;
 
@@ -125,7 +134,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     
                     // We don't reuse context.GetMaterialInformation(material)
                     // because we need to get non-animated material information
-                    var matInfo = new MaterialInformation(referenceMaterial, new List<Renderer>() { Target }, null);
+                    var matInfo = new MaterialInformation(referenceMaterial, new List<Renderer>() { target.SourceRenderer }, null);
 
                     if (matInfo.DefaultResult is not { TextureUsageInformationList: not null })
                     {
@@ -174,7 +183,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
                     // We don't reuse context.GetMaterialInformation(material)
                     // because we need to get non-animated material information
-                    var matInfo = new MaterialInformation(material, new List<Renderer>() { Target }, null);
+                    var matInfo = new MaterialInformation(material, new List<Renderer>() { target.SourceRenderer }, null);
                     referenceInfomration ??= matInfo;
                     if (matInfo.DefaultResult is not { TextureUsageInformationList: {} textureUsageInformations })
                     {
@@ -233,11 +242,24 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
                     // The settings LGTM! let's prepare for merge.
 
-                    var uvFlags = referenceUsages.Aggregate(0, (f, i) => f | (i.UVChannel == UVChannel.NonMeshRelated ? 0 : 1 << ((int)i.UVChannel)));
-                    foreach (var goodSource in goodSources) transformUvs[goodSource.SubMeshIndex] = uvFlags;
-                    foreach (var goodSource in goodSources) slotsForMerge[goodSource.SubMeshIndex] = true;
                     validatedSettings.Add(new ValidatedMergeInfo(referenceMaterial, referenceInfomration, mergeInfo, goodSources));
                 }
+            }
+
+            return validatedSettings;
+        }
+
+        public static void DoMergeMaterial(MeshInfo2 target, List<ValidatedMergeInfo> validatedSettings)
+        {
+            var transformUvs = new int[target.SubMeshes.Count];
+            var slotsForMerge = new BitArray(target.SubMeshes.Count);
+
+            foreach (var validatedMergeInfo in validatedSettings)
+            {
+                var referenceUsages = validatedMergeInfo.ReferenceInformation.DefaultResult!.TextureUsageInformationList!;
+                var uvFlags = referenceUsages.Aggregate(0, (f, i) => f | (i.UVChannel == UVChannel.NonMeshRelated ? 0 : 1 << ((int)i.UVChannel)));
+                foreach (var goodSource in validatedMergeInfo.Sources) transformUvs[goodSource.SubMeshIndex] = uvFlags;
+                foreach (var goodSource in validatedMergeInfo.Sources) slotsForMerge[goodSource.SubMeshIndex] = true;
             }
 
             var users = new Dictionary<Vertex, int>();
@@ -306,7 +328,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             target.SubMeshes.AddRange(subMeshes);
         }
 
-        private Vector2 MapUV(Vector2 vector2, Rect destSourceRect) =>
+        private static Vector2 MapUV(Vector2 vector2, Rect destSourceRect) =>
             new Vector2(vector2.x % 1, vector2.y % 1) * new Vector2(destSourceRect.width, destSourceRect.height) 
             + new Vector2(destSourceRect.x, destSourceRect.y);
 

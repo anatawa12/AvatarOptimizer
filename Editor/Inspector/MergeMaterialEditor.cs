@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
 using UnityEditor;
 using UnityEngine;
 
@@ -93,6 +94,7 @@ namespace Anatawa12.AvatarOptimizer
 
         protected override void OnInspectorGUIInner()
         {
+            Undo.RecordObject(target, "Inspector");
             EditorGUI.BeginChangeCheck();
 
             var component = (MergeMaterial)target;
@@ -147,6 +149,7 @@ namespace Anatawa12.AvatarOptimizer
 
             if (GUILayout.Button(AAOL10N.Tr("MergeMaterial:button:Generate Preview")))
             {
+                // preview: we only show _MainTex
                 // TODO: implement preview generation
                 //_generatedPreviews = MergeMaterialProcessor.GenerateTextures(component, _upstreamMaterials, false);
             }
