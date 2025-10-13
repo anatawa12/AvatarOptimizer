@@ -51,12 +51,15 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         {
             public MergeMaterial.MergeSource Settings;
             public int SubMeshIndex;
+            public Material Material;
             public List<TextureUsageInformation> Usages;
             public Dictionary<string, TextureUsageInformation> UsagesByName;
 
-            public ValidatedMergeSource(MergeMaterial.MergeSource settings, int subMeshIndex, List<TextureUsageInformation> usages)
+            public ValidatedMergeSource(MergeMaterial.MergeSource settings, Material material, int subMeshIndex,
+                List<TextureUsageInformation> usages)
             {
                 Settings = settings;
+                Material = material;
                 SubMeshIndex = subMeshIndex;
                 Usages = usages;
                 UsagesByName = usages.ToDictionary(x => x.MaterialPropertyName);
@@ -68,6 +71,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             CheckForDuplicatedMaterials(Component);
             var validatedSettings = ValidateMaterials(target, Component);
             DoMergeMaterial(target, validatedSettings);
+            DoMergeMaterial1(target, validatedSettings);
         }
 
         public static void CheckForDuplicatedMaterials(MergeMaterial component)
@@ -113,14 +117,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 }
             }
 
-            // bit 0..7 for uv0..uv7
             var validatedSettings = new List<ValidatedMergeInfo>();
 
             foreach (var mergeInfo in component.merges)
             {
                 if (mergeInfo.source.Length == 0) continue;
 
-                // TODO: add option to override material properties and shader
                 Shader? shader = null;
                 Material? referenceMaterial = mergeInfo.referenceMaterial;
                 MaterialInformation? referenceInfomration = null;
@@ -207,7 +209,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                         }
                     }
 
-                    goodSources.Add(new (mergeSource, subMeshIndices[0], textureUsageInformations));
+                    goodSources.Add(new (mergeSource, material, subMeshIndices[0], textureUsageInformations));
                 }
 
                 if (!hasShaderError && referenceMaterial != null)
@@ -252,14 +254,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         public static void DoMergeMaterial(MeshInfo2 target, List<ValidatedMergeInfo> validatedSettings)
         {
             var transformUvs = new int[target.SubMeshes.Count];
-            var slotsForMerge = new BitArray(target.SubMeshes.Count);
 
             foreach (var validatedMergeInfo in validatedSettings)
             {
                 var referenceUsages = validatedMergeInfo.ReferenceInformation.DefaultResult!.TextureUsageInformationList!;
                 var uvFlags = referenceUsages.Aggregate(0, (f, i) => f | (i.UVChannel == UVChannel.NonMeshRelated ? 0 : 1 << ((int)i.UVChannel)));
                 foreach (var goodSource in validatedMergeInfo.Sources) transformUvs[goodSource.SubMeshIndex] = uvFlags;
-                foreach (var goodSource in validatedMergeInfo.Sources) slotsForMerge[goodSource.SubMeshIndex] = true;
             }
 
             var users = new Dictionary<Vertex, int>();
@@ -316,13 +316,20 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     }
                 }
             }
+        }
+
+        public static void DoMergeMaterial1(MeshInfo2 target, List<ValidatedMergeInfo> validatedSettings)
+        {
+            var slotsForMerge = new BitArray(target.SubMeshes.Count);
+
+            foreach (var validatedMergeInfo in validatedSettings)
+            foreach (var goodSource in validatedMergeInfo.Sources) slotsForMerge[goodSource.SubMeshIndex] = true;
 
             // merge submeshes
-            target.FlattenMultiPassRendering("Merge Toon Lit");
             var copied = target.SubMeshes.Where((_, i) => !slotsForMerge[i]);
             var merged = validatedSettings.Select(x => new SubMesh(
                 x.Sources.SelectMany(src => target.SubMeshes[src.SubMeshIndex].Triangles).ToList(),
-                CreateMaterial(x, target, compress: true)));
+                CreateMaterial(x, compress: true)));
             var subMeshes = copied.Concat(merged).ToList();
             target.SubMeshes.Clear();
             target.SubMeshes.AddRange(subMeshes);
@@ -335,7 +342,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        private static Material CreateMaterial(ValidatedMergeInfo mergeInfo, MeshInfo2 target, bool compress)
+        public static Texture CreateTexture(ValidatedMergeInfo mergeInfo, bool compress, string propertyName) =>
+            GenerateTexture(MakeMergePlan(mergeInfo, propertyName), compress);
+
+        public static Material CreateMaterial(ValidatedMergeInfo mergeInfo, bool compress)
         {
             var mat = new Material(mergeInfo.ReferenceMaterial);
             mat.name = "AAO Merged Material";
@@ -349,29 +359,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 // In such case, we just return null.
                 if (mergeInfo.Sources.All(source =>
                         !source.UsagesByName.ContainsKey(information.MaterialPropertyName) ||
-                        target.SubMeshes[source.SubMeshIndex].SharedMaterial!.GetTexture(information.MaterialPropertyName) == null))
+                        source.Material.GetTexture(information.MaterialPropertyName) == null))
                     continue;
-                
-                HashSet<(Texture, Matrix2x3, Rect)> sources = new();
-                foreach (var source in mergeInfo.Sources)
-                {
-                    if (!source.UsagesByName.TryGetValue(information.MaterialPropertyName, out var usageInformation)) continue;
-                    var sourceMat = target.SubMeshes[source.SubMeshIndex].SharedMaterial!;
-                    var sourceTex = sourceMat.GetTexture(information.MaterialPropertyName);
-                    var sourceTexTransform = usageInformation.UVMatrix!.Value;
 
-                    sources.Add((sourceTex, sourceTexTransform, source.Settings.targetRect));
-                }
-
-                var finalFormat = mergeInfo.Settings.mergedFormat;
-                if (finalFormat == MergeMaterial.MergedTextureFormat.Default)
-#if UNITY_ANDROID || UNITY_IOS
-                finalFormat = MergeMaterial.MergedTextureFormat.ASTC_6x6;
-#else
-                    finalFormat = MergeMaterial.MergedTextureFormat.DXT5;
-#endif
-
-                var plan = new TextureMergePlan(mergeInfo.Settings.textureSize.x, mergeInfo.Settings.textureSize.y, finalFormat, sources);
+                var plan = MakeMergePlan(mergeInfo, information.MaterialPropertyName);
                 if (!mergePlanAndTargetProperties.TryGetValue(plan, out var targetProperties))
                     mergePlanAndTargetProperties.Add(plan, targetProperties = new List<string>());
                 targetProperties.Add(information.MaterialPropertyName);
@@ -379,7 +370,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             foreach (var (mergePlan, properties) in mergePlanAndTargetProperties)
             {
-                var texture = GenerateTexture(mergePlan, compress: true);
+                var texture = GenerateTexture(mergePlan, compress);
                 if (texture != null) texture.name = "AAO Merged Texture (for " + string.Join(", ", properties) + ")";
 
                 foreach (var property in properties)
@@ -389,14 +380,39 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             return mat;
         }
 
+        private static TextureMergePlan MakeMergePlan(ValidatedMergeInfo mergeInfo, string propertyName)
+        {
+            HashSet<(Texture?, Matrix2x3, Rect)> sources = new();
+            foreach (var source in mergeInfo.Sources)
+            {
+                if (!source.UsagesByName.TryGetValue(propertyName, out var usageInformation))
+                    continue;
+                var sourceTex = source.Material.GetTexture(propertyName);
+                var sourceTexTransform = usageInformation.UVMatrix!.Value;
+
+                sources.Add((sourceTex, sourceTexTransform, source.Settings.targetRect));
+            }
+
+            var finalFormat = mergeInfo.Settings.mergedFormat;
+            if (finalFormat == MergeMaterial.MergedTextureFormat.Default)
+#if UNITY_ANDROID || UNITY_IOS
+                finalFormat = MergeMaterial.MergedTextureFormat.ASTC_6x6;
+#else
+                finalFormat = MergeMaterial.MergedTextureFormat.DXT5;
+#endif
+
+            return new TextureMergePlan(mergeInfo.Settings.textureSize.x, mergeInfo.Settings.textureSize.y,
+                finalFormat, sources);
+        }
+
         readonly struct TextureMergePlan : IEquatable<TextureMergePlan>
         {
             public readonly int Width;
             public readonly int Height;
             public readonly MergeMaterial.MergedTextureFormat Format;
-            public readonly HashSet<(Texture, Matrix2x3, Rect)> Sources;
+            public readonly HashSet<(Texture?, Matrix2x3, Rect)> Sources;
 
-            public TextureMergePlan(int width, int height, MergeMaterial.MergedTextureFormat format, HashSet<(Texture, Matrix2x3, Rect)> sources)
+            public TextureMergePlan(int width, int height, MergeMaterial.MergedTextureFormat format, HashSet<(Texture?, Matrix2x3, Rect)> sources)
             {
                 Width = width;
                 Height = height;
@@ -528,7 +544,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             }
         }
 
-        private static Texture? GenerateTexture(TextureMergePlan mergePlan, bool compress)
+        private static Texture GenerateTexture(TextureMergePlan mergePlan, bool compress)
         {
             var texWidth = mergePlan.Width;
             var texHeight = mergePlan.Height;
