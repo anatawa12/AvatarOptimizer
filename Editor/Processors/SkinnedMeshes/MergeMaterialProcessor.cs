@@ -119,34 +119,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             var validatedSettings = new List<ValidatedMergeInfo>();
 
+            var materialMapping = new Dictionary<Material, (Material, int)>();
             foreach (var mergeInfo in component.merges)
             {
                 if (mergeInfo.source.Length == 0) continue;
-
-                Shader? shader = null;
-                Material? referenceMaterial = mergeInfo.referenceMaterial;
-                MaterialInformation? referenceInfomration = null;
-                bool isAutoReferenceMaterial = referenceMaterial == null;
-                bool hasShaderError = false;
-                var goodSources = new List<ValidatedMergeSource>();
-
-                if (referenceMaterial != null) 
-                {
-                    shader = referenceMaterial.shader;
-                    
-                    // We don't reuse context.GetMaterialInformation(material)
-                    // because we need to get non-animated material information
-                    var matInfo = new MaterialInformation(referenceMaterial, new List<Renderer>() { target.SourceRenderer }, null);
-
-                    if (matInfo.DefaultResult is not { TextureUsageInformationList: not null })
-                    {
-                        BuildLog.LogError("MergeMaterial:UnsupportedShaderInMergeSetting", referenceMaterial, shader);
-                        hasShaderError = true;
-                        continue;
-                    }
-
-                    referenceInfomration = matInfo;
-                }
 
                 foreach (var mergeSource in mergeInfo.source)
                 {
@@ -161,6 +137,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     {
                         BuildLog.LogError("MergeMaterial:MaterialUsedInMultipleSubMeshes",
                             materialReference);
+                        continue;
                     }
 
                     var subMesh = target.SubMeshes[subMeshIndices[0]];
@@ -168,31 +145,165 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     {
                         BuildLog.LogError("MergeMaterial:MultiMaterialSubMesh",
                             materialReference);
+                        continue;
                     }
 
                     var material = subMesh.SharedMaterial!;
-                    shader ??= material.shader;
-                    referenceMaterial ??= material;
-                    if (shader != material.shader)
+
+                    materialMapping[mergeSource.material!] = (material, subMeshIndices[0]);
+                }
+                
+                var validatedInfo = ValidateOneSetting(mergeInfo, m => materialMapping.TryGetValue(m, out var pair) ? pair : (null, -1), out var errors);
+
+                foreach (var error in errors)
+                {
+                    switch (error)
                     {
-                        BuildLog.LogError("MergeMaterial:DifferentShaderInMergeSetting",
-                            string.Join(", ", mergeInfo.source.Select(s => s.material?.name ?? "null")),
-                            mergeInfo.source.Select(x => x.material));
-                        continue;
+                        case UnsupportedShaderInMergeSetting setting:
+                            BuildLog.LogError("MergeMaterial:UnsupportedShaderInMergeSetting",
+                                setting.ReferenceMaterial, setting.ReferenceMaterial.shader);
+                            break;
+                        case UnsupportedUVTransformInReferenceMaterial setting:
+                            BuildLog.LogError("MergeMaterial:UnsupportedUVTransformInReferenceMaterial",
+                                string.Join(", ", setting.BadProperties), setting.ReferenceMaterial);
+                            break;
+                        case UnknownUVTransform setting:
+                            BuildLog.LogError("MergeMaterial:UnknownUVTransform",
+                                string.Join(", ", setting.BadProperties), setting.Material);
+                            break;
+                        case DifferentShaderInMergeSetting:
+                            BuildLog.LogError("MergeMaterial:DifferentShaderInMergeSetting",
+                                string.Join(", ", mergeInfo.source.Select(s => s.material?.name ?? "null")),
+                                mergeInfo.source.Select(x => x.material));
+                            break;
+                        case NotAllTexturesUsed settings:
+                            BuildLog.LogError("MergeMaterial:ReferenceMaterial:NotAllTexturesUsed", 
+                                string.Join(", ", settings.NonUsedProperties),
+                                settings.ReferenceMaterial);
+                            break;
+                    }
+                }
+
+                if (validatedInfo != null)
+                {
+                    validatedSettings.Add(validatedInfo);
+                    break;
+                }
+            }
+
+            return validatedSettings;
+        }
+
+        public abstract class RootValidationError {}
+
+        public class UnsupportedShaderInMergeSetting : RootValidationError
+        {
+            public readonly Material ReferenceMaterial;
+
+            public UnsupportedShaderInMergeSetting(Material referenceMaterial)
+            {
+                ReferenceMaterial = referenceMaterial;
+            }
+        }
+
+        public class UnsupportedUVTransformInReferenceMaterial : RootValidationError
+        {
+            public readonly List<string> BadProperties;
+            public readonly Material ReferenceMaterial;
+
+            public UnsupportedUVTransformInReferenceMaterial(List<string> badProperties, Material referenceMaterial)
+            {
+                BadProperties = badProperties;
+                ReferenceMaterial = referenceMaterial;
+            }
+        }
+
+        public class UnknownUVTransform : RootValidationError
+        {
+            public readonly List<string> BadProperties;
+            public readonly Material Material;
+
+            public UnknownUVTransform(List<string> badProperties, Material material)
+            {
+                BadProperties = badProperties;
+                Material = material;
+            }
+        }
+
+        public class DifferentShaderInMergeSetting : RootValidationError
+        {
+        }
+
+        public class NotAllTexturesUsed : RootValidationError
+        {
+            public readonly List<string> NonUsedProperties;
+            public readonly Material ReferenceMaterial;
+
+            public NotAllTexturesUsed(List<string> nonUsedProperties, Material referenceMaterial)
+            {
+                NonUsedProperties = nonUsedProperties;
+                ReferenceMaterial = referenceMaterial;
+            }
+        }
+
+        public static ValidatedMergeInfo? ValidateOneSetting(MergeMaterial.MergeInfo mergeInfo, Func<Material, (Material?, int)> normalizeMaterial, out List<RootValidationError> validationErrors)
+        {
+            validationErrors = new List<RootValidationError>();
+            {
+                if (mergeInfo.source.Length == 0) return null;
+                var mappedMaterials = mergeInfo.source.Select(x => x.material != null ? normalizeMaterial(x.material) : default).ToArray();
+
+                var referenceMaterial = mergeInfo.referenceMaterial;
+                if (referenceMaterial == null)
+                    referenceMaterial = mappedMaterials.FirstOrDefault(x => x.Item1).Item1;
+
+                if (referenceMaterial == null) return null; // All sources are null
+
+                // We don't reuse context.GetMaterialInformation(material)
+                // because we need to get non-animated material information
+                var referenceInformation = new MaterialInformation(referenceMaterial, new List<Renderer>(), null);
+
+                {
+                    if (referenceInformation.DefaultResult is not { TextureUsageInformationList: not null })
+                    {
+                        validationErrors.Add(new UnsupportedShaderInMergeSetting(referenceMaterial));
+                        return null;
                     }
 
-                    if (hasShaderError) continue;
+                    var referenceUsages = referenceInformation.DefaultResult!.TextureUsageInformationList!;
+                    var badProperties = referenceUsages.Where(usage =>
+                            usage.UVChannel != UVChannel.NonMeshRelated && usage.UVMatrix != Matrix2x3.Identity)
+                        .Select(x => x.MaterialPropertyName)
+                        .ToList();
+                    if (badProperties.Any())
+                    {
+                        validationErrors.Add(new UnsupportedUVTransformInReferenceMaterial(badProperties, referenceMaterial));
+                        return null;
+                    }
+                }
+
+                if (mappedMaterials.Any(x => x.Item1 != null && x.Item1.shader != referenceMaterial.shader))
+                {
+                    validationErrors.Add(new DifferentShaderInMergeSetting());
+                    return null;
+                }
+
+                var goodSources = new List<ValidatedMergeSource>();
+                for (var index = 0; index < mergeInfo.source.Length; index++)
+                {
+                    var mergeSource = mergeInfo.source[index];
+                    var (material, subMeshIndex) = mappedMaterials[index];
+
+                    if (material == null || subMeshIndex < 0) continue; // skipped
 
                     // We don't reuse context.GetMaterialInformation(material)
                     // because we need to get non-animated material information
-                    var matInfo = new MaterialInformation(material, new List<Renderer>() { target.SourceRenderer }, null);
-                    referenceInfomration ??= matInfo;
-                    if (matInfo.DefaultResult is not { TextureUsageInformationList: {} textureUsageInformations })
-                    {
-                        BuildLog.LogError("MergeMaterial:UnsupportedShaderInMergeSetting", material, shader);
-                        hasShaderError = true;
-                        continue;
-                    }
+                    var matInfo = new MaterialInformation(material, new List<Renderer>(), null);
+
+                    // We have checked that the shader is same as referenceMaterial.shader, and referenceMaterial has valid information.
+                    var textureUsageInformations = matInfo.DefaultResult?.TextureUsageInformationList!;
+                    Utils.Assert(textureUsageInformations != null,
+                        $"textureUsageInformations != null: Unstable ShaderInformation: {material.shader}");
 
                     if (referenceMaterial != material)
                     {
@@ -203,52 +314,37 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
                         if (badProperties.Any())
                         {
-                            BuildLog.LogError("MergeMaterial:UnsupportedMaterialSettings:UnknownUVTransform",
-                                string.Join(", ", badProperties), material);
+                            validationErrors.Add(new UnknownUVTransform(badProperties, referenceMaterial));
                             continue;
                         }
                     }
 
-                    goodSources.Add(new (mergeSource, material, subMeshIndices[0], textureUsageInformations));
+                    goodSources.Add(new(mergeSource, material, subMeshIndex, textureUsageInformations));
                 }
 
-                if (!hasShaderError && referenceMaterial != null)
                 {
                     // Check the textureUsage for referenceMaterial:
                     // - has texture usage for all textures available
                     // - has texture usage with identity matrix
+                    Utils.Assert(referenceInformation!.Material == referenceMaterial);
 
-                    Utils.Assert(referenceInfomration!.Material == referenceMaterial);
-
-                    var allProperties = goodSources.SelectMany(x => x.Usages).Select(x => x.MaterialPropertyName).ToHashSet();
-                    var referenceUsages = referenceInfomration.DefaultResult!.TextureUsageInformationList!;
-                    var nonUsedProperties = allProperties.Except(referenceUsages.Select(x => x.MaterialPropertyName)).ToList();
+                    var allProperties = goodSources.SelectMany(x => x.Usages).Select(x => x.MaterialPropertyName)
+                        .ToHashSet();
+                    var referenceUsages = referenceInformation.DefaultResult!.TextureUsageInformationList!;
+                    var nonUsedProperties =
+                        allProperties.Except(referenceUsages.Select(x => x.MaterialPropertyName)).ToList();
                     if (nonUsedProperties.Any())
                     {
                         // TODO: consider just ignore unused textures?
-                        BuildLog.LogError("MergeMaterial:ReferenceMaterial:NotAllTexturesUsed", referenceMaterial, string.Join(", ", nonUsedProperties));
-                        continue;
-                    }
-
-                    var badProperties = referenceUsages.Where(usage => usage.UVChannel != UVChannel.NonMeshRelated && usage.UVMatrix != Matrix2x3.Identity)
-                        .Select(x => x.MaterialPropertyName)
-                        .ToList();
-                    if (badProperties.Any())
-                    {
-
-                        // We don't have to create error if the reference material is automatically selected since it should
-                        // already errored
-                        if (!isAutoReferenceMaterial) BuildLog.LogError("MergeMaterial:ReferenceMaterial:UnknownUVTransform", string.Join(", ", badProperties), referenceMaterial);
-                        continue;
+                        validationErrors.Add(new NotAllTexturesUsed(nonUsedProperties, referenceMaterial));
+                        return null;
                     }
 
                     // The settings LGTM! let's prepare for merge.
 
-                    validatedSettings.Add(new ValidatedMergeInfo(referenceMaterial, referenceInfomration, mergeInfo, goodSources));
+                    return new ValidatedMergeInfo(referenceMaterial, referenceInformation, mergeInfo, goodSources);
                 }
             }
-
-            return validatedSettings;
         }
 
         public static void DoMergeMaterial(MeshInfo2 target, List<ValidatedMergeInfo> validatedSettings)
