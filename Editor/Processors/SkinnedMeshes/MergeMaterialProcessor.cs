@@ -173,7 +173,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                             break;
                         case DifferentShaderInMergeSetting:
                             BuildLog.LogError("MergeMaterial:DifferentShaderInMergeSetting",
-                                string.Join(", ", mergeInfo.source.Select(s => s.material?.name ?? "null")),
                                 mergeInfo.source.Select(x => x.material));
                             break;
                         case NotAllTexturesUsed settings:
@@ -294,7 +293,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     var mergeSource = mergeInfo.source[index];
                     var (material, subMeshIndex) = mappedMaterials[index];
 
-                    if (material == null || subMeshIndex < 0) continue; // skipped
+                    if (material == null) continue; // skipped
 
                     // We don't reuse context.GetMaterialInformation(material)
                     // because we need to get non-animated material information
@@ -678,6 +677,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             }
 
             var texture = CopyFromRenderTarget(target, finalFormat);
+
+            if (RenderTexture.active == target) RenderTexture.active = null;
 
             DestroyTracker.DestroyImmediate(target);
 
