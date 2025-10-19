@@ -102,6 +102,15 @@ namespace Anatawa12.AvatarOptimizer
 
         }
 
+        private static class Styles
+        {
+            public static readonly GUIContent ReferenceMaterial =
+                new GUIContent(AAOL10N.Tr("MergeMaterial:Reference Material"))
+                {
+                    tooltip = AAOL10N.Tr("MergeMaterial:Reference Material:tooltip"),
+                };
+        }
+
         protected override void OnInspectorGUIInner()
         {
             Undo.RecordObject(target, "Inspector");
@@ -127,8 +136,10 @@ namespace Anatawa12.AvatarOptimizer
                 {
                     EditorGUILayout.BeginVertical(GUI.skin.box);
                     EditorGUI.BeginChangeCheck();
+                    Styles.ReferenceMaterial.text = AAOL10N.Tr("MergeMaterial:label:Reference Material");
+                    Styles.ReferenceMaterial.tooltip = AAOL10N.Tr("MergeMaterial:Reference Material:tooltip");
                     componentMerge.referenceMaterial =
-                        EditorGUILayout.ObjectField(AAOL10N.Tr("MergeMaterial:Reference Material"),
+                        EditorGUILayout.ObjectField(Styles.ReferenceMaterial,
                             componentMerge.referenceMaterial, typeof(Material), false) as Material;
 
                     DrawList(ref componentMerge.source, AAOL10N.Tr("MergeMaterial:button:Add Source"),
@@ -176,7 +187,7 @@ namespace Anatawa12.AvatarOptimizer
                         {
                             case MergeMaterialProcessor.UnsupportedShaderInMergeSetting setting:
                                 EditorGUILayout.SelectableLabel(
-                                    AAOL10N.Tr("MergeMaterial:UnsupportedShaderInMergeSetting"),
+                                    AAOL10N.Tr("MergeMaterial:error:UnsupportedShaderInMergeSetting"),
                                     EditorStyles.wordWrappedLabel);
                                 EditorGUILayout.ObjectField("Reference Material", setting.ReferenceMaterial,
                                     typeof(Material), false);
@@ -185,7 +196,7 @@ namespace Anatawa12.AvatarOptimizer
                                 break;
                             case MergeMaterialProcessor.UnsupportedUVTransformInReferenceMaterial setting:
                                 EditorGUILayout.SelectableLabel(
-                                    AAOL10N.Tr("MergeMaterial:UnsupportedUVTransformInReferenceMaterial")
+                                    AAOL10N.Tr("MergeMaterial:error:UnsupportedUVTransformInReferenceMaterial")
                                         .Replace("{0}", string.Join(", ", setting.BadProperties)),
                                     EditorStyles.wordWrappedLabel);
                                 EditorGUILayout.ObjectField("Reference Material", setting.ReferenceMaterial,
@@ -193,7 +204,7 @@ namespace Anatawa12.AvatarOptimizer
                                 break;
                             case MergeMaterialProcessor.UnknownUVTransform setting:
                                 EditorGUILayout.SelectableLabel(
-                                    AAOL10N.Tr("MergeMaterial:UnknownUVTransform")
+                                    AAOL10N.Tr("MergeMaterial:error:UnknownUVTransform")
                                         .Replace("{0}", string.Join(", ", setting.BadProperties)),
                                     EditorStyles.wordWrappedLabel);
                                 EditorGUILayout.ObjectField("Reference Material", setting.Material, typeof(Material),
@@ -201,12 +212,12 @@ namespace Anatawa12.AvatarOptimizer
                                 break;
                             case MergeMaterialProcessor.DifferentShaderInMergeSetting:
                                 EditorGUILayout.SelectableLabel(
-                                    AAOL10N.Tr("MergeMaterial:DifferentShaderInMergeSetting"),
+                                    AAOL10N.Tr("MergeMaterial:error:DifferentShaderInMergeSetting"),
                                     EditorStyles.wordWrappedLabel);
                                 break;
                             case MergeMaterialProcessor.NotAllTexturesUsed settings:
                                 EditorGUILayout.SelectableLabel(
-                                    AAOL10N.Tr("MergeMaterial:ReferenceMaterial:NotAllTexturesUsed").Replace("{0}",
+                                    AAOL10N.Tr("MergeMaterial:error:ReferenceMaterial:NotAllTexturesUsed").Replace("{0}",
                                         string.Join(", ", settings.NonUsedProperties)), EditorStyles.wordWrappedLabel);
                                 EditorGUILayout.ObjectField("Reference Material", settings.ReferenceMaterial,
                                     typeof(Material), false);
@@ -220,6 +231,7 @@ namespace Anatawa12.AvatarOptimizer
                     if (!preview) preview = Assets.PreviewHereTex; // TODO: replace with error image
                     EditorGUILayout.LabelField(new GUIContent(preview), GUILayout.MaxHeight(256),
                         GUILayout.MaxHeight(256));
+
 
                     EditorGUILayout.EndVertical();
 
@@ -244,13 +256,6 @@ namespace Anatawa12.AvatarOptimizer
 
             if (EditorGUI.EndChangeCheck())
                 OnChanged();
-
-            if (GUILayout.Button(AAOL10N.Tr("MergeMaterial:button:Generate Preview")))
-            {
-                // preview: we only show _MainTex
-                // TODO: implement preview generation
-                //_generatedPreviews = MergeMaterialProcessor.GenerateTextures(component, _upstreamMaterials, false);
-            }
         }
 
         private void OnChanged() => OnChanged(true);

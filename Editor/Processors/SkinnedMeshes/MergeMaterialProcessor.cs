@@ -98,7 +98,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 }
 
                 if (duplicatedMaterials.Count > 0)
-                    BuildLog.LogError("MergeMaterial:DuplicateMaterialInMergeSetting", duplicatedMaterials);
+                    BuildLog.LogError("MergeMaterial:error:DuplicateMaterialInMergeSetting", duplicatedMaterials);
             }
         }
 
@@ -129,13 +129,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     var materialReference = ObjectRegistry.GetReference(mergeSource.material);
                     if (!submeshByMaterial.TryGetValue(materialReference, out var subMeshIndices))
                     {
-                        BuildLog.LogError("MergeMaterial:MaterialNotFoundInMesh", materialReference);
+                        BuildLog.LogError("MergeMaterial:error:MaterialNotFoundInMesh", materialReference);
                         continue;
                     }
 
                     if (subMeshIndices.Count != 1)
                     {
-                        BuildLog.LogError("MergeMaterial:MaterialUsedInMultipleSubMeshes",
+                        BuildLog.LogError("MergeMaterial:error:MaterialUsedInMultipleSubMeshes",
                             materialReference);
                         continue;
                     }
@@ -143,7 +143,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     var subMesh = target.SubMeshes[subMeshIndices[0]];
                     if (subMesh.SharedMaterials.Length != 1)
                     {
-                        BuildLog.LogError("MergeMaterial:MultiMaterialSubMesh",
+                        BuildLog.LogError("MergeMaterial:error:MultiMaterialSubMesh",
                             materialReference);
                         continue;
                     }
@@ -160,23 +160,23 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     switch (error)
                     {
                         case UnsupportedShaderInMergeSetting setting:
-                            BuildLog.LogError("MergeMaterial:UnsupportedShaderInMergeSetting",
+                            BuildLog.LogError("MergeMaterial:error:UnsupportedShaderInMergeSetting",
                                 setting.ReferenceMaterial, setting.ReferenceMaterial.shader);
                             break;
                         case UnsupportedUVTransformInReferenceMaterial setting:
-                            BuildLog.LogError("MergeMaterial:UnsupportedUVTransformInReferenceMaterial",
+                            BuildLog.LogError("MergeMaterial:error:UnsupportedUVTransformInReferenceMaterial",
                                 string.Join(", ", setting.BadProperties), setting.ReferenceMaterial);
                             break;
                         case UnknownUVTransform setting:
-                            BuildLog.LogError("MergeMaterial:UnknownUVTransform",
+                            BuildLog.LogError("MergeMaterial:error:UnknownUVTransform",
                                 string.Join(", ", setting.BadProperties), setting.Material);
                             break;
                         case DifferentShaderInMergeSetting:
-                            BuildLog.LogError("MergeMaterial:DifferentShaderInMergeSetting",
+                            BuildLog.LogError("MergeMaterial:error:DifferentShaderInMergeSetting",
                                 mergeInfo.source.Select(x => x.material));
                             break;
                         case NotAllTexturesUsed settings:
-                            BuildLog.LogError("MergeMaterial:ReferenceMaterial:NotAllTexturesUsed", 
+                            BuildLog.LogError("MergeMaterial:error:ReferenceMaterial:NotAllTexturesUsed", 
                                 string.Join(", ", settings.NonUsedProperties),
                                 settings.ReferenceMaterial);
                             break;
