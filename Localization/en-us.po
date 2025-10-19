@@ -458,6 +458,24 @@ msgstr "Add Source"
 msgid "MergeToonLitMaterial:button:Generate Preview"
 msgstr "Generate Preview"
 
+msgid "MergeToonLitMaterial:button:Migrate to MergeMaterial"
+msgstr "Migrate to MergeMaterial"
+
+msgid "MergeToonLitMaterial:dialog:Migrate to MergeMaterial:title"
+msgstr "Migrate to MergeMaterial"
+
+msgid "MergeToonLitMaterial:dialog:Migrate to MergeMaterial:message"
+msgstr "You're migrating to MergeMaterial component from MergeToonLitMaterial component.\n"
+"This will copy all settings to new MergeMaterial component and remove this component.\n"
+"However, this migration does not guarantee perfect migration. Please check the result after migration.\n"
+"In addition, this migration does not support prefabs. Migrate manually if you're using prefabs."
+
+msgid "MergeToonLitMaterial:dialog:Migrate to MergeMaterial:ok"
+msgstr "Migrate"
+
+msgid "MergeToonLitMaterial:dialog:Migrate to MergeMaterial:cancel"
+msgstr "Cancel"
+
 msgid "MergeToonLitMaterial:label:Texture Size"
 msgstr "Texture Size"
 
