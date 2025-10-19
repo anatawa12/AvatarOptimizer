@@ -125,6 +125,7 @@ namespace Anatawa12.AvatarOptimizer
             DrawList(ref component.merges, AAOL10N.Tr("MergeMaterial:button:Add Merged Material"),
                 (componentMerge, i) =>
                 {
+                    EditorGUILayout.BeginVertical(GUI.skin.box);
                     EditorGUI.BeginChangeCheck();
                     componentMerge.referenceMaterial =
                         EditorGUILayout.ObjectField(AAOL10N.Tr("MergeMaterial:Reference Material"),
@@ -219,6 +220,8 @@ namespace Anatawa12.AvatarOptimizer
                     if (!preview) preview = Assets.PreviewHereTex; // TODO: replace with error image
                     EditorGUILayout.LabelField(new GUIContent(preview), GUILayout.MaxHeight(256),
                         GUILayout.MaxHeight(256));
+
+                    EditorGUILayout.EndVertical();
 
                     Utils.HorizontalLine();
                 },
