@@ -34,16 +34,19 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             public readonly MaterialInformation ReferenceInformation;
             public readonly MergeMaterial.MergeInfo Settings;
             public readonly List<ValidatedMergeSource> Sources;
+            public readonly Dictionary<string, MergeMaterial.TextureConfigOverride> Overrides;
 
             public ValidatedMergeInfo(Material referenceMaterial, 
                 MaterialInformation referenceInfomration,
                 MergeMaterial.MergeInfo settings,
-                List<ValidatedMergeSource> sources)
+                List<ValidatedMergeSource> sources, 
+                Dictionary<string, MergeMaterial.TextureConfigOverride> overrides)
             {
                 ReferenceMaterial = referenceMaterial;
                 ReferenceInformation = referenceInfomration;
                 Settings = settings;
                 Sources = sources;
+                Overrides = overrides;
             }
         }
 
@@ -321,6 +324,16 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     goodSources.Add(new(mergeSource, material, subMeshIndex, textureUsageInformations));
                 }
 
+                var textureFormats = new Dictionary<string, MergeMaterial.TextureConfigOverride>();
+
+                foreach (var @override in mergeInfo.textureConfigOverrides)
+                {
+                    if (@override.textureName != null)
+                    {
+                        textureFormats.TryAdd(@override.textureName, @override);
+                    }
+                }
+
                 {
                     // Check the textureUsage for referenceMaterial:
                     // - has texture usage for all textures available
@@ -341,7 +354,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
                     // The settings LGTM! let's prepare for merge.
 
-                    return new ValidatedMergeInfo(referenceMaterial, referenceInformation, mergeInfo, goodSources);
+                    return new ValidatedMergeInfo(referenceMaterial, referenceInformation, mergeInfo, goodSources, textureFormats);
                 }
             }
         }
@@ -489,6 +502,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             }
 
             var finalFormat = mergeInfo.Settings.mergedFormat;
+            var size = mergeInfo.Settings.textureSize;
+
+            if (mergeInfo.Overrides.TryGetValue(propertyName, out var @override))
+                (finalFormat, size) = (@override.formatOverride, @override.sizeOverride);
+
             if (finalFormat == MergeMaterial.MergedTextureFormat.Default)
 #if UNITY_ANDROID || UNITY_IOS
                 finalFormat = MergeMaterial.MergedTextureFormat.ASTC_6x6;
@@ -496,7 +514,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 finalFormat = MergeMaterial.MergedTextureFormat.DXT5;
 #endif
 
-            return new TextureMergePlan(mergeInfo.Settings.textureSize.x, mergeInfo.Settings.textureSize.y,
+            return new TextureMergePlan(size.x, size.y,
                 finalFormat, sources);
         }
 

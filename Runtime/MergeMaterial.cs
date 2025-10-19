@@ -20,6 +20,8 @@ namespace Anatawa12.AvatarOptimizer
 
             // must be power of two. 13 (2^13 = 8192) is upper limit.
             public Vector2Int textureSize = new Vector2Int(2048, 2048);
+
+            public TextureConfigOverride[] textureConfigOverrides = Array.Empty<TextureConfigOverride>();
         }
 
         [Serializable]
@@ -27,6 +29,14 @@ namespace Anatawa12.AvatarOptimizer
         {
             public Material? material;
             public Rect targetRect = new Rect(0, 0, 1, 1);
+        }
+
+        [Serializable]
+        internal struct TextureConfigOverride
+        {
+            public string? textureName;
+            public Vector2Int sizeOverride;
+            public MergedTextureFormat formatOverride;
         }
 
         /// <summary>

@@ -900,6 +900,22 @@ msgstr "Reference Material"
 msgid "MergeMaterial:Reference Material:tooltip"
 msgstr "The reference material is used as the base material for the merged material."
 
+msgid "MergeMaterial:label:Texture Config Overrides"
+msgstr "Texture Config Overrides"
+
+msgid "MergeMaterial:button:Add Texture Config Override"
+msgstr "Add Config Override"
+
+msgid "MergeMaterial:label:Texture Name"
+msgstr "Override Texture Name"
+
+msgid "MergeMaterial:label:Texture Size Override"
+msgstr "Override Size"
+
+msgid "MergeMaterial:label:Texture Format Override"
+msgstr "Override Format"
+
+
 # region MergeMaterial
 
 msgid "MergeMaterial:error:DuplicateMaterialInMergeSetting"

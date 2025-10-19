@@ -40,10 +40,27 @@ namespace Anatawa12.AvatarOptimizer
                 { source = new[] { _createNewSource() } };
         }
 
+        delegate void DrawerCallback<T>(ref T arg1, int arg2);
+
         private static void DrawList<T>(
             [AllowNull] ref T[] array,
             string addButton,
             Action<T, int> drawer,
+            Func<T>? newElement,
+            bool noEmpty = false,
+            Action? postButtons = null,
+            Action<int, int>? onMoved = null,
+            Action<int, T>? onRemoved = null,
+            Action<T>? onAdded = null
+        ) where T : class
+        {
+            DrawList(ref array, addButton, delegate(ref T v, int i) { drawer(v, i); }, newElement, noEmpty, postButtons, onMoved, onRemoved, onAdded);
+        }
+
+        private static void DrawList<T>(
+            [AllowNull] ref T[] array,
+            string addButton,
+            DrawerCallback<T> drawer,
             Func<T>? newElement,
             bool noEmpty = false,
             Action? postButtons = null,
@@ -55,7 +72,7 @@ namespace Anatawa12.AvatarOptimizer
             if (array == null) array = Array.Empty<T>();
             for (var i = 0; i < array.Length; i++)
             {
-                drawer(array[i], i);
+                drawer(ref array[i], i);
 
                 GUILayout.BeginHorizontal();
                 using (new EditorGUI.DisabledScope(i == 0))
@@ -164,6 +181,37 @@ namespace Anatawa12.AvatarOptimizer
                     componentMerge.mergedFormat =
                         (MergeMaterial.MergedTextureFormat)EditorGUILayout.EnumPopup("Format",
                             componentMerge.mergedFormat);
+
+                    // texture settings overrides
+                    EditorGUILayout.LabelField(AAOL10N.Tr("MergeMaterial:label:Texture Config Overrides"));
+                    DrawList(ref componentMerge.textureConfigOverrides, AAOL10N.Tr("MergeMaterial:button:Add Texture Config Override"),
+                        delegate(ref MergeMaterial.TextureConfigOverride @override, int _)
+                        {
+                            EditorGUILayout.BeginHorizontal();
+                            @override.textureName =
+                                EditorGUILayout.TextField(AAOL10N.Tr("MergeMaterial:label:Texture Name"),
+                                    @override.textureName);
+                            var textures =
+                                _materialEditorCaches[i].ValidatedInfo?.ReferenceInformation?.DefaultResult
+                                    ?.TextureUsageInformationList?.Select(x => x.MaterialPropertyName)?.ToArray() ??
+                                Array.Empty<string>();
+                            var popupResult = EditorGUILayout.Popup(-1, textures, GUILayout.Width(20));
+                            if (popupResult != -1) @override.textureName = textures[popupResult];
+                            EditorGUILayout.EndHorizontal();
+                            EditorGUI.indentLevel++;
+                            @override.sizeOverride = EditorGUILayout.Vector2IntField(
+                                AAOL10N.Tr("MergeMaterial:label:Texture Size Override"), @override.sizeOverride);
+                            @override.formatOverride =
+                                (MergeMaterial.MergedTextureFormat)EditorGUILayout.EnumPopup(
+                                    AAOL10N.Tr("MergeMaterial:label:Texture Format Override"),
+                                    @override.formatOverride);
+                            EditorGUI.indentLevel--;
+                        },
+                        () => new MergeMaterial.TextureConfigOverride()
+                        {
+                            sizeOverride = componentMerge.textureSize,
+                            formatOverride = componentMerge.mergedFormat,
+                        });
 
                     ref var cache = ref _materialEditorCaches[i];
 
