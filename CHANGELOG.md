@@ -46,6 +46,8 @@ The format is based on [Keep a Changelog].
 - Mesh can be disappeared when BlendShapes with infinity in their delta are frozen with AAO `#1518`
   - Freezing them would result Infinity in vertex position, which results NaN or Infinity in bounds, which makes Unity to clear the mesh.
 - VRM: A NullReferenceException or MissingReferenceException may occur when parsing incomplete VRM components `#1524`
+- MeshCompression settings is not preserved after AvatarOptimizer process `#1529`
+  - This bug increases size of some avatars unexpectedly. This is fixed now.
 
 ### Security
 
