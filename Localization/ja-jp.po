@@ -361,6 +361,30 @@ msgstr "プレビューを生成"
 msgid "MergeToonLitMaterial:label:Texture Size"
 msgstr "テクスチャのサイズ"
 
+msgid "MergeToonLitMaterial:suggestMigrate"
+msgstr ""
+"MergeToonLitMaterialは非推奨です！ 多くのシェーダをサポートするMerge Materialコンポーネントに置き換えられました。\n"
+"下のボタンを押し、Merge Materialに移行することを推奨します！ (設定は引き継がれます)"
+
+msgid "MergeToonLitMaterial:button:Migrate to MergeMaterial"
+msgstr "Merge Materialに移行する"
+
+msgid "MergeToonLitMaterial:dialog:Migrate to MergeMaterial:title"
+msgstr "Merge Materialに移行"
+
+msgid "MergeToonLitMaterial:dialog:Migrate to MergeMaterial:message"
+msgstr ""
+"MergeToonLitMaterialコンポーネントからMergeMaterialコンポーネントに移行しようとしています。\n"
+"これにより、すべての設定が新しいMergeMaterialコンポーネントにコピーされ、このコンポーネントは削除されます。\n"
+"ただし、この移行が完全な移行を保証するものではありません。移行後に結果を確認してください。\n"
+"さらに、この移行はプレハブをサポートしていません。プレハブを使用している場合は手動で移行してください。"
+
+msgid "MergeToonLitMaterial:dialog:Migrate to MergeMaterial:ok"
+msgstr "移行する"
+
+msgid "MergeToonLitMaterial:dialog:Migrate to MergeMaterial:cancel"
+msgstr "キャンセル"
+
 # endregion
 
 # region RemoveMeshInBox
@@ -806,5 +830,80 @@ msgstr "Trace and Optimizeの追加に失敗しました"
 
 msgid "ContextMenus:AddTraceAndOptimize:FailedToAddTraceAndOptimize:Message"
 msgstr "Trace and Optimizeはアバターのルートにのみ追加することができます。アバターのルートを選択してもう一度お試しください。"
+
+# endregion
+
+# region MergeMaterial
+
+msgid "MergeMaterial:button:Add Merged Material"
+msgstr "統合したマテリアルを追加"
+
+msgid "MergeMaterial:button:Add Source"
+msgstr "統合対象を追加"
+
+msgid "MergeMaterial:label:Texture Size"
+msgstr "テクスチャのサイズ"
+
+msgid "MergeMaterial:label:Reference Material"
+msgstr "代表マテリアル"
+
+msgid "MergeMaterial:Reference Material:tooltip"
+msgstr "統合先のマテリアルとして使用されるマテリアルです。このマテリアルのシェーダーの設定が統合後のマテリアルに使用されます。"
+
+msgid "MergeMaterial:label:Texture Config Overrides"
+msgstr "テクスチャ設定のオーバーライド"
+
+msgid "MergeMaterial:button:Add Texture Config Override"
+msgstr "テクスチャ設定のオーバーライドを追加"
+
+msgid "MergeMaterial:label:Texture Name"
+msgstr "テクスチャ名"
+
+msgid "MergeMaterial:label:Texture Size Override"
+msgstr "サイズのオーバーライド"
+
+msgid "MergeMaterial:label:Texture Format Override"
+msgstr "フォーマットのオーバーライド"
+
+
+# region MergeMaterial
+
+msgid "MergeMaterial:error:DuplicateMaterialInMergeSetting"
+msgstr "複数の統合設定が同じマテリアルを統合対象として使用しています。これはサポートされていない動作です。"
+
+msgid "MergeMaterial:error:MaterialNotFoundInMesh"
+msgstr "MergeMaterialに設定されたマテリアルがSkinned Mesh Rendererに存在しません。"
+
+msgid "MergeMaterial:error:MaterialUsedInMultipleSubMeshes"
+msgstr "Skinned Mesh Rendererの複数のマテリアルで設定されたマテリアルが使用されています。サブメッシュを統合してから処理を行う必要があります。"
+
+msgid "MergeMaterial:error:MultiMaterialSubMesh"
+msgstr "設定されたマテリアルを使用しているサブメッシュが、複数のマテリアルを持っています。MergeMaterialコンポーネントでは、マルチマテリアルマルチパスレンダリングはサポートされていません。"
+
+msgid "MergeMaterial:error:UnsupportedShaderInMergeSetting"
+msgstr "設定されたマテリアルで使用されているシェーダーは、Merge Materialでサポートされていません。"
+
+msgid "MergeMaterial:error:UnsupportedShaderInMergeSetting:description"
+msgstr "そのシェーダーはAvatar Optimizer向けのShader Informationを提供していないか、Shader Informationが'TextureAndUVUsage'情報を提供していません。これらの情報がないと、Avatar Optimizerはマテリアルを正常に統合することができません。"
+
+msgid "MergeMaterial:error:UnsupportedUVTransformInReferenceMaterial"
+msgstr "代表マテリアル(または設定内の最初のマテリアル)に、サポートされていないUV変換が適用されたテクスチャがあります: {0}"
+
+msgid "MergeMaterial:error:UnsupportedUVTransformInReferenceMaterial:description"
+msgstr "代表マテリアルには_STやパララックスのようなUV変換を持っていてはいけません。"
+
+msgid "MergeMaterial:error:UnknownUVTransform"
+msgstr "マテリアルに、サポートされていないまたは未知のUV変換が適用されたテクスチャがあります: {0}"
+
+msgid "MergeMaterial:error:UnknownUVTransform:description"
+msgstr "マテリアルを統合するためには、テクスチャがどのように使用されているかを知る必要がありますが、これらのテクスチャには未知のテクスチャ変換や、パララックスやスクロールのような動的変換があります。Merge Materialはそのような機能とは互換性がありません。"
+
+msgid "MergeMaterial:error:DifferentShaderInMergeSetting"
+msgstr "統合対象のマテリアルで使用されているシェーダーが、設定間で異なるか、代表マテリアルと異なっています。"
+
+msgid "MergeMaterial:error:ReferenceMaterial:NotAllTexturesUsed"
+msgstr "統合対象のマテリアルで使用されている一部のテクスチャが、代表マテリアルで使用されていません。これは現在サポートされていません: {0}"
+
+# endregion
 
 # endregion
