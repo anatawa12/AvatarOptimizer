@@ -99,6 +99,32 @@ namespace Anatawa12.AvatarOptimizer
 
             var component = (MergeToonLitMaterial)target;
 
+            EditorGUILayout.HelpBox(AAOL10N.Tr("MergeToonLitMaterial:suggestMigrate"), MessageType.Info);
+
+            if (GUILayout.Button(AAOL10N.Tr("MergeToonLitMaterial:button:Migrate to MergeMaterial")))
+            {
+                // Show warning and remove the component, and add mergeMaterial
+                if (!EditorUtility.DisplayDialog(
+                        AAOL10N.Tr("MergeToonLitMaterial:dialog:Migrate to MergeMaterial:title"),
+                        AAOL10N.Tr("MergeToonLitMaterial:dialog:Migrate to MergeMaterial:message"),
+                        AAOL10N.Tr("MergeToonLitMaterial:dialog:Migrate to MergeMaterial:ok"),
+                        AAOL10N.Tr("MergeToonLitMaterial:dialog:Migrate to MergeMaterial:cancel")
+                    ))
+                    return;
+                var mergeMaterial = Undo.AddComponent<MergeMaterial>(component.gameObject);
+                mergeMaterial.merges = component.merges.Select(x => new MergeMaterial.MergeInfo
+                {
+                    source = x.source.Select(y => new MergeMaterial.MergeSource
+                    {
+                        material = y.materialIndex >= 0 && y.materialIndex < _upstreamMaterials.Length ? _upstreamMaterials[y.materialIndex] : null,
+                        targetRect = y.targetRect
+                    }).ToArray(),
+                    textureSize = x.textureSize,
+                    mergedFormat = (MergeMaterial.MergedTextureFormat)x.mergedFormat,
+                }).ToArray();
+                Undo.DestroyObjectImmediate(component);
+            }
+
             DrawList(ref component.merges, AAOL10N.Tr("MergeToonLitMaterial:button:Add Merged Material"), (componentMerge, i) =>
                 {
                     DrawList(ref componentMerge.source, AAOL10N.Tr("MergeToonLitMaterial:button:Add Source"), (mergeSource, _) =>
@@ -142,30 +168,6 @@ namespace Anatawa12.AvatarOptimizer
             if (GUILayout.Button(AAOL10N.Tr("MergeToonLitMaterial:button:Generate Preview")))
             {
                 _generatedPreviews = MergeToonLitMaterialProcessor.GenerateTextures(component, _upstreamMaterials, false);
-            }
-
-            if (GUILayout.Button(AAOL10N.Tr("MergeToonLitMaterial:button:Migrate to MergeMaterial")))
-            {
-                // Show warning and remove the component, and add mergeMaterial
-                if (!EditorUtility.DisplayDialog(
-                        AAOL10N.Tr("MergeToonLitMaterial:dialog:Migrate to MergeMaterial:title"),
-                        AAOL10N.Tr("MergeToonLitMaterial:dialog:Migrate to MergeMaterial:message"),
-                        AAOL10N.Tr("MergeToonLitMaterial:dialog:Migrate to MergeMaterial:ok"),
-                        AAOL10N.Tr("MergeToonLitMaterial:dialog:Migrate to MergeMaterial:cancel")
-                    ))
-                    return;
-                var mergeMaterial = Undo.AddComponent<MergeMaterial>(component.gameObject);
-                mergeMaterial.merges = component.merges.Select(x => new MergeMaterial.MergeInfo
-                {
-                    source = x.source.Select(y => new MergeMaterial.MergeSource
-                    {
-                        material = y.materialIndex >= 0 && y.materialIndex < _upstreamMaterials.Length ? _upstreamMaterials[y.materialIndex] : null,
-                        targetRect = y.targetRect
-                    }).ToArray(),
-                    textureSize = x.textureSize,
-                    mergedFormat = (MergeMaterial.MergedTextureFormat)x.mergedFormat,
-                }).ToArray();
-                Undo.DestroyObjectImmediate(component);
             }
         }
 

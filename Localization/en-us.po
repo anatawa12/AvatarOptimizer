@@ -458,6 +458,11 @@ msgstr "Add Source"
 msgid "MergeToonLitMaterial:button:Generate Preview"
 msgstr "Generate Preview"
 
+msgid "MergeToonLitMaterial:suggestMigrate"
+msgstr ""
+"MergeToonLitMaterial is obsoleted by MergeMaterial wich supports more shaders!\n"
+"We recommend migrating to MergeMaterial by clicking the button below."
+
 msgid "MergeToonLitMaterial:button:Migrate to MergeMaterial"
 msgstr "Migrate to MergeMaterial"
 
