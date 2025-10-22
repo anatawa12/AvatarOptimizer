@@ -11,14 +11,6 @@ namespace Anatawa12.AvatarOptimizer
     [CustomEditor(typeof(MergeMaterial))]
     internal class MergeMaterialEditor : AvatarTagComponentEditorBase
     {
-        private Material?[] _upstreamMaterials = null!; // initialized in OnEnable
-        private Material[] _materials = null!; // initialized in OnEnable
-
-        private Material[] _candidateMaterials = null!; // initialized in OnEnable
-        private string[] _candidateNames = null!; // initialized in OnEnable
-
-        private Texture[]? _generatedPreviews;
-
         private readonly Func<MergeMaterial.MergeSource> _createNewSource;
         private readonly Func<MergeMaterial.MergeInfo> _createNewMergeInfo;
 
@@ -35,7 +27,7 @@ namespace Anatawa12.AvatarOptimizer
         public MergeMaterialEditor()
         {
             _createNewSource = () => new MergeMaterial.MergeSource
-                { material = null }; // TODO: consider create material selection
+                { material = null };
             _createNewMergeInfo = () => new MergeMaterial.MergeInfo
                 { source = new[] { _createNewSource() } };
         }
@@ -74,28 +66,38 @@ namespace Anatawa12.AvatarOptimizer
             {
                 drawer(ref array[i], i);
 
+                var indentedRect = EditorGUI.IndentedRect(EditorGUILayout.GetControlRect());
+                var spacing = 1;
+                var buttonRect = new Rect(
+                    indentedRect.x,
+                    indentedRect.y,
+                    (indentedRect.width + spacing) / 3 - spacing,
+                    indentedRect.height
+                );
                 GUILayout.BeginHorizontal();
                 using (new EditorGUI.DisabledScope(i == 0))
                 {
-                    if (GUILayout.Button("▲"))
+                    if (GUI.Button(buttonRect, "▲"))
                     {
                         (array[i], array[i - 1]) = (array[i - 1], array[i]);
                         onMoved?.Invoke(i, i - 1);
                     }
                 }
 
+                buttonRect.x += buttonRect.width + spacing;
                 using (new EditorGUI.DisabledScope(i == array.Length - 1))
                 {
-                    if (GUILayout.Button("▼"))
+                    if (GUI.Button(buttonRect, "▼"))
                     {
                         (array[i], array[i + 1]) = (array[i + 1], array[i]);
                         onMoved?.Invoke(i, i + 1);
                     }
                 }
 
+                buttonRect.x += buttonRect.width + spacing;
                 using (new EditorGUI.DisabledScope(noEmpty && array.Length == 1))
                 {
-                    if (GUILayout.Button("✗"))
+                    if (GUI.Button(buttonRect, "✗"))
                     {
                         var removing = array[i];
                         ArrayUtility.RemoveAt(ref array, i);
@@ -109,7 +111,7 @@ namespace Anatawa12.AvatarOptimizer
             }
 
             using (new EditorGUI.DisabledScope(newElement == null))
-                if (GUILayout.Button(addButton))
+                if (GUI.Button(EditorGUI.IndentedRect(EditorGUILayout.GetControlRect()), addButton))
                 {
                     if (newElement == null) throw new InvalidOperationException();
                     T element;
@@ -162,16 +164,20 @@ namespace Anatawa12.AvatarOptimizer
                     DrawList(ref componentMerge.source, AAOL10N.Tr("MergeMaterial:button:Add Source"),
                         (mergeSource, _) =>
                         {
-                            var found = _materials.FirstOrDefault(mat => mat == mergeSource.material);
-                            _candidateNames[0] = found != null ? found.name : "(invalid)";
-                            EditorGUI.BeginChangeCheck();
-                            var newIndex = EditorGUILayout.Popup(0, _candidateNames);
-                            if (EditorGUI.EndChangeCheck() && newIndex != 0)
-                                mergeSource.material = _candidateMaterials[newIndex - 1];
+                            EditorGUILayout.BeginHorizontal();
+                            mergeSource.material =
+                                EditorGUILayout.ObjectField(
+                                    mergeSource.material,
+                                    typeof(Material), 
+                                    false)
+                                    as Material;
+                            var selectedMaterial = Utils.PopupSuggestion(GetCandidateMaterials, x => x.name, GUILayout.Width(20));
+                            if (selectedMaterial != null) mergeSource.material = selectedMaterial;
+                            EditorGUILayout.EndHorizontal();
 
                             mergeSource.targetRect = EditorGUILayout.RectField(mergeSource.targetRect);
                         },
-                        _candidateMaterials.Length != 0 ? _createNewSource : null
+                        _createNewSource
                     );
 
                     componentMerge.textureSize =
@@ -184,6 +190,7 @@ namespace Anatawa12.AvatarOptimizer
 
                     // texture settings overrides
                     EditorGUILayout.LabelField(AAOL10N.Tr("MergeMaterial:label:Texture Config Overrides"));
+                    EditorGUI.indentLevel++;
                     DrawList(ref componentMerge.textureConfigOverrides, AAOL10N.Tr("MergeMaterial:button:Add Texture Config Override"),
                         delegate(ref MergeMaterial.TextureConfigOverride @override, int _)
                         {
@@ -191,13 +198,15 @@ namespace Anatawa12.AvatarOptimizer
                             @override.textureName =
                                 EditorGUILayout.TextField(AAOL10N.Tr("MergeMaterial:label:Texture Name"),
                                     @override.textureName);
-                            var textures =
-                                _materialEditorCaches[i].ValidatedInfo?.ReferenceInformation?.DefaultResult
-                                    ?.TextureUsageInformationList?.Select(x => x.MaterialPropertyName)?.ToArray() ??
-                                Array.Empty<string>();
-                            var popupResult = EditorGUILayout.Popup(-1, textures, GUILayout.Width(20));
-                            if (popupResult != -1) @override.textureName = textures[popupResult];
+                            var texture = Utils.PopupSuggestion(() =>
+                                    _materialEditorCaches[i].ValidatedInfo?.ReferenceInformation?.DefaultResult
+                                        ?.TextureUsageInformationList?.Select(x => x.MaterialPropertyName)?.ToArray() ??
+                                    Array.Empty<string>(),
+                                x => x,
+                                GUILayout.Width(20));
+                            if (texture != null) @override.textureName = texture;
                             EditorGUILayout.EndHorizontal();
+
                             EditorGUI.indentLevel++;
                             @override.sizeOverride = EditorGUILayout.Vector2IntField(
                                 AAOL10N.Tr("MergeMaterial:label:Texture Size Override"), @override.sizeOverride);
@@ -212,6 +221,7 @@ namespace Anatawa12.AvatarOptimizer
                             sizeOverride = componentMerge.textureSize,
                             formatOverride = componentMerge.mergedFormat,
                         });
+                    EditorGUI.indentLevel--;
 
                     ref var cache = ref _materialEditorCaches[i];
 
@@ -276,16 +286,18 @@ namespace Anatawa12.AvatarOptimizer
                     }
 
                     var preview = cache.Texture;
-                    if (!preview) preview = Assets.PreviewHereTex; // TODO: replace with error image
-                    EditorGUILayout.LabelField(new GUIContent(preview), GUILayout.MaxHeight(256),
-                        GUILayout.MaxHeight(256));
+                    if (preview)
+                    {
+                        EditorGUILayout.LabelField(new GUIContent(preview), GUILayout.MaxHeight(256),
+                            GUILayout.MaxHeight(256));
+                    }
 
 
                     EditorGUILayout.EndVertical();
 
                     Utils.HorizontalLine();
                 },
-                _candidateMaterials.Length != 0 ? _createNewMergeInfo : null,
+                _createNewMergeInfo,
                 postButtons: () => Utils.HorizontalLine(),
                 onMoved: (aIndex, bIndex) =>
                 {
@@ -303,31 +315,15 @@ namespace Anatawa12.AvatarOptimizer
             );
 
             if (EditorGUI.EndChangeCheck())
-                OnChanged();
+                EditorUtility.SetDirty(target);
         }
 
-        private void OnChanged() => OnChanged(true);
-
-        private void OnChanged(bool dirty)
-        {
-            _generatedPreviews = null;
-            var component = (MergeMaterial)target;
-            if (dirty) EditorUtility.SetDirty(component);
-            var usedMaterials =
-                new HashSet<Material>(component.merges.SelectMany(x =>
-                    x.source.Select(y => y.material).OfType<Material>()));
-            _candidateMaterials = _materials.Where(mat => !usedMaterials.Contains(mat)).ToArray();
-            _candidateNames = new[] { "" }.Concat(_candidateMaterials.Select(mat => mat.name)).ToArray();
-        }
-
-        private void OnEnable()
+        private Material[] GetCandidateMaterials()
         {
             var component = (MergeMaterial)target;
-
-            _upstreamMaterials = EditSkinnedMeshComponentUtil
-                .GetMaterials(component.GetComponent<SkinnedMeshRenderer>(), component);
-            _materials = _upstreamMaterials.ToArray()!;
-            OnChanged(dirty: false);
+            return EditSkinnedMeshComponentUtil.GetMaterials(component.GetComponent<SkinnedMeshRenderer>(), component)
+                .Where(x => x)
+                .ToArray()!;
         }
     }
 }
