@@ -913,6 +913,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     var name = $"AAOGeneratedMesh{targetRenderer.name}";
                     var mesh = new Mesh { name = name };
 
+                    if (_originalMesh) MeshUtility.SetMeshCompression(mesh, MeshUtility.GetMeshCompression(_originalMesh));
+
                     WriteToMesh(mesh, isSkinnedMesh: true);
                     // I don't know why but Instantiating mesh will fix broken BlendShapes with
                     // https://github.com/anatawa12/AvatarOptimizer/issues/753
@@ -942,6 +944,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             using (ErrorReport.WithContextObject(targetRenderer))
             {
                 var mesh = new Mesh { name = $"AAOGeneratedMesh{targetRenderer.name}" };
+                if (_originalMesh) MeshUtility.SetMeshCompression(mesh, MeshUtility.GetMeshCompression(_originalMesh));
                 var meshFilter = targetRenderer.GetComponent<MeshFilter>();
                 WriteToMesh(mesh, isSkinnedMesh: false);
                 if (_originalMesh) ObjectRegistry.RegisterReplacedObject(_originalMesh, mesh);
