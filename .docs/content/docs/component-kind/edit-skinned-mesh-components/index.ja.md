@@ -26,6 +26,6 @@ Edit Skinned Mesh ComponentはSkinnedMeshRendererコンポーネントのあるG
 - [Remove Mesh By Box](../../reference/remove-mesh-by-box)
 - [Remove Mesh By UV Tile](../../remove-mesh-by-uv-tile/)
 - [Freeze BlendShape](../../reference/freeze-blendshape)
-- [Merge ToonLit Material](../../reference/merge-toonlit-material)
 - [Merge Material](../../reference/merge-material)
 - [Rename BlendsShape](../../reference/rename-blendshape)
+- [Merge ToonLit Material](../../reference/merge-toonlit-material)
