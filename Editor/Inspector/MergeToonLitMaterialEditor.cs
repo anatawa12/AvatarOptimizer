@@ -111,8 +111,16 @@ namespace Anatawa12.AvatarOptimizer
                         AAOL10N.Tr("MergeToonLitMaterial:dialog:Migrate to MergeMaterial:cancel")
                     ))
                     return;
-                var mergeMaterial = Undo.AddComponent<MergeMaterial>(component.gameObject);
-                mergeMaterial.merges = component.merges.Select(x => new MergeMaterial.MergeInfo
+                if (!component.gameObject.TryGetComponent(out MergeMaterial mergeMaterial))
+                {
+                    mergeMaterial = Undo.AddComponent<MergeMaterial>(component.gameObject);
+                    mergeMaterial.merges = Array.Empty<MergeMaterial.MergeInfo>();
+                }
+                else
+                {
+                    Undo.RecordObject(mergeMaterial, "Migrate MergeToonLitMaterial to MergeMaterial");
+                }
+                mergeMaterial.merges = mergeMaterial.merges.Concat(component.merges.Select(x => new MergeMaterial.MergeInfo
                 {
                     source = x.source.Select(y => new MergeMaterial.MergeSource
                     {
@@ -121,7 +129,7 @@ namespace Anatawa12.AvatarOptimizer
                     }).ToArray(),
                     textureSize = x.textureSize,
                     mergedFormat = (MergeMaterial.MergedTextureFormat)x.mergedFormat,
-                }).ToArray();
+                })).ToArray();
                 Undo.DestroyObjectImmediate(component);
             }
 
