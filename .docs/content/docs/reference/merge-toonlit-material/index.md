@@ -1,9 +1,17 @@
 ---
 title: Merge ToonLit Material
-weight: 25
+weight: 200
 ---
 
 # Merge ToonLit Material
+
+<blockquote class="book-hint warning">
+
+This component is obsolete.
+Please use [Merge Material](../merge-material/) component, which supports more shaders than this component and has better save format.
+This component will not receive any further improvements.
+
+</blockquote>
 
 Merge `VRChat/Mobile/Toon Lit` materials to one material by packing texture manually.
 

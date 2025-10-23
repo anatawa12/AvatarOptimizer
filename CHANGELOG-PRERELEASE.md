@@ -13,6 +13,11 @@ The format is based on [Keep a Changelog].
 - More cases are supported by Automatically Freeze BlendShape `#1510`
     - AAO can now freeze BlendShapes that are animated in animator layers with weights between 0 and 1.
 - Remove unused textures in Remove Unused Objects `1502`
+- Merge Material component which is successor of Merge ToonLit Material `#1516`
+  - This component merges multiple materials into one material.
+  - This component supports many shader includes lilToon, ToonStandard and others.
+  - Merge ToonLit Material is now deprecated. Please use this new component instead.
+  - Merge ToonLit Material will be removed in next major version.
 
 ### Changed
 - Avatar Optimizer will run as late as possible in NDMF Pipeline by default `#1493`
