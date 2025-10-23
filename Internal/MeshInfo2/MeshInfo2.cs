@@ -160,9 +160,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         /// <summary>
         /// Makes all vertices in this MeshInfo2 boned.
         /// </summary>
-        public void MakeBoned()
+        public void MakeBoned(bool evenIfBasicMesh = false)
         {
             if (Bones.Count != 0) return;
+            if (!evenIfBasicMesh && SourceRenderer is MeshRenderer) throw new Exception("Cannot make boned for MeshRenderer because MeshRenderer does not support bones");
 
             Bones.Add(new Bone(Matrix4x4.identity, RootBone));
 
