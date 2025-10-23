@@ -6,7 +6,7 @@ using UnityEngine;
 namespace Anatawa12.AvatarOptimizer
 {
     [AddComponentMenu("Avatar Optimizer/AAO Remove Mesh By UV Tile")]
-    [RequireComponent(typeof(SkinnedMeshRenderer))]
+    // [RequireComponent(typeof(SkinnedMeshRenderer) or typeof(MeshRenderer))] // handled in editor
     [DisallowMultipleComponent]
     [HelpURL("https://vpm.anatawa12.com/avatar-optimizer/ja/docs/reference/remove-mesh-by-uv-tile/")]
     internal sealed class RemoveMeshByUVTile : EditSkinnedMeshComponent, INoSourceEditSkinnedMeshComponent
