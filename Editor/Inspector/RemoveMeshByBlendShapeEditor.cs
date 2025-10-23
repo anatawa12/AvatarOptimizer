@@ -9,6 +9,7 @@ namespace Anatawa12.AvatarOptimizer
     {
         private PrefabSafeSet.PSSEditorUtil<string> _shapeKeysSet = null!; // initialized in OnEnable
         private SerializedProperty _toleranceProp = null!; // initialized in OnEnable
+        private SerializedProperty _invertSelection = null!; // initialized in OnEnable
         private SkinnedMeshRenderer? _renderer;
         public bool automaticallySetWeightWhenToggle;
 
@@ -21,6 +22,7 @@ namespace Anatawa12.AvatarOptimizer
                 x => x.stringValue,
                 (x, v) => x.stringValue = v);
             _toleranceProp = serializedObject.FindProperty(nameof(RemoveMeshByBlendShape.tolerance));
+            _invertSelection = serializedObject.FindProperty(nameof(RemoveMeshByBlendShape.invertSelection));
         }
 
         protected override void OnInspectorGUIInner()
@@ -63,6 +65,7 @@ namespace Anatawa12.AvatarOptimizer
 
             serializedObject.Update();
             EditorGUILayout.PropertyField(_toleranceProp);
+            EditorGUILayout.PropertyField(_invertSelection);
 
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("BlendShapes", EditorStyles.boldLabel);
