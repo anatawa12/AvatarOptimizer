@@ -97,6 +97,7 @@ namespace Anatawa12.AvatarOptimizer
             }
             EditorGUILayout.LabelField("Ignore Transforms", "Automatically Merged");
             EndpointPositionProp("Endpoint Position", EndpointPosition);
+            PbProp("Ignore Other Phys Bones", IgnoreOtherPhysBones);
             EditorGUILayout.LabelField("Multi Child Type", "Must be Ignore");
             var multiChildType = GetSourceProperty("multiChildType");
             if (multiChildType.enumValueIndex != 0 || multiChildType.hasMultipleDifferentValues)
@@ -672,6 +673,8 @@ namespace Anatawa12.AvatarOptimizer
                 if (EndpointPosition.PhysBoneValue!.hasMultipleDifferentValues)
                     _differProps.Add("Endpoint Position");
             }
+
+            // we don't produce errors for IgnoreOtherPhysBones since we merge the value
 
             var multiChildType = GetSourceProperty(nameof(VRCPhysBoneBase.multiChildType));
             if (multiChildType.enumValueIndex != 0 || multiChildType.hasMultipleDifferentValues)
