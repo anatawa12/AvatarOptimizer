@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using JetBrains.Annotations;
 using UnityEngine;
+using UnityEngine.Animations;
 
 namespace Anatawa12.AvatarOptimizer
 {
@@ -22,6 +23,7 @@ namespace Anatawa12.AvatarOptimizer
         internal double tolerance = 0.001;
         [SerializeField]
         [ToggleLeft]
+        [NotKeyable]
         internal bool invertSelection;
 
         internal RemoveMeshByBlendShape()
