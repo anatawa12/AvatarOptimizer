@@ -289,6 +289,13 @@ msgstr "This is not supported with Limit Rotation mode Fix for now."
 
 # endregion
 
+#region EditSkinnedMeshComponents
+
+msgid "EditSkinnedMeshComponents:invalid-renderer-type"
+msgstr "This component is expected to be used with SkinnedMeshRenderer or MeshRenderer, but the target GameObject has different Renderer. This is not supported, and this component will be ignored."
+
+#endregion
+
 # region MergeSkinnedMesh
 
 msgid "MergeSkinnedMesh:warning:blendShapeWeightMismatch"
