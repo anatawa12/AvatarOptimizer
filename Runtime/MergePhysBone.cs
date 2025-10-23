@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.Animations;
+using UnityEngine.Serialization;
 using VRC.Dynamics;
 
 namespace Anatawa12.AvatarOptimizer
@@ -29,6 +30,7 @@ namespace Anatawa12.AvatarOptimizer
         // rootTransform
         // ignoreTransforms
         [NotKeyable] public EndPointPositionConfig endpointPositionConfig;
+        [NotKeyable] public BoolConfig ignoreOtherPhysBones;
         // multiChildType
         #endregion
 
@@ -171,6 +173,14 @@ namespace Anatawa12.AvatarOptimizer
             public bool @override;
             [Range(0f, 1f)]
             public float value;
+        }
+
+        [Serializable]
+        public struct NewBoolConfig
+        {
+            public bool @override;
+            public bool errorConflictedSettings;
+            public bool value;
         }
 
         [Serializable]
