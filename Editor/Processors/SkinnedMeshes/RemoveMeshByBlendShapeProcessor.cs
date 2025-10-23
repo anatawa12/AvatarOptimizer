@@ -16,27 +16,64 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         public override void Process(BuildContext context, MeshInfo2 target)
         {
-            var byBlendShapeVertices = new HashSet<Vertex>();
+            HashSet<Vertex> byBlendShapeVertices;
             var sqrTolerance = Component.tolerance * Component.tolerance;
 
-            foreach (var vertex in target.Vertices)
-            {
-                var buffer = vertex.BlendShapeBuffer;
-                var blendShapeVertexIndex = vertex.BlendShapeBufferVertexIndex;
+            var invertSelection = Component.invertSelection;
 
-                foreach (var shapeName in Component.RemovingShapeKeys)
+            if (invertSelection)
+            {
+                byBlendShapeVertices = new HashSet<Vertex>();
+
+                foreach (var vertex in target.Vertices)
                 {
-                    if (!buffer.Shapes.TryGetValue(shapeName, out var shapeShape)) continue;
-                    foreach (var bufferIndex in shapeShape.FramesBufferIndices)
+                    var buffer = vertex.BlendShapeBuffer;
+                    var blendShapeVertexIndex = vertex.BlendShapeBufferVertexIndex;
+                    var shouldRemove = true;
+
+                    foreach (var shapeName in Component.RemovingShapeKeys)
                     {
-                        if (buffer.DeltaVertices[bufferIndex][blendShapeVertexIndex].sqrMagnitude > sqrTolerance)
+                        if (!buffer.Shapes.TryGetValue(shapeName, out var shapeShape)) continue;
+                        foreach (var bufferIndex in shapeShape.FramesBufferIndices)
                         {
-                            byBlendShapeVertices.Add(vertex);
-                            goto endOfVertexProcessing;
+                            if (buffer.DeltaVertices[bufferIndex][blendShapeVertexIndex].sqrMagnitude > sqrTolerance)
+                            {
+                                shouldRemove = false;
+                                goto endOfVertexProcessing;
+                            }
                         }
                     }
+
+                    endOfVertexProcessing:;
+                    if (shouldRemove)
+                        byBlendShapeVertices.Add(vertex);
                 }
-                endOfVertexProcessing: ;
+            }
+            else
+            {
+                byBlendShapeVertices = new HashSet<Vertex>();
+
+                foreach (var vertex in target.Vertices)
+                {
+                    var buffer = vertex.BlendShapeBuffer;
+                    var blendShapeVertexIndex = vertex.BlendShapeBufferVertexIndex;
+
+                    foreach (var shapeName in Component.RemovingShapeKeys)
+                    {
+                        if (!buffer.Shapes.TryGetValue(shapeName, out var shapeShape)) continue;
+                        foreach (var bufferIndex in shapeShape.FramesBufferIndices)
+                        {
+                            if (buffer.DeltaVertices[bufferIndex][blendShapeVertexIndex].sqrMagnitude >
+                                sqrTolerance)
+                            {
+                                byBlendShapeVertices.Add(vertex);
+                                goto endOfVertexProcessing;
+                            }
+                        }
+                    }
+
+                    endOfVertexProcessing: ;
+                }
             }
 
             Func<Vertex[], bool> condition = primitive => primitive.Any(byBlendShapeVertices.Contains);
