@@ -165,7 +165,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 if (bone.Transform == null) continue;
                 if (mergeMapping.TryGetValue(bone.Transform, out var mapped))
                 {
-                    bone.Bindpose = mapped.worldToLocalMatrix * bone.Transform.localToWorldMatrix * bone.Bindpose;
+                    bone.Bindpose = RelativeTransform(mapped, bone.Transform) * bone.Bindpose;
                     bone.Transform = mapped;
                     context.Extension<GCComponentInfoContext>().GetInfo(meshInfo2.SourceRenderer)
                         .AddDependency(mapped, GCComponentInfo.DependencyType.Bone);
@@ -265,6 +265,32 @@ namespace Anatawa12.AvatarOptimizer.Processors
             }
 
             Profiler.EndSample();
+        }
+
+        /// <summary>
+        /// Compute relative transform from one transform to another.
+        ///
+        /// Requires that `from` is a parent of `to`.
+        /// </summary>
+        /// <param name="from"></param>
+        /// <param name="to"></param>
+        /// <returns></returns>
+        private Matrix4x4 RelativeTransform(Transform from, Transform to)
+        {
+            // Same as the following, but supports zero scaling in parent
+            // from.worldToLocalMatrix * to.localToWorldMatrix
+            var result = Matrix4x4.identity;
+            for (var current = to; current != from; current = current.parent)
+            {
+                if (current == null)
+                {
+                    throw new ArgumentException("to is not a child of from", nameof(to));
+                }
+
+                // accumulate localToWorldMatrix
+                result = Matrix4x4.TRS(current.localPosition, current.localRotation, current.localScale) * result;
+            }
+            return result;
         }
 
         private bool ValidBindPose(Matrix4x4 matrix)

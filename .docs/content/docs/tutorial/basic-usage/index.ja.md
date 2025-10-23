@@ -40,7 +40,7 @@ AAO: Avatar Optimizerは非破壊改変ツールであり、Playモードに入�
 
 [skip-hard-limit-faq]: ../../faq/#i-cannot-upload-the-avatar-because-of-pre-build-hard-limit-check
 
-{{< hint info >}}
+<blockquote class="book-hint info">
 
 ### UploadせずにPerformance Rankを見る方法 {#performance-rank-without-upload}
 
@@ -52,9 +52,9 @@ AAO: Avatar Optimizerは非破壊改変ツールであり、Playモードに入�
 [gists-basic-usage]: https://vpm.anatawa12.com/gists/ja/docs/basic-usage/
 [Actual Performance Window]: https://vpm.anatawa12.com/gists/ja/docs/reference/actual-performance-window/
 
-{{< /hint >}}
+</blockquote>
 
-{{< hint info >}}
+<blockquote class="book-hint info">
 
 ### 非破壊改変ツールを手動で適用する方法 {#how-to-manual-bake}
 
@@ -64,7 +64,7 @@ AAO: Avatar Optimizerは非破壊改変ツールであり、Playモードに入�
 
 VRChat向けアバターをVRM形式で出力したい場合などにご活用ください。
 
-{{< /hint >}}
+</blockquote>
 
 貫通防止用BlendShapeを利用してポリゴンを減らす {#remove-mesh-by-blendshape}
 ---
@@ -89,14 +89,14 @@ VRChat向けアバターをVRM形式で出力したい場合などにご活用�
 Avatar Optimizerを使用すると簡単にSkinned Meshを統合することができます！
 Skinned Meshを統合すると個別にオン・オフできなくなりますが、統合することで軽量化に繋がります！
 
-{{< hint info >}}
+<blockquote class="book-hint info">
 
 **なぜSkinned Meshを統合するの？**
 
 Skinned Meshを統合することでメッシュを変形させる処理の回数が減り、負荷が軽くなります。
 また、MergeSkinnedMeshでは、同じマテリアルを使用しているマテリアルスロットも統合することができるので、描画負荷も減らす事ができます。
 
-{{< /hint >}}
+</blockquote>
 
 一番単純なパターンとして、Anonちゃんを軽量化してみます。
 
@@ -124,14 +124,14 @@ Skinned Meshを統合することでメッシュを変形させる処理の回�
 
 ![drag-and-drop.png](./drag-and-drop.png)
 
-{{< hint info >}}
+<blockquote class="book-hint info">
 
 **なせ顔のメッシュは統合しないの？**
 
 BlendShape(シェイプキー)は頂点数とBlendShape数の積に比例して重くなる処理です。
 そのため、BlendShapeの数が多い顔のメッシュを頂点数の多い体のメッシュと統合するとかえって重くなってしまうため、顔は別のままにするのを推奨しています。
 
-{{< /hint >}}
+</blockquote>
 
 続いて、`Anon_Merged`の設定をしましょう！
 

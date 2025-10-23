@@ -48,12 +48,8 @@ If you have some material slots which will be replaced differently with animatio
 
 ## BlendShape animations conflict when using `AAO Merge Skinned Mesh` component {#blendshape-animations-conflict-when-using-aao-merge-skinned-mesh-component}
 
-This problem is a known bug and is currently expected to conflicts.
-
-When merging meshes with animated BlendShapes, be careful not to conflict.
-If there is a conflict, a warning will be displayed, so please check the warning.
-
-Issue of this problem: [#568](https://github.com/anatawa12/AvatarOptimizer/issues/568)
+This problem has been fixed since Avatar Optimizer 1.8.0.
+Please update to Avatar Optimizer 1.8.0 or later.
 
 ## PhysBones / Contact Receivers that are used in the OSC-based gimmick are not working {#physbones-contact-receivers-that-are-used-in-the-osc-based-gimmick-are-not-working}
 
@@ -71,26 +67,12 @@ If you would like to, please contact us on [GitHub], [NDMF Discord], [Fediverse 
 
 ## I cannot upload the avatar because of pre-build hard limit check {#i-cannot-upload-the-avatar-because-of-pre-build-hard-limit-check}
 
-Avatar Optimizer and some other non-destructive avatar modification tools may make your avatar not exceed the hard limit of VRChat.
-However, the upload button on the VRCSDK Control Panel will be disabled if the hard limit is exceeded with on-scene Avatar.
-You may use the following methods to skip pre-build hard limit check.
-Please note that those methods will not skip the post-build hard limit check.
+This is because the upload button on the VRCSDK Control Panel is disabled if the hard limit is exceeded with on-scene Avatar.
 
-- Manual bake avatar before uploading the avatar.
+However, since VRChat SDK 3.8.1, VRCSDK allows you to start building and uploading the avatar even if the hard limit is exceeded with on-scene Avatar.
+Therefore, the recommended way to fix this problem is to update the VRCSDK to the latest version.
 
-  You can use `NDM Framework/Manual bake avatar` on the context menu of the Avatar GameObject to apply non-destructive tools before uploading the avatar.
-  This will clone your avatar and apply non-destructive tools to the cloned avatar, so your original avatar will not be modified.
-- Use [Upload without pre-check] by Sayamame-beans.
-
-  [Upload without pre-check] is a tool that allows you to upload the avatar without pre-build hard limit check.
-- Use [VRCQuestTools] by kurotu.
-
-  [VRCQuestTools] is a tool to easily convert your avatar to Android / Quest compatible avatar.\
-  As a part of the tool, [VQT Avatar Builder] allows you to upload the avatar without pre-build hard limit check for Android build.
-
-[Upload without pre-check]: https://github.com/Sayamame-beans/Upload-without-preCheck?tab=readme-ov-file#upload-without-pre-check
-[VRCQuestTools]: https://kurotu.github.io/VRCQuestTools/
-[VQT Avatar Builder]: https://kurotu.github.io/VRCQuestTools/docs/references/main-menu/show-avatar-builder
+When you have some problems with upgrading the VRCSDK, you may use some external tools that can initiate the upload process without using the VRCSDK Control Panel.
 
 ## I want to support the development of Avatar Optimizer {#i-want-to-support-the-development-of-avatar-optimizer}
 
