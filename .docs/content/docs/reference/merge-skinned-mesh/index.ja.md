@@ -9,11 +9,11 @@ weight: 21
 
 このコンポーネントは、メッシュを指定していないSkinnedMeshRendererコンポーネントがある新規GameObjectに追加してください。(分類: [Source Edit Skinned Mesh Component](../../component-kind/edit-skinned-mesh-components#source-component))
 
-{{< hint info >}}
+<blockquote class="book-hint info">
 
 [Trace And Optimize](../trace-and-optimize)が自動で同様の処理を行うため、大抵の場合、このコンポーネントを使用する必要はありません。
 
-{{< /hint >}}
+</blockquote>
 
 ## 利点 {#benefits}
 
@@ -27,11 +27,11 @@ SkinnedMeshRendererを統合することでメッシュを変形させる処理�
 このコンポーネントはメッシュ・マテリアル・BlendShape・Boundsを設定しますが、その他の設定については変更しません。
 Anchor Override等の設定を行うには、MergeSkinnedMeshのあるGameObject上のSkinnedMeshRendererコンポーネントを編集してください。
 
-{{< hint info >}}
+<blockquote class="book-hint info">
 
 [Modular Avatar]を使用している場合は、アバターのルートに[`MA Mesh Settings`]コンポーネントを追加して設定することにより、アバター全体のAnchor Override等をまとめて設定することができます。
 
-{{< /hint >}}
+</blockquote>
 
 BlendShapeによる負荷を減らすために、体や服のメッシュのBlendShapeは固定・除去することを推奨します。\
 [Freeze BlendShape](../freeze-blendshape)コンポーネントを統合対象・統合先のSkinnedMeshRendererコンポーネントのいずれか(または両方)に追加して、BlendShapeを固定・除去することが出来ます。

@@ -863,6 +863,17 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                             }
                         }
 
+                        // Future (as of 2025-08-08) NDMF toolchain planned to use technique called infinimation
+                        // that apply blendShapes with infinity value to hide some portion of mesh.
+                        // The infinity value on blendshape delta itself does not cause any problem, but as a part
+                        // of AAO process, blendshape delta can be multiplied with matrix with zero-value in element.
+                        // When infinity is multiplied with zero, it becomes NaN.
+                        // However, Unity does not handle NaN in blendshape delta (possibly by bug) and replaces with zero.
+                        // So, we have to replace NaNs with infinity to work around this bug.
+                        foreach (ref var position in positions.AsSpan())
+                            if (float.IsNaN(position.magnitude))
+                                position = Vector3.positiveInfinity;
+
                         destMesh.AddBlendShapeFrame(shapeName, weight, positions, normals, tangents);
                     }
                     Profiler.EndSample();

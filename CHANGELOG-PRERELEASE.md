@@ -49,9 +49,41 @@ The format is based on [Keep a Changelog].
 
 ### Security
 
+## [1.8.14] - 2025-10-04
+### Fixed
+- Optimize Texture will break EmissionMap of ToonStandarad [`#1525`](https://github.com/anatawa12/AvatarOptimizer/pull/1525)
+
+## [1.8.14-beta.2] - 2025-09-13
+### Added
+- Compatibility declaration for VRCSDK 3.9.x [`#1520`](https://github.com/anatawa12/AvatarOptimizer/pull/1520)
+    - No breaking changes affect AAO, so no code changes were required.
+
+## [1.8.14-beta.1] - 2025-08-09
+### Fixed
+- AAO may break infinimation [`#1492`](https://github.com/anatawa12/AvatarOptimizer/pull/1492)
+    - The infinimation is the technique of animation that may be used in NDMF or other tools.
+    - I hope most of AAO users don't experience this issue for now, but will be spread in the near future.
+
 ## [1.9.0-beta.2] - 2025-07-28
 ### Fixed
 - Padding used in OptimizeTexture is too small that can cause problems with masks [`#1478`](https://github.com/anatawa12/AvatarOptimizer/pull/1478)
+
+## [1.8.13] - 2025-07-28
+## [1.8.13-beta.3] - 2025-07-28
+### Fixed
+- Optimizing textures with some relatively rare texture formats [`#1485`](https://github.com/anatawa12/AvatarOptimizer/pull/1485)
+- Automatic MergeBone may break rendering if there is bones with scale zero [`#1486`](https://github.com/anatawa12/AvatarOptimizer/pull/1486)
+
+## [1.8.13-beta.2] - 2025-07-26
+### Fixed
+- VRCConstraints solve in local space can be broken with automatic merge bone [`#1484`](https://github.com/anatawa12/AvatarOptimizer/pull/1484)
+
+## [1.8.13-beta.1] - 2025-07-25
+### Fixed
+- Padding used in OptimizeTexture is too small that can cause problems with masks [`#1478`](https://github.com/anatawa12/AvatarOptimizer/pull/1478)
+- StackOverflow with infinite recursion when AdditiveReferencePoseClip has recursion [`#1480`](https://github.com/anatawa12/AvatarOptimizer/pull/1480)
+- Generating preview of MergeToonLit does not work [`#1481`](https://github.com/anatawa12/AvatarOptimizer/pull/1481)
+- Automatic toggle may create toggle for different object when multiple components on single GameObject [`#1482`](https://github.com/anatawa12/AvatarOptimizer/pull/1482)
 
 ## [1.9.0-beta.1] - 2025-07-13
 ### Added
@@ -1947,8 +1979,15 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-beta.2...HEAD
-[1.9.0-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-beta.1...v1.9.0-beta.2
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.14...HEAD
+[1.8.14]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.14-beta.2...v1.8.14
+[1.8.14-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.14-beta.1...v1.8.14-beta.2
+[1.8.14-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-beta.2...v1.8.14-beta.1
+[1.9.0-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.13...v1.9.0-beta.2
+[1.8.13]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.13-beta.3...v1.8.13
+[1.8.13-beta.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.13-beta.2...v1.8.13-beta.3
+[1.8.13-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.13-beta.1...v1.8.13-beta.2
+[1.8.13-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-beta.1...v1.8.13-beta.1
 [1.9.0-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.12...v1.9.0-beta.1
 [1.8.12]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.12-beta.1...v1.8.12
 [1.8.12-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.11...v1.8.12-beta.1
