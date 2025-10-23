@@ -14,18 +14,20 @@ namespace Anatawa12.AvatarOptimizer
         private static readonly Vector2Int DefaultTextureSize = new(1024, 1024);
 
         private SerializedProperty _materials = null!; // Initialized in OnEnable
-        private SkinnedMeshRenderer _renderer = null!; // Initialized in OnEnable
+        private Renderer _renderer = null!; // Initialized in OnEnable
         public bool automaticallySetWeightWhenToggle;
 
         private void OnEnable()
         {
             NativeLeakDetection.Mode = NativeLeakDetectionMode.EnabledWithStackTrace;
-            _renderer = ((Component)target).GetComponent<SkinnedMeshRenderer>();
+            _renderer = ((Component)target).GetComponent<Renderer>();
             _materials = serializedObject.FindProperty(nameof(RemoveMeshByMask.materials));
         }
 
         protected override void OnInspectorGUIInner()
         {
+            GenericEditSkinnedMeshComponentsEditor.DrawUnexpectedRendererError(targets);
+
             // if there is source skinned mesh component, show error
             if (((Component)target).TryGetComponent<ISourceSkinnedMeshComponent>(out _))
             {
@@ -33,13 +35,18 @@ namespace Anatawa12.AvatarOptimizer
                 return;
             }
 
-            if (!_renderer || !_renderer.sharedMesh)
+            Mesh? mesh = null;
+            if (_renderer is SkinnedMeshRenderer skinnedMeshRenderer)
+                mesh = skinnedMeshRenderer.sharedMesh;
+            else if (_renderer is MeshRenderer && _renderer.TryGetComponent<MeshFilter>(out var filter))
+                mesh = filter.sharedMesh;
+
+            if (!_renderer || !mesh)
             {
                 EditorGUILayout.HelpBox(AAOL10N.Tr("RemoveMeshByMask:warning:NoMesh"), MessageType.Warning);
                 return;
             }
 
-            var mesh = _renderer.sharedMesh;
             var template = AAOL10N.Tr("RemoveMeshByMask:prop:enabled");
 
             for (int i = 0; i < mesh.subMeshCount; i++)
@@ -112,7 +119,7 @@ namespace Anatawa12.AvatarOptimizer
         private static void DrawMaskAndMode(
             SerializedProperty mask,
             SerializedProperty mode,
-            SkinnedMeshRenderer renderer, int slot)
+            Renderer renderer, int slot)
         {
             using (new EditorGUILayout.HorizontalScope())
             {

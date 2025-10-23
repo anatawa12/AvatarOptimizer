@@ -1,3 +1,4 @@
+using System.Linq;
 using Anatawa12.AvatarOptimizer.ndmf;
 using nadena.dev.ndmf;
 using UnityEngine;
@@ -17,7 +18,8 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 graph.AddComponent(component);
             Profiler.EndSample();
 
-            var renderers = context.GetComponents<SkinnedMeshRenderer>();
+            var renderers = context.GetComponents<SkinnedMeshRenderer>().
+                Concat<Renderer>(context.GetComponents<MeshRenderer>());
             var processorLists = graph.GetSortedProcessors(renderers);
             foreach (var processors in processorLists)
             {
@@ -30,7 +32,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                     using (ErrorReport.WithContextObject(processor.Component)) processor.Process(context, target);
                     target.AssertInvariantContract(
                         $"after {processor.GetType().Name} " +
-                        $"for {processor.Target.gameObject.name}");
+                        $"for {processor.TargetGeneric.gameObject.name}");
                     DestroyTracker.DestroyImmediate(processor.Component);
                     Profiler.EndSample();
                 }

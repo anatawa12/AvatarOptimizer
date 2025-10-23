@@ -214,6 +214,13 @@ msgstr "コンポーネント"
 
 # endregion
 
+#region EditSkinnedMeshComponents
+
+msgid "EditSkinnedMeshComponents:invalid-renderer-type"
+msgstr "このコンポーネントはSkinnedMeshRendererまたはMeshRendererで使用されることを想定していますが、対象のGameObjectには異なるレンダラーが付いています。これはサポートされておらず、このコンポーネントは無視されます。"
+
+#endregion
+
 # region MergeSkinnedMesh
 
 msgid "MergeSkinnedMesh:warning:blendShapeWeightMismatch"

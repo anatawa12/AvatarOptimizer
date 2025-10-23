@@ -43,7 +43,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             target.SubMeshes.RemoveRange(dstIndex, target.SubMeshes.Count - dstIndex);
 
-            context.RecordMoveProperties(Target, mappings.ToArray());
+            context.RecordMoveProperties(TargetGeneric, mappings.ToArray());
         }
 
         public override IMeshInfoComputer GetComputer(IMeshInfoComputer upstream) => upstream;

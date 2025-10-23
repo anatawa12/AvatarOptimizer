@@ -28,7 +28,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
 
     internal class RemoveMeshByMaskRendererNode : AAORenderFilterNodeBase<RemoveMeshByMask>
     {
-        protected override ValueTask Process(SkinnedMeshRenderer original, SkinnedMeshRenderer proxy,
+        protected override ValueTask<bool> Process(Renderer original, Renderer proxy,
             RemoveMeshByMask[] components,
             Mesh duplicated, ComputeContext context)
         {
@@ -147,7 +147,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                 }
             }
 
-            return default;
+            return new ValueTask<bool>(true);
         }
 
         private class Color32Comparator : IEqualityComparer<Color32>

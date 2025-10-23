@@ -15,7 +15,7 @@ namespace Anatawa12.AvatarOptimizer
             return context.Extension<MeshInfo2Context>().Holder!;
         }
 
-        public static MeshInfo2 GetMeshInfoFor(this BuildContext context, SkinnedMeshRenderer renderer) =>
+        public static MeshInfo2 GetMeshInfoFor(this BuildContext context, Renderer renderer) =>
             context.GetHolder().GetMeshInfoFor(renderer);
     }
 }

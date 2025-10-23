@@ -24,7 +24,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
 
     internal class RemoveMeshByUVTileRendererNode : AAORenderFilterNodeBase<RemoveMeshByUVTile>
     {
-        protected override ValueTask Process(SkinnedMeshRenderer original, SkinnedMeshRenderer proxy,
+        protected override ValueTask<bool> Process(Renderer original, Renderer proxy,
             RemoveMeshByUVTile[] components,
             Mesh duplicated, ComputeContext context)
         {
@@ -130,7 +130,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                 }
             }
 
-            return default;
+            return new ValueTask<bool>(true);
         }
 
         [BurstCompile]

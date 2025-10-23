@@ -5,6 +5,7 @@ namespace Anatawa12.AvatarOptimizer
 {
     [AddComponentMenu("Avatar Optimizer/AAO Rename BlendShape")]
     [DisallowMultipleComponent]
+    [RequireComponent(typeof(SkinnedMeshRenderer))]
     [HelpURL("https://vpm.anatawa12.com/avatar-optimizer/ja/docs/reference/rename-blend-shape/")]
     internal class RenameBlendShape : EditSkinnedMeshComponent, ISerializationCallbackReceiver
     {

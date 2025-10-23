@@ -7,7 +7,7 @@ weight: 25
 
 UVタイルで指定した範囲のポリゴンを削除します。
 
-このコンポーネントは、SkinnedMeshRendererコンポーネントのあるGameObjectに追加してください。(分類: [Modifying Edit Skinned Mesh Component](../../component-kind/edit-skinned-mesh-components#modifying-component))
+このコンポーネントは、SkinnedMeshRendererコンポーネントまたはMeshRendererコンポーネントのあるGameObjectに追加してください。(種類: [基本メッシュ対応Edit Skinned Mesh Component](../../component-kind/edit-skinned-mesh-components#modifying-component))
 
 ## 利点 {#benefits}
 
