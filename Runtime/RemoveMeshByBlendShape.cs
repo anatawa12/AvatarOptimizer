@@ -78,6 +78,7 @@ namespace Anatawa12.AvatarOptimizer
         /// If this flag is true, this component will remove parts not moved by the BlendShapes.
         /// </summary>
         /// <remarks>This api is added in 1.9.0</remarks>
+        [PublicAPI]
         public bool InvertSelection
         {
             get => _checker.OnAPIUsage(this, invertSelection);
