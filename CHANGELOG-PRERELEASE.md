@@ -46,6 +46,9 @@ The format is based on [Keep a Changelog].
 - VRM: A NullReferenceException or MissingReferenceException may occur when parsing incomplete VRM components `#1524`
 - MeshCompression settings is not preserved after AvatarOptimizer process `#1529`
   - This bug increases size of some avatars unexpectedly. This is fixed now.
+- Basic mesh support for remove mesh components `#1530`
+  - You now can remove some portion of basic meshes with Remove Mesh components!
+  - This does not includes remove mesh by blendshape because basic mesh does not support blendshape.
 
 ### Security
 

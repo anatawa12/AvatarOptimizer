@@ -14,6 +14,9 @@ The format is based on [Keep a Changelog].
 - More cases are supported by Automatically Freeze BlendShape `#1510`
   - AAO can now freeze BlendShapes that are animated in animator layers with weights between 0 and 1.
 - Remove unused textures in Remove Unused Objects `1502`
+- Basic mesh support for remove mesh components `#1530`
+  - You now can remove some portion of basic meshes with Remove Mesh components!
+  - This does not includes remove mesh by blendshape because basic mesh does not support blendshape.
 
 ### Changed
 - Avatar Optimizer will run as late as possible in NDMF Pipeline by default `#1493`
