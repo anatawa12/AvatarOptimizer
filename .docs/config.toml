@@ -17,9 +17,6 @@ languageName = '日本語'
 [languages.ja.params]
 howToInstall = 'インストール方法'
 
-[markup.goldmark]
-duplicateResourceFiles = true
-
 [markup.goldmark.renderer]
 unsafe = true
 
