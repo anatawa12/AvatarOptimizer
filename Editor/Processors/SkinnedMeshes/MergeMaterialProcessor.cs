@@ -74,7 +74,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             CheckForDuplicatedMaterials(Component);
             var validatedSettings = ValidateMaterials(target, Component);
             DoMergeMaterial(target, validatedSettings);
-            DoMergeMaterial1(target, validatedSettings);
+            DoMergeMaterial1(target, validatedSettings, context);
         }
 
         public static void CheckForDuplicatedMaterials(MergeMaterial component)
@@ -426,7 +426,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             }
         }
 
-        public static void DoMergeMaterial1(MeshInfo2 target, List<ValidatedMergeInfo> validatedSettings)
+        public static void DoMergeMaterial1(MeshInfo2 target, List<ValidatedMergeInfo> validatedSettings,
+            BuildContext context)
         {
             var slotsForMerge = new BitArray(target.SubMeshes.Count);
 
@@ -441,6 +442,16 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             var subMeshes = copied.Concat(merged).ToList();
             target.SubMeshes.Clear();
             target.SubMeshes.AddRange(subMeshes);
+
+            var mappings = new List<(string, string)>();
+            var newIndex = 0;
+            for (var oldIndex = 0; oldIndex < slotsForMerge.Length; oldIndex++)
+            {
+                if (slotsForMerge[oldIndex]) continue;
+                mappings.Add(($"m_Materials.Array.data[{oldIndex}]", $"m_Materials.Array.data[{newIndex}]"));
+                newIndex++;
+            }
+            context.RecordMoveProperties(target.SourceRenderer, mappings.ToArray());
         }
 
         private static Vector2 MapUV(Vector2 vector2, Rect destSourceRect) =>
