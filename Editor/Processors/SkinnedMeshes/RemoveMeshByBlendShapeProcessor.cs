@@ -47,7 +47,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             target.RemoveUnusedVertices();
 
             // remove the BlendShapes
-            FreezeBlendShapeProcessor.FreezeBlendShapes(Target, context, target, Component.RemovingShapeKeys);
+            Target.GetComponent<FreezeBlendShape>()!.shapeKeysSet.AddRange(Component.RemovingShapeKeys);
         }
 
         public override IMeshInfoComputer GetComputer(IMeshInfoComputer upstream) => new MeshInfoComputer(this, upstream);

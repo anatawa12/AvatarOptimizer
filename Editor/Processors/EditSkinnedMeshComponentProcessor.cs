@@ -11,6 +11,13 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
         protected override void Execute(BuildContext context)
         {
+            // Add necessary components
+            Profiler.BeginSample("Pre-Initialize SkinnedMeshEditorSorter");
+            foreach (var byBlendShape in context.GetComponents<RemoveMeshByBlendShape>())
+                if (!byBlendShape.gameObject.TryGetComponent<FreezeBlendShape>(out _))
+                    byBlendShape.gameObject.AddComponent<FreezeBlendShape>();
+            Profiler.EndSample();
+
             Profiler.BeginSample("Initialize SkinnedMeshEditorSorter");
             var graph = new SkinnedMeshEditorSorter();
             foreach (var component in context.GetComponents<EditSkinnedMeshComponent>())
