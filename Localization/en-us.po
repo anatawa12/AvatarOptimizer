@@ -331,7 +331,7 @@ msgid "MergeSkinnedMesh:prop:renderers"
 msgstr "Skinned Renderers"
 
 msgid "MergeSkinnedMesh:prop:staticRenderers"
-msgstr "Static Renderers"
+msgstr "Basic Renderers"
 
 msgid "MergeSkinnedMesh:prop:removeEmptyRendererObject"
 msgstr "Remove Empty Renderer Object"

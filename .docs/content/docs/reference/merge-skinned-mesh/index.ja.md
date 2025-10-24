@@ -51,7 +51,9 @@ Unity 2022ではBlendShapeの負荷が改善されているため、その記述
 
 一番下の"None"と書いてある要素にドラッグ&ドロップすることにより対象を追加し、Noneに戻すことにより対象を一覧から取り除きます。
 
-### 静的レンダラー {#static-renderers}
+<div id="static-renderers"></div>
+
+### 基本レンダラー {#basic-renderers}
 
 統合対象のMeshRendererの一覧です。
 
