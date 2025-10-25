@@ -15,8 +15,10 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
         protected override void Execute(BuildContext context)
         {
-            var maxTextureSizeComponents = context.GetComponents<MaxTextureSize>().ToList();
-            if (maxTextureSizeComponents.Count == 0) return;
+            var maxTextureSizeComponents = context.GetComponents<MaxTextureSize>();
+            if (!maxTextureSizeComponents.Any()) return;
+
+            var avatarRoot = context.AvatarRootTransform;
 
             // Build a map of renderer to its closest parent MaxTextureSize component
             var rendererToComponent = new Dictionary<Renderer, MaxTextureSize>();
@@ -27,6 +29,10 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 var transform = renderer.transform;
                 while (transform != null)
                 {
+                    // Don't process components outside of the avatar
+                    if (transform == avatarRoot.parent)
+                        break;
+
                     var component = transform.GetComponent<MaxTextureSize>();
                     if (component != null)
                     {
@@ -57,14 +63,11 @@ namespace Anatawa12.AvatarOptimizer.Processors
                     materials = renderer.sharedMaterials.Where(m => m != null);
                 }
 
-                // Also process animated materials
+                // Also process animated materials using GetAllObjectProperties
                 var animationComponent = context.GetAnimationComponent(renderer);
-                var animatedMaterials = Enumerable.Range(0, renderer.sharedMaterials.Length)
-                    .SelectMany(i =>
-                    {
-                        var animation = animationComponent.GetObjectNode($"m_Materials.Array.data[{i}]");
-                        return animation.Value.PossibleValues.OfType<Material>();
-                    });
+                var animatedMaterials = animationComponent.GetAllObjectProperties()
+                    .SelectMany(x => x.node.Value.PossibleValues)
+                    .OfType<Material>();
 
                 materials = materials.Concat(animatedMaterials).Distinct();
 
