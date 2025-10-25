@@ -112,6 +112,7 @@ namespace Anatawa12.AvatarOptimizer.ndmf
                             .Then.Run(Processors.MergeBoneProcessor.Instance)
                             .Then.Run(Processors.RemoveZeroSizedPolygonProcessor.Instance)
                             .Then.Run(Processors.TraceAndOptimizes.OptimizeTexture.Instance)
+                            .Then.Run(Processors.MaxTextureSizeProcessor.Instance)
                             .Then.Run(Processors.AnimatorOptimizer.RemoveInvalidProperties.Instance)
                             .Then.Run(new Processors.GCDebugPass(InternalGcDebugPosition.AtTheEnd))
                         );
