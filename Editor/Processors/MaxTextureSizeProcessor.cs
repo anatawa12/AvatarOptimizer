@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using nadena.dev.ndmf;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
 
@@ -156,20 +157,24 @@ namespace Anatawa12.AvatarOptimizer.Processors
             var format = Utils.GetRenderingFormatForTexture(original.format, isSRGB: original.isDataSRGB);
             
             // Create a temporary render texture
-            var tempRT = RenderTexture.GetTemporary(width, height, 0, format);
+            using var tempRT = Utils.TemporaryRenderTexture(width, height, depthBuffer: 0, format: format);
             var previousRT = RenderTexture.active;
             
             try
             {
                 // Copy the texture to the render texture (this will use mipmaps)
-                Graphics.Blit(original, tempRT);
+                Graphics.Blit(original, tempRT.RenderTexture);
                 
                 // Read back to a Texture2D
-                RenderTexture.active = tempRT;
+                RenderTexture.active = tempRT.RenderTexture;
                 var textureFormat = Utils.GetTextureFormatForReading(original.graphicsFormat);
                 var newTexture = new Texture2D(width, height, textureFormat, mipChain: true, linear: !original.isDataSRGB);
                 newTexture.ReadPixels(new Rect(0, 0, width, height), 0, 0);
-                newTexture.Apply(updateMipmaps: true, makeNoLongerReadable: !original.isReadable);
+                newTexture.Apply(updateMipmaps: true, makeNoLongerReadable: false);
+                
+                // Compress if original was compressed
+                if (GraphicsFormatUtility.IsCompressedFormat(original.format))
+                    UnityEditor.EditorUtility.CompressTexture(newTexture, original.format, UnityEditor.TextureCompressionQuality.Normal);
                 
                 // Copy texture settings
                 newTexture.wrapModeU = original.wrapModeU;
@@ -179,12 +184,14 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 newTexture.mipMapBias = original.mipMapBias;
                 newTexture.name = original.name + " (MaxTextureSize)";
                 
+                // Make non-readable if original was non-readable
+                newTexture.Apply(updateMipmaps: true, makeNoLongerReadable: !original.isReadable);
+                
                 return newTexture;
             }
             finally
             {
                 RenderTexture.active = previousRT;
-                RenderTexture.ReleaseTemporary(tempRT);
             }
         }
     }
