@@ -14,11 +14,9 @@ The format is based on [Keep a Changelog].
     - AAO can now freeze BlendShapes that are animated in animator layers with weights between 0 and 1.
 - Remove unused textures in Remove Unused Objects `1502`
 - Invert option of Remove Mesh by BlendShape `#1535`
-- Max Texture Size component to limit texture sizes using mipmaps
-  - Allows specifying maximum texture size (4096, 2048, 1024, 512, 256, 128, or 64)
-  - Can be placed on any GameObject to affect that GameObject and its children
-  - Uses existing mipmaps to resize textures efficiently without heavy recompression
-  - Skips textures without mipmaps and crunched format textures (with warning)
+- Max Texture Size component to limit texture sizes
+  - Limits texture size on GameObject and its children using mipmaps
+  - Crunched texture format is not supported
 
 ### Changed
 - Avatar Optimizer will run as late as possible in NDMF Pipeline by default `#1493`

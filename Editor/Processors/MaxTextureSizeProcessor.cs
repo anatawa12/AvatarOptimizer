@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
 using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEngine;
@@ -17,76 +18,103 @@ namespace Anatawa12.AvatarOptimizer.Processors
             var maxTextureSizeComponents = context.GetComponents<MaxTextureSize>().ToList();
             if (maxTextureSizeComponents.Count == 0) return;
 
-            // Build a map of renderer to max texture size
-            var rendererToMaxSize = new Dictionary<Renderer, int>();
+            // Build a map of renderer to its closest parent MaxTextureSize component
+            var rendererToComponent = new Dictionary<Renderer, MaxTextureSize>();
             
-            foreach (var component in maxTextureSizeComponents)
+            foreach (var renderer in context.GetComponents<Renderer>())
             {
-                var componentTransform = component.transform;
-                var maxSize = (int)component.maxTextureSize;
-                
-                // Apply to all renderers in this GameObject and its children
-                foreach (var renderer in component.GetComponentsInChildren<Renderer>(true))
+                // Find the closest parent MaxTextureSize component
+                var transform = renderer.transform;
+                while (transform != null)
                 {
-                    if (!rendererToMaxSize.ContainsKey(renderer))
+                    var component = transform.GetComponent<MaxTextureSize>();
+                    if (component != null)
                     {
-                        rendererToMaxSize[renderer] = maxSize;
+                        rendererToComponent[renderer] = component;
+                        break;
                     }
-                    else
-                    {
-                        // Use the minimum max size if multiple components apply
-                        rendererToMaxSize[renderer] = Math.Min(rendererToMaxSize[renderer], maxSize);
-                    }
+                    transform = transform.parent;
                 }
             }
 
-            // Collect all textures used by affected renderers and resize them
-            var textureMapping = new Dictionary<Texture2D, Texture2D>();
+            // Collect all materials and their textures with the required max size
+            var textureToMaxSize = new Dictionary<Texture2D, int>();
+            var materialsToProcess = new HashSet<Material>();
 
-            // First pass: find all textures and create resized versions
-            foreach (var (renderer, maxSize) in rendererToMaxSize)
+            foreach (var (renderer, component) in rendererToComponent)
             {
-                var materials = renderer.sharedMaterials;
-                if (materials == null) continue;
+                var maxSize = (int)component.maxTextureSize;
+                IEnumerable<Material> materials;
+
+                // Use MeshInfo2 materials for SkinnedMeshRenderer
+                if (renderer is SkinnedMeshRenderer skinnedMesh)
+                {
+                    var meshInfo = context.GetMeshInfoFor(skinnedMesh);
+                    materials = meshInfo.SubMeshes.SelectMany(x => x.SharedMaterials);
+                }
+                else
+                {
+                    materials = renderer.sharedMaterials.Where(m => m != null);
+                }
+
+                // Also process animated materials
+                var animationComponent = context.GetAnimationComponent(renderer);
+                var animatedMaterials = Enumerable.Range(0, renderer.sharedMaterials.Length)
+                    .SelectMany(i =>
+                    {
+                        var animation = animationComponent.GetObjectNode($"m_Materials.Array.data[{i}]");
+                        return animation.Value.PossibleValues.OfType<Material>();
+                    });
+
+                materials = materials.Concat(animatedMaterials).Distinct();
 
                 foreach (var material in materials)
                 {
                     if (material == null) continue;
+                    materialsToProcess.Add(material);
 
                     var propertyNames = material.GetTexturePropertyNames();
                     foreach (var propertyName in propertyNames)
                     {
                         var texture = material.GetTexture(propertyName);
-                        if (texture is Texture2D texture2D && !textureMapping.ContainsKey(texture2D))
+                        if (texture is Texture2D texture2D)
                         {
-                            var newTexture = ResizeTexture(texture2D, maxSize);
-                            if (newTexture != null)
+                            if (!textureToMaxSize.ContainsKey(texture2D))
                             {
-                                textureMapping[texture2D] = newTexture;
+                                textureToMaxSize[texture2D] = maxSize;
+                            }
+                            else
+                            {
+                                // Use minimum size if texture is used by multiple materials with different limits
+                                textureToMaxSize[texture2D] = Math.Min(textureToMaxSize[texture2D], maxSize);
                             }
                         }
                     }
                 }
             }
 
-            // Second pass: replace all textures in all materials
-            foreach (var (renderer, _) in rendererToMaxSize)
+            // Resize textures based on the collected size requirements
+            var textureMapping = new Dictionary<Texture2D, Texture2D>();
+
+            foreach (var (texture, maxSize) in textureToMaxSize)
             {
-                var materials = renderer.sharedMaterials;
-                if (materials == null) continue;
-
-                foreach (var material in materials)
+                var newTexture = ResizeTexture(texture, maxSize);
+                if (newTexture != null)
                 {
-                    if (material == null) continue;
+                    textureMapping[texture] = newTexture;
+                }
+            }
 
-                    var propertyNames = material.GetTexturePropertyNames();
-                    foreach (var propertyName in propertyNames)
+            // Replace textures in all processed materials
+            foreach (var material in materialsToProcess)
+            {
+                var propertyNames = material.GetTexturePropertyNames();
+                foreach (var propertyName in propertyNames)
+                {
+                    var texture = material.GetTexture(propertyName);
+                    if (texture is Texture2D texture2D && textureMapping.TryGetValue(texture2D, out var newTexture))
                     {
-                        var texture = material.GetTexture(propertyName);
-                        if (texture is Texture2D texture2D && textureMapping.TryGetValue(texture2D, out var newTexture))
-                        {
-                            material.SetTexture(propertyName, newTexture);
-                        }
+                        material.SetTexture(propertyName, newTexture);
                     }
                 }
             }
@@ -108,10 +136,11 @@ namespace Anatawa12.AvatarOptimizer.Processors
             if (original.mipmapCount <= 1)
                 return null;
 
-            // Skip crunched textures and warn
+            // Skip crunched textures and report error
             if (GraphicsFormatUtility.IsCrunchFormat(original.format))
             {
-                Debug.LogWarning($"AAO Max Texture Size: Skipping crunched texture '{original.name}' - crunched format resizing is not supported.");
+                using (ErrorReport.WithContextObject(original))
+                    BuildLog.LogWarning("MaxTextureSize:warning:crunchedNotSupported");
                 return null;
             }
 
@@ -141,15 +170,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
             var targetHeight = original.height >> targetLevel;
 
             // Extract the specific mipmap level directly from texture data
-            try
-            {
-                return ExtractMipmapLevel(original, targetLevel, targetWidth, targetHeight);
-            }
-            catch (Exception e)
-            {
-                Debug.LogWarning($"AAO Max Texture Size: Failed to extract mipmap from texture '{original.name}': {e.Message}");
-                return null;
-            }
+            return ExtractMipmapLevel(original, targetLevel, targetWidth, targetHeight);
         }
 
         private static Texture2D? ExtractMipmapLevel(Texture2D original, int level, int width, int height)

@@ -891,4 +891,7 @@ msgstr "Limits the maximum size of textures on this GameObject and its children 
 msgid "MaxTextureSize:prop:maxTextureSize"
 msgstr "Max Texture Size"
 
+msgid "MaxTextureSize:warning:crunchedNotSupported"
+msgstr "Crunched texture format is not supported for resizing."
+
 # endregion

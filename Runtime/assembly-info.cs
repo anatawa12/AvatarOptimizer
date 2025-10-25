@@ -4,3 +4,4 @@ using System.Runtime.CompilerServices;
 [assembly:InternalsVisibleTo("com.anatawa12.avatar-optimizer.internal.trace-and-optimize-base")]
 [assembly:InternalsVisibleTo("com.anatawa12.avatar-optimizer.test.basic")]
 [assembly:InternalsVisibleTo("com.anatawa12.avatar-optimizer.test.utils")]
+[assembly:InternalsVisibleTo("com.anatawa12.avatar-optimizer.test.e2e")]
