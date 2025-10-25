@@ -808,3 +808,13 @@ msgid "ContextMenus:AddTraceAndOptimize:FailedToAddTraceAndOptimize:Message"
 msgstr "Trace and Optimizeはアバターのルートにのみ追加することができます。アバターのルートを選択してもう一度お試しください。"
 
 # endregion
+
+# region MaxTextureSize
+
+msgid "MaxTextureSize:description"
+msgstr "Mipmapを使ってアバター内のテクスチャの最大サイズを制限します。重い再圧縮を避けることができます。"
+
+msgid "MaxTextureSize:prop:maxTextureSize"
+msgstr "最大テクスチャサイズ"
+
+# endregion

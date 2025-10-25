@@ -882,3 +882,13 @@ msgid "ContextMenus:AddTraceAndOptimize:FailedToAddTraceAndOptimize:Message"
 msgstr "Trace and Optimize can only be added to the root of the avatar."
 
 # endregion
+
+# region MaxTextureSize
+
+msgid "MaxTextureSize:description"
+msgstr "Limits the maximum size of textures in the avatar using mipmaps to avoid heavy recompression."
+
+msgid "MaxTextureSize:prop:maxTextureSize"
+msgstr "Max Texture Size"
+
+# endregion
