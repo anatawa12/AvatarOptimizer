@@ -51,7 +51,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 if (renderer is SkinnedMeshRenderer skinnedMesh)
                 {
                     var meshInfo = context.GetMeshInfoFor(skinnedMesh);
-                    materials = meshInfo.SubMeshes.SelectMany(x => x.SharedMaterials);
+                    materials = meshInfo.SubMeshes.SelectMany(x => x.SharedMaterials).Where(m => m != null);
                 }
                 else
                 {
