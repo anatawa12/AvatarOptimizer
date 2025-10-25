@@ -22,9 +22,10 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 .Select(c => (int)c.maxTextureSize)
                 .Min();
 
-            // Collect all textures used in the avatar
-            var processedTextures = new HashSet<Texture2D>();
+            // Collect all textures used in the avatar and resize them
+            var textureMapping = new Dictionary<Texture2D, Texture2D>();
 
+            // First pass: find all textures and create resized versions
             foreach (var renderer in context.GetComponents<Renderer>())
             {
                 var materials = renderer.sharedMaterials;
@@ -38,14 +39,35 @@ namespace Anatawa12.AvatarOptimizer.Processors
                     foreach (var propertyName in propertyNames)
                     {
                         var texture = material.GetTexture(propertyName);
-                        if (texture is Texture2D texture2D && !processedTextures.Contains(texture2D))
+                        if (texture is Texture2D texture2D && !textureMapping.ContainsKey(texture2D))
                         {
-                            processedTextures.Add(texture2D);
                             var newTexture = ResizeTexture(texture2D, maxTextureSize);
                             if (newTexture != null)
                             {
-                                material.SetTexture(propertyName, newTexture);
+                                textureMapping[texture2D] = newTexture;
                             }
+                        }
+                    }
+                }
+            }
+
+            // Second pass: replace all textures in all materials
+            foreach (var renderer in context.GetComponents<Renderer>())
+            {
+                var materials = renderer.sharedMaterials;
+                if (materials == null) continue;
+
+                foreach (var material in materials)
+                {
+                    if (material == null) continue;
+
+                    var propertyNames = material.GetTexturePropertyNames();
+                    foreach (var propertyName in propertyNames)
+                    {
+                        var texture = material.GetTexture(propertyName);
+                        if (texture is Texture2D texture2D && textureMapping.TryGetValue(texture2D, out var newTexture))
+                        {
+                            material.SetTexture(propertyName, newTexture);
                         }
                     }
                 }
