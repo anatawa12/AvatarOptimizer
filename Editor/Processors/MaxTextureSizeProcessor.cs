@@ -17,16 +17,34 @@ namespace Anatawa12.AvatarOptimizer.Processors
             var maxTextureSizeComponents = context.GetComponents<MaxTextureSize>().ToList();
             if (maxTextureSizeComponents.Count == 0) return;
 
-            // Get the minimum max texture size from all components
-            var maxTextureSize = maxTextureSizeComponents
-                .Select(c => (int)c.maxTextureSize)
-                .Min();
+            // Build a map of renderer to max texture size
+            var rendererToMaxSize = new Dictionary<Renderer, int>();
+            
+            foreach (var component in maxTextureSizeComponents)
+            {
+                var componentTransform = component.transform;
+                var maxSize = (int)component.maxTextureSize;
+                
+                // Apply to all renderers in this GameObject and its children
+                foreach (var renderer in component.GetComponentsInChildren<Renderer>(true))
+                {
+                    if (!rendererToMaxSize.ContainsKey(renderer))
+                    {
+                        rendererToMaxSize[renderer] = maxSize;
+                    }
+                    else
+                    {
+                        // Use the minimum max size if multiple components apply
+                        rendererToMaxSize[renderer] = Math.Min(rendererToMaxSize[renderer], maxSize);
+                    }
+                }
+            }
 
-            // Collect all textures used in the avatar and resize them
+            // Collect all textures used by affected renderers and resize them
             var textureMapping = new Dictionary<Texture2D, Texture2D>();
 
             // First pass: find all textures and create resized versions
-            foreach (var renderer in context.GetComponents<Renderer>())
+            foreach (var (renderer, maxSize) in rendererToMaxSize)
             {
                 var materials = renderer.sharedMaterials;
                 if (materials == null) continue;
@@ -41,7 +59,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                         var texture = material.GetTexture(propertyName);
                         if (texture is Texture2D texture2D && !textureMapping.ContainsKey(texture2D))
                         {
-                            var newTexture = ResizeTexture(texture2D, maxTextureSize);
+                            var newTexture = ResizeTexture(texture2D, maxSize);
                             if (newTexture != null)
                             {
                                 textureMapping[texture2D] = newTexture;
@@ -52,7 +70,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
             }
 
             // Second pass: replace all textures in all materials
-            foreach (var renderer in context.GetComponents<Renderer>())
+            foreach (var (renderer, _) in rendererToMaxSize)
             {
                 var materials = renderer.sharedMaterials;
                 if (materials == null) continue;
@@ -90,6 +108,13 @@ namespace Anatawa12.AvatarOptimizer.Processors
             if (original.mipmapCount <= 1)
                 return null;
 
+            // Skip crunched textures and warn
+            if (GraphicsFormatUtility.IsCrunchFormat(original.format))
+            {
+                Debug.LogWarning($"AAO Max Texture Size: Skipping crunched texture '{original.name}' - crunched format resizing is not supported.");
+                return null;
+            }
+
             // Calculate the target mipmap level
             var widthLevel = 0;
             var heightLevel = 0;
@@ -115,23 +140,16 @@ namespace Anatawa12.AvatarOptimizer.Processors
             var targetWidth = original.width >> targetLevel;
             var targetHeight = original.height >> targetLevel;
 
-            // For compressed textures with mipmaps, try to extract the specific mipmap level
-            if (GraphicsFormatUtility.IsCompressedFormat(original.format) && 
-                !GraphicsFormatUtility.IsCrunchFormat(original.format) &&
-                original.isReadable)
+            // Extract the specific mipmap level directly from texture data
+            try
             {
-                try
-                {
-                    return ExtractMipmapLevel(original, targetLevel, targetWidth, targetHeight);
-                }
-                catch
-                {
-                    // Fall back to rendering approach if mipmap extraction fails
-                }
+                return ExtractMipmapLevel(original, targetLevel, targetWidth, targetHeight);
             }
-
-            // For other textures or if mipmap extraction failed, use rendering approach
-            return ResizeUsingRenderTexture(original, targetWidth, targetHeight);
+            catch (Exception e)
+            {
+                Debug.LogWarning($"AAO Max Texture Size: Failed to extract mipmap from texture '{original.name}': {e.Message}");
+                return null;
+            }
         }
 
         private static Texture2D? ExtractMipmapLevel(Texture2D original, int level, int width, int height)
@@ -172,49 +190,6 @@ namespace Anatawa12.AvatarOptimizer.Processors
             newTexture.name = original.name + " (MaxTextureSize)";
             
             return newTexture;
-        }
-
-        private static Texture2D? ResizeUsingRenderTexture(Texture2D original, int width, int height)
-        {
-            var format = Utils.GetRenderingFormatForTexture(original.format, isSRGB: original.isDataSRGB);
-            
-            // Create a temporary render texture
-            using var tempRT = Utils.TemporaryRenderTexture(width, height, depthBuffer: 0, format: format);
-            var previousRT = RenderTexture.active;
-            
-            try
-            {
-                // Copy the texture to the render texture (this will use mipmaps)
-                Graphics.Blit(original, tempRT.RenderTexture);
-                
-                // Read back to a Texture2D
-                RenderTexture.active = tempRT.RenderTexture;
-                var textureFormat = Utils.GetTextureFormatForReading(original.graphicsFormat);
-                var newTexture = new Texture2D(width, height, textureFormat, mipChain: true, linear: !original.isDataSRGB);
-                newTexture.ReadPixels(new Rect(0, 0, width, height), 0, 0);
-                newTexture.Apply(updateMipmaps: true, makeNoLongerReadable: false);
-                
-                // Compress if original was compressed
-                if (GraphicsFormatUtility.IsCompressedFormat(original.format))
-                    UnityEditor.EditorUtility.CompressTexture(newTexture, original.format, UnityEditor.TextureCompressionQuality.Normal);
-                
-                // Copy texture settings
-                newTexture.wrapModeU = original.wrapModeU;
-                newTexture.wrapModeV = original.wrapModeV;
-                newTexture.filterMode = original.filterMode;
-                newTexture.anisoLevel = original.anisoLevel;
-                newTexture.mipMapBias = original.mipMapBias;
-                newTexture.name = original.name + " (MaxTextureSize)";
-                
-                // Make non-readable if original was non-readable
-                newTexture.Apply(updateMipmaps: true, makeNoLongerReadable: !original.isReadable);
-                
-                return newTexture;
-            }
-            finally
-            {
-                RenderTexture.active = previousRT;
-            }
         }
     }
 }

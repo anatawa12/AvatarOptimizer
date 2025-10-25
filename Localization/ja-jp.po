@@ -812,7 +812,7 @@ msgstr "Trace and Optimizeはアバターのルートにのみ追加すること
 # region MaxTextureSize
 
 msgid "MaxTextureSize:description"
-msgstr "Mipmapを使ってアバター内のテクスチャの最大サイズを制限します。重い再圧縮を避けることができます。"
+msgstr "Mipmapを使ってこのGameObjectとその子のテクスチャの最大サイズを制限します。重い再圧縮を避けることができます。"
 
 msgid "MaxTextureSize:prop:maxTextureSize"
 msgstr "最大テクスチャサイズ"

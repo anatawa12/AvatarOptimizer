@@ -16,8 +16,9 @@ The format is based on [Keep a Changelog].
 - Invert option of Remove Mesh by BlendShape `#1535`
 - Max Texture Size component to limit texture sizes using mipmaps
   - Allows specifying maximum texture size (4096, 2048, 1024, 512, 256, 128, or 64)
+  - Can be placed on any GameObject to affect that GameObject and its children
   - Uses existing mipmaps to resize textures efficiently without heavy recompression
-  - Skips textures without mipmaps and textures already smaller than the specified limit
+  - Skips textures without mipmaps and crunched format textures (with warning)
 
 ### Changed
 - Avatar Optimizer will run as late as possible in NDMF Pipeline by default `#1493`

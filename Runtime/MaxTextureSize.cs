@@ -1,35 +1,25 @@
 using System;
-using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.Animations;
 
 namespace Anatawa12.AvatarOptimizer
 {
     /// <summary>
-    /// Component to limit the maximum size of textures in the avatar.
+    /// Component to limit the maximum size of textures in the GameObject and its children.
     /// Uses mipmaps to resize textures without heavy recompression.
     /// </summary>
     [AddComponentMenu("Avatar Optimizer/AAO Max Texture Size")]
     [DisallowMultipleComponent]
     [HelpURL("https://vpm.anatawa12.com/avatar-optimizer/ja/docs/reference/max-texture-size/")]
-    [PublicAPI]
-    public sealed class MaxTextureSize : AvatarGlobalComponent
+    internal sealed class MaxTextureSize : AvatarTagComponent
     {
-        internal MaxTextureSize()
-        {
-        }
-
         [NotKeyable]
         [AAOLocalized("MaxTextureSize:prop:maxTextureSize")]
         [SerializeField]
-        internal MaxTextureSizeValue maxTextureSize = MaxTextureSizeValue.Max2048;
+        public MaxTextureSizeValue maxTextureSize = MaxTextureSizeValue.Max2048;
     }
 
-    /// <summary>
-    /// Maximum texture size values
-    /// </summary>
-    [PublicAPI]
-    public enum MaxTextureSizeValue
+    internal enum MaxTextureSizeValue
     {
         [InspectorName("4096")]
         Max4096 = 4096,
