@@ -25,21 +25,16 @@ namespace Anatawa12.AvatarOptimizer.Processors
             
             foreach (var renderer in context.GetComponents<Renderer>())
             {
-                // Find the closest parent MaxTextureSize component
-                var transform = renderer.transform;
-                while (transform != null)
+                // Find the closest parent MaxTextureSize component within avatar boundary
+                // ParentEnumerable with root parameter stops at avatarRoot (exclusive)
+                foreach (var transform in renderer.transform.ParentEnumerable(avatarRoot, includeMe: true))
                 {
-                    // Don't process components outside of the avatar
-                    if (transform == avatarRoot.parent)
-                        break;
-
                     var component = transform.GetComponent<MaxTextureSize>();
                     if (component != null)
                     {
                         rendererToComponent[renderer] = component;
                         break;
                     }
-                    transform = transform.parent;
                 }
             }
 
