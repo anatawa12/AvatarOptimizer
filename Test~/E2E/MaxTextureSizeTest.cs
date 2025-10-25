@@ -12,6 +12,7 @@ namespace Anatawa12.AvatarOptimizer.Test.E2E
         {
             // Create an avatar
             var avatar = TestUtils.NewAvatar();
+            TestUtils.SetFxLayer(avatar, new AnimatorController());
             var rendererGO = new GameObject("Renderer");
             rendererGO.transform.SetParent(avatar.transform, false);
             var meshFilter = rendererGO.AddComponent<MeshFilter>();
@@ -54,6 +55,7 @@ namespace Anatawa12.AvatarOptimizer.Test.E2E
         {
             // Create an avatar
             var avatar = TestUtils.NewAvatar();
+            TestUtils.SetFxLayer(avatar, new AnimatorController());
             var rendererGO = new GameObject("Renderer");
             rendererGO.transform.SetParent(avatar.transform, false);
             var meshFilter = rendererGO.AddComponent<MeshFilter>();
@@ -97,6 +99,7 @@ namespace Anatawa12.AvatarOptimizer.Test.E2E
         {
             // Create an avatar
             var avatar = TestUtils.NewAvatar();
+            TestUtils.SetFxLayer(avatar, new AnimatorController());
             var rendererGO = new GameObject("Renderer");
             rendererGO.transform.SetParent(avatar.transform, false);
             var meshFilter = rendererGO.AddComponent<MeshFilter>();
