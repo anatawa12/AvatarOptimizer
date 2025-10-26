@@ -128,10 +128,6 @@ namespace Anatawa12.AvatarOptimizer.Processors
             if (original.width <= maxSize && original.height <= maxSize)
                 return null;
 
-            // Skip if texture doesn't have mipmaps
-            if (original.mipmapCount <= 1)
-                return null;
-
             // Skip crunched textures and report error
             if (GraphicsFormatUtility.IsCrunchFormat(original.format))
             {
@@ -146,13 +142,13 @@ namespace Anatawa12.AvatarOptimizer.Processors
             var currentWidth = original.width;
             var currentHeight = original.height;
 
-            while (currentWidth > maxSize && widthLevel < original.mipmapCount - 1)
+            while (currentWidth > maxSize)
             {
                 currentWidth /= 2;
                 widthLevel++;
             }
 
-            while (currentHeight > maxSize && heightLevel < original.mipmapCount - 1)
+            while (currentHeight > maxSize)
             {
                 currentHeight /= 2;
                 heightLevel++;
@@ -161,6 +157,14 @@ namespace Anatawa12.AvatarOptimizer.Processors
             var targetLevel = Math.Max(widthLevel, heightLevel);
             if (targetLevel == 0)
                 return null;
+
+            // Skip if texture doesn't have mipmaps
+            if (original.mipmapCount <= targetLevel)
+            {
+                using (ErrorReport.WithContextObject(original))
+                    BuildLog.LogWarning("MaxTextureSize:warning:insufficientMipmaps");
+                return null;
+            }
 
             var targetWidth = original.width >> targetLevel;
             var targetHeight = original.height >> targetLevel;

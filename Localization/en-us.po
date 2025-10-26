@@ -894,4 +894,7 @@ msgstr "Max Texture Size"
 msgid "MaxTextureSize:warning:crunchedNotSupported"
 msgstr "Crunched texture format is not supported for resizing."
 
+msgid "MaxTextureSize:warning:insufficientMipmaps"
+msgstr "Texture does not have enough mipmaps for the specified max size."
+
 # endregion

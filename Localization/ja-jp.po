@@ -820,4 +820,7 @@ msgstr "最大テクスチャサイズ"
 msgid "MaxTextureSize:warning:crunchedNotSupported"
 msgstr "クランチされたテクスチャフォーマットはリサイズに対応していません。"
 
+msgid "MaxTextureSize:warning:insufficientMipmaps"
+msgstr "テクスチャに十分なMipmapレベルがないため、リサイズできません。"
+
 # endregion
