@@ -154,26 +154,26 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 heightLevel++;
             }
 
-            var targetLevel = Math.Max(widthLevel, heightLevel);
-            if (targetLevel == 0)
+            var removeLevels = Math.Max(widthLevel, heightLevel);
+            if (removeLevels == 0)
                 return null;
 
             // Skip if texture doesn't have mipmaps
-            if (original.mipmapCount <= targetLevel)
+            if (original.mipmapCount <= removeLevels)
             {
                 using (ErrorReport.WithContextObject(original))
                     BuildLog.LogWarning("MaxTextureSize:warning:insufficientMipmaps");
                 return null;
             }
 
-            var targetWidth = original.width >> targetLevel;
-            var targetHeight = original.height >> targetLevel;
+            var targetWidth = original.width >> removeLevels;
+            var targetHeight = original.height >> removeLevels;
 
             // Extract the specific mipmap level directly from texture data
-            return ExtractMipmapLevel(original, targetLevel, targetWidth, targetHeight);
+            return ExtractMipmapLevel(original, removeLevels, targetWidth, targetHeight);
         }
 
-        private static Texture2D? ExtractMipmapLevel(Texture2D original, int level, int width, int height)
+        private static Texture2D? ExtractMipmapLevel(Texture2D original, int removeLevels, int width, int height)
         {
             // Get readable version of texture (use Graphics.CopyTexture if not readable)
             Texture2D readableVersion;
@@ -187,31 +187,23 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 Graphics.CopyTexture(original, readableVersion);
                 readableVersion.Apply(false);
             }
+            var mipCount = original.mipmapCount - removeLevels;
             
             // Calculate number of mip levels before target level
             var offset = 0;
-            for (var i = 0; i < level; i++)
+            for (var i = 0; i < removeLevels; i++)
             {
                 var mipWidth = Math.Max(1, original.width >> i);
                 var mipHeight = Math.Max(1, original.height >> i);
                 offset += (int)GraphicsFormatUtility.ComputeMipmapSize(mipWidth, mipHeight, original.format);
             }
             
-            var mipSize = (int)GraphicsFormatUtility.ComputeMipmapSize(width, height, original.format);
-            
             // Get the raw data for the specific mipmap level using span
             var sourceData = readableVersion.GetRawTextureData<byte>();
-            var sourceSpan = sourceData.AsSpan().Slice(offset, mipSize);
-            
-            var destData = new byte[mipSize];
-            var destSpan = destData.AsSpan();
-            
-            // Copy the mipmap data
-            sourceSpan.CopyTo(destSpan);
-            
+
             // Create a new texture with the same format
-            var newTexture = new Texture2D(width, height, original.format, mipChain: false, linear: !original.isDataSRGB);
-            newTexture.SetPixelData(destData, 0);
+            var newTexture = new Texture2D(width, height, original.graphicsFormat, mipCount: mipCount, mipCount != 1 ? TextureCreationFlags.MipChain : TextureCreationFlags.None);
+            newTexture.LoadRawTextureData(sourceData.AsSpan()[offset..]);
             newTexture.Apply(updateMipmaps: false, makeNoLongerReadable: !original.isReadable);
             
             // Clean up temporary readable version if we created one
