@@ -56,6 +56,52 @@ namespace Anatawa12.AvatarOptimizer.Test.E2E
         }
 
         [Test]
+        public void MaxTextureSize_ResizesCompressedLargeTextures()
+        {
+            // Create an avatar
+            var avatar = TestUtils.NewAvatar();
+            TestUtils.SetFxLayer(avatar, new AnimatorController());
+            var rendererGO = new GameObject("Renderer");
+            rendererGO.transform.SetParent(avatar.transform, false);
+            var meshFilter = rendererGO.AddComponent<MeshFilter>();
+            meshFilter.sharedMesh = TestUtils.NewCubeMesh();
+            var renderer = rendererGO.AddComponent<MeshRenderer>();
+
+            // Create a large texture with mipmaps
+            var largeTexture = new Texture2D(2048, 2048, TextureFormat.RGBA32, mipChain: true);
+            for (var y = 0; y < 2048; y++)
+            {
+                for (var x = 0; x < 2048; x++)
+                {
+                    largeTexture.SetPixel(x, y, Color.white);
+                }
+            }
+            largeTexture.Apply(updateMipmaps: true);
+            EditorUtility.CompressTexture(largeTexture, TextureFormat.DXT1, TextureCompressionQuality.Normal);
+            largeTexture.name = "TestTexture";
+
+            // Create a material with the texture
+            var material = new Material(Shader.Find("Standard"));
+            material.mainTexture = largeTexture;
+            renderer.sharedMaterial = material;
+
+            // Add MaxTextureSize component with max size 1024
+            var maxTexSizeComponent = avatar.AddComponent<MaxTextureSize>();
+            maxTexSizeComponent.maxTextureSize = MaxTextureSizeValue.Max1024;
+
+            // Run NDMF
+            var context = AvatarProcessor.ProcessAvatar(avatar, AmbientPlatform.DefaultPlatform);
+
+            // Verify the texture was resized
+            var resultTexture = renderer.sharedMaterial.mainTexture as Texture2D;
+            Assert.IsNotNull(resultTexture, "Material should still have a texture");
+            Assert.That(resultTexture.width, Is.LessThanOrEqualTo(1024), "Texture width should be <= 1024");
+            Assert.That(resultTexture.height, Is.LessThanOrEqualTo(1024), "Texture height should be <= 1024");
+            Assert.That(resultTexture.mipmapCount, Is.EqualTo(11));
+            Assert.That(context.ErrorReport.Errors, Is.Empty);
+        }
+
+        [Test]
         public void MaxTextureSize_SkipsTexturesWithoutMipmaps()
         {
             // Create an avatar
