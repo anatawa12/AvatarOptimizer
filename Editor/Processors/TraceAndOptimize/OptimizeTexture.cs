@@ -460,6 +460,7 @@ internal struct OptimizeTextureImpl {
 
         {
             var usageInformations = info.Textures.SelectMany(x => x.Users).SelectMany(x => x.Value);
+            if (!usageInformations.Any()) return EmptyAtlasConnectedResult;
             var wrapModeU = usageInformations.Select(x => x.WrapModeU).Aggregate((a, b) => a == b ? a : null);
             var wrapModeV = usageInformations.Select(x => x.WrapModeV).Aggregate((a, b) => a == b ? a : null);
 
