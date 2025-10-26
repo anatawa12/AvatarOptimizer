@@ -100,6 +100,53 @@ namespace Anatawa12.AvatarOptimizer.Test.E2E
         }
 
         [Test]
+        public void MaxTextureSize_SkipsTexturesWithCranch()
+        {
+            // Create an avatar
+            var avatar = TestUtils.NewAvatar();
+            TestUtils.SetFxLayer(avatar, new AnimatorController());
+            var rendererGO = new GameObject("Renderer");
+            rendererGO.transform.SetParent(avatar.transform, false);
+            var meshFilter = rendererGO.AddComponent<MeshFilter>();
+            meshFilter.sharedMesh = TestUtils.NewCubeMesh();
+            var renderer = rendererGO.AddComponent<MeshRenderer>();
+
+            // Create a large texture WITHOUT mipmaps
+            var largeTexture = new Texture2D(2048, 2048, TextureFormat.RGBA32, mipChain: false);
+            for (var y = 0; y < 2048; y++)
+            {
+                for (var x = 0; x < 2048; x++)
+                {
+                    largeTexture.SetPixel(x, y, Color.white);
+                }
+            }
+            largeTexture.Apply(updateMipmaps: false);
+            EditorUtility.CompressTexture(largeTexture, TextureFormat.DXT1Crunched, TextureCompressionQuality.Normal);
+            largeTexture.name = "TestTextureCrunched";
+
+            // Create a material with the texture
+            var material = new Material(Shader.Find("Standard"));
+            material.mainTexture = largeTexture;
+            renderer.sharedMaterial = material;
+
+            // Add MaxTextureSize component with max size 1024
+            var maxTexSizeComponent = avatar.AddComponent<MaxTextureSize>();
+            maxTexSizeComponent.maxTextureSize = MaxTextureSizeValue.Max1024;
+
+            // Run NDMF
+            var context = AvatarProcessor.ProcessAvatar(avatar, AmbientPlatform.DefaultPlatform);
+
+            // Verify the texture was NOT resized (since it has no mipmaps)
+            var resultTexture = renderer.sharedMaterial.mainTexture as Texture2D;
+            Assert.IsNotNull(resultTexture, "Material should still have a texture");
+            // The texture should remain the same (not resized) since it has no mipmaps
+            Assert.That(resultTexture.width, Is.EqualTo(2048), "Texture width should remain 2048 without mipmaps");
+            Assert.That(resultTexture.height, Is.EqualTo(2048), "Texture height should remain 2048 without mipmaps");
+            Assert.That(context.ErrorReport.Errors, Has.Count.EqualTo(1));
+            Assert.That((context.ErrorReport.Errors[0].TheError as SimpleError)?.TitleKey, Is.EqualTo("MaxTextureSize:warning:crunchedNotSupported"));
+        }
+
+        [Test]
         public void MaxTextureSize_SkipsSmallTextures()
         {
             // Create an avatar
