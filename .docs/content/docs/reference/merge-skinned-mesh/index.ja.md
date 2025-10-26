@@ -53,7 +53,7 @@ Unity 2022ではBlendShapeの負荷が改善されているため、その記述
 
 <div id="static-renderers"></div>
 
-### 基本レンダラー {#basic-renderers}
+### メッシュレンダラー {#basic-renderers}
 
 統合対象のMeshRendererの一覧です。
 
