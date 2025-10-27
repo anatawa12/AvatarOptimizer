@@ -89,6 +89,7 @@ namespace Anatawa12.AvatarOptimizer.ndmf
                             .Then.Run(Processors.MergePhysBoneProcessor.Instance)
                             .Then.Run(new Processors.GCDebugPass(InternalGcDebugPosition.AfterPhysBone))
 #endif
+                            .Then.Run(Processors.MaxTextureSizeProcessor.Instance)
                             .Then.Run(Processors.EditSkinnedMeshComponentProcessor.Instance)
                             .PreviewingWith(EditModePreview.RemoveMeshByMaskRenderFilter.Instance)
                             .PreviewingWith(EditModePreview.RemoveMeshByBlendShapeRenderFilter.Instance)
