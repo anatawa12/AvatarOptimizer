@@ -8,7 +8,7 @@ weight: 20
 Edit Skinned Mesh Component is a kind of component which should be added to
 a GameObject which has a SkinnedMeshRenderer component, and applies some modification to the SkinnedMeshRenderer.
 
-Since Avatar Optimizer 1.9.0 some components can be used with basic MeshRenderer component.
+Since Avatar Optimizer 1.9.0, some components can be used with basic MeshRenderer component.
 Those will be called "Edit Skinned Mesh component with basic mesh support".
 
 There are two sub-kinds.

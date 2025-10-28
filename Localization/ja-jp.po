@@ -217,7 +217,8 @@ msgstr "コンポーネント"
 #region EditSkinnedMeshComponents
 
 msgid "EditSkinnedMeshComponents:invalid-renderer-type"
-msgstr "このコンポーネントはSkinnedMeshRendererまたはMeshRendererで使用されることを想定していますが、対象のGameObjectには異なるレンダラーが付いています。これはサポートされておらず、このコンポーネントは無視されます。"
+msgstr "このコンポーネントはSkinnedMeshRendererかMeshRendererに対して使用することが想定されていますが、対象のGameObjectにはそれら以外のレンダラーが付いています。\n"
+"これはサポートされておらず、このコンポーネントの設定は無視されます。"
 
 #endregion
 

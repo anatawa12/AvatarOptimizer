@@ -7,8 +7,8 @@ weight: 20
 
 Edit Skinned Mesh ComponentはSkinnedMeshRendererコンポーネントのあるGameObjectに追加することで、そのSkinnedMeshRendererに作用するコンポーネントです。
 
-Avatar Optimizer 1.9.0以降では、一部のコンポーネントが基本メッシュ(MeshRendererコンポーネント)にも対応しています。\
-これらは「基本メッシュ対応Edit Skinned Mesh Component」と呼ばれます。
+Avatar Optimizer 1.9.0以降では、一部のコンポーネントがメッシュレンダラー(MeshRendererコンポーネント)にも対応しています。\
+これらは「MeshRenderer対応Edit Skinned Mesh Component」と呼ばれます。
 
 このコンポーネントには2つの小分類があります。
 
@@ -32,9 +32,9 @@ Avatar Optimizer 1.9.0以降では、一部のコンポーネントが基本メ�
 - [Merge ToonLit Material](../../reference/merge-toonlit-material)
 - [Rename BlendsShape](../../reference/rename-blendshape)
 
-# 基本メッシュ対応コンポーネント {#components-with-basic-mesh-support}
+# MeshRenderer対応コンポーネント {#components-with-basic-mesh-support}
 
-Avatar Optimizer 1.9.0以降では、以下のEdit Skinned Mesh Componentが基本メッシュ(MeshRendererコンポーネント)にも対応しています。
+Avatar Optimizer 1.9.0以降では、以下のEdit Skinned Mesh Componentがメッシュレンダラーにも対応しています。
 
 - [Remove Mesh By Box](../../reference/remove-mesh-by-box)
 - [Remove Mesh By Mask](../../reference/remove-mesh-by-mask)
